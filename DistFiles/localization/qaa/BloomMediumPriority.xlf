@@ -854,6 +854,36 @@
         <target xml:lang="qaa-x-test" state="needs-translation">Show Page Numbers</target>
         <note>BookSettings.ShowPageNumbers</note>
       </trans-unit>
+      <trans-unit id="BookSettings.PageNumbers.Automatic" sil:dynamic="true">
+        <source xml:lang="en">(Automatic)</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">(Automatic)</target>
+        <note>BookSettings.PageNumbers.Automatic</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageNumbers.Left" sil:dynamic="true">
+        <source xml:lang="en">Left</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Left</target>
+        <note>BookSettings.PageNumbers.TopLeft</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageNumbers.Center" sil:dynamic="true">
+        <source xml:lang="en">Center</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Center</target>
+        <note>BookSettings.PageNumbers.Center</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageNumbers.Right" sil:dynamic="true">
+        <source xml:lang="en">Right</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Right</target>
+        <note>BookSettings.PageNumbers.Right</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageNumbers.Hidden" sil:dynamic="true">
+        <source xml:lang="en">Hidden</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Hidden</target>
+        <note>BookSettings.PageNumbers.Hidden</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageNumberLocationNote" sil:dynamic="true">
+        <source xml:lang="en">Note: some Page Themes may not know how to change the location of the Page Number.</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Note: some Page Themes may not know how to change the location of the Page Number.</target>
+        <note>BookSettings.PageNumberLocationNote</note>
+      </trans-unit>
       <trans-unit id="BookSettings.FrontAndBackMatter" sil:dynamic="true">
         <source xml:lang="en">Front &amp; Back Matter</source>
         <target xml:lang="qaa-x-test" state="needs-translation">Front &amp; Back Matter</target>
