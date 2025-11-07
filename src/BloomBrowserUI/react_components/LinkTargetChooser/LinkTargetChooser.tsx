@@ -196,14 +196,14 @@ export const LinkTargetChooser: React.FunctionComponent<{
             title: string | null,
             hasError: boolean,
         ) => {
-            props.onURLChanged?.({
+            onURLChangedRef.current?.({
                 url,
                 bookThumbnail: thumbnail,
                 bookTitle: title,
                 hasError,
             });
         },
-        [props],
+        [],
     );
 
     const handleBookSelected = useCallback(
@@ -225,47 +225,53 @@ export const LinkTargetChooser: React.FunctionComponent<{
         [notifyParent],
     );
 
-    const handlePageSelected = (pageInfo: PageInfoForLinks) => {
-        const normalizedPageId =
-            !pageInfo.pageId || pageInfo.pageId === "cover"
-                ? "cover"
-                : pageInfo.pageId;
+    const handlePageSelected = useCallback(
+        (pageInfo: PageInfoForLinks) => {
+            const normalizedPageId =
+                !pageInfo.pageId || pageInfo.pageId === "cover"
+                    ? "cover"
+                    : pageInfo.pageId;
 
-        setSelectedPageId(normalizedPageId);
-        setErrorMessage("");
+            setSelectedPageId(normalizedPageId);
+            setErrorMessage("");
 
-        // Build URL and update URL box
-        let url: string;
-        if (selectedBookId) {
-            url =
-                normalizedPageId === "cover"
-                    ? `/book/${selectedBookId}`
-                    : `/book/${selectedBookId}#${normalizedPageId}`;
-        } else {
-            url =
-                normalizedPageId === "cover"
-                    ? "#cover"
-                    : `#${normalizedPageId}`;
-        }
+            // Build URL and update URL box
+            let url: string;
+            if (selectedBookId) {
+                url =
+                    normalizedPageId === "cover"
+                        ? `/book/${selectedBookId}`
+                        : `/book/${selectedBookId}#${normalizedPageId}`;
+            } else {
+                url =
+                    normalizedPageId === "cover"
+                        ? "#cover"
+                        : `#${normalizedPageId}`;
+            }
 
-        setCurrentURL(url);
-        notifyParent(
-            url,
-            selectedBook?.thumbnail || null,
-            selectedBook?.title || null,
-            false,
-        );
-    };
+            setCurrentURL(url);
+            notifyParent(
+                url,
+                selectedBook?.thumbnail || null,
+                selectedBook?.title || null,
+                false,
+            );
+        },
+        [selectedBookId, selectedBook, notifyParent],
+    );
 
-    const handleURLEditorChanged = (url: string) => {
-        setCurrentURL(url);
-        setSelectedBook(null); // Clear book selection
-        setSelectedBookId(null);
-        setSelectedPageId(null); // Clear page selection
-        setErrorMessage("");
+    const handleURLEditorChanged = useCallback(
+        (url: string) => {
+            setCurrentURL(url);
+            setSelectedBook(null); // Clear book selection
+            setSelectedBookId(null);
+            setSelectedPageId(null); // Clear page selection
+            setErrorMessage("");
 
-        notifyParent(url, null, null, false);
-    };
+            notifyParent(url, null, null, false);
+        },
+        [notifyParent],
+    );
 
     // Auto-select the current book when component opens if no URL is provided
     useEffect(() => {

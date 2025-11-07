@@ -1,6 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import * as React from "react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { css } from "@emotion/react";
 import {
     BloomDialog,
@@ -19,24 +19,25 @@ export const LinkTargetChooserDialog: React.FunctionComponent<{
     onClose: () => void;
     onSelect?: (info: LinkTargetInfo) => void;
 }> = (props) => {
+    const { onClose, onSelect } = props;
     const [currentLinkInfo, setCurrentLinkInfo] =
         useState<LinkTargetInfo | null>(null);
 
-    const handleURLChanged = (info: LinkTargetInfo) => {
+    const handleURLChanged = useCallback((info: LinkTargetInfo) => {
         setCurrentLinkInfo(info);
-    };
+    }, []);
 
-    const handleOK = () => {
-        if (currentLinkInfo && props.onSelect) {
-            props.onSelect(currentLinkInfo);
+    const handleOK = useCallback(() => {
+        if (currentLinkInfo && onSelect) {
+            onSelect(currentLinkInfo);
         }
-    };
+    }, [currentLinkInfo, onSelect]);
 
-    const handleClose = () => {
-        if (props.onClose) {
-            props.onClose();
+    const handleClose = useCallback(() => {
+        if (onClose) {
+            onClose();
         }
-    };
+    }, [onClose]);
 
     const hasValidLink =
         currentLinkInfo !== null &&

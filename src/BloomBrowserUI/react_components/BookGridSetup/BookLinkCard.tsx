@@ -18,7 +18,7 @@ interface BookCardProps {
     disabled?: boolean;
 }
 
-export const BookLinkCard: React.FC<BookCardProps> = ({
+const BookLinkCardComponent: React.FC<BookCardProps> = ({
     link,
     selected,
     onClick,
@@ -42,7 +42,9 @@ export const BookLinkCard: React.FC<BookCardProps> = ({
             css={css`
                 width: 140px;
                 background-color: #505050 !important;
-                outline: ${selected ? `3px solid ${kBloomGold}` : "none"};
+                outline: ${selected
+                    ? `3px solid ${kBloomGold}`
+                    : "3px solid transparent"};
                 color: white;
                 position: relative;
                 padding: 0 0 8px 0;
@@ -139,3 +141,20 @@ export const BookLinkCard: React.FC<BookCardProps> = ({
         </Card>
     );
 };
+
+export const BookLinkCard = React.memo(
+    BookLinkCardComponent,
+    (prevProps, nextProps) => {
+        // Only re-render if book ID or selection state changes
+        return (
+            prevProps.link.book.id === nextProps.link.book.id &&
+            prevProps.selected === nextProps.selected &&
+            prevProps.onClick === nextProps.onClick &&
+            prevProps.onRemove === nextProps.onRemove &&
+            prevProps.style === nextProps.style &&
+            prevProps.preferFolderName === nextProps.preferFolderName &&
+            prevProps.isDragging === nextProps.isDragging &&
+            prevProps.disabled === nextProps.disabled
+        );
+    },
+);

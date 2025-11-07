@@ -6,7 +6,7 @@ import { BookLinkCard } from "../BookGridSetup/BookLinkCard";
 import { chooserContainerStyles, itemGap } from "./sharedStyles";
 import { chooserButtonPadding } from "./sharedStyles";
 
-export const BookChooser: React.FunctionComponent<{
+const BookChooserComponent: React.FunctionComponent<{
     books: BookInfoForLinks[];
     selectedBook: BookInfoForLinks | null;
     onSelectBook: (book: BookInfoForLinks) => void;
@@ -25,6 +25,12 @@ export const BookChooser: React.FunctionComponent<{
     }, [props.selectedBook]);
 
     const booksToShow = props.includeCurrentBook ? props.books : props.books; // TODO: filter out current book once we have API to identify it
+
+    const handleBookClick = (book: BookInfoForLinks, isDisabled: boolean) => {
+        if (!isDisabled) {
+            props.onSelectBook(book);
+        }
+    };
 
     return (
         <div
@@ -53,11 +59,7 @@ export const BookChooser: React.FunctionComponent<{
                         <BookLinkCard
                             link={{ book: book }}
                             selected={props.selectedBook?.id === book.id}
-                            onClick={() => {
-                                if (!isDisabled) {
-                                    props.onSelectBook(book);
-                                }
-                            }}
+                            onClick={() => handleBookClick(book, !!isDisabled)}
                         />
                     </div>
                 );
@@ -65,3 +67,17 @@ export const BookChooser: React.FunctionComponent<{
         </div>
     );
 };
+
+export const BookChooser = React.memo(
+    BookChooserComponent,
+    (prevProps, nextProps) => {
+        // Only re-render if the selected book ID changes or the books array changes
+        return (
+            prevProps.selectedBook?.id === nextProps.selectedBook?.id &&
+            prevProps.books === nextProps.books &&
+            prevProps.onSelectBook === nextProps.onSelectBook &&
+            prevProps.includeCurrentBook === nextProps.includeCurrentBook &&
+            prevProps.disabledBooks === nextProps.disabledBooks
+        );
+    },
+);

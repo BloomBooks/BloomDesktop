@@ -16,7 +16,85 @@ import {
 import "../../bookEdit/pageThumbnailList/pageThumbnailList.less";
 import { chooserButtonPadding } from "./sharedStyles";
 
-export const PageChooser: React.FunctionComponent<{
+const PageItemComponent: React.FunctionComponent<{
+    page: IPage;
+    isSelected: boolean;
+    pageLayout: string;
+    bookId: string;
+    bookFolderPath?: string;
+    onSelectPage: (pageInfo: PageInfoForLinks) => void;
+    onConfigureReloadCallback: (id: string, callback: () => void) => void;
+}> = (props) => {
+    const {
+        page,
+        isSelected,
+        pageLayout,
+        bookId,
+        bookFolderPath,
+        onSelectPage,
+        onConfigureReloadCallback,
+    } = props;
+
+    return (
+        <div
+            key={page.key}
+            id={page.key}
+            data-caption={page.caption}
+            data-testid={`page-${page.key}`}
+            className={"gridItem"}
+            css={css`
+                position: relative;
+                width: 80px;
+                height: 105px;
+                float: none;
+                display: inline-block;
+                vertical-align: top;
+                border: 1px solid #ccc;
+                border-radius: 2px;
+                padding: 5px;
+                background-color: ${itemBackgroundColor};
+                cursor: pointer;
+                outline: ${getSelectionOutline(isSelected)};
+                & .pageContainer {
+                    float: none;
+                }
+                & .thumbnailCaption {
+                    left: 0 !important;
+                    right: 0 !important;
+                    text-align: center !important;
+                }
+            `}
+            onClick={() =>
+                onSelectPage({
+                    pageId: page.key,
+                    caption: page.caption,
+                    thumbnail: page.content,
+                })
+            }
+        >
+            <PageThumbnail
+                page={page}
+                left={false}
+                pageLayout={pageLayout}
+                bookId={bookId}
+                bookFolderPath={bookFolderPath}
+                configureReloadCallback={onConfigureReloadCallback}
+            />
+        </div>
+    );
+};
+
+const PageItem = React.memo(PageItemComponent, (prevProps, nextProps) => {
+    // Only re-render if selection state or page key changes
+    return (
+        prevProps.page.key === nextProps.page.key &&
+        prevProps.isSelected === nextProps.isSelected &&
+        prevProps.pageLayout === nextProps.pageLayout &&
+        prevProps.bookId === nextProps.bookId
+    );
+});
+
+const PageChooserComponent: React.FunctionComponent<{
     bookId?: string;
     bookFolderPath?: string;
     selectedPageId?: string;
@@ -30,15 +108,19 @@ export const PageChooser: React.FunctionComponent<{
     const [bookAttributes, setBookAttributes] = useState<
         Record<string, string>
     >({});
-    const [bookCssFiles, setBookCssFiles] = useState<string[]>([]);
+    // Keep the latest selected page without re-triggering the data fetch effect.
+    const selectedPageIdRef = useRef<string | undefined>(selectedPageId);
 
-    // Persist reload callbacks in case we grow functionality later.
-    const pageIdToRefreshMap = useRef(new Map<string, () => void>());
-    const injectedCssLinksRef = useRef<HTMLLinkElement[]>([]);
+    // Stable callback for configuring reload callbacks
+    const handleConfigureReloadCallback = React.useCallback(
+        // PageThumbnail expects this hook, but the chooser never calls the callback.
+        (_id: string, _callback: () => void) => undefined,
+        [],
+    );
 
     useEffect(() => {
-        pageIdToRefreshMap.current.clear();
-    }, [bookId]);
+        selectedPageIdRef.current = selectedPageId;
+    }, [selectedPageId]);
 
     useEffect(() => {
         if (!bookId) {
@@ -46,7 +128,6 @@ export const PageChooser: React.FunctionComponent<{
             setLoading(false);
             setErrorMessage(null);
             setBookAttributes({});
-            setBookCssFiles([]);
             return;
         }
 
@@ -74,14 +155,10 @@ export const PageChooser: React.FunctionComponent<{
                 }));
 
                 setPages(pageList);
-                const cssFiles = Array.isArray(response.data.cssFiles)
-                    ? (response.data.cssFiles as string[])
-                    : [];
-                setBookCssFiles(cssFiles);
                 setLoading(false);
 
                 // Auto-select the first page when a new book's pages load
-                if (pageList.length > 0 && !selectedPageId) {
+                if (pageList.length > 0 && !selectedPageIdRef.current) {
                     onSelectPage({
                         pageId: pageList[0].key,
                         caption: pageList[0].caption,
@@ -98,7 +175,6 @@ export const PageChooser: React.FunctionComponent<{
                     );
                     setLoading(false);
                     setPages([]);
-                    setBookCssFiles([]);
                 }
             },
         );
@@ -106,9 +182,10 @@ export const PageChooser: React.FunctionComponent<{
         return () => {
             canceled = true;
         };
-    }, [bookId, selectedPageId, onSelectPage]);
+    }, [bookId, onSelectPage]);
 
     useEffect(() => {
+        // Pull page-level attributes that influence thumbnail rendering.
         if (!bookId) {
             setBookAttributes({});
             return;
@@ -138,57 +215,6 @@ export const PageChooser: React.FunctionComponent<{
             canceled = true;
         };
     }, [bookId]);
-
-    useEffect(() => {
-        const existingLinks = injectedCssLinksRef.current;
-        existingLinks.forEach((link) => {
-            if (link.parentElement) {
-                link.parentElement.removeChild(link);
-            }
-        });
-        injectedCssLinksRef.current = [];
-
-        if (!bookId || bookCssFiles.length === 0) {
-            return;
-        }
-
-        const head = document.head;
-        if (!head) {
-            return;
-        }
-
-        const createdLinks: HTMLLinkElement[] = [];
-        bookCssFiles.forEach((file) => {
-            if (!file) {
-                return;
-            }
-
-            const link = document.createElement("link");
-            link.rel = "stylesheet";
-            link.type = "text/css";
-            link.setAttribute("data-page-chooser-css", "true");
-            const encodedPath = file
-                .split("/")
-                .map((segment) => encodeURIComponent(segment))
-                .join("/");
-            link.href = `/bloom/api/pageList/bookFile/${encodeURIComponent(
-                bookId,
-            )}/${encodedPath}`;
-            head.appendChild(link);
-            createdLinks.push(link);
-        });
-
-        injectedCssLinksRef.current = createdLinks;
-
-        return () => {
-            createdLinks.forEach((link) => {
-                if (link.parentElement) {
-                    link.parentElement.removeChild(link);
-                }
-            });
-            injectedCssLinksRef.current = [];
-        };
-    }, [bookCssFiles, bookId]);
 
     if (!bookId) {
         return (
@@ -250,6 +276,7 @@ export const PageChooser: React.FunctionComponent<{
                 //background-color: #2e2e2e;
                 display: flex;
                 flex-direction: column;
+                contain: layout; /* Isolate layout changes to prevent affecting parent dialog */
             `}
         >
             <div
@@ -279,69 +306,28 @@ export const PageChooser: React.FunctionComponent<{
                             gap: ${itemGap};
                         `}
                     >
-                        {pages.map((page) => {
-                            const isSelected = selectedPageId === page.key;
-                            return (
-                                <div
-                                    key={page.key}
-                                    id={page.key}
-                                    data-caption={page.caption}
-                                    data-testid={`page-${page.key}`}
-                                    className={"gridItem"}
-                                    css={css`
-                                        position: relative;
-                                        width: 80px;
-                                        height: 105px;
-                                        float: none;
-                                        display: inline-block;
-                                        vertical-align: top;
-                                        border: 1px solid #ccc;
-                                        border-radius: 2px;
-                                        padding: 5px;
-                                        background-color: ${itemBackgroundColor};
-                                        cursor: pointer;
-                                        outline: ${getSelectionOutline(
-                                            isSelected,
-                                        )};
-                                        & .pageContainer {
-                                            float: none;
-                                        }
-                                        & .thumbnailCaption {
-                                            left: 0 !important;
-                                            right: 0 !important;
-                                            text-align: center !important;
-                                        }
-                                    `}
-                                    onClick={() =>
-                                        onSelectPage({
-                                            pageId: page.key,
-                                            caption: page.caption,
-                                            thumbnail: page.content,
-                                        })
-                                    }
-                                >
-                                    <PageThumbnail
-                                        page={page}
-                                        left={false}
-                                        pageLayout={pageLayout}
-                                        bookId={bookId}
-                                        bookFolderPath={bookFolderPath}
-                                        configureReloadCallback={(
-                                            id,
-                                            callback,
-                                        ) =>
-                                            pageIdToRefreshMap.current.set(
-                                                id,
-                                                callback,
-                                            )
-                                        }
-                                    />
-                                </div>
-                            );
-                        })}
+                        {pages.map((page) => (
+                            <PageItem
+                                key={page.key}
+                                page={page}
+                                isSelected={selectedPageId === page.key}
+                                pageLayout={pageLayout}
+                                bookId={bookId}
+                                bookFolderPath={bookFolderPath}
+                                onSelectPage={onSelectPage}
+                                onConfigureReloadCallback={
+                                    handleConfigureReloadCallback
+                                }
+                            />
+                        ))}
                     </Box>
                 </Box>
             </div>
         </Box>
     );
 };
+
+// Memoized so the chooser doesn't redraw all thumbnails when parent props change.
+// Without this, selecting a page would cause every PageItem to re-render because
+// LinkTargetChooser hands PageChooser new props on each selection.
+export const PageChooser = React.memo(PageChooserComponent);

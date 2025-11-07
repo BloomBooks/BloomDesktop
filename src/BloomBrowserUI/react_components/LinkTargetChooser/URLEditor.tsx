@@ -9,7 +9,7 @@ import { BloomTooltip } from "../BloomToolTip";
 import { getAsync, post } from "../../utils/bloomApi";
 import { headingStyle } from "./sharedStyles";
 
-export const URLEditor: React.FunctionComponent<{
+const URLEditorComponent: React.FunctionComponent<{
     currentURL: string;
     onChange: (url: string) => void;
 }> = (props) => {
@@ -130,3 +130,14 @@ export const URLEditor: React.FunctionComponent<{
         </Box>
     );
 };
+
+export const URLEditor = React.memo(
+    URLEditorComponent,
+    (prevProps, nextProps) => {
+        // Only re-render if currentURL or onChange changes
+        return (
+            prevProps.currentURL === nextProps.currentURL &&
+            prevProps.onChange === nextProps.onChange
+        );
+    },
+);
