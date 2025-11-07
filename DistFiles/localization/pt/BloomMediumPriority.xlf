@@ -856,12 +856,12 @@
       </trans-unit>
       <trans-unit id="BookSettings.PageNumbers.Automatic" sil:dynamic="true">
         <source xml:lang="en">(Automatic)</source>
-        <target xml:lang="pt-PT" state="needs-translation">(Automatic)</target>
+        <target xml:lang="pt-PT" state="translated">(Automático)</target>
         <note>BookSettings.PageNumbers.Automatic</note>
       </trans-unit>
       <trans-unit id="BookSettings.PageNumbers.Left" sil:dynamic="true">
         <source xml:lang="en">Left</source>
-        <target xml:lang="pt-PT" state="needs-translation">Left</target>
+        <target xml:lang="pt-PT" state="translated">Esquerdo</target>
         <note>BookSettings.PageNumbers.TopLeft</note>
       </trans-unit>
       <trans-unit id="BookSettings.PageNumbers.Center" sil:dynamic="true">
