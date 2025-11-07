@@ -167,9 +167,9 @@
       </trans-unit>
       <!-- Features -->
       <!-- TODO connect with/normalize other places that refer to these things -->
-      <trans-unit id="Feature.Canvas">
+      <trans-unit id="Feature.Canvas" approved="yes">
         <source xml:lang="en">Canvas</source>
-        <target xml:lang="fr" state="needs-translation">Canvas</target>
+        <target xml:lang="fr" state="final">Objet Flottant</target>
         <note>ID: Feature.Canvas</note>
       </trans-unit>
       <trans-unit id="Feature.Spreadsheet">
