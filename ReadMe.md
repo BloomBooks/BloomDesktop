@@ -71,10 +71,9 @@ It may be helpful before submitting a PR to turn off yarn dev and run yarn build
 
 ### Windows Defender exclusions
 
-Due to a current (Nov 2025) bug in vitest 4, it is necessary to add an exclusion for `node.exe` in the Windows Defender settings.
-
-For performance reasons, you probably want to exclude it anyway; and one for the Bloom source code folder (e.g. `C:/dev/BloomDesktop`).
-
+For performance reasons, you probably want to exclude at least the following in the Windows Defender settings:
+- node.exe (process)
+- Bloom source code folder (e.g. `C:/dev/BloomDesktop`)
 
 ### Typescript unit tests
 
