@@ -362,6 +362,20 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
         // above so buttons show
         z-index: @baseZIndexForContainers;
     }
+    .bloom-link-grid {
+        // We want it in front of the html canvas element used by comical.js so we
+        // can operate controls inside it, specifically the scroll bar if any.
+        // Using the same z-index achieves this because individual canvas elements come
+        // after the comical.js canvas in document order.
+        // It is also minimally disruptive of any other controls that should be in
+        // front of it, like the context controls.
+        // (Note that this is again dependent on NOT giving a z-index to bloom-canvas-element,
+        // so they are not stacking contexts.)
+        // (This does mean that comical.js elements like tail handles can't be operated
+        // if they overlap the link grid. We dont' think it makes sense to have comical
+        // tails over what are meant to be UI controls in play mode.)
+        z-index: @canvasElementCanvasZIndex;
+    }
 
     .bloom-editable {
         overflow-y: hidden;
@@ -371,8 +385,15 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
         height: 100%; // review: appearance
         width: 100%; // review: appearance
         box-sizing: border-box; // review: appearance
-        //height: ~"calc(100% - 2px)";
-        // width: ~"calc(100% - 2px)"; //the -1 lets our border fall jus inside the marginbox border. Undesirable in terms of layout, but visually it looks a lot better in the editor
+    }
+
+    // In a button, we want the TG to take on its natural size, allowing the
+    // image to grow as much as possible, and leave any excess space between them
+    .bloom-canvas-button {
+        .bloom-translationGroup {
+            height: auto;
+            width: auto;
+        }
     }
 
     .split-pane-component {
