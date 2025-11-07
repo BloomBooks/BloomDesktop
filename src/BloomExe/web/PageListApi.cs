@@ -65,29 +65,17 @@ namespace Bloom.web
                 {
                     HtmlDom dom = null;
                     var requestedBookId = request.GetParamOrNull("book-id");
-                    if (!string.IsNullOrEmpty(requestedBookId))
+                    try
                     {
-                        if (
-                            !BookRequestResolver.TryResolveBook(
-                                _bookSelection,
-                                _collectionModel,
-                                requestedBookId,
-                                requireBook: true,
-                                out var book,
-                                out var _,
-                                out var failureMessage
-                            )
-                        )
-                        {
-                            request.Failed(failureMessage);
-                            return;
-                        }
-
+                        var book = string.IsNullOrEmpty(requestedBookId)
+                            ? _bookSelection.CurrentSelection
+                            : _collectionModel.GetBookFromId(requestedBookId);
                         dom = book?.OurHtmlDom;
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        dom = _bookSelection.CurrentSelection?.OurHtmlDom;
+                        request.Failed(ex.Message);
+                        return;
                     }
 
                     var attrs = dom?.GetBodyAttributesThatMayAffectDisplay();
@@ -225,27 +213,16 @@ namespace Bloom.web
 
             Book.Book book;
             string requestedBookId = request.GetParamOrNull("book-id");
-            if (!string.IsNullOrEmpty(requestedBookId))
+            try
             {
-                if (
-                    !BookRequestResolver.TryResolveBook(
-                        _bookSelection,
-                        _collectionModel,
-                        requestedBookId,
-                        requireBook: true,
-                        out book,
-                        out var _,
-                        out var failureMessage
-                    )
-                )
-                {
-                    request.Failed(failureMessage);
-                    return;
-                }
+                book = string.IsNullOrEmpty(requestedBookId)
+                    ? _bookSelection.CurrentSelection
+                    : _collectionModel.GetBookFromId(requestedBookId);
             }
-            else
+            catch (Exception ex)
             {
-                book = _bookSelection.CurrentSelection;
+                request.Failed(ex.Message);
+                return;
             }
 
             IPage[] pages = book == null ? new IPage[0] : book.GetPages().ToArray();
@@ -275,27 +252,14 @@ namespace Bloom.web
             var id = request.RequiredParam("id");
             var bookId = request.GetParamOrNull("book-id");
             IPage page;
-            if (!string.IsNullOrEmpty(bookId))
+            try
             {
-                if (
-                    !BookRequestResolver.TryResolveBook(
-                        _bookSelection,
-                        _collectionModel,
-                        bookId,
-                        requireBook: true,
-                        out var book,
-                        out var _,
-                        out var failureMessage
-                    )
-                )
-                {
-                    request.Failed(failureMessage);
-                    return;
-                }
-
+                var book = string.IsNullOrEmpty(bookId)
+                    ? _bookSelection.CurrentSelection
+                    : _collectionModel.GetBookFromId(bookId);
                 page = book.GetPages().FirstOrDefault(p => p.Id == id);
             }
-            else
+            catch (Exception)
             {
                 page = PageFromId(id);
             }
@@ -397,26 +361,24 @@ namespace Bloom.web
             // Strip the query string to get the actual filename
             var fileName = fileNameWithQuery.Split('?')[0];
 
-            if (
-                !BookRequestResolver.TryResolveBook(
-                    _bookSelection,
-                    _collectionModel,
-                    bookId,
-                    requireBook: true,
-                    out var book,
-                    out var _,
-                    out var failureMessage
-                )
-            )
+            var editableCollection = _collectionModel.TheOneEditableCollection;
+            if (editableCollection == null)
             {
-                request.Failed(failureMessage);
+                request.Failed("No editable collection is available.");
                 return;
             }
 
-            var filePath = Path.Combine(book.FolderPath, fileName);
+            var bookInfo = editableCollection.GetBookInfoById(bookId);
+            if (bookInfo == null)
+            {
+                request.Failed($"Book with id '{bookId}' was not found.");
+                return;
+            }
+
+            var filePath = Path.Combine(bookInfo.FolderPath, fileName);
 
             var normalizedFilePath = Path.GetFullPath(filePath);
-            var normalizedBookPath = Path.GetFullPath(book.FolderPath);
+            var normalizedBookPath = Path.GetFullPath(bookInfo.FolderPath);
 
             if (
                 !normalizedFilePath.StartsWith(

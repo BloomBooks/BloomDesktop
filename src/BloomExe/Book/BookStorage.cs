@@ -251,6 +251,7 @@ namespace Bloom.Book
             CollectionSettings collectionSettings
         )
         {
+            Debug.WriteLine($"BookStorage created for {bookInfo.FolderPath}");
             FolderPath = bookInfo.FolderPath;
             _metaData = bookInfo;
 

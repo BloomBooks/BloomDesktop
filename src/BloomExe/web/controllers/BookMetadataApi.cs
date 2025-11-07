@@ -37,23 +37,21 @@ namespace Bloom.web.controllers
         private bool TryResolveBook(ApiRequest request, out Book.Book book, out BookInfo bookInfo)
         {
             var requestedBookId = request.GetParamOrNull("book-id");
-            if (
-                BookRequestResolver.TryResolveBook(
-                    _bookSelection,
-                    _collectionModel,
-                    requestedBookId,
-                    requireBook: true,
-                    out book,
-                    out bookInfo,
-                    out var failureMessage
-                )
-            )
+            try
             {
+                book = string.IsNullOrEmpty(requestedBookId)
+                    ? _bookSelection.CurrentSelection
+                    : _collectionModel.GetBookFromId(requestedBookId);
+                bookInfo = book.BookInfo;
                 return true;
             }
-
-            request.Failed(failureMessage);
-            return false;
+            catch (Exception ex)
+            {
+                book = null;
+                bookInfo = null;
+                request.Failed(ex.Message);
+                return false;
+            }
         }
 
         private void HandleBookMetadata(ApiRequest request)

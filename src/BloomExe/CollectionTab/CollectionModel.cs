@@ -31,7 +31,7 @@ using SIL.Xml;
 
 namespace Bloom.CollectionTab
 {
-    public class CollectionModel
+    public partial class CollectionModel
     {
         private readonly BookSelection _bookSelection;
         private readonly string _pathToCollection;
