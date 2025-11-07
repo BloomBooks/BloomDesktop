@@ -18,6 +18,7 @@ import { chooserButtonPadding } from "./sharedStyles";
 
 const PageItemComponent: React.FunctionComponent<{
     page: IPage;
+    pageIndex: number;
     isSelected: boolean;
     pageLayout: string;
     bookId: string;
@@ -27,6 +28,7 @@ const PageItemComponent: React.FunctionComponent<{
 }> = (props) => {
     const {
         page,
+        pageIndex,
         isSelected,
         pageLayout,
         bookId,
@@ -34,6 +36,18 @@ const PageItemComponent: React.FunctionComponent<{
         onSelectPage,
         onConfigureReloadCallback,
     } = props;
+
+    const isFrontCover = pageIndex === 0;
+
+    const handleSelect = () =>
+        onSelectPage({
+            pageId: isFrontCover ? "cover" : page.key,
+            actualPageId: page.key,
+            caption: page.caption,
+            thumbnail: page.content,
+            pageIndex,
+            isFrontCover,
+        });
 
     return (
         <div
@@ -64,13 +78,7 @@ const PageItemComponent: React.FunctionComponent<{
                     text-align: center !important;
                 }
             `}
-            onClick={() =>
-                onSelectPage({
-                    pageId: page.key,
-                    caption: page.caption,
-                    thumbnail: page.content,
-                })
-            }
+            onClick={handleSelect}
         >
             <PageThumbnail
                 page={page}
@@ -88,6 +96,7 @@ const PageItem = React.memo(PageItemComponent, (prevProps, nextProps) => {
     // Only re-render if selection state or page key changes
     return (
         prevProps.page.key === nextProps.page.key &&
+        prevProps.pageIndex === nextProps.pageIndex &&
         prevProps.isSelected === nextProps.isSelected &&
         prevProps.pageLayout === nextProps.pageLayout &&
         prevProps.bookId === nextProps.bookId
@@ -99,8 +108,15 @@ const PageChooserComponent: React.FunctionComponent<{
     bookFolderPath?: string;
     selectedPageId?: string;
     onSelectPage: (page: PageInfoForLinks) => void;
+    onPagesLoaded?: (pages: PageInfoForLinks[]) => void;
 }> = (props) => {
-    const { bookId, bookFolderPath, selectedPageId, onSelectPage } = props;
+    const {
+        bookId,
+        bookFolderPath,
+        selectedPageId,
+        onSelectPage,
+        onPagesLoaded,
+    } = props;
     const [pages, setPages] = useState<IPage[]>([]);
     const [pageLayout, setPageLayout] = useState<string>("A5Portrait");
     const [loading, setLoading] = useState(false);
@@ -128,6 +144,7 @@ const PageChooserComponent: React.FunctionComponent<{
             setLoading(false);
             setErrorMessage(null);
             setBookAttributes({});
+            onPagesLoaded?.([]);
             return;
         }
 
@@ -157,12 +174,26 @@ const PageChooserComponent: React.FunctionComponent<{
                 setPages(pageList);
                 setLoading(false);
 
+                onPagesLoaded?.(
+                    pageList.map((page, index) => ({
+                        pageId: index === 0 ? "cover" : page.key,
+                        actualPageId: page.key,
+                        caption: page.caption,
+                        thumbnail: page.content,
+                        pageIndex: index,
+                        isFrontCover: index === 0,
+                    })),
+                );
+
                 // Auto-select the first page when a new book's pages load
                 if (pageList.length > 0 && !selectedPageIdRef.current) {
                     onSelectPage({
-                        pageId: pageList[0].key,
+                        pageId: "cover",
+                        actualPageId: pageList[0].key,
                         caption: pageList[0].caption,
                         thumbnail: pageList[0].content,
+                        pageIndex: 0,
+                        isFrontCover: true,
                     });
                 }
             },
@@ -182,7 +213,7 @@ const PageChooserComponent: React.FunctionComponent<{
         return () => {
             canceled = true;
         };
-    }, [bookId, onSelectPage]);
+    }, [bookId, onSelectPage, onPagesLoaded]);
 
     useEffect(() => {
         // Pull page-level attributes that influence thumbnail rendering.
@@ -306,20 +337,27 @@ const PageChooserComponent: React.FunctionComponent<{
                             gap: ${itemGap};
                         `}
                     >
-                        {pages.map((page) => (
-                            <PageItem
-                                key={page.key}
-                                page={page}
-                                isSelected={selectedPageId === page.key}
-                                pageLayout={pageLayout}
-                                bookId={bookId}
-                                bookFolderPath={bookFolderPath}
-                                onSelectPage={onSelectPage}
-                                onConfigureReloadCallback={
-                                    handleConfigureReloadCallback
-                                }
-                            />
-                        ))}
+                        {pages.map((page, index) => {
+                            const isCoverSelected =
+                                selectedPageId === "cover" && index === 0;
+                            const isSelected =
+                                selectedPageId === page.key || isCoverSelected;
+                            return (
+                                <PageItem
+                                    key={page.key}
+                                    page={page}
+                                    pageIndex={index}
+                                    isSelected={isSelected}
+                                    pageLayout={pageLayout}
+                                    bookId={bookId}
+                                    bookFolderPath={bookFolderPath}
+                                    onSelectPage={onSelectPage}
+                                    onConfigureReloadCallback={
+                                        handleConfigureReloadCallback
+                                    }
+                                />
+                            );
+                        })}
                     </Box>
                 </Box>
             </div>

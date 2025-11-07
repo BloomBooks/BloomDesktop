@@ -38,6 +38,8 @@ export const LinkTargetChooser: React.FunctionComponent<{
         null,
     );
     const [errorMessage, setErrorMessage] = useState<string>("");
+    const [hasAttemptedAutoSelect, setHasAttemptedAutoSelect] =
+        useState<boolean>(() => !!props.currentURL);
 
     // Get the current book ID so we can select it by default
     const currentBookId = useApiString("editView/currentBookId", "");
@@ -73,6 +75,9 @@ export const LinkTargetChooser: React.FunctionComponent<{
 
     useEffect(() => {
         const rawUrl = props.currentURL || "";
+        if (rawUrl) {
+            setHasAttemptedAutoSelect(true);
+        }
         setErrorMessage("");
 
         if (!rawUrl) {
@@ -80,6 +85,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
             setSelectedBook(null);
             setSelectedBookId(null);
             setSelectedPageId(null);
+            setHasAttemptedAutoSelect(false);
             return;
         }
 
@@ -95,6 +101,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
                     ? "#cover"
                     : `#${normalizedPageId}`,
             );
+            setHasAttemptedAutoSelect(true);
             return;
         }
 
@@ -117,6 +124,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
                     ? `/book/${bookId}`
                     : `/book/${bookId}#${normalizedPageId}`,
             );
+            setHasAttemptedAutoSelect(true);
             return;
         }
 
@@ -130,6 +138,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
             bookTitle: null,
             hasError: false,
         });
+        setHasAttemptedAutoSelect(true);
     }, [props.currentURL]);
 
     // Validate and preselect book/page when books load or bookId changes
@@ -212,6 +221,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
             setSelectedBookId(book.id);
             setSelectedPageId(null);
             setErrorMessage("");
+            setHasAttemptedAutoSelect(true);
 
             const url = `/book/${book.id}`;
             setCurrentURL(url);
@@ -227,10 +237,12 @@ export const LinkTargetChooser: React.FunctionComponent<{
 
     const handlePageSelected = useCallback(
         (pageInfo: PageInfoForLinks) => {
-            const normalizedPageId =
-                !pageInfo.pageId || pageInfo.pageId === "cover"
-                    ? "cover"
-                    : pageInfo.pageId;
+            const isFrontCover = Boolean(pageInfo.isFrontCover);
+            const normalizedPageId = isFrontCover
+                ? "cover"
+                : !pageInfo.pageId || pageInfo.pageId === "cover"
+                  ? (pageInfo.actualPageId ?? pageInfo.pageId)
+                  : pageInfo.pageId;
 
             setSelectedPageId(normalizedPageId);
             setErrorMessage("");
@@ -267,24 +279,26 @@ export const LinkTargetChooser: React.FunctionComponent<{
             setSelectedBookId(null);
             setSelectedPageId(null); // Clear page selection
             setErrorMessage("");
+            setHasAttemptedAutoSelect(true);
 
             notifyParent(url, null, null, false);
         },
         [notifyParent],
     );
 
-    // Auto-select the current book when component opens if no URL is provided
     useEffect(() => {
         if (
             !props.currentURL &&
             currentBookId &&
             bookInfoForLinks.length > 0 &&
-            !selectedBookId
+            !selectedBookId &&
+            !hasAttemptedAutoSelect
         ) {
             const currentBook = bookInfoForLinks.find(
                 (b) => b.id === currentBookId,
             );
             if (currentBook) {
+                setHasAttemptedAutoSelect(true);
                 handleBookSelected(currentBook);
             }
         }
@@ -293,8 +307,49 @@ export const LinkTargetChooser: React.FunctionComponent<{
         currentBookId,
         bookInfoForLinks,
         selectedBookId,
+        hasAttemptedAutoSelect,
         handleBookSelected,
     ]);
+
+    const handlePagesLoaded = useCallback(
+        (pages: PageInfoForLinks[]) => {
+            if (pages.length === 0) {
+                return;
+            }
+
+            const frontCoverInfo = pages[0];
+            const actualId =
+                frontCoverInfo.actualPageId ?? frontCoverInfo.pageId;
+
+            if (
+                !selectedBookId ||
+                !actualId ||
+                selectedPageId === "cover" ||
+                selectedPageId !== actualId
+            ) {
+                return;
+            }
+
+            setSelectedPageId("cover");
+            const newUrl = `/book/${selectedBookId}`;
+            if (currentURL !== newUrl) {
+                setCurrentURL(newUrl);
+                notifyParent(
+                    newUrl,
+                    selectedBook?.thumbnail || null,
+                    selectedBook?.title || null,
+                    false,
+                );
+            }
+        },
+        [
+            selectedBookId,
+            selectedPageId,
+            currentURL,
+            notifyParent,
+            selectedBook,
+        ],
+    );
 
     return (
         <Box
@@ -363,6 +418,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
                             bookFolderPath={selectedBook?.folderPath}
                             selectedPageId={selectedPageId ?? undefined}
                             onSelectPage={handlePageSelected}
+                            onPagesLoaded={handlePagesLoaded}
                         />
                     </Box>
                 </Box>

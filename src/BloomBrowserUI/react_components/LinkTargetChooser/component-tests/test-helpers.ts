@@ -18,11 +18,11 @@ const createMockBook = (index: number) => {
     ];
     const color = colors[index % colors.length];
     const bookNumber = index + 1;
-    const guid = `${bookNumber}aaaa-bbbb-cccc-dddd-eeeeeeee${bookNumber.toString().padStart(4, "0")}`;
+    const bookId = `book${bookNumber}`;
     const pageCount = bookNumber * 10;
 
     return {
-        id: guid,
+        id: bookId,
         title: `Book ${bookNumber}`,
         folderName: `${bookNumber} Book ${bookNumber}`,
         thumbnail: `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='120'%3E%3Crect width='100' height='120' fill='%23${color}'/%3E%3Ctext x='50' y='60' text-anchor='middle' fill='white' font-size='14'%3EBook ${bookNumber}%3C/text%3E%3C/svg%3E`,
@@ -42,12 +42,16 @@ interface LinkTargetChooserSetupOptions {
     pageLayout?: string;
     cssFiles?: string[];
     bookAttributes?: Record<string, string>;
+    selectedPageId?: string;
+    frontCoverPageId?: string;
+    frontCoverCaption?: string;
 }
 
 const booksApiPattern =
     /\/bloom\/api\/+collections\/books\?realTitle=(true|false)/;
 
 let currentPage: Page | undefined;
+let currentFrontCoverId = "cover";
 
 export async function setupLinkTargetChooser(
     page: Page,
@@ -70,13 +74,16 @@ export async function setupLinkTargetChooser(
         await page.route("**/bloom/api/pageList/pages**", async (route) => {
             const url = new URL(route.request().url());
             const bookId = url.searchParams.get("book-id");
+            const coverKey = props.frontCoverPageId ?? "cover";
+            const coverCaption = props.frontCoverCaption ?? "Cover";
+            currentFrontCoverId = coverKey;
 
             // Find the book to get its page count
             const book = books.find((b) => b.id === bookId);
             const pageCount = book ? book.pageLength - 1 : 2; // pageLength includes cover
 
             const pages = [
-                { key: "cover", caption: "Cover" },
+                { key: coverKey, caption: coverCaption },
                 ...Array.from({ length: pageCount }, (_, i) => ({
                     key: `${i + 1}`,
                     caption: `Page ${i + 1}`,
@@ -93,16 +100,17 @@ export async function setupLinkTargetChooser(
                 contentType: "application/json",
                 body: JSON.stringify({
                     pages,
-                    selectedPageId: "cover",
+                    selectedPageId: props.selectedPageId ?? "cover",
                     pageLayout: props.pageLayout ?? "A5Portrait",
                     cssFiles: props.cssFiles ?? [],
                 }),
             });
         });
     } else {
+        currentFrontCoverId = props.pages[0]?.key ?? "cover";
         prepareGetResponse(page, "**/bloom/api/pageList/pages**", {
             pages: props.pages,
-            selectedPageId: "cover",
+            selectedPageId: props.selectedPageId ?? "cover",
             pageLayout: props.pageLayout ?? "A5Portrait",
             cssFiles: props.cssFiles ?? [],
         });
@@ -152,13 +160,16 @@ export async function setupLinkTargetChooser(
 
 const resolvePageIdentifier = (pageId: string | number) => {
     if (typeof pageId === "number") {
-        return pageId <= 0 ? "cover" : pageId.toString();
+        return pageId <= 0 ? currentFrontCoverId : pageId.toString();
     }
     if (pageId === "p-cover") {
-        return "cover";
+        return currentFrontCoverId;
     }
     if (pageId.startsWith("p-")) {
         return pageId.substring(2);
+    }
+    if (pageId === "cover") {
+        return currentFrontCoverId;
     }
     return pageId;
 };
@@ -173,7 +184,7 @@ export const urlEditor = {
         const selector =
             '[data-testid="url-input"] input, input[placeholder="Paste or enter a URL"]';
         await currentPage.waitForSelector(selector, {
-            state: "visible",
+            state: "attached",
             timeout: 5000,
         });
         return currentPage.locator(selector).first();
@@ -251,7 +262,10 @@ export const bookList = {
                 element;
             const style = window.getComputedStyle(target as HTMLElement);
             return (
-                style.outlineStyle !== "none" && style.outlineWidth !== "0px"
+                style.outlineStyle !== "none" &&
+                style.outlineWidth !== "0px" &&
+                style.outlineColor !== "transparent" &&
+                style.outlineColor !== "rgba(0, 0, 0, 0)"
             );
         });
     },

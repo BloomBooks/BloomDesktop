@@ -103,6 +103,71 @@ test.describe("LinkTargetChooser - URL Synchronization", () => {
             .toBeTruthy();
     });
 
+    test("Deleting the URL clears the book and page selection", async ({
+        page,
+    }) => {
+        await setupLinkTargetChooser(page);
+        await bookList.selectBook("book1");
+
+        const input = await urlEditor.getInput();
+        await input.click();
+        await input.press("Control+A");
+        await input.press("Delete");
+
+        await expect(input).toHaveValue("");
+        await expect
+            .poll(async () => await bookList.isBookSelected("book1"))
+            .toBeFalsy();
+        await expect(
+            page.getByText("Select a book to see its pages"),
+        ).toBeVisible();
+    });
+
+    test("Pasting a URL clears any book and page selection", async ({
+        page,
+    }) => {
+        await setupLinkTargetChooser(page);
+        await bookList.selectBook("book2");
+
+        const clipboardValue = "https://docs.example.org/help";
+        await page.route("**/bloom/api/common/clipboardText", async (route) => {
+            await route.fulfill({
+                status: 200,
+                contentType: "application/json",
+                body: JSON.stringify({ data: clipboardValue }),
+            });
+            await page.unroute("**/bloom/api/common/clipboardText");
+        });
+
+        console.log("Page content before paste", await page.content());
+        const pasteButton = await urlEditor.getPasteButton();
+        await pasteButton.click();
+
+        const selector =
+            '[data-testid="url-input"] input, input[placeholder="Paste or enter a URL"]';
+        const count = await page.locator(selector).count();
+        const containerCount = await page.getByTestId("url-input").count();
+        console.log("Input count after paste", count);
+        console.log("URL container count", containerCount);
+        if (containerCount > 0) {
+            const containerHtml = await page
+                .getByTestId("url-input")
+                .first()
+                .evaluate((el) => el.outerHTML);
+            console.log("URL container markup", containerHtml);
+        }
+        console.log("Page content after paste", await page.content());
+
+        const input = await urlEditor.getInput();
+        await expect(input).toHaveValue(clipboardValue, { timeout: 5000 });
+        await expect
+            .poll(async () => await bookList.isBookSelected("book2"))
+            .toBeFalsy();
+        await expect(
+            page.getByText("Select a book to see its pages"),
+        ).toBeVisible();
+    });
+
     test("Auto-selects current book when API reports one", async ({ page }) => {
         await setupLinkTargetChooser(page, { currentBookId: "book2" });
 
@@ -218,5 +283,27 @@ test.describe("LinkTargetChooser - URL Preselection", () => {
 
         const okButton = await dialog.getOKButton();
         await expect(okButton).toBeDisabled();
+    });
+
+    test("Normalizes existing cover GUID URLs to book-only links", async ({
+        page,
+    }) => {
+        const frontCoverGuid = "front-cover-guid";
+        await setupLinkTargetChooser(page, {
+            currentURL: `/book/book1#${frontCoverGuid}`,
+            pages: [
+                { key: frontCoverGuid, caption: "Front Cover" },
+                { key: "page-1", caption: "Page 1" },
+            ],
+            selectedPageId: frontCoverGuid,
+        });
+
+        await bookList.waitForBooksToLoad();
+
+        const input = await urlEditor.getInput();
+        await expect(input).toHaveValue("/book/book1");
+        await expect
+            .poll(async () => await pageList.isPageSelected("cover"))
+            .toBeTruthy();
     });
 });

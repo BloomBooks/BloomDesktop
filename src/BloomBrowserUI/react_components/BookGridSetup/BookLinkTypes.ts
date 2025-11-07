@@ -11,6 +11,9 @@ export interface PageInfoForLinks {
     pageId: string; // Bloom page ids are strings
     thumbnail: string; // For current book this may contain HTML content for the page thumbnail
     caption?: string; // optional label/caption for display
+    actualPageId?: string; // original id from backend when pageId is normalized (e.g., cover)
+    pageIndex?: number; // zero-based index within the book
+    isFrontCover?: boolean; // true when this page represents the front cover
 }
 
 export interface Link {
