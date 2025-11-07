@@ -513,7 +513,7 @@
         <target xml:lang="ne-NP" state="needs-translation">Show image descriptions</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ShowImageDescriptions</note>
       </trans-unit>
-      <!-- Overlay -->
+      <!-- Canvas (was Overlay) -->
       <trans-unit id="EditTab.Toolbox.OverlayTool.KeyHints.Drag" sil:dynamic="true">
         <source xml:lang="en">drag</source>
         <target xml:lang="ne-NP" state="needs-translation">drag</target>
@@ -580,8 +580,8 @@
         <note>ID: PublishTab.Feature.Games.Present</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.None">
-        <source xml:lang="en">This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.</source>
-        <target xml:lang="ne-NP" state="needs-translation">This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.</target>
+        <source xml:lang="en">This is disabled because this book does not have any canvas elements that qualify as “comic-like”, such as speech bubbles.</source>
+        <target xml:lang="ne-NP" state="needs-translation">This is disabled because this book does not have any canvas elements that qualify as “comic-like”, such as speech bubbles.</target>
         <note>ID: PublishTab.Feature.Comic.None</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.Possible">
