@@ -2426,7 +2426,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool" sil:dynamic="true">
         <source xml:lang="en">Canvas Tool</source>
-        <target xml:lang="pt-PT" state="needs-translation">Canvas Tool</target>
+        <target xml:lang="pt-PT" state="translated">Ferramenta de Tela</target>
         <note>ID: EditTab.Toolbox.CanvasTool</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true">
@@ -4555,7 +4555,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Epub.NoCanvasSupport">
         <source xml:lang="en">Sorry, Bloom cannot produce ePUBs if there are any canvas pages. The first canvas is on page {0}.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Sorry, Bloom cannot produce ePUBs if there are any canvas pages. The first canvas is on page {0}.</target>
+        <target xml:lang="pt-PT" state="translated">Desculpe, Bloom não pode produzir ePUBs se houver alguma página de tela. A primeira tela está na página {0}.</target>
         <note>ID: PublishTab.Epub.NoCanvasSupport</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.PageLabel.Content" approved="yes">
