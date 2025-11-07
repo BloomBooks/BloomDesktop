@@ -8,7 +8,7 @@
         <note>ID: comic.template.digital.title</note>
       </trans-unit>
       <trans-unit id="comic.template.subscription">
-        <source xml:lang="en">Note: The Overlay Tool requires that you have a valid <g id="genid-1" ctype="x-html-a" html:href="" html:onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">Bloom subscription</g>. However, you can localize a shellbook that contains overlay elements into your own language without a Bloom subscription.</source>
+        <source xml:lang="en">Note: The Canvas Tool requires that you have a valid <g id="genid-1" ctype="x-html-a" html:href="" html:onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">Bloom subscription</g>. However, you can localize a shellbook that contains canvas elements into your own language without a Bloom subscription.</source>
         <target xml:lang="pt-PT" state="translated">Nota: A Ferramenta de Sobreposição requer uma assinatura <g id="genid-1" ctype="x-html-a" html:href="" html:onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">Bloom</g>válida. No entanto, você pode traduzir um livro pré-desenhado que contém elementos de sobreposição para sua língua sem uma assinatura do Bloom.</target>
         <note>ID: comic.template.subscription</note>
       </trans-unit>
