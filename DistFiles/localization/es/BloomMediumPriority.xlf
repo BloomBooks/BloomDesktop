@@ -513,7 +513,7 @@
         <target xml:lang="es-ES" state="final">Mostrar descripciones de imágenes</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ShowImageDescriptions</note>
       </trans-unit>
-      <!-- Overlay -->
+      <!-- Canvas (was Overlay) -->
       <trans-unit id="EditTab.Toolbox.OverlayTool.KeyHints.Drag" sil:dynamic="true" approved="yes">
         <source xml:lang="en">drag</source>
         <target xml:lang="es-ES" state="final">arrastrar</target>
@@ -580,7 +580,7 @@
         <note>ID: PublishTab.Feature.Games.Present</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.None">
-        <source xml:lang="en">This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.</source>
+        <source xml:lang="en">This is disabled because this book does not have any canvas elements that qualify as “comic-like”, such as speech bubbles.</source>
         <target xml:lang="es-ES" state="translated">Esto se desactiva porque este libro no tiene ningún elemento superpuesto que pueda calificarse de "tipo cómic", como las burbujas.</target>
         <note>ID: PublishTab.Feature.Comic.None</note>
       </trans-unit>
