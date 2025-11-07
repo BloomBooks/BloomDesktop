@@ -513,7 +513,7 @@
         <target xml:lang="pt-PT" state="final">Mostrar descrição da imagem</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ShowImageDescriptions</note>
       </trans-unit>
-      <!-- Overlay -->
+      <!-- Canvas (was Overlay) -->
       <trans-unit id="EditTab.Toolbox.OverlayTool.KeyHints.Drag" sil:dynamic="true" approved="yes">
         <source xml:lang="en">drag</source>
         <target xml:lang="pt-PT" state="final">arrastar</target>
@@ -579,9 +579,9 @@
         <target xml:lang="pt-PT" state="translated">Este livro tem jogos.</target>
         <note>ID: PublishTab.Feature.Games.Present</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Feature.Comic.None" approved="yes">
-        <source xml:lang="en">This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.</source>
-        <target xml:lang="pt-PT" state="final">Esta opção está desabilitada porque este livro não tem nenhum elemento de sobreposição que faz se qualificar como "tipo quadrinhos/banda desenhada", como balões de fala, por exemplo.</target>
+      <trans-unit id="PublishTab.Feature.Comic.None">
+        <source xml:lang="en">This is disabled because this book does not have any canvas elements that qualify as “comic-like”, such as speech bubbles.</source>
+        <target xml:lang="pt-PT" state="translated">Esta opção está desabilitada porque este livro não tem nenhum elemento de sobreposição que faz se qualificar como "tipo quadrinhos/banda desenhada", como balões de fala, por exemplo.</target>
         <note>ID: PublishTab.Feature.Comic.None</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.Possible" approved="yes">
