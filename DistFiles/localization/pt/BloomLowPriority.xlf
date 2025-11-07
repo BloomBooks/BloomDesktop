@@ -169,7 +169,7 @@
       <!-- TODO connect with/normalize other places that refer to these things -->
       <trans-unit id="Feature.Canvas">
         <source xml:lang="en">Canvas</source>
-        <target xml:lang="pt-PT" state="needs-translation">Canvas</target>
+        <target xml:lang="pt-PT" state="translated">Tela</target>
         <note>ID: Feature.Canvas</note>
       </trans-unit>
       <trans-unit id="Feature.Spreadsheet">
