@@ -1,4 +1,4 @@
-import { css } from "@emotion/react";
+import { css, ThemeProvider } from "@emotion/react";
 
 import * as React from "react";
 import { useState, useEffect } from "react";
@@ -40,8 +40,10 @@ import {
     CanvasElementItemRegion,
     CanvasElementItemRow,
     CanvasElementLinkGridItem,
-    NavigationButtonPaletteItem,
+    NavigationImageButtonPaletteItem,
     CanvasElementTextItem,
+    NavigationLabelButtonPaletteItem,
+    NavigationImageWithLabelButtonPaletteItem,
 } from "./CanvasElementItem";
 import { getCanvasElementManager } from "./canvasElementUtils";
 import { deselectVideoContainers } from "../../js/videoUtils";
@@ -50,9 +52,11 @@ import { ToolBox } from "../toolbox";
 import {
     kBloomBlue,
     kToolboxContentPadding,
+    toolboxTheme,
 } from "../../../bloomMaterialUITheme";
 import $ from "jquery";
 import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
+import { BloomTooltip } from "../../../react_components/BloomToolTip";
 
 const CanvasToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
@@ -695,154 +699,183 @@ const CanvasToolControls: React.FunctionComponent = () => {
     };
 
     return (
-        <RequiresSubscriptionOverlayWrapper
-            featureName={kCanvasToolId as string}
-        >
-            <div id="canvasToolControls">
-                {
-                    // Using most kinds of comic bubbles is problematic in various ways in Bloom games, so we don't allow it.
-                    // We may eventually want to allow some controls to be used, but for now we just disable the whole thing.
-                    // If we don't change our minds this string should get localized.
-                    // issues:
-                    // - making any kind of canvas element that has a border, tail, etc able to be dragged in Play mode would
-                    // required Comical to be integrated into Bloom PLayer. I think even some things that don't seem to need
-                    // Comical, like setting a background color, are currently implemented using it.
-                    // - consequently it's a problem to enable any controls that would switch a play-time draggable to be
-                    // a canvas element type whose rendering depends on Comical.
-                    // - it's also something of a problem to have fixed canvas elements, since the parts rendered by Comical don't
-                    // obey the classes we use to dim things in Correct and Wrong tabs.
-                    // - if we allow Comical canvas elements to be put in the Correct or Wrong tabs, the bit rendered by Comical
-                    // has to also get hidden until wanted in Start and Play modes.
-                    // - the duplicate command needs enhancements to do things like duplicating the target.
-                    // Enhance: if the practice of disabling some tools for some page types becomes widespread, we should
-                    // generalize this somehow, so we can easily configure which tools are disabled for which page types.
-                    // Without more examples, it's hard to know what would work best. For example, a page might have a data
-                    // attribute that lists ids of tools that should be disabled. Or somewhere we might have a map from
-                    // data-activity values to lists of tool ids that should be disabled. Or if disabling tools isn't
-                    // limited to activities, we might introduce a new kind of page type attribute. Also, we may just
-                    // want a single message like "This tool is not available on this page type" or something more specific
-                    // like the one here.
-                    CanvasTool.isCurrentPageABloomGame() ? (
-                        <div
-                            css={css`
-                                padding: ${kToolboxContentPadding};
-                            `}
-                        >
-                            <Typography
+        <ThemeProvider theme={toolboxTheme}>
+            <RequiresSubscriptionOverlayWrapper
+                featureName={kCanvasToolId as string}
+            >
+                <div id="canvasToolControls">
+                    {
+                        // Using most kinds of comic bubbles is problematic in various ways in Bloom games, so we don't allow it.
+                        // We may eventually want to allow some controls to be used, but for now we just disable the whole thing.
+                        // If we don't change our minds this string should get localized.
+                        // issues:
+                        // - making any kind of canvas element that has a border, tail, etc able to be dragged in Play mode would
+                        // required Comical to be integrated into Bloom PLayer. I think even some things that don't seem to need
+                        // Comical, like setting a background color, are currently implemented using it.
+                        // - consequently it's a problem to enable any controls that would switch a play-time draggable to be
+                        // a canvas element type whose rendering depends on Comical.
+                        // - it's also something of a problem to have fixed canvas elements, since the parts rendered by Comical don't
+                        // obey the classes we use to dim things in Correct and Wrong tabs.
+                        // - if we allow Comical canvas elements to be put in the Correct or Wrong tabs, the bit rendered by Comical
+                        // has to also get hidden until wanted in Start and Play modes.
+                        // - the duplicate command needs enhancements to do things like duplicating the target.
+                        // Enhance: if the practice of disabling some tools for some page types becomes widespread, we should
+                        // generalize this somehow, so we can easily configure which tools are disabled for which page types.
+                        // Without more examples, it's hard to know what would work best. For example, a page might have a data
+                        // attribute that lists ids of tools that should be disabled. Or somewhere we might have a map from
+                        // data-activity values to lists of tool ids that should be disabled. Or if disabling tools isn't
+                        // limited to activities, we might introduce a new kind of page type attribute. Also, we may just
+                        // want a single message like "This tool is not available on this page type" or something more specific
+                        // like the one here.
+                        CanvasTool.isCurrentPageABloomGame() ? (
+                            <div
                                 css={css`
-                                    text-align: center;
+                                    padding: ${kToolboxContentPadding};
                                 `}
                             >
-                                <span>
-                                    The Canvas Tool cannot currently be used on
-                                    Bloom Games pages. Some of the functions are
-                                    duplicated in the Games Tool.
-                                </span>
-                            </Typography>
-                        </div>
-                    ) : (
-                        <div
-                            css={css`
-                                // pushes the Help region to the bottom
-                                display: flex;
-                                flex-direction: column;
-                                height: 100%;
-                            `}
-                        >
-                            <CanvasElementItemRegion
-                                theme="blueOnTan"
-                                className={!isXmatter ? "" : "disabled"}
-                            >
-                                <CanvasElementItemRow>
-                                    <CanvasElementItem
-                                        src="/bloom/bookEdit/toolbox/canvas/comic-icon.svg"
-                                        canvasElementType="speech"
-                                    />
-                                    <CanvasElementImageItem
-                                        color={kBloomBlue}
-                                        strokeColor={kBloomBlue}
-                                    />
-                                    <CanvasElementItem
-                                        src="/bloom/bookEdit/toolbox/canvas/sign-language-overlay.svg"
-                                        canvasElementType="video"
-                                    />
-                                </CanvasElementItemRow>
-                                <CanvasElementItemRow secondRow={true}>
-                                    <CanvasElementTextItem
-                                        css={css`
-                                            margin-left: 5px; // Match the spacing on the canvas element icon above
-                                            flex-grow: 1; // Let it fill as much space as possible to the right
-                                            text-align: center; // Center the text horizontally
-
-                                            padding-top: 1em;
-                                            vertical-align: middle;
-                                            padding-bottom: 1em;
-
-                                            color: ${kBloomBlue};
-                                            background-color: white;
-                                            border: 1px dotted ${kBloomBlue};
-                                        `}
-                                        l10nKey="EditTab.Toolbox.ComicTool.TextBlock"
-                                    />
-
-                                    <CanvasElementCaptionItem
-                                        css={css`
-                                            // Horizontal positioning / sizing of the element
-                                            margin-left: 10px;
-                                            flex-grow: 1; // Allow it to fill the entire space (but with margin-left and margin-right outside of it)
-                                            text-align: center;
-
-                                            // Vertical sizing
-                                            padding-top: 5px;
-                                            padding-bottom: 5px;
-
-                                            border: 1px solid ${kBloomBlue};
-                                            color: ${kBloomBlue};
-                                            background-color: white;
-                                            box-shadow: 3px 3px ${kBloomBlue};
-                                        `}
-                                        l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption"
-                                    />
-                                </CanvasElementItemRow>
-
-                                <TriangleCollapse
-                                    initiallyOpen={
-                                        true
-                                    } /* todo should be false in production */
-                                    labelL10nKey="EditTab.Toolbox.OverlayTool.Navigation"
-                                    buttonColor="#1D94A4"
+                                <Typography
                                     css={css`
-                                        margin-top: 10px;
-                                        padding: 0 10px;
+                                        text-align: center;
                                     `}
                                 >
-                                    <CanvasElementItemRow>
-                                        <NavigationButtonPaletteItem />
-
-                                        <CanvasElementLinkGridItem />
-                                    </CanvasElementItemRow>
-                                </TriangleCollapse>
-                            </CanvasElementItemRegion>
+                                    <span>
+                                        The Canvas Tool cannot currently be used
+                                        on Bloom Games pages. Some of the
+                                        functions are duplicated in the Games
+                                        Tool.
+                                    </span>
+                                </Typography>
+                            </div>
+                        ) : (
                             <div
-                                id={"canvasToolControlOptionsRegion"}
-                                className={
-                                    canvasElementType && !isXmatter
-                                        ? ""
-                                        : "disabled"
-                                }
+                                css={css`
+                                    // pushes the Help region to the bottom
+                                    display: flex;
+                                    flex-direction: column;
+                                    height: 100%;
+                                `}
                             >
-                                {getControlOptionsRegion()}
+                                <CanvasElementItemRegion
+                                    theme="blueOnTan"
+                                    className={!isXmatter ? "" : "disabled"}
+                                >
+                                    <CanvasElementItemRow>
+                                        <CanvasElementItem
+                                            src="/bloom/bookEdit/toolbox/canvas/comic-icon.svg"
+                                            canvasElementType="speech"
+                                        />
+                                        <CanvasElementImageItem
+                                            color={kBloomBlue}
+                                            strokeColor={kBloomBlue}
+                                        />
+                                        <CanvasElementItem
+                                            src="/bloom/bookEdit/toolbox/canvas/sign-language-overlay.svg"
+                                            canvasElementType="video"
+                                        />
+                                    </CanvasElementItemRow>
+                                    <CanvasElementItemRow secondRow={true}>
+                                        <CanvasElementTextItem
+                                            css={css`
+                                                margin-left: 5px; // Match the spacing on the canvas element icon above
+                                                flex-grow: 1; // Let it fill as much space as possible to the right
+                                                text-align: center; // Center the text horizontally
+
+                                                padding-top: 1em;
+                                                vertical-align: middle;
+                                                padding-bottom: 1em;
+
+                                                color: ${kBloomBlue};
+                                                background-color: white;
+                                                border: 1px dotted ${kBloomBlue};
+                                            `}
+                                            l10nKey="EditTab.Toolbox.ComicTool.TextBlock"
+                                        />
+
+                                        <CanvasElementCaptionItem
+                                            css={css`
+                                                // Horizontal positioning / sizing of the element
+                                                margin-left: 10px;
+                                                flex-grow: 1; // Allow it to fill the entire space (but with margin-left and margin-right outside of it)
+                                                text-align: center;
+
+                                                // Vertical sizing
+                                                padding-top: 5px;
+                                                padding-bottom: 5px;
+
+                                                border: 1px solid ${kBloomBlue};
+                                                color: ${kBloomBlue};
+                                                background-color: white;
+                                                box-shadow: 3px 3px
+                                                    ${kBloomBlue};
+                                            `}
+                                            l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption"
+                                        />
+                                    </CanvasElementItemRow>
+
+                                    <TriangleCollapse
+                                        initiallyOpen={false}
+                                        labelL10nKey="EditTab.Toolbox.OverlayTool.Navigation"
+                                        helpId="Tasks/Edit_tasks/Canvas_Tool/Navigation_overview.htm"
+                                        buttonColor="#1D94A4"
+                                        css={css`
+                                            margin-top: 0;
+                                            padding: 0;
+                                            font-size: 14px;
+                                        `}
+                                        extraButtonCss="padding: 0;"
+                                    >
+                                        <div>
+                                            <BloomTooltip
+                                                id="navButtons"
+                                                placement="top-end"
+                                                tip={
+                                                    <Div l10nKey="EditTab.Toolbox.OverlayTool.NavButtons"></Div>
+                                                }
+                                            >
+                                                <CanvasElementItemRow extraCss="margin-top:0; height: 80px;">
+                                                    <>
+                                                        <NavigationImageWithLabelButtonPaletteItem />
+                                                        <NavigationImageButtonPaletteItem />
+                                                        <NavigationLabelButtonPaletteItem />
+                                                    </>
+                                                </CanvasElementItemRow>
+                                            </BloomTooltip>
+
+                                            <CanvasElementItemRow extraCss="margin-top:0;">
+                                                <BloomTooltip
+                                                    id="navButtons"
+                                                    placement="top-end"
+                                                    tip={
+                                                        <Div l10nKey="EditTab.Toolbox.OverlayTool.BookGrid"></Div>
+                                                    }
+                                                >
+                                                    <CanvasElementLinkGridItem />
+                                                </BloomTooltip>
+                                            </CanvasElementItemRow>
+                                        </div>
+                                    </TriangleCollapse>
+                                </CanvasElementItemRegion>
+                                <div
+                                    id={"canvasToolControlOptionsRegion"}
+                                    className={
+                                        canvasElementType && !isXmatter
+                                            ? ""
+                                            : "disabled"
+                                    }
+                                >
+                                    {getControlOptionsRegion()}
+                                </div>
+                                <div id="canvasToolControlFillerRegion" />
+                                <div id={"canvasToolControlFooterRegion"}>
+                                    <CanvasElementKeyHints />
+                                    <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Canvas_Tool/Canvas_Tool_overview.htm" />
+                                </div>
                             </div>
-                            <div id="canvasToolControlFillerRegion" />
-                            <div id={"canvasToolControlFooterRegion"}>
-                                <CanvasElementKeyHints />
-                                <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Canvas_Tool/Canvas_Tool_overview.htm" />
-                            </div>
-                        </div>
-                    )
-                }
-            </div>
-        </RequiresSubscriptionOverlayWrapper>
+                        )
+                    }
+                </div>
+            </RequiresSubscriptionOverlayWrapper>
+        </ThemeProvider>
     );
 };
 export default CanvasToolControls;
