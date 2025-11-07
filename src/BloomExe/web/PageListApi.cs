@@ -267,7 +267,6 @@ namespace Bloom.web
             answer.content = GetPageContentForThumbnail(page);
             request.ReplyWithJson(answer);
             watch.Stop();
-            Debug.WriteLine($"Generating JSON for one page took {watch.ElapsedMilliseconds}ms");
         }
 
         private static string GetPageContentForThumbnail(IPage page)

@@ -21,5 +21,4 @@
 - [ ] the dialog (or at least the LinkTargetChooser) seems to be (slowly) rerendering on each click of a page. At least it does this in `./manual.sh --backend` mode. See if you can reproduce in a uitest, perhaps using console messages.
 
 ## Optimization for large books
-* there's a good chance that the c# api is reloading books for every page request
 

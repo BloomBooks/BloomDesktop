@@ -7,9 +7,9 @@ export const chooserBackgroundColor = "transparent";
 // Common item background color (dark gray for cards/thumbnails)
 export const itemBackgroundColor = "#505050";
 
-// Common selection styling
+// Common selection styling - always returns an outline to prevent layout shift
 export const getSelectionOutline = (isSelected: boolean) =>
-    isSelected ? `3px solid ${kBloomGold}` : "none";
+    isSelected ? `3px solid ${kBloomGold}` : "3px solid transparent";
 
 // Common container styles for book and page chooser areas
 export const chooserContainerStyles = css`

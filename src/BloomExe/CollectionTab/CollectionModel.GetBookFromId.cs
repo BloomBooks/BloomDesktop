@@ -4,7 +4,6 @@ namespace Bloom.CollectionTab
 {
     public partial class CollectionModel
     {
-        // this is
         private Book.Book _cachedBook;
 
         /// <summary>
@@ -23,7 +22,7 @@ namespace Bloom.CollectionTab
                 throw new ArgumentException("bookId is required");
             }
 
-            // If it's the currently selected book, return that (no need to load)
+            // If it's the currently selected book, we already have it in memory.
             var currentBook = _bookSelection?.CurrentSelection;
             if (currentBook != null && currentBook.BookInfo.Id == bookId)
             {
@@ -36,22 +35,13 @@ namespace Bloom.CollectionTab
                 return _cachedBook;
             }
 
-            // Need to load the book - first get the bookInfo (cheap), then load the full book (expensive)
             var bookInfo = TheOneEditableCollection.GetBookInfoById(bookId);
             if (bookInfo == null)
             {
                 throw new ArgumentException($"Book with id '{bookId}' was not found.");
             }
 
-            var book = GetBookFromBookInfo(bookInfo);
-            if (book == null)
-            {
-                throw new ArgumentException($"Book '{bookId}' could not be loaded.");
-            }
-
-            _cachedBook = book;
-
-            return book;
+            return _cachedBook = GetBookFromBookInfo(bookInfo);
         }
     }
 }
