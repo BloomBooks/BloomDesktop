@@ -1869,9 +1869,9 @@
         <target xml:lang="fr" state="final">Nouveau style</target>
         <note>ID: EditTab.FormatDialog.NewStyle</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Canvas" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.Canvas" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Canvas Text</source>
-        <target xml:lang="fr" state="needs-translation">Canvas Text</target>
+        <target xml:lang="fr" state="final">Texte pour Objet Flottant</target>
         <note>ID: EditTab.FormatDialog.Canvas</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Padding" sil:dynamic="true" approved="yes">
@@ -2424,9 +2424,9 @@
         <target xml:lang="fr" state="final">Informations sur la propriété intellectuelle de l'image</target>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.CanvasTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Canvas Tool</source>
-        <target xml:lang="fr" state="needs-translation">Canvas Tool</target>
+        <target xml:lang="fr" state="final">Outil pour Objet Flottant</target>
         <note>ID: EditTab.Toolbox.CanvasTool</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true">
@@ -4553,9 +4553,9 @@
         <target xml:lang="fr" state="final">Les pages suivantes ont été supprimées car elles ne sont pas supportées dans les ePUBs:</target>
         <note>ID: PublishTab.Epub.OmittedPages</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.NoCanvasSupport">
+      <trans-unit id="PublishTab.Epub.NoCanvasSupport" approved="yes">
         <source xml:lang="en">Sorry, Bloom cannot produce ePUBs if there are any canvas pages. The first canvas is on page {0}.</source>
-        <target xml:lang="fr" state="needs-translation">Sorry, Bloom cannot produce ePUBs if there are any canvas pages. The first canvas is on page {0}.</target>
+        <target xml:lang="fr" state="final">Désolé, Bloom ne peut pas produire des ePUB s'il y a des pages contenant des objets flottants. Le premier objet flottant se trouve à la page {0}.</target>
         <note>ID: PublishTab.Epub.NoCanvasSupport</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.PageLabel.Content" approved="yes">
