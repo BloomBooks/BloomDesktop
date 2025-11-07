@@ -167,10 +167,10 @@
       </trans-unit>
       <!-- Features -->
       <!-- TODO connect with/normalize other places that refer to these things -->
-      <trans-unit id="Feature.Overlay">
-        <source xml:lang="en">Overlay</source>
-        <target xml:lang="km" state="needs-translation">Overlay</target>
-        <note>ID: Feature.Overlay</note>
+      <trans-unit id="Feature.Canvas">
+        <source xml:lang="en">Canvas</source>
+        <target xml:lang="km" state="needs-translation">Canvas</target>
+        <note>ID: Feature.Canvas</note>
       </trans-unit>
       <trans-unit id="Feature.Spreadsheet">
         <source xml:lang="en">Spreadsheet Import/Export</source>
