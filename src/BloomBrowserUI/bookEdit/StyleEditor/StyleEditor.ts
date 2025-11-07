@@ -41,7 +41,7 @@ import { kBloomYellow } from "../../bloomMaterialUITheme";
 import { RenderRoot } from "./AudioHilitePage";
 import { RenderCanvasElementRoot } from "./CanvasElementFormatPage";
 import { CanvasElementManager } from "../js/CanvasElementManager";
-import { kCanvasElementSelector } from "../toolbox/overlay/canvasElementUtils";
+import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementUtils";
 import { getPageIFrame } from "../../utils/shared";
 
 // Controls the CSS text-align value
@@ -2329,11 +2329,11 @@ export default class StyleEditor {
                         if (this.xmatterMode) {
                             $("#style-page").remove();
                         }
-                        // Show the canvas element tab only if the box being edited is in a canvas element
+                        // Show the overlay tab only if the box being edited is in a canvas element
                         if (
                             !this.boxBeingEdited.closest(kCanvasElementSelector)
                         ) {
-                            document.getElementById("overlay-page")?.remove();
+                            document.getElementById("canvas-page")?.remove();
                         }
 
                         const visibleTabs = $(".tab-page:visible");

@@ -12,7 +12,7 @@ import { useL10n } from "../../../react_components/l10nHooks";
 import { default as PencilIcon } from "@mui/icons-material/Edit";
 import { showGamePromptDialog } from "../games/GameTool";
 import BloomButton from "../../../react_components/bloomButton";
-import { getCanvasElementManager } from "../overlay/canvasElementUtils";
+import { getCanvasElementManager } from "../canvas/canvasElementUtils";
 
 // This component is responsible for the Game Setup mode tabs in the Game tool.
 // Although the code seems to belong in this folder with the other Game code, it is actually

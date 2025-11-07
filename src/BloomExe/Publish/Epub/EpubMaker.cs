@@ -30,7 +30,6 @@ using SIL.Xml;
 using SIL.CommandLineProcessing;
 #endif
 
-
 namespace Bloom.Publish.Epub
 {
     /// <summary>
@@ -429,9 +428,9 @@ namespace Bloom.Publish.Epub
                 {
                     progress.Message("Common.Error", "Error", ProgressKind.Error, false);
                     progress.MessageWithParams(
-                        "PublishTab.Epub.NoOverlaySupport",
-                        "Error shown if book contains overlays.",
-                        "Sorry, Bloom cannot produce ePUBs if there are any overlays. The first overlay is on page {0}.",
+                        "PublishTab.Epub.NoCanvasSupport",
+                        "Error shown if book contains canvas elements.",
+                        "Sorry, Bloom cannot produce ePUBs if there are any canvas pages. The first canvas is on page {0}.",
                         ProgressKind.Error,
                         pageLabelEnglish
                     );

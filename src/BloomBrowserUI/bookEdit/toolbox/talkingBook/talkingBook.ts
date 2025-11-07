@@ -1,5 +1,5 @@
 import { hideImageDescriptions } from "../imageDescription/imageDescriptionUtils";
-import { kBloomCanvasClass } from "../overlay/canvasElementUtils";
+import { kBloomCanvasClass } from "../canvas/canvasElementUtils";
 import { beginLoadSynphonySettings } from "../readers/readerTools";
 import { getTheOneToolbox, ITool } from "../toolbox";
 import { ToolBox } from "../toolbox";

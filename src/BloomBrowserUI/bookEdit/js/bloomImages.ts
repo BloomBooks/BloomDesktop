@@ -17,14 +17,14 @@ import {
     kCanvasElementSelector,
     kBloomCanvasClass,
     kBloomCanvasSelector,
-} from "../toolbox/overlay/canvasElementUtils";
+} from "../toolbox/canvas/canvasElementUtils";
 
 import { farthest } from "../../utils/elementUtils";
 import { EditableDivUtils } from "./editableDivUtils";
 import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { kPlaybackOrderContainerClass } from "../toolbox/talkingBook/audioRecording";
 import { showCopyrightAndLicenseDialog } from "../editViewFrame";
-import { getCanvasElementManager } from "../toolbox/overlay/canvasElementUtils";
+import { getCanvasElementManager } from "../toolbox/canvas/canvasElementUtils";
 import $ from "jquery";
 
 // This appears to be constant even on higher dpi screens.

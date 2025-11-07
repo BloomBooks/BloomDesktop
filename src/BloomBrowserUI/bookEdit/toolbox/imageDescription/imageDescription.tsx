@@ -13,7 +13,6 @@ import { Checkbox } from "../../../react_components/checkbox";
 import { Link } from "../../../react_components/link";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
-import { OverlayTool } from "../overlay/overlayTool";
 import {
     hideImageDescriptions,
     showImageDescriptions,
@@ -21,7 +20,7 @@ import {
 import {
     getCanvasElementManager,
     kBloomCanvasClass,
-} from "../overlay/canvasElementUtils";
+} from "../canvas/canvasElementUtils";
 interface IImageDescriptionState {
     enabled: boolean;
     descriptionNotNeeded: boolean;

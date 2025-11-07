@@ -63,7 +63,7 @@ import { Span } from "../../react_components/l10nComponents";
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import { getAudioSentencesOfVisibleEditables } from "bloom-player";
 import { GameType, getGameType } from "../toolbox/games/GameInfo";
-import { setGeneratedDraggableId } from "../toolbox/overlay/CanvasElementItem";
+import { setGeneratedDraggableId } from "../toolbox/canvas/CanvasElementItem";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -707,7 +707,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
             subLabelL10nId: "EditTab.Image.PlayWhenTouched",
             onClick: () => {},
             icon: <VolumeUpIcon css={getMenuIconCss(1, "left:2px;")} />,
-            featureName: "overlay",
+            featureName: "canvas",
             subMenu,
         };
     }
@@ -1080,7 +1080,7 @@ function addImageMenuOptions(
                     Currently: %0
                 </Span>
             ),
-            featureName: "overlay",
+            featureName: "canvas",
             onClick: () => pasteLink(canvasElement),
 
             /*

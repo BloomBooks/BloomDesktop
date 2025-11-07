@@ -152,9 +152,9 @@
       </trans-unit>
       <!-- Features -->
       <!-- TODO connect with/normalize other places that refer to these things -->
-      <trans-unit id="Feature.Overlay">
-        <source xml:lang="en">Overlay</source>
-        <note>ID: Feature.Overlay</note>
+      <trans-unit id="Feature.Canvas">
+        <source xml:lang="en">Canvas</source>
+        <note>ID: Feature.Canvas</note>
         <note>This is the name of a feature in BLoom</note>
       </trans-unit>
       <trans-unit id="Feature.Spreadsheet">

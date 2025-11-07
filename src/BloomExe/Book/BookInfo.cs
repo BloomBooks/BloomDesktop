@@ -1530,7 +1530,7 @@ namespace Bloom.Book
                     features.Add("video");
                 if (Feature_Motion)
                     features.Add("motion");
-                // Feature code is unchanged despite the toolbox tool rename to Overlay Tool.
+                // Feature code is unchanged despite the toolbox tool rename to Canvas Tool.
                 // Also, in an ideal world, we only set this for actual comic books.
                 if (Feature_Comic)
                     features.Add("comic");
@@ -1674,9 +1674,9 @@ namespace Bloom.Book
         [JsonIgnore]
         public bool Feature_Quiz { get; set; }
 
-        // Feature name is unchanged despite the toolbox tool rename to Overlay Tool, because they are stored
+        // Feature name is unchanged despite the toolbox tool rename to Canvas Tool, because they are stored
         // in the book record database and used from there by Bloom Library, and because older versions of Bloom would not
-        // recognize a 'Feature_Overlay'.
+        // recognize a 'Feature_Canvas'.
         [JsonIgnore]
         public bool Feature_Comic { get; set; }
 

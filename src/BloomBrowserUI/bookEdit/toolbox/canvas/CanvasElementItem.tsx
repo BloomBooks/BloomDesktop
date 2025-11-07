@@ -687,9 +687,9 @@ export const CanvasElementItemRegion: React.FunctionComponent<{
                         props.l10nKey ??
                         "EditTab.Toolbox.ComicTool.DragInstructions"
                     }
-                    className="overlayToolControlDragInstructions"
+                    className="canvasToolControlDragInstructions"
                 >
-                    Drag any of these overlays onto the image:
+                    Drag any of these elements onto the image:
                 </Div>
             )}
             {props.children}

@@ -9,7 +9,6 @@ import "./impairmentVisualizer.less";
 import { RadioGroup, Radio } from "../../../react_components/radio";
 import { deuteranopia, tritanopia, achromatopsia } from "color-blind";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
-import { kHasCanvasElementClass } from "../overlay/canvasElementUtils";
 import { kImageContainerClass } from "../../js/bloomImages";
 import { CanvasElementManager } from "../../js/CanvasElementManager";
 
@@ -171,7 +170,7 @@ export class ImpairmentVisualizerControls extends React.Component<
                             childIndex
                         ] as HTMLElement;
                         if (!child || child.nodeName !== "IMG") continue;
-                        // Don't make a overlay for a draghandle or other UI element.
+                        // Don't make a color blindness overlay for a draghandle or other UI element.
                         if (child.classList.contains("bloom-ui")) continue;
                         this.makeColorBlindnessOverlay(
                             child as HTMLImageElement,

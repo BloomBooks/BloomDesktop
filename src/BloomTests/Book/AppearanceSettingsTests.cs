@@ -309,7 +309,7 @@ namespace BloomTests.Book
 
         [TestCase(true)]
         [TestCase(false)]
-        public void GetThemeAndSubstituteCss_BookHasOverlays_UsesLegacy(bool hasOverlays)
+        public void GetThemeAndSubstituteCss_BookHasCanvasElement_UsesLegacy(bool hasCanvasElement)
         {
             var settings = new AppearanceSettingsTest();
             var cssFilesToCheck = new[]
@@ -317,7 +317,7 @@ namespace BloomTests.Book
                 Tuple.Create("customBookStyles.css", ""),
                 Tuple.Create("customCollectionStyles.css", ""),
             };
-            var dom = hasOverlays
+            var dom = hasCanvasElement
                 ? new HtmlDom(
                     @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
 			<body><div class='bloom-page'>
@@ -332,7 +332,10 @@ namespace BloomTests.Book
             var pathToCustomCss = settings.GetThemeAndSubstituteCss(cssFilesToCheck, dom);
 
             Assert.That(pathToCustomCss, Is.Null);
-            Assert.That(settings.CssThemeName, Is.EqualTo(hasOverlays ? "legacy-5-6" : "default"));
+            Assert.That(
+                settings.CssThemeName,
+                Is.EqualTo(hasCanvasElement ? "legacy-5-6" : "default")
+            );
         }
 
         public static HtmlDom GetTrivialBookDom()

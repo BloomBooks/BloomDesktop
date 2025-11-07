@@ -32,13 +32,10 @@ import { TextFragment } from "../readers/libSynphony/bloomSynphonyExtensions";
 import axios, { AxiosResponse } from "axios";
 import {
     get,
-    getAsync,
     getWithPromise,
-    post,
     postData,
     postJson,
     postJsonAsync,
-    postString,
 } from "../../../utils/bloomApi";
 import * as toastr from "toastr";
 import WebSocketManager from "../../../utils/WebSocketManager";
@@ -64,10 +61,7 @@ import {
     showImageDescriptions,
 } from "../imageDescription/imageDescriptionUtils";
 import { IAudioRecorder } from "./IAudioRecorder";
-import {
-    getCanvasElementManager,
-    kCanvasElementClass,
-} from "../overlay/canvasElementUtils";
+import { getCanvasElementManager } from "../canvas/canvasElementUtils";
 import { RecordingMode } from "./recordingMode";
 import {
     FeatureStatus,
