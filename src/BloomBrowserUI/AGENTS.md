@@ -60,6 +60,9 @@ Keep effects minimal and specific to their purpose; avoid overuse.
 
 We use Playwright.
 
+Tests for components under /react_components have a playwright test system based on "*.uitest.ts" files. See src/BloomBrowserUI/react_components/AGENTS.md for more info.
+
+
 Don't check for styles in tests as a way to know the status of something. That is fragile. If necessary have components add css classes or whatever that tests can check.
 
 Don't use timeouts in tests, that slows things down and is fragile. If a timeout is justified, get my approval and add a comment explaining it.
