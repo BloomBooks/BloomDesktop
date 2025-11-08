@@ -864,24 +864,24 @@
         <target xml:lang="fr" state="final">Gauche</target>
         <note>BookSettings.PageNumbers.TopLeft</note>
       </trans-unit>
-      <trans-unit id="BookSettings.PageNumbers.Center" sil:dynamic="true">
+      <trans-unit id="BookSettings.PageNumbers.Center" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Center</source>
-        <target xml:lang="fr" state="translated">Centré</target>
+        <target xml:lang="fr" state="final">Centré</target>
         <note>BookSettings.PageNumbers.Center</note>
       </trans-unit>
-      <trans-unit id="BookSettings.PageNumbers.Right" sil:dynamic="true">
+      <trans-unit id="BookSettings.PageNumbers.Right" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Right</source>
-        <target xml:lang="fr" state="translated">Droite</target>
+        <target xml:lang="fr" state="final">Droite</target>
         <note>BookSettings.PageNumbers.Right</note>
       </trans-unit>
-      <trans-unit id="BookSettings.PageNumbers.Hidden" sil:dynamic="true">
+      <trans-unit id="BookSettings.PageNumbers.Hidden" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Hidden</source>
-        <target xml:lang="fr" state="translated">Masqué</target>
+        <target xml:lang="fr" state="final">Masqué</target>
         <note>BookSettings.PageNumbers.Hidden</note>
       </trans-unit>
-      <trans-unit id="BookSettings.PageNumberLocationNote" sil:dynamic="true">
+      <trans-unit id="BookSettings.PageNumberLocationNote" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Note: some Page Themes may not know how to change the location of the Page Number.</source>
-        <target xml:lang="fr" state="translated">Remarque : il se peut que certains Thèmes de Page ne sachent pas comment modifier l'emplacement du Numéro de Page.</target>
+        <target xml:lang="fr" state="final">Remarque : il se peut que certains Thèmes de Page ne sachent pas comment modifier l'emplacement du Numéro de Page.</target>
         <note>BookSettings.PageNumberLocationNote</note>
       </trans-unit>
       <trans-unit id="BookSettings.FrontAndBackMatter" sil:dynamic="true">
