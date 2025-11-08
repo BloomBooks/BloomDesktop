@@ -1871,7 +1871,7 @@
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Canvas" sil:dynamic="true">
         <source xml:lang="en">Canvas Text</source>
-        <target xml:lang="pt-PT" state="needs-translation">Canvas Text</target>
+        <target xml:lang="pt-PT" state="translated">Texto na Tela</target>
         <note>ID: EditTab.FormatDialog.Canvas</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Padding" sil:dynamic="true" approved="yes">
