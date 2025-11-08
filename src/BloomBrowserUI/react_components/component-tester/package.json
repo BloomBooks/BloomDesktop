@@ -6,7 +6,7 @@
         "node": ">=22.11.0"
     },
     "scripts": {
-        "dev": "yarn vite --config vite.config.ts",
+        "dev": "yarn vite --config vite.config.ts --no-open",
         "test": "playwright test",
         "test:ui": "playwright test --ui --headed",
         "manual": "tsx scripts/manual.ts -- ",

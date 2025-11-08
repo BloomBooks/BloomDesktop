@@ -2,6 +2,7 @@ import * as path from "path";
 import type { PlaywrightTestConfig } from "@playwright/test";
 
 process.env.BLOOM_COMPONENT_TESTER_SUPPRESS_OPEN = "1";
+process.env.VITE_OPEN = "false";
 
 // Force Node to resolve Playwright from this package's node_modules so sibling spec files
 // don't pull in the repo-level copy and trigger the "Requiring @playwright/test second time" error.
