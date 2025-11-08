@@ -97,6 +97,11 @@ namespace Bloom.web.controllers
                 false,
                 false
             );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "bookFile",
+                HandleBookFileRequest,
+                false
+            );
 
             // used by visual regression tests to name screenshots
             apiHandler.RegisterEndpointHandler(
@@ -208,7 +213,7 @@ namespace Bloom.web.controllers
                                         );
                                     throw ex;
                                 }
-                                throw e;
+                                throw;
                             }
 
                             request.PostSucceeded();
@@ -719,6 +724,65 @@ namespace Bloom.web.controllers
                     //request.Failed("Thumbnail doesn't exist, and making a new thumbnail is not yet implemented.");
                 }
             }
+        }
+
+        private void HandleBookFileRequest(ApiRequest request)
+        {
+            var bookId = System.Web.HttpUtility.UrlDecode(request.RequiredParam("book-id"));
+            var fileParam = System.Web.HttpUtility.UrlDecode(request.RequiredParam("file"));
+
+            if (string.IsNullOrWhiteSpace(fileParam))
+            {
+                request.Failed("File parameter is required.");
+                return;
+            }
+
+            var editableCollection = _collectionModel.TheOneEditableCollection;
+            if (editableCollection == null)
+            {
+                request.Failed("No editable collection is available.");
+                return;
+            }
+
+            var bookInfo = editableCollection.GetBookInfoById(bookId);
+            if (bookInfo == null)
+            {
+                request.Failed($"Book with id '{bookId}' was not found.");
+                return;
+            }
+
+            var relativePath = fileParam
+                .Replace('/', Path.DirectorySeparatorChar)
+                .Replace('\\', Path.DirectorySeparatorChar);
+
+            if (Path.IsPathRooted(relativePath))
+            {
+                request.Failed("Access denied: file path outside book folder");
+                return;
+            }
+
+            var filePath = Path.Combine(bookInfo.FolderPath, relativePath);
+            var normalizedFilePath = Path.GetFullPath(filePath);
+            var normalizedBookPath = Path.GetFullPath(bookInfo.FolderPath);
+
+            if (
+                !normalizedFilePath.StartsWith(
+                    normalizedBookPath,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
+            {
+                request.Failed("Access denied: file path outside book folder");
+                return;
+            }
+
+            if (!RobustFile.Exists(filePath))
+            {
+                request.Failed($"File not found: {fileParam}");
+                return;
+            }
+
+            request.ReplyWithFileContent(filePath);
         }
 
         private void GetBookOnBloomBadgeInfo(ApiRequest apiRequest)

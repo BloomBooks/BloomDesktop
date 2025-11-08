@@ -134,7 +134,7 @@ export async function setupLinkTargetChooser(
         props.bookAttributes ?? {},
     );
 
-    await page.route("**/bloom/api/pageList/bookFile/**", async (route) => {
+    await page.route("**/bloom/api/collections/bookFile**", async (route) => {
         await route.fulfill({
             status: 200,
             contentType: "text/css",

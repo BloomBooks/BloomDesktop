@@ -158,6 +158,11 @@ namespace Bloom.Api
             _requestInfo.ReplyWithImage(imagePath);
         }
 
+        public void ReplyWithFileContent(string path)
+        {
+            _requestInfo.ReplyWithFileContent(path);
+        }
+
         public void ReplyWithStreamContent(Stream input, string responseType)
         {
             _requestInfo.ReplyWithStreamContent(input, responseType);

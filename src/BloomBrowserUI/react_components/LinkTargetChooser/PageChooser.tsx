@@ -12,11 +12,102 @@ import {
     itemBackgroundColor,
     selectedStyle,
     itemGap,
+    chooserButtonPadding,
 } from "./sharedStyles";
-import "../../bookEdit/pageThumbnailList/pageThumbnailList.less";
-import { chooserButtonPadding } from "./sharedStyles";
 
 type PageWithXMatter = IPage & { isXMatter?: boolean };
+
+const staticStylesheets: Array<{ href: string; key: string }> = [
+    {
+        href: "/bloom/bookEdit/pageThumbnailList/pageThumbnailList.css",
+        key: "page-thumbnail-list",
+    },
+    {
+        href: "/bloom/bookLayout/basePage.css",
+        key: "base-page",
+    },
+    {
+        href: "/bloom/bookLayout/previewMode.css",
+        key: "preview-mode",
+    },
+];
+const ensureStylesheet = (
+    href: string,
+    key: string,
+    addedLinks: HTMLLinkElement[],
+) => {
+    const selector = `link[data-page-chooser-css="${key}"]`;
+    let linkElement = document.head.querySelector(
+        selector,
+    ) as HTMLLinkElement | null;
+
+    if (!linkElement) {
+        const absoluteHref = new URL(href, window.location.origin).href;
+        linkElement = Array.from(
+            document.head.querySelectorAll("link[href]"),
+        ).find((candidate) => {
+            const element = candidate as HTMLLinkElement;
+            return element.href === absoluteHref;
+        }) as HTMLLinkElement | null;
+    }
+
+    if (!linkElement) {
+        linkElement = document.createElement("link");
+        linkElement.rel = "stylesheet";
+        linkElement.type = "text/css";
+        linkElement.href = href;
+        linkElement.dataset.pageChooserCss = key;
+        document.head.appendChild(linkElement);
+        addedLinks.push(linkElement);
+    } else if (!linkElement.dataset.pageChooserCss) {
+        linkElement.dataset.pageChooserCss = key;
+    }
+};
+
+const usePageChooserStyles = (bookId?: string) => {
+    useEffect(() => {
+        const addedLinks: HTMLLinkElement[] = [];
+
+        staticStylesheets.forEach(({ href, key }) => {
+            ensureStylesheet(href, key, addedLinks);
+        });
+
+        return () => {
+            addedLinks.forEach((linkElement) => {
+                if (linkElement.parentNode) {
+                    linkElement.parentNode.removeChild(linkElement);
+                }
+            });
+        };
+    }, []);
+
+    useEffect(() => {
+        const existing = document.head.querySelectorAll(
+            'link[data-page-chooser-css="appearance"]',
+        );
+        existing.forEach((link) => {
+            link.parentNode?.removeChild(link);
+        });
+
+        if (!bookId) {
+            return;
+        }
+
+        const addedLinks: HTMLLinkElement[] = [];
+        const href = `/bloom/api/collections/bookFile?book-id=${encodeURIComponent(
+            bookId,
+        )}&file=${encodeURIComponent("appearance.css")}`;
+        ensureStylesheet(href, "appearance", addedLinks);
+
+        return () => {
+            addedLinks.forEach((linkElement) => {
+                if (linkElement.parentNode) {
+                    linkElement.parentNode.removeChild(linkElement);
+                }
+            });
+        };
+    }, [bookId]);
+};
 
 const PageItemComponent: React.FunctionComponent<{
     page: PageWithXMatter;
@@ -72,7 +163,7 @@ const PageItemComponent: React.FunctionComponent<{
         });
     };
 
-    const classNames = ["gridItem", "link-target-page"];
+    const classNames = ["link-target-page"];
     if (isSelected) {
         classNames.push("link-target-page--selected");
     }
@@ -166,6 +257,7 @@ const PageChooserComponent: React.FunctionComponent<{
         onSelectPage,
         onPagesLoaded,
     } = props;
+    usePageChooserStyles(bookId);
     const [pages, setPages] = useState<PageWithXMatter[]>([]);
     const [pageLayout, setPageLayout] = useState<string>("A5Portrait");
     const [loading, setLoading] = useState(false);

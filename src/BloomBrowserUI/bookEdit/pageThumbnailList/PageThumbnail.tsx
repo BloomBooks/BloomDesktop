@@ -24,6 +24,7 @@ const fixResourceUrls = (
         if (!bookId) {
             return rawPath;
         }
+
         let decodedPath = rawPath;
         try {
             decodedPath = decodeURIComponent(rawPath);
@@ -46,19 +47,16 @@ const fixResourceUrls = (
             remainingPath = remainingPath.substring(0, queryIndex);
         }
 
-        const encodedSegments = remainingPath.split("/").map((segment) => {
-            if (segment === "" || segment === "." || segment === "..") {
-                return segment;
-            }
-            return encodeURIComponent(segment);
-        });
+        const normalizedPath = remainingPath
+            .replace(/\\/g, "/")
+            .replace(/^\/+/, "");
+        const fileParam = encodeURIComponent(normalizedPath);
+        const baseUrl = `/bloom/api/collections/bookFile?book-id=${encodeURIComponent(
+            bookId,
+        )}&file=${fileParam}`;
+        const extraQuery = query ? `&${query.substring(1)}` : "";
 
-        const normalizedPath = encodedSegments.join("/");
-        const basePath = `/bloom/api/pageList/bookFile/${encodeURIComponent(bookId)}`;
-        const needsSlash =
-            normalizedPath === "" || normalizedPath.startsWith("/") ? "" : "/";
-
-        return `${basePath}${needsSlash}${normalizedPath}${query}${hash}`;
+        return `${baseUrl}${extraQuery}${hash}`;
     };
 
     const makeFolderUrl = (rawPath: string): string => {

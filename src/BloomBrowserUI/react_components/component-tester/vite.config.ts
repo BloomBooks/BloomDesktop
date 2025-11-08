@@ -16,12 +16,80 @@
  * - Localization is handled by calling bypassLocalization() in test setup
  */
 
+import { createReadStream, existsSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { resolve } from "path";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 const useMocks = process.env.BLOOM_COMPONENT_TESTER_USE_BACKEND !== "1";
+
+const assetRedirects: Array<{
+    requestPath: string;
+    filePath: string;
+}> = [
+    {
+        requestPath: "/bloom/bookEdit/pageThumbnailList/pageThumbnailList.css",
+        filePath: resolve(
+            __dirname,
+            "../../../../output/browser/bookEdit/pageThumbnailList/pageThumbnailList.css",
+        ),
+    },
+    {
+        requestPath: "/bloom/bookLayout/basePage.css",
+        filePath: resolve(
+            __dirname,
+            "../../../../output/browser/bookLayout/basePage.css",
+        ),
+    },
+    {
+        requestPath: "/bloom/bookLayout/previewMode.css",
+        filePath: resolve(
+            __dirname,
+            "../../../../output/browser/collectionsTab/collectionsTabBookPane/previewMode.css",
+        ),
+    },
+];
+
+const tryServeStaticAsset = (
+    req: import("node:http").IncomingMessage,
+    res: import("node:http").ServerResponse,
+) => {
+    if (!useMocks || req.method !== "GET" || !req.url) {
+        return false;
+    }
+
+    let pathname = req.url;
+    try {
+        pathname = new URL(req.url, "http://localhost").pathname;
+    } catch {
+        const queryIndex = req.url.indexOf("?");
+        pathname = queryIndex >= 0 ? req.url.substring(0, queryIndex) : req.url;
+    }
+
+    const redirect = assetRedirects.find(
+        (entry) => entry.requestPath === pathname,
+    );
+    if (!redirect) {
+        return false;
+    }
+
+    if (!existsSync(redirect.filePath)) {
+        res.statusCode = 404;
+        res.end("Not Found");
+        return true;
+    }
+
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "text/css");
+    const stream = createReadStream(redirect.filePath);
+    stream.on("error", () => {
+        res.statusCode = 500;
+        res.end("Failed to read asset");
+    });
+    stream.pipe(res);
+    return true;
+};
 
 const launchBrowser = (targetUrl: string) => {
     const platform = process.platform;
@@ -107,6 +175,19 @@ export default defineConfig({
                     }
                     if (!req.url) {
                         next();
+                        return;
+                    }
+
+                    if (tryServeStaticAsset(req, res)) {
+                        return;
+                    }
+
+                    if (
+                        useMocks &&
+                        req.method === "GET" &&
+                        req.url.startsWith("/bloom/api/collections/bookFile")
+                    ) {
+                        handleMockBookFileRequest(req, res);
                         return;
                     }
 
@@ -238,3 +319,53 @@ export default defineConfig({
         sourcemap: true,
     },
 });
+
+const handleMockBookFileRequest = (
+    req: import("node:http").IncomingMessage,
+    res: import("node:http").ServerResponse,
+) => {
+    // Expected format: /bloom/api/collections/bookFile?book-id={bookId}&file={relativePath}
+    try {
+        const url = new URL(req.url!, "http://localhost");
+        if (url.pathname !== "/bloom/api/collections/bookFile") {
+            res.statusCode = 404;
+            res.end("Not Found");
+            return;
+        }
+
+        const fileParam = url.searchParams.get("file");
+        if (!fileParam) {
+            res.statusCode = 400;
+            res.end("Missing file parameter");
+            return;
+        }
+
+        const requestedPath = fileParam.replace(/^[\\/]+/, "");
+
+        if (requestedPath === "appearance.css") {
+            const appearancePath = resolve(
+                __dirname,
+                "../../../../output/browser/appearanceThemes/appearance-theme-default.css",
+            );
+            if (!existsSync(appearancePath)) {
+                res.statusCode = 404;
+                res.end("Not Found");
+                return;
+            }
+            res.statusCode = 200;
+            res.setHeader("Content-Type", "text/css");
+            const stream = createReadStream(appearancePath);
+            stream.on("error", () => {
+                res.statusCode = 500;
+                res.end("Failed to read asset");
+            });
+            stream.pipe(res);
+            return;
+        }
+    } catch {
+        // fall through
+    }
+
+    res.statusCode = 404;
+    res.end("Not Found");
+};

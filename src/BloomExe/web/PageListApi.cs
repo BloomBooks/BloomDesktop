@@ -95,7 +95,6 @@ namespace Bloom.web
                 },
                 true
             );
-            apiHandler.RegisterEndpointHandler("pageList/bookFile", HandleBookFileRequest, false);
         }
 
         private void HandlePageClickedRequest(ApiRequest request)
@@ -334,70 +333,6 @@ namespace Bloom.web
                     }
                 }
             }
-        }
-
-        // Serves a file from a specific book's folder. Used when displaying thumbnails from books
-        // other than the current one (e.g., in LinkTargetChooser).
-        // URL pattern: /bloom/api/pageList/bookFile/{bookId}/{filename}?thumbnail=1
-        private void HandleBookFileRequest(ApiRequest request)
-        {
-            var localPath = request.LocalPath();
-            // Expected format: pageList/bookFile/{bookId}/{filename}
-            var parts = localPath.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-
-            if (parts.Length < 4)
-            {
-                request.Failed("Invalid book file request format");
-                return;
-            }
-
-            var bookId = System.Web.HttpUtility.UrlDecode(parts[2]);
-            // The filename may include a query string (e.g., "image.jpg?thumbnail=1")
-            // Join the remaining parts and decode
-            var fileNameWithQuery = System.Web.HttpUtility.UrlDecode(
-                string.Join("/", parts.Skip(3))
-            );
-
-            // Strip the query string to get the actual filename
-            var fileName = fileNameWithQuery.Split('?')[0];
-
-            var editableCollection = _collectionModel.TheOneEditableCollection;
-            if (editableCollection == null)
-            {
-                request.Failed("No editable collection is available.");
-                return;
-            }
-
-            var bookInfo = editableCollection.GetBookInfoById(bookId);
-            if (bookInfo == null)
-            {
-                request.Failed($"Book with id '{bookId}' was not found.");
-                return;
-            }
-
-            var filePath = Path.Combine(bookInfo.FolderPath, fileName);
-
-            var normalizedFilePath = Path.GetFullPath(filePath);
-            var normalizedBookPath = Path.GetFullPath(bookInfo.FolderPath);
-
-            if (
-                !normalizedFilePath.StartsWith(
-                    normalizedBookPath,
-                    StringComparison.OrdinalIgnoreCase
-                )
-            )
-            {
-                request.Failed("Access denied: file path outside book folder");
-                return;
-            }
-
-            if (!RobustFile.Exists(filePath))
-            {
-                request.Failed($"File not found: {fileName}");
-                return;
-            }
-
-            request.ReplyWithImage(filePath);
         }
     }
 }
