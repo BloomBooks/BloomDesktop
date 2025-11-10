@@ -1,6 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import * as React from "react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { css } from "@emotion/react";
 import {
     BloomDialog,
@@ -10,6 +10,7 @@ import {
     DialogBottomLeftButtons,
 } from "../BloomDialog/BloomDialog";
 import { LinkTargetChooser, LinkTargetInfo } from "./LinkTargetChooser";
+import { parseURL } from "./urlParser";
 import { DialogCloseButton } from "../BloomDialog/commonDialogComponents";
 import BloomButton from "../bloomButton";
 import { useL10n } from "../l10nHooks";
@@ -23,6 +24,28 @@ export const LinkTargetChooserDialog: React.FunctionComponent<{
     const { onClose, onSelect } = props;
     const [currentLinkInfo, setCurrentLinkInfo] =
         useState<LinkTargetInfo | null>(null);
+
+    // Sync currentLinkInfo when dialog opens or currentURL changes
+    useEffect(() => {
+        if (props.open && props.currentURL) {
+            const parsed = parseURL(props.currentURL);
+            // Only initialize for complete URLs:
+            // - External URLs are complete on their own
+            // - Book-path URLs with a bookId are complete
+            // Do NOT initialize for hash-only URLs (need book context) or empty URLs
+            if (
+                parsed.urlType === "external" ||
+                parsed.urlType === "book-path"
+            ) {
+                setCurrentLinkInfo({
+                    url: parsed.parsedUrl,
+                    bookThumbnail: null,
+                    bookTitle: null,
+                    hasError: false,
+                });
+            }
+        }
+    }, [props.open, props.currentURL]);
 
     const handleURLChanged = useCallback((info: LinkTargetInfo) => {
         setCurrentLinkInfo(info);

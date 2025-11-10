@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.CollectionTab;

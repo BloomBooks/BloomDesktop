@@ -21,6 +21,7 @@ export const BookSourcesList: React.FC<BookSourcesListProps> = ({
     // Auto-scroll to keep the selected book visible when selection changes.
     useEffect(() => {
         if (selectedBook && containerRef.current) {
+            // book id are guids, so no need to escape special characters are needed
             const element = containerRef.current.querySelector(
                 `[data-book-id="${selectedBook.id}"]`,
             );
