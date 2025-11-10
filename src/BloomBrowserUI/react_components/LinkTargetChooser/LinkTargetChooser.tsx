@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { css } from "@emotion/react";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Button, Menu, MenuItem } from "@mui/material";
 import {
     BookInfoForLinks,
     PageInfoForLinks,
@@ -12,8 +12,6 @@ import { PageChooser } from "./PageChooser";
 import { useWatchApiData, useApiString } from "../../utils/bloomApi";
 import { IBookInfo } from "../../collectionsTab/BooksOfCollection";
 import { headingStyle } from "./sharedStyles";
-import { useL10n } from "../l10nHooks";
-import { parseURL } from "./urlParser";
 
 export interface LinkTargetInfo {
     url: string;
@@ -39,13 +37,12 @@ export const LinkTargetChooser: React.FunctionComponent<{
     const [selectedBook, setSelectedBook] = useState<BookInfoForLinks | null>(
         null,
     );
-    const [errorInfo, setErrorInfo] = useState<
-        | { type: "bookNotFound"; bookId: string }
-        | { type: "pageNotFound"; pageId: string; bookTitle: string }
-        | null
-    >(null);
+    const [errorMessage, setErrorMessage] = useState<string>("");
     const [hasAttemptedAutoSelect, setHasAttemptedAutoSelect] =
         useState<boolean>(() => !!props.currentURL);
+    const [moreMenuAnchor, setMoreMenuAnchor] = useState<null | HTMLElement>(
+        null,
+    );
 
     // Get the current book ID so we can select it by default
     const currentBookId = useApiString("editView/currentBookId", "");
@@ -81,101 +78,128 @@ export const LinkTargetChooser: React.FunctionComponent<{
 
     useEffect(() => {
         const rawUrl = props.currentURL || "";
-        const parsed = parseURL(rawUrl);
-
-        // Set hasAttemptedAutoSelect if we have a URL
         if (rawUrl) {
             setHasAttemptedAutoSelect(true);
         }
+        setErrorMessage("");
 
-        // Clear error info initially
-        setErrorInfo(null);
-
-        // Set component state based on parsed result
-        setSelectedBook(null);
-        setSelectedBookId(parsed.bookId);
-        setSelectedPageId(parsed.pageId);
-        setCurrentURL(parsed.parsedUrl);
-
-        // For empty URLs, reset all state
-        if (parsed.urlType === "empty") {
+        if (!rawUrl) {
+            setCurrentURL("");
+            setSelectedBook(null);
+            setSelectedBookId(null);
+            setSelectedPageId(null);
             setHasAttemptedAutoSelect(false);
             return;
         }
 
-        // For external URLs, notify parent immediately
-        if (parsed.urlType === "external") {
+        if (rawUrl.startsWith("#")) {
+            const pageIdStr = rawUrl.substring(1) || "cover";
+            const normalizedPageId =
+                pageIdStr === "cover" ? "cover" : pageIdStr;
+            setSelectedBook(null);
+            setSelectedBookId(null);
+            setSelectedPageId(normalizedPageId);
+            setCurrentURL(
+                normalizedPageId === "cover"
+                    ? "#cover"
+                    : `#${normalizedPageId}`,
+            );
             setHasAttemptedAutoSelect(true);
-            onURLChangedRef.current?.({
-                url: parsed.parsedUrl,
-                bookThumbnail: null,
-                bookTitle: null,
-                hasError: false,
-            });
+            return;
         }
+
+        if (rawUrl.startsWith("/book/")) {
+            const hashIndex = rawUrl.indexOf("#");
+            const bookId =
+                hashIndex === -1
+                    ? rawUrl.substring(6)
+                    : rawUrl.substring(6, hashIndex);
+            const rawPagePart =
+                hashIndex === -1 ? "cover" : rawUrl.substring(hashIndex + 1);
+            const normalizedPageId =
+                !rawPagePart || rawPagePart === "cover" ? "cover" : rawPagePart;
+
+            setSelectedBook(null);
+            setSelectedBookId(bookId);
+            setSelectedPageId(normalizedPageId);
+            setCurrentURL(
+                normalizedPageId === "cover"
+                    ? `/book/${bookId}`
+                    : `/book/${bookId}#${normalizedPageId}`,
+            );
+            setHasAttemptedAutoSelect(true);
+            return;
+        }
+
+        setSelectedBook(null);
+        setSelectedBookId(null);
+        setSelectedPageId(null);
+        setCurrentURL(rawUrl);
+        onURLChangedRef.current?.({
+            url: rawUrl,
+            bookThumbnail: null,
+            bookTitle: null,
+            hasError: false,
+        });
+        setHasAttemptedAutoSelect(true);
     }, [props.currentURL]);
 
     // Validate and preselect book/page when books load or bookId changes
     useEffect(() => {
-        let nextSelectedBook: BookInfoForLinks | null = null;
-        let nextError:
-            | { type: "bookNotFound"; bookId: string }
-            | { type: "pageNotFound"; pageId: string; bookTitle: string }
-            | null = null;
-        let bookThumbnail: string | null = null;
-        let bookTitle: string | null = null;
+        if (!selectedBookId || bookInfoForLinks.length === 0) {
+            setSelectedBook(null);
+            return;
+        }
 
-        if (selectedBookId && bookInfoForLinks.length > 0) {
-            const book = bookInfoForLinks.find((b) => b.id === selectedBookId);
-            if (!book) {
-                nextError = { type: "bookNotFound", bookId: selectedBookId };
-            } else {
-                nextSelectedBook = book;
-                bookThumbnail = book.thumbnail || null;
-                bookTitle = book.title || null;
+        const book = bookInfoForLinks.find((b) => b.id === selectedBookId);
+        if (!book) {
+            const msg = `Book not found: ${selectedBookId}`;
+            setErrorMessage(msg);
+            setSelectedBook(null);
+            onURLChangedRef.current?.({
+                url: currentURL,
+                bookThumbnail: null,
+                bookTitle: null,
+                hasError: true,
+            });
+        } else {
+            setSelectedBook(book);
+            setErrorMessage("");
 
-                if (selectedPageId !== null) {
-                    const numeric = Number(selectedPageId);
-                    const isNumeric = !isNaN(numeric);
-                    if (isNumeric) {
-                        const pageCount = book.pageLength || 1;
-                        if (numeric >= pageCount) {
-                            nextError = {
-                                type: "pageNotFound",
-                                pageId: selectedPageId,
-                                bookTitle: book.title || "",
-                            };
-                        }
+            // Validate page if one is selected
+            if (selectedPageId !== null) {
+                // Optional validation only if page id is numeric
+                const numeric = Number(selectedPageId);
+                const isNumeric = !isNaN(numeric);
+                if (isNumeric) {
+                    const pageCount = book.pageLength || 1;
+                    if (numeric >= pageCount) {
+                        const msg = `Page ${selectedPageId} not found in book "${book.title}"`;
+                        setErrorMessage(msg);
+                        onURLChangedRef.current?.({
+                            url: currentURL,
+                            bookThumbnail: book.thumbnail || null,
+                            bookTitle: book.title || null,
+                            hasError: true,
+                        });
+                        return;
                     }
                 }
+                onURLChangedRef.current?.({
+                    url: currentURL,
+                    bookThumbnail: book.thumbnail || null,
+                    bookTitle: book.title || null,
+                    hasError: false,
+                });
+            } else {
+                onURLChangedRef.current?.({
+                    url: currentURL,
+                    bookThumbnail: book.thumbnail || null,
+                    bookTitle: book.title || null,
+                    hasError: false,
+                });
             }
-        } else {
-            nextSelectedBook = null;
-            nextError = null;
         }
-
-        let hasError = nextError !== null;
-
-        if (!selectedBookId) {
-            const trimmedUrl = currentURL.trim();
-            if (trimmedUrl !== "" && trimmedUrl.startsWith("#")) {
-                hasError = true;
-            }
-        }
-
-        if (selectedBookId && bookInfoForLinks.length === 0) {
-            hasError = true;
-        }
-
-        setSelectedBook(nextSelectedBook);
-        setErrorInfo(nextError);
-
-        onURLChangedRef.current?.({
-            url: currentURL,
-            bookThumbnail,
-            bookTitle,
-            hasError,
-        });
     }, [selectedBookId, bookInfoForLinks, selectedPageId, currentURL]);
 
     const notifyParent = useCallback(
@@ -200,7 +224,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
             setSelectedBook(book);
             setSelectedBookId(book.id);
             setSelectedPageId(null);
-            setErrorInfo(null);
+            setErrorMessage("");
             setHasAttemptedAutoSelect(true);
 
             const url = `/book/${book.id}`;
@@ -217,22 +241,18 @@ export const LinkTargetChooser: React.FunctionComponent<{
 
     const handlePageSelected = useCallback(
         (pageInfo: PageInfoForLinks) => {
-            // we've already disabled selection of x-matter pages except front cover
             if (pageInfo.isXMatter && !pageInfo.isFrontCover) {
                 return;
             }
             const isFrontCover = Boolean(pageInfo.isFrontCover);
-            let normalizedPageId: string;
-            if (isFrontCover) {
-                normalizedPageId = "cover";
-            } else if (!pageInfo.pageId || pageInfo.pageId === "cover") {
-                normalizedPageId = pageInfo.actualPageId ?? pageInfo.pageId;
-            } else {
-                normalizedPageId = pageInfo.pageId;
-            }
+            const normalizedPageId = isFrontCover
+                ? "cover"
+                : !pageInfo.pageId || pageInfo.pageId === "cover"
+                  ? (pageInfo.actualPageId ?? pageInfo.pageId)
+                  : pageInfo.pageId;
 
             setSelectedPageId(normalizedPageId);
-            setErrorInfo(null);
+            setErrorMessage("");
 
             // Build URL and update URL box
             let url: string;
@@ -265,7 +285,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
             setSelectedBook(null); // Clear book selection
             setSelectedBookId(null);
             setSelectedPageId(null); // Clear page selection
-            setErrorInfo(null);
+            setErrorMessage("");
             setHasAttemptedAutoSelect(true);
 
             notifyParent(url, null, null, false);
@@ -338,40 +358,20 @@ export const LinkTargetChooser: React.FunctionComponent<{
         ],
     );
 
-    const booksHeading = useL10n(
-        "Books in this Collection",
-        "LinkTargetChooser.BookList.Heading",
-    );
-    const pagesHeading = useL10n(
-        "Pages in the selected book",
-        "LinkTargetChooser.PageList.Heading",
-    );
-    const bookNotFoundMessage = useL10n(
-        "Book not found: {0}",
-        "LinkTargetChooser.SelectionError.BookNotFound",
-        undefined,
-        errorInfo?.type === "bookNotFound" ? errorInfo.bookId : "",
-    );
-    const pageNotFoundMessage = useL10n(
-        'Page {0} not found in book "{1}"',
-        "LinkTargetChooser.SelectionError.PageNotFound",
-        undefined,
-        errorInfo?.type === "pageNotFound" ? errorInfo.pageId : "",
-        errorInfo?.type === "pageNotFound" ? errorInfo.bookTitle : "",
-    );
+    const handleMoreMenuClick = (
+        event: React.MouseEvent<HTMLButtonElement>,
+    ) => {
+        setMoreMenuAnchor(event.currentTarget);
+    };
 
-    const errorMessage = useMemo(() => {
-        if (!errorInfo) {
-            return "";
-        }
-        if (errorInfo.type === "bookNotFound") {
-            return bookNotFoundMessage;
-        }
-        if (errorInfo.type === "pageNotFound") {
-            return pageNotFoundMessage;
-        }
-        return "";
-    }, [errorInfo, bookNotFoundMessage, pageNotFoundMessage]);
+    const handleMoreMenuClose = () => {
+        setMoreMenuAnchor(null);
+    };
+
+    const handleBackMenuItemClick = () => {
+        handleURLEditorChanged("/back");
+        handleMoreMenuClose();
+    };
 
     return (
         <Box
@@ -382,13 +382,6 @@ export const LinkTargetChooser: React.FunctionComponent<{
                 gap: 10px;
             `}
         >
-            {" "}
-            <Box css={css``}>
-                <URLEditor
-                    currentURL={currentURL}
-                    onChange={handleURLEditorChanged}
-                />
-            </Box>
             <Box
                 css={css`
                     display: flex;
@@ -405,7 +398,9 @@ export const LinkTargetChooser: React.FunctionComponent<{
                         flex-direction: column;
                     `}
                 >
-                    <Typography css={headingStyle}>{booksHeading}</Typography>
+                    <Typography css={headingStyle}>
+                        Books in this Collection
+                    </Typography>
                     <Box
                         css={css`
                             flex: 1;
@@ -417,7 +412,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
                             books={bookInfoForLinks}
                             selectedBook={selectedBook}
                             onSelectBook={handleBookSelected}
-                            excludeBookBeingEdited={false}
+                            includeCurrentBook={true}
                         />
                     </Box>
                 </Box>
@@ -430,7 +425,9 @@ export const LinkTargetChooser: React.FunctionComponent<{
                         flex-direction: column;
                     `}
                 >
-                    <Typography css={headingStyle}>{pagesHeading}</Typography>
+                    <Typography css={headingStyle}>
+                        Pages in the selected book
+                    </Typography>
                     <Box
                         css={css`
                             flex: 1;
@@ -448,6 +445,44 @@ export const LinkTargetChooser: React.FunctionComponent<{
                     </Box>
                 </Box>
             </Box>
+
+            {/* Bottom: URLEditor */}
+            <Box css={css``}>
+                <URLEditor
+                    currentURL={currentURL}
+                    onChange={handleURLEditorChanged}
+                />
+            </Box>
+
+            {/* More Menu */}
+            <Box css={css``}>
+                <Button
+                    variant="text"
+                    size="small"
+                    onClick={handleMoreMenuClick}
+                    data-testid="more-menu-button"
+                    css={css`
+                        text-transform: none;
+                    `}
+                >
+                    More...
+                </Button>
+                <Menu
+                    anchorEl={moreMenuAnchor}
+                    open={Boolean(moreMenuAnchor)}
+                    onClose={handleMoreMenuClose}
+                    data-testid="more-menu"
+                >
+                    <MenuItem
+                        onClick={handleBackMenuItemClick}
+                        data-testid="back-menu-item"
+                        title="like the ← back in a web browser"
+                    >
+                        Back button
+                    </MenuItem>
+                </Menu>
+            </Box>
+
             {/* Error message display */}
             {errorMessage && (
                 <Box

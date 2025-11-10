@@ -5,7 +5,7 @@
  */
 
 import { test, expect } from "../../component-tester/playwrightTest";
-import { setupLinkTargetChooser } from "./test-helpers";
+import { setupLinkTargetChooser, urlEditor } from "./test-helpers";
 
 test.describe("LinkTargetChooser - More Menu Functionality", () => {
     test("More menu button is visible", async ({ page }) => {
@@ -13,6 +13,7 @@ test.describe("LinkTargetChooser - More Menu Functionality", () => {
 
         const moreButton = page.getByTestId("more-menu-button");
         await expect(moreButton).toBeVisible();
+        await expect(moreButton).toHaveText("More...");
     });
 
     test("Clicking More button opens menu", async ({ page }) => {
@@ -33,10 +34,11 @@ test.describe("LinkTargetChooser - More Menu Functionality", () => {
 
         const backMenuItem = page.getByTestId("back-menu-item");
         await expect(backMenuItem).toBeVisible();
+        await expect(backMenuItem).toHaveText("← Back");
     });
 
     test("Clicking Back menu item sets URL to /back", async ({ page }) => {
-        const context = await setupLinkTargetChooser(page, {
+        await setupLinkTargetChooser(page, {
             currentURL: "https://example.com",
         });
 
@@ -49,7 +51,7 @@ test.describe("LinkTargetChooser - More Menu Functionality", () => {
         await backMenuItem.click();
 
         // Verify the URL was changed to /back
-        const value = await context.urlEditor.getValue();
+        const value = await urlEditor.getValue();
         expect(value).toBe("/back");
     });
 
@@ -72,12 +74,12 @@ test.describe("LinkTargetChooser - More Menu Functionality", () => {
     });
 
     test("Back menu item clears book and page selection", async ({ page }) => {
-        const context = await setupLinkTargetChooser(page, {
+        await setupLinkTargetChooser(page, {
             currentURL: "/book/book1#2",
         });
 
         // Verify initial URL is set
-        let value = await context.urlEditor.getValue();
+        let value = await urlEditor.getValue();
         expect(value).toBe("/book/book1#2");
 
         // Open the More menu and click Back
@@ -88,7 +90,7 @@ test.describe("LinkTargetChooser - More Menu Functionality", () => {
         await backMenuItem.click();
 
         // Verify the URL changed to /back
-        value = await context.urlEditor.getValue();
+        value = await urlEditor.getValue();
         expect(value).toBe("/back");
     });
 });
