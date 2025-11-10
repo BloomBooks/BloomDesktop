@@ -411,7 +411,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
                             books={bookInfoForLinks}
                             selectedBook={selectedBook}
                             onSelectBook={handleBookSelected}
-                            includeCurrentBook={true}
+                            excludeBookBeingEdited={false}
                         />
                     </Box>
                 </Box>

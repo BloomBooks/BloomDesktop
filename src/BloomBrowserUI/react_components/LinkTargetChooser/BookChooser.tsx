@@ -1,19 +1,23 @@
 import * as React from "react";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useMemo } from "react";
 import { css } from "@emotion/react";
 import { BookInfoForLinks } from "../BookGridSetup/BookLinkTypes";
 import { BookLinkCard } from "../BookGridSetup/BookLinkCard";
 import { chooserContainerStyles, itemGap } from "./sharedStyles";
 import { chooserButtonPadding } from "./sharedStyles";
+import { useApiString } from "../../utils/bloomApi";
 
 const BookChooserComponent: React.FunctionComponent<{
     books: BookInfoForLinks[];
     selectedBook: BookInfoForLinks | null;
     onSelectBook: (book: BookInfoForLinks) => void;
-    includeCurrentBook?: boolean;
+    excludeBookBeingEdited?: boolean;
     disabledBooks?: string[]; // book IDs that should be shown as disabled
 }> = (props) => {
     const containerRef = useRef<HTMLDivElement>(null);
+
+    // Get the current book ID to filter it out if needed
+    const currentBookId = useApiString("editView/currentBookId", "");
 
     useEffect(() => {
         if (props.selectedBook && containerRef.current) {
@@ -24,7 +28,17 @@ const BookChooserComponent: React.FunctionComponent<{
         }
     }, [props.selectedBook]);
 
-    const booksToShow = props.includeCurrentBook ? props.books : props.books; // TODO: filter out current book once we have API to identify it
+    const booksToShow = useMemo(() => {
+        if (!props.excludeBookBeingEdited) {
+            return props.books;
+        }
+        // Filter out current book if we have a valid current book ID
+        if (currentBookId) {
+            return props.books.filter((book) => book.id !== currentBookId);
+        }
+        // If no current book ID yet, return all books
+        return props.books;
+    }, [props.excludeBookBeingEdited, props.books, currentBookId]);
 
     const handleBookClick = (book: BookInfoForLinks, isDisabled: boolean) => {
         if (!isDisabled) {
@@ -90,7 +104,8 @@ export const BookChooser = React.memo(
             prevProps.selectedBook?.id === nextProps.selectedBook?.id &&
             prevProps.books === nextProps.books &&
             prevProps.onSelectBook === nextProps.onSelectBook &&
-            prevProps.includeCurrentBook === nextProps.includeCurrentBook &&
+            prevProps.excludeBookBeingEdited ===
+                nextProps.excludeBookBeingEdited &&
             prevProps.disabledBooks === nextProps.disabledBooks
         );
     },
