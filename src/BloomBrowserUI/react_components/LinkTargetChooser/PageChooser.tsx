@@ -14,6 +14,7 @@ import {
     itemGap,
     chooserButtonPadding,
 } from "./sharedStyles";
+import { useL10n } from "../l10nHooks";
 
 type PageWithXMatter = IPage & { isXMatter?: boolean };
 
@@ -268,6 +269,19 @@ const PageChooserComponent: React.FunctionComponent<{
     // Keep the latest selected page without re-triggering the data fetch effect.
     const selectedPageIdRef = useRef<string | undefined>(selectedPageId);
 
+    const selectBookMessage = useL10n(
+        "Select a book to see its pages",
+        "LinkTargetChooser.PageList.SelectBookPrompt",
+    );
+    const loadingPagesMessage = useL10n(
+        "Loading pages...",
+        "LinkTargetChooser.PageList.LoadingMessage",
+    );
+    const failedToLoadPagesMessage = useL10n(
+        "Failed to load pages",
+        "LinkTargetChooser.PageList.LoadFailed",
+    );
+
     // Stable callback for configuring reload callbacks
     const handleConfigureReloadCallback = React.useCallback(
         // PageThumbnail expects this hook, but the chooser never calls the callback.
@@ -344,11 +358,11 @@ const PageChooserComponent: React.FunctionComponent<{
             },
             (error: AxiosError) => {
                 if (!canceled) {
-                    setErrorMessage(
+                    const fallbackErrorText =
                         error.response?.statusText ||
-                            error.message ||
-                            "Failed to load pages",
-                    );
+                        error.message ||
+                        failedToLoadPagesMessage;
+                    setErrorMessage(fallbackErrorText);
                     setLoading(false);
                     setPages([]);
                 }
@@ -358,7 +372,7 @@ const PageChooserComponent: React.FunctionComponent<{
         return () => {
             canceled = true;
         };
-    }, [bookId, onSelectPage, onPagesLoaded]);
+    }, [bookId, onSelectPage, onPagesLoaded, failedToLoadPagesMessage]);
 
     useEffect(() => {
         // Pull page-level attributes that influence thumbnail rendering.
@@ -405,7 +419,7 @@ const PageChooserComponent: React.FunctionComponent<{
                 `}
             >
                 <Typography color="textSecondary">
-                    Select a book to see its pages
+                    {selectBookMessage}
                 </Typography>
             </Box>
         );
@@ -423,7 +437,7 @@ const PageChooserComponent: React.FunctionComponent<{
                     padding: 10px;
                 `}
             >
-                <Typography>Loading pages...</Typography>
+                <Typography>{loadingPagesMessage}</Typography>
             </Box>
         );
     }

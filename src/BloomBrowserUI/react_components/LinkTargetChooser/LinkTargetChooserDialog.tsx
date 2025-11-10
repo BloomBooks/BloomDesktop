@@ -12,6 +12,7 @@ import {
 import { LinkTargetChooser, LinkTargetInfo } from "./LinkTargetChooser";
 import { DialogCloseButton } from "../BloomDialog/commonDialogComponents";
 import BloomButton from "../bloomButton";
+import { useL10n } from "../l10nHooks";
 
 export const LinkTargetChooserDialog: React.FunctionComponent<{
     open: boolean;
@@ -39,6 +40,12 @@ export const LinkTargetChooserDialog: React.FunctionComponent<{
         }
     }, [onClose]);
 
+    const dialogTitle = useL10n(
+        "Choose Link Target",
+        "LinkTargetChooser.Dialog.Title",
+        "Title of the dialog used to pick the destination for a link.",
+    );
+
     const hasValidLink =
         currentLinkInfo !== null &&
         currentLinkInfo.url.trim() !== "" &&
@@ -57,7 +64,7 @@ export const LinkTargetChooserDialog: React.FunctionComponent<{
                 }
             `}
         >
-            <DialogTitle title="Choose Link Target" />
+            <DialogTitle title={dialogTitle} />
             <DialogMiddle
                 css={css`
                     display: flex;

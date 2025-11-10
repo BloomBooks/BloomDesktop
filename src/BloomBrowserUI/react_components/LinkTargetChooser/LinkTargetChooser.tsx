@@ -12,6 +12,7 @@ import { PageChooser } from "./PageChooser";
 import { useWatchApiData, useApiString } from "../../utils/bloomApi";
 import { IBookInfo } from "../../collectionsTab/BooksOfCollection";
 import { headingStyle } from "./sharedStyles";
+import { useL10n } from "../l10nHooks";
 
 export interface LinkTargetInfo {
     url: string;
@@ -37,7 +38,11 @@ export const LinkTargetChooser: React.FunctionComponent<{
     const [selectedBook, setSelectedBook] = useState<BookInfoForLinks | null>(
         null,
     );
-    const [errorMessage, setErrorMessage] = useState<string>("");
+    const [errorInfo, setErrorInfo] = useState<
+        | { type: "bookNotFound"; bookId: string }
+        | { type: "pageNotFound"; pageId: string; bookTitle: string }
+        | null
+    >(null);
     const [hasAttemptedAutoSelect, setHasAttemptedAutoSelect] =
         useState<boolean>(() => !!props.currentURL);
 
@@ -78,13 +83,14 @@ export const LinkTargetChooser: React.FunctionComponent<{
         if (rawUrl) {
             setHasAttemptedAutoSelect(true);
         }
-        setErrorMessage("");
+        setErrorInfo(null);
 
         if (!rawUrl) {
             setCurrentURL("");
             setSelectedBook(null);
             setSelectedBookId(null);
             setSelectedPageId(null);
+            setErrorInfo(null);
             setHasAttemptedAutoSelect(false);
             return;
         }
@@ -96,6 +102,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
             setSelectedBook(null);
             setSelectedBookId(null);
             setSelectedPageId(normalizedPageId);
+            setErrorInfo(null);
             setCurrentURL(
                 normalizedPageId === "cover"
                     ? "#cover"
@@ -119,6 +126,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
             setSelectedBook(null);
             setSelectedBookId(bookId);
             setSelectedPageId(normalizedPageId);
+            setErrorInfo(null);
             setCurrentURL(
                 normalizedPageId === "cover"
                     ? `/book/${bookId}`
@@ -131,6 +139,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
         setSelectedBook(null);
         setSelectedBookId(null);
         setSelectedPageId(null);
+        setErrorInfo(null);
         setCurrentURL(rawUrl);
         onURLChangedRef.current?.({
             url: rawUrl,
@@ -145,13 +154,13 @@ export const LinkTargetChooser: React.FunctionComponent<{
     useEffect(() => {
         if (!selectedBookId || bookInfoForLinks.length === 0) {
             setSelectedBook(null);
+            setErrorInfo(null);
             return;
         }
 
         const book = bookInfoForLinks.find((b) => b.id === selectedBookId);
         if (!book) {
-            const msg = `Book not found: ${selectedBookId}`;
-            setErrorMessage(msg);
+            setErrorInfo({ type: "bookNotFound", bookId: selectedBookId });
             setSelectedBook(null);
             onURLChangedRef.current?.({
                 url: currentURL,
@@ -161,7 +170,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
             });
         } else {
             setSelectedBook(book);
-            setErrorMessage("");
+            setErrorInfo(null);
 
             // Validate page if one is selected
             if (selectedPageId !== null) {
@@ -171,8 +180,11 @@ export const LinkTargetChooser: React.FunctionComponent<{
                 if (isNumeric) {
                     const pageCount = book.pageLength || 1;
                     if (numeric >= pageCount) {
-                        const msg = `Page ${selectedPageId} not found in book "${book.title}"`;
-                        setErrorMessage(msg);
+                        setErrorInfo({
+                            type: "pageNotFound",
+                            pageId: selectedPageId,
+                            bookTitle: book.title || "",
+                        });
                         onURLChangedRef.current?.({
                             url: currentURL,
                             bookThumbnail: book.thumbnail || null,
@@ -221,7 +233,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
             setSelectedBook(book);
             setSelectedBookId(book.id);
             setSelectedPageId(null);
-            setErrorMessage("");
+            setErrorInfo(null);
             setHasAttemptedAutoSelect(true);
 
             const url = `/book/${book.id}`;
@@ -249,7 +261,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
                   : pageInfo.pageId;
 
             setSelectedPageId(normalizedPageId);
-            setErrorMessage("");
+            setErrorInfo(null);
 
             // Build URL and update URL box
             let url: string;
@@ -282,7 +294,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
             setSelectedBook(null); // Clear book selection
             setSelectedBookId(null);
             setSelectedPageId(null); // Clear page selection
-            setErrorMessage("");
+            setErrorInfo(null);
             setHasAttemptedAutoSelect(true);
 
             notifyParent(url, null, null, false);
@@ -355,6 +367,41 @@ export const LinkTargetChooser: React.FunctionComponent<{
         ],
     );
 
+    const booksHeading = useL10n(
+        "Books in this Collection",
+        "LinkTargetChooser.BookList.Heading",
+    );
+    const pagesHeading = useL10n(
+        "Pages in the selected book",
+        "LinkTargetChooser.PageList.Heading",
+    );
+    const bookNotFoundMessage = useL10n(
+        "Book not found: {0}",
+        "LinkTargetChooser.SelectionError.BookNotFound",
+        undefined,
+        errorInfo?.type === "bookNotFound" ? errorInfo.bookId : "",
+    );
+    const pageNotFoundMessage = useL10n(
+        'Page {0} not found in book "{1}"',
+        "LinkTargetChooser.SelectionError.PageNotFound",
+        undefined,
+        errorInfo?.type === "pageNotFound" ? errorInfo.pageId : "",
+        errorInfo?.type === "pageNotFound" ? errorInfo.bookTitle : "",
+    );
+
+    const errorMessage = useMemo(() => {
+        if (!errorInfo) {
+            return "";
+        }
+        if (errorInfo.type === "bookNotFound") {
+            return bookNotFoundMessage;
+        }
+        if (errorInfo.type === "pageNotFound") {
+            return pageNotFoundMessage;
+        }
+        return "";
+    }, [errorInfo, bookNotFoundMessage, pageNotFoundMessage]);
+
     return (
         <Box
             css={css`
@@ -387,9 +434,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
                         flex-direction: column;
                     `}
                 >
-                    <Typography css={headingStyle}>
-                        Books in this Collection
-                    </Typography>
+                    <Typography css={headingStyle}>{booksHeading}</Typography>
                     <Box
                         css={css`
                             flex: 1;
@@ -414,9 +459,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
                         flex-direction: column;
                     `}
                 >
-                    <Typography css={headingStyle}>
-                        Pages in the selected book
-                    </Typography>
+                    <Typography css={headingStyle}>{pagesHeading}</Typography>
                     <Box
                         css={css`
                             flex: 1;
