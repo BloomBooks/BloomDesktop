@@ -219,11 +219,14 @@ export const LinkTargetChooser: React.FunctionComponent<{
                 return;
             }
             const isFrontCover = Boolean(pageInfo.isFrontCover);
-            const normalizedPageId = isFrontCover
-                ? "cover"
-                : !pageInfo.pageId || pageInfo.pageId === "cover"
-                  ? (pageInfo.actualPageId ?? pageInfo.pageId)
-                  : pageInfo.pageId;
+            let normalizedPageId: string;
+            if (isFrontCover) {
+                normalizedPageId = "cover";
+            } else if (!pageInfo.pageId || pageInfo.pageId === "cover") {
+                normalizedPageId = pageInfo.actualPageId ?? pageInfo.pageId;
+            } else {
+                normalizedPageId = pageInfo.pageId;
+            }
 
             setSelectedPageId(normalizedPageId);
             setErrorInfo(null);

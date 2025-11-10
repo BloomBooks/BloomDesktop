@@ -61,6 +61,7 @@ const URLEditorComponent: React.FunctionComponent<{
         "LinkTargetChooser.URLSection.OpenButton.Tooltip",
     );
 
+    // is it both a book and a page?
     const isBookPageURL = (urlString: string) => {
         return urlString.startsWith("/book") || urlString.startsWith("#");
     };

@@ -114,6 +114,8 @@ export async function setupLinkTargetChooser(
     page: Page,
     props: LinkTargetChooserSetupOptions = {},
 ): Promise<LinkTargetChooserTestContext> {
+    // we don't ever want to store the guid of a cover page, they get regenerated.
+    // #cover works, but is usually not needed because we can just point at the book.
     let frontCoverId = props.frontCoverPageId ?? "cover";
 
     const books = props.books ?? mockBooks;

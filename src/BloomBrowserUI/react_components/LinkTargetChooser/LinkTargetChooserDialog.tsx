@@ -43,10 +43,14 @@ export const LinkTargetChooserDialog: React.FunctionComponent<{
                     bookTitle: null,
                     hasError: false,
                 });
+            } else {
+                setCurrentLinkInfo(null);
             }
+        } else if (props.open) {
+            // Dialog opened with no URL - reset state
+            setCurrentLinkInfo(null);
         }
     }, [props.open, props.currentURL]);
-
     const handleURLChanged = useCallback((info: LinkTargetInfo) => {
         setCurrentLinkInfo(info);
     }, []);

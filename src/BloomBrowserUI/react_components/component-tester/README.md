@@ -61,8 +61,8 @@ yarn test              # headless
 yarn test:headed       # see browser
 yarn test:ui          # interactive UI
 
-# Play with a component manually ('manual' is the deprecated approach... it is preferred to use show.sh with a playwright test that just never times out.)yarn manual # will list all the components
-yarn manual StarChart # open to a specific component
+# Play with a component manually ('manual' is the deprecated approach... it is preferred to use show.sh with a playwright test that just never times out.)
+yarn manual # will list all the componentsyarn manual StarChart # open to a specific component
 ```
 
 ### Component-local test helpers

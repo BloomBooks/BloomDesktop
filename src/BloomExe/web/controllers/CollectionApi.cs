@@ -765,9 +765,12 @@ namespace Bloom.web.controllers
             var normalizedFilePath = Path.GetFullPath(filePath);
             var normalizedBookPath = Path.GetFullPath(bookInfo.FolderPath);
 
+            var normalizedBookPathWithSeparator = normalizedBookPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                 Path.DirectorySeparatorChar;
+
             if (
                 !normalizedFilePath.StartsWith(
-                    normalizedBookPath,
+                    normalizedBookPathWithSeparator,
                     StringComparison.OrdinalIgnoreCase
                 )
             )
@@ -775,7 +778,6 @@ namespace Bloom.web.controllers
                 request.Failed("Access denied: file path outside book folder");
                 return;
             }
-
             if (!RobustFile.Exists(filePath))
             {
                 request.Failed($"File not found: {fileParam}");

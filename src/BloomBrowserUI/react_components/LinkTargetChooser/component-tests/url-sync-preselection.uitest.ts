@@ -167,29 +167,6 @@ test.describe("LinkTargetChooser - URL Synchronization", () => {
         const pasteButton = await context.urlEditor.getPasteButton();
         await pasteButton.click();
 
-        const selector =
-            '[data-testid="url-input"] input, input[placeholder="Paste or enter a URL"]';
-        const _count = await page.locator(selector).count();
-        const containerCount = await page.getByTestId("url-input").count();
-
-        if (containerCount > 0) {
-            const _containerHtml = await page
-                .getByTestId("url-input")
-                .first()
-                .evaluate((el) => el.outerHTML);
-        }
-
-        const _selectionDetails = await page
-            .locator('[data-book-id="book2"]')
-            .evaluate((element) => {
-                const target = element as HTMLElement;
-                return {
-                    dataSelected: target.getAttribute("data-selected"),
-                    dataDisabled: target.getAttribute("data-disabled"),
-                    classList: Array.from(target.classList),
-                };
-            });
-
         const input = await context.urlEditor.getInput();
         await expect(input).toHaveValue(clipboardValue, { timeout: 5000 });
         await expect

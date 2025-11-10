@@ -266,7 +266,8 @@ namespace Bloom.web
                 // If that happens, let's have the request fail. One could argue we should
                 // send something back so that the client doesn't have to handle failure,
                 // but how are we to know what the client wants in that case?
-                request.Failed("Could not find page");
+                request.Failed("Could not find book or page");
+                return;
             }
             dynamic answer = new ExpandoObject();
             answer.content = GetPageContentForThumbnail(page);

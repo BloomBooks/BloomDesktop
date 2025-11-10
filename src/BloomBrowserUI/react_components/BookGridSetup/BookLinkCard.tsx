@@ -110,13 +110,12 @@ const BookLinkCardComponent: React.FC<BookCardProps> = ({
                         src={link.page?.thumbnail || link.book.thumbnail}
                         css={css`
                             width: 100%;
-                            aspect-ratio: 16/9;
                             height: 100px;
                             object-fit: cover;
                             object-position: center top;
                             margin-bottom: 8px;
                         `}
-                    />
+                    />{" "}
                     <Typography
                         css={css`
                             color: white;

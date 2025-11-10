@@ -20,7 +20,7 @@ const fixResourceUrls = (
         return html || "";
     }
 
-    const makeBookFileUrl = (rawPath: string): string => {
+    const makeBookFileEncodedUrl = (rawPath: string): string => {
         if (!bookId) {
             return rawPath;
         }
@@ -51,15 +51,15 @@ const fixResourceUrls = (
             .replace(/\\/g, "/")
             .replace(/^\/+/, "");
         const fileParam = encodeURIComponent(normalizedPath);
-        const baseUrl = `/bloom/api/collections/bookFile?book-id=${encodeURIComponent(
+        const baseEncodedUrl = `/bloom/api/collections/bookFile?book-id=${encodeURIComponent(
             bookId,
         )}&file=${fileParam}`;
         const extraQuery = query ? `&${query.substring(1)}` : "";
 
-        return `${baseUrl}${extraQuery}${hash}`;
+        return `${baseEncodedUrl}${extraQuery}${hash}`;
     };
 
-    const makeFolderUrl = (rawPath: string): string => {
+    const makeFolderEncodedUrl = (rawPath: string): string => {
         if (!bookFolderPath) {
             return rawPath;
         }
@@ -68,33 +68,41 @@ const fixResourceUrls = (
         const encodedFolderSegments = normalizedFolder
             .split("/")
             .map((segment) => encodeURIComponent(segment));
-        const basePath = `/bloom/${encodedFolderSegments.join("/")}`;
+        const baseEncodedPath = `/bloom/${encodedFolderSegments.join("/")}`;
 
         if (typeof window !== "undefined") {
             try {
-                const baseWithSlash = basePath.endsWith("/")
-                    ? basePath
-                    : `${basePath}/`;
-                const baseUrl = new URL(baseWithSlash, window.location.origin);
-                const resolved = new URL(rawPath, baseUrl);
-                if (resolved.origin !== window.location.origin) {
-                    return resolved.href;
+                const baseEncodedUrlWithSlash = baseEncodedPath.endsWith("/")
+                    ? baseEncodedPath
+                    : `${baseEncodedPath}/`;
+                const baseBrowserEncodedUrl = new URL(
+                    baseEncodedUrlWithSlash,
+                    window.location.origin,
+                );
+                const resolvedBrowserEncodedUrl = new URL(
+                    rawPath,
+                    baseBrowserEncodedUrl,
+                );
+                if (
+                    resolvedBrowserEncodedUrl.origin !== window.location.origin
+                ) {
+                    return resolvedBrowserEncodedUrl.href;
                 }
-                return `${resolved.pathname}${resolved.search}${resolved.hash}`;
+                return `${resolvedBrowserEncodedUrl.pathname}${resolvedBrowserEncodedUrl.search}${resolvedBrowserEncodedUrl.hash}`;
             } catch {
                 // fall through to simple concatenation
             }
         }
 
-        const encodedPath = rawPath
+        const encodedRelativePath = rawPath
             .split("/")
             .map((segment) => encodeURIComponent(segment))
             .join("/");
-        return `${basePath}/${encodedPath}`;
+        return `${baseEncodedPath}/${encodedRelativePath}`;
     };
 
-    const isRelative = (url: string): boolean => {
-        const lowered = url.toLowerCase();
+    const isRelative = (candidateUrl: string): boolean => {
+        const lowered = candidateUrl.toLowerCase();
         return !(
             lowered.startsWith("http://") ||
             lowered.startsWith("https://") ||
@@ -106,34 +114,40 @@ const fixResourceUrls = (
         );
     };
 
-    const convertRelativeUrl = (rawPath: string): string => {
+    const getResolvedEncodedUrl = (rawPath: string): string => {
         if (bookFolderPath) {
-            return makeFolderUrl(rawPath);
+            return makeFolderEncodedUrl(rawPath);
         }
-        return makeBookFileUrl(rawPath);
+        return makeBookFileEncodedUrl(rawPath);
     };
 
     // Fix src and href attributes that reference relative paths
     let updatedHtml = html.replace(
         /(src|href)=("|')([^"']*?)\2/gi,
-        (match, attrName, quote, url) => {
-            if (!url || !isRelative(url)) {
+        (match, attrName, quote, attributeUnencodedRelativeUrl) => {
+            if (
+                !attributeUnencodedRelativeUrl ||
+                !isRelative(attributeUnencodedRelativeUrl)
+            ) {
                 return match;
             }
-            return `${attrName}=${quote}${convertRelativeUrl(url)}${quote}`;
+            return `${attrName}=${quote}${getResolvedEncodedUrl(attributeUnencodedRelativeUrl)}${quote}`;
         },
     );
 
     // Fix inline style url(...) references (e.g., background-image)
     updatedHtml = updatedHtml.replace(
         /url\(("|')?([^"')]+)\1\)/gi,
-        (match, quote, url) => {
-            const trimmedUrl = url.trim();
-            if (!trimmedUrl || !isRelative(trimmedUrl)) {
+        (match, quote, styleUnencodedUrlValue) => {
+            const trimmedRelativeUnencodedUrl = styleUnencodedUrlValue.trim();
+            if (
+                !trimmedRelativeUnencodedUrl ||
+                !isRelative(trimmedRelativeUnencodedUrl)
+            ) {
                 return match;
             }
             const normalizedQuote = quote || "";
-            return `url(${normalizedQuote}${convertRelativeUrl(trimmedUrl)}${normalizedQuote})`;
+            return `url(${normalizedQuote}${getResolvedEncodedUrl(trimmedRelativeUnencodedUrl)}${normalizedQuote})`;
         },
     );
 
@@ -195,10 +209,10 @@ export const PageThumbnail: React.FunctionComponent<{
         }
         pendingPageRequestCount--;
         activePageRequestCount++;
-        const url = props.bookId
+        const pageContentRequestEncodedUrl = props.bookId
             ? `pageList/pageContent?id=${props.page.key}&book-id=${encodeURIComponent(props.bookId)}`
             : `pageList/pageContent?id=${props.page.key}`;
-        get(url, (response) => {
+        get(pageContentRequestEncodedUrl, (response) => {
             activePageRequestCount--;
             let htmlContent = response.data.content; // automatically unJsonified?
 

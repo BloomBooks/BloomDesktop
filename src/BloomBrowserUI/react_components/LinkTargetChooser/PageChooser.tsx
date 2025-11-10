@@ -240,10 +240,10 @@ const PageItem = React.memo(PageItemComponent, (prevProps, nextProps) => {
         prevProps.isSelected === nextProps.isSelected &&
         prevProps.isDisabled === nextProps.isDisabled &&
         prevProps.pageLayout === nextProps.pageLayout &&
-        prevProps.bookId === nextProps.bookId
+        prevProps.bookId === nextProps.bookId &&
+        prevProps.bookFolderPath === nextProps.bookFolderPath
     );
 });
-
 const PageChooserComponent: React.FunctionComponent<{
     bookId?: string;
     bookFolderPath?: string;

@@ -7,13 +7,12 @@ export interface ParsedURL {
 
 /**
  * Pure function that parses a raw URL string and returns normalized URL components.
- * Handles three URL formats:
+ * Handles four URL formats:
  * - Hash-only URLs: "#pageId" or "#cover"
  * - Book path URLs: "/book/bookId" or "/book/bookId#pageId"
  * - External/other URLs: any other string
  * - Empty URLs: empty string
- */
-export const parseURL = (rawUrl: string): ParsedURL => {
+ */ export const parseURL = (rawUrl: string): ParsedURL => {
     if (!rawUrl) {
         return {
             bookId: null,

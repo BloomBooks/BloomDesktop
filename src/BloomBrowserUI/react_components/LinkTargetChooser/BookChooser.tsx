@@ -3,8 +3,11 @@ import { useRef, useEffect, useMemo } from "react";
 import { css } from "@emotion/react";
 import { BookInfoForLinks } from "../BookGridSetup/BookLinkTypes";
 import { BookLinkCard } from "../BookGridSetup/BookLinkCard";
-import { chooserContainerStyles, itemGap } from "./sharedStyles";
-import { chooserButtonPadding } from "./sharedStyles";
+import {
+    chooserContainerStyles,
+    chooserButtonPadding,
+    itemGap,
+} from "./sharedStyles";
 import { useApiString } from "../../utils/bloomApi";
 
 const BookChooserComponent: React.FunctionComponent<{
@@ -57,6 +60,7 @@ const BookChooserComponent: React.FunctionComponent<{
                 align-content: flex-start;
                 align-content: flex-start;
                 padding: ${chooserButtonPadding};
+                // we only run in modern chromium
                 height: -webkit-fill-available;
                 height: -webkit-fill-available;
             `}
@@ -78,8 +82,6 @@ const BookChooserComponent: React.FunctionComponent<{
                         className={classNames.join(" ")}
                         data-selected={isSelected ? "true" : undefined}
                         data-disabled={isDisabled ? "true" : undefined}
-                        aria-selected={isSelected ? "true" : "false"}
-                        aria-disabled={isDisabled ? "true" : undefined}
                         css={css`
                             ${isDisabled ? `opacity: 0.5;` : ""}
                         `}
