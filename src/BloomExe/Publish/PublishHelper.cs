@@ -141,25 +141,28 @@ namespace Bloom.Publish
         /// <remarks>
         /// Running this script and getting the results for the whole page is much faster than running
         /// two trivial scripts for each element in WebView2. See BL-12402.
+        /// If the element is empty, then skip it, since the display and font information won't matter.
         /// </remarks>
         public const string GetElementDisplayAndFontInfoJavascript =
             @"(() =>
 {
-	const elementsInfo = [];
-	const elementsWithId = document.querySelectorAll(""[id], em, strong"");
-	elementsWithId.forEach(elt => {
-		const style = getComputedStyle(elt, null);
-		if (style) {
-			elementsInfo.push({
-				id: elt.id,
-				display: style.display,
-				fontFamily: style.getPropertyValue(""font-family""),
-				fontStyle: style.getPropertyValue(""font-style""),
-				fontWeight: style.getPropertyValue(""font-weight"")
-			});
-		}
-	});
-	return { results: elementsInfo };
+    const elementsInfo = [];
+    const elementsWithId = document.querySelectorAll(""[id], em, strong"");
+    elementsWithId.forEach(elt => {
+        if (elt.innerText) {
+            const style = getComputedStyle(elt, null);
+            if (style) {
+                elementsInfo.push({
+                    id: elt.id,
+                    display: style.display,
+                    fontFamily: style.getPropertyValue(""font-family""),
+                    fontStyle: style.getPropertyValue(""font-style""),
+                    fontWeight: style.getPropertyValue(""font-weight"")
+                });
+            }
+        }
+    });
+    return { results: elementsInfo };
 })();";
 
         /// <summary>
