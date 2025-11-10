@@ -3,10 +3,8 @@
  * This opens a visible browser with the component and keeps it open indefinitely
  * so you can interact with it manually.
  *
- * Run with: yarn playwright test manual-interactive.spec.ts --headed
- * Or add a script to package.json for convenience
+ * Run with: ./show.sh
  */
-
 import { test } from "../../component-tester/playwrightTest";
 import { setupLinkTargetChooser } from "./test-helpers";
 

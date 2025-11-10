@@ -5,13 +5,7 @@
  */
 
 import { test, expect } from "../../component-tester/playwrightTest";
-import {
-    setupLinkTargetChooser,
-    urlEditor,
-    bookList,
-    pageList,
-    dialog,
-} from "./test-helpers";
+import { setupLinkTargetChooser } from "./test-helpers";
 
 const scrollTestColors = [
     "4CAF50",
@@ -46,66 +40,66 @@ const createScrollableBooks = (count: number) =>
 
 test.describe("LinkTargetChooser - URL Synchronization", () => {
     test("URL box shows book URL when book is selected", async ({ page }) => {
-        await setupLinkTargetChooser(page);
+        const context = await setupLinkTargetChooser(page);
 
         // Wait for books to load, then select a book
-        await bookList.selectBook("book1");
+        await context.bookList.selectBook("book1");
 
         // URL should update to show book link once the pages load
-        const input = await urlEditor.getInput();
+        const input = await context.urlEditor.getInput();
         await expect(input).toHaveValue("/book/book1");
 
         // Cover page should become selected automatically
         await expect
-            .poll(async () => await pageList.isPageSelected("cover"))
+            .poll(async () => await context.pageList.isPageSelected("cover"))
             .toBeTruthy();
     });
 
     test("URL box shows book+page URL when page is selected", async ({
         page,
     }) => {
-        await setupLinkTargetChooser(page);
+        const context = await setupLinkTargetChooser(page);
 
         // Select a book (this waits for books to load)
-        await bookList.selectBook("book2");
+        await context.bookList.selectBook("book2");
 
         // Select a page
-        await pageList.selectPage(2);
+        await context.pageList.selectPage(2);
 
         // URL should update to show book+page link
-        const input = await urlEditor.getInput();
+        const input = await context.urlEditor.getInput();
         await expect(input).toHaveValue("/book/book2#2");
     });
 
     test("URL box shows cover page link correctly", async ({ page }) => {
-        await setupLinkTargetChooser(page);
+        const context = await setupLinkTargetChooser(page);
 
         // Select book (waits for books to load)
-        await bookList.selectBook("book1");
-        await pageList.selectPage(2); // Different page to ensure we switch back
+        await context.bookList.selectBook("book1");
+        await context.pageList.selectPage(2); // Different page to ensure we switch back
 
-        const input = await urlEditor.getInput();
+        const input = await context.urlEditor.getInput();
         await expect(input).toHaveValue("/book/book1#2");
 
-        await pageList.selectPage(0); // Cover page
+        await context.pageList.selectPage(0); // Cover page
 
         await expect(input).toHaveValue("/book/book1");
         await expect
-            .poll(async () => await pageList.isPageSelected("cover"))
+            .poll(async () => await context.pageList.isPageSelected("cover"))
             .toBeTruthy();
     });
 
     test("Typing in URL box clears book/page selection", async ({ page }) => {
-        await setupLinkTargetChooser(page);
+        const context = await setupLinkTargetChooser(page);
 
         // Select a book first (waits for books to load)
-        await bookList.selectBook("book1");
+        await context.bookList.selectBook("book1");
 
         // Type a URL
-        await urlEditor.setValue("https://example.com");
+        await context.urlEditor.setValue("https://example.com");
 
         // Verify the URL is updated
-        const urlValue = await urlEditor.getValue();
+        const urlValue = await context.urlEditor.getValue();
         expect(urlValue).toBe("https://example.com");
 
         // Book should no longer appear selected (we'd need to check visual state in real test)
@@ -115,39 +109,39 @@ test.describe("LinkTargetChooser - URL Synchronization", () => {
     test("Selecting book after typing URL clears the URL and shows book URL", async ({
         page,
     }) => {
-        await setupLinkTargetChooser(page);
+        const context = await setupLinkTargetChooser(page);
 
         // Wait for books to load
-        await bookList.waitForBooksToLoad();
+        await context.bookList.waitForBooksToLoad();
 
         // Type a URL first
-        await urlEditor.setValue("https://example.com");
+        await context.urlEditor.setValue("https://example.com");
 
         // Now select a book
-        await bookList.selectBook("book3");
+        await context.bookList.selectBook("book3");
 
         // URL should be updated to book URL
-        const input = await urlEditor.getInput();
+        const input = await context.urlEditor.getInput();
         await expect(input).toHaveValue("/book/book3");
         await expect
-            .poll(async () => await pageList.isPageSelected("cover"))
+            .poll(async () => await context.pageList.isPageSelected("cover"))
             .toBeTruthy();
     });
 
     test("Deleting the URL clears the book and page selection", async ({
         page,
     }) => {
-        await setupLinkTargetChooser(page);
-        await bookList.selectBook("book1");
+        const context = await setupLinkTargetChooser(page);
+        await context.bookList.selectBook("book1");
 
-        const input = await urlEditor.getInput();
+        const input = await context.urlEditor.getInput();
         await input.click();
         await input.press("Control+A");
         await input.press("Delete");
 
         await expect(input).toHaveValue("");
         await expect
-            .poll(async () => await bookList.isBookSelected("book1"))
+            .poll(async () => await context.bookList.isBookSelected("book1"))
             .toBeFalsy();
         await expect(
             page.getByText("Select a book to see its pages"),
@@ -157,8 +151,8 @@ test.describe("LinkTargetChooser - URL Synchronization", () => {
     test("Pasting a URL clears any book and page selection", async ({
         page,
     }) => {
-        await setupLinkTargetChooser(page);
-        await bookList.selectBook("book2");
+        const context = await setupLinkTargetChooser(page);
+        await context.bookList.selectBook("book2");
 
         const clipboardValue = "https://docs.example.org/help";
         await page.route("**/bloom/api/common/clipboardText", async (route) => {
@@ -170,7 +164,7 @@ test.describe("LinkTargetChooser - URL Synchronization", () => {
             await page.unroute("**/bloom/api/common/clipboardText");
         });
 
-        const pasteButton = await urlEditor.getPasteButton();
+        const pasteButton = await context.urlEditor.getPasteButton();
         await pasteButton.click();
 
         const selector =
@@ -196,10 +190,10 @@ test.describe("LinkTargetChooser - URL Synchronization", () => {
                 };
             });
 
-        const input = await urlEditor.getInput();
+        const input = await context.urlEditor.getInput();
         await expect(input).toHaveValue(clipboardValue, { timeout: 5000 });
         await expect
-            .poll(async () => await bookList.isBookSelected("book2"))
+            .poll(async () => await context.bookList.isBookSelected("book2"))
             .toBeFalsy();
         await expect(
             page.getByText("Select a book to see its pages"),
@@ -207,119 +201,121 @@ test.describe("LinkTargetChooser - URL Synchronization", () => {
     });
 
     test("Auto-selects current book when API reports one", async ({ page }) => {
-        await setupLinkTargetChooser(page, { currentBookId: "book2" });
+        const context = await setupLinkTargetChooser(page, {
+            currentBookId: "book2",
+        });
 
-        await bookList.waitForBooksToLoad();
+        await context.bookList.waitForBooksToLoad();
 
         await expect
-            .poll(async () => await bookList.isBookSelected("book2"))
+            .poll(async () => await context.bookList.isBookSelected("book2"))
             .toBeTruthy();
 
-        const input = await urlEditor.getInput();
+        const input = await context.urlEditor.getInput();
         await expect(input).toHaveValue("/book/book2");
 
-        const okButton = await dialog.getOKButton();
+        const okButton = await context.dialog.getOKButton();
         await expect(okButton).toBeEnabled();
     });
 });
 
 test.describe("LinkTargetChooser - URL Preselection", () => {
     test("Keeps anchor-only URL when no book is selected", async ({ page }) => {
-        await setupLinkTargetChooser(page, {
+        const context = await setupLinkTargetChooser(page, {
             currentURL: "#cover",
         });
 
-        const input = await urlEditor.getInput();
+        const input = await context.urlEditor.getInput();
         await expect(input).toHaveValue("#cover");
 
-        const okButton = await dialog.getOKButton();
+        const okButton = await context.dialog.getOKButton();
         await expect(okButton).toBeDisabled();
     });
 
     test("Preselects book when URL is /book/BOOKID", async ({ page }) => {
-        await setupLinkTargetChooser(page, {
+        const context = await setupLinkTargetChooser(page, {
             currentURL: "/book/book2",
         });
 
         // Wait for books to load and component to initialize
-        await bookList.waitForBooksToLoad();
+        await context.bookList.waitForBooksToLoad();
 
         // URL box should show the URL
-        const input = await urlEditor.getInput();
+        const input = await context.urlEditor.getInput();
         await expect(input).toHaveValue("/book/book2");
 
         await expect
-            .poll(async () => await pageList.isPageSelected("cover"))
+            .poll(async () => await context.pageList.isPageSelected("cover"))
             .toBeTruthy();
 
         // OK button should be enabled
-        const okButton = await dialog.getOKButton();
+        const okButton = await context.dialog.getOKButton();
         await expect(okButton).toBeEnabled();
     });
 
     test("Preselects book and page when URL is /book/BOOKID#PAGEID", async ({
         page,
     }) => {
-        await setupLinkTargetChooser(page, {
+        const context = await setupLinkTargetChooser(page, {
             currentURL: "/book/book1#3",
         });
 
         // Wait for books to load and component to initialize
-        await bookList.waitForBooksToLoad();
+        await context.bookList.waitForBooksToLoad();
 
         // URL box should show the URL
-        const input = await urlEditor.getInput();
+        const input = await context.urlEditor.getInput();
         await expect(input).toHaveValue("/book/book1#3");
 
         // OK button should be enabled
-        const okButton = await dialog.getOKButton();
+        const okButton = await context.dialog.getOKButton();
         await expect(okButton).toBeEnabled();
     });
 
     test("Preselects cover page when URL has #cover", async ({ page }) => {
-        await setupLinkTargetChooser(page, {
+        const context = await setupLinkTargetChooser(page, {
             currentURL: "/book/book4#cover",
         });
 
         // Wait for books to load and component to initialize
-        await bookList.waitForBooksToLoad();
+        await context.bookList.waitForBooksToLoad();
 
-        const input = await urlEditor.getInput();
+        const input = await context.urlEditor.getInput();
         await expect(input).toHaveValue("/book/book4");
 
         await expect
-            .poll(async () => await pageList.isPageSelected("cover"))
+            .poll(async () => await context.pageList.isPageSelected("cover"))
             .toBeTruthy();
 
-        const okButton = await dialog.getOKButton();
+        const okButton = await context.dialog.getOKButton();
         await expect(okButton).toBeEnabled();
     });
 
     test("Shows external URL in URL box when provided", async ({ page }) => {
         const externalURL = "https://example.org/page";
-        await setupLinkTargetChooser(page, {
+        const context = await setupLinkTargetChooser(page, {
             currentURL: externalURL,
         });
 
         // Wait for books to load and component to initialize
-        await bookList.waitForBooksToLoad();
+        await context.bookList.waitForBooksToLoad();
 
-        const urlValue = await urlEditor.getValue();
+        const urlValue = await context.urlEditor.getValue();
         expect(urlValue).toBe(externalURL);
 
-        const okButton = await dialog.getOKButton();
+        const okButton = await context.dialog.getOKButton();
         await expect(okButton).toBeEnabled();
     });
 
     test("Handles empty initial URL", async ({ page }) => {
-        await setupLinkTargetChooser(page, {
+        const context = await setupLinkTargetChooser(page, {
             currentURL: "",
         });
 
-        const urlValue = await urlEditor.getValue();
+        const urlValue = await context.urlEditor.getValue();
         expect(urlValue).toBe("");
 
-        const okButton = await dialog.getOKButton();
+        const okButton = await context.dialog.getOKButton();
         await expect(okButton).toBeDisabled();
     });
 
@@ -327,7 +323,7 @@ test.describe("LinkTargetChooser - URL Preselection", () => {
         page,
     }) => {
         const frontCoverGuid = "front-cover-guid";
-        await setupLinkTargetChooser(page, {
+        const context = await setupLinkTargetChooser(page, {
             currentURL: `/book/book1#${frontCoverGuid}`,
             pages: [
                 { key: frontCoverGuid, caption: "Front Cover" },
@@ -336,12 +332,12 @@ test.describe("LinkTargetChooser - URL Preselection", () => {
             selectedPageId: frontCoverGuid,
         });
 
-        await bookList.waitForBooksToLoad();
+        await context.bookList.waitForBooksToLoad();
 
-        const input = await urlEditor.getInput();
+        const input = await context.urlEditor.getInput();
         await expect(input).toHaveValue("/book/book1");
         await expect
-            .poll(async () => await pageList.isPageSelected("cover"))
+            .poll(async () => await context.pageList.isPageSelected("cover"))
             .toBeTruthy();
     });
 
@@ -349,20 +345,24 @@ test.describe("LinkTargetChooser - URL Preselection", () => {
         const books = createScrollableBooks(25);
         const targetBook = books[20];
 
-        await setupLinkTargetChooser(page, {
+        const context = await setupLinkTargetChooser(page, {
             currentURL: `/book/${targetBook.id}`,
             books,
         });
 
-        await bookList.waitForBooksToLoad();
+        await context.bookList.waitForBooksToLoad();
 
         await expect
-            .poll(async () => await bookList.isBookSelected(targetBook.id), {
-                timeout: 2000,
-            })
+            .poll(
+                async () =>
+                    await context.bookList.isBookSelected(targetBook.id),
+                {
+                    timeout: 2000,
+                },
+            )
             .toBeTruthy();
 
-        const targetCard = await bookList.getBookCard(targetBook.id);
+        const targetCard = await context.bookList.getBookCard(targetBook.id);
         await targetCard.waitFor({ state: "attached" });
 
         await expect
@@ -390,20 +390,24 @@ test.describe("LinkTargetChooser - URL Preselection", () => {
         const targetBook = books[22];
         const targetPageId = "150";
 
-        await setupLinkTargetChooser(page, {
+        const context = await setupLinkTargetChooser(page, {
             currentURL: `/book/${targetBook.id}#${targetPageId}`,
             books,
         });
 
-        await bookList.waitForBooksToLoad();
+        await context.bookList.waitForBooksToLoad();
 
         await expect
-            .poll(async () => await bookList.isBookSelected(targetBook.id), {
-                timeout: 2000,
-            })
+            .poll(
+                async () =>
+                    await context.bookList.isBookSelected(targetBook.id),
+                {
+                    timeout: 2000,
+                },
+            )
             .toBeTruthy();
 
-        const targetPage = await pageList.getPage(targetPageId);
+        const targetPage = await context.pageList.getPage(targetPageId);
         await targetPage.waitFor({ state: "attached" });
 
         await expect

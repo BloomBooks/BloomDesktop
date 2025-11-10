@@ -5,46 +5,46 @@
  */
 
 import { test, expect } from "../../component-tester/playwrightTest";
-import { setupLinkTargetChooser, urlEditor } from "./test-helpers";
+import { setupLinkTargetChooser } from "./test-helpers";
 
 test.describe("LinkTargetChooser - URLEditor Basic Functionality", () => {
     test("URLEditor renders with all elements visible", async ({ page }) => {
-        await setupLinkTargetChooser(page);
+        const context = await setupLinkTargetChooser(page);
 
         // Verify all elements are present
-        const input = await urlEditor.getInput();
+        const input = await context.urlEditor.getInput();
         await expect(input).toBeVisible();
 
-        const pasteButton = await urlEditor.getPasteButton();
+        const pasteButton = await context.urlEditor.getPasteButton();
         await expect(pasteButton).toBeVisible();
 
-        const openButton = await urlEditor.getOpenButton();
+        const openButton = await context.urlEditor.getOpenButton();
         await expect(openButton).toBeVisible();
     });
 
     test("Can type URL into text field", async ({ page }) => {
-        await setupLinkTargetChooser(page);
+        const context = await setupLinkTargetChooser(page);
 
         const testURL = "https://example.com";
-        await urlEditor.setValue(testURL);
+        await context.urlEditor.setValue(testURL);
 
-        const value = await urlEditor.getValue();
+        const value = await context.urlEditor.getValue();
         expect(value).toBe(testURL);
     });
 
     test("Open button is disabled when URL is empty", async ({ page }) => {
-        await setupLinkTargetChooser(page);
+        const context = await setupLinkTargetChooser(page);
 
-        const openButton = await urlEditor.getOpenButton();
+        const openButton = await context.urlEditor.getOpenButton();
         await expect(openButton).toBeDisabled();
     });
 
     test("Open button is enabled when URL has value", async ({ page }) => {
-        await setupLinkTargetChooser(page, {
+        const context = await setupLinkTargetChooser(page, {
             currentURL: "https://example.com",
         });
 
-        const openButton = await urlEditor.getOpenButton();
+        const openButton = await context.urlEditor.getOpenButton();
         await expect(openButton).toBeEnabled();
     });
 
@@ -52,34 +52,34 @@ test.describe("LinkTargetChooser - URLEditor Basic Functionality", () => {
         page,
     }) => {
         const bookUrl = "/book/book1";
-        await setupLinkTargetChooser(page, {
+        const context = await setupLinkTargetChooser(page, {
             currentURL: bookUrl,
         });
 
-        const openButton = await urlEditor.getOpenButton();
+        const openButton = await context.urlEditor.getOpenButton();
         await expect(openButton).toBeDisabled();
 
-        await urlEditor.setValue(bookUrl);
+        await context.urlEditor.setValue(bookUrl);
         await expect(openButton).toBeDisabled();
     });
 
     test("Open button becomes enabled after typing URL", async ({ page }) => {
-        await setupLinkTargetChooser(page);
+        const context = await setupLinkTargetChooser(page);
 
-        const openButton = await urlEditor.getOpenButton();
+        const openButton = await context.urlEditor.getOpenButton();
         await expect(openButton).toBeDisabled();
 
-        await urlEditor.setValue("https://example.com");
+        await context.urlEditor.setValue("https://example.com");
         await expect(openButton).toBeEnabled();
     });
 
     test("Open button posts URL to Bloom API", async ({ page }) => {
-        await setupLinkTargetChooser(page);
+        const context = await setupLinkTargetChooser(page);
 
         const testURL = "https://example.org/resource";
-        await urlEditor.setValue(testURL);
+        await context.urlEditor.setValue(testURL);
 
-        const openButton = await urlEditor.getOpenButton();
+        const openButton = await context.urlEditor.getOpenButton();
         await expect(openButton).toBeEnabled();
 
         const [request] = await Promise.all([
