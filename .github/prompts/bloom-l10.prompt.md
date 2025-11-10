@@ -10,8 +10,7 @@ This project uses the following methods to make strings localizable in react com
 There should be a selected line with a string. If there is not, stop and tell me that I have to select a line with a string to be localized.
 
 # Wrapping the string
-If the string is already wrapped in a l10n-aware component or useL10n, go on to the XLIFF portion of these instructions. Otherwise, wrap it in useL10n(english, id, l10nComment). Come up with a good ID that goes from general to specific with fullstops in between. Come up with a description that will help translators know the context and what this string is about. For example, change this:
-```tsx
+If the string is already wrapped in a l10n-aware component or useL10n, go on to the XLIFF portion of these instructions. Otherwise, wrap it in useL10n(english, id).```tsx
 // somewhere in Foobar dialog
 <button>{Brighten everything}</button>
 ```

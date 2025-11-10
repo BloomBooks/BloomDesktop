@@ -97,14 +97,9 @@ const URLEditorComponent: React.FunctionComponent<{
                 return;
             }
 
-            // If the current URL still reflects a book/page link, replace it entirely
-            if (isBookPageURL(url)) {
-                setURL(clipboardText);
-                props.onChange(clipboardText);
-                return;
-            }
-
-            handleURLChange(clipboardText);
+            setURL(clipboardText);
+            props.onChange(clipboardText);
+            return;
         } catch (error) {
             console.error("Failed to get clipboard text:", error);
         }

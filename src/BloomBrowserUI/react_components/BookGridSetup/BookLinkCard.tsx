@@ -115,7 +115,7 @@ const BookLinkCardComponent: React.FC<BookCardProps> = ({
                             object-position: center top;
                             margin-bottom: 8px;
                         `}
-                    />{" "}
+                    />
                     <Typography
                         css={css`
                             color: white;

@@ -362,10 +362,13 @@ const handleMockBookFileRequest = (
             stream.pipe(res);
             return;
         }
-    } catch {
+    } catch (error) {
         // fall through
+        console.error(
+            "Component tester mock: failed to serve book file",
+            error,
+        );
     }
-
     res.statusCode = 404;
     res.end("Not Found");
 };
