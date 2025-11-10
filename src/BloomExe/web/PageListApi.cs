@@ -251,7 +251,7 @@ namespace Bloom.web
             watch.Start();
             var id = request.RequiredParam("id");
             var bookId = request.GetParamOrNull("book-id");
-            IPage page;
+            IPage page = null;
             try
             {
                 var book = string.IsNullOrEmpty(bookId)
@@ -261,7 +261,12 @@ namespace Bloom.web
             }
             catch (Exception)
             {
-                page = PageFromId(id);
+                // Theoretically, the user could have deleted the book or a page and the UI is
+                // still sending out requests for a deleted thing.
+                // If that happens, let's have the request fail. One could argue we should
+                // send something back so that the client doesn't have to handle failure,
+                // but how are we to know what the client wants in that case?
+                request.Failed("Could not find page");
             }
             dynamic answer = new ExpandoObject();
             answer.content = GetPageContentForThumbnail(page);

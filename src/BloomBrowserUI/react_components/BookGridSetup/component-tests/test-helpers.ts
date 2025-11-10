@@ -73,12 +73,11 @@ export async function getSourceBookById(page: Page, id: string) {
 }
 
 /**
- * Gets a book item from the target list by its title
+ * Gets a book item from the target list by its id
  */
 export async function getTargetBookById(page: Page, bookId: string) {
     return page.getByTestId(`target-book-${bookId}`);
 }
-
 /**
  * Clicks on a source book to select it
  */

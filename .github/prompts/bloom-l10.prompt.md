@@ -31,8 +31,11 @@ For each string, we have to have a matching record in one of the xlf files in th
 ### id
 the string id may be used by transltors as they try to understand context or translate a group of related strings. So make sure it is logical and hierarchical. If the string is a tooltip, make that the last part of the id. E.g. LinkTargetChooser.URL.Paste.Tooltip, not LinkTargetChooser.Tooltip.Paste.
 
+## Expose ID to translators
+Add a note like this: `<note>ID: LinkTargetChooser.URL.Paste.Tooltip</note>`
+
 ### comments for translators
-Although we don't want to fill in l10nComment in useL10n, we do want to fill in the note field to give context to translators. They don't know where the string appears in the UI, they also might need some explanation of what it means. For example, for the above string, we might add a note like "This is the text on a button in the Foobar dialog that brightens all images in the current book."
+Although we don't want to fill in l10nComment in useL10n, we do want to fill in the note field to give context to translators. They don't know where the string appears in the UI, they also might need some explanation of what it means. For example, for the above string, we might add a note like `<note>This is the text on a button in the Foobar dialog that brightens all images in the current book.</note>`
 
 # Tips
 * Never use the word "Aria" in ids or comments. Translators don't know what that means.

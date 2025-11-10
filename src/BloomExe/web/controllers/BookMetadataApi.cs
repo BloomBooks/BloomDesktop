@@ -5,6 +5,7 @@ using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.web;
 using L10NSharp;
+using SIL.Reporting;
 
 namespace Bloom.web.controllers
 {
@@ -37,19 +38,44 @@ namespace Bloom.web.controllers
         private bool TryResolveBook(ApiRequest request, out Book.Book book, out BookInfo bookInfo)
         {
             var requestedBookId = request.GetParamOrNull("book-id");
+            book = null;
+            bookInfo = null;
+
             try
             {
                 book = string.IsNullOrEmpty(requestedBookId)
                     ? _bookSelection.CurrentSelection
                     : _collectionModel.GetBookFromId(requestedBookId);
+
+                if (book == null)
+                {
+                    request.Failed(
+                        string.IsNullOrEmpty(requestedBookId)
+                            ? "No book selected"
+                            : "Book not found"
+                    );
+                    return false;
+                }
+
                 bookInfo = book.BookInfo;
                 return true;
+            }
+            catch (ArgumentException)
+            {
+                book = null;
+                bookInfo = null;
+                request.Failed("Book not found");
+                return false;
             }
             catch (Exception ex)
             {
                 book = null;
                 bookInfo = null;
-                request.Failed(ex.Message);
+                Logger.WriteError(
+                    "BookMetadataApi.TryResolveBook encountered an unexpected error.",
+                    ex
+                );
+                request.Failed("Unable to resolve the requested book.");
                 return false;
             }
         }

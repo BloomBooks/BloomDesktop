@@ -86,7 +86,11 @@ const fixResourceUrls = (
             }
         }
 
-        return `${basePath}/${rawPath}`;
+        const encodedPath = rawPath
+            .split("/")
+            .map((segment) => encodeURIComponent(segment))
+            .join("/");
+        return `${basePath}/${encodedPath}`;
     };
 
     const isRelative = (url: string): boolean => {

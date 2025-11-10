@@ -41,8 +41,9 @@ const BookChooserComponent: React.FunctionComponent<{
                 flex-wrap: wrap;
                 gap: ${itemGap};
                 align-content: flex-start;
-                padding-left: 2px;
+                align-content: flex-start;
                 padding: ${chooserButtonPadding};
+                height: -webkit-fill-available;
                 height: -webkit-fill-available;
             `}
         >
