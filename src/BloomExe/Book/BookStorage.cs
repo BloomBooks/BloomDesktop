@@ -111,9 +111,9 @@ namespace Bloom.Book
         void MigrateToLevel8RemoveEnterpriseOnly();
         void MigrateToLevel9TruncateWidgetPaths();
         void MigrateToLevel10GameHeader();
-        void MigrateToLevel11RenameOverlayTool();
-        void MigrateToLevel12PageNumberPosition();
+        void MigrateToLevel12PageNumberPosition(); // Level 11 was skipped.
         void MigrateToLevel13SplitPaneMarginBoxes();
+
         void DoBackMigrations();
 
         CollectionSettings CollectionSettings { get; }
@@ -179,7 +179,7 @@ namespace Bloom.Book
         ///   Bloom 6.2  8 = Removed enterprise-only class on all pages that have it
         ///   Bloom 6.2  9 = Truncate long widget paths to 50 characters
         ///   Bloom 6.3 10 = change old QuizHeader-style and Prompt-Style to uniform GameHeader-style
-        ///   Bloom 6.3 11 = change tool id in metadata from "overlay" to "canvas"
+        ///   Bloom 6.3 11 = unused migration (decided operation wasn't needed after 12 introduced)
         ///   Bloom 6.3 12 = change appearance settings page number control to use page number position system
         ///   Bloom 6.3 13 = fix split-pane-component margin boxes with positioning style
         /// History of kMediaMaintenanceLevel (introduced in 6.0)
@@ -4205,23 +4205,10 @@ namespace Bloom.Book
             Dom.UpdateMetaElement("maintenanceLevel", "10");
         }
 
-        public void MigrateToLevel11RenameOverlayTool()
-        {
-            if (GetMaintenanceLevel() >= 11)
-                return;
-            // Change the IDs used for the canvas element tool in the metadata
-            var metaData = BookMetaData.FromFolder(FolderPath);
-            if (metaData != null)
-            {
-                var ceTool = metaData.ToolStates?.FirstOrDefault(x => x.ToolId == "overlay");
-                if (ceTool != null)
-                    ceTool.SetToolId("canvas");
-                if (metaData.CurrentTool == "overlayTool")
-                    metaData.CurrentTool = "canvasTool";
-                metaData.WriteToFolder(FolderPath);
-            }
-            Dom.UpdateMetaElement("maintenanceLevel", "11");
-        }
+        // Migration level 11 is not used because we decided the operation in question wasn't
+        // needed. Migration 12 was introduced before miration 11 could be removed, and then
+        // migration 13 was also introduced before it could be removed.  So we decided just to
+        // skip 11 rather than renumber and risk losing needed migrations for some books.
 
         /// <summary>
         /// In 6.2, set pageNumber-show to false if the user wanted to hide the page numbers via

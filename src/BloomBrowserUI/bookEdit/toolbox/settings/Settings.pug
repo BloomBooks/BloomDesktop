@@ -4,7 +4,12 @@ html
 		h3#toolbox-settings-header(data-order='999', data-i18n='EditTab.Toolbox.More') More...
 		#toolbox-settings
 			.toolbox-settings-content
-				//- Add new tools in alphabetical order
+				//- Keep tools in alphabetical order (although translations won't be in order)
+				.checkbox-and-label
+					.checkbox.clear#canvasCheck(data-tool='canvasTool', onclick='toolboxBundle.showOrHideTool_click(this);')
+					.toolbox-checkbox-label(data-feature='canvas')
+						.toolbox-checkbox-label-text(data-i18n='EditTab.Toolbox.CanvasTool') Canvas Tool
+						.subscription-badge
 				.checkbox-and-label
 					.checkbox.clear#decodableReaderCheck(data-tool='decodableReaderTool', onclick='toolboxBundle.showOrHideTool_click(this);')
 					.toolbox-checkbox-label
@@ -30,11 +35,6 @@ html
 					.checkbox.clear#musicCheck(data-tool='musicTool', onclick='toolboxBundle.showOrHideTool_click(this);')
 					.toolbox-checkbox-label(data-feature='music')
 						.toolbox-checkbox-label-text(data-i18n='EditTab.Toolbox.MusicTool') Music Tool
-						.subscription-badge
-				.checkbox-and-label
-					.checkbox.clear#canvasCheck(data-tool='canvasTool', onclick='toolboxBundle.showOrHideTool_click(this);')
-					.toolbox-checkbox-label(data-feature='canvas')
-						.toolbox-checkbox-label-text(data-i18n='EditTab.Toolbox.CanvasTool') Canvas Tool
 						.subscription-badge
 				.checkbox-and-label
 					.checkbox.clear#signLanguageCheck(data-tool='signLanguageTool', onclick='toolboxBundle.showOrHideTool_click(this);')
