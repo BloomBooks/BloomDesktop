@@ -13,6 +13,7 @@ import { useWatchApiData, useApiString } from "../../utils/bloomApi";
 import { IBookInfo } from "../../collectionsTab/BooksOfCollection";
 import { headingStyle } from "./sharedStyles";
 import { useL10n } from "../l10nHooks";
+import { parseURL } from "./urlParser";
 
 export interface LinkTargetInfo {
     url: string;
@@ -80,74 +81,38 @@ export const LinkTargetChooser: React.FunctionComponent<{
 
     useEffect(() => {
         const rawUrl = props.currentURL || "";
+        const parsed = parseURL(rawUrl);
+
+        // Set hasAttemptedAutoSelect if we have a URL
         if (rawUrl) {
             setHasAttemptedAutoSelect(true);
         }
+
+        // Clear error info initially
         setErrorInfo(null);
 
-        if (!rawUrl) {
-            setCurrentURL("");
-            setSelectedBook(null);
-            setSelectedBookId(null);
-            setSelectedPageId(null);
-            setErrorInfo(null);
+        // Set component state based on parsed result
+        setSelectedBook(null);
+        setSelectedBookId(parsed.bookId);
+        setSelectedPageId(parsed.pageId);
+        setCurrentURL(parsed.parsedUrl);
+
+        // For empty URLs, reset all state
+        if (parsed.urlType === "empty") {
             setHasAttemptedAutoSelect(false);
             return;
         }
 
-        if (rawUrl.startsWith("#")) {
-            const pageIdStr = rawUrl.substring(1) || "cover";
-            const normalizedPageId =
-                pageIdStr === "cover" ? "cover" : pageIdStr;
-            setSelectedBook(null);
-            setSelectedBookId(null);
-            setSelectedPageId(normalizedPageId);
-            setErrorInfo(null);
-            setCurrentURL(
-                normalizedPageId === "cover"
-                    ? "#cover"
-                    : `#${normalizedPageId}`,
-            );
+        // For external URLs, notify parent immediately
+        if (parsed.urlType === "external") {
             setHasAttemptedAutoSelect(true);
-            return;
+            onURLChangedRef.current?.({
+                url: parsed.parsedUrl,
+                bookThumbnail: null,
+                bookTitle: null,
+                hasError: false,
+            });
         }
-
-        if (rawUrl.startsWith("/book/")) {
-            const hashIndex = rawUrl.indexOf("#");
-            const bookId =
-                hashIndex === -1
-                    ? rawUrl.substring(6)
-                    : rawUrl.substring(6, hashIndex);
-            const rawPagePart =
-                hashIndex === -1 ? "cover" : rawUrl.substring(hashIndex + 1);
-            const normalizedPageId =
-                !rawPagePart || rawPagePart === "cover" ? "cover" : rawPagePart;
-
-            setSelectedBook(null);
-            setSelectedBookId(bookId);
-            setSelectedPageId(normalizedPageId);
-            setErrorInfo(null);
-            setCurrentURL(
-                normalizedPageId === "cover"
-                    ? `/book/${bookId}`
-                    : `/book/${bookId}#${normalizedPageId}`,
-            );
-            setHasAttemptedAutoSelect(true);
-            return;
-        }
-
-        setSelectedBook(null);
-        setSelectedBookId(null);
-        setSelectedPageId(null);
-        setErrorInfo(null);
-        setCurrentURL(rawUrl);
-        onURLChangedRef.current?.({
-            url: rawUrl,
-            bookThumbnail: null,
-            bookTitle: null,
-            hasError: false,
-        });
-        setHasAttemptedAutoSelect(true);
     }, [props.currentURL]);
 
     // Validate and preselect book/page when books load or bookId changes
