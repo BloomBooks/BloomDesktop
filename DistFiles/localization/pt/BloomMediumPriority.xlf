@@ -425,7 +425,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimingsDisabledTip" sil:dynamic="true">
         <source xml:lang="en">This is disabled because there is not a whole text box recording</source>
-        <target xml:lang="pt-PT" state="translated">Isso é desativado porque não há uma gravação completa da caixa de texto</target>
+        <target xml:lang="pt-PT" state="translated">Esta opção está desativada porque não há uma gravação completa da caixa de texto</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimingsDisabledTip</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip" sil:dynamic="true">
@@ -866,17 +866,17 @@
       </trans-unit>
       <trans-unit id="BookSettings.PageNumbers.Center" sil:dynamic="true">
         <source xml:lang="en">Center</source>
-        <target xml:lang="pt-PT" state="needs-translation">Center</target>
+        <target xml:lang="pt-PT" state="translated">Centro</target>
         <note>BookSettings.PageNumbers.Center</note>
       </trans-unit>
       <trans-unit id="BookSettings.PageNumbers.Right" sil:dynamic="true">
         <source xml:lang="en">Right</source>
-        <target xml:lang="pt-PT" state="needs-translation">Right</target>
+        <target xml:lang="pt-PT" state="translated">Direito</target>
         <note>BookSettings.PageNumbers.Right</note>
       </trans-unit>
       <trans-unit id="BookSettings.PageNumbers.Hidden" sil:dynamic="true">
         <source xml:lang="en">Hidden</source>
-        <target xml:lang="pt-PT" state="needs-translation">Hidden</target>
+        <target xml:lang="pt-PT" state="translated">Oculto</target>
         <note>BookSettings.PageNumbers.Hidden</note>
       </trans-unit>
       <trans-unit id="BookSettings.PageNumberLocationNote" sil:dynamic="true">
