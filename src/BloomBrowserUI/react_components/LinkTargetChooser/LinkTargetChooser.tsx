@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { css } from "@emotion/react";
-import { Box, Typography, Button, Menu, MenuItem } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import {
     BookInfoForLinks,
     PageInfoForLinks,
@@ -40,9 +40,6 @@ export const LinkTargetChooser: React.FunctionComponent<{
     const [errorMessage, setErrorMessage] = useState<string>("");
     const [hasAttemptedAutoSelect, setHasAttemptedAutoSelect] =
         useState<boolean>(() => !!props.currentURL);
-    const [moreMenuAnchor, setMoreMenuAnchor] = useState<null | HTMLElement>(
-        null,
-    );
 
     // Get the current book ID so we can select it by default
     const currentBookId = useApiString("editView/currentBookId", "");
@@ -358,21 +355,6 @@ export const LinkTargetChooser: React.FunctionComponent<{
         ],
     );
 
-    const handleMoreMenuClick = (
-        event: React.MouseEvent<HTMLButtonElement>,
-    ) => {
-        setMoreMenuAnchor(event.currentTarget);
-    };
-
-    const handleMoreMenuClose = () => {
-        setMoreMenuAnchor(null);
-    };
-
-    const handleBackMenuItemClick = () => {
-        handleURLEditorChanged("/back");
-        handleMoreMenuClose();
-    };
-
     return (
         <Box
             css={css`
@@ -382,6 +364,13 @@ export const LinkTargetChooser: React.FunctionComponent<{
                 gap: 10px;
             `}
         >
+            {" "}
+            <Box css={css``}>
+                <URLEditor
+                    currentURL={currentURL}
+                    onChange={handleURLEditorChanged}
+                />
+            </Box>
             <Box
                 css={css`
                     display: flex;
@@ -445,44 +434,6 @@ export const LinkTargetChooser: React.FunctionComponent<{
                     </Box>
                 </Box>
             </Box>
-
-            {/* Bottom: URLEditor */}
-            <Box css={css``}>
-                <URLEditor
-                    currentURL={currentURL}
-                    onChange={handleURLEditorChanged}
-                />
-            </Box>
-
-            {/* More Menu */}
-            <Box css={css``}>
-                <Button
-                    variant="text"
-                    size="small"
-                    onClick={handleMoreMenuClick}
-                    data-testid="more-menu-button"
-                    css={css`
-                        text-transform: none;
-                    `}
-                >
-                    More...
-                </Button>
-                <Menu
-                    anchorEl={moreMenuAnchor}
-                    open={Boolean(moreMenuAnchor)}
-                    onClose={handleMoreMenuClose}
-                    data-testid="more-menu"
-                >
-                    <MenuItem
-                        onClick={handleBackMenuItemClick}
-                        data-testid="back-menu-item"
-                        title="like the ← back in a web browser"
-                    >
-                        Back button
-                    </MenuItem>
-                </Menu>
-            </Box>
-
             {/* Error message display */}
             {errorMessage && (
                 <Box

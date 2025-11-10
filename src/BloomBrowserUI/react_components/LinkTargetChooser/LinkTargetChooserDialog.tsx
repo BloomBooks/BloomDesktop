@@ -49,6 +49,8 @@ export const LinkTargetChooserDialog: React.FunctionComponent<{
             open={props.open}
             onClose={props.onClose}
             css={css`
+                // injecting previewMode.css in page thumbnails set cursor to not-allowed
+                cursor: default !important;
                 .MuiDialog-paper {
                     max-width: 1200px;
                     width: 90vw;
