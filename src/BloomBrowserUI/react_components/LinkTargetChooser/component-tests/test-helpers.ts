@@ -50,6 +50,7 @@ interface LinkTargetChooserSetupOptions {
     selectedPageId?: string;
     frontCoverPageId?: string;
     frontCoverCaption?: string;
+    clipboardText?: string; // Mock clipboard content
 }
 
 const booksApiPattern =
@@ -186,6 +187,12 @@ export async function setupLinkTargetChooser(
         "**/bloom/api/pageList/bookAttributesThatMayAffectDisplay**",
         props.bookAttributes ?? {},
     );
+
+    // Mock clipboard API - returns empty string by default or the provided clipboardText
+    // Tests can override this by calling prepareGetResponse again with their own mock
+    prepareGetResponse(page, "**/bloom/api/common/clipboardText", {
+        data: props.clipboardText ?? "",
+    });
 
     await page.route("**/bloom/api/collections/bookFile**", async (route) => {
         await route.fulfill({

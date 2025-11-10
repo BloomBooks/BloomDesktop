@@ -99,7 +99,7 @@ const BookChooserComponent: React.FunctionComponent<{
 export const BookChooser = React.memo(
     BookChooserComponent,
     (prevProps, nextProps) => {
-        // Only re-render if the selected book ID changes or the books array changes
+        // Return true to prevent re-render when selectedBook, books, onSelectBook, excludeBookBeingEdited, and disabledBooks are unchanged
         return (
             prevProps.selectedBook?.id === nextProps.selectedBook?.id &&
             prevProps.books === nextProps.books &&

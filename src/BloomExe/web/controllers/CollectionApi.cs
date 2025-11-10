@@ -765,8 +765,11 @@ namespace Bloom.web.controllers
             var normalizedFilePath = Path.GetFullPath(filePath);
             var normalizedBookPath = Path.GetFullPath(bookInfo.FolderPath);
 
-            var normalizedBookPathWithSeparator = normalizedBookPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-                 Path.DirectorySeparatorChar;
+            var normalizedBookPathWithSeparator =
+                normalizedBookPath.TrimEnd(
+                    Path.DirectorySeparatorChar,
+                    Path.AltDirectorySeparatorChar
+                ) + Path.DirectorySeparatorChar;
 
             if (
                 !normalizedFilePath.StartsWith(

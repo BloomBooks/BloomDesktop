@@ -117,63 +117,65 @@ export const LinkTargetChooser: React.FunctionComponent<{
 
     // Validate and preselect book/page when books load or bookId changes
     useEffect(() => {
-        if (!selectedBookId || bookInfoForLinks.length === 0) {
-            setSelectedBook(null);
-            setErrorInfo(null);
-            return;
-        }
+        let nextSelectedBook: BookInfoForLinks | null = null;
+        let nextError:
+            | { type: "bookNotFound"; bookId: string }
+            | { type: "pageNotFound"; pageId: string; bookTitle: string }
+            | null = null;
+        let bookThumbnail: string | null = null;
+        let bookTitle: string | null = null;
 
-        const book = bookInfoForLinks.find((b) => b.id === selectedBookId);
-        if (!book) {
-            setErrorInfo({ type: "bookNotFound", bookId: selectedBookId });
-            setSelectedBook(null);
-            onURLChangedRef.current?.({
-                url: currentURL,
-                bookThumbnail: null,
-                bookTitle: null,
-                hasError: true,
-            });
-        } else {
-            setSelectedBook(book);
-            setErrorInfo(null);
+        if (selectedBookId && bookInfoForLinks.length > 0) {
+            const book = bookInfoForLinks.find((b) => b.id === selectedBookId);
+            if (!book) {
+                nextError = { type: "bookNotFound", bookId: selectedBookId };
+            } else {
+                nextSelectedBook = book;
+                bookThumbnail = book.thumbnail || null;
+                bookTitle = book.title || null;
 
-            // Validate page if one is selected
-            if (selectedPageId !== null) {
-                // Optional validation only if page id is numeric
-                const numeric = Number(selectedPageId);
-                const isNumeric = !isNaN(numeric);
-                if (isNumeric) {
-                    const pageCount = book.pageLength || 1;
-                    if (numeric >= pageCount) {
-                        setErrorInfo({
-                            type: "pageNotFound",
-                            pageId: selectedPageId,
-                            bookTitle: book.title || "",
-                        });
-                        onURLChangedRef.current?.({
-                            url: currentURL,
-                            bookThumbnail: book.thumbnail || null,
-                            bookTitle: book.title || null,
-                            hasError: true,
-                        });
-                        return;
+                if (selectedPageId !== null) {
+                    const numeric = Number(selectedPageId);
+                    const isNumeric = !isNaN(numeric);
+                    if (isNumeric) {
+                        const pageCount = book.pageLength || 1;
+                        if (numeric >= pageCount) {
+                            nextError = {
+                                type: "pageNotFound",
+                                pageId: selectedPageId,
+                                bookTitle: book.title || "",
+                            };
+                        }
                     }
                 }
-                onURLChangedRef.current?.({
-                    url: currentURL,
-                    bookThumbnail: book.thumbnail || null,
-                    bookTitle: book.title || null,
-                    hasError: false,
-                });
-            } else {
-                onURLChangedRef.current?.({
-                    url: currentURL,
-                    bookThumbnail: book.thumbnail || null,
-                    bookTitle: book.title || null,
-                    hasError: false,
-                });
+            }
+        } else {
+            nextSelectedBook = null;
+            nextError = null;
+        }
+
+        let hasError = nextError !== null;
+
+        if (!selectedBookId) {
+            const trimmedUrl = currentURL.trim();
+            if (trimmedUrl !== "" && trimmedUrl.startsWith("#")) {
+                hasError = true;
             }
         }
+
+        if (selectedBookId && bookInfoForLinks.length === 0) {
+            hasError = true;
+        }
+
+        setSelectedBook(nextSelectedBook);
+        setErrorInfo(nextError);
+
+        onURLChangedRef.current?.({
+            url: currentURL,
+            bookThumbnail,
+            bookTitle,
+            hasError,
+        });
     }, [selectedBookId, bookInfoForLinks, selectedPageId, currentURL]);
 
     const notifyParent = useCallback(
@@ -215,6 +217,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
 
     const handlePageSelected = useCallback(
         (pageInfo: PageInfoForLinks) => {
+            // we've already disabled selection of x-matter pages except front cover
             if (pageInfo.isXMatter && !pageInfo.isFrontCover) {
                 return;
             }

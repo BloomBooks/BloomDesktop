@@ -204,8 +204,6 @@ const PageItemComponent: React.FunctionComponent<{
                 }
             `}
             onClick={handleSelect}
-            aria-disabled={isDisabled ? "true" : undefined}
-            aria-selected={isSelected ? "true" : "false"}
             data-selected={isSelected ? "true" : undefined}
             data-disabled={isDisabled ? "true" : undefined}
         >
@@ -463,7 +461,7 @@ const PageChooserComponent: React.FunctionComponent<{
         <Box
             css={css`
                 height: 100%;
-                //background-color: #2e2e2e;
+
                 display: flex;
                 flex-direction: column;
                 contain: layout; /* Isolate layout changes to prevent affecting parent dialog */
