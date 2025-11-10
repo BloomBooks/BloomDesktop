@@ -1245,7 +1245,7 @@ namespace Bloom.Book
                 return;
             //Collect up all the image files in our book's directory
             var imageFiles = new List<string>();
-            var imageExtentions = new HashSet<string>(new[] { ".jpg", ".png", ".svg" });
+            var imageExtentions = new HashSet<string>(new[] { ".jpg", ".png", ".svg", ".gif" });
             var ignoredFilenameStarts = new HashSet<string>(
                 new[]
                 {

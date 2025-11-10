@@ -26,7 +26,9 @@ namespace Bloom.Publish
         // If we change MusicFileExtensions to remove ".wav", then existing books with .wav background audio
         // files would break due to those files being deleted on automatic cleanup.
         public static readonly string[] MusicFileExtensionsToImport = { ".mp3", ".ogg" };
-        public static readonly string[] MusicFileExtensions = { ".mp3", ".ogg", ".wav" };
+
+        // .webm is usually used for video files, but can also be used for audio files (BL-15467).
+        public static readonly string[] MusicFileExtensions = { ".mp3", ".ogg", ".wav", ".webm" };
 
         public static readonly string[] AudioFileExtensions = NarrationAudioExtensions
             .Union(MusicFileExtensions)
