@@ -34,13 +34,13 @@
         <source xml:lang="en">The install directory is '&lt;A HREF="na"&gt;{path}&lt;/A&gt;'</source>
         <target xml:lang="pt-PT" state="translated">O diretório de instalação é '&lt;A HREF="na"&gt;{path}&lt;/A&gt;'</target>
       </trans-unit>
-      <trans-unit id="progress.installing_app">
+      <trans-unit id="progress.installing_app" approved="yes">
         <source xml:lang="en">Installing {app_title}...</source>
-        <target xml:lang="pt-PT" state="translated">Instalando {app_title}...</target>
+        <target xml:lang="pt-PT" state="final">Instalando {app_title}...</target>
       </trans-unit>
-      <trans-unit id="progress.downloading_runtime">
+      <trans-unit id="progress.downloading_runtime" approved="yes">
         <source xml:lang="en">Downloading {runtime_name}...</source>
-        <target xml:lang="pt-PT" state="translated">Baixando {runtime_name}...</target>
+        <target xml:lang="pt-PT" state="final">Baixando {runtime_name}...</target>
       </trans-unit>
       <trans-unit id="buttons.ok" approved="yes">
         <source xml:lang="en">Ok</source>
@@ -54,13 +54,13 @@
         <source xml:lang="en">No</source>
         <target xml:lang="pt-PT" state="final">Não</target>
       </trans-unit>
-      <trans-unit id="buttons.install_update">
+      <trans-unit id="buttons.install_update" approved="yes">
         <source xml:lang="en">Install Update</source>
-        <target xml:lang="pt-PT" state="translated">Instalar atualização</target>
+        <target xml:lang="pt-PT" state="final">Instalar atualização</target>
       </trans-unit>
-      <trans-unit id="buttons.install_and_update">
+      <trans-unit id="buttons.install_and_update" approved="yes">
         <source xml:lang="en">Install &amp; Update</source>
-        <target xml:lang="pt-PT" state="translated">Instalar &amp; atualização</target>
+        <target xml:lang="pt-PT" state="final">Instalar &amp; atualização</target>
       </trans-unit>
       <trans-unit id="buttons.install" approved="yes">
         <source xml:lang="en">Install</source>
@@ -177,9 +177,9 @@
         <source xml:lang="en">Installation has completed, but the application install hook failed. It may not have installed correctly.</source>
         <target xml:lang="pt-PT" state="translated">A instalação foi concluída, mas o "hook" de instalação do aplicativo falhou. Possivelmente não instalou corretamente.</target>
       </trans-unit>
-      <trans-unit id="dialogs.legacy_migration_failed.header">
+      <trans-unit id="dialogs.legacy_migration_failed.header" approved="yes">
         <source xml:lang="en">Unable to start app</source>
-        <target xml:lang="pt-PT" state="translated">Não foi possível iniciar o aplicativo</target>
+        <target xml:lang="pt-PT" state="final">Não foi possível iniciar o aplicativo</target>
       </trans-unit>
       <trans-unit id="dialogs.legacy_migration_failed.content">
         <source xml:lang="en">This app installation has been corrupted and cannot be started. Please re-install the app.</source>
@@ -187,7 +187,7 @@
       </trans-unit>
       <trans-unit id="dialogs.uninstall_success.content">
         <source xml:lang="en">{app_title} was successfully uninstalled.</source>
-        <target xml:lang="pt-PT" state="translated">O aplicativo foi desinstalado com sucesso.</target>
+        <target xml:lang="pt-PT" state="translated">{app_title} foi desinstalado com sucesso.</target>
       </trans-unit>
     </body>
   </file>
