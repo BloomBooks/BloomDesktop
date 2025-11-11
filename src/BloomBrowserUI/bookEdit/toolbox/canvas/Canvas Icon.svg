@@ -1,0 +1,13 @@
+<svg width="15" height="17" viewBox="0 0 15 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <style>
+    .stroke-color {
+        stroke: white;
+      }
+  </style>
+</defs>
+<path class="stroke-color" d="M2.17651 5.7475C2.17651 3.80146 2.17651 2.82776 2.8674 2.22358C3.55828 1.6194 4.6703 1.61871 6.89503 1.61871H8.46809C10.6921 1.61871 11.8048 1.61871 12.4957 2.22358C13.1866 2.82776 13.1866 3.80146 13.1866 5.7475V11.9407H2.17651V5.7475Z" stroke-width="1.5" stroke-linejoin="round"/>
+<path class="stroke-color" d="M1.4884 11.9407H13.8748" stroke-width="1.5" stroke-linecap="round"/>
+<path class="stroke-color" d="M6.78632 4.07261C7.63272 3.9515 9.03513 3.99967 7.87426 5.16467C6.42368 6.62007 4.24643 9.89626 6.78632 8.80488C9.32552 7.71213 10.4141 8.44017 9.32552 9.53224" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path class="stroke-color" d="M7.6816 11.9407V14.6932M2.86469 15.3813L4.92908 11.9407M12.4985 15.3813L10.4341 11.9407" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
