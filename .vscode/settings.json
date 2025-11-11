@@ -31,6 +31,6 @@
     "[less]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
-    "cSpell.words": ["draggables"],
+    "cSpell.words": ["draggables", "thema"],
     "chat.useNestedAgentsMdFiles": true
 }
