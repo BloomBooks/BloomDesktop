@@ -141,7 +141,7 @@ namespace Bloom.Publish
         /// <remarks>
         /// Running this script and getting the results for the whole page is much faster than running
         /// two trivial scripts for each element in WebView2. See BL-12402.
-        /// If the element is empty, then skip it, since the display and font information won't matter.
+        /// If the element's text is empty, then the font information should be ignored.
         /// </remarks>
         public const string GetElementDisplayAndFontInfoJavascript =
             @"(() =>
@@ -149,15 +149,25 @@ namespace Bloom.Publish
     const elementsInfo = [];
     const elementsWithId = document.querySelectorAll(""[id], em, strong"");
     elementsWithId.forEach(elt => {
-        if (elt.innerText) {
-            const style = getComputedStyle(elt, null);
-            if (style) {
+        const hasText = !!elt.innerText;
+        const style = getComputedStyle(elt, null);
+        if (style) {
+            if (hasText) {
                 elementsInfo.push({
                     id: elt.id,
                     display: style.display,
                     fontFamily: style.getPropertyValue(""font-family""),
                     fontStyle: style.getPropertyValue(""font-style""),
                     fontWeight: style.getPropertyValue(""font-weight"")
+                });
+            }
+            else {
+                elementsInfo.push({
+                    id: elt.id,
+                    display: style.display,
+                    fontFamily: """",
+                    fontStyle: """",
+                    fontWeight: """"
                 });
             }
         }
@@ -458,7 +468,7 @@ namespace Bloom.Publish
                     if (string.IsNullOrEmpty(info.id))
                     {
                         // Presumably in a <strong> or <em> tag.
-                        if (info.display != "none")
+                        if (info.display != "none" && !string.IsNullOrEmpty(info.fontFamily))
                         {
                             var font = ExtractFontNameFromFontFamily(info.fontFamily);
                             FontsUsed.Add(
@@ -473,6 +483,8 @@ namespace Bloom.Publish
                         continue;
                     }
                     _mapIdToDisplay[info.id] = info.display;
+                    if (string.IsNullOrEmpty(info.fontFamily))
+                        continue;
                     var fontInfo = new FontInfo
                     {
                         fontFamily = info.fontFamily,
