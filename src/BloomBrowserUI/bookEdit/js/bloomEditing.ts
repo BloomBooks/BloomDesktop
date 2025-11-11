@@ -36,8 +36,8 @@ import "../../lib/jquery.qtip.js";
 import "../../lib/jquery.qtipSecondary.js";
 import "../../lib/long-press/jquery.longpress.js";
 import {
-    getEditTabBundleExports,
     getToolboxBundleExports,
+    runWhenEditTabBundleAvailable,
 } from "./bloomFrames";
 import { showInvisibles, hideInvisibles } from "./showInvisibles";
 
@@ -307,7 +307,7 @@ function AddEditKeyHandlers(container) {
 }
 
 // Add little language tags. (At one point we limited this to visible .bloom-editable divs,
-// probably as an optimzation since there can be other-language divs present but hidden.
+// probably as an optimization since there can be other-language divs present but hidden.
 // But there may be yet others that are not visible when we run this but which soon will be,
 // such as image descriptions. We don't seem to need the optimization, so let's just do
 // them all.)
@@ -547,28 +547,76 @@ export function SetupElements(
             this.innerHTML = this.value;
         });
 
-    const rootFrameExports = getEditTabBundleExports();
-    const toolboxVisible = rootFrameExports.toolboxIsShowing();
-    rootFrameExports.doWhenToolboxLoaded((toolboxFrameExports) => {
-        const toolbox = toolboxFrameExports.getTheOneToolbox();
-        // toolbox might be undefined in unit testing?
+    let toolboxVisible = false;
+    let focusAlreadyScheduled = false;
 
-        if (toolbox) {
-            toolbox.configureElementsForTools(container);
-            const page = container.getElementsByClassName(
-                "bloom-page",
-            )[0] as HTMLElement;
-            // When this is called initially on page load, container is the body,
-            // and we will find a bloom-page and adjust the tool list.
-            // If it is called later to adjust something like an image-container,
-            // the toolbox should already be set for this page.
-            // In that case we won't find a page inside it, which is fine since
-            // we don't need to adjust the tool list again.
-            if (page) {
-                toolbox.adjustToolListForPage(page);
-            }
+    const focusFirstEditableField = () => {
+        // focus on the first editable field
+        // HACK for BL-1139: except for some reason when the Reader tools are active this causes
+        // quick typing on a newly loaded page to get the cursor messed up. So for the Reader tools, the
+        // user will need to actually click in the div to start typing.
+        const editableElement = $(container)
+            .find("textarea:visible, div.bloom-editable:visible")
+            .first();
+        if (editableElement.length) {
+            // bloomApi postDebugMessage(
+            //     "DEBUG bloomEditing/SetupElements() - setting focus on " +
+            //         editableElement.get(0).outerHTML
+            // );
+            editableElement.focus();
+            // bloomApi postDebugMessage(
+            //     "DEBUG bloomEditing/SetupElements() - activeElement=" +
+            //         (document.activeElement
+            //             ? document.activeElement.outerHTML
+            //             : "<NULL>")
+            // );
+        } else {
+            // bloomApi postDebugMessage(
+            //     "DEBUG bloomEditing/SetupElements() - found nothing to focus"
+            // );
         }
-    });
+    };
+
+    const scheduleFocusIfAppropriate = () => {
+        if (focusAlreadyScheduled || toolboxVisible) {
+            return;
+        }
+        focusAlreadyScheduled = true;
+        window.setTimeout(() => {
+            focusFirstEditableField();
+        }, 0);
+    };
+
+    runWhenEditTabBundleAvailable(
+        (rootFrameExports) => {
+            toolboxVisible = rootFrameExports.toolboxIsShowing();
+            rootFrameExports.doWhenToolboxLoaded((toolboxFrameExports) => {
+                const toolbox = toolboxFrameExports.getTheOneToolbox();
+                // toolbox might be undefined in unit testing?
+
+                if (toolbox) {
+                    toolbox.configureElementsForTools(container);
+                    const page = container.getElementsByClassName(
+                        "bloom-page",
+                    )[0] as HTMLElement;
+                    // When this is called initially on page load, container is the body,
+                    // and we will find a bloom-page and adjust the tool list.
+                    // If it is called later to adjust something like an image-container,
+                    // the toolbox should already be set for this page.
+                    // In that case we won't find a page inside it, which is fine since
+                    // we don't need to adjust the tool list again.
+                    if (page) {
+                        toolbox.adjustToolListForPage(page);
+                    }
+                }
+            });
+            scheduleFocusIfAppropriate();
+        },
+        () => {
+            toolboxVisible = false;
+            scheduleFocusIfAppropriate();
+        },
+    );
 
     SetBookCopyrightAndLicenseButtonVisibility(container);
 
@@ -938,36 +986,6 @@ export function SetupElements(
         theOneCanvasElementManager.initializeCanvasElementEditing();
     }
 
-    // focus on the first editable field
-    // HACK for BL-1139: except for some reason when the Reader tools are active this causes
-    // quick typing on a newly loaded page to get the cursor messed up. So for the Reader tools, the
-    // user will need to actually click in the div to start typing.
-    if (!toolboxVisible) {
-        // The focus set here may not actually be what is focused in the end.  Other setup
-        // code (such as for Comical) may have other--or identical--ideas and set focus.
-        //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
-        const editableElement = $(container)
-            .find("textarea:visible, div.bloom-editable:visible")
-            .first();
-        if (editableElement.length) {
-            // bloomApi postDebugMessage(
-            //     "DEBUG bloomEditing/SetupElements() - setting focus on " +
-            //         editableElement.get(0).outerHTML
-            // );
-            editableElement.focus();
-            // bloomApi postDebugMessage(
-            //     "DEBUG bloomEditing/SetupElements() - activeElement=" +
-            //         (document.activeElement
-            //             ? document.activeElement.outerHTML
-            //             : "<NULL>")
-            // );
-        } else {
-            // bloomApi postDebugMessage(
-            //     "DEBUG bloomEditing/SetupElements() - found nothing to focus"
-            // );
-        }
-    }
-
     AddXMatterLabelAfterPageLabel(container);
     ConstrainContentsOfPageLabel(container);
 }
@@ -1020,7 +1038,7 @@ function ConstrainContentsOfPageLabel(container) {
             .join("");
         // characters that mess something else up, found through experimentation
         pageLabel.innerText = pageLabel.innerText.split(/[#%\r\n]/).join("");
-        // update data-i18n attribute to prevent this change being forgotton on reload; BL-5855
+        // update data-i18n attribute to prevent this change being forgotten on reload; BL-5855
         let localizationAttr = pageLabel.getAttribute("data-i18n");
         if (
             localizationAttr != null &&
@@ -1441,7 +1459,7 @@ function pasteHandler(e: Event) {
 // focused element that allows the ctrl-V handler to be called.
 document.addEventListener("paste", pasteHandler);
 // We also need a handler on ctrl-V. The pasteHandler does not get invoked by
-// the code above when ctrl-V is pressed in a contenteditable elemeent,
+// the code above when ctrl-V is pressed in a contenteditable element,
 // probably because some CkEditor code intercepts it and prevents default,
 // but we still want our own handling of pasting images, and the default
 // handler does not do that.
