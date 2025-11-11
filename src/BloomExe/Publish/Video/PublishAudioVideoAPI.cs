@@ -444,22 +444,20 @@ namespace Bloom.Publish.Video
         }
 
         // Possible values for SetThreadDpiAwarenessContext
-        enum ThreadDpiAwareContext : int
+        static class ThreadDpiAwareContext
         {
-            Invalid = 0,
-            Unaware = -1,
-            SystemAware = -2,
-            PerMonitorAware = -3,
+            public static readonly nint Invalid = 0;
+            public static readonly nint Unaware = (nint)(-1);
+            public static readonly nint SystemAware = (nint)(-2);
+            public static readonly nint PerMonitorAware = (nint)(-3);
 
             /* Fails if used before Creators Update. */
-            PerMonitorAwareV2 = -4,
+            public static readonly nint PerMonitorAwareV2 = (nint)(-4);
         }
 
         // Use with care...Windows only! And the option we want to use only works after the 'creators update'
         [DllImport("user32.dll")]
-        static extern ThreadDpiAwareContext SetThreadDpiAwarenessContext(
-            PublishAudioVideoAPI.ThreadDpiAwareContext newContext
-        );
+        static extern nint SetThreadDpiAwarenessContext(nint newContext);
 
         private void RecordVideo(ApiRequest request)
         {
