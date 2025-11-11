@@ -142,25 +142,38 @@ namespace Bloom.Publish
         /// <remarks>
         /// Running this script and getting the results for the whole page is much faster than running
         /// two trivial scripts for each element in WebView2. See BL-12402.
+        /// If the element's text is empty, then the font information should be ignored.
         /// </remarks>
         public const string GetElementDisplayAndFontInfoJavascript =
             @"(() =>
 {
-	const elementsInfo = [];
-	const elementsWithId = document.querySelectorAll(""[id], em, strong"");
-	elementsWithId.forEach(elt => {
-		const style = getComputedStyle(elt, null);
-		if (style) {
-			elementsInfo.push({
-				id: elt.id,
-				display: style.display,
-				fontFamily: style.getPropertyValue(""font-family""),
-				fontStyle: style.getPropertyValue(""font-style""),
-				fontWeight: style.getPropertyValue(""font-weight"")
-			});
-		}
-	});
-	return { results: elementsInfo };
+    const elementsInfo = [];
+    const elementsWithId = document.querySelectorAll(""[id], em, strong"");
+    elementsWithId.forEach(elt => {
+        const hasText = !!elt.innerText;
+        const style = getComputedStyle(elt, null);
+        if (style) {
+            if (hasText) {
+                elementsInfo.push({
+                    id: elt.id,
+                    display: style.display,
+                    fontFamily: style.getPropertyValue(""font-family""),
+                    fontStyle: style.getPropertyValue(""font-style""),
+                    fontWeight: style.getPropertyValue(""font-weight"")
+                });
+            }
+            else {
+                elementsInfo.push({
+                    id: elt.id,
+                    display: style.display,
+                    fontFamily: """",
+                    fontStyle: """",
+                    fontWeight: """"
+                });
+            }
+        }
+    });
+    return { results: elementsInfo };
 })();";
 
         // A bit of JavaScript we can run, after hacking the DOM to make all languages visible
@@ -488,7 +501,7 @@ namespace Bloom.Publish
                     if (string.IsNullOrEmpty(info.id))
                     {
                         // Presumably in a <strong> or <em> tag.
-                        if (info.display != "none")
+                        if (info.display != "none" && !string.IsNullOrEmpty(info.fontFamily))
                         {
                             var font = ExtractFontNameFromFontFamily(info.fontFamily);
                             FontsUsed.Add(
@@ -503,6 +516,8 @@ namespace Bloom.Publish
                         continue;
                     }
                     _mapIdToDisplay[info.id] = info.display;
+                    if (string.IsNullOrEmpty(info.fontFamily))
+                        continue;
                     var fontInfo = new FontInfo
                     {
                         fontFamily = info.fontFamily,
