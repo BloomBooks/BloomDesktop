@@ -9,8 +9,7 @@ import {
     DialogBottomButtons,
     DialogBottomLeftButtons,
 } from "../BloomDialog/BloomDialog";
-import { LinkTargetChooser, LinkTargetInfo } from "./LinkTargetChooser";
-import { parseURL } from "./urlParser";
+import { LinkTargetChooser } from "./LinkTargetChooser";
 import { DialogCancelButton } from "../BloomDialog/commonDialogComponents";
 import BloomButton from "../bloomButton";
 import { useL10n } from "../l10nHooks";
@@ -19,73 +18,38 @@ export const LinkTargetChooserDialog: React.FunctionComponent<{
     open: boolean;
     currentURL: string;
     onCancel?: () => void;
-    onSelect?: (info: LinkTargetInfo) => void;
+    onSetUrl?: (url: string) => void;
 }> = (props) => {
-    const { onCancel, onSelect } = props;
-    const [currentLinkInfo, setCurrentLinkInfo] =
-        useState<LinkTargetInfo | null>(null);
+    const [currentUrl, setCurrentUrl] = useState<string>("");
+    const [hasError, setHasError] = useState<boolean>(false);
+    const [hasUserInteracted, setHasUserInteracted] = useState<boolean>(false);
 
-    // Sync currentLinkInfo when dialog opens or currentURL changes
+    // Reset state when dialog opens/closes or currentURL changes
     useEffect(() => {
-        if (props.open && props.currentURL) {
-            const parsed = parseURL(props.currentURL);
-            // Only initialize for complete URLs:
-            // - External URLs are complete on their own
-            // - Book-path URLs with a bookId are complete
-            // Do NOT initialize for hash-only URLs (need book context) or empty URLs
-            if (
-                parsed.urlType === "external" ||
-                parsed.urlType === "book-path"
-            ) {
-                setCurrentLinkInfo({
-                    url: parsed.parsedUrl,
-                    bookThumbnail: null,
-                    bookTitle: null,
-                    hasError: false,
-                });
-            } else {
-                setCurrentLinkInfo(null);
-            }
-        } else if (props.open) {
-            // Dialog opened with no URL - reset state
-            setCurrentLinkInfo(null);
+        if (props.open) {
+            setCurrentUrl("");
+            setHasError(false);
+            setHasUserInteracted(false);
         }
     }, [props.open, props.currentURL]);
-    const handleURLChanged = useCallback((info: LinkTargetInfo) => {
-        setCurrentLinkInfo(info);
+
+    const handleURLChanged = useCallback((url: string, hasError: boolean) => {
+        setCurrentUrl(url);
+        setHasError(hasError);
+        setHasUserInteracted(true);
     }, []);
 
     const handleOK = useCallback(() => {
-        if (currentLinkInfo && onSelect) {
-            onSelect(currentLinkInfo);
+        if (props.onSetUrl) {
+            props.onSetUrl(currentUrl.trim());
         }
-    }, [currentLinkInfo, onSelect]);
+    }, [currentUrl, props]);
 
     const handleCancel = useCallback(() => {
-        if (onCancel) {
-            onCancel();
+        if (props.onCancel) {
+            props.onCancel();
         }
-    }, [onCancel]);
-
-    const handleDialogClose = useCallback(
-        (_event?: object, _reason?: "escapeKeyDown" | "backdropClick") => {
-            handleCancel();
-        },
-        [handleCancel],
-    );
-
-    const handleDialogCancel = useCallback(
-        (
-            _reason?:
-                | "escapeKeyDown"
-                | "backdropClick"
-                | "titleCloseClick"
-                | "cancelClicked",
-        ) => {
-            handleCancel();
-        },
-        [handleCancel],
-    );
+    }, [props]);
 
     const dialogTitle = useL10n(
         "Choose Link Target",
@@ -93,16 +57,11 @@ export const LinkTargetChooserDialog: React.FunctionComponent<{
         "Title of the dialog used to pick the destination for a link.",
     );
 
-    const hasValidLink =
-        currentLinkInfo !== null &&
-        currentLinkInfo.url.trim() !== "" &&
-        !currentLinkInfo.hasError;
-
     return (
         <BloomDialog
             open={props.open}
-            onClose={handleDialogClose}
-            onCancel={handleDialogCancel}
+            onClose={handleCancel}
+            onCancel={handleCancel}
             css={css`
                 // injecting previewMode.css in page thumbnails set cursor to not-allowed
                 cursor: default !important;
@@ -126,13 +85,10 @@ export const LinkTargetChooserDialog: React.FunctionComponent<{
                 />
             </DialogMiddle>
             <DialogBottomButtons>
-                <DialogBottomLeftButtons>
-                    {/* Future: Add "Remove Link" button here */}
-                </DialogBottomLeftButtons>
                 <DialogCancelButton />
                 <BloomButton
                     onClick={handleOK}
-                    enabled={hasValidLink}
+                    enabled={!hasError && hasUserInteracted}
                     l10nKey="Common.OK"
                     hasText={true}
                     className="initialFocus"

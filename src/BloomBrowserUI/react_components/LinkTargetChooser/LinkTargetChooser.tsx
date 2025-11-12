@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { css } from "@emotion/react";
 import { Box, Typography } from "@mui/material";
 import {
@@ -21,16 +21,17 @@ export interface LinkTargetInfo {
     hasError?: boolean;
 }
 
+// This component lets the user specify or create a url. The url can be
+// * an external url
+// * a book in the collection
+// * a page in a book in the collection
+// * a "back in history" instruction
 export const LinkTargetChooser: React.FunctionComponent<{
     currentURL: string;
-    onURLChanged?: (info: LinkTargetInfo) => void;
+    onURLChanged?: (url: string, hasError: boolean) => void;
 }> = (props) => {
-    // Use ref to store the latest onURLChanged callback to avoid dependency issues
-    const onURLChangedRef = useRef(props.onURLChanged);
-    useEffect(() => {
-        onURLChangedRef.current = props.onURLChanged;
-    }, [props.onURLChanged]);
-
+    const currentUrlProp = props.currentURL;
+    const onURLChanged = props.onURLChanged;
     // Parse the currentURL to determine initial state
     const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
     const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
@@ -40,7 +41,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
     );
     const [errorMessage, setErrorMessage] = useState<string>("");
     const [hasAttemptedAutoSelect, setHasAttemptedAutoSelect] =
-        useState<boolean>(() => !!props.currentURL);
+        useState<boolean>(() => !!currentUrlProp);
 
     // Get the current book ID so we can select it by default
     const currentBookId = useApiString("editView/currentBookId", "");
@@ -75,7 +76,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
     }, [allBooks]);
 
     useEffect(() => {
-        const rawUrl = props.currentURL || "";
+        const rawUrl = currentUrlProp || "";
         if (rawUrl) {
             setHasAttemptedAutoSelect(true);
         }
@@ -115,17 +116,11 @@ export const LinkTargetChooser: React.FunctionComponent<{
         setSelectedBookId(null);
         setSelectedPageId(null);
         setCurrentURL(rawUrl);
-        onURLChangedRef.current?.({
-            url: rawUrl,
-            bookThumbnail: null,
-            bookTitle: null,
-            hasError: false,
-        });
+        onURLChanged?.(rawUrl, false);
         setHasAttemptedAutoSelect(true);
-    }, [props.currentURL]);
+    }, [currentUrlProp, onURLChanged]);
 
     // Validate and preselect book/page when books load or bookId changes
-    // Note: Uses onURLChangedRef.current instead of notifyParent to avoid re-running when callback changes
     useEffect(() => {
         if (!selectedBookId || bookInfoForLinks.length === 0) {
             setSelectedBook(null);
@@ -137,12 +132,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
             const msg = `Book not found: ${selectedBookId}`;
             setErrorMessage(msg);
             setSelectedBook(null);
-            onURLChangedRef.current?.({
-                url: currentURL,
-                bookThumbnail: null,
-                bookTitle: null,
-                hasError: true,
-            });
+            onURLChanged?.(currentURL, true);
         } else {
             setSelectedBook(book);
             setErrorMessage("");
@@ -157,48 +147,22 @@ export const LinkTargetChooser: React.FunctionComponent<{
                     if (numeric >= pageCount) {
                         const msg = `Page ${selectedPageId} not found in book "${book.title}"`;
                         setErrorMessage(msg);
-                        onURLChangedRef.current?.({
-                            url: currentURL,
-                            bookThumbnail: book.thumbnail || null,
-                            bookTitle: book.title || null,
-                            hasError: true,
-                        });
+                        onURLChanged?.(currentURL, true);
                         return;
                     }
                 }
-                onURLChangedRef.current?.({
-                    url: currentURL,
-                    bookThumbnail: book.thumbnail || null,
-                    bookTitle: book.title || null,
-                    hasError: false,
-                });
+                onURLChanged?.(currentURL, false);
             } else {
-                onURLChangedRef.current?.({
-                    url: currentURL,
-                    bookThumbnail: book.thumbnail || null,
-                    bookTitle: book.title || null,
-                    hasError: false,
-                });
+                onURLChanged?.(currentURL, false);
             }
         }
-    }, [selectedBookId, bookInfoForLinks, selectedPageId, currentURL]);
-
-    const notifyParent = useCallback(
-        (
-            url: string,
-            thumbnail: string | null,
-            title: string | null,
-            hasError: boolean,
-        ) => {
-            onURLChangedRef.current?.({
-                url,
-                bookThumbnail: thumbnail,
-                bookTitle: title,
-                hasError,
-            });
-        },
-        [],
-    );
+    }, [
+        selectedBookId,
+        bookInfoForLinks,
+        selectedPageId,
+        currentURL,
+        onURLChanged,
+    ]);
 
     const handleBookSelected = useCallback(
         (book: BookInfoForLinks) => {
@@ -210,19 +174,14 @@ export const LinkTargetChooser: React.FunctionComponent<{
 
             const url = `/book/${book.id}`;
             setCurrentURL(url);
-            notifyParent(
-                url,
-                book.thumbnail || null,
-                book.title || null,
-                false,
-            );
+            onURLChanged?.(url, false);
         },
-        [notifyParent],
+        [onURLChanged],
     );
 
     const handlePageSelected = useCallback(
         (pageInfo: PageInfoForLinks) => {
-            if (pageInfo.isXMatter && !pageInfo.isFrontCover) {
+            if (pageInfo.disabled) {
                 return;
             }
             const isFrontCover = Boolean(pageInfo.isFrontCover);
@@ -250,14 +209,9 @@ export const LinkTargetChooser: React.FunctionComponent<{
             }
 
             setCurrentURL(url);
-            notifyParent(
-                url,
-                selectedBook?.thumbnail || null,
-                selectedBook?.title || null,
-                false,
-            );
+            onURLChanged?.(url, false);
         },
-        [selectedBookId, selectedBook, notifyParent],
+        [selectedBookId, onURLChanged],
     );
 
     const handleURLEditorChanged = useCallback(
@@ -269,14 +223,14 @@ export const LinkTargetChooser: React.FunctionComponent<{
             setErrorMessage("");
             setHasAttemptedAutoSelect(true);
 
-            notifyParent(url, null, null, false);
+            onURLChanged?.(url, false);
         },
-        [notifyParent],
+        [onURLChanged],
     );
 
     useEffect(() => {
         if (
-            !props.currentURL &&
+            !currentUrlProp &&
             currentBookId &&
             bookInfoForLinks.length > 0 &&
             !selectedBookId &&
@@ -291,7 +245,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
             }
         }
     }, [
-        props.currentURL,
+        currentUrlProp,
         currentBookId,
         bookInfoForLinks,
         selectedBookId,
@@ -322,21 +276,10 @@ export const LinkTargetChooser: React.FunctionComponent<{
             const newUrl = `/book/${selectedBookId}`;
             if (currentURL !== newUrl) {
                 setCurrentURL(newUrl);
-                notifyParent(
-                    newUrl,
-                    selectedBook?.thumbnail || null,
-                    selectedBook?.title || null,
-                    false,
-                );
+                onURLChanged?.(newUrl, false);
             }
         },
-        [
-            selectedBookId,
-            selectedPageId,
-            currentURL,
-            notifyParent,
-            selectedBook,
-        ],
+        [selectedBookId, selectedPageId, currentURL, onURLChanged],
     );
 
     return (
@@ -385,7 +328,6 @@ export const LinkTargetChooser: React.FunctionComponent<{
                             books={bookInfoForLinks}
                             selectedBook={selectedBook}
                             onSelectBook={handleBookSelected}
-                            excludeBookBeingEdited={false}
                         />
                     </Box>
                 </Box>

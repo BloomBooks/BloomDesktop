@@ -15,6 +15,7 @@ export interface PageInfoForLinks {
     pageIndex?: number; // zero-based index within the book
     isFrontCover?: boolean; // true when this page represents the front cover
     isXMatter?: boolean; // true when this page is part of the book's XMatter (front/back matter)
+    disabled?: boolean; // true when the page should be displayed but not selectable
 }
 
 export interface Link {

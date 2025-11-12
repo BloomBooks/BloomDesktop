@@ -31,15 +31,17 @@ test.describe("LinkTargetChooserDialog - OK Button Behavior", () => {
         expect(isDisabled).toBe(false);
     });
 
-    test("OK button is disabled for empty URL", async ({ page }) => {
+    test("OK button is enabled for empty URL (whitespace is trimmed)", async ({
+        page,
+    }) => {
         const context = await setupLinkTargetChooser(page);
 
         const input = await context.urlEditor.getInput();
-        await input.fill("   "); // Just whitespace
+        await input.fill("   "); // Just whitespace - will be trimmed to empty
 
         const okButton = await context.dialog.getOKButton();
         const isDisabled = await okButton.isDisabled();
-        expect(isDisabled).toBe(true);
+        expect(isDisabled).toBe(false); // Whitespace is trimmed, empty URLs are allowed
     });
 
     test("OK button is disabled when there is an error", async ({ page }) => {

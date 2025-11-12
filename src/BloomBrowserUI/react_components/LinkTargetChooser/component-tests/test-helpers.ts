@@ -43,6 +43,7 @@ interface LinkTargetChooserSetupOptions {
         caption: string;
         content?: string;
         isXMatter?: boolean;
+        disabled?: boolean;
     }>;
     pageLayout?: string;
     cssFiles?: string[];
@@ -175,6 +176,8 @@ export async function setupLinkTargetChooser(
                 caption: p.caption,
                 content: p.content ?? "",
                 isXMatter: p.isXMatter ?? index === 0,
+                disabled:
+                    p.disabled ?? ((p.isXMatter ?? index === 0) && index !== 0),
             })),
             selectedPageId: props.selectedPageId ?? "cover",
             pageLayout: props.pageLayout ?? "A5Portrait",

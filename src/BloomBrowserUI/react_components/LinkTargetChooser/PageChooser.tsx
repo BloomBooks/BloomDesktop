@@ -16,7 +16,7 @@ import {
 } from "./sharedStyles";
 import { useL10n } from "../l10nHooks";
 
-type PageWithXMatter = IPage & { isXMatter?: boolean };
+type PageWithXMatter = IPage & { isXMatter?: boolean; disabled?: boolean };
 
 const staticStylesheets: Array<{ href: string; key: string }> = [
     {
@@ -114,7 +114,6 @@ const PageItemComponent: React.FunctionComponent<{
     page: PageWithXMatter;
     pageIndex: number;
     isSelected: boolean;
-    isDisabled: boolean;
     pageLayout: string;
     bookId: string;
     bookFolderPath?: string;
@@ -130,10 +129,10 @@ const PageItemComponent: React.FunctionComponent<{
         bookFolderPath,
         onSelectPage,
         onConfigureReloadCallback,
-        isDisabled,
     } = props;
 
     const isFrontCover = pageIndex === 0;
+    const isDisabled = Boolean(page.disabled);
     const itemRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
@@ -161,6 +160,7 @@ const PageItemComponent: React.FunctionComponent<{
             pageIndex,
             isFrontCover,
             isXMatter: page.isXMatter,
+            disabled: isDisabled,
         });
     };
 
@@ -224,11 +224,13 @@ const PageItemComponent: React.FunctionComponent<{
 
 const PageItem = React.memo(PageItemComponent, (prevProps, nextProps) => {
     // Only re-render if selection state or page key changes
+    const prevDisabled = Boolean(prevProps.page.disabled);
+    const nextDisabled = Boolean(nextProps.page.disabled);
     return (
         prevProps.page.key === nextProps.page.key &&
         prevProps.pageIndex === nextProps.pageIndex &&
         prevProps.isSelected === nextProps.isSelected &&
-        prevProps.isDisabled === nextProps.isDisabled &&
+        prevDisabled === nextDisabled &&
         prevProps.pageLayout === nextProps.pageLayout &&
         prevProps.bookId === nextProps.bookId &&
         prevProps.bookFolderPath === nextProps.bookFolderPath
@@ -308,15 +310,22 @@ const PageChooserComponent: React.FunctionComponent<{
                     caption: string;
                     content: string;
                     isXMatter?: boolean;
+                    disabled?: boolean;
                 }>;
                 setPageLayout(response.data.pageLayout || "A5Portrait");
 
-                const pageList: PageWithXMatter[] = pageData.map((p) => ({
-                    key: p.key,
-                    caption: p.caption,
-                    content: p.content || "",
-                    isXMatter: p.isXMatter,
-                }));
+                const pageList: PageWithXMatter[] = pageData.map((p, index) => {
+                    const isFrontCover = index === 0;
+                    return {
+                        key: p.key,
+                        caption: p.caption,
+                        content: p.content || "",
+                        isXMatter: p.isXMatter,
+                        disabled:
+                            p.disabled ??
+                            (Boolean(p.isXMatter) && !isFrontCover),
+                    };
+                });
 
                 setPages(pageList);
                 setLoading(false);
@@ -330,6 +339,7 @@ const PageChooserComponent: React.FunctionComponent<{
                         pageIndex: index,
                         isFrontCover: index === 0,
                         isXMatter: page.isXMatter,
+                        disabled: page.disabled,
                     })),
                 );
 
@@ -343,6 +353,7 @@ const PageChooserComponent: React.FunctionComponent<{
                         pageIndex: 0,
                         isFrontCover: true,
                         isXMatter: pageList[0].isXMatter,
+                        disabled: pageList[0].disabled,
                     });
                 }
             },
@@ -491,7 +502,8 @@ const PageChooserComponent: React.FunctionComponent<{
                                 selectedPageId === "cover" && index === 0;
                             const isFrontCover = index === 0;
                             const isDisabled =
-                                Boolean(page.isXMatter) && !isFrontCover;
+                                page.disabled ??
+                                (Boolean(page.isXMatter) && !isFrontCover);
                             const isSelected =
                                 !isDisabled &&
                                 (selectedPageId === page.key ||
@@ -502,7 +514,6 @@ const PageChooserComponent: React.FunctionComponent<{
                                     page={page}
                                     pageIndex={index}
                                     isSelected={isSelected}
-                                    isDisabled={isDisabled}
                                     pageLayout={pageLayout}
                                     bookId={bookId}
                                     bookFolderPath={bookFolderPath}
