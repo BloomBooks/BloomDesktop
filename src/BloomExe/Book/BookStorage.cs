@@ -111,6 +111,7 @@ namespace Bloom.Book
         void MigrateToLevel7BloomCanvas();
         void MigrateToLevel8RemoveEnterpriseOnly();
         void MigrateToLevel9TruncateWidgetPaths();
+        void FixProblematicSplitPaneMarginBoxes();
         void DoBackMigrations();
 
         CollectionSettings CollectionSettings { get; }
@@ -180,7 +181,7 @@ namespace Bloom.Book
         ///              0 = No media maintenance has been done
         ///   Bloom 6.0: 1 = maintenanceLevel at least 1 (so images are opaque and not too big)
         /// </summary>
-        public const int kMaintenanceLevel = 8;
+        public const int kMaintenanceLevel = 9;
         public const int kMediaMaintenanceLevel = 1;
 
         public const string PrefixForCorruptHtmFiles = "_broken_";
@@ -3584,7 +3585,6 @@ namespace Bloom.Book
             // If mediaMaintenanceLevel is missing, it should be set to zero if the old maintenanceLevel
             // indicates we have not done MigrateToMediaLevel1ShrinkLargeImages, and to 1 if we have.
             Dom.UpdateMetaElement("mediaMaintenanceLevel", GetMaintenanceLevel() >= 1 ? "1" : "0");
-            ;
         }
 
         /// <summary>
@@ -4133,6 +4133,53 @@ namespace Bloom.Book
                 iframe.SetAttribute("src", newRawSrc);
             }
             Dom.UpdateMetaElement("maintenanceLevel", "9");
+        }
+
+        // See BL-15478 and linked issues.
+        // We have discovered books out in the wild which have a structure like
+        //   <div style="bottom: 77.5%;" class="split-pane-component marginBox">
+        //      <div style="min-height: 40px;" class="split-pane horizontal-percent">
+        // Somehow 5.6 handled displaying these OK, but 6.0+ do not.
+        // I don't know that we ever fixed a specific bug which prevents this structure from occurring,
+        // but we can't reproduce it now, so we're doing a one-time migration on the hope that it
+        // isn't possible anymore.
+        // Note that it *is* possible with current Bloom (6.3) to get a marginBox with split-pane-component class.
+        // That only requires something like: create picture-only page, split the page by adding a pane on the bottom,
+        // remove the top pane. But that isn't enough to cause a problem because 1) there is no bottom/left style added
+        // and 2) the next level down from marginBox/split-pane-component is split-pane-component-inner, not split-pane.
+        public void FixProblematicSplitPaneMarginBoxes()
+        {
+            // We want any marginBox which has both marginBox and split-pane-component classes,
+            // but only if they also have a direct child div with split-pane class.
+            // Note, this single xpath is more efficient than using some combination of methods like HasClass().
+            var marginBoxNodes = Dom.SafeSelectNodes(
+                    "//div[contains(concat(' ', normalize-space(@class), ' '), ' marginBox ') and contains(concat(' ', normalize-space(@class), ' '), ' split-pane-component ') and child::div[contains(concat(' ', normalize-space(@class), ' '), ' split-pane ')]]"
+                )
+                .Cast<SafeXmlElement>();
+            foreach (var marginBox in marginBoxNodes)
+            {
+                marginBox.RemoveClass("split-pane-component");
+                var style = marginBox.GetOptionalStringAttribute("style", null);
+                if (string.IsNullOrWhiteSpace(style))
+                    continue;
+                var styleSegments = style
+                    .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(s => s.Trim())
+                    .Where(s => !string.IsNullOrEmpty(s))
+                    .ToArray();
+                var styleSegmentsToKeep = styleSegments
+                    .Where(s => !s.StartsWith("bottom", StringComparison.OrdinalIgnoreCase))
+                    // I don't think we've seen the situation with left (vertical split) in the wild,
+                    // but if it happens, it would cause the same kind of problem.
+                    .Where(s => !s.StartsWith("left", StringComparison.OrdinalIgnoreCase))
+                    .ToArray();
+                if (styleSegmentsToKeep.Length == styleSegments.Length)
+                    continue;
+                if (styleSegmentsToKeep.Length > 0)
+                    marginBox.SetAttribute("style", string.Join("; ", styleSegmentsToKeep));
+                else
+                    marginBox.RemoveAttribute("style");
+            }
         }
 
         /// <summary>
