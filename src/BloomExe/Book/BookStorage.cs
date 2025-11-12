@@ -113,7 +113,7 @@ namespace Bloom.Book
         void MigrateToLevel10GameHeader();
         void MigrateToLevel11RenameOverlayTool();
         void MigrateToLevel12PageNumberPosition();
-        void FixProblematicSplitPaneMarginBoxes();
+        void MigrateToLevel13SplitPaneMarginBoxes();
         void DoBackMigrations();
 
         CollectionSettings CollectionSettings { get; }
@@ -181,12 +181,13 @@ namespace Bloom.Book
         ///   Bloom 6.3 10 = change old QuizHeader-style and Prompt-Style to uniform GameHeader-style
         ///   Bloom 6.3 11 = change tool id in metadata from "overlay" to "canvas"
         ///   Bloom 6.3 12 = change appearance settings page number control to use page number position system
+        ///   Bloom 6.3 13 = fix split-pane-component margin boxes with positioning style
         /// History of kMediaMaintenanceLevel (introduced in 6.0)
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
         ///   Bloom 6.0: 1 = maintenanceLevel at least 1 (so images are opaque and not too big)
         /// </summary>
-        public const int kMaintenanceLevel = 12;
+        public const int kMaintenanceLevel = 13;
         public const int kMediaMaintenanceLevel = 1;
 
         public const string PrefixForCorruptHtmFiles = "_broken_";
@@ -4253,6 +4254,16 @@ namespace Bloom.Book
                 BookInfo.AppearanceSettings.WriteCssToFolder(FolderPath);
             }
             Dom.UpdateMetaElement("maintenanceLevel", "12");
+        }
+
+        public void MigrateToLevel13SplitPaneMarginBoxes()
+        {
+            if (GetMaintenanceLevel() >= 13)
+                return;
+
+            FixProblematicSplitPaneMarginBoxes();
+
+            Dom.UpdateMetaElement("maintenanceLevel", "13");
         }
 
         /// <summary>

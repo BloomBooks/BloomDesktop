@@ -1789,11 +1789,7 @@ namespace Bloom.Book
             Storage.MigrateToLevel10GameHeader();
             Storage.MigrateToLevel11RenameOverlayTool();
             Storage.MigrateToLevel12PageNumberPosition();
-
-            // In 6.3, this is a proper migration with level (and is called MigrateToLevel13SplitPaneMarginBoxes).
-            // But here in 6.2, we can't do the level number bump because 6.3 already added levels before we got this
-            // fix into 6.2. So for 6.2, we just run it every time. In 6.3, it will properly run only once.
-            Storage.FixProblematicSplitPaneMarginBoxes();
+            Storage.MigrateToLevel13SplitPaneMarginBoxes();
 
             Storage.DoBackMigrations();
 
