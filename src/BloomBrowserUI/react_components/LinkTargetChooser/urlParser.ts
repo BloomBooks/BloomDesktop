@@ -8,7 +8,7 @@ export interface ParsedURL {
 /**
  * Pure function that parses a raw URL string and returns normalized URL components.
  * Handles four URL formats:
- * - Hash-only URLs: "#pageId" or "#cover"
+ * - Hash-only URLs: "#pageId" or "#cover". Bloom Player handles these as referring to the current book.
  * - Book path URLs: "/book/bookId" or "/book/bookId#pageId"
  * - External/other URLs: any other string
  * - Empty URLs: empty string

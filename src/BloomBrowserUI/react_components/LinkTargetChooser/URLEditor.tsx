@@ -161,7 +161,7 @@ const URLEditorComponent: React.FunctionComponent<{
                         flex: 1;
                     `}
                     data-testid="url-input"
-                />{" "}
+                />
                 {/* More Menu */}
                 <Box css={css``}>
                     <IconButton

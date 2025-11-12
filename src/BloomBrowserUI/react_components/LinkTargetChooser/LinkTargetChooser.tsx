@@ -87,6 +87,22 @@ export const LinkTargetChooser: React.FunctionComponent<{
         }
 
         if (parsed.urlType === "hash") {
+            // Hash-only (#the-page-id) URLs refer to pages in the book currently being edited (or played, during playback).
+            // Auto-select the current book if available, but keep the #pageid format.
+            if (currentBookId && bookInfoForLinks.length > 0) {
+                const currentBook = bookInfoForLinks.find(
+                    (b) => b.id === currentBookId,
+                );
+                if (currentBook) {
+                    setSelectedBook(currentBook);
+                    setSelectedPageId(parsed.pageId);
+                    setHasAttemptedAutoSelect(true);
+                    // keep the #pageid format.
+                    props.onURLChanged?.(parsed.parsedUrl, false);
+                    return;
+                }
+            }
+            // No current book available, keep the #pageid format.
             setSelectedBook(null);
             setSelectedPageId(parsed.pageId);
             setHasAttemptedAutoSelect(true);
@@ -117,7 +133,16 @@ export const LinkTargetChooser: React.FunctionComponent<{
                         }
                     }
                 }
-                props.onURLChanged?.(parsed.parsedUrl, false);
+                // Simplify to keep the #pageid format if this is the current book
+                if (currentBookId && parsed.bookId === currentBookId) {
+                    const simplifiedUrl =
+                        parsed.pageId === "cover"
+                            ? "#cover"
+                            : `#${parsed.pageId}`;
+                    props.onURLChanged?.(simplifiedUrl, false);
+                } else {
+                    props.onURLChanged?.(parsed.parsedUrl, false);
+                }
             }
             return;
         }
@@ -137,10 +162,14 @@ export const LinkTargetChooser: React.FunctionComponent<{
             setErrorMessage("");
             setHasAttemptedAutoSelect(true);
 
-            const url = `/book/${book.id}`;
+            // Use #pageid-only format if this is the current book
+            const url =
+                currentBookId && book.id === currentBookId
+                    ? "#cover"
+                    : `/book/${book.id}`;
             props.onURLChanged?.(url, false);
         },
-        [props],
+        [props, currentBookId],
     );
 
     const handlePageSelected = useCallback(
@@ -161,10 +190,18 @@ export const LinkTargetChooser: React.FunctionComponent<{
             // Build URL and update URL box
             let url: string;
             if (selectedBook?.id) {
-                url =
-                    normalizedPageId === "cover"
-                        ? `/book/${selectedBook.id}`
-                        : `/book/${selectedBook.id}#${normalizedPageId}`;
+                // Use #pageid-only format if this is the current book
+                if (currentBookId && selectedBook.id === currentBookId) {
+                    url =
+                        normalizedPageId === "cover"
+                            ? "#cover"
+                            : `#${normalizedPageId}`;
+                } else {
+                    url =
+                        normalizedPageId === "cover"
+                            ? `/book/${selectedBook.id}`
+                            : `/book/${selectedBook.id}#${normalizedPageId}`;
+                }
             } else {
                 url =
                     normalizedPageId === "cover"
@@ -174,7 +211,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
 
             props.onURLChanged?.(url, false);
         },
-        [props, selectedBook],
+        [props, selectedBook, currentBookId],
     );
 
     const handleURLEditorChanged = useCallback(

@@ -179,7 +179,7 @@ test.describe("LinkTargetChooser - URL Synchronization", () => {
 
     test("Auto-selects current book when API reports one", async ({ page }) => {
         const context = await setupLinkTargetChooser(page, {
-            currentBookId: "book2",
+            currentBookBeingEditedId: "book2",
         });
 
         await context.bookList.waitForBooksToLoad();
@@ -189,7 +189,7 @@ test.describe("LinkTargetChooser - URL Synchronization", () => {
             .toBeTruthy();
 
         const input = await context.urlEditor.getInput();
-        await expect(input).toHaveValue("/book/book2");
+        await expect(input).toHaveValue("#cover");
 
         const okButton = await context.dialog.getOKButton();
         await expect(okButton).toBeEnabled();
@@ -207,6 +207,120 @@ test.describe("LinkTargetChooser - URL Preselection", () => {
 
         const okButton = await context.dialog.getOKButton();
         await expect(okButton).toBeDisabled();
+    });
+
+    test("Auto-selects current book and page when URL is hash-only with page ID", async ({
+        page,
+    }) => {
+        const context = await setupLinkTargetChooser(page, {
+            currentURL: "#5",
+            currentBookBeingEditedId: "book3",
+        });
+
+        await context.bookList.waitForBooksToLoad();
+
+        // Should auto-select the current book
+        await expect
+            .poll(async () => await context.bookList.isBookSelected("book3"))
+            .toBeTruthy();
+
+        // Should select the specified page
+        await expect
+            .poll(async () => await context.pageList.isPageSelected(5))
+            .toBeTruthy();
+
+        // URL should stay in hash-only format
+        const input = await context.urlEditor.getInput();
+        await expect(input).toHaveValue("#5");
+
+        // OK button should be enabled
+        const okButton = await context.dialog.getOKButton();
+        await expect(okButton).toBeEnabled();
+    });
+
+    test("Auto-selects current book when URL is #cover", async ({ page }) => {
+        const context = await setupLinkTargetChooser(page, {
+            currentURL: "#cover",
+            currentBookBeingEditedId: "book2",
+        });
+
+        await context.bookList.waitForBooksToLoad();
+
+        // Should auto-select the current book
+        await expect
+            .poll(async () => await context.bookList.isBookSelected("book2"))
+            .toBeTruthy();
+
+        // Should select cover page
+        await expect
+            .poll(async () => await context.pageList.isPageSelected("cover"))
+            .toBeTruthy();
+
+        // URL should stay in hash-only format
+        const input = await context.urlEditor.getInput();
+        await expect(input).toHaveValue("#cover");
+
+        // OK button should be enabled
+        const okButton = await context.dialog.getOKButton();
+        await expect(okButton).toBeEnabled();
+    });
+
+    test("Simplifies book-path URL to hash-only when it refers to current book", async ({
+        page,
+    }) => {
+        const context = await setupLinkTargetChooser(page, {
+            currentURL: "/book/book2#7",
+            currentBookBeingEditedId: "book2",
+        });
+
+        await context.bookList.waitForBooksToLoad();
+
+        // Should auto-select the current book
+        await expect
+            .poll(async () => await context.bookList.isBookSelected("book2"))
+            .toBeTruthy();
+
+        // Should select the specified page
+        await expect
+            .poll(async () => await context.pageList.isPageSelected(7))
+            .toBeTruthy();
+
+        // URL should be simplified to hash-only format
+        const input = await context.urlEditor.getInput();
+        await expect(input).toHaveValue("#7");
+
+        // OK button should be enabled
+        const okButton = await context.dialog.getOKButton();
+        await expect(okButton).toBeEnabled();
+    });
+
+    test("Simplifies book-path URL with cover to #cover when it refers to current book", async ({
+        page,
+    }) => {
+        const context = await setupLinkTargetChooser(page, {
+            currentURL: "/book/book4",
+            currentBookBeingEditedId: "book4",
+        });
+
+        await context.bookList.waitForBooksToLoad();
+
+        // Should auto-select the current book
+        await expect
+            .poll(async () => await context.bookList.isBookSelected("book4"))
+            .toBeTruthy();
+
+        // Should select cover page
+        await expect
+            .poll(async () => await context.pageList.isPageSelected("cover"))
+            .toBeTruthy();
+
+        // URL should be simplified to #cover
+        const input = await context.urlEditor.getInput();
+        await expect(input).toHaveValue("#cover");
+
+        // OK button should be enabled
+        const okButton = await context.dialog.getOKButton();
+        await expect(okButton).toBeEnabled();
     });
 
     test("Preselects book when URL is /book/BOOKID", async ({ page }) => {

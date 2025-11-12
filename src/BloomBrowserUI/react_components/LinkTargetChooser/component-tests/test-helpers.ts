@@ -36,7 +36,7 @@ interface LinkTargetChooserSetupOptions {
     currentURL?: string;
     onCancel?: () => void;
     onSelect?: (info: LinkTargetInfo) => void;
-    currentBookId?: string;
+    currentBookBeingEditedId?: string;
     books?: typeof mockBooks;
     pages?: Array<{
         key: string;
@@ -126,7 +126,7 @@ export async function setupLinkTargetChooser(
     prepareGetResponse(
         page,
         "**/bloom/api/editView/currentBookId",
-        props.currentBookId ?? "",
+        props.currentBookBeingEditedId ?? "",
     );
 
     // Intercept page list APIs used by the PageList component

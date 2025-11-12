@@ -22,6 +22,7 @@ manualDescribe("Manual Interactive Testing", () => {
         // so we mock it with a sample URL that you can paste using the paste button.
         await setupLinkTargetChooser(page, {
             currentURL: "/book/book10#44",
+            currentBookBeingEditedId: "book3",
             clipboardText: "https://example.com", // Mock clipboard content
         });
 
@@ -29,6 +30,48 @@ manualDescribe("Manual Interactive Testing", () => {
 
         // Keep the browser open until manually closed
         // The test will end when you close the browser window
+        await page.waitForEvent("close");
+    });
+
+    test("hash-only-url-with-page-id", async ({ page }) => {
+        test.setTimeout(0);
+
+        // Demonstrates hash-only URL (#5) auto-selecting the current book (book3)
+        // and navigating to page 5. The URL stays as #5 (not converted to /book/book3#5)
+        await setupLinkTargetChooser(page, {
+            currentURL: "#5",
+            currentBookBeingEditedId: "book3",
+            clipboardText: "#10",
+        });
+
+        await page.waitForEvent("close");
+    });
+
+    test("hash-only-url-with-cover", async ({ page }) => {
+        test.setTimeout(0);
+
+        // Demonstrates hash-only URL (#cover) auto-selecting the current book (book2)
+        // and showing the cover page. The URL stays as #cover (not converted to /book/book2)
+        await setupLinkTargetChooser(page, {
+            currentURL: "#cover",
+            currentBookBeingEditedId: "book2",
+            clipboardText: "#cover",
+        });
+
+        await page.waitForEvent("close");
+    });
+
+    test("book-path-url-simplified-to-hash", async ({ page }) => {
+        test.setTimeout(0);
+
+        // Demonstrates that a book-path URL (/book/book2#7) gets simplified to #7
+        // when it refers to the current book (book2)
+        await setupLinkTargetChooser(page, {
+            currentURL: "/book/book2#7",
+            currentBookBeingEditedId: "book2",
+            clipboardText: "/book/book3#5",
+        });
+
         await page.waitForEvent("close");
     });
 
