@@ -1789,6 +1789,7 @@ namespace Bloom.Book
             Storage.MigrateToLevel10GameHeader();
             Storage.MigrateToLevel11RenameOverlayTool();
             Storage.MigrateToLevel12PageNumberPosition();
+            Storage.MigrateToLevel13SplitPaneMarginBoxes();
 
             Storage.DoBackMigrations();
 

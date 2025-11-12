@@ -2001,6 +2001,127 @@ These are similar but already have game-theme classes
             );
         }
 
+        [TestCase("color: blue; bottom: 10%;")]
+        [TestCase("bottom: 11%; color: blue;")]
+        [TestCase("bottom: 12%; color: blue")]
+        [TestCase("  bottom:13%;  color : blue;  ")]
+        [TestCase("color: blue; left: 10%;")]
+        public void FixProblematicSplitPaneMarginBoxes_RemovesBottomLeftAndClass(
+            string originalStyle
+        )
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @$"<html><head></head><body>
+<div class='bloom-page'><div class='split-pane-component marginBox' style='{originalStyle}'><div class='split-pane'>content</div></div></div>
+</body></html>"
+            );
+
+            storage.FixProblematicSplitPaneMarginBoxes();
+
+            var marginBox = storage.Dom.SelectSingleNode("//div[contains(@class,'marginBox')]");
+            Assert.That(marginBox, Is.Not.Null);
+            Assert.That(marginBox.GetAttribute("class"), Does.Not.Contain("split-pane-component"));
+            Assert.That(
+                marginBox.GetAttribute("style"),
+                Is.EqualTo("color: blue").Or.EqualTo("color : blue")
+            );
+        }
+
+        [Test]
+        public void FixProblematicSplitPaneMarginBoxes_RemovesClassEvenWithoutStyle()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head></head><body>
+<div class='bloom-page'><div class='marginBox split-pane-component'><div class='split-pane'>content</div></div></div>
+</body></html>"
+            );
+
+            storage.FixProblematicSplitPaneMarginBoxes();
+
+            var marginBox = storage.Dom.SelectSingleNode("//div[contains(@class,'marginBox')]");
+            Assert.That(marginBox, Is.Not.Null);
+            Assert.That(marginBox.GetAttribute("class"), Does.Not.Contain("split-pane-component"));
+            Assert.That(marginBox.HasAttribute("style"), Is.False);
+        }
+
+        [Test]
+        public void FixProblematicSplitPaneMarginBoxes_RemovesStyleAttributeWhenOnlyBottom()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head></head><body>
+<div class='bloom-page'><div class='marginBox split-pane-component' style='bottom: 42%;'><div class='split-pane'>content</div></div></div>
+</body></html>"
+            );
+
+            storage.FixProblematicSplitPaneMarginBoxes();
+
+            var marginBox = storage.Dom.SelectSingleNode("//div[contains(@class,'marginBox')]");
+            Assert.That(marginBox, Is.Not.Null);
+            Assert.That(marginBox.GetAttribute("class"), Does.Not.Contain("split-pane-component"));
+            Assert.That(marginBox.GetOptionalStringAttribute("style", null), Is.Null.Or.Empty);
+        }
+
+        [Test]
+        public void FixProblematicSplitPaneMarginBoxes_PreservesOtherStylesWhenNoBottomOrLeft()
+        {
+            const string originalStyle = "top: 5%; border-bottom: 1px solid black;";
+            var storage = GetInitialStorageWithCustomHtml(
+                $"<html><head></head><body>"
+                    + "<div class='bloom-page'><div class='marginBox split-pane-component' style='"
+                    + originalStyle
+                    + "'><div class='split-pane'>content</div></div></div></body></html>"
+            );
+
+            storage.FixProblematicSplitPaneMarginBoxes();
+
+            var marginBox = storage.Dom.SelectSingleNode("//div[contains(@class,'marginBox')]");
+            Assert.That(marginBox, Is.Not.Null);
+            Assert.That(marginBox.GetAttribute("class"), Does.Not.Contain("split-pane-component"));
+            Assert.That(marginBox.GetAttribute("style"), Is.EqualTo(originalStyle));
+        }
+
+        [Test]
+        public void FixProblematicSplitPaneMarginBoxes_RemovesStyleAttributeWhenOnlyLeft()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head></head><body>
+<div class='bloom-page'><div class='marginBox split-pane-component' style='left: 42%;'><div class='split-pane'>content</div></div></div>
+</body></html>"
+            );
+
+            storage.FixProblematicSplitPaneMarginBoxes();
+
+            var marginBox = storage.Dom.SelectSingleNode("//div[contains(@class,'marginBox')]");
+            Assert.That(marginBox, Is.Not.Null);
+            Assert.That(marginBox.GetAttribute("class"), Does.Not.Contain("split-pane-component"));
+            Assert.That(marginBox.GetOptionalStringAttribute("style", null), Is.Null.Or.Empty);
+        }
+
+        [Test]
+        public void FixProblematicSplitPaneMarginBoxes_IgnoresElementsWithoutRequiredChild()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head></head><body>
+<div class='bloom-page'>
+    <div class='marginBox split-pane-component' style='bottom: 42%;'>No direct split-pane child</div>
+    <div class='marginBox split-pane-component' style='left: 42%;'><div class='other-class'>Wrong child class</div></div>
+</div>
+</body></html>"
+            );
+
+            storage.FixProblematicSplitPaneMarginBoxes();
+
+            // Both elements should remain unchanged because they don't have the required direct child div with split-pane class
+            var marginBoxes = storage.Dom.SafeSelectNodes("//div[contains(@class,'marginBox')]");
+            Assert.That(marginBoxes.Count, Is.EqualTo(2));
+
+            foreach (SafeXmlElement marginBox in marginBoxes)
+            {
+                Assert.That(marginBox.GetAttribute("class"), Does.Contain("split-pane-component"));
+                Assert.That(marginBox.HasAttribute("style"), Is.True);
+            }
+        }
+
         [Test]
         public void PerformNecessaryMaintenanceOnBook_HandlesMultipleSVGs()
         {
@@ -2321,7 +2442,7 @@ These are similar but already have game-theme classes
                 @"<html>
   <head></head>
   <body>
-    <div class=""bloom-page simple-comprehension-quiz bloom-ignoreForReaderStats bloom-interactive-page enterprise-only numberedPage game-theme-red-on-white side-left Device16x9Landscape bloom-monolingual"" id=""2578f51a-d48c-458e-b658-892963b242a8"" data-page="""" data-reader-version=""2"" data-pagelineage=""F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D"" data-page-number=""1"" lang="""" 
+    <div class=""bloom-page simple-comprehension-quiz bloom-ignoreForReaderStats bloom-interactive-page enterprise-only numberedPage game-theme-red-on-white side-left Device16x9Landscape bloom-monolingual"" id=""2578f51a-d48c-458e-b658-892963b242a8"" data-page="""" data-reader-version=""2"" data-pagelineage=""F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D"" data-page-number=""1"" lang=""""
          data-analyticscategories=""comprehension"" data-activity=""simple-checkbox-quiz"" data-tool-id=""game"">
       <div class=""marginBox"">
         <div class=""quiz"">
