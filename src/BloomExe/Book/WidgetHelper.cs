@@ -94,8 +94,6 @@ namespace Bloom.Book
             // First attempt: get the widget name from the name of the directory
             // containing the .html file.
             var widgetName = Path.GetFileName(fullFolderName);
-            if (widgetName.Length > MaximumNameLength)
-                widgetName = widgetName.Substring(0, MaximumNameLength).Trim();
             var fromActivePresenter = false;
             var activePresenterFiles = new string[]
             {
@@ -127,12 +125,24 @@ namespace Bloom.Book
             // Ampersands cause problems for BloomPubReader, so replace them.  (BL-10045)
             if (widgetName.Contains("&"))
                 widgetName = widgetName.Replace("&", "_");
+            // Trim widgetName to a reasonable length.  (BL-15307)
+            if (widgetName.Length > MaximumNameLength)
+                widgetName = widgetName.Substring(0, MaximumNameLength).Trim();
             var widgetPath = Path.Combine(Path.GetTempPath(), "Bloom", widgetName + ".wdgt");
             Directory.CreateDirectory(Path.GetDirectoryName(widgetPath));
             using (TemporaryFolder temp = new TemporaryFolder("CreatingWidgetForBloom"))
             {
-                // Copy the relevant files and folders to a temporary location.
-                DirectoryUtils.CopyFolder(fullFolderName, temp.FolderPath);
+                try
+                {
+                    // Copy the relevant files and folders to a temporary location.
+                    DirectoryUtils.CopyFolder(fullFolderName, temp.FolderPath);
+                }
+                catch (Bloom.Utils.PathTooLongException ex)
+                {
+                    // Tell the user that the widget creation failed due to the long source path. (BL-15421)
+                    LongPathAware.ReportLongPath(ex);
+                    return "";
+                }
                 // Remove excess html files (if any), and ensure desired html file is named "index.html".
                 foreach (var filePath in Directory.GetFiles(temp.FolderPath))
                 {

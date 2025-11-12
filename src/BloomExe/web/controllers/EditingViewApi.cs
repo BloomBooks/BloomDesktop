@@ -437,6 +437,12 @@ namespace Bloom.web.controllers
                 if (ext.EndsWith("htm") || ext.EndsWith("html"))
                 {
                     fullWidgetPath = WidgetHelper.CreateWidgetFromHtmlFolder(fullWidgetPath);
+                    if (String.IsNullOrEmpty(fullWidgetPath))
+                    {
+                        // treat an error in creating the widget the same as canceling (BL-15421)
+                        request.ReplyWithText("");
+                        return;
+                    }
                 }
                 UrlPathString activityRelativePathUrl = View.Model.AddWidgetFilesToBookFolder(
                     fullWidgetPath
