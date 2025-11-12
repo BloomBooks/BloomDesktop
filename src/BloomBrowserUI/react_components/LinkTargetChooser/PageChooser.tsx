@@ -192,16 +192,19 @@ const PageItemComponent: React.FunctionComponent<{
                 padding: 5px;
                 background-color: ${itemBackgroundColor};
                 cursor: ${isDisabled ? "not-allowed" : "pointer"};
-                opacity: ${isDisabled ? 0.5 : 1};
+                opacity: ${isDisabled ? 0.6 : 1};
                 ${isSelected ? selectedStyle : ""}
                 & .pageContainer {
                     float: none;
+                    margin-left: auto;
+                    margin-right: auto;
                 }
                 & .thumbnailCaption {
                     left: 0 !important;
                     right: 0 !important;
                     text-align: center !important;
                 }
+                text-align: center; // puts the thumbnail caption in center (which is weird, it's not text)
             `}
             onClick={handleSelect}
             data-selected={isSelected ? "true" : undefined}
@@ -215,17 +218,6 @@ const PageItemComponent: React.FunctionComponent<{
                 bookFolderPath={bookFolderPath}
                 configureReloadCallback={onConfigureReloadCallback}
             />
-            {isDisabled && (
-                <div
-                    css={css`
-                        position: absolute;
-                        inset: 0;
-                        background-color: rgba(255, 255, 255, 0.5);
-                        border-radius: 2px;
-                        pointer-events: none;
-                    `}
-                />
-            )}
         </div>
     );
 };

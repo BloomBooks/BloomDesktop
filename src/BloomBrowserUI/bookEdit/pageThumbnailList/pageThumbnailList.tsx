@@ -366,6 +366,7 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
             {...bookAttributesThatMayAffectDisplay}
         >
             <Responsive
+                className="page-thumbnail-list"
                 width={180}
                 layouts={layouts}
                 // lg (two-column) if it's more than 90px wide. That's barely enough for one column,

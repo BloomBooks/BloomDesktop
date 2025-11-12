@@ -138,7 +138,7 @@ const URLEditorComponent: React.FunctionComponent<{
                             top: 2px;
                             margin-left: 4px;
 
-                            color: #666;
+                            color: ${kBloomBlue};
                         `}
                     />
                 </BloomTooltip>
@@ -168,7 +168,7 @@ const URLEditorComponent: React.FunctionComponent<{
                         onClick={handleMoreMenuClick}
                         size="small"
                         aria-label={optionsButtonLabel}
-                        data-testid="more-menu-button"
+                        data-testid="url-editor-more-menu-button"
                         css={css`
                             color: ${kBloomBlue};
                         `}
@@ -179,11 +179,11 @@ const URLEditorComponent: React.FunctionComponent<{
                         anchorEl={moreMenuAnchor}
                         open={Boolean(moreMenuAnchor)}
                         onClose={handleMoreMenuClose}
-                        data-testid="more-menu"
+                        data-testid="url-editor-more-menu"
                     >
                         <MenuItem
                             onClick={handleBackMenuItemClick}
-                            data-testid="back-menu-item"
+                            data-testid="url-editor-back-menu-item"
                             title={backMenuTitle}
                         >
                             {backMenuLabel}

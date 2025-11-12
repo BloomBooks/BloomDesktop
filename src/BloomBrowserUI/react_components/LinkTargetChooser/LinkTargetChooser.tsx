@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { css } from "@emotion/react";
-import { Box, Typography, Button, Menu, MenuItem } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import {
     BookInfoForLinks,
     PageInfoForLinks,
@@ -12,6 +12,7 @@ import { PageChooser } from "./PageChooser";
 import { useWatchApiData, useApiString } from "../../utils/bloomApi";
 import { IBookInfo } from "../../collectionsTab/BooksOfCollection";
 import { headingStyle } from "./sharedStyles";
+import { parseURL } from "./urlParser";
 
 export interface LinkTargetInfo {
     url: string;
@@ -40,9 +41,6 @@ export const LinkTargetChooser: React.FunctionComponent<{
     const [errorMessage, setErrorMessage] = useState<string>("");
     const [hasAttemptedAutoSelect, setHasAttemptedAutoSelect] =
         useState<boolean>(() => !!props.currentURL);
-    const [moreMenuAnchor, setMoreMenuAnchor] = useState<null | HTMLElement>(
-        null,
-    );
 
     // Get the current book ID so we can select it by default
     const currentBookId = useApiString("editView/currentBookId", "");
@@ -83,7 +81,9 @@ export const LinkTargetChooser: React.FunctionComponent<{
         }
         setErrorMessage("");
 
-        if (!rawUrl) {
+        const parsed = parseURL(rawUrl);
+
+        if (parsed.urlType === "empty") {
             setCurrentURL("");
             setSelectedBook(null);
             setSelectedBookId(null);
@@ -92,45 +92,25 @@ export const LinkTargetChooser: React.FunctionComponent<{
             return;
         }
 
-        if (rawUrl.startsWith("#")) {
-            const pageIdStr = rawUrl.substring(1) || "cover";
-            const normalizedPageId =
-                pageIdStr === "cover" ? "cover" : pageIdStr;
+        if (parsed.urlType === "hash") {
             setSelectedBook(null);
             setSelectedBookId(null);
-            setSelectedPageId(normalizedPageId);
-            setCurrentURL(
-                normalizedPageId === "cover"
-                    ? "#cover"
-                    : `#${normalizedPageId}`,
-            );
+            setSelectedPageId(parsed.pageId);
+            setCurrentURL(parsed.parsedUrl);
             setHasAttemptedAutoSelect(true);
             return;
         }
 
-        if (rawUrl.startsWith("/book/")) {
-            const hashIndex = rawUrl.indexOf("#");
-            const bookId =
-                hashIndex === -1
-                    ? rawUrl.substring(6)
-                    : rawUrl.substring(6, hashIndex);
-            const rawPagePart =
-                hashIndex === -1 ? "cover" : rawUrl.substring(hashIndex + 1);
-            const normalizedPageId =
-                !rawPagePart || rawPagePart === "cover" ? "cover" : rawPagePart;
-
+        if (parsed.urlType === "book-path") {
             setSelectedBook(null);
-            setSelectedBookId(bookId);
-            setSelectedPageId(normalizedPageId);
-            setCurrentURL(
-                normalizedPageId === "cover"
-                    ? `/book/${bookId}`
-                    : `/book/${bookId}#${normalizedPageId}`,
-            );
+            setSelectedBookId(parsed.bookId);
+            setSelectedPageId(parsed.pageId);
+            setCurrentURL(parsed.parsedUrl);
             setHasAttemptedAutoSelect(true);
             return;
         }
 
+        // external URL
         setSelectedBook(null);
         setSelectedBookId(null);
         setSelectedPageId(null);
@@ -145,6 +125,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
     }, [props.currentURL]);
 
     // Validate and preselect book/page when books load or bookId changes
+    // Note: Uses onURLChangedRef.current instead of notifyParent to avoid re-running when callback changes
     useEffect(() => {
         if (!selectedBookId || bookInfoForLinks.length === 0) {
             setSelectedBook(null);
@@ -358,21 +339,6 @@ export const LinkTargetChooser: React.FunctionComponent<{
         ],
     );
 
-    const handleMoreMenuClick = (
-        event: React.MouseEvent<HTMLButtonElement>,
-    ) => {
-        setMoreMenuAnchor(event.currentTarget);
-    };
-
-    const handleMoreMenuClose = () => {
-        setMoreMenuAnchor(null);
-    };
-
-    const handleBackMenuItemClick = () => {
-        handleURLEditorChanged("/back");
-        handleMoreMenuClose();
-    };
-
     return (
         <Box
             css={css`
@@ -382,6 +348,13 @@ export const LinkTargetChooser: React.FunctionComponent<{
                 gap: 10px;
             `}
         >
+            <Box css={css``}>
+                <URLEditor
+                    currentURL={currentURL}
+                    onChange={handleURLEditorChanged}
+                />
+            </Box>
+
             <Box
                 css={css`
                     display: flex;
@@ -412,7 +385,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
                             books={bookInfoForLinks}
                             selectedBook={selectedBook}
                             onSelectBook={handleBookSelected}
-                            includeCurrentBook={true}
+                            excludeBookBeingEdited={false}
                         />
                     </Box>
                 </Box>
@@ -444,43 +417,6 @@ export const LinkTargetChooser: React.FunctionComponent<{
                         />
                     </Box>
                 </Box>
-            </Box>
-
-            {/* Bottom: URLEditor */}
-            <Box css={css``}>
-                <URLEditor
-                    currentURL={currentURL}
-                    onChange={handleURLEditorChanged}
-                />
-            </Box>
-
-            {/* More Menu */}
-            <Box css={css``}>
-                <Button
-                    variant="text"
-                    size="small"
-                    onClick={handleMoreMenuClick}
-                    data-testid="more-menu-button"
-                    css={css`
-                        text-transform: none;
-                    `}
-                >
-                    More...
-                </Button>
-                <Menu
-                    anchorEl={moreMenuAnchor}
-                    open={Boolean(moreMenuAnchor)}
-                    onClose={handleMoreMenuClose}
-                    data-testid="more-menu"
-                >
-                    <MenuItem
-                        onClick={handleBackMenuItemClick}
-                        data-testid="back-menu-item"
-                        title="like the ← back in a web browser"
-                    >
-                        Back button
-                    </MenuItem>
-                </Menu>
             </Box>
 
             {/* Error message display */}

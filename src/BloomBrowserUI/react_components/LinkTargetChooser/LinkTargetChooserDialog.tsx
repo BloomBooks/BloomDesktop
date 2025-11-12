@@ -11,17 +11,17 @@ import {
 } from "../BloomDialog/BloomDialog";
 import { LinkTargetChooser, LinkTargetInfo } from "./LinkTargetChooser";
 import { parseURL } from "./urlParser";
-import { DialogCloseButton } from "../BloomDialog/commonDialogComponents";
+import { DialogCancelButton } from "../BloomDialog/commonDialogComponents";
 import BloomButton from "../bloomButton";
 import { useL10n } from "../l10nHooks";
 
 export const LinkTargetChooserDialog: React.FunctionComponent<{
     open: boolean;
     currentURL: string;
-    onClose: () => void;
+    onCancel?: () => void;
     onSelect?: (info: LinkTargetInfo) => void;
 }> = (props) => {
-    const { onClose, onSelect } = props;
+    const { onCancel, onSelect } = props;
     const [currentLinkInfo, setCurrentLinkInfo] =
         useState<LinkTargetInfo | null>(null);
 
@@ -61,11 +61,31 @@ export const LinkTargetChooserDialog: React.FunctionComponent<{
         }
     }, [currentLinkInfo, onSelect]);
 
-    const handleClose = useCallback(() => {
-        if (onClose) {
-            onClose();
+    const handleCancel = useCallback(() => {
+        if (onCancel) {
+            onCancel();
         }
-    }, [onClose]);
+    }, [onCancel]);
+
+    const handleDialogClose = useCallback(
+        (_event?: object, _reason?: "escapeKeyDown" | "backdropClick") => {
+            handleCancel();
+        },
+        [handleCancel],
+    );
+
+    const handleDialogCancel = useCallback(
+        (
+            _reason?:
+                | "escapeKeyDown"
+                | "backdropClick"
+                | "titleCloseClick"
+                | "cancelClicked",
+        ) => {
+            handleCancel();
+        },
+        [handleCancel],
+    );
 
     const dialogTitle = useL10n(
         "Choose Link Target",
@@ -81,7 +101,8 @@ export const LinkTargetChooserDialog: React.FunctionComponent<{
     return (
         <BloomDialog
             open={props.open}
-            onClose={props.onClose}
+            onClose={handleDialogClose}
+            onCancel={handleDialogCancel}
             css={css`
                 // injecting previewMode.css in page thumbnails set cursor to not-allowed
                 cursor: default !important;
@@ -108,7 +129,7 @@ export const LinkTargetChooserDialog: React.FunctionComponent<{
                 <DialogBottomLeftButtons>
                     {/* Future: Add "Remove Link" button here */}
                 </DialogBottomLeftButtons>
-                <DialogCloseButton onClick={handleClose} />
+                <DialogCancelButton />
                 <BloomButton
                     onClick={handleOK}
                     enabled={hasValidLink}

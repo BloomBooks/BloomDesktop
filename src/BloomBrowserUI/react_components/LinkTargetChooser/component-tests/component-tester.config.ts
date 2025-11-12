@@ -4,13 +4,13 @@ import type { LinkTargetInfo } from "../LinkTargetChooser";
 const config: IBloomComponentConfig<{
     open: boolean;
     currentURL: string;
-    onClose?: () => void;
+    onCancel?: () => void;
     onSelect?: (info: LinkTargetInfo) => void;
 }> = {
     defaultProps: {
         open: true,
         currentURL: "",
-        onClose: undefined,
+        onCancel: undefined,
         onSelect: undefined,
     },
     modulePath: "../LinkTargetChooser/LinkTargetChooserDialog",

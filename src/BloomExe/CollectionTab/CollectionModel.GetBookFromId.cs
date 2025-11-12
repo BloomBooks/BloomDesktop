@@ -41,6 +41,8 @@ namespace Bloom.CollectionTab
                 throw new ArgumentException($"Book with id '{bookId}' was not found.");
             }
 
+            // note that we don't have a way of knowing when we aren't going to need this again, so
+            // we never dispose of it.
             return _cachedBook = GetBookFromBookInfo(bookInfo);
         }
     }

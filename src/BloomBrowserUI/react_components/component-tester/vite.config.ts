@@ -18,7 +18,7 @@
 
 import { createReadStream, existsSync } from "node:fs";
 import { spawn } from "node:child_process";
-import { resolve } from "path";
+import { resolve, normalize } from "path";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
@@ -320,6 +320,64 @@ export default defineConfig({
     },
 });
 
+/**
+ * Validates that a path parameter is safe from path traversal attacks.
+ * Returns the sanitized path if valid, null otherwise.
+ * @param pathParam - The path parameter to validate
+ * @returns The sanitized path without leading slashes, or null if invalid
+ */
+const validateSafePath = (pathParam: string | null): string | null => {
+    if (!pathParam) {
+        return null;
+    }
+
+    // Remove leading slashes
+    const sanitized = pathParam.replace(/^[\\/]+/, "");
+
+    // Reject empty paths after sanitization
+    if (!sanitized) {
+        return null;
+    }
+
+    // Normalize the path to resolve any .. or . segments
+    const normalized = normalize(sanitized);
+
+    // Check for path traversal attempts
+    // After normalization, any .. that escapes the current directory will start with ..
+    if (
+        normalized.startsWith("..") ||
+        normalized.includes("..\\") ||
+        normalized.includes("../")
+    ) {
+        return null;
+    }
+
+    // Reject absolute paths (Windows: C:\, \\, Unix: /)
+    if (/^([a-zA-Z]:)?[\\/]/.test(normalized)) {
+        return null;
+    }
+
+    return normalized;
+};
+
+/**
+ * Validates that a book-id parameter contains only safe characters.
+ * @param bookId - The book-id parameter to validate
+ * @returns The book-id if valid, null otherwise
+ */
+const validateBookId = (bookId: string | null): string | null => {
+    if (!bookId) {
+        return null;
+    }
+
+    // Book IDs should only contain alphanumeric characters, hyphens, and underscores
+    if (!/^[a-zA-Z0-9_-]+$/.test(bookId)) {
+        return null;
+    }
+
+    return bookId;
+};
+
 const handleMockBookFileRequest = (
     req: import("node:http").IncomingMessage,
     res: import("node:http").ServerResponse,
@@ -333,16 +391,25 @@ const handleMockBookFileRequest = (
             return;
         }
 
-        const fileParam = url.searchParams.get("file");
-        if (!fileParam) {
+        // Validate book-id parameter (required for all requests)
+        const bookIdParam = url.searchParams.get("book-id");
+        const validatedBookId = validateBookId(bookIdParam);
+        if (!validatedBookId) {
             res.statusCode = 400;
-            res.end("Missing file parameter");
+            res.end("Missing or invalid book-id parameter");
             return;
         }
 
-        const requestedPath = fileParam.replace(/^[\\/]+/, "");
+        // Validate file parameter
+        const fileParam = url.searchParams.get("file");
+        const validatedPath = validateSafePath(fileParam);
+        if (!validatedPath) {
+            res.statusCode = 400;
+            res.end("Missing or invalid file parameter");
+            return;
+        }
 
-        if (requestedPath === "appearance.css") {
+        if (validatedPath === "appearance.css") {
             const appearancePath = resolve(
                 __dirname,
                 "../../../../output/browser/appearanceThemes/appearance-theme-default.css",

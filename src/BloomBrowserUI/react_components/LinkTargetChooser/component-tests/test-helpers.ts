@@ -34,7 +34,7 @@ const mockBooks = Array.from({ length: 10 }, (_, i) => createMockBook(i));
 
 interface LinkTargetChooserSetupOptions {
     currentURL?: string;
-    onClose?: () => void;
+    onCancel?: () => void;
     onSelect?: (info: LinkTargetInfo) => void;
     currentBookId?: string;
     books?: typeof mockBooks;
@@ -69,7 +69,7 @@ export interface LinkTargetChooserTestContext {
     };
     dialog: {
         getOKButton: () => Promise<ReturnType<Page["getByRole"]>>;
-        getCloseButton: () => Promise<ReturnType<Page["getByRole"]>>;
+        getCancelButton: () => Promise<ReturnType<Page["getByRole"]>>;
         isOKEnabled: () => Promise<boolean>;
     };
     bookList: {
@@ -224,7 +224,7 @@ export async function setupLinkTargetChooser(
         {
             open: true,
             currentURL: props.currentURL || "",
-            onClose: props.onClose,
+            onCancel: props.onCancel,
             onSelect: props.onSelect,
         },
     );
@@ -267,8 +267,8 @@ export async function setupLinkTargetChooser(
             getOKButton: async () => {
                 return page.getByRole("button", { name: "OK" });
             },
-            getCloseButton: async () => {
-                return page.getByRole("button", { name: /close/i });
+            getCancelButton: async () => {
+                return page.getByRole("button", { name: /cancel/i });
             },
             isOKEnabled: async () => {
                 const okButton = await context.dialog.getOKButton();

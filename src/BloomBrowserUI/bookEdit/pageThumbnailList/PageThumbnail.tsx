@@ -212,21 +212,29 @@ export const PageThumbnail: React.FunctionComponent<{
         const pageContentRequestEncodedUrl = props.bookId
             ? `pageList/pageContent?id=${props.page.key}&book-id=${encodeURIComponent(props.bookId)}`
             : `pageList/pageContent?id=${props.page.key}`;
-        get(pageContentRequestEncodedUrl, (response) => {
-            activePageRequestCount--;
-            let htmlContent = response.data.content; // automatically unJsonified?
+        get(
+            pageContentRequestEncodedUrl,
+            (response) => {
+                activePageRequestCount--;
+                let htmlContent = response.data.content; // automatically unJsonified?
 
-            // When loading from a different book, we need to fix image URLs to point to that book's folder
-            if (props.bookId || props.bookFolderPath) {
-                htmlContent = fixResourceUrls(
-                    htmlContent,
-                    props.bookId,
-                    props.bookFolderPath,
-                );
-            }
+                // When loading from a different book, we need to fix image URLs to point to that book's folder
+                if (props.bookId || props.bookFolderPath) {
+                    htmlContent = fixResourceUrls(
+                        htmlContent,
+                        props.bookId,
+                        props.bookFolderPath,
+                    );
+                }
 
-            setContent(htmlContent);
-        });
+                setContent(htmlContent);
+            },
+            (error) => {
+                // Handle errors gracefully (e.g., when a page is deleted or moved while
+                // requests are in-flight). Just decrement the counter and leave content empty.
+                activePageRequestCount--;
+            },
+        );
     }, [props.bookId, props.bookFolderPath, props.page.key]);
 
     const reForOverflow = /^[^>]*class="[^"]*pageOverflows/;

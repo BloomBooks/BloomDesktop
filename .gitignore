@@ -198,3 +198,5 @@ src/content/.yarn/*
 src/BloomBrowserUI/react_components/component-tester/test-results/
 
 src/BloomBrowserUI/test-results/
+
+.vscode/reviewHubAI.json

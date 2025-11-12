@@ -102,13 +102,15 @@ export function preparePostReceiver<T>(
  * @param page - The Playwright page object
  * @param urlPattern - URL or pattern to intercept (string glob or RegExp)
  * @param responseData - The data to return in the response
- * @param options.wrapBody - Set true to wrap the payload in a { data: ... } envelope
+ * @param options.wrapBody - Set true to wrap the payload in a { data: ... } envelope.
+ *                           Defaults to false (no wrapping). Use wrapBody: true when the
+ *                           API expects data wrapped in an envelope object.
  */
 export function prepareGetResponse<T>(
     page: Page,
     urlPattern: string | RegExp,
     responseData: T,
-    options: { wrapBody?: boolean } = {},
+    options: { wrapBody?: boolean } = { wrapBody: false },
 ): void {
     const shouldWrap = options.wrapBody === true;
     void page.route(urlPattern, async (route: Route) => {

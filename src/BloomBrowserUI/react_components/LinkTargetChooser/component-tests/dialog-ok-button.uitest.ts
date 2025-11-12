@@ -51,11 +51,11 @@ test.describe("LinkTargetChooserDialog - OK Button Behavior", () => {
         await expect(okButton).toBeDisabled();
     });
 
-    test("Close button is always enabled", async ({ page }) => {
+    test("Cancel button is always enabled", async ({ page }) => {
         const context = await setupLinkTargetChooser(page);
 
-        const closeButton = await context.dialog.getCloseButton();
-        const isDisabled = await closeButton.isDisabled();
+        const cancelButton = await context.dialog.getCancelButton();
+        const isDisabled = await cancelButton.isDisabled();
         expect(isDisabled).toBe(false);
     });
 

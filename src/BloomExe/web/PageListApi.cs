@@ -169,6 +169,9 @@ namespace Bloom.web
             // without slowing down other behavior.
             result.content = "";
             result.key = page.Id;
+            // isXMatter indicates whether this page is part of the front matter or back matter
+            // (xmatter) rather than the main content. The UI uses this to distinguish template
+            // pages from user-editable content pages.
             result.isXMatter = page.IsXMatter;
             return result;
         }
@@ -299,8 +302,6 @@ namespace Bloom.web
             pageElement.SetAttribute("inert", "true");
             return XmlHtmlConverter.ConvertElementToHtml5(pageElement);
         }
-
-        // Note: Int parsing helper removed as unused.
 
         // As a further form of optimization, mark img elements as being thumbnails. The server
         // produces miniatures that take up less memory.
