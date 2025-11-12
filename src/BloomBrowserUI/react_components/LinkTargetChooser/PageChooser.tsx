@@ -32,6 +32,8 @@ const staticStylesheets: Array<{ href: string; key: string }> = [
         key: "preview-mode",
     },
 ];
+type StylesheetDefinition = { href: string; key: string };
+
 const ensureStylesheet = (
     href: string,
     key: string,
@@ -65,21 +67,26 @@ const ensureStylesheet = (
     }
 };
 
+const attachStylesheets = (stylesheets: StylesheetDefinition[]) => {
+    const addedLinks: HTMLLinkElement[] = [];
+    stylesheets.forEach(({ href, key }) => {
+        ensureStylesheet(href, key, addedLinks);
+    });
+    return addedLinks;
+};
+
+const removeStylesheets = (links: HTMLLinkElement[]) => {
+    links.forEach((linkElement) => {
+        if (linkElement.parentNode) {
+            linkElement.parentNode.removeChild(linkElement);
+        }
+    });
+};
+
 const usePageChooserStyles = (bookId?: string) => {
     useEffect(() => {
-        const addedLinks: HTMLLinkElement[] = [];
-
-        staticStylesheets.forEach(({ href, key }) => {
-            ensureStylesheet(href, key, addedLinks);
-        });
-
-        return () => {
-            addedLinks.forEach((linkElement) => {
-                if (linkElement.parentNode) {
-                    linkElement.parentNode.removeChild(linkElement);
-                }
-            });
-        };
+        const addedLinks = attachStylesheets(staticStylesheets);
+        return () => removeStylesheets(addedLinks);
     }, []);
 
     useEffect(() => {
@@ -94,25 +101,49 @@ const usePageChooserStyles = (bookId?: string) => {
             return;
         }
 
-        const addedLinks: HTMLLinkElement[] = [];
         const href = `/bloom/api/collections/bookFile?book-id=${encodeURIComponent(
             bookId,
         )}&file=${encodeURIComponent("appearance.css")}`;
-        ensureStylesheet(href, "appearance", addedLinks);
-
-        return () => {
-            addedLinks.forEach((linkElement) => {
-                if (linkElement.parentNode) {
-                    linkElement.parentNode.removeChild(linkElement);
-                }
-            });
-        };
+        const addedLinks = attachStylesheets([{ href, key: "appearance" }]);
+        return () => removeStylesheets(addedLinks);
     }, [bookId]);
 };
 
+const toPageInfo = (
+    page: PageWithXMatter,
+    index: number,
+): PageInfoForLinks => ({
+    pageId: index === 0 ? "cover" : page.key,
+    actualPageId: page.key,
+    caption: page.caption,
+    thumbnail: page.content,
+    pageIndex: index,
+    isFrontCover: index === 0,
+    isXMatter: page.isXMatter,
+    disabled: page.disabled,
+});
+
+const renderStatus = (
+    message: string,
+    options?: { color?: "error" | "textSecondary"; padding?: string },
+) => (
+    <Box
+        css={css`
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            background-color: ${chooserBackgroundColor};
+            padding: ${options?.padding ?? "10px"};
+        `}
+    >
+        <Typography color={options?.color}>{message}</Typography>
+    </Box>
+);
+
 const PageItemComponent: React.FunctionComponent<{
     page: PageWithXMatter;
-    pageIndex: number;
+    pageInfo: PageInfoForLinks;
     isSelected: boolean;
     pageLayout: string;
     bookId: string;
@@ -120,23 +151,11 @@ const PageItemComponent: React.FunctionComponent<{
     onSelectPage: (pageInfo: PageInfoForLinks) => void;
     onConfigureReloadCallback: (id: string, callback: () => void) => void;
 }> = (props) => {
-    const {
-        page,
-        pageIndex,
-        isSelected,
-        pageLayout,
-        bookId,
-        bookFolderPath,
-        onSelectPage,
-        onConfigureReloadCallback,
-    } = props;
-
-    const isFrontCover = pageIndex === 0;
-    const isDisabled = Boolean(page.disabled);
+    const isDisabled = Boolean(props.pageInfo.disabled);
     const itemRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
-        if (!isSelected || !itemRef.current) {
+        if (!props.isSelected || !itemRef.current) {
             return;
         }
 
@@ -145,27 +164,17 @@ const PageItemComponent: React.FunctionComponent<{
             block: "nearest",
             inline: "nearest",
         });
-    }, [isSelected]);
+    }, [props.isSelected]);
 
     const handleSelect = () => {
         if (isDisabled) {
             return;
         }
-
-        onSelectPage({
-            pageId: isFrontCover ? "cover" : page.key,
-            actualPageId: page.key,
-            caption: page.caption,
-            thumbnail: page.content,
-            pageIndex,
-            isFrontCover,
-            isXMatter: page.isXMatter,
-            disabled: isDisabled,
-        });
+        props.onSelectPage(props.pageInfo);
     };
 
     const classNames = ["link-target-page"];
-    if (isSelected) {
+    if (props.isSelected) {
         classNames.push("link-target-page--selected");
     }
     if (isDisabled) {
@@ -174,10 +183,9 @@ const PageItemComponent: React.FunctionComponent<{
 
     return (
         <div
-            key={page.key}
-            id={page.key}
-            data-caption={page.caption}
-            data-testid={`page-${page.key}`}
+            id={props.page.key}
+            data-caption={props.page.caption}
+            data-testid={`page-${props.page.key}`}
             ref={itemRef}
             className={classNames.join(" ")}
             css={css`
@@ -193,7 +201,7 @@ const PageItemComponent: React.FunctionComponent<{
                 background-color: ${itemBackgroundColor};
                 cursor: ${isDisabled ? "not-allowed" : "pointer"};
                 opacity: ${isDisabled ? 0.6 : 1};
-                ${isSelected ? selectedStyle : ""}
+                ${props.isSelected ? selectedStyle : ""}
                 & .pageContainer {
                     float: none;
                     margin-left: auto;
@@ -207,16 +215,16 @@ const PageItemComponent: React.FunctionComponent<{
                 text-align: center; // puts the thumbnail caption in center (which is weird, it's not text)
             `}
             onClick={handleSelect}
-            data-selected={isSelected ? "true" : undefined}
+            data-selected={props.isSelected ? "true" : undefined}
             data-disabled={isDisabled ? "true" : undefined}
         >
             <PageThumbnail
-                page={page}
+                page={props.page}
                 left={false}
-                pageLayout={pageLayout}
-                bookId={bookId}
-                bookFolderPath={bookFolderPath}
-                configureReloadCallback={onConfigureReloadCallback}
+                pageLayout={props.pageLayout}
+                bookId={props.bookId}
+                bookFolderPath={props.bookFolderPath}
+                configureReloadCallback={props.onConfigureReloadCallback}
             />
         </div>
     );
@@ -224,13 +232,10 @@ const PageItemComponent: React.FunctionComponent<{
 
 const PageItem = React.memo(PageItemComponent, (prevProps, nextProps) => {
     // Only re-render if selection state or page key changes
-    const prevDisabled = Boolean(prevProps.page.disabled);
-    const nextDisabled = Boolean(nextProps.page.disabled);
     return (
         prevProps.page.key === nextProps.page.key &&
-        prevProps.pageIndex === nextProps.pageIndex &&
         prevProps.isSelected === nextProps.isSelected &&
-        prevDisabled === nextDisabled &&
+        prevProps.pageInfo === nextProps.pageInfo &&
         prevProps.pageLayout === nextProps.pageLayout &&
         prevProps.bookId === nextProps.bookId &&
         prevProps.bookFolderPath === nextProps.bookFolderPath
@@ -243,14 +248,7 @@ const PageChooserComponent: React.FunctionComponent<{
     onSelectPage: (page: PageInfoForLinks) => void;
     onPagesLoaded?: (pages: PageInfoForLinks[]) => void;
 }> = (props) => {
-    const {
-        bookId,
-        bookFolderPath,
-        selectedPageId,
-        onSelectPage,
-        onPagesLoaded,
-    } = props;
-    usePageChooserStyles(bookId);
+    usePageChooserStyles(props.bookId);
     const [pages, setPages] = useState<PageWithXMatter[]>([]);
     const [pageLayout, setPageLayout] = useState<string>("A5Portrait");
     const [loading, setLoading] = useState(false);
@@ -259,7 +257,9 @@ const PageChooserComponent: React.FunctionComponent<{
         Record<string, string>
     >({});
     // Keep the latest selected page without re-triggering the data fetch effect.
-    const selectedPageIdRef = useRef<string | undefined>(selectedPageId);
+    const selectedPageIdRef = useRef<string | undefined>(props.selectedPageId);
+    const onSelectPageRef = useRef(props.onSelectPage);
+    const onPagesLoadedRef = useRef(props.onPagesLoaded);
 
     const selectBookMessage = useL10n(
         "Select a book to see its pages",
@@ -282,16 +282,24 @@ const PageChooserComponent: React.FunctionComponent<{
     );
 
     useEffect(() => {
-        selectedPageIdRef.current = selectedPageId;
-    }, [selectedPageId]);
+        selectedPageIdRef.current = props.selectedPageId;
+    }, [props.selectedPageId]);
 
     useEffect(() => {
-        if (!bookId) {
+        onSelectPageRef.current = props.onSelectPage;
+    }, [props.onSelectPage]);
+
+    useEffect(() => {
+        onPagesLoadedRef.current = props.onPagesLoaded;
+    }, [props.onPagesLoaded]);
+
+    useEffect(() => {
+        if (!props.bookId) {
             setPages([]);
             setLoading(false);
             setErrorMessage(null);
             setBookAttributes({});
-            onPagesLoaded?.([]);
+            onPagesLoadedRef.current?.([]);
             return;
         }
 
@@ -300,7 +308,7 @@ const PageChooserComponent: React.FunctionComponent<{
         let canceled = false;
 
         get(
-            `pageList/pages?book-id=${encodeURIComponent(bookId)}`,
+            `pageList/pages?book-id=${encodeURIComponent(props.bookId)}`,
             (response) => {
                 if (canceled) {
                     return;
@@ -330,31 +338,14 @@ const PageChooserComponent: React.FunctionComponent<{
                 setPages(pageList);
                 setLoading(false);
 
-                onPagesLoaded?.(
-                    pageList.map((page, index) => ({
-                        pageId: index === 0 ? "cover" : page.key,
-                        actualPageId: page.key,
-                        caption: page.caption,
-                        thumbnail: page.content,
-                        pageIndex: index,
-                        isFrontCover: index === 0,
-                        isXMatter: page.isXMatter,
-                        disabled: page.disabled,
-                    })),
+                const pageInfos = pageList.map((page, index) =>
+                    toPageInfo(page, index),
                 );
+                onPagesLoadedRef.current?.(pageInfos);
 
                 // Auto-select the first page when a new book's pages load
-                if (pageList.length > 0 && !selectedPageIdRef.current) {
-                    onSelectPage({
-                        pageId: "cover",
-                        actualPageId: pageList[0].key,
-                        caption: pageList[0].caption,
-                        thumbnail: pageList[0].content,
-                        pageIndex: 0,
-                        isFrontCover: true,
-                        isXMatter: pageList[0].isXMatter,
-                        disabled: pageList[0].disabled,
-                    });
+                if (pageInfos.length > 0 && !selectedPageIdRef.current) {
+                    onSelectPageRef.current(pageInfos[0]);
                 }
             },
             (error: AxiosError) => {
@@ -373,18 +364,20 @@ const PageChooserComponent: React.FunctionComponent<{
         return () => {
             canceled = true;
         };
-    }, [bookId, onSelectPage, onPagesLoaded, failedToLoadPagesMessage]);
+    }, [props.bookId, failedToLoadPagesMessage]);
 
     useEffect(() => {
         // Pull page-level attributes that influence thumbnail rendering.
-        if (!bookId) {
+        if (!props.bookId) {
             setBookAttributes({});
             return;
         }
 
         let canceled = false;
         get(
-            `pageList/bookAttributesThatMayAffectDisplay?book-id=${encodeURIComponent(bookId)}`,
+            `pageList/bookAttributesThatMayAffectDisplay?book-id=${encodeURIComponent(
+                props.bookId,
+            )}`,
             (response) => {
                 if (canceled) {
                     return;
@@ -405,59 +398,26 @@ const PageChooserComponent: React.FunctionComponent<{
         return () => {
             canceled = true;
         };
-    }, [bookId]);
+    }, [props.bookId]);
 
-    if (!bookId) {
-        return (
-            <Box
-                css={css`
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    height: 100%;
-                    background-color: ${chooserBackgroundColor};
-                    padding: ${chooserButtonPadding};
-                `}
-            >
-                <Typography color="textSecondary">
-                    {selectBookMessage}
-                </Typography>
-            </Box>
-        );
+    const pageInfos = React.useMemo(
+        () => pages.map((page, index) => toPageInfo(page, index)),
+        [pages],
+    );
+
+    if (!props.bookId) {
+        return renderStatus(selectBookMessage, {
+            color: "textSecondary",
+            padding: chooserButtonPadding,
+        });
     }
 
     if (loading) {
-        return (
-            <Box
-                css={css`
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    height: 100%;
-                    background-color: ${chooserBackgroundColor};
-                    padding: 10px;
-                `}
-            >
-                <Typography>{loadingPagesMessage}</Typography>
-            </Box>
-        );
+        return renderStatus(loadingPagesMessage);
     }
 
     if (errorMessage) {
-        return (
-            <Box
-                css={css`
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    height: 100%;
-                    background-color: ${chooserBackgroundColor};
-                    padding: 10px;
-                `}
-            >
-                <Typography color="error">{errorMessage}</Typography>
-            </Box>
-        );
+        return renderStatus(errorMessage, { color: "error" });
     }
 
     return (
@@ -498,26 +458,22 @@ const PageChooserComponent: React.FunctionComponent<{
                         `}
                     >
                         {pages.map((page, index) => {
-                            const isCoverSelected =
-                                selectedPageId === "cover" && index === 0;
-                            const isFrontCover = index === 0;
-                            const isDisabled =
-                                page.disabled ??
-                                (Boolean(page.isXMatter) && !isFrontCover);
+                            const pageInfo = pageInfos[index]!;
+                            const matchesSelection =
+                                props.selectedPageId === pageInfo.pageId ||
+                                props.selectedPageId === pageInfo.actualPageId;
                             const isSelected =
-                                !isDisabled &&
-                                (selectedPageId === page.key ||
-                                    isCoverSelected);
+                                !pageInfo.disabled && matchesSelection;
                             return (
                                 <PageItem
                                     key={page.key}
                                     page={page}
-                                    pageIndex={index}
+                                    pageInfo={pageInfo}
                                     isSelected={isSelected}
                                     pageLayout={pageLayout}
-                                    bookId={bookId}
-                                    bookFolderPath={bookFolderPath}
-                                    onSelectPage={onSelectPage}
+                                    bookId={props.bookId!}
+                                    bookFolderPath={props.bookFolderPath}
+                                    onSelectPage={props.onSelectPage}
                                     onConfigureReloadCallback={
                                         handleConfigureReloadCallback
                                     }

@@ -7,7 +7,6 @@ import {
     DialogTitle,
     DialogMiddle,
     DialogBottomButtons,
-    DialogBottomLeftButtons,
 } from "../BloomDialog/BloomDialog";
 import { LinkTargetChooser } from "./LinkTargetChooser";
 import { DialogCancelButton } from "../BloomDialog/commonDialogComponents";
@@ -27,7 +26,7 @@ export const LinkTargetChooserDialog: React.FunctionComponent<{
     // Reset state when dialog opens/closes or currentURL changes
     useEffect(() => {
         if (props.open) {
-            setCurrentUrl("");
+            setCurrentUrl(props.currentURL);
             setHasError(false);
             setHasUserInteracted(false);
         }
@@ -67,7 +66,6 @@ export const LinkTargetChooserDialog: React.FunctionComponent<{
                 cursor: default !important;
                 .MuiDialog-paper {
                     max-width: 1200px;
-                    width: 90vw;
                 }
             `}
         >
@@ -80,7 +78,7 @@ export const LinkTargetChooserDialog: React.FunctionComponent<{
                 `}
             >
                 <LinkTargetChooser
-                    currentURL={props.currentURL}
+                    currentURL={currentUrl}
                     onURLChanged={handleURLChanged}
                 />
             </DialogMiddle>

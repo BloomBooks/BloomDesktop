@@ -22,6 +22,8 @@ When working in the front-end, cd to src/BloomBrowserUI
 
 - Style elements using the css macro from @emotion/react directly on the element being styled, using the css prop. E.g. `<div css={css`color:red`}>`
 
+- Do not destructure props. `props.foo` is easier to understand.
+
 
 ## About React useEffect
 Rule 1 — Use useEffect when synchronizing with external systems:

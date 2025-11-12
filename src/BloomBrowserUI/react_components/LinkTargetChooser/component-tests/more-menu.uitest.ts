@@ -1,20 +1,12 @@
 /**
  * Tests for LinkTargetChooser - More Menu Functionality
  * Covers: More menu button, Back menu item functionality
- * Run with: yarn test
  */
 
 import { test, expect } from "../../component-tester/playwrightTest";
 import { setupLinkTargetChooser } from "./test-helpers";
 
 test.describe("LinkTargetChooser - More Menu Functionality", () => {
-    test("More menu button is visible", async ({ page }) => {
-        await setupLinkTargetChooser(page);
-
-        const moreButton = page.getByTestId("url-editor-more-menu-button");
-        await expect(moreButton).toBeVisible();
-    });
-
     test("Clicking More button opens menu", async ({ page }) => {
         await setupLinkTargetChooser(page);
 
