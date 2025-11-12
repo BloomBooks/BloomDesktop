@@ -1787,7 +1787,7 @@ namespace Bloom.Book
             Storage.MigrateToLevel8RemoveEnterpriseOnly();
             Storage.MigrateToLevel9TruncateWidgetPaths();
             Storage.MigrateToLevel10GameHeader();
-            Storage.MigrateToLevel11RenameOverlayTool();
+            // Migration 11 does not exist.
             Storage.MigrateToLevel12PageNumberPosition();
             Storage.MigrateToLevel13SplitPaneMarginBoxes();
 
