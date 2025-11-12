@@ -548,6 +548,19 @@ namespace Bloom.Book
             //code in question says it is for when jquery-ui is not found. I "solved" this by loading jquery, jquery-ui,
             //and finally qtip into the global space here
             dom.AddJavascriptFile("jquery.min.js".ToLocalhost());
+            // JohnT Vite: this file is imported by various bundles. It can't also be loaded directly:
+            // import requires it to import jquery, and a script tag that doesn't declare it to be
+            // a module won't allow it to contain imports, and one that does lacks the smarts to find
+            // the jquery it is supposed to import. Just import it where needed.
+            //dom.AddJavascriptFile(
+            //    "modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js".ToLocalhost()
+            //);
+            //			dom.AddJavascriptFile("lib/jquery.qtip.js".ToLocalhost());
+            //			dom.AddJavascriptFile("lib/jquery.qtipSecondary.js".ToLocalhost());
+
+            // first tried this as import 'jquery.hotkeys' in bloomEditing, but that didn't work
+            //dom.AddJavascriptFile("jquery.hotkeys.js".ToLocalhost());
+
             dom.AddJavascriptFile("editablePageBundle.js".ToLocalhost());
             // At one point we made a point of adding this last so that other code
             // could get in and set disableAutoInline to prevent ckeditor from attaching itself
@@ -1774,6 +1787,8 @@ namespace Bloom.Book
             Storage.MigrateToLevel8RemoveEnterpriseOnly();
             Storage.MigrateToLevel9TruncateWidgetPaths();
             Storage.MigrateToLevel10GameHeader();
+            Storage.MigrateToLevel11RenameOverlayTool();
+            Storage.MigrateToLevel12PageNumberPosition();
 
             Storage.DoBackMigrations();
 
@@ -5397,7 +5412,7 @@ namespace Bloom.Book
         public bool HasNonWidgetGames => OurHtmlDom.HasNonWidgetGamePages();
         public bool HasWidgets => OurHtmlDom.HasWidgetPages();
 
-        public bool HasComicalOverlays => OurHtmlDom.HasComicalCanvasElements();
+        public bool HasComicalElements => OurHtmlDom.HasComicalCanvasElements();
 
         public bool HasOnlyPictureOnlyPages()
         {
@@ -5569,13 +5584,13 @@ namespace Bloom.Book
 
         /// <summary>
         /// Updates the feature in bookInfo.metadata to indicate whether the book contains comic pages.
-        /// These are now created with the Overlay Tool, but the feature retains the old name.
+        /// These are now created with the Canvas Tool, but the feature retains the old name.
         /// (But, we will only report it as a Comic book if the user didn't turn it off in the publish settings.)
         /// </summary>
         private void UpdateComicFeature()
         {
             BookInfo.MetaData.Feature_Comic =
-                HasComicalOverlays && BookInfo.PublishSettings.BloomLibrary.Comic;
+                HasComicalElements && BookInfo.PublishSettings.BloomLibrary.Comic;
         }
 
         /// <summary>
@@ -5679,10 +5694,10 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Used by the publish tab to tell the user they can't publish a book with Overlay elements w/o Enterprise.
+        /// Used by the publish tab to tell the user they can't publish a book with Canvas elements w/o Enterprise.
         /// </summary>
         /// <returns></returns>
-        public string GetNumberOfFirstPageWithOverlay()
+        public string GetNumberOfFirstPageWithCanvasElement()
         {
             var pageNodes = RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]");
             if (pageNodes.Length == 0) // Unexpected!
@@ -5699,7 +5714,7 @@ namespace Bloom.Book
                 {
                     return pageNumberAttribute;
                 }
-                // If at some point we allow overlay elements on xmatter,
+                // If at some point we allow canvas elements on xmatter,
                 // we will need to find and return the 'data-xmatter-page' attribute.
             }
             return ""; // Also unexpected!

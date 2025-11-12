@@ -3,7 +3,7 @@
 // (Subjects from Thema are organized as a hierarchical tree but their JSON file is a flat list).
 // Qualifier subjects were removed (all those with codes starting with a number)
 // The Children related subjects were moved to the top of the list.
-import * as themaData from "./ThemaData.json";
+import themaData from "./ThemaData.json";
 export const themaSubjectData: SubjectTreeNode[] = <SubjectTreeNode[]>(
     (<unknown>themaData)
 );

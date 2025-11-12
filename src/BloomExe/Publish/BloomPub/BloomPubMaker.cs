@@ -471,9 +471,9 @@ namespace Bloom.Publish.BloomPub
                 && modifiedBook.OurHtmlDom.SelectSingleNode(BookStorage.ComicalXpath) != null
             )
             {
-                // This indicates that we are harvesting a book with canvas elements (Overlay Tool).
+                // This indicates that we are harvesting a book with canvas elements (Canvas Tool).
                 // For books with canvas elements, we only publish a single language. This harks back to a time when we couldn't
-                // store different sizes and positions for overlays in different languages. Now we can, but a book we're
+                // store different sizes and positions for canvas elements in different languages. Now we can, but a book we're
                 // harvesting doesn't necessarily have appropriate locations stored for each language. So for now we'll just
                 // publish the first one.
                 var languagesToInclude = new string[1] { modifiedBook.BookData.Language1.Tag };

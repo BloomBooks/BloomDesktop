@@ -24,7 +24,7 @@ import { TransformBasedAnimator } from "bloom-player";
 import {
     kBloomCanvasClass,
     getCanvasElementManager,
-} from "../overlay/canvasElementUtils";
+} from "../canvas/canvasElementUtils";
 import { animateStyleName } from "../../../utils/shared";
 import { ThemeProvider } from "@mui/material/styles";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";
@@ -708,9 +708,10 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             true,
         ) as HTMLElement;
 
-        //if the page has overlays with elements such as speech bubbles, those are drawn in a <canvas/> element created by the ComicalJS library
+        //if the page has canvas overlay elements with elements such as speech bubbles, those
+        //are drawn in a <canvas/> element created by the ComicalJS library.
         //when a <canvas/> is copied, its contents are not copied with it,
-        //so we need to specifically copy the drawings from the original canvas to the clone
+        //so we need to specifically copy the drawings from the original canvas to the clone.
         const comicalCanvas = bloomCanvasToAnimate.querySelector(
             ".comical-generated",
         ) as HTMLCanvasElement;
@@ -780,7 +781,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             animationWrapper.clientHeight,
         ];
 
-        //Overlays have their width, height, and bubble positions set by absolute pixel values
+        //Canvas overlay elementss have their width, height, and bubble positions set by absolute pixel values
         //Because of that, we need to make sure the animationCanvas has the default pixel height and width that the overlays expect
         //Then we can safely rescale the animationCanvas to the size we want, and the overlays will rescale with it.
         animationCanvas.style.width = `${canvasDimensions[0]}px`;

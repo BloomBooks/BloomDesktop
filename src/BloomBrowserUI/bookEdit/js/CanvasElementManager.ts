@@ -37,9 +37,7 @@ import {
     SetupMetadataButton,
     UpdateImageTooltipVisibility,
     HandleImageError,
-    doImageCommand,
 } from "./bloomImages";
-import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import {
     adjustTarget,
     correctTabIndex,
@@ -58,7 +56,7 @@ import {
     kHasCanvasElementClass,
     kBloomCanvasClass,
     kBloomCanvasSelector,
-} from "../toolbox/overlay/canvasElementUtils";
+} from "../toolbox/canvas/canvasElementUtils";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { handlePlayClick } from "./bloomVideo";
@@ -67,14 +65,13 @@ import { needsToBeKeptSameSize } from "../toolbox/games/gameUtilities";
 import {
     CanvasElementType,
     makeTargetAndMatchSize,
-} from "../toolbox/overlay/CanvasElementItem";
+} from "../toolbox/canvas/CanvasElementItem";
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
 import { get, postData, postJson } from "../../utils/bloomApi";
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import PlaceholderProvider from "./PlaceholderProvider";
-import { isInDragActivity } from "../toolbox/games/GameInfo";
 import { getExactClientSize } from "../../utils/elementUtils";
 import { copyContentToTarget, getTarget } from "bloom-player";
 import { showRequiresSubscriptionDialogInEditView } from "../../react_components/requiresSubscription";
@@ -87,7 +84,7 @@ export interface ITextColorInfo {
 }
 
 const kComicalGeneratedClass: string = "comical-generated";
-// In the process of moving these two definitions to overlayUtils.ts, but duplicating here for now.
+
 const kTransformPropName = "bloom-zoomTransformForInitialFocus";
 export const kBackgroundImageClass = "bloom-backgroundImage"; // split-pane.js and editMode.less know about this too
 
@@ -110,7 +107,7 @@ export function getAllDraggables(page: HTMLElement | Document) {
 // Some may have been missed. (It's even conceivable that some references to the other things were
 // accidentally renamed to "canvas element".)
 export class CanvasElementManager {
-    // The min width/height needs to be kept in sync with the corresponding values in overlayTool.less
+    // The min width/height needs to be kept in sync with the corresponding values in canvasTool.less
     public minTextBoxWidthPx = 30;
     public minTextBoxHeightPx = 30;
 
@@ -1512,8 +1509,8 @@ export class CanvasElementManager {
         this.snapProvider.endDrag();
     };
 
-    private minWidth = 30; // @MinTextBoxWidth in overlayTool.less
-    private minHeight = 30; // @MinTextBoxHeight in overlayTool.less
+    private minWidth = 30; // @MinTextBoxWidth in canvasTool.less
+    private minHeight = 30; // @MinTextBoxHeight in canvasTool.less
 
     private getImageOrVideo(): HTMLElement | undefined {
         // It will have one or the other or neither, but not both, so it doesn't much matter
@@ -4924,12 +4921,12 @@ export class CanvasElementManager {
     // or the first one if none has an active element.
     // (If there is no canvas, it returns false.)
     // If the canvas is empty (including the background), set the background to the image.
-    // Else if overlay is allowed by the subscription tier, add the image as an overlay/game item.
+    // Else if canvas is allowed by the subscription tier, add the image as a canvas/game item.
     // Make it up to 1/3 width and 1/3 height of the canvas, roughly centered on the canvas.
     // Is it a draggable item? Yes, if we are in the "Start" mode of a game.
     // In that case, we put it a bit higher and further left, so there is room for the target.
-    // Otherwise it's just a normal overlay item (restricted to the appropriate state, if we're
-    // in the Correct or Wrong state of a game).
+    // Otherwise it's just a normal canvas overlay item (restricted to the appropriate state,
+    // if we're in the Correct or Wrong state of a game).
     public pasteImageFromClipboard(): boolean {
         const bloomCanvas = this.getActiveOrFirstBloomCanvasOnPage();
         if (!bloomCanvas) {
@@ -4996,7 +4993,7 @@ export class CanvasElementManager {
             }
         }
         // otherwise we will add a new canvas element...but only if subscription allows it.
-        get("features/status?featureName=overlay&forPublishing=false", (c) => {
+        get("features/status?featureName=canvas&forPublishing=false", (c) => {
             const features = c.data as FeatureStatus;
             if (features.enabled) {
                 // If the feature is enabled, we can proceed with adding the canvas element.
@@ -5080,7 +5077,7 @@ export class CanvasElementManager {
                 notifyToolOfChangedImage();
             } else {
                 // If the feature is not enabled, we need to show the subscription dialog.
-                showRequiresSubscriptionDialogInEditView("overlay");
+                showRequiresSubscriptionDialogInEditView("canvas");
             }
         });
     }
@@ -5304,7 +5301,7 @@ export class CanvasElementManager {
     }
 
     // All of the text-based canvas elements' default heights are based on the min-height of 30px set
-    // in overlayTool.less for a .bloom-canvas-element. For other elements, we usually want something else.
+    // in canvasTool.less for a .bloom-canvas-element. For other elements, we usually want something else.
     public setDefaultHeightFromWidth(canvasElement: HTMLElement) {
         const width = parseInt(getComputedStyle(canvasElement).width, 10);
 

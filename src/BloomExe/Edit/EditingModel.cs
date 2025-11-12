@@ -1656,8 +1656,8 @@ namespace Bloom.Edit
         public void UpdateImageInBrowser(PageEditingModel.ImageInfoForJavascript args)
         {
             // We generally don't need to wait. Even if we decide to save, its call to RunJavascriptAsync() will come in after ours.
-            // But be careful about depending on that (or any subsequent running Javascript) on pages that might have overlays:
-            // updating the image on an overlay page can involve async code that adjusts things after the image is loaded
+            // But be careful about depending on that (or any subsequent running Javascript) on pages that might have canvas elements:
+            // updating the image on a canvas page can involve async code that adjusts things after the image is loaded
             // enough to get its dimensions, and that adjustment might not complete before the next Javascript is run from C#
             GetEditingBrowser()
                 .RunJavascriptFireAndForget(
@@ -1675,8 +1675,8 @@ namespace Bloom.Edit
              * And as noted above, a reason not to save is that it's a problem to run the Javascript that gets the page
              * content before any async consequences of running the changeImage above (that affect the saved DOM content)
              * have completed.
-             * For now, it's OK to Save on the cover, because we don't support overlays there, and overlays are the only
-             * known case where the async consequences of the changeImage might affect the saved DOM.
+             * For now, it's OK to Save on the cover, because we don't support canvas elements there, and canvas elements
+             * are the only known case where the async consequences of the changeImage might affect the saved DOM.
              * But this is more fragile than I like. Hope we can soon find a better way to get the cover image transparency
              * and maybe even update the thumbnails without forcing a save.
              */

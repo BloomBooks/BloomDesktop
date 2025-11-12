@@ -206,7 +206,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         gamesTooltip = widgetFeatureMessage;
 
     const noComicTooltip = useL10n(
-        "This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.",
+        "This is disabled because this book does not have any canvas elements that qualify as “comic-like”, such as speech bubbles.",
         "PublishTab.Feature.Comic.None",
     );
     const hasComicTooltip = useL10n(

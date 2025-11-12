@@ -9,12 +9,12 @@ import {
     SignLanguageToolControls,
     SignLanguageTool,
 } from "../toolbox/signLanguage/signLanguageTool";
-import { kGameToolId, kOverlayToolId } from "../toolbox/toolIds";
+import { kGameToolId, kCanvasToolId } from "../toolbox/toolIds";
 import { selectVideoContainer } from "./videoUtils";
 import { getPlayIcon } from "../img/playIcon";
 import { getPauseIcon } from "../img/pauseIcon";
 import { getReplayIcon } from "../img/replayIcon";
-import { kCanvasElementSelector } from "../toolbox/overlay/canvasElementUtils";
+import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementUtils";
 import $ from "jquery";
 
 export function SetupVideoEditing(container) {
@@ -157,7 +157,7 @@ function SetupClickToShowSignLanguageTool(videoContainerDiv: Element) {
 
         if (
             toolbox?.toolboxIsShowing() &&
-            (currentToolId === kOverlayToolId ||
+            (currentToolId === kCanvasToolId ||
                 currentToolId === kGameToolId) &&
             videoContainerDiv.closest(kCanvasElementSelector) // only ones actually in a canvas element
         ) {

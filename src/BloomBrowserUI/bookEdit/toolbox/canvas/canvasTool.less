@@ -3,13 +3,13 @@
 @SideMargin: 9px;
 @ControlVerticalSpacing: 10px;
 
-.ui-accordion h3[data-toolId="overlayTool"] {
+.ui-accordion h3[data-toolId="canvasTool"] {
     span.ui-accordion-header-icon {
-        background-image: url("/bloom/bookEdit/toolbox/overlay/comic-icon.svg") !important;
+        background-image: url("/bloom/bookEdit/toolbox/canvas/Canvas Icon.svg") !important;
     }
 }
 
-#overlayToolControls {
+#canvasToolControls {
     display: flex;
     flex-direction: column;
     // fill available toolbox space, part of pushing help to the bottom.
@@ -21,7 +21,7 @@
     padding-bottom: @toolboxContentPadding;
 }
 
-#overlayToolControlShapeChooserRegion {
+#canvasToolControlShapeChooserRegion {
     background-color: @bloom-gray;
     padding: @SideMargin;
     display: flex;
@@ -50,7 +50,7 @@
     }
 }
 
-#overlayToolControlOptionsRegion {
+#canvasToolControlOptionsRegion {
     padding: @SideMargin @SideMargin 0 @SideMargin;
 
     // a toolbox-wide rule sets to x-small, but that makes for tiny checkboxes
@@ -196,14 +196,14 @@
 }
 
 // Empty region that does all the growing and shrinking.
-// makes the overlayToolControlFooterRegion go to the bottom,
+// makes the canvasToolControlFooterRegion go to the bottom,
 // but unlike making it position: absolute and bottom:3,
 // it can get pushed out of view if the view gets too small.
-#overlayToolControlFillerRegion {
+#canvasToolControlFillerRegion {
     flex: 1 1 0;
 }
 
-#overlayToolControlFooterRegion {
+#canvasToolControlFooterRegion {
     padding-left: @SideMargin;
     margin-bottom: 3px;
     margin-top: 10px;
@@ -215,7 +215,7 @@
 .canvasElement-options-dropdown-menu {
     // this allows the popup to be on top of the toolbox.
     // A better way to do this is to wrap a Select in toolboxMenuPopupTheme. Not ready to switch
-    // the overlay tool to themes yet, but don't use this approach for new work.
+    // the canvas tool to themes yet, but don't use this approach for new work.
     z-index: @toolboxPopupZIndex !important;
     .MuiMenu-paper {
         min-width: calc(@toolboxWidth - 2 * @dropdownLeftMargin) !important;

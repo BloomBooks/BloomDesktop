@@ -30,6 +30,8 @@
         "build:l10n:translate": "node scripts/l10n-build.js translate",
         "build:l10n:create": "node scripts/l10n-build.js create",
         "build:content": "npm run check-that-node-modules-exists-in-content-dir && cd ../content && npm run build",
+        "// We shouldn't need'watchBookEditLess' anymore once we finish getting vite dev working": " ",
+        "watchBookEditLess": "less-watch-compiler bookEdit ../../output/browser/bookEdit",
         "// 'watch': rebuilds bundles when source files change (for entrypoints not yet working with vite dev)": " ",
         "watch": "vite build --watch",
         "// You can use yarn link to symlink bloom-player. But also, bloom needs a copy in output/!": " ",
@@ -214,7 +216,7 @@
         "@typescript-eslint/eslint-plugin": "^8.39.0",
         "@typescript-eslint/parser": "^8.39.0",
         "@vitejs/plugin-react": "^5.0.4",
-        "@vitest/browser-playwright": "^4.0.4",
+        "@vitest/browser-playwright": "^4.0.8",
         "cpx": "^1.5.0",
         "del": "^6.0.0",
         "eslint": "^9.32.0",
@@ -252,7 +254,7 @@
         "vite": "^7.1.5",
         "vite-plugin-pug": "^0.4.1",
         "vite-plugin-static-copy": "^3.1.3",
-        "vitest": "^4.0.0"
+        "vitest": "^4.0.8"
     },
     "lint-staged": {
         "!(*.d).{ts,tsx}": "eslint",

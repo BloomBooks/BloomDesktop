@@ -367,7 +367,7 @@ export const kToolboxContentPadding = "15px"; // cf @toolboxContentPadding in bl
 // I've given it a more general name since it might be useful for other things that
 // create popups in the toolbox.
 // This is not yet used for all our Selects; some of the same fiddles, for example,
-// are done in the overlayTool.less. I don't want to mess with that until we make it
+// are done in the canvasTool.less. I don't want to mess with that until we make it
 // entirely React; currently, for example, it's not even using the toolboxTheme.
 export const toolboxMenuPopupTheme = createTheme(toolboxTheme, {
     palette: {

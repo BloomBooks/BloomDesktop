@@ -19,7 +19,7 @@ import {
 import {
     getCanvasElementManager,
     kBloomCanvasClass,
-} from "../overlay/canvasElementUtils";
+} from "../canvas/canvasElementUtils";
 interface IImageDescriptionState {
     enabled: boolean;
     descriptionNotNeeded: boolean;

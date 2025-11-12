@@ -5,6 +5,6 @@
 // Example Book: https://bloomlibrary.org/:search:bookInstanceId%3A8d4b6844-948e-44e1-bef5-3b90bcdcfb3f
 // A replacement customBookStyles.css has been generated.
 {
-  "cssThemeName": "zero-margin-ebook",
-  "pageNumber-show": false,
+    "cssThemeName": "zero-margin-ebook",
+    "pageNumber-position": "hidden"
 }

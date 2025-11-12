@@ -176,7 +176,7 @@ export class ImpairmentVisualizerControls extends React.Component<
                             childIndex
                         ] as HTMLElement;
                         if (!child || child.nodeName !== "IMG") continue;
-                        // Don't make a overlay for a draghandle or other UI element.
+                        // Don't make a color blindness overlay for a draghandle or other UI element.
                         if (child.classList.contains("bloom-ui")) continue;
                         this.makeColorBlindnessOverlay(
                             child as HTMLImageElement,

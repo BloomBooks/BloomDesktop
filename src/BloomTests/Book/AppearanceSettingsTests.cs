@@ -289,27 +289,111 @@ namespace BloomTests.Book
             Assert.That(fromSettings, Does.Contain("--cover-languageName-show: none;"));
         }
 
-        [Test]
-        public void ToCss_EmitsSpecialPageMargin_property()
+        [TestCase(@"""pageNumber-position"": ""automatic""", true)]
+        [TestCase(@"""pageNumber-position"": ""left""", true)]
+        [TestCase(@"""pageNumber-position"": ""center""", true)]
+        [TestCase(@"""pageNumber-position"": ""right""", true)]
+        [TestCase(@"""pageNumber-position"": ""hidden""", false)]
+        public void ToCss_EmitsSpecialPageMargin_property_andHasCorrectPageNumberShow(
+            string settingsFragment,
+            bool multiplicand1Expected
+        )
         {
             var settings = new AppearanceSettings();
             settings.UpdateFromJson(
                 @"
 {
   ""cssThemeName"": ""default"",
-  ""pageNumber-show"": false
+  "
+                    + settingsFragment
+                    + @"
 }"
             );
             var css = settings.ToCss();
-            Assert.That(css, Does.Contain("--pageNumber-show-multiplicand: 0;"));
-            settings.UpdateFromJson("{\"pageNumber-show\": true}");
-            css = settings.ToCss();
-            Assert.That(css, Does.Contain("--pageNumber-show-multiplicand: 1;"));
+            if (multiplicand1Expected)
+            {
+                Assert.That(css, Does.Not.Contain("--pageNumber-show: none;"));
+                Assert.That(css, Does.Contain("--pageNumber-show-multiplicand: 1;"));
+            }
+            else
+            {
+                Assert.That(css, Does.Contain("--pageNumber-show: none;"));
+                // settings already has --pageNumber-show-multiplicand: 0; by default. Check that it's not being overridden
+                Assert.That(css, Does.Not.Contain("--pageNumber-show-multiplicand: 1;"));
+            }
+        }
+
+        [TestCase(@"""pageNumber-position"": ""automatic""", "unset", "unset")]
+        [TestCase(
+            @"""pageNumber-position"": ""left""",
+            "var(--page-margin-left)",
+            "deliberately-invalid"
+        )]
+        [TestCase(@"""pageNumber-position"": ""center""", "50%", "50%")]
+        [TestCase(
+            @"""pageNumber-position"": ""right""",
+            "deliberately-invalid",
+            "var(--page-margin-right)"
+        )]
+        [TestCase(@"""pageNumber-position"": ""hidden""", "unset", "unset")]
+        // [TestCase(null, null, null)]
+        public void ToCss_SetsRelevantPageNumberPositionOverrides(
+            string settingsFragment,
+            string expectedLeftMargin,
+            string expectedRightMargin
+        )
+        {
+            var settings = new AppearanceSettings();
+            var jsonContent = @"{""cssThemeName"": ""default""";
+
+            if (settingsFragment != null)
+            {
+                jsonContent += @", " + settingsFragment;
+            }
+
+            jsonContent += @"}";
+
+            settings.UpdateFromJson(jsonContent);
+            var css = settings.ToCss();
+
+            if (expectedLeftMargin != null)
+            {
+                Assert.That(
+                    css,
+                    Does.Contain($"--pageNumber-left-margin-override: {expectedLeftMargin};"),
+                    $"Expected left margin override to be '{expectedLeftMargin}'"
+                );
+            }
+            else
+            {
+                Assert.That(
+                    css,
+                    Does.Not.Contain("--pageNumber-left-margin-override:"),
+                    "Expected no left margin override to be set"
+                );
+            }
+
+            if (expectedRightMargin != null)
+            {
+                Assert.That(
+                    css,
+                    Does.Contain($"--pageNumber-right-margin-override: {expectedRightMargin};"),
+                    $"Expected right margin override to be '{expectedRightMargin}'"
+                );
+            }
+            else
+            {
+                Assert.That(
+                    css,
+                    Does.Not.Contain("--pageNumber-right-margin-override:"),
+                    "Expected no right margin override to be set"
+                );
+            }
         }
 
         [TestCase(true)]
         [TestCase(false)]
-        public void GetThemeAndSubstituteCss_BookHasOverlays_UsesLegacy(bool hasOverlays)
+        public void GetThemeAndSubstituteCss_BookHasCanvasElement_UsesLegacy(bool hasCanvasElement)
         {
             var settings = new AppearanceSettingsTest();
             var cssFilesToCheck = new[]
@@ -317,7 +401,7 @@ namespace BloomTests.Book
                 Tuple.Create("customBookStyles.css", ""),
                 Tuple.Create("customCollectionStyles.css", ""),
             };
-            var dom = hasOverlays
+            var dom = hasCanvasElement
                 ? new HtmlDom(
                     @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
 			<body><div class='bloom-page'>
@@ -332,7 +416,10 @@ namespace BloomTests.Book
             var pathToCustomCss = settings.GetThemeAndSubstituteCss(cssFilesToCheck, dom);
 
             Assert.That(pathToCustomCss, Is.Null);
-            Assert.That(settings.CssThemeName, Is.EqualTo(hasOverlays ? "legacy-5-6" : "default"));
+            Assert.That(
+                settings.CssThemeName,
+                Is.EqualTo(hasCanvasElement ? "legacy-5-6" : "default")
+            );
         }
 
         public static HtmlDom GetTrivialBookDom()

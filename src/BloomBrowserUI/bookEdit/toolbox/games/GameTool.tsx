@@ -21,13 +21,12 @@ import {
     CanvasElementTextItem,
     CanvasElementVideoItem,
     setGeneratedDraggableId,
-} from "../overlay/CanvasElementItem";
+} from "../canvas/CanvasElementItem";
 import { ToolBox } from "../toolbox";
 import {
     adjustDraggablesForLanguage,
     classSetter,
     copyContentToTarget,
-    doShowAnswersInTargets,
     getTarget,
     playInitialElements,
     prepareActivity,
@@ -62,7 +61,7 @@ import {
 import {
     getCanvasElementManager,
     kCanvasElementSelector,
-} from "../overlay/canvasElementUtils";
+} from "../canvas/canvasElementUtils";
 import { ThemeChooser } from "./ThemeChooser";
 import GameIntroText, { Instructions } from "./GameIntroText";
 import { getGameType, isPageBloomGame } from "./GameInfo";

@@ -1,9 +1,6 @@
-import { css, SerializedStyles } from "@emotion/react";
 import $ from "jquery";
 import * as React from "react";
-import { Button, Dialog } from "@mui/material";
 import { useL10n } from "../../../react_components/l10nHooks";
-import { lightTheme } from "../../../bloomMaterialUITheme";
 
 interface IGamePromptDialogProps {
     prompt: HTMLElement;
@@ -18,12 +15,8 @@ import {
     shuffle,
     isTheTextInDraggablesTheSame,
 } from "bloom-player";
-import { setGeneratedDraggableId } from "../overlay/CanvasElementItem";
-import {
-    adjustTarget,
-    GameTool,
-    makeTargetForDraggable,
-} from "../games/GameTool";
+import { setGeneratedDraggableId } from "../canvas/CanvasElementItem";
+import { adjustTarget, makeTargetForDraggable } from "../games/GameTool";
 import * as ReactDOM from "react-dom";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import {
@@ -44,10 +37,7 @@ import {
     DialogOkButton,
 } from "../../../react_components/BloomDialog/commonDialogComponents";
 import { splitIntoGraphemes } from "../../../utils/textUtils";
-import {
-    kBloomCanvasSelector,
-    kCanvasElementClass,
-} from "../overlay/canvasElementUtils";
+import { kBloomCanvasSelector } from "../canvas/canvasElementUtils";
 
 export const GamePromptDialog: React.FunctionComponent<
     IGamePromptDialogProps

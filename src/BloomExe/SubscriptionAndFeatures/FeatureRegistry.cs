@@ -8,7 +8,7 @@ namespace Bloom.SubscriptionAndFeatures
         BasicPage, // we don't really need this, it's just a basic feature and not experimental or anything. It's for test cases.
         DeleteBook, // we don't really need this, it's just a basic feature and not experimental or anything. It's for test cases.
 
-        Overlay,
+        Canvas, // was Overlay
         Game, // This does not include HTML5 widgets
         Widget, //HTML5 Widget
         Spreadsheet,
@@ -127,7 +127,7 @@ namespace Bloom.SubscriptionAndFeatures
             },
             new FeatureInfo
             {
-                Feature = FeatureName.Overlay,
+                Feature = FeatureName.Canvas,
                 SubscriptionTier = SubscriptionTier.Pro,
                 SupportedMediums = PublishingMediums.All,
                 PreventPublishingInDerivativeBooks = PreventionMethod.None,

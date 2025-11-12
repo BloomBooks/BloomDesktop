@@ -4,7 +4,7 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import * as ReactDOM from "react-dom";
-import "./overlayTool.less";
+import "./canvasTool.less";
 import { getEditTabBundleExports } from "../../js/bloomFrames";
 import {
     CanvasElementManager,
@@ -24,7 +24,7 @@ import { IColorInfo } from "../../../react_components/color-picking/colorSwatch"
 import { IColorPickerDialogProps } from "../../../react_components/color-picking/colorPickerDialog";
 import tinycolor from "tinycolor2";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
-import { kOverlayToolId } from "../toolIds";
+import { kCanvasToolId } from "../toolIds";
 import {
     BloomPalette,
     getColorInfoFromSpecialNameOrColorString,
@@ -45,11 +45,10 @@ import { getCanvasElementManager } from "./canvasElementUtils";
 import { deselectVideoContainers } from "../../js/videoUtils";
 import { CanvasElementKeyHints } from "./CanvasElementKeyHints";
 import { ToolBox } from "../toolbox";
-import { hideColorPickerDialog } from "../../editViewFrame";
 import { kToolboxContentPadding } from "../../../bloomMaterialUITheme";
 import $ from "jquery";
 
-const OverlayToolControls: React.FunctionComponent = () => {
+const CanvasToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
     type CanvasElementType = "text" | "image" | "video" | undefined;
 
@@ -95,6 +94,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
 
     // While renaming Comic -> Overlay, I (gjm) intentionally left several (21) "keys" with
     // the old "ComicTool" to avoid the whole deprecate/invalidate/retranslate issue.
+    // When renaming "Overlay" to "Canvas", we still kept those same keys.
 
     // Setup for color picker, in case we need it.
     const textColorTitle = useL10n(
@@ -158,10 +158,10 @@ const OverlayToolControls: React.FunctionComponent = () => {
     };
 
     // Enhance: if we don't want to have a static, or don't want
-    // this function to know about OverlayTool, we could just pass
+    // this function to know about CanvasTool, we could just pass
     // a setter for this as a property.
 
-    OverlayTool.theOneOverlayTool!.callOnNewPageReady = () => {
+    CanvasTool.theOneCanvasTool!.callOnNewPageReady = () => {
         bubbleSpecInitialization();
         setIsXmatter(ToolboxToolReactAdaptor.isXmatter());
         const count = pageRefreshIndicator;
@@ -496,7 +496,8 @@ const OverlayToolControls: React.FunctionComponent = () => {
                             `}
                         >
                             <Span l10nKey="EditTab.Toolbox.ComicTool.Options.ImageSelected">
-                                There are no options for this kind of overlay
+                                There are no options for this kind of canvas
+                                element
                             </Span>
                         </Typography>
                     </div>
@@ -689,9 +690,9 @@ const OverlayToolControls: React.FunctionComponent = () => {
 
     return (
         <RequiresSubscriptionOverlayWrapper
-            featureName={kOverlayToolId as string}
+            featureName={kCanvasToolId as string}
         >
-            <div id="overlayToolControls">
+            <div id="canvasToolControls">
                 {
                     // Using most kinds of comic bubbles is problematic in various ways in Bloom games, so we don't allow it.
                     // We may eventually want to allow some controls to be used, but for now we just disable the whole thing.
@@ -715,7 +716,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                     // limited to activities, we might introduce a new kind of page type attribute. Also, we may just
                     // want a single message like "This tool is not available on this page type" or something more specific
                     // like the one here.
-                    OverlayTool.isCurrentPageABloomGame() ? (
+                    CanvasTool.isCurrentPageABloomGame() ? (
                         <div
                             css={css`
                                 padding: ${kToolboxContentPadding};
@@ -727,7 +728,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                 `}
                             >
                                 <span>
-                                    The Overlay Tool cannot currently be used on
+                                    The Canvas Tool cannot currently be used on
                                     Bloom Games pages. Some of the functions are
                                     duplicated in the Games Tool.
                                 </span>
@@ -747,12 +748,12 @@ const OverlayToolControls: React.FunctionComponent = () => {
                             >
                                 <CanvasElementItemRow>
                                     <CanvasElementItem
-                                        src="/bloom/bookEdit/toolbox/overlay/comic-icon.svg"
+                                        src="/bloom/bookEdit/toolbox/canvas/comic-icon.svg"
                                         canvasElementType="speech"
                                     />
                                     <CanvasElementImageItem />
                                     <CanvasElementItem
-                                        src="/bloom/bookEdit/toolbox/overlay/sign-language-overlay.svg"
+                                        src="/bloom/bookEdit/toolbox/canvas/sign-language-overlay.svg"
                                         canvasElementType="video"
                                     />
                                 </CanvasElementItemRow>
@@ -795,7 +796,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                             </CanvasElementItemRegion>
 
                             <div
-                                id={"overlayToolControlOptionsRegion"}
+                                id={"canvasToolControlOptionsRegion"}
                                 className={
                                     canvasElementType && !isXmatter
                                         ? ""
@@ -804,10 +805,10 @@ const OverlayToolControls: React.FunctionComponent = () => {
                             >
                                 {getControlOptionsRegion()}
                             </div>
-                            <div id="overlayToolControlFillerRegion" />
-                            <div id={"overlayToolControlFooterRegion"}>
+                            <div id="canvasToolControlFillerRegion" />
+                            <div id={"canvasToolControlFooterRegion"}>
                                 <CanvasElementKeyHints />
-                                <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Overlay_Tool/Overlay_Tool_overview.htm" />
+                                <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Canvas_Tool/Canvas_Tool_overview.htm" />
                             </div>
                         </div>
                     )
@@ -816,33 +817,33 @@ const OverlayToolControls: React.FunctionComponent = () => {
         </RequiresSubscriptionOverlayWrapper>
     );
 };
-export default OverlayToolControls;
+export default CanvasToolControls;
 
 // Possibly wants to be CanvasElementTool, but we may think of a better UI name and want to use that instead, so leaving for now.
-export class OverlayTool extends ToolboxToolReactAdaptor {
-    public static theOneOverlayTool: OverlayTool | undefined;
+export class CanvasTool extends ToolboxToolReactAdaptor {
+    public static theOneCanvasTool: CanvasTool | undefined;
 
     public callOnNewPageReady: () => void | undefined;
 
     public constructor() {
         super();
 
-        OverlayTool.theOneOverlayTool = this;
+        CanvasTool.theOneCanvasTool = this;
     }
 
     public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
-        root.setAttribute("class", "OverlayBody");
+        root.setAttribute("class", "CanvasBody");
 
-        ReactDOM.render(<OverlayToolControls />, root);
+        ReactDOM.render(<CanvasToolControls />, root);
         return root as HTMLDivElement;
     }
 
     public id(): string {
-        return kOverlayToolId;
+        return kCanvasToolId;
     }
 
-    public featureName? = kOverlayToolId;
+    public featureName? = kCanvasToolId;
 
     public isExperimental(): boolean {
         return false;

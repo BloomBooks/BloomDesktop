@@ -2268,11 +2268,11 @@ These are similar but already have game-theme classes
 </body></html>"
             );
             // When we change metadata ID
-            //var metaData = new BookMetaData();
-            //metaData.CurrentTool = "overlayTool"; // obsolete
-            //var state = ToolboxToolState.CreateFromToolId("overlay");
-            //metaData.ToolStates = new List<ToolboxToolState>(new[] { state });
-            //metaData.WriteToFolder(storage.FolderPath);
+            var metaData = new BookMetaData();
+            metaData.CurrentTool = "overlayTool"; // obsolete
+            var state = ToolboxToolState.CreateFromToolId("overlay");
+            metaData.ToolStates = new List<ToolboxToolState>(new[] { state });
+            metaData.WriteToFolder(storage.FolderPath);
 
             var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
             ;
@@ -2533,7 +2533,7 @@ These are similar but already have game-theme classes
             var storage = GetInitialStorageWithCustomHtml(twoOverlayPagesHtml);
             var assertThatDom = AssertThatXmlIn.Dom(storage.Dom.RawDom);
             var xpathOverlay = FeatureRegistry
-                .Features.Find(f => f.Feature == FeatureName.Overlay)
+                .Features.Find(f => f.Feature == FeatureName.Canvas)
                 .ExistsInPageXPath;
 
             assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
