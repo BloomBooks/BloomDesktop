@@ -31,4 +31,16 @@ manualDescribe("Manual Interactive Testing", () => {
         // The test will end when you close the browser window
         await page.waitForEvent("close");
     });
+
+    // this is what you get if you say "./show-with-bloom.sh"
+    test("with-bloom-backend", async ({ page }) => {
+        test.setTimeout(0);
+
+        // With real backend, we don't set up mocks - just navigate to the component
+        // The component will use real API calls to Bloom at localhost:8089
+        await page.goto("/?component=LinkTargetChooserDialog");
+
+        // Keep the browser open until manually closed
+        await page.waitForEvent("close");
+    });
 });
