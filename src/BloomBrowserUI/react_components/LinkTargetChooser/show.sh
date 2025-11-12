@@ -2,7 +2,7 @@
 # Manual testing for LinkTargetChooserDialog
 # Uses Playwright with full mock support from test-helpers.ts
 # Usage: ./show.sh [test-name]
-# Example: ./show.sh hash-only-url-with-page-id
+# Example: ./show.sh page-only-url
 
 cd "$(dirname "$0")/../component-tester"
 

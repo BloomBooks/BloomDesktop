@@ -19,7 +19,8 @@ import { headingStyle } from "./sharedStyles";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import { useL10n } from "../l10nHooks";
 
-const URLEditorComponent: React.FunctionComponent<{
+// this shows a text field for editing the URL directly, with buttons for paste, open in browser, and a menu for "back"
+export const URLEditor: React.FunctionComponent<{
     currentURL: string;
     onChange: (url: string) => void;
 }> = (props) => {
@@ -222,14 +223,3 @@ const URLEditorComponent: React.FunctionComponent<{
         </Box>
     );
 };
-
-export const URLEditor = React.memo(
-    URLEditorComponent,
-    (prevProps, nextProps) => {
-        // Only re-render if currentURL or onChange changes
-        return (
-            prevProps.currentURL === nextProps.currentURL &&
-            prevProps.onChange === nextProps.onChange
-        );
-    },
-);

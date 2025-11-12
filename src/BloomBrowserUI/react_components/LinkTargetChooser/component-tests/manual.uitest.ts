@@ -3,7 +3,7 @@
  * This opens a visible browser with the component and keeps it open indefinitely
  * so you can interact with it manually.
  *
- * Run with: ./show.sh
+ * Run with: ./show.sh, ./show.sh page-only-url, etc.
  */
 import { test } from "../../component-tester/playwrightTest";
 import { setupLinkTargetChooser } from "./test-helpers";
@@ -33,7 +33,7 @@ manualDescribe("Manual Interactive Testing", () => {
         await page.waitForEvent("close");
     });
 
-    test("hash-only-url-with-page-id", async ({ page }) => {
+    test("page-only-url", async ({ page }) => {
         test.setTimeout(0);
 
         // Demonstrates hash-only URL (#5) auto-selecting the current book (book3)
@@ -41,7 +41,6 @@ manualDescribe("Manual Interactive Testing", () => {
         await setupLinkTargetChooser(page, {
             currentURL: "#5",
             currentBookBeingEditedId: "book3",
-            clipboardText: "#10",
         });
 
         await page.waitForEvent("close");
@@ -55,7 +54,18 @@ manualDescribe("Manual Interactive Testing", () => {
         await setupLinkTargetChooser(page, {
             currentURL: "#cover",
             currentBookBeingEditedId: "book2",
-            clipboardText: "#cover",
+        });
+
+        await page.waitForEvent("close");
+    });
+    test("missing-book", async ({ page }) => {
+        test.setTimeout(0);
+
+        // Demonstrates hash-only URL (#cover) auto-selecting the current book (book2)
+        // and showing the cover page. The URL stays as #cover (not converted to /book/book2)
+        await setupLinkTargetChooser(page, {
+            currentURL: "/book/999",
+            currentBookBeingEditedId: "book2",
         });
 
         await page.waitForEvent("close");
@@ -69,7 +79,6 @@ manualDescribe("Manual Interactive Testing", () => {
         await setupLinkTargetChooser(page, {
             currentURL: "/book/book2#7",
             currentBookBeingEditedId: "book2",
-            clipboardText: "/book/book3#5",
         });
 
         await page.waitForEvent("close");
