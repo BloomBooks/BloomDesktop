@@ -6876,10 +6876,13 @@ export class CanvasElementManager {
             // so we don't do this adjustment.
             if (!useSizeOfNewImage && img?.style.width) {
                 // need to adjust image settings to preserve cropping
-                const scale = bgCanvasElement.clientWidth / oldCeWidth;
-                img.style.width =
-                    CanvasElementManager.pxToNumber(img.style.width) * scale +
-                    "px";
+                // Scaling against the old image width preserves a closer approximation
+                // to the virtual image size than using the old canvas element width. (BL-15464)
+                const oldImgWidth = CanvasElementManager.pxToNumber(
+                    img.style.width
+                );
+                const scale = bgCanvasElement.clientWidth / oldImgWidth;
+                img.style.width = oldImgWidth * scale + "px";
                 img.style.left =
                     CanvasElementManager.pxToNumber(img.style.left) * scale +
                     "px";
