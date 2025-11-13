@@ -25,7 +25,7 @@ const fixResourceUrls = (
             return rawPath;
         }
 
-        let decodedPath = rawPath;
+        let decodedPath;
         try {
             decodedPath = decodeURIComponent(rawPath);
         } catch {
