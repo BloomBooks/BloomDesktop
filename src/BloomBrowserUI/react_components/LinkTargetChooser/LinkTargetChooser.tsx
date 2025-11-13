@@ -152,9 +152,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
         setSelectedPageId(null);
         props.onURLChanged?.(rawUrl, false);
         setHasAttemptedAutoSelect(true);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [props.currentURL, props.onURLChanged, bookInfoForLinks]);
-
+    }, [props.currentURL, props.onURLChanged, bookInfoForLinks, currentBookId]);
     const handleBookSelected = useCallback(
         (book: BookInfoForLinks) => {
             setSelectedBook(book);
