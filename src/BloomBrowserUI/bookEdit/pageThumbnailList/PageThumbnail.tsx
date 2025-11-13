@@ -210,13 +210,13 @@ export const PageThumbnail: React.FunctionComponent<{
         pendingPageRequestCount--;
         activePageRequestCount++;
         const pageContentRequestEncodedUrl = props.bookId
-            ? `pageList/pageContent?id=${props.page.key}&book-id=${encodeURIComponent(props.bookId)}`
-            : `pageList/pageContent?id=${props.page.key}`;
+            ? `pageList/pageContent?page-id=${props.page.key}&book-id=${encodeURIComponent(props.bookId)}`
+            : `pageList/pageContent?page-id=${props.page.key}`;
         get(
             pageContentRequestEncodedUrl,
             (response) => {
                 activePageRequestCount--;
-                let htmlContent = response.data.content; // automatically unJsonified?
+                let htmlContent = response.data.content; // axios already parsed the JSON response
 
                 // When loading from a different book, we need to fix image URLs to point to that book's folder
                 if (props.bookId || props.bookFolderPath) {

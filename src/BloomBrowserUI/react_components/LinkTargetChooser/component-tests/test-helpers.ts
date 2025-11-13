@@ -207,7 +207,7 @@ export async function setupLinkTargetChooser(
     // Dynamic route for page content
     await page.route("**/bloom/api/pageList/pageContent**", async (route) => {
         const url = new URL(route.request().url());
-        const id = url.searchParams.get("id") || "";
+        const id = url.searchParams.get("page-id") || "";
         const color =
             id === "cover" ? "4CAF50" : id === "1" ? "2196F3" : "FF9800";
         const caption =

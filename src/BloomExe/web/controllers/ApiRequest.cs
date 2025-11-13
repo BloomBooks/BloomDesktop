@@ -9,6 +9,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Forms;
+using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Utils;
 using Newtonsoft.Json;
@@ -521,6 +522,32 @@ namespace Bloom.Api
         public NameValueCollection GetPostDataWhenFormEncoded()
         {
             return _requestInfo.GetPostDataWhenFormEncoded();
+        }
+
+
+
+        // handle 3 situations:
+        // 1. no book-id specified: return current book or null if no current book
+        // 2. book-id specified and it is found in the collection
+        // 3. book-id specified but not found in the collection: return null
+        public Book.Book GetRequestedBookOrDefaultOrNull(
+            CollectionTab.CollectionModel collection,
+            BookSelection bookSelection
+        )
+        {
+            var requestedBookId = this.GetParamOrNull("book-id");
+            if (requestedBookId != null)
+            {
+                try
+                {
+                    return collection.GetBookFromId(requestedBookId);
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+            return bookSelection.CurrentSelection;
         }
 
         public void ReplyWithBoolean(bool value)

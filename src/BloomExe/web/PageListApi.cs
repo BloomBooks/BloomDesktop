@@ -63,22 +63,17 @@ namespace Bloom.web
                 "pageList/bookAttributesThatMayAffectDisplay",
                 (request) =>
                 {
-                    HtmlDom dom = null;
-                    var requestedBookId = request.GetParamOrNull("book-id");
-                    try
+                    var requestedBook = request.GetRequestedBookOrDefaultOrNull(
+                        _collectionModel,
+                        _bookSelection
+                    );
+                    if (requestedBook == null)
                     {
-                        var book = string.IsNullOrEmpty(requestedBookId)
-                            ? _bookSelection.CurrentSelection
-                            : _collectionModel.GetBookFromId(requestedBookId);
-                        dom = book?.OurHtmlDom;
-                    }
-                    catch (Exception ex)
-                    {
-                        request.Failed(ex.Message);
+                        request.ReplyWithJson("{}");
                         return;
                     }
 
-                    var attrs = dom?.GetBodyAttributesThatMayAffectDisplay();
+                    var attrs = requestedBook.OurHtmlDom.GetBodyAttributesThatMayAffectDisplay();
                     if (attrs == null)
                     {
                         request.ReplyWithJson("{}");
@@ -214,17 +209,11 @@ namespace Bloom.web
             //var watch = new Stopwatch();
             //watch.Start();
 
-            Book.Book book;
-            string requestedBookId = request.GetParamOrNull("book-id");
-            try
+            var book = request.GetRequestedBookOrDefaultOrNull(_collectionModel, _bookSelection);
+
+            if (book == null)
             {
-                book = string.IsNullOrEmpty(requestedBookId)
-                    ? _bookSelection.CurrentSelection
-                    : _collectionModel.GetBookFromId(requestedBookId);
-            }
-            catch (Exception ex)
-            {
-                request.Failed(ex.Message);
+                request.Failed(System.Net.HttpStatusCode.NotFound, "Could not find book");
                 return;
             }
 
@@ -232,10 +221,9 @@ namespace Bloom.web
             int pageNumber = 0;
             dynamic answer = new ExpandoObject();
             answer.pages = pages.Select(p => GetPageObject(p, ref pageNumber)).ToArray();
-            answer.selectedPageId =
-                string.IsNullOrEmpty(requestedBookId) && SelectedPage != null
-                    ? SelectedPage.Id
-                    : "";
+            var isCurrentBook =
+                book != null && ReferenceEquals(book, _bookSelection.CurrentSelection);
+            answer.selectedPageId = isCurrentBook && SelectedPage != null ? SelectedPage.Id : "";
             answer.pageLayout = book?.GetLayout()?.SizeAndOrientation?.ClassName ?? "A5Portrait";
             answer.cssFiles =
                 book != null ? book.Storage.GetCssFilesToLinkForPreview() : new string[0];
@@ -246,30 +234,24 @@ namespace Bloom.web
 
         // Requests the content that should be displayed in a single page thumbnail.
         // Parameters:
-        //    id - the page ID
+        //    page-id - the page ID
         //    book-id - the book ID (optional)
         public void HandlePageContentRequest(ApiRequest request)
         {
             var watch = new Stopwatch();
             watch.Start();
-            var id = request.RequiredParam("id");
-            var bookId = request.GetParamOrNull("book-id");
-            IPage page = null;
-            try
+            var id = request.RequiredParam("page-id");
+            var book = request.GetRequestedBookOrDefaultOrNull(_collectionModel, _bookSelection);
+            if (book == null)
             {
-                var book = string.IsNullOrEmpty(bookId)
-                    ? _bookSelection.CurrentSelection
-                    : _collectionModel.GetBookFromId(bookId);
-                page = book.GetPages().FirstOrDefault(p => p.Id == id);
+                request.Failed(System.Net.HttpStatusCode.NotFound, "Could not find book");
+                return;
             }
-            catch (Exception)
+
+            var page = book.GetPages().FirstOrDefault(p => p.Id == id);
+            if (page == null)
             {
-                // Theoretically, the user could have deleted the book or a page and the UI is
-                // still sending out requests for a deleted thing.
-                // If that happens, let's have the request fail. One could argue we should
-                // send something back so that the client doesn't have to handle failure,
-                // but how are we to know what the client wants in that case?
-                request.Failed("Could not find book or page");
+                request.Failed(System.Net.HttpStatusCode.NotFound, "Could not find page");
                 return;
             }
             dynamic answer = new ExpandoObject();
