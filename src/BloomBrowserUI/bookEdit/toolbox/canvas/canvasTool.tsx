@@ -45,7 +45,10 @@ import { getCanvasElementManager } from "./canvasElementUtils";
 import { deselectVideoContainers } from "../../js/videoUtils";
 import { CanvasElementKeyHints } from "./CanvasElementKeyHints";
 import { ToolBox } from "../toolbox";
-import { kToolboxContentPadding } from "../../../bloomMaterialUITheme";
+import {
+    kBloomBlue,
+    kToolboxContentPadding,
+} from "../../../bloomMaterialUITheme";
 import $ from "jquery";
 
 const CanvasToolControls: React.FunctionComponent = () => {
@@ -744,6 +747,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
                             `}
                         >
                             <CanvasElementItemRegion
+                                theme="blueOnTan"
                                 className={!isXmatter ? "" : "disabled"}
                             >
                                 <CanvasElementItemRow>
@@ -751,7 +755,10 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                         src="/bloom/bookEdit/toolbox/canvas/comic-icon.svg"
                                         canvasElementType="speech"
                                     />
-                                    <CanvasElementImageItem />
+                                    <CanvasElementImageItem
+                                        color={kBloomBlue}
+                                        strokeColor={kBloomBlue}
+                                    />
                                     <CanvasElementItem
                                         src="/bloom/bookEdit/toolbox/canvas/sign-language-overlay.svg"
                                         canvasElementType="video"
@@ -768,8 +775,9 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                             vertical-align: middle;
                                             padding-bottom: 1em;
 
-                                            color: white;
-                                            border: 1px dotted white;
+                                            color: ${kBloomBlue};
+                                            background-color: white;
+                                            border: 1px dotted ${kBloomBlue};
                                         `}
                                         l10nKey="EditTab.Toolbox.ComicTool.TextBlock"
                                     />
@@ -785,10 +793,10 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                             padding-top: 5px;
                                             padding-bottom: 5px;
 
-                                            border: 1px solid black;
-                                            color: black;
+                                            border: 1px solid ${kBloomBlue};
+                                            color: ${kBloomBlue};
                                             background-color: white;
-                                            box-shadow: 3px 3px black;
+                                            box-shadow: 3px 3px ${kBloomBlue};
                                         `}
                                         l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption"
                                     />
