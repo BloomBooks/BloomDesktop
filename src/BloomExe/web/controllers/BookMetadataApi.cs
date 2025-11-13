@@ -2,9 +2,7 @@
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.CollectionTab;
-using Bloom.web;
 using L10NSharp;
-using SIL.Reporting;
 
 namespace Bloom.web.controllers
 {
@@ -33,59 +31,21 @@ namespace Bloom.web.controllers
             );
         }
 
-        // if the request is asking about a book by id, try to get that one; otherwise use the current selection
-        private bool TryResolveBook(ApiRequest request, out Book.Book book, out BookInfo bookInfo)
-        {
-            var requestedBookId = request.GetParamOrNull("book-id");
-            book = null;
-            bookInfo = null;
-
-            try
-            {
-                book = string.IsNullOrEmpty(requestedBookId)
-                    ? _bookSelection.CurrentSelection
-                    : _collectionModel.GetBookFromId(requestedBookId);
-
-                if (book == null)
-                {
-                    request.Failed(
-                        string.IsNullOrEmpty(requestedBookId)
-                            ? "No book selected"
-                            : "Book not found"
-                    );
-                    return false;
-                }
-
-                bookInfo = book.BookInfo;
-                return true;
-            }
-            catch (ArgumentException)
-            {
-                book = null;
-                bookInfo = null;
-                request.Failed("Book not found");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                book = null;
-                bookInfo = null;
-                Logger.WriteError(
-                    "BookMetadataApi.TryResolveBook encountered an unexpected error.",
-                    ex
-                );
-                request.Failed("Unable to resolve the requested book.");
-                return false;
-            }
-        }
-
         private void HandleBookMetadata(ApiRequest request)
         {
             switch (request.HttpMethod)
             {
                 case HttpMethods.Get:
-                    if (!TryResolveBook(request, out var book, out var bookInfo))
+                    var book = request.GetRequestedBookOrDefaultOrNull(
+                        _collectionModel,
+                        _bookSelection
+                    );
+                    if (book == null)
+                    {
+                        request.Failed("Book not found");
                         return;
+                    }
+                    var bookInfo = book.BookInfo;
 
                     // The spec is here: https://docs.google.com/document/d/e/2PACX-1vREQ7fUXgSE7lGMl9OJkneddkWffO4sDnMG5Vn-IleK35fJSFqnC-6ulK1Ss3eoETCHeLn0wPvcxJOf/pub
                     // See also https://www.w3.org/Submission/2017/SUBM-epub-a11y-20170125/#sec-conf-reporting.

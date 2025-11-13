@@ -46,7 +46,6 @@ interface LinkTargetChooserSetupOptions {
         disabled?: boolean;
     }>;
     pageLayout?: string;
-    cssFiles?: string[];
     bookAttributes?: Record<string, string>;
     selectedPageId?: string;
     frontCoverPageId?: string;
@@ -164,7 +163,6 @@ export async function setupLinkTargetChooser(
                     pages,
                     selectedPageId: props.selectedPageId ?? "cover",
                     pageLayout: props.pageLayout ?? "A5Portrait",
-                    cssFiles: props.cssFiles ?? [],
                 }),
             });
         });
@@ -181,7 +179,6 @@ export async function setupLinkTargetChooser(
             })),
             selectedPageId: props.selectedPageId ?? "cover",
             pageLayout: props.pageLayout ?? "A5Portrait",
-            cssFiles: props.cssFiles ?? [],
         });
     }
 

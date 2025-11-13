@@ -2,18 +2,14 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
-using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.SafeXml;
 using Bloom.Utils;
-using SIL.IO;
-using SIL.Xml;
 
 namespace Bloom.web
 {
@@ -223,10 +219,11 @@ namespace Bloom.web
             answer.pages = pages.Select(p => GetPageObject(p, ref pageNumber)).ToArray();
             var isCurrentBook =
                 book != null && ReferenceEquals(book, _bookSelection.CurrentSelection);
+            // this is bit gross, semantically, but originally this api call was only
+            // called while editing a book and the selected page is part of the .net model.
+            // In other (newer) contexts, we may be asking about another book and there is semantically no selected page so this will be null.
             answer.selectedPageId = isCurrentBook && SelectedPage != null ? SelectedPage.Id : "";
             answer.pageLayout = book?.GetLayout()?.SizeAndOrientation?.ClassName ?? "A5Portrait";
-            answer.cssFiles =
-                book != null ? book.Storage.GetCssFilesToLinkForPreview() : new string[0];
             request.ReplyWithJson(answer);
             //watch.Stop();
             //Debug.WriteLine($"Generating JSON for thumbnails took {watch.ElapsedMilliseconds}ms");
