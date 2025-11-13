@@ -147,7 +147,6 @@ const PageItemComponent: React.FunctionComponent<{
     isSelected: boolean;
     pageLayout: string;
     bookId: string;
-    bookFolderPath?: string;
     onSelectPage: (pageInfo: PageInfoForLinks) => void;
     onConfigureReloadCallback: (id: string, callback: () => void) => void;
 }> = (props) => {
@@ -223,7 +222,6 @@ const PageItemComponent: React.FunctionComponent<{
                 left={false}
                 pageLayout={props.pageLayout}
                 bookId={props.bookId}
-                bookFolderPath={props.bookFolderPath}
                 configureReloadCallback={props.onConfigureReloadCallback}
             />
         </div>
@@ -237,13 +235,11 @@ const PageItem = React.memo(PageItemComponent, (prevProps, nextProps) => {
         prevProps.isSelected === nextProps.isSelected &&
         prevProps.pageInfo === nextProps.pageInfo &&
         prevProps.pageLayout === nextProps.pageLayout &&
-        prevProps.bookId === nextProps.bookId &&
-        prevProps.bookFolderPath === nextProps.bookFolderPath
+        prevProps.bookId === nextProps.bookId
     );
 });
 const PageChooserComponent: React.FunctionComponent<{
     bookId?: string;
-    bookFolderPath?: string;
     selectedPageId?: string;
     onSelectPage: (page: PageInfoForLinks) => void;
     onPagesLoaded?: (pages: PageInfoForLinks[]) => void;
@@ -472,7 +468,6 @@ const PageChooserComponent: React.FunctionComponent<{
                                     isSelected={isSelected}
                                     pageLayout={pageLayout}
                                     bookId={props.bookId!}
-                                    bookFolderPath={props.bookFolderPath}
                                     onSelectPage={props.onSelectPage}
                                     onConfigureReloadCallback={
                                         handleConfigureReloadCallback

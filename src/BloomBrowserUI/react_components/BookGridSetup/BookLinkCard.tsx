@@ -18,7 +18,7 @@ interface BookCardProps {
     disabled?: boolean;
 }
 
-const BookLinkCardComponent: React.FC<BookCardProps> = ({
+export const BookLinkCard: React.FC<BookCardProps> = ({
     link,
     selected,
     onClick,
@@ -138,20 +138,3 @@ const BookLinkCardComponent: React.FC<BookCardProps> = ({
         </Card>
     );
 };
-
-export const BookLinkCard = React.memo(
-    BookLinkCardComponent,
-    (prevProps, nextProps) => {
-        // Only re-render if book ID or selection state changes
-        return (
-            prevProps.link.book.id === nextProps.link.book.id &&
-            prevProps.selected === nextProps.selected &&
-            prevProps.onClick === nextProps.onClick &&
-            prevProps.onRemove === nextProps.onRemove &&
-            prevProps.style === nextProps.style &&
-            prevProps.preferFolderName === nextProps.preferFolderName &&
-            prevProps.isDragging === nextProps.isDragging &&
-            prevProps.disabled === nextProps.disabled
-        );
-    },
-);

@@ -347,7 +347,6 @@ export const LinkTargetChooser: React.FunctionComponent<{
                     >
                         <PageChooser
                             bookId={selectedBook?.id}
-                            bookFolderPath={selectedBook?.folderPath}
                             selectedPageId={selectedPageId ?? undefined}
                             onSelectPage={handlePageSelected}
                             onPagesLoaded={handlePagesLoaded}
