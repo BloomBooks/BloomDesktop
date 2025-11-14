@@ -30,7 +30,7 @@ export async function setupBookGridSetupComponent(
 
     await setTestComponent<IBookGridSetupProps>(
         page,
-        "../bookLinkSetup/BookGridSetup",
+        "../BookGridSetup/BookGridSetup",
         "BookGridSetup",
         fullProps,
     );

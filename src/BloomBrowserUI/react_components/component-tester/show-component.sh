@@ -16,7 +16,7 @@ COMPONENTS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 COMPONENT_FOLDER="$1"
 shift
 
-MANUAL_TEST_RELATIVE_PATH="$COMPONENT_FOLDER/component-tests/manual.uitest.ts"
+MANUAL_TEST_RELATIVE_PATH="$COMPONENT_FOLDER/component-tests/show-component.uitest.ts"
 MANUAL_TEST_FULL_PATH="$COMPONENTS_DIR/$MANUAL_TEST_RELATIVE_PATH"
 
 if [ ! -f "$MANUAL_TEST_FULL_PATH" ]; then

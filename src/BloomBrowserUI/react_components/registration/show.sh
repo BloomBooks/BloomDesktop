@@ -1,8 +1,8 @@
 #!/bin/bash
-# Manual testing for LinkTargetChooserDialog
+# Manual testing for RegistrationContents
 # Uses Playwright with full mock support from test-helpers.ts
 # Usage: ./show.sh [test-name]
-# Example: ./show.sh page-only-url
+# Example: ./show.sh with-existing-info
 
 set -euo pipefail
 

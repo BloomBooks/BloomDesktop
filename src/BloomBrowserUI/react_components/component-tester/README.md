@@ -61,9 +61,9 @@ yarn test              # headless
 yarn test:headed       # see browser
 yarn test:ui          # interactive UI
 
-# Play with a component manually ('manual' is the deprecated approach... it is preferred to use show.sh with a playwright test that just never times out.)
-yarn manual # will list all the components
-yarn manual StarChart # open to a specific component
+# Play with a component manually
+./show.sh
+./show-with-bloom.sh
 ```
 
 ### Component-local test helpers
@@ -77,10 +77,6 @@ Every component folder includes a `test.sh` wrapper that runs Playwright against
 
 Relative file paths are resolved inside the component folder, so you do not need to prefix them with `LinkTargetChooser/` when invoking the script.
 
-Some components have this new style which uses playwright to give you a browser window set up with initial conditions for
-manual testing or ai agent testing.
-- `./show.sh`
-- `./show-with-backend.sh`
 
 ## APIs
 For testing components that get or submit data via APIs, use the methods provided by `apiInterceptors.ts`.
