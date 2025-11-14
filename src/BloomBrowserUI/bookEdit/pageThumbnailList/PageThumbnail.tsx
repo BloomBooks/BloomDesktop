@@ -10,150 +10,6 @@ let lastPageRequestTime = 0;
 let activePageRequestCount = 0;
 let pendingPageRequestCount = 0;
 
-// Fix relative resource URLs to point to the correct book folder
-const fixResourceUrls = (
-    html: string,
-    bookId?: string,
-    bookFolderPath?: string,
-): string => {
-    if (!html || (!bookId && !bookFolderPath)) {
-        return html || "";
-    }
-
-    const makeBookFileEncodedUrl = (rawPath: string): string => {
-        if (!bookId) {
-            return rawPath;
-        }
-
-        let decodedPath;
-        try {
-            decodedPath = decodeURIComponent(rawPath);
-        } catch {
-            decodedPath = rawPath;
-        }
-
-        let remainingPath = decodedPath;
-        let hash = "";
-        const hashIndex = remainingPath.indexOf("#");
-        if (hashIndex >= 0) {
-            hash = remainingPath.substring(hashIndex);
-            remainingPath = remainingPath.substring(0, hashIndex);
-        }
-
-        let query = "";
-        const queryIndex = remainingPath.indexOf("?");
-        if (queryIndex >= 0) {
-            query = remainingPath.substring(queryIndex);
-            remainingPath = remainingPath.substring(0, queryIndex);
-        }
-
-        const normalizedPath = remainingPath
-            .replace(/\\/g, "/")
-            .replace(/^\/+/, "");
-        const fileParam = encodeURIComponent(normalizedPath);
-        const baseEncodedUrl = `/bloom/api/collections/bookFile?book-id=${encodeURIComponent(
-            bookId,
-        )}&file=${fileParam}`;
-        const extraQuery = query ? `&${query.substring(1)}` : "";
-
-        return `${baseEncodedUrl}${extraQuery}${hash}`;
-    };
-
-    const makeFolderEncodedUrl = (rawPath: string): string => {
-        if (!bookFolderPath) {
-            return rawPath;
-        }
-
-        const normalizedFolder = bookFolderPath.replace(/\\/g, "/");
-        const encodedFolderSegments = normalizedFolder
-            .split("/")
-            .map((segment) => encodeURIComponent(segment));
-        const baseEncodedPath = `/bloom/${encodedFolderSegments.join("/")}`;
-
-        if (typeof window !== "undefined") {
-            try {
-                const baseEncodedUrlWithSlash = baseEncodedPath.endsWith("/")
-                    ? baseEncodedPath
-                    : `${baseEncodedPath}/`;
-                const baseBrowserEncodedUrl = new URL(
-                    baseEncodedUrlWithSlash,
-                    window.location.origin,
-                );
-                const resolvedBrowserEncodedUrl = new URL(
-                    rawPath,
-                    baseBrowserEncodedUrl,
-                );
-                if (
-                    resolvedBrowserEncodedUrl.origin !== window.location.origin
-                ) {
-                    return resolvedBrowserEncodedUrl.href;
-                }
-                return `${resolvedBrowserEncodedUrl.pathname}${resolvedBrowserEncodedUrl.search}${resolvedBrowserEncodedUrl.hash}`;
-            } catch {
-                // fall through to simple concatenation
-            }
-        }
-
-        const encodedRelativePath = rawPath
-            .split("/")
-            .map((segment) => encodeURIComponent(segment))
-            .join("/");
-        return `${baseEncodedPath}/${encodedRelativePath}`;
-    };
-
-    const isRelative = (candidateUrl: string): boolean => {
-        const lowered = candidateUrl.toLowerCase();
-        return !(
-            lowered.startsWith("http://") ||
-            lowered.startsWith("https://") ||
-            lowered.startsWith("data:") ||
-            lowered.startsWith("/") ||
-            lowered.startsWith("javascript:") ||
-            lowered.startsWith("mailto:") ||
-            lowered.startsWith("#")
-        );
-    };
-
-    const getResolvedEncodedUrl = (rawPath: string): string => {
-        if (bookFolderPath) {
-            return makeFolderEncodedUrl(rawPath);
-        }
-        return makeBookFileEncodedUrl(rawPath);
-    };
-
-    // Fix src and href attributes that reference relative paths
-    let updatedHtml = html.replace(
-        /(src|href)=("|')([^"']*?)\2/gi,
-        (match, attrName, quote, attributeUnencodedRelativeUrl) => {
-            if (
-                !attributeUnencodedRelativeUrl ||
-                !isRelative(attributeUnencodedRelativeUrl)
-            ) {
-                return match;
-            }
-            return `${attrName}=${quote}${getResolvedEncodedUrl(attributeUnencodedRelativeUrl)}${quote}`;
-        },
-    );
-
-    // Fix inline style url(...) references (e.g., background-image)
-    updatedHtml = updatedHtml.replace(
-        /url\(("|')?([^"')]+)\1\)/gi,
-        (match, quote, styleUnencodedUrlValue) => {
-            const trimmedRelativeUnencodedUrl = styleUnencodedUrlValue.trim();
-            if (
-                !trimmedRelativeUnencodedUrl ||
-                !isRelative(trimmedRelativeUnencodedUrl)
-            ) {
-                return match;
-            }
-            const normalizedQuote = quote || "";
-            return `url(${normalizedQuote}${getResolvedEncodedUrl(trimmedRelativeUnencodedUrl)}${normalizedQuote})`;
-        },
-    );
-
-    return updatedHtml;
-};
-
 // Component to display the thumbnail of one page, with its caption and possibly
 // an overflow indicator.
 export const PageThumbnail: React.FunctionComponent<{
@@ -168,8 +24,6 @@ export const PageThumbnail: React.FunctionComponent<{
     onContextMenu?: React.MouseEventHandler<HTMLDivElement>;
     // Optional bookId for cross-book usage (e.g., in LinkTargetChooser)
     bookId?: string;
-    // Folder path for the book when we need to resolve resources directly from disk
-    bookFolderPath?: string;
 }> = (props) => {
     // The initial content here is a blank page. It will be replaced with
     // the real content when we retrieve it from the server.
@@ -218,24 +72,23 @@ export const PageThumbnail: React.FunctionComponent<{
                 activePageRequestCount--;
                 let htmlContent = response.data.content; // axios already parsed the JSON response
 
-                // When loading from a different book, we need to fix image URLs to point to that book's folder
-                if (props.bookId || props.bookFolderPath) {
-                    htmlContent = fixResourceUrls(
+                // When loading from a different book, we need to fix image URLs to point to that book's API
+                if (props.bookId) {
+                    htmlContent = makeRelativeUrlsAbsolute(
                         htmlContent,
                         props.bookId,
-                        props.bookFolderPath,
                     );
                 }
 
                 setContent(htmlContent);
             },
-            (error) => {
+            (_error) => {
                 // Handle errors gracefully (e.g., when a page is deleted or moved while
                 // requests are in-flight). Just decrement the counter and leave content empty.
                 activePageRequestCount--;
             },
         );
-    }, [props.bookId, props.bookFolderPath, props.page.key]);
+    }, [props.bookId, props.page.key]);
 
     const reForOverflow = /^[^>]*class="[^"]*pageOverflows/;
     const overflowing = reForOverflow.test(content); // enhance: memo?
@@ -279,3 +132,82 @@ export const PageThumbnail: React.FunctionComponent<{
         </div>
     );
 };
+
+// This component is used not only for the current book, but also
+// for displaying pages from other books when choosing link targets.
+// In the latter case, we need to fix up resource URLs so they load through the book-file API.
+// For example, if we have <img src="images/pic.png">, we need to change that to
+// something like <img src="/bloom/api/collections/bookFile?book-id=...&file=images%2Fpic.png">.
+// Callers without a bookId should skip this rewriting step entirely.
+function makeRelativeUrlsAbsolute(html: string, bookId: string): string {
+    if (!html) {
+        return "";
+    }
+
+    // Treat anything that already looks absolute as untouched.
+    const absolutePattern = /^(?:[a-z][a-z\d+\-.]*:|\/|#)/i;
+
+    // Resolve relative URLs through the book file API so assets come from the requested book.
+    const resolveRelativeUrl = (rawPath: string): string => {
+        try {
+            const resolved = new URL(rawPath, "http://bloom.invalid/");
+            let normalizedPath = resolved.pathname.replace(/^\/+/, "");
+            try {
+                normalizedPath = decodeURIComponent(normalizedPath);
+            } catch {
+                // keep normalizedPath as-is if decoding fails
+            }
+
+            const params = new URLSearchParams();
+            params.set("book-id", bookId);
+            params.set("file", normalizedPath);
+            resolved.searchParams.forEach((value, key) => {
+                params.append(key, value);
+            });
+
+            return `/bloom/api/collections/bookFile?${params.toString()}${resolved.hash}`;
+        } catch {
+            return rawPath;
+        }
+    };
+
+    // Skip strings that are empty or already absolute so we do not mangle them.
+    const shouldSkip = (candidateUrl: string): boolean => {
+        const trimmed = candidateUrl.trim();
+        return trimmed.length === 0 || absolutePattern.test(trimmed);
+    };
+
+    // Rewrite src/href attributes in-line so thumbnails fetch the right assets.
+    const replaceAttributeUrls = (inputHtml: string): string =>
+        inputHtml.replace(
+            /(src|href)=("|')([^"']*?)\2/gi,
+            (match, attrName, quote, rawValue) => {
+                if (shouldSkip(rawValue)) {
+                    return match;
+                }
+
+                return `${attrName}=${quote}${resolveRelativeUrl(
+                    rawValue,
+                )}${quote}`;
+            },
+        );
+
+    // Handle inline CSS url() references the same way.
+    const replaceStyleUrls = (inputHtml: string): string =>
+        inputHtml.replace(
+            /url\(("|')?([^"')]+)\1\)/gi,
+            (match, quote, rawValue) => {
+                const trimmedValue = rawValue.trim();
+                if (shouldSkip(trimmedValue)) {
+                    return match;
+                }
+
+                const normalizedQuote = quote || "";
+                return `url(${normalizedQuote}${resolveRelativeUrl(
+                    trimmedValue,
+                )}${normalizedQuote})`;
+            },
+        );
+
+    return replaceStyleUrls(replaceAttributeUrls(html));
+}
