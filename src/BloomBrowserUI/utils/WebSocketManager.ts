@@ -296,9 +296,12 @@ export default class WebSocketManager {
         listener: (messageEvent: T) => void,
         tagForDebugging?: string,
     ): void {
-        if (clientContext.indexOf("mock_") > -1) {
-            // this is used in storybook stories. Don't try finding a server because there isn't one.
-            // Events will come in via mockSend().
+        // Skip WebSocket creation in test/mock environments
+        if (
+            clientContext.indexOf("mock_") > -1 ||
+            (window as any)._SKIP_WEBSOCKET_CREATION_
+        ) {
+            // this is used in storybook stories and playwright tests when not in "with-bloom" mode.
             if (!WebSocketManager.clientContextCallbacks[clientContext])
                 WebSocketManager.clientContextCallbacks[clientContext] = [];
         } else {

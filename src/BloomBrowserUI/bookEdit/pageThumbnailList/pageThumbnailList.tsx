@@ -66,7 +66,7 @@ export interface IPage {
 // there ever being more than one instance of pageThumbnailList.
 const pageIdToRefreshMap = new Map<string, () => void>();
 
-const PageList: React.FunctionComponent<{ pageSize: string }> = (props) => {
+const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
     const [realPageList, setRealPageList] = useState<IPage[]>([]);
     // a value to be bumped to force a reload of page content when the websocket detects
     // a request for this.
@@ -283,7 +283,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = (props) => {
                         <PageThumbnail
                             page={pageContent}
                             left={!(index % 2)}
-                            pageSize={props.pageSize}
+                            pageLayout={props.pageLayout}
                             configureReloadCallback={(id, callback) =>
                                 pageIdToRefreshMap.set(id, callback)
                             }
@@ -366,6 +366,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = (props) => {
             {...bookAttributesThatMayAffectDisplay}
         >
             <Responsive
+                className="page-thumbnail-list"
                 width={180}
                 layouts={layouts}
                 // lg (two-column) if it's more than 90px wide. That's barely enough for one column,
@@ -393,10 +394,10 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = (props) => {
 };
 
 $(window).ready(() => {
-    const pageSize =
+    const pageLayout =
         document.body.getAttribute("data-pageSize") || "A5Portrait";
     ReactDOM.render(
-        <PageList pageSize={pageSize} />,
+        <PageList pageLayout={pageLayout} />,
         document.getElementById("pageGridWrapper"),
     );
 

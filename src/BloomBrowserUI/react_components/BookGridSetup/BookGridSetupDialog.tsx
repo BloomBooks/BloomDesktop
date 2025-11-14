@@ -107,10 +107,11 @@ export const BookGridSetupDialog: React.FunctionComponent<{
                         ...link,
                         book: {
                             ...link.book,
-                            folderName: bookIdsToFolderNames[link.book.id],
-                            title:
-                                bookIdsToTitles[link.book.id] ||
-                                link.book.title,
+                            folderName:
+                                // note: the book interface here has a foldername, and we get that
+                                // from api calls, but links we just fished out of the dom don't know their folder name
+                                bookIdsToFolderNames[link.book.id],
+                            title: bookIdsToTitles[link.book.id],
                         },
                     }))}
                     onLinksChanged={setSelectedLinks}

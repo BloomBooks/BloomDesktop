@@ -62,9 +62,21 @@ yarn test:headed       # see browser
 yarn test:ui          # interactive UI
 
 # Play with a component manually
-yarn manual # will list all the components
-yarn manual StarChart # open to a specific component
+./show.sh
+./show-with-bloom.sh
 ```
+
+### Component-local test helpers
+
+Every component folder includes a `test.sh` wrapper that runs Playwright against just that component's specs. Manual Playwright suites are excluded automatically.
+
+- `./test.sh` &mdash; run the entire component suite (manual specs are skipped).
+- `./test.sh component-tests/url-sync-preselection.uitest.ts` &mdash; run a single file.
+- `./test.sh component-tests/url-sync-preselection.uitest.ts -g "Scrolls preselected book into view"` &mdash; run one test case by name.
+- `./test.sh --grep "URL Synchronization"` &mdash; run tests matching a pattern.
+
+Relative file paths are resolved inside the component folder, so you do not need to prefix them with `LinkTargetChooser/` when invoking the script.
+
 
 ## APIs
 For testing components that get or submit data via APIs, use the methods provided by `apiInterceptors.ts`.
