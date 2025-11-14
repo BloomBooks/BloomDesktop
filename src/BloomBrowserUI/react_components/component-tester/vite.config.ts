@@ -160,7 +160,7 @@ export default defineConfig({
                     {
                         tag: "script",
                         injectTo: "head-prepend",
-                        children: `window.__BLOOM_HAS_BACKEND__ = ${!useMocks};`,
+                        children: `window._SKIP_WEBSOCKET_CREATION_ = ${useMocks};`,
                     },
                 ];
             },

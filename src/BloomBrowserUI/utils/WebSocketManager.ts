@@ -296,17 +296,12 @@ export default class WebSocketManager {
         listener: (messageEvent: T) => void,
         tagForDebugging?: string,
     ): void {
-        // Skip WebSocket creation in test/mock environments (but allow it if backend proxy is enabled)
-        const isComponentTester = window.location.port === "5183";
-        const isStorybook = window.location.port === "58886";
-        const hasBackendProxy = (window as any).__BLOOM_HAS_BACKEND__ === true;
+        // Skip WebSocket creation in test/mock environments
         if (
             clientContext.indexOf("mock_") > -1 ||
-            (isComponentTester && !hasBackendProxy) ||
-            isStorybook
+            (window as any)._SKIP_WEBSOCKET_CREATION_
         ) {
-            // this is used in storybook stories and component tester without backend. Don't try finding a server because there isn't one.
-            // Events will come in via mockSend().
+            // this is used in storybook stories and playwright tests when not in "with-bloom" mode.
             if (!WebSocketManager.clientContextCallbacks[clientContext])
                 WebSocketManager.clientContextCallbacks[clientContext] = [];
         } else {
