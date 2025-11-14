@@ -1407,7 +1407,7 @@ canvas.moving {
     }
     // the "crop" handles on left and right are visible for text boxes
     // (though with a different function).
-    &.has-text:not(.moving) {
+    &.has-text:not(.moving):not(.is-button) {
         .bloom-ui-canvas-element-side-handle-e,
         .bloom-ui-canvas-element-side-handle-w {
             display: block;
@@ -1431,7 +1431,10 @@ canvas.moving {
             display: block;
         }
     }
-    &.has-image:not(.moving):not(.has-svg)
+    // Images usually support cropping, but we are (temporarily?) disabling it for buttons.
+    // The current code does not support cropping images with padding or where the size of
+    // the bloom-canvas-element is for any reason different from the image-container size.
+    &.has-image:not(.moving):not(.has-svg):not(.is-button)
         .bloom-ui-canvas-element-side-handle {
         display: block;
     }
@@ -1709,15 +1712,8 @@ svg.bloom-videoControl {
     }
 }
 
-.bloom-link-grid {
-    // Make sure the size doesn't go to nothing if it is empty; it needs to be clickable
-    min-height: 100px;
-}
-
 #edit-book-grid-prompt {
-    // Temporarily making this white to be visible on the current dark background;
-    // we may need to change this when we finalize background color
-    color: white;
+    color: @bloom-blue;
     position: absolute;
     top: 50%;
     left: 50%;

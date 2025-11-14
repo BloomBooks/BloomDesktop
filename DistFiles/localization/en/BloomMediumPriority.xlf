@@ -446,6 +446,18 @@
         <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
       </trans-unit>
       <!-- Canvas (was Overlay) -->
+      <trans-unit id="EditTab.Toolbox.OverlayTool.ClickToSetLinkDest" sil:dynamic="true">
+        <source xml:lang="en">Click to set where the link takes you</source>
+        <note>ID: EditTab.Toolbox.OverlayTool.ClickToSetLinkDest</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.OverlayTool.SetDest" sil:dynamic="true">
+        <source xml:lang="en">Set Destination</source>
+        <note>ID: EditTab.Toolbox.OverlayTool.SetDest</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.OverlayTool.BookGrid" sil:dynamic="true">
+        <source xml:lang="en">A grid of buttons that jump you to books in your app</source>
+        <note>ID: EditTab.Toolbox.OverlayTool.BookGrid</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.OverlayTool.KeyHints.Drag" sil:dynamic="true">
         <source xml:lang="en">drag</source>
         <note>ID: EditTab.Toolbox.OverlayTool.KeyHints.Drag</note>
@@ -460,6 +472,10 @@
         <source xml:lang="en">move</source>
         <note>ID: EditTab.Toolbox.OverlayTool.KeyHints.Move</note>
         <note>Used in the Key hint at the bottom of the Canvas Tool for "Ctrl + drag = move".</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.OverlayTool.NavButtons" sil:dynamic="true">
+        <source xml:lang="en">A button that jumps you to a page or book in your app</source>
+        <note>ID: EditTab.Toolbox.OverlayTool.NavButtons</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
