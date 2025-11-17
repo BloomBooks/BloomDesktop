@@ -18,93 +18,60 @@ import { useL10n } from "../l10nHooks";
 
 type PageWithXMatter = IPage & { isXMatter?: boolean; disabled?: boolean };
 
-const staticStylesheets: Array<{ href: string; key: string }> = [
-    {
-        href: "/bloom/bookEdit/pageThumbnailList/pageThumbnailList.css",
-        key: "page-thumbnail-list",
-    },
-    {
-        href: "/bloom/bookLayout/basePage.css",
-        key: "base-page",
-    },
-    {
-        href: "/bloom/bookLayout/previewMode.css",
-        key: "preview-mode",
-    },
+const staticStylesheetUrls = [
+    "/bloom/bookEdit/pageThumbnailList/pageThumbnailList.css",
+    "/bloom/bookLayout/basePage.css",
+    "/bloom/bookLayout/previewMode.css",
 ];
-type StylesheetDefinition = { href: string; key: string };
 
-const ensureStylesheet = (
-    href: string,
-    key: string,
-    addedLinks: HTMLLinkElement[],
-) => {
-    const selector = `link[data-page-chooser-css="${key}"]`;
-    let linkElement = document.head.querySelector(
-        selector,
-    ) as HTMLLinkElement | null;
-
-    if (!linkElement) {
-        const absoluteHref = new URL(href, window.location.origin).href;
-        linkElement = Array.from(
-            document.head.querySelectorAll("link[href]"),
-        ).find((candidate) => {
-            const element = candidate as HTMLLinkElement;
-            return element.href === absoluteHref;
-        }) as HTMLLinkElement | null;
-    }
-
-    if (!linkElement) {
-        linkElement = document.createElement("link");
-        linkElement.rel = "stylesheet";
-        linkElement.type = "text/css";
-        linkElement.href = href;
-        linkElement.dataset.pageChooserCss = key;
-        document.head.appendChild(linkElement);
-        addedLinks.push(linkElement);
-    } else if (!linkElement.dataset.pageChooserCss) {
-        linkElement.dataset.pageChooserCss = key;
-    }
-};
-
-const attachStylesheets = (stylesheets: StylesheetDefinition[]) => {
-    const addedLinks: HTMLLinkElement[] = [];
-    stylesheets.forEach(({ href, key }) => {
-        ensureStylesheet(href, key, addedLinks);
-    });
-    return addedLinks;
-};
-
-const removeStylesheets = (links: HTMLLinkElement[]) => {
-    links.forEach((linkElement) => {
-        if (linkElement.parentNode) {
-            linkElement.parentNode.removeChild(linkElement);
+const fetchStylesheetContent = async (url: string): Promise<string> => {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            console.warn(`Failed to load stylesheet: ${url}`);
+            return "";
         }
-    });
+        return await response.text();
+    } catch (error) {
+        console.warn(`Error fetching stylesheet ${url}:`, error);
+        return "";
+    }
 };
 
 const usePageChooserStyles = (bookId?: string) => {
-    useEffect(() => {
-        const addedLinks = attachStylesheets(staticStylesheets);
-        return () => removeStylesheets(addedLinks);
-    }, []);
+    const [scopedStyles, setScopedStyles] = useState<string>("");
 
     useEffect(() => {
-        const existing = document.head.querySelectorAll(
-            'link[data-page-chooser-css="appearance"]',
-        );
-        existing.forEach((link) => {
-            link.parentNode?.removeChild(link);
-        });
-
         if (!bookId) {
+            setScopedStyles("");
             return;
         }
 
-        const href = `/bloom/api/collections/bookFile?book-id=${bookId}&file=appearance.css`;
-        const addedLinks = attachStylesheets([{ href, key: "appearance" }]);
-        return () => removeStylesheets(addedLinks);
+        let canceled = false;
+
+        const loadStyles = async () => {
+            const stylePromises = [
+                ...staticStylesheetUrls.map(fetchStylesheetContent),
+                fetchStylesheetContent(
+                    `/bloom/api/collections/bookFile?book-id=${bookId}&file=appearance.css`,
+                ),
+            ];
+
+            const styleContents = await Promise.all(stylePromises);
+
+            if (!canceled) {
+                setScopedStyles(styleContents.join("\n"));
+            }
+        };
+
+        loadStyles();
+
+        return () => {
+            canceled = true;
+        };
     }, [bookId]);
+
+    return scopedStyles;
 };
 
 const toPageInfo = (
@@ -139,14 +106,13 @@ const renderStatus = (
     </Box>
 );
 
-const PageItemComponent: React.FunctionComponent<{
+export const PageItem: React.FunctionComponent<{
     page: PageWithXMatter;
     pageInfo: PageInfoForLinks;
     isSelected: boolean;
     pageLayout: string;
     bookId: string;
     onSelectPage: (pageInfo: PageInfoForLinks) => void;
-    onConfigureReloadCallback: (id: string, callback: () => void) => void;
 }> = (props) => {
     const isDisabled = Boolean(props.pageInfo.disabled);
     const itemRef = useRef<HTMLDivElement | null>(null);
@@ -220,29 +186,18 @@ const PageItemComponent: React.FunctionComponent<{
                 left={false}
                 pageLayout={props.pageLayout}
                 bookId={props.bookId}
-                configureReloadCallback={props.onConfigureReloadCallback}
             />
         </div>
     );
 };
 
-const PageItem = React.memo(PageItemComponent, (prevProps, nextProps) => {
-    // Only re-render if selection state or page key changes
-    return (
-        prevProps.page.key === nextProps.page.key &&
-        prevProps.isSelected === nextProps.isSelected &&
-        prevProps.pageInfo === nextProps.pageInfo &&
-        prevProps.pageLayout === nextProps.pageLayout &&
-        prevProps.bookId === nextProps.bookId
-    );
-});
 const PageChooserComponent: React.FunctionComponent<{
     bookId?: string;
     selectedPageId?: string;
     onSelectPage: (page: PageInfoForLinks) => void;
     onPagesLoaded?: (pages: PageInfoForLinks[]) => void;
 }> = (props) => {
-    usePageChooserStyles(props.bookId);
+    const scopedStyles = usePageChooserStyles(props.bookId);
     const [pages, setPages] = useState<PageWithXMatter[]>([]);
     const [pageLayout, setPageLayout] = useState<string>("A5Portrait");
     const [loading, setLoading] = useState(false);
@@ -266,13 +221,6 @@ const PageChooserComponent: React.FunctionComponent<{
     const failedToLoadPagesMessage = useL10n(
         "Failed to load pages",
         "LinkTargetChooser.PageList.LoadFailed",
-    );
-
-    // Stable callback for configuring reload callbacks
-    const handleConfigureReloadCallback = React.useCallback(
-        // PageThumbnail expects this hook, but the chooser never calls the callback.
-        (_id: string, _callback: () => void) => undefined,
-        [],
     );
 
     useEffect(() => {
@@ -416,6 +364,7 @@ const PageChooserComponent: React.FunctionComponent<{
 
     return (
         <Box
+            className="page-chooser-scope"
             css={css`
                 height: 100%;
 
@@ -424,6 +373,13 @@ const PageChooserComponent: React.FunctionComponent<{
                 contain: layout; /* Isolate layout changes to prevent affecting parent dialog */
             `}
         >
+            {scopedStyles && (
+                <style
+                    dangerouslySetInnerHTML={{
+                        __html: `.page-chooser-scope { ${scopedStyles} }`,
+                    }}
+                />
+            )}
             <div
                 id="wrapperForBodyAttributes"
                 {...(bookAttributes as Record<string, string>)}
@@ -439,7 +395,7 @@ const PageChooserComponent: React.FunctionComponent<{
                     css={css`
                         flex: 1 1 auto;
                         overflow-y: auto;
-                        padding: 10px;
+                        padding: 10px !important;
                         background-color: ${chooserBackgroundColor};
                     `}
                 >
@@ -467,9 +423,6 @@ const PageChooserComponent: React.FunctionComponent<{
                                     pageLayout={pageLayout}
                                     bookId={props.bookId!}
                                     onSelectPage={props.onSelectPage}
-                                    onConfigureReloadCallback={
-                                        handleConfigureReloadCallback
-                                    }
                                 />
                             );
                         })}

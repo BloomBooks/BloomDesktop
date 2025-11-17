@@ -19,7 +19,7 @@ export const PageThumbnail: React.FunctionComponent<{
     // PageThumbnail will call this function to provide the client with
     // a callback that the client can call to get the page thumbnail to
     // refresh itself by re-doing the axios call that gets the page content.
-    configureReloadCallback: (id: string, callback: () => void) => void;
+    configureReloadCallback?: (id: string, callback: () => void) => void;
     onClick?: React.MouseEventHandler<HTMLDivElement>;
     onContextMenu?: React.MouseEventHandler<HTMLDivElement>;
     // Optional bookId for cross-book usage (e.g., in LinkTargetChooser)
@@ -37,7 +37,7 @@ export const PageThumbnail: React.FunctionComponent<{
     // function and call it. This increments the value. A new value in reloadValue
     // causes the useEffect below to run again and request the new page content.
     const [reloadValue, setReloadValue] = useState(1);
-    props.configureReloadCallback(props.page.key, () =>
+    props.configureReloadCallback?.(props.page.key, () =>
         setReloadValue(reloadValue + 1),
     );
     // Get the actual page content. This is appreciably slow...80ms or so on
