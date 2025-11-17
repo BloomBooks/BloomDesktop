@@ -752,7 +752,7 @@ namespace Bloom.web.controllers
                     .Select(p =>
                     {
                         var caption = p.GetCaptionOrPageNumber(ref pageNum, out string i18nId);
-                        if (!string.IsNullOrEmpty(caption))
+                        if (!string.IsNullOrEmpty(i18nId))
                             caption = I18NApi.GetTranslationDefaultMayNotBeEnglish(i18nId, caption);
                         return caption;
                     })
