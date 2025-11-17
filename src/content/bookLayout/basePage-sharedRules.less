@@ -279,3 +279,23 @@ span.bloom-linebreak {
         }
     }
 }
+
+// Hide the video play/pause/replay icons when recording the video for publishing.
+.bloom-page.bloom-publish-video {
+    .bloom-videoContainer.paused {
+        .videoControlContainer {
+            &.videoPlayIcon,
+            &.videoReplayIcon {
+                display: none !important;
+            }
+        }
+    }
+    .bloom-videoContainer.playing {
+        .videoControlContainer {
+            &.videoPauseIcon,
+            &.videoReplayIcon {
+                display: none !important;
+            }
+        }
+    }
+}
