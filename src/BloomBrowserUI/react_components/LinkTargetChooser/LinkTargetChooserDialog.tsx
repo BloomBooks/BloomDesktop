@@ -16,7 +16,6 @@ import { useL10n } from "../l10nHooks";
 export const LinkTargetChooserDialog: React.FunctionComponent<{
     open: boolean;
     currentURL: string;
-    onCancel?: () => void;
     onSetUrl?: (url: string) => void;
 }> = (props) => {
     const [currentUrl, setCurrentUrl] = useState<string>("");
@@ -62,8 +61,6 @@ export const LinkTargetChooserDialog: React.FunctionComponent<{
             onClose={handleCancel}
             onCancel={handleCancel}
             css={css`
-                // injecting previewMode.css in page thumbnails set cursor to not-allowed
-                cursor: default !important;
                 .MuiDialog-paper {
                     max-width: 1200px;
                 }

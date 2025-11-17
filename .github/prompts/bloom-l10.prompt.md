@@ -24,8 +24,11 @@ The `import` above will need the correct path relative to the current file. The 
 
 * normally, don't fill in l10nComment parameter when using useL10n, that just clutters the code. We will put context in the xliff file instead. However if you want to use the later parameters, then you have to put something in that parameter.
 
-# Adding XLIFF files
+# Adding to XLIFF files
 For each string, we have to have a matching record in one of the xlf files in the /DistFiles/l10n/en folder. There are high (DistFiles/localization/en/BloomHighPriority.xlf), medium (DistFiles/localization/en/Bloom.xlf), and low (DistFiles/localization/en/BloomLowPriority.xlf) priority options. Check all three xliff files for a matching record. If you find it, tell the user where it is. If you don't find it, stop and ask me which priority I want with numbers so I can respond 1,2,or 3. Then create the record in the appropriate file, placing the record next to similar records. For example, here we would want to group the `FoobarDialog` records together.
+
+# Default to not ready for translation
+Add a `translate="no"` attribute to new records unless I tell that these strings are ready for translation.
 
 ## String ID
 the string id may be used by translators as they try to understand context or translate a group of related strings. So make sure it is logical and hierarchical. If the string is a tooltip, make that the last part of the id. E.g. LinkTargetChooser.URL.Paste.Tooltip, not LinkTargetChooser.Tooltip.Paste.

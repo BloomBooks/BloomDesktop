@@ -22,6 +22,11 @@ When working in the front-end, cd to src/BloomBrowserUI
 
 - Style elements using the css macro from @emotion/react directly on the element being styled, using the css prop. E.g. `<div css={css`color:red`}>`
 
+- We rarely use `null` in typescript, preferring `undefined` for values that have not been set. E.g.
+    - YES:  `const foo?: string;`
+    - YES:  `const [foo, setFoo] = useState<string>();`
+    - NO: `const [foo, setFoo] = useState<string | null>(null);`
+
 - Do not destructure props. `props.foo` is easier to understand.
 
 
@@ -57,6 +62,8 @@ Prefer pure render computation first.
 Add useEffect only when necessary for external side effects.
 
 Keep effects minimal and specific to their purpose; avoid overuse.
+
+Always include a comment before a usEffect explaining what it does and why it is necessary.
 
 ## UI Tests
 

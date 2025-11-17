@@ -524,32 +524,6 @@ namespace Bloom.Api
             return _requestInfo.GetPostDataWhenFormEncoded();
         }
 
-
-
-        // handle 3 situations:
-        // 1. no book-id specified: return current book or null if no current book
-        // 2. book-id specified and it is found in the collection
-        // 3. book-id specified but not found in the collection: return null
-        public Book.Book GetRequestedBookOrDefaultOrNull(
-            CollectionTab.CollectionModel collection,
-            BookSelection bookSelection
-        )
-        {
-            var requestedBookId = this.GetParamOrNull("book-id");
-            if (requestedBookId != null)
-            {
-                try
-                {
-                    return collection.GetBookFromId(requestedBookId);
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-            return bookSelection.CurrentSelection;
-        }
-
         public void ReplyWithBoolean(bool value)
         {
             // https://tools.ietf.org/html/rfc7493#section-4.1  Note we don't have to be compatible with old parsers. so we can just return true or false

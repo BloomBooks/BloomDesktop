@@ -1141,5 +1141,26 @@ namespace Bloom.CollectionTab
             }
             return true;
         }
+
+        /// <summary>
+        /// Get a requested book by id or fall back to the current selection when no id is provided.
+        /// Returns null if the requested id cannot be resolved.
+        /// </summary>
+        public Book.Book GetRequestedBookOrDefaultOrNull(string requestedBookId)
+        {
+            if (!string.IsNullOrWhiteSpace(requestedBookId))
+            {
+                try
+                {
+                    return GetBookFromId(requestedBookId);
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+
+            return _bookSelection?.CurrentSelection;
+        }
     }
 }

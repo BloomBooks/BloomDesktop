@@ -59,9 +59,8 @@ namespace Bloom.web
                 "pageList/bookAttributesThatMayAffectDisplay",
                 (request) =>
                 {
-                    var requestedBook = request.GetRequestedBookOrDefaultOrNull(
-                        _collectionModel,
-                        _bookSelection
+                    var requestedBook = _collectionModel.GetRequestedBookOrDefaultOrNull(
+                        request.GetParamOrNull("book-id")
                     );
                     if (requestedBook == null)
                     {
@@ -205,7 +204,9 @@ namespace Bloom.web
             //var watch = new Stopwatch();
             //watch.Start();
 
-            var book = request.GetRequestedBookOrDefaultOrNull(_collectionModel, _bookSelection);
+            var book = _collectionModel.GetRequestedBookOrDefaultOrNull(
+                request.GetParamOrNull("book-id")
+            );
 
             if (book == null)
             {
@@ -238,7 +239,9 @@ namespace Bloom.web
             var watch = new Stopwatch();
             watch.Start();
             var id = request.RequiredParam("page-id");
-            var book = request.GetRequestedBookOrDefaultOrNull(_collectionModel, _bookSelection);
+            var book = _collectionModel.GetRequestedBookOrDefaultOrNull(
+                request.GetParamOrNull("book-id")
+            );
             if (book == null)
             {
                 request.Failed(System.Net.HttpStatusCode.NotFound, "Could not find book");

@@ -28,6 +28,8 @@ export const URLEditor: React.FunctionComponent<{
     const [moreMenuAnchor, setMoreMenuAnchor] = useState<null | HTMLElement>(
         null,
     );
+    // Sync local state with prop changes (e.g., when user selects a book/page).
+    // Local state is needed so the input can be edited without triggering onChange on every keystroke.
     React.useEffect(() => {
         setURL(props.currentURL);
     }, [props.currentURL]);

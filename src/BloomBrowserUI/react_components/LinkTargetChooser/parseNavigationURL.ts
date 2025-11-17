@@ -12,7 +12,7 @@ export interface ParsedURL {
  * - Book path URLs: "/book/bookId" or "/book/bookId#pageId"
  * - External/other URLs: any other string
  * - Empty URLs: empty string
- */ export const parseURL = (rawUrl: string): ParsedURL => {
+ */ export const parseNavigationURL = (rawUrl: string): ParsedURL => {
     if (!rawUrl) {
         return {
             bookId: null,

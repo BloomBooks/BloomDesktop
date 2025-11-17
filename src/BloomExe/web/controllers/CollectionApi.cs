@@ -751,7 +751,13 @@ namespace Bloom.web.controllers
                 return;
             }
 
-            var relativePath = fileParam
+            // Strip query parameters (e.g., ?thumbnail=1) from the file path.
+            // The server adds these for optimization hints, but they're not part of the actual filename.
+            var questionMarkIndex = fileParam.IndexOf('?');
+            var filePathOnly =
+                questionMarkIndex >= 0 ? fileParam.Substring(0, questionMarkIndex) : fileParam;
+
+            var relativePath = filePathOnly
                 .Replace('/', Path.DirectorySeparatorChar)
                 .Replace('\\', Path.DirectorySeparatorChar);
 

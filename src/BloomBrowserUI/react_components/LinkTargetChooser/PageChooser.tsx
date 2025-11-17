@@ -101,9 +101,7 @@ const usePageChooserStyles = (bookId?: string) => {
             return;
         }
 
-        const href = `/bloom/api/collections/bookFile?book-id=${encodeURIComponent(
-            bookId,
-        )}&file=${encodeURIComponent("appearance.css")}`;
+        const href = `/bloom/api/collections/bookFile?book-id=${bookId}&file=appearance.css`;
         const addedLinks = attachStylesheets([{ href, key: "appearance" }]);
         return () => removeStylesheets(addedLinks);
     }, [bookId]);

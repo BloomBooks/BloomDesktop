@@ -10,9 +10,9 @@ import {
 } from "./sharedStyles";
 
 // Component that shows all the books in the collection as buttons, and allows selecting one
-const BookChooserComponent: React.FunctionComponent<{
+export const BookChooser: React.FunctionComponent<{
     books: BookInfoForLinks[];
-    selectedBook: BookInfoForLinks | null;
+    selectedBook: BookInfoForLinks | undefined;
     onSelectBook: (book: BookInfoForLinks) => void;
 }> = (props) => {
     // used for scrolling to selected book
@@ -69,16 +69,3 @@ const BookChooserComponent: React.FunctionComponent<{
         </div>
     );
 };
-
-// React.memo keeps the card grid responsive by skipping expensive re-renders unless meaningful data changes.
-export const BookChooser = React.memo(
-    BookChooserComponent,
-    (prevProps, nextProps) => {
-        // Return true to prevent re-render when selectedBook, books, and onSelectBook are unchanged
-        return (
-            prevProps.selectedBook?.id === nextProps.selectedBook?.id &&
-            prevProps.books === nextProps.books &&
-            prevProps.onSelectBook === nextProps.onSelectBook
-        );
-    },
-);

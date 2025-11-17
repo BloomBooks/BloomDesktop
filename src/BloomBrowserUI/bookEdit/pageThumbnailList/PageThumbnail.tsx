@@ -158,12 +158,16 @@ function makeRelativeUrlsAbsolute(html: string, bookId: string): string {
                 // keep normalizedPath as-is if decoding fails
             }
 
+            // Include query string in the file parameter (e.g., image.jpg?thumbnail=1)
+            // because the server provides file references with query strings as part of the path.
+            let fileParam = normalizedPath;
+            if (resolved.search) {
+                fileParam += resolved.search;
+            }
+
             const params = new URLSearchParams();
             params.set("book-id", bookId);
-            params.set("file", normalizedPath);
-            resolved.searchParams.forEach((value, key) => {
-                params.append(key, value);
-            });
+            params.set("file", fileParam);
 
             return `/bloom/api/collections/bookFile?${params.toString()}${resolved.hash}`;
         } catch {

@@ -36,9 +36,8 @@ namespace Bloom.web.controllers
             switch (request.HttpMethod)
             {
                 case HttpMethods.Get:
-                    var book = request.GetRequestedBookOrDefaultOrNull(
-                        _collectionModel,
-                        _bookSelection
+                    var book = _collectionModel.GetRequestedBookOrDefaultOrNull(
+                        request.GetParamOrNull("book-id")
                     );
                     if (book == null)
                     {
@@ -205,26 +204,12 @@ namespace Bloom.web.controllers
                             "Sign Language"
                         ),
                     };
-                    var preferredTitle = bookInfo.QuickTitleUserDisplay;
-                    // review: is this worth it? What's the difference?
-                    // var collectionSettings = _collectionModel.CollectionSettings;
-                    // var languageTags = collectionSettings.GetAllLanguageTags().ToList();
-                    // var bestTitle = bookInfo.GetBestTitleForUserDisplay(languageTags);
-                    // if (!string.IsNullOrWhiteSpace(bestTitle))
-                    // {
-                    //     preferredTitle = bestTitle;
-                    // }
 
                     var blob = new
                     {
                         metadata,
                         translatedStringPairs,
-                        book = new
-                        {
-                            id = bookInfo.Id,
-                            folderName = bookInfo.FolderName,
-                            preferredTitle,
-                        },
+                        book = new { id = bookInfo.Id, folderName = bookInfo.FolderName },
                     };
                     request.ReplyWithJson(blob);
                     break;
