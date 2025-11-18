@@ -175,7 +175,7 @@ namespace Bloom.Book
             {
                 Caption = "Quiz";
             }
-            if (CaptionI18nId == null)
+            if (string.IsNullOrEmpty(CaptionI18nId))
             {
                 if (string.IsNullOrEmpty(Caption))
                     captionI18nId = null;
