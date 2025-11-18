@@ -211,9 +211,11 @@ namespace Bloom.Publish.BloomPub.wifi
             // misinformed about where to respond. It sends its book request somewhere else, and
             // Desktop never hears it.
             //
-            // To mitigate, instantiate the UdpClient with the IP address of the network interface
-            // that we are confident the network stack *will* be using: the interface having the
-            // lowest "interface metric."
+            // The network stack is going to use the interface it wants. We can't control what it
+            // chooses. But we *can* control the IP address we advertise to remote Androids. We get
+            // that address up front using the same selection criteria as the network stack: find
+            // the network interface having the lowest "interface metric" and use *its* IP address.
+            // We then use that IP address as the basis for the UdpClient.
             //
             // The PC on which this runs likely has both WiFi and Ethernet. Either can work,
             // but preference is given to WiFi. The reason: although this PC can likely go either
