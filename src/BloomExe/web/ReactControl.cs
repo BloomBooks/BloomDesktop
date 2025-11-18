@@ -234,8 +234,20 @@ namespace Bloom.web
             var body =
                 $@"
                 <body style='margin:0; height:100%; display: flex; flex: 1; flex-direction: column; background-color:{backColor};{overflowY}'>
-                    <div id='reactRoot' style='height:100%'>Javascript should have replaced this. Make sure that the javascript bundle '{bundleNameWithExtension}' includes a single call to WireUpForWinforms()</div>
+                    <div id='reactRoot' style='height:100%'>
+                    <div class='spinner-container' style='position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);'>
+                        <svg class='spinner' width='40' height='40' viewBox='0 0 40 40' style='animation: spin 1s linear infinite;'>
+                            <circle cx='20' cy='20' r='16' fill='none' stroke='#808080' stroke-width='4' stroke-dasharray='75.4 25.13' stroke-linecap='round'/>
+                        </svg>
+                    </div>
+                    <style>
+                        @keyframes spin {{
+                            to {{ transform: rotate(360deg); }}
+                        }}
+                    </style>
+                    </div>
                 </body>";
+
             if (viteModulePath != null && useViteDev)
             {
                 RobustFile.WriteAllText(
