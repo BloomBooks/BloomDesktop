@@ -401,6 +401,12 @@ namespace Bloom.Publish.BloomPub
                 settings?.PublishAsMotionBookIfApplicable == true && modifiedBook.HasMotionPages
             );
 
+            if ((settings.PublishingMedium & PublishingMediums.Video) != 0)
+            {
+                foreach (var page in modifiedBook.OurHtmlDom.GetPageElements())
+                    page.AddClass("bloom-publish-video");
+            }
+
             // Although usually tentativeBookFolderPath and modifiedBook.FolderPath are the same, there are some exceptions
             // In the process of bringing a book up-to-date (called by MakeDeviceXmatterTempBook), the folder path may change.
             // For example, it could change if the original folder path contains punctuation marks now deemed dangerous.
