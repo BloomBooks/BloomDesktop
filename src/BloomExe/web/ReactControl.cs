@@ -231,10 +231,14 @@ namespace Bloom.web
             // The original version used 400ms, which meant a 1200ms delay; but if it's going to succeed,
             // it typically does so in 2ms. I compromised on 40.
             useViteDev &= IsLocalPortOpen(5173, 40);
+            var loadingMsg = L10NSharp.LocalizationManager.GetString(
+                "Common.Loading",
+                "Loading..."
+            );
             var body =
                 $@"
                 <body style='margin:0; height:100%; display: flex; flex: 1; flex-direction: column; background-color:{backColor};{overflowY}'>
-                    <div id='reactRoot' style='height:100%'>Javascript should have replaced this. Make sure that the javascript bundle '{bundleNameWithExtension}' includes a single call to WireUpForWinforms()</div>
+                    <div id='reactRoot' style='height:100%'>{loadingMsg} <img src='/images/wait30transparent.gif'/></div>
                 </body>";
             if (viteModulePath != null && useViteDev)
             {
