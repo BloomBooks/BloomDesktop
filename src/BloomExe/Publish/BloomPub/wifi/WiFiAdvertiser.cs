@@ -35,21 +35,36 @@ namespace Bloom.Publish.BloomPub.wifi
         }
         public string TitleLanguage;
 
+        private Thread _thread;
+
+        // Source or "local" IP address of the network interface we determine that the network stack
+        // will use for Bloom network traffic, both outgoing (adverts) and incoming (book requests):
+        //  - This is the source address for our broadcast advertisements.
+        //  - This is also the destination address for incoming book requests from Androids. It is
+        //    included in the adverts we send out, informing potential Android recipients where to
+        //    send their requests.
+        //  - This is also used to derive the destination address for our broadcast advertisements.
+        private string _ipForThisDeviceOnChosenInterface = "";
+
+        // Destination IP address to which outgoing book advertising broadcasts are sent.
+        // It does not identify a single device but rather all devices on the same subnet. This type
+        // of address is known as a "directed broadcast address".
+        private string _ipBroadcastForDestination = "";
+
+        // Source endpoint used in broadcasting our adverts.
+        // It is derived from our source IP address.
+        // It has a hand in configuring the broadcast client used to send adverts, thus ensuring that
+        // adverts will go out to the correct subnet.
+        private IPEndPoint _epForThisDeviceOnChosenInterface;
+
+        // Destination endpoint used in broadcasting our adverts.
+        // It is derived from the destination IP address (i.e., the directed broadcast address).
+        // The broadcast client used to send adverts takes in this endpoint as a parameter.
+        private IPEndPoint _epForBroadcastDestination;
+
         // Client by which we send out broadcast book adverts. It uses our local IP address (attached
         // to the correct network interface) and the expected port.
         private UdpClient _clientForBookAdvertSend;
-
-        private Thread _thread;
-        private IPEndPoint _bcastDestinationEP;
-        private IPEndPoint _bcastSourceEP;
-
-        // Our "local IP address" of the network interface used for Bloom network traffic:
-        //   - it is the target address for incoming book requests from Androids
-        //   - it is also used to derive the destination address for outgoing book advert broadcasts
-        private string _ipForReceivingReplies = "";
-
-        // IP address to which outgoing book advert broadcasts are sent, a "directed broadcast address":
-        private string _ipForSendingBroadcast = "";
 
         private string _subnetMask = "";
         private string _currentIpAddress = "";
@@ -149,7 +164,7 @@ namespace Bloom.Publish.BloomPub.wifi
                         _clientForBookAdvertSend.BeginSend(
                             _sendBytes,
                             _sendBytes.Length,
-                            _bcastDestinationEP,
+                            _epForBroadcastDestination,
                             SendCallback,
                             _clientForBookAdvertSend
                         );
@@ -187,13 +202,18 @@ namespace Bloom.Publish.BloomPub.wifi
         {
             // We must ensure that the local IP address we advertise by the UDP broadcast is the
             // actual address from which the network stack makes the broadcast. Gleaning the local
-            // IP address from a UdpClient usually does yield the one that is being used, but
-            // unfortunately it can be different on some machines. When that happens the remote
-            // Android gets the wrong address from the advert, becoming misinformed about where
-            // to respond. It sends its book request somewhere else, and Desktop never hears it.
+            // IP address from an active UdpClient -- using, for example, Dns.GetHostEntry() --
+            // usually yields the address that the stack is using.
+            // But not always. 
+            // On some machines, unfortunately, asking for the IP from the active UdpClient after
+            // the fact yields the address of an interface NOT being used by the stack. When that
+            // happens the the wrong address gets put into the advert and the remote Android becomes
+            // misinformed about where to respond. It sends its book request somewhere else, and
+            // Desktop never hears it.
             //
             // To mitigate, instantiate the UdpClient with the IP address of the network interface
-            // the network stack will use: the interface having the lowest "interface metric."
+            // that we are confident the network stack *will* be using: the interface having the
+            // lowest "interface metric."
             //
             // The PC on which this runs likely has both WiFi and Ethernet. Either can work,
             // but preference is given to WiFi. The reason: although this PC can likely go either
@@ -214,13 +234,13 @@ namespace Bloom.Publish.BloomPub.wifi
                 return;
             }
 
-            _ipForReceivingReplies = ifcResult.IpAddr;
+            _ipForThisDeviceOnChosenInterface = ifcResult.IpAddr;
             _subnetMask = ifcResult.NetMask;
 
             // Now that we know the IP address and subnet mask in effect, calculate
             // the "directed" broadcast address to use.
-            _ipForSendingBroadcast = GetDirectedBroadcastAddress(_ipForReceivingReplies, _subnetMask);
-            if (_ipForSendingBroadcast.Length == 0)
+            _ipBroadcastForDestination = GetDirectedBroadcastAddress(_ipForThisDeviceOnChosenInterface, _subnetMask);
+            if (_ipBroadcastForDestination.Length == 0)
             {
                 EventLog.WriteEntry("Application", "WiFiAdvertiser, ERROR getting broadcast address");
                 return;
@@ -230,14 +250,14 @@ namespace Bloom.Publish.BloomPub.wifi
             {
                 // Instantiate source endpoint using the local IP address we just got,
                 // then use that to create the UdpClient for broadcasting adverts.
-                _bcastSourceEP = new IPEndPoint(IPAddress.Parse(_ipForReceivingReplies), _portForBroadcast);
-                if (_bcastSourceEP == null)
+                _epForThisDeviceOnChosenInterface = new IPEndPoint(IPAddress.Parse(_ipForThisDeviceOnChosenInterface), _portForBroadcast);
+                if (_epForThisDeviceOnChosenInterface == null)
                 {
                     EventLog.WriteEntry("Application", "WiFiAdvertiser, ERROR creating local IPEndPoint");
                     return;
                 }
 
-                _clientForBookAdvertSend = new UdpClient(_bcastSourceEP);
+                _clientForBookAdvertSend = new UdpClient(_epForThisDeviceOnChosenInterface);
                 if (_clientForBookAdvertSend == null)
                 {
                     EventLog.WriteEntry("Application", "WiFiAdvertiser, ERROR creating UdpClient");
@@ -251,12 +271,12 @@ namespace Bloom.Publish.BloomPub.wifi
                 _clientForBookAdvertSend.EnableBroadcast = true;
 
                 // Set up destination endpoint.
-                _bcastDestinationEP = new IPEndPoint(IPAddress.Parse(_ipForSendingBroadcast), _portForBroadcast);
+                _epForBroadcastDestination = new IPEndPoint(IPAddress.Parse(_ipBroadcastForDestination), _portForBroadcast);
 
                 // Log key data for tech support.
-                EventLog.WriteEntry("Application", $"UDP advertising will use: localIp = {_ipForReceivingReplies}:{_bcastSourceEP.Port} ({ifcResult.Description})");
+                EventLog.WriteEntry("Application", $"UDP advertising will use: localIp = {_ipForThisDeviceOnChosenInterface}:{_epForThisDeviceOnChosenInterface.Port} ({ifcResult.Description})");
                 EventLog.WriteEntry("Application", $"                          subnetMask = {_subnetMask}");
-                EventLog.WriteEntry("Application", $"                          remoteIp = {_bcastDestinationEP.Address}:{_bcastDestinationEP.Port}");
+                EventLog.WriteEntry("Application", $"                          remoteIp = {_epForBroadcastDestination.Address}:{_epForBroadcastDestination.Port}");
             }
             catch (Exception e)
             {
@@ -270,7 +290,7 @@ namespace Bloom.Publish.BloomPub.wifi
         /// </summary>
         private void UpdateAdvertisementBasedOnCurrentIpAddress()
         {
-            _currentIpAddress = _ipForReceivingReplies;
+            _currentIpAddress = _ipForThisDeviceOnChosenInterface;
 
             if (_previousIpAddress != _currentIpAddress)
             {

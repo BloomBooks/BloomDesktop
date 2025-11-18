@@ -57,19 +57,19 @@ namespace Bloom.Publish.BloomPub.wifi
             // https://learn.microsoft.com/en-us/dotnet/api/system.net.ipaddress.any?view=net-9.0
             // Then base the UdpClient on this endpoint.
 
-            IPEndPoint groupEP = null;
+            IPEndPoint epForBookRequestReceive = null;
 
             try
             {
-                groupEP = new IPEndPoint(IPAddress.Any, _portToListen);
+                epForBookRequestReceive = new IPEndPoint(IPAddress.Any, _portToListen);
 
-                if (groupEP == null)
+                if (epForBookRequestReceive == null)
                 {
                     EventLog.WriteEntry("Application", "UDPListener, ERROR creating IPEndPoint");
                     return;
                 }
 
-                _clientForBookRequestReceive = new UdpClient(groupEP);
+                _clientForBookRequestReceive = new UdpClient(epForBookRequestReceive);
 
                 if (_clientForBookRequestReceive == null)
                 {
@@ -96,7 +96,7 @@ namespace Bloom.Publish.BloomPub.wifi
                         EventLog.WriteEntry("Application", $"UDP listening will wait for packet on {localEP.Address}, port {localEP.Port}");
                     }
 
-                    byte[] bytes = _clientForBookRequestReceive.Receive(ref groupEP); // waits for packet from Android.
+                    byte[] bytes = _clientForBookRequestReceive.Receive(ref epForBookRequestReceive); // waits for packet from Android.
 
                     // DEBUG ONLY
                     //Debug.WriteLine("UDPListener, got {0} bytes (raising \'NewMessageReceived\'):", bytes.Length);
