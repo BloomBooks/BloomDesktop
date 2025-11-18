@@ -12,6 +12,7 @@ When working in the front-end, cd to src/BloomBrowserUI
 - yarn 1.22.22
 - Never use npm commands
 - Never use CDNs. This is an offline app.
+- WebView2 112
 
 ## Code Style
 
@@ -63,7 +64,7 @@ Add useEffect only when necessary for external side effects.
 
 Keep effects minimal and specific to their purpose; avoid overuse.
 
-Always include a comment before a usEffect explaining what it does and why it is necessary.
+Always include a comment before a useEffect explaining what it does and why it is necessary.
 
 ## UI Tests
 

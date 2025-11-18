@@ -15,64 +15,9 @@ import {
     chooserButtonPadding,
 } from "./sharedStyles";
 import { useL10n } from "../l10nHooks";
+import { PageStylesInjector } from "./PageStylesInjector";
 
 type PageWithXMatter = IPage & { isXMatter?: boolean; disabled?: boolean };
-
-const staticStylesheetUrls = [
-    "/bloom/bookEdit/pageThumbnailList/pageThumbnailList.css",
-    "/bloom/bookLayout/basePage.css",
-    "/bloom/bookLayout/previewMode.css",
-];
-
-const fetchStylesheetContent = async (url: string): Promise<string> => {
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            console.warn(`Failed to load stylesheet: ${url}`);
-            return "";
-        }
-        return await response.text();
-    } catch (error) {
-        console.warn(`Error fetching stylesheet ${url}:`, error);
-        return "";
-    }
-};
-
-const usePageChooserStyles = (bookId?: string) => {
-    const [scopedStyles, setScopedStyles] = useState<string>("");
-
-    useEffect(() => {
-        if (!bookId) {
-            setScopedStyles("");
-            return;
-        }
-
-        let canceled = false;
-
-        const loadStyles = async () => {
-            const stylePromises = [
-                ...staticStylesheetUrls.map(fetchStylesheetContent),
-                fetchStylesheetContent(
-                    `/bloom/api/collections/bookFile?book-id=${bookId}&file=appearance.css`,
-                ),
-            ];
-
-            const styleContents = await Promise.all(stylePromises);
-
-            if (!canceled) {
-                setScopedStyles(styleContents.join("\n"));
-            }
-        };
-
-        loadStyles();
-
-        return () => {
-            canceled = true;
-        };
-    }, [bookId]);
-
-    return scopedStyles;
-};
 
 const toPageInfo = (
     page: PageWithXMatter,
@@ -197,7 +142,6 @@ const PageChooserComponent: React.FunctionComponent<{
     onSelectPage: (page: PageInfoForLinks) => void;
     onPagesLoaded?: (pages: PageInfoForLinks[]) => void;
 }> = (props) => {
-    const scopedStyles = usePageChooserStyles(props.bookId);
     const [pages, setPages] = useState<PageWithXMatter[]>([]);
     const [pageLayout, setPageLayout] = useState<string>("A5Portrait");
     const [loading, setLoading] = useState(false);
@@ -373,13 +317,9 @@ const PageChooserComponent: React.FunctionComponent<{
                 contain: layout; /* Isolate layout changes to prevent affecting parent dialog */
             `}
         >
-            {scopedStyles && (
-                <style
-                    dangerouslySetInnerHTML={{
-                        __html: `.page-chooser-scope { ${scopedStyles} }`,
-                    }}
-                />
-            )}
+            {/* we could inject this in each individual page, but then we'd want to have caching and
+            then have to defeat it for different books. At the cost of some css bleed this seems adequate. */}
+            <PageStylesInjector bookId={props.bookId} />
             <div
                 id="wrapperForBodyAttributes"
                 {...(bookAttributes as Record<string, string>)}
