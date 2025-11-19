@@ -6,6 +6,8 @@ import { get, post } from "../../utils/bloomApi";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { tryProcessHyperlink } from "./hyperlinks";
 import $ from "jquery";
+import { showLinkTargetChooserDialog } from "../../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
+import { getLocalization } from "../../react_components/l10n";
 
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.
@@ -312,19 +314,17 @@ export default class BloomField {
             }
         });
 
-        ckeditor.addCommand("pasteHyperlink", {
+        ckeditor.addCommand("setupHyperlink", {
             exec: function (edt) {
-                get("common/clipboardText", (result) => {
-                    if (!result.data) {
-                        return; // More sanity checks are in bloomEditing.updateCkEditorButtonStatus
-                    }
+                showLinkTargetChooserDialog("", (url) => {
+                    if (!url) return;
                     get("app/selectedBookInfo", (bookInfo) => {
                         if (!bookInfo.data) {
                             return;
                         }
                         const anchor = document.createElement("a");
                         anchor.href = tryProcessHyperlink(
-                            result.data,
+                            url,
                             bookInfo.data.id,
                         );
                         try {
@@ -349,12 +349,19 @@ export default class BloomField {
             },
         });
 
-        ckeditor.ui.addButton("PasteLink", {
-            // add new button and bind our command
-            label: "Paste Hyperlink",
-            command: "pasteHyperlink",
-            toolbar: "insert",
-            icon: "/bloom/images/link.png",
+        getLocalization({
+            english: "Setup Hyperlink",
+            l10nKey: "EditTab.SetupHyperlink",
+            temporarilyDisableI18nWarning: true,
+            callback: (localizedString) => {
+                ckeditor.ui.addButton("SetupLink", {
+                    // add new button and bind our command
+                    label: localizedString,
+                    command: "setupHyperlink",
+                    toolbar: "insert",
+                    icon: "/bloom/images/link.png",
+                });
+            },
         });
 
         // This makes it easy to find the right editor instance. There may be some ckeditor built-in way, but

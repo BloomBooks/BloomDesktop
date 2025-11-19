@@ -1142,8 +1142,8 @@ function addImageMenuOptions(
     //  behavior such that we'd have to distinguish between the two.
     if (!isDraggable(canvasElement)) {
         imageMenuOptions.push({
-            l10nId: "EditTab.PasteHyperlink",
-            english: "Paste Hyperlink",
+            l10nId: "EditTab.SetupHyperlink",
+            english: "Setup Hyperlink",
             subLabel: imgContainer.getAttribute("data-href") && (
                 <Span
                     // This is tricky and I don't fully understand it myself.
@@ -1172,7 +1172,7 @@ function addImageMenuOptions(
                 </Span>
             ),
             featureName: "canvas",
-            onClick: () => pasteLink(canvasElement),
+            onClick: () => setupLink(canvasElement),
 
             /*
             Since the clipboard is not readable by us directly, but
@@ -1187,25 +1187,15 @@ function addImageMenuOptions(
 
     menuOptions.unshift(...imageMenuOptions);
 }
-function pasteLink(canvasElement: HTMLElement) {
-    const imgContainer =
-        canvasElement.getElementsByClassName(kImageContainerClass)[0];
-
-    getHyperlinkFromClipboard((url) => {
-        if (url) imgContainer.setAttribute("data-href", url);
-        else {
-            if (imgContainer.hasAttribute("data-href")) {
-                imgContainer.removeAttribute("data-href");
-                // Note, not localizing this stuff yet. A better
-                // UX would be nice, just doing this budge English alert for now.
-                alert(
-                    "Did not find a hyperlink on the clipboard, so the existing hyperlink was removed.",
-                );
-            } else {
-                // Note, not localizing this stuff yet. A better
-                // UX would be nice, just doing this budge English alert for now.
-                alert("Did not find a hyperlink on the clipboard.");
-            }
+function setupLink(canvasElement: HTMLElement) {
+    const imgContainer = canvasElement.getElementsByClassName(
+        kImageContainerClass,
+    )[0] as HTMLElement;
+    showLinkTargetChooserDialog("", (url) => {
+        if (url) {
+            imgContainer.setAttribute("data-href", url);
+        } else if (imgContainer.hasAttribute("data-href")) {
+            imgContainer.removeAttribute("data-href");
         }
     });
 }

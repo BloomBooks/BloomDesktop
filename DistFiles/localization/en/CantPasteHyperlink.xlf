@@ -3,7 +3,7 @@
   <file original="CantPasteHyperlink-en.htm" datatype="html" source-language="en">
     <body>
       <trans-unit id="hyperlink.title">
-        <source xml:lang="en">Can't Paste Hyperlink</source>
+        <source xml:lang="en">Can't Setup Hyperlink</source>
         <target />
         <note>ID: hyperlink.title</note>
       </trans-unit>

@@ -965,9 +965,9 @@
         <source xml:lang="en">Legacy (Bloom 5.6)</source>
         <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
       </trans-unit>
-      <trans-unit id="EditTab.PasteHyperlink">
-        <source xml:lang="en">Paste Hyperlink</source>
-        <note>ID: EditTab.PasteHyperlink</note>
+      <trans-unit id="EditTab.SetupHyperlink">
+        <source xml:lang="en">Setup Hyperlink</source>
+        <note>ID: EditTab.SetupHyperlink</note>
       </trans-unit>
       <trans-unit id="UseTalkingBookTool">
         <source xml:lang="en">Use Talking Book Tool</source>
