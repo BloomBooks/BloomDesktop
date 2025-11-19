@@ -1039,7 +1039,7 @@
       </trans-unit>
       <trans-unit id="EditTab.PasteHyperlink">
         <source xml:lang="en">Paste Hyperlink</source>
-        <target xml:lang="es-ES" state="needs-translation">Paste Hyperlink</target>
+        <target xml:lang="es-ES" state="translated">Pegar hiperenlace</target>
         <note>ID: EditTab.PasteHyperlink</note>
       </trans-unit>
       <trans-unit id="UseTalkingBookTool">
