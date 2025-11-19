@@ -475,9 +475,9 @@ namespace Bloom
                     .GetEntryAssembly()
                     .ManifestModule.FullyQualifiedName.Replace('\\', '/');
                 // Use a very specific channel name on developer machines based on build configuration.
-                if (path.EndsWith("/output/Debug/Bloom.dll"))
+                if (path.Contains("/output/Debug/") && path.EndsWith("/Bloom.dll"))
                     return "Developer/Debug"; // verifies this code is running on a developer machine.
-                if (path.EndsWith("/output/Release/Bloom.dll"))
+                if (path.Contains("/output/Release/") && path.EndsWith("/Bloom.dll"))
                     return "Developer/Release"; // verifies this code is running on a developer machine.
                 if (Platform.IsUnix)
                 {
