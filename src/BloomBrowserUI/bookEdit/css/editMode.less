@@ -1,6 +1,7 @@
 /*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
 @import "../../bloomUI.less";
 @import "../sourceBubbles/sourceBubbles.less";
+@import "../../placeHolderImages.less";
 
 @bleed: 3mm; // Duplicated from basePage.less to remove circular dependency between BloomBrowserUI and content
 
@@ -590,9 +591,11 @@ body.bloom-fullBleed {
 // on each parent. We could conceivably compute a different transform for each child, but this is more
 // straightforward and less error-prone.
 .bloom-describedImage {
-    // for a reason I haven't tracked down, the rule that usually does this doesn't work here.
-    img[src="placeHolder.png"] {
-        display: none;
+    // Repeated class name so we override even the rules for data-tool-id="canvas" in placeHolderImages.less
+    .bloom-backgroundImage.bloom-canvas-element.bloom-canvas-element:has(
+            img[src*="placeHolder.png"]
+        ) {
+        background-image: none;
     }
     height: 100%;
     width: 100%;
@@ -661,16 +664,6 @@ body.bloom-fullBleed {
     }
     .editMetadataButton.imgMetadataProblem {
         display: block;
-    }
-}
-
-// In a bloom-canvas that has canvas elements other than the background image, we want to
-// hide the placeholder except when the background image is active.
-.bloom-canvas:has(.bloom-canvas-element:not(.bloom-backgroundImage)) {
-    .bloom-backgroundImage:not([data-bloom-active="true"]) {
-        img[src^="placeHolder.png"] {
-            display: none;
-        }
     }
 }
 
@@ -1384,7 +1377,8 @@ canvas.moving {
 
     // background images can't be manually resized
     &.bloom-backgroundImage-control-frame {
-        .bloom-ui-canvas-element-resize-handle {
+        .bloom-ui-canvas-element-resize-handle,
+        .bloom-ui-canvas-element-side-handle {
             display: none;
         }
     }
@@ -1668,17 +1662,21 @@ svg.bloom-videoControl {
 }
 
 // If the background image hasn't been set in a game, we don't want to show the placeholder image.
-.bloom-page[data-tool-id="game"]:not([data-activity="simple-dom-choice"])
-    .bloom-backgroundImage
-    img[src="placeHolder.png"] {
-    visibility: hidden;
+.bloom-page[data-tool-id="game"]:not([data-activity="simple-dom-choice"]) {
+    .bloom-canvas
+        .bloom-backgroundImage.bloom-canvas-element:has(
+            img[src="placeHolder.png"]
+        ) {
+        background-image: none;
+    }
 }
+
 // We also want the crop handles to look disabled.  Disabling them is actually done in
 // typescript code.  The pointer-events: none; seems not to work on the handle divs but
 // is left as a reminder that we don't want to allow cropping in this case.  (BL-14703)
-.bloom-page[data-tool-id="game"]:not([data-activity="simple-dom-choice"])
-    #canvas-element-control-frame.bloom-backgroundImage-control-frame-no-image {
+#canvas-element-control-frame.bloom-image-control-frame-no-image {
     .bloom-ui-canvas-element-side-handle,
+    .bloom-ui-canvas-element-resize-handle,
     .bloom-ui-canvas-element-move-crop-handle {
         pointer-events: none;
         cursor: unset;

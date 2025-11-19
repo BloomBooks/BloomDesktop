@@ -144,6 +144,8 @@ export function SetupImage(image) {
             // attribute in the image element in the HTML.
             image.classList.remove("bloom-imageLoadError");
             image.onerror = HandleImageError;
+            // Trigger the onerror if no valid image
+            image.src = image.getAttribute("src");
         }
     }
 }
@@ -162,7 +164,7 @@ export function HandleImageError(event: Event) {
 
 export function doImageCommand(
     img: HTMLElement | undefined,
-    command: "cut" | "copy" | "paste" | "change",
+    command: "copy" | "paste" | "change",
 ) {
     if (!img) {
         return;
@@ -746,7 +748,14 @@ export function SetupMetadataButton(parent: HTMLElement) {
 // Instead of "missing", we want to show it in the right ui language. We also want the text
 // to indicate that it might not be missing, just didn't load (this happens on slow machines)
 function SetAlternateTextOnImages(element) {
-    if (GetRawImageUrl(element).length > 0) {
+    const rawImageUrl = GetRawImageUrl(element);
+    if (rawImageUrl.length > 0) {
+        if (rawImageUrl.indexOf("placeHolder.png") > -1) {
+            // We now use css to display the placeholder image instead of an actual placeHolder.png file,
+            // but we are continuing to set and use  src=placeHolder.png to trigger place holder behavior. So we
+            // don't expect to find a placeHolder.png file, and we don't want to display alt text.
+            return;
+        }
         //don't show this on the empty license image when we don't know the license yet
         const englishText =
             "This picture, {0}, is missing or was loading too slowly."; // Also update HtmlDom.cs::IsPlaceholderImageAltText
