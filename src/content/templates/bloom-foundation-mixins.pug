@@ -117,7 +117,7 @@ mixin field-version1(placeholder)
 mixin image
 	- requireZeroArguments('image', arguments);
 	.bloom-canvas&attributes(attributes)
-		img(src="placeHolder.png", width=attributes.initialImageWidth, alt='This picture, placeHolder.png, is missing or was loading too slowly.')
+		img(src="placeHolder.png", width=attributes.initialImageWidth)
 		block
 
 mixin video
