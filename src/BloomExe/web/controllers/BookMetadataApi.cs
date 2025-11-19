@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.IO;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.CollectionTab;
@@ -51,12 +52,16 @@ namespace Bloom.web.controllers
                     var licenseUrl = book.GetLicenseMetadata().License.Url;
                     if (string.IsNullOrEmpty(licenseUrl))
                         licenseUrl = null; // allows us to use ?? below.
+                    string coverImagePath = book.GetCoverImagePath();
                     var metadata = new
                     {
                         metapicture = new
                         {
                             type = "image",
-                            value = "/bloom/" + book.GetCoverImagePath(),
+                            value = Path.GetFileName(coverImagePath)
+                                .Equals("placeHolder.png", StringComparison.OrdinalIgnoreCase)
+                                ? ""
+                                : "/bloom/" + coverImagePath,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.metapicture",
                                 "Picture"

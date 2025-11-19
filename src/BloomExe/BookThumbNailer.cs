@@ -235,6 +235,15 @@ namespace Bloom
             if (!Directory.Exists(book.FolderPath))
                 return false;
             var imageSrc = book.GetCoverImagePathAndElt(out SafeXmlElement coverImgElt);
+            // We still use src="placeHolder.png" to indicate no image has been chosen, but we use css rather than a file to display it.
+            // Detect this case and use a placeHolder file to make the thumbnail.
+            if (!String.IsNullOrEmpty(imageSrc) && imageSrc.EndsWith("placeHolder.png"))
+            {
+                var bloomRoot = FileLocationUtilities.GetDirectoryDistributedWithApplication(
+                    BloomFileLocator.BrowserRoot
+                );
+                imageSrc = Path.Combine(bloomRoot, "images\\placeHolder.png");
+            }
             if (!IsCoverImageSrcValid(imageSrc, options))
             {
                 Debug.WriteLine(book.StoragePageFolder + " does not have a cover image.");

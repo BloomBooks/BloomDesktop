@@ -70,13 +70,18 @@ import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
 import { get, postData, postJson } from "../../utils/bloomApi";
-import AudioRecording from "../toolbox/talkingBook/audioRecording";
+import AudioRecording, {
+    kTalkingBookToolId,
+} from "../toolbox/talkingBook/audioRecording";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { getExactClientSize } from "../../utils/elementUtils";
 import { copyContentToTarget, getTarget } from "bloom-player";
 import { showRequiresSubscriptionDialogInEditView } from "../../react_components/requiresSubscription";
 import { FeatureStatus } from "../../react_components/featureStatus";
 import $ from "jquery";
+import { kCanvasToolId } from "../toolbox/toolIds";
+import { getToolboxBundleExports } from "./bloomFrames";
+import { ImageDescriptionAdapter } from "../toolbox/imageDescription/imageDescription";
 
 export interface ITextColorInfo {
     color: string;
@@ -546,6 +551,9 @@ export class CanvasElementManager {
                 bloomCanvas.scrollLeft = 0;
                 bloomCanvas.scrollTop = 0;
             });
+            if (bloomCanvas.getAttribute("data-tool-id") === kCanvasToolId) {
+                SetupClickToShowCanvasTool(bloomCanvas);
+            }
         });
 
         // todo: select the right one...in particular, currently we just select the last one.
@@ -1309,12 +1317,8 @@ export class CanvasElementManager {
                         return;
                     }
                     const target = event.currentTarget as HTMLElement;
-                    if (
-                        target.closest(
-                            `.${kBackgroundImageClass}-control-frame-no-image`,
-                        )
-                    ) {
-                        return; // don't crop empty background image container
+                    if (target.closest(`.bloom-image-control-frame-no-image`)) {
+                        return; // don't crop empty image container
                     }
                     this.startSideControlDrag(event, side);
                 });
@@ -2872,20 +2876,16 @@ export class CanvasElementManager {
             kBackgroundImageClass + "-control-frame",
             this.activeElement.classList.contains(kBackgroundImageClass),
         );
-        let backgroundImageExists = true;
-        if (this.activeElement.classList.contains(kBackgroundImageClass)) {
-            const img = getImageFromCanvasElement(this.activeElement);
-            if (img && img.getAttribute("src") === "placeHolder.png") {
-                backgroundImageExists = false;
-            }
+
+        // mark empty image control frames with a special class
+        let imageIsPlaceHolder = false;
+        const img = getImageFromCanvasElement(this.activeElement);
+        if (img && img.getAttribute("src") === "placeHolder.png") {
+            imageIsPlaceHolder = true;
         }
-        // mark empty background images in games with a special class (BL-14703)
         controlFrame.classList.toggle(
-            kBackgroundImageClass + "-control-frame-no-image",
-            !backgroundImageExists &&
-                !!this.activeElement.closest(
-                    ".bloom-page[data-tool-id='game']",
-                ),
+            "bloom-image-control-frame-no-image",
+            imageIsPlaceHolder,
         );
 
         const hasText = controlFrame.classList.contains("has-text");
@@ -7366,4 +7366,29 @@ async function copyAudioFileAsync(
     // console.log(
     //     `DEBUG copyAudioFileAsync: finished copying ${sourcePath} to ${targetPath}`
     // );
+}
+
+function SetupClickToShowCanvasTool(canvasElement: Element) {
+    // if the user clicks on a canvas element, bring up the canvas tool
+    $(canvasElement).click((ev) => {
+        const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
+        const currentToolId = toolbox?.getCurrentTool()?.id();
+
+        if (
+            toolbox?.toolboxIsShowing() &&
+            (currentToolId === ImageDescriptionAdapter.kToolID ||
+                currentToolId === kTalkingBookToolId)
+        ) {
+            // Image description tool or talking book tool is already open; we don't want to interfere with its functioning
+            return;
+        }
+
+        showCanvasTool();
+    });
+}
+
+export function showCanvasTool() {
+    getToolboxBundleExports()
+        ?.getTheOneToolbox()
+        .activateToolFromId(kCanvasToolId);
 }

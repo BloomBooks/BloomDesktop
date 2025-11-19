@@ -1,4 +1,5 @@
 @import (reference) "../../bloomUI.less";
+@import "../../placeHolderImages.less";
 
 // This is wanted only for previewing templates, not real books.
 // Real books always have a data-l1 attribute added, and the standard basePage rules work for them.
@@ -136,8 +137,8 @@ and as a result, the labels are shifted to this many pixels to the width. This s
 
 // when making a PDF or a thumbnail, if no image is chosen, just don't show anything
 // note that the *= here is needed in case there is a path, as happens in folio pdfs e.g. ../foo/placheholder.png
-.hidePlaceHolders img[src*="placeHolder.png"] {
-    display: none;
+.hidePlaceHolders .bloom-imageContainer:has(img[src*="placeHolder.png"]) {
+    background-image: none;
 }
 
 @stripeGrey: #f0f0f0;

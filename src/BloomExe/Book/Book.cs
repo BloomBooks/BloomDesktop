@@ -3427,7 +3427,11 @@ namespace Bloom.Book
                 {
                     var src = img.GetAttribute("src");
                     var alt = img.GetAttribute("alt");
-                    if (!String.IsNullOrEmpty(src) && String.IsNullOrEmpty(alt))
+                    if (
+                        !String.IsNullOrEmpty(src)
+                        && String.IsNullOrEmpty(alt)
+                        && src != "placeHolder.png"
+                    )
                     {
                         var localizedFormatString = LocalizationManager.GetString(
                             "EditTab.Image.AltMsg",
@@ -5183,7 +5187,9 @@ namespace Bloom.Book
                 StoragePageFolder,
                 ref coverImageFileName
             );
-            if (!RobustFile.Exists(coverImagePath))
+            // We no longer put placeHolder.png files in books (BL-15441) but we still need to detect when the placeholder
+            // is called for, so here we return placeHolder.png instead of null. Callers of this method should handle this special case.
+            if (!coverImagePath.EndsWith("placeHolder.png") && !RobustFile.Exists(coverImagePath))
             {
                 // And the filename might be multiply-HTML encoded.
                 while (coverImagePath.Contains("&amp;"))

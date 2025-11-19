@@ -1,0 +1,41 @@
+.bloom-canvas .bloom-imageContainer:has(img[src*="placeHolder.png"]),
+// when previewing templates and in Change Layout mode, img elements may not be wrapped in canvas-element divs (see BL-15514). Also below.
+.preview:not([data-l1])
+    .bloom-canvas:not(:has(.bloom-canvas-element)):has(
+        img[src*="placeHolder.png"]
+    ),
+.origami-layout-mode
+    .bloom-canvas:not(:has(.bloom-canvas-element)):has(
+        img[src*="placeHolder.png"]
+    ) {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 134 131"><g clip-path="url(%23a)"><path fill="%23888A85" d="M61 0C50 0 45 13 49 22c2 9 6 17 7 26-7-10-18-21-31-18C11 34-3 48 1 63c4 12 19 10 29 10 4 0 16 0 12 2-12 2-24 11-24 24 0 14 9 32 25 32 13-2 14-18 18-28 2-4 6-15 5-5-2 14 7 28 22 29 12 2 31-3 32-18-1-13-17-18-25-26-9-7 1-3 6-1 15 4 30-7 32-22 3-11-1-28-14-28-14 1-23 14-35 19 8-9 15-23 8-35C85 6 73-1 61 0Z"/><path fill="%23BABDB6" d="M66 52c-14 1-20 20-10 29s28 1 28-12c0-10-9-18-18-17Z"/></g><defs><clipPath id="a"><path fill="%23fff" d="M0 0h134v131H0z"/></clipPath></defs></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+
+    // Don't show the default "missing image" icon
+    img[src*="placeHolder.png"] {
+        display: none;
+    }
+}
+
+.bloom-canvas[data-tool-id="canvas"]
+    .bloom-backgroundImage
+    .bloom-imageContainer:has(img[src*="placeHolder.png"]),
+.origami-layout-mode
+    .bloom-canvas[data-tool-id="canvas"]:not(:has(.bloom-canvas-element)):has(
+        img[src*="placeHolder.png"]
+    ) {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 96 106"><path stroke="%23888A85" stroke-linejoin="round" stroke-width="10.4" d="M10 34c0-14 0-20 5-25 4-4 12-4 28-4h10c16 0 23 0 28 4 5 5 5 11 5 25v42H10V34Z"/><path stroke="%23888A85" stroke-linecap="round" stroke-width="10.4" d="M5 76h86"/><path stroke="%23888A85" stroke-linecap="round" stroke-linejoin="round" stroke-width="10.4" d="M42 22c6-1 15 0 7 8-10 10-25 32-7 25 17-8 25-3 17 5"/><path stroke="%23888A85" stroke-linecap="round" stroke-width="10.4" d="M48 76v19m-33 5 14-24m52 24L67 76"/></svg>');
+}
+
+// In a bloom-canvas that has canvas elements other than the background image, we want to
+// hide the placeholder except when the background image is active
+.bloom-canvas.bloom-canvas:has(
+        .bloom-canvas-element:not(.bloom-backgroundImage)
+    ):not(:has(.bloom-backgroundImage[data-bloom-active="true"])) {
+    .bloom-backgroundImage
+        .bloom-imageContainer:has(img[src*="placeHolder.png"]) {
+        background-image: none;
+    }
+}

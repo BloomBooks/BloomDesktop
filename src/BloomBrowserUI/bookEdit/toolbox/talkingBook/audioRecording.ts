@@ -122,7 +122,7 @@ const kBloomVisibleClass = "bloom-visibility-code-on";
 
 const kAudioSplitId = "audio-split";
 
-const kTalkingBookToolId = "talkingBook";
+export const kTalkingBookToolId = "talkingBook";
 
 export const kPlaybackOrderContainerClass: string =
     "bloom-playbackOrderControlsContainer";
