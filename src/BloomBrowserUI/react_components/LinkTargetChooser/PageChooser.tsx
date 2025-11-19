@@ -67,11 +67,34 @@ export const PageItem: React.FunctionComponent<{
             return;
         }
 
-        itemRef.current.scrollIntoView({
-            behavior: "smooth",
-            block: "nearest",
-            inline: "nearest",
-        });
+        const element = itemRef.current;
+        const rafIds: number[] = [];
+
+        const scroll = (behavior: ScrollBehavior) => {
+            element.scrollIntoView({
+                behavior,
+                block: "nearest",
+                inline: "nearest",
+            });
+        };
+
+        scroll("smooth");
+
+        // Thumbnails stream in over many frames; keep nudging the selected page back into view
+        // for a short burst so asynchronous layout changes do not push it away.
+        let remainingFrames = 8;
+        const tick = () => {
+            scroll("auto");
+            remainingFrames -= 1;
+            if (remainingFrames > 0) {
+                rafIds.push(requestAnimationFrame(tick));
+            }
+        };
+        rafIds.push(requestAnimationFrame(tick));
+
+        return () => {
+            rafIds.forEach((id) => cancelAnimationFrame(id));
+        };
     }, [props.isSelected]);
 
     const handleSelect = () => {
