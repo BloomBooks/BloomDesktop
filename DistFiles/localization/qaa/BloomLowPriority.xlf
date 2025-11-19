@@ -37,11 +37,6 @@
         <target xml:lang="qaa-x-test" state="needs-translation">Result of orthography conversion:</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion</note>
       </trans-unit>
-      <trans-unit id="EditTab.ClickToEditBookGrid" sil:dynamic="true">
-        <source xml:lang="en">Click to edit book grid</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">Click to edit book grid</target>
-        <note>ID: EditTab.ClickToEditBookGrid</note>
-      </trans-unit>
       <trans-unit id="Errors.CannotConnectToBloomServer.2">
         <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Web browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.</source>
         <target xml:lang="qaa-x-test" state="needs-translation">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Web browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.</target>
