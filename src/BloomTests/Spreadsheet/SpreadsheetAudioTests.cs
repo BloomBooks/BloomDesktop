@@ -149,16 +149,6 @@ namespace BloomTests.Spreadsheet
                 );
 
             _exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
-            var placeHolderSource = Path.Combine(
-                BloomFileLocator.FactoryCollectionsDirectory,
-                "template books",
-                "Basic Book",
-                "placeHolder.png"
-            );
-            RobustFile.Copy(
-                placeHolderSource,
-                Path.Combine(_bookFolder.FolderPath, "placeHolder.png")
-            );
 
             _progressSpy = new ProgressSpy();
             Sheet = _exporter.ExportToFolder(

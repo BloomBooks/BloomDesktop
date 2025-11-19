@@ -16,6 +16,7 @@ using Bloom.Api;
 using Bloom.Collection;
 using Bloom.FontProcessing;
 using Bloom.History;
+using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
@@ -3185,7 +3186,7 @@ namespace Bloom.Book
             var file = imageUrl.PathOnly.NotEncoded;
             if (string.IsNullOrEmpty(file))
                 return false;
-            if (file == "placeHolder.png" && !image.HasAttribute("data-license"))
+            if (ImageUtils.IsPlaceholderImageFilename(file) && !image.HasAttribute("data-license"))
                 return false;
             return RobustFile.Exists(Path.Combine(Storage.FolderPath, file));
         }
@@ -3427,7 +3428,11 @@ namespace Bloom.Book
                 {
                     var src = img.GetAttribute("src");
                     var alt = img.GetAttribute("alt");
-                    if (!String.IsNullOrEmpty(src) && String.IsNullOrEmpty(alt))
+                    if (
+                        !String.IsNullOrEmpty(src)
+                        && String.IsNullOrEmpty(alt)
+                        && !ImageUtils.IsPlaceholderImageFilename(src)
+                    )
                     {
                         var localizedFormatString = LocalizationManager.GetString(
                             "EditTab.Image.AltMsg",
@@ -5183,7 +5188,12 @@ namespace Bloom.Book
                 StoragePageFolder,
                 ref coverImageFileName
             );
-            if (!RobustFile.Exists(coverImagePath))
+            // We no longer put placeHolder.png files in books (BL-15441) but we still need to detect when the placeholder
+            // is called for, so here we return placeHolder.png instead of null. Callers of this method should handle this special case.
+            if (
+                !ImageUtils.IsPlaceholderImageFilename(coverImagePath)
+                && !RobustFile.Exists(coverImagePath)
+            )
             {
                 // And the filename might be multiply-HTML encoded.
                 while (coverImagePath.Contains("&amp;"))
@@ -5332,7 +5342,7 @@ namespace Bloom.Book
         {
             foreach (var img in page.SafeSelectNodes(".//img"))
             {
-                if (img.GetAttribute("src") != "placeHolder.png")
+                if (!ImageUtils.IsPlaceholderImageFilename(img.GetAttribute("src")))
                     return true;
             }
             foreach (
@@ -5343,7 +5353,7 @@ namespace Bloom.Book
             {
                 var imgUrl = HtmlDom.GetImageElementUrl(div).PathOnly.NotEncoded;
                 // Actually getting a background img url is a good indication that it's one we want.
-                if (!string.IsNullOrEmpty(imgUrl) && imgUrl != "placeHolder.png")
+                if (!string.IsNullOrEmpty(imgUrl) && !ImageUtils.IsPlaceholderImageFilename(imgUrl))
                     return true;
             }
             return false;

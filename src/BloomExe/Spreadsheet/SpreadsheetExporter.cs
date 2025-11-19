@@ -239,7 +239,7 @@ namespace Bloom.Spreadsheet
                     );
                     var fileName = Path.GetFileName(imagePath);
                     var outputPath = Path.Combine("images", fileName);
-                    if (fileName == "placeHolder.png")
+                    if (ImageUtils.IsPlaceholderImageFilename(fileName))
                         outputPath = InternalSpreadsheet.BlankContentIndicator;
                     row.SetCell(InternalSpreadsheet.ImageSourceColumnLabel, outputPath);
                     CopyImageFileToSpreadsheetFolder(imagePath);
@@ -830,7 +830,7 @@ namespace Bloom.Spreadsheet
         {
             if (_outputImageFolder != null)
             {
-                if (Path.GetFileName(imageSourcePath) == "placeHolder.png")
+                if (ImageUtils.IsPlaceholderImageFilename(imageSourcePath))
                     return; // don't need to copy this around.
                 if (!RobustFile.Exists(imageSourcePath))
                 {

@@ -13,6 +13,7 @@ using System.Xml.Linq;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.FontProcessing;
+using Bloom.ImageProcessing;
 using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
 using Bloom.ToPalaso;
@@ -478,7 +479,8 @@ namespace Bloom.Publish.Epub
             // If we don't have an epub thumbnail, create a nice large thumbnail of the cover image
             // with the desired name.  This is a temporary file stored only in the staged book folder
             // before being added to the epub.
-            if (!RobustFile.Exists(epubThumbnailImagePath))
+            var thumbnailFileExists = RobustFile.Exists(epubThumbnailImagePath);
+            if (!thumbnailFileExists)
             {
                 string coverPageImageFile = "thumbnail-256.png"; // name created by _thumbNailer
                 ApplicationException thumbNailException = null;
@@ -497,7 +499,7 @@ namespace Bloom.Publish.Epub
                     return; // especially to avoid reporting problems making thumbnail, e.g., because aborted.
 
                 var coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
-                if (thumbNailException != null || !RobustFile.Exists(coverPageImagePath))
+                if (thumbNailException != null)
                 {
                     NonFatalProblem.Report(
                         ModalIf.All,
@@ -506,25 +508,23 @@ namespace Bloom.Publish.Epub
                         "We will try to make the book anyway, but you may want to try again.",
                         thumbNailException
                     );
-
-                    coverPageImageFile = "thumbnail.png"; // Try a low-res image, which should always exist
-                    coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
-                    if (!RobustFile.Exists(coverPageImagePath))
-                    {
-                        // I don't think we can make an epub without a cover page so at this point we've had it.
-                        // I suppose we could recover without actually crashing but it doesn't seem worth it unless this
-                        // actually happens to real users.
-                        throw new FileNotFoundException(
-                            "Could not find or create thumbnail for cover page (BL-3209)",
-                            coverPageImageFile
-                        );
-                    }
                 }
-                RobustFile.Move(coverPageImagePath, epubThumbnailImagePath);
+                if (thumbNailException != null || !RobustFile.Exists(coverPageImagePath))
+                {
+                    coverPageImageFile = "thumbnail.png"; // Try a low-res image
+                    coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
+                }
+                if (RobustFile.Exists(coverPageImagePath))
+                {
+                    RobustFile.Move(coverPageImagePath, epubThumbnailImagePath);
+                    thumbnailFileExists = true;
+                }
             }
-
-            CopyFileToEpub(epubThumbnailImagePath, true, true, kImagesFolder, imageSettings);
-
+            // Cover image file and therefore thumbnail file may be non-existent simply because no cover image was chosen/it was still the placeHolder, not a problem
+            if (thumbnailFileExists)
+            {
+                CopyFileToEpub(epubThumbnailImagePath, true, true, kImagesFolder, imageSettings);
+            }
             var warnings = EmbedFonts(progress); // must call after copying stylesheets
             if (warnings.Any())
                 PublishHelper.SendBatchedWarningMessagesToProgress(warnings, progress);
@@ -552,7 +552,11 @@ namespace Bloom.Publish.Epub
 					</container>"
             );
 
-            MakeManifest(kImagesFolder + "/" + Path.GetFileName(epubThumbnailImagePath));
+            MakeManifest(
+                thumbnailFileExists
+                    ? kImagesFolder + "/" + Path.GetFileName(epubThumbnailImagePath)
+                    : null
+            );
 
             foreach (
                 var filename in Directory.EnumerateFiles(
@@ -2133,7 +2137,7 @@ namespace Bloom.Publish.Epub
             {
                 bool isBrandingFile; // not used here, but part of method signature
                 var path = FindRealImageFileIfPossible(img, out isBrandingFile);
-                if (!String.IsNullOrEmpty(path) && Path.GetFileName(path) != "placeHolder.png") // consider blank if only placeholder image
+                if (!String.IsNullOrEmpty(path) && !ImageUtils.IsPlaceholderImageFilename(path)) // consider blank if only placeholder image
                     return false;
             }
             foreach (

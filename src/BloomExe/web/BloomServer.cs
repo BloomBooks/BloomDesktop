@@ -746,6 +746,10 @@ namespace Bloom.Api
                     {
                         imageFile = imageFile.Replace("flat", "icy_orange");
                     }
+                    else if (ImageUtils.IsPlaceholderImageFilename(imageFile))
+                    {
+                        return true;
+                    }
                     // If the user does add a video or widget, these placeholder .svgs will get copied to the
                     // book folder and used from there. But we don't copy to the book folder while the user
                     // is still in origami in case the user doesn't actually add the video or widget.
@@ -806,6 +810,7 @@ namespace Bloom.Api
             {
                 // thumbnail requests have the thumbnail parameter set in the query string
                 var thumb = info.GetQueryParameters()["thumbnail"] != null;
+                //TODO erroring here
                 var isForCover = CurrentBook?.ImageFileIsForBookCover(imageFile) ?? false;
                 if (thumb || isForCover)
                 {
