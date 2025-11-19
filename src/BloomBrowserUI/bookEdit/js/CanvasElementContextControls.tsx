@@ -16,6 +16,7 @@ import { default as CircleIcon } from "@mui/icons-material/Circle";
 import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
 import { default as ArrowUpwardIcon } from "@mui/icons-material/ArrowUpward";
 import { default as ArrowDownwardIcon } from "@mui/icons-material/ArrowDownward";
+import { LinkIcon } from "./LinkIcon";
 import { showCopyrightAndLicenseDialog } from "../editViewFrame";
 import {
     doImageCommand,
@@ -64,6 +65,8 @@ import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import { getAudioSentencesOfVisibleEditables } from "bloom-player";
 import { GameType, getGameType } from "../toolbox/games/GameInfo";
 import { setGeneratedDraggableId } from "../toolbox/canvas/CanvasElementItem";
+import { editLinkGrid } from "./linkGrid";
+import { showLinkTargetChooserDialog } from "../../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -90,6 +93,16 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const hasImage = !!imgContainer;
     const hasText =
         props.canvasElement.getElementsByClassName("bloom-editable").length > 0;
+    const linkGrid = props.canvasElement.getElementsByClassName(
+        "bloom-link-grid",
+    )[0] as HTMLElement | undefined;
+    const isLinkGrid = !!linkGrid;
+    // These names are not quite consistent, but the behaviors we want to control are currently
+    // specific to navigation buttons, while the class name is meant to cover buttons in general.
+    // Eventually we may need a way to distinguish buttons used for navigation from other buttons.
+    const isNavButton = props.canvasElement.classList.contains(
+        "bloom-canvas-button",
+    );
     const rectangles =
         props.canvasElement.getElementsByClassName("bloom-rectangle");
     // This is only used by the menu option that toggles it. If the menu stayed up, we would need a state
@@ -141,6 +154,10 @@ const CanvasElementContextControls: React.FunctionComponent<{
 
     const noneLabel = useL10n("None", "EditTab.Toolbox.DragActivity.None", "");
     const aRecordingLabel = useL10n("A Recording", "ARecording", "");
+    const chooseBooksLabel = useL10n(
+        "Choose books...",
+        "EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks",
+    );
 
     const currentDraggableTargetId = props.canvasElement?.getAttribute(
         kDraggableIdAttribute,
@@ -212,7 +229,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
 
     const [textHasAudio, setTextHasAudio] = useState(true);
     useEffect(() => {
-        if (!props.menuOpen || !props.canvasElement) return;
+        if (!props.menuOpen || !props.canvasElement || !hasText) return;
 
         const audioSentences = getAudioSentencesOfVisibleEditables(
             props.canvasElement,
@@ -229,7 +246,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 );
             });
         // Need to include menuOpen so we can re-evaluate if the user has added or removed audio.
-    }, [props.canvasElement, props.menuOpen]);
+    }, [props.canvasElement, props.menuOpen, hasText]);
 
     if (!page) {
         // Probably right after deleting the canvas element. Wish we could return early sooner,
@@ -300,9 +317,28 @@ const CanvasElementContextControls: React.FunctionComponent<{
         addVideoMenuItems(menuOptions, videoContainer, setMenuOpen);
     }
 
+    if (isLinkGrid) {
+        // For link grids, add edit and delete options in the menu
+        menuOptions.push({
+            l10nId: "EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks",
+            english: "Choose books...",
+            onClick: () => {
+                if (!linkGrid) return;
+                editLinkGrid(linkGrid);
+            },
+            icon: <CogIcon css={getMenuIconCss()} />,
+        });
+        menuOptions.push({
+            l10nId: "Common.Delete",
+            english: "Delete",
+            onClick: theOneCanvasElementManager?.deleteCurrentCanvasElement,
+            icon: <DeleteIcon css={getMenuIconCss()} />,
+        });
+    }
+
     menuOptions.push(divider);
 
-    if (!isBackgroundImage && !isSpecialGameElementSelected) {
+    if (!isBackgroundImage && !isSpecialGameElementSelected && !isLinkGrid) {
         menuOptions.push({
             l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
             english: "Duplicate",
@@ -341,18 +377,28 @@ const CanvasElementContextControls: React.FunctionComponent<{
         deleteEnabled = !!(
             img && !img.getAttribute("src")?.startsWith("placeHolder.png")
         );
-    } else if (isSpecialGameElementSelected) {
-        deleteEnabled = false; // don't allow deleting the single drag item in a sentence drag game
+    } else if (isSpecialGameElementSelected || isLinkGrid) {
+        deleteEnabled = false; // don't allow deleting the single drag item in a sentence drag game or link grids
     }
 
     // last one
-    menuOptions.push({
-        l10nId: "Common.Delete",
-        english: "Delete",
-        disabled: !deleteEnabled,
-        onClick: theOneCanvasElementManager?.deleteCurrentCanvasElement,
-        icon: <DeleteIcon css={getMenuIconCss()} />,
-    });
+    if (!isLinkGrid) {
+        menuOptions.push({
+            l10nId: "Common.Delete",
+            english: "Delete",
+            disabled: !deleteEnabled,
+            onClick: theOneCanvasElementManager?.deleteCurrentCanvasElement,
+            icon: <DeleteIcon css={getMenuIconCss()} />,
+        });
+    }
+    if (isNavButton) {
+        menuOptions.splice(0, 0, {
+            l10nId: "EditTab.Toolbox.CanvasTool.SetDest",
+            english: "Set Destination",
+            onClick: () => setLinkDestination(),
+            icon: <LinkIcon css={getMenuIconCss()} />,
+        });
+    }
     const handleMenuButtonMouseDown = (e: React.MouseEvent) => {
         // This prevents focus leaving the text box.
         e.preventDefault();
@@ -435,11 +481,46 @@ const CanvasElementContextControls: React.FunctionComponent<{
                         }
                     `}
                 >
+                    {isLinkGrid && (
+                        <>
+                            <ButtonWithTooltip
+                                tipL10nKey="EditTab.ClickToEditBookGrid"
+                                icon={CogIcon}
+                                relativeSize={0.8}
+                                onClick={() => {
+                                    if (!linkGrid) return;
+                                    editLinkGrid(linkGrid);
+                                }}
+                            />
+                            <span
+                                css={css`
+                                    color: ${kBloomBlue};
+                                    font-size: 10px;
+                                    margin-left: 4px;
+                                    cursor: pointer;
+                                `}
+                                onClick={() => {
+                                    if (!linkGrid) return;
+                                    editLinkGrid(linkGrid);
+                                }}
+                            >
+                                {chooseBooksLabel}
+                            </span>
+                        </>
+                    )}
+                    {isNavButton && (
+                        <ButtonWithTooltip
+                            tipL10nKey="EditTab.Toolbox.CanvasTool.ClickToSetLinkDest"
+                            icon={LinkIcon}
+                            relativeSize={0.8}
+                            onClick={setLinkDestination}
+                        />
+                    )}
                     {hasImage && (
                         <Fragment>
                             {
                                 // Want an attention-grabbing version of set metadata if there is none.)
-                                missingMetadata && (
+                                missingMetadata && !isNavButton && (
                                     <ButtonWithTooltip
                                         tipL10nKey="EditTab.Image.EditMetadataOverlay"
                                         icon={MissingMetadataIcon}
@@ -495,7 +576,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                             )}
                         </Fragment>
                     )}
-                    {editable && (
+                    {editable && !isNavButton && (
                         <ButtonWithTooltip
                             tipL10nKey="EditTab.Toolbox.ComicTool.Options.Format"
                             icon={CogIcon}
@@ -537,7 +618,8 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     )}
                     {!hasVideo &&
                         !isBackgroundImage &&
-                        !isSpecialGameElementSelected && (
+                        !isSpecialGameElementSelected &&
+                        !isLinkGrid && (
                             <ButtonWithTooltip
                                 tipL10nKey="EditTab.Toolbox.ComicTool.Options.Duplicate"
                                 icon={DuplicateIcon}
@@ -552,16 +634,18 @@ const CanvasElementContextControls: React.FunctionComponent<{
                         // Not sure of the reasoning here, since we do have a way to 'delete' a background image,
                         // not by removing the canvas element but by setting the image back to a placeholder.
                         // But the mockup in BL-14069 definitely doesn't have it.
-                        isBackgroundImage || isSpecialGameElementSelected || (
-                            <ButtonWithTooltip
-                                tipL10nKey="Common.Delete"
-                                icon={DeleteIcon}
-                                onClick={() => {
-                                    if (!props.canvasElement) return;
-                                    theOneCanvasElementManager?.deleteCurrentCanvasElement();
-                                }}
-                            />
-                        )
+                        isBackgroundImage ||
+                            isSpecialGameElementSelected ||
+                            isLinkGrid || (
+                                <ButtonWithTooltip
+                                    tipL10nKey="Common.Delete"
+                                    icon={DeleteIcon}
+                                    onClick={() => {
+                                        if (!props.canvasElement) return;
+                                        theOneCanvasElementManager?.deleteCurrentCanvasElement();
+                                    }}
+                                />
+                            )
                     }
                     {isBackgroundImage && (
                         <ButtonWithTooltip
@@ -905,7 +989,8 @@ function addTextMenuItems(
         // an updated value for autoHeight. But the menu is going to be hidden, and showing it again
         // will involve a re-render, and we don't care until then.
     };
-    menuOptions.unshift(
+
+    const textMenuItem: ILocalizableMenuItemProps[] = [
         {
             l10nId: "EditTab.Toolbox.ComicTool.Options.Format",
             english: "Format",
@@ -927,15 +1012,21 @@ function addTextMenuItems(
             },
             icon: <PasteIcon css={getMenuIconCss()} />,
         },
-        divider,
-        {
+    ];
+    // Normally text boxes have the auto-height option, but we keep buttons manual.
+    // One reason is that we haven't figured out a good automatic approach to adjusting the button
+    // height vs adjusting the image size, when both are present. Also, our current auto-height
+    // code doesn't handle padding where our canvas-buttons have it.
+    if (!canvasElement.classList.contains("bloom-canvas-button")) {
+        textMenuItem.push(divider, {
             l10nId: "EditTab.Toolbox.ComicTool.Options.AutoHeight",
             english: "Auto Height",
             // We don't actually know there's no image on the clipboard, but it's not relevant for a text box.
             onClick: () => toggleAutoHeight(),
             icon: autoHeight && <CheckIcon css={getMenuIconCss()} />,
-        },
-    );
+        });
+    }
+    menuOptions.push(...textMenuItem);
 }
 
 function addVideoMenuItems(
@@ -1258,4 +1349,23 @@ function cleanUpDividers(menuItems: IMenuItemWithSubmenu[]) {
         return true;
     });
     return cleanMenuItems;
+}
+
+function setLinkDestination(): void {
+    const activeElement = theOneCanvasElementManager?.getActiveElement();
+    if (!activeElement) return;
+
+    const imgContainer = activeElement.getElementsByClassName(
+        kImageContainerClass,
+    )[0] as HTMLElement;
+    if (!imgContainer) return;
+
+    const currentUrl = imgContainer.getAttribute("data-href") || "";
+    showLinkTargetChooserDialog(currentUrl, (newUrl) => {
+        if (newUrl) {
+            imgContainer.setAttribute("data-href", newUrl);
+        } else {
+            imgContainer.removeAttribute("data-href");
+        }
+    });
 }

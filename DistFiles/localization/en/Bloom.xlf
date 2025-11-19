@@ -2123,6 +2123,7 @@
       <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true">
         <source xml:lang="en">Drag any of these elements onto the image:</source>
         <note>ID: EditTab.Toolbox.ComicTool.DragInstructions</note>
+        <note>obsolete as of Bloom 6.3</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.ChangeShape" sil:dynamic="true">
         <source xml:lang="en">Change Shape</source>

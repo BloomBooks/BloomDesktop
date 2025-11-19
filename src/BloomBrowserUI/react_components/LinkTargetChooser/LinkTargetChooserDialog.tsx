@@ -1,4 +1,3 @@
-/** @jsxImportSource @emotion/react */
 import * as React from "react";
 import { useState, useCallback, useEffect } from "react";
 import { css } from "@emotion/react";
@@ -12,24 +11,29 @@ import { LinkTargetChooser } from "./LinkTargetChooser";
 import { DialogCancelButton } from "../BloomDialog/commonDialogComponents";
 import BloomButton from "../bloomButton";
 import { useL10n } from "../l10nHooks";
+import { useSetupBloomDialog } from "../BloomDialog/BloomDialogPlumbing";
 
 export const LinkTargetChooserDialog: React.FunctionComponent<{
-    open: boolean;
     currentURL: string;
     onSetUrl?: (url: string) => void;
 }> = (props) => {
+    const { closeDialog, propsForBloomDialog } = useSetupBloomDialog({
+        initiallyOpen: true,
+        dialogFrameProvidedExternally: false,
+    });
+
     const [currentUrl, setCurrentUrl] = useState<string>("");
     const [hasError, setHasError] = useState<boolean>(false);
     const [hasUserInteracted, setHasUserInteracted] = useState<boolean>(false);
 
     // Reset state when dialog opens/closes or currentURL changes
     useEffect(() => {
-        if (props.open) {
+        if (propsForBloomDialog.open) {
             setCurrentUrl(props.currentURL);
             setHasError(false);
             setHasUserInteracted(false);
         }
-    }, [props.open, props.currentURL]);
+    }, [propsForBloomDialog.open, props.currentURL]);
 
     const handleURLChanged = useCallback((url: string, hasError: boolean) => {
         setCurrentUrl(url);
@@ -41,13 +45,8 @@ export const LinkTargetChooserDialog: React.FunctionComponent<{
         if (props.onSetUrl) {
             props.onSetUrl(currentUrl.trim());
         }
-    }, [currentUrl, props]);
-
-    const handleCancel = useCallback(() => {
-        if (props.onCancel) {
-            props.onCancel();
-        }
-    }, [props]);
+        closeDialog();
+    }, [currentUrl, props, closeDialog]);
 
     const dialogTitle = useL10n(
         "Choose Link Target",
@@ -57,9 +56,11 @@ export const LinkTargetChooserDialog: React.FunctionComponent<{
 
     return (
         <BloomDialog
-            open={props.open}
-            onClose={handleCancel}
-            onCancel={handleCancel}
+            {...propsForBloomDialog}
+            onClose={closeDialog}
+            onCancel={() => {
+                closeDialog();
+            }}
             css={css`
                 .MuiDialog-paper {
                     max-width: 1200px;

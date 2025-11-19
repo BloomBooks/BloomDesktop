@@ -34,8 +34,7 @@ const mockBooks = Array.from({ length: 10 }, (_, i) => createMockBook(i));
 
 interface LinkTargetChooserSetupOptions {
     currentURL?: string;
-    onCancel?: () => void;
-    onSelect?: (info: LinkTargetInfo) => void;
+    onSetUrl?: (info: LinkTargetInfo) => void;
     currentBookBeingEditedId?: string;
     books?: typeof mockBooks;
     pages?: Array<{
@@ -222,10 +221,8 @@ export async function setupLinkTargetChooser(
         "../LinkTargetChooser/LinkTargetChooserDialog",
         "LinkTargetChooserDialog",
         {
-            open: true,
             currentURL: props.currentURL || "",
-            onCancel: props.onCancel,
-            onSelect: props.onSelect,
+            onSetUrl: props.onSetUrl,
         },
     );
 

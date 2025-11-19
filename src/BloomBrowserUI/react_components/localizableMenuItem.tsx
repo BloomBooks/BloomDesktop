@@ -61,6 +61,7 @@ export interface ILocalizableMenuItemProps
     dontGiveAffordanceForCheckbox?: boolean;
     subscriptionTooltipOverride?: string;
     className?: string;
+    isDivider?: boolean;
 }
 
 interface ILocalizableCheckboxMenuItemProps
@@ -73,6 +74,7 @@ export const divider: ILocalizableMenuItemProps = {
     l10nId: "-",
     english: "",
     onClick: () => {},
+    isDivider: true,
 };
 
 const kIconCheckboxAffordance = 28;
@@ -216,7 +218,7 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<
         getBoolean(props.apiEndpoint, (value) => {
             setChecked(value);
         });
-    }, []);
+    }, [props.apiEndpoint]);
 
     // The "div" wrapper is necessary to get the tooltip to work on a disabled item.
     return (

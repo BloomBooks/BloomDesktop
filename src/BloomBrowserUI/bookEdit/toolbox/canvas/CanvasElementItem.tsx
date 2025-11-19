@@ -33,6 +33,10 @@ export type CanvasElementType =
     | "rectangle"
     | "speech"
     | "caption"
+    | "book-link-grid"
+    | "navigation-image-button"
+    | "navigation-image-with-label-button"
+    | "navigation-label-button"
     | "none";
 
 const ondragstart = (
@@ -319,6 +323,7 @@ export const CanvasElementSvgItem: React.FunctionComponent<{
     // around them. If it didn't depend on the particular icon, we could just make this depend on
     // makeTarget, but as it is, it seems better to have a separate prop.
     showOuterRectangle?: boolean;
+    size?: string;
 }> = (props) => {
     const buttonBorder = `&:after {content: "";
     border: 2px solid ${kBloomBlue};
@@ -327,9 +332,9 @@ export const CanvasElementSvgItem: React.FunctionComponent<{
     border-radius: 5px;
     pointer-events: none;
     opacity: 0.15;}`;
-    const size = props.showOuterRectangle ? "40px" : "50px";
+    const size = props.size ?? (props.showOuterRectangle ? "40px" : "50px");
     return (
-        <div // infuriatingly, svgs don't support draggable, so we have to wrap.
+        <div // svgs don't support draggable, so we have to wrap.
             css={css`
                 width: ${size};
                 height: ${size};
@@ -506,12 +511,14 @@ export const CanvasElementItem: React.FunctionComponent<{
     makeTarget?: boolean;
     addClasses?: string;
     userDefinedStyleName?: string;
+    width?: string;
+    height?: string;
 }> = (props) => {
     return (
         <img
             css={css`
-                width: 50px;
-                height: 50px;
+                width: ${props.width ?? "50px"};
+                height: ${props.height ?? "50px"};
                 cursor: grab;
             `}
             src={props.src}
@@ -600,39 +607,83 @@ export const CanvasElementCaptionItem: React.FunctionComponent<{
     return <CanvasElementBaseTextItem {...props} canvasElementType="caption" />;
 };
 
-const buttonItemProps = css`
-    margin-left: 5px;
-    text-align: center;
-    padding: 2px 0.5em;
-    vertical-align: middle;
-    color: ${kBloomBlue};
-    background-color: "white";
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.2);
-`;
-
-export const CanvasElementButtonItem: React.FunctionComponent<{
-    l10nKey: string;
-    addClasses: string;
-    contentL10nKey?: string;
-    hintL10nKey?: string;
-    userDefinedStyleName?: string;
-}> = (props) => {
+export const CanvasElementLinkGridItem: React.FunctionComponent = (props) => {
     return (
-        <CanvasElementTextItem
-            css={buttonItemProps}
-            l10nKey={props.l10nKey}
-            addClasses={props.addClasses}
-            makeTarget={false}
-            contentL10nKey={props.contentL10nKey}
-            hintL10nKey={props.hintL10nKey}
-            userDefinedStyleName={props.userDefinedStyleName}
-        ></CanvasElementTextItem>
+        <CanvasElementItem
+            src={"/bloom/bookEdit/toolbox/canvas/bookGridPaletteItem.svg"}
+            canvasElementType="book-link-grid"
+            // This icon is not square; forcing it to be, on a row by itself, makes too much white space
+            // and makes it too small
+            width="80px"
+        />
     );
 };
+
+export const NavigationImageButtonPaletteItem: React.FunctionComponent = (
+    props,
+) => {
+    return (
+        <CanvasElementSvgItem
+            canvasElementType={"navigation-image-button"}
+            addClasses={""}
+            showOuterRectangle={false}
+        >
+            <img
+                css={css`
+                    width: 50px;
+                    height: 50px;
+                    cursor: grab;
+                `}
+                src="/bloom/bookEdit/toolbox/canvas/imageButtonPaletteItem.svg"
+            />
+        </CanvasElementSvgItem>
+    );
+};
+export const NavigationLabelButtonPaletteItem: React.FunctionComponent = (
+    props,
+) => {
+    return (
+        <CanvasElementSvgItem
+            canvasElementType={"navigation-label-button"}
+            addClasses={""}
+            showOuterRectangle={false}
+        >
+            <img
+                css={css`
+                    width: 50px;
+                    height: 50px;
+                    cursor: grab;
+                `}
+                src="/bloom/bookEdit/toolbox/canvas/labelButtonPaletteItem.svg"
+            />
+        </CanvasElementSvgItem>
+    );
+};
+export const NavigationImageWithLabelButtonPaletteItem: React.FunctionComponent =
+    (props) => {
+        return (
+            <CanvasElementSvgItem
+                canvasElementType={"navigation-image-with-label-button"}
+                addClasses={""}
+                showOuterRectangle={false}
+                size="80px"
+            >
+                <img
+                    css={css`
+                        width: 80px;
+                        height: 80px;
+                        cursor: grab;
+                    `}
+                    src="/bloom/bookEdit/toolbox/canvas/imageWithLabelButtonPaletteItem.svg"
+                />
+            </CanvasElementSvgItem>
+        );
+    };
 
 export const CanvasElementItemRow: React.FunctionComponent<{
     children: React.ReactNode;
     secondRow?: boolean;
+    extraCss?: string;
 }> = (props) => {
     return (
         <div
@@ -651,6 +702,7 @@ export const CanvasElementItemRow: React.FunctionComponent<{
                 // Each row gets a little vertical cushion
                 margin-top: 10px;
                 ${props.secondRow ? "margin-top: 0; margin-bottom: 10px;" : ""}
+                ${props.extraCss ?? ""}
             `}
         >
             {props.children}
@@ -685,11 +737,11 @@ export const CanvasElementItemRegion: React.FunctionComponent<{
                     `}
                     l10nKey={
                         props.l10nKey ??
-                        "EditTab.Toolbox.ComicTool.DragInstructions"
+                        "EditTab.Toolbox.CanvasTool.DragInstructions"
                     }
                     className="canvasToolControlDragInstructions"
                 >
-                    Drag any of these elements onto the image:
+                    Drag any of these onto a canvas:
                 </Div>
             )}
             {props.children}

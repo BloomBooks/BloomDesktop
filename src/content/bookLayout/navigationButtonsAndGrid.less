@@ -1,0 +1,108 @@
+// Constants for book button sizing. Tweaked by JohnT (and Codex) to produce uniform sizes
+// with at most two lines of text, at a size and spacing that allows three rows of buttons
+// to fit on a Device16x9Landscape page.
+@book-button-width: 90px;
+@book-button-thumbnail-height: 70px;
+@book-button-label-height: 13px;
+@book-button-padding: 5px;
+@book-button-label-margin: 5px;
+@book-button-height: 85px;
+
+.bloom-link-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, @book-button-width);
+    grid-auto-rows: calc(@book-button-height + (@book-button-padding * 2));
+    gap: 20px;
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    overflow-y: auto;
+    padding: 15px;
+    // These two lines prevent the buttons growing vertically to fill the grid.
+    align-content: start;
+    align-items: start;
+    border: solid 1px #c8c8c8;
+    border-radius: 3px;
+    background-color: #fafafa;
+    box-sizing: border-box; /* Include padding and border in dimensions */
+}
+
+.bloom-bookButton {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    color: black;
+    background-color: white;
+    border: solid 1px #c8c8c8;
+    // add a button shadow
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: @book-button-width;
+    height: @book-button-height;
+
+    border-radius: 5px;
+    padding: @book-button-padding;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.1s ease; /* Smooth transition */
+
+    img {
+        flex: 1 1 0;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        object-fit: cover;
+        display: block;
+    }
+    p {
+        margin: @book-button-label-margin 0 0 0;
+        font-size: @book-button-label-height;
+        line-height: 1.2;
+        line-clamp: 2;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-height: (@book-button-label-height * 2.4);
+    }
+    &:active {
+        /* move down and to the right */
+        transform: translate(1px, 2px);
+    }
+}
+
+// Skeleton placeholder for empty book grid
+.bloom-bookButton-skeleton {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 5px;
+    padding: @book-button-padding;
+    width: @book-button-width;
+    height: @book-button-height;
+    overflow: hidden;
+    pointer-events: none; // Don't interfere with clicking the grid
+    opacity: 0.4;
+
+    .skeleton-thumbnail {
+        flex: 1 1 0;
+        width: 100%;
+        height: 100%;
+        background-color: #d0d0d0;
+    }
+
+    .skeleton-label {
+        margin: @book-button-label-margin 0 0 0;
+        height: @book-button-label-height;
+        width: 80%;
+        background-color: #d0d0d0;
+        border-radius: 2px;
+    }
+}
