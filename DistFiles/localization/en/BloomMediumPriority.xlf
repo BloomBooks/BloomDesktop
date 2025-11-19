@@ -968,6 +968,11 @@
       <trans-unit id="EditTab.PasteHyperlink">
         <source xml:lang="en">Paste Hyperlink</source>
         <note>ID: EditTab.PasteHyperlink</note>
+        <note>obsolete as of Bloom 6.3</note>
+      </trans-unit>
+      <trans-unit id="EditTab.SetupHyperlink">
+        <source xml:lang="en">Set Up Hyperlink</source>
+        <note>ID: EditTab.SetupHyperlink</note>
       </trans-unit>
       <trans-unit id="UseTalkingBookTool">
         <source xml:lang="en">Use Talking Book Tool</source>
