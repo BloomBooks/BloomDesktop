@@ -65,12 +65,12 @@
       </trans-unit>
       <trans-unit id="LinkTargetChooser.BookList.Heading">
         <source xml:lang="en">Books in this Collection</source>
-        <target xml:lang="es-ES" state="needs-translation">Books in this Collection</target>
+        <target xml:lang="es-ES" state="translated">Libros en esta colección</target>
         <note>ID: LinkTargetChooser.BookList.Heading</note>
       </trans-unit>
       <trans-unit id="LinkTargetChooser.PageList.Heading">
         <source xml:lang="en">Pages in the selected book</source>
-        <target xml:lang="es-ES" state="needs-translation">Pages in the selected book</target>
+        <target xml:lang="es-ES" state="translated">Páginas en el libro seleccionado</target>
         <note>ID: LinkTargetChooser.PageList.Heading</note>
       </trans-unit>
       <trans-unit id="LinkTargetChooser.SelectionError.BookNotFound">
@@ -100,7 +100,7 @@
       </trans-unit>
       <trans-unit id="LinkTargetChooser.URLSection.Heading">
         <source xml:lang="en">URL</source>
-        <target xml:lang="es-ES" state="needs-translation">URL</target>
+        <target xml:lang="es-ES" state="translated">URL</target>
         <note>ID: LinkTargetChooser.URLSection.Heading</note>
       </trans-unit>
       <trans-unit id="LinkTargetChooser.URLSection.InfoIcon.Tooltip">
@@ -110,12 +110,12 @@
       </trans-unit>
       <trans-unit id="LinkTargetChooser.URLSection.Input.Placeholder">
         <source xml:lang="en">Paste or enter a URL</source>
-        <target xml:lang="es-ES" state="needs-translation">Paste or enter a URL</target>
+        <target xml:lang="es-ES" state="translated">Pegar o introducir una URL</target>
         <note>ID: LinkTargetChooser.URLSection.Input.Placeholder</note>
       </trans-unit>
       <trans-unit id="LinkTargetChooser.URLSection.OptionsButton.Label">
         <source xml:lang="en">More options</source>
-        <target xml:lang="es-ES" state="needs-translation">More options</target>
+        <target xml:lang="es-ES" state="translated">Más opciones</target>
         <note>ID: LinkTargetChooser.URLSection.OptionsButton.Label</note>
       </trans-unit>
       <trans-unit id="LinkTargetChooser.URLSection.OptionsMenu.Back.Tooltip">
