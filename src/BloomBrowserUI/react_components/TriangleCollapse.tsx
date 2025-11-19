@@ -31,7 +31,11 @@ export const TriangleCollapse: React.FC<{
             `}
             className={props.className}
         >
-            <div css="display: flex; ">
+            <div
+                css={css`
+                    display: flex;
+                `}
+            >
                 <Button
                     onClick={handleClick}
                     css={css`

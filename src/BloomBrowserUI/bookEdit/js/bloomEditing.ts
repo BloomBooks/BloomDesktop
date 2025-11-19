@@ -64,7 +64,7 @@ import { EditableDivUtils } from "./editableDivUtils";
 import { setupDragActivityTabControl } from "../toolbox/games/GameTool";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { showLinkGridSetupDialog } from "../../react_components/BookGridSetup/BookGridSetupDialog";
-import { SetupBookLinkGrids } from "./linkGrid";
+import { setupBookLinkGrids } from "./linkGrid";
 import { Link } from "../../react_components/BookGridSetup/BookLinkTypes";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
@@ -732,7 +732,7 @@ export function SetupElements(
             showTopicChooserDialog();
         });
 
-    SetupBookLinkGrids(container);
+    setupBookLinkGrids(container);
 
     // Copy source texts out to their own div, where we can make a bubble with tabs out of them
     // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,

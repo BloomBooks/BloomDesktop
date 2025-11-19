@@ -3,7 +3,7 @@ import { postJson } from "../../utils/bloomApi";
 import { showLinkGridSetupDialog } from "../../react_components/bookLinkSetup/BookGridSetupDialog";
 import { Link } from "../../react_components/bookLinkSetup/BookLinkTypes";
 
-export function SetupBookLinkGrids(container: HTMLElement) {
+export function setupBookLinkGrids(container: HTMLElement) {
     // Add skeleton to empty grids on initial setup
     const linkGrids = Array.from(
         container.getElementsByClassName("bloom-link-grid"),
