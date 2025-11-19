@@ -46,7 +46,7 @@ namespace Bloom.Book
             BookThumbNailer.GenerateImageForWeb(book);
 
             var coverImagePath = book.GetCoverImagePath();
-            if (coverImagePath == null)
+            if (coverImagePath == null || ImageUtils.IsPlaceholderImageFilename(coverImagePath))
             {
                 var blankImage = Path.Combine(
                     FileLocationUtilities.DirectoryOfApplicationOrSolution,

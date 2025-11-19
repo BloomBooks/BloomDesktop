@@ -381,7 +381,7 @@ namespace Bloom.Publish
             {
                 // Ensuring a proper alt attribute is handled elsewhere
                 var src = img.GetOptionalStringAttribute("src", null);
-                if (String.IsNullOrEmpty(src) || src == "placeHolder.png")
+                if (String.IsNullOrEmpty(src) || ImageUtils.IsPlaceholderImageFilename(src))
                 {
                     // If this is a template book, then the whole point of the book is to not have content. So then we want to preserve the placeholders so
                     // that people looking at the book on Bloom Library can see how the template pages are constructed.
@@ -1126,7 +1126,10 @@ namespace Bloom.Publish
                     bloomCanvas.ChildNodes.FirstOrDefault(c =>
                         c is SafeXmlElement ce && ce.LocalName == "img"
                     ) as SafeXmlElement;
-                if (bcImg != null && bcImg.GetAttribute("src") != "placeHolder.png")
+                if (
+                    bcImg != null
+                    && !ImageUtils.IsPlaceholderImageFilename(bcImg.GetAttribute("src"))
+                )
                     continue; // paranoia
                 if (bcImg != null)
                 {

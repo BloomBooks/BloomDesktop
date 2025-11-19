@@ -321,7 +321,7 @@ namespace Bloom.Book
         /// code for those tasks has no business knowing about that status file. OTOH,
         /// some of those functions don't need some of the audio files; but a generic
         /// cleanup function like this doesn't know which ones. For now, it just deals
-        /// with TC cleanup and with any unused copies of the placeHolder.png image file.
+        /// with TC cleanup and any copies of the placeHolder.png image file left from older versions of Bloom.
         /// </summary>
         public static List<string> LocalOnlyFiles(string folderPath)
         {
@@ -332,30 +332,17 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Add unused copies of placeHolder.png in bookFolderPath to accumulator.
+        /// Add any copies of the placeHolder.png image file left from older versions of Bloom to accumulator. We don't use them anymore.
         /// </summary>
         private static void AddUnusedPlaceholderImages(
             string bookFolderPath,
             List<string> accumulator
         )
         {
-            // See https://issues.bloomlibrary.org/youtrack/issue/BL-7616 and also
-            // https://issues.bloomlibrary.org/youtrack/issue/BL-9479 for what has
-            // happened in the past that still can use cleanup in new work.
+            // We now no longer use placeHolder.png file in books (BL-15441)
+            // They may be there from older version of Bloom, remove them.
             var placeholders = Directory.GetFiles(bookFolderPath, "placeHolder*.png");
-            if (placeholders.Length == 0)
-                return;
-            var htmlPath = FindBookHtmlInFolder(bookFolderPath);
-            if (String.IsNullOrEmpty(htmlPath))
-                return; // shouldn't happen, but if it does we'll surely flag it elsewhere
-            var htmlContent = RobustFile.ReadAllText(htmlPath);
-            foreach (var filepath in placeholders)
-            {
-                var filename = Path.GetFileName(filepath);
-                if (htmlContent.Contains($" src=\"{filename}\""))
-                    continue; // file is used
-                accumulator.Add(filepath);
-            }
+            accumulator.AddRange(placeholders);
         }
 
         public string PathToExistingHtml
@@ -1276,8 +1263,6 @@ namespace Bloom.Book
                     )
                 )
                     continue;
-                if (filename.ToLowerInvariant() == "placeholder.png")
-                    continue; // delete unused copies, but keep base placeholder image file even if unused at the moment
                 imageFiles.Add(Path.GetFileName(GetNormalizedPathForOS(path)));
             }
             //Remove from that list each image actually in use
@@ -2718,7 +2703,6 @@ namespace Bloom.Book
             var supportFilesToUpdate = new List<string>(
                 new[]
                 {
-                    "placeHolder.png",
                     BookInfo.AppearanceSettings.BasePageCssName,
                     "previewMode.css",
                     "origami.css",

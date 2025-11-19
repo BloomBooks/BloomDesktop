@@ -68,6 +68,7 @@ import { getGameType, isPageBloomGame } from "./GameInfo";
 import {
     getImageFromCanvasElement,
     kImageContainerSelector,
+    isPlaceHolderImage,
 } from "../../js/bloomImages";
 import { doesContainingPageHaveSameSizeMode } from "./gameUtilities";
 import { CanvasSnapProvider } from "../../js/CanvasSnapProvider";
@@ -245,7 +246,7 @@ export const adjustTarget = (
             const img = getImageFromCanvasElement(x);
             // I don't think we want to increase the minimum size of targets to account
             // for images that are still placeholders.
-            if (img && img.getAttribute("src") !== "placeholder.png") {
+            if (img && !isPlaceHolderImage(img.getAttribute("src"))) {
                 draggableImages.push(x as HTMLElement);
             } else if (x !== draggable) {
                 otherDraggables.push(x as HTMLElement);
