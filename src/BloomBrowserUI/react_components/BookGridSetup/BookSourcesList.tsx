@@ -21,6 +21,7 @@ export const BookSourcesList: React.FC<BookSourcesListProps> = ({
     // Auto-scroll to keep the selected book visible when selection changes.
     useEffect(() => {
         if (selectedBook && containerRef.current) {
+            // book id are guids, so no need to escape special characters
             const element = containerRef.current.querySelector(
                 `[data-book-id="${selectedBook.id}"]`,
             );
@@ -29,7 +30,7 @@ export const BookSourcesList: React.FC<BookSourcesListProps> = ({
     }, [selectedBook]);
 
     // Convert disabled book IDs array to a Set for O(1) lookup performance.
-    // This might matter when rendering large collections with many books?
+    // This might matter when rendering large collections with many books.
     const disabledSet = React.useMemo(
         () => new Set(disabledBookIds),
         [disabledBookIds],

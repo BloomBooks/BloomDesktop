@@ -4,11 +4,21 @@ import { existsSync, readFileSync } from "node:fs";
 
 // When called via yarn, the component name is passed as an argument after "--"
 // We need to find it in process.argv
-const args = process.argv
+const rawArgs = process.argv
     .slice(2)
     .filter((arg) => arg !== "--" && arg.trim() !== "");
-let componentName: string | undefined = args[0];
-const defaultBaseUrl = "http://127.0.0.1:5173";
+
+let backendRequested = false;
+const positionalArgs = rawArgs.filter((arg) => {
+    if (arg === "--backend") {
+        backendRequested = true;
+        return false;
+    }
+    return true;
+});
+
+let componentName: string | undefined = positionalArgs[0];
+const defaultBaseUrl = "http://127.0.0.1:5183";
 
 /**
  * Detects the component to load based on the current working directory.
@@ -64,6 +74,10 @@ const resolveConfigPath = (): string =>
 
 const startDevServer = (
     name: string | undefined,
+    options: {
+        useBackend: boolean;
+        backendUrl?: string;
+    },
 ): import("node:child_process").ChildProcess => {
     const viteCli = path.resolve(
         process.cwd(),
@@ -79,9 +93,17 @@ const startDevServer = (
         args.push("--open", "/");
     }
 
+    const childEnv = { ...process.env };
+    if (options.useBackend) {
+        childEnv.BLOOM_COMPONENT_TESTER_USE_BACKEND = "1";
+        if (options.backendUrl) {
+            childEnv.BLOOM_COMPONENT_TESTER_BACKEND_URL = options.backendUrl;
+        }
+    }
+
     const child = spawn(process.execPath, args, {
         stdio: "inherit",
-        env: process.env,
+        env: childEnv,
     });
 
     child.on("exit", (code) => {
@@ -97,6 +119,12 @@ const run = (): void => {
         componentName = detectComponentFromDirectory();
     }
 
+    const envBackendUrl = process.env.BLOOM_COMPONENT_TESTER_BACKEND_URL;
+    const envUseBackend =
+        process.env.BLOOM_COMPONENT_TESTER_USE_BACKEND === "1";
+    const useBackend = backendRequested || envUseBackend;
+    const backendUrl = envBackendUrl;
+
     if (!componentName) {
         console.log("Starting the dev server...");
         console.log(
@@ -109,7 +137,17 @@ const run = (): void => {
         console.log(`Launching ${url}`);
     }
 
-    startDevServer(componentName);
+    if (useBackend) {
+        const target = backendUrl ?? "http://localhost:8089";
+        console.log(
+            `Component tester will proxy Bloom API requests to ${target}.`,
+        );
+    }
+
+    startDevServer(componentName, {
+        useBackend,
+        backendUrl,
+    });
 };
 
 run();

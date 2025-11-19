@@ -4,7 +4,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { Link } from "./BookLinkTypes";
 import { css } from "@emotion/react";
 import { BloomTooltip } from "../BloomToolTip";
-import { kBloomBlue } from "../../bloomMaterialUITheme";
+import { selectedStyle } from "../LinkTargetChooser/sharedStyles";
 
 interface BookCardProps {
     link: Link;
@@ -42,7 +42,7 @@ export const BookLinkCard: React.FC<BookCardProps> = ({
             css={css`
                 width: 140px;
                 background-color: #505050 !important;
-                outline: ${selected ? `3px solid ${kBloomBlue}` : "none"};
+                ${selected ? selectedStyle : ""}
                 color: white;
                 position: relative;
                 padding: 0 0 8px 0;
@@ -110,7 +110,6 @@ export const BookLinkCard: React.FC<BookCardProps> = ({
                         src={link.page?.thumbnail || link.book.thumbnail}
                         css={css`
                             width: 100%;
-                            aspect-ratio: 16/9;
                             height: 100px;
                             object-fit: cover;
                             object-position: center top;

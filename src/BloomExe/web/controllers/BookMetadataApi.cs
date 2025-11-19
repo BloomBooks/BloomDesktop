@@ -1,6 +1,7 @@
 ﻿using System;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.CollectionTab;
 using L10NSharp;
 
 namespace Bloom.web.controllers
@@ -11,10 +12,12 @@ namespace Bloom.web.controllers
     public class BookMetadataApi
     {
         private readonly BookSelection _bookSelection;
+        private readonly CollectionModel _collectionModel;
 
-        public BookMetadataApi(BookSelection bookSelection)
+        public BookMetadataApi(BookSelection bookSelection, CollectionModel collectionModel)
         {
             _bookSelection = bookSelection;
+            _collectionModel = collectionModel;
         }
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -33,11 +36,19 @@ namespace Bloom.web.controllers
             switch (request.HttpMethod)
             {
                 case HttpMethods.Get:
+                    var book = _collectionModel.GetRequestedBookOrDefaultOrNull(
+                        request.GetParamOrNull("book-id")
+                    );
+                    if (book == null)
+                    {
+                        request.Failed("Book not found");
+                        return;
+                    }
+                    var bookInfo = book.BookInfo;
+
                     // The spec is here: https://docs.google.com/document/d/e/2PACX-1vREQ7fUXgSE7lGMl9OJkneddkWffO4sDnMG5Vn-IleK35fJSFqnC-6ulK1Ss3eoETCHeLn0wPvcxJOf/pub
                     // See also https://www.w3.org/Submission/2017/SUBM-epub-a11y-20170125/#sec-conf-reporting.
-                    var licenseUrl = _bookSelection
-                        .CurrentSelection.GetLicenseMetadata()
-                        .License.Url;
+                    var licenseUrl = book.GetLicenseMetadata().License.Url;
                     if (string.IsNullOrEmpty(licenseUrl))
                         licenseUrl = null; // allows us to use ?? below.
                     var metadata = new
@@ -45,7 +56,7 @@ namespace Bloom.web.controllers
                         metapicture = new
                         {
                             type = "image",
-                            value = "/bloom/" + _bookSelection.CurrentSelection.GetCoverImagePath(),
+                            value = "/bloom/" + book.GetCoverImagePath(),
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.metapicture",
                                 "Picture"
@@ -54,7 +65,7 @@ namespace Bloom.web.controllers
                         name = new
                         {
                             type = "readOnlyText",
-                            value = _bookSelection.CurrentSelection.NameBestForUserDisplay,
+                            value = book.NameBestForUserDisplay,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.name",
                                 "Name"
@@ -63,9 +74,7 @@ namespace Bloom.web.controllers
                         numberOfPages = new
                         {
                             type = "readOnlyText",
-                            value = _bookSelection
-                                .CurrentSelection.GetLastNumberedPageNumber()
-                                .ToString(),
+                            value = book.GetLastNumberedPageNumber().ToString(),
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.numberOfPages",
                                 "Number of pages"
@@ -74,7 +83,7 @@ namespace Bloom.web.controllers
                         inLanguage = new
                         {
                             type = "readOnlyText",
-                            value = _bookSelection.CurrentSelection.BookData.Language1.Tag,
+                            value = book.BookData.Language1.Tag,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.inLanguage",
                                 "Language"
@@ -94,7 +103,7 @@ namespace Bloom.web.controllers
                         author = new
                         {
                             type = "editableText",
-                            value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Author,
+                            value = "" + book.BookInfo.MetaData.Author,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.author",
                                 "Author"
@@ -103,7 +112,7 @@ namespace Bloom.web.controllers
                         summary = new
                         {
                             type = "bigEditableText",
-                            value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Summary,
+                            value = "" + book.BookInfo.MetaData.Summary,
                             translatedLabel = LocalizationManager.GetString(
                                 "PublishTab.Upload.Summary",
                                 "Summary"
@@ -112,8 +121,7 @@ namespace Bloom.web.controllers
                         typicalAgeRange = new
                         {
                             type = "editableText",
-                            value = ""
-                                + _bookSelection.CurrentSelection.BookInfo.MetaData.TypicalAgeRange,
+                            value = "" + book.BookInfo.MetaData.TypicalAgeRange,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.typicalAgeRange",
                                 "Typical age range"
@@ -122,12 +130,7 @@ namespace Bloom.web.controllers
                         level = new
                         {
                             type = "editableText",
-                            value = ""
-                                + _bookSelection
-                                    .CurrentSelection
-                                    .BookInfo
-                                    .MetaData
-                                    .ReadingLevelDescription,
+                            value = "" + book.BookInfo.MetaData.ReadingLevelDescription,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.level",
                                 "Reading level"
@@ -136,7 +139,7 @@ namespace Bloom.web.controllers
                         subjects = new
                         {
                             type = "subjects",
-                            value = _bookSelection.CurrentSelection.BookInfo.MetaData.Subjects,
+                            value = book.BookInfo.MetaData.Subjects,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.subjects",
                                 "Subjects"
@@ -145,8 +148,7 @@ namespace Bloom.web.controllers
                         a11yLevel = new
                         {
                             type = "a11yLevel",
-                            value = ""
-                                + _bookSelection.CurrentSelection.BookInfo.MetaData.A11yLevel,
+                            value = "" + book.BookInfo.MetaData.A11yLevel,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.a11yLevel",
                                 "Accessibility level"
@@ -156,8 +158,7 @@ namespace Bloom.web.controllers
                         a11yCertifier = new
                         {
                             type = "editableText",
-                            value = ""
-                                + _bookSelection.CurrentSelection.BookInfo.MetaData.A11yCertifier,
+                            value = "" + book.BookInfo.MetaData.A11yCertifier,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.a11yCertifier",
                                 "Level certified by"
@@ -166,7 +167,7 @@ namespace Bloom.web.controllers
                         hazards = new
                         {
                             type = "hazards",
-                            value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Hazards,
+                            value = "" + book.BookInfo.MetaData.Hazards,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.hazards",
                                 "Hazards"
@@ -176,8 +177,7 @@ namespace Bloom.web.controllers
                         a11yFeatures = new
                         {
                             type = "a11yFeatures",
-                            value = ""
-                                + _bookSelection.CurrentSelection.BookInfo.MetaData.A11yFeatures,
+                            value = "" + book.BookInfo.MetaData.A11yFeatures,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.a11yFeatures",
                                 "Accessibility features"
@@ -204,7 +204,13 @@ namespace Bloom.web.controllers
                             "Sign Language"
                         ),
                     };
-                    var blob = new { metadata, translatedStringPairs };
+
+                    var blob = new
+                    {
+                        metadata,
+                        translatedStringPairs,
+                        book = new { id = bookInfo.Id, folderName = bookInfo.FolderName },
+                    };
                     request.ReplyWithJson(blob);
                     break;
                 case HttpMethods.Post:

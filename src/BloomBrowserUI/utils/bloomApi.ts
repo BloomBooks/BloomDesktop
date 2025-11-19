@@ -176,6 +176,7 @@ export function get(
         // then some time in the future will call the callback
         // (here, we're just saying do it asap)
         window.setTimeout(() => successCallback(mockReplies[urlSuffix]), 0);
+        return; // Don't make the real request if we have a mock
     }
     wrapAxios(
         axios

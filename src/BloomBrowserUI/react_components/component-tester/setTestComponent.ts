@@ -56,5 +56,5 @@ export async function setTestComponent<TProps>(
     await page.goto("/");
 
     // Wait for React to render
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 }

@@ -35,7 +35,7 @@ const config: IBloomComponentConfig<IBookGridSetupProps> = {
         links: [],
         onLinksChanged: "testapi/bookGridSetup/linksChanged",
     },
-    modulePath: "../bookLinkSetup/BookGridSetup",
+    modulePath: "../BookGridSetup/BookGridSetup",
     exportName: "BookGridSetup",
 };
 

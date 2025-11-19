@@ -9,6 +9,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Forms;
+using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Utils;
 using Newtonsoft.Json;
@@ -156,6 +157,11 @@ namespace Bloom.Api
         public void ReplyWithImage(string imagePath)
         {
             _requestInfo.ReplyWithImage(imagePath);
+        }
+
+        public void ReplyWithFileContent(string path)
+        {
+            _requestInfo.ReplyWithFileContent(path);
         }
 
         public void ReplyWithStreamContent(Stream input, string responseType)
