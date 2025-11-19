@@ -63,7 +63,7 @@ import { ckeditableSelector } from "../../utils/shared";
 import { EditableDivUtils } from "./editableDivUtils";
 import { setupDragActivityTabControl } from "../toolbox/games/GameTool";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
-import { SetupBookLinkGrids } from "./linkGrid";
+import { setupBookLinkGrids } from "./linkGrid";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
 import { handleUndo } from "../editViewFrame";
@@ -730,7 +730,7 @@ export function SetupElements(
             showTopicChooserDialog();
         });
 
-    SetupBookLinkGrids(container);
+    setupBookLinkGrids(container);
 
     // Copy source texts out to their own div, where we can make a bubble with tabs out of them
     // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
