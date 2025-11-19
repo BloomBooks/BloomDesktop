@@ -128,7 +128,7 @@ export const BookGridSetupDialog: React.FunctionComponent<{
     );
 };
 
-export function showLinkGridSetupDialog(
+export function showBookGridSetupDialog(
     currentLinks: Link[],
     setLinksCallback: (links: Link[]) => void,
 ) {

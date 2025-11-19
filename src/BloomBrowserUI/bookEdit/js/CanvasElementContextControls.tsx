@@ -66,6 +66,7 @@ import { getAudioSentencesOfVisibleEditables } from "bloom-player";
 import { GameType, getGameType } from "../toolbox/games/GameInfo";
 import { setGeneratedDraggableId } from "../toolbox/canvas/CanvasElementItem";
 import { editLinkGrid } from "./linkGrid";
+import { showLinkTargetChooserDialog } from "../../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -1349,6 +1350,22 @@ function cleanUpDividers(menuItems: IMenuItemWithSubmenu[]) {
     });
     return cleanMenuItems;
 }
+
 function setLinkDestination(): void {
-    alert("Set Link Destination - not yet implemented");
+    const activeElement = theOneCanvasElementManager?.getActiveElement();
+    if (!activeElement) return;
+
+    const imgContainer = activeElement.getElementsByClassName(
+        kImageContainerClass,
+    )[0] as HTMLElement;
+    if (!imgContainer) return;
+
+    const currentUrl = imgContainer.getAttribute("data-href") || "";
+    showLinkTargetChooserDialog(currentUrl, (newUrl) => {
+        if (newUrl) {
+            imgContainer.setAttribute("data-href", newUrl);
+        } else {
+            imgContainer.removeAttribute("data-href");
+        }
+    });
 }

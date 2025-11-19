@@ -1,7 +1,7 @@
 import WebSocketManager from "../../utils/WebSocketManager";
 import { postJson } from "../../utils/bloomApi";
-import { showLinkGridSetupDialog } from "../../react_components/bookLinkSetup/BookGridSetupDialog";
-import { Link } from "../../react_components/bookLinkSetup/BookLinkTypes";
+import { showBookGridSetupDialog } from "../../react_components/BookGridSetup/BookGridSetupDialog";
+import { Link } from "../../react_components/BookGridSetup/BookLinkTypes";
 
 export function setupBookLinkGrids(container: HTMLElement) {
     // Add skeleton to empty grids on initial setup
@@ -45,7 +45,7 @@ export function editLinkGrid(linkGrid: HTMLElement) {
             };
         });
 
-    showLinkGridSetupDialog(
+    showBookGridSetupDialog(
         currentLinks,
         // callback if they press OK
         (links: Link[]) => {
