@@ -184,6 +184,8 @@ export default class BloomSourceBubbles {
                 $(list).append(
                     '<li id="' +
                         langTag +
+                        '" title="' +
+                        langTag +
                         '"><a class="sourceTextTab" href="#' +
                         langTag +
                         '">' +

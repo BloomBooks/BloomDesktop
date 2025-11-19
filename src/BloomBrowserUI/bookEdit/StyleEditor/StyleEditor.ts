@@ -1529,6 +1529,23 @@ export default class StyleEditor {
             });
     }
 
+    // this is an unfortunate ui hack because we can't yet put the language code as a tooltip on the language
+    // tag itself because it is a psuedo-element (BL-15212).
+    private updateTitleBarLanguageCode() {
+        const target = $("#format-toolbar-lang-code");
+        if (target.length === 0) {
+            return;
+        }
+        const langCode = ($(this.boxBeingEdited).attr("lang") || "").trim();
+        if (langCode) {
+            target.text(langCode);
+            target.removeAttr("aria-hidden");
+        } else {
+            target.text("");
+            target.attr("aria-hidden", "true");
+        }
+    }
+
     // The More tab settings are never language-dependent
     public getParagraphTabDescription() {
         const styleName = StyleEditor.GetBaseStyleNameForElement(
@@ -2319,6 +2336,7 @@ export default class StyleEditor {
 
                     $("#format-toolbar").remove(); // in case there's still one somewhere else
                     $("body").append(html);
+                    this.updateTitleBarLanguageCode();
 
                     if (noFormatChange) {
                         $("#format-toolbar").addClass("formattingDisabled");
