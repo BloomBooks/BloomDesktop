@@ -514,6 +514,46 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.ShowImageDescriptions</note>
       </trans-unit>
       <!-- Canvas (was Overlay) -->
+      <trans-unit id="EditTab.Toolbox.CanvasTool.BookGrid" sil:dynamic="true" translate="no">
+        <source xml:lang="en">A grid of buttons that jump you to books in your app</source>
+        <target xml:lang="tr" state="needs-translation">A grid of buttons that jump you to books in your app</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.BookGrid</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ClickToSetLinkDest" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Click to set where the link takes you</source>
+        <target xml:lang="tr" state="needs-translation">Click to set where the link takes you</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.ClickToSetLinkDest</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.DragInstructions" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Drag any of these onto a canvas:</source>
+        <target xml:lang="tr" state="needs-translation">Drag any of these onto a canvas:</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.DragInstructions2</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Choose books...</source>
+        <target xml:lang="tr" state="needs-translation">Choose books...</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.NavButtons" sil:dynamic="true" translate="no">
+        <source xml:lang="en">A button that jumps you to a page or book in your app</source>
+        <target xml:lang="tr" state="needs-translation">A button that jumps you to a page or book in your app</target>
+        <note>ID: EditTab.Toolbox.OverlayTool.NavButtons</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Navigation" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Navigation</source>
+        <target xml:lang="tr" state="needs-translation">Navigation</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.Navigation</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Go Somewhere</source>
+        <target xml:lang="tr" state="needs-translation">Go Somewhere</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.SetDest" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Set Destination</source>
+        <target xml:lang="tr" state="needs-translation">Set Destination</target>
+        <note>ID: EditTab.Toolbox.OverlayTool.SetDest</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.OverlayTool.KeyHints.Drag" sil:dynamic="true">
         <source xml:lang="en">drag</source>
         <target xml:lang="tr" state="needs-translation">drag</target>
