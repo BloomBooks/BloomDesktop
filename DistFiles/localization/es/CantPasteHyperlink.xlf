@@ -6,6 +6,12 @@
         <source xml:lang="en">Can't Paste Hyperlink</source>
         <target xml:lang="es-ES" state="final">No se pudo pegar el enlace</target>
         <note>ID: hyperlink.title</note>
+        <note>obsolete as of Bloom 6.3</note>
+      </trans-unit>
+      <trans-unit id="hyperlink.heading">
+        <source xml:lang="en">Can't Set Up Hyperlink</source>
+        <target xml:lang="es-ES" state="needs-translation">Can't Set Up Hyperlink</target>
+        <note>ID: hyperlink.heading</note>
       </trans-unit>
       <trans-unit id="EditTab.HyperlinkPasteFailure" approved="yes">
         <source xml:lang="en">Bloom was not able to make a link. Try selecting only simple text.</source>
