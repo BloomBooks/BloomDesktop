@@ -2096,7 +2096,7 @@ namespace Bloom.Api
             var fullPath = Path.GetFullPath(localPath);
             var exactPathName = GetExactPathName(fullPath);
 
-            if (!EqualsIgnoringCaseAndDirectorySeps(exactPathName, fullPath))
+            if (!EqualsWithCaseAndNormalizedDirectorySeps(exactPathName, fullPath))
             {
                 var msg = $"*** Case error occurred. {fullPath} does not match {exactPathName} ***";
                 if (Program.RunningUnitTests)
@@ -2132,17 +2132,16 @@ namespace Bloom.Api
             }
         }
 
-        private static string RemoveAllDirectorySeparators(string path)
+        private static string NormalizeDirectorySeparators(string path)
         {
-            return path.Replace(Path.DirectorySeparatorChar.ToString(), string.Empty)
-                .Replace(Path.AltDirectorySeparatorChar.ToString(), string.Empty);
+            return path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
         }
 
-        private static bool EqualsIgnoringCaseAndDirectorySeps(string path1, string path2)
+        private static bool EqualsWithCaseAndNormalizedDirectorySeps(string path1, string path2)
         {
-            var stripped1 = RemoveAllDirectorySeparators(path1);
-            var stripped2 = RemoveAllDirectorySeparators(path2);
-            return String.Equals(stripped1, stripped2, StringComparison.InvariantCulture);
+            var normPath1 = NormalizeDirectorySeparators(path1);
+            var normPath2 = NormalizeDirectorySeparators(path2);
+            return String.Equals(normPath1, normPath2, StringComparison.Ordinal);
         }
 
         #region Disposable stuff
