@@ -322,9 +322,9 @@
         <target xml:lang="pt-PT" state="final">Número de páginas</target>
         <note>ID: BookMetadata.numberOfPages</note>
       </trans-unit>
-      <trans-unit id="BookMetadata.signLanguage">
+      <trans-unit id="BookMetadata.signLanguage" approved="yes">
         <source xml:lang="en">Sign Language</source>
-        <target xml:lang="pt-PT" state="translated">Língua de sinais</target>
+        <target xml:lang="pt-PT" state="final">Língua de sinais</target>
         <note>ID: BookMetadata.signLanguage</note>
       </trans-unit>
       <trans-unit id="BookMetadata.subjects" approved="yes">
@@ -5351,9 +5351,9 @@
         <target xml:lang="pt-PT" state="final">Desculpe, esta versão do Bloom Editor não é compatível com a versão atual do BloomLibrary.org. Por favor, atualize para uma versão mais recente.</target>
         <note>ID: PublishTab.Upload.OldVersion</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.SignLanguage">
+      <trans-unit id="PublishTab.Upload.SignLanguage" approved="yes">
         <source xml:lang="en">Sign Language</source>
-        <target xml:lang="pt-PT" state="translated">Língua de sinais</target>
+        <target xml:lang="pt-PT" state="final">Língua de sinais</target>
         <note>ID: PublishTab.Upload.SignLanguage</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignIn">
