@@ -1583,14 +1583,8 @@ export function IsPageXMatter($target: JQuery): boolean {
 }
 
 function updateCkEditorButtonStatus(editor: CKEDITOR.editor) {
-    get("editView/isClipboardBookHyperlink", (result) => {
-        const pasteHyperlinkCommand = editor.getCommand("pasteHyperlink");
-        if (result.data) {
-            pasteHyperlinkCommand.enable();
-        } else {
-            pasteHyperlinkCommand.disable();
-        }
-    });
+    // At the moment nothing needs to enabled or disabled dynamically.
+    // This method is a placeholder for future use.
 }
 
 export function attachToCkEditor(element) {
