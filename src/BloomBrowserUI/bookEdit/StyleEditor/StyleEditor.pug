@@ -2,26 +2,29 @@ mixin img(filename)
 	img(src='/bloom/bookEdit/img/' + filename)
 
 #format-toolbar.bloom-ui.bloomDialogContainer(style="visibility: hidden;")
-	.bloomDialogTitleBar(data-i18n="EditTab.FormatDialog.Format") Format
+	.bloomDialogTitleBar
+		span(data-i18n="EditTab.FormatDialog.Format") Format
+		span#format-toolbar-lang-code
 	.hideWhenFormattingEnabled.bloomDialogMainPage
 		p(data-i18n="BookEditor.FormattingDisabled") Sorry, Reader Templates do not allow changes to formatting.
 	#tabRoot.hideWhenFormattingDisabled.tab-pane
 		#style-page.tab-page
 			h2.tab(data-i18n="EditTab.FormatDialog.StyleNameTab") Style Name
-			.bloomDialogMainPage(data-i18n="EditTab.FormatDialog.Style") Style
-			#style-group.state-initial
-				select#styleSelect
-				#dont-see
-					span(data-i18n="EditTab.FormatDialog.DontSeeNeed") Don't see what you need?
-					= ' '
-					a#show-createStyle(href="" data-i18n="EditTab.FormatDialog.CreateStyle") Create a new style
-				#createStyle
-					div(data-i18n="EditTab.FormatDialog.NewStyle") New style
-					div
-						input#style-select-input(type="text")
-						button#create-button(data-i18n="EditTab.FormatDialog.Create" disabled) Create
-					#please-use-alpha(style="color: red;" data-i18n="EditTab.FormatDialog.PleaseUseAlpha") Please use only alphabetical characters. Numbers at the end are ok, as in "part2".
-					#already-exists(style="color: red;" data-i18n="EditTab.FormatDialog.AlreadyExists") That style already exists. Please choose another name.
+			.bloomDialogMainPage
+				div(data-i18n="EditTab.FormatDialog.Style") Style
+				#style-group.state-initial
+					select#styleSelect
+					#dont-see
+						span(data-i18n="EditTab.FormatDialog.DontSeeNeed") Don't see what you need?
+						= ' '
+						a#show-createStyle(href="" data-i18n="EditTab.FormatDialog.CreateStyle") Create a new style
+					#createStyle
+						div(data-i18n="EditTab.FormatDialog.NewStyle") New style
+						div
+							input#style-select-input(type="text")
+							button#create-button(data-i18n="EditTab.FormatDialog.Create" disabled) Create
+						#please-use-alpha(style="color: red;" data-i18n="EditTab.FormatDialog.PleaseUseAlpha") Please use only alphabetical characters. Numbers at the end are ok, as in "part2".
+						#already-exists(style="color: red;" data-i18n="EditTab.FormatDialog.AlreadyExists") That style already exists. Please choose another name.
 		.tab-page
 			h2.tab(data-i18n="EditTab.FormatDialog.CharactersTab") Characters
 			.bloomDialogMainPage

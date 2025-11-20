@@ -5808,25 +5808,59 @@ export class CanvasElementManager {
     ): void {
         const sourceEditable = sourceElement.querySelector(".bloom-editable");
         if (!sourceEditable) return;
-        const sourceId = sourceEditable.getAttribute("id");
-        if (!sourceId) return;
         const copiedEditable = copiedElement.querySelector(".bloom-editable");
         if (!copiedEditable) return;
-        const newId = AudioRecording.createValidXhtmlUniqueId();
-        copiedEditable.setAttribute("id", newId);
-        copyAudioFileAsync(sourceId, newId); // we don't need to wait for this to finish
-        const duration = sourceEditable.getAttribute("data-duration");
-        if (duration) {
-            copiedEditable.setAttribute("data-duration", duration);
+        const sourceId = sourceEditable.getAttribute("id");
+        const mode = sourceEditable.getAttribute("data-audiorecordingmode");
+        if (sourceId && mode === "TextBox") {
+            this.copySoundFileAndAttributes(
+                sourceEditable,
+                sourceId,
+                copiedEditable,
+            );
+        } else if (mode === "Sentence") {
+            const sourceSpans = sourceEditable.querySelectorAll(
+                "span.audio-sentence[id][recordingmd5]",
+            );
+            const copiedSpans = copiedEditable.querySelectorAll(
+                "span.audio-sentence[recordingmd5]",
+            );
+            if (
+                sourceSpans.length === copiedSpans.length &&
+                sourceSpans.length > 0
+            ) {
+                sourceSpans.forEach((sourceSpan, index) => {
+                    const copiedSpan = copiedSpans[index];
+                    const sourceSpanId = sourceSpan.getAttribute("id");
+                    if (sourceSpanId) {
+                        this.copySoundFileAndAttributes(
+                            sourceSpan,
+                            sourceSpanId,
+                            copiedSpan,
+                        );
+                    }
+                });
+            }
         }
-        const endTimes = sourceEditable.getAttribute(
+    }
+
+    private copySoundFileAndAttributes(
+        sourceElement: Element,
+        sourceId: string,
+        copiedElement: Element,
+    ) {
+        const newId = AudioRecording.createValidXhtmlUniqueId();
+        copiedElement.setAttribute("id", newId);
+        copyAudioFileAsync(sourceId, newId); // we don't need to wait for this to finish
+        const duration = sourceElement.getAttribute("data-duration");
+        if (duration) {
+            copiedElement.setAttribute("data-duration", duration);
+        }
+        const endTimes = sourceElement.getAttribute(
             "data-audiorecordingendtimes",
         );
         if (endTimes) {
-            copiedEditable.setAttribute(
-                "data-audiorecordingendtimes",
-                endTimes,
-            );
+            copiedElement.setAttribute("data-audiorecordingendtimes", endTimes);
         }
     }
 
@@ -6992,7 +7026,7 @@ export class CanvasElementManager {
                 // for greater accuracy in scaling. (BL-15464)
                 const newCeWidth = CanvasElementManager.pxToNumber(
                     bgCanvasElement.style.width,
-                    bgCanvasElement.clientWidth
+                    bgCanvasElement.clientWidth,
                 );
                 const scale = newCeWidth / oldCeWidth;
                 img.style.width =
