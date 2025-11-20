@@ -10,7 +10,7 @@
       </trans-unit>
       <trans-unit id="hyperlink.heading">
         <source xml:lang="en">Can't Set Up Hyperlink</source>
-        <target xml:lang="es-ES" state="needs-translation">Can't Set Up Hyperlink</target>
+        <target xml:lang="es-ES" state="translated">No se pudo configurar el enlace</target>
         <note>ID: hyperlink.heading</note>
       </trans-unit>
       <trans-unit id="EditTab.HyperlinkPasteFailure" approved="yes">
