@@ -1,4 +1,4 @@
-﻿
+
 ## Bloom Notes & License
 
 ### Automatic Update
