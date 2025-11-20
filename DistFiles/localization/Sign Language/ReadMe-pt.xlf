@@ -2,9 +2,9 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="pt-PT">
     <body>
-      <trans-unit id="sign.language.template.title">
+      <trans-unit id="sign.language.template.title" approved="yes">
         <source xml:lang="en">About the Sign Language Template</source>
-        <target xml:lang="pt-PT" state="translated">Sobre o modelo para língua de sinais</target>
+        <target xml:lang="pt-PT" state="final">Sobre o modelo para língua de sinais</target>
         <note>ID: sign.language.template.title</note>
       </trans-unit>
       <trans-unit id="sign.language.template.provides">
