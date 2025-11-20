@@ -118,9 +118,9 @@
         <target xml:lang="fr" state="final">Revenir dans l'historique du lien</target>
         <note>ID: LinkTargetChooser.URLSection.OptionsMenu.Back.Tooltip</note>
       </trans-unit>
-      <trans-unit id="LinkTargetChooser.URLSection.OptionsMenu.Back.Label">
+      <trans-unit id="LinkTargetChooser.URLSection.OptionsMenu.Back.Label" approved="yes">
         <source xml:lang="en">Back</source>
-        <target xml:lang="fr" state="needs-translation">Back</target>
+        <target xml:lang="fr" state="final">⬅️ Retour</target>
         <note>ID: LinkTargetChooser.URLSection.OptionsMenu.Back.Label</note>
       </trans-unit>
       <trans-unit id="LinkTargetChooser.URLSection.PasteButton.Tooltip" approved="yes">
