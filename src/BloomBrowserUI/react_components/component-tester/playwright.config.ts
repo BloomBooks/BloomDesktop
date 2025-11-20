@@ -30,7 +30,8 @@ Object.keys(require.cache).forEach((key) => {
 const config: PlaywrightTestConfig = {
     testDir: "..",
     testMatch: "**/*.uitest.*",
-    timeout: 5000,
+    // Allow extra time for the first Vite build when the harness is cold.
+    timeout: 15000,
     expect: {
         timeout: 1000,
     },

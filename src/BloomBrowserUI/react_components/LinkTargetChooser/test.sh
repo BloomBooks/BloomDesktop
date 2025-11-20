@@ -7,6 +7,9 @@ cd "$script_dir/../component-tester"
 # Opt out of manual Playwright specs when running automated component tests.
 export PLAYWRIGHT_INCLUDE_MANUAL=0
 
+component_prefix="../LinkTargetChooser"
+component_arg_added=0
+
 args=()
 expect_value=""
 
@@ -42,11 +45,14 @@ for arg in "$@"; do
 		continue
 	fi
 
-	if [[ "$arg" == LinkTargetChooser/* ]]; then
+	if [[ "$arg" == ${component_prefix}* ]]; then
 		args+=("$arg")
+	elif [[ "$arg" == LinkTargetChooser/* ]]; then
+		args+=("${component_prefix}/${arg#LinkTargetChooser/}")
 	else
-		args+=("LinkTargetChooser/$arg")
+		args+=("${component_prefix}/$arg")
 	fi
+	component_arg_added=1
 done
 
 if [ -n "$expect_value" ]; then
@@ -54,8 +60,8 @@ if [ -n "$expect_value" ]; then
 	exit 1
 fi
 
-if [ ${#args[@]} -eq 0 ]; then
-	args+=("LinkTargetChooser")
+if [ "$component_arg_added" -eq 0 ]; then
+	args+=("$component_prefix")
 fi
 
 yarn test "${args[@]}"

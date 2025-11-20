@@ -272,6 +272,18 @@ export default defineConfig({
         },
     ],
     optimizeDeps: {
+        // These MUI packages live under src/BloomBrowserUI/node_modules instead of this
+        // tester's root. Without explicitly including them, Vite serves them via /@fs/
+        // and skips the CommonJS->ESM transform, which causes missing default exports
+        // (e.g., prop-types) when BookGridSetup loads.
+        include: [
+            "@mui/material",
+            "@mui/material/styles",
+            "@mui/material/styles/styled",
+            "@mui/system",
+            "@mui/styled-engine",
+            "prop-types",
+        ],
         exclude: [
             "playwright-core",
             "chromium-bidi",

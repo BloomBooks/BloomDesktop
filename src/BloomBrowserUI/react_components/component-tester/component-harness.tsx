@@ -196,7 +196,9 @@ async function loadComponent(descriptor: {
         moduleExports = await moduleLoader();
     } catch (error) {
         const message =
-            error instanceof Error ? error.message : JSON.stringify(error);
+            error instanceof Error
+                ? `${error.message}${error.stack ? `\n${error.stack}` : ""}`
+                : JSON.stringify(error);
         throw new Error(
             `Failed to load module "${descriptor.modulePath}": ${message}`,
         );
