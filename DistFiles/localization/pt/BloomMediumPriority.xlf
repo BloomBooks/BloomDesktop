@@ -1082,6 +1082,11 @@
         <target xml:lang="pt-PT" state="translated">Colar o Link</target>
         <note>ID: EditTab.PasteHyperlink</note>
       </trans-unit>
+      <trans-unit id="EditTab.SetupHyperlink">
+        <source xml:lang="en">Set Up Hyperlink</source>
+        <target xml:lang="pt-PT" state="translated">Configurar o Link</target>
+        <note>ID: EditTab.SetupHyperlink</note>
+      </trans-unit>
       <trans-unit id="UseTalkingBookTool">
         <source xml:lang="en">Use Talking Book Tool</source>
         <target xml:lang="pt-PT" state="translated">Usar Ferramenta de Áudio-Livro</target>
