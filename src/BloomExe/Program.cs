@@ -122,6 +122,10 @@ namespace Bloom
             // SetUpLocalization().  See BL-13708.
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            // The next line preserves the appearance from before we changed to .NET 8.
+            // This includes the dialog sizes because WinForms scaling is based on the default font,
+            // which changed in .NET 8.  See BL-15518.
+            Application.SetDefaultFont(new System.Drawing.Font("Microsoft Sans Serif", 8.25f));
 
             // We use crowdin for localizing, and they require a directory per language setup.
             LocalizationManager.UseLanguageCodeFolders = true;
