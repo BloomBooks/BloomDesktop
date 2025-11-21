@@ -10,6 +10,7 @@ using System.Web;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
+using Bloom;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.FontProcessing;
@@ -308,6 +309,8 @@ namespace Bloom.Publish.Epub
                 Path.GetFileName(Book.FolderPath)
             );
             _originalBook = _book;
+            var previousLocator = BloomFileLocator.sTheMostRecentBloomFileLocator;
+
             if (_bookServer != null)
             {
                 // It should only be null while running unit tests which don't create a physical file.
@@ -326,6 +329,16 @@ namespace Bloom.Publish.Epub
                     wantFontFaceDeclarations: false
                 );
             }
+
+            // Keep BloomServer pointing at the temp book for the remainder of StageEpub so every asset lookup
+            // hits the files we just cloned, then automatically restore the user's selection when we exit.
+            using var tempBookLocatorOverride =
+                _book != null && _book != _originalBook
+                    ? BloomFileLocator.OverrideForScope(
+                        _book.Storage.GetFileLocator(),
+                        previousLocator
+                    )
+                    : null;
 
             // The readium control remembers the current page for each book.
             // So it is useful to have a unique name for each one.
