@@ -1172,32 +1172,32 @@ function addImageMenuOptions(
                 </Span>
             ),
             featureName: "canvas",
-            onClick: () => setupLink(canvasElement),
-
-            /*
-            Since the clipboard is not readable by us directly, but
-            only through an async call to the server, I haven't found
-            a way to know if there is a hyperlink on the clipboard. I could
-            know if there was one when we last rendered.
-            disabled: !haveHyperlinkOnClipboard
-            */
+            onClick: () => {
+                // Initially, we could only set links on images. For some reason,
+                // we decided to put it on the image container rather than the canvas element.
+                // Now we have implemented other canvas elements (navigation buttons) which
+                // can have links. Those set the data-href on the canvas element itself.
+                // But we didn't modify how the existing image link setup works so as not to break 6.2.
+                // Thus, for images, we put data-href on the image container, but for other elements, we
+                // put it on the canvas element.
+                const imgContainer = canvasElement.getElementsByClassName(
+                    kImageContainerClass,
+                )[0] as HTMLElement;
+                showLinkTargetChooserDialog(
+                    imgContainer.getAttribute("data-href") || "",
+                    (url) => {
+                        if (url) {
+                            imgContainer.setAttribute("data-href", url);
+                        } else if (imgContainer.hasAttribute("data-href")) {
+                            imgContainer.removeAttribute("data-href");
+                        }
+                    },
+                );
+            },
         });
-        // Enhance: some way to remove a link you don't want anymore. For now, you can paste an empty string.
     }
 
     menuOptions.unshift(...imageMenuOptions);
-}
-function setupLink(canvasElement: HTMLElement) {
-    const imgContainer = canvasElement.getElementsByClassName(
-        kImageContainerClass,
-    )[0] as HTMLElement;
-    showLinkTargetChooserDialog("", (url) => {
-        if (url) {
-            imgContainer.setAttribute("data-href", url);
-        } else if (imgContainer.hasAttribute("data-href")) {
-            imgContainer.removeAttribute("data-href");
-        }
-    });
 }
 
 // applies the modification to all classes of element
@@ -1345,17 +1345,16 @@ function setLinkDestination(): void {
     const activeElement = theOneCanvasElementManager?.getActiveElement();
     if (!activeElement) return;
 
-    const imgContainer = activeElement.getElementsByClassName(
-        kImageContainerClass,
-    )[0] as HTMLElement;
-    if (!imgContainer) return;
-
-    const currentUrl = imgContainer.getAttribute("data-href") || "";
+    // Note that here we place data-href on the canvas element itself.
+    // This is different from how we do it for images, where we put data-href
+    // on the image container. We didn't want to change the existing behavior
+    // for images, so as not to break existing books in 6.2.
+    const currentUrl = activeElement.getAttribute("data-href") || "";
     showLinkTargetChooserDialog(currentUrl, (newUrl) => {
         if (newUrl) {
-            imgContainer.setAttribute("data-href", newUrl);
+            activeElement.setAttribute("data-href", newUrl);
         } else {
-            imgContainer.removeAttribute("data-href");
+            activeElement.removeAttribute("data-href");
         }
     });
 }
