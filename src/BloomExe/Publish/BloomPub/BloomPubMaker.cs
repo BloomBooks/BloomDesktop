@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
+using Bloom;
 using Bloom.Book;
 using Bloom.FontProcessing;
 using Bloom.Publish.Epub;
@@ -127,6 +128,7 @@ namespace Bloom.Publish.BloomPub
             bool isTemplateBook = false
         )
         {
+            var previousLocator = BloomFileLocator.sTheMostRecentBloomFileLocator;
             var modifiedBook = PrepareBookForBloomReader(
                 settings,
                 bookFolderPath,
@@ -136,6 +138,17 @@ namespace Bloom.Publish.BloomPub
                 isTemplateBook,
                 creator
             );
+
+            // Keep BloomServer pointed at the staged book while we finish processing, then restore the
+            // locator we captured before staging once publishing wraps up.
+            using var tempBookLocatorOverride =
+                bookServer != null && modifiedBook != null
+                    ? BloomFileLocator.OverrideForScope(
+                        modifiedBook.Storage.GetFileLocator(),
+                        previousLocator
+                    )
+                    : null;
+
             // We want at least 256 for Bloom Reader, because the screens have a high pixel density. And (at the moment) we are asking for
             // 64dp in Bloom Reader.
 
@@ -385,6 +398,7 @@ namespace Bloom.Publish.BloomPub
                 BookStorage.SanitizeNameForFileSystem(Path.GetFileNameWithoutExtension(htmPath))
             );
             Directory.CreateDirectory(tentativeBookFolderPath);
+            var previousLocator = BloomFileLocator.sTheMostRecentBloomFileLocator;
             var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(
                 bookFolderPath,
                 bookServer,
@@ -396,6 +410,17 @@ namespace Bloom.Publish.BloomPub
                 // Other fonts that BloomDesktop may serve need to be embedded in the .bloompub file.
                 wantFontFaceDeclarations: false
             );
+
+            // Hold the temp locator for the rest of this method so BloomServer sees the in-progress copy
+            // until we finish pruning/packaging it. Disposing the scope restores whichever locator was active
+            // before we cloned the book.
+            using var tempBookLocatorOverride =
+                bookServer != null && modifiedBook != null
+                    ? BloomFileLocator.OverrideForScope(
+                        modifiedBook.Storage.GetFileLocator(),
+                        previousLocator
+                    )
+                    : null;
 
             modifiedBook.SetMotionAttributesOnBody(
                 settings?.PublishAsMotionBookIfApplicable == true && modifiedBook.HasMotionPages

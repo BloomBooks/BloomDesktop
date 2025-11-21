@@ -43,6 +43,53 @@ namespace Bloom
 
         public static BloomFileLocator sTheMostRecentBloomFileLocator;
 
+        // Scoped safety valve for publish operations: lets code point the global locator at a staged book long
+        // enough to satisfy BloomServer while automatically restoring the previous selection when the scope ends.
+        // Because the guard stores the earlier locator and swaps it back in Dispose, callers can isolate the override
+        // to the exact regions that need the temp files.
+        // Future ideas (by copilot): Have BloomServer accept a locator (or token) per request so the static instance can be
+        // retired or injected, or route publish pipelines through dedicated server instances per staged book to avoid
+        // sharing global state entirely.
+        private sealed class LocatorOverride : IDisposable
+        {
+            private readonly BloomFileLocator _previous;
+            private bool _disposed;
+
+            public LocatorOverride(BloomFileLocator previous)
+            {
+                _previous = previous;
+            }
+
+            public void Dispose()
+            {
+                if (_disposed)
+                    return;
+                sTheMostRecentBloomFileLocator = _previous;
+                _disposed = true;
+            }
+        }
+
+        public static IDisposable OverrideForScope(
+            IFileLocator scopedLocator,
+            BloomFileLocator previousLocatorToRestore
+        )
+        {
+            if (scopedLocator == null)
+                throw new ArgumentNullException(nameof(scopedLocator));
+            var scopedBloomLocator = scopedLocator as BloomFileLocator;
+            if (scopedBloomLocator == null)
+            {
+                throw new ArgumentException(
+                    "Locator overrides currently require a BloomFileLocator instance.",
+                    nameof(scopedLocator)
+                );
+            }
+
+            var previous = previousLocatorToRestore ?? sTheMostRecentBloomFileLocator;
+            sTheMostRecentBloomFileLocator = scopedBloomLocator;
+            return new LocatorOverride(previous);
+        }
+
         public BloomFileLocator(
             CollectionSettings collectionSettings,
             XMatterPackFinder xMatterPackFinder,
