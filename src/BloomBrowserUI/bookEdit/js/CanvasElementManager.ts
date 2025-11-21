@@ -2693,7 +2693,7 @@ export class CanvasElementManager {
                     !useSizeOfNewImage && // not waiting for new dimensions
                     imgOrVideo.classList.contains("bloom-imageLoadError")) // error occurred while trying to load
             ) {
-                // Image is in an error state; we probably won't ever get useful dimensions. Just leave
+                // Image is a placeholder or in an error state; we probably won't ever get useful dimensions. Just leave
                 // the canvas element the shape it is.
                 return;
             }

@@ -36,12 +36,17 @@ export const kImageContainerSelector = `.${kImageContainerClass}`;
 // We don't use actual placeHolder.png files anymore, but we do continue to use
 // src="placeHolder.png" to mark placeholders
 export function isPlaceHolderImage(
-    filename: string | null | undefined,
+    url: string | null | undefined,
 ): boolean {
-    if (!filename) {
+    if (!url) {
         return false;
     }
-    return filename.toLowerCase().endsWith("placeholder.png");
+    // Extract just the filename part to handle cases like "placeHolder.png?cachebust=12345"
+    // or paths like "book/placeHolder.png"
+    const urlLower = url.toLowerCase();
+    const questionMarkIndex = urlLower.indexOf("?");
+    const pathPart = questionMarkIndex >= 0 ? urlLower.substring(0, questionMarkIndex) : urlLower;
+    return pathPart.endsWith("placeholder.png");
 }
 
 export function cleanupImages() {

@@ -1376,10 +1376,9 @@ canvas.moving {
     pointer-events: none;
     background-color: transparent;
 
-    // background images can't be manually resized
+    // background images can't be manually resized, but they can be cropped
     &.bloom-backgroundImage-control-frame {
-        .bloom-ui-canvas-element-resize-handle,
-        .bloom-ui-canvas-element-side-handle {
+        .bloom-ui-canvas-element-resize-handle {
             display: none;
         }
     }

@@ -748,6 +748,9 @@ namespace Bloom.Api
                     }
                     else if (ImageUtils.IsPlaceholderImageFilename(imageFile))
                     {
+                        // BL-15441: We no longer use real files for placeholders, but the HTML still references placeHolder.png.
+                        // The placeholder is displayed via CSS. Return a 404 so the browser knows there's no file.
+                        info.WriteError(404);
                         return true;
                     }
                     // If the user does add a video or widget, these placeholder .svgs will get copied to the

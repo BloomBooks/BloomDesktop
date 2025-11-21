@@ -243,6 +243,7 @@ namespace Bloom
                     BloomFileLocator.BrowserRoot
                 );
                 imageSrc = Path.Combine(bloomRoot, "images", "placeHolder.png");
+                // Enhance: We are unnecessarily running some image checks/processing below even in the placeholder case.
             }
             if (!IsCoverImageSrcValid(imageSrc, options))
             {

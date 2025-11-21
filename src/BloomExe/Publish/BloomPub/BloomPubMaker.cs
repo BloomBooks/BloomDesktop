@@ -727,8 +727,9 @@ namespace Bloom.Publish.BloomPub
                 var imgElt in dom.SafeSelectNodes("//img[@src]").Cast<SafeXmlElement>().ToArray()
             )
             {
-                // As of BL-15441, we don't use real files for place holders but we still mark them with src="placeHolder.png".
-                // Don't strip these - we want them to persist in template books, and for other books we are already removing them elsewhere.
+                // As of BL-15441, we don't use real files for place holders (except in templates) but we still mark them with src="placeHolder.png".
+                // Don't strip them here -- we want them to persist in template books. For other books we are already removing them
+                // elsewhere (see line 540 where we delete placeHolder.png from the book folder).
                 string src = imgElt.GetAttribute("src");
                 if (ImageUtils.IsPlaceholderImageFilename(src))
                     continue;
