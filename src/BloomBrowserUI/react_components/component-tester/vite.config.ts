@@ -191,7 +191,7 @@ export default defineConfig({
                         return;
                     }
 
-                    // GET endpoints
+                    // mock GET endpoints
                     if (req.method === "GET") {
                         // Match with or without double slash (bloomApi adds trailing slash)
                         if (
@@ -212,37 +212,62 @@ export default defineConfig({
                         }
                     }
 
-                    // POST endpoints - log errors for visibility during testing
+                    // mock POST endpoints
                     if (req.method === "POST") {
                         if (
-                            req.url.startsWith("/bloom/api/common/openUrl") ||
-                            req.url.startsWith("/bloom/api//common/openUrl")
+                            req.url.startsWith("/bloom/api/link") ||
+                            req.url.startsWith("/bloom/api//link")
                         ) {
-                            let targetUrl = "";
-                            try {
-                                const parsed = new URL(
-                                    req.url,
-                                    "http://localhost",
-                                );
-                                targetUrl =
-                                    parsed.searchParams.get("url") ?? "";
-                            } catch {
-                                // Leave targetUrl as empty
-                            }
-                            if (targetUrl) {
-                                const suppressOpen =
-                                    process.env
-                                        .BLOOM_COMPONENT_TESTER_SUPPRESS_OPEN ===
-                                    "1";
-                                if (suppressOpen) {
-                                    console.info(
-                                        `Component tester mock: would open browser to ${targetUrl}`,
-                                    );
-                                } else {
-                                    launchBrowser(targetUrl);
+                            let body = "";
+                            let responded = false;
+                            const respondOnce = (payload: unknown) => {
+                                if (!responded) {
+                                    responded = true;
+                                    respondWithJson(res, payload);
                                 }
-                            }
-                            respondWithJson(res, { success: true });
+                            };
+
+                            req.on("data", (chunk) => {
+                                body += chunk.toString();
+                            });
+
+                            req.on("end", () => {
+                                const encodedTarget = body.trim();
+                                let targetUrl = "";
+                                if (encodedTarget) {
+                                    try {
+                                        targetUrl =
+                                            decodeURIComponent(encodedTarget);
+                                    } catch {
+                                        targetUrl = encodedTarget;
+                                    }
+                                }
+
+                                if (targetUrl) {
+                                    const suppressOpen =
+                                        process.env
+                                            .BLOOM_COMPONENT_TESTER_SUPPRESS_OPEN ===
+                                        "1";
+                                    if (suppressOpen) {
+                                        console.info(
+                                            `Component tester mock: would open browser to ${targetUrl}`,
+                                        );
+                                    } else {
+                                        launchBrowser(targetUrl);
+                                    }
+                                }
+
+                                respondOnce({ success: true });
+                            });
+
+                            req.on("error", (error) => {
+                                console.error(
+                                    "Component tester mock: failed to read link request",
+                                    error,
+                                );
+                                respondOnce({ success: false });
+                            });
+
                             return;
                         }
                         if (
