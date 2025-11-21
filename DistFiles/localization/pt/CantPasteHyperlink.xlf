@@ -8,9 +8,9 @@
         <note>ID: hyperlink.title</note>
         <note>obsolete as of Bloom 6.3</note>
       </trans-unit>
-      <trans-unit id="hyperlink.heading">
+      <trans-unit id="hyperlink.heading" approved="yes">
         <source xml:lang="en">Can't Set Up Hyperlink</source>
-        <target xml:lang="pt-PT" state="translated">Não é possível configurar o link</target>
+        <target xml:lang="pt-PT" state="final">Não é possível configurar o link</target>
         <note>ID: hyperlink.heading</note>
       </trans-unit>
       <trans-unit id="EditTab.HyperlinkPasteFailure" approved="yes">
