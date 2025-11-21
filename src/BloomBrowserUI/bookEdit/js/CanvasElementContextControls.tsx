@@ -1191,13 +1191,16 @@ function setupLink(canvasElement: HTMLElement) {
     const imgContainer = canvasElement.getElementsByClassName(
         kImageContainerClass,
     )[0] as HTMLElement;
-    showLinkTargetChooserDialog("", (url) => {
-        if (url) {
-            imgContainer.setAttribute("data-href", url);
-        } else if (imgContainer.hasAttribute("data-href")) {
-            imgContainer.removeAttribute("data-href");
-        }
-    });
+    showLinkTargetChooserDialog(
+        imgContainer.getAttribute("data-href") || "",
+        (url) => {
+            if (url) {
+                imgContainer.setAttribute("data-href", url);
+            } else if (imgContainer.hasAttribute("data-href")) {
+                imgContainer.removeAttribute("data-href");
+            }
+        },
+    );
 }
 
 // applies the modification to all classes of element
@@ -1345,17 +1348,12 @@ function setLinkDestination(): void {
     const activeElement = theOneCanvasElementManager?.getActiveElement();
     if (!activeElement) return;
 
-    const imgContainer = activeElement.getElementsByClassName(
-        kImageContainerClass,
-    )[0] as HTMLElement;
-    if (!imgContainer) return;
-
-    const currentUrl = imgContainer.getAttribute("data-href") || "";
+    const currentUrl = activeElement.getAttribute("data-href") || "";
     showLinkTargetChooserDialog(currentUrl, (newUrl) => {
         if (newUrl) {
-            imgContainer.setAttribute("data-href", newUrl);
+            activeElement.setAttribute("data-href", newUrl);
         } else {
-            imgContainer.removeAttribute("data-href");
+            activeElement.removeAttribute("data-href");
         }
     });
 }
