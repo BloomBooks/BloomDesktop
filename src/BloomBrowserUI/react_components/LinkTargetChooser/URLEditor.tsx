@@ -14,7 +14,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { BloomTooltip } from "../BloomToolTip";
-import { getAsync, post } from "../../utils/bloomApi";
+import { getAsync, postString } from "../../utils/bloomApi";
 import { headingStyle } from "./sharedStyles";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import { useL10n } from "../l10nHooks";
@@ -110,7 +110,7 @@ export const URLEditor: React.FunctionComponent<{
         }
 
         // Use the Bloom API to open the URL in the default browser
-        post(`common/openUrl?url=${encodeURIComponent(normalizedUrl)}`);
+        postString("link", encodeURIComponent(normalizedUrl));
     };
 
     const normalizedUrl = url.trim();
