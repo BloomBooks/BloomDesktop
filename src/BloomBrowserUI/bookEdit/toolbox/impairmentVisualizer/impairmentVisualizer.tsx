@@ -8,7 +8,7 @@ import "./impairmentVisualizer.less";
 import { RadioGroup } from "../../../react_components/RadioGroup";
 import { deuteranopia, tritanopia, achromatopsia } from "color-blind";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
-import { kImageContainerClass } from "../../js/bloomImages";
+import { kImageContainerClass, isPlaceHolderImage } from "../../js/bloomImages";
 import { CanvasElementManager } from "../../js/CanvasElementManager";
 import { ThemeProvider } from "@mui/material";
 import { ApiCheckbox } from "../../../react_components/ApiCheckbox";
@@ -232,7 +232,7 @@ export class ImpairmentVisualizerControls extends React.Component<
             window.setTimeout(() => this.makeColorBlindnessOverlay(img), 100);
             return;
         }
-        if (img.getAttribute("src") === "placeHolder.png") {
+        if (isPlaceHolderImage(img.getAttribute("src"))) {
             // I don't think any purpose is served by visualizing what color blindness does to
             // a greyscale image that won't show in the real book, and it makes for more
             // updates to correctly handle when it shows and hides.

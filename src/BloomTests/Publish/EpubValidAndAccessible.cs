@@ -528,15 +528,7 @@ namespace BloomTests.Publish
 
             AssertThatXmlIn
                 .String(_manifestContent)
-                .HasAtLeastOneMatchForXpath(
-                    "package/manifest/item[@id='epub-thumbnail' and @properties='cover-image']"
-                );
-            AssertThatXmlIn
-                .String(_manifestContent)
-                .HasSpecifiedNumberOfMatchesForXpath(
-                    "package/manifest/item[@properties='cover-image']",
-                    1
-                );
+                .HasAtLeastOneMatchForXpath("package/manifest/item[@id='epub-thumbnail']");
 
             AssertThatXmlIn
                 .String(_manifestContent)

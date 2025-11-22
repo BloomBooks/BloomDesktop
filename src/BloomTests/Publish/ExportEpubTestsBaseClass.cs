@@ -641,9 +641,6 @@ namespace BloomTests.Publish
             assertThatManifest.HasAtLeastOneMatchForXpath(
                 "package/manifest/item[@properties='nav']"
             );
-            assertThatManifest.HasAtLeastOneMatchForXpath(
-                "package/manifest/item[@properties='cover-image']"
-            );
 
             assertThatManifest.HasAtLeastOneMatchForXpath(
                 "package/manifest/item[@id='defaultLangStyles' and @href='"

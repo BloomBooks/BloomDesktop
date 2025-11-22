@@ -10,45 +10,58 @@ import { theOneCanvasElementManager } from "./CanvasElementManager";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import $ from "jquery";
 import { splitPane } from "../../lib/split-pane/split-pane";
+import { kCanvasToolId } from "../toolbox/toolIds";
 
 $(() => {
     splitPane($("div.split-pane"));
 });
 
 export function setupOrigami() {
-    getFeatureStatusAsync("widget").then((featureStatus) => {
-        const isWidgetFeatureEnabled: boolean = featureStatus?.enabled || false;
-        const customPages = document.getElementsByClassName("customPage");
-        if (customPages.length > 0) {
-            const width = customPages[0].clientWidth;
-            const origamiControl = getAbovePageControlContainer()
-                .append(createTypeSelectors(isWidgetFeatureEnabled))
-                .append(createTextBoxIdentifier());
-            // The order of this is not important in most ways, since it is positioned absolutely.
-            // However, we position the page label, also absolutely, in the same screen area, and
-            // we want it on top of origami control, so that in template pages the user can edit it.
-            // The page label is part of the page, so we want the page to come after the origami control.
-            // (Could also do this with z-order, but I prefer to do what I can by ordering elements,
-            // and save z-order for when it is really needed.)
-            $("#page-scaling-container").prepend(origamiControl);
-            // The container width is set to 100% in the CSS, but we need to
-            // limit it to no more than the actual width of the page.
-            const toggleContainer = $(".above-page-control-container").get(0);
-            toggleContainer.style.maxWidth = width + "px";
-        }
-        // I'm not clear why the rest of this needs to wait until we have
-        // the two results, but none of the controls shows up if we leave it all
-        // outside the bloomApi functions.
-        $(".origami-toggle .onoffswitch").change(layoutToggleClickHandler);
+    getFeatureStatusAsync("widget").then((widgetFeatureStatus) => {
+        getFeatureStatusAsync("canvas").then((canvasFeatureStatus) => {
+            const isWidgetFeatureEnabled: boolean =
+                widgetFeatureStatus?.enabled || false;
+            const isCanvasFeatureEnabled: boolean =
+                canvasFeatureStatus?.enabled || false;
+            const customPages = document.getElementsByClassName("customPage");
+            if (customPages.length > 0) {
+                const width = customPages[0].clientWidth;
+                const origamiControl = getAbovePageControlContainer()
+                    .append(
+                        createTypeSelectors(
+                            isWidgetFeatureEnabled,
+                            isCanvasFeatureEnabled,
+                        ),
+                    )
+                    .append(createTextBoxIdentifier());
+                // The order of this is not important in most ways, since it is positioned absolutely.
+                // However, we position the page label, also absolutely, in the same screen area, and
+                // we want it on top of origami control, so that in template pages the user can edit it.
+                // The page label is part of the page, so we want the page to come after the origami control.
+                // (Could also do this with z-order, but I prefer to do what I can by ordering elements,
+                // and save z-order for when it is really needed.)
+                $("#page-scaling-container").prepend(origamiControl);
+                // The container width is set to 100% in the CSS, but we need to
+                // limit it to no more than the actual width of the page.
+                const toggleContainer = $(".above-page-control-container").get(
+                    0,
+                );
+                toggleContainer.style.maxWidth = width + "px";
+            }
+            // I'm not clear why the rest of this needs to wait until we have
+            // the two results, but none of the controls shows up if we leave it all
+            // outside the bloomApi functions.
+            $(".origami-toggle .onoffswitch").change(layoutToggleClickHandler);
 
-        if ($(".customPage .marginBox.origami-layout-mode").length) {
-            setupLayoutMode();
-            $("#myonoffswitch").prop("checked", true);
-        }
+            if ($(".customPage .marginBox.origami-layout-mode").length) {
+                setupLayoutMode();
+                $("#myonoffswitch").prop("checked", true);
+            }
 
-        $(".customPage, .above-page-control-container")
-            .find("*[data-i18n]")
-            .localize();
+            $(".customPage, .above-page-control-container")
+                .find("*[data-i18n]")
+                .localize();
+        });
     });
 }
 
@@ -412,13 +425,17 @@ function getCloseButton() {
 }
 
 // N.B. If we ever add a new type, make sure you also modify 'bloomContainerClasses'.
-function createTypeSelectors(includeWidget: boolean) {
+function createTypeSelectors(includeWidget: boolean, includeCanvas: boolean) {
     const space = " ";
     const links = $("<div class='selector-links bloom-ui origami-ui'></div>");
-    const pictureLink = $(
-        "<a href='' data-i18n='EditTab.CustomPage.Picture'>Picture</a>",
+    const imageLink = $(
+        "<a href='' data-i18n='EditTab.CustomPage.Image'>Image</a>",
     );
-    pictureLink.click(makePictureFieldClickHandler);
+    imageLink.click(makeImageFieldClickHandler);
+    const canvasLink = $(
+        "<a href='' data-i18n='EditTab.CustomPage.Canvas'>Canvas</a>",
+    );
+    canvasLink.click(makeCanvasFieldClickHandler);
     const textLink = $(
         "<a href='' data-i18n='EditTab.CustomPage.Text'>Text</a>",
     );
@@ -432,13 +449,9 @@ function createTypeSelectors(includeWidget: boolean) {
         "<a href='' data-i18n='EditTab.CustomPage.HtmlWidget'>HTML Widget</a>",
     );
     htmlWidgetLink.click(makeHtmlWidgetFieldClickHandler);
-    links
-        .append(pictureLink)
-        .append(",")
-        .append(space)
-        .append(videoLink)
-        .append(",")
-        .append(space);
+    links.append(imageLink).append(",").append(space);
+    if (includeCanvas) links.append(canvasLink).append(",");
+    links.append(space).append(videoLink).append(",").append(space);
     if (includeWidget) {
         links
             .append(textLink)
@@ -487,20 +500,31 @@ function makeTextFieldClickHandler(e) {
         dialog.AttachToBox(this);
     });
 }
-function makePictureFieldClickHandler(e) {
-    e.preventDefault();
-    const container = $(this).closest(".split-pane-component-inner");
+function makeImageOrCanvasFieldClickHandler(
+    clickedElement: JQuery,
+    isCanvasClick: boolean,
+) {
+    const container = clickedElement.closest(".split-pane-component-inner");
     addUndoPoint();
     const bloomCanvas = $(
-        "<div class='bloom-canvas bloom-leadingElement'></div>",
+        `<div class='bloom-canvas bloom-leadingElement'${
+            isCanvasClick ? ` data-tool-id='${kCanvasToolId}'` : ""
+        }></div>`,
     );
-    const image = $(
-        "<img src='placeHolder.png' alt='Could not load the picture'/>",
-    );
+    const image = $("<img src='placeHolder.png'/>");
     bloomCanvas.append(image);
     SetupImage(image); // Must attach it first so event handler gets added to parent
     container.append(bloomCanvas);
-    $(this).closest(".selector-links").remove();
+    clickedElement.closest(".selector-links").remove();
+}
+function makeImageFieldClickHandler(e) {
+    e.preventDefault();
+    makeImageOrCanvasFieldClickHandler($(this), false);
+}
+
+function makeCanvasFieldClickHandler(e) {
+    e.preventDefault();
+    makeImageOrCanvasFieldClickHandler($(this), true);
 }
 
 function makeVideoFieldClickHandler(e) {

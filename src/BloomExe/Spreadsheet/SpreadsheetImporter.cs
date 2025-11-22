@@ -852,19 +852,11 @@ namespace Bloom.Spreadsheet
             // notes about its resolution, etc. We think it will be regenerated as needed, but certainly
             // the one from a previous background image is no use.
             currentBloomCanvas.RemoveAttribute("title");
-            if (_pathToSpreadsheetFolder != null) //currently will only be null in tests
+            if (
+                _pathToSpreadsheetFolder != null //currently will only be null in tests
+                && !ImageUtils.IsPlaceholderImageFilename(spreadsheetImgPath)
+            )
             {
-                if (spreadsheetImgPath == "placeHolder.png")
-                {
-                    // Don't assume the source has it, let's get a copy from files shipped with Bloom
-                    fullSpreadsheetPath = Path.Combine(
-                        BloomFileLocator.FactoryCollectionsDirectory,
-                        "template books",
-                        "Basic Book",
-                        "placeHolder.png"
-                    );
-                }
-
                 CopyImageFileToDestination(destFileName, fullSpreadsheetPath, imgElement);
             }
 
@@ -1025,7 +1017,10 @@ namespace Bloom.Spreadsheet
                 if (templateNodeIsNew)
                     AddDataBookNode(templateNode);
 
-                if (_pathToSpreadsheetFolder != null)
+                if (
+                    _pathToSpreadsheetFolder != null
+                    && !ImageUtils.IsPlaceholderImageFilename(imageFileName)
+                )
                 {
                     // Make sure the image gets copied over too.
                     var fullSpreadsheetPath = Path.Combine(_pathToSpreadsheetFolder, imageSrc);

@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Bloom.FontProcessing;
+using Bloom.ImageProcessing;
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
@@ -726,9 +727,12 @@ namespace Bloom.Publish.BloomPub
                 var imgElt in dom.SafeSelectNodes("//img[@src]").Cast<SafeXmlElement>().ToArray()
             )
             {
-                var file = UrlPathString
-                    .CreateFromUrlEncodedString(imgElt.GetAttribute("src"))
-                    .PathOnly.NotEncoded;
+                // As of BL-15441, we don't use real files for place holders but we still mark them with src="placeHolder.png".
+                // Don't strip these - we want them to persist in template books, and for other books we are already removing them elsewhere.
+                string src = imgElt.GetAttribute("src");
+                if (ImageUtils.IsPlaceholderImageFilename(src))
+                    continue;
+                var file = UrlPathString.CreateFromUrlEncodedString(src).PathOnly.NotEncoded;
                 if (!RobustFile.Exists(Path.Combine(folderPath, file)))
                 {
                     imgElt.ParentNode.RemoveChild(imgElt);

@@ -142,7 +142,11 @@ namespace Bloom.Spreadsheet
                             var imageSrc = sourceCell.Content;
 
                             // if this row has an image source value that is not a header
-                            if (imageSrc != "" && !row.IsHeader)
+                            if (
+                                imageSrc != ""
+                                && !ImageUtils.IsPlaceholderImageFilename(imageSrc)
+                                && !row.IsHeader
+                            )
                             {
                                 var sheetFolder = Path.GetDirectoryName(outputPath);
                                 var imagePath = Path.Combine(sheetFolder, imageSrc);
