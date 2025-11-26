@@ -209,16 +209,6 @@ namespace BloomTests.Spreadsheet
                     Path.Combine(path, name),
                     Path.Combine(_bookFolder.FolderPath, name)
                 );
-            var placeHolderSource = Path.Combine(
-                BloomFileLocator.FactoryCollectionsDirectory,
-                "template books",
-                "Basic Book",
-                "placeHolder.png"
-            );
-            RobustFile.Copy(
-                placeHolderSource,
-                Path.Combine(_bookFolder.FolderPath, "placeHolder.png")
-            );
 
             _progressSpy = new ProgressSpy();
             _sheetFromExport = _exporter.ExportToFolder(

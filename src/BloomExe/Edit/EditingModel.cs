@@ -1977,7 +1977,7 @@ namespace Bloom.Edit
 
         /// <summary>
         /// Make sure the book folder contains a current version of the video placeholder.
-        /// We don't copy this to every book like placeHolder.png, since relatively few books need it,
+        /// We don't copy this to every book, since relatively few books need it,
         /// but if it's used it needs to be there so things look right when opened in a browser.
         /// I don't think our image deletion code is smart enough to detect that something a CSS
         /// file says is needed as a background should not be deleted, so I've just made this

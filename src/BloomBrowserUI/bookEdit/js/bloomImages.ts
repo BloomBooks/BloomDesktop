@@ -33,6 +33,15 @@ const kBrowserDpi = 96;
 export const kImageContainerClass = "bloom-imageContainer";
 export const kImageContainerSelector = `.${kImageContainerClass}`;
 
+// We don't use actual placeHolder.png files anymore, but we do continue to use
+// src="placeHolder.png" to mark placeholders
+export function isPlaceHolderImage(url: string | null | undefined): boolean {
+    if (!url) {
+        return false;
+    }
+    return url.toLowerCase().includes("placeholder.png");
+}
+
 export function cleanupImages() {
     $(".bloom-imageContainer").css("opacity", ""); //comes in on img containers from an old version of myimgscale, and is a major problem if the image is missing
     $(".bloom-imageContainer").css("overflow", ""); //review: also comes form myimgscale; is it a problem?
@@ -162,7 +171,7 @@ export function HandleImageError(event: Event) {
 
 export function doImageCommand(
     img: HTMLElement | undefined,
-    command: "cut" | "copy" | "paste" | "change",
+    command: "copy" | "paste" | "change",
 ) {
     if (!img) {
         return;
@@ -493,7 +502,7 @@ async function DetermineImageTooltipAsync(
     const targetDpiHeight = Math.ceil(
         (300 * containerJQ.height()) / kBrowserDpi,
     );
-    const isPlaceHolder = url.indexOf("placeHolder.png") > -1;
+    const isPlaceHolder = isPlaceHolderImage(url);
 
     const result = await getWithConfigAsync<IImageInfoResponse>("image/info", {
         params: { image: url },
@@ -645,13 +654,6 @@ function getFileLengthString(bytes): string {
     return "";
 }
 
-// IsImageReal returns true if the img tag refers to a non-placeholder image
-// If the image is a placeholder:
-// - we don't want to offer to edit placeholder credits
-function IsImageReal(img) {
-    return GetRawImageUrl(img).toLowerCase().indexOf("placeholder") == -1; //don't offer to edit placeholder credits
-}
-
 // Gets the src attribute out of images, and the background-image:url() of everything else
 function GetRawImageUrl(imgOrDivWithBackgroundImage): string {
     if ($(imgOrDivWithBackgroundImage).hasAttr("src")) {
@@ -707,7 +709,7 @@ export function SetupMetadataButton(parent: HTMLElement) {
             continue; // pathological
         }
         const img = getImageFromContainer(container);
-        if (!img || !IsImageReal(img)) continue; // placeholder, doesn't get one of these buttons.
+        if (!img || !!isPlaceHolderImage(GetRawImageUrl(img))) continue; // placeholder, doesn't get one of these buttons.
 
         //review: should we also require copyright, illustrator, etc? In many contexts the id of the work-for-hire illustrator isn't available
         const copyright = img.getAttribute("data-copyright");
@@ -746,7 +748,14 @@ export function SetupMetadataButton(parent: HTMLElement) {
 // Instead of "missing", we want to show it in the right ui language. We also want the text
 // to indicate that it might not be missing, just didn't load (this happens on slow machines)
 function SetAlternateTextOnImages(element) {
-    if (GetRawImageUrl(element).length > 0) {
+    const rawImageUrl = GetRawImageUrl(element);
+    if (rawImageUrl.length > 0) {
+        if (isPlaceHolderImage(rawImageUrl)) {
+            // We now use css to display the placeholder image instead of an actual placeHolder.png file,
+            // but we are continuing to set and use  src=placeHolder.png to trigger place holder behavior. So we
+            // don't expect to find a placeHolder.png file, and we don't want to display alt text.
+            return;
+        }
         //don't show this on the empty license image when we don't know the license yet
         const englishText =
             "This picture, {0}, is missing or was loading too slowly."; // Also update HtmlDom.cs::IsPlaceholderImageAltText

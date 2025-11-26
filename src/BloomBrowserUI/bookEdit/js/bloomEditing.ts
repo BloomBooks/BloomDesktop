@@ -430,10 +430,6 @@ export function changeImage(imageInfo: IImageInfo) {
         );
     }
     changeImageInfo(imgOrImageContainer, imageInfo);
-    const ancestor = imgOrImageContainer.parentElement?.parentElement;
-    if (ancestor) {
-        SetupMetadataButton(ancestor);
-    }
     // id is just a temporary expedient to find the right image easily in this method.
     imgOrImageContainer.removeAttribute("id");
     theOneCanvasElementManager.updateCanvasElementForChangedImage(

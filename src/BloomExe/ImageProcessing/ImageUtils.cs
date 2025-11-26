@@ -257,6 +257,14 @@ namespace Bloom.ImageProcessing
             );
         }
 
+        /// <summary>
+        /// Check whether the given path represents a placeholder image.
+        /// </summary>
+        public static bool IsPlaceholderImageFilename(string filename)
+        {
+            return Path.GetFileName(filename)?.ToLowerInvariant() == "placeholder.png";
+        }
+
         public static bool AppearsToBePng(PalasoImage imageInfo)
         {
             if (imageInfo == null || imageInfo.Image == null)
@@ -331,13 +339,11 @@ namespace Bloom.ImageProcessing
         {
             //LogMemoryUsage();
 
-            // If we go through all the processing and saving machinations for the placeholder image,
-            // we just get more and more placeholders when we cut images (BL-9011).
-            // And the normal update process that a book goes through when selecting it (in the Collection tab)
-            // for editing ensures that the placeHolder.png file is present in the book.
+            // As of BL-15441, we aren't using real placeHolder image files anymore. But if one is there,
+            // don't go through all the processing and saving machinations for it.
             if (
                 !string.IsNullOrEmpty(imageInfo.OriginalFilePath)
-                && imageInfo.OriginalFilePath.ToLowerInvariant().EndsWith("placeholder.png")
+                && IsPlaceholderImageFilename(imageInfo.OriginalFilePath)
             )
             {
                 return Path.GetFileName(imageInfo.OriginalFilePath);
@@ -776,7 +782,7 @@ namespace Bloom.ImageProcessing
                     .ToArray();
                 foreach (string path in pngFiles)
                 {
-                    if (Path.GetFileName(path)?.ToLowerInvariant() == "placeholder.png")
+                    if (IsPlaceholderImageFilename(path))
                         continue;
                     // Very large PNG files can cause "out of memory" errors here, while making thumbnails,
                     // and when creating ePUBs or BloomPub books.  So, we check for sizes bigger than our
@@ -906,7 +912,7 @@ namespace Bloom.ImageProcessing
                 progress.ProgressIndicator.PercentCompleted = (int)(
                     100.0 * (float)completed / (float)totalFileCount
                 );
-                if (Path.GetFileName(path)?.ToLowerInvariant() == "placeholder.png")
+                if (IsPlaceholderImageFilename(path))
                 {
                     ++completed;
                     continue;
@@ -963,7 +969,7 @@ namespace Bloom.ImageProcessing
                         !AppearsToBeJpeg(pi)
                         && !IsIndexedAndOpaque(pi.Image)
                         && Path.GetFileName(path).ToLowerInvariant() != "thumbnail.png"
-                        && Path.GetFileName(path).ToLowerInvariant() != "placeholder.png"
+                        && !IsPlaceholderImageFilename(path)
                     )
                     {
                         RemoveTransparency(pi, path, progress);
@@ -2049,7 +2055,7 @@ namespace Bloom.ImageProcessing
             {
                 var src = img.GetAttribute("src");
                 // We don't want to crop placeHolder.png, just not display it.  (BL-15201)
-                if (src == "placeHolder.png")
+                if (IsPlaceholderImageFilename(src))
                     continue;
                 var style = img.GetAttribute("style");
                 if (!SignifiesCropping(style))
@@ -2061,7 +2067,7 @@ namespace Bloom.ImageProcessing
             foreach (var img in images)
             {
                 var src = img.GetAttribute("src");
-                if (src == "placeHolder.png")
+                if (IsPlaceholderImageFilename(src))
                     continue; // we still don't want to crop placeHolder.png (BL-15229)
                 var style = img.GetAttribute("style");
                 var imgContainer = img.ParentNode as SafeXmlElement;

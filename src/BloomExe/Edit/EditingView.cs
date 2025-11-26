@@ -738,29 +738,6 @@ namespace Bloom.Edit
             }
         }
 
-        public void OnCutImage(string imageId, UrlPathString imageSrc, bool imageIsGif)
-        {
-            var bookFolderPath = _model.CurrentBook.FolderPath;
-
-            if (CopyImageToClipboard(imageSrc, bookFolderPath, imageIsGif)) // returns 'true' if successful
-            {
-                // Replace current image with placeHolder.png
-                // N.B. It is unnecessary to check for the existence of this file, since selecting a book in
-                // collection view triggers an automatic book update process that ensures that the file
-                // is put there if not already present.
-                var path = Path.Combine(bookFolderPath, "placeHolder.png");
-                using (var palasoImage = PalasoImage.FromFileRobustly(path))
-                {
-                    _model.ChangePicture(imageId, imageSrc, palasoImage);
-                }
-            }
-            else
-            {
-                // remove imageId from the element since it's no longer needed
-                RemoveUnneededImageId(imageId);
-            }
-        }
-
         public void OnCopyImage(UrlPathString imageSrc, bool imageIsGif)
         {
             // NB: bloomImages.js contains code that prevents us arriving here

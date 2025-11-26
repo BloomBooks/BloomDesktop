@@ -75,7 +75,6 @@ namespace Bloom.web.controllers
             );
             apiHandler.RegisterEndpointHandler("editView/topics", HandleTopics, false);
             apiHandler.RegisterEndpointHandler("editView/changeImage", HandleChangeImage, true);
-            apiHandler.RegisterEndpointHandler("editView/cutImage", HandleCutImage, true);
             apiHandler.RegisterEndpointHandler("editView/copyImage", HandleCopyImage, true);
             apiHandler.RegisterEndpointHandler("editView/pasteImage", HandlePasteImage, true);
             apiHandler.RegisterEndpointHandler("editView/paste", HandlePaste, true);
@@ -276,17 +275,6 @@ namespace Bloom.web.controllers
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
             View.OnCopyImage(
-                UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
-                data.imageIsGif
-            );
-            request.PostSucceeded();
-        }
-
-        private void HandleCutImage(ApiRequest request)
-        {
-            dynamic data = DynamicJson.Parse(request.RequiredPostJson());
-            View.OnCutImage(
-                data.imageId,
                 UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
                 data.imageIsGif
             );
