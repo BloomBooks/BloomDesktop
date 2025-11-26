@@ -49,7 +49,7 @@ namespace Bloom.Publish.BloomPub.wifi
         // Destination IP address to which outgoing book advertising broadcasts are sent.
         // It does not identify a single device but rather all devices on the same subnet. This type
         // of address is known as a "directed broadcast address".
-        private string _ipBroadcastForDestination = "";
+        private string _ipForBroadcastDestination = "";
 
         // Source endpoint used in broadcasting our adverts.
         // It is derived from our source IP address.
@@ -214,8 +214,9 @@ namespace Bloom.Publish.BloomPub.wifi
             // The network stack is going to use the interface it wants. We can't control what it
             // chooses. But we *can* control the IP address we advertise to remote Androids. We get
             // that address up front using the same selection criteria as the network stack: find
-            // the network interface having the lowest "interface metric" and use *its* IP address.
-            // We then use that IP address as the basis for the UdpClient.
+            // the network interface having the lowest "interface metric" -- Ethernet or WiFi, it
+            // could be either -- and advertise *that* interface's IP address.
+            // We then use that same IP address as the basis for the UdpClient.
             //
             // The PC on which this runs likely has both WiFi and Ethernet. Either can work,
             // but preference is given to WiFi. The reason: although this PC can likely go either
@@ -241,8 +242,8 @@ namespace Bloom.Publish.BloomPub.wifi
 
             // Now that we know the IP address and subnet mask in effect, calculate
             // the "directed" broadcast address to use.
-            _ipBroadcastForDestination = GetDirectedBroadcastAddress(_ipForThisDeviceOnChosenInterface, _subnetMask);
-            if (_ipBroadcastForDestination.Length == 0)
+            _ipForBroadcastDestination = GetDirectedBroadcastAddress(_ipForThisDeviceOnChosenInterface, _subnetMask);
+            if (_ipForBroadcastDestination.Length == 0)
             {
                 EventLog.WriteEntry("Application", "WiFiAdvertiser, ERROR getting broadcast address");
                 return;
@@ -273,7 +274,7 @@ namespace Bloom.Publish.BloomPub.wifi
                 _clientForBookAdvertSend.EnableBroadcast = true;
 
                 // Set up destination endpoint.
-                _epForBroadcastDestination = new IPEndPoint(IPAddress.Parse(_ipBroadcastForDestination), _portForBroadcast);
+                _epForBroadcastDestination = new IPEndPoint(IPAddress.Parse(_ipForBroadcastDestination), _portForBroadcast);
 
                 // Log key data for tech support.
                 EventLog.WriteEntry("Application", $"UDP advertising will use: localIp = {_ipForThisDeviceOnChosenInterface}:{_epForThisDeviceOnChosenInterface.Port} ({ifcResult.Description})");
@@ -512,7 +513,7 @@ namespace Bloom.Publish.BloomPub.wifi
         // subnet mask, both of which are passed in to this function.
         //
         // Bit-wise rationale:
-        //       The subnet mask indicates how to handle the IP address bits.
+        //     The subnet mask indicates how to handle the IP address bits.
         //     - '1' mask bits: the "network address" portion of the IP address.
         //       The broadcast address aims at the same network so just copy the IP
         //       address bits into the same positions of the broadcast address.
