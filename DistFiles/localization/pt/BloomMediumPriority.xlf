@@ -138,6 +138,11 @@
         <target xml:lang="pt-PT" state="final">Desmarque este item se não fizer parte da resposta correta</target>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerMore</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2" translate="no">
+        <source xml:lang="en">This item comes with a “target” to which it must be dragged. If you want to have more items than targets, turn this off for some of them.</source>
+        <target xml:lang="pt-PT" state="needs-translation">This item comes with a “target” to which it must be dragged. If you want to have more items than targets, turn this off for some of them.</target>
+        <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2</note>
+      </trans-unit>
       <!--trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled">
         <source xml:lang="en">Nothing that can be part of the right answer is selected</source>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled</note>
