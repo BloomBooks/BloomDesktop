@@ -86,12 +86,13 @@ test.describe("LinkTargetChooser - URLEditor Basic Functionality", () => {
             page.waitForRequest(
                 (req) =>
                     req.method() === "POST" &&
-                    req.url().includes("/bloom/api/common/openUrl?"),
+                    req.url().includes("/bloom/api/link"),
             ),
             openButton.click(),
         ]);
 
-        const parsed = new URL(request.url());
-        expect(parsed.searchParams.get("url")).toBe(testURL);
+        const body = request.postData();
+        expect(body).toBeTruthy();
+        expect(decodeURIComponent(body!)).toBe(testURL);
     });
 });
