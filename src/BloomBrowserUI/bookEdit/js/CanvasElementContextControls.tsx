@@ -1314,7 +1314,7 @@ function addMenuItemsForDraggable(
     menuOptions.push({
         l10nId: "EditTab.Toolbox.DragActivity.PartOfRightAnswer",
         english: "Part of the right answer",
-        subLabelL10nId: "EditTab.Toolbox.DragActivity.PartOfRightAnswerMore",
+        subLabelL10nId: "EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2",
         onClick: toggleIsPartOfRightAnswer,
         icon: currentDraggableTarget ? (
             <CheckIcon css={getMenuIconCss()} />
