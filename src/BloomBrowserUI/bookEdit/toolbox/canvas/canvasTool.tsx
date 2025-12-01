@@ -45,7 +45,10 @@ import {
     NavigationLabelButtonPaletteItem,
     NavigationImageWithLabelButtonPaletteItem,
 } from "./CanvasElementItem";
-import { getCanvasElementManager } from "./canvasElementUtils";
+import {
+    getCanvasElementManager,
+    kBloomButtonClass,
+} from "./canvasElementUtils";
 import { deselectVideoContainers } from "../../js/videoUtils";
 import { CanvasElementKeyHints } from "./CanvasElementKeyHints";
 import { ToolBox } from "../toolbox";
@@ -57,6 +60,7 @@ import {
 import $ from "jquery";
 import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
+import { text } from "stream/consumers";
 
 const CanvasToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
@@ -493,10 +497,56 @@ const CanvasToolControls: React.FunctionComponent = () => {
     // captions. We'll use this to tell the color chooser not to show the alpha option.
     const isCaption = currentFamilySpec?.style === "caption";
 
+    const backgroundColorControl = (
+        <FormControl variant="standard">
+            <InputLabel shrink={true} htmlFor="background-color-bar">
+                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.BackgroundColor">
+                    Background Color
+                </Span>
+            </InputLabel>
+            <ColorBar
+                id="background-color-bar"
+                onClick={() => launchBackgroundColorChooser(!isCaption)}
+                colorInfo={backgroundColorSwatch}
+                text={percentTransparencyString}
+            />
+        </FormControl>
+    );
+    const textColorControl = (
+        <FormControl variant="standard">
+            <InputLabel htmlFor="text-color-bar" shrink={true}>
+                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.TextColor">
+                    Text Color
+                </Span>
+            </InputLabel>
+            <ColorBar
+                id="text-color-bar"
+                onClick={launchTextColorChooser}
+                colorInfo={textColorSwatch}
+                isDefault={textColorIsDefault}
+            />
+        </FormControl>
+    );
+
+    const isButton =
+        canvasElementManager
+            ?.getActiveElement()
+            ?.classList.contains(kBloomButtonClass) ?? false;
+    const hasText =
+        (canvasElementManager
+            ?.getActiveElement()
+            ?.getElementsByClassName("bloom-translationGroup")?.length ?? 0) >
+        0;
+
     const getControlOptionsRegion = (): JSX.Element => {
         switch (canvasElementType) {
             case "image":
-                return (
+                return isButton ? (
+                    <>
+                        {hasText && textColorControl}
+                        {backgroundColorControl}
+                    </>
+                ) : (
                     <div id="videoOrImageSubstituteSection">
                         <Typography
                             css={css`
@@ -590,7 +640,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                 label="Show Tail"
                                 l10nKey="EditTab.Toolbox.ComicTool.Options.ShowTail"
                                 checked={showTailChecked}
-                                disabled={isChild(currentItemSpec)}
+                                disabled={isChild(currentItemSpec) || isButton}
                                 onCheckChanged={(v) => {
                                     handleShowTailChanged(v as boolean);
                                 }}
@@ -610,37 +660,8 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                 }}
                             />
                         </FormControl>
-                        <FormControl variant="standard">
-                            <InputLabel htmlFor="text-color-bar" shrink={true}>
-                                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.TextColor">
-                                    Text Color
-                                </Span>
-                            </InputLabel>
-                            <ColorBar
-                                id="text-color-bar"
-                                onClick={launchTextColorChooser}
-                                colorInfo={textColorSwatch}
-                                isDefault={textColorIsDefault}
-                            />
-                        </FormControl>
-                        <FormControl variant="standard">
-                            <InputLabel
-                                shrink={true}
-                                htmlFor="background-color-bar"
-                            >
-                                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.BackgroundColor">
-                                    Background Color
-                                </Span>
-                            </InputLabel>
-                            <ColorBar
-                                id="background-color-bar"
-                                onClick={() =>
-                                    launchBackgroundColorChooser(!isCaption)
-                                }
-                                colorInfo={backgroundColorSwatch}
-                                text={percentTransparencyString}
-                            />
-                        </FormControl>
+                        {textColorControl}
+                        {backgroundColorControl}
                         <FormControl
                             variant="standard"
                             className={

@@ -10,6 +10,7 @@ export const kHasCanvasElementClass = "bloom-has-canvas-element";
 // also declared in split-pane.js, which needs it but doesn't want to be a module.
 export const kBloomCanvasClass = "bloom-canvas";
 export const kBloomCanvasSelector = `.${kBloomCanvasClass}`;
+export const kBloomButtonClass = "bloom-canvas-button";
 
 // Enhance: we could reduce cross-bundle dependencies by separately defining the CanvasElementManager interface
 // and just importing that here.
