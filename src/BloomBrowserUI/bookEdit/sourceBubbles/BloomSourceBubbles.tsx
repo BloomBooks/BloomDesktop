@@ -199,7 +199,8 @@ export default class BloomSourceBubbles {
                     () => postString("editView/sourceTextTab", langTag),
                 );
                 // BL-8174: Add a tooltip with the language tag to the item
-                sourceElement.setAttribute("title", langTag);
+                // BL-15212: we no longer want the tag here, just on the language-name label
+                //sourceElement.setAttribute("title", langTag);
             }
 
             if (sourceElement.innerText !== "") {
