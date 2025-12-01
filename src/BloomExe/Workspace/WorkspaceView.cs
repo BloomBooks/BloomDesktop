@@ -143,6 +143,13 @@ namespace Bloom.Workspace
 
             InitializeComponent();
 
+            // Counter the scaling that WinForms does under .Net 8 based on default font size.
+            // We've retained the old default font and size to avoid changing the dialog sizes
+            // inappropriately, but need this scaling to keep the top pane of the workspace
+            // from being too small.  (BL-15518)
+            float scaleFactor = 1.1f; // determined experimentally
+            this.Scale(new SizeF(scaleFactor, scaleFactor));
+
             _checkForNewVersionMenuItem.Visible = Platform.IsWindows;
 
             _toolStrip.Renderer = new NoBorderToolStripRenderer();
