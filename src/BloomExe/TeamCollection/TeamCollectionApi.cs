@@ -1048,10 +1048,18 @@ namespace Bloom.TeamCollection
                     "TeamCollection.SelectFolder",
                     "Select or create the folder where this collection will be shared"
                 );
+                // Enhance: it might be better to launch the dialog and handle the result
+                // using something like Application.Idle +=..., and then succeed unconditionally here.
+                // That way we would not tie up a server thread while the dialog is shown.
                 var sharedFolder = BloomFolderChooser.ChooseFolder(dropboxFolder, description);
                 if (string.IsNullOrEmpty(sharedFolder))
                 {
-                    request.Failed();
+                    // It's debatable whether it succeeded, but reporting that it failed
+                    // causes a JS exception, and we're otherwise ignoring the result anyway...
+                    // The JS is really looking for us to send the new folder path through
+                    // our websocket.
+                    request.PostSucceeded();
+                    //request.Failed();
                     return;
                 }
                 // We send the result through a websocket rather than simply returning it because
