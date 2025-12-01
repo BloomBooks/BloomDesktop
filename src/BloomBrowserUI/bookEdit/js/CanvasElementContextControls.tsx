@@ -67,6 +67,7 @@ import { GameType, getGameType } from "../toolbox/games/GameInfo";
 import { setGeneratedDraggableId } from "../toolbox/canvas/CanvasElementItem";
 import { editLinkGrid } from "./linkGrid";
 import { showLinkTargetChooserDialog } from "../../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
+import { kBloomButtonClass } from "../toolbox/canvas/canvasElementUtils";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -100,9 +101,8 @@ const CanvasElementContextControls: React.FunctionComponent<{
     // These names are not quite consistent, but the behaviors we want to control are currently
     // specific to navigation buttons, while the class name is meant to cover buttons in general.
     // Eventually we may need a way to distinguish buttons used for navigation from other buttons.
-    const isNavButton = props.canvasElement.classList.contains(
-        "bloom-canvas-button",
-    );
+    const isNavButton =
+        props.canvasElement.classList.contains(kBloomButtonClass);
     const rectangles =
         props.canvasElement.getElementsByClassName("bloom-rectangle");
     // This is only used by the menu option that toggles it. If the menu stayed up, we would need a state
@@ -1017,7 +1017,7 @@ function addTextMenuItems(
     // One reason is that we haven't figured out a good automatic approach to adjusting the button
     // height vs adjusting the image size, when both are present. Also, our current auto-height
     // code doesn't handle padding where our canvas-buttons have it.
-    if (!canvasElement.classList.contains("bloom-canvas-button")) {
+    if (!canvasElement.classList.contains(kBloomButtonClass)) {
         textMenuItem.push(divider, {
             l10nId: "EditTab.Toolbox.ComicTool.Options.AutoHeight",
             english: "Auto Height",

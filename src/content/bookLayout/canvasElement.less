@@ -378,10 +378,17 @@
     cursor: pointer;
     box-sizing: border-box;
     background-color: white; // eventually theme? or allow user to set directly?
+
+    &:has(> :only-child) {
+        // With only one element, center it vertically to mimic a typical text button
+        // (image-only would I think be centered anyway)
+        justify-content: center;
+    }
 }
 
 .bloom-page .bloom-canvas-button:hover {
-    background: #19818f;
+    // I think this was AI-generated...might want at runtime? but makes editing hard.
+    //background: #19818f;
     box-shadow:
         0 2px 2px rgba(0, 0, 0, 0.14),
         0 4px 6px rgba(0, 0, 0, 0.16),

@@ -57,6 +57,7 @@ import {
     kHasCanvasElementClass,
     kBloomCanvasClass,
     kBloomCanvasSelector,
+    kBloomButtonClass,
 } from "../toolbox/canvas/canvasElementUtils";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
@@ -1347,7 +1348,7 @@ export class CanvasElementManager {
         } else {
             controlFrame.classList.remove("has-image");
         }
-        if (eltToPutControlsOn?.classList.contains("bloom-canvas-button")) {
+        if (eltToPutControlsOn?.classList.contains(kBloomButtonClass)) {
             controlFrame.classList.add("is-button");
         } else {
             controlFrame.classList.remove("is-button");
@@ -1665,7 +1666,7 @@ export class CanvasElementManager {
         // We don't apply the aspect ratio constraint to buttons.
         if (
             slope &&
-            !this.activeElement.classList.contains("bloom-canvas-button")
+            !this.activeElement.classList.contains(kBloomButtonClass)
         ) {
             // We want to keep the aspect ratio of the image. So the possible places to move
             // the moving corner must be on a line through the opposite corner
@@ -3157,6 +3158,18 @@ export class CanvasElementManager {
                 colors[0],
                 opacity,
             );
+        }
+        if (this.activeElement.classList.contains(kBloomButtonClass)) {
+            // Possibly we should do this in more cases, but I don't want to mess with
+            // existing element types. When we're really making a bubble shape, we
+            // need to let Comical.js handle the background color, so it is the right
+            // shape to match the bubble. For text without a bubble shape, it would
+            // probably be simpler to just set it with style.backgroundColor, but it
+            // doesn't matter much. For text buttons, we definitely want to do it using
+            // the style, so the background color obeys the border radius of the button
+            // and the shadow appears in the right place...makes everything simpler.
+            this.activeElement.style.backgroundColor = newBackgroundColors[0];
+            return;
         }
         this.updateSelectedItemBubbleSpec({
             backgroundColors: newBackgroundColors,
@@ -5192,7 +5205,7 @@ export class CanvasElementManager {
             { width: 120, height: 120 },
             doAfterElementCreated,
         );
-        result.classList.add("bloom-canvas-button");
+        result.classList.add(kBloomButtonClass);
         return result;
     }
 
@@ -5230,7 +5243,7 @@ export class CanvasElementManager {
             imageInfo,
             { width: 120, height: 120 },
         );
-        result.classList.add("bloom-canvas-button");
+        result.classList.add(kBloomButtonClass);
         result.classList.add("bloom-noAutoHeight");
         return result;
     }
@@ -5247,12 +5260,13 @@ export class CanvasElementManager {
             "navigation-label-button",
             rightTopOffset,
         );
-        result.classList.add("bloom-canvas-button");
+        result.classList.add(kBloomButtonClass);
         result.classList.add("bloom-noAutoHeight");
         // The methods used in the other two get to set a size; here we just do it.
-        // This might risk a lot of the button being off-screen.
-        result.style.height = "120px";
-        result.style.width = "120px";
+        // We need to make it a bit higher than the default so it doesn't overflow
+        // with the additional padding that buttons get.
+        result.style.height = "50px";
+        // result.style.width = "120px";
         return result;
     }
 
@@ -5728,8 +5742,8 @@ export class CanvasElementManager {
         // Preserve the bloom-gif class, which is used to indicate that this is a GIF. (BL-15037)
         if (sourceElement.classList.contains("bloom-gif"))
             patriarchDuplicateElement.classList.add("bloom-gif");
-        if (sourceElement.classList.contains("bloom-canvas-button"))
-            patriarchDuplicateElement.classList.add("bloom-canvas-button");
+        if (sourceElement.classList.contains(kBloomButtonClass))
+            patriarchDuplicateElement.classList.add(kBloomButtonClass);
 
         // copy any data-sound
         const sourceDataSound = sourceElement.getAttribute("data-sound");
