@@ -30,11 +30,11 @@ export const createEmptyRegistrationInfo = (): RegistrationInfo => ({
 
 const trimRegistrationInfo = (info: RegistrationInfo): RegistrationInfo => ({
     ...info,
-    firstName: info.firstName.trim(),
-    surname: info.surname.trim(),
-    email: info.email.trim(),
-    organization: info.organization.trim(),
-    usingFor: info.usingFor.trim(),
+    firstName: info.firstName?.trim() || "",
+    surname: info.surname?.trim() || "",
+    email: info.email?.trim() || "",
+    organization: info.organization?.trim() || "",
+    usingFor: info.usingFor?.trim() || "",
 });
 
 export const isFirstNameValid = (value: string): boolean => !!value?.trim();
