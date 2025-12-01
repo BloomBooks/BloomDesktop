@@ -144,8 +144,8 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                "libraryPublish/goToEditBookCover",
-                HandleGoToEditBookCover,
+                "libraryPublish/goToEditBookTitle",
+                HandleGoToEditBookTitle,
                 true
             );
             apiHandler.RegisterEndpointHandler("libraryPublish/topic", HandleTopic, true);
@@ -511,10 +511,12 @@ namespace Bloom.web.controllers
             }
         }
 
-        private void HandleGoToEditBookCover(ApiRequest request)
+        private void HandleGoToEditBookTitle(ApiRequest request)
         {
             // 0 is the index of the first page, the front cover.
-            Model.Book.UserPrefs.MostRecentPage = 0;
+            // A template book does not have a title on the front cover, but it
+            // can be edited on the second (title) page.
+            Model.Book.UserPrefs.MostRecentPage = Model.Book.IsTemplateBook ? 1 : 0;
             GetWorkspaceView()?.ChangeTab(WorkspaceTab.edit);
             request.PostSucceeded();
         }
