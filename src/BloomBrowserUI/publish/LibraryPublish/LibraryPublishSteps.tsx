@@ -445,7 +445,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                 <MissingInfo
                     text="Missing Title"
                     l10nKey={"PublishTab.Upload.Missing.Title"}
-                    onClick={() => post("libraryPublish/goToEditBookCover")}
+                    onClick={() => post("libraryPublish/goToEditBookTitle")}
                 />
             );
         }
