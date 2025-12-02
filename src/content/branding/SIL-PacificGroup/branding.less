@@ -1,44 +1,21 @@
 @import "../branding-base.less";
 
-// [data-book="outside-back-cover-branding-bottom-html"] {
-//     flex-direction: row;
-//     justify-content: space-evenly;
-//     img.branding {
-//         &:not(.bloom-badge) {
-//             height: 2.3cm;
-//         }
-//         &.bloom-badge {
-//             height: 1.5cm;
-//         }
-//     }
-// }
-
-// div.Device16x9Landscape {
-//     img.bloom-badge {
-//         height: 1cm; // there isn't enough room for the 1.5 cm badge
-//     }
-//     // ...and worse yet, in Bloom Reader preview, *any* size badge gets overwritten by the material above.
-//     // so we shrink the logo too
-//     [data-book="outside-back-cover-branding-top-html"] {
-//         img {
-//             height: 2cm;
-//         }
-//     }
-// }
-
 .marginBox [data-book="outside-back-cover-branding-bottom-html"] {
     margin-top: auto !important;
     margin-bottom: 0.5cm;
+
     display: flex;
     flex-direction: row;
-
-    justify-content: space-between;
-    img {
-        height: 2cm;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 1cm;
+    > img.branding {
+        align-self: flex-start;
     }
 }
 img.branding {
     height: 2cm;
+    margin: 0;
 }
 
 div.Device16x9Portrait,
@@ -46,4 +23,8 @@ div.A6Portrait {
     img.branding {
         height: 1.5cm;
     }
+}
+
+img.bloom-badge {
+    height: 1.5cm;
 }
