@@ -81,6 +81,7 @@
 			Properties="Configuration=$(Configuration)" Condition="$(RestartBuild)" />
   </Target>
   <Target Name="VersionNumbers">
+    <!-- The arm64 properties are kept in case we want to try again, but not currently used.-->
     <Message Text="BUILD_NUMBER: $(BUILD_NUMBER)" Importance="high"/>
     <Split Input="$(BUILD_NUMBER)" Delimiter="." OutputSubString="2">
       <Output TaskParameter="ReturnValue" PropertyName="BuildCounter" />
@@ -174,13 +175,16 @@
     change in BloomFileLocatorTests.kRelativePathToBrowserFolder and XMatterHelperTests.OneTimeSetup-->
     <Exec Command='dotnet build "$(RootDir)\src\BloomTests\BloomTests.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\Tests\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\Tests\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
 
-    <!-- Build ARM64 version for each project with proper OutDir and SolutionDir overrides -->
-    <Exec Command='dotnet build "$(RootDir)\src\BloomExe\BloomExe.csproj" --configuration $(Configuration) --runtime win-arm64 --output "$(RootDir)\output\$(Configuration)\arm64" "/p:OutDir=$(RootDir)\output\$(Configuration)\arm64\\" "/p:SolutionDir=$(RootDir)\"' />
-    <Exec Command='dotnet build "$(RootDir)\src\WebView2PdfMaker\WebView2PdfMaker.csproj" --configuration $(Configuration) --runtime win-arm64 --output "$(RootDir)\output\$(Configuration)\arm64" "/p:OutDir=$(RootDir)\output\$(Configuration)\arm64\\" "/p:SolutionDir=$(RootDir)\"' />
-    <Exec Command='dotnet build "$(RootDir)\src\BloomTests\BloomTests.csproj" --configuration $(Configuration) --runtime win-arm64 --output "$(RootDir)\output\Tests\$(Configuration)\arm64" "/p:OutDir=$(RootDir)\output\Tests\$(Configuration)\arm64\\" "/p:SolutionDir=$(RootDir)\"' />
+    <!-- Restore to Build ARM64 version for each project with proper OutDir and SolutionDir overrides
+    Note! change -x- back to double hyphen (not allowed in xml comment)
+    <Exec Command='dotnet build "$(RootDir)\src\BloomExe\BloomExe.csproj" -x-configuration $(Configuration) -x-runtime win-arm64 -x-output "$(RootDir)\output\$(Configuration)\arm64" "/p:OutDir=$(RootDir)\output\$(Configuration)\arm64\\" "/p:SolutionDir=$(RootDir)\"' />
+    <Exec Command='dotnet build "$(RootDir)\src\WebView2PdfMaker\WebView2PdfMaker.csproj" -x-configuration $(Configuration) -x-runtime win-arm64 -x-output "$(RootDir)\output\$(Configuration)\arm64" "/p:OutDir=$(RootDir)\output\$(Configuration)\arm64\\" "/p:SolutionDir=$(RootDir)\"' />
+    <Exec Command='dotnet build "$(RootDir)\src\BloomTests\BloomTests.csproj" -x-configuration $(Configuration) -x-runtime win-arm64 -x-output "$(RootDir)\output\Tests\$(Configuration)\arm64" "/p:OutDir=$(RootDir)\output\Tests\$(Configuration)\arm64\\" "/p:SolutionDir=$(RootDir)\"' />
+     -->
   </Target>
   <ItemGroup>
     <TestAssembliesX64 Include="$(RootDir)/output/Tests/$(Configuration)/x64/BloomTests.dll"/>
+    <!--currently unused-->
     <TestAssembliesArm64 Include="$(RootDir)/output/Tests/$(Configuration)/arm64/BloomTests.dll"/>
     <!-- For backward compatibility, include x64 as the default -->
     <TestAssemblies Include="@(TestAssembliesX64)"/>
@@ -217,9 +221,11 @@
     <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
 					Regex='INSTALLERS_FOLDER'
 					 ReplacementText ="installers$(channel)" />
+    <!-- restore for arm64. Note that the input DownloadPointers.htm must be changed also; see its history
     <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
 					Regex='INSTALLERS_ARM64_FOLDER'
 					 ReplacementText ="installers$(channel)-arm64" />
+    -->
     <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
 					Regex='VERSION_DOT_CHANNEL'
 					 ReplacementText ="$(Version)$(dotChannel)" />
@@ -307,7 +313,9 @@
     <!-- the name of the exe must also match the application product name. Use move rather than rename in case the destination
 		already exists from a previous build. Review: we could do this in installer\content after the following copies.-->
     <Exec Command="move /y $(RootDir)\output\$(Configuration)\x64\Bloom.exe $(RootDir)\output\$(Configuration)\x64\Bloom$(channel).exe"/>
+    <!--restore for Arm64
     <Exec Command="move /y $(RootDir)\output\$(Configuration)\arm64\Bloom.exe $(RootDir)\output\$(Configuration)\arm64\Bloom$(channel).exe"/>
+    -->
 
     <!-- Copy everything we want installed on the user's computer into ../installer/content. (First we remove the directory,
     so as not to include anything obsolete from an earlier build).-->
@@ -340,15 +348,19 @@
     <Copy SourceFiles="@(X64ReleaseFiles)" DestinationFolder="..\output\installer\content\x64\%(RecursiveDir)" />
     <Copy SourceFiles="@(X64Files)" DestinationFolder="..\output\installer\content\x64\runtimes\win-x64\%(RecursiveDir)" />
     <Copy SourceFiles="@(X64PdbFiles)" DestinationFolder="..\output\installer\content\x64\%(RecursiveDir)" />
-    <!-- Copy ARM64 files to arm64 subdirectory -->
+    <!-- restore to Copy ARM64 files to arm64 subdirectory
     <Copy SourceFiles="@(Arm64ReleaseFiles)" DestinationFolder="..\output\installer\content\arm64\%(RecursiveDir)" />
     <Copy SourceFiles="@(Arm64Files)" DestinationFolder="..\output\installer\content\arm64\runtimes\win-arm64\%(RecursiveDir)" />
     <Copy SourceFiles="@(Arm64PdbFiles)" DestinationFolder="..\output\installer\content\arm64\%(RecursiveDir)" />
+    -->
     <!-- Copy shared files to both locations -->
     <Copy SourceFiles="@(DistFiles)" DestinationFolder="..\output\installer\content\x64\%(RecursiveDir)" />
-    <Copy SourceFiles="@(DistFiles)" DestinationFolder="..\output\installer\content\arm64\%(RecursiveDir)" />
     <Copy SourceFiles="@(BrowserFiles)" DestinationFolder="..\output\installer\content\x64\browser\%(RecursiveDir)" />
+    <!-- restore for arm64
+    <Copy SourceFiles="@(DistFiles)" DestinationFolder="..\output\installer\content\arm64\%(RecursiveDir)" />
     <Copy SourceFiles="@(BrowserFiles)" DestinationFolder="..\output\installer\content\arm64\browser\%(RecursiveDir)" />
+    -->
+
     <Message Text="Running Vpk: $(Version)" Importance="high"  />
     <Message Text="Using localization from: $(LocalizationFilesDir)" Importance="high" />
     <!-- This is the command that actually runs Velopack. It generates a complete installer as well as full and delta nupkg packages,
@@ -367,18 +379,23 @@
     <!-- Note, the default for exclude is ".*\.pdb", so we must set it to "" to include .pdb files. -->
     <Exec
       Command="vpk pack --packId Bloom$(channel) --runtime win11-x64 --packVersion $(Version) --packDir ..\output\installer\content\x64 --exclude &quot;&quot; --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder) --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net8-x64-desktop,webview2 --progressColor &quot;#d65649&quot; --localization &quot;$(LocalizationFilesDir)&quot; --packAuthors &quot;SIL Global&quot; " />
-    <!-- Create ARM64 installer with dedicated output directory -->
+    <!-- Restore to Create ARM64 installer with dedicated output directory
+    Note! restore -x- to double hyphen
     <Exec
-      Command="vpk pack --packId Bloom$(channel)-arm64 --runtime win11-arm64 --packVersion $(Version) --packDir ..\output\installer\content\arm64 --exclude &quot;&quot; --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder)\arm64 --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net8-arm64-desktop,webview2 --progressColor &quot;#d65649&quot; --localization &quot;$(LocalizationFilesDir)&quot; --packAuthors &quot;SIL Global&quot; " />
+      Command="vpk pack -x-packId Bloom$(channel)-arm64 -x-runtime win11-arm64 -x-packVersion $(Version) -x-packDir ..\output\installer\content\arm64 -x-exclude &quot;&quot; -x-mainExe Bloom$(channel).exe -x-outputDir $(InstallerOutputFolder)\arm64 -x-icon $(RootDir)\src\Installer\BloomSetup.ico -x-splashImage $(RootDir)\src\Installer\installing.gif -x-framework net8-arm64-desktop,webview2 -x-progressColor &quot;#d65649&quot; -x-localization &quot;$(LocalizationFilesDir)&quot; -x-packAuthors &quot;SIL Global&quot; " />
+      -->
     <!-- Copy installers with appropriate names to main output folder -->
     <Copy SourceFiles="$(InstallerOutputFolder)\Bloom$(channel)-win-Setup.exe"
           DestinationFiles="$(InstallerOutputFolder)\BloomInstaller.$(Version)$(dotChannel).x64.exe"
     />
+    <Message Text="Copied x64 installer to $(InstallerOutputFolder)\BloomInstaller.$(Version)$(dotChannel).x64.exe" Importance="high"/>
+    <!--restore for Arm64
     <Copy SourceFiles="$(InstallerOutputFolder)\arm64\Bloom$(channel)-arm64-win-Setup.exe"
           DestinationFiles="$(InstallerOutputFolder)\BloomInstaller.$(Version)$(dotChannel).arm64.exe"
     />
-    <Message Text="Copied x64 installer to $(InstallerOutputFolder)\BloomInstaller.$(Version)$(dotChannel).x64.exe" Importance="high"/>
     <Message Text="Copied ARM64 installer to $(InstallerOutputFolder)\BloomInstaller.$(Version)$(dotChannel).arm64.exe" Importance="high"/>
+    -->
+
   </Target>
   <Target Name="SignExesIfPossible">
     <PropertyGroup>
@@ -389,10 +406,11 @@
     <Exec Command='sign "$(RootDir)\output\$(Configuration)\x64\Bloom.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
     <Exec Command='sign "$(RootDir)\output\$(Configuration)\x64\BloomPdfMaker.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
     <Exec Command='sign "$(RootDir)\output\$(Configuration)\x64\PdfDroplet.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
-    <!-- Sign ARM64 executables -->
+    <!-- restore to Sign ARM64 executables 
     <Exec Command='sign "$(RootDir)\output\$(Configuration)\arm64\Bloom.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
     <Exec Command='sign "$(RootDir)\output\$(Configuration)\arm64\BloomPdfMaker.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
     <Exec Command='sign "$(RootDir)\output\$(Configuration)\arm64\PdfDroplet.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
+    -->
   </Target>
   <!-- This target is designed to be an target on TeamCity (but using Upload is more likely) that includes target Installer. Review: Velopack itself
 	can sign things if passed the right command line arguments. Is that a better thing to do? -->
@@ -411,7 +429,7 @@
     <CallTarget Targets="UploadCore"/>
   </Target>
   <Target Name="UploadCore">
-    <Message Text="Attempting rsync of x64 and ARM64 installers" Importance="high"/>
+    <Message Text="Attempting rsync of x64 installer" Importance="high"/>
     <!-- The way the web site generates the list of old installers requires that they be the only files in the
 		destination folder. For now I'm keeping them out of the actual installers folder that the web site uses.-->
     <!--Note: S3BuildPublisher needs AWSSDK.dll it its own folder, so TeamCity should do that. Do it youself if you want to build locally-->
@@ -423,13 +441,14 @@
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="installers$(channel)"
 		IsPublicRead="true" />
-    <!-- Upload ARM64 installer -->
+    <!-- Restore to Upload ARM64 installer
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
 		SourceFiles="$(InstallerOutputFolder)/$(InstallerFileNameArm64)"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="installers$(channel)-arm64"
 		IsPublicRead="true" />
+    -->
     <!-- The delta, full, releases.win.json, and RELEASES files must all be in the same directory,
     the one InstallerSupport.LookupUrlOfVelopackUpdate finds.
 		This MUST NOT CHANGE, because it's where all the old versions will look for newer ones, unless we also change the S3 file
@@ -451,7 +470,7 @@
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
 		IsPublicRead="true" />
-    <!-- Upload ARM64 packages -->
+    <!-- Restore to Upload ARM64 packages 
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
 		SourceFiles="$(InstallerOutputFolder)/arm64/$(VelopackDeltaPkgArm64)"
@@ -464,6 +483,7 @@
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)-arm64"
 		IsPublicRead="true" />
+    -->
     <!-- Upload x64 RELEASES and releases.win.json to current location (unchanged) -->
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
@@ -477,18 +497,19 @@
       DestinationBucket="$(Bucket)"
       DestinationFolder="deltas$(channel)"
       IsPublicRead="true" />
-    <!-- Upload ARM64-specific releases.win.json files to ARM64 folder. We don't need RELEASES since
-    there was never an ARM64 Squirrel installer.-->
+    <!-- Restore to Upload ARM64-specific releases.win.json files to ARM64 folder. We don't need RELEASES since
+    there was never an ARM64 Squirrel installer.
     <S3BuildPublisher
       CredentialStoreProfileName ="$(ProfileName)"
       SourceFiles="$(InstallerOutputFolder)/arm64/releases.win.json"
       DestinationBucket="$(Bucket)"
       DestinationFolder="deltas$(channel)-arm64"
       IsPublicRead="true" />
+      -->
     <CallTarget Targets ='MakeDownloadPointers'/>
     <CallTarget Targets="CleanUpObsoleteInstallerFiles"/>
   </Target>
-  <!-- Now that we've uploaded for this run, we can delete any obsolete files still in our Velopack Release Folder. -->
+  <!-- Now that we've uploaded for this run, we can delete any obsolete files still in our Velopack Release Folder. (I think it's harmless to keep including the arm64 folder) -->
   <!-- We don't need any installers (BloomInstaller.*.exe) or any full nuget packages (*.-full.nupkg) besides the one for this run. -->
   <!-- We keep the full nuget package for this run so the next one can create a delta. -->
   <Target Name="CleanUpObsoleteInstallerFiles" DependsOnTargets="VersionNumbers">
@@ -499,7 +520,9 @@
   </Target>
   <Target Name="SignIfPossible" DependsOnTargets="VersionNumbers; Installer">
     <Exec Command='sign "$(InstallerOutputFolder)\$(InstallerFileNameX64)"' ContinueOnError="true"></Exec>
+    <!-- Restore for Arm64
     <Exec Command='sign "$(InstallerOutputFolder)\$(InstallerFileNameArm64)"' ContinueOnError="true"></Exec>
+    -->
   </Target>
   <Target Name="DownloadDistFiles">
     <Message Text="Downloading Bloom.chm help file" Importance="high"  />
