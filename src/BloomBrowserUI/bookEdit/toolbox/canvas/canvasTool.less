@@ -148,16 +148,6 @@
         border-bottom-color: @bloom-toolboxWhite; // FYI, the Material UI default is dark blue.
     }
 
-    .MuiSelect-select {
-        border: 1px solid;
-        border-radius: 5px; // The rounded corners
-        padding-left: 10px;
-    }
-
-    .MuiSelect-icon {
-        padding-right: 10px;
-    }
-
     .MuiButton-root {
         padding-left: 0px; // strip out Material's default padding
         color: @bloom-blue;
@@ -207,17 +197,4 @@
     padding-left: @SideMargin;
     margin-bottom: 3px;
     margin-top: 10px;
-}
-
-// This is built into Material UI, but we need to access it to set the width of dropdown menus.
-@dropdownLeftMargin: 16px;
-
-.canvasElement-options-dropdown-menu {
-    // this allows the popup to be on top of the toolbox.
-    // A better way to do this is to wrap a Select in toolboxMenuPopupTheme. Not ready to switch
-    // the canvas tool to themes yet, but don't use this approach for new work.
-    z-index: @toolboxPopupZIndex !important;
-    .MuiMenu-paper {
-        min-width: calc(@toolboxWidth - 2 * @dropdownLeftMargin) !important;
-    }
 }

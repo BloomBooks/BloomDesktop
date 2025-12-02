@@ -55,6 +55,7 @@ import { ToolBox } from "../toolbox";
 import {
     kBloomBlue,
     kToolboxContentPadding,
+    toolboxMenuPopupTheme,
     toolboxTheme,
 } from "../../../bloomMaterialUITheme";
 import $ from "jquery";
@@ -574,67 +575,69 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                     Style
                                 </Span>
                             </InputLabel>
-                            <Select
-                                variant="standard"
-                                value={style}
-                                open={isStyleSelectOpen}
-                                onOpen={openStyleSelect}
-                                onClose={() => setIsStyleSelectOpen(false)}
-                                onChange={(event) => {
-                                    handleStyleChanged(event);
-                                    setIsStyleSelectOpen(false);
-                                }}
-                                className="canvasElementOptionDropdown"
-                                inputProps={{
-                                    name: "style",
-                                    id: "canvasElement-style-dropdown",
-                                }}
-                                MenuProps={{
-                                    className:
-                                        "canvasElement-options-dropdown-menu",
-                                }}
-                            >
-                                <MenuItem value="caption">
-                                    <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption">
-                                        Caption
-                                    </Div>
-                                </MenuItem>
-                                <MenuItem value="pointedArcs">
-                                    <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Exclamation">
-                                        Exclamation
-                                    </Div>
-                                </MenuItem>
-                                <MenuItem value="none">
-                                    <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.JustText">
-                                        Just Text
-                                    </Div>
-                                </MenuItem>
-                                <MenuItem value="speech">
-                                    <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Speech">
-                                        Speech
-                                    </Div>
-                                </MenuItem>
-                                <MenuItem value="ellipse">
-                                    <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Ellipse">
-                                        Ellipse
-                                    </Div>
-                                </MenuItem>
-                                <MenuItem value="thought">
-                                    <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Thought">
-                                        Thought
-                                    </Div>
-                                </MenuItem>
-                                <MenuItem value="circle">
-                                    <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Circle">
-                                        Circle
-                                    </Div>
-                                </MenuItem>
-                                <MenuItem value="rectangle">
-                                    <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Rectangle">
-                                        Rectangle
-                                    </Div>
-                                </MenuItem>
-                            </Select>
+                            <ThemeProvider theme={toolboxMenuPopupTheme}>
+                                <Select
+                                    variant="standard"
+                                    value={style}
+                                    open={isStyleSelectOpen}
+                                    onOpen={openStyleSelect}
+                                    onClose={() => setIsStyleSelectOpen(false)}
+                                    onChange={(event) => {
+                                        handleStyleChanged(event);
+                                        setIsStyleSelectOpen(false);
+                                    }}
+                                    className="canvasElementOptionDropdown"
+                                    inputProps={{
+                                        name: "style",
+                                        id: "canvasElement-style-dropdown",
+                                    }}
+                                    MenuProps={{
+                                        className:
+                                            "canvasElement-options-dropdown-menu",
+                                    }}
+                                >
+                                    <MenuItem value="caption">
+                                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption">
+                                            Caption
+                                        </Div>
+                                    </MenuItem>
+                                    <MenuItem value="pointedArcs">
+                                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Exclamation">
+                                            Exclamation
+                                        </Div>
+                                    </MenuItem>
+                                    <MenuItem value="none">
+                                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.JustText">
+                                            Just Text
+                                        </Div>
+                                    </MenuItem>
+                                    <MenuItem value="speech">
+                                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Speech">
+                                            Speech
+                                        </Div>
+                                    </MenuItem>
+                                    <MenuItem value="ellipse">
+                                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Ellipse">
+                                            Ellipse
+                                        </Div>
+                                    </MenuItem>
+                                    <MenuItem value="thought">
+                                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Thought">
+                                            Thought
+                                        </Div>
+                                    </MenuItem>
+                                    <MenuItem value="circle">
+                                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Circle">
+                                            Circle
+                                        </Div>
+                                    </MenuItem>
+                                    <MenuItem value="rectangle">
+                                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Rectangle">
+                                            Rectangle
+                                        </Div>
+                                    </MenuItem>
+                                </Select>
+                            </ThemeProvider>
 
                             <BloomCheckbox
                                 label="Show Tail"
@@ -673,46 +676,48 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                     Outer Outline Color
                                 </Span>
                             </InputLabel>
-                            <Select
-                                variant="standard"
-                                value={outlineColor ? outlineColor : "none"}
-                                open={isOutlineColorSelectOpen}
-                                onOpen={openOutlineColorSelect}
-                                onClose={() =>
-                                    setIsOutlineColorSelectOpen(false)
-                                }
-                                className="canvasElementOptionDropdown"
-                                inputProps={{
-                                    name: "outlineColor",
-                                    id: "canvasElement-outlineColor-dropdown",
-                                }}
-                                MenuProps={{
-                                    className:
-                                        "canvasElement-options-dropdown-menu",
-                                }}
-                                onChange={(event) => {
-                                    if (isBubble(currentFamilySpec)) {
-                                        handleOutlineColorChanged(event);
-                                        setIsOutlineColorSelectOpen(false);
+                            <ThemeProvider theme={toolboxMenuPopupTheme}>
+                                <Select
+                                    variant="standard"
+                                    value={outlineColor ? outlineColor : "none"}
+                                    open={isOutlineColorSelectOpen}
+                                    onOpen={openOutlineColorSelect}
+                                    onClose={() =>
+                                        setIsOutlineColorSelectOpen(false)
                                     }
-                                }}
-                            >
-                                <MenuItem value="none">
-                                    <Div l10nKey="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None">
-                                        None
-                                    </Div>
-                                </MenuItem>
-                                <MenuItem value="yellow">
-                                    <Div l10nKey="Common.Colors.Yellow">
-                                        Yellow
-                                    </Div>
-                                </MenuItem>
-                                <MenuItem value="crimson">
-                                    <Div l10nKey="Common.Colors.Crimson">
-                                        Crimson
-                                    </Div>
-                                </MenuItem>
-                            </Select>
+                                    className="canvasElementOptionDropdown"
+                                    inputProps={{
+                                        name: "outlineColor",
+                                        id: "canvasElement-outlineColor-dropdown",
+                                    }}
+                                    MenuProps={{
+                                        className:
+                                            "canvasElement-options-dropdown-menu",
+                                    }}
+                                    onChange={(event) => {
+                                        if (isBubble(currentFamilySpec)) {
+                                            handleOutlineColorChanged(event);
+                                            setIsOutlineColorSelectOpen(false);
+                                        }
+                                    }}
+                                >
+                                    <MenuItem value="none">
+                                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None">
+                                            None
+                                        </Div>
+                                    </MenuItem>
+                                    <MenuItem value="yellow">
+                                        <Div l10nKey="Common.Colors.Yellow">
+                                            Yellow
+                                        </Div>
+                                    </MenuItem>
+                                    <MenuItem value="crimson">
+                                        <Div l10nKey="Common.Colors.Crimson">
+                                            Crimson
+                                        </Div>
+                                    </MenuItem>
+                                </Select>
+                            </ThemeProvider>
                         </FormControl>
                     </form>
                 );
