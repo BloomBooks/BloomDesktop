@@ -60,8 +60,10 @@ export function useTColBookStatus(
     React.useEffect(() => {
         // if it's not in the editable collection, economize and don't call; the initialBookStatus will do.
         if (inEditableCollection) {
+            const params = new URLSearchParams();
+            params.set("folderName", folderName);
             get(
-                `teamCollection/bookStatus?folderName=${folderName}`,
+                `teamCollection/bookStatus?${params.toString()}`,
                 data => {
                     setBookStatus(data.data as IBookTeamCollectionStatus);
                 },
