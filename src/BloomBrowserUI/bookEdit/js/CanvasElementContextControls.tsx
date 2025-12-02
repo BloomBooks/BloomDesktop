@@ -1279,14 +1279,15 @@ function addMenuItemForTogglingDraggability(
             }
         }
     };
+    const visibilityCss = isDraggable(canvasElement)
+        ? ""
+        : "visibility: hidden;";
     menuOptions.push(divider, {
         l10nId: "EditTab.Toolbox.DragActivity.Draggability",
         english: "Draggable",
         subLabelL10nId: "EditTab.Toolbox.DragActivity.DraggabilityMore",
         onClick: toggleDragability,
-        icon: isDraggable(canvasElement) ? (
-            <CheckIcon css={getMenuIconCss()} />
-        ) : undefined,
+        icon: <CheckIcon css={getMenuIconCss(1, visibilityCss)} />,
     });
 }
 
@@ -1311,14 +1312,13 @@ function addMenuItemsForDraggable(
             setCurrentDraggableTarget(makeTargetForDraggable(canvasElement));
         }
     };
+    const visibilityCss = currentDraggableTarget ? "" : "visibility: hidden;";
     menuOptions.push({
         l10nId: "EditTab.Toolbox.DragActivity.PartOfRightAnswer",
         english: "Part of the right answer",
         subLabelL10nId: "EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2",
         onClick: toggleIsPartOfRightAnswer,
-        icon: currentDraggableTarget ? (
-            <CheckIcon css={getMenuIconCss()} />
-        ) : undefined,
+        icon: <CheckIcon css={getMenuIconCss(1, visibilityCss)} />,
     });
 }
 
