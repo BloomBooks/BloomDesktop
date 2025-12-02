@@ -1233,7 +1233,6 @@ namespace BloomTests.Spreadsheet
         [TestCase("Othello 199.jpg")]
         [TestCase("Mars 3.png")]
         [TestCase("Mars 4.png")]
-        [TestCase("placeHolder.png")]
         public void ImageCopiedToOutput(string fileName)
         {
             Assert.That(RobustFile.Exists(Path.Combine(_bookFolder.FolderPath, fileName)));

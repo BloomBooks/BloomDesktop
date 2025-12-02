@@ -22,6 +22,7 @@ import {
     doImageCommand,
     getImageUrlFromImageContainer,
     kImageContainerClass,
+    isPlaceHolderImage,
 } from "./bloomImages";
 import {
     doVideoCommand,
@@ -122,7 +123,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const videoSource = video?.getElementsByTagName("source")[0];
     const videoAlreadyChosen = !!videoSource?.getAttribute("src");
     const isPlaceHolder =
-        hasImage && img?.getAttribute("src")?.startsWith("placeHolder.png");
+        hasImage && isPlaceHolderImage(img?.getAttribute("src"));
     const missingMetadata =
         hasImage &&
         !isPlaceHolder &&
@@ -374,9 +375,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
         menuOptions.splice(index, 0, fillItem);
 
         // we can't delete the placeholder (or if there isn't an img, somehow)
-        deleteEnabled = !!(
-            img && !img.getAttribute("src")?.startsWith("placeHolder.png")
-        );
+        deleteEnabled = hasRealImage(img);
     } else if (isSpecialGameElementSelected || isLinkGrid) {
         deleteEnabled = false; // don't allow deleting the single drag item in a sentence drag game or link grids
     }
@@ -1073,6 +1072,10 @@ function addVideoMenuItems(
     );
 }
 
+function hasRealImage(img) {
+    return img && !isPlaceHolderImage(img.getAttribute("src"));
+}
+
 function addImageMenuOptions(
     menuOptions: IMenuItemWithSubmenu[],
     canvasElement: HTMLElement,
@@ -1093,6 +1096,7 @@ function addImageMenuOptions(
         );
     };
 
+    const realImagePresent = hasRealImage(img);
     const imageMenuOptions: IMenuItemWithSubmenu[] = [
         {
             l10nId: "EditTab.Image.ChooseImage",
@@ -1114,6 +1118,7 @@ function addImageMenuOptions(
             english: "Copy image",
             onClick: () => doImageCommand(img, "copy"),
             icon: <CopyIcon css={getMenuIconCss()} />,
+            disabled: !realImagePresent,
         },
         {
             l10nId: "EditTab.Image.EditMetadataOverlay",
@@ -1121,6 +1126,7 @@ function addImageMenuOptions(
             subLabelL10nId: "EditTab.Image.EditMetadataOverlayMore",
             onClick: runMetadataDialog,
             icon: <CopyrightIcon css={getMenuIconCss()} />,
+            disabled: !realImagePresent,
         },
         {
             l10nId: "EditTab.Image.Reset",

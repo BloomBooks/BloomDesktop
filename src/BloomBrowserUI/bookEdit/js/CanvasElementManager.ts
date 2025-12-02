@@ -38,6 +38,7 @@ import {
     SetupMetadataButton,
     UpdateImageTooltipVisibility,
     HandleImageError,
+    isPlaceHolderImage,
 } from "./bloomImages";
 import {
     adjustTarget,
@@ -72,13 +73,18 @@ import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
 import { get, postData, postJson } from "../../utils/bloomApi";
-import AudioRecording from "../toolbox/talkingBook/audioRecording";
+import AudioRecording, {
+    kTalkingBookToolId,
+} from "../toolbox/talkingBook/audioRecording";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { getExactClientSize } from "../../utils/elementUtils";
 import { copyContentToTarget, getTarget } from "bloom-player";
 import { showRequiresSubscriptionDialogInEditView } from "../../react_components/requiresSubscription";
 import { FeatureStatus } from "../../react_components/featureStatus";
 import $ from "jquery";
+import { kCanvasToolId } from "../toolbox/toolIds";
+import { getToolboxBundleExports } from "./bloomFrames";
+import { ImageDescriptionAdapter } from "../toolbox/imageDescription/imageDescription";
 
 export interface ITextColorInfo {
     color: string;
@@ -548,6 +554,9 @@ export class CanvasElementManager {
                 bloomCanvas.scrollLeft = 0;
                 bloomCanvas.scrollTop = 0;
             });
+            if (bloomCanvas.getAttribute("data-tool-id") === kCanvasToolId) {
+                SetupClickToShowCanvasTool(bloomCanvas);
+            }
         });
 
         // todo: select the right one...in particular, currently we just select the last one.
@@ -1310,12 +1319,8 @@ export class CanvasElementManager {
                         return;
                     }
                     const target = event.currentTarget as HTMLElement;
-                    if (
-                        target.closest(
-                            `.${kBackgroundImageClass}-control-frame-no-image`,
-                        )
-                    ) {
-                        return; // don't crop empty background image container
+                    if (target.closest(`.bloom-image-control-frame-no-image`)) {
+                        return; // don't crop empty image container
                     }
                     this.startSideControlDrag(event, side);
                 });
@@ -2684,11 +2689,12 @@ export class CanvasElementManager {
             imgWidth = imgOrVideo.naturalWidth;
             imgHeight = imgOrVideo.naturalHeight;
             if (
-                imgOrVideo.naturalHeight === 0 && // not loaded successfully (yet)
-                !useSizeOfNewImage && // not waiting for new dimensions
-                imgOrVideo.classList.contains("bloom-imageLoadError") // error occurred while trying to load
+                isPlaceHolderImage(imgOrVideo.getAttribute("src")) ||
+                (imgOrVideo.naturalHeight === 0 && // not loaded successfully (yet)
+                    !useSizeOfNewImage && // not waiting for new dimensions
+                    imgOrVideo.classList.contains("bloom-imageLoadError")) // error occurred while trying to load
             ) {
-                // Image is in an error state; we probably won't ever get useful dimensions. Just leave
+                // Image is in an error state or is just a placeholder; we probably won't ever get useful dimensions. Just leave
                 // the canvas element the shape it is.
                 return;
             }
@@ -2828,6 +2834,7 @@ export class CanvasElementManager {
                 canvasElement,
                 true,
             );
+            SetupMetadataButton(canvasElement);
         } else {
             this.adjustContainerAspectRatio(canvasElement, true);
         }
@@ -2884,20 +2891,16 @@ export class CanvasElementManager {
             kBackgroundImageClass + "-control-frame",
             this.activeElement.classList.contains(kBackgroundImageClass),
         );
-        let backgroundImageExists = true;
-        if (this.activeElement.classList.contains(kBackgroundImageClass)) {
-            const img = getImageFromCanvasElement(this.activeElement);
-            if (img && img.getAttribute("src") === "placeHolder.png") {
-                backgroundImageExists = false;
-            }
+
+        // mark empty image control frames with a special class
+        let imageIsPlaceHolder = false;
+        const img = getImageFromCanvasElement(this.activeElement);
+        if (img && isPlaceHolderImage(img.getAttribute("src"))) {
+            imageIsPlaceHolder = true;
         }
-        // mark empty background images in games with a special class (BL-14703)
         controlFrame.classList.toggle(
-            kBackgroundImageClass + "-control-frame-no-image",
-            !backgroundImageExists &&
-                !!this.activeElement.closest(
-                    ".bloom-page[data-tool-id='game']",
-                ),
+            "bloom-image-control-frame-no-image",
+            imageIsPlaceHolder,
         );
 
         const hasText = controlFrame.classList.contains("has-text");
@@ -5022,7 +5025,7 @@ export class CanvasElementManager {
             canvasElements[0].classList.contains(kBackgroundImageClass)
         ) {
             const bgimg = canvasElements[0].getElementsByTagName("img")[0];
-            if (bgimg.getAttribute("src")?.startsWith("placeHolder.png")) {
+            if (isPlaceHolderImage(bgimg.getAttribute("src"))) {
                 changeImageInfo(bgimg, imageInfo);
                 this.adjustBackgroundImageSize(
                     bloomCanvas,
@@ -5043,7 +5046,7 @@ export class CanvasElementManager {
             const img = activeElement
                 .getElementsByClassName(kImageContainerClass)[0]
                 ?.getElementsByTagName("img")[0];
-            if (img && img.getAttribute("src")?.startsWith("placeHolder.png")) {
+            if (img && isPlaceHolderImage(img.getAttribute("src"))) {
                 changeImageInfo(img, imageInfo);
                 this.adjustContainerAspectRatio(
                     activeElement as HTMLElement,
@@ -6881,9 +6884,12 @@ export class CanvasElementManager {
         // image has the special class indicating that it failed to load.  (The class is supposed
         // to be removed when we change the src attribute, which leads to a new load attempt.)
         failedImage =
-            img.naturalHeight === 0 && // not loaded successfully (yet)
-            !useSizeOfNewImage && // not waiting for new dimensions
-            img.classList.contains("bloom-imageLoadError"); // error occurred while trying to load
+            // As of BL-15441, we use css instead of real placeHolder.png files but still set src="placeHolder.png"
+            // to indicate placeholders. Treat this case as a failed image for dimensions purposes
+            isPlaceHolderImage(img.getAttribute("src")) ||
+            (img.naturalHeight === 0 && // not loaded successfully (yet)
+                !useSizeOfNewImage && // not waiting for new dimensions
+                img.classList.contains("bloom-imageLoadError")); // error occurred while trying to load
         if (failedImage) {
             // If the image failed to load, just use the container aspect ratio to fill up
             // the container with the error message (alt attribute string).
@@ -7154,7 +7160,7 @@ export class CanvasElementManager {
                 const img = getImageFromCanvasElement(child);
                 if (
                     !img ||
-                    img.getAttribute("src") === "placeHolder.png" ||
+                    isPlaceHolderImage(img.getAttribute("src")) ||
                     children.length === 1
                 ) {
                     // If there's no image or it's a placeholder, and there are other overlays, it won't be visible,
@@ -7581,4 +7587,29 @@ async function copyAudioFileAsync(
     // console.log(
     //     `DEBUG copyAudioFileAsync: finished copying ${sourcePath} to ${targetPath}`
     // );
+}
+
+function SetupClickToShowCanvasTool(canvasElement: Element) {
+    // if the user clicks on a canvas element, bring up the canvas tool
+    $(canvasElement).click((ev) => {
+        const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
+        const currentToolId = toolbox?.getCurrentTool()?.id();
+
+        if (
+            toolbox?.toolboxIsShowing() &&
+            (currentToolId === ImageDescriptionAdapter.kToolID ||
+                currentToolId === kTalkingBookToolId)
+        ) {
+            // Image description tool or talking book tool is already open; we don't want to interfere with its functioning
+            return;
+        }
+
+        showCanvasTool();
+    });
+}
+
+export function showCanvasTool() {
+    getToolboxBundleExports()
+        ?.getTheOneToolbox()
+        .activateToolFromId(kCanvasToolId);
 }

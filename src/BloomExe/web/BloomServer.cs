@@ -746,6 +746,13 @@ namespace Bloom.Api
                     {
                         imageFile = imageFile.Replace("flat", "icy_orange");
                     }
+                    else if (ImageUtils.IsPlaceholderImageFilename(imageFile))
+                    {
+                        // We now use css to put in the placeholder images, but still use "placeHolder.png" to mark them
+                        // So we actually don't want to provide an image file for placeHolder.png.
+                        info.WriteCompleteOutput("");
+                        return true;
+                    }
                     // If the user does add a video or widget, these placeholder .svgs will get copied to the
                     // book folder and used from there. But we don't copy to the book folder while the user
                     // is still in origami in case the user doesn't actually add the video or widget.

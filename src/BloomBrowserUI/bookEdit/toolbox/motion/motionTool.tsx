@@ -16,6 +16,7 @@ import {
     DisableImageEditing,
     EnableImageEditing,
     getBackgroundImageFromBloomCanvas,
+    isPlaceHolderImage,
 } from "../../js/bloomImages";
 import { kMotionToolId } from "../toolIds";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
@@ -497,7 +498,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         const bgImage = this.getBackgroundImage();
         if (bgImage) {
             const src = bgImage.getAttribute("src");
-            haveBgImage = !!src && src.toLowerCase() !== "placeholder.png";
+            haveBgImage = !!src && !isPlaceHolderImage(src);
         }
         const newState = this.getStateFromHtml();
         if (haveBgImage) {
@@ -569,7 +570,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         const bgImage = this.getBackgroundImage();
         if (bgImage) {
             const src = bgImage.getAttribute("src");
-            if (!src || src.toLowerCase() === "placeholder.png") {
+            if (!src || isPlaceHolderImage(src)) {
                 this.hideRectangles();
             }
             this.observer.observe(bgImage, {
@@ -938,7 +939,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             src = bgImage?.getAttribute("src") || "";
         }
 
-        const doNotHaveAPicture = !src || src.startsWith("placeHolder.png");
+        const doNotHaveAPicture = !src || isPlaceHolderImage(src);
 
         let motionChecked = true;
         let motionPossible = !doNotHaveAPicture;

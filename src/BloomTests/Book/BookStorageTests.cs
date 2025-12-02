@@ -760,7 +760,7 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void CleanupUnusedImageFiles_ThumbnailsAndPlaceholdersNotRemoved()
+        public void CleanupUnusedImageFiles_ThumbnailsNotRemoved()
         {
             var storage = GetInitialStorageWithCustomHtml(
                 XmlHtmlConverter.CreateHtmlString(
@@ -769,13 +769,25 @@ namespace BloomTests.Book
             );
             var p1 = MakeSamplePngImage(Path.Combine(_folder.Path, "thumbnail.png"));
             var p2 = MakeSamplePngImage(Path.Combine(_folder.Path, "thumbnail88.png"));
-            var p3 = MakeSamplePngImage(Path.Combine(_folder.Path, "placeholder.png"));
             var dropmeTemp = MakeSamplePngImage(Path.Combine(_folder.Path, "dropme.png"));
             storage.CleanupUnusedImageFiles();
             Assert.IsTrue(File.Exists(p1.Path));
             Assert.IsTrue(File.Exists(p2.Path));
-            Assert.IsTrue(File.Exists(p3.Path));
             Assert.IsFalse(File.Exists(dropmeTemp.Path));
+        }
+
+        [Test]
+        public void CleanupUnusedImageFiles_PlaceholderFilesRemoved()
+        {
+            // BL-15441
+            var storage = GetInitialStorageWithCustomHtml(
+                XmlHtmlConverter.CreateHtmlString(
+                    "<div class='bloom-page'><div class='marginBox'></div></div>"
+                )
+            );
+            var placeholder = MakeSamplePngImage(Path.Combine(_folder.Path, "placeholder.png"));
+            storage.CleanupUnusedImageFiles();
+            Assert.IsFalse(File.Exists(placeholder.Path));
         }
 
         [Test]

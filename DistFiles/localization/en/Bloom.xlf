@@ -1355,6 +1355,15 @@
       <trans-unit id="EditTab.CustomPage.Picture" sil:dynamic="true">
         <source xml:lang="en">Picture</source>
         <note>ID: EditTab.CustomPage.Picture</note>
+        <note>Obsolete as of 6.3</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomPage.Image" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Image</source>
+        <note>ID: EditTab.CustomPage.Image</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomPage.Canvas" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Canvas</source>
+        <note>ID: EditTab.CustomPage.Canvas</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Text" sil:dynamic="true">
         <source xml:lang="en">Text</source>
@@ -1871,6 +1880,7 @@
       <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true">
         <source xml:lang="en">Cut image</source>
         <note>ID: EditTab.Image.CutImage</note>
+        <note>Obsolete as of Bloom 6.3</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true">
         <source xml:lang="en">Edit image credits, copyright, &amp; license</source>
