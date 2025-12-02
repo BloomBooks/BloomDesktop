@@ -1559,6 +1559,16 @@
         <target xml:lang="ru" state="final">Изображение</target>
         <note>ID: EditTab.CustomPage.Picture</note>
       </trans-unit>
+      <trans-unit id="EditTab.CustomPage.Image" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Image</source>
+        <target xml:lang="ru" state="needs-translation">Image</target>
+        <note>ID: EditTab.CustomPage.Image</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomPage.Canvas" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Canvas</source>
+        <target xml:lang="ru" state="needs-translation">Canvas</target>
+        <note>ID: EditTab.CustomPage.Canvas</note>
+      </trans-unit>
       <trans-unit id="EditTab.CustomPage.Text" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Text</source>
         <target xml:lang="ru" state="final">Текст</target>
