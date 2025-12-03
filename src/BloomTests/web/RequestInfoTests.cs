@@ -88,7 +88,7 @@ namespace BloomTests.web
         private class TestHttpListenerContext : IHttpListenerContext
         {
             public IHttpListenerRequest Request { get; private set; }
-            public HttpListenerResponse Response { get; private set; }
+            public IHttpListenerResponse Response { get; private set; }
 
             public void SetRequest(IHttpListenerRequest request)
             {
