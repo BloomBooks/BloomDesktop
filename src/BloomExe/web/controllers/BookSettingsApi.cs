@@ -169,6 +169,11 @@ namespace Bloom.Api
                     var jsonOfJustPublishSettings = JsonConvert.SerializeObject(
                         newSettings.publish
                     );
+                    var oldCoverIsImage = _bookSelection
+                        .CurrentSelection
+                        .BookInfo
+                        .AppearanceSettings
+                        .CoverIsImage;
                     _bookSelection.CurrentSelection.BookInfo.PublishSettings.LoadNewJson(
                         jsonOfJustPublishSettings
                     );
@@ -201,6 +206,17 @@ namespace Bloom.Api
                     _bookSelection.CurrentSelection.BookInfo.AppearanceSettings.UpdateFromDynamic(
                         newAppearance
                     );
+                    var newCoverIsImage = _bookSelection
+                        .CurrentSelection
+                        .BookInfo
+                        .AppearanceSettings
+                        .CoverIsImage;
+                    if (newCoverIsImage && !oldCoverIsImage)
+                    {
+                        // We have just switched to an image cover. Clear out any existing image size setting
+                        // such as those set by cropping.
+                        _bookSelection.CurrentSelection.RemoveCoverImageSizeSettings();
+                    }
 
                     _bookSelection.CurrentSelection.SettingsUpdated();
 

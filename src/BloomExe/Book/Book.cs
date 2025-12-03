@@ -1652,6 +1652,7 @@ namespace Bloom.Book
         private bool _doingBookUpdate = false;
         private HtmlDom _domBeingUpdated = null;
         private string _updateStackTrace = null;
+        private bool RemoveCoverImageSizeSettingsOnNextSave;
 
         /// <summary>
         /// As the bloom format evolves, including structure and classes and other attributes, this
@@ -4753,7 +4754,14 @@ namespace Bloom.Book
             // Note that at this point _bookData has already been updated with the edited page's data, if any.
             // This will take priority over other data it finds in the book, even earlier in the book
             // than the edited page.
+            if (RemoveCoverImageSizeSettingsOnNextSave)
+                _bookData.RemoveCoverImageSizeSettings = true;
             _bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo); //will update the title if needed
+            if (RemoveCoverImageSizeSettingsOnNextSave)
+            {
+                _bookData.RemoveCoverImageSizeSettings = false;
+                RemoveCoverImageSizeSettingsOnNextSave = false;
+            }
             if (OkToChangeFileAndFolderName)
             {
                 Storage.UpdateBookFileAndFolderName(CollectionSettings); //which will update the file name if needed
@@ -5946,6 +5954,12 @@ namespace Bloom.Book
         public string GetDefaultTemplatePageId()
         {
             return Storage.Dom.GetMetaValue("defaultTemplatePageId", null);
+        }
+
+        internal void RemoveCoverImageSizeSettings()
+        {
+            // When changing to full-page cover, we need to update the cover image.
+            this.RemoveCoverImageSizeSettingsOnNextSave = true;
         }
 
         public bool IsPlayground

@@ -925,13 +925,9 @@ namespace Bloom.Book
             }
         }
 
-        /// <summary>
-        ///
-        /// </summary>
+        internal bool RemoveCoverImageSizeSettings;
+
         /// <remarks>I (jh) found this labelled UpdateSingleTextVariableThrougoutDom but it actually only updated the datadiv, so I changed the name.</remarks>
-        /// <param name="key"></param>
-        /// <param name="writingSystemId"></param>
-        /// <param name="form"></param>
         private void UpdateSingleTextVariableInDataDiv(
             string key,
             string writingSystemId,
@@ -954,7 +950,17 @@ namespace Bloom.Book
                 isCollectionValue: false,
                 storeEmptyValue: userDeleted
             );
-
+            if (key == "coverImage" && RemoveCoverImageSizeSettings)
+            {
+                for (int i = attrs.Count - 1; i >= 0; i--)
+                {
+                    if (attrs[i].Item1 == "style")
+                        attrs.RemoveAt(i);
+                    else if (attrs[i].Item1 == "data-canvas-element-style")
+                        attrs.RemoveAt(i);
+                    // data-canvas-imgsizebasedon?
+                }
+            }
             if (null == node)
             {
                 if (userDeleted || !XmlString.IsNullOrEmpty(form))
@@ -977,6 +983,12 @@ namespace Bloom.Book
                 }
                 else
                 {
+                    if (key == "coverImage" && RemoveCoverImageSizeSettings)
+                    {
+                        (node as SafeXmlElement).RemoveAttribute("style");
+                        (node as SafeXmlElement).RemoveAttribute("data-canvas-element-style");
+                        // data-canvas-imgsizebasedon?
+                    }
                     SetNodeXml(key, form, node);
                     MergeAttrsIntoElement(attrs, node as SafeXmlElement);
                 }

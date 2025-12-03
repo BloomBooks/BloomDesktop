@@ -35,6 +35,11 @@ namespace Bloom
             _unencoded = notEncoded;
         }
 
+        public override string ToString()
+        {
+            return this.Xml;
+        }
+
         #region Initializers
         /// <summary>
         /// Creates an XMLString object from an XML-ready string.
