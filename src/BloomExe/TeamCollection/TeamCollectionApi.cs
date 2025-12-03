@@ -857,7 +857,11 @@ namespace Bloom.TeamCollection
                 request,
                 reportCheckinProgress
             );
-            request.PostSucceeded();
+            // If CheckInOneBook reported a failure, changing it to success
+            // is not helpful...nor will it work; it will cause an object
+            // disposed exception.
+            if (!request.HasFailed)
+                request.PostSucceeded();
             // Force a full reload of the book from disk and update the UI to match.
             _bookSelection.SelectBook(_bookSelection.CurrentSelection);
         }
@@ -909,14 +913,15 @@ namespace Bloom.TeamCollection
 
                     var book = _collectionModel.GetBookFromBookInfo(bookInfo);
                     var message = BookHistory.GetPendingCheckinMessage(book);
-                    BookHistory.AddEvent(book, BookHistoryEventType.CheckIn, message);
-                    BookHistory.SetPendingCheckinMessage(book, "");
                     _tcManager.CurrentCollection.PutBook(
                         bookInfo.FolderPath,
                         true,
                         false,
                         reportProgressFraction
                     );
+                    // After we actually do the checkin, so if checkin throws, we don't record a checkin that didn't happen.
+                    BookHistory.AddEvent(book, BookHistoryEventType.CheckIn, message);
+                    BookHistory.SetPendingCheckinMessage(book, "");
                     progress?.MessageWithoutLocalizing($"Completed check-in of '{bookInfo.Title}'");
 
                     reportProgressFraction(0); // hides the progress bar (important if a different book has been selected that is still checked out)
