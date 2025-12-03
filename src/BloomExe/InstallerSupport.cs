@@ -217,7 +217,7 @@ namespace Bloom
                 );
                 ProblemReportApi.ShowProblemDialog(null, exception, "", "fatal");
                 // Not sure these lines are reachable. Just making sure.
-                Application.Exit();
+                Program.Exit();
                 return;
             }
 

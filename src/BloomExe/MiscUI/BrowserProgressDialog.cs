@@ -120,7 +120,7 @@ namespace Bloom.MiscUI
                 dlg.ShowDialog(owner); // returns when dialog closed
                 if (progress.HasFatalProblemBeenReported)
                 {
-                    Application.Exit();
+                    Program.Exit();
                 }
 
                 ProgressDialogApi.SetCancelHandler(null);
@@ -260,7 +260,7 @@ namespace Bloom.MiscUI
         {
             if (_progress?.HasFatalProblemBeenReported ?? false)
             {
-                Application.Exit();
+                Program.Exit();
             }
 
             _doWhenProgressDialogCloses?.Invoke();

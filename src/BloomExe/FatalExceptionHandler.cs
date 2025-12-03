@@ -82,7 +82,7 @@ namespace Bloom
             {
                 //Are we inside a Application.Run() statement?
                 if (Application.MessageLoop)
-                    Application.Exit();
+                    Program.Exit();
                 else
                     Environment.Exit(1); //the 1 here is just non-zero
             }

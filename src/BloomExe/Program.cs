@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Bloom.Api;
 using Bloom.CLI;
 using Bloom.Collection;
 using Bloom.Collection.BloomPack;
@@ -103,7 +104,7 @@ namespace Bloom
         static int Main(string[] args1)
         {
             // AttachConsole(-1);	// Enable this to allow Console.Out.WriteLine to be viewable (must run Bloom from terminal, AFAIK)
-            bool gotUniqueToken = false;
+            _gotUniqueToken = false;
             _uiThreadId = Thread.CurrentThread.ManagedThreadId;
             Logger.Init();
             // Configure TempFile to create temp files with a "bloom" prefix so we can
@@ -404,7 +405,7 @@ namespace Bloom
                                         BloomMessageBox.ShowInfo(msg);
                                         return 1;
                                     }
-                                    gotUniqueToken = true;
+                                    _gotUniqueToken = true;
 
                                     if (
                                         projectContext.TeamCollectionManager.CurrentCollection
@@ -470,7 +471,7 @@ namespace Bloom
                         // and now we need to get the lock as usual before going on to load the new collection.
                         if (!UniqueToken.AcquireToken(_mutexId, "Bloom"))
                             return 1;
-                        gotUniqueToken = true;
+                        _gotUniqueToken = true;
                     }
                     else if (IsBloomBookOrder(args))
                     {
@@ -480,7 +481,7 @@ namespace Bloom
                         {
                             // No other instance isrunning. Start up normally (and show the book just downloaded).
                             // See https://silbloom.myjetbrains.com/youtrack/issue/BL-3822
-                            gotUniqueToken = true;
+                            _gotUniqueToken = true;
                         }
                         else if (forEdit)
                         {
@@ -501,7 +502,7 @@ namespace Bloom
                             // control key is held down so allow second instance to run; note that we're deliberately in this state
                             if (UniqueToken.AcquireTokenQuietly(_mutexId))
                             {
-                                gotUniqueToken = true;
+                                _gotUniqueToken = true;
                             }
                             else
                             {
@@ -511,7 +512,7 @@ namespace Bloom
                         else if (UniqueToken.AcquireToken(_mutexId, "Bloom"))
                         {
                             // No other instance is running. We own the token and should release it on quitting.
-                            gotUniqueToken = true;
+                            _gotUniqueToken = true;
                         }
                         else
                         {
@@ -642,8 +643,7 @@ namespace Bloom
             {
                 // Check memory one final time for the benefit of developers.  The user won't see anything.
                 //Bloom.Utils.MemoryManagement.CheckMemory(true, "Bloom finished and exiting", false);
-                if (gotUniqueToken)
-                    UniqueToken.ReleaseToken();
+                ReleaseBloomToken();
 
                 _sentry?.Dispose();
                 // In a debug build we want to be able to see if we're leaving garbage around. (Note: this doesn't seem to be working.)
@@ -652,13 +652,23 @@ namespace Bloom
                 // - we might delete something in use by the instance that has the token
                 // - we would delete the token itself (since _mutexid and NamePrefix happen to be the same),
                 // allowing a later duplicate process to start normally.
-                if (gotUniqueToken)
+                if (_gotUniqueToken)
                     TempFile.CleanupTempFolder();
 #endif
             }
             Settings.Default.FirstTimeRun = false;
             Settings.Default.Save();
             return 0;
+        }
+
+        /// <summary>
+        /// Normally only used as Main() cleans up on exit.
+        /// Also in forced shutdown on timeout.
+        /// </summary>
+        public static void ReleaseBloomToken()
+        {
+            if (_gotUniqueToken)
+                UniqueToken.ReleaseToken();
         }
 
         private static bool IsWebviewMissingOrTooOld()
@@ -909,7 +919,7 @@ namespace Bloom
                 Thread.Sleep(2000);
                 if (hardExit || _projectContext?.ProjectWindow == null)
                 {
-                    Application.Exit();
+                    Program.Exit();
                 }
                 else
                 {
@@ -1286,6 +1296,69 @@ namespace Bloom
             return false;
         }
 
+        private static Thread _forceShutdownThread;
+
+        public static void Exit()
+        {
+            EnsureBloomReallyQuits();
+            Application.Exit();
+        }
+
+        private static void EnsureBloomReallyQuits()
+        {
+            if (_forceShutdownThread != null)
+                return; // already started
+            // We've had a problem with Bloom failing to shutdown, leaving a zombie thread that prevents
+            // other instances from starting up. If shutdown takes more than 20 seconds, we will just
+            // forcefully exit.
+            _forceShutdownThread = new Thread(() =>
+            {
+                Thread.Sleep(20000);
+                // We hope to never get here; it means that Bloom failed to fully
+                // quit 20s after we called Application.Exit(). We will now do some
+                // minimal essential cleanup and then force an exit.
+                // It might be nice to tell the user, but since we don't know
+                // what went wrong or where we are in the shutdown process, it's not
+                // obvious what to say. I don't even see how we can reliably show a message,
+                // since we're about to force a shut down. And I don't think there's
+                // anything that will be left in a bad state that the user might need
+                // to deal with.
+                try
+                {
+                    Logger.WriteEvent("Forcing Bloom to close after normal shutdown timed out.");
+                }
+                catch (Exception)
+                {
+                    // We might have already shut down the logger. If we can't log it, too bad.
+                }
+
+                // These things MUST be done so that Bloom can be started again without problems.
+                // They should be very fast.
+                try
+                {
+                    BloomServer._theOneInstance?.CloseListener();
+                }
+                catch (Exception)
+                {
+                    // Anything that goes wrong here shouldn't prevent either trying
+                    // the next cleanup or exiting.
+                }
+
+                try
+                {
+                    Program.ReleaseBloomToken();
+                }
+                catch (Exception) { }
+
+                Environment.Exit(1);
+                // If that doesn't prove drastic enough, an even more forceful option is
+                // Process.GetCurrentProcess().Kill();
+            });
+            _forceShutdownThread.Priority = ThreadPriority.Highest;
+            _forceShutdownThread.IsBackground = true; // so it won't block shutdown
+            _forceShutdownThread.Start();
+        }
+
         private static void HandleProjectWindowActivated(object sender, EventArgs e)
         {
             _projectContext.ProjectWindow.Activated -= HandleProjectWindowActivated;
@@ -1415,7 +1488,7 @@ namespace Bloom
                             // and we don't want to exit the application. Otherwise, we are in initial startup and
                             // closing the chooser should exit the application.
                             if (formToClose == null)
-                                Application.Exit();
+                                Program.Exit();
                             return false;
                         }
 
@@ -1480,11 +1553,11 @@ namespace Bloom
             }
             else if (((Shell)sender).QuitForVersionUpdate)
             {
-                Application.Exit();
+                Program.Exit();
             }
             else
             {
-                Application.Exit();
+                Program.Exit();
             }
         }
 
@@ -1734,6 +1807,7 @@ namespace Bloom
 
         private static bool _errorHandlingHasBeenSetUp;
         private static IDisposable _sentry;
+        private static bool _gotUniqueToken;
 
         /// ------------------------------------------------------------------------------------
         internal static void SetUpErrorHandling()
