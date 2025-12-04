@@ -309,9 +309,9 @@
         <target xml:lang="pt-PT" state="final">Bloom teve problemas ao escrever arquivos nessa localização ({0}). Verifique se você tem permissão para escrever lá.</target>
         <note>ID: Spreadsheet.WriteFailed</note>
       </trans-unit>
-      <trans-unit id="Spreadsheet.CannotExportDragAndDropGamePages">
+      <trans-unit id="Spreadsheet.CannotExportDragAndDropGamePages" approved="yes">
         <source xml:lang="en">Bloom cannot export because {0} pages contain drag-and-drop games.</source>
-        <target xml:lang="pt-PT" state="translated">Bloom não pode exportar porque {0} páginas contêm jogos de arrastar e soltar.</target>
+        <target xml:lang="pt-PT" state="final">Bloom não pode exportar porque {0} páginas contêm jogos de arrastar-e-soltar.</target>
         <note>ID: Spreadsheet.CannotExportDragAndDropGamePages</note>
       </trans-unit>
       <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer" approved="yes">
