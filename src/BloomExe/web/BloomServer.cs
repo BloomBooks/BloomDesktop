@@ -1334,7 +1334,7 @@ namespace Bloom.Api
                 ErrorReport.NotifyUserOfProblem(GetServerStartFailureMessage());
                 Logger.WriteEvent("Error: Could not start up internal HTTP Server");
                 Analytics.ReportException(new ApplicationException("Could not start server."));
-                Application.Exit();
+                ProgramExit.Exit();
             }
 
             Logger.WriteEvent("Server will use " + ServerUrlEndingInSlash);
@@ -1387,18 +1387,9 @@ namespace Bloom.Api
 
         private bool HandleExceptionOpeningPort(Exception error)
         {
-            if (!Program.RunningUnitTests && !Program.RunningSecondInstance)
-                NonFatalProblem.Report(
-                    ModalIf.None,
-                    PassiveIf.Alpha,
-                    "Could not open " + ServerUrlEndingInSlash,
-                    "Could not start server on that port",
-                    error
-                );
-            else
-                Console.WriteLine(
-                    $"Cannot open {ServerUrlEndingInSlash}: {error.Message} ({error.GetType().Name})"
-                );
+            Console.WriteLine(
+                $"Cannot open {ServerUrlEndingInSlash}: {error.Message} ({error.GetType().Name})"
+            );
             try
             {
                 if (_listener != null)
@@ -1437,7 +1428,7 @@ namespace Bloom.Api
             catch (Exception error)
             {
                 ErrorReport.NotifyUserOfProblem(error, GetServerStartFailureMessage());
-                Application.Exit();
+                ProgramExit.Exit();
             }
 
             ServerIsListening = true;
@@ -2216,19 +2207,7 @@ namespace Bloom.Api
                             }
                         }
 
-                        // stop listening for incoming http requests
-                        Debug.Assert(_listener.IsListening);
-                        if (_listener.IsListening)
-                        {
-                            //In BL-3290, a user quitely failed here each time he exited Bloom, with a Cannot access a disposed object.
-                            //according to http://stackoverflow.com/questions/11164919/why-httplistener-start-method-dispose-stuff-on-exception,
-                            //it's actually just responding to being closed, not disposed.
-                            //I don't know *why* for that user the listener was already stopped.
-                            _listener.Stop();
-                        }
-                        //if we keep getting that exception, we could move the Close() into the previous block
-                        _listener.Close();
-                        _listener = null;
+                        CloseListener();
                     }
                     if (_cache != null)
                     {
@@ -2250,6 +2229,29 @@ namespace Bloom.Api
                 }
             }
             IsDisposed = true;
+        }
+
+        /// <summary>
+        /// Close the listener and free up the port. Normally called only by Dispose.
+        /// Also used when normal shutdown times out.
+        /// </summary>
+        public void CloseListener()
+        {
+            if (_listener == null)
+                return; // probably called from shutdown timer, and normal shutdown got this far
+            // stop listening for incoming http requests
+            Debug.Assert(_listener.IsListening);
+            if (_listener.IsListening)
+            {
+                //In BL-3290, a user quitely failed here each time he exited Bloom, with a Cannot access a disposed object.
+                //according to http://stackoverflow.com/questions/11164919/why-httplistener-start-method-dispose-stuff-on-exception,
+                //it's actually just responding to being closed, not disposed.
+                //I don't know *why* for that user the listener was already stopped.
+                _listener.Stop();
+            }
+            //if we keep getting that exception, we could move the Close() into the previous block
+            _listener.Close();
+            _listener = null;
         }
 
         #endregion
