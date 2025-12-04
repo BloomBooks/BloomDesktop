@@ -1,7 +1,7 @@
 /* The Bloom "Edit"" pane currently works by having an outer window/html with a number of iframes.
         For better or worse, these iframes currently communicate with each other.
         These functions allow any of the iframes or the root to find any of the others. Each of these
-        has an "entry point" javacript which is a file bundled by webpack and <script>-included by the
+        has an "entry point" javascript which is a file bundled by webpack and <script>-included by the
         the html of that frame.
         In order to make the contents of that bundle and the context of that frame accessible from the
         outside, Webpack is set so that the first line of each of these "entry point" files
@@ -39,6 +39,22 @@ export function getEditTabBundleExports(): IEditViewFrameExports {
         );
     }
     return (<any>getRootWindow()).editTabBundle as IEditViewFrameExports;
+}
+
+// Do this task when the edit tab bundle is loaded. If it isn't loaded already, we set a timeout and do it when we can.
+// There is a similar doWhenToolboxLoaded in editViewFrame.ts.
+export function doWhenEditTabBundleLoaded(
+    task: (editViewFrameExports: IEditViewFrameExports) => any,
+): void {
+    const bundle = getRootWindow().editTabBundle as IEditViewFrameExports;
+    if (bundle) {
+        task(bundle);
+        return;
+    }
+
+    window.setTimeout(() => {
+        doWhenEditTabBundleLoaded(task);
+    }, 10);
 }
 
 function getRootWindow(): Window {
