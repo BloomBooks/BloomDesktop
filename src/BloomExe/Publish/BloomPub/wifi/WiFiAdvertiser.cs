@@ -213,23 +213,38 @@ namespace Bloom.Publish.BloomPub.wifi
             //
             // The network stack is going to use the interface it wants. We can't control what it
             // chooses. But we *can* control the IP address we advertise to remote Androids. We get
-            // that address up front using the same selection criteria as the network stack: find
-            // the network interface having the lowest "interface metric" -- Ethernet or WiFi, it
-            // could be either -- and advertise *that* interface's IP address.
-            // We then use that same IP address as the basis for the UdpClient.
+            // that address up front via an educated guess of which network interface the stack will
+            // choose, and advertise that interface's IP address.
             //
-            // The PC on which this runs likely has both WiFi and Ethernet. Either can work,
-            // but preference is given to WiFi. The reason: although this PC can likely go either
-            // way, the Android device only has WiFi. For the book transfer to work both Desktop
-            // and Reader must be on the same subnet. If Desktop is using Ethernet it may not be
-            // on the same subnet as Reader, especially on larger networks. The chances that both
-            // PC and Android are on the same subnet are greatest if both are using WiFi.
+            // This educated guess starts by checking each network in the system and, if it is up,
+            // noting its "interface metric" -- the main criterion the stack uses most of the time.
+            // There are rare exceptions when additional criteria carry greater weight, resulting
+            // in the stack making a different selection. As far as I can tell, those are rare
+            // enough and have mitigations complex enough that accounting for them could introduce
+            // more risk than reward. For more information these posts are helpful:
+            // https://learn.microsoft.com/en-us/troubleshoot/windows-server/networking/automatic-metric-for-ipv4-routes
+            // https://en.softcomputers.org/change-wireless-network-connection-priority-in-windows/
+            //
+            // The stack normally chooses the network interface having the lowest interface metric.
+            // This could be either Ethernet or WiFi (most PC laptops have both). However, we will
+            // prefer WiFi since (a) the Android only has WiFi, and (b) a successful book transfer
+            // requires both Desktop and Reader to be on the same subnet. If Desktop is using Ethernet
+            // it may not be on the same subnet as Reader, especially on larger networks. The chances
+            // that both PC and Android are on the same subnet are greatest if both are using WiFi.
+            //
+            // Our process boils down to this:
+            //   1. Find the active WiFi interface with the lowest interface metric,
+            //      and use its IP address;
+            //   2. Otherwise, find the active Ethernet interface with the lowest interface metric,
+            //      and use its IP address;
+            //   3. Otherwise, fail: IP address not found.
+            // The winning IP address is then used as the basis for the UdpClient which performs the
+            // actual data transfer.
             //
             // This method generates (a) the local IP address *from* which the book advert is
             // sent, and (b) the "directed broadcast address" *to* which the book advert is sent.
 
-            // Examine the network interfaces and determine which will be used for network traffic.
-            InterfaceInfo ifcResult = GetInterfaceStackWillUse();
+            InterfaceInfo ifcResult = GetInterfaceToAdvertise();
 
             if (ifcResult == null)
             {
@@ -307,6 +322,8 @@ namespace Bloom.Publish.BloomPub.wifi
 
                 // If we do eventually add capability to display the advert as a QR code,
                 // the local IP address will need to be included. Might as well add it now.
+                // It will be visible in a network trace, showing what Desktop considers
+                // its local IP to be.
                 advertisement.senderIP = _currentIpAddress;
 
                 _sendBytes = Encoding.UTF8.GetBytes(advertisement.ToString());
@@ -314,16 +331,16 @@ namespace Bloom.Publish.BloomPub.wifi
             }
         }
 
-        // Survey the network interfaces and determine which one, if any, the network
-        // stack will use for network traffic.
+        // Survey the network interfaces and make an educated guess as to which one,
+        // if any, the network stack will use for network traffic.
         //   - During the assessment the current leading WiFi candidate will be held in
         //     'IfaceWifi', and similarly the current best candidate for Ethernet will
         //     be in 'IfaceEthernet'.
-        //   - After assessment inform calling code of the winner by returning an enum
-        //     indicating which of the candidate structs to draw from: WiFi, Ethernet,
-        //     or neither.
+        //   - After assessment inform calling code of the winner by returning the winning
+        //     candidate struct to draw from -- WiFi or Ethernet -- or null if there is
+        //     no winner.
         //
-        private InterfaceInfo GetInterfaceStackWillUse()
+        private InterfaceInfo GetInterfaceToAdvertise()
         {
             InterfaceInfo IfaceWifi = new();
             InterfaceInfo IfaceEthernet = new();
