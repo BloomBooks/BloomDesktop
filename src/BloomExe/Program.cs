@@ -1351,7 +1351,7 @@ namespace Bloom
                 catch (Exception ex)
                 {
                     // If we can't log it, at least write to Console.Error.
-                    Console.Error.WriteLine("Exception during ReleaseBloomToken: " + ex);
+                    Console.Error.WriteLine($"Exception during ReleaseBloomToken: {ex}");
                 }
 
                 Environment.Exit(1);
