@@ -6,6 +6,7 @@ using System.IO;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Properties;
+using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
@@ -51,7 +52,10 @@ namespace Bloom.CollectionCreating
                 }
                 //review: this is a bit weird... we clone it instead of just using it just because this code path
                 //can handle creating the path from scratch
-                return new CollectionSettings(dlg.GetNewCollectionSettings()).SettingsFilePath;
+                var newCollectionSettings = dlg.GetNewCollectionSettings();
+                if (MiscUtils.ReportIfInvalidCollection(newCollectionSettings.PathToSettingsFile))
+                    return null;
+                return new CollectionSettings(newCollectionSettings).SettingsFilePath;
             }
         }
 
