@@ -1334,7 +1334,7 @@ namespace Bloom.Api
                 ErrorReport.NotifyUserOfProblem(GetServerStartFailureMessage());
                 Logger.WriteEvent("Error: Could not start up internal HTTP Server");
                 Analytics.ReportException(new ApplicationException("Could not start server."));
-                Program.Exit();
+                ProgramExit.Exit();
             }
 
             Logger.WriteEvent("Server will use " + ServerUrlEndingInSlash);
@@ -1428,7 +1428,7 @@ namespace Bloom.Api
             catch (Exception error)
             {
                 ErrorReport.NotifyUserOfProblem(error, GetServerStartFailureMessage());
-                Program.Exit();
+                ProgramExit.Exit();
             }
 
             ServerIsListening = true;

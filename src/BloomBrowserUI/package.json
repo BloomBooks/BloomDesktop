@@ -262,7 +262,7 @@
     },
     "husky": {
         "hooks": {
-            "pre-commit": "pretty-quick --staged && lint-staged --no-stash && ../../build/check-csharp-robustfile.sh && ../../build/check-csharp-xmlclasses.sh && ../../build/run-csharpier.sh",
+            "pre-commit": "pretty-quick --staged && lint-staged --no-stash && ../../build/check-csharp-robustfile.sh && ../../build/check-csharp-xmlclasses.sh && ../../build/check-csharp-ApplicationExit.sh &&../../build/run-csharpier.sh",
             "pre-commit-comments": "// The '--no-stash' option makes linting much faster and is safe since our lint-staged doesn't currently modify any files. If it did modify files, you could still use --no-stash but there are some corner cases where you'd need to manually resolve conflicts."
         }
     },

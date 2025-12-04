@@ -374,7 +374,7 @@ namespace Bloom
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
-                Program.Exit();
+                ProgramExit.Exit();
             }
 
             var server = parentContainer.Resolve<BloomServer>();

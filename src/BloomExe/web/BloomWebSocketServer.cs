@@ -161,7 +161,7 @@ namespace Bloom.Api
                 Environment.NewLine,
                 server.Port
             );
-            Program.Exit();
+            ProgramExit.Exit();
         }
 
         /// <summary>

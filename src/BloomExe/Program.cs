@@ -919,7 +919,7 @@ namespace Bloom
                 Thread.Sleep(2000);
                 if (hardExit || _projectContext?.ProjectWindow == null)
                 {
-                    Program.Exit();
+                    ProgramExit.Exit();
                 }
                 else
                 {
@@ -1296,69 +1296,6 @@ namespace Bloom
             return false;
         }
 
-        private static Thread _forceShutdownThread;
-
-        public static void Exit()
-        {
-            EnsureBloomReallyQuits();
-            Application.Exit();
-        }
-
-        private static void EnsureBloomReallyQuits()
-        {
-            if (_forceShutdownThread != null)
-                return; // already started
-            // We've had a problem with Bloom failing to shutdown, leaving a zombie thread that prevents
-            // other instances from starting up. If shutdown takes more than 20 seconds, we will just
-            // forcefully exit.
-            _forceShutdownThread = new Thread(() =>
-            {
-                Thread.Sleep(20000);
-                // We hope to never get here; it means that Bloom failed to fully
-                // quit 20s after we called Application.Exit(). We will now do some
-                // minimal essential cleanup and then force an exit.
-                // It might be nice to tell the user, but since we don't know
-                // what went wrong or where we are in the shutdown process, it's not
-                // obvious what to say. I don't even see how we can reliably show a message,
-                // since we're about to force a shut down. And I don't think there's
-                // anything that will be left in a bad state that the user might need
-                // to deal with.
-                try
-                {
-                    Logger.WriteEvent("Forcing Bloom to close after normal shutdown timed out.");
-                }
-                catch (Exception)
-                {
-                    // We might have already shut down the logger. If we can't log it, too bad.
-                }
-
-                // These things MUST be done so that Bloom can be started again without problems.
-                // They should be very fast.
-                try
-                {
-                    BloomServer._theOneInstance?.CloseListener();
-                }
-                catch (Exception)
-                {
-                    // Anything that goes wrong here shouldn't prevent either trying
-                    // the next cleanup or exiting.
-                }
-
-                try
-                {
-                    Program.ReleaseBloomToken();
-                }
-                catch (Exception) { }
-
-                Environment.Exit(1);
-                // If that doesn't prove drastic enough, an even more forceful option is
-                // Process.GetCurrentProcess().Kill();
-            });
-            _forceShutdownThread.Priority = ThreadPriority.Highest;
-            _forceShutdownThread.IsBackground = true; // so it won't block shutdown
-            _forceShutdownThread.Start();
-        }
-
         private static void HandleProjectWindowActivated(object sender, EventArgs e)
         {
             _projectContext.ProjectWindow.Activated -= HandleProjectWindowActivated;
@@ -1449,7 +1386,7 @@ namespace Bloom
         /// <param name="formToClose">If provided, this form will be closed after choosing a
         /// collection and before opening it. Currently, this is used to close the Shell at the proper
         /// time when switching collectons.</param>
-        /// <returns>true if we switched collections. (However, in this case we may call Application.Exit(), so the
+        /// <returns>true if we switched collections. (However, in this case we may exit the application, so the
         /// caller shouldn't do anything unnecessary.)</returns>
         public static bool ChooseACollection(Shell formToClose = null)
         {
@@ -1488,7 +1425,7 @@ namespace Bloom
                             // and we don't want to exit the application. Otherwise, we are in initial startup and
                             // closing the chooser should exit the application.
                             if (formToClose == null)
-                                Program.Exit();
+                                ProgramExit.Exit();
                             return false;
                         }
 
@@ -1553,11 +1490,11 @@ namespace Bloom
             }
             else if (((Shell)sender).QuitForVersionUpdate)
             {
-                Program.Exit();
+                ProgramExit.Exit();
             }
             else
             {
-                Program.Exit();
+                ProgramExit.Exit();
             }
         }
 
