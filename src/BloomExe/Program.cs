@@ -1348,7 +1348,11 @@ namespace Bloom
                 {
                     Program.ReleaseBloomToken();
                 }
-                catch (Exception) { }
+                catch (Exception ex)
+                {
+                    // If we can't log it, at least write to Console.Error.
+                    Console.Error.WriteLine("Exception during ReleaseBloomToken: " + ex);
+                }
 
                 Environment.Exit(1);
                 // If that doesn't prove drastic enough, an even more forceful option is
