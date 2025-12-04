@@ -6956,6 +6956,11 @@ export class CanvasElementManager {
         );
         let matchWidthOfContainer = imgAspectRatio > containerAspectRatio;
         if (fitCoverMode) {
+            // In case it is NOT already cropped, its size will be 100%, so we must capture
+            // this before we change the parent.
+            const oldImgWidth =
+                CanvasElementManager.pxToNumber(img.style.width) ||
+                img.clientWidth;
             // make the canvas element fill the container
             bgCanvasElement.style.width = bloomCanvasWidth + "px";
             bgCanvasElement.style.height = bloomCanvasHeight + "px";
@@ -6963,9 +6968,6 @@ export class CanvasElementManager {
             bgCanvasElement.style.top = "0px";
             //
             matchWidthOfContainer = !matchWidthOfContainer;
-            const oldImgWidth =
-                CanvasElementManager.pxToNumber(img.style.width) ||
-                img.clientWidth;
             // This is the height it would be if not cropped.
             const oldImgHeight =
                 (oldImgWidth * img.naturalHeight) / img.naturalWidth;
