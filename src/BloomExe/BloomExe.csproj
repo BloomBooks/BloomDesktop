@@ -11,7 +11,7 @@
 		<Company>SIL</Company>
 		<Product>Bloom</Product>
 		<Copyright>© SIL International 2012-2025</Copyright>
-		<Version>6.3.0.0</Version>
+		<Version>6.4.0.0</Version>
 		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 		<BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
 		<TargetFramework>net8.0-windows</TargetFramework>
@@ -221,11 +221,11 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 			<Arm64SqliteSource>$(OutDir)runtimes\win-arm64\native\e_sqlite3.dll</Arm64SqliteSource>
 			<Arm64SqliteTarget>$(OutDir)e_sqlite3.dll</Arm64SqliteTarget>
 		</PropertyGroup>
-		
+
 		<!-- Fail immediately if ARM64 SQLite library is not where NuGet should have placed it -->
 		<Error Text="ARM64 SQLite library not found at expected location: $(Arm64SqliteSource). Check that RuntimeIdentifiers includes 'win-arm64' and NuGet restore completed successfully."
 		       Condition="!Exists('$(Arm64SqliteSource)')" />
-		
+
 		<!-- Copy ARM64 SQLite library to main output directory -->
 		<Copy SourceFiles="$(Arm64SqliteSource)" DestinationFiles="$(Arm64SqliteTarget)" />
 		<Message Text="Copied ARM64 SQLite library: $(Arm64SqliteSource) -> $(Arm64SqliteTarget)" Importance="high" />

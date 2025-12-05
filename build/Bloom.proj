@@ -8,7 +8,7 @@
 	May include something like /p:channel=Alpha.
   To build locally, you need a Developer shell (currently start menu, Developer Command Prompt for Visual Studio 2022).
   CD to this build directory. You will probably need to run MsBuild /t:RestoreBuildTasks. Then use a command like
-  MSbuild /p:InstallerOutputFolder=C:\github\BloomDesktop\output\installer\result;BUILD_NUMBER=6.3.1001.0;channel=LocalBuilt /t:Installer
+  MSbuild /p:InstallerOutputFolder=C:\github\BloomDesktop\output\installer\result;BUILD_NUMBER=6.4.1001.0;channel=LocalBuilt /t:Installer
   To test updating, modify ApplicationUpdateSupport.GetUpdateUrl to return an absolute path to the directory
   where the output is placed (InstallerOutputFolder in the command line above).
   -->
@@ -93,7 +93,7 @@
     <Message Text="BuildHash: $(BuildHash)" Importance="high"/>
     <!-- Note, after some thought, we've decided this is the best place to keep the version number
 			(not on TeamCity, not in the projects). -->
-    <CreateProperty Value="6.3.$(BuildCounter)">
+    <CreateProperty Value="6.4.$(BuildCounter)">
       <Output PropertyName="Version" TaskParameter="Value"/>
     </CreateProperty>
     <CreateProperty Value="$(Version).$(BuildHash)">
@@ -406,7 +406,7 @@
     <Exec Command='sign "$(RootDir)\output\$(Configuration)\x64\Bloom.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
     <Exec Command='sign "$(RootDir)\output\$(Configuration)\x64\BloomPdfMaker.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
     <Exec Command='sign "$(RootDir)\output\$(Configuration)\x64\PdfDroplet.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
-    <!-- restore to Sign ARM64 executables 
+    <!-- restore to Sign ARM64 executables
     <Exec Command='sign "$(RootDir)\output\$(Configuration)\arm64\Bloom.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
     <Exec Command='sign "$(RootDir)\output\$(Configuration)\arm64\BloomPdfMaker.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
     <Exec Command='sign "$(RootDir)\output\$(Configuration)\arm64\PdfDroplet.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
@@ -470,7 +470,7 @@
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
 		IsPublicRead="true" />
-    <!-- Restore to Upload ARM64 packages 
+    <!-- Restore to Upload ARM64 packages
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
 		SourceFiles="$(InstallerOutputFolder)/arm64/$(VelopackDeltaPkgArm64)"
