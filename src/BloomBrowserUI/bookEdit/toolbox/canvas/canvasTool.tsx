@@ -91,6 +91,13 @@ const CanvasToolControls: React.FunctionComponent = () => {
         ToolBox.addWhenClosingToolTask(() => {
             setIsStyleSelectOpen(false);
         });
+        window.addEventListener(
+            "blur",
+            () => {
+                setIsStyleSelectOpen(false);
+            },
+            { once: true },
+        );
     }
     function openOutlineColorSelect() {
         setIsOutlineColorSelectOpen(true);
@@ -98,6 +105,13 @@ const CanvasToolControls: React.FunctionComponent = () => {
         ToolBox.addWhenClosingToolTask(() => {
             setIsOutlineColorSelectOpen(false);
         });
+        window.addEventListener(
+            "blur",
+            () => {
+                setIsOutlineColorSelectOpen(false);
+            },
+            { once: true },
+        );
     }
 
     // Calls to useL10n
