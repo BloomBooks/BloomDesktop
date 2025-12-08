@@ -851,6 +851,10 @@ namespace Bloom.TeamCollection
                 // still not interested in it, so harmless to respond 'true'.)
                 if (Path.GetExtension(path) == ".tmp")
                     return true;
+                // The creation of the temp folder where we write local stuff during put
+                // is not interesting.
+                if (path.Replace("\\", "/").ToLowerInvariant().EndsWith("/books/temp"))
+                    return true;
                 // Not the book we most recently wrote, so not an 'own write'.
                 // Note that our zip library sometimes creates a temp file by adding a suffix to the
                 // path, so it's very likely that a recent write of a path starting with the name of the book we
