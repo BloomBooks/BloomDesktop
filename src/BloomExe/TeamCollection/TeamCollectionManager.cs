@@ -47,7 +47,7 @@ namespace Bloom.TeamCollection
         // Sometimes a TC may be disconnected, that is, we know this is a TC,
         // but we can't currently do TC operations, for example, because we don't
         // find the folder where the repo lives, or it's a dropbox folder but
-        // Dropbox is not running or we can't ping dropbox.com.
+        // Dropbox is not running or we can't access dropbox.com.
         // A collection we know is a TC may also be disabled because there is no
         // enterprise subscription. Another possibility is that we can't do TC
         // operations because the user has not registered; I've been calling this
