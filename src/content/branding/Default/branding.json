@@ -3,7 +3,7 @@
         {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
-            "content": "<img class='branding' src='made-with-bloom-badge.svg'/>",
+            "content": "<div class='bloom-branding-wrapper'><img class='branding' src='made-with-bloom-badge.svg'/></div>",
             "condition": "always"
         }
     ]
