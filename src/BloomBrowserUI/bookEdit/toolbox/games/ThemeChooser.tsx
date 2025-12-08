@@ -43,6 +43,13 @@ export const ThemeChooser: React.FunctionComponent<{
     function openSelect() {
         setIsSelectOpen(true);
         ToolBox.addWhenClosingToolTask(() => setIsSelectOpen(false));
+        window.addEventListener(
+            "blur",
+            () => {
+                setIsSelectOpen(false);
+            },
+            { once: true },
+        );
     }
     const handleChooseTheme = (event) => {
         const newTheme = event.target.value;
