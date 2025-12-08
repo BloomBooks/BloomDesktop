@@ -9,9 +9,13 @@ using System.Windows.Forms;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using L10NSharp;
+using SIL.IO;
 using SIL.PlatformUtilities;
+using System.Collections.Generic;
+
 #if !__MonoCS__
 using Squirrel;
+using Microsoft.Win32;
 #endif
 
 namespace Bloom
@@ -377,16 +381,16 @@ namespace Bloom
 #if !__MonoCS__
         internal static bool NoUpdatesAvailable(UpdateInfo info)
         {
-            if (Environment.OSVersion.Version.Major < 11)
-            {
-                var version = info?.FutureReleaseEntry?.Version;
-                if (
-                    version != null
-                    && (
-                        version.Version.Major > 6
-                        || (version.Version.Major == 6 && version.Version.Minor > 2)
-                    )
+            var version = info?.FutureReleaseEntry?.Version;
+            if (
+                version != null
+                && (
+                    version.Version.Major > 6
+                    || (version.Version.Major == 6 && version.Version.Minor > 2)
                 )
+            )
+            {
+                if (Environment.OSVersion.Version.Major < 10 || !IsWindows11Build())
                 {
                     // Bloom 6.3 and later requires Windows 11 or later.
                     // If we are running on Windows 10 or earlier, we cannot update to it.
@@ -398,6 +402,43 @@ namespace Bloom
                 }
             }
             return info == null || info.ReleasesToApply.Count == 0;
+        }
+
+        /// <summary>
+        /// Windows 11 still thinks its major version is 10.  The recommended way to detect
+        /// Windows 11 is to check the build number which is stored in the registry.
+        /// </summary>
+        private static bool IsWindows11Build()
+        {
+            try
+            {
+                using (
+                    RegistryKey reg = Registry.LocalMachine.OpenSubKey(
+                        @"SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+                    )
+                )
+                {
+                    if (reg != null)
+                    {
+                        object currentBuildObj = reg.GetValue("CurrentBuild");
+                        if (
+                            currentBuildObj != null
+                            && int.TryParse(currentBuildObj.ToString(), out int currentBuild)
+                        )
+                        {
+                            // Windows 11 build numbers start from 22000
+                            return currentBuild >= 22000;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                SIL.Reporting.Logger.WriteEvent(
+                    $"Squirrel: Error detecting Windows version: {ex.Message}"
+                );
+            }
+            return false; // Default to false if detection fails
         }
 #endif
 
@@ -418,26 +459,50 @@ namespace Bloom
         // Adapted from Squirrel's EasyModeMixin.UpdateApp, but this version yields the new directory.
         internal static async Task<UpdateResult> UpdateApp(IUpdateManager manager)
         {
+            bool tryVelopackTransition = false;
             bool ignoreDeltaUpdates = false;
+            ToastNotifier updatingNotifier = null;
+            List<ReleaseEntry> releasesToDownload = null;
 
             retry:
             var updateInfo = default(UpdateInfo);
             string newInstallDirectory = null;
+            var downloadSucceeded = false;
 
             try
             {
                 updateInfo = await manager.CheckForUpdate(ignoreDeltaUpdates, x => { });
                 if (NoUpdatesAvailable(updateInfo))
+                {
+                    // It's quite possible that no updates are available.
+                    // However, if the update process threw an exception and we detected that an update
+                    // to a version beyond 6.2 has been downloaded, we should try to transition to finishing
+                    // a velopack install.  The retry will not find any updates, because they've already been
+                    // downloaded, but the transition may be possible since the Squirrel update appears to
+                    // install velopack's Update.exe before it crashes trying to unpack the rest of the files.
+                    if (tryVelopackTransition)
+                    {
+                        SIL.Reporting.Logger.WriteEvent(
+                            "Squirrel: trying to transition to velopack install"
+                        );
+                        // If the transition to velopack succeeeds, this method will not return.
+                        // If it returns, the update has failed.
+                        return TransitionToVelopackIfPossible(manager, updatingNotifier);
+                    }
                     return new UpdateResult()
                     {
                         NewInstallDirectory = null,
                         Outcome = UpdateOutcome.AlreadyUpToDate
                     }; // none available.
-
-                var updatingNotifier = new ToastNotifier();
+                }
+                if (updatingNotifier != null)
+                {
+                    updatingNotifier.CloseSafely();
+                }
+                updatingNotifier = new ToastNotifier();
                 updatingNotifier.Image.Image = Resources.Bloom;
                 var version = updateInfo.FutureReleaseEntry.Version;
-                var releasesToDownload = updateInfo.ReleasesToApply;
+                releasesToDownload = updateInfo.ReleasesToApply;
                 var size = releasesToDownload.Sum(x => x.Filesize) / 1024;
                 var updatingMsg = String.Format(
                     LocalizationManager.GetString(
@@ -480,6 +545,7 @@ namespace Bloom
                 SIL.Reporting.Logger.WriteEvent(
                     "Squirrel update download succeeded at " + DateTime.Now
                 );
+                downloadSucceeded = true;
 
                 // There's no telling what fraction of the total download and update will be. With a bad connection downloading can take a long time.
                 // With a lot of updates applying can take a long time.  If it has to
@@ -530,9 +596,28 @@ namespace Bloom
                     // some sort of discontinuity in the sequence of deltas.
                     ignoreDeltaUpdates = true;
                     SIL.Reporting.Logger.WriteEvent(
-                        "Squirrel update incremental download failed; trying whole package. Exception: "
-                            + ex.Message
+                        $"Squirrel update incremental download failed; trying whole package. {ex}"
                     );
+                    if (
+                        downloadSucceeded
+                        && releasesToDownload != null
+                        && releasesToDownload.Count > 0
+                    )
+                    {
+                        // If the exception happened after we had successfully downloaded updates,
+                        // and the updates include a version beyond 6.2, we should try to transition to
+                        // a velopack installation, since the Squirrel update appears to crashed while
+                        // install the velopack release.  So we set a flag to do that on the retry.  If
+                        // the updates have all downloaded successfully, the retry will find no updates
+                        // available.
+                        var downLoadVersion = releasesToDownload[
+                            releasesToDownload.Count - 1
+                        ].Version.ToString();
+                        if (downLoadVersion.CompareTo("6.2.") > 0)
+                        {
+                            tryVelopackTransition = true;
+                        }
+                    }
                     goto retry;
                 }
 
@@ -541,9 +626,7 @@ namespace Bloom
                 // RELEASES is getting uploaded before the delta and nupkg files (due to subtask overlap
                 // in MsBuild? Due to 'eventual consistency' not yet being attained by S3?).
                 // In any case we don't need to crash the program over a failed update. Just log it.
-                SIL.Reporting.Logger.WriteEvent(
-                    "Squirrel update failed: " + ex.Message + ex.StackTrace
-                );
+                SIL.Reporting.Logger.WriteEvent($"Squirrel update failed: {ex}");
                 return new UpdateResult()
                 {
                     NewInstallDirectory = null,
@@ -558,6 +641,48 @@ namespace Bloom
                     newInstallDirectory == null
                         ? UpdateOutcome.AlreadyUpToDate
                         : UpdateOutcome.GotNewVersion
+            };
+        }
+
+        private static UpdateResult TransitionToVelopackIfPossible(
+            IUpdateManager manager,
+            ToastNotifier updatingNotifier
+        )
+        {
+            updatingNotifier?.Hide();
+            updatingNotifier?.CloseSafely();
+
+            // This finishes cleaning up what Squirrel started, and then restarts Bloom.
+            // The code here is largely copied from code in Bloom 6.3 dealing with Velopack installs.
+            // Velopack always puts our EXE in a directory called "current" under one that contains "Update.exe".
+            // If Update.exe is present, then it's fair to assume this is an installed build.
+            // In that case, if we're not in a "current" directory, we need run Update.exe to clean up the mess.
+            // Squirrel seems to install a velopack Update.exe before it fails to apply the rest of the update.
+            var location = Assembly.GetExecutingAssembly().Location;
+            var bloomDir = Path.GetDirectoryName(location);
+            var mainInstallDir = Path.GetDirectoryName(bloomDir);
+            var updateExePath = Path.Combine(mainInstallDir, "Update.exe");
+            if (
+                RobustFile.Exists(updateExePath)
+                && Path.GetFileName(bloomDir).ToLowerInvariant() != "current"
+            )
+            {
+                // We can tell Update.exe to wait for this process to finish before it continues
+                // with tasks that may involve replacing or moving our exe. The "start" argument tells it
+                // to complete any updates that are in progress (which will be an incomplete update from
+                // Squirrel, that happens because our update logic for Squirrel did not use Update.exe to
+                // restart the app, as was apparently expected).
+                var processId = Process.GetCurrentProcess().Id;
+                var args = "start --waitPid " + processId;
+
+                Process.Start(updateExePath, args);
+                // Exit so Update.exe can finish the install and then restart Bloom.
+                Environment.Exit(0);
+            }
+            return new UpdateResult()
+            {
+                NewInstallDirectory = null,
+                Outcome = UpdateOutcome.InstallFailed
             };
         }
 #endif
