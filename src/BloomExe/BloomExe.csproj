@@ -191,8 +191,7 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 		<Copy SourceFiles="@(FfmpegFiles)" DestinationFolder="$(OutDir)" />
 		<Message Text="Copying platform-specific ffmpeg for $(Platform)" Importance="high" />
 
-		<Error Text="Platform-specific ffmpeg not found for $(Platform) - expected at @(FfmpegFiles)"
-		       Condition="'$(Platform)'=='ARM64' AND !Exists('@(FfmpegFiles)')" />
+		<Error Text="Platform-specific ffmpeg not found for $(Platform) - expected at @(FfmpegFiles)" Condition="'$(Platform)'=='ARM64' AND !Exists('@(FfmpegFiles)')" />
 	</Target>
 	<Target Name="ReallyAfterBuild" AfterTargets="CopySomeFiles">
 		<Copy SourceFiles="@(CopyForSILMedia)" DestinationFolder="$(OutDir)" />
@@ -228,7 +227,7 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 
 		<!-- Copy ARM64 SQLite library to main output directory -->
 		<Copy SourceFiles="$(Arm64SqliteSource)" DestinationFiles="$(Arm64SqliteTarget)" />
-		<Message Text="Copied ARM64 SQLite library: $(Arm64SqliteSource) -> $(Arm64SqliteTarget)" Importance="high" />
+		<Message Text="Copied ARM64 SQLite library: $(Arm64SqliteSource) -&gt; $(Arm64SqliteTarget)" Importance="high" />
 	</Target>
 	<ItemGroup>
 		<PackageReference Include="Autofac" Version="6.0.0" />
@@ -251,6 +250,7 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 		<PackageReference Include="NAudio" Version="1.10.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="PDFsharp" Version="6.2.1" />
+		<PackageReference Include="QRCoder" Version="1.7.0" />
 		<PackageReference Include="RestSharp" Version="106.12.0" />
 		<PackageReference Include="Sentry" Version="3.9.4" />
 		<PackageReference Include="SharpZipLib" Version="1.3.3" />

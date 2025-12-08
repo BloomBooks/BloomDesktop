@@ -2046,6 +2046,8 @@ namespace Bloom.Book
             UpdateCharacterStyleMarkup(OurHtmlDom);
 
             OurHtmlDom.SetImageAltAttrsFromDescriptions(_bookData.Language1.Tag);
+            // We've messed with xmatter, branding...need this back to what it should be.
+            //BookStorage.UpdateQrCode(OurHtmlDom, true, Language1Tag);
 
             //we've removed and possible added pages, so our page cache is invalid
             _pagesCache = null;
@@ -5282,6 +5284,7 @@ namespace Bloom.Book
         public void UpdateSupportFiles()
         {
             Storage.UpdateSupportFiles();
+            BookStorage.UpdateQrCode(OurHtmlDom, true, Language1Tag, _bookData.Language1.Name);
         }
 
         private bool IsPageProtectedFromRemoval(SafeXmlElement pageElement)
@@ -5937,7 +5940,7 @@ namespace Bloom.Book
             // that removing it causes. If you find a reason we need it, please document thoroughly.
             //BookInfo.Save();
             // Should not be needed when deleting customBookStyles.css, but definitely when we change theme.
-            Storage.UpdateSupportFiles();
+            UpdateSupportFiles();
             // temporary while we're in transition between storing cover color in the HTML and in the bookInfo
             var color = BookInfo.AppearanceSettings.GetStringPropertyValueOrDefault(
                 "cover-background-color",

@@ -1001,3 +1001,46 @@ The buffer would be absent if the marginBox had a border or the page has a backg
     --topLevel-text-padding-right: var(--topLevel-text-padding);
     --topLevel-text-padding-left: var(--topLevel-text-padding);
 }
+
+.bloom-branding-wrapper {
+    border: 3px solid @bloom-red;
+    // there may be a little space bewteen our logo and the border,
+    //  especially where the logo is rounded on the right.
+    background-color: white;
+    border-radius: 8px;
+    display: inline-grid;
+    grid-template-columns: max-content max-content;
+    grid-auto-rows: auto;
+    column-gap: 2px;
+    row-gap: 2px;
+    width: fit-content;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    .bloom-qrcode {
+        width: 2cm;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+    .bloom-lang-on-blorg {
+        font-size: x-small;
+        grid-column: 1 / span 2;
+        width: 100%;
+        box-sizing: border-box;
+        margin-left: 12px;
+        margin-right: 10px;
+        margin-bottom: 10px;
+
+        // bloom logo is set to 5cm; qr code to 2cm.
+        // This will need to be overridden if this structure is used
+        // with another logo that wants to be a different size; however,
+        // the current intent is only to use this with the Bloom logo.
+        // I would like to let the column width be set by the first row,
+        // and the second row just fill that width, but I could not find
+        // a way to do that. However, a 7cm max-width will cause English,
+        // at least, to fit nicely on two lines for most language names,
+        // and probably won't look bad for wider logos, though it might
+        // look strange with a much narrower one.
+        max-width: 7cm;
+    }
+}

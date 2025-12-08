@@ -758,6 +758,8 @@ namespace Bloom.Publish.BloomPub
                 string src = imgElt.GetAttribute("src");
                 if (ImageUtils.IsPlaceholderImageFilename(src))
                     continue;
+                if (src.StartsWith("data:"))
+                    continue;
                 var file = UrlPathString.CreateFromUrlEncodedString(src).PathOnly.NotEncoded;
                 if (!RobustFile.Exists(Path.Combine(folderPath, file)))
                 {
