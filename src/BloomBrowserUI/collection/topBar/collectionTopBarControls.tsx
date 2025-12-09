@@ -12,6 +12,7 @@ import {
     kWarningColor,
     lightTheme,
 } from "../../bloomMaterialUITheme";
+import { SerializedStyles, css as emotionCss } from "@emotion/react";
 const bloomApiPrefix = getBloomApiPrefix(false);
 
 const teamCollectionIcon = `${bloomApiPrefix}teamCollection/Team Collection.svg`;
@@ -64,6 +65,13 @@ const statusIcons: Record<TeamCollectionStatus, string> = {
 const buttonBackground = kBloomBlueTextBackground;
 const buttonTextColor = "white";
 const buttonDisabledTextColor = "#d9e5e8";
+const folderIconCss: SerializedStyles = emotionCss`
+    & img {
+        width: 20px;
+        height: 20px;
+        object-fit: contain;
+    }
+`;
 
 export const CollectionTopBarControls: React.FunctionComponent = () => {
     const [teamCollectionStatus, setTeamCollectionStatus] = useState(
@@ -125,6 +133,7 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
                     backgroundColor={buttonBackground}
                     textColor={buttonTextColor}
                     disabledTextColor={buttonDisabledTextColor}
+                    cssOverrides={folderIconCss}
                 />
             </div>
         ),
