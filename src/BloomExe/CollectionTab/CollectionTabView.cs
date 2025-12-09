@@ -345,11 +345,9 @@ namespace Bloom.CollectionTab
         {
             var status = tcManager?.CollectionStatus ?? TeamCollectionStatus.None;
 
-            var statusPayload = new TeamCollectionTopBarStatus
-            {
-                Status = status.ToString(),
-                ShowReloadButton = tcManager?.MessageLog?.ShouldShowReloadButton ?? false,
-            };
+            dynamic statusPayload = new DynamicJson();
+            statusPayload.status = status.ToString();
+            statusPayload.showReloadButton = tcManager?.MessageLog?.ShouldShowReloadButton ?? false;
 
             _webSocketServer.SendBundle(
                 "collectionTopBar",
