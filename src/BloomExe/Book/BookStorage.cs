@@ -2780,14 +2780,15 @@ namespace Bloom.Book
             HtmlDom dom,
             bool shouldHaveQrCode,
             string langCode,
-            string langName
+            CollectionSettings settings,
+            string bookFolderPath
         )
         {
             var qrWrappers = dom.SafeSelectNodes(
                 "//div[contains(@class, 'bloom-branding-wrapper')]"
             );
 
-            string base64Svg = null;
+            string qrFileName = null;
 
             foreach (var qrWrapper in qrWrappers)
             {
@@ -2806,6 +2807,8 @@ namespace Bloom.Book
                     if (img != null)
                     {
                         qrWrapper.RemoveChild(img);
+                        // We could delete the svg file, but I'm inclined to leave it for
+                        // our usual cleanup code.
                     }
 
                     if (label != null)
@@ -2813,7 +2816,7 @@ namespace Bloom.Book
                     return;
                 }
 
-                if (base64Svg == null)
+                if (qrFileName == null)
                 {
                     using (var qrGenerator = new QRCodeGenerator())
                     {
@@ -2835,8 +2838,11 @@ namespace Bloom.Book
                             // Modify SVG to make corner detection pattern centers red
                             svgContent = MakeQrCodeDotsRed(svgContent);
 
-                            // Create data URL for SVG
-                            base64Svg = Convert.ToBase64String(Encoding.UTF8.GetBytes(svgContent));
+                            qrFileName = "lang-qr-code.svg";
+                            RobustFile.WriteAllText(
+                                Path.Combine(bookFolderPath, qrFileName),
+                                svgContent
+                            );
                         }
                     }
                 }
@@ -2848,7 +2854,7 @@ namespace Bloom.Book
                     qrWrapper.AppendChild(img);
                 }
 
-                img.SetAttribute("src", "data:image/svg+xml;base64," + base64Svg);
+                img.SetAttribute("src", qrFileName);
                 img.SetAttribute("alt", "QR code linking to book online");
 
                 if (label == null)
@@ -2858,11 +2864,7 @@ namespace Bloom.Book
                     qrWrapper.AppendChild(label);
                 }
 
-                // Todo: localize
-                string labelSrc = "Get more books in the {0} language on BloomLibrary.org";
-
-                // Todo: nice name for language
-                label.InnerText = String.Format(labelSrc, langName);
+                label.InnerText = settings.BadgeQrCodeLabelLocalizedWithLang;
             }
         }
 
@@ -2885,6 +2887,18 @@ namespace Bloom.Book
             var index = svgContent.LastIndexOf("</svg>");
             if (index < 0)
                 return svgContent;
+            // Review: this is a very crude way of making the corner dots red. It works
+            // only because the pixel grid is a specific size. I don't know whether it
+            // would still work with a different length string, which might require more
+            // or fewer dots in the square. However, the string we're making this qr code
+            // for is fixed in length...only the actual language code changes. So I think
+            // this should be good enough.
+            // (AI suggested various strategies for things like finding which path in the
+            // svg is the corner dots, but they don't work. The whole dot pattern including
+            // the corner dots is one path as produced by qrcoder. There's no obvious way
+            // to extract a piece of it that corresponds to the corner dots. If necessary,
+            // it might be possible to figure out where they must be based on the overall
+            // size.)
             return svgContent.Substring(0, index)
                 + @"  <path fill=""#D65649"" d=""M 2 2 h3 v3 h-3 z""/>
   <path fill=""#D65649"" d=""M 28 2 h3 v3 h-3 z""/>

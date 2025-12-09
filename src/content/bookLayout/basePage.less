@@ -1018,9 +1018,23 @@ The buffer would be absent if the marginBox had a border or the page has a backg
     margin-left: auto;
     margin-right: auto;
     .bloom-qrcode {
+        // Review: This produces some unevenness in rendering the QR code.
+        // On my monitor, it looks better if the size (without padding)
+        // is a multiple of 33 pixels (it's a 33x33 grid). Probably
+        // 66 pixels plus whatever padding we want. But that doesn't
+        // go as well with the size of the other elements; it would currently
+        // work out to 86px wherease the 2cm (75.6px) size we have now is closer to
+        // the height of the Bloom logo.
+        // I'm not at all sure that making the logo 66px would look better on
+        // all monitors, though...it might only work if the real pixel size is
+        // 96dpi or a multiple. Or course the larger we can make it the less
+        // the pixelation matters.
         width: 2cm;
         padding: 10px;
         box-sizing: border-box;
+        // suggested by AI, don't seem to help
+        // shape-rendering: crispEdges;
+        // vector-effect: non-scaling-stroke;
     }
     .bloom-lang-on-blorg {
         font-size: x-small;

@@ -48,6 +48,8 @@ namespace Bloom.Collection
         // "Internal" so CollectionSettingsApi can update these.
         internal readonly string[] PendingFontSelections = new[] { "", "", "" };
         internal string PendingNumberingStyle { get; set; }
+        internal bool PendingShowBlorgLanguageQrCode;
+        internal string PendingBadgeQrCodeLabel;
         internal string PendingXmatter { get; set; }
         internal string PendingAdministrators { get; set; }
 
@@ -109,6 +111,8 @@ namespace Bloom.Collection
                 ? _collectionSettings.AllLanguages[2].FontName
                 : "";
             PendingNumberingStyle = _collectionSettings.PageNumberStyle;
+            PendingShowBlorgLanguageQrCode = _collectionSettings.ShowBlorgLanguageQrCode;
+            PendingBadgeQrCodeLabel = _collectionSettings.BadgeQrCodeLabelLocalized;
             PendingXmatter = _collectionSettings.XMatterPackName;
             PendingAdministrators = _collectionSettings.AdministratorsDisplayString;
             CollectionSettingsApi.DialogBeingEdited = this;
@@ -413,6 +417,8 @@ namespace Bloom.Collection
             _collectionSettings.District = _districtText.Text.Trim();
 
             _collectionSettings.PageNumberStyle = PendingNumberingStyle; // non-localized key
+            _collectionSettings.ShowBlorgLanguageQrCode = PendingShowBlorgLanguageQrCode;
+            _collectionSettings.BadgeQrCodeLabel = PendingBadgeQrCodeLabel;
 
             if (_pendingSubscription != null)
             {

@@ -355,6 +355,23 @@ export function useApiState<T>(
     };
     return [value, setFunction];
 }
+export function useApiStringWithUpdate(
+    urlSuffix: string,
+    defaultValue: string,
+): [string, (value: string) => void] {
+    const [value, setValue] = useState<string>(defaultValue);
+    useEffect(() => {
+        get(urlSuffix, (c) => {
+            setValue(c.data);
+        });
+    }, []);
+
+    const setFunction = (value: string) => {
+        postString(urlSuffix, value);
+        setValue(value);
+    };
+    return [value, setFunction];
+}
 
 // A variant of useApiState which returns a third value indicating whether we actually got the data yet.
 // Possibly this could just replace useApiState, and clients that don't want the third argument could

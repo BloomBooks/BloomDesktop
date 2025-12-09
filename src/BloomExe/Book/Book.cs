@@ -5284,7 +5284,13 @@ namespace Bloom.Book
         public void UpdateSupportFiles()
         {
             Storage.UpdateSupportFiles();
-            BookStorage.UpdateQrCode(OurHtmlDom, true, Language1Tag, _bookData.Language1.Name);
+            BookStorage.UpdateQrCode(
+                OurHtmlDom,
+                CollectionSettings.ShowBlorgLanguageQrCode,
+                Language1Tag,
+                CollectionSettings,
+                FolderPath
+            );
         }
 
         private bool IsPageProtectedFromRemoval(SafeXmlElement pageElement)
