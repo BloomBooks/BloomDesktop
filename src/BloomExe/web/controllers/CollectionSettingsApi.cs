@@ -185,6 +185,56 @@ namespace Bloom.web.controllers
                 },
                 true
             );
+            apiHandler.RegisterBooleanEndpointHandler(
+                kApiUrlPart + "showBlorgLanguageQrCode",
+                request =>
+                    (DialogBeingEdited == null)
+                        ? _collectionSettings.ShowBlorgLanguageQrCode
+                        : DialogBeingEdited.PendingShowBlorgLanguageQrCode,
+                (request, val) =>
+                {
+                    if (DialogBeingEdited != null)
+                    {
+                        DialogBeingEdited.PendingShowBlorgLanguageQrCode = val;
+                        // We don't really need a change as drastic as a restart,
+                        // but I don't expect this to change often, and somehow the
+                        // badge needs to get updated.
+                        if (val != _collectionSettings.ShowBlorgLanguageQrCode)
+                            DialogBeingEdited.ChangeThatRequiresRestart();
+                    }
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "badgeQrCodeLabel",
+                request =>
+                {
+                    if (request.HttpMethod == HttpMethods.Get)
+                    {
+                        request.ReplyWithText(
+                            DialogBeingEdited == null
+                                ? _collectionSettings.BadgeQrCodeLabelLocalized
+                                : DialogBeingEdited.PendingBadgeQrCodeLabel
+                        );
+                    }
+                    else // post
+                    {
+                        var val = request.RequiredPostString();
+
+                        if (DialogBeingEdited != null)
+                        {
+                            DialogBeingEdited.PendingBadgeQrCodeLabel = val;
+                            // We don't really need a change as drastic as a restart,
+                            // but I don't expect this to change often, and somehow the
+                            // badge needs to get updated.
+                            if (val != _collectionSettings.BadgeQrCodeLabelLocalizedWithLang)
+                                DialogBeingEdited.ChangeThatRequiresRestart();
+                        }
+                        request.PostSucceeded();
+                    }
+                },
+                true
+            );
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "branding",
                 request =>

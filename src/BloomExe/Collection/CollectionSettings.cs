@@ -67,6 +67,11 @@ namespace Bloom.Collection
         /// </summary>
         public string ExpiredBookshelf = "";
 
+        public bool ShowBlorgLanguageQrCode = true;
+
+        // if this is null, relevant code uses the default, so we don't have to initialize it here
+        public string BadgeQrCodeLabel;
+
         public static readonly Dictionary<string, string> CssNumberStylesToCultureOrDigits =
             new Dictionary<string, string>()
             {
@@ -401,10 +406,42 @@ namespace Bloom.Collection
                 xml.Add(new XElement("DefaultBookTags", "bookshelf:" + DefaultBookshelf));
             }
             xml.Add(BulkPublishBloomPubSettings.ToXElement());
+            xml.Add(new XElement("ShowBlorgLanguageQrCode", ShowBlorgLanguageQrCode));
+            xml.Add(new XElement("BadgeQrCodeLabel", BadgeQrCodeLabel));
             RobustIO.SaveXElement(xml, SettingsFilePath);
 
             // Color palette settings are stored in a separate Json file
             SaveColorPalettesToJsonFile();
+        }
+
+        public string BadgeQrCodeLabelLocalizedWithLang
+        {
+            get
+            {
+                var pattern = BadgeQrCodeLabelLocalized;
+
+                return string.Format(pattern, Language1.Name);
+            }
+        }
+
+        public string BadgeQrCodeLabelLocalized
+        {
+            get
+            {
+                var pattern = BadgeQrCodeLabel; // may or may not have {0}. We'll fill in if present.
+                if (string.IsNullOrEmpty(BadgeQrCodeLabel))
+                {
+                    pattern = LocalizationManager.GetString(
+                        "CollectionSettingsDialog.BookMakingTab.QrCodeBadgeText",
+                        "Get more books in the {0} language on BloomLibrary.org",
+                        "",
+                        new string[] { Language1Tag, Language2Tag, Language3Tag, "en" },
+                        out string _
+                    );
+                }
+
+                return pattern;
+            }
         }
 
         internal void SaveColorPalettesToJsonFile()
@@ -631,6 +668,9 @@ namespace Bloom.Collection
                 {
                     BulkPublishBloomPubSettings = bulkPublishSettingsFromXml;
                 }
+
+                ShowBlorgLanguageQrCode = ReadBoolean(xml, "ShowBlorgLanguageQrCode", true);
+                BadgeQrCodeLabel = ReadString(xml, "BadgeQrCodeLabel", "");
 
                 LoadDictionary(xml, "Palette", ColorPalettes);
             }
