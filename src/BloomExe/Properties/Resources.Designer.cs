@@ -10,8 +10,8 @@
 
 namespace Bloom.Properties {
     using System;
-    
-    
+
+
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -23,15 +23,15 @@ namespace Bloom.Properties {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
-        
+
         private static global::System.Resources.ResourceManager resourceMan;
-        
+
         private static global::System.Globalization.CultureInfo resourceCulture;
-        
+
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal Resources() {
         }
-        
+
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
@@ -45,7 +45,7 @@ namespace Bloom.Properties {
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.
@@ -59,27 +59,7 @@ namespace Bloom.Properties {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap AddPageButton {
-            get {
-                object obj = ResourceManager.GetObject("AddPageButton", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap AddPageButtonDisabled {
-            get {
-                object obj = ResourceManager.GetObject("AddPageButtonDisabled", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -89,7 +69,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -99,7 +79,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
@@ -109,7 +89,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Icon)(obj));
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -119,27 +99,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap BloomPUB {
-            get {
-                object obj = ResourceManager.GetObject("BloomPUB", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap book_settings {
-            get {
-                object obj = ResourceManager.GetObject("book-settings", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -149,17 +109,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap coverOnly {
-            get {
-                object obj = ResourceManager.GetObject("coverOnly", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to {
         ///    &quot;urls&quot;: [
@@ -182,13 +132,13 @@ namespace Bloom.Properties {
                 return ResourceManager.GetString("CurrentServiceUrls", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap DeleteMessageBoxButtonImage {
+        internal static System.Drawing.Bitmap book_settings {
             get {
-                object obj = ResourceManager.GetObject("DeleteMessageBoxButtonImage", resourceCulture);
+                object obj = ResourceManager.GetObject("book-settings", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -202,57 +152,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap deletePage16x16 {
-            get {
-                object obj = ResourceManager.GetObject("deletePage16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap deletePage24x24 {
-            get {
-                object obj = ResourceManager.GetObject("deletePage24x24", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap DeletePage32x32 {
-            get {
-                object obj = ResourceManager.GetObject("DeletePage32x32", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap DeletePageDisabled24x24 {
-            get {
-                object obj = ResourceManager.GetObject("DeletePageDisabled24x24", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap DeletePageDisabled32x32 {
-            get {
-                object obj = ResourceManager.GetObject("DeletePageDisabled32x32", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -262,27 +162,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap duplicatePage32x32 {
-            get {
-                object obj = ResourceManager.GetObject("duplicatePage32x32", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap duplicatePageDisabled32x32 {
-            get {
-                object obj = ResourceManager.GetObject("duplicatePageDisabled32x32", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -292,7 +172,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -302,17 +182,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap epubPublishButton {
-            get {
-                object obj = ResourceManager.GetObject("epubPublishButton", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -322,7 +192,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -332,7 +202,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -342,7 +212,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -352,17 +222,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap insideBookletPages {
-            get {
-                object obj = ResourceManager.GetObject("insideBookletPages", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -372,7 +232,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -382,17 +242,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap OpenCreateCollection16x16 {
-            get {
-                object obj = ResourceManager.GetObject("OpenCreateCollection16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -402,17 +252,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap PackageFlat {
-            get {
-                object obj = ResourceManager.GetObject("PackageFlat", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -422,27 +262,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap Paste16x16 {
-            get {
-                object obj = ResourceManager.GetObject("Paste16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap paste24x24 {
-            get {
-                object obj = ResourceManager.GetObject("paste24x24", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -452,17 +272,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap PdfPrint {
-            get {
-                object obj = ResourceManager.GetObject("PdfPrint", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -472,17 +282,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap publish_video {
-            get {
-                object obj = ResourceManager.GetObject("publish_video", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -492,7 +292,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -502,17 +302,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap settings16x16 {
-            get {
-                object obj = ResourceManager.GetObject("settings16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -522,37 +312,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap settings32x32 {
-            get {
-                object obj = ResourceManager.GetObject("settings32x32", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap settingsbw16x16 {
-            get {
-                object obj = ResourceManager.GetObject("settingsbw16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap simplePages {
-            get {
-                object obj = ResourceManager.GetObject("simplePages", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -562,7 +322,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -572,7 +332,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -582,7 +342,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -592,27 +352,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap Undo16x16 {
-            get {
-                object obj = ResourceManager.GetObject("Undo16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap upload {
-            get {
-                object obj = ResourceManager.GetObject("upload", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -622,7 +362,7 @@ namespace Bloom.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>

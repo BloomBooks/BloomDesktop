@@ -312,55 +312,28 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="Resources\current-service-urls.json" />
-		<None Include="Resources\DeleteMessageBoxButtonImage.png" />
 		<None Include="Resources\DeleteMessageBoxImage.png" />
 		<None Include="Resources\open.png" />
 		<None Include="Resources\edit.png" />
 		<None Include="Resources\Error70x70.png" />
 		<None Include="Resources\pagePlaceHolder.png" />
 		<None Include="Resources\collection32x32.png" />
-		<None Include="Resources\settings16x16.png" />
-		<None Include="Resources\settings32x32.png" />
 		<None Include="Resources\settings24x24.png" />
 		<None Include="Resources\OpenCreateCollection24x24.png" />
 		<None Include="Resources\help24x24.png" />
 		<None Include="Resources\publish32x32.png" />
-		<None Include="Resources\coverOnly.png" />
-		<None Include="Resources\insideBookletPages.png" />
-		<None Include="Resources\simplePages.png" />
-		<None Include="Resources\deletePage16x16.png" />
-		<None Include="Resources\deletePage24x24.png" />
-		<None Include="Resources\Paste16x16.png" />
-		<None Include="Resources\Undo16x16.png" />
-		<None Include="Resources\paste24x24.png" />
 		<None Include="Resources\newCollection32x32.png" />
 		<None Include="Resources\BloomPack64x64.png" />
-		<None Include="Resources\DeletePageDisabled24x24.png" />
-		<None Include="Resources\DeletePageDisabled32x32.png" />
-		<None Include="Resources\DeletePage32x32.png" />
 	</ItemGroup>
 	<ItemGroup>
-		<None Include="Resources\PackageFlat48x47.png" />
 		<None Include="Resources\pdf16x16.png" />
 		<None Include="Resources\thumbnail.png" />
-		<None Include="Resources\PackageFlat.png" />
 		<None Include="Resources\placeHolderBookThumbnail.png" />
-		<None Include="Resources\upload.png" />
-		<None Include="Resources\duplicatePage32x32.png" />
-		<None Include="Resources\duplicatePageDisabled32x32.png" />
 		<None Include="Resources\videos.png" />
-		<None Include="Resources\settingsbw16x16.png" />
-		<None Include="Resources\OpenCreateCollection16x16.png" />
-		<None Include="Resources\AddPageButton.PNG" />
-		<None Include="Resources\AddPageButtonDisabled.PNG" />
-		<None Include="Resources\epubPublishButton.png" />
 	</ItemGroup>
 	<ItemGroup>
 		<Content Include="bloom.ico" />
 		<None Include="Resources\book-settings.png" />
-		<None Include="Resources\PdfPrint.png" />
-		<None Include="Resources\BloomPUB.png" />
-		<None Include="Resources\publish video.png" />
 		<None Include="Resources\Disconnected.png" />
 		<None Include="Resources\TC Button Grey Small Team.png" />
 		<None Include="Resources\TC Button Warning.png" />
