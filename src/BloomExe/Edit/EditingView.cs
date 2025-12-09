@@ -45,7 +45,6 @@ namespace Bloom.Edit
         private readonly UndoCommand _undoCommand;
         private readonly SignLanguageApi _signLanguageApi;
         private readonly CopyrightAndLicenseApi _copyrightAndLicenseApi;
-        private Action _pendingMessageHandler;
         private Color _enabledToolbarColor = Palette.DarkTextAgainstBackgroundColor;
         private Color _disabledToolbarColor = Color.FromArgb(114, 74, 106);
         private bool _visible;
@@ -90,25 +89,21 @@ namespace Bloom.Edit
             // Turning off for this PR because it's not working well enough yet.
             if (!Program.RunningHarvesterMode)
             {
-                this._browser1 = BrowserMaker.MakeBrowser();
-                //
-                // _browser1
-                //
-                this._browser1.BackColor = System.Drawing.Color.DarkGray;
-                this._browser1.ContextMenuProvider = null;
-                this._browser1.ReplaceContextMenu = null;
-                this._browser1.ControlKeyEvent = null;
-                this._browser1.Dock = System.Windows.Forms.DockStyle.Fill;
-                this._browser1.Location = new System.Drawing.Point(0, 0);
-                this._browser1.Margin = new System.Windows.Forms.Padding(5);
-                this._browser1.Name = "_browser1";
-                this._browser1.Size = new System.Drawing.Size(826, 561);
-                this._browser1.TabIndex = 1;
-                this._splitContainer2.Panel1.Controls.Add(this._browser1);
+                _browser1 = BrowserMaker.MakeBrowser();
+                _browser1.BackColor = System.Drawing.Color.DarkGray;
+                _browser1.ContextMenuProvider = null;
+                _browser1.ReplaceContextMenu = null;
+                _browser1.ControlKeyEvent = null;
+                _browser1.Dock = System.Windows.Forms.DockStyle.Fill;
+                _browser1.Location = new System.Drawing.Point(0, 0);
+                _browser1.Margin = new System.Windows.Forms.Padding(5);
+                _browser1.Name = "_browser1";
+                _browser1.Size = new System.Drawing.Size(826, 561);
+                _browser1.TabIndex = 1;
+                Controls.Add(_browser1);
             }
 
-            this._splitContainer2.BackColor = Palette.GeneralBackground;
-            SetupThumnailLists();
+            SetupThumbnailLists();
             _model.SetView(this);
             // We will need to handle this in another way if we ever have multiple projects open and thus
             // multiple models and views.
@@ -127,10 +122,6 @@ namespace Bloom.Edit
             }
 
             controlKeyEvent.Subscribe(HandleControlKeyEvent);
-
-            // Adding this renderer prevents a white line from showing up under the components.
-            // BL-5071 We don't want a hover border on the items either.
-            _rightToolStrip.Renderer = new NoBorderToolStripRenderer();
 
             //we're giving it to the parent control through the TopBarControls property
             Controls.Remove(_topBarPanel);
@@ -324,27 +315,11 @@ namespace Bloom.Edit
 
         public Bitmap ToolStripBackground { get; set; }
 
-        private void _handleMessageTimer_Tick(object sender, EventArgs e)
-        {
-            _handleMessageTimer.Enabled = false;
-            _pendingMessageHandler();
-            _pendingMessageHandler = null;
-        }
-
-        private void SetupThumnailLists()
+        private void SetupThumbnailLists()
         {
             _pageListView.Dock = DockStyle.Left;
             _pageListView.Width = 200;
             this.Controls.Add(_pageListView);
-        }
-
-        // TODO: this _splitContainer2 could be eliminated now that we no longer have the TemplatePagesView
-        private void SetTranslationPanelVisibility()
-        {
-            _splitContainer2.Panel2.Controls.Clear();
-            _splitTemplateAndSource.Panel1.Controls.Clear();
-            _splitTemplateAndSource.Panel2.Controls.Clear();
-            _splitContainer2.Panel2Collapsed = true; // used to hold TemplatesPagesView
         }
 
         public void CheckFontAvailability()
@@ -372,8 +347,6 @@ namespace Bloom.Edit
                 Cursor = Cursors.WaitCursor;
                 if (_model.GetBookHasChanged())
                 {
-                    //now we're doing it based on the focus textarea: ShowOrHideSourcePane(_model.ShowTranslationPanel);
-                    SetTranslationPanelVisibility();
                     //even before showing, we need to clear some things so the user doesn't see the old stuff
                     _pageListView.Clear();
                 }
@@ -1962,7 +1935,7 @@ namespace Bloom.Edit
         // intended for use only by the EditingModel
         internal Browser Browser => _browser1;
 
-        private void _bookSettingsButton_Click(object sender, EventArgs e)
+        public void SaveAndOpenBookSettingsDialog()
         {
             _model.SaveThen(
                 () =>

@@ -14,6 +14,7 @@ import {
     lightTheme,
 } from "../../bloomMaterialUITheme";
 import { ArrowDropDown } from "@mui/icons-material";
+import { BookSettingsButton } from "../../react_components/BookSettingsButton";
 
 interface IDropdownData {
     contentLanguagesEnabled: boolean;
@@ -65,66 +66,73 @@ export const EditTopBarControls: React.FunctionComponent = () => {
     return (
         <ThemeProvider theme={lightTheme}>
             <div
-                id="topBarControlsRoot"
                 css={css`
-                    // We originally set this to ${kBloomPurple}, but on some displays,
-                    // something caused a slightly different color to be displayed for the control
-                    // background compared to the WinForms bar it sits on.
-                    // This should improve things. Though now the buttons are probably slightly different
-                    // on that display. We could, in theory, do something similar for the buttons,
-                    // but that would probably break any hover/active/click effects.
-                    // This problem will go away when the whole top bar is react.
-                    background-color: transparent;
                     display: flex;
-                    overflow-y: hidden;
-                    padding-top: 4px;
-                    padding-bottom: 2px;
-                    padding-inline: 3px;
+                    justify-content: space-between;
                 `}
             >
-                <PasteButton enabled={buttonsEnabled.paste ?? true} />
                 <div
                     css={css`
+                        // We originally set this to ${kBloomPurple}, but on some displays,
+                        // something caused a slightly different color to be displayed for the control
+                        // background compared to the WinForms bar it sits on.
+                        // This should improve things. Though now the buttons are probably slightly different
+                        // on that display. We could, in theory, do something similar for the buttons,
+                        // but that would probably break any hover/active/click effects.
+                        // This problem will go away when the whole top bar is react.
+                        background-color: transparent;
                         display: flex;
-                        flex-direction: column;
-                        justify-content: space-evenly;
-                        width: 72px;
+                        overflow-y: hidden;
+                        padding-top: 4px;
+                        padding-bottom: 2px;
+                        padding-inline: 3px;
                     `}
                 >
-                    <CutButton enabled={buttonsEnabled.cut ?? true} />
-                    <CopyButton enabled={buttonsEnabled.copy ?? true} />
+                    <PasteButton enabled={buttonsEnabled.paste ?? true} />
                     <div
                         css={css`
-                            height: 6px;
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: space-evenly;
+                            width: 72px;
                         `}
-                    />
-                </div>
-                <UndoButton enabled={buttonsEnabled.undo ?? true} />
-                <div
-                    css={css`
-                        width: 18px;
-                    `}
-                />
-                <div
-                    css={css`
-                        display: flex;
-                        flex-direction: column;
-                        font-size: 11px;
-                    `}
-                >
-                    <ContentLanguagesDropdown
-                        enabled={contentLanguagesEnabled}
-                        number={contentLanguagesNumber}
+                    >
+                        <CutButton enabled={buttonsEnabled.cut ?? true} />
+                        <CopyButton enabled={buttonsEnabled.copy ?? true} />
+                        <div
+                            css={css`
+                                height: 6px;
+                            `}
+                        />
+                    </div>
+                    <UndoButton enabled={buttonsEnabled.undo ?? true} />
+                    <div
+                        css={css`
+                            width: 18px;
+                        `}
                     />
                     <div
                         css={css`
-                            height: 3px;
+                            display: flex;
+                            flex-direction: column;
+                            font-size: 11px;
                         `}
-                    ></div>
-                    <LayoutChoicesDropdown
-                        localizedText={layoutChoicesLocalizedText}
-                    />
+                    >
+                        <ContentLanguagesDropdown
+                            enabled={contentLanguagesEnabled}
+                            number={contentLanguagesNumber}
+                        />
+                        <div
+                            css={css`
+                                height: 3px;
+                            `}
+                        ></div>
+                        <LayoutChoicesDropdown
+                            localizedText={layoutChoicesLocalizedText}
+                        />
+                    </div>
                 </div>
+                <BookSettingsButton />
             </div>
         </ThemeProvider>
     );
