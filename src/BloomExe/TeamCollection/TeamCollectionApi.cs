@@ -24,6 +24,15 @@ using SIL.Reporting;
 
 namespace Bloom.TeamCollection
 {
+    public class TeamCollectionTopBarStatus
+    {
+        [JsonProperty("status")]
+        public string Status { get; set; }
+
+        [JsonProperty("showReloadButton")]
+        public bool ShowReloadButton { get; set; }
+    }
+
     // Implements functions used by the HTML/Typescript parts of the Team Collection code.
     // Review: should this be in web/controllers with all the other API classes, or here with all the other sharing code?
     public class TeamCollectionApi
@@ -133,6 +142,16 @@ namespace Bloom.TeamCollection
                 true
             );
             apiHandler.RegisterEndpointHandler(
+                "teamCollection/topBarStatus",
+                HandleTopBarStatus,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "teamCollection/showStatusDialog",
+                HandleShowStatusDialog,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
                 "teamCollection/reportBadZip",
                 HandleReportBadZip,
                 true,
@@ -180,6 +199,22 @@ namespace Bloom.TeamCollection
             if (_tcManager?.MessageLog == null)
                 return false;
             return _tcManager.MessageLog.Messages.Any(m => m.Important);
+        }
+
+        public TeamCollectionTopBarStatus GetTopBarStatus()
+        {
+            var status = _tcManager?.CollectionStatus ?? TeamCollectionStatus.None;
+            var showReloadButton = _tcManager?.MessageLog?.ShouldShowReloadButton ?? false;
+            return new TeamCollectionTopBarStatus
+            {
+                Status = status.ToString(),
+                ShowReloadButton = showReloadButton,
+            };
+        }
+
+        private void HandleTopBarStatus(ApiRequest request)
+        {
+            request.ReplyWithJson(GetTopBarStatus());
         }
 
         private void HandleForceUnlock(ApiRequest request)
@@ -234,6 +269,18 @@ namespace Bloom.TeamCollection
                 );
                 request.Failed("could not unlock");
             }
+        }
+
+        private void HandleShowStatusDialog(ApiRequest request)
+        {
+            var status = GetTopBarStatus();
+            dynamic messageBundle = new DynamicJson();
+            messageBundle.showReloadButton = status.ShowReloadButton;
+            _socketServer.LaunchDialog("TeamCollectionDialog", messageBundle);
+            _tcManager.CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(
+                MessageAndMilestoneType.LogDisplayed
+            );
+            request.PostSucceeded();
         }
 
         /// <summary>

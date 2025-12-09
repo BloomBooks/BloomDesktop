@@ -28,6 +28,12 @@ namespace Bloom.web.controllers
                 HandleOpenOrCreateCollection,
                 true
             );
+
+            apiHandler.RegisterEndpointHandler(
+                "workspace/legacySettings",
+                HandleLegacySettings,
+                true
+            );
         }
 
         private void HandleOpenOrCreateCollection(ApiRequest request)
@@ -38,10 +44,22 @@ namespace Bloom.web.controllers
             request.PostSucceeded();
         }
 
+        private void HandleLegacySettings(ApiRequest request)
+        {
+            Application.Idle += OpenLegacySettings;
+            request.PostSucceeded();
+        }
+
         private void OpenCreateCollection(object sender, EventArgs e)
         {
             Application.Idle -= OpenCreateCollection;
             WorkspaceView.OpenCreateCollection();
+        }
+
+        private void OpenLegacySettings(object sender, EventArgs e)
+        {
+            Application.Idle -= OpenLegacySettings;
+            WorkspaceView.OnLegacySettingsButton_Click(null, null);
         }
     }
 }

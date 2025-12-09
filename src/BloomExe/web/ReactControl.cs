@@ -194,6 +194,10 @@ namespace Bloom.web
                     "createTeamCollectionDialogBundle",
                     "/teamCollection/CreateTeamCollection.entry.tsx"
                 },
+                {
+                    "collectionTopBarControlsBundle",
+                    "/collection/topBar/collectionTopBarControls.entry.tsx"
+                },
                 { "editTopBarControlsBundle", "/bookEdit/topbar/editTopBarControls.entry.tsx" },
                 { "duplicateManyDlgBundle", "/bookEdit/duplicateManyDialog.entry.tsx" },
                 {
