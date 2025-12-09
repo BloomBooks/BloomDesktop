@@ -9,6 +9,7 @@ import FontScriptSettingsControl from "./fontScriptSettingsControl";
 import { tabMargins } from "./commonTabSettings";
 
 import { WireUpForWinforms } from "../utils/WireUpWinform";
+import BlorgLanguageQrCodeControl from "./BlorgLanguageQrCodeControl";
 
 const BookMakingSettingsControl: React.FunctionComponent = () => {
     return (
@@ -33,6 +34,7 @@ const BookMakingSettingsControl: React.FunctionComponent = () => {
                     >
                         <FontScriptSettingsControl />
                         <PageNumberStyleControl />
+                        <BlorgLanguageQrCodeControl />
                     </div>
                     <div
                         css={css`
