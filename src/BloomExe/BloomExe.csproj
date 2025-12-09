@@ -316,8 +316,6 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 		<None Include="Resources\Error70x70.png" />
 		<None Include="Resources\pagePlaceHolder.png" />
 		<None Include="Resources\collection32x32.png" />
-		<None Include="Resources\settings24x24.png" />
-		<None Include="Resources\OpenCreateCollection24x24.png" />
 		<None Include="Resources\help24x24.png" />
 		<None Include="Resources\publish32x32.png" />
 		<None Include="Resources\newCollection32x32.png" />

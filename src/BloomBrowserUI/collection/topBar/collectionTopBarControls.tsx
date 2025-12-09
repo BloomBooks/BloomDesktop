@@ -7,19 +7,17 @@ import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
 import {
     kBloomBlue,
-    kBloomBlueTextBackground,
     kBloomYellow,
     kWarningColor,
     lightTheme,
 } from "../../bloomMaterialUITheme";
-import { SerializedStyles, css as emotionCss } from "@emotion/react";
 const bloomApiPrefix = getBloomApiPrefix(false);
 
-const teamCollectionIcon = `${bloomApiPrefix}teamCollection/Team Collection.svg`;
+const teamCollectionIcon = `${bloomApiPrefix}images/Team32x32.png`;
 const attentionIcon = `${bloomApiPrefix}images/Attention.svg`;
 const disconnectedIcon = `${bloomApiPrefix}images/Disconnected.svg`;
-const folderIcon = `${bloomApiPrefix}images/folder.svg`;
-const settingsIcon = `${bloomApiPrefix}images/book-settings.png`;
+const openCreateCollectionIcon = `${bloomApiPrefix}images/OpenCreateCollection24x24.png`;
+const settingsIcon = `${bloomApiPrefix}images/settings24x24.png`;
 
 export type TeamCollectionStatus =
     | "Nominal"
@@ -62,16 +60,8 @@ const statusIcons: Record<TeamCollectionStatus, string> = {
     None: teamCollectionIcon,
 };
 
-const buttonBackground = kBloomBlueTextBackground;
-const buttonTextColor = "white";
-const buttonDisabledTextColor = "#d9e5e8";
-const folderIconCss: SerializedStyles = emotionCss`
-    & img {
-        width: 20px;
-        height: 20px;
-        object-fit: contain;
-    }
-`;
+const mainButtonBackground = kBloomBlue;
+const mainButtonTextColor = "rgb(60, 60, 60)";
 
 export const CollectionTopBarControls: React.FunctionComponent = () => {
     const [teamCollectionStatus, setTeamCollectionStatus] = useState(
@@ -121,19 +111,16 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
                     labelL10nKey="CollectionTab.SettingsButton"
                     labelEnglish="Settings"
                     onClick={handleLegacySettingsClick}
-                    backgroundColor={buttonBackground}
-                    textColor={buttonTextColor}
-                    disabledTextColor={buttonDisabledTextColor}
+                    backgroundColor={mainButtonBackground}
+                    textColor={mainButtonTextColor}
                 />
                 <TopBarButton
-                    iconPath={folderIcon}
+                    iconPath={openCreateCollectionIcon}
                     labelL10nKey="CollectionTab.Open/CreateCollectionButton"
                     labelEnglish="Other Collection"
                     onClick={handleOpenOrCreateClick}
-                    backgroundColor={buttonBackground}
-                    textColor={buttonTextColor}
-                    disabledTextColor={buttonDisabledTextColor}
-                    cssOverrides={folderIconCss}
+                    backgroundColor={mainButtonBackground}
+                    textColor={mainButtonTextColor}
                 />
             </div>
         ),
@@ -209,9 +196,8 @@ const TeamCollectionButton: React.FunctionComponent<{
                     labelL10nKey="TeamCollection.TeamCollection"
                     labelEnglish="Team Collection"
                     onClick={props.onClick}
-                    backgroundColor={buttonBackground}
-                    textColor={buttonTextColor}
-                    disabledTextColor={buttonDisabledTextColor}
+                    backgroundColor={mainButtonBackground}
+                    textColor={"white"}
                 />
             </div>
             {statusLabel && (
@@ -219,8 +205,8 @@ const TeamCollectionButton: React.FunctionComponent<{
                     css={css`
                         font-size: 11px;
                         line-height: 14px;
-                        color: ${buttonTextColor};
-                        background-color: ${buttonBackground};
+                        color: "white";
+                        background-color: ${mainButtonTextColor};
                         padding: 2px 8px;
                         border-radius: 12px;
                         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);

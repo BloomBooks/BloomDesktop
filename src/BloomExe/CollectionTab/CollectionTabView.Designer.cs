@@ -70,7 +70,7 @@ namespace Bloom.CollectionTab
             // 
 			// _topBarReactControl
 			// 
-			this._topBarReactControl.BackColor = System.Drawing.Color.Transparent;
+			this._topBarReactControl.BackColor = System.Drawing.Color.FromArgb(29, 148, 164);
 			this._topBarReactControl.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._topBarReactControl.JavascriptBundleName = "collectionTopBarControlsBundle";
 			this._L10NSharpExtender.SetLocalizableToolTip(this._topBarReactControl, null);
