@@ -49,7 +49,7 @@ namespace Bloom.Edit
         private Color _disabledToolbarColor = Color.FromArgb(114, 74, 106);
         private bool _visible;
         private BloomWebSocketServer _webSocketServer;
-        private ZoomControl _zoomControl;
+        private ZoomModel _zoomModel;
         private PageListApi _pageListApi;
         private DateTime? _lastTopBarMenuClosedTime;
 
@@ -1866,8 +1866,8 @@ namespace Bloom.Edit
                     {
                         zoomInt = (int)Math.Round(zoomFloat * 10F) * 10;
                         if (
-                            zoomInt < ZoomControl.kMinimumZoom
-                            || zoomInt > ZoomControl.kMaximumZoom
+                            zoomInt < ZoomModel.kMinimumZoom
+                            || zoomInt > ZoomModel.kMaximumZoom
                         )
                             return 100; // bad antique value - normalize to real size.
                         return zoomInt;
@@ -1888,10 +1888,10 @@ namespace Bloom.Edit
                 )
                 {
                     // we can't go below 30 (30%), so those must be old floating point values that rounded to an integer.
-                    if (zoomInt < ZoomControl.kMinimumZoom)
+                    if (zoomInt < ZoomModel.kMinimumZoom)
                         zoomInt = zoomInt * 100;
-                    if (zoomInt > ZoomControl.kMaximumZoom)
-                        return ZoomControl.kMaximumZoom;
+                    if (zoomInt > ZoomModel.kMaximumZoom)
+                        return ZoomModel.kMaximumZoom;
                     return zoomInt;
                 }
                 else
@@ -1916,20 +1916,20 @@ namespace Bloom.Edit
 
         public void AdjustPageZoom(int delta)
         {
-            var currentZoom = _zoomControl.Zoom;
+            var currentZoom = _zoomModel.Zoom;
             if (
-                delta < 0 && currentZoom <= Bloom.Workspace.ZoomControl.kMinimumZoom
-                || delta > 0 && currentZoom >= Bloom.Workspace.ZoomControl.kMaximumZoom
+                delta < 0 && currentZoom <= Bloom.Workspace.ZoomModel.kMinimumZoom
+                || delta > 0 && currentZoom >= Bloom.Workspace.ZoomModel.kMaximumZoom
             )
             {
                 return;
             }
-            _zoomControl.Zoom = currentZoom + delta;
+            _zoomModel.Zoom = currentZoom + delta;
         }
 
-        internal void SetZoomControl(ZoomControl zoomCtl)
+        internal void SetZoomModel(ZoomModel zoomModel)
         {
-            _zoomControl = zoomCtl;
+            _zoomModel = zoomModel;
         }
 
         // intended for use only by the EditingModel

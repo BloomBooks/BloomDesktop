@@ -58,7 +58,7 @@ namespace Bloom.Workspace
         private Control _previouslySelectedControl;
         public event EventHandler ReopenCurrentProject;
         public static float DPIOfThisAccount;
-        private ZoomControl _zoomControl;
+        private ZoomModel _zoomModel;
         private ReactControl _topRightReactControl;
 
         public delegate WorkspaceView Factory();
@@ -227,7 +227,7 @@ namespace Bloom.Workspace
                 SetupUiLanguageMenu();
             };
             SetupUiLanguageMenu(true);
-            SetupZoomControl();
+            SetupZoomModel();
             SetupTopRightReactControl();
             SendTopRightState();
             AdjustButtonTextsForLocale();
@@ -510,28 +510,27 @@ namespace Bloom.Workspace
             }
         }
 
-        private void SetupZoomControl()
+        private void SetupZoomModel()
         {
-            _zoomControl = new ZoomControl();
-            _zoomWrapper = new ToolStripControlHost(_zoomControl);
-            // We're using a ToolStrip to display these three controls in the top right, and it does a nice job
-            // of stretching the width to match localization. But height and spacing we must control exactly,
-            // or it goes into an overflow mode that is very ugly.
-            _zoomWrapper.Margin = Padding.Empty;
+            _zoomModel = new ZoomModel();
+            _zoomModel.ZoomChanged += OnZoomChanged;
             // Provide access for javascript to adjust this control via the EditingView and EditingModel.
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-5584.
-            _editingView.SetZoomControl(_zoomControl);
+            _editingView.SetZoomModel(_zoomModel);
         }
 
         public void SetZoomFromApi(int zoom)
         {
-            if (_zoomControl == null)
+            if (_zoomModel == null)
                 return;
 
-            _zoomControl.Zoom = zoom;
-            var zoomManager = CurrentTabView as IZoomManager;
-            if (zoomManager != null)
-                zoomManager.SetZoom(_zoomControl.Zoom);
+            _zoomModel.Zoom = zoom;
+        }
+
+        private void OnZoomChanged(object sender, EventArgs e)
+        {
+            if (CurrentTabView is IZoomManager zoomManager)
+                zoomManager.SetZoom(_zoomModel.Zoom);
             SendTopRightState();
         }
 
@@ -555,15 +554,15 @@ namespace Bloom.Workspace
         {
             var zoomManager = CurrentTabView as IZoomManager;
             var zoomEnabled = zoomManager != null;
-            var zoomValue = zoomEnabled ? zoomManager.Zoom : (_zoomControl?.Zoom ?? 100);
+            var zoomValue = zoomEnabled ? zoomManager.Zoom : (_zoomModel?.Zoom ?? 100);
             dynamic state = new DynamicJson();
             state.uiLanguageLabel = GetCurrentUiLanguageLabel();
             state.showUnapprovedText = GetShowUnapprovedTranslationsMenuText();
             state.showUnapprovedChecked = Settings.Default.ShowUnapprovedLocalizations;
             state.zoom = zoomValue;
             state.zoomEnabled = zoomEnabled;
-            state.minZoom = ZoomControl.kMinimumZoom;
-            state.maxZoom = ZoomControl.kMaximumZoom;
+            state.minZoom = ZoomModel.kMinimumZoom;
+            state.maxZoom = ZoomModel.kMaximumZoom;
             return state;
         }
 
@@ -1399,19 +1398,7 @@ namespace Bloom.Workspace
                         var zoomManager = CurrentTabView as IZoomManager;
                         if (zoomManager != null)
                         {
-                            if (!_toolStrip.Items.Contains(_zoomWrapper))
-                                _toolStrip.Items.Add(_zoomWrapper);
-                            _zoomControl.Zoom = zoomManager.Zoom;
-                            _zoomControl.ZoomChanged += (sender, args) =>
-                            {
-                                zoomManager.SetZoom(_zoomControl.Zoom);
-                                SendTopRightState();
-                            };
-                        }
-                        else
-                        {
-                            if (_toolStrip.Items.Contains(_zoomWrapper))
-                                _toolStrip.Items.Remove(_zoomWrapper);
+                            _zoomModel.Zoom = zoomManager.Zoom;
                         }
                         SendTopRightState();
                         // TODO-WV2: Can we clear the cache in WV2?  Do we need to?
@@ -1861,12 +1848,11 @@ namespace Bloom.Workspace
         }
 
         private Shrinkage _currentShrinkage = Shrinkage.FullSize;
-        private ToolStripControlHost _zoomWrapper;
 
         private const int MinToolStripMargin = 3;
 
         private int TopRightContentWidth =>
-            Math.Max(_topRightReactControl?.Width ?? 0, _toolStrip.Width);
+            Math.Max(_topRightReactControl?.Width ?? 0, _toolStrip?.Width ?? 0);
 
         // The width of the toolstrip panel in stage 1 is typically its original width, which leaves a bit of margin
         // left of the toolstrip. If a long language name requires more width than typical, make it at least wide
