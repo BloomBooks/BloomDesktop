@@ -1,23 +1,45 @@
-REM call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat"
-REM Must be run in a DEVELOPMENT shell (e.g., start menu, type dev, choose "Developer Command Prompt for VS 2022 ")
-REM Makes a release build with some debug-friendly settings and then makes a Velopack installer,
-REM currently in ../output/installer/result
-REM (Note that Installer depends on Build, so a release build will be done even if you remove the first command)
-REM To test the update process, patch ApplicationUpdateSupport.GetUpdateUrl to temporarily return an absolute path to the output directory
-REM If there are existing releases in the output directory, you must make sure the BUILD_NUMBER is adjusted to something larger than any
-REM of them. The major and minor numbers here are ignored.
+@REM This batch file mimics what TeamCity uses to build installers.
+@REM Edit BUILDCOUNT, CHANNEL, and SHAREDDIR to fit your needs for testing.
+@REM %0% help will tell you how to change these variables on the command line.
 
-REM Ensure we run from the directory of this script, so msbuild finds Bloom.proj
-pushd "%~dp0"
+@if "%~1" EQU "help" goto help
+@if "%~2" EQU "help" goto help
+@if "%~3" EQU "help" goto help
 
-REM you may need to run msbuild /t:RestoreBuildTasks
-if not exist ..\packages dotnet msbuild /t:RestoreBuildTasks
-REM Build the installer (Installer depends on Build and EnsureVelopackCli)
-REM Note: BUILD_NUMBER must be 4 parts (a.b.c.d). Only the 3rd part (BuildCounter) matters for Version; the others can be 0.
-REM Clean the output folder to avoid vpk complaining about equal/greater existing releases
-set OUTPUT_DIR=..\output\installer\result
-if exist "%OUTPUT_DIR%" rmdir /s /q "%OUTPUT_DIR%"
-mkdir "%OUTPUT_DIR%" 2>nul
-dotnet msbuild "Bloom.proj" /p:channel=LocalBuilt /p:InstallerOutputFolder="%OUTPUT_DIR%" /p:BUILD_NUMBER=0.0.9999.0 /t:Installer /verbosity:detailed
-popd
+where msbuild
+if %errorlevel% == 1 call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" amd64
 
+@pushd .
+
+@set CHANNEL=BetaInternal
+@if NOT "%~1" EQU "" set CHANNEL=%1%
+@if NOT %CHANNEL% EQU Alpha if NOT %CHANNEL% EQU Beta if NOT %CHANNEL% EQU Release if NOT %CHANNEL% EQU BetaInternal if NOT %CHANNEL% EQU ReleaseInternal echo WARNING: Unknown channel %CHANNEL%
+@echo CHANNEL=%CHANNEL%
+
+@set BUILDCOUNT=99
+@if NOT "%~2" == "" set BUILDCOUNT=%2%
+@echo BUILDCOUNT=%BUILDCOUNT%
+
+@set SHAREDDIR="%TEMP%"
+@if NOT "%~3" == "" set SHAREDDIR=%3%
+@echo SHAREDDIR=%SHAREDDIR%
+
+msbuild /t:Build build\Bloom.proj /p:Configuration="Release" /p:Platform="Any CPU"
+
+msbuild build\Bloom.proj /t:UploadSignIfPossible /p:Configuration=Release /p:Platform="Any CPU" /p:Label=%CHANNEL% /p:channel=%CHANNEL% /p:SquirrelReleaseFolder="../output/installer" /p:BuildConfigurationID=xyz123 /p:SharedBuildDir="%SHAREDDIR%" /p:BUILD_NUMBER="*.*.%BUILDCOUNT%.123456789" /p:Minor="1" /v:detailed
+
+@popd
+
+@echo expect a build failure reporting "Unable to get AWS credentials from the credential profile store"
+@echo the installer should exist in output\installer
+
+@exit /B
+
+:help
+@echo USAGE: %0 Channel Count TempDir
+@echo Channel should be one of Alpha, Beta, BetaInternal, Release, or ReleaseInternal.
+@echo         The default is BetaInternal.
+@echo Count is the build count for the channel, which is the third item in the version.
+@echo         The default is 99.
+@echo TempDir is someplace where temp files can be stored.  The default is %TEMP%.
+@echo If you want to skip an argument on the command line, use "" as its value.
