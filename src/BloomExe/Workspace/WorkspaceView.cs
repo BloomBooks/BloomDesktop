@@ -210,7 +210,7 @@ namespace Bloom.Workspace
 
             this._reactCollectionTab.Text = _collectionTabView.CollectionTabLabel;
             _tabStrip.SelectedTab = _reactCollectionTab;
-            SelectPage(_collectionTabView);
+            SelectTab(_collectionTabView);
 
             if (Platform.IsMono)
             {
@@ -1336,9 +1336,9 @@ namespace Bloom.Workspace
             );
         }
 
-        private void SelectPage(Control view)
+        private void SelectTab(Control view)
         {
-            // Already on the desired page: nothing to do.  And possible problems if we do do something.
+            // Already on the desired tab: nothing to do.  And possible problems if we do do something.
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-8382.
             if (view == _previouslySelectedControl)
                 return;
@@ -1368,6 +1368,10 @@ namespace Bloom.Workspace
 
             _panelHoldingToolStrip.BackColor = CurrentTabView.TopBarControl.BackColor =
                 _tabStrip.BackColor;
+            if (_topRightReactControl != null) // might not be set up yet
+            {
+                _topRightReactControl.BackColor = _tabStrip.BackColor;
+            }
 
             if (Platform.IsMono)
             {
@@ -1446,8 +1450,12 @@ namespace Bloom.Workspace
             TabStripButton btn = (TabStripButton)e.SelectedTab;
             _tabStrip.BackColor = btn.BarColor;
             _toolSpecificPanel.BackColor = _panelHoldingToolStrip.BackColor = _tabStrip.BackColor;
+            if (_topRightReactControl != null) // might not be set up yet
+            {
+                _topRightReactControl.BackColor = _tabStrip.BackColor;
+            }
             //Logger.WriteEvent("Selecting Tab Page: " + e.SelectedTab.Name);
-            SelectPage((Control)e.SelectedTab.Tag);
+            SelectTab((Control)e.SelectedTab.Tag);
             AdjustTabStripDisplayForScreenSize();
             if (_tabSelection.ActiveTab == WorkspaceTab.collection && _collectionTabView != null)
             {

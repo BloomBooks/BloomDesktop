@@ -1865,10 +1865,7 @@ namespace Bloom.Edit
                     )
                     {
                         zoomInt = (int)Math.Round(zoomFloat * 10F) * 10;
-                        if (
-                            zoomInt < ZoomModel.kMinimumZoom
-                            || zoomInt > ZoomModel.kMaximumZoom
-                        )
+                        if (zoomInt < ZoomModel.kMinimumZoom || zoomInt > ZoomModel.kMaximumZoom)
                             return 100; // bad antique value - normalize to real size.
                         return zoomInt;
                     }

@@ -164,30 +164,6 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
         }
     };
 
-    const onZoomInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
-        if (!state) {
-            return;
-        }
-        const parsed = parseInt(event.target.value, 10);
-        if (isNaN(parsed)) {
-            setZoomField(`${state.zoom}%`);
-            return;
-        }
-        const clamped = Math.min(
-            Math.max(parsed, state.minZoom),
-            state.maxZoom,
-        );
-        setState({ ...state, zoom: clamped });
-        setZoomField(`${clamped}%`);
-        if (!props.skipApi) {
-            postJson("workspace/topRight/zoom", { zoom: clamped });
-        }
-    };
-
-    const onZoomInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setZoomField(event.target.value);
-    };
-
     const renderLanguageMenuItems = () => {
         if (!state) {
             return null;
@@ -332,8 +308,7 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
                     <input
                         aria-label="Zoom value"
                         value={zoomField}
-                        onBlur={onZoomInputBlur}
-                        onChange={onZoomInputChange}
+                        readOnly={true}
                         disabled={!state.zoomEnabled}
                         css={css`
                             width: 56px;
