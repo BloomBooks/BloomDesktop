@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -134,13 +134,16 @@ namespace Bloom.Utils
         {
             try
             {
-                var ping = new System.Net.NetworkInformation.Ping();
+                var request = (System.Net.HttpWebRequest)System.Net.WebRequest.Create("https://www.dropbox.com/");
+                request.Method = "HEAD";
+                request.Timeout = 5000; // 5 seconds
+                request.AllowAutoRedirect = true;
 
-                // Waits up to 5 seconds. Hopefully we usually get a faster response
-                // if Dropbox IS acccessible and also if we're offline altogether.
-                var result = ping.Send("dropbox.com");
-
-                return result.Status == System.Net.NetworkInformation.IPStatus.Success;
+                using (var response = (System.Net.HttpWebResponse)request.GetResponse())
+                {
+                    var code = (int)response.StatusCode;
+                    return code >= 200 && code < 400;
+                }
             }
             catch (Exception ex)
             {
