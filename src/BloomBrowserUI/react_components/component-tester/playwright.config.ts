@@ -19,8 +19,6 @@ if (!currentNodePath.includes(nodeModulesPath)) {
         .join(path.delimiter);
 }
 
-// Clear any cached versions of @playwright/test to ensure we use the local one
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 Object.keys(require.cache).forEach((key) => {
     if (key.includes("@playwright/test") || key.includes("playwright/lib")) {
         delete require.cache[key];
@@ -36,14 +34,14 @@ const config: PlaywrightTestConfig = {
         timeout: 1000,
     },
     use: {
-        baseURL: "http://127.0.0.1:5183",
+        baseURL: "http://127.0.0.1:5182",
         trace: "on-first-retry",
     },
     // Spin up the Vite dev server so the harness is available during tests.
     webServer: {
         command: "yarn dev",
         cwd: __dirname,
-        url: "http://127.0.0.1:5183",
+        url: "http://127.0.0.1:5182",
         reuseExistingServer: true,
         stdout: "pipe",
         stderr: "pipe",

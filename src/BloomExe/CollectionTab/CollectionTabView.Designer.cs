@@ -56,9 +56,9 @@ namespace Bloom.CollectionTab
 			this._topBarControl.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             this.SuspendLayout();
-            // 
+            //
             // _topBarControl
-            // 
+            //
             this._topBarControl.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this._topBarControl.AutoSize = true;
 			this._topBarControl.BackColor = System.Drawing.Color.Cyan;
@@ -67,9 +67,9 @@ namespace Bloom.CollectionTab
             this._topBarControl.Name = "_topBarControl";
             this._topBarControl.Size = new System.Drawing.Size(767, 69);
             this._topBarControl.TabIndex = 15;
-            // 
+            //
 			// _topBarReactControl
-			// 
+			//
 			this._topBarReactControl.BackColor = System.Drawing.Color.FromArgb(29, 148, 164);
 			this._topBarReactControl.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._topBarReactControl.JavascriptBundleName = "collectionTopBarControlsBundle";
@@ -80,14 +80,14 @@ namespace Bloom.CollectionTab
 			this._topBarReactControl.Name = "_topBarReactControl";
 			this._topBarReactControl.Size = new System.Drawing.Size(767, 69);
 			this._topBarReactControl.TabIndex = 34;
-            // 
+            //
             // _L10NSharpExtender
-			// 
+			//
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = null;
-			// 
+			//
 			// reactControl2
-			// 
+			//
 			this._reactControl.BackColor = System.Drawing.Color.White;
 			this._reactControl.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._reactControl.JavascriptBundleName = "collectionsTabPaneBundle";
@@ -98,9 +98,9 @@ namespace Bloom.CollectionTab
 			this._reactControl.Name = "_reactControl";
 			this._reactControl.Size = new System.Drawing.Size(773, 518);
 			this._reactControl.TabIndex = 16;
-			// 
+			//
 			// ReactCollectionTabView
-			// 
+			//
 			this.BackColor = System.Drawing.SystemColors.Control;
 			this.Controls.Add(this._reactControl);
 			this.Controls.Add(this._topBarControl);

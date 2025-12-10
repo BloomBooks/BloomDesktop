@@ -2,13 +2,13 @@
  * Vite configuration for the React component test harness.
  *
  * This configuration:
- * - Sets up a dev server on port 5183
+ * - Sets up a dev server on port 5182
  * - Mocks Bloom API endpoints (channel, error reporting)
  * - Enables React hot module reloading
  * - Serves component-harness.html at the root path
  *
  * Used by both:
- * - Manual testing: `yarn dev` then open http://127.0.0.1:5183
+ * - Manual testing: `yarn dev` then open http://127.0.0.1:5182
  * - Playwright tests: Automatically started by test runner
  *
  * Note:
@@ -318,7 +318,7 @@ export default defineConfig({
     },
     server: {
         host: "127.0.0.1",
-        port: 5183,
+        port: 5182,
         open: false,
         strictPort: true,
         fs: {

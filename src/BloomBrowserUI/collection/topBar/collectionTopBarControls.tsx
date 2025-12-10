@@ -196,7 +196,7 @@ const TeamCollectionButton: React.FunctionComponent<{
                     labelL10nKey="TeamCollection.TeamCollection"
                     labelEnglish="Team Collection"
                     onClick={props.onClick}
-                    backgroundColor={mainButtonBackground}
+                    backgroundColor={mainButtonTextColor}
                     textColor={"white"}
                 />
             </div>
