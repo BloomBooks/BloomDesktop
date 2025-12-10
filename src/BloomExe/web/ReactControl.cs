@@ -344,7 +344,7 @@ namespace Bloom.web
             return tempFile;
         }
 
-        private static bool IsLocalPortOpen(int port, int timeoutMs = 400)
+        public static bool IsLocalPortOpen(int port, int timeoutMs = 400)
         {
             try
             {

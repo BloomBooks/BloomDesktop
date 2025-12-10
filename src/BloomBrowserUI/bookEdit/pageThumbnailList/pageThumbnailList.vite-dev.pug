@@ -1,0 +1,24 @@
+doctype html
+include ../../../content/templates/bloom-foundation-mixins.pug
+html
+    head
+        meta(charset='utf-8')
+        //- This bit of 'magic' is needed to get React Fast Refresh working with Vite Dev.
+        script(type='module').
+            import RefreshRuntime from "http://localhost:5173/@react-refresh";
+            RefreshRuntime.injectIntoGlobalHook(window);
+            //- Avoiding arrow functions here because our HTML to XML converter mangles wedge characters
+            window.$RefreshReg$ = function () {};
+            window.$RefreshSig$ = function () {return function (type) {return type;};};
+            window.__vite_plugin_react_preamble_installed__ = true;
+        script(type='module' src='http://localhost:5173/@vite/client')
+    body(data-pageSize='A5Portrait')
+        #panelFlexContainer
+            #pageGridWrapper
+                #pageGrid
+            #PageControls
+        script(type='module').
+            import "http://localhost:5173/bookEdit/pageThumbnailList/pageThumbnailList.less";
+            import "http://localhost:5173/bookEdit/pageThumbnailList/pageControls/pageControls.less";
+            import "http://localhost:5173/bookEdit/pageThumbnailList/pageControls/pageControls.tsx";
+            import "http://localhost:5173/bookEdit/pageThumbnailList/pageThumbnailList.tsx";

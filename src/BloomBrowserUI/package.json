@@ -23,6 +23,7 @@
         "build:clean": "node scripts/clean.js",
         "// 'build-prod': 'production build: clean, then build+content in parallel, then l10n'": " ",
         "build-prod": "npm run build:clean && npm-run-all --parallel build:ui build:content && npm-run-all --parallel build:l10n:translate build:l10n:create",
+        "build:pug": "node ./scripts/compilePug.mjs",
         "// 'build:l10n': creates/updates xliff files and translates html files.": " ",
         "// 'build:l10n': is needed when markdown/html content changes or when testing l10n.": " ",
         "// 'build:l10n': should be run after build.  (build-prod includes this functionality.)": " ",

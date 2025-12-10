@@ -86,11 +86,21 @@ namespace Bloom.Edit
                     _thumbnailInterval = "100";
                 }
             }
+            // Should we load relevant assets from the Vite Dev server?
+            // To save time, only consider it if this is a dev build.
+            // This also guards against trying to load assets from the vite server
+            // if a developer runs some other version. Though, it could still be a
+            // problem if a dev is trying to run dev builds of two versions at once.
+            var useViteDev = ApplicationUpdateSupport.IsDev;
+            // If still an option, see if localhost:5173 is running. This is quite slow when it is not.
+            // The original version used 400ms, which meant a 1200ms delay; but if it's going to succeed,
+            // it typically does so in 2ms. I compromised on 40.
+            useViteDev &= ReactControl.IsLocalPortOpen(5173, 40);
             var frame = BloomFileLocator.GetBrowserFile(
                 false,
                 "bookEdit",
                 "pageThumbnailList",
-                "pageThumbnailList.html"
+                useViteDev ? "pageThumbnailList.vite-dev.html" : "pageThumbnailList.html"
             );
             var backColor = MiscUtils.ColorToHtmlCode(Palette.SidePanelBackgroundColor);
             _baseHtml = RobustFile.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
