@@ -2,9 +2,11 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import { Label } from "../react_components/l10nComponents";
 import { get, post, postJson, useApiStringState } from "../utils/bloomApi";
-import { FontAwesomeIcon } from "../bloomIcons";
+import CheckIcon from "@mui/icons-material/Check";
+import QuestionMarkIcon from "@mui/icons-material/QuestionMark";
+import ErrorIcon from "@mui/icons-material/Error";
 import Button from "@mui/material/Button";
-import { Stack } from "@mui/material";
+import { Stack, TextField } from "@mui/material";
 import ContentCopy from "@mui/icons-material/ContentCopy";
 import ContentPaste from "@mui/icons-material/ContentPaste";
 import { useState } from "react";
@@ -14,6 +16,7 @@ import {
     useSubscriptionInfo,
 } from "./useSubscriptionInfo";
 import { NoteBox, WarningBox } from "../react_components/boxes";
+import { kBloomBlue, kErrorColor } from "../bloomMaterialUITheme";
 
 type Status =
     | "None"
@@ -377,7 +380,8 @@ const Editor: React.FC<{ status: Status }> = ({ status }) => {
                     Subscription Code:
                 </Label>
 
-                <input
+                <TextField
+                    size="small"
                     id="subscriptionCodeInput"
                     //className="subscriptionCodeInput"
                     type="text"
@@ -390,33 +394,36 @@ const Editor: React.FC<{ status: Status }> = ({ status }) => {
                     }
                     onChange={userTypedOrPastedCode}
                     css={css`
+                        background-color: white;
                         width: 260px;
                         margin-left: 5px;
-                        padding-right: 20px; // clear of icon
                         flex-grow: 1;
-                        font-family:
-                            Consolas, monospace; // show zeros distinctly
-                        padding: 5px;
                     `}
+                    InputProps={{
+                        style: {
+                            fontFamily: "Consolas, monospace", // show zeros distinctly
+                        },
+                        endAdornment: shouldShowGreenCheck() ? (
+                            <CheckIcon
+                                css={css`
+                                    color: lime;
+                                `}
+                            />
+                        ) : status === "SubscriptionIncomplete" ? (
+                            <QuestionMarkIcon
+                                css={css`
+                                    color: ${kBloomBlue};
+                                `}
+                            />
+                        ) : shouldShowRedExclamation() ? (
+                            <ErrorIcon
+                                css={css`
+                                    color: ${kErrorColor};
+                                `}
+                            />
+                        ) : undefined,
+                    }}
                 />
-                {shouldShowGreenCheck() && (
-                    <span className={"evaluationCode"}>
-                        <FontAwesomeIcon icon="check" />
-                    </span>
-                )}
-                {status === "SubscriptionIncomplete" && (
-                    <span className={"evaluationCode"}>
-                        <FontAwesomeIcon icon="question" />
-                    </span>
-                )}
-                {shouldShowRedExclamation() && (
-                    <span className={"evaluationCode"}>
-                        <FontAwesomeIcon
-                            icon="exclamation-circle"
-                            css={{ color: "red" }}
-                        />
-                    </span>
-                )}
             </div>
             <Button variant="text" onClick={handleCopy} size="small">
                 <Stack direction="column" alignItems="center">
