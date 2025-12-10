@@ -614,6 +614,8 @@ export default defineConfig(async ({ command }) => {
         registrationDialogBundle:
             "./react_components/registration/registrationDialog.tsx",
         editTopBarControlsBundle: "./bookEdit/topbar/editTopBarControls.tsx",
+        workspaceTopRightControlsBundle:
+            "./react_components/TopBar/workspaceTopRightControls/workspaceTopRightControls.entry.tsx",
     };
 
     // MAIN VITE CONFIGURATION

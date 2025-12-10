@@ -59,6 +59,7 @@ namespace Bloom.Workspace
         public event EventHandler ReopenCurrentProject;
         public static float DPIOfThisAccount;
         private ZoomControl _zoomControl;
+        private ReactControl _topRightReactControl;
 
         public delegate WorkspaceView Factory();
 
@@ -227,6 +228,8 @@ namespace Bloom.Workspace
             };
             SetupUiLanguageMenu(true);
             SetupZoomControl();
+            SetupTopRightReactControl();
+            SendTopRightState();
             AdjustButtonTextsForLocale();
             _viewInitialized = false;
             CommonApi.WorkspaceView = this;
@@ -520,6 +523,212 @@ namespace Bloom.Workspace
             _editingView.SetZoomControl(_zoomControl);
         }
 
+        public void SetZoomFromApi(int zoom)
+        {
+            if (_zoomControl == null)
+                return;
+
+            _zoomControl.Zoom = zoom;
+            var zoomManager = CurrentTabView as IZoomManager;
+            if (zoomManager != null)
+                zoomManager.SetZoom(_zoomControl.Zoom);
+            SendTopRightState();
+        }
+
+        private void SetupTopRightReactControl()
+        {
+            _toolStrip.Visible = false;
+            _panelHoldingToolStrip.Controls.Remove(_toolStrip);
+            _topRightReactControl = ReactControl.Create("workspaceTopRightControlsBundle");
+            _topRightReactControl.Dock = DockStyle.Fill;
+            _topRightReactControl.BackColor = _panelHoldingToolStrip.BackColor;
+            _topRightReactControl.SetLocalizationChangedEvent(_localizationChangedEvent);
+            _panelHoldingToolStrip.Controls.Add(_topRightReactControl);
+            if (_panelHoldingToolStrip.Width < 220)
+            {
+                _panelHoldingToolStrip.Width = 220;
+                AlignTopRightPanels();
+            }
+        }
+
+        public dynamic BuildTopRightState()
+        {
+            var zoomManager = CurrentTabView as IZoomManager;
+            var zoomEnabled = zoomManager != null;
+            var zoomValue = zoomEnabled ? zoomManager.Zoom : (_zoomControl?.Zoom ?? 100);
+            dynamic state = new DynamicJson();
+            state.uiLanguageLabel = GetCurrentUiLanguageLabel();
+            state.showUnapprovedText = GetShowUnapprovedTranslationsMenuText();
+            state.showUnapprovedChecked = Settings.Default.ShowUnapprovedLocalizations;
+            state.zoom = zoomValue;
+            state.zoomEnabled = zoomEnabled;
+            state.minZoom = ZoomControl.kMinimumZoom;
+            state.maxZoom = ZoomControl.kMaximumZoom;
+            return state;
+        }
+
+        private string GetCurrentUiLanguageLabel()
+        {
+            var lang = Settings.Default.UserInterfaceLanguage;
+            if (String.IsNullOrEmpty(lang))
+                lang = "en";
+            var item = CreateLanguageItem(lang);
+            return item.MenuText;
+        }
+
+        public List<object> GetUiLanguageMenuItemsForApi()
+        {
+            var items = new List<LanguageItem>();
+            foreach (var lang in LocalizationManager.GetAvailableLocalizedLanguages())
+            {
+                var approved = FractionApproved(lang);
+                if (Settings.Default.ShowUnapprovedLocalizations)
+                    approved = FractionTranslated(lang);
+                var alpha = ApplicationUpdateSupport.IsDevOrAlpha;
+                if ((alpha && approved < 0.01F) || (!alpha && approved < 0.25F))
+                    continue;
+                items.Add(CreateLanguageItem(lang));
+            }
+
+            items.Sort(compareLangItems);
+
+            var tooltipFormat = LocalizationManager.GetString(
+                "CollectionTab.UILanguageMenu.ItemTooltip",
+                "{0}% translated",
+                "Shown when hovering over an item in the UI Language menu.  The {0} marker is filled in by a number between 1 and 100."
+            );
+
+            var current = Settings.Default.UserInterfaceLanguage;
+            if (String.IsNullOrEmpty(current))
+                current = "en";
+            Settings.Default.UserInterfaceLanguage = current;
+
+            return items
+                .Select(li =>
+                {
+                    var fraction = Settings.Default.ShowUnapprovedLocalizations
+                        ? li.FractionTranslated
+                        : li.FractionApproved;
+
+                    return new
+                    {
+                        langTag = li.LangTag,
+                        menuText = li.MenuText,
+                        tooltip = String.Format(tooltipFormat, (int)(fraction * 100.0F)),
+                        isCurrent = li.LangTag == current,
+                    };
+                })
+                .Cast<object>()
+                .ToList();
+        }
+
+        public List<object> GetHelpMenuItemsForApi()
+        {
+            var list = new List<object>();
+
+            void AddItem(ToolStripItem item, string id)
+            {
+                if (item == null || !item.Visible)
+                    return;
+                if (item is ToolStripSeparator)
+                {
+                    list.Add(
+                        new
+                        {
+                            id = id,
+                            text = "",
+                            isSeparator = true,
+                            enabled = false,
+                        }
+                    );
+                    return;
+                }
+
+                list.Add(
+                    new
+                    {
+                        id = id,
+                        text = item.Text,
+                        isSeparator = false,
+                        enabled = item.Enabled,
+                    }
+                );
+            }
+
+            AddItem(_documentationMenuItem, "documentation");
+            AddItem(_bloomDocsMenuItem, "bloomDocs");
+            AddItem(_trainingVideosMenuItem, "trainingVideos");
+            AddItem(buildingReaderTemplatesMenuItem, "buildingReaderTemplates");
+            AddItem(usingReaderTemplatesMenuItem, "usingReaderTemplates");
+            AddItem(toolStripSeparator1, "dividerA");
+            AddItem(_askAQuestionMenuItem, "askQuestion");
+            AddItem(_requestAFeatureMenuItem, "requestFeature");
+            AddItem(_reportAProblemMenuItem, "reportProblem");
+            AddItem(_divider1, "dividerB");
+            AddItem(_releaseNotesMenuItem, "releaseNotes");
+            AddItem(_checkForNewVersionMenuItem, "checkForNewVersion");
+            AddItem(_registrationMenuItem, "registration");
+            AddItem(_divider2, "dividerC");
+            AddItem(_webSiteMenuItem, "webSite");
+            AddItem(_aboutBloomMenuItem, "aboutBloom");
+
+            return list.Cast<object>().ToList();
+        }
+
+        public void RunHelpMenuCommand(string id)
+        {
+            switch (id)
+            {
+                case "documentation":
+                    toolStripMenuItem3_Click(this, EventArgs.Empty);
+                    break;
+                case "bloomDocs":
+                    _bloom_docs_Click(this, EventArgs.Empty);
+                    break;
+                case "trainingVideos":
+                    _trainingVideosMenuItem_Click(this, EventArgs.Empty);
+                    break;
+                case "buildingReaderTemplates":
+                    buildingReaderTemplatesMenuItem_Click(this, EventArgs.Empty);
+                    break;
+                case "usingReaderTemplates":
+                    usingReaderTemplatesMenuItem_Click(this, EventArgs.Empty);
+                    break;
+                case "askQuestion":
+                    _askAQuestionMenuItem_Click(this, EventArgs.Empty);
+                    break;
+                case "requestFeature":
+                    _requestAFeatureMenuItem_Click(this, EventArgs.Empty);
+                    break;
+                case "reportProblem":
+                    _reportAProblemMenuItem_Click(this, EventArgs.Empty);
+                    break;
+                case "releaseNotes":
+                    _releaseNotesMenuItem_Click(this, EventArgs.Empty);
+                    break;
+                case "checkForNewVersion":
+                    _checkForNewVersionMenuItem_Click(this, EventArgs.Empty);
+                    break;
+                case "registration":
+                    OnRegistrationMenuItem_Click(this, EventArgs.Empty);
+                    break;
+                case "webSite":
+                    _webSiteMenuItem_Click(this, EventArgs.Empty);
+                    break;
+                case "aboutBloom":
+                    OnAboutBoxClick(this, EventArgs.Empty);
+                    break;
+            }
+        }
+
+        private void SendTopRightState()
+        {
+            if (_webSocketServer == null)
+                return;
+            var state = BuildTopRightState();
+            _webSocketServer.SendBundle("workspaceTopRightControls", "state", state);
+        }
+
         private int TabButtonSectionWidth
         {
             get { return _tabStrip.Items.Cast<TabStripButton>().Sum(tab => tab.Width) + 10; }
@@ -660,7 +869,7 @@ namespace Bloom.Workspace
                 _helpMenu.DropDown.Close(ToolStripDropDownCloseReason.ItemClicked);
         }
 
-        private void ToggleShowingOnlyApprovedTranslations()
+        public void ToggleShowingOnlyApprovedTranslations()
         {
             Settings.Default.ShowUnapprovedLocalizations = !Settings
                 .Default
@@ -852,6 +1061,35 @@ namespace Bloom.Workspace
             finishClickAction?.Invoke();
         }
 
+        public void SetUiLanguage(string langTag)
+        {
+            LocalizationManagerWinforms.SetUILanguage(langTag, true);
+            Settings.Default.UserInterfaceLanguage = langTag;
+            Settings.Default.UserInterfaceLanguageSetExplicitly = true;
+            Settings.Default.Save();
+            UpdateMenuTextToShorterNameOfSelection(
+                _uiLanguageMenu,
+                CreateLanguageItem(langTag).MenuText
+            );
+
+            if (BloomWebSocketServer.Instance == null)
+            {
+                using (var server = new BloomWebSocketServer())
+                {
+                    server.Init(
+                        (BloomServer.portForHttp + 1).ToString(CultureInfo.InvariantCulture)
+                    );
+                    server.SendString("app", "uiLanguageChanged", langTag);
+                }
+            }
+            else
+            {
+                BloomWebSocketServer.Instance.SendString("app", "uiLanguageChanged", langTag);
+            }
+
+            FinishUiLanguageMenuItemClick();
+        }
+
         private void FinishUiLanguageMenuItemClick()
         {
             // these lines deal with having a smaller workspace window and minimizing the button texts for smaller windows
@@ -859,6 +1097,7 @@ namespace Bloom.Workspace
             AdjustButtonTextsForLocale();
             _showAllTranslationsItem.Text = GetShowUnapprovedTranslationsMenuText();
             _localizationChangedEvent.Raise(null);
+            SendTopRightState();
         }
 
         private string GetShowUnapprovedTranslationsMenuText()
@@ -1164,13 +1403,17 @@ namespace Bloom.Workspace
                                 _toolStrip.Items.Add(_zoomWrapper);
                             _zoomControl.Zoom = zoomManager.Zoom;
                             _zoomControl.ZoomChanged += (sender, args) =>
+                            {
                                 zoomManager.SetZoom(_zoomControl.Zoom);
+                                SendTopRightState();
+                            };
                         }
                         else
                         {
                             if (_toolStrip.Items.Contains(_zoomWrapper))
                                 _toolStrip.Items.Remove(_zoomWrapper);
                         }
+                        SendTopRightState();
                         // TODO-WV2: Can we clear the cache in WV2?  Do we need to?
                     },
                 }
@@ -1622,12 +1865,15 @@ namespace Bloom.Workspace
 
         private const int MinToolStripMargin = 3;
 
+        private int TopRightContentWidth =>
+            Math.Max(_topRightReactControl?.Width ?? 0, _toolStrip.Width);
+
         // The width of the toolstrip panel in stage 1 is typically its original width, which leaves a bit of margin
         // left of the toolstrip. If a long language name requires more width than typical, make it at least wide
         // enough to hold the language name. In the latter case, stage 2 won't do anything, and we will move right
         // on to stage 3 if stage 1 isn't enough.
         private int Stage_1WidthOfToolStringPanel =>
-            Math.Max(_originalToolStripPanelWidth, _toolStrip.Width + MinToolStripMargin);
+            Math.Max(_originalToolStripPanelWidth, TopRightContentWidth + MinToolStripMargin);
 
         // The width at which we switch to stage 1: the actual space needed for the controls in the top panel,
         // when each is in its widest form and the preferred extra space is between the tab controls and the TopBarControl.
@@ -1669,7 +1915,7 @@ namespace Bloom.Workspace
             // and possibly zoom control. It must be wide enough to display its content. In stages Full and 1,
             // it is also not less than original width.
             int desiredToolStripPanelWidth = Math.Max(
-                _toolStrip.Width + MinToolStripMargin,
+                TopRightContentWidth + MinToolStripMargin,
                 _currentShrinkage <= Shrinkage.Stage1 ? _originalToolStripPanelWidth : 0
             );
             if (desiredToolStripPanelWidth != _panelHoldingToolStrip.Width)

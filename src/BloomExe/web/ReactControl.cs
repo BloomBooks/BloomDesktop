@@ -215,6 +215,10 @@ namespace Bloom.web
                     "teamCollectionSettingsBundle",
                     "/teamCollection/TeamCollectionSettingsPanel.entry.tsx"
                 },
+                {
+                    "workspaceTopRightControlsBundle",
+                    "/react_components/TopBar/workspaceTopRightControls/WorkspaceTopRightControls.entry.tsx"
+                },
             };
             // Should we load relevant assets from the Vite Dev server?
             // To save time, only consider it if this is a dev build.

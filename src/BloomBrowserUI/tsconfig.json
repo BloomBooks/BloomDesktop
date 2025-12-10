@@ -12,7 +12,7 @@
             /*"@emotion/core",*/
             "@emotion/react/types/css-prop",
             "vitest/globals",
-            "@testing-library/jest-dom"
+            "@testing-library/jest-dom/types/index"
         ],
         "lib": ["dom", "es6", "scripthost", "es2019"],
         "experimentalDecorators": true,
@@ -24,8 +24,16 @@
         // this solved the 'foo' cannot be used as a JSX component. Its instance type 'foo' is not a valid JSX element,
         // which came in when we were at react 17 but some things are going towards 18
         "paths": {
-            "react": ["./node_modules/@types/react"]
-        }
+            "react": ["./node_modules/@types/react"],
+            "@emotion/react": ["./node_modules/@emotion/react"],
+            "@emotion/react/*": ["./node_modules/@emotion/react/*"],
+            "vitest": ["./node_modules/vitest"],
+            "vitest/*": ["./node_modules/vitest/*"],
+            "@testing-library/jest-dom": [
+                "./node_modules/@testing-library/jest-dom"
+            ]
+        },
+        "typeRoots": ["./node_modules/@types", "./node_modules"]
     },
     "exclude": [
         "node_modules",
