@@ -216,21 +216,12 @@ namespace Bloom.web
                     "/teamCollection/TeamCollectionSettingsPanel.entry.tsx"
                 },
             };
-            // Should we load relevant assets from the Vite Dev server?
-            // To save time, only consider it if this is a dev build.
-            // This also guards against trying to load assets from the vite server
-            // if a developer runs some other version. Though, it could still be a
-            // problem if a dev is trying to run dev builds of two versions at once.
-            var useViteDev =
-                ApplicationUpdateSupport.IsDev
-                && bundleToViteModulePathMap.ContainsKey(_javascriptBundleName);
-            var viteModulePath = useViteDev
-                ? bundleToViteModulePathMap[_javascriptBundleName]
-                : null;
-            // If still an option, see if localhost:5173 is running. This is quite slow when it is not.
-            // The original version used 400ms, which meant a 1200ms delay; but if it's going to succeed,
-            // it typically does so in 2ms. I compromised on 40.
-            useViteDev &= IsLocalPortOpen(5173, 40);
+            string viteModulePath = null;
+            var useViteDev = ShouldUseViteDev(() =>
+                bundleToViteModulePathMap.TryGetValue(_javascriptBundleName, out viteModulePath)
+                && viteModulePath != null
+            );
+
             var body =
                 $@"
                 <body style='margin:0; height:100%; display: flex; flex: 1; flex-direction: column; background-color:{backColor};{overflowY}'>
@@ -248,7 +239,7 @@ namespace Bloom.web
                     </div>
                 </body>";
 
-            if (viteModulePath != null && useViteDev)
+            if (useViteDev)
             {
                 RobustFile.WriteAllText(
                     tempFile.Path,
@@ -342,6 +333,27 @@ namespace Bloom.web
                 );
             }
             return tempFile;
+        }
+
+        // Determines the basics of whether to load the vite dev versions of various things.
+        // True if we're running a dev build and the vite dev port is active.
+        // Some callers (including in this file) may impose additional conditions;
+        // if extraCheck is passed it must return true for us to use vite.
+        public static bool ShouldUseViteDev(Func<bool> extraCheck = null)
+        {
+            // Should we load relevant assets from the Vite Dev server?
+            // To save time, only consider it if this is a dev build.
+            // This also guards against trying to load assets from the vite server
+            // if a developer runs some other version. Though, it could still be a
+            // problem if a dev is trying to run dev builds of two versions at once.
+            if (!ApplicationUpdateSupport.IsDev)
+                return false;
+            if (extraCheck != null && !extraCheck())
+                return false;
+            // If still an option, see if localhost:5173 is running. This is quite slow when it is not.
+            // The original version used 400ms, which meant a 1200ms delay; but if it's going to succeed,
+            // it typically does so in 2ms. I compromised on 40.
+            return IsLocalPortOpen(5173, 40);
         }
 
         public static bool IsLocalPortOpen(int port, int timeoutMs = 400)
