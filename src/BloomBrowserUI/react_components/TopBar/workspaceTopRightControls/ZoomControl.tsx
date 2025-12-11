@@ -69,7 +69,11 @@ export const ZoomControl: React.FunctionComponent = () => {
         >
             <PlusMinusButton label="–" onClick={() => applyDelta(-10)} />
 
-            {`${zoomInfo.zoom}%`}
+            <span
+                css={css`
+                    cursor: default; // Don't want the user to think he can type
+                `}
+            >{`${zoomInfo.zoom}%`}</span>
 
             <PlusMinusButton label="+" onClick={() => applyDelta(10)} />
         </div>

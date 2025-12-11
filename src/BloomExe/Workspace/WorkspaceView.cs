@@ -574,7 +574,7 @@ namespace Bloom.Workspace
 
         // TODO we don't want a separate way of getting these from the original. And can we get rid of the original toolmenu control?
         // maybe complicated by the fact that the menu is used elsewhere?
-        public List<object> GetUiLanguageMenuItemsForApi()
+        public List<object> GetUiLanguageMenuItems()
         {
             var items = new List<LanguageItem>();
             foreach (var lang in LocalizationManager.GetAvailableLocalizedLanguages())
@@ -636,7 +636,7 @@ namespace Bloom.Workspace
         {
             _uiLanguageContextMenu.Items.Clear();
 
-            foreach (dynamic entry in GetUiLanguageMenuItemsForApi())
+            foreach (dynamic entry in GetUiLanguageMenuItems())
             {
                 var item = new ToolStripMenuItem((string)entry.menuText)
                 {
@@ -701,21 +701,24 @@ namespace Bloom.Workspace
             _helpContextMenu.Items.Add(item);
         }
 
-        // TODO can we prevent it showing on next screen?
         private void ShowContextMenu(ContextMenuStrip menu)
         {
-            // Keep the placement consistent with EditingView context menus.
-            var mouseX = MousePosition.X;
-            var mouseY = MousePosition.Y + 8;
-            menu.Left = mouseX;
-            menu.Top = mouseY;
+            // Align the menu's right edge with the window's right edge.
+            // Ensures it stays on the same monitor.
+            // But also, it provides more consistency than having it shift left/right
+            // depending on where the mouse is.
+            var host = FindForm();
+            var windowRight = host?.Bounds.Right ?? MousePosition.X;
+            var menuWidth = menu.Width > 0 ? menu.Width : menu.GetPreferredSize(Size.Empty).Width;
+            var x = windowRight - menuWidth;
+            var y = MousePosition.Y + 8;
 
             var timer = new System.Windows.Forms.Timer { Interval = 10 };
             timer.Tick += (s, a) =>
             {
-                menu.Left = mouseX;
-                menu.Top = mouseY;
-                menu.Show(mouseX, mouseY);
+                menu.Left = x;
+                menu.Top = y;
+                menu.Show(x, y);
                 timer.Stop();
                 timer.Dispose();
             };

@@ -21,9 +21,11 @@ export const WorkspaceTopRightControls: React.FunctionComponent = () => {
                         styleOverrides: {
                             root: {
                                 color: kTextOnPurple,
+                                fontWeight: "normal",
                             },
                             text: {
                                 color: kTextOnPurple,
+                                fontWeight: "normal",
                             },
                         },
                     },
@@ -47,8 +49,19 @@ export const WorkspaceTopRightControls: React.FunctionComponent = () => {
                     font-size: 12px;
                 `}
             >
-                <UiLanguageMenu />
-                <HelpMenu />
+                {/* This grid keeps the two menu buttons the same width which keeps the down arrows aligned horizontally */}
+                <div
+                    css={css`
+                        display: grid;
+                        grid-template-columns: 1fr;
+                        grid-auto-rows: auto;
+                        width: max-content;
+                        row-gap: 1px;
+                    `}
+                >
+                    <UiLanguageMenu />
+                    <HelpMenu />
+                </div>
                 <ZoomControl />
             </div>
         </ThemeProvider>

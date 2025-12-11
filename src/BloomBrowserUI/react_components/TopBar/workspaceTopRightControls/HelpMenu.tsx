@@ -1,36 +1,48 @@
-import { css } from "@emotion/react";
 import * as React from "react";
-import BloomButton from "../../bloomButton";
 import { BloomTooltip } from "../../BloomToolTip";
 import { ArrowDropDown, HelpOutline } from "@mui/icons-material";
-import { postJson } from "../../../utils/bloomApi";
+import {
+    postJson,
+    useApiString,
+    useWatchString,
+} from "../../../utils/bloomApi";
+import { TopRightMenuButton, topRightMenuArrowCss } from "./TopRightMenuButton";
+import { useL10n } from "../../l10nHooks";
 
 export const HelpMenu: React.FunctionComponent = () => {
+    const helpText = useL10n("?", "HelpMenu.Help Menu");
+
+    const uiLangInitial = useApiString("currentUiLanguage", "en");
+    const uiLanguage = useWatchString(
+        uiLangInitial,
+        "app",
+        "uiLanguageChanged",
+    );
+
+    const showIconOnly =
+        helpText === "?" || ["en", "fr", "de", "es"].includes(uiLanguage);
+
     const onOpen = () => {
         postJson("workspace/topRight/openHelpMenu", {});
     };
 
+    const button = (
+        <TopRightMenuButton
+            text={showIconOnly ? "" : helpText}
+            onClick={onOpen}
+            startIcon={showIconOnly ? <HelpOutline /> : undefined}
+            endIcon={<ArrowDropDown css={topRightMenuArrowCss} />}
+            hasText={!showIconOnly}
+        />
+    );
+
+    if (!showIconOnly) {
+        return button;
+    }
+
     return (
         <BloomTooltip tip={{ l10nKey: "HelpMenu.Help Menu" }}>
-            {/* TODO: dynamic text vs icon */}
-            <BloomButton
-                l10nKey=""
-                alreadyLocalized={true}
-                enabled={true}
-                onClick={onOpen}
-                startIcon={<HelpOutline />}
-                endIcon={<ArrowDropDown fontSize="small" />}
-                hasText={false}
-                variant="text"
-                css={css`
-                    font-size: 12px;
-                    padding-top: 0px;
-                    padding-bottom: 0px;
-                    text-transform: none;
-                `}
-            >
-                Help
-            </BloomButton>
+            {button}
         </BloomTooltip>
     );
 };
