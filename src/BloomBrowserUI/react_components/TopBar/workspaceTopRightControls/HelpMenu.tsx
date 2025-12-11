@@ -4,19 +4,20 @@ import * as React from "react";
 import BloomButton from "../../bloomButton";
 import { BloomTooltip } from "../../BloomToolTip";
 import { ArrowDropDown, HelpOutline } from "@mui/icons-material";
+import { postJson } from "../../../utils/bloomApi";
 
-interface HelpMenuProps {
-    onOpen: () => void;
-}
+export const HelpMenu: React.FunctionComponent = () => {
+    const onOpen = () => {
+        postJson("workspace/topRight/openHelpMenu", {});
+    };
 
-export const HelpMenu: React.FunctionComponent<HelpMenuProps> = (props) => {
     return (
         <BloomTooltip tip={{ l10nKey: "HelpMenu.Help Menu" }}>
             <BloomButton
                 l10nKey=""
                 alreadyLocalized={true}
                 enabled={true}
-                onClick={props.onOpen}
+                onClick={onOpen}
                 startIcon={<HelpOutline />}
                 endIcon={<ArrowDropDown />}
                 hasText={false}

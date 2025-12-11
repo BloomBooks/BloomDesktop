@@ -2,15 +2,19 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import BloomButton from "../../bloomButton";
 import { ArrowDropDown } from "@mui/icons-material";
+import { postJson } from "../../../utils/bloomApi";
 
 interface LanguageMenuProps {
     text: string;
-    onOpen: () => void;
 }
 
 export const UiLanguageMenu: React.FunctionComponent<LanguageMenuProps> = (
     props,
 ) => {
+    const onOpen = () => {
+        postJson("workspace/topRight/openLanguageMenu", {});
+    };
+
     return (
         <BloomButton
             l10nKey=""
@@ -18,7 +22,7 @@ export const UiLanguageMenu: React.FunctionComponent<LanguageMenuProps> = (
             enabled={true}
             hasText={true}
             variant="text"
-            onClick={props.onOpen}
+            onClick={onOpen}
             endIcon={<ArrowDropDown />}
             css={css`
                 border: hidden;

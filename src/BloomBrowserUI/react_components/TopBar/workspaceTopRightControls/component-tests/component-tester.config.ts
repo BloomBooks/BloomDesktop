@@ -2,7 +2,6 @@ import type { IBloomComponentConfig } from "../../../component-tester/componentT
 
 const config: IBloomComponentConfig<Record<string, never>> = {
     defaultProps: {
-        skipApi: true,
         initialState: {
             uiLanguageLabel: "English",
             showUnapprovedText:

@@ -36,6 +36,16 @@ manualDescribe("Manual Interactive Testing", () => {
         await page.route("**/bloom/**/workspace/topRight/*", async (route) => {
             console.log("intercept topRight", route.request().url());
             if (route.request().method() === "POST") {
+                const url = route.request().url();
+                if (url.includes("openHelpMenu")) {
+                    await page.evaluate(() =>
+                        alert("Would have opened the WinForms help menu."),
+                    );
+                } else if (url.includes("openLanguageMenu")) {
+                    await page.evaluate(() =>
+                        alert("Would have opened the WinForms language menu."),
+                    );
+                }
                 await route.fulfill({
                     status: 200,
                     contentType: "application/json",
@@ -72,7 +82,6 @@ manualDescribe("Manual Interactive Testing", () => {
             "../TopBar/workspaceTopRightControls/WorkspaceTopRightControls",
             "WorkspaceTopRightControls",
             {
-                skipApi: true,
                 initialState: statePayload,
             },
         );

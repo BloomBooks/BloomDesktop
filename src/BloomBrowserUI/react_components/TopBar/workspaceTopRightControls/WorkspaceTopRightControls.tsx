@@ -6,7 +6,7 @@ import WebSocketManager from "../../../utils/WebSocketManager";
 import { lightTheme } from "../../../bloomMaterialUITheme";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { WireUpForWinforms } from "../../../utils/WireUpWinform";
-import { StyledEngineProvider, CssBaseline } from "@mui/material";
+import { CssBaseline } from "@mui/material";
 import { ZoomControl } from "./ZoomControl";
 import { UiLanguageMenu } from "./UiLanguageMenu";
 import { HelpMenu } from "./HelpMenu";
@@ -21,7 +21,6 @@ interface TopRightState {
 
 interface TopRightProps {
     initialState?: TopRightState;
-    skipApi?: boolean;
 }
 
 export const WorkspaceTopRightControls: React.FunctionComponent<
@@ -29,11 +28,11 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
 > = (props) => {
     const [state, setState] = useState<TopRightState | undefined>(undefined);
     const anchorRef = React.useRef<HTMLDivElement | null>(null);
-    const menuTheme = React.useMemo(
+    const lightThemeOverride = React.useMemo(
         () =>
             createTheme(lightTheme, {
                 components: {
-                    // Get default text color (almost black) -- rather than Bloom blue
+                    // Use default text color (almost black) -- rather than Bloom blue
                     MuiButton: {
                         styleOverrides: {
                             root: {
@@ -50,17 +49,14 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
     );
 
     const refreshState = React.useCallback(() => {
-        if (props.skipApi && props.initialState) {
+        if (props.initialState) {
             setState(props.initialState);
-            return;
-        }
-        if (props.skipApi) {
             return;
         }
         get("workspace/topRight/state", (result) => {
             setState(result.data as TopRightState);
         });
-    }, [props.initialState, props.skipApi]);
+    }, [props.initialState]);
 
     // Refresh initial state from either props or the API when the component mounts.
     useEffect(() => {
@@ -69,9 +65,6 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
 
     // Listen for websocket pushes so the UI stays in sync with backend state changes.
     useEffect(() => {
-        if (props.skipApi) {
-            return;
-        }
         const listener = (e) => {
             if (e.id === "state") {
                 const results = e as TopRightState;
@@ -84,30 +77,14 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
                 "workspaceTopRightControls",
                 listener,
             );
-    }, [props.skipApi]);
-
-    const requestLanguageMenu = () => {
-        if (props.skipApi) {
-            return;
-        }
-        postJson("workspace/topRight/openLanguageMenu", {});
-    };
-
-    const requestHelpMenu = () => {
-        if (props.skipApi) {
-            return;
-        }
-        postJson("workspace/topRight/openHelpMenu", {});
-    };
+    }, []);
 
     const changeZoom = (newZoom: number) => {
         if (!state) {
             return;
         }
         setState({ ...state, zoom: newZoom });
-        if (!props.skipApi) {
-            postJson("workspace/topRight/zoom", { zoom: newZoom });
-        }
+        postJson("workspace/topRight/zoom", { zoom: newZoom });
     };
 
     if (!state) {
@@ -115,7 +92,7 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
     }
 
     return (
-        <ThemeProvider theme={menuTheme}>
+        <ThemeProvider theme={lightThemeOverride}>
             {/* CssBaseline injects MUI's base styles (it sets html/body to the theme typography,
                 normalizes margins, etc.). Without it, the browser keeps default fonts and spacing,
                 so our theme's font family/size and resets never reach this control. */}
@@ -128,11 +105,8 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
                     align-items: end;
                 `}
             >
-                <UiLanguageMenu
-                    text={state.uiLanguageLabel}
-                    onOpen={requestLanguageMenu}
-                />
-                <HelpMenu onOpen={requestHelpMenu} />
+                <UiLanguageMenu text={state.uiLanguageLabel} />
+                <HelpMenu />
                 {state.zoomEnabled && (
                     <ZoomControl
                         zoom={state.zoom}
