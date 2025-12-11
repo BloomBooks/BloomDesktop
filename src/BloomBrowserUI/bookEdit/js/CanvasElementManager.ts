@@ -73,9 +73,7 @@ import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
 import { get, postData, postJson } from "../../utils/bloomApi";
-import AudioRecording, {
-    kTalkingBookToolId,
-} from "../toolbox/talkingBook/audioRecording";
+import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { getExactClientSize } from "../../utils/elementUtils";
 import { copyContentToTarget, getTarget } from "bloom-player";
@@ -84,7 +82,6 @@ import { FeatureStatus } from "../../react_components/featureStatus";
 import $ from "jquery";
 import { kCanvasToolId } from "../toolbox/toolIds";
 import { getToolboxBundleExports } from "./bloomFrames";
-import { ImageDescriptionAdapter } from "../toolbox/imageDescription/imageDescription";
 
 export interface ITextColorInfo {
     color: string;
@@ -7591,18 +7588,11 @@ async function copyAudioFileAsync(
     // );
 }
 
-function SetupClickToShowCanvasTool(canvasElement: Element) {
+function SetupClickToShowCanvasTool(canvas: Element) {
     // if the user clicks on a canvas element, bring up the canvas tool
-    $(canvasElement).click((ev) => {
-        const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
-        const currentToolId = toolbox?.getCurrentTool()?.id();
-
-        if (
-            toolbox?.toolboxIsShowing() &&
-            (currentToolId === ImageDescriptionAdapter.kToolID ||
-                currentToolId === kTalkingBookToolId)
-        ) {
-            // Image description tool or talking book tool is already open; we don't want to interfere with its functioning
+    $(canvas).click((ev) => {
+        // don't interfere with editing or recording of an image description of this canvas
+        if (canvas.getElementsByClassName("bloom-describedImage").length > 0) {
             return;
         }
 
