@@ -13,8 +13,6 @@ import { HelpMenu } from "./HelpMenu";
 
 interface TopRightState {
     uiLanguageLabel: string;
-    showUnapprovedText: string;
-    showUnapprovedChecked: boolean;
     zoom: number;
     zoomEnabled: boolean;
     minZoom: number;
@@ -113,7 +111,7 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
                     `}
                 >
                     <UiLanguageMenu
-                        state={state}
+                        text={state.uiLanguageLabel}
                         onOpen={requestLanguageMenu}
                     />
 

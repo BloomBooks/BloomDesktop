@@ -147,7 +147,7 @@ manualDescribe("Manual Interactive Testing", () => {
     test("with-bloom-backend", async ({ page }) => {
         test.setTimeout(0);
 
-        await page.goto("/?component=TopBar/workspaceTopRightControls");
+        await page.goto("/?component=WorkspaceTopRightControls");
 
         await page.waitForEvent("close");
     });

@@ -60,6 +60,8 @@ namespace Bloom.Workspace
         public static float DPIOfThisAccount;
         private ZoomModel _zoomModel;
         private ReactControl _topRightReactControl;
+        private readonly ContextMenuStrip _uiLanguageContextMenu = new ContextMenuStrip();
+        private readonly ContextMenuStrip _helpContextMenu = new ContextMenuStrip();
 
         public delegate WorkspaceView Factory();
 
@@ -722,24 +724,81 @@ namespace Bloom.Workspace
 
         public void ShowUiLanguageMenuAtCursor()
         {
-            SetupUiLanguageMenu();
-            ShowToolStripDropDown(_uiLanguageMenu.DropDown);
+            BuildUiLanguageContextMenu();
+            ShowContextMenu(_uiLanguageContextMenu);
         }
 
         public void ShowHelpMenuAtCursor()
         {
-            ShowToolStripDropDown(_helpMenu.DropDown);
+            BuildHelpContextMenu();
+            ShowContextMenu(_helpContextMenu);
         }
 
-        private void ShowToolStripDropDown(ToolStripDropDown dropDown)
+        private void BuildUiLanguageContextMenu()
         {
+            _uiLanguageContextMenu.Items.Clear();
+
+            foreach (dynamic entry in GetUiLanguageMenuItemsForApi())
+            {
+                var item = new ToolStripMenuItem((string)entry.menuText)
+                {
+                    Checked = (bool)entry.isCurrent,
+                    Tag = (string)entry.langTag,
+                    ToolTipText = (string)entry.tooltip,
+                };
+                item.Click += (sender, args) => SetUiLanguage((string)item.Tag);
+                _uiLanguageContextMenu.Items.Add(item);
+            }
+
+            _uiLanguageContextMenu.Items.Add(new ToolStripSeparator());
+
+            _showAllTranslationsItem = new ToolStripMenuItem(
+                GetShowUnapprovedTranslationsMenuText()
+            )
+            {
+                Checked = Settings.Default.ShowUnapprovedLocalizations,
+            };
+            _showAllTranslationsItem.Click += (sender, args) =>
+                ToggleShowingOnlyApprovedTranslations();
+            _uiLanguageContextMenu.Items.Add(_showAllTranslationsItem);
+        }
+
+        private void BuildHelpContextMenu()
+        {
+            _helpContextMenu.Items.Clear();
+
+            foreach (dynamic entry in GetHelpMenuItemsForApi())
+            {
+                if ((bool)entry.isSeparator)
+                {
+                    _helpContextMenu.Items.Add(new ToolStripSeparator());
+                    continue;
+                }
+
+                var item = new ToolStripMenuItem((string)entry.text)
+                {
+                    Enabled = (bool)entry.enabled,
+                    Tag = (string)entry.id,
+                };
+                item.Click += (sender, args) => RunHelpMenuCommand((string)item.Tag);
+                _helpContextMenu.Items.Add(item);
+            }
+        }
+
+        private void ShowContextMenu(ContextMenuStrip menu)
+        {
+            // Keep the placement consistent with EditingView context menus.
             var mouseX = MousePosition.X;
             var mouseY = MousePosition.Y + 8;
-            var timer = new System.Windows.Forms.Timer();
-            timer.Interval = 10;
+            menu.Left = mouseX;
+            menu.Top = mouseY;
+
+            var timer = new System.Windows.Forms.Timer { Interval = 10 };
             timer.Tick += (s, a) =>
             {
-                dropDown.Show(mouseX, mouseY);
+                menu.Left = mouseX;
+                menu.Top = mouseY;
+                menu.Show(mouseX, mouseY);
                 timer.Stop();
                 timer.Dispose();
             };
