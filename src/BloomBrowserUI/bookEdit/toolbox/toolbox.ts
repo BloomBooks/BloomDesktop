@@ -517,10 +517,6 @@ export class ToolBox {
             alert(msg);
             return;
         }
-
-        if (!this.toolboxIsShowing()) {
-            this.toggleToolbox();
-        }
         const checkBox = $("#" + toolId + "Check").get(0) as HTMLDivElement;
         if (checkBox) {
             // if it was an actual "input" element, we would just check for "checked",
@@ -542,6 +538,9 @@ export class ToolBox {
             } else {
                 showOrHideTool("dummy", ToolBox.addToolToString(toolId), true);
             }
+        }
+        if (!this.toolboxIsShowing()) {
+            this.toggleToolbox();
         }
     }
 
