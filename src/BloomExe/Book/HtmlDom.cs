@@ -376,6 +376,14 @@ namespace Bloom.Book
             return script;
         }
 
+        public static void AddInlineScript(SafeXmlDocument doc, string content, bool module)
+        {
+            var script = doc.CreateElement("script");
+            var typeAttr = module ? "module" : "text/javascript";
+            script.InnerText = content;
+            doc.Head.AppendChild(script);
+        }
+
         public void AddOrReplaceMetaElement(string name, string content)
         {
             var meta = _dom.SelectSingleNode($"/html/head/meta[@name='{name}']") as SafeXmlElement;
