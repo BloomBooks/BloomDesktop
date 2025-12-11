@@ -1,4 +1,3 @@
-/** @jsxImportSource @emotion/react */
 import { css, ThemeProvider } from "@emotion/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
@@ -10,6 +9,7 @@ import { lightTheme } from "../../../bloomMaterialUITheme";
 import { WireUpForWinforms } from "../../../utils/WireUpWinform";
 import { Menu, MenuItem, ListItemText } from "@mui/material";
 import { ArrowDropDown, HelpOutline } from "@mui/icons-material";
+import { ZoomControl } from "./ZoomControl";
 
 interface TopRightState {
     uiLanguageLabel: string;
@@ -51,13 +51,11 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
     const [helpAnchor, setHelpAnchor] = useState<HTMLElement | null>(null);
     const [languages, setLanguages] = useState<UiLanguageItem[]>([]);
     const [helpItems, setHelpItems] = useState<HelpMenuItemModel[]>([]);
-    const [zoomField, setZoomField] = useState<string>("");
     const anchorRef = React.useRef<HTMLDivElement | null>(null);
 
     const refreshState = React.useCallback(() => {
         if (props.skipApi && props.initialState) {
             setState(props.initialState);
-            setZoomField(`${props.initialState.zoom}%`);
             return;
         }
         if (props.skipApi) {
@@ -65,14 +63,15 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
         }
         get("workspace/topRight/state", (result) => {
             setState(result.data as TopRightState);
-            setZoomField(`${(result.data as TopRightState).zoom}%`);
         });
     }, [props.initialState, props.skipApi]);
 
+    // Refresh initial state from either props or the API when the component mounts.
     useEffect(() => {
         refreshState();
     }, [refreshState]);
 
+    // Listen for websocket pushes so the UI stays in sync with backend state changes.
     useEffect(() => {
         if (props.skipApi) {
             return;
@@ -81,7 +80,6 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
             if (e.id === "state") {
                 const results = e as TopRightState;
                 setState(results);
-                setZoomField(`${results.zoom}%`);
             }
         };
         WebSocketManager.addListener("workspaceTopRightControls", listener);
@@ -149,18 +147,13 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
         setHelpAnchor(null);
     };
 
-    const changeZoom = (delta: number) => {
-        if (!state || !state.zoomEnabled) {
+    const changeZoom = (newZoom: number) => {
+        if (!state) {
             return;
         }
-        const clamped = Math.min(
-            Math.max(state.zoom + delta, state.minZoom),
-            state.maxZoom,
-        );
-        setState({ ...state, zoom: clamped });
-        setZoomField(`${clamped}%`);
+        setState({ ...state, zoom: newZoom });
         if (!props.skipApi) {
-            postJson("workspace/topRight/zoom", { zoom: clamped });
+            postJson("workspace/topRight/zoom", { zoom: newZoom });
         }
     };
 
@@ -222,8 +215,7 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
                     display: flex;
                     flex-direction: column;
                     align-items: end;
-                    background-color: transparent;
-                    color: white;
+                    /* background-color: transparent; */
                 `}
             >
                 <BloomTooltip
@@ -276,67 +268,14 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
                     </BloomButton>
                 </BloomTooltip>
 
-                <div
-                    css={css`
-                        display: flex;
-                        align-items: center;
-                        gap: 4px;
-                        background-color: transparent;
-                        padding: 4px 6px;
-                        border-radius: 4px;
-                        color: ${state.zoomEnabled
-                            ? "white"
-                            : "rgba(255,255,255,0.6)"};
-                    `}
-                >
-                    <BloomButton
-                        l10nKey="Workspace.Zoom.Decrease"
-                        enabled={state.zoomEnabled}
-                        transparent={true}
-                        hasText={true}
-                        onClick={() => changeZoom(-10)}
-                        css={css`
-                            color: inherit;
-                            min-width: 28px;
-                            padding: 4px;
-                            border: hidden;
-                            background-color: transparent;
-                        `}
-                    >
-                        -
-                    </BloomButton>
-                    <input
-                        aria-label="Zoom value"
-                        value={zoomField}
-                        readOnly={true}
-                        disabled={!state.zoomEnabled}
-                        css={css`
-                            width: 56px;
-                            text-align: center;
-                            border: none;
-                            background: transparent;
-                            color: inherit;
-                            outline: none;
-                            font-size: 12px;
-                        `}
+                {state.zoomEnabled && (
+                    <ZoomControl
+                        zoom={state.zoom}
+                        minZoom={state.minZoom}
+                        maxZoom={state.maxZoom}
+                        onZoomChange={changeZoom}
                     />
-                    <BloomButton
-                        l10nKey="Workspace.Zoom.Increase"
-                        enabled={state.zoomEnabled}
-                        transparent={true}
-                        hasText={true}
-                        onClick={() => changeZoom(10)}
-                        css={css`
-                            color: inherit;
-                            min-width: 28px;
-                            padding: 4px;
-                            border: hidden;
-                            background-color: transparent;
-                        `}
-                    >
-                        +
-                    </BloomButton>
-                </div>
+                )}
 
                 <Menu
                     anchorEl={languageAnchor}

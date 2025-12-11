@@ -139,4 +139,12 @@ manualDescribe("Manual Interactive Testing", () => {
 
         await page.waitForEvent("close");
     });
+
+    test("with-bloom-backend", async ({ page }) => {
+        test.setTimeout(0);
+
+        await page.goto("/?component=TopBar/workspaceTopRightControls");
+
+        await page.waitForEvent("close");
+    });
 });
