@@ -7,21 +7,23 @@ import { CssBaseline } from "@mui/material";
 import { ZoomControl } from "./ZoomControl";
 import { UiLanguageMenu } from "./UiLanguageMenu";
 import { HelpMenu } from "./HelpMenu";
+import { kTextOnPurple } from "../../../bloomMaterialUITheme";
 
 export const WorkspaceTopRightControls: React.FunctionComponent = () => {
-    const anchorRef = React.useRef<HTMLDivElement | null>(null);
     const lightThemeOverride = React.useMemo(
         () =>
             createTheme(lightTheme, {
                 components: {
-                    // Use default text color (almost black) -- rather than Bloom blue
+                    // kTextOnPurple: The background isn't always purple,
+                    // but this matches what the original winforms control was doing.
+                    // Without the override, we get Bloom blue.
                     MuiButton: {
                         styleOverrides: {
                             root: {
-                                color: "inherit",
+                                color: kTextOnPurple,
                             },
                             text: {
-                                color: "inherit",
+                                color: kTextOnPurple,
                             },
                         },
                     },
@@ -37,11 +39,12 @@ export const WorkspaceTopRightControls: React.FunctionComponent = () => {
                 so our theme's font family/size and resets never reach this control. */}
             <CssBaseline />
             <div
-                ref={anchorRef}
                 css={css`
                     display: flex;
                     flex-direction: column;
+                    gap: 1px;
                     align-items: end;
+                    font-size: 12px;
                 `}
             >
                 <UiLanguageMenu />

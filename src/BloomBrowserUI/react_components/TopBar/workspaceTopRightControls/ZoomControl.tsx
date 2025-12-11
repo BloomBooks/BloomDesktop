@@ -5,7 +5,7 @@ import BloomButton from "../../bloomButton";
 import { get, postJson } from "../../../utils/bloomApi";
 import WebSocketManager from "../../../utils/WebSocketManager";
 
-interface ZoomState {
+interface IZoomInfo {
     zoom: number;
     minZoom: number;
     maxZoom: number;
@@ -13,27 +13,25 @@ interface ZoomState {
 }
 
 export const ZoomControl: React.FunctionComponent = () => {
-    const [zoomState, setZoomState] = useState<ZoomState | undefined>(
-        undefined,
-    );
+    const [zoomInfo, setZoomInfo] = useState<IZoomInfo | undefined>(undefined);
 
     // Fetch zoom info from the backend.
     useEffect(() => {
-        if (zoomState) {
+        if (zoomInfo) {
             return;
         }
-        get("workspace/topRight/zoomState", (result) => {
-            const state = result.data as ZoomState;
-            setZoomState(state);
+        get("workspace/topRight/zoomInfo", (result) => {
+            const state = result.data as IZoomInfo;
+            setZoomInfo(state);
         });
-    }, [zoomState]);
+    }, [zoomInfo]);
 
     // Listen for backend pushes so the zoom control stays in sync with WinForms state.
     useEffect(() => {
         const listener = (e) => {
             if (e.id === "zoom") {
-                const state = e as ZoomState;
-                setZoomState(state);
+                const state = e as IZoomInfo;
+                setZoomInfo(state);
             }
         };
         WebSocketManager.addListener("workspaceTopRightControls", listener);
@@ -44,20 +42,20 @@ export const ZoomControl: React.FunctionComponent = () => {
             );
     }, []);
 
-    const clampZoom = (value: number, current: ZoomState) => {
+    const clampZoom = (value: number, current: IZoomInfo) => {
         return Math.min(Math.max(value, current.minZoom), current.maxZoom);
     };
 
     const applyDelta = (delta: number) => {
-        if (!zoomState) {
+        if (!zoomInfo) {
             return;
         }
-        const clamped = clampZoom(zoomState.zoom + delta, zoomState);
-        setZoomState({ ...zoomState, zoom: clamped });
+        const clamped = clampZoom(zoomInfo.zoom + delta, zoomInfo);
+        setZoomInfo({ ...zoomInfo, zoom: clamped });
         postJson("workspace/topRight/zoom", { zoom: clamped });
     };
 
-    if (!zoomState || !zoomState.zoomEnabled) {
+    if (!zoomInfo || !zoomInfo.zoomEnabled) {
         return null;
     }
 
@@ -66,52 +64,42 @@ export const ZoomControl: React.FunctionComponent = () => {
             css={css`
                 display: flex;
                 align-items: center;
-                gap: 4px;
-                background-color: transparent;
-                padding: 4px 6px;
-                border-radius: 4px;
+                gap: 8px;
             `}
         >
-            <BloomButton
-                l10nKey=""
-                alreadyLocalized={true}
-                enabled={true}
-                transparent={true}
-                hasText={true}
-                onClick={() => applyDelta(-10)}
-                css={css`
-                    min-width: 28px;
-                    padding: 4px;
-                    border: hidden;
-                    background-color: transparent;
-                `}
-            >
-                -
-            </BloomButton>
+            <PlusMinusButton label="–" onClick={() => applyDelta(-10)} />
 
-            <div
-                css={css`
-                    width: 56px;
-                    text-align: center;
-                `}
-            >{`${zoomState.zoom}%`}</div>
+            {`${zoomInfo.zoom}%`}
 
-            <BloomButton
-                l10nKey=""
-                alreadyLocalized={true}
-                enabled={true}
-                transparent={true}
-                hasText={true}
-                onClick={() => applyDelta(10)}
-                css={css`
-                    min-width: 28px;
-                    padding: 4px;
-                    border: hidden;
-                    background-color: transparent;
-                `}
-            >
-                +
-            </BloomButton>
+            <PlusMinusButton label="+" onClick={() => applyDelta(10)} />
         </div>
+    );
+};
+
+interface PlusMinusButtonProps {
+    label: string;
+    onClick: () => void;
+}
+
+const PlusMinusButton: React.FunctionComponent<PlusMinusButtonProps> = (
+    props,
+) => {
+    return (
+        <BloomButton
+            l10nKey=""
+            alreadyLocalized={true}
+            enabled={true}
+            transparent={true}
+            hasText={true}
+            onClick={props.onClick}
+            css={css`
+                font-size: 18px;
+                border: hidden;
+                background-color: transparent;
+                cursor: pointer;
+            `}
+        >
+            {props.label}
+        </BloomButton>
     );
 };

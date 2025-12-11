@@ -49,8 +49,6 @@ namespace Bloom.Workspace
         private int _originalUiMenuWidth;
         private int _stage1SpaceSaved;
         private int _stage2SpaceSaved;
-
-        // Help items now live only in a context menu; original ToolStrip button no longer used.
         private string _originalUiLanguageSelection;
         private EditingView _editingView;
         private PublishView _publishView;
@@ -232,7 +230,6 @@ namespace Bloom.Workspace
             SetupZoomModel();
             SetupTopRightReactControl();
             SendTopRightState();
-            AdjustButtonTextsForLocale();
             _viewInitialized = false;
             CommonApi.WorkspaceView = this;
 
@@ -541,6 +538,7 @@ namespace Bloom.Workspace
             _toolStrip.Visible = false;
             _panelHoldingToolStrip.Controls.Remove(_toolStrip);
             _topRightReactControl = ReactControl.Create("workspaceTopRightControlsBundle");
+            _topRightReactControl.HideVerticalOverflow = true;
             _topRightReactControl.Dock = DockStyle.Fill;
             _topRightReactControl.BackColor = _panelHoldingToolStrip.BackColor;
             _topRightReactControl.SetLocalizationChangedEvent(_localizationChangedEvent);
@@ -574,6 +572,8 @@ namespace Bloom.Workspace
             return item.MenuText;
         }
 
+        // TODO we don't want a separate way of getting these from the original. And can we get rid of the original toolmenu control?
+        // maybe complicated by the fact that the menu is used elsewhere?
         public List<object> GetUiLanguageMenuItemsForApi()
         {
             var items = new List<LanguageItem>();
@@ -670,9 +670,9 @@ namespace Bloom.Workspace
                     _documentationMenuItem,
                     _bloomDocsMenuItem,
                     _trainingVideosMenuItem,
-                    buildingReaderTemplatesMenuItem,
-                    usingReaderTemplatesMenuItem,
-                    toolStripSeparator1,
+                    _buildingReaderTemplatesMenuItem,
+                    _usingReaderTemplatesMenuItem,
+                    _toolStripSeparator1,
                     _askAQuestionMenuItem,
                     _requestAFeatureMenuItem,
                     _reportAProblemMenuItem,
@@ -701,6 +701,7 @@ namespace Bloom.Workspace
             _helpContextMenu.Items.Add(item);
         }
 
+        // TODO can we prevent it showing on next screen?
         private void ShowContextMenu(ContextMenuStrip menu)
         {
             // Keep the placement consistent with EditingView context menus.
@@ -721,6 +722,8 @@ namespace Bloom.Workspace
             timer.Start();
         }
 
+        //TODO split into two methods. Do we even need uiLanguageLabel?
+        // For that matter, do we need zoom?
         private void SendTopRightState()
         {
             if (_webSocketServer == null)
@@ -728,7 +731,7 @@ namespace Bloom.Workspace
 
             _webSocketServer.SendString(
                 "workspaceTopRightControls",
-                "uiLanguage",
+                "uiLanguageLabel",
                 GetCurrentUiLanguageLabel()
             );
             _webSocketServer.SendBundle("workspaceTopRightControls", "zoom", GetZoomInfo());
@@ -1093,7 +1096,6 @@ namespace Bloom.Workspace
         {
             // these lines deal with having a smaller workspace window and minimizing the button texts for smaller windows
             SaveOriginalButtonTexts();
-            AdjustButtonTextsForLocale();
             _showAllTranslationsItem.Text = GetShowUnapprovedTranslationsMenuText();
             _localizationChangedEvent.Raise(null);
             SendTopRightState();
@@ -2033,14 +2035,6 @@ namespace Bloom.Workspace
             );
             AlignTopRightPanels();
             _stage1SpaceSaved = 0;
-        }
-
-        /// <summary>
-        /// Adjust buttons for the current Locale. In particular the Help button may be an icon or a translation.
-        /// </summary>
-        void AdjustButtonTextsForLocale()
-        {
-            // No-op: help is now displayed via ContextMenuStrip only.
         }
 
         // Currently stage 2 removes the space between the right-hand toolstrip and the tool-specific controls,

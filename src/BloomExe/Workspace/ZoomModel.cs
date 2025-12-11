@@ -23,10 +23,5 @@ namespace Bloom.Workspace
         }
 
         public event EventHandler<EventArgs> ZoomChanged;
-
-        public void Adjust(int delta)
-        {
-            Zoom = _zoom + delta;
-        }
     }
 }

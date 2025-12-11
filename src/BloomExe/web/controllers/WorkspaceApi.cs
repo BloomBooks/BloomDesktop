@@ -36,13 +36,13 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                "workspace/topRight/uiLanguageState",
-                HandleGetUiLanguageState,
+                "workspace/topRight/uiLanguageLabel",
+                HandleGetUiLanguageLabel,
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                "workspace/topRight/zoomState",
-                HandleGetZoomState,
+                "workspace/topRight/zoomInfo",
+                HandleGetZoomInfo,
                 true
             );
             apiHandler.RegisterEndpointHandler("workspace/topRight/zoom", HandleZoom, true);
@@ -62,12 +62,12 @@ namespace Bloom.web.controllers
             WorkspaceView.OpenCreateCollection();
         }
 
-        private void HandleGetUiLanguageState(ApiRequest request)
+        private void HandleGetUiLanguageLabel(ApiRequest request)
         {
             request.ReplyWithJson(WorkspaceView.GetCurrentUiLanguageLabel());
         }
 
-        private void HandleGetZoomState(ApiRequest request)
+        private void HandleGetZoomInfo(ApiRequest request)
         {
             request.ReplyWithJson(WorkspaceView.GetZoomInfo());
         }

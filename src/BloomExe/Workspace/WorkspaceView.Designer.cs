@@ -50,9 +50,9 @@ namespace Bloom.Workspace
 			this._documentationMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._bloomDocsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._trainingVideosMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.buildingReaderTemplatesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.usingReaderTemplatesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+			this._buildingReaderTemplatesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this._usingReaderTemplatesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this._toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
 			this._askAQuestionMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._requestAFeatureMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._reportAProblemMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -233,32 +233,32 @@ namespace Bloom.Workspace
 			//
 			// buildingReaderTemplatesMenuItem
 			//
-			this.buildingReaderTemplatesMenuItem.Image = global::Bloom.Properties.Resources.pdf16x16;
-			this._L10NSharpExtender.SetLocalizableToolTip(this.buildingReaderTemplatesMenuItem, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.buildingReaderTemplatesMenuItem, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this.buildingReaderTemplatesMenuItem, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this.buildingReaderTemplatesMenuItem, "HelpMenu.BuildingReaderTemplatesMenuItem");
-			this.buildingReaderTemplatesMenuItem.Name = "buildingReaderTemplatesMenuItem";
-			this.buildingReaderTemplatesMenuItem.Size = new System.Drawing.Size(213, 22);
-			this.buildingReaderTemplatesMenuItem.Text = "Building Reader Templates";
-			this.buildingReaderTemplatesMenuItem.Click += new System.EventHandler(this.buildingReaderTemplatesMenuItem_Click);
+			this._buildingReaderTemplatesMenuItem.Image = global::Bloom.Properties.Resources.pdf16x16;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._buildingReaderTemplatesMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._buildingReaderTemplatesMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._buildingReaderTemplatesMenuItem, L10NSharp.LocalizationPriority.Low);
+			this._L10NSharpExtender.SetLocalizingId(this._buildingReaderTemplatesMenuItem, "HelpMenu.BuildingReaderTemplatesMenuItem");
+			this._buildingReaderTemplatesMenuItem.Name = "buildingReaderTemplatesMenuItem";
+			this._buildingReaderTemplatesMenuItem.Size = new System.Drawing.Size(213, 22);
+			this._buildingReaderTemplatesMenuItem.Text = "Building Reader Templates";
+			this._buildingReaderTemplatesMenuItem.Click += new System.EventHandler(this.buildingReaderTemplatesMenuItem_Click);
 			//
 			// usingReaderTemplatesMenuItem
 			//
-			this.usingReaderTemplatesMenuItem.Image = global::Bloom.Properties.Resources.pdf16x16;
-			this._L10NSharpExtender.SetLocalizableToolTip(this.usingReaderTemplatesMenuItem, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.usingReaderTemplatesMenuItem, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this.usingReaderTemplatesMenuItem, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this.usingReaderTemplatesMenuItem, "HelpMenu.UsingReaderTemplatesMenuItem");
-			this.usingReaderTemplatesMenuItem.Name = "usingReaderTemplatesMenuItem";
-			this.usingReaderTemplatesMenuItem.Size = new System.Drawing.Size(213, 22);
-			this.usingReaderTemplatesMenuItem.Text = "Using Reader Templates ";
-			this.usingReaderTemplatesMenuItem.Click += new System.EventHandler(this.usingReaderTemplatesMenuItem_Click);
+			this._usingReaderTemplatesMenuItem.Image = global::Bloom.Properties.Resources.pdf16x16;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._usingReaderTemplatesMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._usingReaderTemplatesMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._usingReaderTemplatesMenuItem, L10NSharp.LocalizationPriority.Low);
+			this._L10NSharpExtender.SetLocalizingId(this._usingReaderTemplatesMenuItem, "HelpMenu.UsingReaderTemplatesMenuItem");
+			this._usingReaderTemplatesMenuItem.Name = "usingReaderTemplatesMenuItem";
+			this._usingReaderTemplatesMenuItem.Size = new System.Drawing.Size(213, 22);
+			this._usingReaderTemplatesMenuItem.Text = "Using Reader Templates ";
+			this._usingReaderTemplatesMenuItem.Click += new System.EventHandler(this.usingReaderTemplatesMenuItem_Click);
 			//
 			// toolStripSeparator1
 			//
-			this.toolStripSeparator1.Name = "toolStripSeparator1";
-			this.toolStripSeparator1.Size = new System.Drawing.Size(210, 6);
+			this._toolStripSeparator1.Name = "toolStripSeparator1";
+			this._toolStripSeparator1.Size = new System.Drawing.Size(210, 6);
 			//
 			// _askAQuestionMenuItem
 			//
@@ -437,10 +437,10 @@ namespace Bloom.Workspace
 		private System.Windows.Forms.ToolStripDropDownButton _uiLanguageMenu;
 		private System.Windows.Forms.ToolStripMenuItem _documentationMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _trainingVideosMenuItem;
-		private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+		private System.Windows.Forms.ToolStripSeparator _toolStripSeparator1;
 		private System.Windows.Forms.ToolStripMenuItem _releaseNotesMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem buildingReaderTemplatesMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem usingReaderTemplatesMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem _buildingReaderTemplatesMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem _usingReaderTemplatesMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _reportAProblemMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _requestAFeatureMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _webSiteMenuItem;
