@@ -552,23 +552,20 @@ namespace Bloom.Workspace
             }
         }
 
-        public dynamic BuildTopRightState()
+        public dynamic GetZoomInfo()
         {
             var zoomManager = CurrentTabView as IZoomManager;
             var zoomEnabled = zoomManager != null;
             var zoomValue = zoomEnabled ? zoomManager.Zoom : (_zoomModel?.Zoom ?? 100);
-            dynamic state = new DynamicJson();
-            state.uiLanguageLabel = GetCurrentUiLanguageLabel();
-            state.showUnapprovedText = GetShowUnapprovedTranslationsMenuText();
-            state.showUnapprovedChecked = Settings.Default.ShowUnapprovedLocalizations;
-            state.zoom = zoomValue;
-            state.zoomEnabled = zoomEnabled;
-            state.minZoom = ZoomModel.kMinimumZoom;
-            state.maxZoom = ZoomModel.kMaximumZoom;
-            return state;
+            dynamic zoomInfo = new DynamicJson();
+            zoomInfo.zoom = zoomValue;
+            zoomInfo.zoomEnabled = zoomEnabled;
+            zoomInfo.minZoom = ZoomModel.kMinimumZoom;
+            zoomInfo.maxZoom = ZoomModel.kMaximumZoom;
+            return zoomInfo;
         }
 
-        private string GetCurrentUiLanguageLabel()
+        public string GetCurrentUiLanguageLabel()
         {
             var lang = Settings.Default.UserInterfaceLanguage;
             if (String.IsNullOrEmpty(lang))
@@ -728,8 +725,13 @@ namespace Bloom.Workspace
         {
             if (_webSocketServer == null)
                 return;
-            var state = BuildTopRightState();
-            _webSocketServer.SendBundle("workspaceTopRightControls", "state", state);
+
+            _webSocketServer.SendString(
+                "workspaceTopRightControls",
+                "uiLanguage",
+                GetCurrentUiLanguageLabel()
+            );
+            _webSocketServer.SendBundle("workspaceTopRightControls", "zoom", GetZoomInfo());
         }
 
         private int TabButtonSectionWidth

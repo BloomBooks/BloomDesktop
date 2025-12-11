@@ -26,11 +26,6 @@ namespace Bloom.web.controllers
             );
 
             apiHandler.RegisterEndpointHandler(
-                "workspace/topRight/state",
-                HandleGetTopRightState,
-                true
-            );
-            apiHandler.RegisterEndpointHandler(
                 "workspace/topRight/openLanguageMenu",
                 HandleOpenLanguageMenu,
                 true
@@ -38,6 +33,16 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler(
                 "workspace/topRight/openHelpMenu",
                 HandleOpenHelpMenu,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "workspace/topRight/uiLanguageState",
+                HandleGetUiLanguageState,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "workspace/topRight/zoomState",
+                HandleGetZoomState,
                 true
             );
             apiHandler.RegisterEndpointHandler("workspace/topRight/zoom", HandleZoom, true);
@@ -57,22 +62,25 @@ namespace Bloom.web.controllers
             WorkspaceView.OpenCreateCollection();
         }
 
-        private void HandleGetTopRightState(ApiRequest request)
+        private void HandleGetUiLanguageState(ApiRequest request)
         {
-            WorkspaceView.Invoke(
-                new Action(() => request.ReplyWithJson(WorkspaceView.BuildTopRightState()))
-            );
+            request.ReplyWithJson(WorkspaceView.GetCurrentUiLanguageLabel());
+        }
+
+        private void HandleGetZoomState(ApiRequest request)
+        {
+            request.ReplyWithJson(WorkspaceView.GetZoomInfo());
         }
 
         private void HandleOpenLanguageMenu(ApiRequest request)
         {
-            WorkspaceView.Invoke(new Action(WorkspaceView.ShowUiLanguageMenuAtCursor));
+            WorkspaceView.ShowUiLanguageMenuAtCursor();
             request.PostSucceeded();
         }
 
         private void HandleOpenHelpMenu(ApiRequest request)
         {
-            WorkspaceView.Invoke(new Action(WorkspaceView.ShowHelpMenuAtCursor));
+            WorkspaceView.ShowHelpMenuAtCursor();
             request.PostSucceeded();
         }
 
@@ -80,13 +88,13 @@ namespace Bloom.web.controllers
         {
             if (request.HttpMethod == HttpMethods.Get)
             {
-                request.ReplyWithJson(WorkspaceView.BuildTopRightState());
+                request.ReplyWithJson(WorkspaceView.GetZoomInfo());
                 return;
             }
 
             var data = request.RequiredPostDynamic();
             int zoom = Convert.ToInt32(data.zoom);
-            WorkspaceView.Invoke(new Action(() => WorkspaceView.SetZoomFromApi(zoom)));
+            WorkspaceView.SetZoomFromApi(zoom);
             request.PostSucceeded();
         }
     }

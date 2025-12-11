@@ -16,21 +16,33 @@ manualDescribe("Manual Interactive Testing", () => {
     test("default", async ({ page }) => {
         test.setTimeout(0);
 
-        const statePayload = {
-            uiLanguageLabel: "English",
+        const uiLanguageState = "English";
+
+        const zoomState = {
             zoom: 100,
             zoomEnabled: true,
             minZoom: 50,
             maxZoom: 300,
         };
 
-        const statePatterns = [
-            /.*\/bloom\/api\/workspace\/topRight\/state.*/,
-            /.*\/bloom\/workspace\/topRight\/state.*/,
+        const uiLanguagePatterns = [
+            /.*\/bloom\/api\/workspace\/topRight\/uiLanguageState.*/,
+            /.*\/bloom\/workspace\/topRight\/uiLanguageState.*/,
         ];
 
-        statePatterns.forEach((pattern) =>
-            prepareGetResponse(page, pattern, statePayload, { wrapBody: true }),
+        const zoomPatterns = [
+            /.*\/bloom\/api\/workspace\/topRight\/zoomState.*/,
+            /.*\/bloom\/workspace\/topRight\/zoomState.*/,
+        ];
+
+        uiLanguagePatterns.forEach((pattern) =>
+            prepareGetResponse(page, pattern, uiLanguageState, {
+                wrapBody: true,
+            }),
+        );
+
+        zoomPatterns.forEach((pattern) =>
+            prepareGetResponse(page, pattern, zoomState, { wrapBody: true }),
         );
 
         await page.route("**/bloom/**/workspace/topRight/*", async (route) => {
@@ -81,9 +93,7 @@ manualDescribe("Manual Interactive Testing", () => {
             page,
             "../TopBar/workspaceTopRightControls/WorkspaceTopRightControls",
             "WorkspaceTopRightControls",
-            {
-                initialState: statePayload,
-            },
+            {},
         );
 
         await page.waitForEvent("close");
