@@ -15,7 +15,8 @@ import {
     useSubscribeToWebSocketForEvent,
 } from "../utils/WebSocketManager";
 import { BookProblem } from "../react_components/bookProblem";
-import { SimpleMenu, SimpleMenuItem } from "../react_components/simpleMenu";
+import { SimpleMenu } from "../react_components/simpleMenu";
+import { SimpleMenuItem } from "../react_components/SimpleMenuItem";
 import { AvatarDialog } from "./AvatarDialog";
 import { ForgetChangesDialog } from "./ForgetChangesDialog";
 import { createTheme, adaptV4Theme } from "@mui/material/styles";

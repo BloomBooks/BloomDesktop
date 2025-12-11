@@ -10,7 +10,7 @@ import "./imageDescription.less";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { Label } from "../../../react_components/l10nComponents";
 import { Link } from "../../../react_components/link";
-import { ToolBottomHelpLink } from "../../../react_components/helpLink";
+import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
 import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
 import {
     hideImageDescriptions,

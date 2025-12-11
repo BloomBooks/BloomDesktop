@@ -12,7 +12,7 @@ import { DialogCancelButton } from "../../../react_components/BloomDialog/common
 import { useL10n } from "../../../react_components/l10nHooks";
 import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
 import TextField from "@mui/material/TextField";
-import { WhatsThisBlock } from "../../../react_components/helpLink";
+import { WhatsThisBlock } from "../../../react_components/WhatsThisBlock";
 import { BloomPalette } from "../../../react_components/color-picking/bloomPalette";
 import { ColorDisplayButton } from "../../../react_components/color-picking/colorPickerDialog";
 import { ConditionallyEnabledBlock } from "../../../react_components/ConditionallyEnabledBlock";

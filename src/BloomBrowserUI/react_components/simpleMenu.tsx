@@ -7,15 +7,7 @@ import MenuItem from "@mui/material/MenuItem";
 import { useL10n } from "./l10nHooks";
 import { Divider, ListItemIcon, ListItemText } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-
-export class SimpleMenuItem {
-    text: string;
-    l10nKey: string;
-    temporarilyDisableI18nWarning?: boolean;
-    action: () => void; // in addition to closing the menu
-    disabled?: boolean;
-    icon?: React.ReactNode;
-}
+import { SimpleMenuItem } from "./SimpleMenuItem";
 
 const useButtonStyles = makeStyles({
     label: {
