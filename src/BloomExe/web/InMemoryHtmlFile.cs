@@ -12,6 +12,7 @@ namespace Bloom.Api
         Nav, // Navigating to a new page?
         Preview, // Preview whole book
         Frame, // Editing View is updating single displayed page
+        RealTempFile, // A real temp file, not just in memory
     }
 
     /// <summary>
@@ -54,8 +55,12 @@ namespace Bloom.Api
                     return "Preview";
                 case InMemoryHtmlFileSource.Frame:
                     return "Frame";
+                case InMemoryHtmlFileSource.JustCheckingPage:
+                    return "JustCheckingPage";
+                case InMemoryHtmlFileSource.Nav:
+                    return "Nav";
                 default:
-                    return "Other"; // I got bored of listing them
+                    return "Other";
             }
         }
     }

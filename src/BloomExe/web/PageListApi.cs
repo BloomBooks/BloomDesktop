@@ -21,7 +21,7 @@ namespace Bloom.web
         private readonly BookSelection _bookSelection;
         private readonly CollectionModel _collectionModel;
 
-        internal WebThumbNailList PageList { get; set; }
+        internal PageThumbnailList PageList { get; set; }
 
         // internal for use only by WebThumbnailList
         internal IPage SelectedPage { get; set; }

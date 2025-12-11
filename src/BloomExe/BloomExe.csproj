@@ -173,6 +173,10 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 	<ItemGroup>
 		<DeleteForSILMedia Include="$(OutDir)lib\win-x64\*.*" />
 		<DeleteForSILMedia Include="$(OutDir)lib\win-x86\*.*" />
+		<Compile Remove="Edit\PageListView.Designer.cs" />
+		<Compile Remove="Edit\WebThumbNailList.Designer.cs" />
+		<EmbeddedResource Remove="Edit\PageListView.resx" />
+		<EmbeddedResource Remove="Edit\WebThumbNailList.resx" />
 		<RemoveForSILMedia Include="$(OutDir)lib\win-x86" />
 		<RemoveForSILMedia Include="$(OutDir)lib\win-x64" />
 		<RemoveForSILMedia Include="$(OutDir)lib" />
@@ -191,8 +195,7 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 		<Copy SourceFiles="@(FfmpegFiles)" DestinationFolder="$(OutDir)" />
 		<Message Text="Copying platform-specific ffmpeg for $(Platform)" Importance="high" />
 
-		<Error Text="Platform-specific ffmpeg not found for $(Platform) - expected at @(FfmpegFiles)"
-		       Condition="'$(Platform)'=='ARM64' AND !Exists('@(FfmpegFiles)')" />
+		<Error Text="Platform-specific ffmpeg not found for $(Platform) - expected at @(FfmpegFiles)" Condition="'$(Platform)'=='ARM64' AND !Exists('@(FfmpegFiles)')" />
 	</Target>
 	<Target Name="ReallyAfterBuild" AfterTargets="CopySomeFiles">
 		<Copy SourceFiles="@(CopyForSILMedia)" DestinationFolder="$(OutDir)" />
@@ -223,12 +226,11 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 		</PropertyGroup>
 
 		<!-- Fail immediately if ARM64 SQLite library is not where NuGet should have placed it -->
-		<Error Text="ARM64 SQLite library not found at expected location: $(Arm64SqliteSource). Check that RuntimeIdentifiers includes 'win-arm64' and NuGet restore completed successfully."
-		       Condition="!Exists('$(Arm64SqliteSource)')" />
+		<Error Text="ARM64 SQLite library not found at expected location: $(Arm64SqliteSource). Check that RuntimeIdentifiers includes 'win-arm64' and NuGet restore completed successfully." Condition="!Exists('$(Arm64SqliteSource)')" />
 
 		<!-- Copy ARM64 SQLite library to main output directory -->
 		<Copy SourceFiles="$(Arm64SqliteSource)" DestinationFiles="$(Arm64SqliteTarget)" />
-		<Message Text="Copied ARM64 SQLite library: $(Arm64SqliteSource) -> $(Arm64SqliteTarget)" Importance="high" />
+		<Message Text="Copied ARM64 SQLite library: $(Arm64SqliteSource) -&gt; $(Arm64SqliteTarget)" Importance="high" />
 	</Target>
 	<ItemGroup>
 		<PackageReference Include="Autofac" Version="6.0.0" />

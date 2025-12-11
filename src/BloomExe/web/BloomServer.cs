@@ -2254,6 +2254,17 @@ namespace Bloom.Api
             _listener = null;
         }
 
+        internal bool DoesSimulatedFileExist(string pageListFileUrl)
+        {
+            bool gotFile = false;
+            string content = null;
+            lock (_urlToSimulatedPageContent)
+            {
+                gotFile = _urlToSimulatedPageContent.TryGetValue(pageListFileUrl, out content);
+            }
+            return gotFile && !string.IsNullOrEmpty(content);
+        }
+
         #endregion
     }
 

@@ -1,16 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
-using Bloom.ErrorReporter;
 using Bloom.ToPalaso;
 using SIL.IO;
-using SIL.Reporting;
 
 namespace Bloom
 {
@@ -48,12 +46,6 @@ namespace Bloom
     public abstract class Browser : UserControl
     {
         internal Point ContextMenuLocation;
-
-        // A temporary object needed just as long as it is the content of this browser.
-        // Currently may be a TempFile (a real filesystem file) or a InMemoryHtmlFile (just a dictionary entry).
-        // It gets disposed when the Browser goes away.
-        private IDisposable _dependentContent;
-        protected string _replacedUrl;
 
         /// <summary>
         /// Allow creator to hook up this event handler if the browser needs to handle Ctrl-N.
@@ -138,29 +130,47 @@ namespace Bloom
             // This must already be called before calling Navigate(), but it doesn't really hurt to call it again.
             EnsureBrowserReadyToNavigate();
 
-            var dom = htmlDom.RawDom;
+            string url = CreateSimulatedFile(htmlDom, setAsCurrentPageForDebugging, source);
+            UpdateDisplay(url);
+        }
 
+        internal string CreateSimulatedFile(
+            HtmlDom htmlDom,
+            bool setAsCurrentPageForDebugging,
+            InMemoryHtmlFileSource source
+        )
+        {
+            var dom = htmlDom.RawDom;
             XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
             var fakeTempFile = BloomServer.MakeInMemoryHtmlFileInBookFolder(
                 htmlDom,
                 setAsCurrentPageForDebugging: setAsCurrentPageForDebugging,
                 source: source
             );
-            SetNewDependent(fakeTempFile);
-            UpdateDisplay(fakeTempFile.Key);
+            SetNewDependent(fakeTempFile, source);
+            return fakeTempFile.Key;
         }
 
-        private void SetNewDependent(IDisposable dependent)
-        {
-            // Save information needed to prevent http://issues.bloomlibrary.org/youtrack/issue/BL-4268.
-            var simulated = _dependentContent as InMemoryHtmlFile;
-            _replacedUrl = (simulated != null) ? simulated.Key : null;
+        //protected Dictionary<InMemoryHtmlFileSource, string> _replacedUrls =
+        //    new Dictionary<InMemoryHtmlFileSource, string>();
+        protected Dictionary<InMemoryHtmlFileSource, IDisposable> _dependentFiles =
+            new Dictionary<InMemoryHtmlFileSource, IDisposable>();
 
-            if (_dependentContent != null)
+        private void SetNewDependent(
+            IDisposable dependent,
+            InMemoryHtmlFileSource source = InMemoryHtmlFileSource.RealTempFile
+        )
+        {
+            var previousDependent = _dependentFiles.TryGetValue(source, out var dep) ? dep : null;
+            //// Save information needed to prevent http://issues.bloomlibrary.org/youtrack/issue/BL-4268.
+            //var simulated = previousDependent as InMemoryHtmlFile;
+            //_replacedUrls[source] = (simulated != null) ? simulated.Key : null;
+
+            if (previousDependent != null)
             {
                 try
                 {
-                    _dependentContent.Dispose();
+                    previousDependent.Dispose();
                 }
                 catch (Exception)
                 {
@@ -170,7 +180,7 @@ namespace Bloom
 #endif
                 }
             }
-            _dependentContent = dependent;
+            _dependentFiles[source] = dependent;
         }
 
         // Navigate the browser to Url
@@ -232,11 +242,9 @@ namespace Bloom
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            if (_dependentContent != null)
-            {
-                _dependentContent.Dispose();
-                _dependentContent = null;
-            }
+            foreach (var dependent in _dependentFiles.Values)
+                dependent.Dispose();
+            _dependentFiles.Clear();
         }
 
         /// <summary>

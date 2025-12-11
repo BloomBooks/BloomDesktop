@@ -36,7 +36,7 @@ namespace Bloom.Edit
     public partial class EditingView : UserControl, IBloomTabArea, IZoomManager
     {
         private readonly EditingModel _model;
-        private PageListView _pageListView;
+        private PageListController _pageListView;
         private ContextMenuStrip _contentLanguagesDropdown = new();
         private ContextMenuStrip _layoutChoicesDropdown = new();
         private readonly CutCommand _cutCommand;
@@ -57,7 +57,7 @@ namespace Bloom.Edit
 
         public EditingView(
             EditingModel model,
-            PageListView pageListView,
+            PageListController pageListView,
             CutCommand cutCommand,
             CopyCommand copyCommand,
             PasteCommand pasteCommand,
@@ -103,7 +103,7 @@ namespace Bloom.Edit
                 Controls.Add(_browser1);
             }
 
-            SetupThumbnailLists();
+            //SetupThumbnailLists();
             _model.SetView(this);
             // We will need to handle this in another way if we ever have multiple projects open and thus
             // multiple models and views.
@@ -286,23 +286,23 @@ namespace Bloom.Edit
                 return;
 
             Debug.WriteLine("EditTab.ParentForm_Activated(): Selecting Browser");
-            //			Debug.WriteLine("browser focus: "+ (_browser1.Focused ? "true": "false"));
-            //			Debug.WriteLine("active control: " + ActiveControl.Name);
-            //			Debug.WriteLine("split container's control: " + _splitContainer1.ActiveControl.Name);
-            //			Debug.WriteLine("_splitContainer1.ContainsFocus: " + (_splitContainer1.ContainsFocus ? "true" : "false"));
-            //			Debug.WriteLine("_splitContainer2.ContainsFocus: " + (_splitContainer2.ContainsFocus ? "true" : "false"));
-            //			Debug.WriteLine("_browser.ContainsFocus: " + (_browser1.ContainsFocus ? "true" : "false"));
-            //			//focus() made it worse, select has no effect
+            ////			Debug.WriteLine("browser focus: "+ (_browser1.Focused ? "true": "false"));
+            ////			Debug.WriteLine("active control: " + ActiveControl.Name);
+            ////			Debug.WriteLine("split container's control: " + _splitContainer1.ActiveControl.Name);
+            ////			Debug.WriteLine("_splitContainer1.ContainsFocus: " + (_splitContainer1.ContainsFocus ? "true" : "false"));
+            ////			Debug.WriteLine("_splitContainer2.ContainsFocus: " + (_splitContainer2.ContainsFocus ? "true" : "false"));
+            ////			Debug.WriteLine("_browser.ContainsFocus: " + (_browser1.ContainsFocus ? "true" : "false"));
+            ////			//focus() made it worse, select has no effect
 
-            /* These two lines are the result of several hours of work. The problem this solves is that when
-             * you're switching between applications (e.g., building a shell book), the browser would highlight
-             * the box you were in, but not really focus on it. So no red border (from the css :focus), and typing/pasting
-             * was erratic.
-             * So now, when we come back to Bloom (this activated event), we *deselect* the browser, then reselect it, and it's happy.
-             */
+            ///* These two lines are the result of several hours of work. The problem this solves is that when
+            // * you're switching between applications (e.g., building a shell book), the browser would highlight
+            // * the box you were in, but not really focus on it. So no red border (from the css :focus), and typing/pasting
+            // * was erratic.
+            // * So now, when we come back to Bloom (this activated event), we *deselect* the browser, then reselect it, and it's happy.
+            // */
 
-            _pageListView.Select();
-            //_browser1.Select();
+            //_pageListView.Select();
+            ////_browser1.Select();
             _browser1.SelectBrowser();
 
             _editButtonsUpdateTimer.Enabled = Parent != null;
@@ -315,12 +315,12 @@ namespace Bloom.Edit
 
         public Bitmap ToolStripBackground { get; set; }
 
-        private void SetupThumbnailLists()
-        {
-            _pageListView.Dock = DockStyle.Left;
-            _pageListView.Width = 200;
-            this.Controls.Add(_pageListView);
-        }
+        //private void SetupThumbnailLists()
+        //{
+        //    _pageListView.Dock = DockStyle.Left;
+        //    _pageListView.Width = 0;
+        //    this.Controls.Add(_pageListView);
+        //}
 
         public void CheckFontAvailability()
         {
@@ -1805,7 +1805,7 @@ namespace Bloom.Edit
             _browser1.Visible = !hidePage;
             _pageListView.Enabled = !hidePage;
             Cursor = hidePage ? Cursors.WaitCursor : Cursors.Default;
-            _pageListView.Cursor = Cursor;
+            // _pageListView.Cursor = Cursor;
         }
 
         public void ShowAddPageDialog()
