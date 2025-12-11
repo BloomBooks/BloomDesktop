@@ -148,6 +148,12 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
                     webSocketListenerFunction,
                 );
             });
+        theOneLocalizationManager
+            .asyncGetText("EditTab.PageList.Heading", "Pages", "")
+            .done((heading) => {
+                const label = document.getElementById("pageThumbnailListLabel");
+                if (label) label.textContent = heading;
+            });
     }, []);
 
     // Initially we have an empty page list. Then we run this once and get a list

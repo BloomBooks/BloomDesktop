@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.web;
@@ -12,42 +11,35 @@ using SIL.Windows.Forms.Reporting;
 
 namespace Bloom.Edit
 {
-    public partial class PageListView : UserControl
+    public class PageListController
     {
-        private readonly PageSelection _pageSelection;
         private readonly EditingModel _model;
         private bool _dontForwardSelectionEvent;
         private IPage _pageWeThinkShouldBeSelected;
         private bool _hyperlinkMessageShown = false;
+        private PageThumbnailList _thumbNailList;
 
-        public PageListView(
-            PageSelection pageSelection,
+        public PageListController(
             RelocatePageEvent relocatePageEvent,
             EditingModel model,
             HtmlThumbNailer thumbnailProvider,
-            ControlKeyEvent controlKeyEvent,
             PageListApi pageListApi,
             BloomWebSocketServer webSocketServer
         )
         {
-            _pageSelection = pageSelection;
             _model = model;
-            this.Font = SystemFonts.MessageBoxFont;
-            InitializeComponent();
+            _thumbNailList = new PageThumbnailList();
             _thumbNailList.PageListApi = pageListApi;
             _thumbNailList.WebSocketServer = webSocketServer;
-            this.BackColor = Palette.SidePanelBackgroundColor;
 
             _thumbNailList.Thumbnailer = thumbnailProvider;
             _thumbNailList.RelocatePageEvent = relocatePageEvent;
             _thumbNailList.PageSelectedChanged += new EventHandler(OnPageSelectedChanged);
-            _thumbNailList.ControlKeyEvent = controlKeyEvent;
             _thumbNailList.Model = model;
-            _thumbNailList.BringToFront(); // needed to get DockStyle.Fill to work right.
             // First action determines whether the menu item is enabled, second performs it.
-            var menuItems = new List<WebThumbNailList.MenuItemSpec>();
+            var menuItems = new List<PageThumbnailList.MenuItemSpec>();
             menuItems.Add(
-                new WebThumbNailList.MenuItemSpec()
+                new PageThumbnailList.MenuItemSpec()
                 {
                     Label = LocalizationManager.GetString(
                         "EditTab.DuplicatePageButton",
@@ -58,7 +50,7 @@ namespace Bloom.Edit
                 }
             );
             menuItems.Add(
-                new WebThumbNailList.MenuItemSpec()
+                new PageThumbnailList.MenuItemSpec()
                 {
                     Label = LocalizationManager.GetString(
                         "EditTab.DuplicatePageMultiple",
@@ -69,7 +61,7 @@ namespace Bloom.Edit
                 }
             );
             menuItems.Add(
-                new WebThumbNailList.MenuItemSpec()
+                new PageThumbnailList.MenuItemSpec()
                 {
                     Label = LocalizationManager.GetString("EditTab.CopyPage", "Copy Page"),
                     EnableFunction = (page) => page != null && _model.CanCopyPage,
@@ -77,7 +69,7 @@ namespace Bloom.Edit
                 }
             );
             menuItems.Add(
-                new WebThumbNailList.MenuItemSpec()
+                new PageThumbnailList.MenuItemSpec()
                 {
                     Label = LocalizationManager.GetString(
                         "EditTab.CopyHyperlink",
@@ -107,7 +99,7 @@ namespace Bloom.Edit
                 }
             );
             menuItems.Add(
-                new WebThumbNailList.MenuItemSpec()
+                new PageThumbnailList.MenuItemSpec()
                 {
                     Label = LocalizationManager.GetString("EditTab.PastePage", "Paste Page"),
                     EnableFunction = (page) =>
@@ -116,7 +108,7 @@ namespace Bloom.Edit
                 }
             );
             menuItems.Add(
-                new WebThumbNailList.MenuItemSpec()
+                new PageThumbnailList.MenuItemSpec()
                 {
                     Label = LocalizationManager.GetString(
                         "EditTab.DeletePageButton",
@@ -131,7 +123,7 @@ namespace Bloom.Edit
                 }
             );
             menuItems.Add(
-                new WebThumbNailList.MenuItemSpec()
+                new PageThumbnailList.MenuItemSpec()
                 {
                     Label = LocalizationManager.GetString(
                         "EditTab.ChooseLayoutButton",
@@ -175,11 +167,6 @@ namespace Bloom.Edit
             }
         }
 
-        private void PageListView_BackColorChanged(object sender, EventArgs e)
-        {
-            _thumbNailList.BackColor = BackColor;
-        }
-
         public void SetBook(Book.Book book) //review: could do this instead by giving this class the bookselection object
         {
             if (book == null)
@@ -191,7 +178,6 @@ namespace Bloom.Edit
                 _thumbNailList.SetItems(
                     new IPage[] { new PlaceHolderPage() }.Concat(book.GetPages())
                 );
-                //  _thumbNailList.SetItems(book.GetPages());
 
                 if (_pageWeThinkShouldBeSelected != null)
                 {
@@ -238,7 +224,7 @@ namespace Bloom.Edit
             _thumbNailList.EmptyThumbnailCache();
         }
 
-        public new bool Enabled
+        public bool Enabled
         {
             set { _thumbNailList.Enabled = value; }
         }

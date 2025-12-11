@@ -40,23 +40,7 @@ namespace Bloom.Api
 
         public static string GetTitleForProcessExplorer(InMemoryHtmlFileSource source)
         {
-            switch (source)
-            {
-                case InMemoryHtmlFileSource.Normal:
-                    return "Normal";
-                case InMemoryHtmlFileSource.Pub:
-                    return "Pub";
-                case InMemoryHtmlFileSource.Thumb:
-                    return "Thumb";
-                case InMemoryHtmlFileSource.Pagelist:
-                    return "PageList";
-                case InMemoryHtmlFileSource.Preview:
-                    return "Preview";
-                case InMemoryHtmlFileSource.Frame:
-                    return "Frame";
-                default:
-                    return "Other"; // I got bored of listing them
-            }
+            return source.ToString();
         }
     }
 }

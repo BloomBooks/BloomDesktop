@@ -1,15 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.Design;
-using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
-using Bloom.MiscUI;
 using Bloom.Utils;
 using Bloom.web;
 using L10NSharp;
@@ -18,17 +13,16 @@ using SIL.IO;
 namespace Bloom.Edit
 {
     /// <summary>
-    /// Displays a list page thumbnails (the left column in Edit mode) using a separate Browser configured by
+    /// Handle a list of page thumbnails (the left column in Edit mode) using an iframe configured by
     /// pageThumbnailList.pug to load the React component specified in pageThumbnailList.tsx.
     /// The code here is tightly coupled to the code in pageThumbnailList.tsx and its dependencies,
     /// and also to the code in PageListApi which supports various callbacks to C# from the JS.
-    /// Todo: rename this PageThumbnailList (but in another PR, with no other changes).
     /// </summary>
-    public partial class WebThumbNailList : UserControl
+    public class PageThumbnailList
     {
         public HtmlThumbNailer Thumbnailer;
         public event EventHandler PageSelectedChanged;
-        private Browser _browser;
+
         internal EditingModel Model;
         private static string _thumbnailInterval;
         private string _baseForRelativePaths;
@@ -36,7 +30,6 @@ namespace Bloom.Edit
         // Store this so we don't have to reload the thing from disk everytime we refresh the screen.
         private readonly string _baseHtml;
         private List<IPage> _pages;
-        private bool _usingTwoColumns;
 
         /// <summary>
         /// The CSS class we give the main div for each page; the same element always has an id attr which identifies the page.
@@ -68,23 +61,8 @@ namespace Bloom.Edit
         // the one we show ourselves when the arrow is clicked.
         internal List<MenuItemSpec> ContextMenuItems { get; set; }
 
-        public WebThumbNailList()
+        public PageThumbnailList()
         {
-            InitializeComponent();
-
-            if (!ReallyDesignMode && !Program.RunningHarvesterMode)
-            {
-                _browser = BrowserMaker.MakeBrowser();
-                _browser.BackColor = Color.DarkGray;
-                _browser.Dock = DockStyle.Fill;
-                _browser.Location = new Point(0, 0);
-                _browser.Name = "_browser";
-                _browser.Size = new Size(150, 491);
-                _browser.TabIndex = 0;
-                _browser.VerticalScroll.Visible = false;
-                Controls.Add(_browser);
-            }
-
             // set the thumbnail interval based on physical RAM
             if (string.IsNullOrEmpty(_thumbnailInterval))
             {
@@ -114,13 +92,9 @@ namespace Bloom.Edit
                 "pageThumbnailList",
                 "pageThumbnailList.html"
             );
-            var backColor = MiscUtils.ColorToHtmlCode(BackColor);
+            var backColor = MiscUtils.ColorToHtmlCode(Palette.SidePanelBackgroundColor);
             _baseHtml = RobustFile.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
         }
-
-        protected bool ReallyDesignMode =>
-            (base.DesignMode || GetService(typeof(IDesignerHost)) != null)
-            || (LicenseManager.UsageMode == LicenseUsageMode.Designtime);
 
         private void InvokePageSelectedChanged(IPage page)
         {
@@ -146,10 +120,7 @@ namespace Bloom.Edit
 
         public void SelectPage(IPage page)
         {
-            if (InvokeRequired)
-                Invoke((Action)(() => SelectPageInternal(page)));
-            else
-                SelectPageInternal(page);
+            SelectPageInternal(page);
         }
 
         private void SelectPageInternal(IPage page)
@@ -164,35 +135,6 @@ namespace Bloom.Edit
         public void SetItems(IEnumerable<IPage> pages)
         {
             _pages = UpdateItems(pages);
-        }
-
-        private bool RoomForTwoColumns => Width > 199;
-
-        protected override void OnLoad(EventArgs e)
-        {
-            var settings = (_browser as WebView2Browser)?.InternalBrowser?.CoreWebView2?.Settings;
-            CounteractWindowsTextSizeScaling();
-
-            // If we switch to a single Browser instance, this setting would lose the CTRL-plus and
-            // CTRL-minus zooming of the book page in the Edit pane if applied to the single Browser.
-            // The CTRL-mousewheel and clicking on the + and - icons apparently would still work.
-            if (settings != null)
-                settings.IsZoomControlEnabled = false;
-            base.OnLoad(e);
-        }
-
-        private void CounteractWindowsTextSizeScaling()
-        {
-            var webview2 = (_browser as WebView2Browser)?.InternalBrowser;
-            if (webview2 != null)
-                webview2.ZoomFactor = 1.0 / MiscUtils.GetWindowsTextScaleFactor();
-        }
-
-        protected override void OnSizeChanged(EventArgs e)
-        {
-            base.OnSizeChanged(e);
-            if (_pages != null && _pages.Count > 0 && RoomForTwoColumns != _usingTwoColumns)
-                UpdateItems(_pages);
         }
 
         private void OnPaneContentsChanging(bool hasPages)
@@ -210,17 +152,7 @@ namespace Bloom.Edit
 
         private List<IPage> UpdateItems(IEnumerable<IPage> pages)
         {
-            List<IPage> result = null;
-            if (InvokeRequired)
-            {
-                Invoke((Action)(() => result = UpdateItemsInternal(pages)));
-            }
-            else
-            {
-                result = UpdateItemsInternal(pages);
-            }
-
-            return result;
+            return UpdateItemsInternal(pages);
         }
 
         private List<IPage> UpdateItemsInternal(IEnumerable<IPage> pages)
@@ -238,16 +170,10 @@ namespace Bloom.Edit
             }
             OnPaneContentsChanging(result.Any());
 
-            if (result.FirstOrDefault(p => p.Book != null) == null || !_browser.IsReadyToNavigate)
+            if (result.FirstOrDefault(p => p.Book != null) == null)
             {
-                // If we're not ready to navigate (old code: don't hae a GeckWebBrowser yet),
-                // Navigate won't do anything. But some of the code below would have problems (BL-9167).
-                //  But if we haven't already been initialized enough to have a browser, then we don't
-                // have a thumbnail display to update anyway.
-                _browser.Navigate(@"about:blank", false); // no pages, we just want a blank screen, if anything.
                 return new List<IPage>();
             }
-            _usingTwoColumns = RoomForTwoColumns;
             var sizeClass =
                 result.Count > 1
                     ? Book
@@ -277,48 +203,23 @@ namespace Bloom.Edit
             // We will end up navigating to pageListDom
             var pageListDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(htmlText));
 
-            if (SIL.PlatformUtilities.Platform.IsLinux)
-                OptimizeForLinux(pageListDom);
-
             pageListDom = Model.CurrentBook.GetHtmlDomForPageList(pageListDom);
-            _browser.DocumentCompleted += WebBrowser_DocumentCompleted;
 
             _baseForRelativePaths = pageListDom.BaseForRelativePaths;
-            if (this.IsHandleCreated) // somehow we can get here when the edit view is not active at all
-                Invoke(
-                    (Action)(
-                        () =>
-                            _browser.Navigate(pageListDom, source: InMemoryHtmlFileSource.Pagelist)
-                    )
-                );
             return result.ToList();
-        }
-
-        private static void OptimizeForLinux(HtmlDom pageListDom)
-        {
-            // BL-987: Add styles to optimize performance on Linux
-            var style = pageListDom.RawDom.CreateElement("style");
-            style.InnerXml =
-                "img { image-rendering: optimizeSpeed; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges; }";
-            pageListDom.RawDom.GetElementsByTagName("head")[0].AppendChild(style);
-        }
-
-        void WebBrowser_DocumentCompleted(object sender, EventArgs e)
-        {
-            SelectPage(PageListApi?.SelectedPage);
-            _browser.DocumentCompleted -= WebBrowser_DocumentCompleted; // need to do this only once
         }
 
         internal void PageClicked(IPage page)
         {
-            InvokePageSelectedChanged(page);
+            if (Enabled)
+                InvokePageSelectedChanged(page);
         }
 
         internal void MenuClicked(IPage page)
         {
-            var menu = new ContextMenuStrip();
-            if (page == null)
+            if (!Enabled || page == null)
                 return;
+            var menu = new ContextMenuStrip();
             foreach (var item in ContextMenuItems)
             {
                 var useItem = item; // for use in Click action (reference to loop variable has unpredictable results)
@@ -328,15 +229,15 @@ namespace Bloom.Edit
                 menu.Items.Add(menuItem);
             }
 
-            _browser.OnBrowserClick += Browser_Click;
             Model.GetEditingBrowser().OnBrowserClick += Browser_Click;
             _popupPageMenu = menu;
 
-            menu.Show(MousePosition);
+            menu.Show(Control.MousePosition);
         }
 
         ContextMenuStrip _popupPageMenu;
         private PageListApi _pageListApi;
+        internal bool Enabled = true;
 
         private void Browser_Click(object sender, EventArgs e)
         {
@@ -344,7 +245,6 @@ namespace Bloom.Edit
             {
                 _popupPageMenu.Close(ToolStripDropDownCloseReason.CloseCalled);
                 _popupPageMenu = null;
-                _browser.OnBrowserClick -= Browser_Click;
                 Model.GetEditingBrowser().OnBrowserClick -= Browser_Click;
             }
         }
@@ -392,15 +292,6 @@ namespace Bloom.Edit
                 return;
             }
             WebSocketServer.SendString("pageThumbnailList", "pageNeedsRefresh", page.Id);
-        }
-
-        public ControlKeyEvent ControlKeyEvent
-        {
-            set
-            {
-                if (_browser != null)
-                    _browser.ControlKeyEvent = value;
-            }
         }
     }
 }

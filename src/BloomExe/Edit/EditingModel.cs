@@ -9,7 +9,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
@@ -630,6 +629,9 @@ namespace Bloom.Edit
                         DeterminePageWhichWouldPrecedeNextInsertion(),
                         page as Page,
                         e.NumberToAdd
+                    );
+                    _view.Browser.RunJavascriptAsync(
+                        "document.getElementById('pageList').contentWindow.location.reload(true);"
                     );
                     //_view.UpdatePageList(false);  InsertPageAfter calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
                     //_pageSelection.SelectPage(newPage);
@@ -1282,6 +1284,65 @@ namespace Bloom.Edit
             );
         }
 
+        internal string GetUrlForPageListFile()
+        {
+            var frame = BloomFileLocator.GetBrowserFile(
+                false,
+                "bookEdit",
+                "pageThumbnailList",
+                "pageThumbnailList.html"
+            );
+            var backColor = MiscUtils.ColorToHtmlCode(_view.BackColor);
+            var _baseHtml = RobustFile
+                .ReadAllText(frame, Encoding.UTF8)
+                .Replace("DarkGray", backColor);
+            var pages = CurrentBook.GetPages().ToList();
+            var sizeClass =
+                pages.Count > 1
+                    ? Book
+                        .Layout.FromPage(pages[1].GetDivNodeForThisPage(), Book.Layout.A5Portrait)
+                        .SizeAndOrientation.ClassName
+                    : "A5Portrait";
+            // Somehow, the React code needs to know the page size, mainly so it can put the right class on
+            // the pageContainer element in pageThumbnail.tsx.
+            // - It could get it by parsing the HTML page content, but that'movedPageIdAndNewIndex clumsy and also really too late:
+            //   the pages are drawn empty before the page content is ever retrieved.
+            // - we can't use the class on the page element because it is inside the pageContainer we need to affect
+            // - we could put a sizeClass on the body or some other higher-level element, and rewrite the CSS
+            //   rules to look for pageContainer INSIDE a certain page class. But this seems risky.
+            //   Our expectation is that this class is applied to a page-level element. We don't want to
+            //   accidentally invoke some rule that makes the whole preview pane A5Portrait-shaped.
+            //   It also violates all our expectations, and forces us to do counter-intuitive things
+            //   like making pageContainer a certain size if it is 'inside' something that is A5Portrait.
+            // So, I ended up putting a data-pageSize attribute on the body element, and having the
+            // code that initializes React look for it and pass pageSize to the root React element
+            // as it should be, a property.
+            var htmlText = _baseHtml.Replace(
+                "data-pageSize=\"A5Portrait\"",
+                $"data-pageSize=\"{sizeClass}\""
+            );
+            var pageListDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(htmlText));
+
+            if (SIL.PlatformUtilities.Platform.IsLinux)
+                OptimizeForLinux(pageListDom);
+
+            pageListDom = CurrentBook.GetHtmlDomForPageList(pageListDom);
+            return _view.Browser.CreateSimulatedFile(
+                pageListDom,
+                false,
+                InMemoryHtmlFileSource.Pagelist
+            );
+        }
+
+        private static void OptimizeForLinux(HtmlDom pageListDom)
+        {
+            // BL-987: Add styles to optimize performance on Linux
+            var style = pageListDom.RawDom.CreateElement("style");
+            style.InnerXml =
+                "img { image-rendering: optimizeSpeed; image-rendering: crisp-edges; }";
+            pageListDom.RawDom.GetElementsByTagName("head")[0].AppendChild(style);
+        }
+
         /// <summary>
         /// Return the top-level document that should be displayed in the browser for the current page.
         /// </summary>
@@ -1297,7 +1358,8 @@ namespace Bloom.Edit
             // See BloomServer.MakeInMemoryHtmlFileInBookFolder() for more details.
             var frameText = RobustFile
                 .ReadAllText(path, Encoding.UTF8)
-                .Replace("{simulatedPageFileInBookFolder}", GetUrlForCurrentPage());
+                .Replace("{simulatedPageFileInBookFolder}", GetUrlForCurrentPage())
+                .Replace("{simulatedPageListFile}", GetUrlForPageListFile());
             var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));
 
             if (_currentlyDisplayedBook.BookInfo.ToolboxIsOpen)
