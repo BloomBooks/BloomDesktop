@@ -1,22 +1,15 @@
 import { css } from "@emotion/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import BloomButton from "../../bloomButton";
-import { BloomTooltip } from "../../BloomToolTip";
 import { get, postJson } from "../../../utils/bloomApi";
 import WebSocketManager from "../../../utils/WebSocketManager";
 import { lightTheme } from "../../../bloomMaterialUITheme";
 import { ThemeProvider } from "@mui/material/styles";
 import { WireUpForWinforms } from "../../../utils/WireUpWinform";
-import {
-    Menu,
-    MenuItem,
-    ListItemText,
-    StyledEngineProvider,
-    CssBaseline,
-} from "@mui/material";
-import { ArrowDropDown, HelpOutline } from "@mui/icons-material";
+import { StyledEngineProvider, CssBaseline } from "@mui/material";
 import { ZoomControl } from "./ZoomControl";
+import { UiLanguageMenu } from "./UiLanguageMenu";
+import { HelpMenu } from "./HelpMenu";
 
 interface TopRightState {
     uiLanguageLabel: string;
@@ -164,52 +157,6 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
         }
     };
 
-    const renderLanguageMenuItems = () => {
-        if (!state) {
-            return null;
-        }
-        return (
-            <>
-                {languages.map((lang) => (
-                    <MenuItem
-                        key={lang.langTag}
-                        selected={lang.isCurrent}
-                        onClick={() => applyLanguage(lang.langTag)}
-                    >
-                        <ListItemText primary={lang.menuText} />
-                    </MenuItem>
-                ))}
-                <MenuItem onClick={toggleShowUnapproved}>
-                    <ListItemText
-                        primary={state.showUnapprovedText}
-                        sx={{
-                            fontStyle: state.showUnapprovedChecked
-                                ? "italic"
-                                : "normal",
-                        }}
-                    />
-                </MenuItem>
-            </>
-        );
-    };
-
-    const renderHelpMenuItems = () => {
-        return helpItems.map((item, index) => {
-            if (item.isSeparator) {
-                return <MenuItem key={`sep-${index}`} divider disabled />;
-            }
-            return (
-                <MenuItem
-                    key={item.id}
-                    onClick={() => runHelpCommand(item.id)}
-                    disabled={!item.enabled}
-                >
-                    <ListItemText primary={item.text} />
-                </MenuItem>
-            );
-        });
-    };
-
     if (!state) {
         return null;
     }
@@ -229,55 +176,25 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
                         align-items: end;
                     `}
                 >
-                    <BloomTooltip
-                        tip={{ l10nKey: "CollectionTab.LanguageMenu.Tooltip" }}
-                    >
-                        <BloomButton
-                            l10nKey="CollectionTab.LanguageMenu"
-                            enabled={true}
-                            hasText={true}
-                            transparent={true}
-                            onClick={() => openLanguageMenu(anchorRef.current)}
-                            css={css`
-                                background-color: transparent;
-                                color: inherit;
-                                padding-inline: 8px;
-                                text-transform: none;
-                                border: hidden;
-                                font-size: 12px;
-                            `}
-                        >
-                            <span
-                                css={css`
-                                    display: inline-flex;
-                                    align-items: center;
-                                    gap: 6px;
-                                `}
-                            >
-                                <span>{state.uiLanguageLabel}</span>
-                                <ArrowDropDown />
-                            </span>
-                        </BloomButton>
-                    </BloomTooltip>
+                    <UiLanguageMenu
+                        state={state}
+                        languages={languages}
+                        anchorRef={anchorRef}
+                        languageAnchor={languageAnchor}
+                        onOpen={openLanguageMenu}
+                        onClose={() => setLanguageAnchor(null)}
+                        onApplyLanguage={applyLanguage}
+                        onToggleShowUnapproved={toggleShowUnapproved}
+                    />
 
-                    <BloomTooltip tip={{ l10nKey: "HelpMenu.Help Menu" }}>
-                        <BloomButton
-                            l10nKey="HelpMenu.HelpButton"
-                            enabled={true}
-                            transparent={true}
-                            onClick={() => openHelpMenu(anchorRef.current)}
-                            hasText={false}
-                            css={css`
-                                background-color: transparent;
-                                color: inherit;
-                                border: hidden;
-                                min-width: 36px;
-                                padding: 6px;
-                            `}
-                        >
-                            <HelpOutline />
-                        </BloomButton>
-                    </BloomTooltip>
+                    <HelpMenu
+                        helpItems={helpItems}
+                        anchorRef={anchorRef}
+                        helpAnchor={helpAnchor}
+                        onOpen={openHelpMenu}
+                        onClose={() => setHelpAnchor(null)}
+                        onRunCommand={runHelpCommand}
+                    />
 
                     {state.zoomEnabled && (
                         <ZoomControl
@@ -287,22 +204,6 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
                             onZoomChange={changeZoom}
                         />
                     )}
-
-                    <Menu
-                        anchorEl={languageAnchor}
-                        open={Boolean(languageAnchor)}
-                        onClose={() => setLanguageAnchor(null)}
-                    >
-                        {renderLanguageMenuItems()}
-                    </Menu>
-
-                    <Menu
-                        anchorEl={helpAnchor}
-                        open={Boolean(helpAnchor)}
-                        onClose={() => setHelpAnchor(null)}
-                    >
-                        {renderHelpMenuItems()}
-                    </Menu>
                 </div>
             </ThemeProvider>
         </StyledEngineProvider>
