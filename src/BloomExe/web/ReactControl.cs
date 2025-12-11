@@ -222,7 +222,7 @@ namespace Bloom.web
             // if a developer runs some other version. Though, it could still be a
             // problem if a dev is trying to run dev builds of two versions at once.
             var useViteDev =
-                !ApplicationUpdateSupport.IsDev
+                ApplicationUpdateSupport.IsDev
                 && bundleToViteModulePathMap.ContainsKey(_javascriptBundleName);
             var viteModulePath = useViteDev
                 ? bundleToViteModulePathMap[_javascriptBundleName]
