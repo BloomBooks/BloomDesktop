@@ -46,10 +46,8 @@ namespace Bloom.Workspace
         private bool _viewInitialized;
         private int _originalToolStripPanelWidth;
         private int _originalToolSpecificPanelHorizPos;
-        private int _originalUiMenuWidth;
         private int _stage1SpaceSaved;
         private int _stage2SpaceSaved;
-        private string _originalUiLanguageSelection;
         private EditingView _editingView;
         private PublishView _publishView;
         private CollectionTabView _collectionTabView;
@@ -153,8 +151,6 @@ namespace Bloom.Workspace
 
             _checkForNewVersionMenuItem.Visible = Platform.IsWindows;
 
-            _toolStrip.Renderer = new NoBorderToolStripRenderer();
-
             //we have a number of buttons which don't make sense for the remote (therefore vulnerable) low-end user
             //_settingsLauncherHelper.CustomSettingsControl = _toolStrip;
             //NB: these aren't really settings, but we're using that feature to simplify this menu down to what makes sense for the easily-confused user
@@ -167,9 +163,6 @@ namespace Bloom.Workspace
             SettingsProtectionSettings.Default.PropertyChanged += new PropertyChangedEventHandler(
                 OnSettingsProtectionChanged
             );
-
-            _uiLanguageMenu.Visible = true;
-            _settingsLauncherHelper.ManageComponent(_uiLanguageMenu);
 
             editBookCommand.Subscribe(OnEditBook);
 
@@ -220,13 +213,6 @@ namespace Bloom.Workspace
                 _tabStrip.AutoSize = false;
             }
 
-            _toolStrip.SizeChanged += ToolStripOnSizeChanged;
-
-            _uiLanguageMenu.DropDownOpening += (sender, args) =>
-            {
-                SetupUiLanguageMenu();
-            };
-            SetupUiLanguageMenu(true);
             SetupZoomModel();
             SetupTopRightReactControl();
             SendZoomInfo();
@@ -535,17 +521,15 @@ namespace Bloom.Workspace
 
         private void SetupTopRightReactControl()
         {
-            _toolStrip.Visible = false;
-            _panelHoldingToolStrip.Controls.Remove(_toolStrip);
             _topRightReactControl = ReactControl.Create("workspaceTopRightControlsBundle");
             _topRightReactControl.HideVerticalOverflow = true;
             _topRightReactControl.Dock = DockStyle.Fill;
-            _topRightReactControl.BackColor = _panelHoldingToolStrip.BackColor;
+            _topRightReactControl.BackColor = _panelHoldingTopRightReactControl.BackColor;
             _topRightReactControl.SetLocalizationChangedEvent(_localizationChangedEvent);
-            _panelHoldingToolStrip.Controls.Add(_topRightReactControl);
-            if (_panelHoldingToolStrip.Width < 220)
+            _panelHoldingTopRightReactControl.Controls.Add(_topRightReactControl);
+            if (_panelHoldingTopRightReactControl.Width < 220)
             {
-                _panelHoldingToolStrip.Width = 220;
+                _panelHoldingTopRightReactControl.Width = 220;
                 AlignTopRightPanels();
             }
         }
@@ -572,52 +556,31 @@ namespace Bloom.Workspace
             return item.MenuText;
         }
 
-        // TODO we don't want a separate way of getting these from the original. And can we get rid of the original toolmenu control?
-        // maybe complicated by the fact that the menu is used elsewhere?
-        public List<object> GetUiLanguageMenuItems()
+        private static List<LanguageItem> GetLanguageItems(bool onlyActiveItem)
         {
             var items = new List<LanguageItem>();
-            foreach (var lang in LocalizationManager.GetAvailableLocalizedLanguages())
+            if (onlyActiveItem)
             {
-                var approved = FractionApproved(lang);
-                if (Settings.Default.ShowUnapprovedLocalizations)
-                    approved = FractionTranslated(lang);
-                var alpha = ApplicationUpdateSupport.IsDevOrAlpha;
-                if ((alpha && approved < 0.01F) || (!alpha && approved < 0.25F))
-                    continue;
-                items.Add(CreateLanguageItem(lang));
+                if (String.IsNullOrEmpty(Settings.Default.UserInterfaceLanguage))
+                    Settings.Default.UserInterfaceLanguage = "en"; // See BL-13545.
+                items.Add(CreateLanguageItem(Settings.Default.UserInterfaceLanguage));
+            }
+            else
+            {
+                foreach (var lang in LocalizationManager.GetAvailableLocalizedLanguages())
+                {
+                    var approved = FractionApproved(lang);
+                    if (Settings.Default.ShowUnapprovedLocalizations)
+                        approved = FractionTranslated(lang);
+                    var alpha = ApplicationUpdateSupport.IsDevOrAlpha;
+                    if ((alpha && approved < 0.01F) || (!alpha && approved < 0.25F))
+                        continue;
+                    items.Add(CreateLanguageItem(lang));
+                }
             }
 
             items.Sort(compareLangItems);
-
-            var tooltipFormat = LocalizationManager.GetString(
-                "CollectionTab.UILanguageMenu.ItemTooltip",
-                "{0}% translated",
-                "Shown when hovering over an item in the UI Language menu.  The {0} marker is filled in by a number between 1 and 100."
-            );
-
-            var current = Settings.Default.UserInterfaceLanguage;
-            if (String.IsNullOrEmpty(current))
-                current = "en";
-            Settings.Default.UserInterfaceLanguage = current;
-
-            return items
-                .Select(li =>
-                {
-                    var fraction = Settings.Default.ShowUnapprovedLocalizations
-                        ? li.FractionTranslated
-                        : li.FractionApproved;
-
-                    return new
-                    {
-                        langTag = li.LangTag,
-                        menuText = li.MenuText,
-                        tooltip = String.Format(tooltipFormat, (int)(fraction * 100.0F)),
-                        isCurrent = li.LangTag == current,
-                    };
-                })
-                .Cast<object>()
-                .ToList();
+            return items;
         }
 
         public void ShowUiLanguageMenu()
@@ -634,31 +597,12 @@ namespace Bloom.Workspace
 
         private void BuildUiLanguageContextMenu()
         {
-            _uiLanguageContextMenu.Items.Clear();
-
-            foreach (dynamic entry in GetUiLanguageMenuItems())
-            {
-                var item = new ToolStripMenuItem((string)entry.menuText)
-                {
-                    Checked = (bool)entry.isCurrent,
-                    Tag = (string)entry.langTag,
-                    ToolTipText = (string)entry.tooltip,
-                };
-                item.Click += (sender, args) => SetUiLanguage((string)item.Tag);
-                _uiLanguageContextMenu.Items.Add(item);
-            }
-
-            _uiLanguageContextMenu.Items.Add(new ToolStripSeparator());
-
-            _showAllTranslationsItem = new ToolStripMenuItem(
-                GetShowUnapprovedTranslationsMenuText()
-            )
-            {
-                Checked = Settings.Default.ShowUnapprovedLocalizations,
-            };
-            _showAllTranslationsItem.Click += (sender, args) =>
-                ToggleShowingOnlyApprovedTranslations();
-            _uiLanguageContextMenu.Items.Add(_showAllTranslationsItem);
+            PopulateUiLanguageMenuItems(
+                _uiLanguageContextMenu.Items,
+                (langTag) => SetUiLanguage(langTag),
+                includeHelpTranslate: true,
+                includeShowAllTranslationsToggle: true
+            );
         }
 
         private void BuildHelpContextMenu()
@@ -827,28 +771,85 @@ namespace Bloom.Workspace
 
         ToolStripMenuItem _showAllTranslationsItem;
 
-        private void SetupUiLanguageMenu(bool onlyActiveItem = false)
+        private void SetupUiLanguageMenu()
         {
-            SetupUiLanguageMenuCommon(
-                _uiLanguageMenu,
-                FinishUiLanguageMenuItemClick,
-                onlyActiveItem
+            PopulateUiLanguageMenuItems(
+                _uiLanguageContextMenu.Items,
+                (langTag) => SetUiLanguage(langTag),
+                includeHelpTranslate: true,
+                includeShowAllTranslationsToggle: true
             );
-
-            // REVIEW: should this be part of SetupUiLanguageMenuCommon()?  should it be added only for alpha and beta?
-            _uiLanguageMenu.DropDownItems.Add("-");
-            _showAllTranslationsItem = new ToolStripMenuItem();
-            _showAllTranslationsItem.Text = GetShowUnapprovedTranslationsMenuText();
-            _showAllTranslationsItem.Checked = Settings.Default.ShowUnapprovedLocalizations;
-            _showAllTranslationsItem.Click += (sender, args) =>
-                ToggleShowingOnlyApprovedTranslations();
-            _uiLanguageMenu.DropDownItems.Add(_showAllTranslationsItem);
-
-            _uiLanguageMenu.DropDown.Closing += DropDown_Closing;
-            _uiLanguageMenu.DropDown.Opening += DropDown_Opening;
         }
 
-        public void ToggleShowingOnlyApprovedTranslations()
+        private void PopulateUiLanguageMenuItems(
+            ToolStripItemCollection target,
+            Action<string> onSelect,
+            bool includeHelpTranslate,
+            bool includeShowAllTranslationsToggle,
+            bool onlyActiveItem = false
+        )
+        {
+            var items = GetLanguageItems(onlyActiveItem);
+            var tooltipFormat = LocalizationManager.GetString(
+                "CollectionTab.UILanguageMenu.ItemTooltip",
+                "{0}% translated",
+                "Shown when hovering over an item in the UI Language menu.  The {0} marker is filled in by a number between 1 and 100."
+            );
+
+            var current = Settings.Default.UserInterfaceLanguage;
+            if (String.IsNullOrEmpty(current))
+                current = "en";
+            Settings.Default.UserInterfaceLanguage = current;
+
+            target.Clear();
+            foreach (var langItem in items)
+            {
+                var translationFraction = Settings.Default.ShowUnapprovedLocalizations
+                    ? langItem.FractionTranslated
+                    : langItem.FractionApproved;
+                var toolTip = String.Format(tooltipFormat, (int)(translationFraction * 100.0F));
+                var item = new ToolStripMenuItem(langItem.MenuText)
+                {
+                    Checked = langItem.LangTag == current,
+                    Tag = langItem,
+                    ToolTipText = toolTip,
+                };
+                item.Click += (sender, args) => onSelect(langItem.LangTag);
+                target.Add(item);
+            }
+
+            if (includeShowAllTranslationsToggle)
+            {
+                target.Add(new ToolStripSeparator());
+                _showAllTranslationsItem = new ToolStripMenuItem(
+                    GetShowUnapprovedTranslationsMenuText()
+                )
+                {
+                    Checked = Settings.Default.ShowUnapprovedLocalizations,
+                };
+                _showAllTranslationsItem.Click += (sender, args) =>
+                    ToggleShowingOnlyApprovedTranslations();
+                target.Add(_showAllTranslationsItem);
+            }
+
+            if (includeHelpTranslate)
+            {
+                target.Add(new ToolStripSeparator());
+                var message = LocalizationManager.GetString(
+                    "CollectionTab.UILanguageMenu.HelpTranslate",
+                    "Help us translate Bloom (web)",
+                    "The final item in the UI Language menu. When clicked, it opens Bloom's page in the Crowdin web-based translation system."
+                );
+                var helpItem = target.Add(message);
+                helpItem.Image = Resources.weblink;
+                helpItem.Click += (sender, args) =>
+                    ProcessExtra.SafeStartInFront(
+                        UrlLookup.LookupUrl(UrlType.LocalizingSystem, null)
+                    );
+            }
+        }
+
+        private void ToggleShowingOnlyApprovedTranslations()
         {
             Settings.Default.ShowUnapprovedLocalizations = !Settings
                 .Default
@@ -863,63 +864,6 @@ namespace Bloom.Workspace
             Program.RestartBloom(false);
         }
 
-        private bool _ignoreNextAppFocusChange;
-
-        /// <summary>
-        /// Prevent undesirable closing of dropdown menus.  This is worth losing some desired
-        /// closings, especially for Linux/Gnome in which the menus refuse to stay open at all
-        /// without this fix.
-        /// </summary>
-        /// <remarks>
-        /// See https://silbloom.myjetbrains.com/youtrack/issue/BL-5471.
-        /// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6107.
-        /// The exact behavior seems rather system dependent.
-        /// </remarks>
-        private void DropDown_Closing(object sender, ToolStripDropDownClosingEventArgs e)
-        {
-            // ReSharper disable once SwitchStatementMissingSomeCases
-            switch (e.CloseReason)
-            {
-                case ToolStripDropDownCloseReason.AppFocusChange:
-                    // this is usually just hovering over the help menu on Windows.
-                    // there is always one spurious focus change on Linux/Gnome.
-                    e.Cancel = _ignoreNextAppFocusChange;
-                    break;
-                case ToolStripDropDownCloseReason.AppClicked:
-                // "reason" is AppClicked, but is it legit?
-                // Every other time we get AppClicked even if we are just hovering over the help menu.
-                case ToolStripDropDownCloseReason.Keyboard:
-                    // If "reason" is Keyboard, that seems to be generated just by moving the mouse over the
-                    // adjacent (visible) button on Linux.
-                    var owner = _uiLanguageMenu.Owner;
-                    if (owner == null)
-                        break;
-                    var mousePos = owner.PointToClient(MousePosition);
-                    var bounds = _uiLanguageMenu.Bounds;
-                    if (bounds.Contains(mousePos))
-                    {
-                        // probably a false positive
-                        e.Cancel =
-                            e.CloseReason == ToolStripDropDownCloseReason.AppClicked
-                            || Platform.IsLinux;
-                    }
-                    break;
-                default: // includes ItemClicked, CloseCalled
-                    break;
-            }
-            _ignoreNextAppFocusChange = Platform.IsWindows; // preserve the fix for BL-5476.
-            Debug.WriteLine(
-                "DEBUG WorkspaceView.DropDown_Closing: reason={0}, cancel={1}",
-                e.CloseReason.ToString(),
-                e.Cancel
-            );
-        }
-
-        void DropDown_Opening(object sender, CancelEventArgs e)
-        {
-            _ignoreNextAppFocusChange = true;
-        }
-
         /// <summary>
         /// This is also called by CollectionChoosing.OpenCreateCloneControl
         /// </summary>
@@ -929,55 +873,55 @@ namespace Bloom.Workspace
             bool onlyActiveItem = false
         )
         {
-            var items = new List<LanguageItem>();
-            if (onlyActiveItem)
+            var parentForm = uiMenuControl.GetCurrentParent()?.FindForm();
+            var view = parentForm?.Controls.OfType<WorkspaceView>().FirstOrDefault();
+            if (view != null)
             {
-                if (String.IsNullOrEmpty(Settings.Default.UserInterfaceLanguage))
-                    Settings.Default.UserInterfaceLanguage = "en"; // See BL-13545.
-                items.Add(CreateLanguageItem(Settings.Default.UserInterfaceLanguage));
-            }
-            else
-            {
-                foreach (var lang in LocalizationManager.GetAvailableLocalizedLanguages())
-                {
-                    // Require that at least 1% of the strings have been translated and approved for alphas,
-                    // or 25% translated and approved for betas and release.
-                    var approved = FractionApproved(lang);
-                    if (Settings.Default.ShowUnapprovedLocalizations)
-                        approved = FractionTranslated(lang);
-                    var alpha = ApplicationUpdateSupport.IsDevOrAlpha;
-                    if ((alpha && approved < 0.01F) || (!alpha && approved < 0.25F))
-                        continue;
-                    items.Add(CreateLanguageItem(lang));
-                }
+                Action<string> onSelect = (langTag) =>
+                    UiLanguageMenuItemClickHandler(uiMenuControl, langTag, finishClickAction);
+                view.PopulateUiLanguageMenuItems(
+                    uiMenuControl.DropDownItems,
+                    onSelect,
+                    includeHelpTranslate: true,
+                    includeShowAllTranslationsToggle: false,
+                    onlyActiveItem: onlyActiveItem
+                );
+                return;
             }
 
-            items.Sort(compareLangItems);
-
+            // Fallback for cases where we don't have a WorkspaceView instance (e.g., designer preview).
+            var items = GetLanguageItems(onlyActiveItem);
             var tooltipFormat = LocalizationManager.GetString(
                 "CollectionTab.UILanguageMenu.ItemTooltip",
                 "{0}% translated",
                 "Shown when hovering over an item in the UI Language menu.  The {0} marker is filled in by a number between 1 and 100."
             );
+            var current = Settings.Default.UserInterfaceLanguage;
+            if (String.IsNullOrEmpty(current))
+                current = "en";
+
             uiMenuControl.DropDownItems.Clear();
             foreach (var langItem in items)
             {
                 var item = uiMenuControl.DropDownItems.Add(langItem.MenuText);
                 item.Tag = langItem;
-                var fraction = langItem.FractionApproved;
-                if (Settings.Default.ShowUnapprovedLocalizations)
-                    fraction = langItem.FractionTranslated;
+                var fraction = Settings.Default.ShowUnapprovedLocalizations
+                    ? langItem.FractionTranslated
+                    : langItem.FractionApproved;
                 item.ToolTipText = String.Format(tooltipFormat, (int)(fraction * 100.0F));
                 item.Click += (sender, args) =>
                     UiLanguageMenuItemClickHandler(
                         uiMenuControl,
-                        sender as ToolStripItem,
+                        langItem.LangTag,
                         finishClickAction
                     );
-                if (langItem.LangTag == Settings.Default.UserInterfaceLanguage)
+                if (langItem.LangTag == current)
+                {
                     UpdateMenuTextToShorterNameOfSelection(uiMenuControl, langItem.MenuText);
+                }
             }
-            uiMenuControl.DropDownItems.Add("-"); // adds ToolStripSeparator
+
+            uiMenuControl.DropDownItems.Add("-");
             var message = LocalizationManager.GetString(
                 "CollectionTab.UILanguageMenu.HelpTranslate",
                 "Help us translate Bloom (web)",
@@ -1006,19 +950,20 @@ namespace Bloom.Workspace
 
         private static void UiLanguageMenuItemClickHandler(
             ToolStripDropDownButton toolStripButton,
-            ToolStripItem item,
+            string langTag,
             Action finishClickAction
         )
         {
-            var tag = (LanguageItem)item.Tag;
-
-            LocalizationManagerWinforms.SetUILanguage(tag.LangTag, true);
+            LocalizationManagerWinforms.SetUILanguage(langTag, true);
             // TODO-WV2: Can we set the browser language in WV2?  Do we need to?
-            Settings.Default.UserInterfaceLanguage = tag.LangTag;
+            Settings.Default.UserInterfaceLanguage = langTag;
             Settings.Default.UserInterfaceLanguageSetExplicitly = true;
             Settings.Default.Save();
-            item.Select();
-            UpdateMenuTextToShorterNameOfSelection(toolStripButton, item.Text);
+            if (toolStripButton != null)
+            {
+                var menuText = CreateLanguageItem(langTag).MenuText;
+                UpdateMenuTextToShorterNameOfSelection(toolStripButton, menuText);
+            }
 
             // Currently needed for the language chooser to update its localization
             // BloomWebSocketServer.Instance is set only while loading a collection.
@@ -1031,12 +976,12 @@ namespace Bloom.Workspace
                     server.Init(
                         (BloomServer.portForHttp + 1).ToString(CultureInfo.InvariantCulture)
                     );
-                    server.SendString("app", "uiLanguageChanged", tag.LangTag);
+                    server.SendString("app", "uiLanguageChanged", langTag);
                 }
             }
             else
             {
-                BloomWebSocketServer.Instance.SendString("app", "uiLanguageChanged", tag.LangTag);
+                BloomWebSocketServer.Instance.SendString("app", "uiLanguageChanged", langTag);
             }
 
             finishClickAction?.Invoke();
@@ -1048,11 +993,6 @@ namespace Bloom.Workspace
             Settings.Default.UserInterfaceLanguage = langTag;
             Settings.Default.UserInterfaceLanguageSetExplicitly = true;
             Settings.Default.Save();
-            UpdateMenuTextToShorterNameOfSelection(
-                _uiLanguageMenu,
-                CreateLanguageItem(langTag).MenuText
-            );
-
             if (BloomWebSocketServer.Instance == null)
             {
                 using (var server = new BloomWebSocketServer())
@@ -1073,8 +1013,6 @@ namespace Bloom.Workspace
 
         private void FinishUiLanguageMenuItemClick()
         {
-            // these lines deal with having a smaller workspace window and minimizing the button texts for smaller windows
-            SaveOriginalButtonTexts();
             _showAllTranslationsItem.Text = GetShowUnapprovedTranslationsMenuText();
             _localizationChangedEvent.Raise(null);
         }
@@ -1346,16 +1284,11 @@ namespace Bloom.Workspace
 
             _toolSpecificPanel.Controls.Clear();
 
-            _panelHoldingToolStrip.BackColor = CurrentTabView.TopBarControl.BackColor =
+            _panelHoldingTopRightReactControl.BackColor = CurrentTabView.TopBarControl.BackColor =
                 _tabStrip.BackColor;
             if (_topRightReactControl != null) // might not be set up yet
             {
                 _topRightReactControl.BackColor = _tabStrip.BackColor;
-            }
-
-            if (Platform.IsMono)
-            {
-                BackgroundColorsForLinux(CurrentTabView);
             }
 
             if (CurrentTabView != null) //can remove when we get rid of info view
@@ -1391,24 +1324,6 @@ namespace Bloom.Workspace
             );
         }
 
-        private void BackgroundColorsForLinux(IBloomTabArea currentTabView)
-        {
-            if (currentTabView.ToolStripBackground == null)
-            {
-                var bmp = new Bitmap(_toolStrip.Width, _toolStrip.Height);
-                using (var g = Graphics.FromImage(bmp))
-                {
-                    using (var b = new SolidBrush(_panelHoldingToolStrip.BackColor))
-                    {
-                        g.FillRectangle(b, 0, 0, bmp.Width, bmp.Height);
-                    }
-                }
-                currentTabView.ToolStripBackground = bmp;
-            }
-
-            _toolStrip.BackgroundImage = currentTabView.ToolStripBackground;
-        }
-
         protected IBloomTabArea CurrentTabView { get; set; }
 
         private void _tabStrip_SelectedTabChanged(object sender, SelectedTabChangedEventArgs e)
@@ -1429,7 +1344,8 @@ namespace Bloom.Workspace
             }
             TabStripButton btn = (TabStripButton)e.SelectedTab;
             _tabStrip.BackColor = btn.BarColor;
-            _toolSpecificPanel.BackColor = _panelHoldingToolStrip.BackColor = _tabStrip.BackColor;
+            _toolSpecificPanel.BackColor = _panelHoldingTopRightReactControl.BackColor =
+                _tabStrip.BackColor;
             if (_topRightReactControl != null) // might not be set up yet
             {
                 _topRightReactControl.BackColor = _tabStrip.BackColor;
@@ -1839,8 +1755,7 @@ namespace Bloom.Workspace
 
         private const int MinToolStripMargin = 3;
 
-        private int TopRightContentWidth =>
-            Math.Max(_topRightReactControl?.Width ?? 0, _toolStrip?.Width ?? 0);
+        private int TopRightContentWidth => _topRightReactControl?.Width ?? 0;
 
         // The width of the toolstrip panel in stage 1 is typically its original width, which leaves a bit of margin
         // left of the toolstrip. If a long language name requires more width than typical, make it at least wide
@@ -1867,13 +1782,6 @@ namespace Bloom.Workspace
             get { return STAGE_2 - _stage2SpaceSaved; }
         }
 
-        // The tabstrip typically changes size when a different language is selected.
-
-        private void ToolStripOnSizeChanged(object o, EventArgs eventArgs)
-        {
-            AdjustTabStripDisplayForScreenSize();
-        }
-
         private void AdjustTabStripDisplayForScreenSize()
         {
             if (!_viewInitialized)
@@ -1882,7 +1790,6 @@ namespace Bloom.Workspace
             if (_originalToolStripPanelWidth == 0)
             {
                 SaveOriginalWidthValues();
-                SaveOriginalButtonTexts();
             }
 
             // First, set the width of _panelHoldingToolstrip, the control holding the language menu,  help menu,
@@ -1892,9 +1799,9 @@ namespace Bloom.Workspace
                 TopRightContentWidth + MinToolStripMargin,
                 _currentShrinkage <= Shrinkage.Stage1 ? _originalToolStripPanelWidth : 0
             );
-            if (desiredToolStripPanelWidth != _panelHoldingToolStrip.Width)
+            if (desiredToolStripPanelWidth != _panelHoldingTopRightReactControl.Width)
             {
-                _panelHoldingToolStrip.Width = desiredToolStripPanelWidth;
+                _panelHoldingTopRightReactControl.Width = desiredToolStripPanelWidth;
                 AlignTopRightPanels();
             }
 
@@ -1966,16 +1873,10 @@ namespace Bloom.Workspace
 
         private void SaveOriginalWidthValues()
         {
-            _originalToolStripPanelWidth = _panelHoldingToolStrip.Width;
+            _originalToolStripPanelWidth = _panelHoldingTopRightReactControl.Width;
             _originalToolSpecificPanelHorizPos = _toolSpecificPanel.Location.X;
-            _originalUiMenuWidth = _uiLanguageMenu.Width;
             _stage1SpaceSaved = 0;
             _stage2SpaceSaved = 0;
-        }
-
-        private void SaveOriginalButtonTexts()
-        {
-            _originalUiLanguageSelection = _uiLanguageMenu.Text;
         }
 
         // Stage 1 removes the space we initially leave in edit and publish views to the left of the
@@ -2000,8 +1901,10 @@ namespace Bloom.Workspace
         /// </summary>
         void AlignTopRightPanels()
         {
-            _panelHoldingToolStrip.Left = this.Width - _panelHoldingToolStrip.Width; // align this panel on the right.
-            _toolSpecificPanel.Width = _panelHoldingToolStrip.Left - _toolSpecificPanel.Left;
+            _panelHoldingTopRightReactControl.Left =
+                this.Width - _panelHoldingTopRightReactControl.Width; // align this panel on the right.
+            _toolSpecificPanel.Width =
+                _panelHoldingTopRightReactControl.Left - _toolSpecificPanel.Left;
         }
 
         private void GrowToFullSize()
@@ -2019,14 +1922,15 @@ namespace Bloom.Workspace
         // by shrinking _panelHoldingToolStrip.
         private void ShrinkToStage2()
         {
-            _panelHoldingToolStrip.Width = _toolStrip.Width + MinToolStripMargin;
+            _panelHoldingTopRightReactControl.Width = MinToolStripMargin;
             AlignTopRightPanels();
-            _stage2SpaceSaved = _originalToolStripPanelWidth - _panelHoldingToolStrip.Width;
+            _stage2SpaceSaved =
+                _originalToolStripPanelWidth - _panelHoldingTopRightReactControl.Width;
         }
 
         private void GrowToStage1()
         {
-            _panelHoldingToolStrip.Width = _originalToolStripPanelWidth;
+            _panelHoldingTopRightReactControl.Width = _originalToolStripPanelWidth;
             AlignTopRightPanels();
             _stage2SpaceSaved = 0;
         }
@@ -2035,13 +1939,13 @@ namespace Bloom.Workspace
         private void ShrinkToStage3()
         {
             // Extreme measures for really small screens
-            _panelHoldingToolStrip.Visible = false;
+            _panelHoldingTopRightReactControl.Visible = false;
             _toolSpecificPanel.Width = Width - _toolSpecificPanel.Left;
         }
 
         private void GrowToStage2()
         {
-            _panelHoldingToolStrip.Visible = true;
+            _panelHoldingTopRightReactControl.Visible = true;
             AlignTopRightPanels();
         }
 

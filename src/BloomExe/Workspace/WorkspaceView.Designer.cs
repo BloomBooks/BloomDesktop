@@ -45,8 +45,6 @@ namespace Bloom.Workspace
 			this._tabStrip = new Messir.Windows.Forms.TabStrip();
 			this._editTab = new Messir.Windows.Forms.TabStripButton();
 			this._publishTab = new Messir.Windows.Forms.TabStripButton();
-			this._toolStrip = new System.Windows.Forms.ToolStrip();
-			this._uiLanguageMenu = new System.Windows.Forms.ToolStripDropDownButton();
 			this._documentationMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._bloomDocsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._trainingVideosMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -63,13 +61,12 @@ namespace Bloom.Workspace
 			this._divider2 = new System.Windows.Forms.ToolStripSeparator();
 			this._webSiteMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._aboutBloomMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this._panelHoldingToolStrip = new Bloom.Workspace.NestedDockedChildPanel();
+			this._panelHoldingTopRightReactControl = new Bloom.Workspace.NestedDockedChildPanel();
 			this._applicationUpdateCheckTimer = new System.Windows.Forms.Timer(this.components);
 			this._reactCollectionTab = new Messir.Windows.Forms.TabStripButton();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this._tabStrip.SuspendLayout();
-			this._toolStrip.SuspendLayout();
-			this._panelHoldingToolStrip.SuspendLayout();
+			this._panelHoldingTopRightReactControl.SuspendLayout();
 			this.SuspendLayout();
 			//
 			// _containerPanel
@@ -165,38 +162,6 @@ namespace Bloom.Workspace
 			this._publishTab.Text = "Publish";
 			this._publishTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._publishTab.TextChanged += new System.EventHandler(this.HandleTabTextChanged);
-			//
-			// _toolStrip
-			//
-			this._toolStrip.BackColor = System.Drawing.Color.Transparent;
-			this._toolStrip.Dock = System.Windows.Forms.DockStyle.Right;
-			this._toolStrip.GripMargin = new System.Windows.Forms.Padding(0);
-			this._toolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-			this._toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-			this._uiLanguageMenu});
-			this._L10NSharpExtender.SetLocalizableToolTip(this._toolStrip, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._toolStrip, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._toolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._toolStrip, "WorkspaceView._toolStrip");
-			this._toolStrip.Location = new System.Drawing.Point(30, 0);
-			this._toolStrip.Name = "_toolStrip";
-			this._toolStrip.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this._toolStrip.Size = new System.Drawing.Size(59, 60);
-			this._toolStrip.TabIndex = 28;
-			this._toolStrip.Text = "_toolStrip";
-			//
-			// _uiLanguageMenu
-			//
-			this._uiLanguageMenu.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-			this._uiLanguageMenu.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
-			this._uiLanguageMenu.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._uiLanguageMenu, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._uiLanguageMenu, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._uiLanguageMenu, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._uiLanguageMenu, ".toolStripDropDownButton1");
-			this._uiLanguageMenu.Name = "_uiLanguageMenu";
-			this._uiLanguageMenu.Size = new System.Drawing.Size(56, 19);
-			this._uiLanguageMenu.Text = "English";
 			//
 			// _documentationMenuItem
 			//
@@ -356,17 +321,16 @@ namespace Bloom.Workspace
 			//
 			// _panelHoldingToolStrip
 			//
-			this._panelHoldingToolStrip.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this._panelHoldingToolStrip.BackColor = System.Drawing.Color.Transparent;
-			this._panelHoldingToolStrip.Controls.Add(this._toolStrip);
-			this._L10NSharpExtender.SetLocalizableToolTip(this._panelHoldingToolStrip, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._panelHoldingToolStrip, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._panelHoldingToolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._panelHoldingToolStrip, "HelpMenu.WorkspaceView._panelHoldingToolStrip");
-			this._panelHoldingToolStrip.Location = new System.Drawing.Point(1006, 3);
-			this._panelHoldingToolStrip.Name = "_panelHoldingToolStrip";
-			this._panelHoldingToolStrip.Size = new System.Drawing.Size(89, 59);
-			this._panelHoldingToolStrip.TabIndex = 29;
+			this._panelHoldingTopRightReactControl.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this._panelHoldingTopRightReactControl.BackColor = System.Drawing.Color.Transparent;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._panelHoldingTopRightReactControl, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._panelHoldingTopRightReactControl, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._panelHoldingTopRightReactControl, L10NSharp.LocalizationPriority.NotLocalizable);
+			this._L10NSharpExtender.SetLocalizingId(this._panelHoldingTopRightReactControl, "HelpMenu.WorkspaceView._panelHoldingToolStrip");
+			this._panelHoldingTopRightReactControl.Location = new System.Drawing.Point(1006, 3);
+			this._panelHoldingTopRightReactControl.Name = "_panelHoldingToolStrip";
+			this._panelHoldingTopRightReactControl.Size = new System.Drawing.Size(89, 59);
+			this._panelHoldingTopRightReactControl.TabIndex = 29;
 			//
 			// _applicationUpdateCheckTimer
 			//
@@ -399,7 +363,7 @@ namespace Bloom.Workspace
 			//
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.Controls.Add(this._panelHoldingToolStrip);
+			this.Controls.Add(this._panelHoldingTopRightReactControl);
 			this.Controls.Add(this._toolSpecificPanel);
 			this.Controls.Add(this._containerPanel);
 			this.Controls.Add(this._tabStrip);
@@ -413,10 +377,8 @@ namespace Bloom.Workspace
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			this._tabStrip.ResumeLayout(false);
 			this._tabStrip.PerformLayout();
-			this._toolStrip.ResumeLayout(false);
-			this._toolStrip.PerformLayout();
-			this._panelHoldingToolStrip.ResumeLayout(false);
-			this._panelHoldingToolStrip.PerformLayout();
+			this._panelHoldingTopRightReactControl.ResumeLayout(false);
+			this._panelHoldingTopRightReactControl.PerformLayout();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -433,8 +395,6 @@ namespace Bloom.Workspace
 		private Messir.Windows.Forms.TabStrip _tabStrip;
 		private L10NSharp.Windows.Forms.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.Timer _applicationUpdateCheckTimer;
-		private System.Windows.Forms.ToolStrip _toolStrip;
-		private System.Windows.Forms.ToolStripDropDownButton _uiLanguageMenu;
 		private System.Windows.Forms.ToolStripMenuItem _documentationMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _trainingVideosMenuItem;
 		private System.Windows.Forms.ToolStripSeparator _toolStripSeparator1;
@@ -449,7 +409,7 @@ namespace Bloom.Workspace
 		private System.Windows.Forms.ToolStripMenuItem _checkForNewVersionMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _registrationMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _aboutBloomMenuItem;
-		private NestedDockedChildPanel _panelHoldingToolStrip;
+		private NestedDockedChildPanel _panelHoldingTopRightReactControl;
 		private System.Windows.Forms.ToolStripMenuItem _askAQuestionMenuItem;
 		private Messir.Windows.Forms.TabStripButton _reactCollectionTab;
 		private System.Windows.Forms.ToolStripMenuItem _bloomDocsMenuItem;
