@@ -720,6 +720,32 @@ namespace Bloom.Workspace
             }
         }
 
+        public void ShowUiLanguageMenuAtCursor()
+        {
+            SetupUiLanguageMenu();
+            ShowToolStripDropDown(_uiLanguageMenu.DropDown);
+        }
+
+        public void ShowHelpMenuAtCursor()
+        {
+            ShowToolStripDropDown(_helpMenu.DropDown);
+        }
+
+        private void ShowToolStripDropDown(ToolStripDropDown dropDown)
+        {
+            var mouseX = MousePosition.X;
+            var mouseY = MousePosition.Y + 8;
+            var timer = new System.Windows.Forms.Timer();
+            timer.Interval = 10;
+            timer.Tick += (s, a) =>
+            {
+                dropDown.Show(mouseX, mouseY);
+                timer.Stop();
+                timer.Dispose();
+            };
+            timer.Start();
+        }
+
         private void SendTopRightState()
         {
             if (_webSocketServer == null)

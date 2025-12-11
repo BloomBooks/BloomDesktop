@@ -4,30 +4,14 @@ import * as React from "react";
 import BloomButton from "../../bloomButton";
 import { BloomTooltip } from "../../BloomToolTip";
 import { ArrowDropDown } from "@mui/icons-material";
-import { ListItemText, Menu, MenuItem } from "@mui/material";
-
-interface LanguageMenuItem {
-    langTag: string;
-    menuText: string;
-    tooltip: string;
-    isCurrent: boolean;
-}
 
 interface LanguageMenuState {
     uiLanguageLabel: string;
-    showUnapprovedText: string;
-    showUnapprovedChecked: boolean;
 }
 
 interface LanguageMenuProps {
     state: LanguageMenuState;
-    languages: LanguageMenuItem[];
-    anchorRef: React.RefObject<HTMLDivElement | null>;
-    languageAnchor: HTMLElement | null;
-    onOpen: (target?: HTMLElement | null) => void;
-    onClose: () => void;
-    onApplyLanguage: (langTag: string) => void;
-    onToggleShowUnapproved: () => void;
+    onOpen: () => void;
 }
 
 export const UiLanguageMenu: React.FunctionComponent<LanguageMenuProps> = (
@@ -43,7 +27,7 @@ export const UiLanguageMenu: React.FunctionComponent<LanguageMenuProps> = (
                     enabled={true}
                     hasText={true}
                     transparent={true}
-                    onClick={() => props.onOpen(props.anchorRef.current)}
+                    onClick={props.onOpen}
                     css={css`
                         background-color: transparent;
                         color: inherit;
@@ -65,32 +49,6 @@ export const UiLanguageMenu: React.FunctionComponent<LanguageMenuProps> = (
                     </span>
                 </BloomButton>
             </BloomTooltip>
-
-            <Menu
-                anchorEl={props.languageAnchor}
-                open={Boolean(props.languageAnchor)}
-                onClose={props.onClose}
-            >
-                {props.languages.map((lang) => (
-                    <MenuItem
-                        key={lang.langTag}
-                        selected={lang.isCurrent}
-                        onClick={() => props.onApplyLanguage(lang.langTag)}
-                    >
-                        <ListItemText primary={lang.menuText} />
-                    </MenuItem>
-                ))}
-                <MenuItem onClick={props.onToggleShowUnapproved}>
-                    <ListItemText
-                        primary={props.state.showUnapprovedText}
-                        sx={{
-                            fontStyle: props.state.showUnapprovedChecked
-                                ? "italic"
-                                : "normal",
-                        }}
-                    />
-                </MenuItem>
-            </Menu>
         </>
     );
 };

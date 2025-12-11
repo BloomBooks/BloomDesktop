@@ -13,40 +13,6 @@ const config: IBloomComponentConfig<Record<string, never>> = {
             minZoom: 50,
             maxZoom: 300,
         },
-        initialLanguages: [
-            {
-                langTag: "en",
-                menuText: "English",
-                tooltip: "100% translated",
-                isCurrent: true,
-            },
-            {
-                langTag: "fr",
-                menuText: "Français",
-                tooltip: "80% translated",
-                isCurrent: false,
-            },
-        ],
-        initialHelpItems: [
-            {
-                id: "documentation",
-                text: "Documentation",
-                isSeparator: false,
-                enabled: true,
-            },
-            {
-                id: "dividerA",
-                text: "",
-                isSeparator: true,
-                enabled: false,
-            },
-            {
-                id: "aboutBloom",
-                text: "About Bloom",
-                isSeparator: false,
-                enabled: true,
-            },
-        ],
     },
     modulePath: "../TopBar/workspaceTopRightControls/WorkspaceTopRightControls",
     exportName: "WorkspaceTopRightControls",

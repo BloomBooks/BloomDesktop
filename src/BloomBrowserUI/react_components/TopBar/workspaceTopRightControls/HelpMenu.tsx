@@ -4,22 +4,9 @@ import * as React from "react";
 import BloomButton from "../../bloomButton";
 import { BloomTooltip } from "../../BloomToolTip";
 import { HelpOutline } from "@mui/icons-material";
-import { ListItemText, Menu, MenuItem } from "@mui/material";
-
-interface HelpMenuItemModel {
-    id: string;
-    text: string;
-    isSeparator: boolean;
-    enabled: boolean;
-}
 
 interface HelpMenuProps {
-    helpItems: HelpMenuItemModel[];
-    anchorRef: React.RefObject<HTMLDivElement | null>;
-    helpAnchor: HTMLElement | null;
-    onOpen: (target?: HTMLElement | null) => void;
-    onClose: () => void;
-    onRunCommand: (id: string) => void;
+    onOpen: () => void;
 }
 
 export const HelpMenu: React.FunctionComponent<HelpMenuProps> = (props) => {
@@ -30,7 +17,7 @@ export const HelpMenu: React.FunctionComponent<HelpMenuProps> = (props) => {
                     l10nKey="HelpMenu.HelpButton"
                     enabled={true}
                     transparent={true}
-                    onClick={() => props.onOpen(props.anchorRef.current)}
+                    onClick={props.onOpen}
                     hasText={false}
                     css={css`
                         background-color: transparent;
@@ -43,29 +30,6 @@ export const HelpMenu: React.FunctionComponent<HelpMenuProps> = (props) => {
                     <HelpOutline />
                 </BloomButton>
             </BloomTooltip>
-
-            <Menu
-                anchorEl={props.helpAnchor}
-                open={Boolean(props.helpAnchor)}
-                onClose={props.onClose}
-            >
-                {props.helpItems.map((item, index) => {
-                    if (item.isSeparator) {
-                        return (
-                            <MenuItem key={`sep-${index}`} divider disabled />
-                        );
-                    }
-                    return (
-                        <MenuItem
-                            key={item.id}
-                            onClick={() => props.onRunCommand(item.id)}
-                            disabled={!item.enabled}
-                        >
-                            <ListItemText primary={item.text} />
-                        </MenuItem>
-                    );
-                })}
-            </Menu>
         </>
     );
 };

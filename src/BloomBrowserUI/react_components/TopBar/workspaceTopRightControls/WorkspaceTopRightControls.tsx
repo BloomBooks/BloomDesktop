@@ -21,23 +21,8 @@ interface TopRightState {
     maxZoom: number;
 }
 
-interface UiLanguageItem {
-    langTag: string;
-    menuText: string;
-    tooltip: string;
-    isCurrent: boolean;
-}
-
-interface HelpMenuItemModel {
-    id: string;
-    text: string;
-    isSeparator: boolean;
-    enabled: boolean;
-}
 interface TopRightProps {
     initialState?: TopRightState;
-    initialLanguages?: UiLanguageItem[];
-    initialHelpItems?: HelpMenuItemModel[];
     skipApi?: boolean;
 }
 
@@ -45,12 +30,6 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
     TopRightProps
 > = (props) => {
     const [state, setState] = useState<TopRightState | undefined>(undefined);
-    const [languageAnchor, setLanguageAnchor] = useState<HTMLElement | null>(
-        null,
-    );
-    const [helpAnchor, setHelpAnchor] = useState<HTMLElement | null>(null);
-    const [languages, setLanguages] = useState<UiLanguageItem[]>([]);
-    const [helpItems, setHelpItems] = useState<HelpMenuItemModel[]>([]);
     const anchorRef = React.useRef<HTMLDivElement | null>(null);
 
     const refreshState = React.useCallback(() => {
@@ -90,61 +69,18 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
             );
     }, [props.skipApi]);
 
-    const openLanguageMenu = (target?: HTMLElement | null) => {
-        if (!target) {
-            return;
-        }
-        if (props.skipApi && props.initialLanguages) {
-            setLanguages(props.initialLanguages);
-            setLanguageAnchor(target);
-            return;
-        }
+    const requestLanguageMenu = () => {
         if (props.skipApi) {
             return;
         }
-        get("workspace/topRight/languages", (result) => {
-            setLanguages(result.data as UiLanguageItem[]);
-            setLanguageAnchor(target);
-        });
+        postJson("workspace/topRight/openLanguageMenu", {});
     };
 
-    const openHelpMenu = (target?: HTMLElement | null) => {
-        if (!target) {
-            return;
-        }
-        if (props.skipApi && props.initialHelpItems) {
-            setHelpItems(props.initialHelpItems);
-            setHelpAnchor(target);
-            return;
-        }
+    const requestHelpMenu = () => {
         if (props.skipApi) {
             return;
         }
-        get("workspace/topRight/helpItems", (result) => {
-            setHelpItems(result.data as HelpMenuItemModel[]);
-            setHelpAnchor(target);
-        });
-    };
-
-    const applyLanguage = (langTag: string) => {
-        if (!props.skipApi) {
-            postJson("workspace/topRight/setLanguage", { langTag });
-        }
-        setLanguageAnchor(null);
-    };
-
-    const toggleShowUnapproved = () => {
-        if (!props.skipApi) {
-            postJson("workspace/topRight/toggleShowUnapproved", {});
-        }
-        setLanguageAnchor(null);
-    };
-
-    const runHelpCommand = (id: string) => {
-        if (!props.skipApi) {
-            postJson("workspace/topRight/helpCommand", { id });
-        }
-        setHelpAnchor(null);
+        postJson("workspace/topRight/openHelpMenu", {});
     };
 
     const changeZoom = (newZoom: number) => {
@@ -178,23 +114,10 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
                 >
                     <UiLanguageMenu
                         state={state}
-                        languages={languages}
-                        anchorRef={anchorRef}
-                        languageAnchor={languageAnchor}
-                        onOpen={openLanguageMenu}
-                        onClose={() => setLanguageAnchor(null)}
-                        onApplyLanguage={applyLanguage}
-                        onToggleShowUnapproved={toggleShowUnapproved}
+                        onOpen={requestLanguageMenu}
                     />
 
-                    <HelpMenu
-                        helpItems={helpItems}
-                        anchorRef={anchorRef}
-                        helpAnchor={helpAnchor}
-                        onOpen={openHelpMenu}
-                        onClose={() => setHelpAnchor(null)}
-                        onRunCommand={runHelpCommand}
-                    />
+                    <HelpMenu onOpen={requestHelpMenu} />
 
                     {state.zoomEnabled && (
                         <ZoomControl

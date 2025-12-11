@@ -8,7 +8,8 @@ import { test } from "../../../component-tester/playwrightTest";
 import { setTestComponent } from "../../../component-tester/setTestComponent";
 import { prepareGetResponse } from "../../../component-tester/apiInterceptors";
 
-const includeManualTests = process.env.PLAYWRIGHT_INCLUDE_MANUAL === "1";
+declare const process: { env?: Record<string, string | undefined> };
+const includeManualTests = process?.env?.PLAYWRIGHT_INCLUDE_MANUAL === "1";
 const manualDescribe = includeManualTests ? test.describe : test.describe.skip;
 
 manualDescribe("Manual Interactive Testing", () => {
@@ -137,40 +138,6 @@ manualDescribe("Manual Interactive Testing", () => {
             {
                 skipApi: true,
                 initialState: statePayload,
-                initialLanguages: [
-                    {
-                        langTag: "en",
-                        menuText: "English",
-                        tooltip: "100% translated",
-                        isCurrent: true,
-                    },
-                    {
-                        langTag: "fr",
-                        menuText: "Français",
-                        tooltip: "80% translated",
-                        isCurrent: false,
-                    },
-                ],
-                initialHelpItems: [
-                    {
-                        id: "documentation",
-                        text: "Documentation",
-                        isSeparator: false,
-                        enabled: true,
-                    },
-                    {
-                        id: "dividerA",
-                        text: "",
-                        isSeparator: true,
-                        enabled: false,
-                    },
-                    {
-                        id: "aboutBloom",
-                        text: "About Bloom",
-                        isSeparator: false,
-                        enabled: true,
-                    },
-                ],
             },
         );
 

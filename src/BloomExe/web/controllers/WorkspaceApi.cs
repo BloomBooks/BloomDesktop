@@ -59,6 +59,16 @@ namespace Bloom.web.controllers
                 HandleHelpCommand,
                 true
             );
+            apiHandler.RegisterEndpointHandler(
+                "workspace/topRight/openLanguageMenu",
+                HandleOpenLanguageMenu,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "workspace/topRight/openHelpMenu",
+                HandleOpenHelpMenu,
+                true
+            );
             apiHandler.RegisterEndpointHandler("workspace/topRight/zoom", HandleZoom, true);
         }
 
@@ -112,6 +122,18 @@ namespace Bloom.web.controllers
             var data = request.RequiredPostDynamic();
             string id = data.id;
             WorkspaceView.Invoke(new Action(() => WorkspaceView.RunHelpMenuCommand(id)));
+            request.PostSucceeded();
+        }
+
+        private void HandleOpenLanguageMenu(ApiRequest request)
+        {
+            WorkspaceView.Invoke(new Action(WorkspaceView.ShowUiLanguageMenuAtCursor));
+            request.PostSucceeded();
+        }
+
+        private void HandleOpenHelpMenu(ApiRequest request)
+        {
+            WorkspaceView.Invoke(new Action(WorkspaceView.ShowHelpMenuAtCursor));
             request.PostSucceeded();
         }
 
