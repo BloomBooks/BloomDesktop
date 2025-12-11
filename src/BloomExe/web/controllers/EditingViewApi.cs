@@ -115,6 +115,11 @@ namespace Bloom.web.controllers
                 HandleGetCurrentBookId,
                 false
             );
+            apiHandler.RegisterEndpointHandler(
+                "editView/showBookSettingsDialog",
+                HandleShowBookSettingsDialog,
+                true
+            );
         }
 
         private void HandleJumpToPage(ApiRequest request)
@@ -122,6 +127,12 @@ namespace Bloom.web.controllers
             var pageId = request.GetPostStringOrNull();
             request.PostSucceeded();
             View.Model.SaveThen(() => pageId, () => { });
+        }
+
+        private void HandleShowBookSettingsDialog(ApiRequest request)
+        {
+            request.PostSucceeded();
+            View.SaveAndOpenBookSettingsDialog();
         }
 
         /// <summary>
