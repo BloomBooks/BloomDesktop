@@ -889,6 +889,7 @@ namespace Bloom.Workspace
                 return;
             }
 
+            //TODO too much duplication between this and PopulateUiLanguageMenuItems. Do we need this fallback at all?
             // Fallback for cases where we don't have a WorkspaceView instance (e.g., designer preview).
             var items = GetLanguageItems(onlyActiveItem);
             var tooltipFormat = LocalizationManager.GetString(
