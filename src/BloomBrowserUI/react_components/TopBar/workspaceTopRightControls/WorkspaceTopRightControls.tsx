@@ -1,4 +1,4 @@
-import { css, ThemeProvider } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import BloomButton from "../../bloomButton";
@@ -6,8 +6,15 @@ import { BloomTooltip } from "../../BloomToolTip";
 import { get, postJson } from "../../../utils/bloomApi";
 import WebSocketManager from "../../../utils/WebSocketManager";
 import { lightTheme } from "../../../bloomMaterialUITheme";
+import { ThemeProvider } from "@mui/material/styles";
 import { WireUpForWinforms } from "../../../utils/WireUpWinform";
-import { Menu, MenuItem, ListItemText } from "@mui/material";
+import {
+    Menu,
+    MenuItem,
+    ListItemText,
+    StyledEngineProvider,
+    CssBaseline,
+} from "@mui/material";
 import { ArrowDropDown, HelpOutline } from "@mui/icons-material";
 import { ZoomControl } from "./ZoomControl";
 
@@ -208,92 +215,97 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
     }
 
     return (
-        <ThemeProvider theme={lightTheme}>
-            <div
-                ref={anchorRef}
-                css={css`
-                    display: flex;
-                    flex-direction: column;
-                    align-items: end;
-                    /* background-color: transparent; */
-                `}
-            >
-                <BloomTooltip
-                    tip={{ l10nKey: "CollectionTab.LanguageMenu.Tooltip" }}
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={lightTheme}>
+                {/* CssBaseline injects MUI's base styles (it sets html/body to the theme typography,
+                normalizes margins, etc.). Without it, the browser keeps default fonts and spacing,
+                so our theme's font family/size and resets never reach this control. */}
+                <CssBaseline />
+                <div
+                    ref={anchorRef}
+                    css={css`
+                        display: flex;
+                        flex-direction: column;
+                        align-items: end;
+                    `}
                 >
-                    <BloomButton
-                        l10nKey="CollectionTab.LanguageMenu"
-                        enabled={true}
-                        hasText={true}
-                        transparent={true}
-                        onClick={() => openLanguageMenu(anchorRef.current)}
-                        css={css`
-                            background-color: transparent;
-                            color: inherit;
-                            padding-inline: 8px;
-                            text-transform: none;
-                            border: hidden;
-                            font-size: 12px;
-                        `}
+                    <BloomTooltip
+                        tip={{ l10nKey: "CollectionTab.LanguageMenu.Tooltip" }}
                     >
-                        <span
+                        <BloomButton
+                            l10nKey="CollectionTab.LanguageMenu"
+                            enabled={true}
+                            hasText={true}
+                            transparent={true}
+                            onClick={() => openLanguageMenu(anchorRef.current)}
                             css={css`
-                                display: inline-flex;
-                                align-items: center;
-                                gap: 6px;
+                                background-color: transparent;
+                                color: inherit;
+                                padding-inline: 8px;
+                                text-transform: none;
+                                border: hidden;
+                                font-size: 12px;
                             `}
                         >
-                            <span>{state.uiLanguageLabel}</span>
-                            <ArrowDropDown />
-                        </span>
-                    </BloomButton>
-                </BloomTooltip>
+                            <span
+                                css={css`
+                                    display: inline-flex;
+                                    align-items: center;
+                                    gap: 6px;
+                                `}
+                            >
+                                <span>{state.uiLanguageLabel}</span>
+                                <ArrowDropDown />
+                            </span>
+                        </BloomButton>
+                    </BloomTooltip>
 
-                <BloomTooltip tip={{ l10nKey: "HelpMenu.Help Menu" }}>
-                    <BloomButton
-                        l10nKey="HelpMenu.HelpButton"
-                        enabled={true}
-                        transparent={true}
-                        onClick={() => openHelpMenu(anchorRef.current)}
-                        hasText={false}
-                        css={css`
-                            background-color: transparent;
-                            color: inherit;
-                            border: hidden;
-                            min-width: 36px;
-                            padding: 6px;
-                        `}
+                    <BloomTooltip tip={{ l10nKey: "HelpMenu.Help Menu" }}>
+                        <BloomButton
+                            l10nKey="HelpMenu.HelpButton"
+                            enabled={true}
+                            transparent={true}
+                            onClick={() => openHelpMenu(anchorRef.current)}
+                            hasText={false}
+                            css={css`
+                                background-color: transparent;
+                                color: inherit;
+                                border: hidden;
+                                min-width: 36px;
+                                padding: 6px;
+                            `}
+                        >
+                            <HelpOutline />
+                        </BloomButton>
+                    </BloomTooltip>
+
+                    {state.zoomEnabled && (
+                        <ZoomControl
+                            zoom={state.zoom}
+                            minZoom={state.minZoom}
+                            maxZoom={state.maxZoom}
+                            onZoomChange={changeZoom}
+                        />
+                    )}
+
+                    <Menu
+                        anchorEl={languageAnchor}
+                        open={Boolean(languageAnchor)}
+                        onClose={() => setLanguageAnchor(null)}
                     >
-                        <HelpOutline />
-                    </BloomButton>
-                </BloomTooltip>
+                        {renderLanguageMenuItems()}
+                    </Menu>
 
-                {state.zoomEnabled && (
-                    <ZoomControl
-                        zoom={state.zoom}
-                        minZoom={state.minZoom}
-                        maxZoom={state.maxZoom}
-                        onZoomChange={changeZoom}
-                    />
-                )}
-
-                <Menu
-                    anchorEl={languageAnchor}
-                    open={Boolean(languageAnchor)}
-                    onClose={() => setLanguageAnchor(null)}
-                >
-                    {renderLanguageMenuItems()}
-                </Menu>
-
-                <Menu
-                    anchorEl={helpAnchor}
-                    open={Boolean(helpAnchor)}
-                    onClose={() => setHelpAnchor(null)}
-                >
-                    {renderHelpMenuItems()}
-                </Menu>
-            </div>
-        </ThemeProvider>
+                    <Menu
+                        anchorEl={helpAnchor}
+                        open={Boolean(helpAnchor)}
+                        onClose={() => setHelpAnchor(null)}
+                    >
+                        {renderHelpMenuItems()}
+                    </Menu>
+                </div>
+            </ThemeProvider>
+        </StyledEngineProvider>
     );
 };
 
