@@ -74,13 +74,13 @@ namespace Bloom.web.controllers
 
         private void HandleOpenLanguageMenu(ApiRequest request)
         {
-            WorkspaceView.ShowUiLanguageMenuAtCursor();
+            WorkspaceView.ShowUiLanguageMenu();
             request.PostSucceeded();
         }
 
         private void HandleOpenHelpMenu(ApiRequest request)
         {
-            WorkspaceView.ShowHelpMenuAtCursor();
+            WorkspaceView.ShowHelpMenu();
             request.PostSucceeded();
         }
 

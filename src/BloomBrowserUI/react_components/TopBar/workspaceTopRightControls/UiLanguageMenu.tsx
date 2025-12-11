@@ -1,20 +1,10 @@
-import { css } from "@emotion/react";
 import * as React from "react";
 import { ArrowDropDown } from "@mui/icons-material";
-import {
-    postJson,
-    useApiString,
-    useWatchString,
-} from "../../../utils/bloomApi";
+import { postJson, useApiString } from "../../../utils/bloomApi";
 import { TopRightMenuButton, topRightMenuArrowCss } from "./TopRightMenuButton";
 
 export const UiLanguageMenu: React.FunctionComponent = () => {
-    const labelInitial = useApiString("workspace/topRight/uiLanguageLabel", "");
-    const label = useWatchString(
-        labelInitial,
-        "workspaceTopRightControls",
-        "uiLanguageLabel",
-    );
+    const label = useApiString("workspace/topRight/uiLanguageLabel", "");
 
     const onOpen = () => {
         postJson("workspace/topRight/openLanguageMenu", {});

@@ -229,7 +229,7 @@ namespace Bloom.Workspace
             SetupUiLanguageMenu(true);
             SetupZoomModel();
             SetupTopRightReactControl();
-            SendTopRightState();
+            SendZoomInfo();
             _viewInitialized = false;
             CommonApi.WorkspaceView = this;
 
@@ -530,7 +530,7 @@ namespace Bloom.Workspace
         {
             if (CurrentTabView is IZoomManager zoomManager)
                 zoomManager.SetZoom(_zoomModel.Zoom);
-            SendTopRightState();
+            SendZoomInfo();
         }
 
         private void SetupTopRightReactControl()
@@ -620,13 +620,13 @@ namespace Bloom.Workspace
                 .ToList();
         }
 
-        public void ShowUiLanguageMenuAtCursor()
+        public void ShowUiLanguageMenu()
         {
             BuildUiLanguageContextMenu();
             ShowContextMenu(_uiLanguageContextMenu);
         }
 
-        public void ShowHelpMenuAtCursor()
+        public void ShowHelpMenu()
         {
             BuildHelpContextMenu();
             ShowContextMenu(_helpContextMenu);
@@ -687,20 +687,6 @@ namespace Bloom.Workspace
             );
         }
 
-        private void AddHelpMenuItem(ToolStripItem item)
-        {
-            if (item == null)
-                return;
-
-            // If the item already has an owner, move it out before reparenting.
-            if (item.Owner != null)
-            {
-                item.Owner.Items.Remove(item);
-            }
-
-            _helpContextMenu.Items.Add(item);
-        }
-
         private void ShowContextMenu(ContextMenuStrip menu)
         {
             // Align the menu's right edge with the window's right edge.
@@ -725,19 +711,9 @@ namespace Bloom.Workspace
             timer.Start();
         }
 
-        //TODO split into two methods. Do we even need uiLanguageLabel?
-        // For that matter, do we need zoom?
-        private void SendTopRightState()
+        private void SendZoomInfo()
         {
-            if (_webSocketServer == null)
-                return;
-
-            _webSocketServer.SendString(
-                "workspaceTopRightControls",
-                "uiLanguageLabel",
-                GetCurrentUiLanguageLabel()
-            );
-            _webSocketServer.SendBundle("workspaceTopRightControls", "zoom", GetZoomInfo());
+            _webSocketServer?.SendBundle("workspaceTopRightControls", "zoom", GetZoomInfo());
         }
 
         private int TabButtonSectionWidth
@@ -1101,7 +1077,6 @@ namespace Bloom.Workspace
             SaveOriginalButtonTexts();
             _showAllTranslationsItem.Text = GetShowUnapprovedTranslationsMenuText();
             _localizationChangedEvent.Raise(null);
-            SendTopRightState();
         }
 
         private string GetShowUnapprovedTranslationsMenuText()
@@ -1409,7 +1384,7 @@ namespace Bloom.Workspace
                         {
                             _zoomModel.Zoom = zoomManager.Zoom;
                         }
-                        SendTopRightState();
+                        SendZoomInfo();
                         // TODO-WV2: Can we clear the cache in WV2?  Do we need to?
                     },
                 }
