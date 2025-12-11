@@ -49,8 +49,8 @@ namespace Bloom.Workspace
         private int _originalUiMenuWidth;
         private int _stage1SpaceSaved;
         private int _stage2SpaceSaved;
-        private string _originalHelpText;
-        private Image _originalHelpImage;
+
+        // Help items now live only in a context menu; original ToolStrip button no longer used.
         private string _originalUiLanguageSelection;
         private EditingView _editingView;
         private PublishView _publishView;
@@ -623,105 +623,6 @@ namespace Bloom.Workspace
                 .ToList();
         }
 
-        public List<object> GetHelpMenuItemsForApi()
-        {
-            var list = new List<object>();
-
-            void AddItem(ToolStripItem item, string id)
-            {
-                if (item == null || !item.Visible)
-                    return;
-                if (item is ToolStripSeparator)
-                {
-                    list.Add(
-                        new
-                        {
-                            id = id,
-                            text = "",
-                            isSeparator = true,
-                            enabled = false,
-                        }
-                    );
-                    return;
-                }
-
-                list.Add(
-                    new
-                    {
-                        id = id,
-                        text = item.Text,
-                        isSeparator = false,
-                        enabled = item.Enabled,
-                    }
-                );
-            }
-
-            AddItem(_documentationMenuItem, "documentation");
-            AddItem(_bloomDocsMenuItem, "bloomDocs");
-            AddItem(_trainingVideosMenuItem, "trainingVideos");
-            AddItem(buildingReaderTemplatesMenuItem, "buildingReaderTemplates");
-            AddItem(usingReaderTemplatesMenuItem, "usingReaderTemplates");
-            AddItem(toolStripSeparator1, "dividerA");
-            AddItem(_askAQuestionMenuItem, "askQuestion");
-            AddItem(_requestAFeatureMenuItem, "requestFeature");
-            AddItem(_reportAProblemMenuItem, "reportProblem");
-            AddItem(_divider1, "dividerB");
-            AddItem(_releaseNotesMenuItem, "releaseNotes");
-            AddItem(_checkForNewVersionMenuItem, "checkForNewVersion");
-            AddItem(_registrationMenuItem, "registration");
-            AddItem(_divider2, "dividerC");
-            AddItem(_webSiteMenuItem, "webSite");
-            AddItem(_aboutBloomMenuItem, "aboutBloom");
-
-            return list.Cast<object>().ToList();
-        }
-
-        public void RunHelpMenuCommand(string id)
-        {
-            switch (id)
-            {
-                case "documentation":
-                    toolStripMenuItem3_Click(this, EventArgs.Empty);
-                    break;
-                case "bloomDocs":
-                    _bloom_docs_Click(this, EventArgs.Empty);
-                    break;
-                case "trainingVideos":
-                    _trainingVideosMenuItem_Click(this, EventArgs.Empty);
-                    break;
-                case "buildingReaderTemplates":
-                    buildingReaderTemplatesMenuItem_Click(this, EventArgs.Empty);
-                    break;
-                case "usingReaderTemplates":
-                    usingReaderTemplatesMenuItem_Click(this, EventArgs.Empty);
-                    break;
-                case "askQuestion":
-                    _askAQuestionMenuItem_Click(this, EventArgs.Empty);
-                    break;
-                case "requestFeature":
-                    _requestAFeatureMenuItem_Click(this, EventArgs.Empty);
-                    break;
-                case "reportProblem":
-                    _reportAProblemMenuItem_Click(this, EventArgs.Empty);
-                    break;
-                case "releaseNotes":
-                    _releaseNotesMenuItem_Click(this, EventArgs.Empty);
-                    break;
-                case "checkForNewVersion":
-                    _checkForNewVersionMenuItem_Click(this, EventArgs.Empty);
-                    break;
-                case "registration":
-                    OnRegistrationMenuItem_Click(this, EventArgs.Empty);
-                    break;
-                case "webSite":
-                    _webSiteMenuItem_Click(this, EventArgs.Empty);
-                    break;
-                case "aboutBloom":
-                    OnAboutBoxClick(this, EventArgs.Empty);
-                    break;
-            }
-        }
-
         public void ShowUiLanguageMenuAtCursor()
         {
             BuildUiLanguageContextMenu();
@@ -766,23 +667,41 @@ namespace Bloom.Workspace
         private void BuildHelpContextMenu()
         {
             _helpContextMenu.Items.Clear();
-
-            foreach (dynamic entry in GetHelpMenuItemsForApi())
-            {
-                if ((bool)entry.isSeparator)
+            _helpContextMenu.Items.AddRange(
+                new ToolStripItem[]
                 {
-                    _helpContextMenu.Items.Add(new ToolStripSeparator());
-                    continue;
+                    _documentationMenuItem,
+                    _bloomDocsMenuItem,
+                    _trainingVideosMenuItem,
+                    buildingReaderTemplatesMenuItem,
+                    usingReaderTemplatesMenuItem,
+                    toolStripSeparator1,
+                    _askAQuestionMenuItem,
+                    _requestAFeatureMenuItem,
+                    _reportAProblemMenuItem,
+                    _divider1,
+                    _releaseNotesMenuItem,
+                    _checkForNewVersionMenuItem,
+                    _registrationMenuItem,
+                    _divider2,
+                    _webSiteMenuItem,
+                    _aboutBloomMenuItem,
                 }
+            );
+        }
 
-                var item = new ToolStripMenuItem((string)entry.text)
-                {
-                    Enabled = (bool)entry.enabled,
-                    Tag = (string)entry.id,
-                };
-                item.Click += (sender, args) => RunHelpMenuCommand((string)item.Tag);
-                _helpContextMenu.Items.Add(item);
+        private void AddHelpMenuItem(ToolStripItem item)
+        {
+            if (item == null)
+                return;
+
+            // If the item already has an owner, move it out before reparenting.
+            if (item.Owner != null)
+            {
+                item.Owner.Items.Remove(item);
             }
+
+            _helpContextMenu.Items.Add(item);
         }
 
         private void ShowContextMenu(ContextMenuStrip menu)
@@ -942,15 +861,7 @@ namespace Bloom.Workspace
             _uiLanguageMenu.DropDownItems.Add(_showAllTranslationsItem);
 
             _uiLanguageMenu.DropDown.Closing += DropDown_Closing;
-            _helpMenu.DropDown.Closing += DropDown_Closing;
             _uiLanguageMenu.DropDown.Opening += DropDown_Opening;
-            _helpMenu.DropDown.Opening += DropDown_Opening;
-            // one side-effect of the above is if the _uiLanguageMenu dropdown is open, a click on the _helpMenu won't close it
-            // (and vice versa)
-            _helpMenu.Click += (sender, args) =>
-                _uiLanguageMenu.DropDown.Close(ToolStripDropDownCloseReason.ItemClicked);
-            _uiLanguageMenu.Click += (sender, e) =>
-                _helpMenu.DropDown.Close(ToolStripDropDownCloseReason.ItemClicked);
         }
 
         public void ToggleShowingOnlyApprovedTranslations()
@@ -996,9 +907,11 @@ namespace Bloom.Workspace
                 case ToolStripDropDownCloseReason.Keyboard:
                     // If "reason" is Keyboard, that seems to be generated just by moving the mouse over the
                     // adjacent (visible) button on Linux.
-                    var mousePos = _helpMenu.Owner.PointToClient(MousePosition);
-                    var bounds =
-                        (sender == _helpMenu.DropDown) ? _uiLanguageMenu.Bounds : _helpMenu.Bounds;
+                    var owner = _uiLanguageMenu.Owner;
+                    if (owner == null)
+                        break;
+                    var mousePos = owner.PointToClient(MousePosition);
+                    var bounds = _uiLanguageMenu.Bounds;
                     if (bounds.Contains(mousePos))
                     {
                         // probably a false positive
@@ -2080,7 +1993,6 @@ namespace Bloom.Workspace
 
         private void SaveOriginalButtonTexts()
         {
-            _originalHelpText = _helpMenu.Text;
             _originalUiLanguageSelection = _uiLanguageMenu.Text;
         }
 
@@ -2126,22 +2038,7 @@ namespace Bloom.Workspace
         /// </summary>
         void AdjustButtonTextsForLocale()
         {
-            if (_originalHelpImage == null)
-                _originalHelpImage = _helpMenu.Image;
-            var helpText = LocalizationManager.GetString("HelpMenu.Help Menu", "?");
-            if (
-                helpText == "?"
-                || new[] { "en", "fr", "de", "es" }.Contains(LocalizationManager.UILanguageId)
-            )
-            {
-                _helpMenu.Text = "";
-                _helpMenu.Image = _originalHelpImage;
-            }
-            else
-            {
-                _helpMenu.Text = helpText;
-                _helpMenu.Image = null;
-            }
+            // No-op: help is now displayed via ContextMenuStrip only.
         }
 
         // Currently stage 2 removes the space between the right-hand toolstrip and the tool-specific controls,

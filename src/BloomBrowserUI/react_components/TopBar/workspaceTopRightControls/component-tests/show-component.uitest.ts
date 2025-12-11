@@ -18,9 +18,6 @@ manualDescribe("Manual Interactive Testing", () => {
 
         const statePayload = {
             uiLanguageLabel: "English",
-            showUnapprovedText:
-                "Show translations which have not been approved yet",
-            showUnapprovedChecked: false,
             zoom: 100,
             zoomEnabled: true,
             minZoom: 50,
@@ -30,71 +27,10 @@ manualDescribe("Manual Interactive Testing", () => {
         const statePatterns = [
             /.*\/bloom\/api\/workspace\/topRight\/state.*/,
             /.*\/bloom\/workspace\/topRight\/state.*/,
-            /.*workspaceTopRight\?.*state.*/, // fallback safety
         ];
 
         statePatterns.forEach((pattern) =>
             prepareGetResponse(page, pattern, statePayload, { wrapBody: true }),
-        );
-
-        const languagePatterns = [
-            /.*\/bloom\/api\/workspace\/topRight\/languages.*/,
-            /.*\/bloom\/workspace\/topRight\/languages.*/,
-        ];
-
-        languagePatterns.forEach((pattern) =>
-            prepareGetResponse(
-                page,
-                pattern,
-                [
-                    {
-                        langTag: "en",
-                        menuText: "English",
-                        tooltip: "100% translated",
-                        isCurrent: true,
-                    },
-                    {
-                        langTag: "fr",
-                        menuText: "Français",
-                        tooltip: "80% translated",
-                        isCurrent: false,
-                    },
-                ],
-                { wrapBody: true },
-            ),
-        );
-
-        const helpPatterns = [
-            /.*\/bloom\/api\/workspace\/topRight\/helpItems.*/,
-            /.*\/bloom\/workspace\/topRight\/helpItems.*/,
-        ];
-
-        helpPatterns.forEach((pattern) =>
-            prepareGetResponse(
-                page,
-                pattern,
-                [
-                    {
-                        id: "documentation",
-                        text: "Documentation",
-                        isSeparator: false,
-                        enabled: true,
-                    },
-                    {
-                        id: "dividerA",
-                        text: "",
-                        isSeparator: true,
-                        enabled: false,
-                    },
-                    {
-                        id: "aboutBloom",
-                        text: "About Bloom",
-                        isSeparator: false,
-                        enabled: true,
-                    },
-                ],
-                { wrapBody: true },
-            ),
         );
 
         await page.route("**/bloom/**/workspace/topRight/*", async (route) => {

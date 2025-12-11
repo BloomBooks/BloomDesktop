@@ -47,7 +47,6 @@ namespace Bloom.Workspace
 			this._publishTab = new Messir.Windows.Forms.TabStripButton();
 			this._toolStrip = new System.Windows.Forms.ToolStrip();
 			this._uiLanguageMenu = new System.Windows.Forms.ToolStripDropDownButton();
-			this._helpMenu = new System.Windows.Forms.ToolStripDropDownButton();
 			this._documentationMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._bloomDocsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._trainingVideosMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -174,8 +173,7 @@ namespace Bloom.Workspace
 			this._toolStrip.GripMargin = new System.Windows.Forms.Padding(0);
 			this._toolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
 			this._toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-			this._uiLanguageMenu,
-			this._helpMenu});
+			this._uiLanguageMenu});
 			this._L10NSharpExtender.SetLocalizableToolTip(this._toolStrip, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._toolStrip, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._toolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
@@ -199,36 +197,6 @@ namespace Bloom.Workspace
 			this._uiLanguageMenu.Name = "_uiLanguageMenu";
 			this._uiLanguageMenu.Size = new System.Drawing.Size(56, 19);
 			this._uiLanguageMenu.Text = "English";
-			//
-			// _helpMenu
-			//
-			this._helpMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-			this._documentationMenuItem,
-			this._bloomDocsMenuItem,
-			this._trainingVideosMenuItem,
-			this.buildingReaderTemplatesMenuItem,
-			this.usingReaderTemplatesMenuItem,
-			this.toolStripSeparator1,
-			this._askAQuestionMenuItem,
-			this._requestAFeatureMenuItem,
-			this._reportAProblemMenuItem,
-			this._divider1,
-			this._releaseNotesMenuItem,
-			this._checkForNewVersionMenuItem,
-			this._registrationMenuItem,
-			this._divider2,
-			this._webSiteMenuItem,
-			this._aboutBloomMenuItem});
-			this._helpMenu.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
-			this._helpMenu.Image = global::Bloom.Properties.Resources.help16x16Darker;
-			this._helpMenu.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-			this._helpMenu.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._helpMenu, "Get Help");
-			this._L10NSharpExtender.SetLocalizationComment(this._helpMenu, null);
-			this._L10NSharpExtender.SetLocalizingId(this._helpMenu, "HelpMenu.Help Menu");
-			this._helpMenu.Name = "_helpMenu";
-			this._helpMenu.Size = new System.Drawing.Size(56, 20);
-			this._helpMenu.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			//
 			// _documentationMenuItem
 			//
@@ -467,7 +435,6 @@ namespace Bloom.Workspace
 		private System.Windows.Forms.Timer _applicationUpdateCheckTimer;
 		private System.Windows.Forms.ToolStrip _toolStrip;
 		private System.Windows.Forms.ToolStripDropDownButton _uiLanguageMenu;
-		private System.Windows.Forms.ToolStripDropDownButton _helpMenu;
 		private System.Windows.Forms.ToolStripMenuItem _documentationMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _trainingVideosMenuItem;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
