@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { get, postJson } from "../../../utils/bloomApi";
 import WebSocketManager from "../../../utils/WebSocketManager";
 import { lightTheme } from "../../../bloomMaterialUITheme";
-import { ThemeProvider } from "@mui/material/styles";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { WireUpForWinforms } from "../../../utils/WireUpWinform";
 import { StyledEngineProvider, CssBaseline } from "@mui/material";
 import { ZoomControl } from "./ZoomControl";
@@ -29,6 +29,25 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
 > = (props) => {
     const [state, setState] = useState<TopRightState | undefined>(undefined);
     const anchorRef = React.useRef<HTMLDivElement | null>(null);
+    const menuTheme = React.useMemo(
+        () =>
+            createTheme(lightTheme, {
+                components: {
+                    // Get default text color (almost black) -- rather than Bloom blue
+                    MuiButton: {
+                        styleOverrides: {
+                            root: {
+                                color: "inherit",
+                            },
+                            text: {
+                                color: "inherit",
+                            },
+                        },
+                    },
+                },
+            }),
+        [],
+    );
 
     const refreshState = React.useCallback(() => {
         if (props.skipApi && props.initialState) {
@@ -96,38 +115,34 @@ export const WorkspaceTopRightControls: React.FunctionComponent<
     }
 
     return (
-        <StyledEngineProvider injectFirst>
-            <ThemeProvider theme={lightTheme}>
-                {/* CssBaseline injects MUI's base styles (it sets html/body to the theme typography,
+        <ThemeProvider theme={menuTheme}>
+            {/* CssBaseline injects MUI's base styles (it sets html/body to the theme typography,
                 normalizes margins, etc.). Without it, the browser keeps default fonts and spacing,
                 so our theme's font family/size and resets never reach this control. */}
-                <CssBaseline />
-                <div
-                    ref={anchorRef}
-                    css={css`
-                        display: flex;
-                        flex-direction: column;
-                        align-items: end;
-                    `}
-                >
-                    <UiLanguageMenu
-                        text={state.uiLanguageLabel}
-                        onOpen={requestLanguageMenu}
+            <CssBaseline />
+            <div
+                ref={anchorRef}
+                css={css`
+                    display: flex;
+                    flex-direction: column;
+                    align-items: end;
+                `}
+            >
+                <UiLanguageMenu
+                    text={state.uiLanguageLabel}
+                    onOpen={requestLanguageMenu}
+                />
+                <HelpMenu onOpen={requestHelpMenu} />
+                {state.zoomEnabled && (
+                    <ZoomControl
+                        zoom={state.zoom}
+                        minZoom={state.minZoom}
+                        maxZoom={state.maxZoom}
+                        onZoomChange={changeZoom}
                     />
-
-                    <HelpMenu onOpen={requestHelpMenu} />
-
-                    {state.zoomEnabled && (
-                        <ZoomControl
-                            zoom={state.zoom}
-                            minZoom={state.minZoom}
-                            maxZoom={state.maxZoom}
-                            onZoomChange={changeZoom}
-                        />
-                    )}
-                </div>
-            </ThemeProvider>
-        </StyledEngineProvider>
+                )}
+            </div>
+        </ThemeProvider>
     );
 };
 
