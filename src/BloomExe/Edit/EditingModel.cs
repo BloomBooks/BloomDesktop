@@ -18,6 +18,7 @@ using Bloom.MiscUI;
 using Bloom.SafeXml;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Utils;
+using Bloom.web;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
@@ -1350,7 +1351,13 @@ namespace Bloom.Edit
         public HtmlDom GetXmlDocumentForEditScreenWebPage()
         {
             var path = FileLocationUtilities.GetFileDistributedWithApplication(
-                Path.Combine(BloomFileLocator.BrowserRoot, "bookEdit", "EditViewFrame.html")
+                Path.Combine(
+                    BloomFileLocator.BrowserRoot,
+                    "bookEdit",
+                    ReactControl.ShouldUseViteDev()
+                        ? "EditViewFrame.vite-dev.html"
+                        : "EditViewFrame.html"
+                )
             );
             // {simulatedPageFileInBookFolder} is placed in the template file where we want the source file for the 'page' iframe.
             // We don't really make a file for the page, the contents are just saved in our local server.
