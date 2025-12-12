@@ -142,8 +142,8 @@ namespace Bloom.TeamCollection
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                "teamCollection/topBarStatus",
-                HandleTopBarStatus,
+                "teamCollection/tcStatus",
+                HandleTeamCollectionStatus,
                 false
             );
             apiHandler.RegisterEndpointHandler(
@@ -212,9 +212,9 @@ namespace Bloom.TeamCollection
             };
         }
 
-        private void HandleTopBarStatus(ApiRequest request)
+        private void HandleTeamCollectionStatus(ApiRequest request)
         {
-            request.ReplyWithJson(GetTopBarStatus());
+            request.ReplyWithEnum(_tcManager?.CollectionStatus ?? TeamCollectionStatus.None);
         }
 
         private void HandleForceUnlock(ApiRequest request)

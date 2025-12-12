@@ -329,11 +329,6 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 	</ItemGroup>
 	<ItemGroup>
 		<Content Include="bloom.ico" />
-		<None Include="Resources\Disconnected.png" />
-		<None Include="Resources\TC Button Grey Small Team.png" />
-		<None Include="Resources\TC Button Warning.png" />
-		<None Include="Resources\TC Button Updates Available.png" />
-		<None Include="Resources\Team32x32.png" />
 		<None Include="Resources\help16x16Darker.png" />
 		<None Include="Resources\sad16x16.png" />
 		<None Include="Resources\weblink.png" />

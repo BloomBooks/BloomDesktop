@@ -4,78 +4,37 @@ import { useEffect, useMemo, useState } from "react";
 import { TopBarButton } from "../../TopBarButton";
 import { get, getBloomApiPrefix, post } from "../../../utils/bloomApi";
 import { WireUpForWinforms } from "../../../utils/WireUpWinform";
-import {
-    useSubscribeToWebSocketForObject,
-    useSubscribeToWebSocketForStringMessage,
-} from "../../../utils/WebSocketManager";
+import { useSubscribeToWebSocketForStringMessage } from "../../../utils/WebSocketManager";
 import {
     kBloomBlue,
     kBloomYellow,
-    kWarningColor,
     lightTheme,
 } from "../../../bloomMaterialUITheme";
 import { kBloomGray } from "../../../utils/colorUtils";
 const bloomApiPrefix = getBloomApiPrefix(false);
 
-const teamCollectionIcon = `${bloomApiPrefix}images/Team32x32.png`;
-const attentionIcon = `${bloomApiPrefix}images/Attention.svg`;
-const disconnectedIcon = `${bloomApiPrefix}images/Disconnected.svg`;
-const openCreateCollectionIcon = `${bloomApiPrefix}images/OpenCreateCollection24x24.png`;
-const settingsIcon = `${bloomApiPrefix}images/settings24x24.png`;
+const kOpenCreateCollectionIcon = `${bloomApiPrefix}images/OpenCreateCollection24x24.png`;
+const kSettingsIcon = `${bloomApiPrefix}images/settings24x24.png`;
 
-export type TeamCollectionStatus =
+type TeamCollectionStatus =
+    | "None"
     | "Nominal"
     | "NewStuff"
     | "Error"
     | "ClobberPending"
-    | "Disconnected"
-    | "None";
-
-export interface ITeamCollectionTopBarStatus {
-    status: TeamCollectionStatus;
-    showReloadButton: boolean;
-}
-
-const defaultTeamCollectionStatus: ITeamCollectionTopBarStatus = {
-    status: "None",
-    showReloadButton: false,
-};
-
-const statusBadgeColors: Partial<Record<TeamCollectionStatus, string>> = {
-    NewStuff: kBloomBlue,
-    Disconnected: kBloomYellow,
-    Error: kWarningColor,
-    ClobberPending: kWarningColor,
-};
-
-const statusLabels: Partial<Record<TeamCollectionStatus, string>> = {
-    NewStuff: "Updates Available",
-    Disconnected: "Disconnected",
-    Error: "Problems Encountered",
-    ClobberPending: "Needs Attention",
-};
-
-const statusIcons: Record<TeamCollectionStatus, string> = {
-    Nominal: teamCollectionIcon,
-    NewStuff: attentionIcon,
-    Error: attentionIcon,
-    ClobberPending: attentionIcon,
-    Disconnected: disconnectedIcon,
-    None: teamCollectionIcon,
-};
+    | "Disconnected";
 
 const mainButtonBackground = kBloomBlue;
 const mainButtonTextColor = "rgb(60, 60, 60)";
 
 export const CollectionTopBarControls: React.FunctionComponent = () => {
-    const [teamCollectionStatus, setTeamCollectionStatus] = useState(
-        defaultTeamCollectionStatus,
-    );
+    const [teamCollectionStatus, setTeamCollectionStatus] =
+        useState<TeamCollectionStatus>("None");
     const [_l10nVersion, setL10nVersion] = useState(0);
 
     useEffect(() => {
-        get("teamCollection/topBarStatus", (result) => {
-            setTeamCollectionStatus(result.data as ITeamCollectionTopBarStatus);
+        get("teamCollection/tcStatus", (result) => {
+            setTeamCollectionStatus(result.data as TeamCollectionStatus);
         });
     }, []);
 
@@ -83,20 +42,13 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
         setL10nVersion((current) => current + 1);
     });
 
-    useSubscribeToWebSocketForObject<ITeamCollectionTopBarStatus>(
+    useSubscribeToWebSocketForStringMessage(
         "collectionTopBar",
         "teamCollectionStatus",
-        (results) => {
-            setTeamCollectionStatus({
-                status: results.status,
-                showReloadButton: results.showReloadButton,
-            });
+        (status) => {
+            setTeamCollectionStatus(status as TeamCollectionStatus);
         },
     );
-
-    const handleTeamCollectionClick = React.useCallback(() => {
-        post("teamCollection/showStatusDialog");
-    }, []);
 
     const handleLegacySettingsClick = React.useCallback(() => {
         post("workspace/legacySettings");
@@ -116,7 +68,7 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
                 `}
             >
                 <TopBarButton
-                    iconPath={settingsIcon}
+                    iconPath={kSettingsIcon}
                     labelL10nKey="CollectionTab.SettingsButton"
                     labelEnglish="Settings"
                     onClick={handleLegacySettingsClick}
@@ -124,7 +76,7 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
                     textColor={mainButtonTextColor}
                 />
                 <TopBarButton
-                    iconPath={openCreateCollectionIcon}
+                    iconPath={kOpenCreateCollectionIcon}
                     labelL10nKey="CollectionTab.Open/CreateCollectionButton"
                     labelEnglish="Other Collection"
                     onClick={handleOpenOrCreateClick}
@@ -143,16 +95,9 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
-                    /* padding: 6px 10px; */
-                    /* height: 66px; */
-                    /* box-sizing: border-box; */
-                    /* background-color: green; */
                 `}
             >
-                <TeamCollectionButton
-                    status={teamCollectionStatus}
-                    onClick={handleTeamCollectionClick}
-                />
+                <TeamCollectionButton status={teamCollectionStatus} />
                 {rightSideButtons}
             </div>
         </ThemeProvider>
@@ -160,17 +105,49 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
 };
 
 const TeamCollectionButton: React.FunctionComponent<{
-    status: ITeamCollectionTopBarStatus;
-    onClick: () => void;
+    status: TeamCollectionStatus;
 }> = (props) => {
-    if (props.status.status === "None") {
+    const handleTeamCollectionClick = React.useCallback(() => {
+        post("teamCollection/showStatusDialog");
+    }, []);
+
+    if (props.status === "None") {
         return <div />;
     }
 
-    const badgeColor = statusBadgeColors[props.status.status];
-    const statusLabel = statusLabels[props.status.status];
-    const iconPath = statusIcons[props.status.status];
+    const kTeamCollectionIcon = `${bloomApiPrefix}images/Team32x32.png`;
+    const kNewStuffIcon = `${bloomApiPrefix}images/TC Button Updates Available.png`;
+    const kDisconnectedIcon = `${bloomApiPrefix}images/Disconnected.svg`;
+    const kWarningIcon = `${bloomApiPrefix}images/TC Button Warning.png`;
+    const kSmallTcIcon = `${bloomApiPrefix}images/TC Button Grey Small Team.png`;
 
+    const statusBadgeColors: Partial<Record<TeamCollectionStatus, string>> = {
+        Nominal: "white",
+        NewStuff: "rgb(88, 210, 85)",
+        Disconnected: kBloomYellow,
+        Error: kBloomYellow,
+        ClobberPending: kBloomYellow,
+    };
+
+    const statusLabels: Partial<Record<TeamCollectionStatus, string>> = {
+        Nominal: "Team Collection",
+        NewStuff: "Updates Available",
+        Disconnected: "Disconnected",
+        Error: "Problems Encountered",
+        ClobberPending: "Problems Encountered",
+    };
+
+    const statusIcons: Partial<Record<TeamCollectionStatus, string>> = {
+        Nominal: kTeamCollectionIcon,
+        NewStuff: kNewStuffIcon,
+        Disconnected: kDisconnectedIcon,
+        Error: kWarningIcon,
+        ClobberPending: kWarningIcon,
+    };
+
+    const badgeColor = statusBadgeColors[props.status] || "white";
+    const statusLabel = statusLabels[props.status] || "Team Collection";
+    const iconPath = statusIcons[props.status] || kTeamCollectionIcon;
     return (
         <div
             css={css`
@@ -186,49 +163,32 @@ const TeamCollectionButton: React.FunctionComponent<{
                     display: inline-block;
                 `}
             >
-                {badgeColor && (
-                    <div
+                {props.status !== "Nominal" && (
+                    <img
+                        src={kSmallTcIcon}
                         css={css`
                             position: absolute;
-                            top: 6px;
-                            right: 6px;
-                            width: 10px;
-                            height: 10px;
-                            border-radius: 50%;
-                            background-color: ${badgeColor};
-                            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+                            top: 8px;
+                            left: 8px;
+                            width: 16px;
                         `}
                     />
                 )}
                 <TopBarButton
                     iconPath={iconPath}
-                    labelL10nKey="TeamCollection.TeamCollection"
-                    labelEnglish="Team Collection"
-                    onClick={props.onClick}
+                    labelL10nKey=""
+                    labelEnglish={statusLabel}
+                    onClick={handleTeamCollectionClick}
                     backgroundColor={kBloomGray}
-                    textColor={"white"}
+                    textColor={badgeColor}
                     cssOverrides={css`
                         border-radius: 8px;
                         grid-template-rows: 34px auto;
-                        padding: 10px 8px 6px;
+                        padding-left: 12px;
+                        padding-right: 12px;
                     `}
                 />
             </div>
-            {statusLabel && (
-                <div
-                    css={css`
-                        font-size: 11px;
-                        line-height: 14px;
-                        color: "green";
-                        background-color: ${kBloomGray};
-                        padding: 2px 8px;
-                        border-radius: 12px;
-                        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
-                    `}
-                >
-                    {statusLabel}
-                </div>
-            )}
         </div>
     );
 };

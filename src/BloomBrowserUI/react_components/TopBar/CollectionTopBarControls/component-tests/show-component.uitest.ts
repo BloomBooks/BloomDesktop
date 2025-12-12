@@ -8,21 +8,14 @@ import { Page, test } from "../../../component-tester/playwrightTest";
 const includeManualTests = process.env.PLAYWRIGHT_INCLUDE_MANUAL === "1";
 const manualDescribe = includeManualTests ? test.describe : test.describe.skip;
 
-const routeTopBarStatus = async (
-    page: Page,
-    status: string,
-    showReloadButton: boolean = false,
-) => {
+const routeTopBarStatus = async (page: Page, status: string) => {
     await page.route("**/*", (route) => {
         const url = route.request().url();
-        if (url.includes("teamCollection/topBarStatus")) {
+        if (url.includes("teamCollection/tcStatus")) {
             return route.fulfill({
                 status: 200,
                 contentType: "application/json",
-                body: JSON.stringify({
-                    status,
-                    showReloadButton,
-                }),
+                body: status,
             });
         }
         return route.continue();
@@ -33,7 +26,7 @@ manualDescribe("Manual Interactive Testing", () => {
     test("default", async ({ page }) => {
         test.setTimeout(0);
 
-        await routeTopBarStatus(page, "Nominal", true);
+        await routeTopBarStatus(page, "Nominal");
 
         await page.goto("/?component=CollectionTopBarControls");
 
@@ -43,7 +36,7 @@ manualDescribe("Manual Interactive Testing", () => {
     test("new-stuff", async ({ page }) => {
         test.setTimeout(0);
 
-        await routeTopBarStatus(page, "NewStuff", true);
+        await routeTopBarStatus(page, "NewStuff");
 
         await page.goto("/?component=CollectionTopBarControls");
 
@@ -53,17 +46,7 @@ manualDescribe("Manual Interactive Testing", () => {
     test("error", async ({ page }) => {
         test.setTimeout(0);
 
-        await routeTopBarStatus(page, "Error", true);
-
-        await page.goto("/?component=CollectionTopBarControls");
-
-        await page.waitForEvent("close");
-    });
-
-    test("clobber-pending", async ({ page }) => {
-        test.setTimeout(0);
-
-        await routeTopBarStatus(page, "ClobberPending", true);
+        await routeTopBarStatus(page, "Error");
 
         await page.goto("/?component=CollectionTopBarControls");
 
@@ -73,7 +56,7 @@ manualDescribe("Manual Interactive Testing", () => {
     test("disconnected", async ({ page }) => {
         test.setTimeout(0);
 
-        await routeTopBarStatus(page, "Disconnected", false);
+        await routeTopBarStatus(page, "Disconnected");
 
         await page.goto("/?component=CollectionTopBarControls");
 
@@ -83,7 +66,7 @@ manualDescribe("Manual Interactive Testing", () => {
     test("none", async ({ page }) => {
         test.setTimeout(0);
 
-        await routeTopBarStatus(page, "None", false);
+        await routeTopBarStatus(page, "None");
 
         await page.goto("/?component=CollectionTopBarControls");
 
