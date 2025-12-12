@@ -23,15 +23,6 @@ using SIL.Reporting;
 
 namespace Bloom.TeamCollection
 {
-    public class TeamCollectionTopBarStatus
-    {
-        [JsonProperty("status")]
-        public string Status { get; set; }
-
-        [JsonProperty("showReloadButton")]
-        public bool ShowReloadButton { get; set; }
-    }
-
     // Implements functions used by the HTML/Typescript parts of the Team Collection code.
     // Review: should this be in web/controllers with all the other API classes, or here with all the other sharing code?
     public class TeamCollectionApi
@@ -200,17 +191,6 @@ namespace Bloom.TeamCollection
             return _tcManager.MessageLog.Messages.Any(m => m.Important);
         }
 
-        public TeamCollectionTopBarStatus GetTopBarStatus()
-        {
-            var status = _tcManager?.CollectionStatus ?? TeamCollectionStatus.None;
-            var showReloadButton = _tcManager?.MessageLog?.ShouldShowReloadButton ?? false;
-            return new TeamCollectionTopBarStatus
-            {
-                Status = status.ToString(),
-                ShowReloadButton = showReloadButton,
-            };
-        }
-
         private void HandleTeamCollectionStatus(ApiRequest request)
         {
             request.ReplyWithEnum(_tcManager?.CollectionStatus ?? TeamCollectionStatus.None);
@@ -272,9 +252,8 @@ namespace Bloom.TeamCollection
 
         private void HandleShowStatusDialog(ApiRequest request)
         {
-            var status = GetTopBarStatus();
             dynamic messageBundle = new DynamicJson();
-            messageBundle.showReloadButton = status.ShowReloadButton;
+            messageBundle.showReloadButton = _tcManager.MessageLog.ShouldShowReloadButton;
             _socketServer.LaunchDialog("TeamCollectionDialog", messageBundle);
             _tcManager.CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(
                 MessageAndMilestoneType.LogDisplayed
