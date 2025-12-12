@@ -9,6 +9,33 @@ const includeManualTests = process.env.PLAYWRIGHT_INCLUDE_MANUAL === "1";
 const manualDescribe = includeManualTests ? test.describe : test.describe.skip;
 
 manualDescribe("Manual Interactive Testing", () => {
+    test("default", async ({ page }) => {
+        test.setTimeout(0);
+
+        await page.route("**/bloom/api/teamCollection/topBarStatus", (route) =>
+            route.fulfill({
+                status: 200,
+                contentType: "application/json",
+                body: JSON.stringify({
+                    status: "Nominal",
+                    showReloadButton: true,
+                }),
+            }),
+        );
+
+        await page.route("**/bloom/api/**", (route) =>
+            route.fulfill({
+                status: 200,
+                contentType: "application/json",
+                body: "{}",
+            }),
+        );
+
+        await page.goto("/?component=CollectionTopBarControls");
+
+        await page.waitForEvent("close");
+    });
+
     test("with-bloom-backend", async ({ page }) => {
         test.setTimeout(0);
 
