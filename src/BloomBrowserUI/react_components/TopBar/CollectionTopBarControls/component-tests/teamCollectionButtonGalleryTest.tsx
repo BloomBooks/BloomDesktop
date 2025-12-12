@@ -3,7 +3,7 @@ import * as React from "react";
 import {
     TeamCollectionButton,
     TeamCollectionStatus,
-} from "../CollectionTopBarControls";
+} from "../TeamCollectionButton";
 import { kBloomBlue, lightTheme } from "../../../../bloomMaterialUITheme";
 
 export const TeamCollectionButtonGalleryTest: React.FunctionComponent = () => {
