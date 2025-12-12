@@ -1,21 +1,18 @@
-html
-	head
-		meta(charset='UTF-8')
-		title Content of the Toolbox view (far right pane in book edit)
-		link(rel='stylesheet', href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css')
-		link(rel='stylesheet', href='/bloom/bookEdit/html/font-awesome/css/font-awesome.min.css')
-		link(rel='stylesheet', href='/bloom/bookEdit/toolbox/toolbox.css')
-		link(rel='stylesheet', href='/bloom/bookEdit/toolbox/readerTools.css')
-		link(rel='stylesheet', href='/bloom/bookEdit/toolbox/talkingBook/audioRecording.css')
-		link(rel='stylesheet', href='/bloom/bookEdit/toolbox/motion/motion.css')
-		link(rel='stylesheet', href='/bloom/bookEdit/toolbox/music/music.css')
-		link(rel='stylesheet', href='/bloom/bookEdit/css/rc-slider-bloom.css')
-		link(rel='stylesheet', href='/bloom/lib/jquery.qtip.css')
-		link(rel='stylesheet', href='/bloom/writingSystemDisplayForUI.css')
+extends toolbox.mixins.pug
 
-		//reviewslog: since we only access the ckeditor on the page, we should be able to reference that one, not addd one to this iframe script(src='/bloom/lib/ckeditor/ckeditor.js')
-		script(src='/bloom/toolboxBundle.js' type='module')
+block headContent
+	meta(charset='UTF-8')
+	title Content of the Toolbox view (far right pane in book edit)
+	link(rel='stylesheet', href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css')
+	link(rel='stylesheet', href='/bloom/bookEdit/html/font-awesome/css/font-awesome.min.css')
+	link(rel='stylesheet', href='/bloom/bookEdit/toolbox/toolbox.css')
+	link(rel='stylesheet', href='/bloom/bookEdit/toolbox/readerTools.css')
+	link(rel='stylesheet', href='/bloom/bookEdit/toolbox/talkingBook/audioRecording.css')
+	link(rel='stylesheet', href='/bloom/bookEdit/toolbox/motion/motion.css')
+	link(rel='stylesheet', href='/bloom/bookEdit/toolbox/music/music.css')
+	link(rel='stylesheet', href='/bloom/bookEdit/css/rc-slider-bloom.css')
+	link(rel='stylesheet', href='/bloom/lib/jquery.qtip.css')
+	link(rel='stylesheet', href='/bloom/writingSystemDisplayForUI.css')
 
-	body
-		.toolboxRoot
-			#toolbox
+	//reviewslog: since we only access the ckeditor on the page, we should be able to reference that one, not addd one to this iframe script(src='/bloom/lib/ckeditor/ckeditor.js')
+	script(src='/bloom/toolboxBundle.js' type='module')

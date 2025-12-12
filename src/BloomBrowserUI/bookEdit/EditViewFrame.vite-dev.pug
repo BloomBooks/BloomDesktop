@@ -1,89 +1,48 @@
-doctype html
-html
-	head
-		meta(charset='utf-8')
-		link(rel='stylesheet', href='/bloom/lib/pure-drawer.css', type='text/css')
-		//- This bit of 'magic' is needed to get React Fast Refresh working with Vite Dev.
-		script(type='module').
-			import RefreshRuntime from "http://localhost:5173/@react-refresh";
-			RefreshRuntime.injectIntoGlobalHook(window);
-			//- Avoiding arrow functions here because our HTML to XML converter mangles wedge characters
-			window.$RefreshReg$ = function () {};
-			window.$RefreshSig$ = function () {return function (type) {return type;};};
-			window.__vite_plugin_react_preamble_installed__ = true;
-		script(type='module' src='http://localhost:5173/@vite/client')
-		style.
-			html, body, #left, #right { margin: 0; padding: 0; border: 0 none; height:100%}
-			iframe { border: 0 none;} /* apparently Gecko gives this a default 2 px wide. */
-			body, .pure-pusher { overflow:hidden }
-			#left { width:100%; box-sizing: border-box;}
-			div#pusherContainer { padding-right: 35px;height: 100%;}
-			/* These rules achieve a change in the width of the frame I added just inside the pure-pusher
-			(the main content of the pure-drawer system) when the check-box is checked. The second line
-			gives it more padding (to leave room for the toolbox) when the pure pusher container is
-			a sibling of the checked pure-toggle input. The first line makes it change smoothly
-			when the check box is clicked.
-			There's probably a more elegant way of making this a new 'effect' option for pure-drawer
-			but I wanted to keep the changes to that as simple as possible.
-			Padding works better than margin because it keeps the area 'under' the toolbox dark
-			so it is less noticeable when the two animations are not perfectly in sync.
-			*/
-			[data-effect='pure-effect-slide'] div#pusherContainer {transition-duration: 500ms;}
-			.pure-toggle[data-toggle='right']:checked ~ .pure-pusher-container div#pusherContainer { padding-right: 200px;}
-	body
-		//.
-			All the pure- stuff here is the required framework for pure-drawer to make the toolbox appear and disappear
-			based on the litle control in the top right. Note particularly that C# code is aware of the pure-toggle-right input,
-			and it has to come first because various css rules depend on things being a following-sibling.
-		div.pure-container(data-effect="pure-effect-slide")
-			input.pure-toggle(type="checkbox" id="pure-toggle-right" data-toggle="right")
-			label.pure-toggle-label(for="pure-toggle-right" data-toggle-label="right")
-				span.pure-toggle-icon
-			nav.pure-drawer(data-position="right")
-				#right
-					iframe#toolbox(width='100%', height='100%', src='/bloom/toolboxContent') .
-						| Your browser does not support iframes.
-			div.pure-pusher-container
-				div.pure-pusher
-					#pusherContainer
-						#left
-							div(style='width:200px; height:100%; display:inline-block; box-sizing: border-box;')
-								iframe#pageList(width='100%', height='100%', src='{simulatedPageListFile}') .
-									| Your browser does not support iframes.
-							div(style='width:calc(100% - 205px); padding-left: 5px; height:100%; display:inline-block; box-sizing: border-box;')
-								iframe#page(width='100%', height='100%', src='{simulatedPageFileInBookFolder}') .
-									| Your browser does not support iframes.
-				label.pure-overlay(for="pure-toggle-right" data-overlay="right")
-		div#modal-dialog-container
-		script(type='module').
-			async function main() {
-			try {
-			//- Assign globals expected by legacy libs.
-			const jQuery = (await import('http://localhost:5173/@id/jquery')).default;
-			// Some builds export default, others export the function itself. Normalize.
-			const jq = jQuery?.fn ? jQuery : (jQuery?.default ? jQuery.default : jQuery);
-			window.$ = jq;
-			window.jQuery = jq;
-			console.log('jQuery ready via Vite prebundle (EditViewFrame)');
+extends EditViewFrame.mixins.pug
 
-			const jQueryUI = await import('http://localhost:5173/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js');
-			console.log('jQuery UI ready via Vite (EditViewFrame)');
+block headContent
+	meta(charset='utf-8')
+	link(rel='stylesheet', href='/bloom/lib/pure-drawer.css', type='text/css')
+	//- This bit of 'magic' is needed to get React Fast Refresh working with Vite Dev.
+	script(type='module').
+		import RefreshRuntime from "http://localhost:5173/@react-refresh";
+		RefreshRuntime.injectIntoGlobalHook(window);
+		//- Avoiding arrow functions here because our HTML to XML converter mangles wedge characters
+		window.$RefreshReg$ = function () {};
+		window.$RefreshSig$ = function () {return function (type) {return type;};};
+		window.__vite_plugin_react_preamble_installed__ = true;
+	script(type='module' src='http://localhost:5173/@vite/client')
 
-			//- Load CSS files
-			await import("http://localhost:5173/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css");
-			await import("http://localhost:5173/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css");
-			await import("http://localhost:5173/bookEdit/toolbox/toolbox.less");
-			await import("http://localhost:5173/bookEdit/html/font-awesome/css/font-awesome.min.css");
-			await import("http://localhost:5173/bookEdit/css/bloomDialog.less");
-			await import("http://localhost:5173/lib/long-press/longpress.css");
-			await import("/bloom/jquery.min.js"); //needed by longpress
+block endBodyScripts
+	script(type='module').
+		async function main() {
+		try {
+		//- Assign globals expected by legacy libs.
+		const jQuery = (await import('http://localhost:5173/@id/jquery')).default;
+		// Some builds export default, others export the function itself. Normalize.
+		const jq = jQuery?.fn ? jQuery : (jQuery?.default ? jQuery.default : jQuery);
+		window.$ = jq;
+		window.jQuery = jq;
+		console.log('jQuery ready via Vite prebundle (EditViewFrame)');
+
+		const jQueryUI = await import('http://localhost:5173/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js');
+		console.log('jQuery UI ready via Vite (EditViewFrame)');
+
+		//- Load CSS files. Note, the list of files is duplicated in a different format in editViewFrame.pug.
+		await import("http://localhost:5173/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css");
+		await import("http://localhost:5173/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css");
+		await import("http://localhost:5173/bookEdit/toolbox/toolbox.less");
+		await import("http://localhost:5173/bookEdit/html/font-awesome/css/font-awesome.min.css");
+		await import("http://localhost:5173/bookEdit/css/bloomDialog.less");
+		await import("http://localhost:5173/lib/long-press/longpress.css");
+		await import("/bloom/jquery.min.js"); //needed by longpress
 
 
-			// Finally, load the app entry.
-			await import('http://localhost:5173/bookEdit/editViewFrame.ts');
-			} catch (e) {
-			console.error('Failed to initialize Vite dev EditViewFrame:', e);
-			}
-			}
+		// Finally, load the app entry.
+		await import('http://localhost:5173/bookEdit/editViewFrame.ts');
+		} catch (e) {
+		console.error('Failed to initialize Vite dev EditViewFrame:', e);
+		}
+		}
 
-			main();
+		main();
