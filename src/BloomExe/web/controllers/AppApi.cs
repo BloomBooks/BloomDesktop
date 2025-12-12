@@ -9,6 +9,7 @@ using Bloom.ToPalaso;
 using Bloom.web;
 using Bloom.Workspace;
 using SIL.IO;
+using SIL.Windows.Forms.SettingProtection;
 
 namespace Bloom.Api
 {
@@ -127,6 +128,13 @@ namespace Bloom.Api
                     request.PostSucceeded();
                 },
                 true
+            );
+
+            apiHandler.RegisterBooleanEndpointHandler(
+                kAppUrlPrefix + "settingsProtectionNormallyHidden",
+                request => SettingsProtectionSettings.Default.NormallyHidden,
+                null,
+                false
             );
 
             apiHandler.RegisterEndpointHandler(

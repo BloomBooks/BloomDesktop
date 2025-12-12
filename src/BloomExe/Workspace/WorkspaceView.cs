@@ -623,10 +623,20 @@ namespace Bloom.Workspace
 
         void OnSettingsProtectionChanged(object sender, PropertyChangedEventArgs e)
         {
-            //when we need to use Ctrl+Shift to display stuff, we don't want it also firing up the localization dialog (which shouldn't be done by a user under settings protection anyhow)
+            if (
+                e != null
+                && e.PropertyName != null
+                && e.PropertyName != nameof(SettingsProtectionSettings.NormallyHidden)
+            )
+            {
+                return;
+            }
 
-            // Commented out due to BL-5111
-            //LocalizationManager.EnableClickingOnControlToBringUpLocalizationDialog = !SettingsProtectionSettings.Default.NormallyHidden;
+            _webSocketServer.SendString(
+                "app",
+                "settingsProtectionNormallyHidden",
+                SettingsProtectionSettings.Default.NormallyHidden ? "true" : "false"
+            );
         }
 
         ToolStripMenuItem _showAllTranslationsItem;

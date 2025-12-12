@@ -2,7 +2,13 @@ import { css, ThemeProvider } from "@emotion/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { TopBarButton } from "../../TopBarButton";
-import { get, getBloomApiPrefix, post } from "../../../utils/bloomApi";
+import {
+    get,
+    getBloomApiPrefix,
+    post,
+    useApiBoolean,
+    useWatchBooleanEvent,
+} from "../../../utils/bloomApi";
 import { WireUpForWinforms } from "../../../utils/WireUpWinform";
 import { useSubscribeToWebSocketForStringMessage } from "../../../utils/WebSocketManager";
 import {
@@ -28,20 +34,18 @@ const mainButtonBackground = kBloomBlue;
 const mainButtonTextColor = "rgb(60, 60, 60)";
 
 export const CollectionTopBarControls: React.FunctionComponent = () => {
+    const [l10nVersion, setL10nVersion] = useState(0);
+    useSubscribeToWebSocketForStringMessage("app", "uiLanguageChanged", () => {
+        setL10nVersion((current) => current + 1);
+    });
+
     const [teamCollectionStatus, setTeamCollectionStatus] =
         useState<TeamCollectionStatus>("None");
-    const [l10nVersion, setL10nVersion] = useState(0);
-
     useEffect(() => {
         get("teamCollection/tcStatus", (result) => {
             setTeamCollectionStatus(result.data as TeamCollectionStatus);
         });
     }, []);
-
-    useSubscribeToWebSocketForStringMessage("app", "uiLanguageChanged", () => {
-        setL10nVersion((current) => current + 1);
-    });
-
     useSubscribeToWebSocketForStringMessage(
         "collectionTopBar",
         "teamCollectionStatus",
@@ -49,6 +53,28 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
             setTeamCollectionStatus(status as TeamCollectionStatus);
         },
     );
+
+    const [hideForSettingsProtection, setHideForSettingsProtection] =
+        useApiBoolean("app/settingsProtectionNormallyHidden", false);
+    useSubscribeToWebSocketForStringMessage(
+        "app",
+        "settingsProtectionNormallyHidden",
+        (settingsProtectionNormallyHidden) => {
+            setHideForSettingsProtection(
+                settingsProtectionNormallyHidden === "true",
+            );
+        },
+    );
+
+    // const [
+    //     initialHideForSettingsProtection,
+    //     _setInitialHideForSettingsProtection,
+    // ] = useApiBoolean("app/settingsProtectionNormallyHidden", false);
+    // const hideForSettingsProtection = useWatchBooleanEvent(
+    //     initialHideForSettingsProtection,
+    //     "app",
+    //     "settingsProtectionNormallyHidden",
+    // );
 
     // "legacy" means the winforms one.
     // We have a new CollectionSettingsDialog react component which exists but isn't finished.
@@ -72,30 +98,32 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
                 `}
             >
                 <TeamCollectionButton status={teamCollectionStatus} />
-                <div
-                    css={css`
-                        display: flex;
-                        gap: 10px;
-                        align-items: center;
-                    `}
-                >
-                    <TopBarButton
-                        iconPath={kSettingsIcon}
-                        labelL10nKey="CollectionTab.SettingsButton"
-                        labelEnglish="Settings"
-                        onClick={handleLegacySettingsClick}
-                        backgroundColor={mainButtonBackground}
-                        textColor={mainButtonTextColor}
-                    />
-                    <TopBarButton
-                        iconPath={kOpenCreateCollectionIcon}
-                        labelL10nKey="CollectionTab.Open/CreateCollectionButton"
-                        labelEnglish="Other Collection"
-                        onClick={handleOpenOrCreateClick}
-                        backgroundColor={mainButtonBackground}
-                        textColor={mainButtonTextColor}
-                    />
-                </div>
+                {hideForSettingsProtection || (
+                    <div
+                        css={css`
+                            display: flex;
+                            gap: 10px;
+                            align-items: center;
+                        `}
+                    >
+                        <TopBarButton
+                            iconPath={kSettingsIcon}
+                            labelL10nKey="CollectionTab.SettingsButton"
+                            labelEnglish="Settings"
+                            onClick={handleLegacySettingsClick}
+                            backgroundColor={mainButtonBackground}
+                            textColor={mainButtonTextColor}
+                        />
+                        <TopBarButton
+                            iconPath={kOpenCreateCollectionIcon}
+                            labelL10nKey="CollectionTab.Open/CreateCollectionButton"
+                            labelEnglish="Other Collection"
+                            onClick={handleOpenOrCreateClick}
+                            backgroundColor={mainButtonBackground}
+                            textColor={mainButtonTextColor}
+                        />
+                    </div>
+                )}
             </div>
         </ThemeProvider>
     );
