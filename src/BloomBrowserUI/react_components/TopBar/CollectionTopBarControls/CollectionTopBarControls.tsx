@@ -4,13 +4,17 @@ import { useEffect, useMemo, useState } from "react";
 import { TopBarButton } from "../../TopBarButton";
 import { get, getBloomApiPrefix, post } from "../../../utils/bloomApi";
 import { WireUpForWinforms } from "../../../utils/WireUpWinform";
-import { useSubscribeToWebSocketForObject } from "../../../utils/WebSocketManager";
+import {
+    useSubscribeToWebSocketForObject,
+    useSubscribeToWebSocketForStringMessage,
+} from "../../../utils/WebSocketManager";
 import {
     kBloomBlue,
     kBloomYellow,
     kWarningColor,
     lightTheme,
 } from "../../../bloomMaterialUITheme";
+import { kBloomGray } from "../../../utils/colorUtils";
 const bloomApiPrefix = getBloomApiPrefix(false);
 
 const teamCollectionIcon = `${bloomApiPrefix}images/Team32x32.png`;
@@ -67,12 +71,17 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
     const [teamCollectionStatus, setTeamCollectionStatus] = useState(
         defaultTeamCollectionStatus,
     );
+    const [_l10nVersion, setL10nVersion] = useState(0);
 
     useEffect(() => {
         get("teamCollection/topBarStatus", (result) => {
             setTeamCollectionStatus(result.data as ITeamCollectionTopBarStatus);
         });
     }, []);
+
+    useSubscribeToWebSocketForStringMessage("app", "uiLanguageChanged", () => {
+        setL10nVersion((current) => current + 1);
+    });
 
     useSubscribeToWebSocketForObject<ITeamCollectionTopBarStatus>(
         "collectionTopBar",
@@ -134,10 +143,10 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
-                    padding: 6px 10px;
-                    height: 66px;
-                    box-sizing: border-box;
-                    background-color: transparent;
+                    /* padding: 6px 10px; */
+                    /* height: 66px; */
+                    /* box-sizing: border-box; */
+                    /* background-color: green; */
                 `}
             >
                 <TeamCollectionButton
@@ -196,8 +205,13 @@ const TeamCollectionButton: React.FunctionComponent<{
                     labelL10nKey="TeamCollection.TeamCollection"
                     labelEnglish="Team Collection"
                     onClick={props.onClick}
-                    backgroundColor={mainButtonTextColor}
+                    backgroundColor={kBloomGray}
                     textColor={"white"}
+                    cssOverrides={css`
+                        border-radius: 8px;
+                        grid-template-rows: 34px auto;
+                        padding: 10px 8px 6px;
+                    `}
                 />
             </div>
             {statusLabel && (
@@ -205,8 +219,8 @@ const TeamCollectionButton: React.FunctionComponent<{
                     css={css`
                         font-size: 11px;
                         line-height: 14px;
-                        color: "white";
-                        background-color: ${mainButtonTextColor};
+                        color: "green";
+                        background-color: ${kBloomGray};
                         padding: 2px 8px;
                         border-radius: 12px;
                         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
