@@ -1,10 +1,10 @@
-import type { IBloomComponentConfig } from "../../component-tester/componentTypes";
+import type { IBloomComponentConfig } from "../../../component-tester/componentTypes";
 
 type ICollectionTopBarControlsProps = Record<string, never>;
 
 const config: IBloomComponentConfig<ICollectionTopBarControlsProps> = {
     defaultProps: {},
-    modulePath: "../CollectionTopBarControls/CollectionTopBarControls",
+    modulePath: "../TopBar/CollectionTopBarControls/CollectionTopBarControls",
     exportName: "CollectionTopBarControls",
 };
 

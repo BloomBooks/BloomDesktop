@@ -1,16 +1,16 @@
 import { css, ThemeProvider } from "@emotion/react";
 import * as React from "react";
 import { useEffect, useMemo, useState } from "react";
-import { TopBarButton } from "../../react_components/TopBarButton";
-import { get, getBloomApiPrefix, post } from "../../utils/bloomApi";
-import { WireUpForWinforms } from "../../utils/WireUpWinform";
-import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
+import { TopBarButton } from "../../TopBarButton";
+import { get, getBloomApiPrefix, post } from "../../../utils/bloomApi";
+import { WireUpForWinforms } from "../../../utils/WireUpWinform";
+import { useSubscribeToWebSocketForObject } from "../../../utils/WebSocketManager";
 import {
     kBloomBlue,
     kBloomYellow,
     kWarningColor,
     lightTheme,
-} from "../../bloomMaterialUITheme";
+} from "../../../bloomMaterialUITheme";
 const bloomApiPrefix = getBloomApiPrefix(false);
 
 const teamCollectionIcon = `${bloomApiPrefix}images/Team32x32.png`;

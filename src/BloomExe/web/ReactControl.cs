@@ -195,8 +195,8 @@ namespace Bloom.web
                     "/teamCollection/CreateTeamCollection.entry.tsx"
                 },
                 {
-                    "collectionTopBarControlsBundle",
-                    "/collection/topBar/collectionTopBarControls.entry.tsx"
+                    "CollectionTopBarControlsBundle",
+                    "/react_components/TopBar/CollectionTopBarControls/CollectionTopBarControls.entry.tsx"
                 },
                 { "editTopBarControlsBundle", "/bookEdit/topbar/editTopBarControls.entry.tsx" },
                 { "duplicateManyDlgBundle", "/bookEdit/duplicateManyDialog.entry.tsx" },

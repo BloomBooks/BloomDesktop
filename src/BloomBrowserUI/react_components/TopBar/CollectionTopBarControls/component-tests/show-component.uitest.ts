@@ -3,7 +3,7 @@
  * Requires a running Bloom backend (uses live API + websocket traffic).
  * Run with: ./show.sh or ./show.sh with-bloom-backend
  */
-import { test } from "../../component-tester/playwrightTest";
+import { test } from "../../../component-tester/playwrightTest";
 
 const includeManualTests = process.env.PLAYWRIGHT_INCLUDE_MANUAL === "1";
 const manualDescribe = includeManualTests ? test.describe : test.describe.skip;
