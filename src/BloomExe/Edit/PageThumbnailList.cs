@@ -86,11 +86,12 @@ namespace Bloom.Edit
                     _thumbnailInterval = "100";
                 }
             }
+            var useViteDev = ReactControl.ShouldUseViteDev();
             var frame = BloomFileLocator.GetBrowserFile(
                 false,
                 "bookEdit",
                 "pageThumbnailList",
-                "pageThumbnailList.html"
+                useViteDev ? "pageThumbnailList.vite-dev.html" : "pageThumbnailList.html"
             );
             var backColor = MiscUtils.ColorToHtmlCode(Palette.SidePanelBackgroundColor);
             _baseHtml = RobustFile.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);

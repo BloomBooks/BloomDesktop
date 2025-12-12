@@ -21,6 +21,7 @@ using Bloom.Publish;
 using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
 using Bloom.Utils;
+using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
@@ -562,7 +563,30 @@ namespace Bloom.Book
             // first tried this as import 'jquery.hotkeys' in bloomEditing, but that didn't work
             //dom.AddJavascriptFile("jquery.hotkeys.js".ToLocalhost());
 
-            dom.AddJavascriptFile("editablePageBundle.js".ToLocalhost());
+            if (ReactControl.ShouldUseViteDev())
+            {
+                // This bit of magic somehow enables vite dev hot reloading (maybe only for react controls)
+                // I think it needs to come before we load the vite script that is the root of the
+                // bundle in production.
+                HtmlDom.AddInlineScript(
+                    dom.RawDom,
+                    $@"
+                        window.$RefreshSig$ = window.$RefreshSig$ || (function () {{ return function (type) {{ return type; }}; }});
+                        window.$RefreshReg$ = window.$RefreshReg$ || function () {{}};
+                        window.__vite_plugin_react_preamble_installed__ = true;",
+                    true
+                );
+                HtmlDom.AddScriptFile(
+                    dom.RawDom,
+                    "http://localhost:5173/bookEdit/editablePage.ts",
+                    true
+                );
+            }
+            else
+            {
+                dom.AddJavascriptFile("editablePageBundle.js".ToLocalhost());
+            }
+
             // At one point we made a point of adding this last so that other code
             // could get in and set disableAutoInline to prevent ckeditor from attaching itself
             // to things we don't want it to. Could not get this to work after we switched our

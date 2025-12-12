@@ -13,12 +13,12 @@ import { glob } from "glob";
 import react from "@vitejs/plugin-react";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 import * as fs from "fs";
-import pug from "pug";
 import less from "less";
 import MarkdownIt from "markdown-it";
 import markdownItContainer from "markdown-it-container";
 import markdownItAttrs from "markdown-it-attrs";
 import { playwright } from "@vitest/browser-playwright";
+import { compilePugFiles } from "./scripts/compilePug.mjs";
 
 // Custom plugin to compile Pug files to HTML
 // There are a couple of npm packages for pug, but as of October 2025, they are experimental
@@ -31,68 +31,7 @@ function compilePugPlugin(): Plugin {
         name: "compile-pug",
         apply: "build",
         async closeBundle() {
-            // Find pug files in BloomBrowserUI
-            const browserUIPugFiles = glob.sync("./**/*.pug", {
-                ignore: ["**/node_modules/**", "**/*mixins.pug"],
-            });
-
-            // Find pug files in content directory
-            const contentPugFiles = glob.sync("../content/**/*.pug", {
-                ignore: ["**/node_modules/**", "**/*mixins.pug"],
-            });
-
-            const allPugFiles = [...browserUIPugFiles, ...contentPugFiles];
-
-            console.log(
-                `\nCompiling ${allPugFiles.length} Pug files (${browserUIPugFiles.length} from BloomBrowserUI, ${contentPugFiles.length} from content)...`,
-            );
-
-            const outputBase = path.resolve(__dirname, "../../output/browser");
-
-            for (const file of allPugFiles) {
-                // Convert relative path to output path
-                // For BloomBrowserUI: "./bookEdit/toolbox/toolbox.pug" -> "../../output/browser/bookEdit/toolbox/toolbox.html"
-                // For content: "../content/templates/foo.pug" -> "../../output/browser/templates/foo.html"
-
-                // Normalize path separators for comparison
-                const normalizedFile = file.replace(/\\/g, "/");
-
-                let relativePath;
-                if (normalizedFile.startsWith("../content/")) {
-                    // Strip "../content/" prefix for content files
-                    relativePath = normalizedFile
-                        .replace("../content/", "")
-                        .replace(".pug", ".html");
-                } else {
-                    // Strip "./" prefix for BloomBrowserUI files
-                    relativePath = normalizedFile
-                        .replace("./", "")
-                        .replace(".pug", ".html");
-                }
-
-                const outputFile = path.join(outputBase, relativePath);
-                const outputDir = path.dirname(outputFile);
-
-                // Ensure output directory exists
-                if (!fs.existsSync(outputDir)) {
-                    fs.mkdirSync(outputDir, { recursive: true });
-                }
-
-                // Compile pug to HTML
-                // Use the appropriate basedir based on the file location
-                const basedir = normalizedFile.startsWith("../content/")
-                    ? "../content"
-                    : ".";
-                const html = pug.renderFile(file, {
-                    basedir: basedir,
-                    pretty: true,
-                });
-
-                fs.writeFileSync(outputFile, html);
-                console.log(`  ✓ ${file} → ${relativePath}`);
-            }
-
-            console.log(`Pug compilation complete!\n`);
+            await compilePugFiles();
         },
     };
 }

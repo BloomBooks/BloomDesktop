@@ -1,62 +1,20 @@
-doctype html
-html
-	head
-		meta(charset='UTF-8')
-		link(rel='stylesheet', href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css', type='text/css')
-		link(rel='stylesheet', href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css', type='text/css')
-		link(rel='stylesheet', href='/bloom/bookEdit/toolbox/toolbox.css', type='text/css')
-		link(rel='stylesheet', href='/bloom/bookEdit/html/font-awesome/css/font-awesome.min.css', type='text/css')
-		link(rel='stylesheet', href='/bloom/bookEdit/css/bloomDialog.css', type='text/css')
-		link(rel='stylesheet', href='/bloom/lib/pure-drawer.css', type='text/css')
-		link(rel='stylesheet', href='/bloom/lib/long-press/longpress.css', type='text/css')
-		script(src='/bloom/jquery.min.js') //needed by longpress
-		//script(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')
-		//script(src='/bloom/bookEdit/js/jquery.hasAttr.js')
+extends EditViewFrame.mixins.pug
 
-		//script(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')
+block headContent
+	meta(charset='UTF-8')
+	//- The files listed here are duplicated in a different form in EditViewFrame.vite-dev.pug.
+	link(rel='stylesheet', href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css', type='text/css')
+	link(rel='stylesheet', href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css', type='text/css')
+	link(rel='stylesheet', href='/bloom/bookEdit/toolbox/toolbox.css', type='text/css')
+	link(rel='stylesheet', href='/bloom/bookEdit/html/font-awesome/css/font-awesome.min.css', type='text/css')
+	link(rel='stylesheet', href='/bloom/bookEdit/css/bloomDialog.css', type='text/css')
+	link(rel='stylesheet', href='/bloom/lib/pure-drawer.css', type='text/css')
+	link(rel='stylesheet', href='/bloom/lib/long-press/longpress.css', type='text/css')
+	script(src='/bloom/jquery.min.js') //needed by longpress
+	//script(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')
+	//script(src='/bloom/bookEdit/js/jquery.hasAttr.js')
 
-		script(src='/bloom/editTabBundle.js' type='module')
-		script.
-		style.
-			html, body, #left, #right { margin: 0; padding: 0; border: 0 none; height:100%}
-			iframe { border: 0 none;} /* apparently Gecko gives this a default 2 px wide. */
-			body, .pure-pusher { overflow:hidden }
-			#left { width:100%; box-sizing: border-box;}
-			div#pusherContainer { padding-right: 35px;height: 100%;}
-			/* These rules achieve a change in the width of the frame I added just inside the pure-pusher
-			(the main content of the pure-drawer system) when the check-box is checked. The second line
-			gives it more padding (to leave room for the toolbox) when the pure pusher container is
-			a sibling of the checked pure-toggle input. The first line makes it change smoothly
-			when the check box is clicked.
-			There's probably a more elegant way of making this a new 'effect' option for pure-drawer
-			but I wanted to keep the changes to that as simple as possible.
-			Padding works better than margin because it keeps the area 'under' the toolbox dark
-			so it is less noticeable when the two animations are not perfectly in sync.
-			*/
-			[data-effect='pure-effect-slide'] div#pusherContainer {transition-duration: 500ms;}
-			.pure-toggle[data-toggle='right']:checked ~ .pure-pusher-container div#pusherContainer { padding-right: 200px;}
-	body
-		//.
-			All the pure- stuff here is the required framework for pure-drawer to make the toolbox appear and disappear
-			based on the litle control in the top right. Note particularly that C# code is aware of the pure-toggle-right input,
-			and it has to come first because various css rules depend on things being a following-sibling.
-		div.pure-container(data-effect="pure-effect-slide")
-			input.pure-toggle(type="checkbox" id="pure-toggle-right" data-toggle="right")
-			label.pure-toggle-label(for="pure-toggle-right" data-toggle-label="right")
-				span.pure-toggle-icon
-			nav.pure-drawer(data-position="right")
-				#right
-					iframe#toolbox(width='100%', height='100%', src='/bloom/toolboxContent') .
-						| Your browser does not support iframes.
-			div.pure-pusher-container
-				div.pure-pusher
-					#pusherContainer
-						#left
-							div(style='width:200px; height:100%; display:inline-block; box-sizing: border-box;')
-								iframe#pageList(width='100%', height='100%', src='{simulatedPageListFile}') .
-									| Your browser does not support iframes.
-							div(style='width:calc(100% - 205px); padding-left: 5px; height:100%; display:inline-block; box-sizing: border-box;')
-								iframe#page(width='100%', height='100%', src='{simulatedPageFileInBookFolder}') .
-									| Your browser does not support iframes.
-				label.pure-overlay(for="pure-toggle-right" data-overlay="right")
-		div#modal-dialog-container
+	//script(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')
+
+	script(src='/bloom/editTabBundle.js' type='module')
+	script.

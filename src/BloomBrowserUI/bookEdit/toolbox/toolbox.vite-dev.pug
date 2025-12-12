@@ -1,0 +1,55 @@
+extends toolbox.mixins.pug
+
+block headContent
+	meta(charset='utf-8')
+	//- This bit of 'magic' is needed to get React Fast Refresh working with Vite Dev.
+	script(type='module').
+		import RefreshRuntime from "http://localhost:5173/@react-refresh";
+		RefreshRuntime.injectIntoGlobalHook(window);
+		//- Avoiding arrow functions here because our HTML to XML converter mangles wedge characters
+		window.$RefreshReg$ = function () {};
+		window.$RefreshSig$ = function () {return function (type) {return type;};};
+		window.__vite_plugin_react_preamble_installed__ = true;
+	script(type='module' src='http://localhost:5173/@vite/client')
+	//- This file is generated on the fly when requested by the bloom server, so doesn't involve vite's dev server.
+	link(rel='stylesheet', href='/bloom/writingSystemDisplayForUI.css')
+
+block endBodyScripts
+	script(type='module').
+		async function main()  {
+		try  {
+		//- Assign globals expected by legacy libs.
+		const jQuery = (await import('http://localhost:5173/@id/jquery')).default;
+		// Some builds export default, others export the function itself. Normalize.
+		const jq = jQuery?.fn ? jQuery : (jQuery?.default ? jQuery.default : jQuery);
+		window.$ = jq;
+		window.jQuery = jq;
+		console.log('jQuery ready via Vite prebundle');
+
+		const XRegExp = (await import('http://localhost:5173/@id/xregexp')).default || (await import('xregexp'));
+		window.XRegExp = XRegExp.default || XRegExp;
+		console.log('XRegExp ready via Vite prebundle');
+
+		const _mod = await import('http://localhost:5173/@id/underscore');
+		window._ = _mod.default || _mod;
+		console.log('Underscore ready via Vite prebundle');
+
+		//- Note, the list of files is duplicated in a different format in toolbox.pug.
+		await import("http://localhost:5173/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css");
+		await import("http://localhost:5173/bookEdit/html/font-awesome/css/font-awesome.min.css");
+		await import("http://localhost:5173/bookEdit/toolbox/toolbox.less");
+		await import("http://localhost:5173/bookEdit/toolbox/readerTools.less");
+		await import("http://localhost:5173/bookEdit/toolbox/talkingBook/audioRecording.less");
+		await import("http://localhost:5173/bookEdit/toolbox/motion/motion.less");
+		await import("http://localhost:5173/bookEdit/toolbox/music/music.less");
+		await import("http://localhost:5173/bookEdit/css/rc-slider-bloom.less");
+		await import("http://localhost:5173/lib/jquery.qtip.css");
+
+		// Finally, load the app entry.
+		await import('http://localhost:5173/bookEdit/toolbox/toolboxBootstrap.ts');
+		} catch (e)  {
+		console.error('Failed to initialize Vite dev page:', e);
+		}
+		}
+
+		main();

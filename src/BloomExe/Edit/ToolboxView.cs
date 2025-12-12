@@ -4,6 +4,7 @@ using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.web;
 using BloomTemp;
 
 namespace Bloom.Edit
@@ -91,7 +92,11 @@ namespace Bloom.Edit
 
         public static string MakeToolboxContent(Book.Book book)
         {
-            var path = BloomFileLocator.GetBrowserFile(false, "bookEdit/toolbox", "toolbox.html");
+            var path = BloomFileLocator.GetBrowserFile(
+                false,
+                "bookEdit/toolbox",
+                ReactControl.ShouldUseViteDev() ? "toolbox.vite-dev.html" : "toolbox.html"
+            );
             var domForToolbox = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
             XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(domForToolbox.RawDom);
             return domForToolbox.getHtmlStringDisplayOnly();

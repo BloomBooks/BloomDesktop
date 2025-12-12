@@ -12,7 +12,7 @@ import {
     postJson,
     postThatMightNavigate,
 } from "../../../utils/bloomApi";
-import { ToolBottomHelpLink } from "../../../react_components/helpLink";
+import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
 import { UrlUtils } from "../../../utils/urlUtils";
 import { Expandable } from "../../../react_components/expandable";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
