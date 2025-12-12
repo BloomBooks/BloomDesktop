@@ -7,7 +7,6 @@ import {
     getBloomApiPrefix,
     post,
     useApiBoolean,
-    useWatchBooleanEvent,
 } from "../../../utils/bloomApi";
 import { WireUpForWinforms } from "../../../utils/WireUpWinform";
 import { useSubscribeToWebSocketForStringMessage } from "../../../utils/WebSocketManager";
@@ -38,6 +37,26 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
     useSubscribeToWebSocketForStringMessage("app", "uiLanguageChanged", () => {
         setL10nVersion((current) => current + 1);
     });
+
+    const [ctrlShiftIsDown, setCtrlShiftIsDown] = useState(false);
+    useEffect(() => {
+        const updateFromEvent = (e: KeyboardEvent) => {
+            setCtrlShiftIsDown(!!e.ctrlKey && !!e.shiftKey);
+        };
+
+        const handleBlur = () => {
+            setCtrlShiftIsDown(false);
+        };
+
+        window.addEventListener("keydown", updateFromEvent);
+        window.addEventListener("keyup", updateFromEvent);
+        window.addEventListener("blur", handleBlur);
+        return () => {
+            window.removeEventListener("keydown", updateFromEvent);
+            window.removeEventListener("keyup", updateFromEvent);
+            window.removeEventListener("blur", handleBlur);
+        };
+    }, []);
 
     const [teamCollectionStatus, setTeamCollectionStatus] =
         useState<TeamCollectionStatus>("None");
@@ -98,7 +117,7 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
                 `}
             >
                 <TeamCollectionButton status={teamCollectionStatus} />
-                {hideForSettingsProtection || (
+                {(hideForSettingsProtection && !ctrlShiftIsDown) || (
                     <div
                         css={css`
                             display: flex;
