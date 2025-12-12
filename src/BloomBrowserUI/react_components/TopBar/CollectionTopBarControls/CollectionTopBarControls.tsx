@@ -50,6 +50,8 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
         },
     );
 
+    // "legacy" means the winforms one.
+    // We have a new CollectionSettingsDialog react component which exists but isn't finished.
     const handleLegacySettingsClick = React.useCallback(() => {
         post("workspace/showLegacySettingsDialog");
     }, []);

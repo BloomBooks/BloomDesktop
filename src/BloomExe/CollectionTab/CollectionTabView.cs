@@ -284,7 +284,8 @@ namespace Bloom.CollectionTab
 
         internal void ManageSettings(SettingsProtectionHelper settingsLauncherHelper)
         {
-            // React top bar handles visibility; legacy WinForms buttons are no longer used here.
+            // TODO
+            // this used to suppress settings and collection buttons
         }
 
         public string CollectionTabLabel
@@ -323,12 +324,7 @@ namespace Bloom.CollectionTab
         internal void SetTeamCollectionStatus(ITeamCollectionManager tcManager)
         {
             var status = tcManager?.CollectionStatus ?? TeamCollectionStatus.None;
-
-            dynamic statusPayload = new DynamicJson();
-            statusPayload.status = status.ToString();
-            statusPayload.showReloadButton = tcManager?.MessageLog?.ShouldShowReloadButton ?? false;
-
-            _webSocketServer.SendBundle("collectionTopBar", "teamCollectionStatus", statusPayload);
+            _webSocketServer.SendString("collectionTopBar", "tcStatus", status.ToString());
 
             // This will cause the CollectionsTabBookPane to reload the status of the book
             // (and the collection itself), which will trickle down to the status panel.
