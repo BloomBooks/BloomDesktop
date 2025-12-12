@@ -1,16 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
-using Bloom.ErrorReporter;
 using Bloom.ToPalaso;
 using SIL.IO;
-using SIL.Reporting;
 
 namespace Bloom
 {
@@ -48,12 +47,6 @@ namespace Bloom
     public abstract class Browser : UserControl
     {
         internal Point ContextMenuLocation;
-
-        // A temporary object needed just as long as it is the content of this browser.
-        // Currently may be a TempFile (a real filesystem file) or a InMemoryHtmlFile (just a dictionary entry).
-        // It gets disposed when the Browser goes away.
-        private IDisposable _dependentContent;
-        protected string _replacedUrl;
 
         /// <summary>
         /// Allow creator to hook up this event handler if the browser needs to handle Ctrl-N.
@@ -138,8 +131,17 @@ namespace Bloom
             // This must already be called before calling Navigate(), but it doesn't really hurt to call it again.
             EnsureBrowserReadyToNavigate();
 
-            var dom = htmlDom.RawDom;
+            string url = CreateSimulatedFile(htmlDom, setAsCurrentPageForDebugging, source);
+            UpdateDisplay(url);
+        }
 
+        internal string CreateSimulatedFile(
+            HtmlDom htmlDom,
+            bool setAsCurrentPageForDebugging,
+            InMemoryHtmlFileSource source
+        )
+        {
+            var dom = htmlDom.RawDom;
             XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
             var fakeTempFile = BloomServer.MakeInMemoryHtmlFileInBookFolder(
                 htmlDom,
@@ -147,20 +149,43 @@ namespace Bloom
                 source: source
             );
             SetNewDependent(fakeTempFile);
-            UpdateDisplay(fakeTempFile.Key);
+            return fakeTempFile.Key;
         }
+
+        // Some views (e.g., EditView) involve more than one simulated file that needs to be disposed
+        // when the browser goes away (if not before). No view uses more than one of a given type.
+        // (If that changes, this code will get more complicated.)  These simulated (or temporary)
+        // files are typically sources of various iframes.
+        protected Dictionary<string, IDisposable> _dependentFiles =
+            new Dictionary<string, IDisposable>();
 
         private void SetNewDependent(IDisposable dependent)
         {
-            // Save information needed to prevent http://issues.bloomlibrary.org/youtrack/issue/BL-4268.
-            var simulated = _dependentContent as InMemoryHtmlFile;
-            _replacedUrl = (simulated != null) ? simulated.Key : null;
+            // Many callers pass in a TempFile, but some pass in an InMemoryHtmlFile.
+            // For those who do the latter, there may be more than one InMemoryHtmlFile that
+            // need to coexist, so we have to distinguish them by their types derived from
+            // their keys.
+            var dependentType = "TempFile";
+            var simulatedFile = dependent as InMemoryHtmlFile;
+            if (simulatedFile != null)
+            {
+                var match = Regex.Match(simulatedFile.Key, @"^.*-memsim-([A-Z-a-z0-9]+)\.html?$");
+                if (match.Success)
+                    dependentType = match.Groups[1].Value;
+                else
+                    dependentType = "Unknown";
+                if (string.IsNullOrEmpty(dependentType))
+                    dependentType = "Unknown";
+            }
 
-            if (_dependentContent != null)
+            var previousDependent = _dependentFiles.TryGetValue(dependentType, out var dep)
+                ? dep
+                : null;
+            if (previousDependent != null)
             {
                 try
                 {
-                    _dependentContent.Dispose();
+                    previousDependent.Dispose();
                 }
                 catch (Exception)
                 {
@@ -170,7 +195,7 @@ namespace Bloom
 #endif
                 }
             }
-            _dependentContent = dependent;
+            _dependentFiles[dependentType] = dependent;
         }
 
         // Navigate the browser to Url
@@ -232,11 +257,9 @@ namespace Bloom
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            if (_dependentContent != null)
-            {
-                _dependentContent.Dispose();
-                _dependentContent = null;
-            }
+            foreach (var dependent in _dependentFiles.Values)
+                dependent.Dispose();
+            _dependentFiles.Clear();
         }
 
         /// <summary>
