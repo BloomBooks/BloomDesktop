@@ -66,11 +66,6 @@ namespace Bloom.CollectionTab
 
             //TODO splitContainer1.SplitterDistance = _collectionListView.PreferredWidth;
 
-            if (SIL.PlatformUtilities.Platform.IsMono)
-            {
-                BackgroundColorsForLinux();
-            }
-
             selectedTabChangedEvent.Subscribe(c =>
             {
                 if (c.To == this)
@@ -292,11 +287,6 @@ namespace Bloom.CollectionTab
             // React top bar handles visibility; legacy WinForms buttons are no longer used here.
         }
 
-        private void BackgroundColorsForLinux()
-        {
-            // Legacy WinForms toolstrip is no longer used; keep method for compatibility.
-        }
-
         public string CollectionTabLabel
         {
             get
@@ -330,19 +320,6 @@ namespace Bloom.CollectionTab
 
         public Bitmap ToolStripBackground { get; set; }
 
-        private WorkspaceView GetWorkspaceView()
-        {
-            Control ancestor = Parent;
-            while (ancestor != null && !(ancestor is WorkspaceView))
-                ancestor = ancestor.Parent;
-            return ancestor as WorkspaceView;
-        }
-
-        private void _legacySettingsButton_Click(object sender, EventArgs e)
-        {
-            GetWorkspaceView().OnLegacySettingsButton_Click(sender, e);
-        }
-
         internal void SetTeamCollectionStatus(ITeamCollectionManager tcManager)
         {
             var status = tcManager?.CollectionStatus ?? TeamCollectionStatus.None;
@@ -359,11 +336,6 @@ namespace Bloom.CollectionTab
             {
                 _webSocketServer.SendEvent("bookTeamCollectionStatus", "reload");
             }
-        }
-
-        private void _tcStatusButton_Click(object sender, EventArgs e)
-        {
-            // probably will do GetWorkspaceView().OpenTCStatus();
         }
 
         /// <summary>

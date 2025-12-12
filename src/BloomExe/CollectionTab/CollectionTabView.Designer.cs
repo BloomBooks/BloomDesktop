@@ -78,6 +78,7 @@ namespace Bloom.CollectionTab
 			this._L10NSharpExtender.SetLocalizingId(this._topBarReactControl, "CollectionTopBarReact");
 			this._topBarReactControl.Location = new System.Drawing.Point(0, 0);
 			this._topBarReactControl.Name = "_topBarReactControl";
+			this._topBarReactControl.HideVerticalOverflow = true;
 			this._topBarReactControl.Size = new System.Drawing.Size(767, 69);
 			this._topBarReactControl.TabIndex = 34;
             //

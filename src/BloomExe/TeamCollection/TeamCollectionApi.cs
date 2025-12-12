@@ -11,7 +11,6 @@ using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.History;
 using Bloom.MiscUI;
-using Bloom.Publish;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.Workspace;

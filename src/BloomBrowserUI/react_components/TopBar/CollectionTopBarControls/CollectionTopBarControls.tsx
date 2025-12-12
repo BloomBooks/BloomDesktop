@@ -1,6 +1,6 @@
 import { css, ThemeProvider } from "@emotion/react";
 import * as React from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { TopBarButton } from "../../TopBarButton";
 import { get, getBloomApiPrefix, post } from "../../../utils/bloomApi";
 import { WireUpForWinforms } from "../../../utils/WireUpWinform";
@@ -16,7 +16,7 @@ const bloomApiPrefix = getBloomApiPrefix(false);
 const kOpenCreateCollectionIcon = `${bloomApiPrefix}images/OpenCreateCollection24x24.png`;
 const kSettingsIcon = `${bloomApiPrefix}images/settings24x24.png`;
 
-type TeamCollectionStatus =
+export type TeamCollectionStatus =
     | "None"
     | "Nominal"
     | "NewStuff"
@@ -30,7 +30,7 @@ const mainButtonTextColor = "rgb(60, 60, 60)";
 export const CollectionTopBarControls: React.FunctionComponent = () => {
     const [teamCollectionStatus, setTeamCollectionStatus] =
         useState<TeamCollectionStatus>("None");
-    const [_l10nVersion, setL10nVersion] = useState(0);
+    const [l10nVersion, setL10nVersion] = useState(0);
 
     useEffect(() => {
         get("teamCollection/tcStatus", (result) => {
@@ -51,60 +51,55 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
     );
 
     const handleLegacySettingsClick = React.useCallback(() => {
-        post("workspace/legacySettings");
+        post("workspace/showLegacySettingsDialog");
     }, []);
 
     const handleOpenOrCreateClick = React.useCallback(() => {
         post("workspace/openOrCreateCollection/");
     }, []);
 
-    const rightSideButtons = useMemo(
-        () => (
-            <div
-                css={css`
-                    display: flex;
-                    gap: 10px;
-                    align-items: center;
-                `}
-            >
-                <TopBarButton
-                    iconPath={kSettingsIcon}
-                    labelL10nKey="CollectionTab.SettingsButton"
-                    labelEnglish="Settings"
-                    onClick={handleLegacySettingsClick}
-                    backgroundColor={mainButtonBackground}
-                    textColor={mainButtonTextColor}
-                />
-                <TopBarButton
-                    iconPath={kOpenCreateCollectionIcon}
-                    labelL10nKey="CollectionTab.Open/CreateCollectionButton"
-                    labelEnglish="Other Collection"
-                    onClick={handleOpenOrCreateClick}
-                    backgroundColor={mainButtonBackground}
-                    textColor={mainButtonTextColor}
-                />
-            </div>
-        ),
-        [handleLegacySettingsClick, handleOpenOrCreateClick],
-    );
-
     return (
         <ThemeProvider theme={lightTheme}>
             <div
+                key={`collection-topbar-${l10nVersion}`}
                 css={css`
                     display: flex;
-                    align-items: center;
+                    align-items: flex-start;
                     justify-content: space-between;
+                    padding-top: 2px;
                 `}
             >
                 <TeamCollectionButton status={teamCollectionStatus} />
-                {rightSideButtons}
+                <div
+                    css={css`
+                        display: flex;
+                        gap: 10px;
+                        align-items: center;
+                    `}
+                >
+                    <TopBarButton
+                        iconPath={kSettingsIcon}
+                        labelL10nKey="CollectionTab.SettingsButton"
+                        labelEnglish="Settings"
+                        onClick={handleLegacySettingsClick}
+                        backgroundColor={mainButtonBackground}
+                        textColor={mainButtonTextColor}
+                    />
+                    <TopBarButton
+                        iconPath={kOpenCreateCollectionIcon}
+                        labelL10nKey="CollectionTab.Open/CreateCollectionButton"
+                        labelEnglish="Other Collection"
+                        onClick={handleOpenOrCreateClick}
+                        backgroundColor={mainButtonBackground}
+                        textColor={mainButtonTextColor}
+                    />
+                </div>
             </div>
         </ThemeProvider>
     );
 };
 
-const TeamCollectionButton: React.FunctionComponent<{
+export const TeamCollectionButton: React.FunctionComponent<{
     status: TeamCollectionStatus;
 }> = (props) => {
     const handleTeamCollectionClick = React.useCallback(() => {
@@ -151,44 +146,33 @@ const TeamCollectionButton: React.FunctionComponent<{
     return (
         <div
             css={css`
-                display: flex;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 4px;
+                position: relative;
             `}
         >
-            <div
-                css={css`
-                    position: relative;
-                    display: inline-block;
-                `}
-            >
-                {props.status !== "Nominal" && (
-                    <img
-                        src={kSmallTcIcon}
-                        css={css`
-                            position: absolute;
-                            top: 8px;
-                            left: 8px;
-                            width: 16px;
-                        `}
-                    />
-                )}
-                <TopBarButton
-                    iconPath={iconPath}
-                    labelL10nKey=""
-                    labelEnglish={statusLabel}
-                    onClick={handleTeamCollectionClick}
-                    backgroundColor={kBloomGray}
-                    textColor={badgeColor}
-                    cssOverrides={css`
-                        border-radius: 8px;
-                        grid-template-rows: 34px auto;
-                        padding-left: 12px;
-                        padding-right: 12px;
+            {props.status !== "Nominal" && (
+                <img
+                    src={kSmallTcIcon}
+                    css={css`
+                        position: absolute;
+                        top: 8px;
+                        left: 8px;
+                        width: 16px;
                     `}
                 />
-            </div>
+            )}
+            <TopBarButton
+                iconPath={iconPath}
+                labelL10nKey=""
+                labelEnglish={statusLabel}
+                onClick={handleTeamCollectionClick}
+                backgroundColor={kBloomGray}
+                textColor={badgeColor}
+                cssOverrides={css`
+                    border-radius: 8px;
+                    grid-template-rows: 40px auto;
+                    padding: 4px 16px 6px 16px;
+                `}
+            />
         </div>
     );
 };

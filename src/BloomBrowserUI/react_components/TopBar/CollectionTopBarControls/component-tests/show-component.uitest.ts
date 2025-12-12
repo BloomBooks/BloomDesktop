@@ -1,9 +1,9 @@
 /**
  * Interactive manual testing for CollectionTopBarControls.
- * Requires a running Bloom backend (uses live API + websocket traffic).
- * Run with: ./show.sh or ./show.sh with-bloom-backend
+ * Run with: ./show.sh or ./show-with-bloom.sh
  */
 import { Page, test } from "../../../component-tester/playwrightTest";
+import { setTestComponent } from "../../../component-tester/setTestComponent";
 
 const includeManualTests = process.env.PLAYWRIGHT_INCLUDE_MANUAL === "1";
 const manualDescribe = includeManualTests ? test.describe : test.describe.skip;
@@ -69,6 +69,19 @@ manualDescribe("Manual Interactive Testing", () => {
         await routeTopBarStatus(page, "None");
 
         await page.goto("/?component=CollectionTopBarControls");
+
+        await page.waitForEvent("close");
+    });
+
+    test("gallery-all-states", async ({ page }) => {
+        test.setTimeout(0);
+
+        await setTestComponent(
+            page,
+            "../TopBar/CollectionTopBarControls/component-tests/teamCollectionButtonGalleryTest",
+            "TeamCollectionButtonGalleryTest",
+            {},
+        );
 
         await page.waitForEvent("close");
     });
