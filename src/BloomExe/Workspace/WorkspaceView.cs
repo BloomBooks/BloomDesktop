@@ -1025,11 +1025,6 @@ namespace Bloom.Workspace
             });
         }
 
-        internal void OnLegacySettingsButton_Click(object sender, EventArgs e)
-        {
-            OpenLegacySettingsDialog();
-        }
-
         private CollectionSettingsDialog _currentlyOpenSettingsDialog;
 
         public void OpenLegacySettingsDialog(

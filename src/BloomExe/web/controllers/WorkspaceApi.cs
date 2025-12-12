@@ -52,7 +52,11 @@ namespace Bloom.web.controllers
 
         private void HandleShowLegacySettingsDialog(ApiRequest request)
         {
-            WorkspaceView.OnLegacySettingsButton_Click(null, null);
+            WorkspaceView.OpenLegacySettingsDialog();
+
+            // When the fully react dialog is ready, we'll do this instead:
+            // _webSocketServer.LaunchDialog("CollectionSettingsDialog");
+
             request.PostSucceeded();
         }
     }
