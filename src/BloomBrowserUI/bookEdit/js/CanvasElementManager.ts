@@ -122,7 +122,7 @@ export class CanvasElementManager {
         // identifies the source that requested the notification; allows us to remove the
         // right one when no longer needed, and prevent multiple notifiers to the same client.
         id: string;
-        handler: (x: BubbleSpec | undefined) => void;
+        handler: (x: Bubble | undefined) => void;
     }[] = [];
 
     // These variables are used by the canvas element's onmouse* event handlers
@@ -3047,9 +3047,9 @@ export class CanvasElementManager {
     }
 
     public doNotifyChange() {
-        const spec = this.getSelectedFamilySpec();
+        const bubble = this.getPatriarchBubbleOfActiveElement();
         this.thingsToNotifyOfCanvasElementChange.forEach((f) =>
-            f.handler(spec),
+            f.handler(bubble),
         );
     }
 
@@ -4438,7 +4438,7 @@ export class CanvasElementManager {
 
     public requestCanvasElementChangeNotification(
         id: string,
-        notifier: (bubble: BubbleSpec | undefined) => void,
+        notifier: (bubble: Bubble | undefined) => void,
     ): void {
         this.detachCanvasElementChangeNotification(id);
         this.thingsToNotifyOfCanvasElementChange.push({
@@ -4470,9 +4470,12 @@ export class CanvasElementManager {
         return this.updateBubbleWithPropsHelper(activeBubble, newBubbleProps);
     }
 
-    public updateSelectedFamilyBubbleSpec(newBubbleProps: BubbleSpecPattern) {
+    public updateSelectedFamilyBubbleSpec(
+        newBubbleProps: BubbleSpecPattern,
+    ): Bubble {
         const parentBubble = this.getPatriarchBubbleOfActiveElement();
-        return this.updateBubbleWithPropsHelper(parentBubble, newBubbleProps);
+        this.updateBubbleWithPropsHelper(parentBubble, newBubbleProps);
+        return parentBubble!;
     }
 
     private updateBubbleWithPropsHelper(
