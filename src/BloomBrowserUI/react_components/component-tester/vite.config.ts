@@ -91,6 +91,79 @@ const tryServeStaticAsset = (
     return true;
 };
 
+const tryServeBloomImageAsset = (
+    req: import("node:http").IncomingMessage,
+    res: import("node:http").ServerResponse,
+) => {
+    if (!useMocks || req.method !== "GET" || !req.url) {
+        return false;
+    }
+
+    let pathname = req.url;
+    try {
+        pathname = new URL(req.url, "http://localhost").pathname;
+    } catch {
+        const queryIndex = req.url.indexOf("?");
+        pathname = queryIndex >= 0 ? req.url.substring(0, queryIndex) : req.url;
+    }
+
+    if (!pathname.startsWith("/bloom/images/")) {
+        return false;
+    }
+
+    const relativePath = decodeURIComponent(
+        pathname.substring("/bloom/images/".length),
+    );
+    // Fail fast on suspicious paths.
+    if (
+        !relativePath ||
+        relativePath.includes("..") ||
+        relativePath.includes("\\")
+    ) {
+        res.statusCode = 400;
+        res.end("Bad Request");
+        return true;
+    }
+
+    const imagesRoot = resolve(__dirname, "../../images");
+    const filePath = resolve(imagesRoot, relativePath);
+    const normalizedImagesRoot = normalize(imagesRoot + "/");
+    const normalizedFilePath = normalize(filePath);
+    if (!normalizedFilePath.startsWith(normalizedImagesRoot)) {
+        res.statusCode = 400;
+        res.end("Bad Request");
+        return true;
+    }
+
+    if (!existsSync(filePath)) {
+        res.statusCode = 404;
+        res.end("Not Found");
+        return true;
+    }
+
+    const lowerPath = filePath.toLowerCase();
+    if (lowerPath.endsWith(".png")) {
+        res.setHeader("Content-Type", "image/png");
+    } else if (lowerPath.endsWith(".svg")) {
+        res.setHeader("Content-Type", "image/svg+xml");
+    } else if (lowerPath.endsWith(".jpg") || lowerPath.endsWith(".jpeg")) {
+        res.setHeader("Content-Type", "image/jpeg");
+    } else if (lowerPath.endsWith(".gif")) {
+        res.setHeader("Content-Type", "image/gif");
+    } else {
+        res.setHeader("Content-Type", "application/octet-stream");
+    }
+
+    res.statusCode = 200;
+    const stream = createReadStream(filePath);
+    stream.on("error", () => {
+        res.statusCode = 500;
+        res.end("Failed to read asset");
+    });
+    stream.pipe(res);
+    return true;
+};
+
 const launchBrowser = (targetUrl: string) => {
     const platform = process.platform;
     let command: string;
@@ -179,6 +252,10 @@ export default defineConfig({
                     }
 
                     if (tryServeStaticAsset(req, res)) {
+                        return;
+                    }
+
+                    if (tryServeBloomImageAsset(req, res)) {
                         return;
                     }
 
