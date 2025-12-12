@@ -865,7 +865,7 @@ const DragActivityControls: React.FunctionComponent<{
         // requester with the key dragActivityTool, so it won't be a large leak.
         canvasElementManager?.requestCanvasElementChangeNotification(
             "dragActivityTool",
-            (b) => setBubble(b),
+            (b) => setBubble(b?.getBubbleSpec()),
         );
     }, [props.pageGeneration, canvasElementManager]);
     useEffect(() => {
