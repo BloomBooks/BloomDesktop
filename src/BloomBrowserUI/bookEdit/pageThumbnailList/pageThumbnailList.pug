@@ -1,25 +1,18 @@
-﻿doctype html
-include ../../../content/templates/bloom-foundation-mixins.pug
-// including the lang attribute is causing css problems with defaultLangStyles.css
-// <html lang="en">
-html
-	head
-		meta(charset='utf-8')
-		+stylesheet('/bloom/bookEdit/pageThumbnailList/pageThumbnailList.css')
-		+stylesheet('/bloom/bookEdit/pageThumbnailList/pageControls/pageControls.css')
-	body(data-pageSize='A5Portrait')
-		#panelFlexContainer
-			div#pageThumbnailListLabel(data-i18n="EditTab.PageList.Heading") Pages
-			#pageGridWrapper
-				#pageGrid
-			#PageControls
-		script(src='/bloom/pageControlsBundle.js' type='module')
-		//- Must be loaded AFTER pageControlsBundle.js. We are violating our usual practice
-		//- here of only having one root bundle per page. Anything pageControlsBundle.js
-		//- exports will NOT be accessible through editTabBundle, as usual, because
-		//- pageThumbnailListBundle.js will overwrite it. That's OK because
-		//- pageControlsBundle.js is built from pageControls.tsx which doesn't export anything.
-		//- If it ever does export anything we need to access from C# or some other Iframe,
-		//- we should reorganize this page to have a single bundle.
-		script(src='/bloom/pageThumbnailListBundle.js' type='module')
+﻿extends pageThumbnailList.mixins.pug
+
+block headContent
+	//- These CSS files are imported in a different way in the Vite-Dev version of this file.
+	+stylesheet('/bloom/bookEdit/pageThumbnailList/pageThumbnailList.css')
+	+stylesheet('/bloom/bookEdit/pageThumbnailList/pageControls/pageControls.css')
+
+block endBodyScripts
+	script(src='/bloom/pageControlsBundle.js' type='module')
+	//- Must be loaded AFTER pageControlsBundle.js. We are violating our usual practice
+	//- here of only having one root bundle per page. Anything pageControlsBundle.js
+	//- exports will NOT be accessible through editTabBundle, as usual, because
+	//- pageThumbnailListBundle.js will overwrite it. That's OK because
+	//- pageControlsBundle.js is built from pageControls.tsx which doesn't export anything.
+	//- If it ever does export anything we need to access from C# or some other Iframe,
+	//- we should reorganize this page to have a single bundle.
+	script(src='/bloom/pageThumbnailListBundle.js' type='module')
 
