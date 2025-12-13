@@ -18,13 +18,6 @@ const routeTopBarStatus = async (page: Page, status: string) => {
                 body: status,
             });
         }
-        if (url.includes("app/settingsProtectionNormallyHidden")) {
-            return route.fulfill({
-                status: 200,
-                contentType: "text/plain",
-                body: "false",
-            });
-        }
         return route.continue();
     });
 };

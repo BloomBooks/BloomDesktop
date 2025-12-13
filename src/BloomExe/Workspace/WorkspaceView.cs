@@ -162,11 +162,6 @@ namespace Bloom.Workspace
             _settingsLauncherHelper.ManageComponent(_releaseNotesMenuItem);
             _settingsLauncherHelper.ManageComponent(_divider2);
 
-            OnSettingsProtectionChanged(this, null); //initial setup
-            SettingsProtectionSettings.Default.PropertyChanged += new PropertyChangedEventHandler(
-                OnSettingsProtectionChanged
-            );
-
             _uiLanguageMenu.Visible = true;
             _settingsLauncherHelper.ManageComponent(_uiLanguageMenu);
 
@@ -619,24 +614,6 @@ namespace Bloom.Workspace
                     () => RestartBloom()
                 );
             }
-        }
-
-        void OnSettingsProtectionChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (
-                e != null
-                && e.PropertyName != null
-                && e.PropertyName != nameof(SettingsProtectionSettings.NormallyHidden)
-            )
-            {
-                return;
-            }
-
-            _webSocketServer.SendString(
-                "app",
-                "settingsProtectionNormallyHidden",
-                SettingsProtectionSettings.Default.NormallyHidden ? "true" : "false"
-            );
         }
 
         ToolStripMenuItem _showAllTranslationsItem;
