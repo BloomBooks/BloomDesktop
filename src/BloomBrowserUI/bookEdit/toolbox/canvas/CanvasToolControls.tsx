@@ -178,13 +178,17 @@ const CanvasToolControls: React.FunctionComponent = () => {
     // Enhance: if we don't want to have a static, or don't want
     // this function to know about CanvasTool, we could just pass
     // a setter for this as a property.
-
-    CanvasTool.theOneCanvasTool!.callOnNewPageReady = () => {
-        bubbleSpecInitialization();
-        setIsXmatter(ToolboxToolReactAdaptor.isXmatter());
-        const count = pageRefreshIndicator;
-        setPageRefreshIndicator(count + 1);
-    };
+    // In production, CanvasTool.theOneCanvasTool is always defined here.
+    // During hot module reloading in dev mode, somehow it is sometimes not.
+    // In such cases the initialization should already have been done.
+    if (CanvasTool.theOneCanvasTool) {
+        CanvasTool.theOneCanvasTool.callOnNewPageReady = () => {
+            bubbleSpecInitialization();
+            setIsXmatter(ToolboxToolReactAdaptor.isXmatter());
+            const count = pageRefreshIndicator;
+            setPageRefreshIndicator(count + 1);
+        };
+    }
 
     // Reset UI when current bubble spec changes (e.g. user clicked on a bubble).
     useEffect(() => {
