@@ -1287,11 +1287,12 @@ namespace Bloom.Edit
 
         internal string GetUrlForPageListFile()
         {
+            var useViteDev = ReactControl.ShouldUseViteDev();
             var frame = BloomFileLocator.GetBrowserFile(
                 false,
                 "bookEdit",
                 "pageThumbnailList",
-                "pageThumbnailList.html"
+                useViteDev ? "pageThumbnailList.vite-dev.html" : "pageThumbnailList.html"
             );
             var backColor = MiscUtils.ColorToHtmlCode(_view.BackColor);
             var _baseHtml = RobustFile

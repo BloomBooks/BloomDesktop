@@ -248,11 +248,13 @@ namespace Bloom.web
                 <head>
                     <title>ReactControl (Vite {_javascriptBundleName})</title>
                     <meta charset='UTF-8' />
-                    <script>
+                    <script type='module'>
+                        import RefreshRuntime from ""http://localhost:5173/@react-refresh"";
+                        RefreshRuntime.injectIntoGlobalHook(window);
                         // Provide no-op React Fast Refresh globals so dev transforms don't crash in WebView.
-                        window.__vite_plugin_react_preamble_installed__ = true;
                         window.$RefreshSig$ = window.$RefreshSig$ || (function () {{ return function (type) {{ return type; }}; }});
                         window.$RefreshReg$ = window.$RefreshReg$ || function () {{}};
+                        window.__vite_plugin_react_preamble_installed__ = true;
                         window.__reactControlProps__ = {props};
                         // Shim Node-style globals for browser-only environment
                         if (typeof window.global === 'undefined') window.global = window;
