@@ -633,6 +633,12 @@ export default defineConfig(async ({ command }) => {
         server: {
             port: 5173, // Default Vite port
             strictPort: true, // Fail if port is already in use (don't try other ports)
+            hmr: {
+                protocol: "ws",
+                host: "localhost", // The host where your Vite server is running
+                port: 5173, // The port where your Vite server is running
+                overlay: true,
+            },
         },
 
         // BUILD CONFIGURATION
