@@ -54,11 +54,13 @@ namespace Bloom.Publish.BloomPub.wifi
 
         public void Start()
         {
+            Debug.WriteLine("WiFiAdvertiser, creating CancellationTokenSource"); // WM, TEMPORARY
             _cancellationTokenSource = new CancellationTokenSource();
             // The doc seems to indicate that EnableBroadcast is required for doing broadcasts.
             // In practice it seems to be required on Mono but not on Windows.
             // This may be fixed in a later version of one platform or the other, but please
             // test both if tempted to remove it.
+            Debug.WriteLine("WiFiAdvertiser, creating UdpClient"); // WM, TEMPORARY
             _client = new UdpClient { EnableBroadcast = true };
             _endPoint = new IPEndPoint(IPAddress.Parse("255.255.255.255"), Port);
             _thread = new Thread(() => Work(_cancellationTokenSource.Token));
@@ -75,11 +77,13 @@ namespace Bloom.Publish.BloomPub.wifi
             );
             try
             {
+                Debug.WriteLine("WiFiAdvertiser, entering advert loop"); // WM, TEMPORARY
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     if (!Paused)
                     {
                         UpdateAdvertisementBasedOnCurrentIpAddress();
+                        Debug.WriteLine("WiFiAdvertiser, sending advert"); // WM, TEMPORARY
                         _client.BeginSend(
                             _sendBytes,
                             _sendBytes.Length,
@@ -92,6 +96,7 @@ namespace Bloom.Publish.BloomPub.wifi
                 }
                 _progress.Message(idSuffix: "Stopped", message: "Stopped Advertising.");
                 _client.Close();
+                Debug.WriteLine("WiFiAdvertiser, exited advert loop, UdpClient closed"); // WM, TEMPORARY
             }
             catch (Exception error)
             {
@@ -112,6 +117,7 @@ namespace Bloom.Publish.BloomPub.wifi
         /// </summary>
         private void UpdateAdvertisementBasedOnCurrentIpAddress()
         {
+            Debug.WriteLine("WiFiAdvertiser, UABOCIA, _currentIpAddress = " + _currentIpAddress); // WM, TEMPORARY
             if (_currentIpAddress != GetLocalIpAddress())
             {
                 _currentIpAddress = GetLocalIpAddress();
