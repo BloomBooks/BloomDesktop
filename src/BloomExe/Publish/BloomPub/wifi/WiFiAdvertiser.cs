@@ -36,7 +36,7 @@ namespace Bloom.Publish.BloomPub.wifi
         public string TitleLanguage;
 
         private Thread _thread;
-		
+
         private CancellationTokenSource _cancellationTokenSource;
 
         // Source or "local" IP address of the network interface we determine that the network stack
@@ -85,7 +85,7 @@ namespace Bloom.Publish.BloomPub.wifi
             public int dwForwardProto;
             public int dwForwardAge;
             public int dwForwardNextHopAS;
-            public int dwForwardMetric1;  // the "interface metric" we need
+            public int dwForwardMetric1; // the "interface metric" we need
             public int dwForwardMetric2;
             public int dwForwardMetric3;
             public int dwForwardMetric4;
@@ -110,10 +110,10 @@ namespace Bloom.Publish.BloomPub.wifi
         // Hold relevant network interface attributes.
         private class InterfaceInfo
         {
-            public string IpAddr      { get; set; }
+            public string IpAddr { get; set; }
             public string Description { get; set; }
-            public string NetMask     { get; set; }
-            public int Metric         { get; set; }
+            public string NetMask { get; set; }
+            public int Metric { get; set; }
         }
 
         // The port on which we advertise.
@@ -149,7 +149,7 @@ namespace Bloom.Publish.BloomPub.wifi
             try
             {
                 Debug.WriteLine("WiFiAdvertiser, entering advert loop"); // WM, TEMPORARY
-				// Advertise until cancellation.
+                // Advertise until cancellation.
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     if (!Paused)
@@ -207,7 +207,7 @@ namespace Bloom.Publish.BloomPub.wifi
         // actual address from which the network stack makes the broadcast. Gleaning the local
         // IP address from an active UdpClient -- using, for example, Dns.GetHostEntry() --
         // usually yields the address that the stack is using.
-        // But not always. 
+        // But not always.
         // On some machines, unfortunately, asking for the IP from the active UdpClient after
         // the fact yields the address of an interface NOT being used by the stack. When that
         // happens the the wrong address gets put into the advert and the remote Android becomes
@@ -262,10 +262,16 @@ namespace Bloom.Publish.BloomPub.wifi
 
             // Now that we know the IP address and subnet mask in effect, calculate
             // the "directed" broadcast address to use.
-            _ipForBroadcastDestination = GetDirectedBroadcastAddress(_ipForThisDeviceOnChosenInterface, _subnetMask);
+            _ipForBroadcastDestination = GetDirectedBroadcastAddress(
+                _ipForThisDeviceOnChosenInterface,
+                _subnetMask
+            );
             if (_ipForBroadcastDestination.Length == 0)
             {
-                EventLog.WriteEntry("Application", "WiFiAdvertiser, ERROR getting broadcast address");
+                EventLog.WriteEntry(
+                    "Application",
+                    "WiFiAdvertiser, ERROR getting broadcast address"
+                );
                 return;
             }
 
@@ -273,10 +279,16 @@ namespace Bloom.Publish.BloomPub.wifi
             {
                 // Instantiate source endpoint using the local IP address we just got,
                 // then use that to create the UdpClient for broadcasting adverts.
-                _epForThisDeviceOnChosenInterface = new IPEndPoint(IPAddress.Parse(_ipForThisDeviceOnChosenInterface), _portForBroadcast);
+                _epForThisDeviceOnChosenInterface = new IPEndPoint(
+                    IPAddress.Parse(_ipForThisDeviceOnChosenInterface),
+                    _portForBroadcast
+                );
                 if (_epForThisDeviceOnChosenInterface == null)
                 {
-                    EventLog.WriteEntry("Application", "WiFiAdvertiser, ERROR creating local IPEndPoint");
+                    EventLog.WriteEntry(
+                        "Application",
+                        "WiFiAdvertiser, ERROR creating local IPEndPoint"
+                    );
                     return;
                 }
 
@@ -294,21 +306,40 @@ namespace Bloom.Publish.BloomPub.wifi
                 _clientForBookAdvertSend.EnableBroadcast = true;
 
                 // Set up destination endpoint.
-                _epForBroadcastDestination = new IPEndPoint(IPAddress.Parse(_ipForBroadcastDestination), _portForBroadcast);
+                _epForBroadcastDestination = new IPEndPoint(
+                    IPAddress.Parse(_ipForBroadcastDestination),
+                    _portForBroadcast
+                );
 
                 // Log key data for tech support.
-                EventLog.WriteEntry("Application", $"UDP advertising will use: localIp = {_ipForThisDeviceOnChosenInterface}:{_epForThisDeviceOnChosenInterface.Port} ({ifcResult.Description})");
-                EventLog.WriteEntry("Application", $"                          subnetMask = {_subnetMask}");
-                EventLog.WriteEntry("Application", $"                          remoteIp = {_epForBroadcastDestination.Address}:{_epForBroadcastDestination.Port}");
+                EventLog.WriteEntry(
+                    "Application",
+                    $"UDP advertising will use: localIp = {_ipForThisDeviceOnChosenInterface}:{_epForThisDeviceOnChosenInterface.Port} ({ifcResult.Description})"
+                );
+                EventLog.WriteEntry(
+                    "Application",
+                    $"                          subnetMask = {_subnetMask}"
+                );
+                EventLog.WriteEntry(
+                    "Application",
+                    $"                          remoteIp = {_epForBroadcastDestination.Address}:{_epForBroadcastDestination.Port}"
+                );
 
                 // WM, TEMPORARY
-                Debug.WriteLine($"UDP advertising will use: localIp = {_ipForThisDeviceOnChosenInterface}:{_epForThisDeviceOnChosenInterface.Port} ({ifcResult.Description})");
+                Debug.WriteLine(
+                    $"UDP advertising will use: localIp = {_ipForThisDeviceOnChosenInterface}:{_epForThisDeviceOnChosenInterface.Port} ({ifcResult.Description})"
+                );
                 Debug.WriteLine($"                          subnetMask = {_subnetMask}");
-                Debug.WriteLine($"                          remoteIp = {_epForBroadcastDestination.Address}:{_epForBroadcastDestination.Port}");
+                Debug.WriteLine(
+                    $"                          remoteIp = {_epForBroadcastDestination.Address}:{_epForBroadcastDestination.Port}"
+                );
             }
             catch (Exception e)
             {
-                EventLog.WriteEntry("Application", "WiFiAdvertiser::GetCurrentIpAddresses, Exception: " + e);
+                EventLog.WriteEntry(
+                    "Application",
+                    "WiFiAdvertiser::GetCurrentIpAddresses, Exception: " + e
+                );
             }
         }
 
@@ -362,12 +393,17 @@ namespace Bloom.Publish.BloomPub.wifi
             IfaceEthernet.Metric = int.MaxValue;
 
             // Retrieve all network interfaces that are *active*.
-            var allOperationalNetworks = NetworkInterface.GetAllNetworkInterfaces()
-                .Where(ni => ni.OperationalStatus == OperationalStatus.Up).ToArray();
+            var allOperationalNetworks = NetworkInterface
+                .GetAllNetworkInterfaces()
+                .Where(ni => ni.OperationalStatus == OperationalStatus.Up)
+                .ToArray();
 
             if (!allOperationalNetworks.Any())
             {
-                EventLog.WriteEntry("Application", "WiFiAdvertiser, NO network interfaces are operational");
+                EventLog.WriteEntry(
+                    "Application",
+                    "WiFiAdvertiser, NO network interfaces are operational"
+                );
                 return null;
             }
 
@@ -436,7 +472,10 @@ namespace Bloom.Publish.BloomPub.wifi
                 return IfaceEthernet;
             }
 
-            EventLog.WriteEntry("Application", "WiFiAdvertiser, NO suitable network interface found");
+            EventLog.WriteEntry(
+                "Application",
+                "WiFiAdvertiser, NO suitable network interface found"
+            );
             return null;
         }
 
@@ -473,7 +512,10 @@ namespace Bloom.Publish.BloomPub.wifi
             }
             catch (OutOfMemoryException e)
             {
-                EventLog.WriteEntry("Application", "GetMetricForInterface, ERROR creating buffer: " + e);
+                EventLog.WriteEntry(
+                    "Application",
+                    "GetMetricForInterface, ERROR creating buffer: " + e
+                );
                 return bestMetric;
             }
 
@@ -486,7 +528,10 @@ namespace Bloom.Publish.BloomPub.wifi
                     // Something went wrong so bail.
                     // It is tempting to add a dealloc call here, but don't. The
                     // dealloc in the 'finally' block *will* be done (I checked).
-                    EventLog.WriteEntry("Application", $"GetMetricForInterface, ERROR {error} getting table, returning {bestMetric}");
+                    EventLog.WriteEntry(
+                        "Application",
+                        $"GetMetricForInterface, ERROR {error} getting table, returning {bestMetric}"
+                    );
                     return bestMetric;
                 }
 
@@ -514,7 +559,10 @@ namespace Bloom.Publish.BloomPub.wifi
             {
                 if (e is AccessViolationException || e is MissingMethodException)
                 {
-                    EventLog.WriteEntry("Application", "GetMetricForInterface, ERROR walking table: " + e);
+                    EventLog.WriteEntry(
+                        "Application",
+                        "GetMetricForInterface, ERROR walking table: " + e
+                    );
                 }
             }
             finally
@@ -560,7 +608,7 @@ namespace Bloom.Publish.BloomPub.wifi
         //     convert broadcast address byte array to IP address string and return it
         //
         // Note: the local IP and mask inputs are not explicitly checked. Any issues they
-        // may have will become apparent by the catch block firing. 
+        // may have will become apparent by the catch block firing.
         //
         private string GetDirectedBroadcastAddress(string ipIn, string maskIn)
         {
@@ -573,7 +621,10 @@ namespace Bloom.Publish.BloomPub.wifi
 
                 if (ipBytes.Length != maskBytes.Length)
                 {
-                    EventLog.WriteEntry("Application", $"BroadcastAddress, ERROR length mismatch, IP vs mask: {ipBytes.Length}, {maskBytes.Length}");
+                    EventLog.WriteEntry(
+                        "Application",
+                        $"BroadcastAddress, ERROR length mismatch, IP vs mask: {ipBytes.Length}, {maskBytes.Length}"
+                    );
                     return "";
                 }
 
