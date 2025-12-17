@@ -316,8 +316,6 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 		<None Include="Resources\Error70x70.png" />
 		<None Include="Resources\pagePlaceHolder.png" />
 		<None Include="Resources\collection32x32.png" />
-		<None Include="Resources\settings24x24.png" />
-		<None Include="Resources\OpenCreateCollection24x24.png" />
 		<None Include="Resources\help24x24.png" />
 		<None Include="Resources\publish32x32.png" />
 		<None Include="Resources\newCollection32x32.png" />
@@ -331,11 +329,6 @@ xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
 	</ItemGroup>
 	<ItemGroup>
 		<Content Include="bloom.ico" />
-		<None Include="Resources\Disconnected.png" />
-		<None Include="Resources\TC Button Grey Small Team.png" />
-		<None Include="Resources\TC Button Warning.png" />
-		<None Include="Resources\TC Button Updates Available.png" />
-		<None Include="Resources\Team32x32.png" />
 		<None Include="Resources\help16x16Darker.png" />
 		<None Include="Resources\sad16x16.png" />
 		<None Include="Resources\weblink.png" />

@@ -8,6 +8,7 @@ using SIL.IO;
 
 namespace Bloom.TeamCollection
 {
+    // Must match the TeamCollectionStatus type in TeamCollectionStatus.ts
     public enum TeamCollectionStatus
     {
         Nominal, // all is well
