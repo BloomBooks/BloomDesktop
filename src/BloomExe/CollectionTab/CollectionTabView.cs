@@ -59,25 +59,12 @@ namespace Bloom.CollectionTab
 
             InitializeComponent();
             _reactControl.SetLocalizationChangedEvent(localizationChangedEvent); // after InitializeComponent, which creates it.
-            // JohnT: when changing 5.7 to 6.0, I changed this instead to 6.1. I believe it is a button
-            // to launch the new settings dialog, which we are not yet ready to release.
-            // The current settings dialog is the thing code calls the "LegacySettingsDialog" though a lot of its tabs are React.
-            _settingsButton.Visible = false; // Hide for now. We'll bring it back in 6.1.
-            BackColor = _reactControl.BackColor = Palette.GeneralBackground;
-            _toolStrip.Renderer = new NoBorderToolStripRenderer();
-            _toolStripLeft.Renderer = new NoBorderToolStripRenderer();
-
-            // When going down to Shrink Stage 3 (see WorkspaceView), we want the right-side toolstrip to take precedence
-            // (Settings, Other Collection).
-            // This essentially makes the TC Status button's zIndex less than the buttons on the right side.
-            _toolStripLeft.SendToBack();
+            BackColor =
+                _reactControl.BackColor =
+                _topBarControl.BackColor =
+                    Palette.GeneralBackground;
 
             //TODO splitContainer1.SplitterDistance = _collectionListView.PreferredWidth;
-
-            if (SIL.PlatformUtilities.Platform.IsMono)
-            {
-                BackgroundColorsForLinux();
-            }
 
             selectedTabChangedEvent.Subscribe(c =>
             {
@@ -100,21 +87,6 @@ namespace Bloom.CollectionTab
                         () => SetTeamCollectionStatus(tcManager)
                     );
                 }
-            };
-            _tcStatusButton.Click += (sender, args) =>
-            {
-                // Reinstate this to see messages from before we started up.
-                // We think it might be too expensive to show a list as long as this might get.
-                // Instead, in the short term we may add a button to show the file.
-                // Later we may implement some efficient way to scroll through them.
-                // tcManager.CurrentCollection?.MessageLog?.LoadSavedMessages();
-
-                dynamic messageBundle = new DynamicJson();
-                messageBundle.showReloadButton = tcManager.MessageLog.ShouldShowReloadButton;
-                _webSocketServer.LaunchDialog("TeamCollectionDialog", messageBundle);
-                tcManager.CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(
-                    MessageAndMilestoneType.LogDisplayed
-                );
             };
 
             // We don't want this control initializing until team collections sync (if any) is done.
@@ -310,38 +282,6 @@ namespace Bloom.CollectionTab
             );
         }
 
-        internal void ManageSettings(SettingsProtectionHelper settingsLauncherHelper)
-        {
-            //we have a couple of buttons which don't make sense for the remote (therefore vulnerable) low-end user
-            settingsLauncherHelper.ManageComponent(_legacySettingsButton);
-            //comment out until 6.1 settingsLauncherHelper.ManageComponent(_settingsButton);
-
-            //NB: this isn't really a setting, but we're using that feature to simplify this menu down to what makes sense for the easily-confused user
-            settingsLauncherHelper.ManageComponent(_openCreateCollectionButton);
-        }
-
-        private void BackgroundColorsForLinux()
-        {
-            // Set the background image for Mono because the background color does not paint,
-            // and if we override the background paint handler, the default styling of the child
-            // controls is changed.
-
-            // We are getting an exception if none of the buttons are visible. The tabstrip is set
-            // to Dock.Top which results in the height being zero if no buttons are visible.
-            if ((_toolStrip.Height == 0) || (_toolStrip.Width == 0))
-                return;
-
-            var bmp = new Bitmap(_toolStrip.Width, _toolStrip.Height);
-            using (var g = Graphics.FromImage(bmp))
-            {
-                using (var b = new SolidBrush(_toolStrip.BackColor))
-                {
-                    g.FillRectangle(b, 0, 0, bmp.Width, bmp.Height);
-                }
-            }
-            _toolStrip.BackgroundImage = bmp;
-        }
-
         public string CollectionTabLabel
         {
             get
@@ -366,11 +306,7 @@ namespace Bloom.CollectionTab
         /// <summary>
         /// TopBarControl.Width is not right here, because the Team Collection status button only shows in team collections.
         /// </summary>
-        public int WidthToReserveForTopBarControl =>
-            _openCreateCollectionButton.Width
-            + _settingsButton.Width
-            + _legacySettingsButton.Width
-            + (_tcStatusButton.Visible ? _tcStatusButton.Width : 0);
+        public int WidthToReserveForTopBarControl => _topBarReactControl?.Width ?? 0;
 
         public void PlaceTopBarControl()
         {
@@ -379,46 +315,17 @@ namespace Bloom.CollectionTab
 
         public Bitmap ToolStripBackground { get; set; }
 
-        private WorkspaceView GetWorkspaceView()
+        internal void SetTeamCollectionStatus(ITeamCollectionManager tcManager)
         {
-            Control ancestor = Parent;
-            while (ancestor != null && !(ancestor is WorkspaceView))
-                ancestor = ancestor.Parent;
-            return ancestor as WorkspaceView;
-        }
+            var status = tcManager?.CollectionStatus ?? TeamCollectionStatus.None;
+            _webSocketServer.SendString("collectionTopBar", "tcStatus", status.ToString());
 
-        private void _legacySettingsButton_Click(object sender, EventArgs e)
-        {
-            GetWorkspaceView().OnLegacySettingsButton_Click(sender, e);
-        }
-
-        private void _settingsButton_Click(object sender, EventArgs e)
-        {
-            _webSocketServer.LaunchDialog("CollectionSettingsDialog");
-        }
-
-        private void _openCreateCollectionButton_Click(object sender, EventArgs e)
-        {
-            GetWorkspaceView().OpenCreateCollection();
-        }
-
-        /// <summary>
-        /// Set a new TC status image. Called at Idle time or startup, on the UI thread.
-        /// N.B.: It also gets called if the user tries to do something and the TeamCollection suddenly
-        /// recognizes it is in a disconnected state.
-        /// </summary>
-        public void SetTeamCollectionStatus(TeamCollectionManager tcManager)
-        {
-            _tcStatusButton.Update(tcManager.CollectionStatus);
             // This will cause the CollectionsTabBookPane to reload the status of the book
             // (and the collection itself), which will trickle down to the status panel.
-            if (tcManager.CollectionStatus == TeamCollectionStatus.Disconnected)
+            if (tcManager?.CollectionStatus == TeamCollectionStatus.Disconnected)
+            {
                 _webSocketServer.SendEvent("bookTeamCollectionStatus", "reload");
-        }
-
-        private void _tcStatusButton_Click(object sender, EventArgs e)
-        {
-            // probably will do GetWorkspaceView().OpenTCStatus();
+            }
         }
 
         /// <summary>

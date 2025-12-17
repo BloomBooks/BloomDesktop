@@ -28,6 +28,12 @@ namespace Bloom.web.controllers
                 HandleOpenOrCreateCollection,
                 true
             );
+
+            apiHandler.RegisterEndpointHandler(
+                "workspace/showLegacySettingsDialog",
+                HandleShowLegacySettingsDialog,
+                true
+            );
         }
 
         private void HandleOpenOrCreateCollection(ApiRequest request)
@@ -42,6 +48,16 @@ namespace Bloom.web.controllers
         {
             Application.Idle -= OpenCreateCollection;
             WorkspaceView.OpenCreateCollection();
+        }
+
+        private void HandleShowLegacySettingsDialog(ApiRequest request)
+        {
+            WorkspaceView.OpenLegacySettingsDialog();
+
+            // When the fully react dialog is ready, we'll do this instead:
+            // _webSocketServer.LaunchDialog("CollectionSettingsDialog");
+
+            request.PostSucceeded();
         }
     }
 }

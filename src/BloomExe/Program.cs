@@ -1624,7 +1624,6 @@ namespace Bloom
                     LocalizationManager.FallbackLanguageIds = new[] { "es", "en" };
                 }
 
-                // If this is removed, change code in WorkspaceView.OnSettingsProtectionChanged
                 LocalizationManager.EnableClickingOnControlToBringUpLocalizationDialog = false; // BL-5111
 
                 // It's now safe to read the localized strings.  See BL-13245.

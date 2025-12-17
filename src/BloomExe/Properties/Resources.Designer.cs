@@ -146,16 +146,6 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Disconnected {
-            get {
-                object obj = ResourceManager.GetObject("Disconnected", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap edit {
             get {
                 object obj = ResourceManager.GetObject("edit", resourceCulture);
@@ -236,16 +226,6 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap OpenCreateCollection24x24 {
-            get {
-                object obj = ResourceManager.GetObject("OpenCreateCollection24x24", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap PagePlaceHolder {
             get {
                 object obj = ResourceManager.GetObject("PagePlaceHolder", resourceCulture);
@@ -289,56 +269,6 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap sad16x16 {
             get {
                 object obj = ResourceManager.GetObject("sad16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap settings24x24 {
-            get {
-                object obj = ResourceManager.GetObject("settings24x24", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap TC_Button_Grey_Small_Team {
-            get {
-                object obj = ResourceManager.GetObject("TC Button Grey Small Team", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap TC_Button_Updates_Available {
-            get {
-                object obj = ResourceManager.GetObject("TC Button Updates Available", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap TC_Button_Warning {
-            get {
-                object obj = ResourceManager.GetObject("TC Button Warning", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap Team32x32 {
-            get {
-                object obj = ResourceManager.GetObject("Team32x32", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
