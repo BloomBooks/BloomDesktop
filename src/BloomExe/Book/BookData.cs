@@ -1496,6 +1496,10 @@ namespace Bloom.Book
                 // They are already on both so no point in copying.
                 "data-book",
                 "data-collection",
+                // This attribute affects an element's position on the page, and
+                // (now that a custom cover may have two copies of the title)
+                // we definitely don't want to force them both to be in the same place.
+                "data-bubble-alternate",
                 // This is important because without it magic languages like "N1" could get overwritten by specific ones.
                 "lang",
                 // If there's explicit formatting on an element, we probably don't want the same on every copy of
@@ -1524,6 +1528,7 @@ namespace Bloom.Book
                 "bloom-content3",
                 "bloom-contentNational1",
                 "bloom-contentNational2",
+                "bloom-custom-cover-only-visible",
             }
         );
 

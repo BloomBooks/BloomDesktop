@@ -14,6 +14,7 @@ using Bloom.SafeXml;
 using Bloom.Utils;
 using L10NSharp;
 using SIL.IO;
+using SIL.Progress;
 using SIL.Windows.Forms.Miscellaneous;
 
 namespace Bloom.web.controllers
@@ -119,6 +120,28 @@ namespace Bloom.web.controllers
                 "editView/showBookSettingsDialog",
                 HandleShowBookSettingsDialog,
                 true
+            );
+            apiHandler.RegisterEndpointHandler("editView/updateXmatter", HandleUpdateXmatter, true);
+        }
+
+        /// <summary>
+        /// Run BringXmatterHtmlUpToDate (after saving current page state), then reload the page.
+        /// This is currently used to restore the auto setting of the front cover.
+        /// </summary>
+        private void HandleUpdateXmatter(ApiRequest request)
+        {
+            var pageId = request.GetPostStringOrNull();
+            request.PostSucceeded();
+            View.Model.SaveThen(
+                () =>
+                {
+                    // See a long comment in Book.Save where this is called although
+                    // it seems we just need BringXmatterHtmlUpToDate. This is safer,
+                    // and switching back to Auto is not likely to be common.
+                    View.Model.CurrentBook.EnsureUpToDateMemory(new NullProgress());
+                    return pageId;
+                },
+                () => { }
             );
         }
 

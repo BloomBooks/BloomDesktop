@@ -351,7 +351,7 @@ namespace Bloom.Book
 
             _bookDom.EnsureStylesheetLinks(Path.GetFileName(PathToXMatterStylesheet));
 
-            var divBeforeNextFrontMatterPage = _bookDom.RawDom.SelectSingleNode(
+            var divToIsertNextPageAfter = _bookDom.RawDom.SelectSingleNode(
                 "//body/div[@id='bloomDataDiv']"
             );
 
@@ -365,7 +365,25 @@ namespace Bloom.Book
 
                 // If we are using an image for the front cover, replace the typical front cover with
                 // a special one which has a full-page bloom-canvas.
-                if (coverIsImage && IsOutsideFrontCoverPage(xmatterPage))
+                var isOutsideFrontCoverPage = IsOutsideFrontCoverPage(xmatterPage);
+                if (isOutsideFrontCoverPage)
+                {
+                    var firstPage = _bookDom.SelectSingleNode(
+                        "/html/body/div[contains(@class, 'bloom-page')]"
+                    );
+                    if (firstPage != null && firstPage.HasClass("bloom-custom-cover"))
+                    {
+                        // Since we've saved a custom front cover, we don't want to insert the one
+                        // from the template.
+                        // However, we might be doing this because of a change of orientation,
+                        // so make sure that's right.
+                        SizeAndOrientation.UpdatePageSizeAndOrientationClasses(firstPage, layout);
+                        // and other pages should come after it!
+                        divToIsertNextPageAfter = firstPage;
+                        continue;
+                    }
+                }
+                if (coverIsImage && isOutsideFrontCoverPage)
                 {
                     var directoryPath = GetXMatterDirectory(
                         "CoverIsImage",
@@ -432,7 +450,7 @@ namespace Bloom.Book
                 )
                 {
                     //note: this is redundant unless this is the 1st backmatterpage in the list
-                    divBeforeNextFrontMatterPage = _bookDom.RawDom.SelectSingleNode(
+                    divToIsertNextPageAfter = _bookDom.RawDom.SelectSingleNode(
                         "//body/div[last()]"
                     );
                 }
@@ -452,10 +470,10 @@ namespace Bloom.Book
                     }
                 }
 
-                _bookDom.RawDom
-                    .SelectSingleNode("//body")
-                    .InsertAfter(newPageDiv, divBeforeNextFrontMatterPage);
-                divBeforeNextFrontMatterPage = newPageDiv;
+                _bookDom
+                    .RawDom.SelectSingleNode("//body")
+                    .InsertAfter(newPageDiv, divToIsertNextPageAfter);
+                divToIsertNextPageAfter = newPageDiv;
 
                 //enhance... this is really ugly. I'm just trying to clear out any remaining "{blah}" left over from the template
                 foreach (
@@ -563,6 +581,10 @@ namespace Bloom.Book
                 )
             )
             {
+                // Custom pages are not removed or replaced. This allows all their layout to survive
+                // the process of bringing the book up to date.
+                if (div.HasClass("bloom-custom-cover"))
+                    continue;
                 var id = div.GetAttribute("id");
                 if (!string.IsNullOrEmpty(id))
                 {

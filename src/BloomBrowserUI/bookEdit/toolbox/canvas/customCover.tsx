@@ -1,3 +1,6 @@
+// This collectionSettings reference defines the function GetSettings(): ICollectionSettings
+// The actual function is injected by C#.
+/// <reference path="../../js/collectionSettings.d.ts"/>
 import * as ReactDOM from "react-dom";
 import * as React from "react";
 import { CustomCoverMenu } from "./customCoverMenu";
@@ -7,10 +10,10 @@ import {
 } from "../../js/CanvasElementManager";
 import { EditableDivUtils } from "../../js/editableDivUtils";
 import { kBloomCanvasClass, kCanvasElementClass } from "./canvasElementUtils";
+import { postString } from "../../../utils/bloomApi";
 
 export function convertCoverPageToCustom(page: HTMLElement): void {
     theOneCanvasElementManager?.turnOffCanvasElementEditing();
-    page.classList.add("bloom-custom-cover");
     const marginBox = page.getElementsByClassName("marginBox")[0];
     if (!marginBox) return; // paranoia and lint
 
@@ -19,60 +22,81 @@ export function convertCoverPageToCustom(page: HTMLElement): void {
         marginBox.querySelectorAll("[data-book], [data-derived]"),
     );
     const newCanvasElements: HTMLElement[] = [];
-    const newCeContentElements: HTMLElement[] = [];
+    const settings = GetSettings();
     for (const elem of contentElements) {
         if (elem instanceof HTMLImageElement) {
-            // The main cover image. We will keep it, but it will no longer be
+            // The main cover image. We will clone it, but it will no longer be
             // a background image.
             const ce = elem.parentElement?.parentElement;
             if (ce && ce.classList.contains(kCanvasElementClass)) {
-                newCanvasElements.push(ce as HTMLElement);
-                ce.classList.remove(kBackgroundImageClass);
-                // We don't need this except to keep the two arrays aligned.
-                newCeContentElements.push(ce.firstElementChild as HTMLElement);
+                const newCe = ce.cloneNode(true) as HTMLElement;
+                newCanvasElements.push(newCe);
+                newCe.classList.remove(kBackgroundImageClass);
                 // set its top and left to where it currently is relative to the page
                 const pageRect = page.getBoundingClientRect();
+                // base this on the original!
                 const tgRect = ce.getBoundingClientRect();
                 const scale = EditableDivUtils.getPageScale();
-                ce.style.left = (tgRect.left - pageRect.left) / scale + "px";
-                ce.style.top = (tgRect.top - pageRect.top) / scale + "px";
+                newCe.style.left = (tgRect.left - pageRect.left) / scale + "px";
+                newCe.style.top = (tgRect.top - pageRect.top) / scale + "px";
             }
         } else {
             let ceContent = elem;
+            let baseSizeOn = elem;
             if (elem.classList.contains("bloom-editable")) {
                 const tg = elem.parentElement;
-                if (!tg || !tg.classList.contains("bloom-translationGroup"))
+                if (!tg || !tg.classList.contains("bloom-translationGroup")) {
                     continue;
-                // Enhance: if it is the title, make three CE's for three possible languages
-                // that might be visible. Distinguish them somehow. Fiddle something so that
-                // each is only visible if the corresponding cover language title is turned on.
-                // Fiddle some more so that in each only the relevant language is visible.
-                // I think it's best if all of them contain the title in all languages; then
-                // the right thing can happen if the collection languages change.
-                // But for now, if we already made a ce for it's parent, skip it.
-                if (newCeContentElements.indexOf(tg) >= 0) continue;
-                ceContent = tg; // we'll move the whole tg.
+                }
+                // we'll only make a CE for bloom-editables that are visible
+                if (!elem.classList.contains("bloom-visibility-code-on")) {
+                    continue;
+                }
+
+                ceContent = tg.cloneNode(true) as HTMLElement;
+                const lang = elem.getAttribute("lang");
+                const newEditable = ceContent.querySelector(
+                    `.bloom-editable[lang='${lang}']`,
+                ) as HTMLElement;
+
+                // Now, we need to make the CE display just the one bloom-editable that it
+                // was made for. Normally this is controlled by bloom-visibility-code-on.
+                // But that is managed by C# code and it would be messy and duplicative
+                // to make make special cases there for custom covers. So instead we'll add
+                // our own class.
+                newEditable.classList.add("bloom-custom-cover-only-visible");
+                // I don't know why an editable that is not part of a CE yet would have one of these,
+                // but if it does it is obsolete and will interfere with the position we're setting
+                // here. (Maybe I only saw it on pages I'd already messed with?)
+                Array.from(
+                    ceContent.querySelectorAll("[data-bubble-alternate]"),
+                ).forEach((e) => {
+                    e.removeAttribute("data-bubble-alternate");
+                });
+            } else {
+                // This is debatable. But I think having empty CEs around for things like optional
+                // branding elements is not helpful.
+                if (ceContent.clientHeight === 0 || ceContent.clientWidth === 0)
+                    continue; // invisible, skip it.
+                // tempting to move it, but we don't want to mess with the current page
+                // until we finish the loop, so that nothing moves before we figure out
+                // where to put its new canvas element.
+                ceContent = elem.cloneNode(true) as HTMLElement;
             }
-            // This is debatable. But I think having empty CEs around for things like optional
-            // branding elements is not helpful.
-            if (ceContent.clientHeight === 0 || ceContent.clientWidth === 0)
-                continue; // invisible, skip it.
             // make a new canvas element to hold this. Not sure what problems it will
             // cause when it's NOT a TG, but we have at least topic and language name that
             // never are and are commonly on the front cover.
             const newCe = document.createElement("div");
             newCe.classList.add(kCanvasElementClass);
             newCanvasElements.push(newCe);
-            // We'd like to just move it, but that will affect its own size and position
-            // and also other elements we want to measure.
-            newCeContentElements.push(ceContent as HTMLElement);
+            newCe.appendChild(ceContent);
             // Before we move the tg, measure its size and make newCe match
             // Review: do we need to add allowance for borders/margins/padding?
-            newCe.style.width = ceContent.clientWidth + "px";
-            newCe.style.height = ceContent.clientHeight + "px";
+            newCe.style.width = baseSizeOn.clientWidth + "px";
+            newCe.style.height = baseSizeOn.clientHeight + "px";
             // set its top and left to where it currently is relative to the page
             const pageRect = page.getBoundingClientRect();
-            const tgRect = ceContent.getBoundingClientRect();
+            const tgRect = baseSizeOn.getBoundingClientRect();
             const scale = EditableDivUtils.getPageScale();
             newCe.style.left = (tgRect.left - pageRect.left) / scale + "px";
             newCe.style.top = (tgRect.top - pageRect.top) / scale + "px";
@@ -81,14 +105,13 @@ export function convertCoverPageToCustom(page: HTMLElement): void {
     const mainCanvas = document.createElement("div");
     mainCanvas.classList.add(kBloomCanvasClass);
     mainCanvas.classList.add("bloom-has-canvas-element");
-    for (let i = 0; i < newCanvasElements.length; i++) {
-        newCanvasElements[i].appendChild(newCeContentElements[i]);
-    }
     for (const newCE of newCanvasElements) {
         mainCanvas.appendChild(newCE);
     }
     marginBox.innerHTML = ""; // remove all existing content (now we got what we want)
     marginBox.appendChild(mainCanvas);
+    // This needs to be after we measure positions of things!
+    page.classList.add("bloom-custom-cover");
     // it's a new canvas so we need to set it up
     theOneCanvasElementManager.turnOnCanvasElementEditing();
 }
@@ -132,8 +155,12 @@ function renderCoverMenu(page: HTMLElement, container: HTMLElement): void {
                     convertCoverPageToCustom(page);
                 } else {
                     page.classList.remove("bloom-custom-cover");
-                    // Todo: save and clean up
+                    postString(
+                        "editView/updateXmatter",
+                        page.getAttribute("id")!,
+                    );
                 }
+                renderCoverMenu(page, container);
             }}
         />,
         container,
