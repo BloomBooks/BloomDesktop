@@ -58,10 +58,7 @@ namespace Bloom.CollectionTab
 
             InitializeComponent();
             _reactControl.SetLocalizationChangedEvent(localizationChangedEvent); // after InitializeComponent, which creates it.
-            BackColor =
-                _reactControl.BackColor =
-                _topBarControl.BackColor =
-                    Palette.GeneralBackground;
+            BackColor = _reactControl.BackColor = Palette.GeneralBackground;
 
             //TODO splitContainer1.SplitterDistance = _collectionListView.PreferredWidth;
 
@@ -305,7 +302,7 @@ namespace Bloom.CollectionTab
         /// <summary>
         /// TopBarControl.Width is not right here, because the Team Collection status button only shows in team collections.
         /// </summary>
-        public int WidthToReserveForTopBarControl => _topBarReactControl?.Width ?? 0;
+        public int WidthToReserveForTopBarControl => 0;
 
         public void PlaceTopBarControl()
         {

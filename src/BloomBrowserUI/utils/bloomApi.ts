@@ -3,7 +3,10 @@ import * as StackTrace from "stacktrace-js";
 import { reportError, reportPreliminaryError } from "../lib/errorHandler";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { useSubscribeToWebSocketForEvent } from "./WebSocketManager";
+import {
+    useSubscribeToWebSocketForEvent,
+    useSubscribeToWebSocketForObject,
+} from "./WebSocketManager";
 
 // You can modify mockReplies in order to work on UI components without the Bloom backend...
 // namely, storybook.
@@ -299,6 +302,34 @@ export function useWatchApiData<T>(
         setGeneration((old) => old + 1);
     });
     return useApiDataInternal(urlSuffix, defaultValue, generation);
+}
+
+// Gets initial value of the object and keeps it in sync via websocket updates.
+export function useWatchApiObject<T>(
+    urlSuffix: string,
+    defaultValue: T,
+    clientContext: string,
+    eventId: string,
+): T {
+    const [val, setVal] = useState<T>(defaultValue);
+
+    useEffect(() => {
+        setVal(defaultValue);
+        get(urlSuffix, (result) => {
+            if (typeof result.data === "string") {
+                setVal(JSON.parse(result.data) as T);
+            } else {
+                setVal(result.data as T);
+            }
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [urlSuffix, JSON.stringify(defaultValue)]);
+
+    useSubscribeToWebSocketForObject<T>(clientContext, eventId, (message) => {
+        setVal(message);
+    });
+
+    return val;
 }
 
 export function useWatchBooleanEvent(

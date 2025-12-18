@@ -212,9 +212,13 @@ namespace Bloom
         {
             if (ReplaceContextMenu != null)
             {
-                e.Handled = true;
-                ReplaceContextMenu();
-                return;
+                // If the user is holding down ctrl, we want to show the developer menu, so don't override.
+                if (!ModifierKeys.HasFlag(Keys.Control))
+                {
+                    e.Handled = true;
+                    ReplaceContextMenu();
+                    return;
+                }
             }
 
             var wantDebug = WantDebugMenuItems;

@@ -9,7 +9,6 @@ import {
     post,
     useWatchApiData,
 } from "../../../utils/bloomApi";
-import { WireUpForWinforms } from "../../../utils/WireUpWinform";
 import { useSubscribeToWebSocketForStringMessage } from "../../../utils/WebSocketManager";
 import { kBloomBlue, lightTheme } from "../../../bloomMaterialUITheme";
 const bloomApiPrefix = getBloomApiPrefix(false);
@@ -59,6 +58,7 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
                     align-items: flex-start;
                     justify-content: space-between;
                     padding-top: 2px;
+                    width: 100%;
                 `}
             >
                 <TeamCollectionButton status={teamCollectionStatus} />
@@ -90,4 +90,3 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
         </ThemeProvider>
     );
 };
-WireUpForWinforms(CollectionTopBarControls, kBloomBlue);

@@ -3,29 +3,124 @@ import * as React from "react";
 import { CollectionsTabIcon } from "./CollectionsTabIcon";
 import { EditTabIcon } from "./EditTabIcon";
 import { PublishTabIcon } from "./PublishTabIcon";
+import { WireUpForWinforms } from "../../utils/WireUpWinform";
+import { postJson, useWatchApiObject } from "../../utils/bloomApi";
+import { TopBarControls } from "./TopBarControls";
+import { Span } from "../l10nComponents";
+import {
+    kBloomBlue,
+    kBloomPurple,
+    kBloomRed,
+    kGreyOnDarkColor,
+} from "../../bloomMaterialUITheme";
 
-const tabs = [
-    { name: "Collections", svg: <CollectionsTabIcon />, height: 32 },
-    { name: "Edit", svg: <EditTabIcon />, height: 32 },
-    { name: "Publish", svg: <PublishTabIcon />, height: 27 },
+export type WorkspaceTabId = "collection" | "edit" | "publish";
+
+type WorkspaceTabState = "active" | "enabled" | "disabled" | "hidden";
+
+type TabStates = Record<WorkspaceTabId, WorkspaceTabState>;
+
+interface ITabDefinition {
+    id: WorkspaceTabId;
+    l10nId: string;
+    svg: React.ReactNode;
+    color: string;
+}
+
+const tabDefinitions: Array<ITabDefinition> = [
+    {
+        id: "collection",
+        l10nId: "CollectionTab.Collections",
+        svg: <CollectionsTabIcon />,
+        color: kBloomBlue,
+    },
+    {
+        id: "edit",
+        l10nId: "EditTab.Edit",
+        svg: <EditTabIcon />,
+        color: kBloomPurple,
+    },
+    {
+        id: "publish",
+        l10nId: "PublishTab.Publish",
+        svg: <PublishTabIcon />,
+        color: kBloomRed,
+    },
 ];
 
 export const TopBar: React.FunctionComponent = () => {
+    const defaultState = React.useMemo(
+        () => ({
+            tabStates: {
+                collection: "active",
+                edit: "hidden",
+                publish: "hidden",
+            } as TabStates,
+        }),
+        [],
+    );
+
+    const state = useWatchApiObject<{ tabStates: TabStates }>(
+        "workspace/tabs",
+        defaultState,
+        "workspace",
+        "tabs",
+    );
+
+    const tabStates = state.tabStates ?? defaultState.tabStates;
+    const activeTab = React.useMemo((): WorkspaceTabId => {
+        return (
+            tabDefinitions.find((t) => tabStates[t.id] === "active")?.id ??
+            "collection"
+        );
+    }, [tabStates]);
+
+    const handleSelectTab = React.useCallback(
+        (tab: WorkspaceTabId) => {
+            const tabState = tabStates[tab];
+
+            if (
+                tabState === "active" ||
+                tabState === "hidden" ||
+                tabState === "disabled"
+            ) {
+                return;
+            }
+            postJson("workspace/selectTab", { tab });
+        },
+        [tabStates],
+    );
+
+    const getColorForTab = React.useCallback(
+        (tabId: WorkspaceTabId): string => {
+            const tab = tabDefinitions.find((t) => t.id === tabId);
+            return tab ? tab.color : kBloomRed;
+        },
+        [],
+    );
+
     return (
         <div
             css={css`
-                background-color: #d65649;
+                background-color: ${getColorForTab(activeTab)};
                 padding-top: 2px;
+                display: flex;
+                align-items: flex-start;
+                gap: 100px;
             `}
         >
-            <BloomTabs />
+            <BloomTabs tabStates={tabStates} selectTab={handleSelectTab} />
+            <TopBarControls activeTab={activeTab} />
         </div>
     );
 };
 
+const kDisabledColor = kGreyOnDarkColor;
+
 const Tab: React.FunctionComponent<{
-    tab: { name: string; svg: React.ReactNode; height: number };
+    tab: ITabDefinition;
     selected: boolean;
+    disabled: boolean;
     select: () => void;
 }> = (props) => {
     return (
@@ -33,13 +128,16 @@ const Tab: React.FunctionComponent<{
             <a
                 role="tab"
                 aria-selected={props.selected ? "true" : "false"}
+                aria-disabled={props.disabled ? "true" : "false"}
                 css={css`
                     // style as big rectangular tab
                     color: white;
                     text-align: center;
                     padding: 14px 16px;
                     text-decoration: none;
-                    height: 55px;
+                    //height: 55px;
+
+                    cursor: pointer;
 
                     background-color: #575757;
                     border: solid thin black;
@@ -63,18 +161,30 @@ const Tab: React.FunctionComponent<{
                     font-size: 12px;
                     font-family: "segoe ui";
                     padding: 10px 21px;
+
+                    &[aria-disabled="true"] {
+                        pointer-events: none;
+                        color: ${kDisabledColor};
+                        & svg,
+                        & svg * {
+                            fill: ${kDisabledColor};
+                            stroke: ${kDisabledColor};
+                        }
+                    }
                 `}
                 // when clicked, add "selected" class to this tab
                 onClick={props.select}
             >
                 {props.tab.svg}
-                {props.tab.name}
+                <Span l10nKey={props.tab.l10nId} />
             </a>
         </li>
     );
 };
-export const BloomTabs: React.FunctionComponent = () => {
-    const [selectedTab, setSelectedTab] = React.useState("Collection");
+export const BloomTabs: React.FunctionComponent<{
+    tabStates: TabStates;
+    selectTab: (tab: WorkspaceTabId) => void;
+}> = (props) => {
     return (
         <ul
             role="tablist"
@@ -87,17 +197,31 @@ export const BloomTabs: React.FunctionComponent = () => {
                     margin: 0;
                     padding: 0;
                     gap: 1px;
+                    min-width: 300px;
                 `
             }
         >
-            {tabs.map((tab) => (
-                <Tab
-                    key={tab.name}
-                    tab={tab}
-                    selected={tab.name === selectedTab}
-                    select={() => setSelectedTab(tab.name)}
-                />
-            ))}
+            {tabDefinitions.map((tab) => {
+                const tabState = props.tabStates[tab.id];
+                if (tabState === "hidden") {
+                    return null;
+                }
+
+                const disabled = tabState === "disabled";
+                const selected = tabState === "active";
+
+                return (
+                    <Tab
+                        key={tab.id}
+                        tab={tab}
+                        selected={selected}
+                        disabled={disabled}
+                        select={() => props.selectTab(tab.id)}
+                    />
+                );
+            })}
         </ul>
     );
 };
+
+WireUpForWinforms(TopBar);
