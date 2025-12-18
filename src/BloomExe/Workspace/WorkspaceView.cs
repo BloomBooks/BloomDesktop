@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -23,7 +21,6 @@ using Bloom.web;
 using Bloom.web.controllers;
 using L10NSharp;
 using L10NSharp.Windows.Forms;
-using Messir.Windows.Forms;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -42,11 +39,6 @@ namespace Bloom.Workspace
         private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
         private readonly LocalizationChangedEvent _localizationChangedEvent;
         private readonly CollectionSettings _collectionSettings;
-        private bool _viewInitialized;
-        private int _originalToolStripPanelWidth;
-        private int _originalToolSpecificPanelHorizPos;
-        private int _stage1SpaceSaved;
-        private int _stage2SpaceSaved;
         private EditingView _editingView;
         private PublishView _publishView;
         private CollectionTabView _collectionTabView;
@@ -54,7 +46,7 @@ namespace Bloom.Workspace
         public event EventHandler ReopenCurrentProject;
         public static float DPIOfThisAccount;
         private ZoomModel _zoomModel;
-        private ReactControl _topRightReactControl;
+        private bool _tabsEnabled = true;
         private readonly ContextMenuStrip _uiLanguageContextMenu = new ContextMenuStrip();
         private readonly ContextMenuStrip _helpContextMenu = new ContextMenuStrip();
 
@@ -72,13 +64,15 @@ namespace Bloom.Workspace
 
         private NewCollectionWizardApi _newCollectionWizardApi;
 
+        internal ReactControl TopBarReactControl => _topBarReactControl;
+
         //autofac uses this
 
         public WorkspaceView(
             WorkspaceModel model,
-            CollectionTabView.Factory reactCollectionsTabsViewFactory,
+            CollectionTabView.Factory collectionsTabViewFactory,
             EditingView.Factory editingViewFactory,
-            PublishView.Factory pdfViewFactory,
+            PublishView.Factory publishViewFactory,
             CollectionSettingsDialog.Factory settingsDialogFactory,
             EditBookCommand editBookCommand,
             SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
@@ -112,7 +106,6 @@ namespace Bloom.Workspace
             _bookServer = bookServer;
             _tabSelection = tabSelection;
             _audioRecording = audioRecording;
-            collectionApi.WorkspaceView = this; // avoids an Autofac exception that appears if collectionApi constructor takes a WorkspaceView
             _collectionApi = collectionApi;
             appApi.WorkspaceView = this; // it needs to know, and there's some circularity involved in having factory pass it in
             workspaceApi.WorkspaceView = this; // and yet one more
@@ -162,46 +155,39 @@ namespace Bloom.Workspace
             //
             this._editingView = editingViewFactory();
             this._editingView.Dock = DockStyle.Fill;
-            this._editingView.Model.EnableSwitchingTabs = (enabled) => _tabStrip.Enabled = enabled;
+            this._editingView.Model.EnableSwitchingTabs = (enabled) =>
+            {
+                _tabsEnabled = enabled;
+                SendTopBarState();
+            };
 
-            _collectionTabView = reactCollectionsTabsViewFactory();
+            _collectionTabView = collectionsTabViewFactory();
             _collectionTabView.Dock = DockStyle.Fill;
             _collectionTabView.BackColor = System.Drawing.Color.FromArgb(
                 ((int)(((byte)(87)))),
                 ((int)(((byte)(87)))),
                 ((int)(((byte)(87))))
             );
-            _reactCollectionTab.Tag = _collectionTabView;
-            _tabStrip.SelectedTab = _reactCollectionTab;
+            _tabSelection.ActiveTab = WorkspaceTab.collection;
 
             //
             // _pdfView
             //
-            this._publishView = pdfViewFactory();
+            this._publishView = publishViewFactory();
             this._publishView.Dock = DockStyle.Fill;
 
-            _publishTab.Tag = _publishView;
-            _editTab.Tag = _editingView;
+            // Temporary: while Help/UI language menus are WinForms menus and tabs run in separate browsers,
+            // listen for browser clicks from each main browser so those WinForms menus can close.
+            // Remove once menus are in the single browser UI.
+            _editingView.Browser.OnBrowserClick += HandleAnyBrowserClick;
+            _collectionTabView.BrowserClick += HandleAnyBrowserClick;
+            _publishView.BrowserClick += HandleAnyBrowserClick;
 
-            SetTabVisibility(_publishTab, false);
-            SetTabVisibility(_editTab, false);
-
-            this._reactCollectionTab.Text = _collectionTabView.CollectionTabLabel;
-            _tabStrip.SelectedTab = _reactCollectionTab;
             SelectTab(_collectionTabView);
 
-            if (Platform.IsMono)
-            {
-                // Without this adjustment, we lose some controls on smaller resolutions.
-                AdjustToolPanelLocation(true);
-                // in mono auto-size causes the height of the tab strip to be too short
-                _tabStrip.AutoSize = false;
-            }
-
             SetupZoomModel();
-            SetupTopRightReactControl();
+            SetupTopBarReactControl();
             SendZoomInfo();
-            _viewInitialized = false;
             CommonApi.WorkspaceView = this;
 
             // We put this on the high priority list because the notification it sends
@@ -448,7 +434,7 @@ namespace Bloom.Workspace
             );
             if (bookName != Path.GetFileName(_bookSelection.CurrentSelection?.FolderPath))
                 return; // change is not to the book we're interested in.
-            if (_tabStrip.SelectedTab == _reactCollectionTab)
+            if (_tabSelection.ActiveTab == WorkspaceTab.collection)
                 return; // this toast is all about returning to the collection tab
             if (_returnToCollectionTabNotifier != null)
                 return; // notification already up
@@ -472,7 +458,7 @@ namespace Bloom.Workspace
                         _returnToCollectionTabNotifier.ToastClicked += (sender, _) =>
                         {
                             _returnToCollectionTabNotifier.CloseSafely();
-                            _tabStrip.SelectedTab = _reactCollectionTab;
+                            ChangeTab(WorkspaceTab.collection);
                         };
                         _returnToCollectionTabNotifier.Show(msg, "", -1);
                     }
@@ -504,25 +490,77 @@ namespace Bloom.Workspace
             SendZoomInfo();
         }
 
-        private void SetupTopRightReactControl()
+        private void SetupTopBarReactControl()
         {
-            _topRightReactControl = ReactControl.Create("workspaceTopRightControlsBundle");
-            _topRightReactControl.HideVerticalOverflow = true;
-            _topRightReactControl.Dock = DockStyle.Fill;
-            _topRightReactControl.BackColor = _panelHoldingTopRightReactControl.BackColor;
-            _topRightReactControl.SetLocalizationChangedEvent(_localizationChangedEvent);
-            _panelHoldingTopRightReactControl.Controls.Add(_topRightReactControl);
-            // Nothing special about 125. It just gives room for the longest language name (Bahasa Indonesia).
-            // But this is going to go away very soon as the whole top bar becomes one control.
-            if (_panelHoldingTopRightReactControl.Width < 125)
+            _topBarReactControl.SetLocalizationChangedEvent(_localizationChangedEvent);
+            _topBarReactControl.ReplaceContextMenu = () =>
             {
-                _panelHoldingTopRightReactControl.Width = 125;
+                Shell.GetShellOrNull()?.ShowContextMenuAt(MousePosition);
+            };
+            // Temporary: top bar is currently hosted as a separate browser from other tabs.
+            // Remove once menus and top bar run in one browser UI.
+            _topBarReactControl.OnBrowserClick += HandleAnyBrowserClick;
+        }
 
-                _panelHoldingTopRightReactControl.Left =
-                    this.Width - _panelHoldingTopRightReactControl.Width; // align this panel on the right.
-                _toolSpecificTopBarPanel.Width =
-                    _panelHoldingTopRightReactControl.Left - _toolSpecificTopBarPanel.Left;
+        // Temporary helper used to close WinForms menus from browser click notifications.
+        // Remove once menus are rendered in the single browser UI.
+        private void HandleAnyBrowserClick(object sender, EventArgs e)
+        {
+            if (_uiLanguageContextMenu.Visible)
+                _uiLanguageContextMenu.Close();
+            if (_helpContextMenu.Visible)
+                _helpContextMenu.Close();
+        }
+
+        public dynamic GetTabInfoForClient()
+        {
+            dynamic tabInfo = new DynamicJson();
+
+            var activeTabId = TabToId(_tabSelection.ActiveTab);
+
+            tabInfo.tabStates = new DynamicJson();
+            tabInfo.tabStates.collection = GetTabStateForUi("collection", activeTabId);
+            tabInfo.tabStates.edit = GetTabStateForUi("edit", activeTabId);
+            tabInfo.tabStates.publish = GetTabStateForUi("publish", activeTabId);
+            return tabInfo;
+        }
+
+        private string GetTabStateForUi(string tabId, string activeTabId)
+        {
+            // Even if !_tabsEnabled, we want the current tab to look active.
+            // Clicking on the active tab doesn't do anything anyway.
+            if (tabId == activeTabId)
+                return "active";
+
+            if (tabId == "edit" && !_model.ShowEditTab)
+                return "hidden";
+
+            if (tabId == "publish" && !_model.ShowPublishTab)
+                return "hidden";
+
+            var disabled = !_tabsEnabled || (tabId == "edit" && _model.EditTabLocked);
+
+            return disabled ? "disabled" : "enabled";
+        }
+
+        private static string TabToId(WorkspaceTab tab)
+        {
+            switch (tab)
+            {
+                case WorkspaceTab.collection:
+                    return "collection";
+                case WorkspaceTab.edit:
+                    return "edit";
+                case WorkspaceTab.publish:
+                    return "publish";
+                default:
+                    return "collection";
             }
+        }
+
+        private void SendTopBarState()
+        {
+            _webSocketServer?.SendBundle("workspace", "tabs", GetTabInfoForClient());
         }
 
         public dynamic GetZoomInfo()
@@ -639,90 +677,6 @@ namespace Bloom.Workspace
         private void SendZoomInfo()
         {
             _webSocketServer?.SendBundle("workspaceTopRightControls", "zoom", GetZoomInfo());
-        }
-
-        private int TabButtonSectionWidth
-        {
-            get { return _tabStrip.Items.Cast<TabStripButton>().Sum(tab => tab.Width) + 10; }
-        }
-
-        /// <summary>
-        /// Adjusts the tool panel location to allow more (or optionally less) space
-        /// for the tab buttons.
-        /// </summary>
-        void AdjustToolPanelLocation(bool allowNarrowing)
-        {
-            var widthOfTabButtons = TabButtonSectionWidth;
-            var location = _toolSpecificTopBarPanel.Location;
-            if (widthOfTabButtons > location.X || allowNarrowing)
-            {
-                location.X = widthOfTabButtons;
-                _toolSpecificTopBarPanel.Location = location;
-            }
-        }
-
-        /// <summary>
-        /// Adjust the tool panel location when the chosen localization changes.
-        /// See https://jira.sil.org/browse/BL-1212 for what can happen if we
-        /// don't adjust.  At the moment, we only widen, we never narrow the
-        /// overall area allotted to the tab buttons.  Button widths adjust
-        /// themselves automatically to their Text width.  There doesn't seem
-        /// to be a built-in mechanism to limit the width to a given maximum
-        /// so we implement such an operation ourselves.
-        /// </summary>
-        void HandleTabTextChanged(object sender, EventArgs e)
-        {
-            var btn = sender as TabStripButton;
-            if (btn != null)
-            {
-                const string kEllipsis = "\u2026";
-                // Preserve the original string as the tooltip.
-                if (!btn.Text.EndsWith(kEllipsis))
-                    btn.ToolTipText = btn.Text;
-                // Ensure the button width is no more than 110 pixels.
-                if (btn.Width > 110)
-                {
-                    using (Graphics g = btn.Owner.CreateGraphics())
-                    {
-                        btn.Text = ShortenStringToFit(btn.Text, 110, btn.Width, btn.Font, g);
-                    }
-                }
-            }
-            AdjustToolPanelLocation(false);
-        }
-
-        /// <summary>
-        /// Ensure that the TabStripItem or Control or Whatever is no wider than desired by
-        /// truncating the Text as needed, with an ellipsis appended to show truncation has
-        /// occurred.
-        /// </summary>
-        /// <returns>the possibly shortened string</returns>
-        /// <param name="text">the string to shorten if necessary</param>
-        /// <param name="maxWidth">the maximum item width allowed</param>
-        /// <param name="originalWidth">the original item width (with the original string)</param>
-        /// <param name="font">the font to use</param>
-        /// <param name="g">the relevant Graphics object for drawing/measuring</param>
-        /// <remarks>Would this be a good library method somewhere?  Where?</remarks>
-        public static string ShortenStringToFit(
-            string text,
-            int maxWidth,
-            int originalWidth,
-            Font font,
-            Graphics g
-        )
-        {
-            const string kEllipsis = "\u2026";
-            var txtWidth = TextRenderer.MeasureText(g, text, font).Width;
-            var padding = originalWidth - txtWidth;
-            while (txtWidth + padding > maxWidth)
-            {
-                var len = text.Length - 2;
-                if (len <= 0)
-                    break; // I can't conceive this happening, but I'm also paranoid.
-                text = text.Substring(0, len) + kEllipsis; // trim, add ellipsis
-                txtWidth = TextRenderer.MeasureText(g, text, font).Width;
-            }
-            return text;
         }
 
         private void _applicationUpdateCheckTimer_Tick(object sender, EventArgs e)
@@ -1052,17 +1006,12 @@ namespace Bloom.Workspace
 
         private void OnEditBook(Book.Book book)
         {
-            _tabStrip.SelectedTab = _editTab;
+            ChangeTab(WorkspaceTab.edit);
         }
 
-        public bool InEditMode => _tabStrip.SelectedTab == _editTab;
+        public bool InEditMode => _tabSelection.ActiveTab == WorkspaceTab.edit;
 
-        public bool InCollectionTab => _tabStrip.SelectedTab == _reactCollectionTab;
-
-        internal bool IsInTabStrip(Point pt)
-        {
-            return _tabStrip != null && _tabStrip.DisplayRectangle.Contains(pt);
-        }
+        public bool InCollectionTab => _tabSelection.ActiveTab == WorkspaceTab.collection;
 
         private void Application_Idle(object sender, EventArgs e)
         {
@@ -1071,23 +1020,16 @@ namespace Bloom.Workspace
 
         private void OnUpdateDisplay(object sender, EventArgs e)
         {
-            SetTabVisibility(_editTab, _model.ShowEditTab);
-            SetTabVisibility(_publishTab, _model.ShowPublishTab);
-            _editTab.Enabled = !_model.EditTabLocked;
+            SendTopBarState();
         }
 
         // Called early in checkin, will be re-updated by OnUpdateDisplay later in checkin,
         // but we need to disable it right away when losing permission to edit.
         public void DisableEditTab()
         {
-            _editTab.Enabled = false;
+            SendTopBarState();
             // This disables the Edit button.
             SendBookSelectionChanged(forceNotSaveable: true);
-        }
-
-        private void SetTabVisibility(TabStripButton tab, bool visible)
-        {
-            tab.Visible = visible;
         }
 
         public void OpenCreateCollection()
@@ -1226,22 +1168,6 @@ namespace Bloom.Workspace
             view.Dock = DockStyle.Fill;
             _containerPanel.Controls.Add(view);
 
-            _toolSpecificTopBarPanel.Controls.Clear();
-
-            _panelHoldingTopRightReactControl.BackColor = CurrentTabView.TopBarControl.BackColor =
-                _tabStrip.BackColor;
-            if (_topRightReactControl != null) // might not be set up yet
-            {
-                _topRightReactControl.BackColor = _tabStrip.BackColor;
-            }
-
-            if (CurrentTabView != null) //can remove when we get rid of info view
-            {
-                CurrentTabView.PlaceTopBarControl();
-                _toolSpecificTopBarPanel.Controls.Add(CurrentTabView.TopBarControl);
-                CurrentTabView.TopBarControl.Dock = DockStyle.Fill;
-            }
-
             _selectedTabAboutToChangeEvent.Raise(
                 new TabChangedDetails()
                 {
@@ -1262,6 +1188,7 @@ namespace Bloom.Workspace
                             _zoomModel.Zoom = zoomManager.Zoom;
                         }
                         SendZoomInfo();
+                        SendTopBarState();
                         // TODO-WV2: Can we clear the cache in WV2?  Do we need to?
                     },
                 }
@@ -1270,76 +1197,48 @@ namespace Bloom.Workspace
 
         protected IBloomTabArea CurrentTabView { get; set; }
 
-        private void _tabStrip_SelectedTabChanged(object sender, SelectedTabChangedEventArgs e)
-        {
-            if (_tabStrip.SelectedTab == _editTab)
-                _tabSelection.ActiveTab = WorkspaceTab.edit;
-            else if (_tabStrip.SelectedTab == _publishTab)
-                _tabSelection.ActiveTab = WorkspaceTab.publish;
-            else
-                _tabSelection.ActiveTab = WorkspaceTab.collection;
-            if (
-                _returnToCollectionTabNotifier != null
-                && _tabStrip.SelectedTab == _reactCollectionTab
-            )
-            {
-                _returnToCollectionTabNotifier.CloseSafely();
-                _returnToCollectionTabNotifier = null;
-            }
-            TabStripButton btn = (TabStripButton)e.SelectedTab;
-            _tabStrip.BackColor = btn.BarColor;
-            _toolSpecificTopBarPanel.BackColor = _panelHoldingTopRightReactControl.BackColor =
-                _tabStrip.BackColor;
-            if (_topRightReactControl != null) // might not be set up yet
-            {
-                _topRightReactControl.BackColor = _tabStrip.BackColor;
-            }
-            //Logger.WriteEvent("Selecting Tab Page: " + e.SelectedTab.Name);
-            SelectTab((Control)e.SelectedTab.Tag);
-            if (_tabSelection.ActiveTab == WorkspaceTab.collection && _collectionTabView != null)
-            {
-                if (Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded)
-                {
-                    // update bloom library status for the either the selected book or the entire collection.
-                    _collectionTabView.UpdateBloomLibraryStatus(
-                        Publish.BloomLibrary.BloomLibraryPublishModel.BookUploadedId
-                    );
-                    Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded = false;
-                    Publish.BloomLibrary.BloomLibraryPublishModel.BookUploadedId = null;
-                }
-            }
-        }
-
         public void ChangeTab(WorkspaceTab newTab)
         {
+            _tabSelection.ActiveTab = newTab;
             switch (newTab)
             {
                 case WorkspaceTab.edit:
-                    _tabStrip.SelectedTab = _editTab;
+                    SelectTab(_editingView);
                     break;
                 case WorkspaceTab.collection:
-                    _tabStrip.SelectedTab = _reactCollectionTab;
+                    SelectTab(_collectionTabView);
+                    if (_returnToCollectionTabNotifier != null)
+                    {
+                        _returnToCollectionTabNotifier.CloseSafely();
+                        _returnToCollectionTabNotifier = null;
+                    }
+                    if (_collectionTabView != null)
+                    {
+                        if (Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded)
+                        {
+                            _collectionTabView.UpdateBloomLibraryStatus(
+                                Publish.BloomLibrary.BloomLibraryPublishModel.BookUploadedId
+                            );
+                            Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded = false;
+                            Publish.BloomLibrary.BloomLibraryPublishModel.BookUploadedId = null;
+                        }
+                    }
                     break;
                 case WorkspaceTab.publish:
-                    _tabStrip.SelectedTab = _publishTab;
+                    SelectTab(_publishView);
                     break;
             }
-        }
-
-        private void _tabStrip_BackColorChanged(object sender, EventArgs e)
-        {
-            //_topBarButtonTable.BackColor = _toolSpecificPanel.BackColor =  _tabStrip.BackColor;
         }
 
         private void OnAboutBoxClick(object sender, EventArgs e)
         {
-            if (_tabStrip.SelectedTab == _editTab)
+            if (InEditMode)
                 _editingView.ShowAboutDialog();
             else
                 _webSocketServer.LaunchDialog("AboutDialog");
         }
 
-        private void toolStripMenuItem3_Click(object sender, EventArgs e)
+        private void _documentationMenuItem_Click(object sender, EventArgs e)
         {
             HelpLauncher.Show(this, CurrentTabView.HelpTopicUrl);
         }
@@ -1383,12 +1282,11 @@ namespace Bloom.Workspace
         private void WorkspaceView_Load(object sender, EventArgs e)
         {
             CheckDPISettings();
-            _originalToolStripPanelWidth = 0;
-            _viewInitialized = true;
             ShowAutoUpdateDialogIfNeeded();
             ShowForumInvitationDialogIfNeeded();
             // Whether we showed the dialog or not we'll check for a new version in 1 minute.
             _applicationUpdateCheckTimer.Enabled = true;
+            SendTopBarState();
         }
 
         private const int kCurrentAutoUpdateVersion = 1;
@@ -1490,7 +1388,7 @@ namespace Bloom.Workspace
 
         public void ShowRegistrationDialog()
         {
-            if (_tabStrip.SelectedTab == _editTab)
+            if (InEditMode)
                 _editingView.ShowRegistrationDialog();
             else
             {
@@ -1611,7 +1509,7 @@ namespace Bloom.Workspace
             // Try to ensure latest changes in book are included in report.  (BL-10480)
             try
             {
-                if (_editTab.IsSelected)
+                if (InEditMode)
                 {
                     _editingView.Model.SaveThen(
                         () =>
@@ -1649,11 +1547,10 @@ namespace Bloom.Workspace
             ProblemReportApi.ShowProblemDialog(this, null);
         }
 
-        public void SetStateOfNonPublishTabs(bool enable)
+        public void SetTabsEnabled(bool enable)
         {
-            if (_reactCollectionTab != null)
-                _reactCollectionTab.Enabled = enable;
-            _editTab.Enabled = enable;
+            _tabsEnabled = enable;
+            SendTopBarState();
         }
 
         private void _trainingVideosMenuItem_Click(object sender, EventArgs e)
@@ -1769,31 +1666,5 @@ namespace Bloom.Workspace
         public string MenuText;
         public float FractionApproved;
         public float FractionTranslated;
-    }
-
-    /// <summary>
-    /// This class follows a recommendation at
-    /// https://support.microsoft.com/en-us/help/953934/deeply-nested-controls-do-not-resize-properly-when-their-parents-are-r
-    /// It works around a bug that causes a "deeply nested" panel with a docked child to
-    /// fail to adjust the position of the docked child when the parent resizes.
-    /// </summary>
-    public class NestedDockedChildPanel : Panel
-    {
-        // This fix is Windows/.Net specific.  It prevents Bloom from displaying the main window at all in Linux/Mono.
-#if !__MonoCS__
-        protected override void OnSizeChanged(EventArgs e)
-        {
-            if (this.Handle != null)
-            {
-                this.BeginInvoke(
-                    (MethodInvoker)
-                        delegate
-                        {
-                            base.OnSizeChanged(e);
-                        }
-                );
-            }
-        }
-#endif
     }
 }

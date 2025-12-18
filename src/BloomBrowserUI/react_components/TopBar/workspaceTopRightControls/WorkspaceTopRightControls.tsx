@@ -3,8 +3,6 @@ import * as React from "react";
 import { useState } from "react";
 import { lightTheme } from "../../../bloomMaterialUITheme";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { WireUpForWinforms } from "../../../utils/WireUpWinform";
-import { CssBaseline } from "@mui/material";
 import { ZoomControl } from "./ZoomControl";
 import { UiLanguageMenu } from "./UiLanguageMenu";
 import { HelpMenu } from "./HelpMenu";
@@ -44,10 +42,6 @@ export const WorkspaceTopRightControls: React.FunctionComponent = () => {
 
     return (
         <ThemeProvider theme={lightThemeOverride}>
-            {/* CssBaseline injects MUI's base styles (it sets html/body to the theme typography,
-                normalizes margins, etc.). Without it, the browser keeps default fonts and spacing,
-                so our theme's font family/size and resets never reach this control. */}
-            <CssBaseline />
             <div
                 key={`workspace-top-right-controls-${generation}`}
                 css={css`
@@ -82,5 +76,3 @@ export const WorkspaceTopRightControls: React.FunctionComponent = () => {
         </ThemeProvider>
     );
 };
-
-WireUpForWinforms(WorkspaceTopRightControls);

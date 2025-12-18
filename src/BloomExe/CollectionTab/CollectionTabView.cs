@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,11 +7,8 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.MiscUI;
-using Bloom.Properties;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
-using Bloom.web;
 using Bloom.Workspace;
 using L10NSharp;
 using SIL.Reporting;
@@ -58,10 +54,7 @@ namespace Bloom.CollectionTab
 
             InitializeComponent();
             _reactControl.SetLocalizationChangedEvent(localizationChangedEvent); // after InitializeComponent, which creates it.
-            BackColor =
-                _reactControl.BackColor =
-                _topBarControl.BackColor =
-                    Palette.GeneralBackground;
+            BackColor = _reactControl.BackColor = Palette.GeneralBackground;
 
             //TODO splitContainer1.SplitterDistance = _collectionListView.PreferredWidth;
 
@@ -297,23 +290,6 @@ namespace Bloom.CollectionTab
             get { return "/Tasks/Collections_tab_tasks/Collections_tab_tasks_overview.htm"; }
         }
 
-        public Control TopBarControl
-        {
-            get { return _topBarControl; }
-        }
-
-        /// <summary>
-        /// TopBarControl.Width is not right here, because the Team Collection status button only shows in team collections.
-        /// </summary>
-        public int WidthToReserveForTopBarControl => _topBarReactControl?.Width ?? 0;
-
-        public void PlaceTopBarControl()
-        {
-            _topBarControl.Dock = DockStyle.Right;
-        }
-
-        public Bitmap ToolStripBackground { get; set; }
-
         /// <summary>
         /// Update the TeamCollection button text/icon/color. Called at Idle time or startup, on the UI thread.
         /// N.B.: It also gets called if the user tries to do something and the TeamCollection suddenly
@@ -352,6 +328,14 @@ namespace Bloom.CollectionTab
             Task.Run(() =>
                 _model.TheOneEditableCollection.UpdateBloomLibraryStatusOfBooks(bookInfos)
             );
+        }
+
+        // Temporary bridge while workspace menus are still WinForms menus.
+        // Remove when menus and tabs run in one browser UI.
+        internal event EventHandler BrowserClick
+        {
+            add { _reactControl.OnBrowserClick += value; }
+            remove { _reactControl.OnBrowserClick -= value; }
         }
     }
 }

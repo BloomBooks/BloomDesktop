@@ -57,6 +57,19 @@ type CollectionInfo = {
 };
 
 export const CollectionsTabPane: React.FunctionComponent = () => {
+    // Temporary: notify c# about clicks so WinForms menus can close.
+    // Remove this once menus move into the same browser UI.
+    React.useEffect(() => {
+        const notifyBrowserClicked = () => {
+            (window as any).chrome?.webview?.postMessage("browser-clicked");
+        };
+
+        window.addEventListener("click", notifyBrowserClicked);
+        return () => {
+            window.removeEventListener("click", notifyBrowserClicked);
+        };
+    }, []);
+
     // This sort of duplicates useApiJson, but allows us to use the underlying state variable.
     // Which we really need.
     const [collections, setCollections] = useState<
