@@ -196,6 +196,7 @@ namespace Bloom.Publish.BloomPub.wifi
                     $"Error in Advertiser: {error.Message}",
                     ProgressKind.Error
                 );
+                _clientForBookAdvertSend.Close();
             }
         }
 
