@@ -11,9 +11,17 @@ import {
 import { EditableDivUtils } from "../../js/editableDivUtils";
 import { kBloomCanvasClass, kCanvasElementClass } from "./canvasElementUtils";
 import { postString } from "../../../utils/bloomApi";
+import { Bubble, BubbleSpec } from "comicaljs";
+import { recomputeSourceBubblesForPage } from "../../js/bloomEditing";
+import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
+import { getToolboxBundleExports } from "../../js/bloomFrames";
 
 export function convertCoverPageToCustom(page: HTMLElement): void {
     theOneCanvasElementManager?.turnOffCanvasElementEditing();
+    // we need to get rid of the old ones before we switch things around,
+    // since the remove code makes use of the existing divs that the
+    // source bubbles are connected to.
+    BloomSourceBubbles.removeSourceBubbles(page);
     const marginBox = page.getElementsByClassName("marginBox")[0];
     if (!marginBox) return; // paranoia and lint
 
@@ -22,7 +30,8 @@ export function convertCoverPageToCustom(page: HTMLElement): void {
         marginBox.querySelectorAll("[data-book], [data-derived]"),
     );
     const newCanvasElements: HTMLElement[] = [];
-    const settings = GetSettings();
+    const newCeImages: HTMLElement[] = [];
+
     for (const elem of contentElements) {
         if (elem instanceof HTMLImageElement) {
             // The main cover image. We will clone it, but it will no longer be
@@ -30,7 +39,7 @@ export function convertCoverPageToCustom(page: HTMLElement): void {
             const ce = elem.parentElement?.parentElement;
             if (ce && ce.classList.contains(kCanvasElementClass)) {
                 const newCe = ce.cloneNode(true) as HTMLElement;
-                newCanvasElements.push(newCe);
+                newCeImages.push(newCe);
                 newCe.classList.remove(kBackgroundImageClass);
                 // set its top and left to where it currently is relative to the page
                 const pageRect = page.getBoundingClientRect();
@@ -48,8 +57,13 @@ export function convertCoverPageToCustom(page: HTMLElement): void {
                 if (!tg || !tg.classList.contains("bloom-translationGroup")) {
                     continue;
                 }
-                // we'll only make a CE for bloom-editables that are visible
-                if (!elem.classList.contains("bloom-visibility-code-on")) {
+                // we'll only make a CE for bloom-editables that are visible.
+                // (the image description is a special case, it is typically not visible because rules hide the
+                // containing TG)
+                if (
+                    !elem.classList.contains("bloom-visibility-code-on") ||
+                    tg.classList.contains("bloom-imageDescription")
+                ) {
                     continue;
                 }
 
@@ -105,15 +119,33 @@ export function convertCoverPageToCustom(page: HTMLElement): void {
     const mainCanvas = document.createElement("div");
     mainCanvas.classList.add(kBloomCanvasClass);
     mainCanvas.classList.add("bloom-has-canvas-element");
-    for (const newCE of newCanvasElements) {
+    // We'll put the new images before (and with lower bubble index) than text, since
+    // we may want to put text over images, and clicks should prefer the text.
+    let level = 2; // level 1 will be the background image
+    for (const newCE of newCeImages.concat(newCanvasElements)) {
         mainCanvas.appendChild(newCE);
+        // as each one is added, we give it a bubble spec. getDefaultBubbleSpec
+        // assigns a new 'level' to each, which is important for how our mouse event
+        // handler figures out z-ordering and makes sure comicaljs doesn't think they
+        // are a family of connected bubbles.
+        const bubble = new Bubble(newCE);
+        const bubbleSpec: BubbleSpec = Bubble.getDefaultBubbleSpec(
+            newCE,
+            "none",
+        );
+        bubbleSpec.level = level;
+        level++;
+        bubble.setBubbleSpec(bubbleSpec);
     }
     marginBox.innerHTML = ""; // remove all existing content (now we got what we want)
     marginBox.appendChild(mainCanvas);
     // This needs to be after we measure positions of things!
     page.classList.add("bloom-custom-cover");
+    // The divs that originally held source bubbles are gone
+    recomputeSourceBubblesForPage(page);
     // it's a new canvas so we need to set it up
     theOneCanvasElementManager.turnOnCanvasElementEditing();
+    getToolboxBundleExports()?.applyToolboxStateToPage();
 }
 
 export function setupCoverMenu(): void {

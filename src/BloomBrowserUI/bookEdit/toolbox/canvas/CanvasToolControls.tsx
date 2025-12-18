@@ -73,7 +73,13 @@ const CanvasToolControls: React.FunctionComponent = () => {
     const [showTailChecked, setShowTailChecked] = useState(false);
     const [isRoundedCornersChecked, setIsRoundedCornersChecked] =
         useState(false);
-    const [isXmatter, setIsXmatter] = useState(true);
+    // This is generally false if the page is xmatter.
+    // There is a special case where it is true for custom front cover.
+    // Currently it will be true for game pages, although in fact we
+    // don't currently allow it to be used; it is partly historical,
+    // and partly we want to show a special message if someone tries to use it there.
+    const [pageTypeForbidsCanvasTools, setPageTypeForbidsCanvasTools] =
+        useState(true);
     // This 'counter' increments on new page ready so we can re-check if the book is locked.
     const [pageRefreshIndicator, setPageRefreshIndicator] = useState(0);
 
@@ -184,7 +190,9 @@ const CanvasToolControls: React.FunctionComponent = () => {
     if (CanvasTool.theOneCanvasTool) {
         CanvasTool.theOneCanvasTool.callOnNewPageReady = () => {
             bubbleSpecInitialization();
-            setIsXmatter(ToolboxToolReactAdaptor.isXmatter());
+            setPageTypeForbidsCanvasTools(
+                ToolboxToolReactAdaptor.isXmatter(true),
+            );
             const count = pageRefreshIndicator;
             setPageRefreshIndicator(count + 1);
         };
@@ -790,7 +798,11 @@ const CanvasToolControls: React.FunctionComponent = () => {
                             >
                                 <CanvasElementItemRegion
                                     theme="blueOnTan"
-                                    className={!isXmatter ? "" : "disabled"}
+                                    className={
+                                        pageTypeForbidsCanvasTools
+                                            ? "disabled"
+                                            : ""
+                                    }
                                 >
                                     <CanvasElementItemRow>
                                         <CanvasElementItem
@@ -891,9 +903,10 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                 <div
                                     id={"canvasToolControlOptionsRegion"}
                                     className={
-                                        canvasElementType && !isXmatter
-                                            ? ""
-                                            : "disabled"
+                                        canvasElementType &&
+                                        pageTypeForbidsCanvasTools
+                                            ? "disabled"
+                                            : ""
                                     }
                                 >
                                     {getControlOptionsRegion()}

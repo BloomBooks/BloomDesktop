@@ -480,6 +480,45 @@ function hasOrigami(container: HTMLElement) {
     return container.getElementsByClassName("split-pane-component").length > 0;
 }
 
+function prepareSourceAndHintBubbles(container: HTMLElement): {
+    divsThatHaveSourceBubbles: HTMLElement[];
+    bubbleDivs: any[];
+} {
+    // Copy source texts out to their own div, where we can make a bubble with tabs out of them
+    // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too.
+    const divsThatHaveSourceBubbles: HTMLElement[] = [];
+    const bubbleDivs: any[] = [];
+    if ($(container).find(".bloom-preventSourceBubbles").length === 0) {
+        $(container)
+            .find("*.bloom-translationGroup")
+            .not(".bloom-readOnlyInTranslationMode")
+            .each(function () {
+                if ($(this).find("textarea, div").length > 1) {
+                    const bubble =
+                        BloomSourceBubbles.ProduceSourceBubbles(this);
+                    if (bubble.length !== 0) {
+                        divsThatHaveSourceBubbles.push(this);
+                        bubbleDivs.push(bubble);
+                    }
+                }
+            });
+    }
+
+    // NB: this should be after the ProduceSourceBubbles(), because hint-bubbles are lower priority
+    // and should not show if we already have a source bubble. (Eventually we may make the hint part
+    // of the source bubble when there is one...Bl-4295.) This would happen with the Book Title, which
+    // would have both when there are source languages to show.
+    BloomHintBubbles.addHintBubbles(
+        container,
+        divsThatHaveSourceBubbles,
+        bubbleDivs,
+    );
+
+    PlaceholderProvider.addPlaceholders(container);
+
+    return { divsThatHaveSourceBubbles, bubbleDivs };
+}
+
 // Originally, all this code was in document.load and the selectors were acting
 // on all elements (not bound by the container).  I added the container bound so we
 // can add new elements (such as during layout mode) and call this on only newly added elements.
@@ -729,38 +768,8 @@ export function SetupElements(
 
     setupBookLinkGrids(container);
 
-    // Copy source texts out to their own div, where we can make a bubble with tabs out of them
-    // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
-    const divsThatHaveSourceBubbles: HTMLElement[] = [];
-    const bubbleDivs: any[] = [];
-    if ($(container).find(".bloom-preventSourceBubbles").length === 0) {
-        $(container)
-            .find("*.bloom-translationGroup")
-            .not(".bloom-readOnlyInTranslationMode")
-            .each(function () {
-                if ($(this).find("textarea, div").length > 1) {
-                    const bubble =
-                        BloomSourceBubbles.ProduceSourceBubbles(this);
-                    if (bubble.length !== 0) {
-                        divsThatHaveSourceBubbles.push(this);
-                        bubbleDivs.push(bubble);
-                    }
-                }
-            });
-    }
-
-    //NB: this should be after the ProduceSourceBubbles(), because hint-bubbles are lower
-    // priority, and should not show if we already have a source bubble.
-    // (Eventually we may make the hint part of the source bubble when there is one...Bl-4295.)
-    // This would happen with the Book Title, which would have both
-    // when there are source languages to show
-    BloomHintBubbles.addHintBubbles(
-        container,
-        divsThatHaveSourceBubbles,
-        bubbleDivs,
-    );
-
-    PlaceholderProvider.addPlaceholders(container);
+    const { divsThatHaveSourceBubbles, bubbleDivs } =
+        prepareSourceAndHintBubbles(container);
 
     // We seem to need a delay to get a reliable result in BloomSourceBubbles.MakeSourceBubblesIntoQtips()
     // as it calls BloomSourceBubbles.CreateAndShowQtipBubbleFromDiv(), which ends by calling
@@ -768,12 +777,7 @@ export function SetupElements(
     // For getting focus set reliably, it seems best to do this whole loop inside one delay, rather than
     // have separate delays invoked each time through the loop.
     setTimeout(() => {
-        for (let i = 0; i < bubbleDivs.length; i++) {
-            BloomSourceBubbles.MakeSourceBubblesIntoQtips(
-                divsThatHaveSourceBubbles[i],
-                bubbleDivs[i],
-            );
-        }
+        makeSourceBubblesIntoQtips(bubbleDivs, divsThatHaveSourceBubbles);
         BloomSourceBubbles.setupSizeChangedHandling(divsThatHaveSourceBubbles);
         if (theOneCanvasElementManager.isCanvasElementEditingOn) {
             // If we saved the page with an indication that a particular element should be
@@ -935,6 +939,27 @@ export function SetupElements(
 
     AddXMatterLabelAfterPageLabel(container);
     ConstrainContentsOfPageLabel(container);
+}
+
+function makeSourceBubblesIntoQtips(
+    bubbleDivs: any[],
+    divsThatHaveSourceBubbles: HTMLElement[],
+) {
+    for (let i = 0; i < bubbleDivs.length; i++) {
+        BloomSourceBubbles.MakeSourceBubblesIntoQtips(
+            divsThatHaveSourceBubbles[i],
+            bubbleDivs[i],
+        );
+    }
+}
+
+export function recomputeSourceBubblesForPage(container: HTMLElement) {
+    const { divsThatHaveSourceBubbles, bubbleDivs } =
+        prepareSourceAndHintBubbles(container);
+    setTimeout(() => {
+        makeSourceBubblesIntoQtips(bubbleDivs, divsThatHaveSourceBubbles);
+        BloomSourceBubbles.setupSizeChangedHandling(divsThatHaveSourceBubbles);
+    }, 100);
 }
 
 // This function sets up a rule to display a prompt following the placeholder we insert for a missing
