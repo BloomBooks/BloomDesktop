@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using Bloom.Api;
@@ -115,14 +116,6 @@ namespace Bloom.Publish
             _webSocketServer.SendEvent("publish", "switchToPublishTab");
         }
 
-        public Control TopBarControl => new Control();
-
-        public int WidthToReserveForTopBarControl => 0;
-
-        public void PlaceTopBarControl() { }
-
-        public Bitmap ToolStripBackground { get; set; }
-
         // This property is invoked in WorkspaceView as "CurrentTabView.HelpTopicUrl".  Until the
         // tab view mechanism and overall WorkspaceView is converted to typescript, carrying the
         // help menu with it, this property needs to stay in C#.
@@ -130,6 +123,14 @@ namespace Bloom.Publish
         public string HelpTopicUrl
         {
             get { return "/Tasks/Publish_tasks/Publish_tasks_overview.htm"; }
+        }
+
+        // Temporary bridge while workspace menus are still WinForms menus.
+        // Remove when menus and tabs run in one browser UI.
+        internal event EventHandler BrowserClick
+        {
+            add { _reactControl.OnBrowserClick += value; }
+            remove { _reactControl.OnBrowserClick -= value; }
         }
     }
 }

@@ -1,8 +1,6 @@
 import { css, ThemeProvider } from "@emotion/react";
-import $ from "jquery";
 import BloomButton from "../../react_components/bloomButton";
 import { getBloomApiPrefix, post, postJson } from "../../utils/bloomApi";
-import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import { useEffect, useState } from "react";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
@@ -69,6 +67,7 @@ export const EditTopBarControls: React.FunctionComponent = () => {
                 css={css`
                     display: flex;
                     justify-content: space-between;
+                    width: 100%;
                 `}
             >
                 <div
@@ -394,15 +393,3 @@ export const EditingControlDropdown: React.FunctionComponent<{
         </BloomTooltip>
     );
 };
-
-$(window).ready(() => {
-    // If the user clicks outside of the context menu, we want to close it.
-    // Since it is currently a winforms menu, we do that by sending a message
-    // back to c#-land.
-    // We can remove this whenever we replace the winforms context menu with a react menu.
-    $(window).click(() => {
-        (window as any).chrome?.webview?.postMessage("browser-clicked");
-    });
-});
-
-WireUpForWinforms(EditTopBarControls, kBloomPurple);

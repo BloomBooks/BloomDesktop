@@ -3,7 +3,6 @@ import * as React from "react";
 import { useState } from "react";
 import { lightTheme } from "../../../bloomMaterialUITheme";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { WireUpForWinforms } from "../../../utils/WireUpWinform";
 import { CssBaseline } from "@mui/material";
 import { ZoomControl } from "./ZoomControl";
 import { UiLanguageMenu } from "./UiLanguageMenu";
@@ -82,5 +81,3 @@ export const WorkspaceTopRightControls: React.FunctionComponent = () => {
         </ThemeProvider>
     );
 };
-
-WireUpForWinforms(WorkspaceTopRightControls);
