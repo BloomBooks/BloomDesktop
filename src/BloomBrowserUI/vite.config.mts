@@ -551,11 +551,7 @@ export default defineConfig(async ({ command }) => {
             "./collection/NewCollectionLanguageChooser.tsx",
         registrationDialogBundle:
             "./react_components/registration/registrationDialog.tsx",
-        editTopBarControlsBundle: "./bookEdit/topbar/editTopBarControls.tsx",
-        collectionTopBarControlsBundle:
-            "./react_components/TopBar/CollectionTopBarControls/CollectionTopBarControls.tsx",
-        workspaceTopRightControlsBundle:
-            "./react_components/TopBar/workspaceTopRightControls/workspaceTopRightControls.entry.tsx",
+        topBarBundle: "./react_components/TopBar/TopBar.entry.tsx",
     };
 
     // MAIN VITE CONFIGURATION
