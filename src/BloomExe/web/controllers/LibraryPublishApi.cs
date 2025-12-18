@@ -343,7 +343,7 @@ namespace Bloom.web.controllers
 
         private void SetParentControlsState(bool enable)
         {
-            GetWorkspaceView()?.SetStateOfNonPublishTabs(enable);
+            GetWorkspaceView()?.SetTabsEnabled(enable);
         }
 
         private WorkspaceView GetWorkspaceView()

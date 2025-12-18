@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 using Bloom.Utils;
@@ -53,6 +52,8 @@ namespace Bloom.web
         public bool HideVerticalOverflow;
         public event EventHandler OnBrowserClick;
 
+        public Action ReplaceContextMenu { private get; set; }
+
         private Browser _browser;
 
         protected override void OnBackColorChanged(EventArgs e)
@@ -82,6 +83,8 @@ namespace Bloom.web
             // rectangle in the upper left corner...
             //_browser = new GeckoFxBrowser
             _browser = BrowserMaker.MakeBrowser();
+            if (ReplaceContextMenu != null)
+                _browser.ReplaceContextMenu = ReplaceContextMenu;
             var browserControl = _browser;
 
             browserControl.Dock = DockStyle.Fill;
@@ -128,9 +131,9 @@ namespace Bloom.web
             // since the user can't see them to respond. Don't use alerts in the initialization code!
             _browser.DocumentCompleted += (unused, args) =>
             {
-                if (this.IsDisposed)
+                if (IsDisposed)
                     return;
-                Controls.Add((UserControl)_browser); //review this cast
+                Controls.Add(_browser);
 
                 // This allows us to bring up a react control/dialog with focus already set to a specific element.
                 // For example, for BloomMessageBox, we set the Cancel button to have focus so the user
@@ -170,6 +173,16 @@ namespace Bloom.web
 
             var props = Props == null ? "{}" : JsonConvert.SerializeObject(Props);
 
+            // //TODO needed? Is there a better way?
+            // // Am I doing something wrong that I am the only ReactControl without ReactDialog using Props?
+            // // Json.NET does not serialize our DynamicJson array type as a real JSON array;
+            // // it turns it into an object with numeric keys (e.g. {"0":...}), which breaks
+            // // consumers expecting an Array in JS. DynamicJson.ToString() produces correct JSON.
+            // var props =
+            //     Props == null ? "{}"
+            //     : Props is DynamicJson dynamicJson ? dynamicJson.ToString()
+            //     : JsonConvert.SerializeObject(Props);
+
             if (_javascriptBundleName == null)
             {
                 throw new ArgumentNullException("React Control needs a _javascriptBundleName");
@@ -203,11 +216,6 @@ namespace Bloom.web
                     "createTeamCollectionDialogBundle",
                     "/teamCollection/CreateTeamCollection.entry.tsx"
                 },
-                {
-                    "collectionTopBarControlsBundle",
-                    "/react_components/TopBar/CollectionTopBarControls/CollectionTopBarControls.entry.tsx"
-                },
-                { "editTopBarControlsBundle", "/bookEdit/topbar/editTopBarControls.entry.tsx" },
                 { "duplicateManyDlgBundle", "/bookEdit/duplicateManyDialog.entry.tsx" },
                 {
                     "joinTeamCollectionDialogBundle",
@@ -232,10 +240,7 @@ namespace Bloom.web
                     "accessibilityCheckBundle",
                     "/publish/accessibilityCheck/accessibilityCheckScreen.entry.tsx"
                 },
-                {
-                    "workspaceTopRightControlsBundle",
-                    "/react_components/TopBar/workspaceTopRightControls/WorkspaceTopRightControls.entry.tsx"
-                },
+                { "topBarBundle", "/react_components/TopBar/TopBar.entry.tsx" },
             };
             string viteModulePath = null;
             var useViteDev = ShouldUseViteDev(() =>
