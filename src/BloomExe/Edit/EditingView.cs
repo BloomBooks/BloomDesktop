@@ -82,8 +82,6 @@ namespace Bloom.Edit
             _pageListApi = pageListApi;
             InitializeComponent();
 
-            _editControlsReactControl.SetLocalizationChangedEvent(localizationChangedEvent);
-
             // This used to be part of InitializeComponent, but we want to make which browser to use
             // configurable. It can possibly move back to the Designer code once we settle on WebView2.
             // Turning off for this PR because it's not working well enough yet.
@@ -266,7 +264,7 @@ namespace Bloom.Edit
             get { return _topBarPanel; }
         }
 
-        public int WidthToReserveForTopBarControl => _editControlsReactControl.Width;
+        public int WidthToReserveForTopBarControl => 0;
 
         /// <summary>
         /// Prevents a white line from appearing below the tool strip
@@ -1503,7 +1501,7 @@ namespace Bloom.Edit
             }
 
             Browser.OnBrowserClick += Browser_Click;
-            _editControlsReactControl.OnBrowserClick += Browser_Click;
+            CommonApi.WorkspaceView.TopBarReactControl.OnBrowserClick += Browser_Click;
 
             ShowContextMenu(_contentLanguagesDropdown);
         }
@@ -1575,7 +1573,7 @@ namespace Bloom.Edit
             }
 
             Browser.OnBrowserClick += Browser_Click;
-            _editControlsReactControl.OnBrowserClick += Browser_Click;
+            CommonApi.WorkspaceView.TopBarReactControl.OnBrowserClick += Browser_Click;
 
             ShowContextMenu(_layoutChoicesDropdown);
         }
@@ -1966,7 +1964,7 @@ namespace Bloom.Edit
         private void Browser_Click(object sender, EventArgs e)
         {
             Browser.OnBrowserClick -= Browser_Click;
-            _editControlsReactControl.OnBrowserClick -= Browser_Click;
+            CommonApi.WorkspaceView.TopBarReactControl.OnBrowserClick -= Browser_Click;
 
             if (_contentLanguagesDropdown.Visible || _layoutChoicesDropdown.Visible)
             {
