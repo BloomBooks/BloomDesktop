@@ -162,11 +162,6 @@ namespace Bloom.Workspace
             _settingsLauncherHelper.ManageComponent(_releaseNotesMenuItem);
             _settingsLauncherHelper.ManageComponent(_divider2);
 
-            OnSettingsProtectionChanged(this, null); //initial setup
-            SettingsProtectionSettings.Default.PropertyChanged += new PropertyChangedEventHandler(
-                OnSettingsProtectionChanged
-            );
-
             _uiLanguageMenu.Visible = true;
             _settingsLauncherHelper.ManageComponent(_uiLanguageMenu);
 
@@ -185,7 +180,6 @@ namespace Bloom.Workspace
             this._editingView.Model.EnableSwitchingTabs = (enabled) => _tabStrip.Enabled = enabled;
 
             _collectionTabView = reactCollectionsTabsViewFactory();
-            _collectionTabView.ManageSettings(_settingsLauncherHelper);
             _collectionTabView.Dock = DockStyle.Fill;
             _collectionTabView.BackColor = System.Drawing.Color.FromArgb(
                 ((int)(((byte)(87)))),
@@ -621,14 +615,6 @@ namespace Bloom.Workspace
             }
         }
 
-        void OnSettingsProtectionChanged(object sender, PropertyChangedEventArgs e)
-        {
-            //when we need to use Ctrl+Shift to display stuff, we don't want it also firing up the localization dialog (which shouldn't be done by a user under settings protection anyhow)
-
-            // Commented out due to BL-5111
-            //LocalizationManager.EnableClickingOnControlToBringUpLocalizationDialog = !SettingsProtectionSettings.Default.NormallyHidden;
-        }
-
         ToolStripMenuItem _showAllTranslationsItem;
 
         private void SetupUiLanguageMenu(bool onlyActiveItem = false)
@@ -1023,11 +1009,6 @@ namespace Bloom.Workspace
                 );
                 return DialogResult.OK;
             });
-        }
-
-        internal void OnLegacySettingsButton_Click(object sender, EventArgs e)
-        {
-            OpenLegacySettingsDialog();
         }
 
         private CollectionSettingsDialog _currentlyOpenSettingsDialog;

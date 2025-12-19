@@ -11,7 +11,6 @@ using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.History;
 using Bloom.MiscUI;
-using Bloom.Publish;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.Workspace;
@@ -133,6 +132,16 @@ namespace Bloom.TeamCollection
                 true
             );
             apiHandler.RegisterEndpointHandler(
+                "teamCollection/tcStatus",
+                HandleTeamCollectionStatus,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "teamCollection/showStatusDialog",
+                HandleShowStatusDialog,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
                 "teamCollection/reportBadZip",
                 HandleReportBadZip,
                 true,
@@ -180,6 +189,11 @@ namespace Bloom.TeamCollection
             if (_tcManager?.MessageLog == null)
                 return false;
             return _tcManager.MessageLog.Messages.Any(m => m.Important);
+        }
+
+        private void HandleTeamCollectionStatus(ApiRequest request)
+        {
+            request.ReplyWithEnum(_tcManager?.CollectionStatus ?? TeamCollectionStatus.None);
         }
 
         private void HandleForceUnlock(ApiRequest request)
@@ -234,6 +248,17 @@ namespace Bloom.TeamCollection
                 );
                 request.Failed("could not unlock");
             }
+        }
+
+        private void HandleShowStatusDialog(ApiRequest request)
+        {
+            dynamic messageBundle = new DynamicJson();
+            messageBundle.showReloadButton = _tcManager.MessageLog.ShouldShowReloadButton;
+            _socketServer.LaunchDialog("TeamCollectionDialog", messageBundle);
+            _tcManager.CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(
+                MessageAndMilestoneType.LogDisplayed
+            );
+            request.PostSucceeded();
         }
 
         /// <summary>
