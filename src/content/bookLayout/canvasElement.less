@@ -310,27 +310,6 @@
     }
 }
 
-// In a custom cover canvas element, one specific language will be shown,
-// and we want to show that and hide all the others.
-// This rule needs to be more specific than the normal rules based on
-// bloom-visibility-code-on, so we repeat the main selector and include
-// some redundant ones. Requiring a data-book attribute makes this
-// specific to the elements created by converting the page from auto
-// to custom. We want the normal behavior for bubbles added by hand.
-.bloom-custom-cover.bloom-custom-cover.bloom-custom-cover
-    .bloom-canvas
-    .bloom-canvas-element
-    .bloom-translationGroup {
-    .bloom-editable[data-book] {
-        // turn them all off
-        display: none;
-        // except the one we want
-        &.bloom-custom-cover-only-visible {
-            display: flex;
-        }
-    }
-}
-
 // wants to be more specific than the appearance system rules
 .bloom-page.bloom-custom-cover {
     // everything is a canvas element, and we want to be able to put them anywhere

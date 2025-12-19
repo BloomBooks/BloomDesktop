@@ -485,7 +485,21 @@ namespace Bloom.Book
             string[] dataDefaultLanguages
         )
         {
-            HtmlDom.RemoveClassesBeginningWith(editable, "bloom-content");
+            HashSet<string> classesToKeep = null;
+            if (editable.ParentWithClass("bloom-page")?.HasClass("bloom-custom-cover") ?? false)
+            {
+                // on a custom page, every bloom-editable is the only thing visible
+                // in its translationGroup, and visibility is not controlled by the
+                // appearance system. So we will never add these classes. However,
+                // they might have been copied there when setting up the custom layout.
+                // To avoid a distracting and possibly annoying change of appearance
+                // when transitioning to a custom layout, we will keep whatever class
+                // from this group the element had when the conversion happened.
+                classesToKeep = new HashSet<string>(
+                    new[] { "bloom-contentFirst", "bloom-contentSecond", "bloom-contentThird" }
+                );
+            }
+            HtmlDom.RemoveClassesBeginningWith(editable, "bloom-content", classesToKeep);
             var lang = editable.GetAttribute("lang");
 
             //These bloom-content* classes are used by some stylesheet rules, primarily to boost the font-size of some languages.

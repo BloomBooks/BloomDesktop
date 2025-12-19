@@ -410,18 +410,9 @@ const CanvasElementContextControls: React.FunctionComponent<{
         setMenuOpen(true); // Review: better on mouse down? But then the mouse up may be missed, if the menu is on top...
     };
 
-    let editable = props.canvasElement.getElementsByClassName(
+    const editable = props.canvasElement.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on",
     )[0] as HTMLElement;
-    if (
-        page.classList.contains("bloom-custom-cover") &&
-        editable &&
-        editable.hasAttribute("data-book")
-    ) {
-        editable = props.canvasElement.getElementsByClassName(
-            "bloom-editable bloom-custom-cover-only-visible",
-        )[0] as HTMLElement;
-    }
     const langName = editable?.getAttribute("data-languagetipcontent");
     // and these for text boxes
     if (editable) {

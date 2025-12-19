@@ -607,8 +607,14 @@ namespace Bloom.Book
             e.RemoveAttribute("dir");
         }
 
-        public static void RemoveClassesBeginningWith(SafeXmlElement xmlElement, string classPrefix)
+        public static void RemoveClassesBeginningWith(
+            SafeXmlElement xmlElement,
+            string classPrefix,
+            HashSet<string> classesToKeep = null
+        )
         {
+            if (classesToKeep == null)
+                classesToKeep = new HashSet<string>();
             var oldClasses = xmlElement.GetClasses();
 
             if (oldClasses.Length == 0)
@@ -617,7 +623,7 @@ namespace Bloom.Book
             var classes = "";
             foreach (var part in oldClasses)
             {
-                if (!part.StartsWith(classPrefix))
+                if (!part.StartsWith(classPrefix) || classesToKeep.Contains(part))
                     classes += part + " ";
             }
             xmlElement.SetAttribute("class", classes.Trim());

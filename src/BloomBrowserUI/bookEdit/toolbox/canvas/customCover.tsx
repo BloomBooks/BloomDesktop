@@ -16,6 +16,44 @@ import { recomputeSourceBubblesForPage } from "../../js/bloomEditing";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import { getToolboxBundleExports } from "../../js/bloomFrames";
 
+/* Summary of how custom covers work
+    Done:
+        - a custom page is indicated by the presence of the class
+          bloom-custom-cover on the bloom-page div.
+        - a custom cover page has a single bloom-canvas div inside its marginBox,
+          with one or more bloom-canvas-element divs inside it.
+        - when first created, we make a canvas element for each text and image
+          element that was on the cover page.
+        - each canvas element is absolutely positioned to match where the content
+          was on the page before conversion.
+        - where multiple languages of something can be shown (e.g., title), we make
+          a canvas element for each language that was visible at the time of conversion.
+          We disable any appearance system visibility control and put a value in
+          data-default-languages to indicate which of the collection languages
+          should be shown there.
+    Planned:
+        - the content of the custom cover is stored in a sibling of the marginBox
+        that has class bloom-customMarginBox. The auto-layout content is kept
+        in the regular marginBox.
+        - either the regular or custom margin box is visible, dependinng on whether
+        the page has bloom-custom-cover.
+        - the customMarginBox has data-book="customCover", so its entire content
+        is saved in the data-div.
+        - previous version of Bloom don't have a bloom-customMarginBox on their
+        template cover pages, so they will just go away when the book is brought
+        up to date there. But the data will survive in the data-div, so it will
+        come back if the newer Bloom does a bring-book-up-to-date.
+        - it's important that we save data-book values out of the visible marginBox.
+        marginBox is marked data-ignore="bloom-custom-cover", and the custom margin box
+        with data-ignore="!bloom-custom-cover" to achieve this.
+        - it's important that we restore the content of the custom margin box
+        before restoring any of the elements it contains, since if there has been
+        editing of elements like title in auto mode (or an older Bloom), we want
+        to end up with the edited content. The custom margin box has a class
+        bloom-contains-child-data to tell the BookData class to restore it in
+        a first pass.
+*/
+
 export function convertCoverPageToCustom(page: HTMLElement): void {
     theOneCanvasElementManager?.turnOffCanvasElementEditing();
     // we need to get rid of the old ones before we switch things around,
@@ -74,11 +112,30 @@ export function convertCoverPageToCustom(page: HTMLElement): void {
                 ) as HTMLElement;
 
                 // Now, we need to make the CE display just the one bloom-editable that it
-                // was made for. Normally this is controlled by bloom-visibility-code-on.
-                // But that is managed by C# code and it would be messy and duplicative
-                // to make make special cases there for custom covers. So instead we'll add
-                // our own class.
-                newEditable.classList.add("bloom-custom-cover-only-visible");
+                // was made for.
+                for (const e of Array.from(
+                    ceContent.getElementsByClassName("bloom-editable"),
+                )) {
+                    if (e !== newEditable) {
+                        e.classList.remove("bloom-visibility-code-on");
+                    }
+                }
+                // We also want it to stay that way when C# code later updates visibility codes.
+                // This is based on a setting in the TG. Using these generic codes means that if
+                // the collection languages change, or we make a derivative, the right language
+                // should still be made visible in each box.
+                const settings = GetSettings();
+                if (settings.languageForNewTextBoxes === lang) {
+                    ceContent.setAttribute("data-default-languages", "V");
+                } else if (settings.defaultSourceLanguage === lang) {
+                    ceContent.setAttribute("data-default-languages", "N1");
+                } else if (settings.defaultSourceLanguage2 === lang) {
+                    ceContent.setAttribute("data-default-languages", "N2");
+                }
+                // Don't let the appearance system mess with which languages are visible here.
+                ceContent.removeAttribute("data-visibility-variable");
+
+                newEditable.classList.add("bloom-visibility-code-on");
                 // I don't know why an editable that is not part of a CE yet would have one of these,
                 // but if it does it is obsolete and will interfere with the position we're setting
                 // here. (Maybe I only saw it on pages I'd already messed with?)
