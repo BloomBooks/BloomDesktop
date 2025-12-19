@@ -4704,24 +4704,6 @@ export class CanvasElementManager {
         );
     }
 
-    public addCanvasElementWithScreenCoords(
-        screenX: number,
-        screenY: number,
-        canvasElementType: CanvasElementType,
-        userDefinedStyleName?: string,
-        rightTopOffset?: string,
-    ): HTMLElement | undefined {
-        const clientX = screenX - window.screenX;
-        const clientY = screenY - window.screenY;
-        return this.addCanvasElement(
-            clientX,
-            clientY,
-            canvasElementType,
-            userDefinedStyleName,
-            rightTopOffset,
-        );
-    }
-
     private addCanvasElementFromOriginal(
         offsetX: number,
         offsetY: number,
@@ -4824,16 +4806,18 @@ export class CanvasElementManager {
             // Don't add a canvas element if we can't find the containing bloom-canvas.
             return undefined;
         }
-        // initial mouseX, mouseY coordinates are relative to viewport
-        const positionInViewport = new Point(
-            mouseX,
-            mouseY,
+        // initial mouseX, mouseY coordinates are relative to viewport. We want relative to bloom-canvas.
+        const rect = bloomCanvas[0].getBoundingClientRect();
+        const requestedPositionInCanvas = new Point(
+            mouseX - rect.left,
+            mouseY - rect.top,
             PointScaling.Scaled,
-            "Scaled Viewport coordinates",
+            "Scaled bloom-canvas coordinates",
         );
+        // Adjust so it's more certain to be IN the bloom-canvas.
         const positionInBloomCanvas = this.adjustRelativePointToBloomCanvas(
             bloomCanvas[0],
-            positionInViewport,
+            requestedPositionInCanvas,
         );
         if (canvasElementType === "video") {
             return this.addVideoCanvasElement(
