@@ -44,11 +44,6 @@ namespace Bloom.web.controllers
 
         private object _thumbnailEventsLock = new object();
 
-        // public so that WorkspaceView can set it in constructor.
-        // We'd prefer to just let the WorkspaceView be a constructor arg passed to this by Autofac,
-        // but that throws an exception, probably there is some circularity.
-        public WorkspaceView WorkspaceView;
-
         public CollectionApi(
             CollectionSettings settings,
             CollectionModel collectionModel,
