@@ -201,6 +201,21 @@ namespace Bloom.SafeXml
             return current;
         }
 
+        public SafeXmlElement ParentWithAttribute(string targetAttribute)
+        {
+            var current = ParentElement;
+            while (current != null && !current.HasAttribute(targetAttribute))
+                current = current.ParentNode as SafeXmlElement;
+            return current;
+        }
+
+        public SafeXmlElement ParentWithAttributeValue(string targetAttribute, string attrVal)
+        {
+            var current = ParentElement;
+            current = current.ParentNode as SafeXmlElement;
+            return current;
+        }
+
         public SafeXmlElement GetChildWithName(string name)
         {
             return ChildNodes.FirstOrDefault(n => n.Name.ToLowerInvariant() == name)

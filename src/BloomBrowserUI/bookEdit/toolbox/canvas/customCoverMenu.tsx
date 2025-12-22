@@ -10,17 +10,21 @@ import { Span } from "../../../react_components/l10nComponents";
 
 export const CustomCoverMenu: React.FunctionComponent<{
     isCustom: boolean;
-    setCustom: (value: boolean) => void;
+    setCustom: (value: "auto" | "custom" | "customStartOver") => void;
 }> = (props) => {
     const autoLabel = useL10n("Auto", "EditTab.CustomCover.Auto");
     const customLabel = useL10n("Custom", "EditTab.CustomCover.Custom");
 
     const handleChange = (event: SelectChangeEvent<string>) => {
-        props.setCustom(event.target.value === "custom");
+        const selection = event.target.value as
+            | "auto"
+            | "custom"
+            | "customStartOver";
+        props.setCustom(selection);
     };
 
     const renderMenuItem = (
-        value: "auto" | "custom",
+        value: "auto" | "custom" | "customStartOver",
         label: string,
         checked: boolean,
     ) => {
@@ -77,6 +81,11 @@ export const CustomCoverMenu: React.FunctionComponent<{
                 >
                     {renderMenuItem("auto", autoLabel, !props.isCustom)}
                     {renderMenuItem("custom", customLabel, props.isCustom)}
+                    {renderMenuItem(
+                        "customStartOver",
+                        "new custom layout",
+                        false,
+                    )}
                 </Select>
             </div>
         </ThemeProvider>

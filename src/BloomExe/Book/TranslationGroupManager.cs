@@ -486,7 +486,7 @@ namespace Bloom.Book
         )
         {
             HashSet<string> classesToKeep = null;
-            if (editable.ParentWithClass("bloom-page")?.HasClass("bloom-custom-cover") ?? false)
+            if (editable.ParentWithAttributeValue("data-book", "coverImage") != null)
             {
                 // on a custom page, every bloom-editable is the only thing visible
                 // in its translationGroup, and visibility is not controlled by the
@@ -495,6 +495,8 @@ namespace Bloom.Book
                 // To avoid a distracting and possibly annoying change of appearance
                 // when transitioning to a custom layout, we will keep whatever class
                 // from this group the element had when the conversion happened.
+                // The above check prevents it from being removed both in the live page
+                // and in the data-div.
                 classesToKeep = new HashSet<string>(
                     new[] { "bloom-contentFirst", "bloom-contentSecond", "bloom-contentThird" }
                 );

@@ -1071,10 +1071,14 @@ function isTextSelected(): boolean {
 
 let reportedTextSelected = isTextSelected();
 
+let inactiveMarginBox: HTMLElement | undefined;
+
 // ---------------------------------------------------------------------------------
 // called inside document ready function
 // ---------------------------------------------------------------------------------
 export function bootstrap() {
+    hideInactiveMarginBox();
+
     bloomQtipUtils.setQtipZindex();
 
     $.fn.reverse = function (...args) {
@@ -1220,6 +1224,8 @@ export function requestPageContent() {
         // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports().
         getToolboxBundleExports()?.removeToolboxMarkup();
         removeEditingDebris(); // Enhance this makes a change when better it would only changed the
+        restoreInactiveMarginBox();
+
         const content = getBodyContentForSavePage();
         const userStylesheet = userStylesheetContent();
         postString(
@@ -1244,6 +1250,52 @@ export function requestPageContent() {
                 document?.body?.innerHTML,
         );
     }
+}
+export function hideInactiveMarginBox() {
+    // If we have two margin boxes and are only showing one, it simplifies things to remove the inactive one.
+    // Things that search the whole document won't unintentionally find things there,
+    // nor modify them in unwanted ways because they aren't visible (and hence have zero size, etc).
+    // We will put the inactive one back unchanged when we save the page.
+    const customMarginBox = document.getElementsByClassName(
+        "bloom-customMarginBox",
+    )[0] as HTMLElement | undefined;
+    if (customMarginBox) {
+        const page = document.getElementsByClassName(
+            "bloom-page",
+        )[0] as HTMLElement;
+        if (page.classList.contains("bloom-custom-cover")) {
+            inactiveMarginBox = Array.from(
+                customMarginBox.parentElement!.getElementsByClassName(
+                    "marginBox",
+                ),
+            ).find(
+                (mb) => !mb.classList.contains("bloom-customMarginBox"),
+            ) as HTMLElement;
+        } else {
+            inactiveMarginBox = customMarginBox;
+        }
+        inactiveMarginBox.parentElement!.removeChild(inactiveMarginBox);
+    }
+}
+
+export function restoreInactiveMarginBox(): HTMLElement | undefined {
+    if (!inactiveMarginBox) return undefined;
+    const marginBox = document.getElementsByClassName(
+        "marginBox",
+    )[0] as HTMLElement;
+    // I'm not sure whether it matters to keep them in the expected order,
+    // but it doesn't cost much and removes one possible source of confusion.
+    if (marginBox.classList.contains("bloom-customMarginBox")) {
+        // put the inactive one back before it
+        marginBox.parentElement!.insertBefore(inactiveMarginBox, marginBox);
+    } else {
+        // put the inactive one back after it
+        marginBox.parentElement!.insertBefore(
+            inactiveMarginBox,
+            marginBox.nextSibling,
+        );
+    }
+    return inactiveMarginBox;
 }
 
 // Caution: We don't want this to become an async method because we don't want

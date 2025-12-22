@@ -171,11 +171,17 @@ mixin editable-cover-image(language)
 	.bloom-editable.ImageDescriptionEdit-style(lang=language, contenteditable="true", data-book="coverImageDescription")&attributes(attributes)
 
 
+//- This originally used the page-cover mixin, but the outside front cover needs a second marginBox,
+//- and it's less messy to duplicate a bit of knowledge about classes and attributes fron that and
+//- other mixins than to make them all know how to make the second marginBox.
 mixin factoryStandard-outsideFrontCover
 	// FRONT COVER
-	+page-cover('Front Cover')(data-export='front-matter-cover', data-xmatter-page='frontCover')&attributes(attributes).frontCover.outsideFrontCover#74731b2d-18b0-420f-ac96-6de20f659810
-		+standard-cover-contents
-		block front-cover-footer
+	+pageWithJustPageSize.bloom-page.cover.coverColor.bloom-frontMatter.frontCover.outsideFrontCover#74731b2d-18b0-420f-ac96-6de20f659810(data-page='required singleton', data-export='front-matter-cover', data-xmatter-page='frontCover')&attributes(attributes)
+		+page-label-english('Front Cover')
+		.marginBox(data-ignore="bloom-custom-cover")
+			+standard-cover-contents
+			block front-cover-footer
+		.marginBox.bloom-customMarginBox.bloom-contains-child-data(data-book="customCover" data-ignore="!bloom-custom-cover")
 
 mixin factoryStandard-creditsInsideFrontCover
 	// Inside Front Cover CREDITS PAGE

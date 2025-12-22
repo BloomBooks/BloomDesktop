@@ -1007,3 +1007,17 @@ The buffer would be absent if the marginBox had a border or the page has a backg
     --topLevel-text-padding-right: var(--topLevel-text-padding);
     --topLevel-text-padding-left: var(--topLevel-text-padding);
 }
+
+// certain bloom pages have two marginBoxes. The second one is marked with
+// bloom-customMarginBox. Normally we hide it. If the page has a marker class,
+// we show it and hide the regular one.
+// Note: these rules need to be fairly specific, and we don't want to
+// use one rule to hide and a more-specific one to show, because other rules
+// want to make the marginBox block or flex, and we don't know which to
+// restore. So we do it all with fairly specific display:none rules.
+.bloom-page:not(.bloom-custom-cover) .marginBox.bloom-customMarginBox {
+    display: none;
+}
+.bloom-page.bloom-custom-cover .marginBox:not(.bloom-customMarginBox) {
+    display: none;
+}

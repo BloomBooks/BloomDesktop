@@ -12,58 +12,85 @@ import { EditableDivUtils } from "../../js/editableDivUtils";
 import { kBloomCanvasClass, kCanvasElementClass } from "./canvasElementUtils";
 import { postString } from "../../../utils/bloomApi";
 import { Bubble, BubbleSpec } from "comicaljs";
-import { recomputeSourceBubblesForPage } from "../../js/bloomEditing";
+import {
+    hideInactiveMarginBox,
+    recomputeSourceBubblesForPage,
+    restoreInactiveMarginBox,
+} from "../../js/bloomEditing";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import { getToolboxBundleExports } from "../../js/bloomFrames";
+import { remove } from "mobx";
 
 /* Summary of how custom covers work
-    Done:
         - a custom page is indicated by the presence of the class
-          bloom-custom-cover on the bloom-page div.
+        bloom-custom-cover on the bloom-page div.
         - a custom cover page has a single bloom-canvas div inside its marginBox,
-          with one or more bloom-canvas-element divs inside it.
+        ith one or more bloom-canvas-element divs inside it.
         - when first created, we make a canvas element for each text and image
-          element that was on the cover page.
+        element that was on the cover page.
         - each canvas element is absolutely positioned to match where the content
-          was on the page before conversion.
+        was on the page before conversion.
         - where multiple languages of something can be shown (e.g., title), we make
-          a canvas element for each language that was visible at the time of conversion.
-          We disable any appearance system visibility control and put a value in
-          data-default-languages to indicate which of the collection languages
-          should be shown there.
-    Planned:
+        a canvas element for each language that was visible at the time of conversion.
+        We disable any appearance system visibility control and put a value in
+        data-default-languages to indicate which of the collection languages
+        should be shown there.
+        - kludge: so that such elements keep their appearance-system default sizes,
+        we keep the appearance-system special classes like bloom-contentSecond.
+        C# code is also patched not to remove these.
         - the content of the custom cover is stored in a sibling of the marginBox
-        that has class bloom-customMarginBox. The auto-layout content is kept
+        that also has class bloom-customMarginBox. The auto-layout content is kept
         in the regular marginBox.
         - either the regular or custom margin box is visible, dependinng on whether
         the page has bloom-custom-cover.
         - the customMarginBox has data-book="customCover", so its entire content
         is saved in the data-div.
-        - previous version of Bloom don't have a bloom-customMarginBox on their
+        - previous versions of Bloom don't have a bloom-customMarginBox on their
         template cover pages, so they will just go away when the book is brought
         up to date there. But the data will survive in the data-div, so it will
         come back if the newer Bloom does a bring-book-up-to-date.
         - it's important that we save data-book values out of the visible marginBox.
         marginBox is marked data-ignore="bloom-custom-cover", and the custom margin box
-        with data-ignore="!bloom-custom-cover" to achieve this.
+        with data-ignore="!bloom-custom-cover" to trigger this behavior in the C#
+        BookData code.
         - it's important that we restore the content of the custom margin box
         before restoring any of the elements it contains, since if there has been
         editing of elements like title in auto mode (or an older Bloom), we want
         to end up with the edited content. The custom margin box has a class
-        bloom-contains-child-data to tell the BookData class to restore it in
+        bloom-contains-child-data to tell the BookData code to restore it in
         a first pass.
 */
 
-export function convertCoverPageToCustom(page: HTMLElement): void {
+export function convertCoverPageToCustom(
+    page: HTMLElement,
+    startOver = false,
+): void {
     theOneCanvasElementManager?.turnOffCanvasElementEditing();
     // we need to get rid of the old ones before we switch things around,
     // since the remove code makes use of the existing divs that the
     // source bubbles are connected to.
     BloomSourceBubbles.removeSourceBubbles(page);
-    const marginBox = page.getElementsByClassName("marginBox")[0];
-    if (!marginBox) return; // paranoia and lint
 
-    // review: do we need
+    const customMarginBox = restoreInactiveMarginBox();
+    if (!customMarginBox) {
+        return; // current xmatter doesn't support this
+    }
+    const marginBox = Array.from(
+        customMarginBox.parentElement!.getElementsByClassName("marginBox"),
+    ).find((mb) => mb !== customMarginBox) as HTMLElement;
+    if (!marginBox) return; // paranoia and lint
+    if (customMarginBox.children.length > 0) {
+        if (startOver) {
+            // remove existing content
+            customMarginBox.innerHTML = "";
+        } else {
+            // Already set up, just turn it back on
+            page.classList.add("bloom-custom-cover");
+            finishReactivatingPage(page);
+            return;
+        }
+    }
+
     const contentElements = Array.from(
         marginBox.querySelectorAll("[data-book], [data-derived]"),
     );
@@ -194,10 +221,15 @@ export function convertCoverPageToCustom(page: HTMLElement): void {
         level++;
         bubble.setBubbleSpec(bubbleSpec);
     }
-    marginBox.innerHTML = ""; // remove all existing content (now we got what we want)
-    marginBox.appendChild(mainCanvas);
+
+    customMarginBox.appendChild(mainCanvas);
     // This needs to be after we measure positions of things!
     page.classList.add("bloom-custom-cover");
+    finishReactivatingPage(page);
+}
+
+function finishReactivatingPage(page: HTMLElement): void {
+    hideInactiveMarginBox(); // don't want to create source bubbles and canvases in it!
     // The divs that originally held source bubbles are gone
     recomputeSourceBubblesForPage(page);
     // it's a new canvas so we need to set it up
@@ -239,15 +271,16 @@ function renderCoverMenu(page: HTMLElement, container: HTMLElement): void {
     ReactDOM.render(
         <CustomCoverMenu
             isCustom={isCustomCover}
-            setCustom={(newVal) => {
-                if (newVal) {
-                    convertCoverPageToCustom(page);
-                } else {
+            setCustom={(selection) => {
+                if (selection === "auto") {
                     page.classList.remove("bloom-custom-cover");
                     postString(
                         "editView/updateXmatter",
                         page.getAttribute("id")!,
                     );
+                } else {
+                    const startOver = selection === "customStartOver";
+                    convertCoverPageToCustom(page, startOver);
                 }
                 renderCoverMenu(page, container);
             }}

@@ -780,81 +780,89 @@ namespace Bloom.Book
         /// </summary>
         private void SetUpDisplayOfTopicInBook(DataSet data, BookInfo info = null)
         {
-            var topicPageElement = this._dom.SelectSingleNode("//div[@data-derived='topic']");
-            if (topicPageElement == null)
+            var topicPageElements = this._dom.SafeSelectNodes("//div[@data-derived='topic']");
+            if (topicPageElements.Length == 0)
             {
                 //old-style. here we don't have the data-derived, so we need to avoid picking from the datadiv
-                topicPageElement = this._dom.SelectSingleNode(
+                topicPageElements = this._dom.SafeSelectNodes(
                     "//div[not(id='bloomDataDiv')]//div[@data-book='topic']"
                 );
-                if (topicPageElement == null)
+                if (topicPageElements.Length == 0)
                 {
-                    //most unit tests do not have complete books, so this not surprising. It just means we don't have anything to do
+                    //most unit tests do not have complete books, so this is not surprising. It just means we don't have anything to do
                     return;
                 }
             }
-            //clear it out what's there now
-            topicPageElement.RemoveAttribute("lang");
-            topicPageElement.InnerText = "";
 
+            // Come up with the string, if any, that we are going to put in the visible
+            // topic element(s). (There be more than one, if custom covers are in use.)
             DataSetElementValue topicData;
-
-            var parentOfTopicDisplayElement = ((SafeXmlElement)(topicPageElement.ParentNode));
-            //this just lets us have css rules that vary if there is a topic (allows other text to be centered instead left-aligned)
-            //we'll change it later if we find there is a topic
-            parentOfTopicDisplayElement.SetAttribute("data-have-topic", "false");
-
-            //if we have no topic element in the data-div
-            //leave the field in the page with an empty text.
-            if (!data.TextVariables.TryGetValue("topic", out topicData))
+            string englishTopic = null; // default means we don't have a topic
+            string bestTranslation = null;
+            string langOfTopicToShowOnCover = "en"; // should never be used not updated.
+            if (data.TextVariables.TryGetValue("topic", out topicData))
             {
-                return;
+                //we use English as the "key" for topics.
+                englishTopic = topicData.TextAlternatives.GetExactAlternative("en");
+                if (!string.IsNullOrEmpty(englishTopic) && englishTopic != "NoTopic")
+                {
+                    var stringId = "Topics." + englishTopic;
+
+                    var tagsInPriorityOrder = GetLanguagePrioritiesForLocalizedTextOnPage();
+                    langOfTopicToShowOnCover =
+                        tagsInPriorityOrder.FirstOrDefault(t =>
+                            LocalizationManager.GetIsStringAvailableForLangId(stringId, t)
+                        ) ?? "en";
+
+                    bestTranslation = LocalizationManager.GetDynamicStringOrEnglish(
+                        "Bloom",
+                        stringId,
+                        englishTopic,
+                        "this is a book topic",
+                        langOfTopicToShowOnCover
+                    );
+
+                    //NB: in a unit test environment, GetDynamicStringOrEnglish is going to give us the id back, which is annoying.
+                    if (bestTranslation == stringId)
+                        bestTranslation = englishTopic;
+                }
             }
 
-            //we use English as the "key" for topics.
-            var englishTopic = topicData.TextAlternatives.GetExactAlternative("en");
+            foreach (SafeXmlElement topicPageElement in topicPageElements)
+            {
+                //clear it out what's there now
+                topicPageElement.RemoveAttribute("lang");
+                topicPageElement.InnerText = "";
 
-            //if we have no topic, just clear it out from the page
-            if (string.IsNullOrEmpty(englishTopic) || englishTopic == "NoTopic")
-                return;
+                var parentOfTopicDisplayElement = ((SafeXmlElement)(topicPageElement.ParentNode));
+                //this just lets us have css rules that vary if there is a topic (allows other text to be centered instead left-aligned)
+                //we'll change it later if we find there is a topic
+                parentOfTopicDisplayElement.SetAttribute("data-have-topic", "false");
 
-            // Even if we have a topic, if we don't want to show it on the page,
-            // we don't want this attribute set to true.
-            // This was a tough call. The main effect of data-have-topic being false is to center the
-            // language name. We do want that to happen when the topic is hidden, as well as when it
-            // is not set. So does it make more sense to have code here take into account the
-            // appearance setting, or should the CSS know about both reasons for centering?
-            // I don't see a strong reason either way, so I let it be decided by the fact that
-            // there's no obvious way in CSS to get the centering behavior (done by setting both
-            // margins to auto) based on whether --cover-topic-show is 'none' or
-            // 'doShow-css-will-ignore-this-and-use-default'. So data-have-topic could plausibly
-            // be renamed data-show-topic (or we could just use a class), but I'm not sure what
-            // backwards compatibility issues that might cause, so decided not to rename.
-            if (ShouldShowTopic(info))
-                parentOfTopicDisplayElement.SetAttribute("data-have-topic", "true");
+                //if we have no topic leave the field in the page with an empty text and the false above
+                if (bestTranslation == null)
+                {
+                    continue;
+                }
 
-            var stringId = "Topics." + englishTopic;
+                // Even if we have a topic, if we don't want to show it on the page,
+                // we don't want this attribute set to true.
+                // This was a tough call. The main effect of data-have-topic being false is to center the
+                // language name. We do want that to happen when the topic is hidden, as well as when it
+                // is not set. So does it make more sense to have code here take into account the
+                // appearance setting, or should the CSS know about both reasons for centering?
+                // I don't see a strong reason either way, so I let it be decided by the fact that
+                // there's no obvious way in CSS to get the centering behavior (done by setting both
+                // margins to auto) based on whether --cover-topic-show is 'none' or
+                // 'doShow-css-will-ignore-this-and-use-default'. So data-have-topic could plausibly
+                // be renamed data-show-topic (or we could just use a class), but I'm not sure what
+                // backwards compatibility issues that might cause, so decided not to rename.
+                if (ShouldShowTopic(info))
+                    parentOfTopicDisplayElement.SetAttribute("data-have-topic", "true");
 
-            var tagsInPriorityOrder = GetLanguagePrioritiesForLocalizedTextOnPage();
-            var langOfTopicToShowOnCover =
-                tagsInPriorityOrder.FirstOrDefault(t =>
-                    LocalizationManager.GetIsStringAvailableForLangId(stringId, t)
-                ) ?? "en";
-
-            var bestTranslation = LocalizationManager.GetDynamicStringOrEnglish(
-                "Bloom",
-                stringId,
-                englishTopic,
-                "this is a book topic",
-                langOfTopicToShowOnCover
-            );
-
-            //NB: in a unit test environment, GetDynamicStringOrEnglish is going to give us the id back, which is annoying.
-            if (bestTranslation == stringId)
-                bestTranslation = englishTopic;
-
-            topicPageElement.SetAttribute("lang", langOfTopicToShowOnCover);
-            topicPageElement.InnerText = bestTranslation;
+                topicPageElement.SetAttribute("lang", langOfTopicToShowOnCover);
+                topicPageElement.InnerText = bestTranslation;
+            }
         }
 
         private bool ShouldShowTopic(BookInfo info)
@@ -1316,6 +1324,29 @@ namespace Bloom.Book
                 {
                     bool isCollectionValue = false;
 
+                    // If the element has an ancestor with the data-ignore attribute, look for
+                    // a still higher ancestor that has the class specified in the attribute.
+                    // If there is such an ancestor, we won't read data from this element.
+                    // (Or, if the data-ignore value starts with "!", we will skip if there
+                    // is no such ancestor.) (This is initially used to skip reading from
+                    // the auto-layout marginBox when we are showing the custom one, and
+                    // vice-versa).
+                    var ignoreParent = node.ParentWithAttribute("data-ignore");
+                    if (ignoreParent != null)
+                    {
+                        var test = ignoreParent.GetAttribute("data-ignore");
+                        var classToLookFor = test;
+                        var skipIfNotFound = test.StartsWith("!");
+                        if (skipIfNotFound)
+                            classToLookFor = classToLookFor.Substring(1); // remove the leading !
+                        var ancestor = ignoreParent.ParentWithClass(classToLookFor);
+                        if (
+                            ancestor == null && skipIfNotFound
+                            || ancestor != null && !skipIfNotFound
+                        )
+                            continue;
+                    }
+
                     string key = node.GetAttribute("data-book").Trim();
                     if (key == String.Empty)
                     {
@@ -1629,114 +1660,28 @@ namespace Bloom.Book
             {
                 var query =
                     $"//{elementName}[(@data-book or @data-collection or @data-library or @{kDataXmatterPage})]";
-                var nodesOfInterest = targetDom.SafeSelectNodes(query);
+                var nodesOfInterest = targetDom.SafeSelectNodes(query).Cast<SafeXmlElement>();
 
-                foreach (SafeXmlElement node in nodesOfInterest)
+                var otherNodes = new List<SafeXmlElement>();
+                foreach (var elt in nodesOfInterest)
                 {
-                    var key = node.GetAttribute("data-book").Trim();
+                    // elements that have children that also have data-book attributes
+                    // (for example, the customMarginBox on a custom front cover)
+                    // must be processed before all others. For example, if we've been
+                    // editing the auto version of the cover, the data-div still contains
+                    // a copy of the custom layout version. Its layout is relevant,
+                    // but its version of things like the title text may be obsolete.
+                    // We want to first restore the customMarginBox content, and the
+                    // restore things like the title into it (among other places).
+                    if (elt.HasClass("bloom-contains-child-data"))
+                        UpdateOneElementFromDataSet(data, itemsToDelete, elt);
+                    else
+                        otherNodes.Add(elt);
+                }
 
-                    if (key == string.Empty)
-                    {
-                        key = node.GetAttribute(kDataXmatterPage).Trim();
-                        if (key != string.Empty)
-                        {
-                            UpdateXmatterPageDataAttributeSets(data, node);
-                            continue;
-                        }
-                        key = node.GetAttribute("data-collection").Trim();
-                        if (key == string.Empty)
-                        {
-                            key = node.GetAttribute("data-library").Trim(); //"library" is the old name for what is now "collection"
-                        }
-                    }
-
-                    if (string.IsNullOrEmpty(key))
-                        continue;
-
-                    if (data.TextVariables.ContainsKey(key))
-                    {
-                        if (UpdateImageFromDataSet(data, node, key))
-                            continue;
-
-                        var lang = DealiasWritingSystemId(
-                            node.GetOptionalStringAttribute("lang", "*")
-                        );
-
-                        //							//see comment later about the inability to clear a value. TODO: when we re-write Bloom, make sure this is possible
-                        //							if(data.TextVariables[key].TextAlternatives.Forms.Length==0)
-                        //							{
-                        //								//no text forms == desire to remove it. THe multitextbase prohibits empty strings, so this is the best we can do: completly remove the item.
-                        //								targetDom.RemoveChild(node);
-                        //							}
-                        //							else
-                        if (!string.IsNullOrEmpty(lang))
-                        //if we don't even have this language specified (e.g. no national language), the  give up
-                        {
-                            //Ideally, we have this string, in this desired language.
-                            DataSetElementValue dsv = data.TextVariables[key];
-                            var form = dsv.TextAlternatives.GetBestAlternative(new[] { lang, "*" });
-                            var s = form == null ? "" : form.Form;
-
-                            if (KeysOfVariablesThatAreUrlEncoded.Contains(key))
-                            {
-                                Debug.Assert(
-                                    !s.Contains("&amp;"),
-                                    "In memory, all image urls should be encoded such that & is just &."
-                                );
-                            }
-                            //But if not, maybe we should copy one in from another national language
-                            if (StringAlternativeHasNoText(s))
-                                s = PossiblyCopyFromAnotherLanguage(node, lang, data, key);
-
-                            //NB: this was the focus of a multi-hour bug search, and it's not clear that I got it right.
-                            //The problem is that the title page has N1 and n2 alternatives for title, the cover may not.
-                            //the gather page was gathering no values for those alternatives (why not), and so GetBestAlternativeSTring
-                            //was giving "", which we then used to remove our nice values.
-                            //REVIEW: what affect will this have in other pages, other circumstances. Will it make it impossible to clear a value?
-                            //Hoping not, as we are differentiating between "" and just not being in the multitext at all.
-                            //don't overwrite a datadiv alternative with empty just becuase this page has no value for it.
-                            // JohnT update: if we simply do nothing when dsv.TextAlternatives doesn't contain lang,
-                            // that DOES prevent deleting stuff. We often got away with it, because the edited page would
-                            // have the empty content from being edited, and itemsToDelete would list this key/lang combination
-                            // as a result, and a couple of calls up the stack, UpdateVariablesAndDataDiv() would typically
-                            // delete it from the data-div while processing itemsToDelete. But if we're looking at the bookTitle,
-                            // which is typically on more than one page, there's still a page where it's not deleted, and the
-                            // next update will pick that as preferred value. See BL-10739
-                            if (
-                                s == ""
-                                && !dsv.TextAlternatives.ContainsAlternative(lang)
-                                && !itemsToDelete.Contains(Tuple.Create(key, lang))
-                            )
-                                continue;
-
-                            //hack: until I think of a more elegant way to avoid repeating the language name in N2 when it's the exact same as N1...
-                            var n1Form = GetBestUnwrappedAlternative(
-                                data.TextVariables[key].TextAlternatives,
-                                new[] { MetadataLanguage1Tag, "*" }
-                            );
-                            if (lang == MetadataLanguage2Tag && n1Form != null && s == n1Form.Form)
-                            {
-                                s = ""; //don't show it in N2, since it's the same as N1
-                            }
-                            SetInnerXmlPreservingLabel(key, node, XmlString.FromXml(s));
-                            var attrs = dsv.GetAttributeList(lang);
-                            if (attrs != null)
-                            {
-                                MergeAttrsIntoElement(attrs, node);
-                            }
-                        }
-                    }
-                    else if (!HtmlDom.IsImgOrSomethingWithBackgroundImage(node))
-                    {
-                        // See whether we need to delete something
-                        var lang = DealiasWritingSystemId(
-                            node.GetOptionalStringAttribute("lang", "*")
-                        );
-                        if (itemsToDelete.Contains(Tuple.Create(key, lang)))
-                        {
-                            SetInnerXmlPreservingLabel(key, node, XmlString.Empty); // a later process may remove node altogether.
-                        }
-                    }
+                foreach (var node in otherNodes)
+                {
+                    UpdateOneElementFromDataSet(data, itemsToDelete, node);
                 }
             }
             catch (Exception error)
@@ -1748,6 +1693,114 @@ namespace Bloom.Book
                         + targetDom.OuterXml,
                     error
                 );
+            }
+        }
+
+        private void UpdateOneElementFromDataSet(
+            DataSet data,
+            HashSet<Tuple<string, string>> itemsToDelete,
+            SafeXmlElement node
+        )
+        {
+            var key = node.GetAttribute("data-book").Trim();
+
+            if (key == string.Empty)
+            {
+                key = node.GetAttribute(kDataXmatterPage).Trim();
+                if (key != string.Empty)
+                {
+                    UpdateXmatterPageDataAttributeSets(data, node);
+                    return;
+                }
+                key = node.GetAttribute("data-collection").Trim();
+                if (key == string.Empty)
+                {
+                    key = node.GetAttribute("data-library").Trim(); //"library" is the old name for what is now "collection"
+                }
+            }
+
+            if (string.IsNullOrEmpty(key))
+                return;
+
+            if (data.TextVariables.ContainsKey(key))
+            {
+                if (UpdateImageFromDataSet(data, node, key))
+                    return;
+
+                var lang = DealiasWritingSystemId(node.GetOptionalStringAttribute("lang", "*"));
+
+                //							//see comment later about the inability to clear a value. TODO: when we re-write Bloom, make sure this is possible
+                //							if(data.TextVariables[key].TextAlternatives.Forms.Length==0)
+                //							{
+                //								//no text forms == desire to remove it. THe multitextbase prohibits empty strings, so this is the best we can do: completly remove the item.
+                //								targetDom.RemoveChild(node);
+                //							}
+                //							else
+                if (!string.IsNullOrEmpty(lang))
+                //if we don't even have this language specified (e.g. no national language), the  give up
+                {
+                    //Ideally, we have this string, in this desired language.
+                    DataSetElementValue dsv = data.TextVariables[key];
+                    var form = dsv.TextAlternatives.GetBestAlternative(new[] { lang, "*" });
+                    var s = form == null ? "" : form.Form;
+
+                    if (KeysOfVariablesThatAreUrlEncoded.Contains(key))
+                    {
+                        Debug.Assert(
+                            !s.Contains("&amp;"),
+                            "In memory, all image urls should be encoded such that & is just &."
+                        );
+                    }
+                    //But if not, maybe we should copy one in from another national language
+                    if (StringAlternativeHasNoText(s))
+                        s = PossiblyCopyFromAnotherLanguage(node, lang, data, key);
+
+                    //NB: this was the focus of a multi-hour bug search, and it's not clear that I got it right.
+                    //The problem is that the title page has N1 and n2 alternatives for title, the cover may not.
+                    //the gather page was gathering no values for those alternatives (why not), and so GetBestAlternativeSTring
+                    //was giving "", which we then used to remove our nice values.
+                    //REVIEW: what affect will this have in other pages, other circumstances. Will it make it impossible to clear a value?
+                    //Hoping not, as we are differentiating between "" and just not being in the multitext at all.
+                    //don't overwrite a datadiv alternative with empty just becuase this page has no value for it.
+                    // JohnT update: if we simply do nothing when dsv.TextAlternatives doesn't contain lang,
+                    // that DOES prevent deleting stuff. We often got away with it, because the edited page would
+                    // have the empty content from being edited, and itemsToDelete would list this key/lang combination
+                    // as a result, and a couple of calls up the stack, UpdateVariablesAndDataDiv() would typically
+                    // delete it from the data-div while processing itemsToDelete. But if we're looking at the bookTitle,
+                    // which is typically on more than one page, there's still a page where it's not deleted, and the
+                    // next update will pick that as preferred value. See BL-10739
+                    if (
+                        s == ""
+                        && !dsv.TextAlternatives.ContainsAlternative(lang)
+                        && !itemsToDelete.Contains(Tuple.Create(key, lang))
+                    )
+                        return;
+
+                    //hack: until I think of a more elegant way to avoid repeating the language name in N2 when it's the exact same as N1...
+                    var n1Form = GetBestUnwrappedAlternative(
+                        data.TextVariables[key].TextAlternatives,
+                        new[] { MetadataLanguage1Tag, "*" }
+                    );
+                    if (lang == MetadataLanguage2Tag && n1Form != null && s == n1Form.Form)
+                    {
+                        s = ""; //don't show it in N2, since it's the same as N1
+                    }
+                    SetInnerXmlPreservingLabel(key, node, XmlString.FromXml(s));
+                    var attrs = dsv.GetAttributeList(lang);
+                    if (attrs != null)
+                    {
+                        MergeAttrsIntoElement(attrs, node);
+                    }
+                }
+            }
+            else if (!HtmlDom.IsImgOrSomethingWithBackgroundImage(node))
+            {
+                // See whether we need to delete something
+                var lang = DealiasWritingSystemId(node.GetOptionalStringAttribute("lang", "*"));
+                if (itemsToDelete.Contains(Tuple.Create(key, lang)))
+                {
+                    SetInnerXmlPreservingLabel(key, node, XmlString.Empty); // a later process may remove node altogether.
+                }
             }
         }
 
