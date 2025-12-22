@@ -39,7 +39,6 @@ namespace Bloom.Workspace
         private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
         private readonly LocalizationChangedEvent _localizationChangedEvent;
         private readonly CollectionSettings _collectionSettings;
-        private bool _viewInitialized;
         private EditingView _editingView;
         private PublishView _publishView;
         private CollectionTabView _collectionTabView;
@@ -71,9 +70,9 @@ namespace Bloom.Workspace
 
         public WorkspaceView(
             WorkspaceModel model,
-            CollectionTabView.Factory reactCollectionsTabsViewFactory,
+            CollectionTabView.Factory collectionsTabViewFactory,
             EditingView.Factory editingViewFactory,
-            PublishView.Factory pdfViewFactory,
+            PublishView.Factory publishViewFactory,
             CollectionSettingsDialog.Factory settingsDialogFactory,
             EditBookCommand editBookCommand,
             SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
@@ -107,7 +106,6 @@ namespace Bloom.Workspace
             _bookServer = bookServer;
             _tabSelection = tabSelection;
             _audioRecording = audioRecording;
-            collectionApi.WorkspaceView = this; // avoids an Autofac exception that appears if collectionApi constructor takes a WorkspaceView
             _collectionApi = collectionApi;
             appApi.WorkspaceView = this; // it needs to know, and there's some circularity involved in having factory pass it in
             workspaceApi.WorkspaceView = this; // and yet one more
@@ -171,7 +169,7 @@ namespace Bloom.Workspace
                 SendTopBarState();
             };
 
-            _collectionTabView = reactCollectionsTabsViewFactory();
+            _collectionTabView = collectionsTabViewFactory();
             _collectionTabView.Dock = DockStyle.Fill;
             _collectionTabView.BackColor = System.Drawing.Color.FromArgb(
                 ((int)(((byte)(87)))),
@@ -183,7 +181,7 @@ namespace Bloom.Workspace
             //
             // _pdfView
             //
-            this._publishView = pdfViewFactory();
+            this._publishView = publishViewFactory();
             this._publishView.Dock = DockStyle.Fill;
 
             SelectTab(_collectionTabView);
@@ -191,7 +189,6 @@ namespace Bloom.Workspace
             SetupZoomModel();
             SetupTopBarReactControl();
             SendZoomInfo();
-            _viewInitialized = false;
             CommonApi.WorkspaceView = this;
 
             // We put this on the high priority list because the notification it sends
@@ -336,7 +333,6 @@ namespace Bloom.Workspace
 
         private void HandleBookSelectionChanged(object sender, BookSelectionChangedEventArgs e)
         {
-            //TODO add tab update?
             SendBookSelectionChanged(false);
         }
 
@@ -519,6 +515,8 @@ namespace Bloom.Workspace
 
         private string GetTabStateForUi(string tabId, string activeTabId)
         {
+            // Even if !_tabsEnabled, we want the current tab to look active.
+            // Clicking on the active tab doesn't do anything anyway.
             if (tabId == activeTabId)
                 return "active";
 
@@ -980,11 +978,6 @@ namespace Bloom.Workspace
 
         public bool InCollectionTab => _tabSelection.ActiveTab == WorkspaceTab.collection;
 
-        internal bool IsInTabStrip(Point pt)
-        {
-            return _topBarReactControl != null && _topBarReactControl.Bounds.Contains(pt);
-        }
-
         private void Application_Idle(object sender, EventArgs e)
         {
             Application.Idle -= Application_Idle;
@@ -1259,7 +1252,6 @@ namespace Bloom.Workspace
         private void WorkspaceView_Load(object sender, EventArgs e)
         {
             CheckDPISettings();
-            _viewInitialized = true;
             ShowAutoUpdateDialogIfNeeded();
             ShowForumInvitationDialogIfNeeded();
             // Whether we showed the dialog or not we'll check for a new version in 1 minute.
@@ -1525,7 +1517,7 @@ namespace Bloom.Workspace
             ProblemReportApi.ShowProblemDialog(this, null);
         }
 
-        public void SetStateOfNonPublishTabs(bool enable)
+        public void SetTabsEnabled(bool enable)
         {
             _tabsEnabled = enable;
             SendTopBarState();
