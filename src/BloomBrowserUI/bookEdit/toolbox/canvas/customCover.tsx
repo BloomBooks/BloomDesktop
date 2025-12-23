@@ -10,7 +10,7 @@ import {
 } from "../../js/CanvasElementManager";
 import { EditableDivUtils } from "../../js/editableDivUtils";
 import { kBloomCanvasClass, kCanvasElementClass } from "./canvasElementUtils";
-import { postString } from "../../../utils/bloomApi";
+import { getAsync, postString } from "../../../utils/bloomApi";
 import { Bubble, BubbleSpec } from "comicaljs";
 import {
     hideInactiveMarginBox,
@@ -20,6 +20,7 @@ import {
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import { getToolboxBundleExports } from "../../js/bloomFrames";
 import { remove } from "mobx";
+import { ILanguageNameValues } from "../../bookSettings/FieldVisibilityGroup";
 
 /* Summary of how custom covers work
         - a custom page is indicated by the presence of the class
@@ -147,18 +148,10 @@ export function convertCoverPageToCustom(
                         e.classList.remove("bloom-visibility-code-on");
                     }
                 }
-                // We also want it to stay that way when C# code later updates visibility codes.
-                // This is based on a setting in the TG. Using these generic codes means that if
-                // the collection languages change, or we make a derivative, the right language
-                // should still be made visible in each box.
-                const settings = GetSettings();
-                if (settings.languageForNewTextBoxes === lang) {
-                    ceContent.setAttribute("data-default-languages", "V");
-                } else if (settings.defaultSourceLanguage === lang) {
-                    ceContent.setAttribute("data-default-languages", "N1");
-                } else if (settings.defaultSourceLanguage2 === lang) {
-                    ceContent.setAttribute("data-default-languages", "N2");
-                }
+                // We don't need to await this. We just want it done before the next time
+                // we save the page, and the async result should arrive almost instantly.
+                setDataDefault(ceContent as HTMLElement, lang || "");
+
                 // Don't let the appearance system mess with which languages are visible here.
                 ceContent.removeAttribute("data-visibility-variable");
 
@@ -226,6 +219,26 @@ export function convertCoverPageToCustom(
     // This needs to be after we measure positions of things!
     page.classList.add("bloom-custom-cover");
     finishReactivatingPage(page);
+}
+
+async function setDataDefault(
+    ceContent: HTMLElement,
+    lang: string,
+): Promise<void> {
+    // We also want it to stay that way when C# code later updates visibility codes.
+    // This is based on a setting in the TG. Using these generic codes means that if
+    // the collection languages change, or we make a derivative, the right language
+    // should still be made visible in each box.
+    // settings/languageNames
+    const languageNameValues = (await getAsync("settings/languageNames"))
+        .data as ILanguageNameValues;
+    if (languageNameValues.language1Tag === lang) {
+        ceContent.setAttribute("data-default-languages", "V");
+    } else if (languageNameValues.language2Tag === lang) {
+        ceContent.setAttribute("data-default-languages", "N1");
+    } else if (languageNameValues.language3Tag === lang) {
+        ceContent.setAttribute("data-default-languages", "N2");
+    }
 }
 
 function finishReactivatingPage(page: HTMLElement): void {
