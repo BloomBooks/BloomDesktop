@@ -82,12 +82,18 @@ export function convertCoverPageToCustom(
     if (!marginBox) return; // paranoia and lint
     if (customMarginBox.children.length > 0) {
         if (startOver) {
-            // remove existing content
+            // remove existing content, and carry on to create new content from scratch.
+            // We don't particularly need to save the page, since we're copying everything
+            // from the current page anyway.
             customMarginBox.innerHTML = "";
         } else {
-            // Already set up, just turn it back on
-            page.classList.add("bloom-custom-cover");
-            finishReactivatingPage(page);
+            // We already have a custom page saved away, but we need to do a full save and
+            // update process to get our book data elements transferred from one version
+            // of the page to the other.
+            // We'll leave it up to toggleCustomCover to actually change the class on
+            // the front cover because we need to save things in the current state.
+            // This will reload the page, so nothing else that happens here matters.
+            postString("editView/toggleCustomCover", page.getAttribute("id")!);
             return;
         }
     }
@@ -286,9 +292,11 @@ function renderCoverMenu(page: HTMLElement, container: HTMLElement): void {
             isCustom={isCustomCover}
             setCustom={(selection) => {
                 if (selection === "auto") {
-                    page.classList.remove("bloom-custom-cover");
+                    // We'll leave it up to toggleCustomCover to actually change the class on
+                    // the front cover because we need to save things in the current state.
+                    // This will reload the page, so nothing else that happens here matters.
                     postString(
-                        "editView/updateXmatter",
+                        "editView/toggleCustomCover",
                         page.getAttribute("id")!,
                     );
                 } else {

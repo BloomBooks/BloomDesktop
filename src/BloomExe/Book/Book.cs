@@ -2497,6 +2497,10 @@ namespace Bloom.Book
             // Various things, especially publication, don't work with unknown page sizes.
             Layout layout = Layout.FromDomAndChoices(bookDOM, Layout.A5Portrait, fileLocator);
             var oldIds = new List<string>();
+            var frontCover =
+                RawDom.SelectSingleNode("/html/body/div[contains(@class, 'outsideFrontCover')]")
+                as SafeXmlElement;
+            var frontCoverWasCustom = frontCover?.HasClass("bloom-custom-cover") ?? false;
             XMatterHelper.RemoveExistingXMatter(bookDOM, oldIds);
             // this says, if you can't figure out the page size, use the one we got before we removed the xmatter...
             // still requiring it to be a valid layout.
@@ -2509,7 +2513,13 @@ namespace Bloom.Book
                 oldIds,
                 CoverIsImage
             );
-
+            frontCover =
+                RawDom.SelectSingleNode("/html/body/div[contains(@class, 'outsideFrontCover')]")
+                as SafeXmlElement;
+            if (frontCoverWasCustom)
+            {
+                frontCover?.AddClass("bloom-custom-cover");
+            }
             var dataBookLangs = bookDOM.GatherDataBookLanguages();
             TranslationGroupManager.PrepareDataBookTranslationGroups(bookDOM.RawDom, dataBookLangs);
 

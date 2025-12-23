@@ -1347,6 +1347,19 @@ namespace Bloom.Book
                             continue;
                     }
 
+                    // Don't load data from an element on a page that is hidden. This seems like a
+                    // good plan in general. But it's especially important on a custom cover page
+                    // where there may be multiple translation groups containing the same set of
+                    // bloom-editables with the same data-book value but only some of them are visible.
+                    if (
+                        node.HasClass("bloom-editable")
+                        && !node.HasClass("bloom-visibility-code-on")
+                        && node.ParentWithClass("bloom-page") != null
+                    )
+                    {
+                        continue;
+                    }
+
                     string key = node.GetAttribute("data-book").Trim();
                     if (key == String.Empty)
                     {
@@ -1674,7 +1687,12 @@ namespace Bloom.Book
                     // We want to first restore the customMarginBox content, and the
                     // restore things like the title into it (among other places).
                     if (elt.HasClass("bloom-contains-child-data"))
+                    {
                         UpdateOneElementFromDataSet(data, itemsToDelete, elt);
+                        // and now that element may have different contents and
+                        // they should be updated too.
+                        otherNodes.AddRange(elt.SafeSelectElements("." + query));
+                    }
                     else
                         otherNodes.Add(elt);
                 }

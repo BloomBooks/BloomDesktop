@@ -121,24 +121,47 @@ namespace Bloom.web.controllers
                 HandleShowBookSettingsDialog,
                 true
             );
-            apiHandler.RegisterEndpointHandler("editView/updateXmatter", HandleUpdateXmatter, true);
+            apiHandler.RegisterEndpointHandler(
+                "editView/toggleCustomCover",
+                HandleToggleCustomCover,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/getDataBookValue",
+                HandleGetDataBookValue,
+                true
+            );
+        }
+
+        private void HandleGetDataBookValue(ApiRequest request)
+        {
+            var lang = request.RequiredParam("lang");
+            var dataBook = request.RequiredParam("dataBook");
+            var multiText = View.Model.CurrentBook.BookData.GetMultiTextVariableOrEmpty(dataBook);
+            var value = multiText.GetExactAlternative(lang) ?? "";
+            request.ReplyWithText(value);
         }
 
         /// <summary>
-        /// Run BringXmatterHtmlUpToDate (after saving current page state), then reload the page.
-        /// This is currently used to restore the auto setting of the front cover.
+        /// Save the current state of the page, then toggle the book cover custom flag, and finally reload the page.
         /// </summary>
-        private void HandleUpdateXmatter(ApiRequest request)
+        private void HandleToggleCustomCover(ApiRequest request)
         {
             var pageId = request.GetPostStringOrNull();
             request.PostSucceeded();
             View.Model.SaveThen(
                 () =>
                 {
-                    // See a long comment in Book.Save where this is called although
-                    // it seems we just need BringXmatterHtmlUpToDate. This is safer,
-                    // and switching back to Auto is not likely to be common.
-                    View.Model.CurrentBook.EnsureUpToDateMemory(new NullProgress());
+                    var book = View.Model.CurrentBook;
+                    var page = book.GetPage(pageId);
+                    var pageElt = page.GetDivNodeForThisPage();
+                    if (pageElt.HasClass("bloom-custom-cover"))
+                        pageElt.RemoveClass("bloom-custom-cover");
+                    else
+                        pageElt.AddClass("bloom-custom-cover");
+                    // Bring everything up to date consistent with the new
+                    // state. Might be enough just do the BookData update.
+                    book.EnsureUpToDateMemory(new NullProgress());
                     return pageId;
                 },
                 () => { }

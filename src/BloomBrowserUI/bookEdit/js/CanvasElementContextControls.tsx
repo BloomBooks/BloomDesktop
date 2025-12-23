@@ -69,8 +69,9 @@ import { setGeneratedDraggableId } from "../toolbox/canvas/CanvasElementItem";
 import { editLinkGrid } from "./linkGrid";
 import { showLinkTargetChooserDialog } from "../../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
 import { kBloomButtonClass } from "../toolbox/canvas/canvasElementUtils";
-import { useApiObject } from "../../utils/bloomApi";
+import { get, getString, useApiObject } from "../../utils/bloomApi";
 import { ILanguageNameValues } from "../bookSettings/FieldVisibilityGroup";
+import { isWhiteSpaceLike } from "typescript";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -432,6 +433,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
             props.canvasElement,
             props.setMenuOpen,
             languageNameValues,
+            noneLabel,
         );
     }
 
@@ -989,7 +991,7 @@ function makeLanguageMenuItem(
         }
         setMenuOpen(false);
     };
-    //icon: autoHeight && <CheckIcon css={getMenuIconCss()}
+
     const activeLangTag = tg
         .getElementsByClassName("bloom-editable bloom-visibility-code-on")[0]
         ?.getAttribute("lang");
@@ -1062,6 +1064,98 @@ function makeLanguageMenuItem(
     menuOptions.push({
         l10nId: "EditTab.Toolbox.ComicTool.Options.Language",
         english: "Language:",
+        subMenu: subMenu,
+        onClick: () => {},
+    });
+}
+
+const fieldTypeData = [
+    { dataBook: "bookTitle", label: "Book Title" },
+    { dataBook: "smallCoverCredits", label: "Cover Credits" },
+    // It would also be nice to do topic and languageOfBook.
+    // But these use data-derived rather than data-book.
+    // They also have a quite different structure without a translation group or blooms-editables.
+    // We will have to wipe out any existing value and find a way to get the value they should actually have.
+    // So skip them for now.
+];
+
+function makeFieldTypeMenuItem(
+    ce: HTMLElement,
+    menuOptions: IMenuItemWithSubmenu[],
+    setMenuOpen: (open: boolean) => void,
+    noneLabel: string,
+) {
+    // We only do this on custom pages, at least for now
+    if (!ce.closest(".bloom-page")?.classList?.contains("bloom-custom-cover"))
+        return;
+    const tg = ce.getElementsByClassName(
+        "bloom-translationGroup",
+    )[0] as HTMLElement;
+    if (!tg) {
+        // not the right kind of element (maybe already a topic, or an image).
+        return;
+    }
+
+    const activeType = tg
+        .getElementsByClassName("bloom-editable bloom-visibility-code-on")[0]
+        ?.getAttribute("data-book");
+    const subMenu: ILocalizableMenuItemProps[] = [
+        {
+            l10nId: null,
+            english: noneLabel,
+            onClick: () => {
+                for (const editable of Array.from(
+                    tg.getElementsByClassName("bloom-editable"),
+                )) {
+                    editable.removeAttribute("data-book");
+                }
+                setMenuOpen(false);
+            },
+            icon: !activeType && <CheckIcon css={getMenuIconCss()} />,
+        },
+    ];
+    for (const fieldType of fieldTypeData) {
+        subMenu.push({
+            l10nId: null,
+            english: fieldType.label,
+            onClick: () => {
+                for (const editable of Array.from(
+                    tg.getElementsByClassName("bloom-editable"),
+                )) {
+                    editable.setAttribute("data-book", fieldType.dataBook);
+                    if (
+                        editable.classList.contains("bloom-visibility-code-on")
+                    ) {
+                        getString(
+                            `editView/getDataBookValue?lang=${editable.getAttribute("lang")}&dataBook=${fieldType.dataBook}`,
+                            (content) => {
+                                // content comes from a source that looked empty, we don't want to overwrite something the user may
+                                // already have typed here.
+                                // But it may well have something in it, because we usually have an empty paragraph to start with.
+                                // To test whether it looks empty, we put the text into a newly created element and then
+                                // see whether it's textContent is empty.
+                                // The logic of overwriting something which the user has typed here is that if we keep what's here,
+                                // then the user may never know that there was already in that field. But if we overwrite, then
+                                // the user can always correct it back to what he just typed.
+                                const temp = document.createElement("div");
+                                temp.innerHTML = content || "";
+                                if (temp.textContent.trim() !== "")
+                                    editable.innerHTML = content;
+                            },
+                        );
+                    }
+                }
+                setMenuOpen(false);
+            },
+            icon: activeType === fieldType.dataBook && (
+                <CheckIcon css={getMenuIconCss()} />
+            ),
+        });
+    }
+
+    menuOptions.push({
+        l10nId: "EditTab.Toolbox.ComicTool.Options.FieldType",
+        english: "Field Type:",
         subMenu: subMenu,
         onClick: () => {},
     });
@@ -1163,6 +1257,7 @@ function addTextMenuItems(
     canvasElement: HTMLElement,
     setMenuOpen: (open: boolean) => void,
     languageNameValues: ILanguageNameValues,
+    noneLabel: string,
 ) {
     const autoHeight = !canvasElement.classList.contains("bloom-noAutoHeight");
     const toggleAutoHeight = () => {
@@ -1217,6 +1312,7 @@ function addTextMenuItems(
         setMenuOpen,
         languageNameValues,
     );
+    makeFieldTypeMenuItem(canvasElement, menuOptions, setMenuOpen, noneLabel);
 }
 
 function addVideoMenuItems(
