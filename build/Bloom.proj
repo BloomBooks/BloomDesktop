@@ -1,6 +1,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- This makes defaults for various properties unless they are set from the command line or TeamCity parameter settings.
 	Typically command line includes /p:BUILD_NUMBER=3.1.22.0 (all 4 digits required).
+	/p:NODELTA=true causes the Squirrel installer to not make a delta package.
 	May include something like /p:channel=Alpha.-->
   <PropertyGroup>
     <isOnTeamCity Condition="'$(teamcity_version)' == ''">false</isOnTeamCity>
@@ -31,6 +32,8 @@
     <ApplicationName>Bloom$(channel)</ApplicationName>
     <Configuration>Release</Configuration>
     <BUILD_NUMBER Condition="'$(BUILD_NUMBER)'==''">1.2.3.4</BUILD_NUMBER>
+    <SquirrelDelta Condition="'$(NODELTA)'=='true'">--no-delta</SquirrelDelta>
+    <SquirrelDelta Condition="'$(NODELTA)'!='true'"></SquirrelDelta>
     <useNUnit-x86 Condition="'$(OS)'=='Windows_NT'">true</useNUnit-x86>
     <useNUnit-x86 Condition="'$(OS)'!='Windows_NT'">false</useNUnit-x86>
     <TestProcessType Condition="'$(useNUnit-x86)'=='true'">Separate</TestProcessType>
@@ -244,7 +247,7 @@
 			We continue on error so we can output the log contents. -->
     <Exec
 			ContinueOnError="true"
-			Command="$(RootDir)\lib\dotnet\Update --releasify $(RootDir)\build\Bloom$(channel).$(Version).nupkg --releaseDir=$(SquirrelReleaseFolder) --no-msi -i $(RootDir)\src\SquirrelInstaller\BloomSetup.ico -g $(RootDir)\src\SquirrelInstaller\installing.gif -l 'Desktop,StartMenu'">
+			Command="$(RootDir)\lib\dotnet\Update --releasify $(RootDir)\build\Bloom$(channel).$(Version).nupkg --releaseDir=$(SquirrelReleaseFolder) --no-msi $(SquirrelDelta) -i $(RootDir)\src\SquirrelInstaller\BloomSetup.ico -g $(RootDir)\src\SquirrelInstaller\installing.gif -l 'Desktop,StartMenu'">
       <Output TaskParameter="ExitCode" PropertyName="SquirrelReleasifyExitCode"/>
     </Exec>
     <CallTarget Targets="HandleSquirrelReleasifyError" Condition="$(SquirrelReleasifyExitCode)!=0" />
