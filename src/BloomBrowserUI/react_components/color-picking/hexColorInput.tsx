@@ -11,37 +11,47 @@ interface IHexColorInputProps {
 
 const hashChar = "#";
 
+const massageColorInput = (color: string): string => {
+    let result = color.toUpperCase();
+    result = result.replace(/[^0-9A-F]/g, ""); // eliminate any non-hex characters
+    result = hashChar + result; // insert hash as the first character
+    if (result.length > 7) {
+        result = result.slice(0, 7);
+    }
+    return result;
+};
+
+// In general, we want our Hex Color input to reflect the first value in the 'colors' array.
+// For our predefined gradients, however, we want the hex input to be empty.
+// And for named colors, we need to show the hex equivalent.
+const getHexColorValueFromColorInfo = (colorInfo: IColorInfo): string => {
+    // First, our hex value will be empty, if we're dealing with a gradient.
+    // The massage method below will add a hash character...
+    if (colorInfo.colors.length > 1) return "";
+    const firstColor = colorInfo.colors[0];
+    if (firstColor[0] === hashChar) return firstColor;
+    // In some cases we might be dealing with a color word like "black" or "white" or "transparent".
+    return tinycolor(firstColor).toHexString();
+};
+
+const getInitialHexValue = (colorInfo: IColorInfo): string => {
+    return massageColorInput(getHexColorValueFromColorInfo(colorInfo));
+};
+
 export const HexColorInput: React.FunctionComponent<IHexColorInputProps> = (
     props,
 ) => {
-    const [currentColor, setCurrentColor] = useState("");
+    const [currentColor, setCurrentColor] = useState(() =>
+        getInitialHexValue(props.initial),
+    );
 
-    // In general, we want our Hex Color input to reflect the first value in the 'colors' array.
-    // For our predefined gradients, however, we want the hex input to be empty.
-    // And for named colors, we need to show the hex equivalent.
-    const getHexColorValueFromColorInfo = (): string => {
-        // First, our hex value will be empty, if we're dealing with a gradient.
-        // The massage method below will add a hash character...
-        if (props.initial.colors.length > 1) return "";
-        const firstColor = props.initial.colors[0];
-        if (firstColor[0] === hashChar) return firstColor;
-        // In some cases we might be dealing with a color word like "black" or "white" or "transparent".
-        return tinycolor(firstColor).toHexString();
-    };
+    const initialHexValue = getInitialHexValue(props.initial);
 
-    const massageColorInput = (color: string): string => {
-        let result = color.toUpperCase();
-        result = result.replace(/[^0-9A-F]/g, ""); // eliminate any non-hex characters
-        result = hashChar + result; // insert hash as the first character
-        if (result.length > 7) {
-            result = result.slice(0, 7);
-        }
-        return result;
-    };
-
+    // Keep the displayed hex string in sync when the parent changes the color programmatically
+    // (e.g. swatch click, eyedropper, or external currentColor updates).
     useEffect(() => {
-        setCurrentColor(massageColorInput(getHexColorValueFromColorInfo()));
-    }, [props.initial.colors]);
+        setCurrentColor(initialHexValue);
+    }, [initialHexValue]);
 
     const handleInputChange: React.ChangeEventHandler<HTMLInputElement> = (
         e,

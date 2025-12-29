@@ -1,13 +1,16 @@
 import { css } from "@emotion/react";
 import * as React from "react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ColorResult, RGBColor } from "react-color";
 import BloomSketchPicker from "./bloomSketchPicker";
 import ColorSwatch, { IColorInfo } from "./colorSwatch";
 import tinycolor from "tinycolor2";
 import { HexColorInput } from "./hexColorInput";
 import { useL10n } from "../l10nHooks";
-import { Typography } from "@mui/material";
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
+import ColorizeIcon from "@mui/icons-material/Colorize";
+import { getColorInfoFromSpecialNameOrColorString } from "./bloomPalette";
 
 // We are combining parts of the 'react-color' component set with our own list of swatches.
 // The reason for using our own swatches is so we can support swatches with gradients and alpha.
@@ -19,13 +22,126 @@ interface IColorPickerProps {
     swatchColors: IColorInfo[];
     includeDefault?: boolean;
     onDefaultClick?: () => void;
+    onEyedropperActiveChange?: (active: boolean) => void;
+    eyedropperBackdropSelector?: string;
     //defaultColor?: IColorInfo;  will eventually need this
 }
+
+type EyeDropperResult = { sRGBHex: string };
+type EyeDropper = { open: () => Promise<EyeDropperResult> };
+type EyeDropperConstructor = { new (): EyeDropper };
+
+const getEyeDropperConstructor = (): EyeDropperConstructor | undefined => {
+    let iframeWindow:
+        | (Window & { EyeDropper?: EyeDropperConstructor })
+        | null
+        | undefined;
+    try {
+        const iframe = parent.window.document.getElementById(
+            "page",
+        ) as HTMLIFrameElement | null;
+        iframeWindow = iframe?.contentWindow as
+            | (Window & { EyeDropper?: EyeDropperConstructor })
+            | null;
+    } catch {
+        iframeWindow = undefined;
+    }
+    const topWindow = window as Window & { EyeDropper?: EyeDropperConstructor };
+    return iframeWindow?.EyeDropper ?? topWindow.EyeDropper;
+};
+
+const kEyedropperBackdropStyleId = "bloom-eyedropper-backdrop-style";
+const defaultEyedropperBackdropSelector = ".MuiBackdrop-root";
+
+const setEyedropperBackdropTransparent = (
+    selector: string | undefined,
+    enabled: boolean,
+): void => {
+    const resolvedSelector = selector ?? defaultEyedropperBackdropSelector;
+    if (!resolvedSelector) {
+        return;
+    }
+
+    const existing = document.getElementById(
+        kEyedropperBackdropStyleId,
+    ) as HTMLStyleElement | null;
+
+    if (enabled) {
+        if (existing && existing.textContent?.includes(resolvedSelector)) {
+            return;
+        }
+        const style = existing ?? document.createElement("style");
+        style.id = kEyedropperBackdropStyleId;
+        style.textContent = `
+            ${resolvedSelector} {
+                background-color: transparent !important;
+            }
+        `;
+        if (!existing) {
+            document.head.appendChild(style);
+        }
+    } else if (existing) {
+        existing.remove();
+    }
+};
+
+const setPageScalingDisabled = (disabled: boolean): (() => void) => {
+    if (!disabled) {
+        return () => {};
+    }
+
+    // Bloom applies page zoom using a transform on this element (see editViewFrame.ts setZoom()).
+    // WebView2's EyeDropper sampling can be offset when the page content is transformed.
+    const iframe = parent.window.document.getElementById(
+        "page",
+    ) as HTMLIFrameElement | null;
+    const iframeDoc = iframe?.contentWindow?.document;
+    const container = iframeDoc?.getElementById(
+        "page-scaling-container",
+    ) as HTMLElement | null;
+
+    if (!container) {
+        return () => {};
+    }
+
+    const previousTransform = container.style.transform;
+    const previousWidth = container.style.width;
+    const previousTransformOrigin = container.style.transformOrigin;
+
+    container.style.transform = "";
+    container.style.width = "";
+    container.style.transformOrigin = "";
+
+    return () => {
+        container.style.transform = previousTransform;
+        container.style.width = previousWidth;
+        container.style.transformOrigin = previousTransformOrigin;
+    };
+};
 
 export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
     props,
 ) => {
-    const [colorChoice, setColorChoice] = useState(props.currentColor);
+    const [eyedropperActive, setEyedropperActive] = useState(false);
+    const mountedRef = useRef(true);
+    const backdropSelector =
+        props.eyedropperBackdropSelector ?? defaultEyedropperBackdropSelector;
+    const hasNativeEyedropper = !!getEyeDropperConstructor();
+
+    // Use a content-based key so we detect when the color content changes,
+    // even if the object reference is the same (e.g., eyedropper mutations).
+    const currentColorKey =
+        props.currentColor.colors.join("|") + "|" + props.currentColor.opacity;
+
+    // Track mount state so we don't update state after unmount, and to ensure any temporary
+    // backdrop overrides are removed if the component unmounts while the eyedropper is active.
+    useEffect(() => {
+        mountedRef.current = true;
+        return () => {
+            mountedRef.current = false;
+            setEyedropperBackdropTransparent(backdropSelector, false);
+        };
+    }, [backdropSelector]);
 
     const defaultStyleLabel = useL10n(
         "Default for style",
@@ -33,8 +149,11 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
     );
 
     const changeColor = (swatchColor: IColorInfo) => {
-        setColorChoice(swatchColor);
-        props.onChange(swatchColor);
+        const clonedColor: IColorInfo = {
+            ...swatchColor,
+            colors: [...swatchColor.colors],
+        };
+        props.onChange(clonedColor);
     };
 
     // Handler for when the user clicks on a swatch at the bottom of the picker.
@@ -52,7 +171,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
     const handleHexCodeChange = (hexColor: string) => {
         const newColor = {
             colors: [hexColor],
-            opacity: colorChoice.opacity, // Don't change opacity
+            opacity: props.currentColor.opacity, // Don't change opacity
         };
         changeColor(newColor);
     };
@@ -81,9 +200,42 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
     };
 
     const getRgbaOfCurrentColor = (): RGBColor => {
-        const rgbColor = tinycolor(colorChoice.colors[0]).toRgb();
-        rgbColor.a = colorChoice.opacity;
+        const rgbColor = tinycolor(props.currentColor.colors[0]).toRgb();
+        rgbColor.a = props.currentColor.opacity;
         return rgbColor;
+    };
+
+    const handleEyedropperClick = async (): Promise<void> => {
+        if (eyedropperActive) {
+            return;
+        }
+
+        const constructor = getEyeDropperConstructor();
+        if (!constructor) {
+            return;
+        }
+
+        setEyedropperActive(true);
+        props.onEyedropperActiveChange?.(true);
+        setEyedropperBackdropTransparent(backdropSelector, true);
+        const restorePageScaling = setPageScalingDisabled(true);
+        try {
+            const result = await new constructor().open();
+            if (result?.sRGBHex) {
+                changeColor(
+                    getColorInfoFromSpecialNameOrColorString(result.sRGBHex),
+                );
+            }
+        } catch {
+            // The user can cancel (e.g. Escape), which rejects the promise.
+        } finally {
+            restorePageScaling();
+            setEyedropperBackdropTransparent(backdropSelector, false);
+            if (mountedRef.current) {
+                setEyedropperActive(false);
+                props.onEyedropperActiveChange?.(false);
+            }
+        }
     };
 
     const getColorSwatches = () => (
@@ -122,29 +274,50 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
             `}
         >
             <BloomSketchPicker
+                key={currentColorKey}
                 noAlphaSlider={!props.transparency}
                 // if the current color choice happens to be a gradient, this will be 'white'.
                 color={getRgbaOfCurrentColor()}
                 onChange={handlePickerChange}
-                currentOpacity={colorChoice.opacity}
+                currentOpacity={props.currentColor.opacity}
             />
             <div
                 css={css`
                     height: 26px;
-                    width: 100%;
+                    width: 225px;
                     margin-top: 16px;
                     display: flex;
                     flex-direction: row;
                     justify-content: space-between;
+                    align-items: center;
+                    align-self: center;
                 `}
             >
+                {hasNativeEyedropper && (
+                    <IconButton
+                        size="medium"
+                        title="Sample Color"
+                        onClick={handleEyedropperClick}
+                        disabled={eyedropperActive}
+                        css={css`
+                            padding: 2px;
+                        `}
+                    >
+                        <ColorizeIcon
+                            fontSize="medium"
+                            css={css`
+                                color: #000;
+                            `}
+                        />
+                    </IconButton>
+                )}
                 <HexColorInput
-                    initial={colorChoice}
+                    initial={props.currentColor}
                     onChangeComplete={handleHexCodeChange}
                 />
                 <ColorSwatch
-                    colors={colorChoice.colors}
-                    opacity={colorChoice.opacity}
+                    colors={props.currentColor.colors}
+                    opacity={props.currentColor.opacity}
                     width={48}
                     height={26}
                 />
