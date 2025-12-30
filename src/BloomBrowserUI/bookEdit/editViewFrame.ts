@@ -56,6 +56,7 @@ export { showPageChooserDialog };
 import "../lib/errorHandler";
 import { showBookSettingsDialog } from "./bookSettings/BookSettingsDialog";
 export { showBookSettingsDialog };
+import { showPageSettingsDialog } from "./pageSettings/PageSettingsDialog";
 import { showRegistrationDialogForEditTab } from "../react_components/registration/registrationDialog";
 export { showRegistrationDialogForEditTab as showRegistrationDialog };
 import { showAboutDialog } from "../react_components/aboutDialog";
@@ -261,6 +262,10 @@ export function showEditViewBookSettingsDialog(
     showBookSettingsDialog(initiallySelectedGroupIndex);
 }
 
+export function showEditViewPageSettingsDialog() {
+    showPageSettingsDialog();
+}
+
 export function showAboutDialogInEditTab() {
     showAboutDialog();
 }
@@ -319,6 +324,7 @@ interface EditTabBundleApi {
     showCopyrightAndLicenseDialog: typeof showCopyrightAndLicenseDialog;
     showEditViewTopicChooserDialog: typeof showEditViewTopicChooserDialog;
     showEditViewBookSettingsDialog: typeof showEditViewBookSettingsDialog;
+    showEditViewPageSettingsDialog: typeof showEditViewPageSettingsDialog;
     showAboutDialogInEditTab: typeof showAboutDialogInEditTab;
     showRequiresSubscriptionDialog: typeof showRequiresSubscriptionDialog;
     showRegistrationDialogInEditTab: typeof showRegistrationDialogInEditTab;
@@ -356,6 +362,7 @@ window.editTabBundle = {
     showCopyrightAndLicenseDialog,
     showEditViewTopicChooserDialog,
     showEditViewBookSettingsDialog,
+    showEditViewPageSettingsDialog,
     showAboutDialogInEditTab,
     showRequiresSubscriptionDialog,
     showRegistrationDialogInEditTab,

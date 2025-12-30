@@ -29,13 +29,14 @@
 
 [class*="Device"].numberedPage:not(.bloom-interactive-page) {
     --pageNumber-extra-height: 0mm !important; /* we put the page number on top of the image so we don't need a margin boost */
+    --pageNumber-background-color: #ffffff; /* I'm not clear why this is white, but all I did in this change is to move it so that it can be overridden by page settings */
 }
 [class*="Device"].numberedPage:not(.bloom-interactive-page)::after {
     --pageNumber-bottom: var(--page-margin-bottom);
     --pageNumber-top: unset;
     --pageNumber-font-size: 11pt;
     --pageNumber-border-radius: 50%;
-    --pageNumber-background-color: #ffffff;
+
     --pageNumber-background-width: 33px;
     --pageNumber-always-left-margin: var(--page-margin-left);
     --pageNumber-right-margin: deliberately-invalid; /* prevents right being set at all. unset does not work. Prevent centering for this layout */

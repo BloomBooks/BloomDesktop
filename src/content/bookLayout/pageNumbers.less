@@ -7,6 +7,14 @@
     // themes can override this as needed. If you have reasonable margins, you don't need to add anything to fit in a pageNumber
     --pageNumber-extra-height: 0mm; // must have units
 }
+
+// If the page has explicitly set a background color (e.g. via Page Settings),
+// make the page number background match it, unless it has its own explicit setting.
+// .bloom-page.numberedPage[style*="--page-background-color"]:not(
+//         [style*="--pageNumber-background-color"]
+//     ) {
+//     --pageNumber-background-color: var(--page-background-color);
+// }
 .numberedPage {
     &:after {
         content: attr(data-page-number);
@@ -22,6 +30,8 @@
         bottom: var(--pageNumber-bottom);
         top: var(--pageNumber-top);
         background-color: var(--pageNumber-background-color);
+        color: var(--pageNumber-color);
+
         border-radius: var(--pageNumber-border-radius);
         z-index: 1000;
         // These are needed to get the number centered in a circle.  They have
