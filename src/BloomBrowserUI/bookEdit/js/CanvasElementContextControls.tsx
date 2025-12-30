@@ -72,7 +72,7 @@ import {
     kBloomCanvasSelector,
 } from "../toolbox/canvas/canvasElementUtils";
 import { getString, post, useApiObject } from "../../utils/bloomApi";
-import { ILanguageNameValues } from "../bookSettings/FieldVisibilityGroup";
+import { ILanguageNameValues } from "../bookAndPageSettings/FieldVisibilityGroup";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];

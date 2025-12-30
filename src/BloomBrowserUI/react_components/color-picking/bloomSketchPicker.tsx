@@ -9,6 +9,7 @@ interface IBloomSketchPickerProps {
     noAlphaSlider?: boolean;
 
     onChange: (color: ColorResult) => void;
+    onChangeComplete?: (color: ColorResult) => void;
 
     // Needed for tooltip on Alpha slider
     currentOpacity: number;

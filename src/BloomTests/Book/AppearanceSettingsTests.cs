@@ -289,6 +289,25 @@ namespace BloomTests.Book
             Assert.That(fromSettings, Does.Contain("--cover-languageName-show: none;"));
         }
 
+        [Test]
+        public void ToCss_ContainsPageNumberColorOverridesFromJson()
+        {
+            var settings = new AppearanceSettings();
+            settings.UpdateFromJson(
+                @"
+{
+  ""cssThemeName"": ""default"",
+  ""pageNumber-color"": ""#123456"",
+  ""pageNumber-outline-color"": ""#FFFFFF""
+}"
+            );
+
+            var css = settings.ToCss();
+
+            Assert.That(css, Does.Contain("--pageNumber-color: #123456;"));
+            Assert.That(css, Does.Contain("--pageNumber-outline-color: #FFFFFF;"));
+        }
+
         [TestCase(@"""pageNumber-position"": ""automatic""", true)]
         [TestCase(@"""pageNumber-position"": ""left""", true)]
         [TestCase(@"""pageNumber-position"": ""center""", true)]

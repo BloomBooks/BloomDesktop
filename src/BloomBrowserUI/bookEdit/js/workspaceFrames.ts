@@ -13,9 +13,9 @@
         to hide the details so that we can easily change it later.
 */
 
-import { IPageFrameExports } from "../editablePage";
-import { IWorkspaceExports } from "../workspaceRoot";
-import { IToolboxFrameExports } from "../toolbox/toolboxBootstrap";
+import type { IPageFrameExports } from "../editablePage";
+import type { IWorkspaceExports } from "../workspaceRoot";
+import type { IToolboxFrameExports } from "../toolbox/toolboxBootstrap";
 
 export function getToolboxBundleExports(): IToolboxFrameExports | null {
     const frameWindow = getFrame("toolbox") as
