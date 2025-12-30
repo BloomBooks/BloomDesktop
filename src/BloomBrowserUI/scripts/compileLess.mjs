@@ -32,16 +32,7 @@ export async function compileLessFiles(options = {}) {
     const contentRoot =
         options.contentRoot ?? path.resolve(browserUIRoot, "..", "content");
 
-    let compiled = 0;
-    const logger = {
-        ...console,
-        log: (...args) => {
-            if (typeof args[0] === "string" && args[0].startsWith("[LESS] ✓")) {
-                compiled++;
-            }
-            console.log(...args);
-        },
-    };
+    const logger = console;
 
     const targets = options.targets ?? [
         {
@@ -75,6 +66,7 @@ export async function compileLessFiles(options = {}) {
     });
 
     await manager.initialize();
+    const compiled = manager.compiledCount ?? 0;
     const total = manager.entries?.size ?? 0;
     const skipped = Math.max(0, total - compiled);
     console.log(

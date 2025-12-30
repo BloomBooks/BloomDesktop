@@ -114,14 +114,13 @@ describe("LessWatchManager", () => {
         await manager.initialize();
         const entryId = getEntryId(manager, entryPath);
         const cssPath = path.join(outputRoot, "main.css");
-        let baselineMTime = fs.statSync(cssPath).mtimeMs;
 
         await new Promise((resolve) => setTimeout(resolve, 30));
         writeFile(entryPath, "body { color: black; }\n");
         await manager.handleFileChanged(entryPath, "entry updated");
         const deps = manager.entryDependencies.get(entryId) ?? [];
         expect(deps.length).toBe(1);
-        baselineMTime = fs.statSync(cssPath).mtimeMs;
+        const baselineMTime = fs.statSync(cssPath).mtimeMs;
 
         await new Promise((resolve) => setTimeout(resolve, 30));
         writeFile(depPath, "@val: red;\n");

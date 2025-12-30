@@ -445,5 +445,5 @@ async function main() {
 
 main().catch((err) => {
     console.error("Dev script failed:", err);
-    cleanup();
+    cleanup(1);
 });
