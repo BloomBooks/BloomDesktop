@@ -173,7 +173,7 @@ const PageBackgroundColorPickerForConfigr: React.FunctionComponent<{
             initialColor={props.value}
             localizedTitle={backgroundColorLabel}
             transparency={false}
-            palette={BloomPalette.CoverBackground}
+            palette={BloomPalette.PageColors}
             width={75}
             onClose={(dialogResult: DialogResult, newColor: string) => {
                 if (dialogResult === DialogResult.OK) props.onChange(newColor);
@@ -199,7 +199,7 @@ const PageNumberColorPickerForConfigr: React.FunctionComponent<{
             initialColor={props.value}
             localizedTitle={pageNumberColorLabel}
             transparency={false}
-            palette={BloomPalette.CoverBackground}
+            palette={BloomPalette.Text}
             width={75}
             onClose={(dialogResult: DialogResult, newColor: string) => {
                 if (dialogResult === DialogResult.OK) props.onChange(newColor);
@@ -225,7 +225,7 @@ const PageNumberBackgroundColorPickerForConfigr: React.FunctionComponent<{
             initialColor={props.value || "transparent"}
             localizedTitle={pageNumberBackgroundColorLabel}
             transparency={true}
-            palette={BloomPalette.CoverBackground}
+            palette={BloomPalette.PageColors}
             width={75}
             onClose={(dialogResult: DialogResult, newColor: string) => {
                 if (dialogResult === DialogResult.OK) props.onChange(newColor);
