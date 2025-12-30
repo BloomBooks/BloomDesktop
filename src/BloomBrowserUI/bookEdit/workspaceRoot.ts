@@ -22,6 +22,7 @@ export interface IWorkspaceExports {
         task: (toolboxFrameExports: IToolboxFrameExports) => unknown,
     );
     getModalDialogContainer(): HTMLElement | null;
+    ShowEditViewDialog(dialog: FunctionComponentElement<unknown>): void;
     showConfirmDialog(props: IConfirmDialogProps): void;
     showColorPickerDialog(props: IColorPickerDialogProps): void;
     hideColorPickerDialog(): void;
@@ -62,7 +63,7 @@ import { showPageChooserDialog } from "../pageChooser/PageChooserDialog";
 export { showPageChooserDialog };
 
 import "../lib/errorHandler";
-import { showBookSettingsDialog } from "./bookSettings/BookSettingsDialog";
+import { showBookSettingsDialog } from "./bookAndPageSettings/BookAndPageSettingsDialog";
 export { showBookSettingsDialog };
 import { showRegistrationDialogForEditTab } from "../react_components/registration/registrationDialog";
 export { showRegistrationDialogForEditTab as showRegistrationDialog };
@@ -275,12 +276,20 @@ export function showEditViewTopicChooserDialog() {
     showTopicChooserDialog();
 }
 export function showEditViewBookSettingsDialog(
-    initiallySelectedGroupIndex?: number,
+    initiallySelectedPageKey?: string,
 ) {
-    showBookSettingsDialog(initiallySelectedGroupIndex);
+    showBookSettingsDialog(initiallySelectedPageKey);
 }
 
 export function showAboutDialogFromWorkspaceRoot() {
+    showAboutDialog();
+}
+
+export function showEditViewPageSettingsDialog() {
+    showBookSettingsDialog("colors");
+}
+
+export function showAboutDialogInEditTab() {
     showAboutDialog();
 }
 
@@ -374,6 +383,8 @@ interface WorkspaceBundleApi {
     showEditViewTopicChooserDialog: typeof showEditViewTopicChooserDialog;
     showEditViewBookSettingsDialog: typeof showEditViewBookSettingsDialog;
     showAboutDialogFromWorkspaceRoot: typeof showAboutDialogFromWorkspaceRoot;
+    showEditViewPageSettingsDialog: typeof showEditViewPageSettingsDialog;
+    showAboutDialogInEditTab: typeof showAboutDialogInEditTab;
     showRequiresSubscriptionDialog: typeof showRequiresSubscriptionDialog;
     showRegistrationDialogFromWorkspaceRoot: typeof showRegistrationDialogFromWorkspaceRoot;
     showAdjustTimingsDialogFromWorkspaceRoot: typeof showAdjustTimingsDialogFromWorkspaceRoot;
@@ -415,6 +426,8 @@ window.workspaceBundle = {
     showEditViewTopicChooserDialog,
     showEditViewBookSettingsDialog,
     showAboutDialogFromWorkspaceRoot,
+    showEditViewPageSettingsDialog,
+    showAboutDialogInEditTab,
     showRequiresSubscriptionDialog,
     showRegistrationDialogFromWorkspaceRoot,
     showAdjustTimingsDialogFromWorkspaceRoot:

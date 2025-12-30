@@ -1,6 +1,7 @@
 import { css } from "@emotion/react";
 import * as React from "react";
 import {
+    ConfigrValues,
     ConfigrGroup,
     ConfigrPage,
     ConfigrPane,
@@ -27,7 +28,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         propsForBloomDialog,
     } = useEventLaunchedBloomDialog("CollectionSettingsDialog");
 
-    const [settings, setSettings] = React.useState<object | undefined>(
+    const [settings, setSettings] = React.useState<ConfigrValues | undefined>(
         undefined,
     );
 
@@ -41,29 +42,17 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     }, [propsForBloomDialog.open]);
 
     const [settingsToReturnLater, setSettingsToReturnLater] = React.useState<
-        string | object | undefined
+        ConfigrValues | undefined
     >(undefined);
-
-    const normalizeConfigrSettings = (
-        settingsValue: string | object | undefined,
-    ): object | undefined => {
-        if (!settingsValue) {
-            return undefined;
-        }
-        if (typeof settingsValue === "string") {
-            return JSON.parse(settingsValue) as object;
-        }
-        return settingsValue;
-    };
     // Parse the settings JSON for Configr's initial values once it arrives.
     React.useEffect(() => {
         if (settingsString === "{}") {
             return; // leave settings as undefined
         }
         if (typeof settingsString === "string") {
-            setSettings(JSON.parse(settingsString));
+            setSettings(JSON.parse(settingsString) as ConfigrValues);
         } else {
-            setSettings(settingsString);
+            setSettings(settingsString as ConfigrValues);
         }
     }, [settingsString]);
 
@@ -150,11 +139,11 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                 <DialogOkButton
                     default={true}
                     onClick={() => {
-                        const settingsToPost = normalizeConfigrSettings(
-                            settingsToReturnLater,
-                        );
-                        if (settingsToPost) {
-                            postJson("collection/settings", settingsToPost);
+                        if (settingsToReturnLater) {
+                            postJson(
+                                "collection/settings",
+                                settingsToReturnLater,
+                            );
                         }
                         closeDialog();
                     }}

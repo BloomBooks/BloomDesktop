@@ -1771,11 +1771,23 @@ namespace Bloom.Edit
             _model.SaveThen(
                 () =>
                 {
-                    // Open the book settings dialog to the context-specific group.
-                    var groupIndex = _model.CurrentPage.IsCoverPage ? 0 : 1;
+                    // Open the book settings dialog to the context-specific page.
+                    var pageKey = _model.CurrentPage.IsCoverPage ? "cover" : "contentPages";
                     RunJavascriptAsync(
-                        $"workspaceBundle.showEditViewBookSettingsDialog({groupIndex});"
+                        $"workspaceBundle.showEditViewBookSettingsDialog('{pageKey}');"
                     );
+                    return _model.CurrentPage.Id;
+                },
+                () => { } // wrong state, do nothing
+            );
+        }
+
+        public void SaveAndOpenPageSettingsDialog()
+        {
+            _model.SaveThen(
+                () =>
+                {
+                    RunJavascriptAsync("workspaceBundle.showEditViewPageSettingsDialog();");
                     return _model.CurrentPage.Id;
                 },
                 () => { } // wrong state, do nothing

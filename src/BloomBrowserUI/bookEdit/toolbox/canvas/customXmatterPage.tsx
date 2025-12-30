@@ -19,8 +19,8 @@ import {
 } from "../../js/bloomEditing";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import { getToolboxBundleExports } from "../../js/workspaceFrames";
-import { ILanguageNameValues } from "../../bookSettings/FieldVisibilityGroup";
-import { isLegacyThemeCssLoaded } from "../../bookSettings/appearanceThemeUtils";
+import { ILanguageNameValues } from "../../bookAndPageSettings/FieldVisibilityGroup";
+import { isLegacyThemeCssLoaded } from "../../bookAndPageSettings/appearanceThemeUtils";
 
 /* Summary of how custom covers work
 	- a page (currently just cover) which can be customized has a new attribute,

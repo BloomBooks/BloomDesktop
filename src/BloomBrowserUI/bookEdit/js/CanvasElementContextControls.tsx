@@ -75,6 +75,8 @@ import { wrapWithRequestPageContentDelay } from "./bloomEditing";
 import { get, post, useApiObject } from "../../utils/bloomApi";
 import { ILanguageNameValues } from "../bookSettings/FieldVisibilityGroup";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
+import { getString, post, useApiObject } from "../../utils/bloomApi";
+import { ILanguageNameValues } from "../bookAndPageSettings/FieldVisibilityGroup";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];

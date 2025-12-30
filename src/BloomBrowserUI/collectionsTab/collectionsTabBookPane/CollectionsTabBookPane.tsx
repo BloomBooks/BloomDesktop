@@ -294,7 +294,6 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                 padding: 10px;
                 background-color: ${kDarkestBackground};
             `}
-            {...props} // allows defining more css rules from container
         >
             <div
                 css={css`
