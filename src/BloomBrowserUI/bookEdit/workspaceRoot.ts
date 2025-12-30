@@ -61,6 +61,7 @@ export { showPageChooserDialog };
 import "../lib/errorHandler";
 import { showBookSettingsDialog } from "./bookSettings/BookSettingsDialog";
 export { showBookSettingsDialog };
+import { showPageSettingsDialog } from "./pageSettings/PageSettingsDialog";
 import { showRegistrationDialogForEditTab } from "../react_components/registration/registrationDialog";
 export { showRegistrationDialogForEditTab as showRegistrationDialog };
 import { showAboutDialog } from "../react_components/aboutDialog";
@@ -275,6 +276,11 @@ export function showEditViewBookSettingsDialog(
 }
 
 export function showAboutDialogFromWorkspaceRoot() {
+export function showEditViewPageSettingsDialog() {
+    showPageSettingsDialog();
+}
+
+export function showAboutDialogInEditTab() {
     showAboutDialog();
 }
 
@@ -434,6 +440,8 @@ interface WorkspaceBundleApi {
     showEditViewTopicChooserDialog: typeof showEditViewTopicChooserDialog;
     showEditViewBookSettingsDialog: typeof showEditViewBookSettingsDialog;
     showAboutDialogFromWorkspaceRoot: typeof showAboutDialogFromWorkspaceRoot;
+    showEditViewPageSettingsDialog: typeof showEditViewPageSettingsDialog;
+    showAboutDialogInEditTab: typeof showAboutDialogInEditTab;
     showRequiresSubscriptionDialog: typeof showRequiresSubscriptionDialog;
     showRegistrationDialogFromWorkspaceRoot: typeof showRegistrationDialogFromWorkspaceRoot;
     setWorkspaceMode: typeof setWorkspaceMode;
@@ -473,6 +481,8 @@ window.workspaceBundle = {
     showEditViewTopicChooserDialog,
     showEditViewBookSettingsDialog,
     showAboutDialogFromWorkspaceRoot,
+    showEditViewPageSettingsDialog,
+    showAboutDialogInEditTab,
     showRequiresSubscriptionDialog,
     showRegistrationDialogFromWorkspaceRoot,
     setWorkspaceMode,
