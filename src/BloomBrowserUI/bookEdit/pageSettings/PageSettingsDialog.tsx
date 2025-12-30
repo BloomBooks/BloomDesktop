@@ -151,6 +151,12 @@ const setPageNumberBackgroundColor = (color: string): void => {
     page.style.setProperty("--pageNumber-background-color", color);
 };
 
+const applyPageSettings = (settings: IPageSettings): void => {
+    setCurrentPageBackgroundColor(settings.page.backgroundColor);
+    setPageNumberColor(settings.page.pageNumberColor);
+    setPageNumberBackgroundColor(settings.page.pageNumberBackgroundColor);
+};
+
 const PageBackgroundColorPickerForConfigr: React.FunctionComponent<{
     value: string;
     disabled: boolean;
@@ -172,6 +178,7 @@ const PageBackgroundColorPickerForConfigr: React.FunctionComponent<{
             onClose={(dialogResult: DialogResult, newColor: string) => {
                 if (dialogResult === DialogResult.OK) props.onChange(newColor);
             }}
+            onChange={(newColor) => props.onChange(newColor)}
         />
     );
 };
@@ -197,6 +204,7 @@ const PageNumberColorPickerForConfigr: React.FunctionComponent<{
             onClose={(dialogResult: DialogResult, newColor: string) => {
                 if (dialogResult === DialogResult.OK) props.onChange(newColor);
             }}
+            onChange={(newColor) => props.onChange(newColor)}
         />
     );
 };
@@ -222,6 +230,7 @@ const PageNumberBackgroundColorPickerForConfigr: React.FunctionComponent<{
             onClose={(dialogResult: DialogResult, newColor: string) => {
                 if (dialogResult === DialogResult.OK) props.onChange(newColor);
             }}
+            onChange={(newColor) => props.onChange(newColor)}
         />
     );
 };
@@ -279,14 +288,15 @@ export const PageSettingsDialog: React.FunctionComponent = () => {
                 ? (JSON.parse(rawSettings) as IPageSettings)
                 : rawSettings;
 
-        setCurrentPageBackgroundColor(settings.page.backgroundColor);
-        setPageNumberColor(settings.page.pageNumberColor);
-        setPageNumberBackgroundColor(settings.page.pageNumberBackgroundColor);
+        applyPageSettings(settings);
         isOpenAlready = false;
         closeDialog();
     };
 
     const onCancel = (): void => {
+        if (initialValues) {
+            applyPageSettings(initialValues);
+        }
         isOpenAlready = false;
         closeDialog();
     };
@@ -329,13 +339,16 @@ export const PageSettingsDialog: React.FunctionComponent = () => {
                             onChange={(s: unknown) => {
                                 if (typeof s === "string") {
                                     setSettingsToReturnLater(s);
+                                    applyPageSettings(
+                                        JSON.parse(s) as IPageSettings,
+                                    );
                                     return;
                                 }
 
                                 if (typeof s === "object" && s) {
-                                    setSettingsToReturnLater(
-                                        s as IPageSettings,
-                                    );
+                                    const settings = s as IPageSettings;
+                                    setSettingsToReturnLater(settings);
+                                    applyPageSettings(settings);
                                     return;
                                 }
 
