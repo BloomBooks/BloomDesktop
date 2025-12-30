@@ -1,4 +1,4 @@
-import { css } from "@emotion/react";
+import { css, Global } from "@emotion/react";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { useEffect, useRef, useState } from "react";
@@ -283,9 +283,30 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
         props.onChange(color);
     };
 
+    const dialogOpen = props.open === undefined ? open : props.open;
+
+    // The MUI backdrop is rendered outside the dialog tree, so we use a body class
+    // to suppress it while the color picker is open.
+    useEffect(() => {
+        if (!dialogOpen) {
+            return;
+        }
+        document.body.classList.add("bloom-hide-color-picker-backdrop");
+        return () => {
+            document.body.classList.remove("bloom-hide-color-picker-backdrop");
+        };
+    }, [dialogOpen]);
+
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={lightTheme}>
+                <Global
+                    styles={css`
+                        .bloom-hide-color-picker-backdrop .MuiBackdrop-root {
+                            background-color: transparent !important;
+                        }
+                    `}
+                />
                 <BloomDialog
                     className="bloomModalDialog"
                     css={css`
@@ -302,7 +323,16 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
                             padding: 10px 14px 10px 10px; // maintain same spacing all around dialog content and between header/footer
                         }
                     `}
-                    open={props.open === undefined ? open : props.open}
+                    hideBackdrop={true}
+                    BackdropProps={{
+                        invisible: true,
+                    }}
+                    slotProps={{
+                        backdrop: {
+                            invisible: true,
+                        },
+                    }}
+                    open={dialogOpen}
                     ref={dlgRef}
                     onClose={(
                         _event,
@@ -429,6 +459,7 @@ export interface IColorDisplayButtonProps {
     width?: number;
     disabled?: boolean;
     onClose: (result: DialogResult, newColor: string) => void;
+    onChange?: (newColor: string) => void;
     palette: BloomPalette;
 }
 
@@ -494,9 +525,13 @@ export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = (
                     props.initialColor,
                 )}
                 onInputFocus={() => {}}
-                onChange={(color: IColorInfo) =>
-                    setCurrentButtonColor(color.colors[0])
-                }
+                onChange={(color: IColorInfo) => {
+                    const newColor = color.colors[0];
+                    setCurrentButtonColor(newColor);
+                    if (props.onChange) {
+                        props.onChange(newColor);
+                    }
+                }}
             />
         </div>
     );
