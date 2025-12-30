@@ -139,6 +139,8 @@ class LessWatchManager {
         this.pendingBuilds = new Map();
         this.watchers = [];
         this.dependencyWatcher = null;
+
+        this.compiledCount = 0;
     }
 
     async initialize() {
@@ -492,6 +494,8 @@ class LessWatchManager {
 
         this.updateEntryDependencies(entry.id, dependencies);
         await this.persistMetadata();
+
+        this.compiledCount += 1;
 
         this.logger.log(
             `[LESS] ✓ ${entry.id} (${reason ?? "recompiled"}) → ${pathToRepoRelative(
