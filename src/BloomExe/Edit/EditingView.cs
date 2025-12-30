@@ -1902,6 +1902,30 @@ namespace Bloom.Edit
             );
         }
 
+        public void SaveAndOpenPageSettingsDialog()
+        {
+            _model.SaveThen(
+                () =>
+                {
+                    RunJavascriptAsync("editTabBundle.showEditViewPageSettingsDialog();");
+                    return _model.CurrentPage.Id;
+                },
+                () => { } // wrong state, do nothing
+            );
+        }
+
+        private void _pageSettingsButton_Click(object sender, EventArgs e)
+        {
+            SaveAndOpenPageSettingsDialog();
+        }
+
+        // This is temporary code we added in 6.0 when trying to determine why we are sometimes losing
+        // user data upon save. See BL-13120.
+        private void _topBarPanel_Click(object sender, EventArgs e)
+        {
+            if (Model.Visible && ModifierKeys == (Keys.Shift | Keys.Control))
+                _model.RethinkPageAndReloadItAndReportIfItFails();
+        }
         public async Task AddImageFromUrlAsync(string desiredFileNameWithoutExtension, string url)
         {
             using (var client = new System.Net.Http.HttpClient())
