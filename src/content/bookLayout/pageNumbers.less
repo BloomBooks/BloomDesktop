@@ -8,13 +8,6 @@
     --pageNumber-extra-height: 0mm; // must have units
 }
 
-// If the page has explicitly set a background color (e.g. via Page Settings),
-// make the page number background match it, unless it has its own explicit setting.
-// .bloom-page.numberedPage[style*="--page-background-color"]:not(
-//         [style*="--pageNumber-background-color"]
-//     ) {
-//     --pageNumber-background-color: var(--page-background-color);
-// }
 .numberedPage {
     &:after {
         content: attr(data-page-number);
