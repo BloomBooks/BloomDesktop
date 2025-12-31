@@ -208,10 +208,48 @@ const respondWithJson = (
     res.end(JSON.stringify(payload));
 };
 
+const rewriteLargeTimestampQuery = (url: string) => {
+    // Workaround: some /@fs module requests with an epoch-ms `t=` query
+    // are served as an empty module ("use strict"), breaking ESM imports.
+    // Rewrite ms -> seconds (still cache-busting, but smaller).
+    const splitIndex = url.indexOf("?");
+    if (splitIndex < 0) {
+        return url;
+    }
+
+    const path = url.substring(0, splitIndex);
+    const query = url.substring(splitIndex + 1);
+    const params = new URLSearchParams(query);
+    const t = params.get("t");
+    if (!t) {
+        return url;
+    }
+
+    const tNumber = Number(t);
+    if (!Number.isFinite(tNumber) || tNumber < 1000000000000) {
+        return url;
+    }
+
+    params.set("t", String(Math.floor(tNumber / 1000)));
+    const nextQuery = params.toString();
+    return nextQuery ? `${path}?${nextQuery}` : path;
+};
+
 export default defineConfig({
     root: __dirname,
     plugins: [
         react(),
+        {
+            name: "rewrite-large-timestamp-query",
+            configureServer(server) {
+                server.middlewares.use((req, _res, next) => {
+                    if (req.url) {
+                        req.url = rewriteLargeTimestampQuery(req.url);
+                    }
+                    next();
+                });
+            },
+        },
         {
             name: "serve-component-harness",
             configureServer(server) {

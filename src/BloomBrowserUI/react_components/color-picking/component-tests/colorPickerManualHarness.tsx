@@ -31,7 +31,7 @@ export const ColorPickerManualHarness: React.FunctionComponent = () => {
             <ColorPicker
                 currentColor={currentColor}
                 swatchColors={swatches}
-                transparency={false}
+                transparency={true}
                 onChange={(color) => {
                     setCurrentColor(color);
                 }}

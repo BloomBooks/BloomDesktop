@@ -3,7 +3,11 @@
  * This opens a visible browser with the component and keeps it open indefinitely
  * so you can interact with it manually.
  *
- * Run with: ./show.sh
+ * Run with:
+ *   (cd ../component-tester && ./show-component.sh color-picking [test-name])
+ *
+ * For an MCP-friendly browser-based harness (non-Playwright), run:
+ *   ./scope.sh
  */
 import { test } from "../../component-tester/playwrightTest";
 import { setTestComponent } from "../../component-tester/setTestComponent";

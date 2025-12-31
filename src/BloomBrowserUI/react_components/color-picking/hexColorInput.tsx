@@ -3,6 +3,7 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import tinycolor from "tinycolor2";
 import { IColorInfo } from "./colorSwatch";
+import { kUiFontStack } from "../../bloomMaterialUITheme";
 
 interface IHexColorInputProps {
     initial: IColorInfo;
@@ -10,15 +11,36 @@ interface IHexColorInputProps {
 }
 
 const hashChar = "#";
+const maxHexChars = 8;
+const maxHexLength = maxHexChars + 1;
 
 const massageColorInput = (color: string): string => {
     let result = color.toUpperCase();
     result = result.replace(/[^0-9A-F]/g, ""); // eliminate any non-hex characters
     result = hashChar + result; // insert hash as the first character
-    if (result.length > 7) {
-        result = result.slice(0, 7);
+    if (result.length > maxHexLength) {
+        result = result.slice(0, maxHexLength);
     }
     return result;
+};
+
+const clampToByte = (value: number): number => {
+    if (value < 0) {
+        return 0;
+    }
+    if (value > 255) {
+        return 255;
+    }
+    return value;
+};
+
+const toTwoDigitHex = (value: number): string =>
+    clampToByte(Math.round(value)).toString(16).toUpperCase().padStart(2, "0");
+
+const getHexWithAlpha = (hexColor: string, opacity: number): string => {
+    const baseHex = tinycolor(hexColor).toHexString().toUpperCase();
+    const alphaHex = toTwoDigitHex(opacity * 255);
+    return `${baseHex}${alphaHex}`;
 };
 
 // In general, we want our Hex Color input to reflect the first value in the 'colors' array.
@@ -29,9 +51,8 @@ const getHexColorValueFromColorInfo = (colorInfo: IColorInfo): string => {
     // The massage method below will add a hash character...
     if (colorInfo.colors.length > 1) return "";
     const firstColor = colorInfo.colors[0];
-    if (firstColor[0] === hashChar) return firstColor;
     // In some cases we might be dealing with a color word like "black" or "white" or "transparent".
-    return tinycolor(firstColor).toHexString();
+    return getHexWithAlpha(firstColor, colorInfo.opacity);
 };
 
 const getInitialHexValue = (colorInfo: IColorInfo): string => {
@@ -58,13 +79,13 @@ export const HexColorInput: React.FunctionComponent<IHexColorInputProps> = (
     ) => {
         const result = massageColorInput(e.target.value);
         setCurrentColor(result);
-        if (result.length === 7) {
+        if (result.length === 7 || result.length === maxHexLength) {
             props.onChangeComplete(result);
         }
     };
 
     const borderThickness = 2;
-    const controlWidth = 60; // This width handles "#DDDDDD" as the maximum width input.
+    const controlWidth = 78; // This width handles "#DDDDDDDD" as the maximum width input.
     const inputWidth = controlWidth - 2 * borderThickness;
 
     return (
@@ -83,6 +104,7 @@ export const HexColorInput: React.FunctionComponent<IHexColorInputProps> = (
                     border: none;
                     width: ${inputWidth}px;
                     font-size: 12px;
+                    font-family: ${kUiFontStack};
                     :focus {
                         outline: none; // get rid of blue outline inside of box when selected.
                     }

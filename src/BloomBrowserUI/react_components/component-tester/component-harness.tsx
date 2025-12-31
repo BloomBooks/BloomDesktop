@@ -8,7 +8,7 @@
  * - Dynamically loads components defined via Playwright or manual configuration
  *
  * To run: `yarn dev` from the component-tester folder
- * Then open http://127.0.0.1:5173/ in your browser
+ * Then open http://127.0.0.1:5183/ in your browser
  */
 
 import * as React from "react";
@@ -94,9 +94,30 @@ const testRequest = (window as any).__TEST_ELEMENT__ as
 
 const urlParams = new URLSearchParams(window.location.search);
 const requestedComponentName = urlParams.get("component");
+const requestedModulePath =
+    urlParams.get("modulePath") ?? urlParams.get("module");
+const requestedExportName =
+    urlParams.get("exportName") ?? urlParams.get("export") ?? undefined;
 
 let pendingRequest: ComponentRenderRequest<any> | undefined = testRequest;
 let pendingError: string | undefined;
+
+// Enable loading an arbitrary module/export directly via URL.
+// This is useful for manual debugging in a regular browser (e.g. via chrome-devtools-mcp)
+// where we don't have Playwright's addInitScript() to populate __TEST_ELEMENT__.
+if (!pendingRequest && requestedModulePath) {
+    if (!requestedModulePath.startsWith("../")) {
+        pendingError = `Invalid modulePath "${requestedModulePath}". Expected a path like "../color-picking/component-tests/colorPickerManualHarness".`;
+    } else {
+        pendingRequest = {
+            descriptor: {
+                modulePath: requestedModulePath,
+                exportName: requestedExportName,
+            },
+            props: {},
+        };
+    }
+}
 
 if (!pendingRequest && requestedComponentName) {
     pendingRequest = getComponentRequestByName(requestedComponentName);

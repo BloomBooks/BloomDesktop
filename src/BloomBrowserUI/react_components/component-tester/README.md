@@ -64,6 +64,12 @@ yarn test:ui          # interactive UI
 # Play with a component manually
 ./show.sh
 ./show-with-bloom.sh
+
+# Play with a component manually in a shared MCP-controllable browser session
+# (recommended when you want the agent to interact with the same tab)
+./show-component-mcp.sh <modulePath> <exportName>
+
+This prints the component URL and the Vite harness base URL (host/port), which helps debug whether the dev server is still running.
 ```
 
 ### Component-local test helpers

@@ -11,6 +11,8 @@ import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import ColorizeIcon from "@mui/icons-material/Colorize";
 import { getColorInfoFromSpecialNameOrColorString } from "./bloomPalette";
+import { Checkboard } from "react-color/lib/components/common";
+import { getBackgroundColorCssFromColorInfo } from "./colorSwatch";
 
 // We are combining parts of the 'react-color' component set with our own list of swatches.
 // The reason for using our own swatches is so we can support swatches with gradients and alpha.
@@ -127,9 +129,9 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
     const backdropSelector =
         props.eyedropperBackdropSelector ?? defaultEyedropperBackdropSelector;
     const hasNativeEyedropper = !!getEyeDropperConstructor();
+    const allowTransparency = props.transparency !== false;
 
-    // Use a content-based key so we detect when the color content changes,
-    // even if the object reference is the same (e.g., eyedropper mutations).
+    // Track content changes even if the object reference is reused (e.g., eyedropper mutations).
     const currentColorKey =
         props.currentColor.colors.join("|") + "|" + props.currentColor.opacity;
 
@@ -169,9 +171,14 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
 
     // Handler for when the user changes the hex code value (including pasting).
     const handleHexCodeChange = (hexColor: string) => {
+        const parsed = tinycolor(hexColor);
+        const nextOpacity =
+            hexColor.length === 9
+                ? parsed.getAlpha()
+                : props.currentColor.opacity;
         const newColor = {
-            colors: [hexColor],
-            opacity: props.currentColor.opacity, // Don't change opacity
+            colors: [parsed.toHexString()],
+            opacity: nextOpacity,
         };
         changeColor(newColor);
     };
@@ -188,10 +195,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
         if (opacity === undefined) {
             opacity = 1.0;
         }
-        let colorString = color.hex;
-        if (opacity === 0.0) {
-            colorString = "transparent";
-        }
+        const colorString = color.hex;
         return {
             name: customName,
             colors: [colorString],
@@ -249,7 +253,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
                     }
                 })
                 .filter((colorInfo) => {
-                    return !props.transparency ? colorInfo.opacity === 1 : true;
+                    return !allowTransparency ? colorInfo.opacity === 1 : true;
                 })
                 .map((colorInfo: IColorInfo, i: number) => (
                     <ColorSwatch
@@ -263,6 +267,34 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
         </React.Fragment>
     );
 
+    const getCurrentColorPreview = () => (
+        <div
+            css={css`
+                flex: 1;
+                height: 26px;
+                min-width: 0;
+                border-radius: 3px;
+                position: relative;
+            `}
+        >
+            <Checkboard grey="#aaa" />
+            <div
+                css={css`
+                    background: ${getBackgroundColorCssFromColorInfo(
+                        props.currentColor,
+                    )};
+                    box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 0px 1px inset;
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    right: 0;
+                    bottom: 0;
+                    border-radius: 3px;
+                `}
+            />
+        </div>
+    );
+
     return (
         <div
             className="custom-color-picker"
@@ -274,53 +306,59 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
             `}
         >
             <BloomSketchPicker
-                key={currentColorKey}
-                noAlphaSlider={!props.transparency}
+                noAlphaSlider={!allowTransparency}
                 // if the current color choice happens to be a gradient, this will be 'white'.
                 color={getRgbaOfCurrentColor()}
                 onChange={handlePickerChange}
                 currentOpacity={props.currentColor.opacity}
+                colorKey={currentColorKey}
             />
             <div
                 css={css`
                     height: 26px;
-                    width: 225px;
+                    width: 280px;
                     margin-top: 16px;
                     display: flex;
                     flex-direction: row;
-                    justify-content: space-between;
+                    justify-content: flex-start;
                     align-items: center;
+                    gap: 8px;
                     align-self: center;
                 `}
             >
-                {hasNativeEyedropper && (
-                    <IconButton
-                        size="medium"
-                        title="Sample Color"
-                        onClick={handleEyedropperClick}
-                        disabled={eyedropperActive}
-                        css={css`
-                            padding: 2px;
-                        `}
-                    >
-                        <ColorizeIcon
-                            fontSize="medium"
+                <div
+                    css={css`
+                        display: flex;
+                        flex-direction: row;
+                        align-items: center;
+                        gap: 6px;
+                        flex: 0 0 auto;
+                    `}
+                >
+                    {hasNativeEyedropper && (
+                        <IconButton
+                            size="medium"
+                            title="Sample Color"
+                            onClick={handleEyedropperClick}
+                            disabled={eyedropperActive}
                             css={css`
-                                color: #000;
+                                padding: 2px;
                             `}
-                        />
-                    </IconButton>
-                )}
-                <HexColorInput
-                    initial={props.currentColor}
-                    onChangeComplete={handleHexCodeChange}
-                />
-                <ColorSwatch
-                    colors={props.currentColor.colors}
-                    opacity={props.currentColor.opacity}
-                    width={48}
-                    height={26}
-                />
+                        >
+                            <ColorizeIcon
+                                fontSize="medium"
+                                css={css`
+                                    color: #000;
+                                `}
+                            />
+                        </IconButton>
+                    )}
+                    <HexColorInput
+                        initial={props.currentColor}
+                        onChangeComplete={handleHexCodeChange}
+                    />
+                </div>
+                {getCurrentColorPreview()}
             </div>
             <div
                 css={css`
@@ -329,7 +367,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
                     flex: 2;
                     flex-direction: column;
                     padding: 0 0 0 8px;
-                    max-width: 209px; // 225px less margin and padding of 8px each
+                    max-width: 264px; // 280px less margin and padding of 8px each
                 `}
                 className="swatch-section"
             >
