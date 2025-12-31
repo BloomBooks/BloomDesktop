@@ -105,10 +105,27 @@ const getCurrentPageBackgroundColor = (): string => {
     return computedBackground || "#FFFFFF";
 };
 
+const setOrRemoveCustomProperty = (
+    style: CSSStyleDeclaration,
+    propertyName: string,
+    value: string,
+): void => {
+    const normalized = normalizeToHexOrEmpty(value);
+    if (normalized) {
+        style.setProperty(propertyName, normalized);
+    } else {
+        style.removeProperty(propertyName);
+    }
+};
+
 const setCurrentPageBackgroundColor = (color: string): void => {
     const page = getCurrentPageElement();
-    page.style.setProperty("--page-background-color", color);
-    page.style.setProperty("--marginBox-background-color", color);
+    setOrRemoveCustomProperty(page.style, "--page-background-color", color);
+    setOrRemoveCustomProperty(
+        page.style,
+        "--marginBox-background-color",
+        color,
+    );
 };
 
 const getPageNumberColor = (): string => {
@@ -127,7 +144,7 @@ const getPageNumberColor = (): string => {
 
 const setPageNumberColor = (color: string): void => {
     const page = getCurrentPageElement();
-    page.style.setProperty("--pageNumber-color", color);
+    setOrRemoveCustomProperty(page.style, "--pageNumber-color", color);
 };
 
 const getPageNumberBackgroundColor = (): string => {
@@ -148,7 +165,11 @@ const getPageNumberBackgroundColor = (): string => {
 
 const setPageNumberBackgroundColor = (color: string): void => {
     const page = getCurrentPageElement();
-    page.style.setProperty("--pageNumber-background-color", color);
+    setOrRemoveCustomProperty(
+        page.style,
+        "--pageNumber-background-color",
+        color,
+    );
 };
 
 const applyPageSettings = (settings: IPageSettings): void => {
@@ -241,6 +262,11 @@ export const PageSettingsDialog: React.FunctionComponent = () => {
         dialogFrameProvidedExternally: false,
     });
 
+    const closeDialogAndClearOpenFlag = React.useCallback(() => {
+        isOpenAlready = false;
+        closeDialog();
+    }, [closeDialog]);
+
     const pageSettingsTitle = useL10n("Page Settings", "PageSettings.Title");
     const backgroundColorLabel = useL10n(
         "Background Color",
@@ -289,22 +315,33 @@ export const PageSettingsDialog: React.FunctionComponent = () => {
                 : rawSettings;
 
         applyPageSettings(settings);
-        isOpenAlready = false;
-        closeDialog();
+        closeDialogAndClearOpenFlag();
     };
 
-    const onCancel = (): void => {
+    const onCancel = (
+        _reason?:
+            | "escapeKeyDown"
+            | "backdropClick"
+            | "titleCloseClick"
+            | "cancelClicked",
+    ): void => {
         if (initialValues) {
             applyPageSettings(initialValues);
         }
-        isOpenAlready = false;
-        closeDialog();
+        closeDialogAndClearOpenFlag();
+    };
+
+    const onClose = (
+        _evt?: object,
+        _reason?: "escapeKeyDown" | "backdropClick",
+    ): void => {
+        onCancel(_reason);
     };
 
     return (
         <BloomDialog
             {...propsForBloomDialog}
-            onClose={closeDialog}
+            onClose={onClose}
             onCancel={onCancel}
             draggable={false}
             maxWidth={false}
