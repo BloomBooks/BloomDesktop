@@ -161,8 +161,8 @@ namespace Bloom.Wizard.WinForms
 
         private static void FinishUiLanguageMenuItemClick()
         {
-            ToolStripDropDownItem selectedItem = null;
-            foreach (ToolStripDropDownItem dropDownItem in s_toolStripDropDownButton.DropDownItems)
+            ToolStripItem selectedItem = null;
+            foreach (ToolStripItem dropDownItem in s_toolStripDropDownButton.DropDownItems)
             {
                 if (dropDownItem.Selected)
                 {
