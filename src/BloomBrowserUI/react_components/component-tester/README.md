@@ -65,9 +65,14 @@ yarn test:ui          # interactive UI
 ./show.sh
 ./show-with-bloom.sh
 
-# Play with a component manually in a shared MCP-controllable browser session
-# (recommended when you want the agent to interact with the same tab)
-./show-component-mcp.sh <modulePath> <exportName>
+# Play with a component manually in a shared, remote-debugging-enabled browser session
+# (recommended when you want automation tools to interact with the same tab)
+./show-scope.sh <modulePath> <exportName>
+
+# By default, if the dev server is not already running, this script will start it in the
+# current terminal and keep the terminal busy (Ctrl+C stops the dev server).
+# Use --detach to start the dev server in the background instead.
+# ./show-scope.sh --detach <modulePath> <exportName>
 
 This prints the component URL and the Vite harness base URL (host/port), which helps debug whether the dev server is still running.
 ```

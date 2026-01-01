@@ -27,7 +27,7 @@ const wheelModeOptions: Array<{
     showHue?: boolean;
 }> = [
     { value: "hsv", label: "HSV Hue/Saturation" },
-    { value: "hsv-one-way", label: "HSV One Way", oneWay: true },
+    { value: "hsv-one-way", label: "Hybrid", oneWay: true },
     {
         value: "oklch-gamut",
         label: "OKLCH Hue/Chroma (Current Lightness, Gamut Limited)",
@@ -260,28 +260,6 @@ const OklchSlider: React.FunctionComponent<{
     useEffect(() => {
         const isThisSliderDragging = () =>
             globalDragState.activeSlider === props.label;
-
-        const handleMouseDown = (event: MouseEvent) => {
-            if (!sliderRef.current) {
-                return;
-            }
-            if (!sliderRef.current.contains(event.target as Node)) {
-                return;
-            }
-            globalDragState.activeSlider = props.label;
-            updateFromClientXRef.current(event.clientX);
-        };
-        const handleMouseMove = (event: MouseEvent) => {
-            if (!isThisSliderDragging()) {
-                return;
-            }
-            updateFromClientXRef.current(event.clientX);
-        };
-        const handleMouseUp = () => {
-            if (isThisSliderDragging()) {
-                globalDragState.activeSlider = null;
-            }
-        };
         const handlePointerDown = (event: PointerEvent) => {
             if (!sliderRef.current) {
                 return;
@@ -316,17 +294,11 @@ const OklchSlider: React.FunctionComponent<{
         };
 
         const slider = sliderRef.current;
-        document.addEventListener("mousedown", handleMouseDown, true);
-        document.addEventListener("mousemove", handleMouseMove, true);
-        document.addEventListener("mouseup", handleMouseUp, true);
         document.addEventListener("pointerdown", handlePointerDown, true);
         document.addEventListener("pointerup", handlePointerUp, true);
         // pointermove must be on the element itself when pointer capture is used
         slider?.addEventListener("pointermove", handlePointerMove);
         return () => {
-            document.removeEventListener("mousedown", handleMouseDown, true);
-            document.removeEventListener("mousemove", handleMouseMove, true);
-            document.removeEventListener("mouseup", handleMouseUp, true);
             document.removeEventListener(
                 "pointerdown",
                 handlePointerDown,
@@ -755,28 +727,6 @@ const BloomSketchPicker: React.FunctionComponent<{
     // Use global drag state because component may re-render during drag.
     useEffect(() => {
         const isPickerDragging = () => globalDragState.activePicker;
-
-        const handleMouseDown = (event: MouseEvent) => {
-            if (!pickerRef.current) {
-                return;
-            }
-            if (!pickerRef.current.contains(event.target as Node)) {
-                return;
-            }
-            globalDragState.activePicker = true;
-            updateFromClientPointRef.current(event.clientX, event.clientY);
-        };
-        const handleMouseMove = (event: MouseEvent) => {
-            if (!isPickerDragging()) {
-                return;
-            }
-            updateFromClientPointRef.current(event.clientX, event.clientY);
-        };
-        const handleMouseUp = () => {
-            if (isPickerDragging()) {
-                globalDragState.activePicker = false;
-            }
-        };
         const handlePointerDown = (event: PointerEvent) => {
             if (!pickerRef.current) {
                 return;
@@ -811,17 +761,11 @@ const BloomSketchPicker: React.FunctionComponent<{
         };
 
         const picker = pickerRef.current;
-        document.addEventListener("mousedown", handleMouseDown, true);
-        document.addEventListener("mousemove", handleMouseMove, true);
-        document.addEventListener("mouseup", handleMouseUp, true);
         document.addEventListener("pointerdown", handlePointerDown, true);
         document.addEventListener("pointerup", handlePointerUp, true);
         // pointermove must be on the element itself when pointer capture is used
         picker?.addEventListener("pointermove", handlePointerMove);
         return () => {
-            document.removeEventListener("mousedown", handleMouseDown, true);
-            document.removeEventListener("mousemove", handleMouseMove, true);
-            document.removeEventListener("mouseup", handleMouseUp, true);
             document.removeEventListener(
                 "pointerdown",
                 handlePointerDown,

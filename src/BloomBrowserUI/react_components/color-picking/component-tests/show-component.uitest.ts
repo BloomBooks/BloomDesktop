@@ -6,7 +6,7 @@
  * Run with:
  *   (cd ../component-tester && ./show-component.sh color-picking [test-name])
  *
- * For an MCP-friendly browser-based harness (non-Playwright), run:
+ * For a shared, remote-debugging-enabled browser-based harness (non-Playwright), run:
  *   ./scope.sh
  */
 import { test } from "../../component-tester/playwrightTest";

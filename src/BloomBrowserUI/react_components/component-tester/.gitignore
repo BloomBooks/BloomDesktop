@@ -1,1 +1,6 @@
 manualConfig.ts
+
+.mcp-vite-dev.log
+.mcp-vite-dev.pid
+.scope-vite-dev.log
+.scope-vite-dev.pid

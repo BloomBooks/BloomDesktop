@@ -15,13 +15,13 @@ const maxHexChars = 8;
 const maxHexLength = maxHexChars + 1;
 
 const massageColorInput = (color: string): string => {
-    let result = color.toUpperCase();
+    const limitedInput = color.length > 256 ? color.slice(0, 256) : color;
+    let result = limitedInput.toUpperCase();
     result = result.replace(/[^0-9A-F]/g, ""); // eliminate any non-hex characters
-    result = hashChar + result; // insert hash as the first character
-    if (result.length > maxHexLength) {
-        result = result.slice(0, maxHexLength);
+    if (result.length > maxHexChars) {
+        result = result.slice(0, maxHexChars);
     }
-    return result;
+    return hashChar + result;
 };
 
 const clampToByte = (value: number): number => {
