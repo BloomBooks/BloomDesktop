@@ -3,7 +3,8 @@
  * This opens a visible browser with the component and keeps it open indefinitely
  * so you can interact with it manually.
  *
- * Run with: ./show.sh
+ * Preferred manual debugging: `yarn scope [exportName]` (uses scope-harness.tsx).
+ * To run this Playwright-driven manual suite: (cd ../component-tester && ./show-component.sh registration [test-name])
  */
 import { test } from "../../component-tester/playwrightTest";
 import { setupRegistrationComponent } from "./test-helpers";

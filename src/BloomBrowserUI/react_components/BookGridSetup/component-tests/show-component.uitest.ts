@@ -3,7 +3,8 @@
  * This opens a visible browser with the component and keeps it open indefinitely
  * so you can interact with it manually.
  *
- * Run with: ./show.sh, ./show.sh with-preselected-links, etc.
+ * Preferred manual debugging: `yarn scope [exportName]` (uses scope-harness.tsx).
+ * To run this Playwright-driven manual suite: (cd ../component-tester && ./show-component.sh BookGridSetup [test-name])
  */
 import { test } from "../../component-tester/playwrightTest";
 import { setupBookGridSetupComponent, createTestBook } from "./test-helpers";
@@ -45,7 +46,7 @@ manualDescribe("Manual Interactive Testing", () => {
         await page.waitForEvent("close");
     });
 
-    // this is what you get if you run ./show-with-bloom.sh
+    // This is similar to what you get if you run `yarn scope --backend` (or `yarn scope:bloom`).
     test("with-bloom-backend", async ({ page }) => {
         test.setTimeout(0);
 

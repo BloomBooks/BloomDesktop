@@ -1,6 +1,8 @@
 /**
  * Interactive manual testing for CollectionTopBarControls.
- * Run with: ./show.sh or ./show-with-bloom.sh
+ * Preferred manual debugging: `yarn scope [exportName]` (uses scope-harness.tsx).
+ * To run this Playwright-driven manual suite:
+ *   (cd ../../../component-tester && ./show-component.sh TopBar/CollectionTopBarControls [test-name])
  */
 import { Page, test } from "../../../component-tester/playwrightTest";
 import { setTestComponent } from "../../../component-tester/setTestComponent";

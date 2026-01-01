@@ -7,7 +7,7 @@
  *   (cd ../component-tester && ./show-component.sh color-picking [test-name])
  *
  * For a shared, remote-debugging-enabled browser-based harness (non-Playwright), run:
- *   ./scope.sh
+ *   (cd src/BloomBrowserUI/react_components/color-picking && yarn scope [exportName])
  */
 import { test } from "../../component-tester/playwrightTest";
 import { setTestComponent } from "../../component-tester/setTestComponent";

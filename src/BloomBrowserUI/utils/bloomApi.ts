@@ -194,6 +194,11 @@ export function get(
 
 // This method is used to get a result from Bloom.
 export async function getAsync(urlSuffix: string) {
+    // Allow storybook/component-tester style mocks for promise-based callers.
+    // This mirrors the behavior of get() above, which checks mockReplies first.
+    if (mockReplies[urlSuffix]) {
+        return mockReplies[urlSuffix] as AxiosResponse;
+    }
     return await axios.get(getBloomApiPrefix() + urlSuffix);
 }
 

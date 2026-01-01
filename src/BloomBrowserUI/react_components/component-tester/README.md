@@ -61,18 +61,20 @@ yarn test              # headless
 yarn test:headed       # see browser
 yarn test:ui          # interactive UI
 
-# Play with a component manually
-./show.sh
-./show-with-bloom.sh
-
 # Play with a component manually in a shared, remote-debugging-enabled browser session
 # (recommended when you want automation tools to interact with the same tab)
-./show-scope.sh <modulePath> <exportName>
+# This uses scope-harness.tsx in the component folder (e.g. react_components/color-picking/scope-harness.tsx)
+# Run from within the component folder (so the script can find scope-harness.tsx).
+cd ../color-picking
+yarn scope                # default export
+yarn scope red            # named export example
+yarn scope --backend      # use a real Bloom backend on localhost:8089 (or BLOOM_SCOPE_BACKEND_URL)
+yarn scope-bloom          # equivalent shortcut for --backend
 
 # By default, if the dev server is not already running, this script will start it in the
 # current terminal and keep the terminal busy (Ctrl+C stops the dev server).
-# Use --detach to start the dev server in the background instead.
-# ./show-scope.sh --detach <modulePath> <exportName>
+# If you don't want to tie up your terminal, start the dev server in a separate terminal:
+#   (cd src/BloomBrowserUI/react_components/component-tester && yarn dev)
 
 This prints the component URL and the Vite harness base URL (host/port), which helps debug whether the dev server is still running.
 ```

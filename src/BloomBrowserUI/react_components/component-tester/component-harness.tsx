@@ -1,14 +1,15 @@
 /**
- * Entry point for the Vite dev server used for manual testing of React components.
+ * Entry point for the Vite dev server used for the scope harness (and component tests).
  *
  * This file:
  * - Sets up jQuery mocks for the localization system
  * - Enables localization bypass for testing
  * - Renders components based on __TEST_ELEMENT__ injection (for automated tests)
- * - Dynamically loads components defined via Playwright or manual configuration
+ * - Dynamically loads components defined via the scope runner or manual configuration
  *
- * To run: `yarn dev` from the component-tester folder
- * Then open http://127.0.0.1:5183/ in your browser
+ * Typical usage:
+ * - `yarn scope` (recommended)
+ * - Or: `yarn dev` from the component-tester folder, then open http://127.0.0.1:5183/
  */
 
 import * as React from "react";
@@ -98,6 +99,28 @@ const requestedModulePath =
     urlParams.get("modulePath") ?? urlParams.get("module");
 const requestedExportName =
     urlParams.get("exportName") ?? urlParams.get("export") ?? undefined;
+const scopeRunId = urlParams.get("scopeRunId") ?? undefined;
+
+if (scopeRunId) {
+    const titleParts: string[] = ["Bloom Scope Harness"];
+    titleParts.push(`run ${scopeRunId.substring(0, 8)}`);
+    if (requestedModulePath) {
+        titleParts.push(
+            `${requestedModulePath}${requestedExportName ? `:${requestedExportName}` : ""}`,
+        );
+    }
+    document.title = titleParts.join(" — ");
+
+    let meta = document.querySelector(
+        'meta[name="bloom-scope-run-id"]',
+    ) as HTMLMetaElement | null;
+    if (!meta) {
+        meta = document.createElement("meta");
+        meta.name = "bloom-scope-run-id";
+        document.head.appendChild(meta);
+    }
+    meta.content = scopeRunId;
+}
 
 let pendingRequest: ComponentRenderRequest<any> | undefined = testRequest;
 let pendingError: string | undefined;

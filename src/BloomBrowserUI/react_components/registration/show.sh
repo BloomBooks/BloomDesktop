@@ -1,14 +1,12 @@
 #!/bin/bash
-# Manual testing for RegistrationContents
-# Uses Playwright with full mock support from test-helpers.ts
-# Usage: ./show.sh [test-name]
-# Example: ./show.sh with-existing-info
+# Manual debugging for RegistrationContents
+# Uses scope-harness.tsx + the shared component-tester scope runner.
+# Usage: ./show.sh [exportName]
+# Example: ./show.sh withExistingInfo
 
 set -euo pipefail
 
-COMPONENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-COMPONENT_NAME="$(basename "$COMPONENT_DIR")"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
 
-cd "$COMPONENT_DIR/../component-tester"
-
-./show-component.sh "$COMPONENT_NAME" "$@"
+yarn scope "$@"

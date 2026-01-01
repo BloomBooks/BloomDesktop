@@ -22,7 +22,16 @@ import { resolve, normalize } from "path";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-const useMocks = process.env.BLOOM_COMPONENT_TESTER_USE_BACKEND !== "1";
+const useBackend =
+    process.env.BLOOM_SCOPE_USE_BACKEND === "1" ||
+    process.env.BLOOM_COMPONENT_TESTER_USE_BACKEND === "1";
+
+const backendUrl =
+    process.env.BLOOM_SCOPE_BACKEND_URL ??
+    process.env.BLOOM_COMPONENT_TESTER_BACKEND_URL ??
+    "http://localhost:8089";
+
+const useMocks = !useBackend;
 
 const assetRedirects: Array<{
     requestPath: string;
@@ -332,6 +341,34 @@ export default defineConfig({
                     // mock POST endpoints
                     if (req.method === "POST") {
                         if (
+                            req.url.startsWith(
+                                "/bloom/api/registration/userInfo",
+                            ) ||
+                            req.url.startsWith(
+                                "/bloom/api//registration/userInfo",
+                            )
+                        ) {
+                            // RegistrationContents posts JSON to save user info.
+                            // In component-tester mode we just accept it so manual testing
+                            // doesn't spam the console with network errors.
+                            let body = "";
+                            req.on("data", (chunk) => {
+                                body += chunk.toString();
+                            });
+                            req.on("end", () => {
+                                if (body) {
+                                    console.info(
+                                        "Component tester mock: received registration info",
+                                    );
+                                }
+                                respondWithJson(res, { success: true });
+                            });
+                            req.on("error", () => {
+                                respondWithJson(res, { success: false });
+                            });
+                            return;
+                        }
+                        if (
                             req.url.startsWith("/bloom/api/link") ||
                             req.url.startsWith("/bloom/api//link")
                         ) {
@@ -445,7 +482,7 @@ export default defineConfig({
             ? undefined
             : {
                   "/bloom": {
-                      target: "http://localhost:8089",
+                      target: backendUrl,
                       changeOrigin: true,
                       secure: false,
                   },
