@@ -68,10 +68,14 @@ import { GameType, getGameType } from "../toolbox/games/GameInfo";
 import { setGeneratedDraggableId } from "../toolbox/canvas/CanvasElementItem";
 import { editLinkGrid } from "./linkGrid";
 import { showLinkTargetChooserDialog } from "../../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
-import { kBloomButtonClass } from "../toolbox/canvas/canvasElementUtils";
+import {
+    kBloomButtonClass,
+    kBloomCanvasSelector,
+} from "../toolbox/canvas/canvasElementUtils";
 import { get, getString, useApiObject } from "../../utils/bloomApi";
 import { ILanguageNameValues } from "../bookSettings/FieldVisibilityGroup";
 import { isWhiteSpaceLike } from "typescript";
+import { setOrRemoveAttribute } from "../../utils/elementUtils";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -1488,6 +1492,84 @@ function addImageMenuOptions(
                 );
             },
         });
+        if (realImagePresent) {
+            imageMenuOptions.push({
+                l10nId: "EditTab.Toolbox.ComicTool.Options.BecomeBackground",
+                english: "Become Background",
+                onClick: () => {
+                    const bloomCanvas = canvasElement.closest(
+                        kBloomCanvasSelector,
+                    ) as HTMLElement;
+                    const bgImageCe = bloomCanvas.getElementsByClassName(
+                        kBackgroundImageClass,
+                    )[0] as HTMLElement;
+                    if (!bgImageCe) return; // paranoia
+                    const bgImgContainer = bgImageCe.getElementsByClassName(
+                        kImageContainerClass,
+                    )[0] as HTMLElement;
+                    const bgImg = bgImgContainer?.getElementsByTagName(
+                        "img",
+                    )[0] as HTMLImageElement;
+                    if (!bgImg) return;
+                    const haveRealBgImage = hasRealImage(bgImg);
+                    const currentImgSrce = img.getAttribute("src") || "";
+                    const currentCopyright =
+                        imgContainer.getAttribute("data-copyright");
+                    const currentCreator =
+                        imgContainer.getAttribute("data-creator");
+                    const currentLicense =
+                        imgContainer.getAttribute("data-license");
+                    const currentDataBook = img.getAttribute("data-book");
+
+                    if (haveRealBgImage) {
+                        img.setAttribute(
+                            "src",
+                            bgImg.getAttribute("src") || "",
+                        );
+                        imgContainer.setAttribute(
+                            "data-copyright",
+                            bgImg.getAttribute("data-copyright") || "",
+                        );
+                        imgContainer.setAttribute(
+                            "data-creator",
+                            bgImg.getAttribute("data-creator") || "",
+                        );
+                        imgContainer.setAttribute(
+                            "data-license",
+                            bgImg.getAttribute("data-license") || "",
+                        );
+                        theOneCanvasElementManager.updateCanvasElementForChangedImage(
+                            img,
+                        );
+                    } else {
+                        // delete the image that we turned into the background; there's no
+                        // real image to swap with it.
+                        theOneCanvasElementManager.deleteCurrentCanvasElement();
+                    }
+
+                    bgImg.src = currentImgSrce;
+                    bgImg.setAttribute(
+                        "data-copyright",
+                        currentCopyright || "",
+                    );
+                    bgImg.setAttribute("data-creator", currentCreator || "");
+                    bgImg.setAttribute("data-license", currentLicense || "");
+                    // Not sure how or if this should generalize. When we make a custom cover,
+                    // the cover image is initially a moveable canvas element with data-book=coverImage.
+                    // Changing it to a background image should preserve that.
+                    // However, if we then create another image overlay and make THAT the background,
+                    // I think we still want the cover background to be the cover image. So we will not
+                    // remove an existing data-book value if the current image doesn't have one.
+                    if (currentDataBook) {
+                        bgImg.setAttribute("data-book", currentDataBook);
+                    }
+                    // review: do we want to preserve cropping? Also when going the other way?
+                    theOneCanvasElementManager.updateCanvasElementForChangedImage(
+                        bgImg,
+                    );
+                },
+            });
+        }
     }
 
     menuOptions.unshift(...imageMenuOptions);

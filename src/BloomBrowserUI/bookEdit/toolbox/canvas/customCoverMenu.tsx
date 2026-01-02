@@ -10,21 +10,33 @@ import { Span } from "../../../react_components/l10nComponents";
 
 export const CustomCoverMenu: React.FunctionComponent<{
     isCustom: boolean;
-    setCustom: (value: "auto" | "custom" | "customStartOver") => void;
+    setCustom: (value: "standard" | "custom" | "customStartOver") => void;
 }> = (props) => {
-    const autoLabel = useL10n("Auto", "EditTab.CustomCover.Auto");
+    const standardLabel = useL10n("Standard", "EditTab.CustomCover.Standard");
     const customLabel = useL10n("Custom", "EditTab.CustomCover.Custom");
 
     const handleChange = (event: SelectChangeEvent<string>) => {
-        const selection = event.target.value as
-            | "auto"
+        let selection = event.target.value as
+            | "standard"
             | "custom"
             | "customStartOver";
+        // If custom is selected with shift+ctrl held, trigger startOver behavior
+        // TypeScript thinks the argument should be a SelectChangeEvent in order to pass
+        // the function as the onChange handler for a Select, but in fact it always
+        // comes in as a PointerEvent which has the keyboard modifier info we need.
+        const pointerEvent = event as any as PointerEvent;
+        if (
+            selection === "custom" &&
+            pointerEvent.shiftKey &&
+            pointerEvent.ctrlKey
+        ) {
+            selection = "customStartOver";
+        }
         props.setCustom(selection);
     };
 
     const renderMenuItem = (
-        value: "auto" | "custom" | "customStartOver",
+        value: "standard" | "custom",
         label: string,
         checked: boolean,
     ) => {
@@ -74,18 +86,13 @@ export const CustomCoverMenu: React.FunctionComponent<{
                         }
                     `}
                     size="small"
-                    value={props.isCustom ? "custom" : "auto"}
+                    value={props.isCustom ? "custom" : "standard"}
                     onChange={handleChange}
                     displayEmpty
                     renderValue={() => ""}
                 >
-                    {renderMenuItem("auto", autoLabel, !props.isCustom)}
+                    {renderMenuItem("standard", standardLabel, !props.isCustom)}
                     {renderMenuItem("custom", customLabel, props.isCustom)}
-                    {renderMenuItem(
-                        "customStartOver",
-                        "new custom layout",
-                        false,
-                    )}
                 </Select>
             </div>
         </ThemeProvider>

@@ -291,7 +291,7 @@ function renderCoverMenu(page: HTMLElement, container: HTMLElement): void {
         <CustomCoverMenu
             isCustom={isCustomCover}
             setCustom={(selection) => {
-                if (selection === "auto") {
+                if (selection === "standard") {
                     // We'll leave it up to toggleCustomCover to actually change the class on
                     // the front cover because we need to save things in the current state.
                     // This will reload the page, so nothing else that happens here matters.
