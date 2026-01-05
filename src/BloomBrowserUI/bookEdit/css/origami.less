@@ -189,28 +189,24 @@
 
 .selector-links {
     box-sizing: border-box;
-    padding: 5px;
+    padding: 15px;
     top: 45%;
     height: 55%;
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    // copilot did this
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     gap: 10px;
-
-    // align-items: stretch;
 }
 
 .selector-links .foobar {
-    container-type: inline-size;
+    container-type: size;
 
     // Setting the z-index on the inner a elements allows the adder buttons to
     // remain visible and active except when the cursor is over an actual link.
     z-index: 50000;
 
     background-color: inherit;
-    flex-grow: 0;
-    flex-shrink: 1;
-    flex-basis: 80px;
-    padding: 5px; // TODO or %?
+    padding: 8px; // TODO how to make it proportional to size
     border-radius: 10px;
     border: 1px solid fade(@OrigamiActiveColor, 50%);
     display: flex;
@@ -224,24 +220,21 @@
 
     // TODO height
     .icon-wrapper {
-        height: 75%;
+        max-height: 75%;
         img {
-            height: 100%;
+            max-height: 100%;
+            max-width: 100%;
         }
     }
     .button-label {
         color: @OrigamiActiveColor;
+        overflow: hidden;
+        font-size: 0.8em;
     }
 
-    @container (width > 10px) {
+    @container (height < 40px) {
         span {
-            background-color: red;
-        }
-    }
-
-    @container (width <= 10px) {
-        span {
-            background-color: green;
+            display: none;
         }
     }
 }

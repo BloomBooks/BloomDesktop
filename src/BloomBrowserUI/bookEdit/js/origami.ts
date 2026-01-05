@@ -424,44 +424,70 @@ function getCloseButton() {
     return closeButton;
 }
 
+function blockButton(
+    text: string,
+    l10n: string,
+    iconSrc: string,
+    onClick: (any) => any,
+) {
+    const label = $(
+        `<span data-i18n='${l10n}' class='button-label'>${text}</span>`,
+    );
+    const icon = $(`<img src='${iconSrc}' />`);
+    const iconWrapper = $("<div class='icon-wrapper'></div>").append(icon);
+
+    const button = $("<button class='foobar'></button>") // TODO a real classname
+        .append(iconWrapper)
+        .append(label)
+        .on("click", onClick);
+    return button;
+}
+
 // N.B. If we ever add a new type, make sure you also modify 'bloomContainerClasses'.
 function createTypeSelectors(includeWidget: boolean, includeCanvas: boolean) {
-    const space = " ";
     const links = $("<div class='selector-links bloom-ui origami-ui'></div>");
-    const imageLink = $(
-        "<a href='' data-i18n='EditTab.CustomPage.Image'>Image</a>",
+    links.append(
+        blockButton(
+            "Picture",
+            "EditTab.CustomPage.Picture", // TODO l10n, and do we switch image to picture?
+            "/bloom/bookEdit/img/picture.svg",
+            makeImageFieldClickHandler,
+        ),
     );
-    imageLink.click(makeImageFieldClickHandler);
-    const canvasLink = $(
-        "<a href='' data-i18n='EditTab.CustomPage.Canvas'>Canvas</a>",
+    if (includeCanvas)
+        links.append(
+            blockButton(
+                "Canvas",
+                "EditTab.CustomPage.Canvas",
+                "/bloom/bookEdit/img/canvas.svg",
+                makeCanvasFieldClickHandler,
+            ),
+        );
+    links.append(
+        blockButton(
+            "Video",
+            "EditTab.CustomPage.Video",
+            "/bloom/bookEdit/img/video.svg",
+            makeVideoFieldClickHandler,
+        ),
     );
-    canvasLink.click(makeCanvasFieldClickHandler);
-    const textLink = $(
-        "<a href='' data-i18n='EditTab.CustomPage.Text'>Text</a>",
+    links.append(
+        blockButton(
+            "Text",
+            "EditTab.CustomPage.Text",
+            "/bloom/bookEdit/img/text.svg",
+            makeTextFieldClickHandler,
+        ),
     );
-    textLink.click(makeTextFieldClickHandler);
-    const videoLink = $(
-        "<a href='' data-i18n='EditTab.CustomPage.Video'>Video</a>",
-    );
-    videoLink.click(makeVideoFieldClickHandler);
-    const orDiv = $("<div data-i18n='EditTab.CustomPage.Or'>or</div>");
-    const htmlWidgetLink = $(
-        "<a href='' data-i18n='EditTab.CustomPage.HtmlWidget'>HTML Widget</a>",
-    );
-    htmlWidgetLink.click(makeHtmlWidgetFieldClickHandler);
-    links.append(imageLink).append(",").append(space);
-    if (includeCanvas) links.append(canvasLink).append(",");
-    links.append(space).append(videoLink).append(",").append(space);
     if (includeWidget) {
-        links
-            .append(textLink)
-            .append(",")
-            .append(space)
-            .append(orDiv)
-            .append(space)
-            .append(htmlWidgetLink);
-    } else {
-        links.append(orDiv).append(space).append(textLink);
+        links.append(
+            blockButton(
+                "Widget",
+                "EditTab.CustomPage.Widget", // TODO l10n
+                "/bloom/bookEdit/img/widget.svg",
+                makeHtmlWidgetFieldClickHandler,
+            ),
+        );
     }
     return $(
         "<div class='container-selector-links bloom-ui origami-ui'></div>",
