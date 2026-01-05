@@ -13,6 +13,11 @@ namespace Bloom.Utils
     /// </summary>
     public class DropboxUtils
     {
+        private static readonly object _accessCheckLock = new object();
+        private static bool? _lastAccessResult = null;
+        private static DateTime _lastAccessCheck = DateTime.MinValue;
+        private static readonly TimeSpan _cacheTimeout = TimeSpan.FromMinutes(2);
+
         /// <summary>
         /// Location(s) for the Dropbox info.json file based on information in
         /// https://help.dropbox.com/installs-integrations/desktop/locate-dropbox-folder,
@@ -130,11 +135,43 @@ namespace Bloom.Utils
             return false;
         }
 
+        /// <summary>
+        /// Can we access Dropbox.com? This method includes caching and thread safety
+        /// to handle multiple concurrent calls efficiently. I'm not sure we ever call
+        /// this off the UI thread, but at one point we could generate several calls to
+        /// it in a row in Idle event handlers, and sometimes one of the multiple
+        /// requests would fail (BL-15624), though I was not able to determine how or why.
+        /// This check is mainly to let us give nicer error messages if something is
+        /// about to fail because DropBox is not accessible, so it's not a complete
+        /// disaster if our information is slightly stale. Even without the caching,
+        /// DropBox status could possibly change between calling this and whatever we
+        /// want to do that wants it to be up. So I think it's better (and less likely
+        /// to give false negatives, which are much worse because our TC UI shuts down)
+        /// to limit how often we check.
+        /// </summary>
         public static bool CanAccessDropbox()
+        {
+            lock (_accessCheckLock)
+            {
+                // Return cached result if still valid
+                if (_lastAccessResult.HasValue && DateTime.Now - _lastAccessCheck < _cacheTimeout)
+                {
+                    return _lastAccessResult.Value;
+                }
+
+                // Perform the actual check
+                _lastAccessResult = CheckDropboxAccessInternal();
+                _lastAccessCheck = DateTime.Now;
+                return _lastAccessResult.Value;
+            }
+        }
+
+        private static bool CheckDropboxAccessInternal()
         {
             try
             {
-                var request = (System.Net.HttpWebRequest)System.Net.WebRequest.Create("https://www.dropbox.com/");
+                var request = (System.Net.HttpWebRequest)
+                    System.Net.WebRequest.Create("https://www.dropbox.com/");
                 request.Method = "HEAD";
                 request.Timeout = 5000; // 5 seconds
                 request.AllowAutoRedirect = true;
