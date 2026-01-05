@@ -462,7 +462,7 @@ namespace Bloom.Publish.Video
 
             // Stop the recording BEFORE we close the window, otherwise, we capture a bit of it fading away.
             QuitFfmpegProcess();
-            _ffmpegProcess.WaitForExit(2000); // give it a little time to exit cleanly
+            _ffmpegProcess?.WaitForExit(2000); // give it a little time to exit cleanly
 
             ClearPreventSleepTimer();
             Close();
