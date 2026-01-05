@@ -32,6 +32,7 @@ using CommandLine;
 using L10NSharp;
 using L10NSharp.Windows.Forms;
 using Sentry;
+using SIL.Core.Desktop.i18n;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.Miscellaneous;
@@ -1616,6 +1617,8 @@ namespace Bloom
                     "issues@bloomlibrary.org",
                     new string[] { "SIL" }
                 );
+
+                SIL.Localizer.Default = new L10NSharpLocalizer();
 
                 LocalizationManagerWinforms.Create(
                     uiLanguage,

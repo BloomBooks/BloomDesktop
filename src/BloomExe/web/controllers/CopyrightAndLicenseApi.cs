@@ -3,6 +3,7 @@ using System.Drawing;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
+using SIL.Core.ClearShare;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
@@ -43,9 +44,13 @@ namespace Bloom.web.controllers
                     Image licenseImage;
                     var token = request.Parameters.GetValues("token");
                     if (token != null)
-                        licenseImage = CreativeCommonsLicense.FromToken(token[0]).GetImage();
+                        licenseImage = (
+                            (ILicenseWithImage)CreativeCommonsLicense.FromToken(token[0])
+                        ).GetImage();
                     else
-                        licenseImage = request.CurrentBook.GetLicenseMetadata().License.GetImage();
+                        licenseImage = (
+                            (ILicenseWithImage)request.CurrentBook.GetLicenseMetadata().License
+                        ).GetImage();
                     // ReplyWithImage uses the extension to determine the content type
                     using (TempFile tempFile = TempFile.WithExtension(".png"))
                     {
