@@ -188,18 +188,62 @@
 }
 
 .selector-links {
+    box-sizing: border-box;
+    padding: 5px;
     top: 45%;
-    text-align: center;
+    height: 55%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    // align-items: stretch;
+}
+
+.selector-links .foobar {
+    container-type: inline-size;
 
     // Setting the z-index on the inner a elements allows the adder buttons to
     // remain visible and active except when the cursor is over an actual link.
-    a {
-        z-index: 50000;
-    }
-}
+    z-index: 50000;
 
-.selector-links div {
-    display: inline;
+    background-color: inherit;
+    flex-grow: 0;
+    flex-shrink: 1;
+    flex-basis: 80px;
+    padding: 5px; // TODO or %?
+    border-radius: 10px;
+    border: 1px solid fade(@OrigamiActiveColor, 50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+
+    // aspect-ratio: 1 / 1;
+    max-height: 80px;
+    min-height: 10px;
+
+    // TODO height
+    .icon-wrapper {
+        height: 75%;
+        img {
+            height: 100%;
+        }
+    }
+    .button-label {
+        color: @OrigamiActiveColor;
+    }
+
+    @container (width > 10px) {
+        span {
+            background-color: red;
+        }
+    }
+
+    @container (width <= 10px) {
+        span {
+            background-color: green;
+        }
+    }
 }
 
 //Assume too small to show
