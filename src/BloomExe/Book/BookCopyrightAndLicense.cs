@@ -1,16 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Web;
-using System.Xml;
 using Bloom.ImageProcessing;
 using Bloom.SafeXml;
-using Bloom.Utils;
 using L10NSharp;
+using SIL.Core.ClearShare;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
@@ -381,7 +377,7 @@ namespace Bloom.Book
         /// </summary>
         private static void UpdateBookLicenseIcon(Metadata metadata, string bookFolderPath)
         {
-            var licenseImage = metadata.License.GetImage();
+            var licenseImage = (metadata.License as ILicenseWithImage)?.GetImage();
             var imagePath = bookFolderPath.CombineForPath("license.png");
             // Don't try to overwrite the license image for a template book.  (See BL-3284.)
             if (

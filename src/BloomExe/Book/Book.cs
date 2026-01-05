@@ -27,6 +27,7 @@ using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Code;
+using SIL.Core.ClearShare;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Linq;

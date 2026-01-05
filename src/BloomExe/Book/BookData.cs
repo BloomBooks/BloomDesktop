@@ -10,7 +10,6 @@ using System.Xml.Linq;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.Edit;
-using Bloom.Publish;
 using Bloom.SafeXml;
 using L10NSharp;
 using Microsoft.CSharp.RuntimeBinder;
