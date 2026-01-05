@@ -731,7 +731,12 @@ namespace Bloom.Api
 
         /// <summary></summary>
         /// <param name="jsonString">The theOneLanguageDataInstance as json</param>
-        /// <returns>OK</returns>
+        /// <Note>This is often called while opening a book for editing as a result
+        /// of some Javascript initialization. Typically the file doesn't actually
+        /// get changed. It's desirable not to write it if it didn't change, not
+        /// only to save time, but because writing the language data files in a TC
+        /// triggers syncing collection-level stuff to the Repo and changes our
+        /// records of "when things changed" and so forth.</Note>
         private void SaveSynphonyLanguageData(string jsonString)
         {
             // insert LangName and LangID if missing
@@ -753,7 +758,40 @@ namespace Bloom.Api
             );
             fileName = Path.Combine(CurrentBook.CollectionSettings.FolderPath, fileName);
 
-            RobustFile.WriteAllText(fileName, jsonString, Encoding.UTF8);
+            // Only write if content has likely changed
+            if (ShouldWriteLanguageDataFile(fileName, jsonString))
+            {
+                RobustFile.WriteAllText(fileName, jsonString, Encoding.UTF8);
+            }
+        }
+
+        /// <summary>
+        /// Efficiently determines if we should write the language data file by comparing
+        /// file size and content bytes to avoid unnecessary writes.
+        /// </summary>
+        private bool ShouldWriteLanguageDataFile(string fileName, string newContent)
+        {
+            try
+            {
+                if (!RobustFile.Exists(fileName))
+                    return true;
+
+                var newContentBytes = Encoding.UTF8.GetBytes(newContent);
+                var fileInfo = new FileInfo(fileName);
+
+                // Quick check: if file size is different, content must be different
+                if (fileInfo.Length != newContentBytes.Length)
+                    return true;
+
+                // File sizes match, so compare the actual byte content
+                var existingContentBytes = RobustFile.ReadAllBytes(fileName);
+                return !newContentBytes.SequenceEqual(existingContentBytes);
+            }
+            catch
+            {
+                // If anything goes wrong (permissions, etc.), just write the file
+                return true;
+            }
         }
 
         private void OpenTextsFolder()
