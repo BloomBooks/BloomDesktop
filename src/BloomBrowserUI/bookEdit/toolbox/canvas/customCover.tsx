@@ -23,43 +23,43 @@ import { remove } from "mobx";
 import { ILanguageNameValues } from "../../bookSettings/FieldVisibilityGroup";
 
 /* Summary of how custom covers work
-        - a custom page is indicated by the presence of the class
-        bloom-custom-cover on the bloom-page div.
-        - a custom cover page has a single bloom-canvas div inside its marginBox,
-        ith one or more bloom-canvas-element divs inside it.
-        - when first created, we make a canvas element for each text and image
-        element that was on the cover page.
-        - each canvas element is absolutely positioned to match where the content
-        was on the page before conversion.
-        - where multiple languages of something can be shown (e.g., title), we make
-        a canvas element for each language that was visible at the time of conversion.
-        We disable any appearance system visibility control and put a value in
-        data-default-languages to indicate which of the collection languages
-        should be shown there.
-        - kludge: so that such elements keep their appearance-system default sizes,
-        we keep the appearance-system special classes like bloom-contentSecond.
-        C# code is also patched not to remove these.
-        - the content of the custom cover is stored in a sibling of the marginBox
-        that also has class bloom-customMarginBox. The auto-layout content is kept
-        in the regular marginBox.
-        - either the regular or custom margin box is visible, dependinng on whether
-        the page has bloom-custom-cover.
-        - the customMarginBox has data-book="customCover", so its entire content
-        is saved in the data-div.
-        - previous versions of Bloom don't have a bloom-customMarginBox on their
-        template cover pages, so they will just go away when the book is brought
-        up to date there. But the data will survive in the data-div, so it will
-        come back if the newer Bloom does a bring-book-up-to-date.
-        - it's important that we save data-book values out of the visible marginBox.
-        marginBox is marked data-ignore="bloom-custom-cover", and the custom margin box
-        with data-ignore="!bloom-custom-cover" to trigger this behavior in the C#
-        BookData code.
-        - it's important that we restore the content of the custom margin box
-        before restoring any of the elements it contains, since if there has been
-        editing of elements like title in auto mode (or an older Bloom), we want
-        to end up with the edited content. The custom margin box has a class
-        bloom-contains-child-data to tell the BookData code to restore it in
-        a first pass.
+    - a custom page is indicated by the presence of the class
+    bloom-custom-cover on the bloom-page div.
+    - a custom cover page has a single bloom-canvas div inside its marginBox,
+    ith one or more bloom-canvas-element divs inside it.
+    - when first created, we make a canvas element for each text and image
+    element that was on the cover page.
+    - each canvas element is absolutely positioned to match where the content
+    was on the page before conversion.
+    - where multiple languages of something can be shown (e.g., title), we make
+    a canvas element for each language that was visible at the time of conversion.
+    We disable any appearance system visibility control and put a value in
+    data-default-languages to indicate which of the collection languages
+    should be shown there.
+    - kludge: so that such elements keep their appearance-system default sizes,
+    we keep the appearance-system special classes like bloom-contentSecond.
+    C# code is also patched not to remove these.
+    - the content of the custom cover is stored in a sibling of the marginBox
+    that also has class bloom-customMarginBox. The auto-layout content is kept
+    in the regular marginBox.
+    - either the regular or custom margin box is visible, dependinng on whether
+    the page has bloom-custom-cover.
+    - the customMarginBox has data-book="customCover", so its entire content
+    is saved in the data-div.
+    - previous versions of Bloom don't have a bloom-customMarginBox on their
+    template cover pages, so they will just go away when the book is brought
+    up to date there. But the data will survive in the data-div, so it will
+    come back if the newer Bloom does a bring-book-up-to-date.
+    - it's important that we save data-book values out of the visible marginBox.
+    marginBox is marked data-ignore="bloom-custom-cover", and the custom margin box
+    with data-ignore="!bloom-custom-cover" to trigger this behavior in the C#
+    BookData code.
+    - it's important that we restore the content of the custom margin box
+    before restoring any of the elements it contains, since if there has been
+    editing of elements like title in auto mode (or an older Bloom), we want
+    to end up with the edited content. The custom margin box has a class
+    bloom-contains-child-data to tell the BookData code to restore it in
+    a first pass.
 */
 
 export function convertCoverPageToCustom(
@@ -311,9 +311,32 @@ function renderCoverMenu(page: HTMLElement, container: HTMLElement): void {
 }
 
 // Todo:
-// - implement an affordance for calling this function. It should occupy the space
-//   currently used for the origami or game tools.
-// - also provide a way to turn it off. That will involve removing the class,
-//   then a new api message that restores the cover using bringxmatterUptodate.
-// - fix basePage.less so that pages with bloom-custom-cover have no padding
-// - allow the overlay tool to work on custom covers
+// - there is a bug where turning a title language off in the book settings
+// somehow gets a style="display:block/none" put on the title bloom-editables.
+// This gets propagated through data-book and pre-empts the intended control
+// by bloom-visibility-code-on.
+// - Test how books that have this open in 6.3, and whether this damages
+// things in 6.4. May need some of the TranslationGroupManager changes
+// in 6.3, and to prevent earlier 6.3's from opening such books. Concern is
+// that the DataDiv element containing the custom cover may be found as the
+// first source of fields, causing bring-book-up-to-date to revert to the last
+// version of such fields saved by 6.4. Try changing xmatter and branding
+// using an older Bloom...I noted a suspicion that it could mess up font sizes
+// on the custom cover.
+// - Lots of testing. For example, any issues with deriving a book from one
+// with a custom cover?
+// - code that is looking for the main cover image (e.g., to make a thumbnail)
+// should find any image on the cover (maybe the largest?) if there isn't one
+// marked as the cover image.)
+// - Field should offer topic as well as language list.
+// - Field should offer to make an image "the cover image".
+// - cropping does not survive "become background image".
+// - Do we want to do any auto-sizing of read-only fields (languages and topic)?
+// - Make sure the appropriate Canvas controls (and only those) are enabled for
+// read-only fields. For example, we should be able to change colors...not sure
+// about others.
+// - Think about CSS class and method names. John wants to be able to convert origami
+// pages (one-way, more-or-less) to "custom" pages with a single canvas and
+// child elements. I don't think this will involve keeping both versions around
+// like we're doing for the cover; more like a new page type, only for "change layout",
+// that results in converting all the page content to canvas elements.

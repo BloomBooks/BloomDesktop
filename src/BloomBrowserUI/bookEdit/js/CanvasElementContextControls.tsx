@@ -72,7 +72,7 @@ import {
     kBloomButtonClass,
     kBloomCanvasSelector,
 } from "../toolbox/canvas/canvasElementUtils";
-import { get, getString, useApiObject } from "../../utils/bloomApi";
+import { get, getString, post, useApiObject } from "../../utils/bloomApi";
 import { ILanguageNameValues } from "../bookSettings/FieldVisibilityGroup";
 import { isWhiteSpaceLike } from "typescript";
 import { setOrRemoveAttribute } from "../../utils/elementUtils";
@@ -1074,8 +1074,30 @@ function makeLanguageMenuItem(
 }
 
 const fieldTypeData = [
-    { dataBook: "bookTitle", label: "Book Title" },
-    { dataBook: "smallCoverCredits", label: "Cover Credits" },
+    {
+        dataBook: "bookTitle",
+        dataDerived: "",
+        label: "Book Title",
+        readOnly: false,
+        editableClasses: ["Title-On-Cover-style", "bloom-padForOverflow"],
+        classes: ["bookTitle"],
+    },
+    {
+        dataBook: "smallCoverCredits",
+        dataDerived: "",
+        label: "Cover Credits",
+        readOnly: false,
+        editableClasses: ["smallCoverCredits"],
+        classes: [],
+    },
+    {
+        dataBook: "",
+        dataDerived: "languagesOfBook",
+        label: "Langages",
+        readOnly: true,
+        editableClasses: [],
+        classes: ["coverBottomLangName", "Cover-Default-style"],
+    },
     // It would also be nice to do topic and languageOfBook.
     // But these use data-derived rather than data-book.
     // They also have a quite different structure without a translation group or blooms-editables.
@@ -1095,10 +1117,6 @@ function makeFieldTypeMenuItem(
     const tg = ce.getElementsByClassName(
         "bloom-translationGroup",
     )[0] as HTMLElement;
-    if (!tg) {
-        // not the right kind of element (maybe already a topic, or an image).
-        return;
-    }
 
     const activeType = tg
         .getElementsByClassName("bloom-editable bloom-visibility-code-on")[0]
@@ -1123,30 +1141,50 @@ function makeFieldTypeMenuItem(
             l10nId: null,
             english: fieldType.label,
             onClick: () => {
-                for (const editable of Array.from(
+                for (const className of fieldType.classes) {
+                    tg.classList.add(className);
+                }
+                const editables = Array.from(
                     tg.getElementsByClassName("bloom-editable"),
-                )) {
-                    editable.setAttribute("data-book", fieldType.dataBook);
-                    if (
-                        editable.classList.contains("bloom-visibility-code-on")
-                    ) {
-                        getString(
-                            `editView/getDataBookValue?lang=${editable.getAttribute("lang")}&dataBook=${fieldType.dataBook}`,
-                            (content) => {
-                                // content comes from a source that looked empty, we don't want to overwrite something the user may
-                                // already have typed here.
-                                // But it may well have something in it, because we usually have an empty paragraph to start with.
-                                // To test whether it looks empty, we put the text into a newly created element and then
-                                // see whether it's textContent is empty.
-                                // The logic of overwriting something which the user has typed here is that if we keep what's here,
-                                // then the user may never know that there was already in that field. But if we overwrite, then
-                                // the user can always correct it back to what he just typed.
-                                const temp = document.createElement("div");
-                                temp.innerHTML = content || "";
-                                if (temp.textContent.trim() !== "")
-                                    editable.innerHTML = content;
-                            },
-                        );
+                );
+                if (fieldType.readOnly) {
+                    const readOnlyDiv = document.createElement("div");
+                    readOnlyDiv.setAttribute(
+                        "data-derived",
+                        fieldType.dataDerived,
+                    );
+                    readOnlyDiv.classList.add(...fieldType.classes);
+                    tg.parentElement!.insertBefore(readOnlyDiv, tg);
+                    tg.remove();
+                    // Reload the page to get the derived content loaded.
+                    post("common/saveChangesAndRethinkPageEvent", () => {});
+                } else {
+                    tg.classList.add(...fieldType.classes);
+                    for (const editable of editables) {
+                        editable.setAttribute("data-book", fieldType.dataBook);
+                        if (
+                            editable.classList.contains(
+                                "bloom-visibility-code-on",
+                            )
+                        ) {
+                            getString(
+                                `editView/getDataBookValue?lang=${editable.getAttribute("lang")}&dataBook=${fieldType.dataBook}`,
+                                (content) => {
+                                    // content comes from a source that looked empty, we don't want to overwrite something the user may
+                                    // already have typed here.
+                                    // But it may well have something in it, because we usually have an empty paragraph to start with.
+                                    // To test whether it looks empty, we put the text into a newly created element and then
+                                    // see whether it's textContent is empty.
+                                    // The logic of overwriting something which the user has typed here is that if we keep what's here,
+                                    // then the user may never know that there was already something in that field. But if we overwrite, then
+                                    // the user can always correct it back to what he just typed.
+                                    const temp = document.createElement("div");
+                                    temp.innerHTML = content || "";
+                                    if (temp.textContent.trim() !== "")
+                                        editable.innerHTML = content;
+                                },
+                            );
+                        }
                     }
                 }
                 setMenuOpen(false);
