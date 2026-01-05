@@ -4,6 +4,7 @@ using Bloom.Collection;
 using L10NSharp;
 using L10NSharp.Windows.Forms;
 using NUnit.Framework;
+using SIL.Core.ClearShare;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.TestUtilities;

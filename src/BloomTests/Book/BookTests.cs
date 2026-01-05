@@ -18,6 +18,7 @@ using Bloom.web.controllers;
 using BloomTemp;
 using Moq;
 using NUnit.Framework;
+using SIL.Core.ClearShare;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;

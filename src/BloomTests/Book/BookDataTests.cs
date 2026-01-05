@@ -13,6 +13,7 @@ using Bloom.SubscriptionAndFeatures;
 using L10NSharp;
 using L10NSharp.Windows.Forms;
 using NUnit.Framework;
+using SIL.Core.ClearShare;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;

@@ -17,6 +17,7 @@ using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using L10NSharp;
 using Newtonsoft.Json.Linq;
+using SIL.Core.ClearShare;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
