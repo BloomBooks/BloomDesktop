@@ -2693,6 +2693,7 @@ export class CanvasElementManager {
             ) {
                 // Image is in an error state or is just a placeholder; we probably won't ever get useful dimensions. Just leave
                 // the canvas element the shape it is.
+                this.alignControlFrameWithActiveElement();
                 return;
             }
             if (imgHeight === 0 || useSizeOfNewImage) {
@@ -4909,6 +4910,7 @@ export class CanvasElementManager {
         style?: string,
         userDefinedStyleName?: string,
         rightTopOffset?: string,
+        limitToCanvasBounds: boolean = false,
     ): HTMLElement {
         const transGroupHtml = this.makeTranslationGroup(userDefinedStyleName);
 
@@ -4916,9 +4918,11 @@ export class CanvasElementManager {
             bloomCanvasJQuery,
             transGroupHtml,
             location,
-            style,
-            false,
-            rightTopOffset,
+            {
+                comicalBubbleStyle: style,
+                rightTopOffset,
+                limitToCanvasBounds,
+            },
         );
     }
 
@@ -4958,9 +4962,11 @@ export class CanvasElementManager {
             bloomCanvasJQuery,
             videoContainerHtml,
             location,
-            "none",
-            true,
-            rightTopOffset,
+            {
+                comicalBubbleStyle: "none",
+                setElementActive: true,
+                rightTopOffset,
+            },
         );
     }
 
@@ -5175,12 +5181,14 @@ export class CanvasElementManager {
             bloomCanvasJQuery,
             imageContainerHtml,
             location,
-            "none",
-            true,
-            rightTopOffset,
-            imageInfo,
-            size,
-            doAfterElementCreated,
+            {
+                comicalBubbleStyle: "none",
+                setElementActive: true,
+                rightTopOffset,
+                imageInfo,
+                size,
+                doAfterElementCreated,
+            },
         );
     }
     private addNavigationImageButtonElement(
@@ -5201,12 +5209,15 @@ export class CanvasElementManager {
             bloomCanvasJQuery,
             imageContainerHtml,
             location,
-            "none",
-            true,
-            rightTopOffset,
-            imageInfo,
-            { width: 120, height: 120 },
-            doAfterElementCreated,
+            {
+                comicalBubbleStyle: "none",
+                setElementActive: true,
+                rightTopOffset,
+                imageInfo,
+                size: { width: 120, height: 120 },
+                doAfterElementCreated,
+                limitToCanvasBounds: true,
+            },
         );
         result.classList.add(kBloomButtonClass);
         return result;
@@ -5240,11 +5251,14 @@ export class CanvasElementManager {
             bloomCanvasJQuery,
             imageContainerHtml + transGroupHtml,
             location,
-            "none",
-            true,
-            rightTopOffset,
-            imageInfo,
-            { width: 120, height: 120 },
+            {
+                comicalBubbleStyle: "none",
+                setElementActive: true,
+                rightTopOffset,
+                imageInfo,
+                size: { width: 120, height: 120 },
+                limitToCanvasBounds: true,
+            },
         );
         result.classList.add(kBloomButtonClass);
         result.classList.add("bloom-noAutoHeight");
@@ -5262,6 +5276,7 @@ export class CanvasElementManager {
             "none", // no comical bubble style
             "navigation-label-button",
             rightTopOffset,
+            true,
         );
         result.classList.add(kBloomButtonClass);
         result.classList.add("bloom-noAutoHeight");
@@ -5309,9 +5324,11 @@ export class CanvasElementManager {
             bloomCanvasJQuery,
             html,
             location,
-            "none",
-            true,
-            rightTopOffset,
+            {
+                comicalBubbleStyle: "none",
+                setElementActive: true,
+                rightTopOffset,
+            },
         );
     }
 
@@ -5327,11 +5344,13 @@ export class CanvasElementManager {
             bloomCanvasJQuery,
             html,
             location,
-            "none",
-            true,
-            rightTopOffset,
-            undefined,
-            { width: 360, height: 360 },
+            {
+                comicalBubbleStyle: "none",
+                setElementActive: true,
+                rightTopOffset,
+                size: { width: 360, height: 360 },
+                limitToCanvasBounds: true,
+            },
         );
         // Add skeleton to the newly created empty grid
         const linkGrid = canvasElement.querySelector(
@@ -5355,9 +5374,11 @@ export class CanvasElementManager {
             bloomCanvasJQuery,
             html,
             location,
-            "none",
-            true,
-            rightTopOffset,
+            {
+                comicalBubbleStyle: "none",
+                setElementActive: true,
+                rightTopOffset,
+            },
         );
         // reorder it after the element with class kBackgroundImageClass. This puts it in front of
         // the background but but behind the other canvas elements it is meant to frame.
@@ -5391,22 +5412,67 @@ export class CanvasElementManager {
         }
     }
 
+    // Note: This is distinct from ensureCanvasElementsIntersectParent(), which is intended to
+    // keep *existing* canvas elements at least partly visible (and also keeps tails inside).
+    // Here we try to keep a *newly created* element entirely within the canvas (if possible),
+    // without changing its size and without moving it above/left of the canvas.
+    private ensureCanvasElementInsideCanvasIfPossible(
+        canvasElement: HTMLElement,
+        bloomCanvas: HTMLElement,
+    ): void {
+        const canvasSize = getExactClientSize(bloomCanvas);
+        const canvasElementSize = getExactClientSize(canvasElement);
+        const currentCanvasElementLeft = CanvasElementManager.pxToNumber(
+            canvasElement.style.left,
+        );
+        const currentCanvasElementTop = CanvasElementManager.pxToNumber(
+            canvasElement.style.top,
+        );
+        const currentCanvasElementWidth = canvasElementSize.width;
+        const currentCanvasElementHeight = canvasElementSize.height;
+
+        const maxLeft = canvasSize.width - currentCanvasElementWidth;
+        const maxTop = canvasSize.height - currentCanvasElementHeight;
+        const clampedLeft = Math.max(
+            0,
+            Math.min(currentCanvasElementLeft, maxLeft),
+        );
+        const clampedTop = Math.max(
+            0,
+            Math.min(currentCanvasElementTop, maxTop),
+        );
+        if (
+            clampedLeft !== currentCanvasElementLeft ||
+            clampedTop !== currentCanvasElementTop
+        ) {
+            CanvasElementManager.setCanvasElementPosition(
+                canvasElement,
+                clampedLeft,
+                clampedTop,
+            );
+            this.adjustTarget(canvasElement);
+        }
+    }
+
     private finishAddingCanvasElement(
         bloomCanvasJQuery: JQuery,
         internalHtml: string,
         location: Point,
-        comicalBubbleStyle?: string,
-        setElementActive?: boolean,
-        rightTopOffset?: string,
-        imageInfo?: {
-            imageId: string;
-            src: string; // must already appropriately URL-encoded.
-            copyright: string;
-            creator: string;
-            license: string;
+        options?: {
+            comicalBubbleStyle?: string;
+            setElementActive?: boolean;
+            rightTopOffset?: string;
+            imageInfo?: {
+                imageId: string;
+                src: string; // must already appropriately URL-encoded.
+                copyright: string;
+                creator: string;
+                license: string;
+            };
+            size?: { width: number; height: number };
+            doAfterElementCreated?: (newElement: HTMLElement) => void;
+            limitToCanvasBounds?: boolean;
         },
-        size?: { width: number; height: number },
-        doAfterElementCreated?: (newElement: HTMLElement) => void,
     ): HTMLElement {
         // add canvas element as last child of .bloom-canvas (BL-7883)
         const lastChildOfBloomCanvas = bloomCanvasJQuery.children().last();
@@ -5424,15 +5490,15 @@ export class CanvasElementManager {
             lastChildOfBloomCanvas,
         );
         const canvasElement = canvasElementJQuery.get(0);
-        if (imageInfo) {
+        if (options?.imageInfo) {
             const img = canvasElement.getElementsByTagName("img")[0];
             if (img) {
-                changeImageInfo(img, imageInfo);
+                changeImageInfo(img, options.imageInfo);
             }
         }
-        if (size) {
-            canvasElement.style.width = size.width + "px";
-            canvasElement.style.height = size.height + "px";
+        if (options?.size) {
+            canvasElement.style.width = options.size.width + "px";
+            canvasElement.style.height = options.size.height + "px";
         } else {
             this.setDefaultHeightFromWidth(canvasElement);
         }
@@ -5440,8 +5506,16 @@ export class CanvasElementManager {
             canvasElementJQuery,
             bloomCanvasJQuery.get(0),
             location,
-            rightTopOffset,
+            options?.rightTopOffset,
         );
+
+        if (options?.limitToCanvasBounds) {
+            const bloomCanvas = bloomCanvasJQuery.get(0) as HTMLElement;
+            this.ensureCanvasElementInsideCanvasIfPossible(
+                canvasElement,
+                bloomCanvas,
+            );
+        }
 
         // The following code would not be needed for Picture and Video canvas elements if the focusin
         // handler were reliably called after being attached by refreshBubbleEditing() below.
@@ -5452,7 +5526,7 @@ export class CanvasElementManager {
         // with refreshBubbleEditing(). This code actually prevents bloomEditing.focusOnChildIfFound()
         // from being called, but that doesn't really matter since calling it does no good.
         // See https://issues.bloomlibrary.org/youtrack/issue/BL-11620.
-        if (setElementActive) {
+        if (options?.setElementActive) {
             this.activeElement = canvasElement;
             this.doNotifyChange();
             this.showCorrespondingTextBox(canvasElement);
@@ -5460,16 +5534,16 @@ export class CanvasElementManager {
         const bubble = new Bubble(canvasElement);
         const bubbleSpec: BubbleSpec = Bubble.getDefaultBubbleSpec(
             canvasElement,
-            comicalBubbleStyle || "speech",
+            options?.comicalBubbleStyle || "speech",
         );
         bubble.setBubbleSpec(bubbleSpec);
         const bloomCanvas = bloomCanvasJQuery.get(0);
-        if (doAfterElementCreated) {
+        if (options?.doAfterElementCreated) {
             // It's not obvious when the best time to do this is. Obviously it has to be after
             // the element is created. For the current purpose, the main thing is that it be
             // before refreshBubbleEditing() is called, since (for picture elements) that is
             // what gets the element selected and triggers a call to adjustContainerAspectRatio().
-            doAfterElementCreated(canvasElement);
+            options.doAfterElementCreated(canvasElement);
         }
         // background image in parent bloom-canvas may need to become canvas element
         // (before we refreshBubbleEditing, since we may change some canvas elements here.)
