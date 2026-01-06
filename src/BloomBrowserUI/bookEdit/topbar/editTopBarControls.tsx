@@ -397,4 +397,4 @@ $(window).ready(() => {
     });
 });
 
-WireUpForWinforms(EditTopBarControls);
+WireUpForWinforms(EditTopBarControls, kBloomPurple);
