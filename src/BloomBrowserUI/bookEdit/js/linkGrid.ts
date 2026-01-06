@@ -16,8 +16,9 @@ export function setupBookLinkGrids(container: HTMLElement) {
         // In case you are tempted to do the same for other canvas elements, bear in mind
         // that the price paid is not being able to put things like comic tail handles over
         // such elements.
-        linkGrid.ondblclick = function () {
+        linkGrid.onclick = function (e) {
             editLinkGrid(linkGrid);
+            e.stopPropagation();
         };
     }
 }
