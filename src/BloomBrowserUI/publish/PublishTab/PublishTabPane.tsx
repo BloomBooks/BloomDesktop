@@ -343,4 +343,4 @@ export const PublishTabPane: React.FunctionComponent = () => {
     );
 };
 
-WireUpForWinforms(PublishTabPane);
+WireUpForWinforms(PublishTabPane, kBloomUnselectedTabBackground);
