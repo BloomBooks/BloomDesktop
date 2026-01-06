@@ -738,4 +738,4 @@ function processTemplatesCollection(
 
     return [simpleTemplates, specializedTemplates];
 }
-WireUpForWinforms(CollectionsTabPane);
+WireUpForWinforms(CollectionsTabPane, kPanelBackground);

@@ -9,7 +9,7 @@ import {
     CanvasElementManager,
     ITextColorInfo,
 } from "../../js/CanvasElementManager";
-import { BubbleSpec, TailSpec } from "comicaljs";
+import { Bubble, BubbleSpec, TailSpec } from "comicaljs";
 import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
@@ -143,9 +143,9 @@ const CanvasToolControls: React.FunctionComponent = () => {
 
     // If canvasElementType is not undefined, corresponds to the active canvas element's family.
     // Otherwise, corresponds to the most recently active canvas element's family.
-    const [currentFamilySpec, setCurrentFamilySpec] = useState<
-        BubbleSpec | undefined
-    >(undefined);
+    const [currentBubble, setCurrentBubble] = useState<Bubble | undefined>(
+        undefined,
+    );
 
     // Callback to initialize bubbleEditing and get the initial bubbleSpec
     const bubbleSpecInitialization = () => {
@@ -161,18 +161,18 @@ const CanvasToolControls: React.FunctionComponent = () => {
         canvasElementManager.turnOnCanvasElementEditing();
         deselectVideoContainers();
 
-        const bubbleSpec = canvasElementManager.getSelectedFamilySpec();
+        const bubble = canvasElementManager.getPatriarchBubbleOfActiveElement();
 
         // The callback function is (currently) called when switching between canvas elements, but is not called
         // if the tail spec changes, or for style and similar changes to the canvas element that are initiated by React.
         canvasElementManager.requestCanvasElementChangeNotification(
             "canvasElement",
-            (bubble: BubbleSpec | undefined) => {
-                setCurrentFamilySpec(bubble);
+            (bubble: Bubble | undefined) => {
+                setCurrentBubble(bubble);
             },
         );
 
-        setCurrentFamilySpec(bubbleSpec);
+        setCurrentBubble(bubble);
     };
 
     // Enhance: if we don't want to have a static, or don't want
@@ -192,19 +192,24 @@ const CanvasToolControls: React.FunctionComponent = () => {
 
     // Reset UI when current bubble spec changes (e.g. user clicked on a bubble).
     useEffect(() => {
-        if (currentFamilySpec) {
-            setStyle(currentFamilySpec.style);
+        if (currentBubble) {
+            const currentBubbleSpec = currentBubble.getBubbleSpec();
+            setStyle(currentBubbleSpec.style);
             setShowTailChecked(
-                currentFamilySpec.tails && currentFamilySpec.tails.length > 0,
+                currentBubbleSpec.tails && currentBubbleSpec.tails.length > 0,
             );
             setIsRoundedCornersChecked(
-                !!currentFamilySpec.cornerRadiusX &&
-                    !!currentFamilySpec.cornerRadiusY &&
-                    currentFamilySpec.cornerRadiusX > 0 &&
-                    currentFamilySpec.cornerRadiusY > 0,
+                !!currentBubbleSpec.cornerRadiusX &&
+                    !!currentBubbleSpec.cornerRadiusY &&
+                    currentBubbleSpec.cornerRadiusX > 0 &&
+                    currentBubbleSpec.cornerRadiusY > 0,
             );
-            setOutlineColor(currentFamilySpec.outerBorderColor);
-            const backColor = getBackgroundColorValue(currentFamilySpec);
+            setOutlineColor(currentBubbleSpec.outerBorderColor);
+            const isButton =
+                currentBubble.content.classList.contains(kBloomButtonClass);
+            const backColor = isButton
+                ? currentBubble.content.style.backgroundColor
+                : getBackgroundColorValue(currentBubbleSpec);
             const newSwatch =
                 getColorInfoFromSpecialNameOrColorString(backColor);
             setBackgroundColorSwatch(newSwatch);
@@ -226,7 +231,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
         } else {
             setCanvasElementType(undefined);
         }
-    }, [currentFamilySpec]);
+    }, [currentBubble]);
 
     const getBubbleType = (
         mgr: CanvasElementManager | undefined,
@@ -255,7 +260,8 @@ const CanvasToolControls: React.FunctionComponent = () => {
             };
 
             // BL-8537: If we are choosing "caption" style, we make sure that the background color is opaque.
-            const backgroundColorArray = currentFamilySpec?.backgroundColors;
+            const backgroundColorArray =
+                currentBubble?.getBubbleSpec()?.backgroundColors;
             if (
                 newStyle === "caption" &&
                 backgroundColorArray &&
@@ -272,12 +278,12 @@ const CanvasToolControls: React.FunctionComponent = () => {
                 newBubbleProps["backgroundColors"] = backgroundColorArray;
             }
 
-            const newSpec =
+            const bubble =
                 canvasElementManager.updateSelectedFamilyBubbleSpec(
                     newBubbleProps,
                 );
             // We do this because the new style's spec may affect Show Tail, or background opacity too.
-            setCurrentFamilySpec(newSpec);
+            setCurrentBubble(bubble);
         }
     };
 
@@ -377,8 +383,8 @@ const CanvasToolControls: React.FunctionComponent = () => {
     const updateReactFromComical = (
         canvasElementManager: CanvasElementManager,
     ) => {
-        const newSpec = canvasElementManager.getSelectedFamilySpec();
-        setCurrentFamilySpec(newSpec);
+        const bubble = canvasElementManager.getPatriarchBubbleOfActiveElement();
+        setCurrentBubble(bubble);
     };
 
     // Callback when outline color of the bubble is changed
@@ -503,7 +509,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
 
     // BL-8537 Because of the black shadow background, partly transparent backgrounds don't work for
     // captions. We'll use this to tell the color chooser not to show the alpha option.
-    const isCaption = currentFamilySpec?.style === "caption";
+    const isCaption = currentBubble?.getBubbleSpec()?.style === "caption";
 
     const backgroundColorControl = (
         <FormControl variant="standard">
@@ -662,7 +668,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                 checked={isRoundedCornersChecked}
                                 disabled={
                                     !styleSupportsRoundedCorners(
-                                        currentFamilySpec,
+                                        currentBubble?.getBubbleSpec(),
                                     )
                                 }
                                 onCheckChanged={(newValue) => {
@@ -675,7 +681,9 @@ const CanvasToolControls: React.FunctionComponent = () => {
                         <FormControl
                             variant="standard"
                             className={
-                                isBubble(currentFamilySpec) ? "" : "disabled"
+                                isBubble(currentBubble?.getBubbleSpec())
+                                    ? ""
+                                    : "disabled"
                             }
                         >
                             <InputLabel htmlFor="canvasElement-outlineColor-dropdown">
@@ -702,7 +710,11 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                             "canvasElement-options-dropdown-menu",
                                     }}
                                     onChange={(event) => {
-                                        if (isBubble(currentFamilySpec)) {
+                                        if (
+                                            isBubble(
+                                                currentBubble?.getBubbleSpec(),
+                                            )
+                                        ) {
                                             handleOutlineColorChanged(event);
                                             setIsOutlineColorSelectOpen(false);
                                         }
