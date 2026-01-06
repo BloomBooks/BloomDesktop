@@ -57,7 +57,6 @@ import { copySelection, GetEditor, pasteClipboard } from "./bloomEditing";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { useL10n } from "../../react_components/l10nHooks";
 import { CogIcon } from "./CogIcon";
-import { getHyperlinkFromClipboard } from "../bloomField/hyperlinks";
 import { MissingMetadataIcon } from "./MissingMetadataIcon";
 import { FillSpaceIcon } from "./FillSpaceIcon";
 import { kBloomDisabledOpacity } from "../../utils/colorUtils";
@@ -72,6 +71,13 @@ import { kBloomButtonClass } from "../toolbox/canvas/canvasElementUtils";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
+}
+
+// These names are not quite consistent, but the behaviors we want to control are currently
+// specific to navigation buttons, while the class name is meant to cover buttons in general.
+// Eventually we may need a way to distinguish buttons used for navigation from other buttons.
+function isNavigationButton(canvasElement: HTMLElement) {
+    return canvasElement.classList.contains(kBloomButtonClass);
 }
 
 // This is the controls bar that appears beneath a canvas element when it is selected. It contains buttons
@@ -99,11 +105,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
         "bloom-link-grid",
     )[0] as HTMLElement | undefined;
     const isLinkGrid = !!linkGrid;
-    // These names are not quite consistent, but the behaviors we want to control are currently
-    // specific to navigation buttons, while the class name is meant to cover buttons in general.
-    // Eventually we may need a way to distinguish buttons used for navigation from other buttons.
-    const isNavButton =
-        props.canvasElement.classList.contains(kBloomButtonClass);
+    const isNavButton = isNavigationButton(props.canvasElement);
     const rectangles =
         props.canvasElement.getElementsByClassName("bloom-rectangle");
     // This is only used by the menu option that toggles it. If the menu stayed up, we would need a state
@@ -270,7 +272,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
             ),
         });
     }
-    if (hasText && !isInDraggableGame) {
+    if (hasText && !isInDraggableGame && !isNavButton) {
         menuOptions.splice(0, 0, {
             l10nId: "EditTab.Toolbox.ComicTool.Options.AddChildBubble",
             english: "Add Child Bubble",
@@ -396,6 +398,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
             english: "Set Destination",
             onClick: () => setLinkDestination(),
             icon: <LinkIcon css={getMenuIconCss()} />,
+            featureName: "canvas",
         });
     }
     const handleMenuButtonMouseDown = (e: React.MouseEvent) => {
@@ -1144,9 +1147,13 @@ function addImageMenuOptions(
             ),
         },
     ];
-    // It would be too confusing and difficult for the element to be both draggable and clickable with different
-    //  behavior such that we'd have to distinguish between the two.
-    if (!isDraggable(canvasElement)) {
+
+    if (
+        !isNavigationButton(canvasElement) &&
+        // It would be too confusing and difficult for the element to be both draggable and clickable with different
+        //  behavior such that we'd have to distinguish between the two.
+        !isDraggable(canvasElement)
+    ) {
         imageMenuOptions.push({
             l10nId: "EditTab.SetupHyperlink",
             english: "Set Up Hyperlink",

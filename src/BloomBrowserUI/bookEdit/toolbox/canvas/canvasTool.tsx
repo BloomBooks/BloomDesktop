@@ -549,42 +549,45 @@ const CanvasToolControls: React.FunctionComponent = () => {
         </FormControl>
     );
 
+    const activeElement = canvasElementManager?.getActiveElement();
     const isButton =
-        canvasElementManager
-            ?.getActiveElement()
-            ?.classList.contains(kBloomButtonClass) ?? false;
+        activeElement?.classList.contains(kBloomButtonClass) ?? false;
     const hasText =
-        (canvasElementManager
-            ?.getActiveElement()
-            ?.getElementsByClassName("bloom-translationGroup")?.length ?? 0) >
-        0;
+        (activeElement?.getElementsByClassName("bloom-translationGroup")
+            ?.length ?? 0) > 0;
+    const isBookGrid =
+        (activeElement?.getElementsByClassName("bloom-link-grid")?.length ??
+            0) > 0;
+
+    const noControlsSection = (
+        <div id="noOptionsSection">
+            <Typography
+                css={css`
+                    // "!important" is needed to keep .MuiTypography-root from overriding
+                    margin: 15px 15px 0 15px !important;
+                    text-align: center;
+                `}
+            >
+                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.ImageSelected">
+                    There are no options for this kind of canvas element
+                </Span>
+            </Typography>
+        </div>
+    );
 
     const getControlOptionsRegion = (): JSX.Element => {
+        if (isBookGrid) return noControlsSection;
+        if (isButton)
+            return (
+                <>
+                    {hasText && textColorControl}
+                    {backgroundColorControl}
+                </>
+            );
         switch (canvasElementType) {
             case "image":
-                return isButton ? (
-                    <>
-                        {hasText && textColorControl}
-                        {backgroundColorControl}
-                    </>
-                ) : (
-                    <div id="videoOrImageSubstituteSection">
-                        <Typography
-                            css={css`
-                                // "!important" is needed to keep .MuiTypography-root from overriding
-                                margin: 15px 15px 0 15px !important;
-                                text-align: center;
-                            `}
-                        >
-                            <Span l10nKey="EditTab.Toolbox.ComicTool.Options.ImageSelected">
-                                There are no options for this kind of canvas
-                                element
-                            </Span>
-                        </Typography>
-                    </div>
-                );
             case "video":
-                return <div id="videoOrImageSubstituteSection"></div>;
+                return noControlsSection;
             case undefined:
             case "text":
                 return (

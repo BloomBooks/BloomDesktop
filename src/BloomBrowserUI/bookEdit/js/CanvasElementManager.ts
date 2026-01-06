@@ -2693,6 +2693,7 @@ export class CanvasElementManager {
             ) {
                 // Image is in an error state or is just a placeholder; we probably won't ever get useful dimensions. Just leave
                 // the canvas element the shape it is.
+                this.alignControlFrameWithActiveElement();
                 return;
             }
             if (imgHeight === 0 || useSizeOfNewImage) {
@@ -4909,6 +4910,7 @@ export class CanvasElementManager {
         style?: string,
         userDefinedStyleName?: string,
         rightTopOffset?: string,
+        keepInsideCanvas: boolean = false,
     ): HTMLElement {
         const transGroupHtml = this.makeTranslationGroup(userDefinedStyleName);
 
@@ -4919,6 +4921,10 @@ export class CanvasElementManager {
             style,
             false,
             rightTopOffset,
+            undefined,
+            undefined,
+            undefined,
+            keepInsideCanvas,
         );
     }
 
@@ -5207,6 +5213,7 @@ export class CanvasElementManager {
             imageInfo,
             { width: 120, height: 120 },
             doAfterElementCreated,
+            true,
         );
         result.classList.add(kBloomButtonClass);
         return result;
@@ -5245,6 +5252,8 @@ export class CanvasElementManager {
             rightTopOffset,
             imageInfo,
             { width: 120, height: 120 },
+            undefined,
+            true,
         );
         result.classList.add(kBloomButtonClass);
         result.classList.add("bloom-noAutoHeight");
@@ -5262,6 +5271,7 @@ export class CanvasElementManager {
             "none", // no comical bubble style
             "navigation-label-button",
             rightTopOffset,
+            true,
         );
         result.classList.add(kBloomButtonClass);
         result.classList.add("bloom-noAutoHeight");
@@ -5332,6 +5342,8 @@ export class CanvasElementManager {
             rightTopOffset,
             undefined,
             { width: 360, height: 360 },
+            undefined,
+            true,
         );
         // Add skeleton to the newly created empty grid
         const linkGrid = canvasElement.querySelector(
@@ -5407,6 +5419,7 @@ export class CanvasElementManager {
         },
         size?: { width: number; height: number },
         doAfterElementCreated?: (newElement: HTMLElement) => void,
+        keepInsideCanvas: boolean = false,
     ): HTMLElement {
         // add canvas element as last child of .bloom-canvas (BL-7883)
         const lastChildOfBloomCanvas = bloomCanvasJQuery.children().last();
@@ -5442,6 +5455,33 @@ export class CanvasElementManager {
             location,
             rightTopOffset,
         );
+
+        // Technically, it only tries to move up and left if necessary to keep inside the canvas.
+        if (keepInsideCanvas) {
+            const bloomCanvas = bloomCanvasJQuery.get(0) as HTMLElement;
+            const canvasSize = getExactClientSize(bloomCanvas);
+            const elementWidth = canvasElement.clientWidth;
+            const elementHeight = canvasElement.clientHeight;
+            const currentLeft = CanvasElementManager.pxToNumber(
+                canvasElement.style.left,
+            );
+            const currentTop = CanvasElementManager.pxToNumber(
+                canvasElement.style.top,
+            );
+
+            const maxLeft = canvasSize.width - elementWidth;
+            const maxTop = canvasSize.height - elementHeight;
+            const clampedLeft = Math.max(0, Math.min(currentLeft, maxLeft));
+            const clampedTop = Math.max(0, Math.min(currentTop, maxTop));
+            if (clampedLeft !== currentLeft || clampedTop !== currentTop) {
+                CanvasElementManager.setCanvasElementPosition(
+                    canvasElement,
+                    clampedLeft,
+                    clampedTop,
+                );
+                this.adjustTarget(canvasElement);
+            }
+        }
 
         // The following code would not be needed for Picture and Video canvas elements if the focusin
         // handler were reliably called after being attached by refreshBubbleEditing() below.

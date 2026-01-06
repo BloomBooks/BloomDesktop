@@ -103,19 +103,19 @@ export const URLEditor: React.FunctionComponent<{
         }
     };
 
+    function isExternalUrl(url: string): boolean {
+        return /^(https?:)?\/\//i.test(url);
+    }
+
     const handleOpenInBrowser = () => {
-        const normalizedUrl = url.trim();
-        if (!normalizedUrl || normalizedUrl.startsWith("/book")) {
+        const trimmedUrl = url.trim();
+        if (!isExternalUrl(trimmedUrl)) {
             return;
         }
 
         // Use the Bloom API to open the URL in the default browser
-        postString("link", encodeURIComponent(normalizedUrl));
+        postString("link", encodeURIComponent(trimmedUrl));
     };
-
-    const normalizedUrl = url.trim();
-    const isOpenButtonDisabled =
-        normalizedUrl.length === 0 || normalizedUrl.startsWith("/book");
 
     return (
         <Box
@@ -204,7 +204,7 @@ export const URLEditor: React.FunctionComponent<{
                     <IconButton
                         onClick={handleOpenInBrowser}
                         size="small"
-                        disabled={isOpenButtonDisabled}
+                        disabled={!isExternalUrl(url.trim())}
                         css={css`
                             color: ${kBloomBlue};
                             &:disabled {
