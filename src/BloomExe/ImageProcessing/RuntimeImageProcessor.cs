@@ -271,6 +271,14 @@ namespace Bloom.ImageProcessing
             bool padImageToRequestedSize = true
         )
         {
+            if (ImageUtils.IsPlaceholderImageFilename(coverImagePath))
+            {
+                coverImagePath = Path.Combine(
+                    FileLocationUtilities.DirectoryOfApplicationOrSolution,
+                    "DistFiles",
+                    "Blank.png"
+                );
+            }
             using (var coverImage = PalasoImage.FromFileRobustly(coverImagePath))
             {
                 var coverImageWidth = coverImage.Image.Width;
