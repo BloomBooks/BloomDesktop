@@ -2961,7 +2961,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Max" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Max</source>
-        <target xml:lang="fr" state="final">Maximum</target>
+        <target xml:lang="fr" state="final">Max</target>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Max</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.MaxInBook" sil:dynamic="true" approved="yes">
