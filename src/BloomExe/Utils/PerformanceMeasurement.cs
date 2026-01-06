@@ -387,9 +387,22 @@ namespace Bloom.Utils
                                 .Get()
                                 .Cast<ManagementObject>()
                         );
-                        var subProcs = listMOs.Select(mo =>
-                            Process.GetProcessById(Convert.ToInt32(mo["ProcessID"]))
-                        );
+                        var subProcs = listMOs
+                            .Select(mo =>
+                            {
+                                // It is possible that the process has exited since we got the list from WMI.
+                                // See BL-15638.
+                                try
+                                {
+                                    return Process.GetProcessById(Convert.ToInt32(mo["ProcessID"]));
+                                }
+                                catch
+                                {
+                                    return null;
+                                }
+                            })
+                            .Where(p => p != null)
+                            .ToList();
                         if (subProcs.Any())
                             subProcesses.AddRange(subProcs);
                     }
