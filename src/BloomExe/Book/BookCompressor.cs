@@ -48,11 +48,7 @@ namespace Bloom.Book
             var coverImagePath = book.GetCoverImagePath();
             if (coverImagePath == null || ImageUtils.IsPlaceholderImageFilename(coverImagePath))
             {
-                var blankImage = Path.Combine(
-                    FileLocationUtilities.DirectoryOfApplicationOrSolution,
-                    "DistFiles",
-                    "Blank.png"
-                );
+                var blankImage = BloomFileLocator.GetFileFromDistFiles("Blank.png");
                 if (RobustFile.Exists(blankImage))
                     coverImagePath = blankImage;
             }
