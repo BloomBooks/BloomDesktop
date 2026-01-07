@@ -26,6 +26,10 @@ Note that hiding the page numbers is done by a setting in appearance.json, not h
     is picture on top, text on the bottom, we need to make room for the page number */
     --pageNumber-extra-height: 12mm !important;
 }
+.bloom-fullBleed .Device16x9Landscape.numberedPage {
+    /* Adjust the page number position for full bleed pages */
+    --pageNumber-left-margin-override: calc(var(--full-bleed-excess-width) / 2);
+}
 .Device16x9Landscape.numberedPage::after {
     --pageNumber-bottom: 0mm;
     --pageNumber-top: unset;
@@ -36,6 +40,12 @@ Note that hiding the page numbers is done by a setting in appearance.json, not h
     --pageNumber-background-width: 33px;
     --pageNumber-always-left-margin: var(--page-margin-left);
     --pageNumber-right-margin: deliberately-invalid; /* prevents right being set at all. unset does not work. Prevent centering for this layout */
+}
+.bloom-fullBleed
+    .Device16x9Landscape.numberedPage.pictureOnRight.pictureOnRight::after {
+    /* Adjust the page number position for full bleed pages */
+    --pageNumber-left-margin-override: deliberately-invalid;
+    --pageNumber-right-margin: calc(var(--full-bleed-excess-width) / 2);
 }
 .Device16x9Landscape.numberedPage.pictureOnRight.pictureOnRight::after {
     --pageNumber-right-margin: var(--page-margin-right);

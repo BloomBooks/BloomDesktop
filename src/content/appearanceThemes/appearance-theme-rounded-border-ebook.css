@@ -21,6 +21,9 @@
     /* move so that page number doesn't it hide it if the text box is in the lower left */
     --formatButton-pageNumber-dodge: 20px;
 }
+[class*="Device"] .marginBox > .split-pane-component-inner {
+    top: 0px; /* default of auto leaves gap at top */
+}
 
 /* using "where:" so that the user's custom appearance can override the theme if specified */
 .numberedPage:where([class*="Device"]:not(.bloom-interactive-page)) {
