@@ -10,6 +10,7 @@ using System.Web;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
+using Bloom;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.FontProcessing;
@@ -308,6 +309,11 @@ namespace Bloom.Publish.Epub
                 Path.GetFileName(Book.FolderPath)
             );
             _originalBook = _book;
+
+            // MakeDeviceXmatterTempBook is about to modify sTheMostRecentBloomFileLocator.
+            // Record the previous value so we can restore it later.
+            var previousLocator = BloomFileLocator.sTheMostRecentBloomFileLocator;
+
             if (_bookServer != null)
             {
                 // It should only be null while running unit tests which don't create a physical file.
@@ -326,6 +332,14 @@ namespace Bloom.Publish.Epub
                     wantFontFaceDeclarations: false
                 );
             }
+
+            // Hold the temp locator for the rest of this method so BloomServer sees the in-progress copy
+            // as long as we need it. The override is disposed at the end of the method which will restore
+            // whichever locator was active before we cloned the book.
+            using var tempBookLocatorOverride =
+                _book != null && _book != _originalBook
+                    ? BloomFileLocator.OverrideForScope(previousLocator)
+                    : null;
 
             // The readium control remembers the current page for each book.
             // So it is useful to have a unique name for each one.

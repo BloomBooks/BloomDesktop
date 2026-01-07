@@ -1985,6 +1985,127 @@ These are similar but already have game-theme classes
             );
         }
 
+        [TestCase("color: blue; bottom: 10%;")]
+        [TestCase("bottom: 11%; color: blue;")]
+        [TestCase("bottom: 12%; color: blue")]
+        [TestCase("  bottom:13%;  color : blue;  ")]
+        [TestCase("color: blue; left: 10%;")]
+        public void FixProblematicSplitPaneMarginBoxes_RemovesBottomLeftAndClass(
+            string originalStyle
+        )
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @$"<html><head></head><body>
+<div class='bloom-page'><div class='split-pane-component marginBox' style='{originalStyle}'><div class='split-pane'>content</div></div></div>
+</body></html>"
+            );
+
+            storage.FixProblematicSplitPaneMarginBoxes();
+
+            var marginBox = storage.Dom.SelectSingleNode("//div[contains(@class,'marginBox')]");
+            Assert.That(marginBox, Is.Not.Null);
+            Assert.That(marginBox.GetAttribute("class"), Does.Not.Contain("split-pane-component"));
+            Assert.That(
+                marginBox.GetAttribute("style"),
+                Is.EqualTo("color: blue").Or.EqualTo("color : blue")
+            );
+        }
+
+        [Test]
+        public void FixProblematicSplitPaneMarginBoxes_RemovesClassEvenWithoutStyle()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head></head><body>
+<div class='bloom-page'><div class='marginBox split-pane-component'><div class='split-pane'>content</div></div></div>
+</body></html>"
+            );
+
+            storage.FixProblematicSplitPaneMarginBoxes();
+
+            var marginBox = storage.Dom.SelectSingleNode("//div[contains(@class,'marginBox')]");
+            Assert.That(marginBox, Is.Not.Null);
+            Assert.That(marginBox.GetAttribute("class"), Does.Not.Contain("split-pane-component"));
+            Assert.That(marginBox.HasAttribute("style"), Is.False);
+        }
+
+        [Test]
+        public void FixProblematicSplitPaneMarginBoxes_RemovesStyleAttributeWhenOnlyBottom()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head></head><body>
+<div class='bloom-page'><div class='marginBox split-pane-component' style='bottom: 42%;'><div class='split-pane'>content</div></div></div>
+</body></html>"
+            );
+
+            storage.FixProblematicSplitPaneMarginBoxes();
+
+            var marginBox = storage.Dom.SelectSingleNode("//div[contains(@class,'marginBox')]");
+            Assert.That(marginBox, Is.Not.Null);
+            Assert.That(marginBox.GetAttribute("class"), Does.Not.Contain("split-pane-component"));
+            Assert.That(marginBox.GetOptionalStringAttribute("style", null), Is.Null.Or.Empty);
+        }
+
+        [Test]
+        public void FixProblematicSplitPaneMarginBoxes_PreservesOtherStylesWhenNoBottomOrLeft()
+        {
+            const string originalStyle = "top: 5%; border-bottom: 1px solid black;";
+            var storage = GetInitialStorageWithCustomHtml(
+                $"<html><head></head><body>"
+                    + "<div class='bloom-page'><div class='marginBox split-pane-component' style='"
+                    + originalStyle
+                    + "'><div class='split-pane'>content</div></div></div></body></html>"
+            );
+
+            storage.FixProblematicSplitPaneMarginBoxes();
+
+            var marginBox = storage.Dom.SelectSingleNode("//div[contains(@class,'marginBox')]");
+            Assert.That(marginBox, Is.Not.Null);
+            Assert.That(marginBox.GetAttribute("class"), Does.Not.Contain("split-pane-component"));
+            Assert.That(marginBox.GetAttribute("style"), Is.EqualTo(originalStyle));
+        }
+
+        [Test]
+        public void FixProblematicSplitPaneMarginBoxes_RemovesStyleAttributeWhenOnlyLeft()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head></head><body>
+<div class='bloom-page'><div class='marginBox split-pane-component' style='left: 42%;'><div class='split-pane'>content</div></div></div>
+</body></html>"
+            );
+
+            storage.FixProblematicSplitPaneMarginBoxes();
+
+            var marginBox = storage.Dom.SelectSingleNode("//div[contains(@class,'marginBox')]");
+            Assert.That(marginBox, Is.Not.Null);
+            Assert.That(marginBox.GetAttribute("class"), Does.Not.Contain("split-pane-component"));
+            Assert.That(marginBox.GetOptionalStringAttribute("style", null), Is.Null.Or.Empty);
+        }
+
+        [Test]
+        public void FixProblematicSplitPaneMarginBoxes_IgnoresElementsWithoutRequiredChild()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head></head><body>
+<div class='bloom-page'>
+    <div class='marginBox split-pane-component' style='bottom: 42%;'>No direct split-pane child</div>
+    <div class='marginBox split-pane-component' style='left: 42%;'><div class='other-class'>Wrong child class</div></div>
+</div>
+</body></html>"
+            );
+
+            storage.FixProblematicSplitPaneMarginBoxes();
+
+            // Both elements should remain unchanged because they don't have the required direct child div with split-pane class
+            var marginBoxes = storage.Dom.SafeSelectNodes("//div[contains(@class,'marginBox')]");
+            Assert.That(marginBoxes.Count, Is.EqualTo(2));
+
+            foreach (SafeXmlElement marginBox in marginBoxes)
+            {
+                Assert.That(marginBox.GetAttribute("class"), Does.Contain("split-pane-component"));
+                Assert.That(marginBox.HasAttribute("style"), Is.True);
+            }
+        }
+
         [Test]
         public void PerformNecessaryMaintenanceOnBook_HandlesMultipleSVGs()
         {
@@ -2301,7 +2422,7 @@ These are similar but already have game-theme classes
                 @"<html>
   <head></head>
   <body>
-    <div class=""bloom-page simple-comprehension-quiz bloom-ignoreForReaderStats bloom-interactive-page enterprise-only numberedPage game-theme-red-on-white side-left Device16x9Landscape bloom-monolingual"" id=""2578f51a-d48c-458e-b658-892963b242a8"" data-page="""" data-reader-version=""2"" data-pagelineage=""F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D"" data-page-number=""1"" lang="""" 
+    <div class=""bloom-page simple-comprehension-quiz bloom-ignoreForReaderStats bloom-interactive-page enterprise-only numberedPage game-theme-red-on-white side-left Device16x9Landscape bloom-monolingual"" id=""2578f51a-d48c-458e-b658-892963b242a8"" data-page="""" data-reader-version=""2"" data-pagelineage=""F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D"" data-page-number=""1"" lang=""""
          data-analyticscategories=""comprehension"" data-activity=""simple-checkbox-quiz"" data-tool-id=""game"">
       <div class=""marginBox"">
         <div class=""quiz"">
@@ -2381,12 +2502,12 @@ These are similar but already have game-theme classes
          data-analyticscategories=""drag-activity"" data-activity=""drag-image-to-target"" data-tool-id=""game"">
       <div class=""marginBox"">
         <div class=""split-pane-component-inner"">
-          <div class=""bloom-canvas bloom-has-canvas-element"" data-title=""For the current paper size: • The image container is 672 x 378 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2100 x 1182 dots would fill this container at 300 DPI."" title="""" data-imgsizebasedon=""672,378"">
+          <div class=""bloom-canvas bloom-has-canvas-element"" data-title=""For the current paper size: ï¿½ The image container is 672 x 378 dots. ï¿½ For print publications, you want between 300-600 DPI (Dots Per Inch). ï¿½ An image with 2100 x 1182 dots would fill this container at 300 DPI."" title="""" data-imgsizebasedon=""672,378"">
             <div class=""bloom-canvas-element bloom-backgroundImage"" data-bubble=""{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"" style="" width: 672px; top: 0px; left: 0px; height: 378px;"">
-              <div class=""bloom-imageContainer"" data-title=""For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI."" title=""For the current paper size: • The image container is 652 x 358 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). • An image with 2038 x 1119 dots would fill this container at 300 DPI.""><img src=""placeHolder.png"" style="" width: 672px; top: -141.088px; left: 0px;"" alt="""" /></div>
+              <div class=""bloom-imageContainer"" data-title=""For the current paper size: ï¿½ The image container is 652 x 358 dots. ï¿½ For print publications, you want between 300-600 DPI (Dots Per Inch). ï¿½ An image with 2038 x 1119 dots would fill this container at 300 DPI."" title=""For the current paper size: ï¿½ The image container is 652 x 358 dots. ï¿½ For print publications, you want between 300-600 DPI (Dots Per Inch). ï¿½ An image with 2038 x 1119 dots would fill this container at 300 DPI.""><img src=""placeHolder.png"" style="" width: 672px; top: -141.088px; left: 0px;"" alt="""" /></div>
             </div>
             <div class=""bloom-canvas-element bloom-gif drag-item-correct"" style="" height: 220px; left: 370px; top: 70px; width: 230px; position: absolute;"" data-bubble=""{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"">
-              <div tabindex=""0"" class=""bloom-imageContainer"" title=""""><img src=""smiling-flowers.gif"" alt="""" data-copyright=""Copyright © 2025, Ilona Spaeder"" data-creator=""Ilona Spaeder"" data-license=""Custom License"" /></div>
+              <div tabindex=""0"" class=""bloom-imageContainer"" title=""""><img src=""smiling-flowers.gif"" alt="""" data-copyright=""Copyright ï¿½ 2025, Ilona Spaeder"" data-creator=""Ilona Spaeder"" data-license=""Custom License"" /></div>
             </div>
             <div class=""bloom-canvas-element bloom-passive-element"" data-bubble=""{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"" style=""height: 35.5px;"" data-bloom-active=""true"">
               <div class=""bloom-translationGroup bloom-leadingElement"" data-default-languages=""V"" data-hasqtip=""true"" data-eager-placeholder-l10n-id=""EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions"" style=""font-size: 21.3333px;"" aria-describedby=""qtip-0"">
@@ -2399,7 +2520,7 @@ These are similar but already have game-theme classes
               </div>
             </div>
             <div class=""bloom-canvas-element bloom-gif drag-item-wrong"" style="" height: 220px; left: 370px; top: 70px; width: 220px; position: absolute;"" data-bubble=""{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:18,`backgroundColors`:[`transparent`],`shadowOffset`:0}"">
-              <div tabindex=""0"" class=""bloom-imageContainer"" title=""""><img src=""sad-face.gif"" alt="""" data-copyright=""Copyright © 2025, Ilona Spaeder"" data-creator=""Ilona Spaeder"" data-license=""Custom License"" /></div>
+              <div tabindex=""0"" class=""bloom-imageContainer"" title=""""><img src=""sad-face.gif"" alt="""" data-copyright=""Copyright ï¿½ 2025, Ilona Spaeder"" data-creator=""Ilona Spaeder"" data-license=""Custom License"" /></div>
             </div>
           </div>
         </div>
@@ -2482,7 +2603,7 @@ These are similar but already have game-theme classes
               <div class=""bloom-canvas bloom-leadingElement bloom-has-canvas-element"" data-imgsizebasedon=""438,328"" data-title=""Name: 100_1243.jpg"" title="""">
                 <svg version=""1.1"" ></svg>
                 <div class=""bloom-canvas-element bloom-backgroundImage"" data-bubble=""{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"" style=""width: 437.333px; left: 0.333333px; top: 0px; height: 328px;"">
-                  <div class=""bloom-leadingElement bloom-imageContainer""><img src=""100_1243.jpg"" alt="""" data-copyright=""Copyright © 2010, Stephen McConnel"" data-creator=""Stephen McConnel"" data-license=""cc-by"" /></div>
+                  <div class=""bloom-leadingElement bloom-imageContainer""><img src=""100_1243.jpg"" alt="""" data-copyright=""Copyright ï¿½ 2010, Stephen McConnel"" data-creator=""Stephen McConnel"" data-license=""cc-by"" /></div>
                 </div>
                 <div class=""bloom-canvas-element"" style=""left: 270px; top: 30px; width: 150px; height: 27px;"" data-bubble=""{`version`:`1.0`,`style`:`speech`,`tails`:[{`tipX`:282,`tipY`:121,`midpointX`:301.5,`midpointY`:89,`autoCurve`:false}],`level`:2}"">
                   <div class=""bloom-translationGroup bloom-leadingElement"" data-default-languages=""V"" style=""font-size: 16px;"">

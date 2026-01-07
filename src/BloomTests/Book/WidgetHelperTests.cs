@@ -14,6 +14,7 @@ namespace BloomTests.Book
     {
         private TemporaryFolder _bookFolder;
         private TempFile _widgetFile;
+        private string _widgetShortname;
         private string _activityFolder;
         private string _secondActivityFolder;
         private UrlPathString _firstWidgetSrcPath;
@@ -23,12 +24,14 @@ namespace BloomTests.Book
         public void OneTimeSetup()
         {
             _bookFolder = new TemporaryFolder("AddWidgetFilesToBookFolderTests");
-            _widgetFile = TempFile.WithFilename("My Widget N&am%e.wdgt");
-            _activityFolder = Path.Combine(_bookFolder.FolderPath, "activities");
-            _secondActivityFolder = Path.Combine(
-                _activityFolder,
-                Path.GetFileNameWithoutExtension(_widgetFile.Path) + "1"
+            _widgetFile = TempFile.WithFilename(
+                "My Wi.,dget N&am%e is long and even more than         50.wdgt"
             );
+            _widgetShortname = WidgetHelper.GetShortWidgetName(
+                Path.GetFileNameWithoutExtension(_widgetFile.Path)
+            );
+            _activityFolder = Path.Combine(_bookFolder.FolderPath, "activities");
+            _secondActivityFolder = Path.Combine(_activityFolder, _widgetShortname + "1");
 
             SetupZip(zip => { });
 
@@ -37,10 +40,7 @@ namespace BloomTests.Book
                 _widgetFile.Path
             );
             _secondWidgetSrcPath = UrlPathString.CreateFromUnencodedString(
-                "activities/"
-                    + Path.GetFileNameWithoutExtension(_widgetFile.Path)
-                    + "1/"
-                    + "index.htm"
+                "activities/" + _widgetShortname + "1/" + "index.htm"
             );
         }
 
@@ -87,21 +87,13 @@ namespace BloomTests.Book
         {
             Assert.That(
                 _firstWidgetSrcPath.NotEncoded,
-                Is.EqualTo(
-                    "activities/"
-                        + Path.GetFileNameWithoutExtension(_widgetFile.Path)
-                        + "/"
-                        + "index.htm"
-                )
+                Is.EqualTo($"activities/{_widgetShortname}/index.htm")
             );
         }
 
         private void ValidateOriginalActivityFiles()
         {
-            var thisActivityFolder = Path.Combine(
-                _activityFolder,
-                Path.GetFileNameWithoutExtension(_widgetFile.Path)
-            );
+            var thisActivityFolder = Path.Combine(_activityFolder, _widgetShortname);
             Assert.That(
                 File.ReadAllText(Path.Combine(thisActivityFolder, "index.htm")),
                 Is.EqualTo("fake html")
@@ -271,10 +263,7 @@ namespace BloomTests.Book
                 WidgetHelper.AddWidgetFilesToBookFolder(_bookFolder.FolderPath, _widgetFile.Path),
                 Is.EqualTo(
                     UrlPathString.CreateFromUnencodedString(
-                        "activities/"
-                            + Path.GetFileNameWithoutExtension(_widgetFile.Path)
-                            + "1/"
-                            + "index.html"
+                        $"activities/{_widgetShortname}1/index.html"
                     )
                 )
             );
