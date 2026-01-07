@@ -2066,10 +2066,14 @@ Anyone looking specifically at our issue tracking system can read what you sent 
             }
         }
 
+        private static bool? _runningUnitTests;
         public static bool RunningUnitTests
         {
             get
             {
+                if (_runningUnitTests.HasValue)
+                    return _runningUnitTests.Value;
+
                 // In .NET 8, Assembly.GetEntryAssembly() doesn't reliably return null for unit tests.
                 // Check if any test framework assemblies are loaded
                 var assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -2078,12 +2082,22 @@ Anyone looking specifically at our issue tracking system can read what you sent 
                     var name = assembly.FullName;
                     if (
                         name != null
-                        && name.StartsWith("BloomTests", StringComparison.OrdinalIgnoreCase)
+                        && (
+                            name.StartsWith("BloomTests", StringComparison.OrdinalIgnoreCase)
+                            // Quite the hack... but with the switch to .NET 8, we started having to explicitly look for BloomTests above.
+                            // And when running unit tests from harvester, it was thus failing to detect that we were running unit tests.
+                            || name.StartsWith(
+                                "BloomHarvesterTests",
+                                StringComparison.OrdinalIgnoreCase
+                            )
+                        )
                     )
                     {
+                        _runningUnitTests = true;
                         return true;
                     }
                 }
+                _runningUnitTests = false;
                 return false;
             }
         }

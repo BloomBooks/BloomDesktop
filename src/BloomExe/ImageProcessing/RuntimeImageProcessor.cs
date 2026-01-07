@@ -273,11 +273,7 @@ namespace Bloom.ImageProcessing
         {
             if (ImageUtils.IsPlaceholderImageFilename(coverImagePath))
             {
-                coverImagePath = Path.Combine(
-                    FileLocationUtilities.DirectoryOfApplicationOrSolution,
-                    "DistFiles",
-                    "Blank.png"
-                );
+                coverImagePath = BloomFileLocator.GetFileFromDistFiles("Blank.png");
             }
             using (var coverImage = PalasoImage.FromFileRobustly(coverImagePath))
             {

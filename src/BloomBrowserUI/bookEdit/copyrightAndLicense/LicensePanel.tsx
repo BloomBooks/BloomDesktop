@@ -160,6 +160,10 @@ export const LicensePanel: React.FunctionComponent<{
                 defaultValue="creativeCommons"
                 onChange={(e) => handleLicenseTypeChange(e.target.value)}
                 name="license-selection-radio-group"
+                css={css`
+                    // BL-15625
+                    padding-left: 1px;
+                `}
             >
                 <Radio
                     value={"publicDomain"}

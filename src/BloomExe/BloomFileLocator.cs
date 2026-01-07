@@ -10,6 +10,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using L10NSharp;
 using SIL.Code;
+using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
 
@@ -533,6 +534,23 @@ namespace Bloom
                 );
             }
             return path;
+        }
+
+        /// <summary>
+        /// Tracks down a file that comes from DistFiles. In production it should end up
+        /// in the indicated location relative to the root directory. In a debug build
+        /// we need to insert DistFiles into the path.
+        /// </summary>
+        public static string GetFileFromDistFiles(params string[] pathFromDistfiles)
+        {
+            var baseFolder = FileLocationUtilities.DirectoryOfApplicationOrSolution;
+            // In normal operation the files from DistFiles are put in the main application folder
+            var combinedPathFromDistFiles = Path.Combine(pathFromDistfiles);
+            var path = Path.Combine(baseFolder, combinedPathFromDistFiles);
+            if (RobustFile.Exists(path))
+                return path;
+            // In debug, they are in the DistFiles directory.
+            return path.CombineForPath(baseFolder, "DistFiles", combinedPathFromDistFiles);
         }
     }
 }
