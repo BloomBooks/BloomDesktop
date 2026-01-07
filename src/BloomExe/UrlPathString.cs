@@ -206,5 +206,11 @@ namespace Bloom
             }
             return path;
         }
+
+        // Helpful, for example, when looking at test output.
+        public override string ToString()
+        {
+            return _notEncoded;
+        }
     }
 }

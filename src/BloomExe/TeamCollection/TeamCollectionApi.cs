@@ -439,7 +439,9 @@ namespace Bloom.TeamCollection
                     return;
                 }
 
-                var bookFolderName = Path.GetFileName(request.RequiredParam("folderName"));
+                var bookFolderName = Path.GetFileName(
+                    System.Web.HttpUtility.UrlDecode(request.RequiredParam("folderName"))
+                );
                 request.ReplyWithJson(GetBookStatusJson(bookFolderName, null));
             }
             catch (Exception e)

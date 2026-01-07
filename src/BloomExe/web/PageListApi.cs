@@ -132,7 +132,7 @@ namespace Bloom.web
             dynamic result = new ExpandoObject();
             string captionI18nId;
             var caption = page.GetCaptionOrPageNumber(ref pageNumber, out captionI18nId);
-            if (!string.IsNullOrEmpty(caption))
+            if (!string.IsNullOrEmpty(captionI18nId))
                 caption = I18NApi.GetTranslationDefaultMayNotBeEnglish(captionI18nId, caption);
             result.caption = caption;
 
