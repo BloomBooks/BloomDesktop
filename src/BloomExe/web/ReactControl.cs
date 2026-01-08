@@ -55,6 +55,15 @@ namespace Bloom.web
 
         private Browser _browser;
 
+        protected override void OnBackColorChanged(EventArgs e)
+        {
+            base.OnBackColorChanged(e);
+            var htmlColor = MiscUtils.ColorToHtmlCode(BackColor);
+            _browser?.RunJavascriptFireAndForget(
+                $"document.body.style.backgroundColor = '{htmlColor}';"
+            );
+        }
+
         private void ReactControl_Load(object sender, System.EventArgs e)
         {
             if (this.DesignModeAtAll())
@@ -218,6 +227,10 @@ namespace Bloom.web
                 {
                     "teamCollectionSettingsBundle",
                     "/teamCollection/TeamCollectionSettingsPanel.entry.tsx"
+                },
+                {
+                    "workspaceTopRightControlsBundle",
+                    "/react_components/TopBar/workspaceTopRightControls/WorkspaceTopRightControls.entry.tsx"
                 },
             };
             string viteModulePath = null;

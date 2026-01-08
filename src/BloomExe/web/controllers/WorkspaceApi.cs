@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Workspace;
@@ -34,6 +30,23 @@ namespace Bloom.web.controllers
                 HandleShowLegacySettingsDialog,
                 true
             );
+
+            apiHandler.RegisterEndpointHandler(
+                "workspace/topRight/openLanguageMenu",
+                HandleOpenLanguageMenu,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "workspace/topRight/openHelpMenu",
+                HandleOpenHelpMenu,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "workspace/topRight/uiLanguageLabel",
+                HandleGetUiLanguageLabel,
+                true
+            );
+            apiHandler.RegisterEndpointHandler("workspace/topRight/zoom", HandleZoom, true);
         }
 
         private void HandleOpenOrCreateCollection(ApiRequest request)
@@ -57,6 +70,37 @@ namespace Bloom.web.controllers
             // When the fully react dialog is ready, we'll do this instead:
             // _webSocketServer.LaunchDialog("CollectionSettingsDialog");
 
+            request.PostSucceeded();
+        }
+
+        private void HandleGetUiLanguageLabel(ApiRequest request)
+        {
+            request.ReplyWithJson(WorkspaceView.GetCurrentUiLanguageLabel());
+        }
+
+        private void HandleOpenLanguageMenu(ApiRequest request)
+        {
+            WorkspaceView.ShowUiLanguageMenu();
+            request.PostSucceeded();
+        }
+
+        private void HandleOpenHelpMenu(ApiRequest request)
+        {
+            WorkspaceView.ShowHelpMenu();
+            request.PostSucceeded();
+        }
+
+        private void HandleZoom(ApiRequest request)
+        {
+            if (request.HttpMethod == HttpMethods.Get)
+            {
+                request.ReplyWithJson(WorkspaceView.GetZoomInfo());
+                return;
+            }
+
+            var data = request.RequiredPostDynamic();
+            int zoom = Convert.ToInt32(data.zoom);
+            WorkspaceView.SetZoom(zoom);
             request.PostSucceeded();
         }
     }
