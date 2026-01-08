@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { ThemeProvider } from "@mui/material/styles";
@@ -23,16 +22,16 @@ export const AudioHilitePage: React.FunctionComponent<{
     color: string;
     onHilitePropsChanged: (
         hiliteTextColor: string | undefined,
-        hiliteBgColor: string
+        hiliteBgColor: string,
     ) => void;
-}> = props => {
+}> = (props) => {
     const chooserTitleBg = useL10n(
         "Background color",
-        "EditTab.FormatDialog.BackgroundColor"
+        "EditTab.FormatDialog.BackgroundColor",
     );
     const chooserTitleText = useL10n(
         "Text color",
-        "EditTab.FormatDialog.TextColor"
+        "EditTab.FormatDialog.TextColor",
     );
     const colorRowCss = css`
         display: flex;
@@ -62,10 +61,10 @@ export const AudioHilitePage: React.FunctionComponent<{
                     label="Background Color"
                     l10nKey="EditTab.FormatDialog.BackgroundColor"
                     checked={props.hiliteBgColor !== "transparent"}
-                    onCheckChanged={checked => {
+                    onCheckChanged={(checked) => {
                         props.onHilitePropsChanged(
                             props.hiliteTextColor,
-                            checked ? kBloomYellow : "transparent"
+                            checked ? kBloomYellow : "transparent",
                         );
                     }}
                 ></BloomCheckbox>
@@ -78,7 +77,7 @@ export const AudioHilitePage: React.FunctionComponent<{
                     onClose={(result, newColor) =>
                         props.onHilitePropsChanged(
                             props.hiliteTextColor,
-                            newColor
+                            newColor,
                         )
                     }
                 />
@@ -88,10 +87,10 @@ export const AudioHilitePage: React.FunctionComponent<{
                     label="Text Color"
                     l10nKey="EditTab.FormatDialog.TextColor"
                     checked={!!props.hiliteTextColor}
-                    onCheckChanged={checked => {
+                    onCheckChanged={(checked) => {
                         props.onHilitePropsChanged(
                             checked ? props.color : undefined,
-                            props.hiliteBgColor
+                            props.hiliteBgColor,
                         );
                     }}
                 ></BloomCheckbox>
@@ -104,7 +103,7 @@ export const AudioHilitePage: React.FunctionComponent<{
                     onClose={(result, newColor) =>
                         props.onHilitePropsChanged(
                             newColor,
-                            props.hiliteBgColor
+                            props.hiliteBgColor,
                         )
                     }
                 />
@@ -118,7 +117,7 @@ export function RenderRoot(
     color: string,
     hiliteTextColor: string | undefined,
     hiliteBgColor: string,
-    changeHiliteProps: (textColor: string | undefined, bgColor: string) => void
+    changeHiliteProps: (textColor: string | undefined, bgColor: string) => void,
 ) {
     const root = document.getElementById("audioHilitePage");
     // This test is for paranoia. At one point it was briefly possible to be trying to
@@ -135,7 +134,7 @@ export function RenderRoot(
                     changeHiliteProps(textColor, bgColor)
                 }
             />,
-            root
+            root,
         );
     }
 }

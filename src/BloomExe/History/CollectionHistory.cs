@@ -1,15 +1,15 @@
-﻿using Bloom.Api;
-using Bloom.Book;
-using Bloom.Collection;
-using Bloom.TeamCollection;
-using SIL.Code;
-using SQLite;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using Bloom.Api;
+using Bloom.Book;
+using Bloom.Collection;
+using Bloom.TeamCollection;
+using SIL.Code;
+using SQLite;
 
 namespace Bloom.History
 {
@@ -83,7 +83,7 @@ namespace Bloom.History
                         Type = eventType,
                         BloomVersion = Application.ProductVersion,
                         // Be sure to use UTC, otherwise, order will not be preserved properly.
-                        When = DateTime.UtcNow
+                        When = DateTime.UtcNow,
                     };
 
                     db.Insert(evt);

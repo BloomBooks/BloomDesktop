@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import {
@@ -7,7 +6,7 @@ import {
     post,
     postJson,
     postString,
-    useApiStringState
+    useApiStringState,
 } from "../utils/bloomApi";
 import { P } from "../react_components/l10nComponents";
 import { RequiresSubscriptionOverlayWrapper } from "../react_components/requiresSubscription";
@@ -22,21 +21,21 @@ import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { useEffect } from "react";
 import { Label } from "../react_components/l10nComponents";
 import { TextField } from "@mui/material";
+import { DialogHelpButton } from "../react_components/BloomDialog/commonDialogComponents";
 
 // The contents of the Team Collection panel of the Settings dialog.
 
-export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
+export const TeamCollectionSettingsPanel: React.FunctionComponent = () => {
     const [repoFolderPath] = useApiStringState(
         "teamCollection/repoFolderPath",
-        ""
+        "",
     );
 
-    const [adminstratorEmail, setAdminstratorEmail] = React.useState<string>(
-        ""
-    );
+    const [adminstratorEmail, setAdminstratorEmail] =
+        React.useState<string>("");
 
     useEffect(() => {
-        get("settings/administrators", result => {
+        get("settings/administrators", (result) => {
             setAdminstratorEmail(result.data);
         });
     }, []);
@@ -77,10 +76,10 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
             <a
                 className="directory-link"
                 href=""
-                onClick={e => {
+                onClick={(e) => {
                     e.preventDefault();
                     postJson("fileIO/showInFolder", {
-                        folderPath: repoFolderPath
+                        folderPath: repoFolderPath,
                     });
                 }}
             >
@@ -95,7 +94,7 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
             <TextField
                 id="adminstratorEmails"
                 value={adminstratorEmail}
-                onChange={event => {
+                onChange={(event) => {
                     const newAdminString: string = event.target.value;
                     setAdminstratorEmail(newAdminString);
                     postString("settings/administrators", newAdminString);
@@ -114,20 +113,13 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                 Need help adding someone to your Team Collection?
             </P>
             <div className="align-right">
-                <BloomButton
+                <DialogHelpButton
                     l10nKey="TeamCollection.HowToAddSomeone"
                     temporarilyDisableI18nWarning={true}
                     variant="text"
-                    enabled={true}
-                    hasText={true}
-                    onClick={() =>
-                        post(
-                            "help?topic=Tasks/Basic_tasks/Team_Collections/Add_someone_to_a_Team_Collection.htm"
-                        )
-                    }
-                >
-                    How to add someone to this Team Collection
-                </BloomButton>
+                    helpId="Tasks/Basic_tasks/Team_Collections/Add_someone_to_a_Team_Collection.htm"
+                    buttonText="How to add someone to this Team Collection"
+                />
             </div>
         </div>
     );
@@ -158,20 +150,13 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                 your Team?
             </P>
             <div className="align-right">
-                <BloomButton
+                <DialogHelpButton
                     l10nKey="TeamCollection.Joining"
-                    enabled={true}
-                    hasText={true}
-                    variant="text"
                     temporarilyDisableI18nWarning={true}
-                    onClick={() =>
-                        post(
-                            "help?topic=Tasks/Basic_tasks/Team_Collections/Join_a_Team_Collection.htm"
-                        )
-                    }
-                >
-                    How to join an existing Team Collection
-                </BloomButton>
+                    variant="text"
+                    helpId="Tasks/Basic_tasks/Team_Collections/Join_a_Team_Collection.htm"
+                    buttonText="How to join an existing Team Collection"
+                />
             </div>
         </div>
     );

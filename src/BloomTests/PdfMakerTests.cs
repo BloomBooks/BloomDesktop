@@ -223,7 +223,7 @@ namespace BloomTests
                     SaveMemoryMode = saveMemoryMode,
                     LayoutPagesForRightToLeft = rightToLeft,
                     BooketLayoutMethod = layout,
-                    BookletPortion = portion
+                    BookletPortion = portion,
                 },
                 null,
                 eventArgs,

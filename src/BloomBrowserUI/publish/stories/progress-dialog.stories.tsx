@@ -1,7 +1,7 @@
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react-vite";
 import {
     ProgressDialogInner,
-    ProgressState
+    ProgressState,
 } from "../commonPublish/PublishProgressDialogInner";
 import { loremIpsum } from "lorem-ipsum";
 
@@ -9,12 +9,12 @@ const testText =
     loremIpsum({
         count: 3,
         format: "html",
-        units: "paragraphs"
+        units: "paragraphs",
     }) + "<a target='_blank' href='https://google.com'>google.com</a>";
 
 const meta: Meta<typeof ProgressDialogInner> = {
     title: "Publish/ProgressDialog",
-    component: ProgressDialogInner
+    component: ProgressDialogInner,
 };
 
 export default meta;
@@ -32,7 +32,7 @@ export const Working: Story = {
                 onUserStopped={() => {}}
             />
         </div>
-    )
+    ),
 };
 
 export const Done: Story = {
@@ -45,7 +45,7 @@ export const Done: Story = {
                 onUserStopped={() => {}}
             />
         </div>
-    )
+    ),
 };
 
 export const Error: Story = {
@@ -60,5 +60,5 @@ export const Error: Story = {
                 onUserStopped={() => {}}
             />
         </div>
-    )
+    ),
 };

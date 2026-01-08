@@ -1,5 +1,4 @@
 using Bloom;
-
 using NUnit.Framework;
 
 namespace BloomTests

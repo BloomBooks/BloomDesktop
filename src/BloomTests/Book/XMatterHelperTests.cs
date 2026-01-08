@@ -24,7 +24,7 @@ namespace BloomTests.Book
         {
             _factoryXMatter = BloomFileLocator.GetFactoryXMatterDirectory();
             var codeBaseDir = BloomFileLocator.GetCodeBaseFolder();
-            _testXmatter = $"{codeBaseDir}/../../src/BloomTests/xMatter";
+            _testXmatter = $"{codeBaseDir}/../../../src/BloomTests/xMatter";
         }
 
         [SetUp]
@@ -257,7 +257,7 @@ namespace BloomTests.Book
             SafeXmlElement[] elementsToCheck =
             {
                 languageLocationDiv,
-                originalCopyrightAndLicenseDiv
+                originalCopyrightAndLicenseDiv,
             };
             elementsToCheck.ForEach(elementToCheck =>
             {
@@ -507,7 +507,6 @@ namespace BloomTests.Book
         //			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
         //			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//p[@lang='xyz']", 1);
         //		}
-
 
         //TODO: tests with a different paper size
 

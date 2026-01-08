@@ -15,7 +15,7 @@ export interface IAudioRecorder {
     handleNewPageReady: (
         deshroudPhraseDelimiters?:
             | ((page: HTMLElement | null) => void)
-            | undefined
+            | undefined,
     ) => Promise<void>;
     bumpUp: (number) => void;
     bumpDown: (number) => void;

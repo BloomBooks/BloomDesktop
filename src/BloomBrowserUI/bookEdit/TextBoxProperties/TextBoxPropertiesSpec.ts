@@ -1,6 +1,8 @@
+import { describe, it, expect, beforeEach } from "vitest";
 /// <reference path="./TextBoxProperties.ts" />
 
 import TextBoxProperties from "./TextBoxProperties";
+import $ from "jquery";
 
 describe("TextBoxProperties", () => {
     let dialog;
@@ -8,7 +10,7 @@ describe("TextBoxProperties", () => {
     beforeEach(() => {
         $("body").html("");
         $("body").append(
-            '<div id="testTarget" class="bloom-translationGroup"></div>'
+            '<div id="testTarget" class="bloom-translationGroup"></div>',
         );
         dialog = new TextBoxProperties("");
     });
@@ -16,7 +18,7 @@ describe("TextBoxProperties", () => {
     it("changeBackground, to none, css set properly", () => {
         // this div represents the button used to select the 'none' background option
         $("body").append(
-            '<div id="background-none" class="selectedIcon"></div>'
+            '<div id="background-none" class="selectedIcon"></div>',
         );
         dialog.changeBackground($("#testTarget"));
 
@@ -26,7 +28,7 @@ describe("TextBoxProperties", () => {
     it("changeBackground, to gray, css set properly", () => {
         // this div represents the button used to select the 'gray' background option
         $("body").append(
-            '<div id="background-gray" class="selectedIcon"></div>'
+            '<div id="background-gray" class="selectedIcon"></div>',
         );
         dialog.changeBackground($("#testTarget"));
 
@@ -42,7 +44,7 @@ describe("TextBoxProperties", () => {
 
         // this div represents the button used to select the 'black' border style
         $("body").append(
-            '<div id="borderstyle-black" class="selectedIcon"></div>'
+            '<div id="borderstyle-black" class="selectedIcon"></div>',
         );
         // these four divs represent the buttons used to select border sides
         $("body").append('<div id="bordertop"></div>');
@@ -54,12 +56,12 @@ describe("TextBoxProperties", () => {
         dialog.changeBorder($("#testTarget"), true);
 
         expect(
-            $("#testTarget").hasClass("bloom-borderstyle-black")
+            $("#testTarget").hasClass("bloom-borderstyle-black"),
         ).toBeTruthy();
         expect($("#testTarget").hasClass("bloom-top-border-off")).toBeFalsy();
         expect($("#testTarget").hasClass("bloom-right-border-off")).toBeFalsy();
         expect(
-            $("#testTarget").hasClass("bloom-bottom-border-off")
+            $("#testTarget").hasClass("bloom-bottom-border-off"),
         ).toBeFalsy();
         expect($("#testTarget").hasClass("bloom-left-border-off")).toBeFalsy();
 
@@ -98,7 +100,7 @@ describe("TextBoxProperties", () => {
 
         // this div represents the buttons used to select border styles
         $("body").append(
-            '<div id="borderstyle-none" class="selectedIcon"></div>'
+            '<div id="borderstyle-none" class="selectedIcon"></div>',
         );
         // these four divs represent the buttons used to select border sides
         $("body").append('<div id="bordertop" class="selectedIcon"></div>');
@@ -110,14 +112,14 @@ describe("TextBoxProperties", () => {
         dialog.changeBorder($("#testTarget"), true);
 
         expect(
-            $("#testTarget").hasClass("bloom-borderstyle-black")
+            $("#testTarget").hasClass("bloom-borderstyle-black"),
         ).toBeFalsy();
         expect($("#testTarget").hasClass("bloom-top-border-off")).toBeTruthy();
         expect(
-            $("#testTarget").hasClass("bloom-right-border-off")
+            $("#testTarget").hasClass("bloom-right-border-off"),
         ).toBeTruthy();
         expect(
-            $("#testTarget").hasClass("bloom-bottom-border-off")
+            $("#testTarget").hasClass("bloom-bottom-border-off"),
         ).toBeTruthy();
         expect($("#testTarget").hasClass("bloom-left-border-off")).toBeTruthy();
 
@@ -135,7 +137,7 @@ describe("TextBoxProperties", () => {
         // these divs represent the buttons used to select border styles
         $("body").append('<div id="borderstyle-none"></div>');
         $("body").append(
-            '<div id="borderstyle-gray-round" class="selectedIcon"></div>'
+            '<div id="borderstyle-gray-round" class="selectedIcon"></div>',
         );
         // these four divs represent the buttons used to select border sides
         $("body").append('<div id="bordertop"></div>');
@@ -147,16 +149,16 @@ describe("TextBoxProperties", () => {
         dialog.changeBorder($("#testTarget"), true);
 
         expect(
-            $("#testTarget").hasClass("bloom-borderstyle-black")
+            $("#testTarget").hasClass("bloom-borderstyle-black"),
         ).toBeFalsy();
         expect(
-            $("#testTarget").hasClass("bloom-borderstyle-gray-round")
+            $("#testTarget").hasClass("bloom-borderstyle-gray-round"),
         ).toBeTruthy();
 
         expect($("#testTarget").hasClass("bloom-top-border-off")).toBeTruthy();
         expect($("#testTarget").hasClass("bloom-right-border-off")).toBeFalsy();
         expect(
-            $("#testTarget").hasClass("bloom-bottom-border-off")
+            $("#testTarget").hasClass("bloom-bottom-border-off"),
         ).toBeTruthy();
         expect($("#testTarget").hasClass("bloom-left-border-off")).toBeFalsy();
 
@@ -172,7 +174,7 @@ describe("TextBoxProperties", () => {
         // these divs represent the buttons used to select border styles
         $("body").append('<div id="borderstyle-none"></div>');
         $("body").append(
-            '<div id="borderstyle-black-round" class="selectedIcon"></div>'
+            '<div id="borderstyle-black-round" class="selectedIcon"></div>',
         );
         // these four divs represent the buttons used to select border sides
         $("body").append('<div id="bordertop" class="selectedIcon"></div>');
@@ -186,7 +188,7 @@ describe("TextBoxProperties", () => {
 
         // these all remain the same as expected
         expect(
-            $("#testTarget").hasClass("bloom-borderstyle-black-round")
+            $("#testTarget").hasClass("bloom-borderstyle-black-round"),
         ).toBeTruthy();
         expect($("#testTarget").hasClass("bloom-top-border-off")).toBeFalsy();
         expect($("#testTarget").hasClass("bloom-right-border-off")).toBeFalsy();
@@ -198,7 +200,7 @@ describe("TextBoxProperties", () => {
 
         // this is added by changeBorder
         expect(
-            $("#testTarget").hasClass("bloom-bottom-border-off")
+            $("#testTarget").hasClass("bloom-bottom-border-off"),
         ).toBeTruthy();
     });
 
@@ -212,10 +214,10 @@ describe("TextBoxProperties", () => {
         $("body").append('<div id="borderstyle-group">');
         // these divs represent the buttons used to select border styles
         $("#borderstyle-group").append(
-            '<div id="borderstyle-none" class="propButton"></div>'
+            '<div id="borderstyle-none" class="propButton"></div>',
         );
         $("#borderstyle-group").append(
-            '<div id="borderstyle-black-round" class="selectedIcon propButton"></div>'
+            '<div id="borderstyle-black-round" class="selectedIcon propButton"></div>',
         );
         // these four divs represent the buttons used to select border sides
         $("body").append('<div id="bordertop" class="propButton"></div>');
@@ -227,20 +229,20 @@ describe("TextBoxProperties", () => {
         dialog.changeBorder($("#testTarget"), false);
 
         expect(
-            $("#testTarget").hasClass("bloom-borderstyle-black-round")
+            $("#testTarget").hasClass("bloom-borderstyle-black-round"),
         ).toBeFalsy();
 
         expect($("#testTarget").hasClass("bloom-top-border-off")).toBeTruthy();
         expect(
-            $("#testTarget").hasClass("bloom-right-border-off")
+            $("#testTarget").hasClass("bloom-right-border-off"),
         ).toBeTruthy();
         expect(
-            $("#testTarget").hasClass("bloom-bottom-border-off")
+            $("#testTarget").hasClass("bloom-bottom-border-off"),
         ).toBeTruthy();
         expect($("#testTarget").hasClass("bloom-left-border-off")).toBeTruthy();
 
         expect(
-            $("#borderstyle-black-round").hasClass("selectedIcon")
+            $("#borderstyle-black-round").hasClass("selectedIcon"),
         ).toBeFalsy();
         expect($("#borderstyle-none").hasClass("selectedIcon")).toBeTruthy();
         expect($("#bordertop").hasClass("selectedIcon")).toBeFalsy();

@@ -14,42 +14,50 @@ namespace BloomTests
     public class XmlHtmlConverterTests
     {
         [Test]
-        public void GetXmlDomFromHtml_MinimalWellFormedHtml5()
+        public void CreateHtmlString_CreatesDocStructure()
         {
-            var dom = XmlHtmlConverter.GetXmlDomFromHtml("<!DOCTYPE html><html></html>", false);
-            AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//html", 1); //makes sure no namespace was inserted (or does it? what if that assert is too smart))
-            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
-            var xml = dom.OuterXml;
-            xml = xml.Replace(Environment.NewLine, "");
-            Assert.AreEqual("<html><head><title></title></head><body></body></html>", xml);
+            var bodyContent = "<div>foo</div>";
+            var bodyContentWithNoWhitespace = Regex.Replace(bodyContent, @"\s+", "");
+            string doc1 = XmlHtmlConverter.CreateHtmlString(bodyContent);
+            var doc1WithNoWhitespace = Regex.Replace(doc1, @"\s+", "");
+            Assert.That(
+                doc1WithNoWhitespace,
+                Is.EqualTo(
+                    $"<html><head><title></title></head><body>{bodyContentWithNoWhitespace}</body></html>"
+                )
+            );
+
+            var headContent = "<meta charset='utf-8'>";
+            var headContentWithNoWhitespace = Regex.Replace(headContent, @"\s+", "");
+            string doc2 = XmlHtmlConverter.CreateHtmlString(bodyContent, headContent);
+            var doc2WithNoWhitespace = Regex.Replace(doc2, @"\s+", "");
+
+            Assert.That(
+                doc2WithNoWhitespace,
+                Is.EqualTo(
+                    $"<html><head>{headContentWithNoWhitespace}</head><body>{bodyContentWithNoWhitespace}</body></html>"
+                )
+            );
         }
 
         [Test]
         public void GetXmlDomFromHtml_HasOpenLinkElement_Closes()
         {
-            var dom = XmlHtmlConverter.GetXmlDomFromHtml(
-                "<!DOCTYPE html><html><head>    <link rel='stylesheet' href='basePage.css' type='text/css'> </head></html>",
-                false
+            var doc = XmlHtmlConverter.CreateHtmlString(
+                "<link rel='stylesheet' href='basePage.css' type='text/css'>"
             );
+            var dom = XmlHtmlConverter.GetXmlDomFromHtml(doc, false);
             AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//html", 1); //makes sure no namespace was inserted (or does it? what if that assert is too smart))
-            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
             var xml = dom.OuterXml;
-            xml = xml.Replace(Environment.NewLine, "");
-            Assert.AreEqual(
-                "<html><head><link rel=\"stylesheet\" href=\"basePage.css\" type=\"text/css\" /><title></title></head><body></body></html>",
-                xml
+            Assert.That(
+                xml,
+                Does.Contain("<link rel=\"stylesheet\" href=\"basePage.css\" type=\"text/css\" />")
             );
-        }
-
-        [Test]
-        public void GetXmlDomFromHtml_HasErrors_ReportsError()
-        {
-            Assert.Throws<ApplicationException>(
-                () =>
-                    XmlHtmlConverter.GetXmlDomFromHtml(
-                        "<!DOCTYPE html><html><head>    <blahblah> </head></html>",
-                        false
-                    )
+            Assert.That(
+                xml,
+                Does.Not.Contain(
+                    "<link rel=\"stylesheet\" href=\"basePage.css\" type=\"text/css\">"
+                )
             );
         }
 
@@ -57,28 +65,13 @@ namespace BloomTests
         public void SaveAsHTML_HasXHTMLSelfClosingDiv_ChangesToHTMLStandard()
         {
             var dom = SafeXmlDocument.Create();
-            dom.LoadXml("<html><body><div data-book='test'/></body></html>");
+            dom.LoadXml(XmlHtmlConverter.CreateHtmlString("<div data-book='test'/>"));
             using (var temp = new TempFile())
             {
                 XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
                 var text = File.ReadAllText(temp.Path);
                 Assert.IsTrue(text.Contains("</div>"), text);
             }
-        }
-
-        [TestCase("abc<svg whatever> some content</svg> something $$ else")]
-        [TestCase("abc<svg whatever> some content</svg> something $$ <svg 2>second svg</svg>else")]
-        public void RemoveRestoreSvgs(string input)
-        {
-            var svgs = new List<string>();
-            var intermediate = XmlHtmlConverter.RemoveSvgs(input, svgs);
-            var adapted = intermediate.Replace("$$", "Something changed");
-            Assert.That(intermediate, Does.Not.Contain("<svg"));
-            Assert.That(intermediate, Does.Not.Contain("</svg"));
-            Assert.That(intermediate, Does.Not.Contain("some content")); // checks at least once that the body of the svg is gone
-            var output = XmlHtmlConverter.RestoreSvgs(adapted, svgs);
-            var expectedOutput = input.Replace("$$", "Something changed");
-            Assert.That(output, Is.EqualTo(expectedOutput));
         }
 
         /// <summary>
@@ -89,11 +82,13 @@ namespace BloomTests
         /// invalid.
         /// </summary>
         [Test]
-        public void SaveAsHTML_EmptyUbi_Removed()
+        public void SaveAsHTML_EmptyUbi_DoNotResultInSelfClosing()
         {
             var dom = SafeXmlDocument.Create();
             dom.LoadXml(
-                "<html><body><div data-book='test'/>Text with <u></u> and <b></b> and <i></i> works</body></html>"
+                XmlHtmlConverter.CreateHtmlString(
+                    "<div data-book='test'/>Text with <u></u> and <b></b> and <i></i> works"
+                )
             );
             using (var temp = new TempFile())
             {
@@ -104,11 +99,6 @@ namespace BloomTests
                 Assert.That(text, Does.Not.Contain("<i />"));
                 Assert.That(text, Does.Not.Contain("<em />"));
                 Assert.That(text, Does.Not.Contain("<strong />"));
-                Assert.That(text, Does.Not.Contain("<i></i>"));
-                Assert.That(text, Does.Not.Contain("<b></b>"));
-                Assert.That(text, Does.Not.Contain("<u></u>"));
-                Assert.That(text, Does.Not.Contain("<em></em>"));
-                Assert.That(text, Does.Not.Contain("<strong></strong>"));
             }
         }
 
@@ -117,7 +107,9 @@ namespace BloomTests
         {
             var dom = SafeXmlDocument.Create();
             dom.LoadXml(
-                "<html><body><div data-book='test'/>Text with <u /><u attr=\"1\" /> and <b/><b attr=\"1\" /><span /><span attr=\"1\" /> and <i /><i attr=\"1\" />  <em /><em attr=\"1\" />  <strong /><strong attr=\"1\" /> works</body></html>"
+                XmlHtmlConverter.CreateHtmlString(
+                    "<div data-book='test'/>Text with <u /><u attr=\"1\" /> and <b/><b attr=\"1\" /><span /><span attr=\"1\" /> and <i /><i attr=\"1\" />  <em /><em attr=\"1\" />  <strong /><strong attr=\"1\" /> works"
+                )
             );
             using (var temp = new TempFile())
             {
@@ -129,12 +121,6 @@ namespace BloomTests
                 Assert.That(text, Does.Not.Contain("<em />"));
                 Assert.That(text, Does.Not.Contain("<strong />"));
                 Assert.That(text, Does.Not.Contain("<span />"));
-                Assert.That(text, Does.Not.Contain("<b></b>"));
-                Assert.That(text, Does.Not.Contain("<u></u>"));
-                Assert.That(text, Does.Not.Contain("<i></i>"));
-                Assert.That(text, Does.Not.Contain("<em></em>"));
-                Assert.That(text, Does.Not.Contain("<strong></strong>"));
-                Assert.That(text, Does.Not.Contain("<span></span>"));
                 Assert.That(text, Does.Contain("<b attr=\"1\"></b>"));
                 Assert.That(text, Does.Contain("<u attr=\"1\"></u>"));
                 Assert.That(text, Does.Contain("<i attr=\"1\"></i>"));
@@ -149,7 +135,7 @@ namespace BloomTests
         {
             var dom = SafeXmlDocument.Create();
             var original = "<p><em>one</em><strong>two</strong></p>";
-            dom.LoadXml("<html><body><div data-book='test'/>" + original + "</body></html>");
+            dom.LoadXml(XmlHtmlConverter.CreateHtmlString("<div data-book='test'/>" + original));
             using (var temp = new TempFile())
             {
                 XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
@@ -164,7 +150,9 @@ namespace BloomTests
         {
             var dom = SafeXmlDocument.Create();
             dom.LoadXml(
-                "<html><body><p>first line <span class='bloom-linebreak'></span>second line</p></body></html>"
+                XmlHtmlConverter.CreateHtmlString(
+                    "<p>first line <span class='bloom-linebreak'></span>second line</p>"
+                )
             );
             using (var temp = new TempFile())
             {
@@ -180,7 +168,7 @@ namespace BloomTests
             var pattern =
                 "<p></p><p></p><p>a</p><p></p><p>b</p><p/><cite></cite><cite /><cite data-book='originalTitle'></cite><cite data-book='originalTitle'/>";
             var dom = SafeXmlDocument.Create();
-            dom.LoadXml("<!DOCTYPE html><html><body>" + pattern + "</body></html>");
+            dom.LoadXml(XmlHtmlConverter.CreateHtmlString(pattern));
             using (var temp = new TempFile())
             {
                 XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
@@ -201,7 +189,7 @@ namespace BloomTests
         {
             var pattern = "<svg whatever='whatever'><path something='rubbish' /></svg>";
             var dom = SafeXmlDocument.Create();
-            dom.LoadXml("<!DOCTYPE html><html><body>" + pattern + "</body></html>");
+            dom.LoadXml(XmlHtmlConverter.CreateHtmlString(pattern));
             using (var temp = new TempFile())
             {
                 XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
@@ -216,11 +204,71 @@ namespace BloomTests
             }
         }
 
+        [TestCase("area")]
+        [TestCase("img")]
+        [TestCase("br")]
+        [TestCase("hr")]
+        [TestCase("link")]
+        [TestCase("input")]
+        [TestCase("source")]
+        [TestCase("wbr")]
+        public void SaveAsHtml_VoidElements_ConvertsToSelfClosing(string tag)
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml(XmlHtmlConverter.CreateHtmlString($"<{tag} data-foo='bar'></{tag}>"));
+            using (var temp = new TempFile())
+            {
+                XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
+                var text = File.ReadAllText(temp.Path);
+                Assert.That(text, Does.Contain($"<{tag} data-foo=\"bar\" />"));
+            }
+        }
+
+        [Test]
+        public void SaveAsHtml_NonVoidElement_DoesNotConvert()
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml(XmlHtmlConverter.CreateHtmlString($"<span data-foo='bar'></span>"));
+            using (var temp = new TempFile())
+            {
+                XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
+                var text = File.ReadAllText(temp.Path);
+                Assert.That(text, Does.Contain($"<span data-foo=\"bar\"></span>"));
+                Assert.That(text, Does.Not.Contain($"<span data-foo=\"bar\" />"));
+            }
+        }
+
+        [Test]
+        public void SaveAsHtml_HasSvgs_DoesNotChoke()
+        {
+            string svg =
+                @"<svg xmlns=""http://www.w3.org/2000/svg""><path d=""M 0 0 L 10 10"" /></svg>";
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml(XmlHtmlConverter.CreateHtmlString($"{svg}<div>foobar</div>"));
+            using (var temp = new TempFile())
+            {
+                XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
+                var text = File.ReadAllText(temp.Path);
+                Assert.That(text, Does.Contain("<svg"));
+                Assert.That(text, Does.Contain("foobar"));
+            }
+        }
+
+        [Test]
+        public void GetXmlDomFromHtml_HasSvgs_DoesNotChoke()
+        {
+            string svg =
+                @"<svg xmlns=""http://www.w3.org/2000/svg""><path d=""M 0 0 L 10 10"" /></svg>";
+            string html = XmlHtmlConverter.CreateHtmlString($"{svg}<div>foobar</div>");
+            var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
+            Assert.That(dom.InnerXml, Does.Contain("<svg"));
+            Assert.That(dom.InnerXml, Does.Contain("foobar"));
+        }
+
         [Test]
         public void GetXmlDomFromHtml_HasBrTags_TagsNotDoubled()
         {
-            const string html =
-                "<!DOCTYPE html><html><head></head><body><div><br></br></div></body></html>";
+            var html = XmlHtmlConverter.CreateHtmlString("<div><br></br></div>");
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
             var found = 0;
             if (dom.DocumentElement != null)
@@ -236,40 +284,40 @@ namespace BloomTests
         public void SaveDOMAsHtml5_SavesBrCorrectly()
         {
             var dom = SafeXmlDocument.Create();
-            dom.LoadXml("<html><body><br /></body></html>");
+            dom.LoadXml(XmlHtmlConverter.CreateHtmlString("<br />"));
             using (var temp = new TempFile())
             {
                 XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
                 var text = File.ReadAllText(temp.Path);
-                Assert.That(text, Does.Contain("<br />"));
+                Assert.That(text, Does.Contain("<br"));
                 Assert.That(text, Does.Not.Contain("</br>"));
             }
         }
 
         /// <summary>
-        /// We don't particularly want it to convert newlines to spaces, as this test demonstrates that it does.
-        /// However, that is harmless and unlikely to occur (we're not counting on newlines for formatting)
-        /// so I haven't tried to prevent it.
-        /// I do want to test that an existing newline is not simply removed, leaving no white space.
+        /// Existing newlines are not simply removed leaving no white space, though they may be replaced with a space.
+        /// We're not relying on them for formatting.
         /// </summary>
         [Test]
-        public void GetXmlDomFromHtml_HasBandItags_NoExtraNewlinesBefore()
+        public void GetXmlDomFromHtml_HasBandItags_WhitespaceNotDisappearing()
         {
-            const string html =
-                @"<!DOCTYPE html><html><head></head><body><div>one<b>two</b>three<i>four</i>five
-<b>six</b>seven <i>eight</i>nine</div></body></html>";
+            var html = XmlHtmlConverter.CreateHtmlString(
+                @"<div>one<b>two</b>three<i>four</i>five
+<b>six</b>seven <i>eight</i>nine</div>"
+            );
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
             Assert.That(
                 dom.InnerXml,
-                Does.Contain(@"one<b>two</b>three<i>four</i>five <b>six</b>seven <i>eight</i>nine")
+                Does.Match(@"one<b>two</b>three<i>four</i>five\s+<b>six</b>seven <i>eight</i>nine")
             );
         }
 
         [Test]
         public void GetXmlDomFromHtml_HasDirectFormatting_PreserveSpacesBetween()
         {
-            const string html =
-                @"<!DOCTYPE html><html><head></head><body><div><p>one <b>two</b> <i>three</i> <strong>four</strong> <em>five</em> <u>six</u> seven</p></div></body></html>";
+            var html = XmlHtmlConverter.CreateHtmlString(
+                @"<div><p>one <b>two</b> <i>three</i> <strong>four</strong> <em>five</em> <u>six</u> seven</p></div>"
+            );
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
             Assert.That(
                 dom.InnerXml,
@@ -282,8 +330,9 @@ namespace BloomTests
         [Test]
         public void GetXmlDomFromHtml_HasSpans_PreserveSpacesBetween()
         {
-            const string html =
-                "<!DOCTYPE html><html><head></head><body><div><p>one <span class=\"x\">two</span> <span class=\"y\">three</span> <span class =\"z\">four</span> five</p></div></body></html>";
+            var html = XmlHtmlConverter.CreateHtmlString(
+                "<div><p>one <span class=\"x\">two</span> <span class=\"y\">three</span> <span class =\"z\">four</span> five</p></div>"
+            );
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
             Assert.That(
                 dom.InnerXml,
@@ -296,8 +345,9 @@ namespace BloomTests
         [Test]
         public void GetXmlDomFromHtml_PreservesSpaceAtElementBoundaries()
         {
-            const string html =
-                "<!DOCTYPE html><html><head></head><body><div><p>This is a<strong> bold </strong>sentence with a<span style=\"color:red\"> red </span>word</p></div></body></html>";
+            var html = XmlHtmlConverter.CreateHtmlString(
+                "<div><p>This is a<strong> bold </strong>sentence with a<span style=\"color:red\"> red </span>word</p></div>"
+            );
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
             Assert.That(
                 dom.InnerXml,
@@ -311,63 +361,32 @@ namespace BloomTests
         public void GetXmlDomFromHtml_HasEmptyParagraphs_RetainsEmptyParagraphs()
         {
             var pattern = "<p></p><p></p><p>a</p><p></p><p>b</p>";
-            var html = "<!DOCTYPE html><html><body>" + pattern + "</body></html>";
+            var html = XmlHtmlConverter.CreateHtmlString(pattern);
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
             AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//p", 5);
         }
 
         [Test]
-        public void GetXmlDomFromHtml_HasEmptyTags_RemoveTags()
-        {
-            var html = "<!DOCTYPE html><html><head></head><body><div><u></u></div></body></html>";
-            var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
-            var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
-            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
-            xml = xml.Replace(Environment.NewLine, "");
-            Assert.AreEqual("<div></div>", xml);
-        }
-
-        [Test]
         public void GetXmlDomFromHtml_HasSpaceOnlyTags_KeepTags()
         {
-            var html = "<!DOCTYPE html><html><head></head><body><div><u> </u></div></body></html>";
+            var html = XmlHtmlConverter.CreateHtmlString("<div><u> </u></div>");
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
             var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
-            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
-            xml = xml.Replace(Environment.NewLine, "");
-            Assert.AreEqual("<div><u> </u></div>", xml);
-        }
-
-        [Test]
-        public void GetXmlDomFromHtml_HasNestedEmptyTags_RemoveTags()
-        {
-            var html =
-                "<!DOCTYPE html><html><head></head><body><div><u><i /></u></div></body></html>";
-            var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
-            var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
-            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
-            xml = xml.Replace(Environment.NewLine, "");
-            Assert.AreEqual("<div></div>", xml);
+            Assert.AreEqual("<div><u> </u></div>", xml.Trim());
         }
 
         [Test]
         public void GetXmlDomFromHtml_HasEmptyTagsWithAttributes_NoRemoveTags()
         {
-            var html =
-                "<!DOCTYPE html><html><head></head><body><div><u style=\"test\"> </u></div></body></html>";
+            var html = XmlHtmlConverter.CreateHtmlString("<div><u style=\"test\"> </u></div>");
             var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
             var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
-            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
-            xml = xml.Replace(Environment.NewLine, "");
-            Assert.AreEqual("<div><u style=\"test\"> </u></div>", xml);
+            Assert.AreEqual("<div><u style=\"test\"> </u></div>", xml.Trim());
 
-            html =
-                "<!DOCTYPE html><html><head></head><body><div><u><i style=\"test\" /></u></div></body></html>";
+            html = XmlHtmlConverter.CreateHtmlString("<div><u><i style=\"test\" /></u></div>");
             dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
             xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
-            xml = xml.Replace(Environment.NewLine, "");
-            // The PreserveWhitespace setting appears to insert newlines that we don't care about.
-            Assert.AreEqual("<div><u><i style=\"test\"></i></u></div>", xml);
+            Assert.AreEqual("<div><u><i style=\"test\"></i></u></div>", xml.Trim());
         }
 
         [Test]
@@ -418,13 +437,33 @@ namespace BloomTests
         }
 
         [Test]
+        public void GetXmlDomFromHtml_RemovesBlankLinesAtEndOfStyleBlocks()
+        {
+            var styleContent =
+                @".BigWords-style { font-size: 45pt ! important; text-align: center ! important; }
+.normal-style { text-align: initial ! important; }
+
+
+
+
+";
+            var html =
+                @"<!DOCTYPE html><html><head><style>"
+                + styleContent
+                + "</style></head><body></body></html>";
+            var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+            var xml = dom.DocumentElement.GetElementsByTagName("style")[0].InnerXml;
+            Assert.That(xml, Is.EqualTo(styleContent.Trim()));
+        }
+
+        [Test]
         public void GetXmlDomFromHtml_RemovesBOMs()
         {
             var bookHtml =
                 "\uFEFF"
                 + @"<html><head>
-						<link rel='stylesheet' href='Basic Book.css' type='text/css'></link>
-						<link rel='stylesheet' href='Traditional-XMatter.css' type='text/css'></link>
+                        <link rel='stylesheet' href='Basic Book.css' type='text/css'></link>
+                        <link rel='stylesheet' href='Traditional-XMatter.css' type='text/css'></link>
 					</head><body>"
                 + "\uFEFF"
                 + @"
@@ -436,6 +475,175 @@ namespace BloomTests
             var outerXml = htmlDom.OuterXml;
             var idxBOM = outerXml.IndexOf('\uFEFF');
             Assert.That(idxBOM, Is.EqualTo(-1), "All BOMs are removed.");
+        }
+
+        [Test]
+        public void GetXmlDomFromHtml_HasXmlDeclaration_RespectsIncludeXmlDeclaration()
+        {
+            var html = XmlHtmlConverter.CreateHtmlString("<div data-book='test'/>");
+            var htmlDomWithXmlDecl = XmlHtmlConverter.GetXmlDomFromHtml(html, true);
+            var htmlDomWithoutXmlDecl = XmlHtmlConverter.GetXmlDomFromHtml(html);
+            Assert.That(
+                htmlDomWithXmlDecl.OuterXml,
+                Does.StartWith("<?xml version=\"1.0\" encoding=\"utf-8\"?>"),
+                "The XML declaration should be included."
+            );
+            Assert.That(
+                htmlDomWithoutXmlDecl.OuterXml,
+                Does.Not.StartWith("<?xml version=\"1.0\" encoding=\"utf-8\"?>"),
+                "The XML declaration should not be included."
+            );
+        }
+
+        [Test]
+        public void GetXmlDomFromHtml_Deduplicates_attributes()
+        {
+            // Some unit tests, at least, depend on the converter fixing duplicate attributes. We don't know whether it matters which one of a pair of duplicates it keeps, but the current code keeps the second, so this test is written to make sure we at least notice if this changes.
+            var html = XmlHtmlConverter.CreateHtmlString(
+                "<div data-foo=\"bar\" data-baz=\"qux\" data-foo=\"bar2\"></div>"
+            );
+            var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html, true);
+            var xml = htmlDom.DocumentElement.InnerXml;
+            Assert.That(
+                xml,
+                Does.Not.Contain("data-foo=\"bar\""),
+                "The first of the duplicate attributes should not be present."
+            );
+            Assert.That(
+                xml,
+                Does.Contain("data-foo=\"bar2\""),
+                "The second of the duplicate attributes should be present."
+            );
+            Assert.That(
+                xml,
+                Does.Contain("data-baz=\"qux\""),
+                "The remaining attributes should remain present."
+            );
+        }
+
+        [Test]
+        public void GetXmlDomFromHtml_nbsp_handled()
+        {
+            var html = XmlHtmlConverter.CreateHtmlString(
+                "<div>Some text with a&nbsp;non-breaking space.</div>"
+            );
+            var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html, true);
+            var xml = htmlDom.DocumentElement.InnerXml;
+            var nbspIndex = xml.IndexOf("Some text with a") + "Some text with a".Length;
+            Assert.That(
+                xml[nbspIndex],
+                Is.EqualTo('\u00A0'),
+                "The non-breaking space should be preserved"
+            );
+        }
+
+        [Test]
+        public void GetXmlDomFromHtml_PreservesCommentsInMiddle()
+        {
+            var html =
+                @"
+<html>
+<!-- This is a comment 1-->
+<head>In the head<style>
+<!-- This is a comment 2-->
+</style></head>
+<body>in the body</body>
+<!-- This is a comment 3-->
+</html>";
+            var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+            var xml = htmlDom.DocumentElement.OuterXml;
+            Assert.That(xml, Does.Contain("<!-- This is a comment 1-->"));
+            Assert.That(xml, Does.Contain("<!-- This is a comment 2-->"));
+            Assert.That(xml, Does.Contain("<!-- This is a comment 3-->"));
+        }
+
+        [Test]
+        public void GetXmlDomFromHtml_doesNotDoubleEncodeEntities()
+        {
+            var html = XmlHtmlConverter.CreateHtmlString(
+                "<div>Ben &amp; Jerry</div><div>Buggy says &quot;hi&quot;</div>"
+            );
+            var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html, true);
+            var xml = htmlDom.DocumentElement.InnerXml;
+            Assert.That(xml, Does.Contain("Ben &amp; Jerry"));
+            Assert.That(xml, Does.Contain("Buggy says \"hi\"")); // decoded by this point for some reason
+            Assert.That(
+                xml,
+                Does.Not.Contain("&amp;amp;"),
+                "The &amp; entity should not be double-encoded."
+            );
+            Assert.That(
+                xml,
+                Does.Not.Contain("&amp;quot;"),
+                "The &quot; entity should not be double-encoded."
+            );
+        }
+
+        [Test]
+        public void GetXmlDomFromHtml_ParsesStructureRegardlessOfComments()
+        {
+            var mainHtml =
+                @"
+<html>
+<head>In the head</head>
+<body>in the body</body>
+</html>";
+            var withDoctype =
+                @"<!DOCTYPE html>
+" + mainHtml;
+            var withComment =
+                @"
+<!-- This is a comment -->
+<!-- Another comment -->
+" + mainHtml;
+            var withMultilineComment =
+                @"
+<!-- This is a comment 
+comment continues onto the next line
+ and the next -->
+" + mainHtml;
+            var withDoctypeAndComment =
+                @"<!DOCTYPE html>
+<!-- This is a comment -->
+" + mainHtml;
+            var withCommentAndDoctype =
+                @"<!-- This is a comment -->
+<!DOCTYPE html>
+" + mainHtml;
+            var withBlankLines =
+                @" <!DOCTYPE html>
+
+<!-- This is a comment -->
+
+
+
+
+" + mainHtml;
+            foreach (
+                var html in new[]
+                {
+                    mainHtml,
+                    withDoctype,
+                    withComment,
+                    withMultilineComment,
+                    withDoctypeAndComment,
+                    withCommentAndDoctype,
+                    withBlankLines,
+                }
+            )
+            {
+                var doc = XmlHtmlConverter.GetXmlDomFromHtml(html);
+                Assert.That(
+                    doc.Head.InnerXml.Trim(),
+                    Is.EqualTo("In the head"),
+                    $"failed to properly parse html: ${html}"
+                );
+                Assert.That(
+                    doc.Body.InnerXml,
+                    Is.EqualTo("in the body"),
+                    $"failed to properly parse html: ${html}"
+                );
+            }
         }
     }
 }

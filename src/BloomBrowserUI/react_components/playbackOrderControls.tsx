@@ -15,12 +15,12 @@ const PlaybackOrderButton: React.FC<{
     icon: JSX.Element;
     disabled: boolean;
     onClick: () => void;
-}> = props => {
+}> = (props) => {
     const icon = React.cloneElement(props.icon, {
-        fontSize: "small" as any,
+        fontSize: "small",
         fontWeight: 800,
         shapeRendering: "crispEdges",
-        fill: "white"
+        fill: "white",
     });
     return (
         <button
@@ -35,7 +35,9 @@ const PlaybackOrderButton: React.FC<{
     );
 };
 
-const PlaybackOrderControls: React.FC<IPlaybackOrderControlsProps> = props => {
+const PlaybackOrderControls: React.FC<IPlaybackOrderControlsProps> = (
+    props,
+) => {
     return (
         <div className="playbackOrderContainer">
             <PlaybackOrderButton

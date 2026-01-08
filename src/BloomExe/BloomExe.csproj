@@ -1,29 +1,30 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 	<PropertyGroup>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<ProjectGuid>{304D5612-167C-4725-AF27-B9F2BB788B57}</ProjectGuid>
+		<UseWindowsForms>true</UseWindowsForms>
+		<UseWPF>false</UseWPF>
 		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
-		<OutputPath>..\..\output\$(Configuration)\</OutputPath>
-		<Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+		<OutputPath>..\..\output\$(Configuration)\$(Platform)\</OutputPath>
+		<Platform Condition=" '$(Platform)' == '' ">x64</Platform>
 		<AssemblyTitle>Bloom</AssemblyTitle>
 		<Company>SIL</Company>
 		<Product>Bloom</Product>
 		<Copyright>© SIL International 2012-2025</Copyright>
-		<Version>6.2.0.0</Version>
+		<Version>6.3.0.0</Version>
 		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 		<BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
-		<TargetFramework>net472</TargetFramework>
+		<TargetFramework>net8.0-windows</TargetFramework>
 		<LangVersion>11.0</LangVersion>
 		<PostBuildEvent>
-copy /Y "$(SolutionDir)\lib\msvcr120.dll" $(OutDir)
-copy /Y "$(SolutionDir)\lib\ffmpeg.exe" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\meddle.exe" $(OutDir)
-xcopy "$(SolutionDir)lib\RedistributableDlls" $(OutDir) /S /R /Y
-xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
-copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
-    </PostBuildEvent>
+xcopy "$(SolutionDir)\lib\gm" "$(OutDir)gm\" /S /R /Y
+		</PostBuildEvent>
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<Platforms>x64;ARM64</Platforms>
+		<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
 	</PropertyGroup>
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">
@@ -66,7 +67,7 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 		<Optimize>false</Optimize>
 		<DebugSymbols>true</DebugSymbols>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
 		<DebugType>full</DebugType>
 		<CodeAnalysisLogFile>..\..\output\Debug\Bloom.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
 		<CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
@@ -78,7 +79,7 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 		<CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
 		<CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
 		<DebugType>pdbonly</DebugType>
 		<CodeAnalysisLogFile>..\..\output\Release\Bloom.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
 		<CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
@@ -117,22 +118,17 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 	<PropertyGroup>
 		<StartupObject />
 	</PropertyGroup>
-	<PropertyGroup>
-		<PostBuildEvent>
-copy /Y "$(SolutionDir)\lib\msvcr120.dll" $(OutDir)
-copy /Y "$(SolutionDir)\lib\ffmpeg.exe" $(OutDir)
-copy /Y "$(SolutionDir)\lib\dotnet\meddle.exe" $(OutDir)
-xcopy "$(SolutionDir)lib\RedistributableDlls" $(OutDir) /S /R /Y
-xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
-copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
-    </PostBuildEvent>
-		<PlatformTarget>AnyCPU</PlatformTarget>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+		<PlatformTarget>x64</PlatformTarget>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<Prefer32Bit>True</Prefer32Bit>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+		<PlatformTarget>x64</PlatformTarget>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<Prefer32Bit>True</Prefer32Bit>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+		<PlatformTarget>ARM64</PlatformTarget>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+		<PlatformTarget>ARM64</PlatformTarget>
 	</PropertyGroup>
 	<ItemGroup>
 		<SourceFiles Include="..\..\lib\dotnet\*.config" />
@@ -145,12 +141,35 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 	<ItemGroup>
 		<None Remove="**/*.orig" />
 	</ItemGroup>
-	<ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x86'">
-		<CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x86\*.dll" />
-	</ItemGroup>
-	<ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x64'">
+	<ItemGroup Condition="'$(RuntimeIdentifier)'==''"><!-- Default build assumes win-x64 -->
 		<CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x64\*.dll" />
 	</ItemGroup>
+	<ItemGroup Condition="'$(RuntimeIdentifier)'=='win-x64'">
+		<CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x64\*.dll" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(RuntimeIdentifier)'=='win-arm64'">
+		<CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-arm64\*.dll" />
+	</ItemGroup>
+
+	<!-- Platform-specific ffmpeg binaries -->
+	<ItemGroup Condition="'$(RuntimeIdentifier)'==''"><!-- Default build assumes win-x64 -->
+		<FfmpegFiles Include="$(SolutionDir)\lib\ffmpeg\x64\ffmpeg.exe" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(RuntimeIdentifier)'=='win-x64'">
+		<FfmpegFiles Include="$(SolutionDir)\lib\ffmpeg\x64\ffmpeg.exe" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(RuntimeIdentifier)'=='win-arm64'">
+		<FfmpegFiles Include="$(SolutionDir)\lib\ffmpeg\arm64\ffmpeg.exe" />
+	</ItemGroup>
+
+	<PropertyGroup>
+		<LocalizationDir>..\..\DistFiles\localization\</LocalizationDir>
+	</PropertyGroup>
+	<ItemGroup>
+		<SourcePalasoFile Include="$(PkgSIL_libpalaso_l10ns)\content\Palaso.en.xlf" />
+		<TranslatedPalasoFiles Include="$(PkgSIL_libpalaso_l10ns)\content\**\*.xlf" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<DeleteForSILMedia Include="$(OutDir)lib\win-x64\*.*" />
 		<DeleteForSILMedia Include="$(OutDir)lib\win-x86\*.*" />
@@ -163,20 +182,53 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 		<Copy SourceFiles="@(LameFiles)" DestinationFolder="../../DistFiles" />
 		<Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader" />
 		<Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader" />
-		<Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'" />
+		<Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)' == 'Debug'" />
 		<Copy SourceFiles="@(IccFiles)" DestinationFolder="$(OutDir)/ColorProfiles" />
 		<Message Text="CopySomeFiles target completed." Importance="high" />
+	</Target>
+
+	<Target Name="CopyPlatformSpecificFiles" AfterTargets="CopySomeFiles">
+		<Copy SourceFiles="@(FfmpegFiles)" DestinationFolder="$(OutDir)" />
+		<Message Text="Copying platform-specific ffmpeg for $(Platform)" Importance="high" />
+
+		<Error Text="Platform-specific ffmpeg not found for $(Platform) - expected at @(FfmpegFiles)"
+		       Condition="'$(Platform)'=='ARM64' AND !Exists('@(FfmpegFiles)')" />
 	</Target>
 	<Target Name="ReallyAfterBuild" AfterTargets="CopySomeFiles">
 		<Copy SourceFiles="@(CopyForSILMedia)" DestinationFolder="$(OutDir)" />
 		<Delete Files="@(DeleteForSILMedia)" TreatErrorsAsWarnings="true" />
 		<RemoveDir Directories="@(RemoveForSILMedia)" />
+		<Message Text="Copying Palaso.xlf files from nuget package to DistFiles" Importance="high" />
+		<Copy SourceFiles="@(SourcePalasoFile)" DestinationFiles="$(LocalizationDir)en\Palaso.xlf" />
+		<Copy SourceFiles="@(TranslatedPalasoFiles)" DestinationFiles="$(LocalizationDir)%(RecursiveDir)Palaso.xlf" Condition="'%(RecursiveDir)' != ''" />
 		<Message Text="ReallyAfterBuild target completed." Importance="high" />
 	</Target>
-	<Target Name="CopyX86SqliteForArm" AfterTargets="ReallyAfterBuild">
-		<MakeDir Directories="$(OutDir)runtimes\win-arm64\native" />
-		<Copy SourceFiles="$(OutDir)runtimes\win-x86\native\e_sqlite3.dll" DestinationFiles="$(OutDir)e_sqlite3.dll" />
-		<Message Text="BL-13934 sqlite looks in the ARM64 directory, but then fails because actually we're running as an x86 process still, as of Bloom 6.2. So for now we're cheating and just putting the x86 version in." Importance="high" />
+	<!--
+		The SIL Common Strings project uses pt-BR as the tag for Portuguese.  SIL-Bloom uses
+		pt-PT as the tag.  This needs to be fixed for Bloom to use the localizations from
+		libpalaso.  Using the FileUpdate task from the SIL.BuildTasks package seems like the
+		easiest way to achieve this result.
+	-->
+	<UsingTask TaskName="FileUpdate" AssemblyFile="$(PkgSIL_BuildTasks)\tools\SIL.BuildTasks.dll" />
+	<Target Name="FixPortuguese" AfterTargets="ReallyAfterBuild">
+		<FileUpdate File="$(LocalizationDir)\pt\Palaso.xlf" Regex="pt-BR" ReplacementText="pt-PT" />
+		<Message Text="Finished fixing Portuguese language tags in Palaso.xlf" Importance="high" />
+	</Target>
+
+	<!-- ARM64 SQLite support - fail fast if dependency not properly restored -->
+	<Target Name="CopyArm64Sqlite" AfterTargets="ReallyAfterBuild" Condition="'$(Platform)'=='ARM64'">
+		<PropertyGroup>
+			<Arm64SqliteSource>$(OutDir)runtimes\win-arm64\native\e_sqlite3.dll</Arm64SqliteSource>
+			<Arm64SqliteTarget>$(OutDir)e_sqlite3.dll</Arm64SqliteTarget>
+		</PropertyGroup>
+		
+		<!-- Fail immediately if ARM64 SQLite library is not where NuGet should have placed it -->
+		<Error Text="ARM64 SQLite library not found at expected location: $(Arm64SqliteSource). Check that RuntimeIdentifiers includes 'win-arm64' and NuGet restore completed successfully."
+		       Condition="!Exists('$(Arm64SqliteSource)')" />
+		
+		<!-- Copy ARM64 SQLite library to main output directory -->
+		<Copy SourceFiles="$(Arm64SqliteSource)" DestinationFiles="$(Arm64SqliteTarget)" />
+		<Message Text="Copied ARM64 SQLite library: $(Arm64SqliteSource) -> $(Arm64SqliteTarget)" Importance="high" />
 	</Target>
 	<ItemGroup>
 		<PackageReference Include="Autofac" Version="6.0.0" />
@@ -187,7 +239,8 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 		<PackageReference Include="EPPlus" Version="6.2.4" />
 		<PackageReference Include="Fleck" Version="1.1.0" />
 		<PackageReference Include="Glob" Version="1.1.8" />
-		<PackageReference Include="L10NSharp" Version="8.0.0" />
+		<PackageReference Include="HtmlAgilityPack" Version="1.12.1" />
+		<PackageReference Include="L10NSharp" Version="9.0.0-beta0001" />
 		<PackageReference Include="LargeAddressAware" Version="1.0.5" />
 		<PackageReference Include="Markdig.Signed" Version="0.37.0" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
@@ -197,23 +250,27 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 		<PackageReference Include="Mono.Unix" Version="7.1.0-final.1.21458.1" />
 		<PackageReference Include="NAudio" Version="1.10.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="PDFsharp" Version="6.2.1" />
 		<PackageReference Include="RestSharp" Version="106.12.0" />
 		<PackageReference Include="Sentry" Version="3.9.4" />
 		<PackageReference Include="SharpZipLib" Version="1.3.3" />
-		<PackageReference Include="SIL.Core" Version="16.1.0-beta0004" />
-		<PackageReference Include="SIL.Core.Desktop" Version="16.1.0-beta0004" />
+		<PackageReference Include="SIL.BuildTasks" Version="3.1.1" GeneratePathProperty="true" />
+		<PackageReference Include="SIL.Core.Desktop" Version="17.0.0-beta0079" />
 		<PackageReference Include="SIL.DesktopAnalytics" Version="4.0.4" />
-		<PackageReference Include="SIL.Media" Version="16.1.0-beta0004" />
-		<PackageReference Include="SIL.Windows.Forms" Version="16.1.0-beta0004" />
-		<PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="16.1.0-beta0004" />
-		<PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="16.1.0-beta0004" />
-		<PackageReference Include="SIL.WritingSystems" Version="16.1.0-beta0004" />
+		<PackageReference Include="SIL.libpalaso.l10ns" Version="17.0.0-beta0070" GeneratePathProperty="true" />
+		<PackageReference Include="SIL.Media" Version="17.0.0-beta0079" />
+		<PackageReference Include="SIL.Windows.Forms" Version="17.0.0-beta0079" />
+		<PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="17.0.0-beta0079" />
+		<PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="17.0.0-beta0079" />
+		<PackageReference Include="SIL.WritingSystems" Version="17.0.0-beta0079" />
+		<PackageReference Include="sillsdev.dotImpose" Version="2.6.2" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
 		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.2" />
 		<PackageReference Include="SQLitePCLRaw.core" Version="2.1.2" />
 		<PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.2" />
 		<PackageReference Include="SQLitePCLRaw.provider.dynamic_cdecl" Version="2.1.2" />
 		<PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
+		<PackageReference Include="System.Management" Version="9.0.7" />
 		<PackageReference Include="System.Net.Http" Version="4.3.4" />
 		<PackageReference Include="System.Runtime" Version="4.3.0" />
 		<PackageReference Include="TagLibSharp" Version="2.3.0" />
@@ -221,6 +278,9 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
+		<!-- Version is sourced from the repo-wide Directory.Build.props (VelopackVersion) so that we always
+		 use the same version of the BloomBooks.Velopack and BloomBooks.Velopack.Cli  -->
+		<PackageReference Include="BloomBooks.Velopack" Version="$(VelopackVersion)" />
 	</ItemGroup>
 	<ItemGroup>
 		<Reference Include="PresentationCore" />
@@ -233,26 +293,11 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 		<Reference Include="System.Web.Extensions" />
 		<Reference Include="System.Windows.Forms" />
 		<Reference Include="WindowsBase" />
-		<Reference Include="NuGet.Squirrel">
-			<HintPath>..\..\lib\dotnet\NuGet.Squirrel.dll</HintPath>
-		</Reference>
-		<Reference Include="PdfDroplet">
-			<HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
-		</Reference>
-		<Reference Include="PdfSharp">
-			<HintPath>..\..\lib\dotnet\PdfSharp.dll</HintPath>
-		</Reference>
 		<Reference Include="PodcastUtilities.PortableDevices">
 			<HintPath>..\..\lib\dotnet\PodcastUtilities.PortableDevices.dll</HintPath>
 		</Reference>
 		<Reference Include="Splat">
 			<HintPath>..\..\lib\dotnet\Splat.dll</HintPath>
-		</Reference>
-		<Reference Include="Squirrel">
-			<HintPath>..\..\lib\dotnet\Squirrel.dll</HintPath>
-		</Reference>
-		<Reference Include="TidyManaged">
-			<HintPath>..\..\lib\dotnet\TidyManaged.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 	<ItemGroup>
@@ -285,34 +330,14 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 		<None Include="Resources\simplePages.png" />
 		<None Include="Resources\deletePage16x16.png" />
 		<None Include="Resources\deletePage24x24.png" />
-		<None Include="Resources\Cut16x16.png" />
-		<None Include="Resources\Copy16x16.png" />
 		<None Include="Resources\Paste16x16.png" />
 		<None Include="Resources\Undo16x16.png" />
 		<None Include="Resources\paste24x24.png" />
-		<None Include="Resources\paste32x32.png" />
-		<None Include="Resources\undo32x32.png" />
 		<None Include="Resources\newCollection32x32.png" />
 		<None Include="Resources\BloomPack64x64.png" />
-		<None Include="Resources\copyDisable16x16.png" />
-		<None Include="Resources\pasteDisabled32x32.png" />
-		<None Include="Resources\copyDisable16x161.png" />
-		<None Include="Resources\undoDisabled32x32.png" />
 		<None Include="Resources\DeletePageDisabled24x24.png" />
 		<None Include="Resources\DeletePageDisabled32x32.png" />
 		<None Include="Resources\DeletePage32x32.png" />
-		<None Include="Resources\cutDisable16x16.png" />
-	</ItemGroup>
-	<ItemGroup>
-		<COMReference Include="IWshRuntimeLibrary">
-			<Guid>{F935DC20-1CF0-11D0-ADB9-00C04FD58A0B}</Guid>
-			<VersionMajor>1</VersionMajor>
-			<VersionMinor>0</VersionMinor>
-			<Lcid>0</Lcid>
-			<WrapperTool>tlbimp</WrapperTool>
-			<Isolated>False</Isolated>
-			<EmbedInteropTypes>False</EmbedInteropTypes>
-		</COMReference>
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="Resources\PackageFlat48x47.png" />

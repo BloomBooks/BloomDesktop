@@ -77,7 +77,7 @@ namespace Bloom.MiscUI
             set { _dialog.FileName = value; }
         }
 
-         public DialogResult ShowDialog()
+        public DialogResult ShowDialog()
         {
             return _dialog.ShowDialog();
         }

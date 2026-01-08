@@ -1,9 +1,9 @@
 import { BookInfoCard } from "../bookInfoCard";
 
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react-vite";
 
 const meta: Meta = {
-    title: "BookInformationCards"
+    title: "BookInformationCards",
 };
 
 export default meta;
@@ -15,7 +15,7 @@ const languages3: string[] = [
     "French",
     "Swahili",
     "Tanzanian Sign Language",
-    "English"
+    "English",
 ];
 const uploadDate = "7/28/2020";
 const updateDate = "10/26/2020";
@@ -29,17 +29,17 @@ export const PreviouslyUploadedStory: Story = {
             originalUpload={uploadDate}
             lastUpdated={updateDate}
         />
-    )
+    ),
 };
 
 export const NewUploadStory: Story = {
     name: "NewUpload",
-    render: () => <BookInfoCard title="02. Foo Bar" languages={languages2} />
+    render: () => <BookInfoCard title="02. Foo Bar" languages={languages2} />,
 };
 
 export const SeveralLanguagesStory: Story = {
     name: "Several languages",
     render: () => (
         <BookInfoCard title="Foo Bar Extended" languages={languages3} />
-    )
+    ),
 };

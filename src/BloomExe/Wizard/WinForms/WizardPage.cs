@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Windows.Forms;
 using System.Drawing;
 using System.Globalization;
+using System.Windows.Forms;
 using Bloom.CollectionCreating;
 using Bloom.Workspace;
 
@@ -56,7 +56,7 @@ namespace Bloom.Wizard.WinForms
             {
                 Padding = new Padding(30),
                 AutoSize = true,
-                Dock = DockStyle.Fill
+                Dock = DockStyle.Fill,
             };
             Controls.Add(_pagePanel);
             Controls.Add(titlePanel);
@@ -135,7 +135,7 @@ namespace Bloom.Wizard.WinForms
                 BackColor = Color.Transparent,
                 Font = _titleLabel.Font,
                 GripStyle = ToolStripGripStyle.Hidden,
-                Renderer = new NoBorderToolStripRenderer()
+                Renderer = new NoBorderToolStripRenderer(),
             };
             return _toolStrip;
         }
@@ -151,7 +151,7 @@ namespace Bloom.Wizard.WinForms
                 ToolTipText = L10NSharp.LocalizationManager.GetString(
                     "OpenCreateNewCollectionsDialog.UILanguageMenu_ToolTip_",
                     "Change user interface language"
-                )
+                ),
             };
             WorkspaceView.SetupUiLanguageMenuCommon(
                 s_toolStripDropDownButton,

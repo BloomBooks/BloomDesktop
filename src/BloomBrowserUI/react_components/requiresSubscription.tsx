@@ -1,8 +1,8 @@
 import { css } from "@emotion/react";
 
 import * as React from "react";
-import { useState, useEffect } from "react";
-import { get, post } from "../utils/bloomApi";
+import { useEffect } from "react";
+import { post } from "../utils/bloomApi";
 import Button from "@mui/material/Button";
 import { kBloomBlue50Transparent, lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
@@ -15,24 +15,24 @@ import {
     kFormBackground,
     kBloomGray,
     kBloomBlue,
-    kBloomDisabledOpacity
+    kBloomDisabledOpacity,
 } from "../utils/colorUtils";
 import {
     BloomDialog,
     DialogTitle,
     DialogMiddle,
-    DialogBottomButtons
+    DialogBottomButtons,
 } from "./BloomDialog/BloomDialog";
 import { kUiFontStack } from "../bloomMaterialUITheme";
 import {
     IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
+    useSetupBloomDialog,
 } from "./BloomDialog/BloomDialogPlumbing";
 import { getBloomApiPrefix } from "../utils/bloomApi";
 import {
     openBloomSubscriptionSettings,
     useGetFeatureStatus,
-    useGetFeatureAvailabilityMessage
+    useGetFeatureAvailabilityMessage,
 } from "./featureStatus";
 import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
 import { getPageIframeBody } from "../utils/shared";
@@ -54,26 +54,27 @@ export const RequiresSubscriptionAdjacentIconWrapper = (props: {
         | React.ReactElement<IDisableable>
         | Array<React.ReactElement<IDisableable>>;
 }) => {
-    const memoizedFeatureName = React.useMemo(() => props.featureName, [
-        props.featureName
-    ]);
+    const memoizedFeatureName = React.useMemo(
+        () => props.featureName,
+        [props.featureName],
+    );
     const featureStatus = useGetFeatureStatus(memoizedFeatureName);
     const tierMessage = useGetFeatureAvailabilityMessage(featureStatus);
 
     // Set the disabled property on all the children
     const children = featureStatus?.enabled
         ? props.children
-        : React.Children.map(props.children, child =>
+        : React.Children.map(props.children, (child) =>
               React.cloneElement(child, {
-                  disabled: false // we're going to slap a partial opacity on the whole thing, so we don't want the children to be disabled
-              })
+                  disabled: false, // we're going to slap a partial opacity on the whole thing, so we don't want the children to be disabled
+              }),
           );
 
     const icon = (
         <img
             css={css`
                 ${"height: 16px; margin-left: 6px; cursor: pointer; " +
-                    (props.iconStyles ?? "")}
+                (props.iconStyles ?? "")}
             `}
             src={badgeUrl}
             title={tierMessage}
@@ -99,7 +100,7 @@ export const RequiresSubscriptionAdjacentIconWrapper = (props: {
                         ? 1.0
                         : kBloomDisabledOpacity};
                 `}
-                ref={node =>
+                ref={(node) =>
                     node &&
                     // later version of react reportedly do support `inert`, but this version doesn't,
                     // so we are using this `ref` way to get it into the DOM.
@@ -116,7 +117,7 @@ export const RequiresSubscriptionAdjacentIconWrapper = (props: {
 };
 export const BloomEnterpriseIconWithTooltip: React.FunctionComponent<{
     featureName: string;
-}> = props => {
+}> = (props) => {
     const featureStatus = useGetFeatureStatus(props.featureName);
     const featureMessage = useGetFeatureAvailabilityMessage(featureStatus);
 
@@ -135,10 +136,11 @@ export const BloomEnterpriseIconWithTooltip: React.FunctionComponent<{
 
 export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
     featureName: string;
-}> = props => {
-    const memoizedFeatureName = React.useMemo(() => props.featureName, [
-        props.featureName
-    ]);
+}> = (props) => {
+    const memoizedFeatureName = React.useMemo(
+        () => props.featureName,
+        [props.featureName],
+    );
     const featureStatus = useGetFeatureStatus(memoizedFeatureName);
 
     return (
@@ -242,12 +244,12 @@ export const RequiresSubscriptionNotice: React.VoidFunctionComponent<{
                                   display: none;
                               `
                             : inSeparateDialog
-                            ? css`
-                                  padding: 10px 0px 0px 0px;
-                              `
-                            : css`
-                                  padding: 5px;
-                              `
+                              ? css`
+                                    padding: 10px 0px 0px 0px;
+                                `
+                              : css`
+                                    padding: 5px;
+                                `
                     }
                 >
                     <div className="messageSettingsDialogWrapper">
@@ -339,16 +341,13 @@ export const RequiresSubscriptionNotice: React.VoidFunctionComponent<{
 // not been updated to supply the reaquired featureName prop.
 export const RequiresSubscriptionNoticeDialog: React.FunctionComponent<{
     featureName: string;
-}> = props => {
+}> = (props) => {
     // Designed to be invoked from WinForms land.
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog({
-        dialogFrameProvidedExternally: true,
-        initiallyOpen: true
-    });
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog({
+            dialogFrameProvidedExternally: true,
+            initiallyOpen: true,
+        });
 
     return (
         <BloomDialog {...propsForBloomDialog}>
@@ -413,7 +412,7 @@ export function showRequiresSubscriptionDialog(featureName: string) {
 // component into it.
 export function showRequiresSubscriptionDialogInEditView(featureName: string) {
     ShowEditViewDialog(
-        <RequiresSubscriptionDialog featureName={featureName} />
+        <RequiresSubscriptionDialog featureName={featureName} />,
     );
     // We have to give it a chance to render, since a useEffect in the render
     // is what sets the showRequiresSubscriptionDialogInternal function.
@@ -447,13 +446,10 @@ export function showRequiresSubscriptionDialogInAnyView(featureName: string) {
 export const RequiresSubscriptionDialog: React.FunctionComponent<{
     dialogEnvironment?: IBloomDialogEnvironmentParams;
     featureName?: string;
-}> = props => {
+}> = (props) => {
     // Designed to be invoked natively from TypeScript land.
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
     useEffect(() => {
         showRequiresSubscriptionDialogInternal = showDialog;
         return () => {
@@ -463,7 +459,7 @@ export const RequiresSubscriptionDialog: React.FunctionComponent<{
 
     const dialogTitle = useL10n(
         "Bloom Subscription Feature",
-        "Common.BloomSubscriptionFeature"
+        "Common.BloomSubscriptionFeature",
     );
 
     return (
@@ -510,7 +506,7 @@ export const BloomSubscriptionIndicatorIconAndText: React.FunctionComponent<{
     feature: string;
     disabled?: boolean;
     className?: string;
-}> = props => {
+}> = (props) => {
     const tierAllowsFeature = useGetFeatureStatus(props.feature)?.enabled;
 
     return (

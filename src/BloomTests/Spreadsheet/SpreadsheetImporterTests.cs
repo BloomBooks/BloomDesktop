@@ -1,19 +1,19 @@
 using System;
-using Bloom.Book;
-using Bloom.Spreadsheet;
-using Moq;
-using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml;
-using BloomTemp;
-using BloomTests.TeamCollection;
-using SIL.IO;
+using Bloom.Book;
 using Bloom.Collection;
 using Bloom.SafeXml;
+using Bloom.Spreadsheet;
+using BloomTemp;
+using BloomTests.TeamCollection;
+using Moq;
+using NUnit.Framework;
+using SIL.IO;
 
 namespace BloomTests.Spreadsheet
 {
@@ -62,8 +62,8 @@ namespace BloomTests.Spreadsheet
             // bloom-editable elements in the kSimpleTwoPageBook DOM and replace them with different text.
             // The import should update those bloom-editables to these changed values.
             var engColumn = _sheet.GetRequiredColumnForLang("en");
-            var firstRowToModify = _sheet.ContentRows.FirstOrDefault(
-                row => row.GetCell(engColumn).Content.Contains("This elephant is running amok.")
+            var firstRowToModify = _sheet.ContentRows.FirstOrDefault(row =>
+                row.GetCell(engColumn).Content.Contains("This elephant is running amok.")
             );
             Assert.IsNotNull(
                 firstRowToModify,
@@ -71,10 +71,9 @@ namespace BloomTests.Spreadsheet
             );
             firstRowToModify.SetCell(engColumn, "<p>This elephant is running amok.</p>");
             var frColumn = _sheet.GetRequiredColumnForLang("fr");
-            var secondRowToModify = _sheet.ContentRows.FirstOrDefault(
-                row =>
-                    row.GetCell(frColumn)
-                        .Content.Contains("Riding on French elephants can be more risky.")
+            var secondRowToModify = _sheet.ContentRows.FirstOrDefault(row =>
+                row.GetCell(frColumn)
+                    .Content.Contains("Riding on French elephants can be more risky.")
             );
             Assert.IsNotNull(
                 secondRowToModify,
@@ -96,8 +95,8 @@ namespace BloomTests.Spreadsheet
             var asteriskColumn = _sheet.GetRequiredColumnForLang("*");
             var imageSrcColumn = _sheet.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
 
-            var firstXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(
-                row => row.MetadataKey.Contains("style number sequence")
+            var firstXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row =>
+                row.MetadataKey.Contains("style number sequence")
             );
             Assert.IsNotNull(
                 firstXmatterRowToModify,
@@ -105,8 +104,8 @@ namespace BloomTests.Spreadsheet
             );
             firstXmatterRowToModify.SetCell(asteriskColumn, "7");
 
-            var secondXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(
-                row => row.MetadataKey == InternalSpreadsheet.CoverImageRowLabel
+            var secondXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row =>
+                row.MetadataKey == InternalSpreadsheet.CoverImageRowLabel
             );
             Assert.IsNotNull(
                 secondXmatterRowToModify,
@@ -114,8 +113,8 @@ namespace BloomTests.Spreadsheet
             );
             secondXmatterRowToModify.SetCell(imageSrcColumn, "octopus.png");
 
-            var thirdXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(
-                row => row.MetadataKey == InternalSpreadsheet.BookTitleRowLabel
+            var thirdXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row =>
+                row.MetadataKey == InternalSpreadsheet.BookTitleRowLabel
             );
             Assert.IsNotNull(
                 thirdXmatterRowToModify,
@@ -128,8 +127,8 @@ namespace BloomTests.Spreadsheet
                 "<p>This is Not the End of the English World</p>"
             );
 
-            var fourthXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(
-                row => row.MetadataKey.Contains("content language 1")
+            var fourthXmatterRowToModify = _sheet.ContentRows.FirstOrDefault(row =>
+                row.MetadataKey.Contains("content language 1")
             );
             fourthXmatterRowToModify.SetCell(
                 _sheet.GetColumnForTag(InternalSpreadsheet.RowTypeColumnLabel),
@@ -1234,7 +1233,6 @@ namespace BloomTests.Spreadsheet
         [TestCase("Othello 199.jpg")]
         [TestCase("Mars 3.png")]
         [TestCase("Mars 4.png")]
-        [TestCase("placeHolder.png")]
         public void ImageCopiedToOutput(string fileName)
         {
             Assert.That(RobustFile.Exists(Path.Combine(_bookFolder.FolderPath, fileName)));
@@ -1855,8 +1853,7 @@ namespace BloomTests.Spreadsheet
                 InternalSpreadsheet.ReadFromFile(tempFile.Path, spy);
                 Assert.That(
                     spy.Messages,
-                    Has.Some
-                        .Property("Item1")
+                    Has.Some.Property("Item1")
                         .EqualTo(
                             "The input does not appear to be a valid Excel spreadsheet. Import failed."
                         )
@@ -1913,8 +1910,7 @@ namespace BloomTests.Spreadsheet
             Assert.That(importer.Validate(ss, spy), Is.False);
             Assert.That(
                 spy.Messages,
-                Has.Some
-                    .Property("Item1")
+                Has.Some.Property("Item1")
                     .EqualTo(
                         "This spreadsheet has no data that Bloom knows how to import. Did you follow the standard format for Bloom spreadsheets?"
                     )

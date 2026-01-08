@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { useState } from "react";
 import { Div } from "../react_components/l10nComponents";
@@ -12,7 +11,7 @@ import { useL10n } from "../react_components/l10nHooks";
 import {
     kBloomBuff,
     kMutedTextGray,
-    kWarningColor
+    kWarningColor,
 } from "../bloomMaterialUITheme";
 import { useGetFeatureStatus } from "../react_components/featureStatus";
 
@@ -42,20 +41,19 @@ interface ISelectedTemplatePageProps {
         convertWholeBookChecked: boolean,
         numberToAdd: number,
         dataToolId: string,
-        requiredTool?: string
+        requiredTool?: string,
     ) => void;
 }
 
 // Displays a large preview of a template page in the Add Page or Change Layout dialog.
-export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemplatePageProps> = (
-    props: ISelectedTemplatePageProps
-) => {
+export const SelectedTemplatePageControls: React.FunctionComponent<
+    ISelectedTemplatePageProps
+> = (props: ISelectedTemplatePageProps) => {
     const previewPaneLeftPadding = 15;
 
     const [continueChecked, setContinueChecked] = useState(false);
-    const [convertWholeBookChecked, setConvertWholeBookChecked] = useState(
-        false
-    );
+    const [convertWholeBookChecked, setConvertWholeBookChecked] =
+        useState(false);
     const minimumPagesToAdd = 1;
     const maximumPagesToAdd = 99;
     const [numberToAdd, setNumberToAdd] = useState<number>(minimumPagesToAdd);
@@ -71,7 +69,7 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
 
     const featureStatus = useGetFeatureStatus(props.featureName) ?? {
         enabled: true,
-        visible: true
+        visible: true,
     };
 
     const isAddOrChoosePageButtonEnabled = (): boolean => {
@@ -81,7 +79,7 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
     const numberOfPagesTooltip = useL10n(
         "Number of pages to add",
         "EditTab.AddPageDialog.NumberOfPagesTooltip",
-        "For the number to the left of the ADD PAGE button"
+        "For the number to the left of the ADD PAGE button",
     );
 
     return (
@@ -278,7 +276,7 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
                                             ? -1
                                             : numberToAdd,
                                         props.dataToolId,
-                                        props.requiredTool
+                                        props.requiredTool,
                                     );
                             }}
                         >

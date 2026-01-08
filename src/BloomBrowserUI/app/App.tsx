@@ -14,7 +14,7 @@ import { kBloomBlue, kPanelBackground } from "../bloomMaterialUITheme";
 
 // invoke this with http://localhost:8089". Doesn't do much yet... someday will be the root of our UI.
 
-export const App: React.FunctionComponent = props => {
+export const App: React.FunctionComponent = (props) => {
     return (
         <div style={{ backgroundColor: kPanelBackground, height: "100%" }}>
             <div style={{ backgroundColor: kBloomBlue, paddingTop: "3px" }}>
@@ -24,7 +24,7 @@ export const App: React.FunctionComponent = props => {
         </div>
     );
 };
-const Tabs: React.FunctionComponent = props => {
+const Tabs: React.FunctionComponent = (props) => {
     return (
         <ul id="main-tabs" style={{ height: "77px" }}>
             <li>

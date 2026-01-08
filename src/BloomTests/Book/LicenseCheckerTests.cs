@@ -172,7 +172,15 @@ namespace BloomTests.Book
                 Assert.That(checker.CheckBook(dom, new[] { "en" }), Is.EqualTo(expectedEn));
                 var expectedFr = string.Format(expectedTemplate, "français");
                 Assert.That(checker.CheckBook(dom, new[] { "fr" }), Is.EqualTo(expectedFr));
-                var expectedEnFr = string.Format(expectedTemplate, "English, français");
+                var expectedEnFr = string.Format(
+                    expectedTemplate,
+                    string.Join(
+                        System.Globalization.CultureInfo.CurrentCulture.TextInfo.ListSeparator
+                            + " ",
+                        "English",
+                        "français"
+                    )
+                );
                 Assert.That(checker.CheckBook(dom, new[] { "en", "fr" }), Is.EqualTo(expectedEnFr));
                 // Russian and bjn ARE permitted.
                 Assert.That(checker.CheckBook(dom, new[] { "ru", "bjn" }), Is.Null);

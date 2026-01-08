@@ -1,11 +1,11 @@
-﻿using Bloom.Book;
-using Bloom.Collection;
-using Bloom.Spreadsheet;
-using CommandLine;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using Bloom.Book;
+using Bloom.Collection;
+using Bloom.Spreadsheet;
+using CommandLine;
 
 namespace Bloom.CLI
 {
@@ -59,11 +59,7 @@ namespace Bloom.CLI
         {
             string bookFolder = Path.GetDirectoryName(bookPath);
             string collectionFolder = Directory.GetParent(bookFolder).FullName;
-            string collectionName = Path.GetDirectoryName(collectionFolder);
-            string collectionSettingsFile = Path.Combine(
-                collectionFolder,
-                Path.ChangeExtension(collectionName, ".bloomCollection")
-            );
+            var collectionSettingsFile = CollectionSettings.GetSettingsFilePath(collectionFolder);
             return new CollectionSettings(collectionSettingsFile);
         }
     }

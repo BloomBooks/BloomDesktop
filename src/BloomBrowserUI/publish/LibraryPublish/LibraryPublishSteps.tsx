@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { TextField, Step, StepLabel, StepContent } from "@mui/material";
@@ -11,7 +10,7 @@ import {
     post,
     postBoolean,
     postString,
-    useApiBoolean
+    useApiBoolean,
 } from "../../utils/bloomApi";
 import { kBloomDisabledOpacity } from "../../utils/colorUtils";
 import { BloomStepper } from "../../react_components/BloomStepper";
@@ -20,7 +19,7 @@ import BloomButton from "../../react_components/bloomButton";
 import { PWithLink } from "../../react_components/pWithLink";
 import {
     ProgressBox,
-    ProgressBoxHandle
+    ProgressBoxHandle,
 } from "../../react_components/Progress/progressBox";
 import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -28,20 +27,20 @@ import { kWebSocketContext } from "./LibraryPublishScreen";
 import {
     useSubscribeToWebSocketForEvent,
     useSubscribeToWebSocketForObject,
-    useSubscribeToWebSocketForStringMessage
+    useSubscribeToWebSocketForStringMessage,
 } from "../../utils/WebSocketManager";
 import { Link } from "../../react_components/link";
 import {
     DialogResult,
     ConfirmDialog,
-    showConfirmDialog
+    showConfirmDialog,
 } from "../../react_components/confirmDialog";
 import { BloomSplitButton } from "../../react_components/bloomSplitButton";
 import { ErrorBox, WaitBox } from "../../react_components/boxes";
 import {
     IUploadCollisionDlgData,
     showUploadCollisionDialog,
-    UploadCollisionDlg
+    UploadCollisionDlg,
 } from "./uploadCollisionDlg";
 import { showCopyrightAndLicenseInfoOrDialog } from "../../bookEdit/copyrightAndLicense/CopyrightAndLicenseDialog";
 import { useGetEnterpriseBookshelves } from "../../collection/useGetEnterpriseBookshelves";
@@ -70,7 +69,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         project,
         defaultBookshelfUrlKey,
         validBookshelves,
-        error: serverError
+        error: serverError,
     } = useGetEnterpriseBookshelves();
 
     useEffect(() => {
@@ -85,8 +84,8 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
             ) {
                 setBookshelfHasProblem(
                     validBookshelves.filter(
-                        b => b.value === defaultBookshelfUrlKey
-                    ).length === 0
+                        (b) => b.value === defaultBookshelfUrlKey,
+                    ).length === 0,
                 );
             }
         }
@@ -95,31 +94,31 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     const localizedSummary = useL10n("Summary", "PublishTab.Upload.Summary");
     const localizedAllRightsReserved = useL10n(
         "All rights reserved (Contact the Copyright holder for any permissions.)",
-        "PublishTab.Upload.AllReserved"
+        "PublishTab.Upload.AllReserved",
     );
     const localizedSuggestChangeCC = useL10n(
         "Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.",
-        "PublishTab.Upload.SuggestChangeCC"
+        "PublishTab.Upload.SuggestChangeCC",
     );
     const localizedSuggestAssignCC = useL10n(
         "Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.",
-        "PublishTab.Upload.SuggestAssignCC"
+        "PublishTab.Upload.SuggestAssignCC",
     );
     const localizedUploadBook = useL10n(
         "Upload Book",
-        "PublishTab.Upload.UploadButton"
+        "PublishTab.Upload.UploadButton",
     );
     const localizedUploadCollection = useL10n(
         "Upload this Collection",
-        "PublishTab.Upload.UploadCollection"
+        "PublishTab.Upload.UploadCollection",
     );
     const localizedUploadFolder = useL10n(
         "Upload Folder of Collections",
-        "PublishTab.Upload.UploadFolder"
+        "PublishTab.Upload.UploadFolder",
     );
     const localizedEnterpriseTooltip = useL10n(
         "This feature requires an Enterprise subscription and a destination shelf selected in Collection Settings.",
-        "PublishTab.Upload.EnterpriseShelfRequiredTooltip"
+        "PublishTab.Upload.EnterpriseShelfRequiredTooltip",
     );
 
     const [reload, setReload] = useState<number>(0);
@@ -130,11 +129,11 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     const [bookInfo, setBookInfo] = useState<IReadonlyBookInfo>();
     useEffect(() => {
         post("libraryPublish/checkForLoggedInUser");
-        getBoolean("libraryPublish/agreementsAccepted", result => {
+        getBoolean("libraryPublish/agreementsAccepted", (result) => {
             setAgreedPreviously(result);
             setAgreementsAccepted(result);
         });
-        get("libraryPublish/getBookInfo", result => {
+        get("libraryPublish/getBookInfo", (result) => {
             setBookInfo(result.data);
             setSummary(result.data.summary);
             setIsLoading(false);
@@ -144,21 +143,20 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         "bookCopyrightAndLicense",
         "saved",
         () => {
-            setReload(reload => reload + 1);
-        }
+            setReload((reload) => reload + 1);
+        },
     );
 
     const [useSandbox, setUseSandbox] = useState<boolean>(false);
-    const [uploadButtonText, setUploadButtonText] = useState<string>(
-        localizedUploadBook
-    );
+    const [uploadButtonText, setUploadButtonText] =
+        useState<string>(localizedUploadBook);
     useEffect(() => {
         getBoolean("libraryPublish/useSandbox", setUseSandbox);
     }, []);
     useEffect(() => {
         setUploadButtonText(
             localizedUploadBook +
-                (useSandbox ? " (to dev.bloomlibrary.org)" : "")
+                (useSandbox ? " (to dev.bloomlibrary.org)" : ""),
         );
     }, [useSandbox, localizedUploadBook]);
 
@@ -175,12 +173,11 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         );
     }
     const [agreedPreviously, setAgreedPreviously] = useState<boolean>(false);
-    const [agreementsAccepted, setAgreementsAccepted] = useState<boolean>(
-        false
-    );
-    const [isPlaygroundBook, setIsPlaygroundBook] = useApiBoolean(
+    const [agreementsAccepted, setAgreementsAccepted] =
+        useState<boolean>(false);
+    const [isPlaygroundBook, _setIsPlaygroundBook] = useApiBoolean(
         "publish/isPlaygroundBook",
-        true
+        true,
     );
 
     // This useRef silliness is to prevent the postBoolean from happening on the initial render.
@@ -189,7 +186,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         if (hasRenderedRef.current)
             postBoolean(
                 "libraryPublish/agreementsAccepted",
-                agreementsAccepted
+                agreementsAccepted,
             );
         else hasRenderedRef.current = true;
     }, [agreementsAccepted]);
@@ -199,9 +196,9 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     useSubscribeToWebSocketForStringMessage(
         kWebSocketContext,
         kWebSocketEventId_loginSuccessful,
-        email => {
+        (email) => {
             setLoggedInEmail(email);
-        }
+        },
     );
 
     function isReadyForUpload(): boolean {
@@ -216,17 +213,16 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         }
     }
 
-    const [uploadCollisionInfo, setUploadCollisionInfo] = useState<
-        IUploadCollisionDlgData
-    >({
-        userEmail: "",
-        newTitle: "",
-        existingTitle: "",
-        existingCreatedDate: "",
-        existingUpdatedDate: "",
-        existingBookUrl: "",
-        count: 0
-    });
+    const [uploadCollisionInfo, setUploadCollisionInfo] =
+        useState<IUploadCollisionDlgData>({
+            userEmail: "",
+            newTitle: "",
+            existingTitle: "",
+            existingCreatedDate: "",
+            existingUpdatedDate: "",
+            existingBookUrl: "",
+            count: 0,
+        });
 
     const [conflictIndex, setConflictIndex] = useState<number>(0);
 
@@ -234,14 +230,14 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     function uploadOneBook() {
         setIsUploadComplete(false);
         setIsUploading(true);
-        get("libraryPublish/checkSubscriptionMatch", result => {
+        get("libraryPublish/checkSubscriptionMatch", (result) => {
             if (result.data.error) {
                 // The API already sent an error message
                 return;
             }
             get(
                 "libraryPublish/getUploadCollisionInfo?index=" + conflictIndex,
-                result => {
+                (result) => {
                     if (result.data.error) {
                         // The API already sent an error message
                         return;
@@ -250,20 +246,23 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                         setUploadCollisionInfo(result.data);
                         showUploadCollisionDialog();
                     } else post("libraryPublish/upload");
-                }
+                },
             );
         });
     }
 
     const changeConflictIndex = (index: number) => {
-        get("libraryPublish/getUploadCollisionInfo?index=" + index, result => {
-            if (result.data.error) {
-                // The API already sent an error message
-                return;
-            }
-            setUploadCollisionInfo(result.data);
-            setConflictIndex(index);
-        });
+        get(
+            "libraryPublish/getUploadCollisionInfo?index=" + index,
+            (result) => {
+                if (result.data.error) {
+                    // The API already sent an error message
+                    return;
+                }
+                setUploadCollisionInfo(result.data);
+                setConflictIndex(index);
+            },
+        );
     };
 
     const [isCanceling, setIsCanceling] = useState<boolean>(false);
@@ -272,7 +271,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         kWebSocketEventId_uploadCanceled,
         () => {
             setIsCanceling(false);
-        }
+        },
     );
 
     function bulkUploadCollection() {
@@ -288,14 +287,14 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     useSubscribeToWebSocketForObject<{ success: boolean; path: string }>(
         "fileIO",
         "chooseFolder-results",
-        results => {
+        (results) => {
             if (results.success) {
                 postString(
                     "libraryPublish/uploadFolderOfCollections",
-                    results.path
+                    results.path,
                 );
             }
-        }
+        },
     );
 
     const lastElementOnPageRef = React.useRef<HTMLDivElement>(null);
@@ -305,11 +304,11 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     useSubscribeToWebSocketForObject<{ bookId: string; url: string }>(
         kWebSocketContext,
         kWebSocketEventId_uploadSuccessful,
-        results => {
+        (results) => {
             setIsUploading(false);
             setBookUrl(results.url);
             setIsUploadComplete(true);
-        }
+        },
     );
 
     const [isUploadComplete, setIsUploadComplete] = useState<boolean>(false);
@@ -326,14 +325,14 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
             if (isUploadComplete) {
                 lastElementOnPageRef?.current?.scrollIntoView({
                     behavior: "smooth",
-                    block: "start"
+                    block: "start",
                 });
             }
         }, 300);
     }, [isUploadComplete]);
 
     const [licenseBlock, setLicenseBlock] = useState<JSX.Element>(
-        <React.Fragment />
+        <React.Fragment />,
     );
     useEffect(() => {
         switch (bookInfo?.licenseType) {
@@ -344,7 +343,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                         css={css`
                             width: 100px;
                         `}
-                    />
+                    />,
                 );
                 break;
             case "Null":
@@ -354,7 +353,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                         <WarningMessage>
                             {localizedSuggestAssignCC}
                         </WarningMessage>
-                    </div>
+                    </div>,
                 );
                 break;
             case "Custom":
@@ -364,7 +363,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                         <WarningMessage>
                             {localizedSuggestChangeCC}
                         </WarningMessage>
-                    </div>
+                    </div>,
                 );
                 break;
         }
@@ -372,7 +371,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         bookInfo,
         localizedAllRightsReserved,
         localizedSuggestAssignCC,
-        localizedSuggestChangeCC
+        localizedSuggestChangeCC,
     ]);
 
     const serverErrorBox = serverError && (
@@ -411,7 +410,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                     onClick: () => {
                         progressBoxRef.current?.clear();
                         confirmWithUserIfNecessaryAndUpload();
-                    }
+                    },
                 },
                 {
                     english: localizedUploadCollection,
@@ -421,7 +420,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                     onClick: () => {
                         progressBoxRef.current?.clear();
                         bulkUploadCollection();
-                    }
+                    },
                 },
                 {
                     english: localizedUploadFolder,
@@ -431,8 +430,8 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                     onClick: () => {
                         progressBoxRef.current?.clear();
                         bulkUploadFolderOfCollections();
-                    }
-                }
+                    },
+                },
             ]}
         ></BloomSplitButton>
     );
@@ -446,7 +445,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                 <MissingInfo
                     text="Missing Title"
                     l10nKey={"PublishTab.Upload.Missing.Title"}
-                    onClick={() => post("libraryPublish/goToEditBookCover")}
+                    onClick={() => post("libraryPublish/goToEditBookTitle")}
                 />
             );
         }
@@ -505,12 +504,12 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                                 // needed by aria for a11y
                                 id="book summary"
                                 value={summary}
-                                onChange={e => setSummary(e.target.value)}
+                                onChange={(e) => setSummary(e.target.value)}
                                 label={localizedSummary}
                                 margin="normal"
                                 variant="outlined"
                                 InputLabelProps={{
-                                    shrink: true
+                                    shrink: true,
                                 }}
                                 multiline
                                 rows="2"
@@ -712,7 +711,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                 confirmButtonLabelL10nKey="Common.Yes"
                 cancelButtonLabel="No"
                 cancelButtonLabelL10nKey="Common.No"
-                onDialogClose={function(result: DialogResult): void {
+                onDialogClose={function (result: DialogResult): void {
                     if (result === DialogResult.Confirm) uploadOneBook();
                 }}
             />
@@ -732,17 +731,17 @@ const Agreements: React.FunctionComponent<{
     initiallyChecked: boolean;
     disabled: boolean;
     onReadyChange: (v: boolean) => void;
-}> = props => {
+}> = (props) => {
     const totalCheckboxes = 3;
     const [numChecked, setNumChecked] = useState<number>(
-        props.initiallyChecked ? 3 : 0
+        props.initiallyChecked ? 3 : 0,
     );
     useEffect(() => {
         props.onReadyChange(numChecked === totalCheckboxes);
     }, [numChecked]);
     function handleChange(isChecked: boolean) {
-        setNumChecked(prevNumChecked =>
-            isChecked ? prevNumChecked + 1 : prevNumChecked - 1
+        setNumChecked((prevNumChecked) =>
+            isChecked ? prevNumChecked + 1 : prevNumChecked - 1,
         );
     }
     return (
@@ -766,7 +765,7 @@ const Agreements: React.FunctionComponent<{
                     </React.Fragment>
                 }
                 disabled={props.disabled}
-                onChange={checked => handleChange(checked)}
+                onChange={(checked) => handleChange(checked)}
             />
             <AgreementCheckbox
                 initiallyChecked={props.initiallyChecked}
@@ -777,7 +776,7 @@ const Agreements: React.FunctionComponent<{
                     </Span>
                 }
                 disabled={props.disabled}
-                onChange={checked => handleChange(checked)}
+                onChange={(checked) => handleChange(checked)}
             />
             <AgreementCheckbox
                 initiallyChecked={props.initiallyChecked}
@@ -801,7 +800,7 @@ const Agreements: React.FunctionComponent<{
                     </PWithLink>
                 }
                 disabled={props.disabled}
-                onChange={checked => handleChange(checked)}
+                onChange={(checked) => handleChange(checked)}
             />
         </React.Fragment>
     );
@@ -812,7 +811,7 @@ const AgreementCheckbox: React.FunctionComponent<{
     label: string | React.ReactNode;
     disabled: boolean;
     onChange: (v: boolean) => void;
-}> = props => {
+}> = (props) => {
     // props.initiallyChecked doesn't always have the right value the first time,
     // so we can't use it to initialize isChecked without the useEffect machinery.
     // See BL-13117.
@@ -829,7 +828,7 @@ const AgreementCheckbox: React.FunctionComponent<{
             <BloomCheckbox
                 label={props.label}
                 checked={isChecked}
-                onCheckChanged={newState => {
+                onCheckChanged={(newState) => {
                     handleCheckChanged(!!newState);
                 }}
                 disabled={props.disabled}
@@ -839,7 +838,7 @@ const AgreementCheckbox: React.FunctionComponent<{
     );
 };
 
-const WarningMessage: React.FunctionComponent = props => {
+const WarningMessage: React.FunctionComponent = (props) => {
     return (
         <div
             css={css`
@@ -856,7 +855,7 @@ const MissingInfo: React.FunctionComponent<{
     text: string;
     l10nKey: string;
     onClick: () => void;
-}> = props => {
+}> = (props) => {
     const selectedBookContext = React.useContext(SelectedBookContext);
     return (
         <ErrorBox

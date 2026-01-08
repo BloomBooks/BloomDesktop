@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows.Forms;
-using L10NSharp;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
 
@@ -17,11 +16,7 @@ namespace Bloom.CollectionChoosing
 
             _openAndCreateControl.Init(
                 mruList,
-                LocalizationManager.GetString(
-                    "OpenCreateNewCollectionsDialog.Bloom Collections",
-                    "Bloom Collections",
-                    "This shows in the file-open dialog that you use to open a different bloom collection"
-                ) + @"|*.bloomLibrary;*.bloomCollection",
+                Bloom.Collection.CollectionSettings.GetFileDialogFilterString(),
                 (IWin32Window owner) =>
                     NewCollectionWizard.CreateNewCollection(
                         () => _openAndCreateControl.UpdateUiLanguageMenuSelection(),

@@ -15,9 +15,9 @@ namespace BloomTests
         /// </summary>
         public static void DisableDebugListeners()
         {
-            debugListenersClone = new TraceListener[Debug.Listeners.Count];
-            Debug.Listeners.CopyTo(debugListenersClone, 0);
-            Debug.Listeners.Clear();
+            debugListenersClone = new TraceListener[Trace.Listeners.Count];
+            Trace.Listeners.CopyTo(debugListenersClone, 0);
+            Trace.Listeners.Clear();
         }
 
         /// <summary>
@@ -25,7 +25,10 @@ namespace BloomTests
         /// </summary>
         public static void EnableDebugListeners()
         {
-            Debug.Listeners.AddRange(debugListenersClone);
+            foreach (var listener in debugListenersClone)
+            {
+                Trace.Listeners.Add(listener);
+            }
         }
     }
 }

@@ -11,28 +11,28 @@ export const PrivacyScreen: React.FunctionComponent<{
     email: string;
     userInput: string;
     onBack: () => void;
-}> = props => {
+}> = (props) => {
     const localizedLoadingMsg = useL10n(
         "Loading...",
         "Common.Loading",
-        "This is shown when Bloom is slowly loading something, so the user doesn't worry about why they don't see the result immediately."
+        "This is shown when Bloom is slowly loading something, so the user doesn't worry about why they don't see the result immediately.",
     );
     const log = useApiStringState(
         `problemReport/diagnosticInfo?includeBook=${
             props.includeBook ? "true" : "false"
         }&email=${props.email}&userInput=${props.userInput}`,
-        localizedLoadingMsg
+        localizedLoadingMsg,
     );
     const privateEmailAddress = "private@bloomlibrary.org";
     const localizedPrivacyInfoMessage = useL10n(
         "Your report will go into our issue tracking system and will be visible via the web. If you have something private to say, please email to '{0}'.",
         "ReportProblemDialog.PrivacyInfo",
         "The {0} is where the Bloom team's private email address will be inserted.",
-        privateEmailAddress
+        privateEmailAddress,
     );
     const localizedPrivacyIntro = useL10n(
         "Bloom will include the following diagnostic information with your report:",
-        "ReportProblemDialog.DiagnosticReportIntro"
+        "ReportProblemDialog.DiagnosticReportIntro",
     );
 
     return (

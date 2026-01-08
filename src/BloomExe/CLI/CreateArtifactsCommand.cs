@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.Publish.BloomPub;
@@ -99,10 +100,7 @@ namespace Bloom.CLI
 
                 using (var applicationContainer = new ApplicationContainer())
                 {
-                    LocalizationManager.SetUILanguage(
-                        Settings.Default.UserInterfaceLanguage,
-                        false
-                    ); // Unclear if this line is needed or not.
+                    LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage); // Unclear if this line is needed or not.
                     if (DesktopAnalytics.Analytics.AllowTracking)
                     {
                         throw new ApplicationException(
@@ -120,8 +118,7 @@ namespace Bloom.CLI
                     {
                         Bloom.Program.SetProjectContext(s_projectContext);
                         // This may be needed for bringing the book up to date.  See BH-7453, BH-7454, and BH-7455.
-                        if (!Sldr.IsInitialized)
-                            Sldr.Initialize();
+                        WritingSystem.EnsureSldrInitialized();
 
                         // Make the .bloompub and /bloomdigital outputs
                         return CreateArtifacts(options);
@@ -151,8 +148,10 @@ namespace Bloom.CLI
             string jsonTextsOutputPath = parameters.JsonTextsOutputPath;
 
             PublishHelper.ProblemFontsPath = parameters.ProblemFontsPath;
-            if (!string.IsNullOrEmpty(PublishHelper.ProblemFontsPath) &&
-                RobustFile.Exists(PublishHelper.ProblemFontsPath))
+            if (
+                !string.IsNullOrEmpty(PublishHelper.ProblemFontsPath)
+                && RobustFile.Exists(PublishHelper.ProblemFontsPath)
+            )
             {
                 // If the file already exists, delete it so we can write a fresh one if needed.
                 RobustFile.Delete(PublishHelper.ProblemFontsPath);
@@ -232,8 +231,10 @@ namespace Bloom.CLI
             }
             // If the problem fonts file exists, it means that there were problems with the fonts
             // that the harvester will need to report.
-            if (!string.IsNullOrEmpty(PublishHelper.ProblemFontsPath) &&
-                RobustFile.Exists(PublishHelper.ProblemFontsPath))
+            if (
+                !string.IsNullOrEmpty(PublishHelper.ProblemFontsPath)
+                && RobustFile.Exists(PublishHelper.ProblemFontsPath)
+            )
             {
                 exitCode |= CreateArtifactsExitCode.FontProblems;
             }
@@ -412,7 +413,7 @@ namespace Bloom.CLI
                 if (s_book.BookInfo?.PublishSettings?.Epub?.Mode == "fixed")
                     maker.Unpaginated = false;
                 maker.OneAudioPerPage = true; // default used in EpubApi
-                                              // Enhance: maybe we want book to have image descriptions on page? use reader font sizes?
+                // Enhance: maybe we want book to have image descriptions on page? use reader font sizes?
 
                 // Make the epub
                 maker.SaveEpub(parameters.EpubOutputPath, new NullWebSocketProgress());
@@ -541,7 +542,7 @@ namespace Bloom.CLI
             "problemFontsPath",
             HelpText = "Output destination path for a text file which contains information about problematic fonts that prevent artifact upload",
             Required = false
-            )]
+        )]
         public string ProblemFontsPath { get; set; }
 
         private string _creator;

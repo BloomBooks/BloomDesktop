@@ -8,8 +8,8 @@
 // This collectionSettings reference defines the function GetSettings(): ICollectionSettings
 // The actual function is injected by C#.
 /// <reference path="../js/collectionSettings.d.ts"/>
-import * as React from "react";
 import * as ReactDOM from "react-dom";
+import $ from "jquery";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import bloomQtipUtils from "../js/bloomQtipUtils";
@@ -18,13 +18,15 @@ import BloomHintBubbles from "../js/BloomHintBubbles";
 import { postJson, postString } from "../../utils/bloomApi";
 import CopyContentButton from "../../react_components/CopyContentButton";
 
+declare function GetSettings(): any; // C# (or test code) injects this
+
 export default class BloomSourceBubbles {
     //:empty is not quite enough... we don't want to show bubbles if all there is is an empty paragraph
     private static hasNoText(obj: HTMLElement): boolean {
         //if(typeof (obj) == 'HTMLTextAreaElement') {
         //    return $.trim($(obj).text()).length == 0;
         //}
-        return $.trim($(obj).text()).length == 0;
+        return $.trim($(obj).text()).length === 0;
     }
 
     // This is the method that should be called from bloomEditing to create tabbed source bubbles
@@ -34,23 +36,23 @@ export default class BloomSourceBubbles {
     // Returns the source bubble if it made one.
     public static ProduceSourceBubbles(
         group: HTMLElement,
-        newLangTag?: string
+        newLangTag?: string,
     ): JQuery {
         return BloomSourceBubbles.MakeSourceTextDivForGroup(group, newLangTag);
     }
 
     // remvoe tooltips from every TG in the container (and the container itself, if it IS a TG).
     public static removeSourceBubbles(
-        container: HTMLElement | null | undefined
+        container: HTMLElement | null | undefined,
     ): void {
         if (!container) return; // saves every client checking (often only because of eslint)
         const groups = Array.from(
-            container.getElementsByClassName("bloom-translationGroup")
+            container.getElementsByClassName("bloom-translationGroup"),
         );
         if (container.classList.contains("bloom-translationGroup")) {
             groups.push(container);
         }
-        groups.forEach(group => {
+        groups.forEach((group) => {
             $(group).qtip("destroy");
         });
     }
@@ -59,27 +61,26 @@ export default class BloomSourceBubbles {
         elementThatHasBubble: HTMLElement,
         contentsOfBubble: JQuery,
         selectLangTag?: string,
-        forceShowAlwaysOnBody?: boolean
+        forceShowAlwaysOnBody?: boolean,
     ) {
         // Do easytabs transformation on the cloned div 'divForBubble' with the first tab selected,
         let divForBubble = BloomSourceBubbles.CreateTabsFromDiv(
             contentsOfBubble,
-            selectLangTag
+            selectLangTag,
         );
         if (divForBubble.length === 0) return;
 
         // If divForBubble contains more than two languages, create a dropdown menu to contain the
         // extra possibilities. The menu will show (x), where x is the number of items in the dropdown.
-        divForBubble = BloomSourceBubbles.CreateDropdownIfNecessary(
-            divForBubble
-        );
+        divForBubble =
+            BloomSourceBubbles.CreateDropdownIfNecessary(divForBubble);
 
         // Turns the tabbed and linked div bundle into a qtip bubble attached to the elementThatHasBubble.
         // Also makes sure the tooltips are setup correctly.
         BloomSourceBubbles.CreateAndShowQtipBubbleFromDiv(
             elementThatHasBubble,
             divForBubble,
-            forceShowAlwaysOnBody
+            forceShowAlwaysOnBody,
         );
     }
 
@@ -90,7 +91,7 @@ export default class BloomSourceBubbles {
     // This method is only public for testing
     public static MakeSourceTextDivForGroup(
         group: HTMLElement,
-        newLangTag?: string
+        newLangTag?: string,
     ): JQuery {
         if (group.classList.contains("bloom-no-source-bubble")) return $();
         // Copy source texts out to their own div, where we can make a bubble with tabs out of them
@@ -105,7 +106,7 @@ export default class BloomSourceBubbles {
         });
 
         //make the source texts in the bubble read-only and remove any user font size adjustments
-        divForBubble.find("textarea, div").each(function(): boolean {
+        divForBubble.find("textarea, div").each(function (): boolean {
             //don't want empty items in the bubble
             const $this = $(this);
             if (BloomSourceBubbles.hasNoText(this)) {
@@ -166,7 +167,7 @@ export default class BloomSourceBubbles {
         // BL-2357
         items = BloomSourceBubbles.SmartOrderSourceTabs(items, newLangTag);
         const list = $this.find("nav ul");
-        items.each(function() {
+        items.each(function () {
             const sourceElement = this as HTMLElement;
             const langTag = sourceElement.getAttribute("lang");
             if (langTag) {
@@ -183,20 +184,23 @@ export default class BloomSourceBubbles {
                 $(list).append(
                     '<li id="' +
                         langTag +
+                        '" title="' +
+                        langTag +
                         '"><a class="sourceTextTab" href="#' +
                         langTag +
                         '">' +
                         localizedLanguageName +
-                        "</a></li>"
+                        "</a></li>",
                 );
-                (list.get(
-                    0
-                ) as HTMLElement).lastElementChild?.firstElementChild?.addEventListener(
+                (
+                    list.get(0) as HTMLElement
+                ).lastElementChild?.firstElementChild?.addEventListener(
                     "click",
-                    () => postString("editView/sourceTextTab", langTag)
+                    () => postString("editView/sourceTextTab", langTag),
                 );
                 // BL-8174: Add a tooltip with the language tag to the item
-                sourceElement.setAttribute("title", langTag);
+                // BL-15212: we no longer want the tag here, just on the language-name label
+                //sourceElement.setAttribute("title", langTag);
             }
 
             if (sourceElement.innerText !== "") {
@@ -206,7 +210,7 @@ export default class BloomSourceBubbles {
                 // It's actually easier to figure out what to copy out here and feed it into the button
                 // component.
                 const elementToCopy = sourceElement.closest(
-                    ".source-text"
+                    ".source-text",
                 ) as HTMLDivElement;
                 let textToCopy: string | undefined = undefined;
                 if (elementToCopy) {
@@ -219,11 +223,11 @@ export default class BloomSourceBubbles {
                         <CopyContentButton
                             onClick={() =>
                                 BloomSourceBubbles.handleCopyBubbleSourceClick(
-                                    textToCopy!
+                                    textToCopy!,
                                 )
                             }
                         />,
-                        buttonDiv
+                        buttonDiv,
                     );
                 }
             }
@@ -239,7 +243,7 @@ export default class BloomSourceBubbles {
             if (textNode.textContent)
                 textNode.textContent = textNode.textContent.replace(
                     /\s\s+/g,
-                    " "
+                    " ",
                 );
         }
     }
@@ -247,7 +251,7 @@ export default class BloomSourceBubbles {
     private static handleCopyBubbleSourceClick(textToCopy: string): void {
         if (textToCopy) {
             postJson("common/clipboardText", {
-                text: textToCopy
+                text: textToCopy,
             });
             //navigator.clipboard.writeText(textToCopy); simpler, but not available until FF66+
         }
@@ -265,7 +269,7 @@ export default class BloomSourceBubbles {
     // optional param 'newLangTag' is defined when the user clicks on a language in the dropdown box
     private static SmartOrderSourceTabs(
         items: JQuery,
-        newLangTag?: string
+        newLangTag?: string,
     ): JQuery {
         const settings = GetSettings();
 
@@ -276,8 +280,8 @@ export default class BloomSourceBubbles {
             settings.defaultSourceLanguage, // Second priority - primary source language
             settings.defaultSourceLanguage2, // Third priority - secondary source language
             settings.currentCollectionLanguage2, // Fourth priority - collection languages
-            settings.currentCollectionLanguage3
-        ].filter(lang => Boolean(lang?.trim())); // Remove empty/undefined/whitespace-only values
+            settings.currentCollectionLanguage3,
+        ].filter((lang) => Boolean(lang?.trim())); // Remove empty/undefined/whitespace-only values
 
         // Convert to Set to remove duplicates while preserving order
         const preferredOrder = new Set(preferredLanguages);
@@ -309,16 +313,16 @@ export default class BloomSourceBubbles {
     private static DoSafeReplaceInList(
         items: JQuery,
         langCode: string,
-        position: number
+        position: number,
     ): JQuery {
         // if items contains a div with langCode, then try to put it at the position specified in the list
         // (unless it already occurs at an earlier position).
         let moveFrom = 0;
         let objToMove;
         const itemArray = items.toArray();
-        items.each(function(idx, obj): boolean {
+        items.each(function (idx, obj): boolean {
             const langTag = $(this).attr("lang");
-            if (langTag == langCode && position < idx) {
+            if (langTag === langCode && position < idx) {
                 moveFrom = idx;
                 objToMove = obj;
                 return false; // break out of .each()
@@ -338,7 +342,7 @@ export default class BloomSourceBubbles {
     // language; otherwise, the first tab (which might be a hint).
     private static CreateTabsFromDiv(
         divForBubble: JQuery,
-        selectLangTag?: string
+        selectLangTag?: string,
     ): JQuery {
         //now turn that new div into a set of tabs
         const opts: any = {
@@ -346,7 +350,7 @@ export default class BloomSourceBubbles {
             tabs: "> nav > ul > li",
             // don't need it messing with the window url, and may help prevent previous
             // selections being copied into updated qtips.
-            updateHash: false
+            updateHash: false,
         };
         const tabs = divForBubble.find("nav li");
         if (tabs.length > 0) {
@@ -356,12 +360,9 @@ export default class BloomSourceBubbles {
             if (
                 !selectLangTag &&
                 tabs.length > 1 &&
-                tabs.first().attr("id") == "hint"
+                tabs.first().attr("id") === "hint"
             ) {
-                selectLangTag = tabs
-                    .first()
-                    .next()
-                    .attr("id");
+                selectLangTag = tabs.first().next().attr("id");
             }
             if (selectLangTag) {
                 // Somehow easytabs.select is NOT deselecting the item it selected by default.
@@ -387,7 +388,7 @@ export default class BloomSourceBubbles {
     public static CreateDropdownIfNecessary(divForBubble: JQuery): JQuery {
         let firstSelectOption = 3;
         const tabs = divForBubble.find("nav li"); // may be li elements in the content
-        if (tabs.length && tabs.first().attr("id") == "hint") {
+        if (tabs.length && tabs.first().attr("id") === "hint") {
             firstSelectOption++; // allow hint in addition to languages.
         }
         if (tabs.length < firstSelectOption) return divForBubble; // no change
@@ -396,7 +397,7 @@ export default class BloomSourceBubbles {
             "<li class='dropdown-menu'><div>0</div><ul class='dropdown-list'></ul></li>";
         divForBubble.find("nav ul").append(dropMenu);
         const container = divForBubble.find(".dropdown-list");
-        tabs.each(function(idx): boolean {
+        tabs.each(function (idx): boolean {
             if (idx < firstSelectOption - 1) return true; // continue to next iteration of .each()
             const $this = $(this);
             const link = $this.find("a").clone(false); // don't want to keep easytab click event
@@ -410,11 +411,11 @@ export default class BloomSourceBubbles {
 
         tabs.remove(".removeThisOne");
 
-        container.find("li").each(function() {
+        container.find("li").each(function () {
             this.addEventListener(
                 "click",
                 BloomSourceBubbles.styledSelectChangeHandler,
-                false
+                false,
             );
         });
 
@@ -429,11 +430,9 @@ export default class BloomSourceBubbles {
         const newLangTag = event.target.href.split("#")[1];
 
         // Figure out which qtip we're in and go find the associated bloom-translationGroup
-        const qtip = $(event.target)
-            .closest(".qtip")
-            .attr("id");
+        const qtip = $(event.target).closest(".qtip").attr("id");
         const group = $(document).find(
-            '.bloom-translationGroup[aria-describedby="' + qtip + '"]'
+            '.bloom-translationGroup[aria-describedby="' + qtip + '"]',
         );
 
         // Redo creating the source bubbles with the selected language first
@@ -441,19 +440,19 @@ export default class BloomSourceBubbles {
             // should be
             const divForBubble = BloomSourceBubbles.ProduceSourceBubbles(
                 group[0],
-                newLangTag
+                newLangTag,
             );
             postString("editView/sourceTextTab", newLangTag);
             if (divForBubble.length !== 0) {
                 BloomHintBubbles.addHintBubbles(
                     group.get(0),
                     [group.get(0)],
-                    [divForBubble.get(0)]
+                    [divForBubble.get(0)],
                 );
                 BloomSourceBubbles.MakeSourceBubblesIntoQtips(
                     group.get(0),
                     divForBubble,
-                    newLangTag
+                    newLangTag,
                 );
             }
         }
@@ -472,21 +471,21 @@ export default class BloomSourceBubbles {
             childList: true,
             characterData: true,
             subtree: true,
-            attributes: true
+            attributes: true,
         };
-        const observer = new MutationObserver(mutations => {
+        const observer = new MutationObserver((mutations) => {
             // To minimize the overhead of this, we only do it after nothing changes for 100ms
             if (BloomSourceBubbles.debounceTimeout) {
                 clearTimeout(BloomSourceBubbles.debounceTimeout);
             }
 
-            BloomSourceBubbles.debounceTimeout = (setTimeout(() => {
+            BloomSourceBubbles.debounceTimeout = setTimeout(() => {
                 observer.disconnect(); // don't want to respond to changes that reposition makes
                 $(document.querySelectorAll("[data-hasqtip]")).qtip(
-                    "reposition"
+                    "reposition",
                 );
                 observer.observe(document.body, config);
-            }, 100) as any) as number;
+            }, 100) as any as number;
         });
         // observe everything...even (for example) dialogs that are outside the page.
         // For example, the GamePromptDialog has a source bubble and can be moved.
@@ -504,7 +503,7 @@ export default class BloomSourceBubbles {
         // Since the dialog is outside the scaling container, it isn't scaled, so scaling the bubble
         // will make it look wrong in both size and position. And it only shows when hovering the dialog,
         // so conflicting with other bubbles is not an issue.
-        forceShowAlwaysOnBody?: boolean
+        forceShowAlwaysOnBody?: boolean,
     ): void {
         let showEvents = false;
         let hideEvents = false;
@@ -516,7 +515,7 @@ export default class BloomSourceBubbles {
         if (
             (!forceShowAlwaysOnBody &&
                 bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles(
-                    $group
+                    $group,
                 )) ||
             !$group.is(":visible")
         ) {
@@ -528,7 +527,7 @@ export default class BloomSourceBubbles {
         }
 
         // turn that tab thing into a bubble, and attach it to the original div ("group")
-        $group.each(function() {
+        $group.each(function () {
             // const targetHeight = Math.max(55, $(this).height()); // This ensures we get at least one line of the source text!
 
             const $this: JQuery = $(this);
@@ -539,17 +538,17 @@ export default class BloomSourceBubbles {
                     at: "right top",
                     adjust: {
                         x: 0,
-                        y: 0
+                        y: 0,
                     },
                     container: forceShowAlwaysOnBody
                         ? document.body
-                        : bloomQtipUtils.qtipZoomContainer()
+                        : bloomQtipUtils.qtipZoomContainer(),
                 },
                 content: divForBubble,
 
                 show: {
                     event: showEvents ? showEventsStr : showEvents,
-                    ready: shouldShowAlways
+                    ready: shouldShowAlways,
                 },
                 style: {
                     tip: {
@@ -557,10 +556,10 @@ export default class BloomSourceBubbles {
                         width: 10,
                         height: 10,
                         mimic: "left center",
-                        offset: 20
+                        offset: 20,
                     },
                     classes:
-                        "ui-tooltip-green ui-tooltip-rounded uibloomSourceTextsBubble"
+                        "ui-tooltip-green ui-tooltip-rounded uibloomSourceTextsBubble",
                 },
                 hide: hideEvents ? hideEventsStr : hideEvents,
                 events: {
@@ -578,7 +577,7 @@ export default class BloomSourceBubbles {
                         // BL-878: set the tool tips to not be larger than the text area so they don't overlap each other
                         const $tip = api.elements.tooltip;
                         const $div = $body.find(
-                            '[aria-describedby="' + $tip.attr("id") + '"]'
+                            '[aria-describedby="' + $tip.attr("id") + '"]',
                         );
                         let maxHeight = $div.height();
                         if ($tip.height() > maxHeight) {
@@ -600,15 +599,14 @@ export default class BloomSourceBubbles {
                     render: (event, api) => {
                         if (!api.elements.tooltip || !api.elements.tooltip[0])
                             return;
-                        const paras = api.elements.tooltip[0].getElementsByTagName(
-                            "p"
-                        );
+                        const paras =
+                            api.elements.tooltip[0].getElementsByTagName("p");
                         for (let i = 0; i < paras.length; i++) {
                             const p = paras[i] as HTMLElement;
                             // won't let us tab to it, but lets it get focus when we do a drag selection,
                             // which allows keyboard events to be raised and ctrl-A intercepted.
                             p.setAttribute("tabindex", "-1");
-                            p.addEventListener("keydown", kevent => {
+                            p.addEventListener("keydown", (kevent) => {
                                 // When the user types <Control-A> inside a source bubble, we don't
                                 // want the whole page selected.  We want just the current text of
                                 // the bubble to be selected.
@@ -627,11 +625,13 @@ export default class BloomSourceBubbles {
                                         wholeSource.ownerDocument &&
                                         wholeSource.ownerDocument.defaultView
                                     ) {
-                                        const selection = wholeSource.ownerDocument.defaultView.getSelection();
+                                        const selection =
+                                            wholeSource.ownerDocument.defaultView.getSelection();
                                         if (selection) {
-                                            const range = wholeSource.ownerDocument.createRange();
+                                            const range =
+                                                wholeSource.ownerDocument.createRange();
                                             range.selectNodeContents(
-                                                wholeSource
+                                                wholeSource,
                                             );
                                             selection.removeAllRanges();
                                             selection.addRange(range);
@@ -649,11 +649,11 @@ export default class BloomSourceBubbles {
                         // BL-9198 Also if the user is trying to click on the copy button in the source bubble
                         // we don't want the default behavior (which makes the bubble close;
                         // how? we aren't quite sure yet).
-                        api.elements.tooltip.mousedown(ev => {
+                        api.elements.tooltip.mousedown((ev) => {
                             const cls = ev.target.getAttribute("class");
                             const href = ev.target.getAttribute("href");
                             if (
-                                (cls == "sourceTextTab" &&
+                                (cls === "sourceTextTab" &&
                                     href &&
                                     href.startsWith("#")) ||
                                 ev.target.closest(".source-copy-button")
@@ -666,7 +666,7 @@ export default class BloomSourceBubbles {
                         // reliably for some undetermined reason. It's still useful so that clicking on a tooltip focuses its element.
                         // Otherwise the bubble may stay hidden behind something else even when clicked.
                         // However, if the user drags and makes a range selection, we don't want to hide it.
-                        api.elements.tooltip.click(ev => {
+                        api.elements.tooltip.click(() => {
                             const sel = window.getSelection();
                             if (sel && !sel.isCollapsed) {
                                 // user made a range selection, probably to copy. Don't mess with it.
@@ -677,7 +677,7 @@ export default class BloomSourceBubbles {
                             let baseElement = $("body").find(
                                 "[aria-describedby='" +
                                     api.elements.tooltip.attr("id") +
-                                    "']"
+                                    "']",
                             );
                             // That might be either a group or an editable div. Focus needs to go to something actually editable,
                             // so a group is not a candidate. Fortunately, source bubbles are always attached to the top
@@ -704,8 +704,8 @@ export default class BloomSourceBubbles {
                                 baseElement.removeAttr("tabindex");
                             }
                         });
-                    }
-                }
+                    },
+                },
             });
 
             BloomSourceBubbles.SetupTooltips($this);
@@ -722,7 +722,7 @@ export default class BloomSourceBubbles {
             // BloomField.WireToCKEditor() has focus and blur handlers to add/remove the
             // passive-bubble class on qtip tooltips that are *not* Source Bubbles.
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-11745.
-            $(elt).focus(event => {
+            $(elt).focus((event) => {
                 // bloomApi postDebugMessage(
                 //     "DEBUG BloomSourceBubbles.SetupTooltips/on focus - element=" +
                 //         (event.target as Element).outerHTML
@@ -734,13 +734,13 @@ export default class BloomSourceBubbles {
             // in ShowSourceBubbleForElement() below (called by the focus handler) is
             // not enough because the field receiving focus may not be one that has
             // been configured with this event.
-            $(elt).blur(ev => {
+            $(elt).blur((ev) => {
                 // bloomApi postDebugMessage(
                 //     "DEBUG BloomSourceBubbles.SetupTooltips/on blur - element=" +
                 //         (ev.target as Element).outerHTML
                 // );
                 const tipId = (ev.target.parentNode as Element).getAttribute(
-                    "aria-describedby"
+                    "aria-describedby",
                 );
                 const $tip = $("body").find("#" + tipId);
                 if ($tip.hasClass("qtip-focus")) {
@@ -766,7 +766,7 @@ export default class BloomSourceBubbles {
         });
         // show the full tip, if needed
         const tipId = (element.parentNode as Element).getAttribute(
-            "aria-describedby"
+            "aria-describedby",
         );
         const $tip = $body.find("#" + tipId);
         $tip.removeClass("passive-bubble");

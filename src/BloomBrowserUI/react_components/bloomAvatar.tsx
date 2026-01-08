@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import Avatar, { Cache, ConfigProvider } from "react-avatar";
@@ -10,7 +9,7 @@ export const BloomAvatar: React.FunctionComponent<{
     name: string;
     borderColor?: string;
     avatarSizeInt?: number;
-}> = props => {
+}> = (props) => {
     const borderSizeInt = 3;
     const avatarSizeInt = props.avatarSizeInt || 48;
     const avatarSize = props.borderColor
@@ -26,7 +25,7 @@ export const BloomAvatar: React.FunctionComponent<{
     // We do want it to retry retrieving gravatars, so keep its cache empty
     const cache = new Cache({
         sourceTTL: 0, // retain for 0 milliseconds
-        sourceSize: 0 // retain a maximum of 0 items in cache
+        sourceSize: 0, // retain a maximum of 0 items in cache
     });
     return (
         <React.Suspense fallback={<React.Fragment />}>

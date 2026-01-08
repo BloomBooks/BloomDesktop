@@ -1,16 +1,17 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading;
 using Bloom;
+using Bloom.Book;
+using Bloom.Collection;
+using Bloom.MiscUI;
 using Bloom.TeamCollection;
 using Bloom.web;
 using BloomTemp;
 using Moq;
 using NUnit.Framework;
 using SIL.IO;
-using System;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using Bloom.Book;
-using Bloom.MiscUI;
 
 namespace BloomTests.TeamCollection
 {
@@ -45,11 +46,9 @@ namespace BloomTests.TeamCollection
                         "Strange book content",
                         bookFolderName2
                     );
-                    var settingsFileName = Path.ChangeExtension(
-                        Path.GetFileName(collectionFolder.FolderPath),
-                        "bloomCollection"
+                    var settingsPath = CollectionSettings.GetSettingsFilePath(
+                        collectionFolder.FolderPath
                     );
-                    var settingsPath = Path.Combine(collectionFolder.FolderPath, settingsFileName);
 
                     // As an aside, this is a convenient place to check that a TC manager created when TC settings does not exist
                     // functions and does not have a current collection.
@@ -104,9 +103,8 @@ namespace BloomTests.TeamCollection
                     Assert.That(File.Exists(teamCollectionLinkPath));
                     var collectionFileContent = RobustFile.ReadAllText(teamCollectionLinkPath);
                     Assert.That(collectionFileContent, Is.EqualTo(sharedFolder.FolderPath));
-                    var sharedSettingsPath = Path.Combine(
-                        collectionFolder.FolderPath,
-                        settingsFileName
+                    var sharedSettingsPath = CollectionSettings.GetSettingsFilePath(
+                        collectionFolder.FolderPath
                     );
                     Assert.That(
                         RobustFile.ReadAllText(sharedSettingsPath),
@@ -244,11 +242,9 @@ namespace BloomTests.TeamCollection
                     )
                 )
                 {
-                    var settingsFileName = Path.ChangeExtension(
-                        Path.GetFileName(collectionFolder.FolderPath),
-                        "bloomCollection"
+                    var settingsPath = CollectionSettings.GetSettingsFilePath(
+                        collectionFolder.FolderPath
                     );
-                    var settingsPath = Path.Combine(collectionFolder.FolderPath, settingsFileName);
                     var tcManager = new TeamCollectionManager(
                         settingsPath,
                         null,
@@ -737,9 +733,8 @@ namespace BloomTests.TeamCollection
                         collectionFolder.FolderPath,
                         repoFolder.FolderPath
                     );
-                    var otherPath = Path.Combine(
-                        collectionFolder.FolderPath,
-                        Path.GetFileName(collectionFolder.FolderPath) + ".bloomCollection"
+                    var otherPath = CollectionSettings.GetSettingsFilePath(
+                        collectionFolder.FolderPath
                     );
                     Directory.CreateDirectory(Path.GetDirectoryName(otherPath));
                     // this test doesn't need this folder except that StartMonitoring does.
@@ -770,6 +765,7 @@ namespace BloomTests.TeamCollection
                     // To avoid messing up other tests, clean up before asserting.
                     tc.RepoCollectionFilesChanged -= monitorFunction;
                     tc.StopMonitoring();
+                    tc.Dispose();
 
                     Assert.That(eventWasRaised, Is.True, "event was not raised");
                 }
@@ -831,9 +827,8 @@ namespace BloomTests.TeamCollection
                         collectionFolder.FolderPath,
                         repoFolder.FolderPath
                     );
-                    var otherPath = Path.Combine(
-                        collectionFolder.FolderPath,
-                        Path.GetFileName(collectionFolder.FolderPath) + ".bloomCollection"
+                    var otherPath = CollectionSettings.GetSettingsFilePath(
+                        collectionFolder.FolderPath
                     );
                     // this test doesn't need this folder except that StartMonitoring does.
                     Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));

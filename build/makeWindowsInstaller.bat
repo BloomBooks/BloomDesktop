@@ -43,4 +43,3 @@ msbuild build\Bloom.proj /t:UploadSignIfPossible /p:Configuration=Release /p:Pla
 @echo         The default is 99.
 @echo TempDir is someplace where temp files can be stored.  The default is %TEMP%.
 @echo If you want to skip an argument on the command line, use "" as its value.
-

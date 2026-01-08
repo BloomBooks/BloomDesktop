@@ -4,8 +4,8 @@
 import { getPageIframeBody } from "../../utils/shared";
 import {
     kCanvasElementSelector,
-    getCanvasElementManager
-} from "../toolbox/overlay/canvasElementUtils";
+    getCanvasElementManager,
+} from "../toolbox/canvas/canvasElementUtils";
 
 export const kVideoContainerClass = "bloom-videoContainer";
 
@@ -15,17 +15,17 @@ export const kVideoContainerClass = "bloom-videoContainer";
 // notifyCanvasElementManager is false when calling FROM setActiveElement, and should not be otherwise.
 export function selectVideoContainer(
     videoContainer: Element | undefined | null,
-    notifyCanvasElementManager = true
+    notifyCanvasElementManager = true,
 ) {
     const body = getPageIframeBody();
     if (body) {
         Array.from(body.getElementsByClassName("bloom-selected"))
-            .filter(e => e !== videoContainer)
-            .forEach(e => e.classList.remove("bloom-selected"));
+            .filter((e) => e !== videoContainer)
+            .forEach((e) => e.classList.remove("bloom-selected"));
     }
     videoContainer?.classList.add("bloom-selected");
     const canvasElement = videoContainer?.closest(
-        kCanvasElementSelector
+        kCanvasElementSelector,
     ) as HTMLElement;
     // If it's in a canvas element, make that canvas element active. If not, make sure no canvas element is active.
     // We don't need the confusion of two different ideas of what's active.
@@ -41,11 +41,11 @@ export function selectVideoContainer(
 // canvas element) to be selected in the sign langauge tool if we switch back.)
 export function deselectVideoContainers() {
     const videoContainers: HTMLElement[] = Array.from(
-        document.getElementsByClassName(kVideoContainerClass) as any
+        document.getElementsByClassName(kVideoContainerClass) as any,
     );
     videoContainers
-        .filter(x => !x.closest(kCanvasElementSelector))
-        .forEach(container => {
+        .filter((x) => !x.closest(kCanvasElementSelector))
+        .forEach((container) => {
             container.classList.remove("bloom-selected");
         });
 }

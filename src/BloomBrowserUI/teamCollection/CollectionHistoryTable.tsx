@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useApiData } from "../utils/bloomApi";
@@ -19,7 +18,7 @@ interface IBookHistoryEvent {
 
 const HeaderCell: React.FunctionComponent<{
     colSpan?: number;
-}> = props => {
+}> = (props) => {
     return (
         <td
             colSpan={props.colSpan}
@@ -37,7 +36,7 @@ const HeaderCell: React.FunctionComponent<{
 const TextCell: React.FunctionComponent<{
     className?: string;
     colSpan?: number;
-}> = props => {
+}> = (props) => {
     return (
         <td
             className={props.className}
@@ -64,26 +63,26 @@ const kEventTypes = [
     "Import Spreadsheet",
     "Sync Problem",
     "Deleted",
-    "Moved"
+    "Moved",
 ]; // REVIEW maybe better to do this in c# and just send it over?
 
 export const CollectionHistoryTable: React.FunctionComponent<{
     selectedBook?: string;
-}> = props => {
+}> = (props) => {
     const currentBookOnly = !!props.selectedBook;
     // This is a trick to force the API call to run again when the selected book changes.
     const [generation, setGeneration] = useState(0);
-    useEffect(() => setGeneration(gen => gen + 1), [props.selectedBook]);
+    useEffect(() => setGeneration((gen) => gen + 1), [props.selectedBook]);
     // Likewise force a re-run when there is a new event.
     useSubscribeToWebSocketForEvent("bookHistory", "eventAdded", () =>
-        setGeneration(gen => gen + 1)
+        setGeneration((gen) => gen + 1),
     );
     const events = useApiData<IBookHistoryEvent[]>(
         "teamCollection/getHistory" +
             (currentBookOnly
                 ? "?currentBookOnly=true&generation=" + generation
                 : ""),
-        []
+        [],
     );
 
     return (

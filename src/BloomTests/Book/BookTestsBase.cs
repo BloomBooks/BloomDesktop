@@ -134,8 +134,9 @@ namespace BloomTests.Book
                 .Setup(x => x.LocateFileWithThrow("customCollectionStyles.css"))
                 .Returns(Path.Combine(_testFolder.Path, "customCollectionStyles.css"));
             var basicBookPath =
-                BloomFileLocator.GetCodeBaseFolder()
-                + "/../browser/templates/template books/Basic Book/Basic Book.css";
+                FileLocationUtilities.DirectoryOfTheApplicationExecutable.CombineForPath(
+                    $"{BloomFileLocatorTests.kRelativePathToBrowserFolder}/templates/template books/Basic Book/Basic Book.css"
+                );
             _fileLocator.Setup(x => x.LocateFile("Basic Book.css")).Returns(basicBookPath);
             _fileLocator.Setup(x => x.LocateFileWithThrow("Basic Book.css")).Returns(basicBookPath);
 
@@ -149,11 +150,8 @@ namespace BloomTests.Book
                 .Setup(x => x.LocateDirectory("Factory-XMatter", It.IsAny<string>()))
                 .Returns(xMatter.CombineForPath("Factory-XMatter"));
             _fileLocator
-                .Setup(
-                    x =>
-                        x.LocateFileWithThrow(
-                            "Factory-XMatter".CombineForPath("Factory-XMatter.htm")
-                        )
+                .Setup(x =>
+                    x.LocateFileWithThrow("Factory-XMatter".CombineForPath("Factory-XMatter.htm"))
                 )
                 .Returns(xMatter.CombineForPath("Factory-XMatter", "Factory-XMatter.htm"));
 
@@ -167,11 +165,10 @@ namespace BloomTests.Book
                 .Setup(x => x.LocateDirectory("Traditional-XMatter", It.IsAny<string>()))
                 .Returns(xMatter.CombineForPath("Traditional-XMatter"));
             _fileLocator
-                .Setup(
-                    x =>
-                        x.LocateFileWithThrow(
-                            "Traditional-XMatter".CombineForPath("Traditional-XMatter.htm")
-                        )
+                .Setup(x =>
+                    x.LocateFileWithThrow(
+                        "Traditional-XMatter".CombineForPath("Traditional-XMatter.htm")
+                    )
                 )
                 .Returns(xMatter.CombineForPath("Traditional-XMatter", "Factory-XMatter.htm"));
             _fileLocator
@@ -188,11 +185,8 @@ namespace BloomTests.Book
                 .Setup(x => x.LocateDirectory("BigBook-XMatter", It.IsAny<string>()))
                 .Returns(xMatter.CombineForPath("BigBook-XMatter"));
             _fileLocator
-                .Setup(
-                    x =>
-                        x.LocateFileWithThrow(
-                            "BigBook-XMatter".CombineForPath("BigBook-XMatter.htm")
-                        )
+                .Setup(x =>
+                    x.LocateFileWithThrow("BigBook-XMatter".CombineForPath("BigBook-XMatter.htm"))
                 )
                 .Returns(xMatter.CombineForPath("BigBook-XMatter", "BigBook-XMatter.htm"));
 
@@ -206,9 +200,8 @@ namespace BloomTests.Book
                 .Setup(x => x.LocateDirectory("Device-XMatter", It.IsAny<string>()))
                 .Returns(xMatter.CombineForPath("Device-XMatter"));
             _fileLocator
-                .Setup(
-                    x =>
-                        x.LocateFileWithThrow("Device-XMatter".CombineForPath("Device-XMatter.htm"))
+                .Setup(x =>
+                    x.LocateFileWithThrow("Device-XMatter".CombineForPath("Device-XMatter.htm"))
                 )
                 .Returns(xMatter.CombineForPath("Device-XMatter", "Device-XMatter.htm"));
 
@@ -246,7 +239,7 @@ namespace BloomTests.Book
         }
 
         protected Bloom.Book.Book CreateBookWithPhysicalFile(
-            string bookHtml,
+            string bookHtmlDoc,
             CollectionSettings collectionSettings
         )
         {
@@ -259,7 +252,7 @@ namespace BloomTests.Book
                 ProjectContext.GetAfterXMatterFileLocations()
             );
 
-            File.WriteAllText(Path.Combine(_tempFolder.Path, "book.htm"), bookHtml);
+            File.WriteAllText(Path.Combine(_tempFolder.Path, "book.htm"), bookHtmlDoc);
 
             var storage = new BookStorage(
                 this._tempFolder.Path,
@@ -285,10 +278,12 @@ namespace BloomTests.Book
         }
 
         protected virtual Bloom.Book.Book CreateBookWithPhysicalFile(
-            string bookHtml,
+            string bodyContent,
+            string headContent = null,
             bool bringBookUpToDate = false
         )
         {
+            var bookHtml = XmlHtmlConverter.CreateHtmlString(bodyContent, headContent);
             var book = CreateBookWithPhysicalFile(bookHtml, CreateDefaultCollectionsSettings());
             if (bringBookUpToDate)
                 book.BringBookUpToDate(new NullProgress());
@@ -320,7 +315,7 @@ namespace BloomTests.Book
                     ),
                     Language1Tag = "xyz",
                     Language2Tag = "en",
-                    Language3Tag = "fr"
+                    Language3Tag = "fr",
                 }
             );
         }
@@ -354,13 +349,12 @@ namespace BloomTests.Book
         private SafeXmlDocument GetThreePageDom()
         {
             var dom = SafeXmlDocument.Create();
-            dom.LoadXml(ThreePageHtml);
+            dom.LoadXml(XmlHtmlConverter.CreateHtmlString(kThreePageBookBodyContent, ""));
             return dom;
         }
 
-        protected const string ThreePageHtml =
-            @"<html><head></head><body>
-				<div class='bloom-page numberedPage' id='guid1'>
+        protected const string kThreePageBookBodyContent =
+            @"<div class='bloom-page numberedPage' id='guid1'>
 					<p>
 						<textarea lang='en' id='1'  data-book='bookTitle'>tree</textarea>
 						<textarea lang='xyz' id='2'  data-book='bookTitle'>dog</textarea>
@@ -384,26 +378,16 @@ namespace BloomTests.Book
 					   <textarea lang='xyz' id='bb'  data-collection='testLibraryVariable'>bb</textarea>
 
 					</p>
-				</div>
-				</body></html>";
+				</div>";
 
-        protected void SetDom(string bodyContents, string headContents = "")
+        protected void SetDom(string bodyContent, string headContent = "")
         {
-            _bookDom = MakeDom(bodyContents, headContents);
+            _bookDom = MakeDom(bodyContent, headContent);
         }
 
-        public static HtmlDom MakeDom(string bodyContents, string headContents = "")
+        public static HtmlDom MakeDom(string bodyContent, string headContent = "")
         {
-            return new HtmlDom(MakeBookHtml(bodyContents, headContents));
-        }
-
-        protected static string MakeBookHtml(string bodyContents, string headContents)
-        {
-            return @"<html ><head>"
-                + headContents
-                + "</head><body>"
-                + bodyContents
-                + "</body></html>";
+            return new HtmlDom(XmlHtmlConverter.CreateHtmlString(bodyContent, headContent));
         }
 
         public BookServer CreateBookServer()

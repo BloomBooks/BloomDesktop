@@ -8,8 +8,10 @@
  */
 import { theOneLibSynphony } from "./synphony_lib";
 import { removeAllHtmlMarkupFromString } from "./jquery.text-markup.ts";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import $ from "jquery";
 
-describe("jquery.text-markup", function() {
+describe("jquery.text-markup", function () {
     function addDiv(id) {
         var div = document.createElement("div");
         div.id = id;
@@ -21,18 +23,18 @@ describe("jquery.text-markup", function() {
     var divTextEntry2;
     var divTextEntry3;
 
-    beforeEach(function() {
+    beforeEach(function () {
         document.body.innerHTML = "";
         divTextEntry1 = addDiv("text_entry1");
         divTextEntry2 = addDiv("text_entry2");
         divTextEntry3 = addDiv("text_entry3");
     });
 
-    afterEach(function() {
+    afterEach(function () {
         document.body.innerHTML = "";
     });
 
-    it("checkLeveledReader", function() {
+    it("checkLeveledReader", function () {
         var input =
             'Two-word sentence. Thr<span data-cke-bookmark="1" style="display: none;" id="cke_bm_41C">&nbsp;</span>ee <span class="bold">"word"</span> sentence. "This is a six word sentence."';
         var out2 =
@@ -55,7 +57,7 @@ describe("jquery.text-markup", function() {
         expect(result).toBe(out3);
     });
 
-    it("checkLeveledReader.handlesDivsWithEmbeddedParas", function() {
+    it("checkLeveledReader.handlesDivsWithEmbeddedParas", function () {
         var input =
             '<p>Two-word sentence. Three <span class="bold">"word"</span> sentence.<br></p><p>"This is a six word sentence."</p>';
         var out2 =
@@ -70,7 +72,7 @@ describe("jquery.text-markup", function() {
     });
 
     // check the bug reported in BL-10119
-    it("checkLeveledReader.handlesSentencesWithInitialMarkup", function() {
+    it("checkLeveledReader.handlesSentencesWithInitialMarkup", function () {
         const input =
             '<p>Short sentences exist. <em>Four</em> <strong>"word"</strong> sentences exist.</p><p>A five word sentence exists. <u>Shorter</u> sentences also exist.</p>';
         $("#text_entry1")
@@ -80,7 +82,7 @@ describe("jquery.text-markup", function() {
         expect(result).toBe(input);
     });
 
-    it("checkLeveledReader.handleDefaults.maxWordsPerSentence", function() {
+    it("checkLeveledReader.handleDefaults.maxWordsPerSentence", function () {
         var input = "This sentence should have enough words";
         var out = "This sentence should have enough words";
 
@@ -92,7 +94,7 @@ describe("jquery.text-markup", function() {
         expect(result).toBe(out);
     });
 
-    it("checkLeveledReader.handleNestedSpans", function() {
+    it("checkLeveledReader.handleNestedSpans", function () {
         const input =
             '<p><span class="bloom-highlightSegment">This is a test,<span class="bloom-audio-split-marker">|</span></span></p>';
         $("#text_entry1")
@@ -102,7 +104,7 @@ describe("jquery.text-markup", function() {
         expect(result).toBe(input);
     });
 
-    it("marks up invalid words", function() {
+    it("marks up invalid words", function () {
         var input = "a ae big";
         var out =
             'a <span class="possible-word" data-segment="word">ae</span> <span class="word-not-found" data-segment="word">big</span>';
@@ -110,13 +112,13 @@ describe("jquery.text-markup", function() {
             .html(input)
             .checkDecodableReader({
                 focusWords: ["a"],
-                knownGraphemes: ["a", "e", "s"]
+                knownGraphemes: ["a", "e", "s"],
             });
         var result = $("#text_entry1").html();
         expect(result).toBe(out);
     });
 
-    it("handles the magic word 'word'", function() {
+    it("handles the magic word 'word'", function () {
         var input = "a ae word";
         var out =
             'a <span class="possible-word" data-segment="word">ae</span> <span class="word-not-found" data-segment="word">word</span>';
@@ -124,34 +126,34 @@ describe("jquery.text-markup", function() {
             .html(input)
             .checkDecodableReader({
                 focusWords: ["a"],
-                knownGraphemes: ["a", "e", "s"]
+                knownGraphemes: ["a", "e", "s"],
             });
         var result = $("#text_entry1").html();
         expect(result).toBe(out);
     });
 
-    it("getMaxSentenceLength", function() {
+    it("getMaxSentenceLength", function () {
         $("#text_entry1").html("Three word sentence. Short sentence.");
         $("#text_entry2").html(
-            "Two-word sentence. A really longer six word sentence."
+            "Two-word sentence. A really longer six word sentence.",
         );
         $("#text_entry3").html(
-            "Another four word sentence. A longer five word sentence."
+            "Another four word sentence. A longer five word sentence.",
         );
 
         var result = $("div").getMaxSentenceLength();
         expect(result).toBe(6);
     });
 
-    it("getMaxSentenceLength with tags", function() {
+    it("getMaxSentenceLength with tags", function () {
         $("#text_entry1").html(
-            'Three <span class="bold">word</span> sentence. Short sentence.'
+            'Three <span class="bold">word</span> sentence. Short sentence.',
         );
         $("#text_entry2").html(
-            'Two-word sentence. <span class="sentence-too-long" data-segment="sentence">A really longer six word sentence.</span>'
+            'Two-word sentence. <span class="sentence-too-long" data-segment="sentence">A really longer six word sentence.</span>',
         );
         $("#text_entry3").html(
-            "Another four word sentence.<br />A longer five word sentence."
+            "Another four word sentence.<br />A longer five word sentence.",
         );
 
         // check 2 word sentences
@@ -159,7 +161,7 @@ describe("jquery.text-markup", function() {
         expect(result).toBe(6);
     });
 
-    it("getMaxSentenceLength - Thai", function() {
+    it("getMaxSentenceLength - Thai", function () {
         // This is the same five-word sentence repeated with a space between.
         $("#text_entry1").html("ฉัน​มี​ยุง​ใน​บ้าน ฉัน​มี​ยุง​ใน​บ้าน");
 
@@ -167,7 +169,7 @@ describe("jquery.text-markup", function() {
 
         for (var i = 0; i < extraPunctuationToTest.length; i++) {
             theOneLibSynphony.setExtraSentencePunctuation(
-                extraPunctuationToTest[i]
+                extraPunctuationToTest[i],
             );
 
             var result = $("div").getMaxSentenceLength();
@@ -178,35 +180,35 @@ describe("jquery.text-markup", function() {
         theOneLibSynphony.setExtraSentencePunctuation("");
     });
 
-    it("getTotalWordCount", function() {
+    it("getTotalWordCount", function () {
         $("#text_entry1").html("Three word sentence. Short sentence.");
         $("#text_entry2").html(
-            "Two-word sentence. A really longer six word sentence."
+            "Two-word sentence. A really longer six word sentence.",
         );
         $("#text_entry3").html(
-            "Another four word sentence. A longer five word sentence."
+            "Another four word sentence. A longer five word sentence.",
         );
 
         var result = $("div").getTotalWordCount();
         expect(result).toBe(22);
     });
 
-    it("getTotalWordCount with tags", function() {
+    it("getTotalWordCount with tags", function () {
         $("#text_entry1").html(
-            'Three <span class="bold">word</span> sentence. Short sentence.'
+            'Three <span class="bold">word</span> sentence. Short sentence.',
         );
         $("#text_entry2").html(
-            'Two-word sentence. <span class="sentence-too-long" data-segment="sentence">A really longer six word sentence.</span>'
+            'Two-word sentence. <span class="sentence-too-long" data-segment="sentence">A really longer six word sentence.</span>',
         );
         $("#text_entry3").html(
-            "Another four word sentence.<br />A longer five word sentence."
+            "Another four word sentence.<br />A longer five word sentence.",
         );
 
         var result = $("div").getTotalWordCount();
         expect(result).toBe(22);
     });
 
-    it("getTotalWordCount in Nepali", function() {
+    it("getTotalWordCount in Nepali", function () {
         // Two sentences w/ six words each. Between the two sentences there are 8 zero-width joiners.
         // The second sentence also contains a zero-width non-joiner, which should also not create a word break.
         // Therefore this text should yield a count of 12 words.
@@ -217,36 +219,36 @@ describe("jquery.text-markup", function() {
         expect(result).toBe(12);
     });
 
-    it("removeAllHtmlMarkup testing", function() {
+    it("removeAllHtmlMarkup testing", function () {
         var out1 = removeAllHtmlMarkupFromString(
-            '<p>An malipayon na adlaw ni Mando nabalyuh<span data-cke-bookmark="1" style="display: none;" id="cke_bm_78C">&nbsp;</span>an san pagkahanda kan Ondo.<span data-cke-bookmark="1" style="display: none;" id="cke_bm_36C">&nbsp;</span> <span data-cke-bookmark="1" style="display: none;" id="cke_bm_47C"></span></p>'
+            '<p>An malipayon na adlaw ni Mando nabalyuh<span data-cke-bookmark="1" style="display: none;" id="cke_bm_78C">&nbsp;</span>an san pagkahanda kan Ondo.<span data-cke-bookmark="1" style="display: none;" id="cke_bm_36C">&nbsp;</span> <span data-cke-bookmark="1" style="display: none;" id="cke_bm_47C"></span></p>',
         );
         expect(out1).toBe(
-            " An malipayon na adlaw ni Mando nabalyuhan san pagkahanda kan Ondo.  "
+            " An malipayon na adlaw ni Mando nabalyuhan san pagkahanda kan Ondo.  ",
         );
 
         var out2 = removeAllHtmlMarkupFromString(
-            "<p>This <strong>is</strong> <em>a</em> <u>test</u> of <sup>some</sup> sort.</p>"
+            "<p>This <strong>is</strong> <em>a</em> <u>test</u> of <sup>some</sup> sort.</p>",
         );
         expect(out2).toBe(" This is a test of some sort. ");
 
         var out3 = removeAllHtmlMarkupFromString(
-            "W<p></p>X<p/>Y<p />Z<p>A<br></br>B<br/>C<br />D</p>E"
+            "W<p></p>X<p/>Y<p />Z<p>A<br></br>B<br/>C<br />D</p>E",
         );
         expect(out3).toBe("W X Y Z A B C D E");
 
         var out4 = removeAllHtmlMarkupFromString(
-            "A sti<span class='something'>tch</span> in <a href='https://somewhere.com/abcde/'>time</a> saves <i><b>nine</b></i>!"
+            "A sti<span class='something'>tch</span> in <a href='https://somewhere.com/abcde/'>time</a> saves <i><b>nine</b></i>!",
         );
         expect(out4).toBe("A stitch in time saves nine!");
 
         var out5 = removeAllHtmlMarkupFromString(
-            "<p><span id='xyzzy1' class='bloom-highlightSegment'>This is a test,<span class='bloom-audio-split-marker'>|</span></span> <span id='xyzzy2' class='bloom-highlightSegment'>this is only a test.</span></p>"
+            "<p><span id='xyzzy1' class='bloom-highlightSegment'>This is a test,<span class='bloom-audio-split-marker'>|</span></span> <span id='xyzzy2' class='bloom-highlightSegment'>this is only a test.</span></p>",
         );
         expect(out5).toBe(" This is a test, this is only a test. ");
     });
 
-    it("checkWrapWordsExtraIgnoresEmptyItems", function() {
+    it("checkWrapWordsExtraIgnoresEmptyItems", function () {
         const cssWordNotFound = "word-not-found";
         const cssPossibleWord = "possible-word";
         const html = "<p>This is a test.</p>";
@@ -255,14 +257,14 @@ describe("jquery.text-markup", function() {
             html,
             notFound,
             cssWordNotFound,
-            ' data-segment="word"'
+            ' data-segment="word"',
         );
         expect(newHtml).toBe(
-            '<p>This <span class="word-not-found" data-segment="word">is</span> a <span class="word-not-found" data-segment="word">test</span>.</p>'
+            '<p>This <span class="word-not-found" data-segment="word">is</span> a <span class="word-not-found" data-segment="word">test</span>.</p>',
         );
     });
 
-    it("checkWrapWordsExtraHandlesExtraWhitespace", function() {
+    it("checkWrapWordsExtraHandlesExtraWhitespace", function () {
         const cssWordNotFound = "word-not-found";
         const cssPossibleWord = "possible-word";
         const html = "<p> This<em> is </em>a test.</p>";
@@ -271,10 +273,10 @@ describe("jquery.text-markup", function() {
             html,
             notFound,
             cssWordNotFound,
-            ' data-segment="word"'
+            ' data-segment="word"',
         );
         expect(newHtml).toBe(
-            '<p> <span class="word-not-found" data-segment="word">This</span><em> <span class="word-not-found" data-segment="word">is</span> </em>a test.</p>'
+            '<p> <span class="word-not-found" data-segment="word">This</span><em> <span class="word-not-found" data-segment="word">is</span> </em>a test.</p>',
         );
     });
 });

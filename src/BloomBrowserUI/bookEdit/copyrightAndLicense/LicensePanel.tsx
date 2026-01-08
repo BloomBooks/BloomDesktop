@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useEffect, useState } from "react";
@@ -29,7 +28,7 @@ export enum LicenseType {
     CreativeCommons = "creativeCommons",
     PublicDomain = "publicDomain",
     Contact = "contact",
-    Custom = "custom"
+    Custom = "custom",
 }
 
 // Fields used to modify the license (of a book or image)
@@ -38,11 +37,11 @@ export const LicensePanel: React.FunctionComponent<{
     licenseInfo: ILicenseInfo;
     derivativeInfo?: IDerivativeInfo;
     onChange: (licenseInfo: ILicenseInfo, isValid: boolean) => void;
-}> = props => {
+}> = (props) => {
     const licenseInfo = JSON.parse(JSON.stringify(props.licenseInfo)); //clone
 
     const originalLicenseShorthand = useGetLicenseShorthand(
-        props.derivativeInfo?.originalLicense
+        props.derivativeInfo?.originalLicense,
     );
     const originalLicenseSentence = props.derivativeInfo?.originalLicense ? (
         <LocalizedString
@@ -96,7 +95,7 @@ export const LicensePanel: React.FunctionComponent<{
     }, [isLicenseValid]);
 
     const [rightsStatement, setRightsStatement] = useState(
-        licenseInfo.rightsStatement
+        licenseInfo.rightsStatement,
     );
 
     useEffect(() => {
@@ -106,7 +105,7 @@ export const LicensePanel: React.FunctionComponent<{
 
     useEffect(() => {
         setIsLicenseValid(
-            licenseType !== LicenseType.Custom || !!rightsStatement?.trim()
+            licenseType !== LicenseType.Custom || !!rightsStatement?.trim(),
         );
     }, [rightsStatement, licenseType]);
 
@@ -149,7 +148,7 @@ export const LicensePanel: React.FunctionComponent<{
         <div>
             <Div
                 l10nKey={getL10nIdForBookOrImage(
-                    "License.CopyrightHolderAllows"
+                    "License.CopyrightHolderAllows",
                 )}
             >
                 The copyright holder allows others to use the {getBookOrImage()}{" "}
@@ -159,8 +158,12 @@ export const LicensePanel: React.FunctionComponent<{
             <RadioGroup
                 value={licenseType}
                 defaultValue="creativeCommons"
-                onChange={e => handleLicenseTypeChange(e.target.value)}
+                onChange={(e) => handleLicenseTypeChange(e.target.value)}
                 name="license-selection-radio-group"
+                css={css`
+                    // BL-15625
+                    padding-left: 1px;
+                `}
             >
                 <Radio
                     value={"publicDomain"}
@@ -181,7 +184,7 @@ export const LicensePanel: React.FunctionComponent<{
                         <BloomCheckbox
                             label={`copy this ${getBookOrImage()} for free`}
                             l10nKey={getL10nIdForBookOrImage(
-                                "License.CreativeCommons.CopyForFree"
+                                "License.CreativeCommons.CopyForFree",
                             )}
                             disabled={true}
                             checked={
@@ -194,7 +197,7 @@ export const LicensePanel: React.FunctionComponent<{
                         <BloomCheckbox
                             label={`use the ${getBookOrImage()} in a commercial way`}
                             l10nKey={getL10nIdForBookOrImage(
-                                "License.CreativeCommons.AllowCommercial"
+                                "License.CreativeCommons.AllowCommercial",
                             )}
                             disabled={!isCCLicense}
                             checked={
@@ -202,10 +205,9 @@ export const LicensePanel: React.FunctionComponent<{
                                 licenseInfo.creativeCommonsInfo
                                     .allowCommercial === "yes"
                             }
-                            onCheckChanged={checked => {
-                                licenseInfo.creativeCommonsInfo.allowCommercial = checked
-                                    ? "yes"
-                                    : "no";
+                            onCheckChanged={(checked) => {
+                                licenseInfo.creativeCommonsInfo.allowCommercial =
+                                    checked ? "yes" : "no";
                                 reportChange();
                             }}
                         />
@@ -219,7 +221,7 @@ export const LicensePanel: React.FunctionComponent<{
                                     : "make new versions of this image, but they must keep the illustrator and other credits"
                             }
                             l10nKey={getL10nIdForBookOrImage(
-                                "License.CreativeCommons.ShareAlike"
+                                "License.CreativeCommons.ShareAlike",
                             )}
                             disabled={!isCCLicense}
                             checked={
@@ -227,17 +229,16 @@ export const LicensePanel: React.FunctionComponent<{
                                 licenseInfo.creativeCommonsInfo
                                     .allowDerivatives !== "no"
                             }
-                            onCheckChanged={checked => {
-                                licenseInfo.creativeCommonsInfo.allowDerivatives = checked
-                                    ? "yes"
-                                    : "no";
+                            onCheckChanged={(checked) => {
+                                licenseInfo.creativeCommonsInfo.allowDerivatives =
+                                    checked ? "yes" : "no";
                                 reportChange();
                             }}
                         />
                         <BloomCheckbox
                             label={`apply a different license to new versions of this ${getBookOrImage()}`}
                             l10nKey={getL10nIdForBookOrImage(
-                                "License.CreativeCommons.DifferentLicense"
+                                "License.CreativeCommons.DifferentLicense",
                             )}
                             disabled={
                                 !isCCLicense ||
@@ -249,10 +250,9 @@ export const LicensePanel: React.FunctionComponent<{
                                 licenseInfo.creativeCommonsInfo
                                     .allowDerivatives === "yes"
                             }
-                            onCheckChanged={checked => {
-                                licenseInfo.creativeCommonsInfo.allowDerivatives = checked
-                                    ? "yes"
-                                    : "sharealike";
+                            onCheckChanged={(checked) => {
+                                licenseInfo.creativeCommonsInfo.allowDerivatives =
+                                    checked ? "yes" : "sharealike";
                                 reportChange();
                             }}
                         />
@@ -304,7 +304,7 @@ export const LicensePanel: React.FunctionComponent<{
 };
 
 // Just a simple wrapper to indent components
-const SubPanel: React.FunctionComponent = props => {
+const SubPanel: React.FunctionComponent = (props) => {
     return (
         <div
             css={css`
@@ -321,7 +321,7 @@ const CustomNote: React.FunctionComponent<{
     l10nKey: string;
     value: string;
     onChange: (value: string) => void;
-}> = props => {
+}> = (props) => {
     return (
         <React.Fragment>
             <Div
@@ -338,7 +338,7 @@ const CustomNote: React.FunctionComponent<{
                 rows={2}
                 fullWidth
                 value={props.value}
-                onChange={e => props.onChange(e.target.value)}
+                onChange={(e) => props.onChange(e.target.value)}
             />
         </React.Fragment>
     );
@@ -348,7 +348,7 @@ const Radio: React.FunctionComponent<{
     label: string;
     l10nKey: string;
     value: string;
-}> = props => {
+}> = (props) => {
     return (
         <MuiRadio
             label={props.label}

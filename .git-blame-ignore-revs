@@ -1,6 +1,11 @@
+# format all C# and XML with csharpier 1.1.2
+d91573b013164e808f7ccc084d170df4a71f7737
 # format all c# with csharpier
 087743561c71bff054c9f8d5e56eb9fd1752c69e
 # format all c3 with csharpier (a follow-up after some changes hadn't been applied)
 29c4a976a1e71e1457074fc8eed2263b763f3e85
 # format all html with prettier
 a8c3a95d33958acd1ae8a873143a1bcdfbc8f135
+# format all BloomBrowserUI and content files with prettier v3
+b751a4ca1d7b642b485c1e8d08ec91f1a4793017
+938512c4ee055e6e2c67cb130da37ea4912adab9

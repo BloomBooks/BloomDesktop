@@ -6,6 +6,7 @@ using System.IO;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Properties;
+using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
@@ -30,13 +31,31 @@ namespace Bloom.CollectionCreating
             {
                 dlg.UiLanguageChanged = uiLanguageChangedAction;
                 dlg.ShowInTaskbar = showNewCollectionWizard; //if we're at this stage, there isn't a bloom icon there already.
+
+                // Ensure the wizard appears on the same monitor as the parent
+                // I (JohnT) don't understand why this is needed. Claude came up with it.
+                // Normally passing the owner to ShowDialog is sufficient to make it come up
+                // on the same monitor.
+                if (owner != null && owner is Form parentForm)
+                {
+                    dlg.StartPosition = FormStartPosition.CenterParent;
+                }
+                else if (owner != null)
+                {
+                    // If owner is not a Form but is a valid window, try to center on its screen
+                    dlg.StartPosition = FormStartPosition.CenterScreen;
+                }
+
                 if (DialogResult.OK != dlg.ShowDialog(owner))
                 {
                     return null;
                 }
                 //review: this is a bit weird... we clone it instead of just using it just because this code path
                 //can handle creating the path from scratch
-                return new CollectionSettings(dlg.GetNewCollectionSettings()).SettingsFilePath;
+                var newCollectionSettings = dlg.GetNewCollectionSettings();
+                if (MiscUtils.ReportIfInvalidCollection(newCollectionSettings.PathToSettingsFile))
+                    return null;
+                return new CollectionSettings(newCollectionSettings).SettingsFilePath;
             }
         }
 

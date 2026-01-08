@@ -1,3 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
@@ -10,14 +18,6 @@ using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Progress;
 using SIL.Reporting;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Bloom.web.controllers
 {
@@ -447,11 +447,11 @@ namespace Bloom.web.controllers
             );
 
             // Clean up the fragments
-            audioTextFragments = audioTextFragments.Where(
-                obj => !String.IsNullOrWhiteSpace(obj.fragmentText)
+            audioTextFragments = audioTextFragments.Where(obj =>
+                !String.IsNullOrWhiteSpace(obj.fragmentText)
             ); // Remove entries containing only whitespace
-            var fragmentList = audioTextFragments.Select(
-                obj => TextUtils.TrimEndNewlines(obj.fragmentText)
+            var fragmentList = audioTextFragments.Select(obj =>
+                TextUtils.TrimEndNewlines(obj.fragmentText)
             );
             if (langCode != requestedLangCode)
             {
@@ -1126,7 +1126,7 @@ namespace Bloom.web.controllers
                     Arguments = arguments,
                     WorkingDirectory = workingDir,
                     UseShellExecute = false,
-                    CreateNoWindow = true
+                    CreateNoWindow = true,
                 };
 
                 return RunProcessAsync(startInfo);
@@ -1216,7 +1216,7 @@ namespace Bloom.web.controllers
                 lang = langCode,
                 filePath = RobustFile.Exists(orthographyConversionMappingPath)
                     ? Path.GetFileName(orthographyConversionMappingPath)
-                    : ""
+                    : "",
             };
             string responseJson = JsonConvert.SerializeObject(response);
             request.ReplyWithJson(responseJson);

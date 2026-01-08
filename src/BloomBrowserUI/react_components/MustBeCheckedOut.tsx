@@ -5,7 +5,7 @@ import { BloomTooltip, IBloomToolTipProps } from "./BloomToolTip";
 export const MustBeCheckedOut: React.FunctionComponent<{
     placement?: IBloomToolTipProps["placement"];
     children: React.ReactNode;
-}> = props => {
+}> = (props) => {
     const selectedBookInfo = React.useContext(SelectedBookContext);
 
     return selectedBookInfo.saveable ? (
@@ -16,7 +16,7 @@ export const MustBeCheckedOut: React.FunctionComponent<{
             tipWhenDisabled={{
                 english:
                     "This feature requires the book to be checked out to you.",
-                l10nKey: "CollectionTab.BookMenu.MustCheckOutTooltip"
+                l10nKey: "CollectionTab.BookMenu.MustCheckOutTooltip",
             }}
             {...props}
         ></BloomTooltip>

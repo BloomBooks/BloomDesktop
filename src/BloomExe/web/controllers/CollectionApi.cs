@@ -97,6 +97,11 @@ namespace Bloom.web.controllers
                 false,
                 false
             );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "bookFile",
+                HandleBookFileRequest,
+                false
+            );
 
             // used by visual regression tests to name screenshots
             apiHandler.RegisterEndpointHandler(
@@ -184,7 +189,10 @@ namespace Bloom.web.controllers
                                             folderPath
                                         );
                                     var msg = "Error selecting book: " + folderPath;
-                                    var ex = new Exception(msg, e);
+                                    var ex = new Exception(
+                                        msg,
+                                        MiscUtils.UnwrapUntilInterestingException(e)
+                                    );
                                     // For some reason, BookInfo can't be serialized, so we'll add the pieces to the exception.
                                     ex.Data.Add("ErrorBookFolder", folderPath);
                                     if (
@@ -205,7 +213,7 @@ namespace Bloom.web.controllers
                                         );
                                     throw ex;
                                 }
-                                throw e;
+                                throw;
                             }
 
                             request.PostSucceeded();
@@ -280,7 +288,7 @@ namespace Bloom.web.controllers
                 kApiUrlPart + "makeBloompack/",
                 (request) =>
                 {
-                    _collectionModel.MakeReaderTemplateBloompack();
+                    _collectionModel.MakeBloomPack(forReaderTools: true);
                     request.PostSucceeded();
                 },
                 true
@@ -449,12 +457,7 @@ namespace Bloom.web.controllers
                     "Choose Collection",
                     "This is the title of the file-open dialog that you use to choose a Bloom collection"
                 );
-                dlg.Filter =
-                    LocalizationManager.GetString(
-                        "OpenCreateNewCollectionsDialog.Bloom Collections",
-                        "Bloom Collections",
-                        "This shows in the file-open dialog that you use to open a different bloom collection"
-                    ) + @"|*.bloomLibrary;*.bloomCollection";
+                dlg.Filter = CollectionSettings.GetFileDialogFilterString();
                 dlg.InitialDirectory = NewCollectionWizard.DefaultParentDirectoryForCollections;
                 if (
                     dlg.ShowDialog() == DialogResult.Cancel
@@ -539,7 +542,7 @@ namespace Bloom.web.controllers
                                     && !c.ContainsDownloadedBooks
                                     && !c.PathToDirectory.StartsWith(
                                         BloomFileLocator.FactoryCollectionsDirectory
-                                    )
+                                    ),
                             }
                         );
                     }
@@ -590,10 +593,9 @@ namespace Bloom.web.controllers
                 }
             }
             var jsonInfos = bookInfos
-                .Where(
-                    info =>
-                        collection.Type == BookCollection.CollectionType.TheOneEditableCollection
-                        || info.ShowThisBookAsSource()
+                .Where(info =>
+                    collection.Type == BookCollection.CollectionType.TheOneEditableCollection
+                    || info.ShowThisBookAsSource()
                 )
                 .Select(info =>
                 {
@@ -619,7 +621,7 @@ namespace Bloom.web.controllers
                         collectionId = collection.PathToDirectory,
                         folderName = info.FolderName,
                         folderPath = info.FolderPath,
-                        isFactory = collection.IsFactoryInstalled
+                        isFactory = collection.IsFactoryInstalled,
                     };
                 })
                 .ToArray();
@@ -724,17 +726,87 @@ namespace Bloom.web.controllers
             }
         }
 
+        private void HandleBookFileRequest(ApiRequest request)
+        {
+            var bookId = System.Web.HttpUtility.UrlDecode(request.RequiredParam("book-id"));
+            var fileParam = System.Web.HttpUtility.UrlDecode(request.RequiredParam("file"));
+
+            if (string.IsNullOrWhiteSpace(fileParam))
+            {
+                request.Failed("File parameter is required.");
+                return;
+            }
+
+            var editableCollection = _collectionModel.TheOneEditableCollection;
+            if (editableCollection == null)
+            {
+                request.Failed("No editable collection is available.");
+                return;
+            }
+
+            var bookInfo = editableCollection.GetBookInfoById(bookId);
+            if (bookInfo == null)
+            {
+                request.Failed($"Book with id '{bookId}' was not found.");
+                return;
+            }
+
+            // Strip query parameters (e.g., ?thumbnail=1) from the file path.
+            // The server adds these for optimization hints, but they're not part of the actual filename.
+            var questionMarkIndex = fileParam.IndexOf('?');
+            var filePathOnly =
+                questionMarkIndex >= 0 ? fileParam.Substring(0, questionMarkIndex) : fileParam;
+
+            var relativePath = filePathOnly
+                .Replace('/', Path.DirectorySeparatorChar)
+                .Replace('\\', Path.DirectorySeparatorChar);
+
+            if (Path.IsPathRooted(relativePath))
+            {
+                request.Failed("Access denied: file path outside book folder");
+                return;
+            }
+
+            var filePath = Path.Combine(bookInfo.FolderPath, relativePath);
+            var normalizedFilePath = Path.GetFullPath(filePath);
+            var normalizedBookPath = Path.GetFullPath(bookInfo.FolderPath);
+
+            var normalizedBookPathWithSeparator =
+                normalizedBookPath.TrimEnd(
+                    Path.DirectorySeparatorChar,
+                    Path.AltDirectorySeparatorChar
+                ) + Path.DirectorySeparatorChar;
+
+            if (
+                !normalizedFilePath.StartsWith(
+                    normalizedBookPathWithSeparator,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
+            {
+                request.Failed("Access denied: file path outside book folder");
+                return;
+            }
+            if (!RobustFile.Exists(filePath))
+            {
+                request.Failed($"File not found: {fileParam}");
+                return;
+            }
+
+            request.ReplyWithFileContent(filePath);
+        }
+
         private void GetBookOnBloomBadgeInfo(ApiRequest apiRequest)
         {
             var bookId = apiRequest.RequiredParam("book-id");
 
-            var infos = _collectionModel.TheOneEditableCollection
-                .GetBookInfos()
+            var infos = _collectionModel
+                .TheOneEditableCollection.GetBookInfos()
                 .Where(info => info.Id == bookId && info.BloomLibraryStatus != null)
                 .ToList();
             if (infos.Count == 0)
             {
-                apiRequest.ReplyWithJson(new { bookUrl = "", });
+                apiRequest.ReplyWithJson(new { bookUrl = "" });
             }
             else
             {
@@ -749,9 +821,9 @@ namespace Bloom.web.controllers
                         bookUrl = info.BloomLibraryStatus.BloomLibraryBookUrl,
                         draft = info.BloomLibraryStatus.Draft,
                         inCirculation = !info.BloomLibraryStatus.NotInCirculation,
-                        harvestState = info.BloomLibraryStatus.HarvesterState
-                            .ToString()
-                            .ToLowerInvariant()
+                        harvestState = info
+                            .BloomLibraryStatus.HarvesterState.ToString()
+                            .ToLowerInvariant(),
                     }
                 );
             }

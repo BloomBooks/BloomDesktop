@@ -116,7 +116,7 @@ namespace Bloom.web.controllers
                             LanguageTag = data.LanguageTag,
                             DesiredName = data.DesiredName,
                             DefaultName = data.DefaultName,
-                            Country = data.Country
+                            Country = data.Country,
                         }
                     );
                     request.PostSucceeded();
@@ -374,7 +374,7 @@ namespace Bloom.web.controllers
                 {
                     displayName = labelToShow,
                     internalName = pack.Key,
-                    description
+                    description,
                 };
                 xmatterOfferings.Add(item);
             }
@@ -404,7 +404,7 @@ namespace Bloom.web.controllers
             return new
             {
                 currentPageNumberStyle = _collectionSettings.PageNumberStyle,
-                numberingStyleData = _numberingStyles.ToArray()
+                numberingStyleData = _numberingStyles.ToArray(),
             };
         }
 

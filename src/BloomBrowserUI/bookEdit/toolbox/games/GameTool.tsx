@@ -8,7 +8,7 @@ import {
     kBloomBlue,
     kOptionPanelBackgroundColor,
     toolboxMenuPopupTheme,
-    toolboxTheme
+    toolboxTheme,
 } from "../../../bloomMaterialUITheme";
 import { Div } from "../../../react_components/l10nComponents";
 import {
@@ -20,31 +20,30 @@ import {
     CanvasElementSoundItem,
     CanvasElementTextItem,
     CanvasElementVideoItem,
-    setGeneratedDraggableId
-} from "../overlay/CanvasElementItem";
+    setGeneratedDraggableId,
+} from "../canvas/CanvasElementItem";
 import { ToolBox } from "../toolbox";
 import {
     adjustDraggablesForLanguage,
     classSetter,
     copyContentToTarget,
-    doShowAnswersInTargets,
     getTarget,
     playInitialElements,
     prepareActivity,
     setDefaultSoundUrls,
     shuffle,
-    undoPrepareActivity
+    undoPrepareActivity,
 } from "bloom-player";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import {
     getWithPromise,
     postData,
     postJson,
-    postString
+    postString,
 } from "../../../utils/bloomApi";
 import {
     getEditablePageBundleExports,
-    getToolboxBundleExports
+    getToolboxBundleExports,
 } from "../../editViewFrame";
 import { MenuItem, Select } from "@mui/material";
 import { useL10n } from "../../../react_components/l10nHooks";
@@ -57,24 +56,26 @@ import {
     getAllDraggables,
     isDraggable,
     kBackgroundImageClass,
-    kDraggableIdAttribute
+    kDraggableIdAttribute,
 } from "../../js/CanvasElementManager";
 import {
     getCanvasElementManager,
-    kCanvasElementSelector
-} from "../overlay/canvasElementUtils";
+    kCanvasElementSelector,
+} from "../canvas/canvasElementUtils";
 import { ThemeChooser } from "./ThemeChooser";
 import GameIntroText, { Instructions } from "./GameIntroText";
 import { getGameType, isPageBloomGame } from "./GameInfo";
 import {
     getImageFromCanvasElement,
-    kImageContainerSelector
+    kImageContainerSelector,
+    isPlaceHolderImage,
 } from "../../js/bloomImages";
 import { doesContainingPageHaveSameSizeMode } from "./gameUtilities";
 import { CanvasSnapProvider } from "../../js/CanvasSnapProvider";
 import { CanvasGuideProvider } from "../../js/CanvasGuideProvider";
 import { kIdForDragActivityTabControl } from "./DragActivityTabControl";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
+import $ from "jquery";
 
 // This is the main code that manages the Bloom Games, including Drag Activities.
 // See especially DragActivityControls, which is the main React component for the tool,
@@ -101,11 +102,11 @@ export const enableDraggingTargets = (startingPoint: HTMLElement) => {
 // React rendering will be confused.
 export const showGamePromptDialog = (onlyIfEmpty: boolean) => {
     const page = document.getElementsByClassName(
-        "bloom-page"
+        "bloom-page",
     )[0] as HTMLElement;
     if (!page) return;
     const prompt = page.getElementsByClassName(
-        "bloom-game-prompt"
+        "bloom-game-prompt",
     )[0] as HTMLElement;
     // So far only this one kind of game has a prompt
     if (
@@ -117,14 +118,14 @@ export const showGamePromptDialog = (onlyIfEmpty: boolean) => {
 
     if (onlyIfEmpty) {
         const editable = prompt.getElementsByClassName(
-            "bloom-editable bloom-visibility-code-on"
+            "bloom-editable bloom-visibility-code-on",
         )[0];
         if (editable && editable.textContent?.trim()) {
             return;
         }
     }
     let dialogRoot = page.ownerDocument.getElementsByClassName(
-        "bloom-ui-dialog"
+        "bloom-ui-dialog",
     )[0] as HTMLElement;
     if (!dialogRoot) {
         dialogRoot = page.ownerDocument.createElement("div");
@@ -139,9 +140,8 @@ export const showGamePromptDialog = (onlyIfEmpty: boolean) => {
 };
 
 export const hideGamePromptDialog = (page: HTMLElement) => {
-    const dialogRoot = page.ownerDocument.getElementsByClassName(
-        "bloom-ui-dialog"
-    )[0];
+    const dialogRoot =
+        page.ownerDocument.getElementsByClassName("bloom-ui-dialog")[0];
     if (dialogRoot) {
         ReactDOM.unmountComponentAtNode(dialogRoot);
         dialogRoot.remove();
@@ -181,11 +181,11 @@ const overlap = (start: HTMLElement, end: HTMLElement): boolean => {
 export const adjustTarget = (
     draggable: HTMLElement,
     target: HTMLElement | undefined,
-    forceAdjustAll?: boolean
+    forceAdjustAll?: boolean,
 ) => {
-    let arrow = (draggable.ownerDocument.getElementById(
-        "target-arrow"
-    ) as unknown) as SVGSVGElement;
+    let arrow = draggable.ownerDocument.getElementById(
+        "target-arrow",
+    ) as unknown as SVGSVGElement;
     if (!target) {
         // if there is a target, we'll adjust the existing arrow if any.
         // If not, get rid of any arrow now.
@@ -240,27 +240,27 @@ export const adjustTarget = (
         const otherDraggables: HTMLElement[] = [];
         const draggableImages: HTMLElement[] = [];
         const draggables: HTMLElement[] = getAllDraggables(
-            page
+            page,
         ) as HTMLElement[];
-        draggables.forEach(x => {
+        draggables.forEach((x) => {
             const img = getImageFromCanvasElement(x);
             // I don't think we want to increase the minimum size of targets to account
             // for images that are still placeholders.
-            if (img && img.getAttribute("src") !== "placeholder.png") {
+            if (img && !isPlaceHolderImage(img.getAttribute("src"))) {
                 draggableImages.push(x as HTMLElement);
             } else if (x !== draggable) {
                 otherDraggables.push(x as HTMLElement);
             }
         });
         const targets: HTMLElement[] = Array.from(
-            page.querySelectorAll("[data-target-of]")
+            page.querySelectorAll("[data-target-of]"),
         );
 
         let targetHeight = getHeight(draggable);
         let targetWidth = getWidth(draggable);
         if (draggableImages.length > 0) {
-            targetHeight = Math.max(...draggables.map(x => getHeight(x)));
-            targetWidth = Math.max(...draggables.map(x => getWidth(x)));
+            targetHeight = Math.max(...draggables.map((x) => getHeight(x)));
+            targetWidth = Math.max(...draggables.map((x) => getWidth(x)));
         }
 
         // from BL-14646 we decided to limit this "same size" behavior to the targets only
@@ -295,7 +295,7 @@ export const adjustTarget = (
 const makeArrowShape = (
     draggable: HTMLElement,
     target: HTMLElement,
-    arrow: SVGSVGElement
+    arrow: SVGSVGElement,
 ): SVGSVGElement => {
     // These values make a line from the center of the draggable to the center of the target.
     const startX = draggable.offsetLeft + draggable.offsetWidth / 2;
@@ -331,7 +331,7 @@ const makeArrowShape = (
         // Make an empty SVG that we will add lines to to make the arrow.
         arrow = draggable.ownerDocument.createElementNS(
             "http://www.w3.org/2000/svg",
-            "svg"
+            "svg",
         );
         arrow.setAttribute("id", "target-arrow");
         arrow.setAttribute("class", "bloom-ui"); // so it won't be saved with the page
@@ -382,17 +382,17 @@ const makeArrowShape = (
     if (!line) {
         line = draggable.ownerDocument.createElementNS(
             "http://www.w3.org/2000/svg",
-            "line"
+            "line",
         );
         arrow.appendChild(line);
         line2 = draggable.ownerDocument.createElementNS(
             "http://www.w3.org/2000/svg",
-            "line"
+            "line",
         );
         arrow.appendChild(line2);
         line3 = draggable.ownerDocument.createElementNS(
             "http://www.w3.org/2000/svg",
-            "line"
+            "line",
         );
         arrow.appendChild(line3);
     }
@@ -440,7 +440,7 @@ const makeArrowShape = (
     // This viewBox avoids the need to translate all the points in the lines
     arrow.setAttribute(
         "viewBox",
-        `${minX} ${minY} ${maxX - minX} ${maxY - minY}`
+        `${minX} ${minY} ${maxX - minX} ${maxY - minY}`,
     );
     arrow.style.left = finalStartX + minX + "px";
     arrow.style.top = finalStartY + minY + "px";
@@ -451,7 +451,7 @@ const makeArrowShape = (
     const color = "#80808080";
     const strokeWidth = "3";
     const lines = [line, line2, line3];
-    lines.forEach(l => {
+    lines.forEach((l) => {
         l.setAttribute("stroke", color);
         l.setAttribute("stroke-width", strokeWidth);
     });
@@ -476,10 +476,10 @@ const startDraggingTarget = (e: MouseEvent) => {
     targetBeingDragged = target;
     const page = target.closest(".bloom-page") as HTMLElement;
     const targets = Array.from(
-        page.querySelectorAll("[data-target-of]")
+        page.querySelectorAll("[data-target-of]"),
     ) as HTMLElement[];
     const canvasElements = Array.from(
-        page.querySelectorAll(kCanvasElementSelector)
+        page.querySelectorAll(kCanvasElementSelector),
     ) as HTMLElement[];
     guideProvider.startDrag("move", [...targets, ...canvasElements]);
 
@@ -517,8 +517,8 @@ const dragTarget = (e: MouseEvent) => {
     // relative to the mouse.
     let x = e.clientX / scale - targetClickOffsetLeft;
     let y = e.clientY / scale - targetClickOffsetTop;
-    let deltaMin = Number.MAX_VALUE;
-    let deltaRowMin = Number.MAX_VALUE;
+    const deltaMin = Number.MAX_VALUE;
+    const deltaRowMin = Number.MAX_VALUE;
     const width = targetBeingDragged.offsetWidth;
     snappedToExisting = false;
     // This code tries to snap a dragged target so as to form a row with other targets at a uniform spacing,
@@ -597,7 +597,7 @@ const dragTarget = (e: MouseEvent) => {
 };
 
 const draggableOfTarget = (
-    target: HTMLElement | undefined
+    target: HTMLElement | undefined,
 ): HTMLElement | undefined => {
     if (!target) {
         return undefined;
@@ -607,7 +607,7 @@ const draggableOfTarget = (
         return undefined;
     }
     return target.ownerDocument.querySelector(
-        `[${kDraggableIdAttribute}="${targetId}"]`
+        `[${kDraggableIdAttribute}="${targetId}"]`,
     ) as HTMLElement;
 };
 
@@ -618,12 +618,12 @@ const stopDraggingTarget = (_: MouseEvent) => {
     if (snappedToExisting) {
         // Move things around so we end up with an evenly spaced row again.
         const row = targetInitialPositions.filter(
-            s => s.y === targetBeingDragged.offsetTop
+            (s) => s.y === targetBeingDragged.offsetTop,
         );
         const indexDroppedOn = row.findIndex(
-            s => s.x === targetBeingDragged.offsetLeft
+            (s) => s.x === targetBeingDragged.offsetLeft,
         );
-        const indexDragged = row.findIndex(s => s.elt === targetBeingDragged);
+        const indexDragged = row.findIndex((s) => s.elt === targetBeingDragged);
         if (indexDragged !== indexDroppedOn) {
             // if equal, we didn't really move it at all.
             const spacing =
@@ -667,7 +667,7 @@ export const playTabIndex = 3;
 const updateTabClass = (tabIndex: number) => {
     const pageBody = ToolBox.getPage();
     const page = pageBody?.getElementsByClassName(
-        "bloom-page"
+        "bloom-page",
     )[0] as HTMLElement;
     if (!page) {
         // try again in a bit (this might happen if the toolbox iframe loads faster than the page iframe)
@@ -682,7 +682,7 @@ const updateTabClass = (tabIndex: number) => {
         "drag-activity-wrong", // in wrong tab, or in Play after finding answer is wrong
         "drag-activity-play", // when in Play mode, either Play tab or Bloom Player.
         // doesn't have a tab, but used in Play when showing the correct answer.
-        "drag-activity-solution"
+        "drag-activity-solution",
     ];
     for (let i = 0; i < classes.length; i++) {
         const className = classes[i];
@@ -697,7 +697,7 @@ const getPage = () => {
 
 const getSoundFilesAsync = async (prefix: string): Promise<string[]> => {
     const result = await getWithPromise(
-        `fileIO/listFiles?subPath=sounds&match=${prefix}_*`
+        `fileIO/listFiles?subPath=sounds&match=${prefix}_*`,
     );
     if (!result || !result.data) {
         return []; // huh?
@@ -711,13 +711,13 @@ const getSoundOptions = (
     currentId: string,
     defaultLabel: string,
     noneLabel: string,
-    chooseLabel: string
+    chooseLabel: string,
 ): { label: string; id: string; divider: boolean }[] => {
     const soundOptions = [
         { label: defaultLabel, id: "default", divider: false },
-        { label: noneLabel, id: "none", divider: true }
+        { label: noneLabel, id: "none", divider: true },
     ];
-    const idToLabel = label =>
+    const idToLabel = (label) =>
         label
             .replace(new RegExp(`^${prefix}_`), "") // don't use substring, for own sounds prefix might not be found
             .replace(/\.mp3$/i, "")
@@ -726,7 +726,7 @@ const getSoundOptions = (
             .replace("-", " ")
             .replace(/ pixabay/i, "");
 
-    files.forEach(file => {
+    files.forEach((file) => {
         soundOptions.push({ label: idToLabel(file), id: file, divider: false });
     });
     soundOptions[soundOptions.length - 1].divider = true;
@@ -735,12 +735,12 @@ const getSoundOptions = (
 
     if (
         currentId !== "none" &&
-        !soundOptions.find(opt => opt.id === currentId)
+        !soundOptions.find((opt) => opt.id === currentId)
     ) {
         soundOptions.splice(0, 0, {
             label: idToLabel(currentId),
             id: currentId,
-            divider: false
+            divider: false,
         });
     }
     return soundOptions;
@@ -755,7 +755,7 @@ export const copyAndPlaySoundAsync = async (
     newSoundId: string,
     page: HTMLElement,
     copyBuiltIn: boolean,
-    soundType?: SoundType
+    soundType?: SoundType,
 ) => {
     if (copyBuiltIn) {
         await copyBuiltInSoundAsync(newSoundId);
@@ -769,7 +769,7 @@ const copyBuiltInSoundAsync = async (newSoundId: string) => {
     }
     const resultAudioDir = await postJson(
         "fileIO/getSpecialLocation",
-        "CurrentBookAudioDirectory"
+        "CurrentBookAudioDirectory",
     );
 
     if (!resultAudioDir) {
@@ -779,7 +779,7 @@ const copyBuiltInSoundAsync = async (newSoundId: string) => {
     const targetPath = resultAudioDir.data + "/" + newSoundId;
     await postData("fileIO/copyFile", {
         from: encodeURIComponent(newSoundId),
-        to: encodeURIComponent(targetPath)
+        to: encodeURIComponent(targetPath),
     });
 };
 
@@ -787,7 +787,7 @@ export const showDialogToChooseSoundFileAsync = async () => {
     const title = await theOneLocalizationManager.asyncGetText(
         "EditTab.Toolbox.DragActivity.ChooseSoundFile",
         "Choose Sound File",
-        ""
+        "",
     );
     const result = await postJson("fileIO/chooseFile", {
         // Enhance: use something with a callback that can't timeout
@@ -795,11 +795,11 @@ export const showDialogToChooseSoundFileAsync = async () => {
         fileTypes: [
             {
                 name: "MP3",
-                extensions: ["mp3"]
-            }
+                extensions: ["mp3"],
+            },
         ],
         defaultPath: soundFolder,
-        destFolder: "audio"
+        destFolder: "audio",
     });
     if (result?.data) {
         setSoundFolder(result?.data);
@@ -812,7 +812,7 @@ export const showDialogToChooseSoundFileAsync = async () => {
 const DragActivityControls: React.FunctionComponent<{
     activeTab: number;
     pageGeneration: number; // incremented when the page changes
-}> = props => {
+}> = (props) => {
     // The sound files for correct and wrong answers, determined by attributes of the page.
     const [correctSoundId, setCorrectSoundId] = useState("default");
     const [wrongSoundId, setWrongSoundId] = useState("default");
@@ -827,7 +827,7 @@ const DragActivityControls: React.FunctionComponent<{
 
     // Observer to copy changes to the current canvas element to its target when showAnswersInTargets is true.
     const draggableToTargetObserver = React.useRef<MutationObserver | null>(
-        null
+        null,
     );
 
     // Menu item names for 'none' and "Choose...", options in both the correct and wrong sound menus.
@@ -836,7 +836,7 @@ const DragActivityControls: React.FunctionComponent<{
     const chooseLabel = useL10n(
         "Choose...",
         "EditTab.Toolbox.DragActivity.ChooseSound",
-        ""
+        "",
     );
 
     const canvasElementManager = getCanvasElementManager()!;
@@ -848,7 +848,7 @@ const DragActivityControls: React.FunctionComponent<{
         currentCanvasElement = undefined;
     }
     const currentCanvasElementTargetId = currentCanvasElement?.getAttribute(
-        kDraggableIdAttribute
+        kDraggableIdAttribute,
     );
     const [currentDraggableTarget, setCurrentDraggableTarget] = useState<
         HTMLElement | undefined
@@ -865,7 +865,7 @@ const DragActivityControls: React.FunctionComponent<{
         // requester with the key dragActivityTool, so it won't be a large leak.
         canvasElementManager?.requestCanvasElementChangeNotification(
             "dragActivityTool",
-            b => setBubble(b)
+            (b) => setBubble(b?.getBubbleSpec()),
         );
     }, [props.pageGeneration, canvasElementManager]);
     useEffect(() => {
@@ -876,8 +876,8 @@ const DragActivityControls: React.FunctionComponent<{
         const page = getPage();
         setCurrentDraggableTarget(
             page?.querySelector(
-                `[data-target-of="${currentCanvasElementTargetId}"]`
-            ) as HTMLElement
+                `[data-target-of="${currentCanvasElementTargetId}"]`,
+            ) as HTMLElement,
         );
         // We need to re-evaluate when changing pages, it's possible the initially selected item
         // on a new page has the same currentDraggableTargetId.
@@ -927,7 +927,7 @@ const DragActivityControls: React.FunctionComponent<{
             currentCanvasElement &&
             currentDraggableTarget
         ) {
-            draggableToTargetObserver.current = new MutationObserver(_ => {
+            draggableToTargetObserver.current = new MutationObserver((_) => {
                 // if it's no longer current, we just haven't removed the observer yet,
                 // don't do it.
                 if (
@@ -940,7 +940,7 @@ const DragActivityControls: React.FunctionComponent<{
             draggableToTargetObserver.current.observe(currentCanvasElement, {
                 childList: true,
                 subtree: true,
-                attributes: true // e.g., cropping of image
+                attributes: true, // e.g., cropping of image
             });
         }
     }, [currentCanvasElement, currentDraggableTarget, props.activeTab]);
@@ -949,7 +949,7 @@ const DragActivityControls: React.FunctionComponent<{
         const getStateFromPage = () => {
             const pageBody = ToolBox.getPage();
             const page = pageBody?.getElementsByClassName(
-                "bloom-page"
+                "bloom-page",
             )[0] as HTMLElement;
             if (!page) {
                 // Hopefully the only way this happens is if the toolbox iframe loads faster than the page iframe.
@@ -961,10 +961,10 @@ const DragActivityControls: React.FunctionComponent<{
 
             setAllItemsSameSize(doesContainingPageHaveSameSizeMode(page));
             setShowTargetsDuringPlay(
-                page.getAttribute("data-show-targets-during-play") !== "false"
+                page.getAttribute("data-show-targets-during-play") !== "false",
             );
             setShowAnswersInTargets(
-                page.getAttribute("data-show-answers-in-targets") === "true"
+                page.getAttribute("data-show-answers-in-targets") === "true",
             );
             const getSoundId = (attr: string) => {
                 const id = page.getAttribute(attr);
@@ -1011,9 +1011,9 @@ const DragActivityControls: React.FunctionComponent<{
                 correctSoundId,
                 defaultLabel,
                 noneLabel,
-                chooseLabel
+                chooseLabel,
             ),
-        [correctFiles, correctSoundId, defaultLabel, noneLabel, chooseLabel]
+        [correctFiles, correctSoundId, defaultLabel, noneLabel, chooseLabel],
     );
     const wrongSoundOptions = useMemo(
         () =>
@@ -1023,9 +1023,9 @@ const DragActivityControls: React.FunctionComponent<{
                 wrongSoundId,
                 defaultLabel,
                 noneLabel,
-                chooseLabel
+                chooseLabel,
             ),
-        [wrongFiles, wrongSoundId, defaultLabel, noneLabel, chooseLabel]
+        [wrongFiles, wrongSoundId, defaultLabel, noneLabel, chooseLabel],
     );
 
     // const [dragObjectType, setDragObjectType] = useState("text");
@@ -1059,7 +1059,7 @@ const DragActivityControls: React.FunctionComponent<{
     const setSound = (
         soundType: SoundType,
         newSoundId: string,
-        copyBuiltIn: boolean
+        copyBuiltIn: boolean,
     ) => {
         const page = getPage();
         const setSoundAttr = (soundAttr: string, newSoundId: string) => {
@@ -1096,7 +1096,7 @@ const DragActivityControls: React.FunctionComponent<{
             if (!someDraggable || !isDraggable(someDraggable)) {
                 // find something
                 someDraggable = page.querySelector(
-                    kDraggableIdAttribute
+                    kDraggableIdAttribute,
                 ) as HTMLElement;
             }
             if (!someDraggable) {
@@ -1110,7 +1110,7 @@ const DragActivityControls: React.FunctionComponent<{
             // actually make a difference to image targets that previously matched the largest
             // draggable in each dimension.
             page.querySelectorAll(
-                "[data-target-of] " + kImageContainerSelector
+                "[data-target-of] " + kImageContainerSelector,
             ).forEach((ic: HTMLElement) => {
                 const target = ic.closest("[data-target-of]") as HTMLElement;
                 target.style.width = ic.style.width;
@@ -1126,7 +1126,7 @@ const DragActivityControls: React.FunctionComponent<{
         const page = getPage();
         page.setAttribute(
             "data-show-answers-in-targets",
-            newShowAnswersInTargets ? "true" : "false"
+            newShowAnswersInTargets ? "true" : "false",
         );
         // Don't actually change it. Answers always show in Start mode.
     };
@@ -1137,7 +1137,7 @@ const DragActivityControls: React.FunctionComponent<{
         const page = getPage();
         page.setAttribute(
             "data-show-targets-during-play",
-            newShowTargetsDuringPlay ? "true" : "false"
+            newShowTargetsDuringPlay ? "true" : "false",
         );
     };
 
@@ -1425,19 +1425,21 @@ const DragActivityControls: React.FunctionComponent<{
                     />
                 )}
 
-                {// At one point, we had extra controls in the Wrong tab to add Try Again and Show Answer buttons,
-                // but decided to build those in.
-                props.activeTab === wrongTabIndex && (
-                    <CorrectWrongControls
-                        soundType="wrong"
-                        instructionsL10nKey="EditTab.Toolbox.DragActivity.WrongInstructions"
-                        whenTheAnswerIsSubKey="WrongSound"
-                        classToAddToItems="drag-item-wrong"
-                        soundOptions={wrongSoundOptions}
-                        currentSound={wrongSoundId}
-                        onSoundItemChosen={onSoundItemChosen}
-                    />
-                )}
+                {
+                    // At one point, we had extra controls in the Wrong tab to add Try Again and Show Answer buttons,
+                    // but decided to build those in.
+                    props.activeTab === wrongTabIndex && (
+                        <CorrectWrongControls
+                            soundType="wrong"
+                            instructionsL10nKey="EditTab.Toolbox.DragActivity.WrongInstructions"
+                            whenTheAnswerIsSubKey="WrongSound"
+                            classToAddToItems="drag-item-wrong"
+                            soundOptions={wrongSoundOptions}
+                            currentSound={wrongSoundId}
+                            onSoundItemChosen={onSoundItemChosen}
+                        />
+                    )
+                }
                 {props.activeTab === playTabIndex && (
                     <div>
                         <Div
@@ -1457,7 +1459,7 @@ const DragActivityControls: React.FunctionComponent<{
 
 const GameTextItem: React.FunctionComponent<{
     addClasses?: string;
-}> = props => {
+}> = (props) => {
     // We don't want game text items to autosize, so we add this class to them. (BL-14779)
     let classesToAdd = props.addClasses ?? "";
     if (!classesToAdd.includes("bloom-noAutoHeight")) {
@@ -1477,7 +1479,7 @@ const GameTextItem: React.FunctionComponent<{
 function textItemCss(
     fontSize: string = "larger",
     darkBackground: boolean = false,
-    radius: string = "0"
+    radius: string = "0",
 ) {
     return css`
         margin-left: 5px;
@@ -1503,7 +1505,7 @@ const SoundControls: React.FunctionComponent<{
     soundOptions: { label: string; id: string; divider: boolean }[];
     currentSound: string;
     onSoundItemChosen: (soundType: SoundType, value: string) => void;
-}> = props => {
+}> = (props) => {
     return (
         <div css={playAudioCss}>
             <Div
@@ -1520,7 +1522,7 @@ const SoundControls: React.FunctionComponent<{
                 props.soundType,
                 props.soundOptions,
                 props.currentSound,
-                props.onSoundItemChosen
+                props.onSoundItemChosen,
             )}
         </div>
     );
@@ -1534,7 +1536,7 @@ const CorrectWrongControls: React.FunctionComponent<{
     soundOptions: { label: string; id: string; divider: boolean }[];
     currentSound: string;
     onSoundItemChosen: (soundType: SoundType, value: string) => void;
-}> = props => {
+}> = (props) => {
     return (
         <div>
             <CanvasElementItemRegion theme="blueOnTan" l10nKey="">
@@ -1605,8 +1607,8 @@ export const makeDuplicateOfDragBubble = () => {
         setGeneratedDraggableId(duplicate);
 
         // Duplicate had better not be locked to contain the same text!
-        Array.from(duplicate.querySelectorAll("[data-book]")).forEach(e =>
-            e.removeAttribute("data-book")
+        Array.from(duplicate.querySelectorAll("[data-book]")).forEach((e) =>
+            e.removeAttribute("data-book"),
         );
 
         if (oldTarget) {
@@ -1631,7 +1633,7 @@ export const soundSelect = (
     soundType: SoundType,
     options: { label: string; id: string; divider: boolean }[],
     value: string,
-    setValue: (soundType: SoundType, value: string) => void
+    setValue: (soundType: SoundType, value: string) => void,
 ) => {
     return (
         <ThemeProvider theme={toolboxMenuPopupTheme}>
@@ -1650,13 +1652,13 @@ export const soundSelect = (
                 `}
                 size="small"
                 value={value}
-                onChange={event => {
+                onChange={(event) => {
                     const newSoundId = event.target.value as string;
                     setValue(soundType, newSoundId);
                 }}
                 disabled={false}
             >
-                {options.map(option => (
+                {options.map((option) => (
                     <MenuItem
                         value={option.id}
                         key={option.id}
@@ -1672,7 +1674,7 @@ export const soundSelect = (
 };
 
 // Function to produce the CSS for an option button.
-const optionCss = turnedOn => `background-color: ${
+const optionCss = (turnedOn) => `background-color: ${
     turnedOn ? kBloomBlue : "transparent"
 };
 padding: 6px;
@@ -1768,7 +1770,7 @@ export class GameTool extends ToolboxToolReactAdaptor {
                 activeTab={this.tab}
                 pageGeneration={this.pageGeneration}
             />,
-            this.root
+            this.root,
         );
     }
 
@@ -1810,7 +1812,7 @@ export class GameTool extends ToolboxToolReactAdaptor {
         adjustDraggablesForLanguage(page);
 
         setPlayerUrlPrefixFromWindowLocationHref(
-            page.ownerDocument.defaultView!.location.href
+            page.ownerDocument.defaultView!.location.href,
         );
 
         const pageId = page.getAttribute("id") ?? "";
@@ -1843,13 +1845,13 @@ export class GameTool extends ToolboxToolReactAdaptor {
 export function playSound(
     newSoundId: string,
     page: HTMLElement,
-    soundType?: SoundType
+    soundType?: SoundType,
 ) {
     let url = "audio/" + newSoundId;
     if (newSoundId === "default") {
         if (soundType === undefined) {
             throw new Error(
-                "If newSoundId is 'default', soundType must be provided."
+                "If newSoundId is 'default', soundType must be provided.",
             );
         }
         url =
@@ -1938,7 +1940,7 @@ export function setActiveDragActivityTab(tab: number) {
             console.log(
                 "had to postpone setting tab to ",
                 tab,
-                " because page not ready yet."
+                " because page not ready yet.",
             );
             setActiveDragActivityTab(tab);
         }, 100);
@@ -1967,7 +1969,7 @@ export function setActiveDragActivityTab(tab: number) {
         canvasElementManager!.suspendComicEditing("forGamePlayMode");
         // Enhance: perhaps the next/prev page buttons could do something even here?
         // If so, would we want them to work only in TryIt mode, or always?
-        prepareActivity(page, _next => {
+        prepareActivity(page, (_next) => {
             /* nothing to do */
         });
         playInitialElements(page, true);
@@ -1976,7 +1978,7 @@ export function setActiveDragActivityTab(tab: number) {
         // Bloom player has its own image hyperlink handling and follows both links to external sites and links to other
         // pages and books, which we can't do here in the Edit tab.
         const imagesWithLinks = Array.from(
-            page.querySelectorAll("[data-href]")
+            page.querySelectorAll("[data-href]"),
         ).filter((elt: HTMLElement) => {
             return (
                 elt.classList.contains("bloom-imageContainer") &&
@@ -1986,7 +1988,7 @@ export function setActiveDragActivityTab(tab: number) {
         imagesWithLinks.forEach((elt: HTMLElement) => {
             elt.addEventListener("click", (e: MouseEvent) => {
                 const linkElement = (e.target as HTMLElement).closest(
-                    "[href], [data-href]"
+                    "[href], [data-href]",
                 ) as HTMLElement;
                 if (!linkElement) return;
 
@@ -2039,7 +2041,7 @@ export function setupDragActivityTabControl() {
     const tabControl = page.ownerDocument.createElement("div");
     tabControl.setAttribute("id", kIdForDragActivityTabControl);
     const abovePageControlContainer = page.ownerDocument.getElementsByClassName(
-        "above-page-control-container"
+        "above-page-control-container",
     )[0];
     if (!abovePageControlContainer) {
         // if it's not already created, keep trying until it is.
@@ -2056,7 +2058,7 @@ export function setupDragActivityTabControl() {
     // its initialization code, and it's vital to be consistent about the bundle
     // from which event handler functions are taken, so they can later be removed.
     getToolboxBundleExports()?.setActiveDragActivityTab(
-        getActiveDragActivityTab()
+        getActiveDragActivityTab(),
     );
 }
 
@@ -2069,7 +2071,7 @@ function pxToNumber(dimension: string): number {
 }
 
 export const makeTargetForDraggable = (
-    canvasElement: HTMLElement
+    canvasElement: HTMLElement,
 ): HTMLElement => {
     const id = canvasElement.getAttribute(kDraggableIdAttribute);
     if (!id) {
@@ -2093,7 +2095,7 @@ export const makeTargetForDraggable = (
     const { x: snapX, y: snapY } = snapProvider.getPosition(
         undefined,
         newLeft,
-        newTop
+        newTop,
     );
     // Review: can we do any more to make sure it's visible and not overlapping canvas element?
     // Should we try to avoid overlapping other canvas elements and/or targets?
@@ -2113,12 +2115,12 @@ export const makeTargetForDraggable = (
 function randomlyAssignTargetsIfNeeded(page): void {
     if (page.classList.contains("draggables-need-shuffling")) {
         const draggables = getAllDraggables(page) as HTMLElement[];
-        const origDraggableIdOrder = draggables.map(d =>
-            d.getAttribute(kDraggableIdAttribute)
+        const origDraggableIdOrder = draggables.map((d) =>
+            d.getAttribute(kDraggableIdAttribute),
         );
 
         const targets = Array.from(
-            page.querySelectorAll("[data-target-of]")
+            page.querySelectorAll("[data-target-of]"),
         ) as HTMLElement[];
 
         // If there are the same number of draggables and targets, we don't ever want the situation where the draggables
@@ -2131,17 +2133,17 @@ function randomlyAssignTargetsIfNeeded(page): void {
         for (let i = 0; i < 5; i++) {
             shuffle(
                 draggables,
-                (_a, _b) => false
+                (_a, _b) => false,
                 // This uses fischer-yates shuffle. If we let it check for differences, it will ensure that no draggable
                 // ends up in the same place, which we don't want because with only 3 draggables this would mean very few
                 // possible arrangements.
             );
-            const newDraggableIdOrder = draggables.map(d =>
-                d.getAttribute(kDraggableIdAttribute)
+            const newDraggableIdOrder = draggables.map((d) =>
+                d.getAttribute(kDraggableIdAttribute),
             );
             if (
                 !newDraggableIdOrder.every(
-                    (value, index) => value === origDraggableIdOrder[index]
+                    (value, index) => value === origDraggableIdOrder[index],
                 ) ||
                 !requireShuffleDifference
             ) {
@@ -2153,7 +2155,7 @@ function randomlyAssignTargetsIfNeeded(page): void {
             const target = targets[i];
             target.setAttribute(
                 "data-target-of",
-                draggables[i].getAttribute(kDraggableIdAttribute) ?? ""
+                draggables[i].getAttribute(kDraggableIdAttribute) ?? "",
             );
         }
 

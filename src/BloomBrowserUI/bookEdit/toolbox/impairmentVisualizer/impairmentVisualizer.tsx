@@ -1,18 +1,18 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
-import { Div } from "../../../react_components/l10nComponents";
+import { Div, Span } from "../../../react_components/l10nComponents";
 import { get, postDataWithConfig } from "../../../utils/bloomApi";
-import { ApiBackedCheckbox } from "../../../react_components/apiBackedCheckbox";
 import "./impairmentVisualizer.less";
-import { RadioGroup, Radio } from "../../../react_components/radio";
+import { RadioGroup } from "../../../react_components/RadioGroup";
 import { deuteranopia, tritanopia, achromatopsia } from "color-blind";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
-import { kHasCanvasElementClass } from "../overlay/canvasElementUtils";
-import { kImageContainerClass } from "../../js/bloomImages";
+import { kImageContainerClass, isPlaceHolderImage } from "../../js/bloomImages";
 import { CanvasElementManager } from "../../js/CanvasElementManager";
+import { ThemeProvider } from "@mui/material";
+import { ApiCheckbox } from "../../../react_components/ApiCheckbox";
+import { toolboxTheme } from "../../../bloomMaterialUITheme";
 
 interface IState {
     kindOfColorBlindness: string;
@@ -28,7 +28,7 @@ export class ImpairmentVisualizerControls extends React.Component<
     IState
 > {
     public readonly state: IState = {
-        kindOfColorBlindness: "redGreen"
+        kindOfColorBlindness: "redGreen",
     };
 
     // This wants to be part of our state, passed as a prop to ApiBackedCheckbox.
@@ -39,65 +39,69 @@ export class ImpairmentVisualizerControls extends React.Component<
     private simulatingCataracts: boolean;
     private simulatingColorBlindness: boolean;
 
+    private radioLabelElement = (
+        label: string,
+        l10nKey: string,
+    ): JSX.Element => <Span l10nKey={l10nKey}>{label}</Span>;
+
     public render() {
         return (
-            <div className="impairmentVisualizerBody">
-                <div className="impairmentVisualizerInnerWrapper">
-                    <Div l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Overview">
-                        You can use these check boxes to have Bloom simulate how
-                        your images would look with various visual impairments.
-                    </Div>
-                    <ApiBackedCheckbox
-                        apiEndpoint="accessibilityCheck/cataracts"
-                        l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Cataracts"
-                        onCheckChanged={simulate =>
-                            this.updateCataracts(simulate)
-                        }
-                        css={css`
-                            margin-bottom: 6px;
-                        `}
-                    >
-                        Cataracts
-                    </ApiBackedCheckbox>
-                    <ApiBackedCheckbox
-                        apiEndpoint="accessibilityCheck/colorBlindness"
-                        l10nKey="EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness"
-                        onCheckChanged={simulate =>
-                            this.updateColorBlindnessCheck(simulate)
-                        }
-                        css={css`
-                            margin-bottom: 2px;
-                        `}
-                    >
-                        Color Blindness
-                    </ApiBackedCheckbox>
-                    <RadioGroup
-                        onChange={val => this.updateColorBlindnessRadio(val)}
-                        value={this.state.kindOfColorBlindness}
-                    >
-                        <Radio
-                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.RedGreen"
-                            value="RedGreen"
-                        >
-                            Red-Green
-                        </Radio>
-                        <Radio
-                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.BlueYellow"
-                            value="BlueYellow"
-                        >
-                            Blue-Yellow
-                        </Radio>
-                        <Radio
-                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Complete"
-                            value="Complete"
-                        >
-                            Complete
-                        </Radio>
-                    </RadioGroup>
-                </div>
+            <ThemeProvider theme={toolboxTheme}>
+                <div className="impairmentVisualizerBody">
+                    <div className="impairmentVisualizerInnerWrapper">
+                        <Div l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Overview">
+                            You can use these check boxes to have Bloom simulate
+                            how your images would look with various visual
+                            impairments.
+                        </Div>
+                        <ApiCheckbox
+                            label="Cataracts"
+                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Cataracts"
+                            apiEndpoint="accessibilityCheck/cataracts"
+                            onChange={(simulate) =>
+                                this.updateCataracts(simulate)
+                            }
+                            size="small"
+                        />
+                        <ApiCheckbox
+                            label="Color Blindness"
+                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness"
+                            apiEndpoint="accessibilityCheck/colorBlindness"
+                            onChange={(simulate) =>
+                                this.updateColorBlindnessCheck(simulate)
+                            }
+                            size="small"
+                        />
+                        <RadioGroup
+                            onChange={(val) =>
+                                this.updateColorBlindnessRadio(val)
+                            }
+                            value={this.state.kindOfColorBlindness}
+                            choices={{
+                                RedGreen: this.radioLabelElement(
+                                    "Red-Green",
+                                    "EditTab.Toolbox.ImpairmentVisualizer.RedGreen",
+                                ),
+                                BlueYellow: this.radioLabelElement(
+                                    "Blue-Yellow",
+                                    "EditTab.Toolbox.ImpairmentVisualizer.BlueYellow",
+                                ),
+                                Complete: this.radioLabelElement(
+                                    "Complete",
+                                    "EditTab.Toolbox.ImpairmentVisualizer.Complete",
+                                ),
+                            }}
+                            radioSize="small"
+                            css={css`
+                                margin-left: 25px;
+                                padding-top: 8px;
+                            `}
+                        ></RadioGroup>
+                    </div>
 
-                <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Impairment_Visualizer/Impairment_Visualizer_overview.htm" />
-            </div>
+                    <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Impairment_Visualizer/Impairment_Visualizer_overview.htm" />
+                </div>
+            </ThemeProvider>
         );
     }
 
@@ -113,14 +117,14 @@ export class ImpairmentVisualizerControls extends React.Component<
 
     private updateColorBlindnessRadio(mode: string) {
         postDataWithConfig("accessibilityCheck/kindOfColorBlindness", mode, {
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
         });
         this.setState({ kindOfColorBlindness: mode });
         // componentDidUpdate will call updateSimulations when state is stable
     }
 
     public componentDidMount() {
-        get("accessibilityCheck/kindOfColorBlindness", result => {
+        get("accessibilityCheck/kindOfColorBlindness", (result) => {
             this.setState({ kindOfColorBlindness: result.data });
         });
     }
@@ -147,16 +151,15 @@ export class ImpairmentVisualizerControls extends React.Component<
             body.classList.remove("simulateCataracts");
         }
         ImpairmentVisualizerControls.removeColorBlindnessMarkup(
-            img ? img.parentElement! : page
+            img ? img.parentElement! : page,
         );
         if (this.simulatingColorBlindness) {
             body.classList.add("simulateColorBlindness");
             // For now limit it to these images because the positioning depends
             // on the img being the first thing in its parent and the parent
             // being positioned, which we can't count on for other images.
-            const containers = page.getElementsByClassName(
-                kImageContainerClass
-            );
+            const containers =
+                page.getElementsByClassName(kImageContainerClass);
             // img instanceof HTMLImageElement does not work here, possibly because img belongs to
             // a different iframe, which has its own HTMLImageElement prototype
             if (img) {
@@ -173,10 +176,10 @@ export class ImpairmentVisualizerControls extends React.Component<
                             childIndex
                         ] as HTMLElement;
                         if (!child || child.nodeName !== "IMG") continue;
-                        // Don't make a overlay for a draghandle or other UI element.
+                        // Don't make a color blindness overlay for a draghandle or other UI element.
                         if (child.classList.contains("bloom-ui")) continue;
                         this.makeColorBlindnessOverlay(
-                            child as HTMLImageElement
+                            child as HTMLImageElement,
                         );
                     }
                 }
@@ -199,7 +202,7 @@ export class ImpairmentVisualizerControls extends React.Component<
     private static removeColorBlindnessMarkup(page: HTMLElement) {
         [].slice
             .call(page.getElementsByClassName("ui-cbOverlay"))
-            .map(x => x.parentElement.removeChild(x));
+            .map((x) => x.parentElement.removeChild(x));
     }
 
     private componentToHex(c) {
@@ -229,7 +232,7 @@ export class ImpairmentVisualizerControls extends React.Component<
             window.setTimeout(() => this.makeColorBlindnessOverlay(img), 100);
             return;
         }
-        if (img.getAttribute("src") === "placeHolder.png") {
+        if (isPlaceHolderImage(img.getAttribute("src"))) {
             // I don't think any purpose is served by visualizing what color blindness does to
             // a greyscale image that won't show in the real book, and it makes for more
             // updates to correctly handle when it shows and hides.
@@ -291,7 +294,7 @@ export class ImpairmentVisualizerControls extends React.Component<
             imgLeft,
             imgTop,
             img.clientWidth,
-            img.clientHeight
+            img.clientHeight,
         );
         // imgData is a byte array with 4 bytes for each pixel in RGBA order
         const imgData = context.getImageData(0, 0, canvas.width, canvas.height);
@@ -330,10 +333,10 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
     public makeRootElement(): HTMLDivElement {
         return super.adaptReactElement(
             <ImpairmentVisualizerControls
-                ref={renderedElement =>
+                ref={(renderedElement) =>
                     (this.controlsElement = renderedElement)
                 }
-            />
+            />,
         );
     }
     public imageUpdated(img: HTMLImageElement | undefined): void {

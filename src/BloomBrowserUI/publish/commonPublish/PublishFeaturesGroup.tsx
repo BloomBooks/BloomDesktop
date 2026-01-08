@@ -9,7 +9,7 @@ import {
     post,
     useApiBoolean,
     useApiString,
-    useWatchString
+    useWatchString,
 } from "../../utils/bloomApi";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import { ILanguagePublishInfo } from "./PublishLanguagesGroup";
@@ -24,42 +24,40 @@ import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import {
     useGetFeatureAvailabilityMessage,
-    useGetFeatureStatus
+    useGetFeatureStatus,
 } from "../../react_components/featureStatus";
 import { kMotionToolId } from "../../bookEdit/toolbox/toolIds";
 
 export const PublishFeaturesGroup: React.FunctionComponent<{
     onChange?: () => void;
     generation?: number; // bump this to force recalc of computed features
-}> = props => {
+}> = (props) => {
     const [motionEnabled] = useApiBoolean("publish/canHaveMotionMode", false);
     const motionFeatureStatus = useGetFeatureStatus(kMotionToolId, true);
-    const motionFeatureMessage = useGetFeatureAvailabilityMessage(
-        motionFeatureStatus
-    );
+    const motionFeatureMessage =
+        useGetFeatureAvailabilityMessage(motionFeatureStatus);
     const motionAllowed = motionFeatureStatus?.enabled ?? false;
 
     const [hasNonWidgetGames] = useApiBoolean(
         "publish/hasNonWidgetGames",
-        false
+        false,
     );
     const nonWidgetGameFeatureStatus = useGetFeatureStatus("game", true);
     const nonWidgetGameFeatureMessage = useGetFeatureAvailabilityMessage(
-        nonWidgetGameFeatureStatus
+        nonWidgetGameFeatureStatus,
     );
     const mayPublishNonWidgetGames =
         nonWidgetGameFeatureStatus?.enabled ?? false;
     const [hasWidgets] = useApiBoolean("publish/hasWidgets", false);
     const widgetFeatureStatus = useGetFeatureStatus("widget", true);
-    const widgetFeatureMessage = useGetFeatureAvailabilityMessage(
-        widgetFeatureStatus
-    );
+    const widgetFeatureMessage =
+        useGetFeatureAvailabilityMessage(widgetFeatureStatus);
     const mayPublishWidgets = widgetFeatureStatus?.enabled ?? false;
 
     const [comicEnabled] = useApiBoolean("publish/comicEnabled", false);
     const [visuallyImpairedEnabled] = useApiBoolean(
         "publish/visuallyImpairedEnabled",
-        false
+        false,
     );
     const [langs, setLangs] = React.useState<ILanguagePublishInfo[]>([]);
     React.useEffect(() => {
@@ -67,7 +65,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
             "publish/languagesInBook",
 
             // onSuccess
-            result => {
+            (result) => {
                 let newLangs = result.data;
                 // This is for debugging. When all is well, the JSON gets parsed automatically.
                 // If there's a syntax error in the JSON, result.data is just the string.
@@ -79,7 +77,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                 // Note that these are just simple objects with fields, not instances of classes with methods.
                 // That's why these are ILanguagePublishInfo's (interface) instead of LanguagePublishInfo's (class)
                 setLangs(newLangs as ILanguagePublishInfo[]);
-            }
+            },
 
             // onError
             // Currently just ignoring errors... letting BloomServer take care of reporting anything that comes up
@@ -95,12 +93,12 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
 
     const signLanguageNameOriginal = useApiString(
         "publish/signLanguageName",
-        ""
+        "",
     );
     const signLanguageName = useWatchString(
         signLanguageNameOriginal,
         "publish",
-        "signLang"
+        "signLang",
     );
 
     const l1Name = useApiString("publish/l1Name", "");
@@ -108,35 +106,36 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
     const signLanguageEnabled = hasVideo && !!signLanguageName;
 
     const isTalkingBook = langs.some(
-        item => item.includeText && item.containsAnyAudio && item.includeAudio
+        (item) =>
+            item.includeText && item.containsAnyAudio && item.includeAudio,
     );
 
-    const couldBeTalkingBook = langs.some(item => item.containsAnyAudio);
+    const couldBeTalkingBook = langs.some((item) => item.containsAnyAudio);
     const NoRecordings = useL10n(
         "This is disabled because this book does not have any Talking Book recordings.",
-        "PublishTab.Feature.TalkingBook.NoRecordings"
+        "PublishTab.Feature.TalkingBook.NoRecordings",
     );
     const NoLanguagesSelected = useL10n(
         "This is disabled because no “Talking Book Languages” are selected.",
-        "PublishTab.Feature.TalkingBook.NoLanguagesSelected"
+        "PublishTab.Feature.TalkingBook.NoLanguagesSelected",
     );
     const talkingBookDisabledTooltip = isTalkingBook
         ? ""
         : couldBeTalkingBook
-        ? NoLanguagesSelected
-        : NoRecordings;
+          ? NoLanguagesSelected
+          : NoRecordings;
 
     const slPresent = useL10n(
         "The videos in this book contain {N}",
-        "PublishTab.Feature.SignLanguage.Present"
+        "PublishTab.Feature.SignLanguage.Present",
     );
     const slNoVideo = useL10n(
         "This is disabled because this book does not have any videos.",
-        "PublishTab.Feature.SignLanguage.NoVideos"
+        "PublishTab.Feature.SignLanguage.NoVideos",
     );
     const slUnknown = useL10n(
         "This is disabled because this collection has {no sign language selected}.",
-        "PublishTab.Feature.SignLanguage.Unknown"
+        "PublishTab.Feature.SignLanguage.Unknown",
     );
     let slTooltip: React.ReactElement | string = slNoVideo; // default
     let linkPart = "";
@@ -189,11 +188,11 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
 
     const noGamesTooltip = useL10n(
         "This book does not have any games.",
-        "PublishTab.Feature.Games.None"
+        "PublishTab.Feature.Games.None",
     );
     const hasGamesTooltip = useL10n(
         "This book has games.",
-        "PublishTab.Feature.Games.Present"
+        "PublishTab.Feature.Games.Present",
     );
 
     let gamesTooltip = noGamesTooltip;
@@ -207,22 +206,22 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         gamesTooltip = widgetFeatureMessage;
 
     const noComicTooltip = useL10n(
-        "This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.",
-        "PublishTab.Feature.Comic.None"
+        "This is disabled because this book does not have any canvas elements that qualify as “comic-like”, such as speech bubbles.",
+        "PublishTab.Feature.Comic.None",
     );
     const hasComicTooltip = useL10n(
         "Select this if you want to list this book as a Comic Book. This only affects how the book is categorized, it does not affect the content of the book.",
-        "PublishTab.Feature.Comic.Possible"
+        "PublishTab.Feature.Comic.Possible",
     );
     const comicTooltip = comicEnabled ? hasComicTooltip : noComicTooltip;
 
     const noMotionTooltip = useL10n(
         "This is disabled because this book does not have any pages with motion enabled.",
-        "PublishTab.Feature.Motion.None"
+        "PublishTab.Feature.Motion.None",
     );
     const hasMotionTooltip = useL10n(
         "Select this if you want to show motion when the book is read in landscape mode.",
-        "PublishTab.Feature.Motion.Possible"
+        "PublishTab.Feature.Motion.Possible",
     );
     const motionTooltip = motionEnabled
         ? motionAllowed
@@ -232,11 +231,11 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
 
     const noVisionTooltip = useL10n(
         "This is disabled because this book does not have any image descriptions in the primary language.",
-        "PublishTab.Feature.Vision.None"
+        "PublishTab.Feature.Vision.None",
     );
     const hasVisionTooltip = useL10n(
         "Select this if you want to list this book as accessible to the visually impaired in the primary language.  This only affects how the book is categorized, it does not affect the content of the book.",
-        "PublishTab.Feature.Vision.Possible"
+        "PublishTab.Feature.Vision.Possible",
     );
     const visionTooltip = visuallyImpairedEnabled
         ? hasVisionTooltip

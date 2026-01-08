@@ -235,22 +235,24 @@ body {
     border: 2px solid @highlightColor;
 }
 
-.gridItem {
-    width: @gridWidth;
-    height: @gridHeight;
-    opacity: 1;
-    //overflow:hidden;
-    &:nth-child(even) {
-        .thumbnailCaption {
-            text-align: left;
+.page-thumbnail-list {
+    .gridItem {
+        width: @gridWidth;
+        height: @gridHeight;
+        opacity: 1;
+        //overflow:hidden;
+        &:nth-child(even) {
+            .thumbnailCaption {
+                text-align: left;
+            }
         }
-    }
-    &:nth-child(odd) {
-        .pageContainer {
-            float: right;
-        }
-        .thumbnailCaption {
-            right: 4px; // position is absolute, so float:right won't work
+        &:nth-child(odd) {
+            .pageContainer {
+                float: right;
+            }
+            .thumbnailCaption {
+                right: 4px; // position is absolute, so float:right won't work
+            }
         }
     }
 }

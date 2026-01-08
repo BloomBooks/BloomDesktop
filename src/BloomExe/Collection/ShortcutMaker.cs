@@ -3,9 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using SIL.IO;
-#if !__MonoCS__
-using IWshRuntimeLibrary;
-#endif
+using static Bloom.Shortcut;
 
 namespace Bloom.Collection
 {
@@ -20,6 +18,10 @@ namespace Bloom.Collection
             [MarshalAs(UnmanagedType.LPTStr)] StringBuilder shortPath,
             int shortPathLength
         );
+
+        [ComImport]
+        [Guid("00021401-0000-0000-C000-000000000046")]
+        class ShellLink { }
 #endif
 
         public static void CreateDirectoryShortcut(string targetPath, string whereToPutItPath)
@@ -32,12 +34,13 @@ namespace Bloom.Collection
                 RobustFile.Delete(linkPath);
 
 #if !__MonoCS__
-            var wshShell = new WshShellClass();
-            var shortcut = (IWshShortcut)wshShell.CreateShortcut(linkPath);
+            // Use ShellLink COM object directly
+            var shellLink = new ShellLink();
+            var shortcut = (IShellLinkW)shellLink;
 
             try
             {
-                shortcut.TargetPath = targetPath;
+                shortcut.SetPath(targetPath);
             }
             catch (Exception)
             {
@@ -57,11 +60,17 @@ namespace Bloom.Collection
                 if (RobustFile.Exists(shortLinkPath))
                     RobustFile.Delete(shortLinkPath);
 
-                shortcut = (IWshShortcut)wshShell.CreateShortcut(shortLinkPath);
-                shortcut.TargetPath = shortTargetPath.ToString();
+                shellLink = new ShellLink();
+                shortcut = (IShellLinkW)shellLink;
+                shortcut.SetPath(shortTargetPath.ToString());
             }
 
-            shortcut.Save();
+            // Save shortcut using IPersistFile
+            var persistFile = (IPersistFile)shellLink;
+            persistFile.Save(
+                !string.IsNullOrEmpty(shortLinkPath) ? shortLinkPath : linkPath,
+                false
+            );
 
             // now rename the link to the correct name if needed
             if (!string.IsNullOrEmpty(shortLinkPath))

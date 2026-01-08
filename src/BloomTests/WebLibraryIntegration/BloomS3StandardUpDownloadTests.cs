@@ -64,9 +64,9 @@ namespace BloomTests.WebLibraryIntegration
         }
 
         [OneTimeTearDown]
-        public void TearDown()
+        public async System.Threading.Tasks.Task TearDown()
         {
-            _client.DeleteFromUnitTestBucket(_storageKeyOfBookFolderParent);
+            await _client.DeleteFromUnitTestBucketAsync(_storageKeyOfBookFolderParent);
             _workFolder.Dispose();
             _client.Dispose();
             _clientWhichMustWorkAroundUploadPermissions.Dispose();

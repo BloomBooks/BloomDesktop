@@ -105,7 +105,7 @@ namespace Bloom.Book
             {
                 "practice.html",
                 "tutorial.html",
-                "test.html"
+                "test.html",
             };
             if (widgetName == "HTML5")
             {

@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Xml;
+using Bloom.SafeXml;
 using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Xml;
-using Bloom.SafeXml;
 
 namespace Bloom.Book
 {

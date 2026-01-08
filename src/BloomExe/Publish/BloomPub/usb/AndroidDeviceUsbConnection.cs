@@ -16,7 +16,7 @@ namespace Bloom.Publish.BloomPub.usb
     {
         Unknown,
         NoDeviceFound,
-        MoreThanOneReadyDevice
+        MoreThanOneReadyDevice,
     }
 
     class OneReadyDeviceNotFoundEventArgs

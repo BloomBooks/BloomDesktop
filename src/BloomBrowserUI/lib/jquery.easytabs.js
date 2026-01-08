@@ -9,6 +9,7 @@
  *
  * Date: Thu Sep 15 09:50:00 2011 -0500
  */
+import jQuery from "jquery";
 ( function($) {
 
     // Triggers an event on an element and returns the event result

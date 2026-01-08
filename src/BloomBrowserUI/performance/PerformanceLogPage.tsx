@@ -6,11 +6,11 @@ import "./PerformanceLogPage.less";
 import {
     ScatterPlot,
     ScatterPlotDatum,
-    ScatterPlotNodeProps
+    ScatterPlotNodeProps,
 } from "@nivo/scatterplot";
 import * as ReactDOM from "react-dom";
 import { Button } from "@mui/material";
-import * as filesize from "filesize";
+import filesize from "filesize";
 
 interface IMeasurement {
     action?: string;
@@ -22,19 +22,19 @@ interface IMeasurement {
 export const PerformanceLogPage: React.FunctionComponent<{
     initialPoints?: IMeasurement[];
     webSocketContext?: string;
-}> = props => {
+}> = (props) => {
     const [measurements, setMeasurements] = useState<IMeasurement[]>(
-        props.initialPoints || []
+        props.initialPoints || [],
     );
 
     const [applicationInfo] = useApiStringState(
         "performance/applicationInfo",
-        ""
+        "",
     );
 
     const earlierMeasurements = useApiData<IMeasurement[]>(
         "performance/allMeasurements",
-        []
+        [],
     );
     React.useEffect(() => {
         setMeasurements(earlierMeasurements);
@@ -44,11 +44,11 @@ export const PerformanceLogPage: React.FunctionComponent<{
         // this prop is just used during testing when there is no server (i.e. storybook).
         props.webSocketContext ?? "performance",
         "event",
-        measurement => {
-            setMeasurements(previous => {
+        (measurement) => {
+            setMeasurements((previous) => {
                 return [...previous, measurement];
             });
-        }
+        },
     );
 
     const allMeasurements = earlierMeasurements.concat(measurements);
@@ -81,11 +81,11 @@ export const PerformanceLogPage: React.FunctionComponent<{
 
 const MemoryGraph: React.FunctionComponent<{
     measurements: IMeasurement[];
-}> = props => {
+}> = (props) => {
     const memoryLevels = props.measurements.map((m, index) => ({
         x: index,
         y: m.privateBytes / 1000000,
-        action: m.action
+        action: m.action,
     }));
     return (
         <div className="graph">
@@ -95,11 +95,11 @@ const MemoryGraph: React.FunctionComponent<{
                 width={1000}
                 margin={{ top: 10, right: 10, bottom: 30, left: 90 }}
                 yScale={{ type: "linear", min: 0, max: "auto" }}
-                yFormat={e =>
+                yFormat={(e) =>
                     filesize(
                         (e as number) *
-                        1000000 /* undo conversion to GB*/ *
-                            1000 /* kb->bytes */
+                            1000000 /* undo conversion to GB*/ *
+                            1000 /* kb->bytes */,
                     )
                 }
                 colors={{ scheme: "category10" }}
@@ -108,7 +108,7 @@ const MemoryGraph: React.FunctionComponent<{
                 axisBottom={{
                     tickSize: 5,
                     tickPadding: 5,
-                    tickValues: memoryLevels.length
+                    tickValues: memoryLevels.length,
                 }}
                 axisLeft={{
                     tickSize: 5,
@@ -116,7 +116,7 @@ const MemoryGraph: React.FunctionComponent<{
                     tickRotation: 0,
                     legend: "private bytes GB",
                     legendPosition: "middle",
-                    legendOffset: -60
+                    legendOffset: -60,
                 }}
                 tooltip={({ node }) => getTooltip(node, props.measurements)}
                 legends={[
@@ -136,17 +136,17 @@ const MemoryGraph: React.FunctionComponent<{
                             {
                                 on: "hover",
                                 style: {
-                                    itemOpacity: 1
-                                }
-                            }
-                        ]
-                    }
+                                    itemOpacity: 1,
+                                },
+                            },
+                        ],
+                    },
                 ]}
                 data={[
                     {
                         id: "",
-                        data: memoryLevels
-                    }
+                        data: memoryLevels,
+                    },
                 ]}
                 nodeComponent={CustomNodeWithColorDependingOnAction}
             />
@@ -156,7 +156,7 @@ const MemoryGraph: React.FunctionComponent<{
 
 const DurationGraph: React.FunctionComponent<{
     measurements: IMeasurement[];
-}> = props => {
+}> = (props) => {
     const durations = props.measurements.map((m, index) => {
         const r = {
             x: index,
@@ -164,7 +164,7 @@ const DurationGraph: React.FunctionComponent<{
             // graph by being a huge number. Cap it.
             y: Math.min(m.duration, 2),
             action: m.action,
-            clipped: false
+            clipped: false,
         };
         r.clipped = r.y < m.duration;
         return r;
@@ -177,21 +177,21 @@ const DurationGraph: React.FunctionComponent<{
                 width={1000}
                 margin={{ top: 10, right: 10, bottom: 30, left: 90 }}
                 yScale={{ type: "linear", min: 0, max: "auto" }}
-                yFormat={e => e + " seconds"}
+                yFormat={(e) => e + " seconds"}
                 colors={{ scheme: "set1" }}
                 axisTop={null}
                 axisRight={null}
                 axisBottom={{
                     tickSize: 5,
                     tickPadding: 5,
-                    tickValues: durations.length
+                    tickValues: durations.length,
                 }}
                 axisLeft={{
                     tickSize: 5,
                     tickPadding: 5,
                     legend: "seconds",
                     legendPosition: "middle",
-                    legendOffset: -60
+                    legendOffset: -60,
                 }}
                 tooltip={({ node }) => getTooltip(node, props.measurements)}
                 legends={[
@@ -211,17 +211,17 @@ const DurationGraph: React.FunctionComponent<{
                             {
                                 on: "hover",
                                 style: {
-                                    itemOpacity: 1
-                                }
-                            }
-                        ]
-                    }
+                                    itemOpacity: 1,
+                                },
+                            },
+                        ],
+                    },
                 ]}
                 data={[
                     {
                         id: "",
-                        data: durations
-                    }
+                        data: durations,
+                    },
                 ]}
                 nodeComponent={CustomNodeWithColorDependingOnAction}
             />
@@ -235,7 +235,7 @@ interface IHash {
 const ActionToColor: IHash = {};
 
 const CustomNodeWithColorDependingOnAction = ({
-    node
+    node,
 }: ScatterPlotNodeProps<{
     x: number;
     y: number;
@@ -269,7 +269,7 @@ const CustomNodeWithColorDependingOnAction = ({
         "#fccde5",
         "#d9d9d9",
         "#bc80bd",
-        "#ccebc5"
+        "#ccebc5",
     ];
     const action = node.data.action;
     const l: number = Object.keys(ActionToColor).length;
@@ -279,7 +279,7 @@ const CustomNodeWithColorDependingOnAction = ({
     }
     const customColor = ActionToColor[action];
     const commonProps = {
-        fill: customColor
+        fill: customColor,
         //style:{{ mixBlendMode: blendMode }},
     };
     return (
@@ -309,7 +309,7 @@ function getTooltip(node, measurements: IMeasurement[]) {
                 style={{
                     color: "white",
                     background: "#333",
-                    padding: "12px 16px"
+                    padding: "12px 16px",
                 }}
             >
                 {measurements[node.index].action}
@@ -317,7 +317,7 @@ function getTooltip(node, measurements: IMeasurement[]) {
                 {measurements[node.index].details} <br />
                 {filesize(
                     (measurements[node.index].privateBytes as number) *
-                        1000 /* kb->bytes */
+                        1000 /* kb->bytes */,
                 )}
                 <br />
                 {measurements[node.index].duration + " seconds"}

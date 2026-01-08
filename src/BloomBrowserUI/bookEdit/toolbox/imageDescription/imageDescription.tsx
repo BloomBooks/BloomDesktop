@@ -1,5 +1,5 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
+import $ from "jquery";
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
@@ -9,18 +9,17 @@ import { getEditablePageBundleExports } from "../../js/bloomFrames";
 import "./imageDescription.less";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { Label } from "../../../react_components/l10nComponents";
-import { Checkbox } from "../../../react_components/checkbox";
 import { Link } from "../../../react_components/link";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
-import { OverlayTool } from "../overlay/overlayTool";
 import {
     hideImageDescriptions,
-    showImageDescriptions
+    showImageDescriptions,
 } from "./imageDescriptionUtils";
-import { getCanvasElementManager } from "../overlay/canvasElementUtils";
-import { kBloomCanvasClass } from "../../js/bloomImages";
-
+import {
+    getCanvasElementManager,
+    kBloomCanvasClass,
+} from "../canvas/canvasElementUtils";
 interface IImageDescriptionState {
     enabled: boolean;
     descriptionNotNeeded: boolean;
@@ -41,7 +40,7 @@ export class ImageDescriptionToolControls extends React.Component<
     public readonly state: IImageDescriptionState = {
         enabled: true,
         descriptionNotNeeded: false,
-        isXmatterPage: false
+        isXmatterPage: false,
     };
 
     private activeEditable: Element | null;
@@ -105,7 +104,7 @@ export class ImageDescriptionToolControls extends React.Component<
                             }
                             className="imageDescriptionCheck"
                             checked={this.state.descriptionNotNeeded}
-                            onCheckChanged={checked =>
+                            onCheckChanged={(checked) =>
                                 this.onCheckChanged(checked!)
                             }
                             // This is a rather ugly way of reaching inside our checkbox class,
@@ -170,10 +169,10 @@ export class ImageDescriptionToolControls extends React.Component<
     }
 
     public static setup(root): ImageDescriptionToolControls {
-        return (ReactDOM.render(
+        return ReactDOM.render(
             <ImageDescriptionToolControls />,
-            root
-        ) as unknown) as ImageDescriptionToolControls;
+            root,
+        ) as unknown as ImageDescriptionToolControls;
     }
 
     public selectImageDescription(bloomCanvas: Element | null): void {
@@ -183,13 +182,12 @@ export class ImageDescriptionToolControls extends React.Component<
             return;
         }
         this.activeEditable = bloomCanvas;
-        const noDescriptionNeeded = this.activeEditable.getAttribute(
-            "aria-hidden"
-        );
+        const noDescriptionNeeded =
+            this.activeEditable.getAttribute("aria-hidden");
         this.setState({
             enabled: true,
             descriptionNotNeeded: noDescriptionNeeded === "true",
-            isXmatterPage: ToolBox.isXmatterPage()
+            isXmatterPage: ToolBox.isXmatterPage(),
         });
     }
 
@@ -215,7 +213,7 @@ export class ImageDescriptionToolControls extends React.Component<
         this.setState({
             enabled: false,
             descriptionNotNeeded: false,
-            isXmatterPage: false
+            isXmatterPage: false,
         });
     }
 }
@@ -229,7 +227,7 @@ export function setupImageDescriptions(
     // after it gets created, if it does not.
     doToImageDescriptions: (descriptions: HTMLCollectionOf<Element>) => void,
     // This function is called for each bloom-canvas that gets modified by adding an image description
-    doIfContentAdded: () => void
+    doIfContentAdded: () => void,
 ) {
     const canvasElementManager = getCanvasElementManager();
     if (!canvasElementManager) {
@@ -238,7 +236,7 @@ export function setupImageDescriptions(
             setupImageDescriptions(
                 page,
                 doToImageDescriptions,
-                doIfContentAdded
+                doIfContentAdded,
             );
         }, 100);
         return;
@@ -248,14 +246,14 @@ export function setupImageDescriptions(
     for (let i = 0; i < bloomCanvases.length; i++) {
         const container = bloomCanvases[i];
         let imageDescriptions = container.getElementsByClassName(
-            "bloom-imageDescription"
+            "bloom-imageDescription",
         );
         if (imageDescriptions.length === 0) {
             // Adds a new bloom-translationGroup
             // Gets the information we need to fill out the interior bloom-editables of the newly added bloom-translation group.
             // Preferable to only send a request for the info we need and not save and refresh the whole page.
             //   (Allows us to avoid the synchronous reload of the page, makes the UI experience much snappier)
-            post("editView/requestTranslationGroupContent", result => {
+            post("editView/requestTranslationGroupContent", (result) => {
                 // newPageReady() can be called twice, and both calls might occur before this async
                 // callback happens for either of them, so both may take this "no translation groups"
                 // branch and start to create them.  So check again before actually adding the new
@@ -263,13 +261,13 @@ export function setupImageDescriptions(
                 // See https://issues.bloomlibrary.org/youtrack/issue/BL-6798 for some
                 // confusing behavior that can result without this check.
                 imageDescriptions = container.getElementsByClassName(
-                    "bloom-imageDescription"
+                    "bloom-imageDescription",
                 );
                 if (result && imageDescriptions.length === 0) {
                     appendTranslationGroup(result.data, container);
                     doIfContentAdded();
                     imageDescriptions = container.getElementsByClassName(
-                        "bloom-imageDescription"
+                        "bloom-imageDescription",
                     );
                     doToImageDescriptions(imageDescriptions);
                 }
@@ -313,7 +311,7 @@ function appendTranslationGroup(innerHtml, container: Element) {
         .get(0);
 
     for (const editable of Array.from(
-        newTg.getElementsByClassName("bloom-editable")
+        newTg.getElementsByClassName("bloom-editable"),
     )) {
         editable.classList.add("ImageDescriptionEdit-style");
         editable.classList.remove("normal-style");
@@ -339,8 +337,10 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     public makeRootElement(): HTMLDivElement {
         return super.adaptReactElement(
             <ImageDescriptionToolControls
-                ref={renderedElement => (this.reactControls = renderedElement)}
-            />
+                ref={(renderedElement) =>
+                    (this.reactControls = renderedElement)
+                }
+            />,
         );
     }
 
@@ -373,7 +373,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     private descriptionGotFocus = (e: Event) => {
         if (this.reactControls) {
             this.reactControls.selectImageDescription(
-                (e.currentTarget as Element).parentElement
+                (e.currentTarget as Element).parentElement,
             );
         }
     };
@@ -393,11 +393,12 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
             setupImageDescriptions(
                 page,
                 // BL-6798: we need to add focus listeners to these new (or newly visible) description elements.
-                imageDescriptions => this.addFocusListeners(imageDescriptions),
+                (imageDescriptions) =>
+                    this.addFocusListeners(imageDescriptions),
                 // BL-6775 if we just added image description
                 // translationGroups to a page that didn't have them before,
                 // we need to reset our state.
-                () => imageDescControls.setStateForNewPage()
+                () => imageDescControls.setStateForNewPage(),
             );
         }
     }
@@ -410,13 +411,13 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         for (let i = 0; i < imageDescriptions.length; i++) {
             imageDescriptions[i].removeEventListener(
                 "focus",
-                this.descriptionGotFocus
+                this.descriptionGotFocus,
             ); // prevent duplicates
             // look for it in capture phase so we see child elements getting focus
             imageDescriptions[i].addEventListener(
                 "focus",
                 this.descriptionGotFocus,
-                true
+                true,
             );
         }
     }

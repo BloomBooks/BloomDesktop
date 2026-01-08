@@ -35,7 +35,7 @@ function GetSettings() {
         "Personal Development",
         "Primer",
         "Science",
-        "Tradition"
+        "Tradition",
     ];
     return v;
 }
@@ -76,6 +76,6 @@ function GetInlineDictionary() {
         "EditTab.BackMatter.InsideBackCoverTextPrompt":
             "If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.",
         "EditTab.BackMatter.OutsideBackCoverTextPrompt":
-            "If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover."
+            "If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.",
     };
 }

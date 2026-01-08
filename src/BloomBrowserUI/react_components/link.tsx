@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { Link as MuiLink } from "@mui/material";
@@ -8,7 +7,7 @@ import { LinkBaseProps } from "@mui/material/Link";
 import {
     ILocalizationProps,
     ILocalizationState,
-    LocalizableElement
+    LocalizableElement,
 } from "./l10nComponents";
 import { kBloomDisabledText } from "../utils/colorUtils";
 
@@ -73,7 +72,7 @@ export class Link extends LocalizableElement<ILinkProps, ILocalizationState> {
 
 // Usage <TextWithEmbeddedLink l10nKey="blah" href="google.com"/>Click [here] or else</TextWithEmbeddedLink>
 export class TextWithEmbeddedLink extends LocalizableElement<
-    ILocalizationProps & LinkBaseProps,
+    ILocalizationProps & { href: string } & LinkBaseProps,
     ILocalizationState
 > {
     public render() {

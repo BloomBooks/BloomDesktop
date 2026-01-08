@@ -13,6 +13,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Publish;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.web.controllers;
 using BloomTemp;
 using Moq;
@@ -21,7 +22,6 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Windows.Forms.ClearShare;
-using Bloom.SubscriptionAndFeatures;
 
 namespace BloomTests.Book
 {
@@ -113,8 +113,7 @@ namespace BloomTests.Book
             // there should only be one appearance rule... i.e. make sure we didn't just make a second one
             Assert.AreEqual(
                 1,
-                book.RawDom
-                    .SafeSelectNodes("//style[contains(text(),'--cover-background-color')]")
+                book.RawDom.SafeSelectNodes("//style[contains(text(),'--cover-background-color')]")
                     .Count()
             );
         }
@@ -383,7 +382,7 @@ namespace BloomTests.Book
 						 <div lang='en'>This is some English</div>
 						</div>
 					</div>";
-            var book = CreateBookWithPhysicalFile(body, true);
+            var book = CreateBookWithPhysicalFile(body, bringBookUpToDate: true);
 
             var appearanceSettings = book.BookInfo.AppearanceSettings;
             Assert.That(appearanceSettings.CssThemeName, Is.EqualTo("default"));
@@ -405,7 +404,7 @@ namespace BloomTests.Book
 						 <div lang='en'>This is some English</div>
 						</div>
 					</div>";
-            var book = CreateBookWithPhysicalFile(body, false);
+            var book = CreateBookWithPhysicalFile(body, bringBookUpToDate: false);
             var cssPath = Path.Combine(book.FolderPath, "customBookStyles.css");
             File.WriteAllText(cssPath, AppearanceMigratorTests.cssThatTriggersEbookZeroMarginTheme);
             book.EnsureUpToDate();
@@ -430,7 +429,7 @@ namespace BloomTests.Book
 						 <div lang='en'>This is some English</div>
 						</div>
 					</div>";
-            var book = CreateBookWithPhysicalFile(body, false);
+            var book = CreateBookWithPhysicalFile(body, bringBookUpToDate: false);
             var cssPath = Path.Combine(book.FolderPath, "customBookStyles.css");
             File.WriteAllText(cssPath, @".marginBox {left: 40px;}");
             book.EnsureUpToDate();
@@ -672,7 +671,6 @@ namespace BloomTests.Book
         //	AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='French']",1);
         //}
 
-
         [Test]
         public void SetMultilingualContentLanguages_UpdatesLanguagesOfBookFieldInDOM()
         {
@@ -692,7 +690,7 @@ namespace BloomTests.Book
                     ),
                     Language1Tag = "th",
                     Language2Tag = "fr",
-                    Language3Tag = "es"
+                    Language3Tag = "es",
                 }
             );
             var bookData = new BookData(_bookDom, _collectionSettings, null);
@@ -711,17 +709,23 @@ namespace BloomTests.Book
 
             //note: our code currently only knows how to display Thai *in Thai*, French *in French*, and Spanish *in Spanish*.
             //It may be better to be writing "Thai" and "Spanish" in French.
-            //That's not part of this test, and will have to be changed as we improve that aspect of things.
-            // There should be two matches here because it should update both the data-div languagesOfBook element and the page data-derived one.
-            AssertThatXmlIn
-                .Dom(book.RawDom)
-                .HasSpecifiedNumberOfMatchesForXpath("//div[text()='español, ไทย, français']", 2);
-            AssertThatXmlIn
-                .Dom(book.RawDom)
-                .HasSpecifiedNumberOfMatchesForXpath(
-                    "//div[@data-derived='languagesOfBook' and text()='español, ไทย, français']",
-                    1
-                );
+            //That's not part of this test, so we're currently allowing either.
+            var dataDivNode =
+                book.RawDom.SelectSingleNode("//div[@data-book='languagesOfBook']")
+                as SafeXmlElement;
+            var derivedNode = book.RawDom.SelectSingleNode(
+                "//div[@data-derived='languagesOfBook']"
+            );
+            // We think the first one happens if there is an ICU DLL somewhere on the path, the second if not.
+            string[] expected = { "espagnol, ไทย, français", "español, ไทย, français" };
+            Assert.That(
+                dataDivNode != null && expected.Contains(dataDivNode.InnerText),
+                "languagesOfBook should be 'espagnol, ไทย, français' or 'español, ไทย, français'"
+            );
+            Assert.That(
+                derivedNode != null && derivedNode.InnerText == dataDivNode.InnerText,
+                "derived languagesOfBook should match data-book"
+            );
 
             book.SetMultilingualContentLanguages("th", "fr");
             AssertThatXmlIn
@@ -1395,15 +1399,15 @@ namespace BloomTests.Book
 
         private SafeXmlNode GetLegacyCoverColorStyleNode(Bloom.Book.Book book)
         {
-            return book.RawDom
-                .SafeSelectNodes("//style[contains(text(),'.bloom-page.coverColor')]")
+            return book
+                .RawDom.SafeSelectNodes("//style[contains(text(),'.bloom-page.coverColor')]")
                 .First();
         }
 
         private SafeXmlNode GetAppearanceCoverBackgroundFallbackStyleNode(Bloom.Book.Book book)
         {
-            return book.RawDom
-                .SafeSelectNodes("//style[contains(text(),'--cover-background-color')]")
+            return book
+                .RawDom.SafeSelectNodes("//style[contains(text(),'--cover-background-color')]")
                 .First();
         }
 
@@ -1436,9 +1440,8 @@ namespace BloomTests.Book
             // SUT
             var book = CreateBook();
             Assert.IsTrue(
-                GetUserModifiedStylesNode(book).InnerText.Contains(
-                    ".normal-style[lang='fr'] { font-size: 9pt ! important; }"
-                )
+                GetUserModifiedStylesNode(book)
+                    .InnerText.Contains(".normal-style[lang='fr'] { font-size: 9pt ! important; }")
             );
         }
 
@@ -3426,7 +3429,7 @@ namespace BloomTests.Book
                         ),
                         Language1Tag = "en",
                         Language2Tag = "fr",
-                        Language3Tag = "es"
+                        Language3Tag = "es",
                     }
                 )
             );
@@ -4900,8 +4903,9 @@ namespace BloomTests.Book
             Assert.AreEqual(
                 3.1,
                 double.Parse(
-                    book.RawDom
-                        .SelectSingleNode("//div[@id='guid1']/div[contains(@class,'bloom-canvas')]")
+                    book.RawDom.SelectSingleNode(
+                            "//div[@id='guid1']/div[contains(@class,'bloom-canvas')]"
+                        )
                         .GetAttribute("data-duration"),
                     CultureInfo.InvariantCulture
                 ),
@@ -4911,8 +4915,9 @@ namespace BloomTests.Book
             Assert.AreEqual(
                 4,
                 double.Parse(
-                    book.RawDom
-                        .SelectSingleNode("//div[@id='guid3']/div[contains(@class,'bloom-canvas')]")
+                    book.RawDom.SelectSingleNode(
+                            "//div[@id='guid3']/div[contains(@class,'bloom-canvas')]"
+                        )
                         .GetAttribute("data-duration"),
                     CultureInfo.InvariantCulture
                 ),
@@ -4965,8 +4970,9 @@ namespace BloomTests.Book
             Assert.AreEqual(
                 3.1,
                 double.Parse(
-                    book.RawDom
-                        .SelectSingleNode("//div[@id='guid1']/div[contains(@class,'bloom-canvas')]")
+                    book.RawDom.SelectSingleNode(
+                            "//div[@id='guid1']/div[contains(@class,'bloom-canvas')]"
+                        )
                         .GetAttribute("data-duration"),
                     CultureInfo.InvariantCulture
                 ),
@@ -4976,8 +4982,9 @@ namespace BloomTests.Book
             Assert.AreEqual(
                 4,
                 double.Parse(
-                    book.RawDom
-                        .SelectSingleNode("//div[@id='guid3']/div[contains(@class,'bloom-canvas')]")
+                    book.RawDom.SelectSingleNode(
+                            "//div[@id='guid3']/div[contains(@class,'bloom-canvas')]"
+                        )
                         .GetAttribute("data-duration"),
                     CultureInfo.InvariantCulture
                 ),
@@ -4987,8 +4994,9 @@ namespace BloomTests.Book
             Assert.AreEqual(
                 3.1,
                 double.Parse(
-                    book.RawDom
-                        .SelectSingleNode("//div[@id='guid5']/div[contains(@class,'bloom-canvas')]")
+                    book.RawDom.SelectSingleNode(
+                            "//div[@id='guid5']/div[contains(@class,'bloom-canvas')]"
+                        )
                         .GetAttribute("data-duration"),
                     CultureInfo.InvariantCulture
                 ),
@@ -5186,17 +5194,14 @@ namespace BloomTests.Book
         [Test]
         public void UpdateMetadataFeatures_WidgetActivityMissing_ActivityAndWidgetFeaturesFalse()
         {
-            var html =
-                @"<html>
-					<body>
-<div class='bloom-page simple-comprehension-quiz bloom-interactive-page'>
+            var bodyContent =
+                @"<div class='bloom-page simple-comprehension-quiz bloom-interactive-page'>
 	<div class='marginBox'>
 
 	</div>
-</div>
-</body></html>";
+</div>";
 
-            var book = CreateBookWithPhysicalFile(html);
+            var book = CreateBookWithPhysicalFile(bodyContent);
             book.BookInfo.MetaData.Feature_Widget = true; // spurious, see if it gets cleaned up
 
             book.UpdateMetadataFeatures(false, false, null);
@@ -5213,19 +5218,17 @@ namespace BloomTests.Book
         [Test]
         public void UpdateMetadataFeatures_WidgetActivityAdded_ActivityAndWidgetFeaturesTrue()
         {
-            var html =
-                @"<html>
-					<body>
+            var bodyContent =
+                @"
 <div class='bloom-page simple-comprehension-quiz bloom-interactive-page'>
 	<div class='marginBox'>
 		<div class='bloom-widgetContainer'>
 			<iframe src='something'></iframe>
 		</div>
 	</div>
-</div>
-</body></html>";
+</div>";
 
-            var book = CreateBookWithPhysicalFile(html);
+            var book = CreateBookWithPhysicalFile(bodyContent);
 
             book.UpdateMetadataFeatures(false, false, null);
 
@@ -5257,7 +5260,7 @@ namespace BloomTests.Book
             var book = CreateBook();
 
             // System under test
-            bool propertyResult = book.HasComicalOverlays;
+            bool propertyResult = book.HasComicalElements;
             book.UpdateMetadataFeatures(false, false, null);
 
             // Verification
@@ -5292,7 +5295,7 @@ namespace BloomTests.Book
             var book = CreateBook();
 
             // System under test
-            bool propertyResult = book.HasComicalOverlays;
+            bool propertyResult = book.HasComicalElements;
             book.UpdateMetadataFeatures(false, false, null);
 
             // Verification
@@ -6164,10 +6167,8 @@ namespace BloomTests.Book
         //    Assert.True(Bloom.Book.Book.ShouldPageBeRemovedForCurrentSubscription(page));
         //}
 
-
         // Originally, video was enterprise-only, so the logic was reversed.
         // Now we want to be sure that video does not trigger a page as enterprise-only.
-
 
         // Retiring this: checking pages for the now more complex subscription complians is now part of the FeatureStatus class
         //       [Test]
@@ -6517,7 +6518,7 @@ namespace BloomTests.Book
         [Test]
         public void SetAndLockBookName_Controls_TitleBestForUserDisplay_MovesBook()
         {
-            var book = CreateBookWithPhysicalFile(ThreePageHtml);
+            var book = CreateBookWithPhysicalFile(kThreePageBookBodyContent);
             book.SetAndLockBookName("animals");
             var bookName = book.NameBestForUserDisplay;
             Assert.That(bookName, Is.EqualTo("animals"));

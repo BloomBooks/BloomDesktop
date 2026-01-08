@@ -202,23 +202,13 @@ namespace BloomTests.Spreadsheet
                     "man.jpg",
                     "Mars 2.png",
                     "lady24b.png",
-                    "empty-file.jpg"
+                    "empty-file.jpg",
                 }
             )
                 RobustFile.Copy(
                     Path.Combine(path, name),
                     Path.Combine(_bookFolder.FolderPath, name)
                 );
-            var placeHolderSource = Path.Combine(
-                BloomFileLocator.FactoryCollectionsDirectory,
-                "template books",
-                "Basic Book",
-                "placeHolder.png"
-            );
-            RobustFile.Copy(
-                placeHolderSource,
-                Path.Combine(_bookFolder.FolderPath, "placeHolder.png")
-            );
 
             _progressSpy = new ProgressSpy();
             _sheetFromExport = _exporter.ExportToFolder(
@@ -396,8 +386,8 @@ namespace BloomTests.Spreadsheet
             var thumbnailColumn = _sheet.GetColumnForTag(
                 InternalSpreadsheet.ImageThumbnailColumnLabel
             );
-            var goodImageFileRow = _pageContentRows.First(
-                x => x.GetCell(InternalSpreadsheet.ImageSourceColumnLabel).Text.Contains("man.jpg")
+            var goodImageFileRow = _pageContentRows.First(x =>
+                x.GetCell(InternalSpreadsheet.ImageSourceColumnLabel).Text.Contains("man.jpg")
             );
             Assert.That(goodImageFileRow.GetCell(thumbnailColumn).Text, Is.EqualTo(""));
         }
@@ -409,10 +399,9 @@ namespace BloomTests.Spreadsheet
             var thumbnailColumn = _sheet.GetColumnForTag(
                 InternalSpreadsheet.ImageThumbnailColumnLabel
             );
-            var missingFileRow = _pageContentRows.First(
-                x =>
-                    x.GetCell(InternalSpreadsheet.ImageSourceColumnLabel)
-                        .Text.Contains("missing file.jpg")
+            var missingFileRow = _pageContentRows.First(x =>
+                x.GetCell(InternalSpreadsheet.ImageSourceColumnLabel)
+                    .Text.Contains("missing file.jpg")
             );
             Assert.That(missingFileRow.GetCell(thumbnailColumn).Text, Is.EqualTo("Missing"));
         }
@@ -437,10 +426,9 @@ namespace BloomTests.Spreadsheet
             var thumbnailColumn = _sheet.GetColumnForTag(
                 InternalSpreadsheet.ImageThumbnailColumnLabel
             );
-            var svgRow = _rows.First(
-                x =>
-                    x.GetCell(InternalSpreadsheet.RowTypeColumnLabel)
-                        .Text.Equals("[outside-back-cover-bottom-html]")
+            var svgRow = _rows.First(x =>
+                x.GetCell(InternalSpreadsheet.RowTypeColumnLabel)
+                    .Text.Equals("[outside-back-cover-bottom-html]")
             );
             Assert.That(svgRow.GetCell(thumbnailColumn).Text, Is.EqualTo("Can't display SVG"));
         }

@@ -2,19 +2,20 @@
 //onto the page.
 //This was an experiment that, at least so far, we have not gone forward with. It was used by the "Template Maker" template.
 //We could end up using this kind of UI someday, thus it is preserved in the code base for now.
+import $ from "jquery";
 
 function AddToolbox(container) {
     $(container)
         .find("div.bloom-page.bloom-enablePageCustomization")
-        .each(function() {
+        .each(function () {
             $(this)
                 .find(".marginBox")
                 .droppable({
                     hoverClass: "ui-state-hover",
-                    accept: function() {
+                    accept: function () {
                         return true;
                     },
-                    drop: function(event, ui) {
+                    drop: function (event, ui) {
                         //is it being dragged in from a toolbox, or just moved around inside the page?
                         if (
                             $(ui.draggable).hasClass("widgetInPageDragToolbox")
@@ -46,7 +47,7 @@ function AddToolbox(container) {
 
                             $(this).append($x);
                         }
-                    }
+                    },
                 });
             var lang1Tag = GetSettings().languageForNewTextBoxes;
             var heading1CenteredWidget =
@@ -76,17 +77,17 @@ function AddToolbox(container) {
                         fieldWidget +
                         "</li><li>" +
                         imageWidget +
-                        "</li></ul></div>"
+                        "</li></ul></div>",
                 );
 
-            toolbox.find(".widgetInPageDragToolbox").each(function() {
+            toolbox.find(".widgetInPageDragToolbox").each(function () {
                 $(this).draggable({
                     //note: this is just used for drawing what you drag around..
                     //it isn't what the droppable is actually given. For that, look in the 'drop' item of the droppable() call above.
-                    helper: function(event) {
+                    helper: function (event) {
                         var tearOff = $(this).clone(); //.removeClass('widgetInPageDragToolbox');//by removing this, we show it with the actual size it will be when dropped
                         return tearOff;
-                    }
+                    },
                 });
             });
             $(this).qtipSecondary({
@@ -96,12 +97,12 @@ function AddToolbox(container) {
                 hide: false,
                 position: {
                     at: "right top",
-                    my: "left top"
+                    my: "left top",
                 },
                 style: {
                     classes: "ui-tooltip-red",
-                    tip: { corner: false }
-                }
+                    tip: { corner: false },
+                },
             });
         });
 }

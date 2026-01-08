@@ -3,7 +3,7 @@ import * as React from "react";
 import {
     ILocalizationProps,
     ILocalizationState,
-    LocalizableElement
+    LocalizableElement,
 } from "./l10nComponents";
 import Button, { ButtonProps } from "@mui/material/Button";
 
@@ -61,7 +61,7 @@ export default class BloomButton extends LocalizableElement<
             disabled: !this.props.enabled,
             className: this.props.className
                 ? this.props.className + (hidden ? " " + hidden : "")
-                : hidden
+                : hidden,
         };
         const localizedContent = !(this.props.hasText === false) && (
             <span key={1}>{this.getLocalizedContent()}</span>

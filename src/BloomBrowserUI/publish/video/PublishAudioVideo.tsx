@@ -10,13 +10,13 @@ import { useDebounce } from "use-debounce";
 import {
     PublishPanel,
     HelpGroup,
-    SettingsPanel
+    SettingsPanel,
 } from "../commonPublish/PublishScreenBaseComponents";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import {
     darkTheme,
     kBloomBlue,
-    kBloomBlue50Transparent
+    kBloomBlue50Transparent,
 } from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import { useSubscribeToWebSocketForStringMessage } from "../../utils/WebSocketManager";
@@ -26,7 +26,7 @@ import {
     useApiBoolean,
     useApiStateWithStatus,
     useApiString,
-    useWatchBooleanEvent
+    useWatchBooleanEvent,
 } from "../../utils/bloomApi";
 import HelpLink from "../../react_components/helpLink";
 import { Link } from "../../react_components/link";
@@ -41,7 +41,7 @@ import {
     Step,
     StepContent,
     StepLabel,
-    Typography
+    Typography,
 } from "@mui/material";
 import { kBloomRed } from "../../utils/colorUtils";
 import { AudioVideoOptionsGroup } from "./AudioVideoOptionsGroup";
@@ -67,7 +67,7 @@ export const PublishAudioVideo = () => {
     // the internal component is annoying.
     const [defaultLandscape] = useApiBoolean(
         "publish/bloompub/defaultLandscape",
-        false
+        false,
     );
 
     if (isLinux()) {
@@ -131,59 +131,58 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     onUpdatePreview: () => void;
     defaultLandscape: boolean;
     showPreview: boolean;
-}> = props => {
+}> = (props) => {
     const inStorybookMode = useContext(StorybookContext);
     const heading = useL10n(
         "Creating Digital Book",
-        "PublishTab.Android.Creating"
+        "PublishTab.Android.Creating",
     );
     const configAndPreview = useL10n(
         "Configure &amp; Preview",
-        "PublishTab.RecordVideo.ConfigureAndPreview"
+        "PublishTab.RecordVideo.ConfigureAndPreview",
     );
     const makeRecording = useL10n(
         "Make Recording",
-        "PublishTab.RecordVideo.MakeRecording"
+        "PublishTab.RecordVideo.MakeRecording",
     );
     const checkRecording = useL10n(
         "Check Recording",
-        "PublishTab.RecordVideo.CheckRecording"
+        "PublishTab.RecordVideo.CheckRecording",
     );
     const save = useL10n("Save", "Common.Save");
     const [closePending, setClosePending] = useState(false);
-    const [avSettings, setAvSettings, gotAvSettings] = useApiStateWithStatus<
-        IAudioVideoSettings
-    >("publish/av/settings", {
-        format: "facebook",
-        pageTurnDelay: 3,
-        motion: false,
-        pageRange: []
-    });
+    const [avSettings, setAvSettings, gotAvSettings] =
+        useApiStateWithStatus<IAudioVideoSettings>("publish/av/settings", {
+            format: "facebook",
+            pageTurnDelay: 3,
+            motion: false,
+            pageRange: [],
+        });
 
     const recording = useWatchBooleanEvent(false, "recordVideo", "recording");
 
     const isLicenseOK = useWatchBooleanEvent(
         true,
         "recordVideo",
-        "publish/licenseOK"
+        "publish/licenseOK",
     );
 
     const [debouncedPageTurnDelay] = useDebounce(
         avSettings.pageTurnDelay,
-        1000
+        1000,
     );
 
     const [progressState, setProgressState] = useState(ProgressState.Working);
     const [activeStep, setActiveStep] = useState(0);
     const [isScalingActive] = useApiBoolean(
         "publish/av/isScalingActive",
-        false
+        false,
     );
     const gotRecording = useWatchBooleanEvent(false, "recordVideo", "ready");
 
     const [hasGamesOrWidgets] = useApiBoolean(
         "publish/av/hasGamesOrWidgets",
-        false
+        false,
     );
     React.useEffect(() => {
         if (activeStep < 2 && gotRecording) {
@@ -204,25 +203,24 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                   "/templates/Sample Shells/The Moon and the Cap" // Enhance: provide an actual bloomd in the source tree
             : // otherwise, wait for the websocket to deliver a url when the c# has finished creating the bloomd.
               //BloomPlayer recognizes "working" as a special value; it will show some spinner or some such.
-              "working"
+              "working",
     );
 
     const [useOriginalPageSize, setUseOriginalPageSize] = useApiBoolean(
         "publish/av/shouldUseOriginalPageSize",
-        false
+        false,
     );
 
     const [playing, setPlaying] = useState(false);
-    const [havePreviewForOrientation, setHavePreviewForOrientation] = useState(
-        false
-    );
+    const [havePreviewForOrientation, setHavePreviewForOrientation] =
+        useState(false);
     useSubscribeToWebSocketForStringMessage(
         "publish-bloompub",
         "bloomPubPreview",
-        url => {
+        (url) => {
             setBookUrl(url);
             setHavePreviewForOrientation(url !== "stopPreview");
-        }
+        },
     );
     useEffect(() => {
         setHavePreviewForOrientation(false);
@@ -230,7 +228,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
 
     const sendMessageToPlayer = (msg: any) => {
         const preview = document.getElementById(
-            "preview-iframe"
+            "preview-iframe",
         ) as HTMLIFrameElement;
         msg.messageType = "control";
         preview.contentWindow?.postMessage(JSON.stringify(msg), "*");
@@ -250,11 +248,11 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     };
     const gamesSkipped = useL10n(
         "Games will be skipped",
-        "PublishTab.RecordVideo.GamesSkipped"
+        "PublishTab.RecordVideo.GamesSkipped",
     );
     const isPauseButtonDisabled = !playing;
     useEffect(() => {
-        const listener = data => {
+        const listener = (data) => {
             // something sends us an empty message, which we haven't figured out, but know we can ignore
             if (!data || !data.data || data.data.length === 0) {
                 return;
@@ -283,11 +281,11 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     // any time it changes. (The actual content of the param is ignored in the backend.)
     const videoSettings = useApiString(
         "publish/av/videoSettings?regen=" + avSettings.pageTurnDelay,
-        ""
+        "",
     );
     const [isPlaygroundBook, setIsPlaygroundBook] = useApiBoolean(
         "publish/isPlaygroundBook",
-        true
+        true,
     );
 
     let videoSettingsParam = "";
@@ -311,9 +309,9 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     if (avSettings.pageRange.length == 2) {
         pageRangeSetting = `&start-page=${
             avSettings.pageRange[0]
-        }&autoplay-count=${avSettings.pageRange[1] -
-            avSettings.pageRange[0] +
-            1}`;
+        }&autoplay-count=${
+            avSettings.pageRange[1] - avSettings.pageRange[0] + 1
+        }`;
     }
     const recordingVideo = avSettings.format != "mp3";
     const circleHeight = "0.88rem";
@@ -513,7 +511,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                             l10nKey="PublishTab.RecordVideo.DisplaySettings"
                                             onClick={() =>
                                                 post(
-                                                    "publish/av/displaySettings"
+                                                    "publish/av/displaySettings",
                                                 )
                                             }
                                         >
@@ -533,13 +531,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                             l10nKey="PublishTab.RecordVideo.Record"
                             l10nComment="'Record' as in 'Record a video recording'"
                             clickApiEndpoint="publish/av/recordVideo"
-                            iconBeforeText={
-                                <RecordIcon
-                                    css={css`
-                                        color: white;
-                                    `}
-                                />
-                            }
+                            iconBeforeText={<RecordIcon />}
                         >
                             Record
                         </BloomButton>
@@ -614,9 +606,9 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                     setAvSettings({ ...avSettings, format: f });
                     getBoolean(
                         "publish/av/shouldUseOriginalPageSize",
-                        value => {
+                        (value) => {
                             setUseOriginalPageSize(value);
-                        }
+                        },
                     );
                 }}
                 pageRange={avSettings.pageRange}
@@ -624,10 +616,10 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                     setAvSettings({ ...avSettings, pageRange: range })
                 }
                 motion={avSettings.motion}
-                onMotionChange={m => {
+                onMotionChange={(m) => {
                     setAvSettings({
                         ...avSettings,
-                        motion: m!
+                        motion: m!,
                     });
                     // Will restart due to regenerating, we want the controls to show not playing.
                     pause();

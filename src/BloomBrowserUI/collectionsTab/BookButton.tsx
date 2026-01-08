@@ -1,12 +1,11 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import {
     post,
     postString,
     useApiString,
-    useWatchString
+    useWatchString,
 } from "../utils/bloomApi";
 import { Button, Menu } from "@mui/material";
 import TruncateMarkup from "react-truncate-markup";
@@ -16,12 +15,12 @@ import {
     kBloomBlue,
     kBloomGold,
     kBloomPurple,
-    kDefaultLanguageFontStack
+    kDefaultLanguageFontStack,
 } from "../bloomMaterialUITheme";
 import { useRef, useState, useEffect } from "react";
 import WebSocketManager, {
     IBloomWebSocketEvent,
-    useSubscribeToWebSocketForEvent
+    useSubscribeToWebSocketForEvent,
 } from "../utils/WebSocketManager";
 import { BookSelectionManager, useIsSelected } from "./bookSelectionManager";
 import { IBookInfo, ICollection } from "./BooksOfCollection";
@@ -41,7 +40,7 @@ export const BookButton: React.FunctionComponent<{
     //selected: boolean;
     manager: BookSelectionManager;
     lockedToOneDownloadedBook: boolean;
-}> = props => {
+}> = (props) => {
     // TODO: the c# had Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont,
 
     const [renaming, setRenaming] = useState(false);
@@ -57,13 +56,13 @@ export const BookButton: React.FunctionComponent<{
         props.book.title,
         // These must correspond to what BookCommandsApi.UpdateButtonTitle sends
         "book",
-        "label-" + props.collection.id + "-" + props.book.id
+        "label-" + props.collection.id + "-" + props.book.id,
     );
     const collectionQuery = `collection-id=${encodeURIComponent(
-        props.collection.id
+        props.collection.id,
     )}`;
     const folderName = props.book.folderPath.substring(
-        props.book.folderPath.lastIndexOf("/") + 1
+        props.book.folderPath.lastIndexOf("/") + 1,
     );
     useEffect(() => {
         // By requesting this here like this rather than, say, as a side effect of
@@ -77,8 +76,8 @@ export const BookButton: React.FunctionComponent<{
         if (!props.book.isFactory) {
             post(
                 `bookCommand/enhanceLabel?${collectionQuery}&id=${encodeURIComponent(
-                    props.book.id
-                )}`
+                    props.book.id,
+                )}`,
             );
         }
         // logically it should also be done if props.collection.id or props.book.id changes, but they don't.
@@ -117,21 +116,21 @@ export const BookButton: React.FunctionComponent<{
 
     // Don't use useApiStringState to get this function because it does an unnecessary server query
     // to get the value, which we are not using, and this hurts performance.
-    const setSelectedBookIdWithApi = value =>
+    const setSelectedBookIdWithApi = (value) =>
         postString(`collections/selected-book?${collectionQuery}`, value);
 
     const renameDiv = useRef<HTMLElement | null>();
 
     const teamCollectionStatus = useTColBookStatus(
         folderName,
-        props.collection.isEditableCollection
+        props.collection.isEditableCollection,
     );
 
     const [reload, setReload] = useState(0);
     // Force a reload when our book's thumbnail image changed
-    useSubscribeToWebSocketForEvent("bookImage", "reload", args => {
+    useSubscribeToWebSocketForEvent("bookImage", "reload", (args) => {
         if (args.message === props.book.id) {
-            setReload(old => old + 1);
+            setReload((old) => old + 1);
         }
     });
 
@@ -149,14 +148,14 @@ export const BookButton: React.FunctionComponent<{
             label: "Export to Word or LibreOffice...",
             l10nId: "CollectionTab.BookMenu.ExportToWordOrLibreOffice",
             command: "bookCommand/exportToWord",
-            hide: () => !props.collection.isEditableCollection
+            hide: () => !props.collection.isEditableCollection,
         },
         {
             label: "Export to Spreadsheet...",
             l10nId: "CollectionTab.BookMenu.ExportToSpreadsheet",
             command: "bookCommand/exportToSpreadsheet",
             featureName: "Spreadsheet",
-            hide: () => !props.collection.isEditableCollection
+            hide: () => !props.collection.isEditableCollection,
         },
         {
             label: "Import Content from Spreadsheet...",
@@ -164,21 +163,21 @@ export const BookButton: React.FunctionComponent<{
             command: "bookCommand/importSpreadsheetContent",
             requiresSavePermission: true,
             featureName: "Spreadsheet",
-            hide: () => !props.collection.isEditableCollection
+            hide: () => !props.collection.isEditableCollection,
         },
         { label: "-", hide: () => !props.collection.isEditableCollection },
         {
             label: "Save as Single File (*.bloomSource)...",
             l10nId: "CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem",
             command: "bookCommand/saveAsDotBloomSource",
-            hide: () => !props.collection.isEditableCollection
+            hide: () => !props.collection.isEditableCollection,
         },
         {
             label: "Save as Bloom Pack (*.BloomPack)",
             l10nId: "CollectionTab.BookMenu.SaveAsBloomPackContextMenuItem",
             command: "bookCommand/makeBloompack",
             addEllipsis: true,
-            hide: () => !props.collection.isEditableCollection
+            hide: () => !props.collection.isEditableCollection,
         },
         { label: "-", hide: () => !props.collection.isEditableCollection },
         {
@@ -186,20 +185,20 @@ export const BookButton: React.FunctionComponent<{
             l10nId: "CollectionTab.BookMenu.UpdateThumbnail",
             command: "bookCommand/updateThumbnail",
             requiresSavePermission: true, // marginal, but it does change the content of the book folder
-            hide: () => !props.collection.isEditableCollection
+            hide: () => !props.collection.isEditableCollection,
         },
         {
             label: "Update Book",
             l10nId: "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
             command: "bookCommand/updateBook",
             requiresSavePermission: true, // marginal, but it does change the content of the book folder
-            hide: () => !props.collection.isEditableCollection
-        }
+            hide: () => !props.collection.isEditableCollection,
+        },
     ];
 
     const editableCollectionName = useApiString(
         "collections/getCurrentEditableCollectionName",
-        ""
+        "",
     );
 
     const getBookMenuItemsSpecs: () => MenuItemSpec[] = () => {
@@ -212,7 +211,7 @@ export const BookButton: React.FunctionComponent<{
                 onClick: () => handleRename(),
                 requiresSavePermission: true,
                 addEllipsis: true,
-                hide: () => !props.collection.isEditableCollection
+                hide: () => !props.collection.isEditableCollection,
             },
             {
                 label: "Duplicate Book",
@@ -220,13 +219,13 @@ export const BookButton: React.FunctionComponent<{
                 command: "collections/duplicateBook",
                 hide: () =>
                     !props.collection.isEditableCollection ||
-                    props.lockedToOneDownloadedBook
+                    props.lockedToOneDownloadedBook,
             },
             {
                 label: "Show in File Explorer",
                 l10nId: "CollectionTab.BookMenu.ShowInFileExplorer",
                 command: "bookCommand/openFolderOnDisk",
-                hide: () => props.collection.isFactoryInstalled // show for all collections except factory
+                hide: () => props.collection.isFactoryInstalled, // show for all collections except factory
             },
             {
                 label: `Move into ${editableCollectionName}`,
@@ -237,7 +236,7 @@ export const BookButton: React.FunctionComponent<{
                     props.lockedToOneDownloadedBook ||
                     props.collection.isEditableCollection ||
                     props.collection.isFactoryInstalled ||
-                    props.collection.containsDownloadedBooks
+                    props.collection.containsDownloadedBooks,
             },
             {
                 label: "Delete Book",
@@ -249,7 +248,7 @@ export const BookButton: React.FunctionComponent<{
                 // Allowed for the downloaded books collection and the editable collection
                 hide: () =>
                     !props.collection.containsDownloadedBooks &&
-                    !props.collection.isEditableCollection
+                    !props.collection.isEditableCollection,
             },
             {
                 label: "Make a book using this source",
@@ -258,15 +257,15 @@ export const BookButton: React.FunctionComponent<{
                 // Only show on template books that are in the editable collection (provided the book is checked out, if applicable)
                 hide: () =>
                     !props.collection.isEditableCollection ||
-                    !props.manager.getSelectedBookInfo()?.isTemplate
+                    !props.manager.getSelectedBookInfo()?.isTemplate,
             },
             { label: "-", hide: () => !props.collection.isEditableCollection },
             {
                 label: "More",
                 l10nId: "CollectionTab.ContextMenu.More",
                 submenu: bookSubMenuItemsSpecs,
-                hide: () => !props.collection.isEditableCollection
-            }
+                hide: () => !props.collection.isEditableCollection,
+            },
         ];
         return items;
     };
@@ -291,7 +290,7 @@ export const BookButton: React.FunctionComponent<{
                     // (See BL-12384.)
                     finishRename(p.innerText);
                 });
-                renameDiv.current?.addEventListener("keypress", e => {
+                renameDiv.current?.addEventListener("keypress", (e) => {
                     if (e.key === "Enter") {
                         finishRename(renameDiv.current!.innerText);
                     } else if (e.key === "Escape") {
@@ -350,7 +349,7 @@ export const BookButton: React.FunctionComponent<{
     const setAdjustedContextMenuPoint = (x: number, y: number) => {
         setContextMousePoint({
             mouseX: x - 2,
-            mouseY: y - 4
+            mouseY: y - 4,
         });
     };
 
@@ -400,7 +399,7 @@ export const BookButton: React.FunctionComponent<{
         awaitingDoubleClick.current = false; // the next click is definitely a first-click
         postString(
             `collections/selectAndEditBook?${collectionQuery}`,
-            props.book.id
+            props.book.id,
         );
     };
 
@@ -425,7 +424,7 @@ export const BookButton: React.FunctionComponent<{
         if (name !== undefined) {
             postString(
                 `bookCommand/rename?${collectionQuery}&name=${name}`,
-                props.manager.getSelectedBookInfo()!.id!
+                props.manager.getSelectedBookInfo()!.id!,
             );
         }
     };
@@ -433,7 +432,7 @@ export const BookButton: React.FunctionComponent<{
     const tooltipIfCannotSaveBook = useL10n(
         "This feature requires the book to be checked out to you.",
         "CollectionTab.BookMenu.MustCheckOutTooltip",
-        "This tooltip pops up when the user hovers over a disabled menu item."
+        "This tooltip pops up when the user hovers over a disabled menu item.",
     );
 
     // If relevant, compute the menu items for a right-click on this button.
@@ -458,7 +457,7 @@ export const BookButton: React.FunctionComponent<{
             handleClose,
             props.book.id,
             props.collection.id,
-            tooltipIfCannotSaveBook
+            tooltipIfCannotSaveBook,
         );
     }
 
@@ -516,8 +515,8 @@ export const BookButton: React.FunctionComponent<{
                 variant="outlined"
                 size="large"
                 onDoubleClick={handleDoubleClick}
-                onClick={e => handleClick(e)}
-                onContextMenu={e => handleContextClick(e)}
+                onClick={(e) => handleClick(e)}
+                onContextMenu={(e) => handleContextClick(e)}
                 startIcon={
                     <div className={"thumbnail-wrapper"}>
                         <img
@@ -540,86 +539,88 @@ export const BookButton: React.FunctionComponent<{
                     anchorReference="anchorPosition"
                     anchorPosition={{
                         top: contextMousePoint!.mouseY,
-                        left: contextMousePoint!.mouseX
+                        left: contextMousePoint!.mouseX,
                     }}
                 >
                     {items}
                 </Menu>
             )}
-            {// The down-arrow button, which is equivalent to right-clicking on the button.
-            // I tried putting this div inside the button but then...in FF 60 but not 68 or later...
-            // the button gets the click even if its inside this div.
-            items.length > 0 && (
-                <div
-                    css={css`
-                        position: absolute;
-                        box-sizing: border-box;
-                        bottom: -${downSize / 2 - 4}px;
-                        right: 3px;
-                        height: ${downSize}px;
-                        width: ${downSize}px;
-                        border: solid transparent ${downSize / 2}px;
-                        border-top-color: white;
-                    `}
-                    onClick={e => {
-                        setAdjustedContextMenuPoint(e.clientX, e.clientY);
-                        handleClick(e);
-                    }}
-                ></div>
-            )}
-            {// I tried putting this div inside the button as an alternate to label.
-            // Somehow, this causes the blur to happen when the user clicks in the label
-            // to position the IP during editing. I suspect default events are being
-            // triggered by the fact that we're in a button. It was very hard to debug,
-            // and stopPropagation did not help. I finally decided that letting the
-            // edit box be over the button was easier and possibly safer.
-            renaming && selected && (
-                <div
-                    // For some unknown reason, the selection background color was coming out white.
-                    // I reset it to what I think is Windows standard. Need -moz- for Gecko60
-                    // (until FF62).
-                    // Enhance: ideally we'd either figure out why we don't get the usual default
-                    // selection background (maybe because the window has a dark background?)
-                    // or make it use the user's configured system highlight background (but that
-                    // really might not work with white text and a dark background?)
+            {
+                // The down-arrow button, which is equivalent to right-clicking on the button.
+                // I tried putting this div inside the button but then...in FF 60 but not 68 or later...
+                // the button gets the click even if its inside this div.
+                items.length > 0 && (
+                    <div
+                        css={css`
+                            position: absolute;
+                            box-sizing: border-box;
+                            bottom: -${downSize / 2 - 4}px;
+                            right: 3px;
+                            height: ${downSize}px;
+                            width: ${downSize}px;
+                            border: solid transparent ${downSize / 2}px;
+                            border-top-color: white;
+                        `}
+                        onClick={(e) => {
+                            setAdjustedContextMenuPoint(e.clientX, e.clientY);
+                            handleClick(e);
+                        }}
+                    ></div>
+                )
+            }
+            {
+                // I tried putting this div inside the button as an alternate to label.
+                // Somehow, this causes the blur to happen when the user clicks in the label
+                // to position the IP during editing. I suspect default events are being
+                // triggered by the fact that we're in a button. It was very hard to debug,
+                // and stopPropagation did not help. I finally decided that letting the
+                // edit box be over the button was easier and possibly safer.
+                renaming && selected && (
+                    <div
+                        // For some unknown reason, the selection background color was coming out white.
+                        // I reset it to what I think is Windows standard. Need -moz- for Gecko60
+                        // (until FF62).
+                        // Enhance: ideally we'd either figure out why we don't get the usual default
+                        // selection background (maybe because the window has a dark background?)
+                        // or make it use the user's configured system highlight background (but that
+                        // really might not work with white text and a dark background?)
 
-                    // 12px of text height matches the size we're getting in the button.
-                    // 18px is more line spacing than we normally use for these labels, but it's
-                    // the minimum to avoid descenders in the top line being cut off by the highlight
-                    // of selected text in the second line. (Of course other fonts might need
-                    // a different value...but it's not a terrible problem if there is some cut off.)
+                        // 12px of text height matches the size we're getting in the button.
+                        // 18px is more line spacing than we normally use for these labels, but it's
+                        // the minimum to avoid descenders in the top line being cut off by the highlight
+                        // of selected text in the second line. (Of course other fonts might need
+                        // a different value...but it's not a terrible problem if there is some cut off.)
 
-                    // (I think the 6 fudge factor in the top calculation is made up of two 1px
-                    // borders and the 4px padding-top.)
-                    css={css`
-                        width: calc(100% - 4px);
-                        height: ${renameHeight}px;
-                        margin-left: 1px;
-                        border: 1px solid ${kBloomBlue};
-                        top: ${bookButtonHeight - renameHeight - 6}px;
-                        padding-top: 4px;
-                        position: absolute;
-                        font-size: 12px;
-                        line-height: 18px;
-                        text-align: center;
-                        &::selection {
-                            background: rgb(0, 120, 215);
+                        // (I think the 6 fudge factor in the top calculation is made up of two 1px
+                        // borders and the 4px padding-top.)
+                        css={css`
+                            width: calc(100% - 4px);
+                            height: ${renameHeight}px;
+                            margin-left: 1px;
+                            border: 1px solid ${kBloomBlue};
+                            top: ${bookButtonHeight - renameHeight - 6}px;
+                            padding-top: 4px;
+                            position: absolute;
+                            font-size: 12px;
+                            line-height: 18px;
+                            text-align: center;
+                            &::selection {
+                                background: rgb(0, 120, 215);
+                            }
+                            overflow-y: auto;
+                        `}
+                        contentEditable={true}
+                        tabIndex={0}
+                        ref={(renderedElement) =>
+                            (renameDiv.current = renderedElement)
                         }
-                        &::-moz-selection {
-                            background: rgb(0, 120, 215);
-                        }
-                    `}
-                    contentEditable={true}
-                    tabIndex={0}
-                    ref={renderedElement =>
-                        (renameDiv.current = renderedElement)
-                    }
-                    // Note: we want a blur on this element, but putting it here does not work right.
-                    // See the comment where we add it in a delayed effect.
-                >
-                    {bookLabel}
-                </div>
-            )}
+                        // Note: we want a blur on this element, but putting it here does not work right.
+                        // See the comment where we add it in a delayed effect.
+                    >
+                        {bookLabel}
+                    </div>
+                )
+            }
         </div>
     );
 };
@@ -632,10 +633,10 @@ export const BookButton: React.FunctionComponent<{
 export const BookButtonPlaceHolder: React.FunctionComponent<{
     book: IBookInfo;
     reload: (id: string) => void;
-}> = props => {
+}> = (props) => {
     const [reload, setReload] = useState(0);
     // Force a reload when the placeholder's book thumbnail image changed
-    useSubscribeToWebSocketForEvent("bookImage", "reload", args => {
+    useSubscribeToWebSocketForEvent("bookImage", "reload", (args) => {
         if (args.message === props.book.id) {
             setReload(reload + 1);
             props.reload(props.book.id);
@@ -646,7 +647,7 @@ export const BookButtonPlaceHolder: React.FunctionComponent<{
             className="placeholder"
             style={{
                 height: bookButtonHeight.toString(10) + "px",
-                width: bookButtonWidth.toString(10) + "px"
+                width: bookButtonWidth.toString(10) + "px",
             }}
         ></div>
     );

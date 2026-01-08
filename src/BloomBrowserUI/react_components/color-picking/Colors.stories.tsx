@@ -1,4 +1,3 @@
-// Don't add /** @jsxFrag React.Fragment */ or these stories won't show up in StoryBook! (at least in Aug 2022)
 import { css } from "@emotion/react";
 
 import * as React from "react";
@@ -10,29 +9,29 @@ import {
     showColorPickerDialog,
     IColorPickerDialogProps,
     ColorDisplayButton,
-    DialogResult
+    DialogResult,
 } from "./colorPickerDialog";
 import { BloomPalette, TextBackgroundColors } from "./bloomPalette";
 import BloomSketchPicker from "./bloomSketchPicker";
-import * as tinycolor from "tinycolor2";
+import tinycolor from "tinycolor2";
 import { ColorResult } from "react-color";
 import { FormControl, InputLabel, Typography } from "@mui/material";
 import { HexColorInput } from "./hexColorInput";
-import { ColorBar } from "../../bookEdit/toolbox/overlay/colorBar";
+import { ColorBar } from "../../bookEdit/toolbox/canvas/colorBar";
 
 const mainBlockStyles: React.CSSProperties = {
     width: 300,
     height: 300,
     display: "flex",
     flexDirection: "column",
-    justifyContent: "center"
+    justifyContent: "center",
 };
 
 const backDivStyles: React.CSSProperties = {
     position: "relative",
     flex: 3,
     display: "flex",
-    background: "lightgreen"
+    background: "lightgreen",
 };
 
 const chooserStyles: React.CSSProperties = {
@@ -44,7 +43,7 @@ const chooserStyles: React.CSSProperties = {
     border: "2px solid green",
     display: "flex",
     justifyContent: "center",
-    alignContent: "center"
+    alignContent: "center",
 };
 
 const initialOverDivStyles: React.CSSProperties = {
@@ -56,44 +55,42 @@ const initialOverDivStyles: React.CSSProperties = {
     border: "1px solid red",
     zIndex: 2,
     background: "#fff",
-    color: "black"
+    color: "black",
 };
 
 export default {
-    title: "Colors"
+    title: "Colors",
 };
 
 export const BackgroundTextColor = () =>
     React.createElement(() => {
         const [chooserShowing, setChooserShowing] = useState(false);
         const [backgroundChooser, setBackgroundChooser] = useState(true); // false is text chooser
-        const [overDivStyles, setOverDivStyles] = useState(
-            initialOverDivStyles
-        );
+        const [overDivStyles, setOverDivStyles] =
+            useState(initialOverDivStyles);
         const [
             chooserCurrentBackgroundColor,
-            setChooserCurrentBackgroundColor
+            setChooserCurrentBackgroundColor,
         ] = useState<IColorInfo>({
             name: "white",
             colors: ["#ffffff"],
-            opacity: 1
+            opacity: 1,
         });
-        const [chooserCurrentTextColor, setChooserCurrentTextColor] = useState<
-            IColorInfo
-        >({
-            name: "black",
-            colors: ["#000000"],
-            opacity: 1
-        });
+        const [chooserCurrentTextColor, setChooserCurrentTextColor] =
+            useState<IColorInfo>({
+                name: "black",
+                colors: ["#000000"],
+                opacity: 1,
+            });
         const handleColorChange = (
             color: IColorInfo,
-            colorIsBackground: boolean
+            colorIsBackground: boolean,
         ) => {
             if (colorIsBackground) {
                 // set background color
                 setOverDivStyles({
                     ...overDivStyles,
-                    background: getBackgroundColorCssFromColorInfo(color)
+                    background: getBackgroundColorCssFromColorInfo(color),
                 });
                 setChooserCurrentBackgroundColor(color);
             } else {
@@ -101,7 +98,7 @@ export const BackgroundTextColor = () =>
                 // set text color
                 setOverDivStyles({
                     ...overDivStyles,
-                    color: textColor
+                    color: textColor,
                 });
                 setChooserCurrentTextColor(color);
             }
@@ -120,7 +117,7 @@ export const BackgroundTextColor = () =>
                     style={{
                         flexDirection: "row",
                         display: "inline-flex",
-                        justifyContent: "space-around"
+                        justifyContent: "space-around",
                     }}
                 >
                     <BloomButton
@@ -149,7 +146,7 @@ export const BackgroundTextColor = () =>
                 {chooserShowing && (
                     <div style={chooserStyles}>
                         <ColorPicker
-                            onChange={color =>
+                            onChange={(color) =>
                                 handleColorChange(color, backgroundChooser)
                             }
                             currentColor={
@@ -168,31 +165,30 @@ export const BackgroundTextColor = () =>
     });
 
 BackgroundTextColor.story = {
-    name: "Background/text color"
+    name: "Background/text color",
 };
 
 export const ColorPickerDialog = () =>
     React.createElement(() => {
-        const [overDivStyles, setOverDivStyles] = useState(
-            initialOverDivStyles
-        );
+        const [overDivStyles, setOverDivStyles] =
+            useState(initialOverDivStyles);
         const [
             chooserCurrentBackgroundColor,
-            setChooserCurrentBackgroundColor
+            setChooserCurrentBackgroundColor,
         ] = useState<IColorInfo>({
             name: "white",
             colors: ["#ffffff"],
-            opacity: 1
+            opacity: 1,
         });
         const handleColorChange = (color: IColorInfo) => {
             console.log("Color change:");
             console.log(
-                `  ${color.name}: ${color.colors[0]}, ${color.colors[1]}, ${color.opacity}`
+                `  ${color.name}: ${color.colors[0]}, ${color.colors[1]}, ${color.opacity}`,
             );
             // set background color
             setOverDivStyles({
                 ...overDivStyles,
-                background: getBackgroundColorCssFromColorInfo(color)
+                background: getBackgroundColorCssFromColorInfo(color),
             });
             setChooserCurrentBackgroundColor(color);
         };
@@ -201,8 +197,8 @@ export const ColorPickerDialog = () =>
             localizedTitle: "Custom Color Picker",
             initialColor: chooserCurrentBackgroundColor,
             palette: BloomPalette.TextBackground,
-            onChange: color => handleColorChange(color),
-            onInputFocus: () => {}
+            onChange: (color) => handleColorChange(color),
+            onInputFocus: () => {},
         };
 
         return (
@@ -219,7 +215,7 @@ export const ColorPickerDialog = () =>
                     onClick={() =>
                         showColorPickerDialog(
                             colorPickerDialogProps,
-                            document.getElementById("modal-container")
+                            document.getElementById("modal-container"),
                         )
                     }
                     enabled={true}
@@ -234,29 +230,27 @@ export const ColorPickerDialog = () =>
 
 export const ColorPickerWDefault = () =>
     React.createElement(() => {
-        const [overDivStyles, setOverDivStyles] = useState(
-            initialOverDivStyles
-        );
+        const [overDivStyles, setOverDivStyles] =
+            useState(initialOverDivStyles);
         const defaultColorInfo: IColorInfo = {
             colors: ["#ffbf00"],
-            opacity: 1
+            opacity: 1,
         };
-        const [chooserCurrentTextColor, setChooserCurrentTextColor] = useState<
-            IColorInfo
-        >({
-            name: "black",
-            colors: ["#000000"],
-            opacity: 1
-        });
+        const [chooserCurrentTextColor, setChooserCurrentTextColor] =
+            useState<IColorInfo>({
+                name: "black",
+                colors: ["#000000"],
+                opacity: 1,
+            });
         const handleColorChange = (color: IColorInfo) => {
             console.log("Color change:");
             console.log(
-                `  ${color.name}: ${color.colors[0]}, ${color.colors[1]}, ${color.opacity}`
+                `  ${color.name}: ${color.colors[0]}, ${color.colors[1]}, ${color.opacity}`,
             );
             // set text color
             setOverDivStyles({
                 ...overDivStyles,
-                color: getBackgroundColorCssFromColorInfo(color)
+                color: getBackgroundColorCssFromColorInfo(color),
             });
             setChooserCurrentTextColor(color);
         };
@@ -265,12 +259,12 @@ export const ColorPickerWDefault = () =>
             localizedTitle: "Color Picker w/ Default",
             initialColor: chooserCurrentTextColor,
             palette: BloomPalette.Text,
-            onChange: color => handleColorChange(color),
+            onChange: (color) => handleColorChange(color),
             onInputFocus: () => {},
             includeDefault: true,
             onDefaultClick: () => {
                 alert("clicked Default");
-            }
+            },
             //defaultColor: defaultColorInfo
         };
 
@@ -288,7 +282,7 @@ export const ColorPickerWDefault = () =>
                     onClick={() =>
                         showColorPickerDialog(
                             colorPickerDialogProps,
-                            document.getElementById("modal-container")
+                            document.getElementById("modal-container"),
                         )
                     }
                     enabled={true}
@@ -302,22 +296,22 @@ export const ColorPickerWDefault = () =>
     });
 
 ColorPickerWDefault.story = {
-    name: "Color Picker w/Default"
+    name: "Color Picker w/Default",
 };
 
 export const ColorBars = () =>
     React.createElement(() => {
         const transparentColorInfo = {
             colors: ["#000"],
-            opacity: 0
+            opacity: 0,
         };
         const partialTransparentColorInfo = {
             colors: ["#d00a00"],
-            opacity: 0.6
+            opacity: 0.6,
         };
         const defaultTextColorInfo: IColorInfo = {
             colors: ["#ffbf00"],
-            opacity: 1
+            opacity: 1,
         };
 
         return (
@@ -450,7 +444,7 @@ export const CoverColorDisplayButton = () =>
                         alert(
                             `DialogResult was ${
                                 result === DialogResult.OK ? "OK" : "Cancel"
-                            }`
+                            }`,
                         );
                     }}
                     initialColor={currentColor}
@@ -475,7 +469,7 @@ export const CoverColorDisplayButton = () =>
     });
 
 CoverColorDisplayButton.story = {
-    name: "Cover ColorDisplayButton"
+    name: "Cover ColorDisplayButton",
 };
 
 export const BloomSketchPickerNoTransparency = () =>
@@ -483,13 +477,13 @@ export const BloomSketchPickerNoTransparency = () =>
         const initialColor = "#aa0000";
         const [currentColor, setCurrentColor] = useState<IColorInfo>({
             colors: [initialColor],
-            opacity: 1
+            opacity: 1,
         });
 
         const handlePickerChange = (color: ColorResult) => {
             const newColor: IColorInfo = {
                 colors: [color.hex],
-                opacity: color.rgb.a ? color.rgb.a : 1
+                opacity: color.rgb.a ? color.rgb.a : 1,
             };
             setCurrentColor(newColor);
         };
@@ -535,7 +529,7 @@ export const BloomSketchPickerNoTransparency = () =>
     });
 
 BloomSketchPickerNoTransparency.story = {
-    name: "BloomSketchPicker no transparency"
+    name: "BloomSketchPicker no transparency",
 };
 
 export const BloomSketchPickerWithTransparency = () =>
@@ -543,7 +537,7 @@ export const BloomSketchPickerWithTransparency = () =>
         const initialColor = "#aa0000";
         const [currentColor, setCurrentColor] = useState<IColorInfo>({
             colors: [initialColor],
-            opacity: 1
+            opacity: 1,
         });
 
         const convertCurrentColorToRGBA = () => {
@@ -560,14 +554,14 @@ export const BloomSketchPickerWithTransparency = () =>
         const handlePickerChange = (color: ColorResult) => {
             const newColor: IColorInfo = {
                 colors: [color.hex],
-                opacity: color.rgb.a ? color.rgb.a : 1
+                opacity: color.rgb.a ? color.rgb.a : 1,
             };
             setCurrentColor(newColor);
         };
         const hexValueString = `Hex value = ${currentColor.colors[0]}`;
         const transparentValue = (1 - currentColor.opacity) * 100;
         const transparencyString = `Transparency = ${transparentValue.toFixed(
-            0
+            0,
         )}%`;
 
         return (
@@ -607,14 +601,14 @@ export const BloomSketchPickerWithTransparency = () =>
     });
 
 BloomSketchPickerWithTransparency.story = {
-    name: "BloomSketchPicker with transparency"
+    name: "BloomSketchPicker with transparency",
 };
 
 export const _HexColorInput = () =>
     React.createElement(() => {
         const [currentColor, setCurrentColor] = useState<IColorInfo>({
             colors: ["#FEDCBA"],
-            opacity: 1.0
+            opacity: 1.0,
         });
 
         const getColorInfoFromString = (color: string): IColorInfo => {
@@ -629,7 +623,7 @@ export const _HexColorInput = () =>
             >
                 <HexColorInput
                     initial={currentColor}
-                    onChangeComplete={newValue => {
+                    onChangeComplete={(newValue) => {
                         setCurrentColor(getColorInfoFromString(newValue));
                     }}
                 />

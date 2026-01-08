@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { ThemeProvider } from "@mui/material/styles";
@@ -20,7 +19,7 @@ import MenuItem from "@mui/material/MenuItem";
 export const CanvasElementFormatPage: React.FunctionComponent<{
     padding: string;
     onPropsChanged: (padding: string) => void;
-}> = props => {
+}> = (props) => {
     return (
         <ThemeProvider theme={lightTheme}>
             <Div
@@ -37,7 +36,7 @@ export const CanvasElementFormatPage: React.FunctionComponent<{
                 `}
                 variant="outlined"
                 value={props.padding}
-                onChange={e => {
+                onChange={(e) => {
                     props.onPropsChanged(e.target.value as string);
                 }}
             >
@@ -63,17 +62,17 @@ export const CanvasElementFormatPage: React.FunctionComponent<{
 
 export function RenderCanvasElementRoot(
     padding: string,
-    changeProps: (padding: string) => void
+    changeProps: (padding: string) => void,
 ) {
-    const root = document.getElementById("overlayFormatPage");
+    const root = document.getElementById("canvasFormatPage");
     // This tab is deleted when we are not in a canvas element, so we need to check for its existence.
     if (root) {
         ReactDOM.render(
             <CanvasElementFormatPage
                 padding={padding ?? ""}
-                onPropsChanged={padding => changeProps(padding)}
+                onPropsChanged={(padding) => changeProps(padding)}
             />,
-            root
+            root,
         );
     }
 }

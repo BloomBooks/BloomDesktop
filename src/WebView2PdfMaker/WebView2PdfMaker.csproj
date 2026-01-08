@@ -1,25 +1,23 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 	<PropertyGroup>
 		<ProjectGuid>{F697DD7A-2D74-4850-8381-7E4ADB1E4431}</ProjectGuid>
 		<OutputType>WinExe</OutputType>
 		<AssemblyName>BloomPdfMaker</AssemblyName>
-		<TargetFramework>net472</TargetFramework>
+		<TargetFramework>net8.0-windows</TargetFramework>
 		<LangVersion>11.0</LangVersion>
 		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
-		<OutputPath>..\..\output\$(Configuration)\</OutputPath>
-		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+		<OutputPath>..\..\output\$(Configuration)\$(Platform)\</OutputPath>
 		<AssemblyTitle>BloomPdfMaker</AssemblyTitle>
 		<Company>SIL</Company>
 		<Product>BloomPdfMaker</Product>
-		<Copyright>© SIL International 2023-2024</Copyright>
-		<Version>6.2.0.0</Version>
+		<Copyright>Â© SIL International 2023-2024</Copyright>
+		<Version>6.3.0.0</Version>
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-		<PlatformTarget>AnyCPU</PlatformTarget>
+		<UseWindowsForms>true</UseWindowsForms>
+		<Platforms>x64;ARM64</Platforms>
+		<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
 	</PropertyGroup>
-	<ItemGroup>
-		<Compile Remove="Properties\AssemblyInfo.cs" />
-	</ItemGroup>
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">
 			<_Parameter1>false</_Parameter1>
@@ -29,19 +27,21 @@
 			<_Parameter1>f697dd7a-2d74-4850-8381-7e4adb1e4431</_Parameter1>
 		</AssemblyAttribute>
 	</ItemGroup>
-	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
 		<DebugType>full</DebugType>
-		<Prefer32Bit>True</Prefer32Bit>
+		<PlatformTarget>x64</PlatformTarget>
 	</PropertyGroup>
-	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-		<DebugType>pdbonly</DebugType>
-		<Prefer32Bit>True</Prefer32Bit>
-	</PropertyGroup>
-	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
 		<DebugType>full</DebugType>
+		<PlatformTarget>ARM64</PlatformTarget>
 	</PropertyGroup>
-	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
 		<DebugType>pdbonly</DebugType>
+		<PlatformTarget>x64</PlatformTarget>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+		<DebugType>pdbonly</DebugType>
+		<PlatformTarget>ARM64</PlatformTarget>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="CommandLineParser" Version="2.8.0" />
@@ -50,17 +50,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
-		<!-- In June 2025, when we upgraded libpalaso to 16.0.1-beta0002, 
-			 tests started failing saying they couldn't find 
-			 System.Runtime.CompilerServices.Unsafe 6.0.0.
-			 We don't know why, but VS was showing that WebView2PdfMaker wanted 4.5.3
-			 as a transitive dependency even though the other packages wanted 6.0.0
-			 as a transitive dependency. That package, at least on the build server, 
-			 was apparently being built last and putting 4.5.3 in the output.
-			 This works around the problem by making 6.0.0 a direct dependency.
-		 -->
-		<PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
-		<PackageReference Include="SIL.Core" Version="16.1.0-beta0004" />
+		<PackageReference Include="SIL.Core" Version="17.0.0-beta0079" />
 	</ItemGroup>
 	<ItemGroup>
 		<Reference Include="System.Windows.Forms" />

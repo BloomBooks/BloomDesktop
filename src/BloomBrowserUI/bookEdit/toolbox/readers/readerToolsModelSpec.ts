@@ -1,3 +1,4 @@
+import { describe, it, expect, vi } from "vitest";
 import { ReaderToolsModel } from "./readerToolsModel";
 import { theOneLanguageDataInstance } from "./libSynphony/synphony_lib";
 import { TextFragment } from "./libSynphony/bloomSynphonyExtensions";
@@ -24,7 +25,7 @@ describe("averageWordsInPage tests", () => {
         // Two pages, each with one sentence of three words
         const data = [
             [{ words: ["one", "two", "three"] } as TextFragment],
-            [{ words: ["four", "five", "six"] } as TextFragment]
+            [{ words: ["four", "five", "six"] } as TextFragment],
         ];
         expect(ReaderToolsModel.averageWordsInPage(data)).toBe(3);
     });
@@ -33,11 +34,11 @@ describe("averageWordsInPage tests", () => {
         const data = [
             [
                 {
-                    words: ["one", "two", "three", "four", "five"]
+                    words: ["one", "two", "three", "four", "five"],
                 } as TextFragment,
-                { words: ["a", "b", "c"] } as TextFragment
+                { words: ["a", "b", "c"] } as TextFragment,
             ],
-            [{ words: ["four", "five", "six"] } as TextFragment]
+            [{ words: ["four", "five", "six"] } as TextFragment],
         ];
         expect(ReaderToolsModel.averageWordsInPage(data)).toBe(11 / 2);
     });
@@ -46,12 +47,12 @@ describe("averageWordsInPage tests", () => {
         const data = [
             [
                 {
-                    words: ["one", "two", "three", "four", "five"]
+                    words: ["one", "two", "three", "four", "five"],
                 } as TextFragment,
-                { words: ["a", "b", "c"] } as TextFragment
+                { words: ["a", "b", "c"] } as TextFragment,
             ],
             [{ words: ["four", "five", "six"] } as TextFragment],
-            [{ words: ["four", "five"] } as TextFragment]
+            [{ words: ["four", "five"] } as TextFragment],
         ];
         expect(ReaderToolsModel.averageWordsInPage(data)).toBe(13 / 3);
     });
@@ -62,16 +63,16 @@ describe("averageWordsInSentence tests", () => {
         const data = [
             [
                 { words: ["one", "two", "three", "four"] } as TextFragment,
-                { words: ["five", "six"] } as TextFragment
+                { words: ["five", "six"] } as TextFragment,
             ],
             [
                 { words: ["seven", "eight", "nine"] } as TextFragment,
-                { words: [] as string[] } as TextFragment
+                { words: [] as string[] } as TextFragment,
             ],
             [
                 { words: [] as string[] } as TextFragment,
-                { words: [] as string[] } as TextFragment
-            ]
+                { words: [] as string[] } as TextFragment,
+            ],
         ];
         expect(ReaderToolsModel.averageWordsInSentence(data)).toBe(3);
     });
@@ -82,7 +83,7 @@ describe("averageGlyphsInWord tests", () => {
         // Simple four letter wordss
         const data = [
             [{ words: ["four", "five"] } as TextFragment],
-            [{ words: ["nine"] } as TextFragment]
+            [{ words: ["nine"] } as TextFragment],
         ];
         expect(ReaderToolsModel.averageGlyphsInWord(data)).toBe(4);
     });
@@ -90,7 +91,7 @@ describe("averageGlyphsInWord tests", () => {
         // Four words, 18 letters
         const data = [
             [{ words: ["four", "five"] } as TextFragment],
-            [{ words: ["sixes", "seven"] } as TextFragment]
+            [{ words: ["sixes", "seven"] } as TextFragment],
         ];
         expect(ReaderToolsModel.averageGlyphsInWord(data)).toBe(18 / 4);
     });
@@ -99,10 +100,10 @@ describe("averageGlyphsInWord tests", () => {
         const data = [
             [
                 {
-                    words: ["fo\u0301u\u0301r", "fi\u0301ve\u0301"]
-                } as TextFragment
+                    words: ["fo\u0301u\u0301r", "fi\u0301ve\u0301"],
+                } as TextFragment,
             ],
-            [{ words: ["si\u0301x", "se\u0301vn"] } as TextFragment]
+            [{ words: ["si\u0301x", "se\u0301vn"] } as TextFragment],
         ];
         expect(ReaderToolsModel.averageGlyphsInWord(data)).toBe(15 / 4);
     });
@@ -113,7 +114,7 @@ describe("averageSentencesInPage tests", () => {
         // Two pages, each with one sentence
         const data = [
             [{ words: ["one", "two", "three"] } as TextFragment],
-            [{ words: ["four", "five", "six"] } as TextFragment]
+            [{ words: ["four", "five", "six"] } as TextFragment],
         ];
         expect(ReaderToolsModel.averageSentencesInPage(data)).toBe(1);
     });
@@ -122,11 +123,11 @@ describe("averageSentencesInPage tests", () => {
         const data = [
             [
                 {
-                    words: ["one", "two", "three", "four", "five"]
+                    words: ["one", "two", "three", "four", "five"],
                 } as TextFragment,
-                { words: ["a", "b", "c"] } as TextFragment
+                { words: ["a", "b", "c"] } as TextFragment,
             ],
-            [{ words: ["four", "five", "six"] } as TextFragment]
+            [{ words: ["four", "five", "six"] } as TextFragment],
         ];
         expect(ReaderToolsModel.averageSentencesInPage(data)).toBe(1.5);
     });
@@ -135,17 +136,17 @@ describe("averageSentencesInPage tests", () => {
         const data = [
             [
                 {
-                    words: ["one", "two", "three", "four", "five"]
+                    words: ["one", "two", "three", "four", "five"],
                 } as TextFragment,
                 { words: ["a", "b", "c"] } as TextFragment,
                 { words: ["the", "third", "sentence"] } as TextFragment,
-                { words: ["a", "fourth", "sentence"] } as TextFragment
+                { words: ["a", "fourth", "sentence"] } as TextFragment,
             ],
             [
                 { words: ["four", "five", "six"] } as TextFragment,
-                { words: ["second", "on", "page", "two"] } as TextFragment
+                { words: ["second", "on", "page", "two"] } as TextFragment,
             ],
-            [{ words: ["four", "five"] } as TextFragment]
+            [{ words: ["four", "five"] } as TextFragment],
         ];
         expect(ReaderToolsModel.averageSentencesInPage(data)).toBe(7 / 3);
     });
@@ -154,23 +155,23 @@ describe("averageSentencesInPage tests", () => {
             // total of three non-empty sentences on three pages.
             [
                 {
-                    words: ["one", "two", "three", "four"]
+                    words: ["one", "two", "three", "four"],
                 } as TextFragment,
-                { words: ["five", "six"] } as TextFragment
+                { words: ["five", "six"] } as TextFragment,
             ],
             [
                 {
-                    words: ["seven", "eight", "nine"]
+                    words: ["seven", "eight", "nine"],
                 } as TextFragment,
-                { words: [] as string[] } as TextFragment
+                { words: [] as string[] } as TextFragment,
             ],
             [
                 { words: [] as string[] } as TextFragment,
                 { words: [] as string[] } as TextFragment,
                 { words: [] as string[] } as TextFragment,
                 { words: [] as string[] } as TextFragment,
-                { words: [] as string[] } as TextFragment
-            ]
+                { words: [] as string[] } as TextFragment,
+            ],
         ];
         expect(ReaderToolsModel.averageSentencesInPage(data)).toBe(1);
     });
@@ -190,13 +191,13 @@ describe("updateStageNofM tests", () => {
     function setupSpiesForUpdateStageNOfMInternal(params: {
         readerToolsModel: ReaderToolsModel;
         stageLabel: string;
-        numberOfStages: string;
+        numberOfStages: number;
     }) {
-        spyOn(params.readerToolsModel, "getStageLabel").and.returnValue(
-            params.stageLabel
+        vi.spyOn(params.readerToolsModel, "getStageLabel").mockReturnValue(
+            params.stageLabel,
         );
-        spyOn(params.readerToolsModel, "getNumberOfStages").and.returnValue(
-            params.numberOfStages
+        vi.spyOn(params.readerToolsModel, "getNumberOfStages").mockReturnValue(
+            params.numberOfStages,
         );
     }
 
@@ -209,7 +210,7 @@ describe("updateStageNofM tests", () => {
         setupSpiesForUpdateStageNOfMInternal({
             readerToolsModel: obj,
             stageLabel: "2",
-            numberOfStages: "6"
+            numberOfStages: 6,
         });
 
         theOneLocalizationManager.dictionary[
@@ -237,7 +238,7 @@ describe("updateStageNofM tests", () => {
         setupSpiesForUpdateStageNOfMInternal({
             readerToolsModel: obj,
             stageLabel: "3",
-            numberOfStages: "10"
+            numberOfStages: 10,
         });
 
         theOneLocalizationManager.dictionary[
@@ -249,7 +250,7 @@ describe("updateStageNofM tests", () => {
 
         // Expect the text to be
         expect(stageNofM.innerText).toBe(
-            "there are 10 stages; 3 is the current one"
+            "there are 10 stages; 3 is the current one",
         );
 
         // Cleanup
@@ -262,14 +263,14 @@ describe("updateStageNofM tests", () => {
 describe("maxWordLength tests", () => {
     it("longest word", () => {
         expect(ReaderToolsModel.maxWordLength("the cat sat on the mat")).toBe(
-            3
+            3,
         );
     });
     it("very long word with diacritics", () => {
         expect(
             ReaderToolsModel.maxWordLength(
-                "the cat sat on the 'ma\u0301ntle\u0301pi\u0301ece\u0301'"
-            )
+                "the cat sat on the 'ma\u0301ntle\u0301pi\u0301ece\u0301'",
+            ),
         ).toBe(11);
     });
 });

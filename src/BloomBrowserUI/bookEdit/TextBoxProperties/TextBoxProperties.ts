@@ -3,11 +3,12 @@ import "../../node_modules/select2/dist/js/select2.js";
 import { get } from "../../utils/bloomApi";
 import { EditableDivUtils } from "../js/editableDivUtils";
 import BloomHintBubbles from "../js/BloomHintBubbles";
+import $ from "jquery";
 
 declare function WebFxTabPane(
     element: HTMLElement,
     useCookie: boolean,
-    callback: any
+    callback: any,
 ): any; // from tabpane, from a <script> tag
 
 export default class TextBoxProperties {
@@ -40,104 +41,109 @@ export default class TextBoxProperties {
         // Why do we use .off and .on? See comment in a nearly identical location in StyleEditor.ts
         $(targetBox).off("click.formatButton");
         $(targetBox).on("click.formatButton", ".formatButton", () => {
-            get("bookEdit/TextBoxProperties/TextBoxProperties.html", result => {
-                const html = result.data;
-                propDlg.boxBeingEdited = targetBox;
+            get(
+                "bookEdit/TextBoxProperties/TextBoxProperties.html",
+                (result) => {
+                    const html = result.data;
+                    propDlg.boxBeingEdited = targetBox;
 
-                // If this text box has had properties set already, get them so we can setup the dialog contents
-                // if not already set, this will return 'Auto'
-                const languageGroup = propDlg.getTextBoxLanguage(targetBox);
+                    // If this text box has had properties set already, get them so we can setup the dialog contents
+                    // if not already set, this will return 'Auto'
+                    const languageGroup = propDlg.getTextBoxLanguage(targetBox);
 
-                $("#text-properties-dialog").remove(); // in case there's still one somewhere else
-                $("body").append(html);
+                    $("#text-properties-dialog").remove(); // in case there's still one somewhere else
+                    $("body").append(html);
 
-                // Use select2 in place of regular selects. One reason to do this is that, for
-                // reasons I can't fathom, clicking in a regular select doesn't work within this
-                // dialog...a problem that seems to occur only in Bloom, not when we open the page
-                // in Firefox. This makes it very hard to debug.
-                // Another advantage is that the lists can scroll...we are starting to have a lot
-                // of UI languages.
-                // The commented out block is needed if we add ones that allow custom items.
-                // $('.allowCustom').select2({
-                //     tags: true //this is weird, we're not really doing tags, but this is how you get to enable typing
-                // });
-                $("select:not(.allowCustom)").select2({
-                    tags: false,
-                    minimumResultsForSearch: -1 // result is that no search box is shown
-                });
-
-                if (noFormatChange) {
-                    $("#text-properties-dialog").addClass("formattingDisabled");
-                } else {
-                    $(
-                        ":radio[name=languageRadioGroup][value=" +
-                            languageGroup +
-                            "]"
-                    ).prop("checked", true);
-                }
-
-                const dialogElement = $("#text-properties-dialog");
-                dialogElement.find("*[data-i18n]").localize();
-                dialogElement.draggable({
-                    distance: 10,
-                    scroll: false,
-                    containment: $("html")
-                });
-                dialogElement.draggable("disable"); // until after we make sure it's in the Viewport
-                dialogElement.css("opacity", 1.0);
-                if (!noFormatChange) {
-                    // Hook up change event handlers
-                    $("#language-group").change(() => {
-                        propDlg.changeLanguageGroup();
+                    // Use select2 in place of regular selects. One reason to do this is that, for
+                    // reasons I can't fathom, clicking in a regular select doesn't work within this
+                    // dialog...a problem that seems to occur only in Bloom, not when we open the page
+                    // in Firefox. This makes it very hard to debug.
+                    // Another advantage is that the lists can scroll...we are starting to have a lot
+                    // of UI languages.
+                    // The commented out block is needed if we add ones that allow custom items.
+                    // $('.allowCustom').select2({
+                    //     tags: true //this is weird, we're not really doing tags, but this is how you get to enable typing
+                    // });
+                    $("select:not(.allowCustom)").select2({
+                        tags: false,
+                        minimumResultsForSearch: -1, // result is that no search box is shown
                     });
-                    new WebFXTabPane($("#tabRoot").get(0), false);
-                }
-                // Give the browser time to get the dialog into the DOM first, before doing this stuff
-                // It just needs to delay one 'cycle'.
-                // http://stackoverflow.com/questions/779379/why-is-settimeoutfn-0-sometimes-useful
-                setTimeout(() => {
-                    // Make sure we get the right button!
-                    const orientOnButton = $(propDlg.boxBeingEdited).find(
-                        ".formatButton"
-                    );
-                    EditableDivUtils.positionDialogAndSetDraggable(
-                        dialogElement,
-                        orientOnButton
-                    );
-                    dialogElement.draggable("enable");
 
-                    $("html").off("click.dialogElement");
-                    $("html").on("click.dialogElement", event => {
-                        if (
-                            event.target !== dialogElement.get(0) &&
-                            dialogElement.has(event.target).length === 0 &&
-                            $(event.target).parent() !== dialogElement &&
-                            dialogElement.has(event.target).length === 0 &&
-                            dialogElement.is(":visible")
-                        ) {
-                            dialogElement.remove();
+                    if (noFormatChange) {
+                        $("#text-properties-dialog").addClass(
+                            "formattingDisabled",
+                        );
+                    } else {
+                        $(
+                            ":radio[name=languageRadioGroup][value=" +
+                                languageGroup +
+                                "]",
+                        ).prop("checked", true);
+                    }
+
+                    const dialogElement = $("#text-properties-dialog");
+                    dialogElement.find("*[data-i18n]").localize();
+                    dialogElement.draggable({
+                        distance: 10,
+                        scroll: false,
+                        containment: $("html"),
+                    });
+                    dialogElement.draggable("disable"); // until after we make sure it's in the Viewport
+                    dialogElement.css("opacity", 1.0);
+                    if (!noFormatChange) {
+                        // Hook up change event handlers
+                        $("#language-group").change(() => {
+                            propDlg.changeLanguageGroup();
+                        });
+                        new WebFXTabPane($("#tabRoot").get(0), false);
+                    }
+                    // Give the browser time to get the dialog into the DOM first, before doing this stuff
+                    // It just needs to delay one 'cycle'.
+                    // http://stackoverflow.com/questions/779379/why-is-settimeoutfn-0-sometimes-useful
+                    setTimeout(() => {
+                        // Make sure we get the right button!
+                        const orientOnButton = $(propDlg.boxBeingEdited).find(
+                            ".formatButton",
+                        );
+                        EditableDivUtils.positionDialogAndSetDraggable(
+                            dialogElement,
+                            orientOnButton,
+                        );
+                        dialogElement.draggable("enable");
+
+                        $("html").off("click.dialogElement");
+                        $("html").on("click.dialogElement", (event) => {
+                            if (
+                                event.target !== dialogElement.get(0) &&
+                                dialogElement.has(event.target).length === 0 &&
+                                $(event.target).parent() !== dialogElement &&
+                                dialogElement.has(event.target).length === 0 &&
+                                dialogElement.is(":visible")
+                            ) {
+                                dialogElement.remove();
+                                event.stopPropagation();
+                                event.preventDefault();
+                            }
+                        });
+                        dialogElement.on("click.dialogElement", (event) => {
+                            // this stops an event inside the dialog from propagating to the html element, which would close the dialog
                             event.stopPropagation();
-                            event.preventDefault();
-                        }
-                    });
-                    dialogElement.on("click.dialogElement", event => {
-                        // this stops an event inside the dialog from propagating to the html element, which would close the dialog
-                        event.stopPropagation();
-                    });
-                    this.removeButtonSelection();
-                    this.initializeAlignment();
-                    this.initializeBorderStyle();
-                    this.initializeBackground();
-                    this.setButtonClickActions();
-                    this.makeLanguageSelect();
-                    this.initializeHintTab();
-                    this.fillInLanguageNames();
-                }, 0); // just push this to the end of the event queue
-            });
+                        });
+                        this.removeButtonSelection();
+                        this.initializeAlignment();
+                        this.initializeBorderStyle();
+                        this.initializeBackground();
+                        this.setButtonClickActions();
+                        this.makeLanguageSelect();
+                        this.initializeHintTab();
+                        this.fillInLanguageNames();
+                    }, 0); // just push this to the end of the event queue
+                },
+            );
         });
     }
     fillInLanguageNames() {
-        get("editView/getBookLangs", result => {
+        get("editView/getBookLangs", (result) => {
             document.getElementById("tbprop-lang1")!.innerText =
                 "(" + result.data.V + ")";
             document.getElementById("tbprop-lang2")!.innerText =
@@ -164,7 +170,7 @@ export default class TextBoxProperties {
             "bordertop",
             "borderleft",
             "borderright",
-            "borderbottom"
+            "borderbottom",
         ];
     }
 
@@ -179,7 +185,7 @@ export default class TextBoxProperties {
         const buttonIds = this.getButtonIds();
         for (let idIndex = 0; idIndex < buttonIds.length; idIndex++) {
             const button = $("#" + buttonIds[idIndex]);
-            button.click(e => this.buttonClick(e.currentTarget));
+            button.click((e) => this.buttonClick(e.currentTarget));
         }
     }
 
@@ -217,16 +223,16 @@ export default class TextBoxProperties {
         } else if (id.startsWith("borderstyle-")) {
             this.changeBorder(
                 $(this.getAffectedTranslationGroup(this.boxBeingEdited)),
-                true
+                true,
             );
         } else if (id.startsWith("border")) {
             this.changeBorder(
                 $(this.getAffectedTranslationGroup(this.boxBeingEdited)),
-                false
+                false,
             );
         } else if (id.startsWith("background")) {
             this.changeBackground(
-                $(this.getAffectedTranslationGroup(this.boxBeingEdited))
+                $(this.getAffectedTranslationGroup(this.boxBeingEdited)),
             );
         }
     }
@@ -235,7 +241,7 @@ export default class TextBoxProperties {
         // get radio button value and set 'data-default-languages' attribute
         const radioValue = $('input[name="languageRadioGroup"]:checked').val();
         const targetGroup = $(
-            this.getAffectedTranslationGroup(this.boxBeingEdited)
+            this.getAffectedTranslationGroup(this.boxBeingEdited),
         );
         // currently 'radioValue' should be one of: 'Auto', 'N1', 'N2', or 'V'
         if (targetGroup) {
@@ -251,7 +257,7 @@ export default class TextBoxProperties {
 
     private initializeAlignment() {
         const targetGroup = $(
-            this.getAffectedTranslationGroup(this.boxBeingEdited)
+            this.getAffectedTranslationGroup(this.boxBeingEdited),
         );
         if (targetGroup) {
             if (targetGroup.hasClass("bloom-vertical-align-center")) {
@@ -266,7 +272,7 @@ export default class TextBoxProperties {
 
     private changeAlignment() {
         const targetGroup = $(
-            this.getAffectedTranslationGroup(this.boxBeingEdited)
+            this.getAffectedTranslationGroup(this.boxBeingEdited),
         );
         targetGroup.removeClass("bloom-vertical-align-center");
         targetGroup.removeClass("bloom-vertical-align-bottom");
@@ -281,7 +287,7 @@ export default class TextBoxProperties {
 
     private initializeBorderStyle() {
         const targetGroup = $(
-            this.getAffectedTranslationGroup(this.boxBeingEdited)
+            this.getAffectedTranslationGroup(this.boxBeingEdited),
         );
         if (targetGroup) {
             if (targetGroup.hasClass("bloom-borderstyle-black")) {
@@ -396,7 +402,7 @@ export default class TextBoxProperties {
 
     private initializeBackground() {
         const targetGroup = $(
-            this.getAffectedTranslationGroup(this.boxBeingEdited)
+            this.getAffectedTranslationGroup(this.boxBeingEdited),
         );
         if (targetGroup) {
             if (targetGroup.hasClass("bloom-background-gray")) {
@@ -435,7 +441,7 @@ export default class TextBoxProperties {
         // I'm not sure (gjm) how often another translationGroup with box-header-off shows up,
         // but I found at least one instance, so make sure that's not the one we grab.
         return container.find(
-            ".bloom-translationGroup:not(.box-header-off)"
+            ".bloom-translationGroup:not(.box-header-off)",
         )[0];
     }
 
@@ -451,11 +457,11 @@ export default class TextBoxProperties {
 
     private makeLanguageSelect() {
         // items comes back as something like languages: [{label: 'English', tag: 'en'},{label: 'French', tag: 'fr'} ]
-        get("uiLanguages", result => {
+        get("uiLanguages", (result) => {
             const items: Array<any> = (<any>result.data).languages;
             this.makeSelectItems(items, "en", "lang-select");
         });
-        $("#lang-select").change(e => {
+        $("#lang-select").change((e) => {
             this.setHintTextForLang($("#lang-select").val());
         });
     }
@@ -519,7 +525,7 @@ export default class TextBoxProperties {
         }
         this.initializeHintText();
         this.updateHintTabControls();
-        $("#hint-scope").change(e => {
+        $("#hint-scope").change((e) => {
             this.changeShowHintOnEach();
         });
     }
@@ -532,12 +538,10 @@ export default class TextBoxProperties {
         if (groupCanHaveMoreThanOneLanguage) {
             showHintOnEachGroupDiv.show();
             const showHintOnEach = $(
-                this.getAffectedTranslationGroup(this.boxBeingEdited)
+                this.getAffectedTranslationGroup(this.boxBeingEdited),
             ).hasClass(this.classNameForHintOnEach());
             if (showHintOnEach) {
-                $("#hint-scope")
-                    .val("show-on-each")
-                    .trigger("change");
+                $("#hint-scope").val("show-on-each").trigger("change");
                 includeLangLabel.show();
             } else {
                 // first item will be selected by default
@@ -556,7 +560,7 @@ export default class TextBoxProperties {
 
     private changeShowHintOnEach() {
         const targetGroup = $(
-            this.getAffectedTranslationGroup(this.boxBeingEdited)
+            this.getAffectedTranslationGroup(this.boxBeingEdited),
         );
         const showOnEach = this.showHintOnEachIsSelected();
         const includeLangLabel = $("#include-lang");
@@ -569,7 +573,7 @@ export default class TextBoxProperties {
         }
         BloomHintBubbles.updateQtipPlacement(
             targetGroup,
-            $("#hint-content").text()
+            $("#hint-content").text(),
         );
     }
 
@@ -579,11 +583,11 @@ export default class TextBoxProperties {
         // want them to include at least an English hint, as that seems to be the
         // common interchange language among Bloom users.
         this.setHintTextForLang("en");
-        $("#hint-content").on("input", e => {
+        $("#hint-content").on("input", (e) => {
             const lang = $("#lang-select").val();
             const text = $("#hint-content").text();
             const targetGroup = $(
-                this.getAffectedTranslationGroup(this.boxBeingEdited)
+                this.getAffectedTranslationGroup(this.boxBeingEdited),
             );
             let langLabel = targetGroup.find("label[lang=" + lang + "]");
             if (!text) {
@@ -591,7 +595,7 @@ export default class TextBoxProperties {
             } else {
                 if (langLabel.length === 0) {
                     targetGroup.prepend(
-                        '<label class="bubble" lang="' + lang + '"></label>'
+                        '<label class="bubble" lang="' + lang + '"></label>',
                     );
                     langLabel = targetGroup.find("label[lang=" + lang + "]");
                 }
@@ -603,7 +607,7 @@ export default class TextBoxProperties {
 
     private setHintTextForLang(lang: string) {
         const targetGroup = $(
-            this.getAffectedTranslationGroup(this.boxBeingEdited)
+            this.getAffectedTranslationGroup(this.boxBeingEdited),
         );
         const langLabel = targetGroup.find("label[lang=" + lang + "]");
         if (langLabel.length > 0) {

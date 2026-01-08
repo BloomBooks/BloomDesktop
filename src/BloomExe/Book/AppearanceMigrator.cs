@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Security.Cryptography;
-using SIL.IO;
-using SIL.Code;
-using System.IO;
-using System.Text.RegularExpressions;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using SIL.Code;
+using SIL.IO;
 
 namespace Bloom.Book
 {

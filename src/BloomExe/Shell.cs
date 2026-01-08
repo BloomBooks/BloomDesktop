@@ -15,6 +15,7 @@ using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.Workspace;
 using SIL.Extensions;
+using SIL.Reporting;
 using SIL.Windows.Forms.PortableSettingsProvider;
 
 namespace Bloom
@@ -50,8 +51,8 @@ namespace Bloom
             AudioRecording audioRecording
         )
         {
-            queueRenameOfCollection.Subscribe(
-                newName => _nameToChangeCollectionUponClosing = newName.Trim().SanitizeFilename('-')
+            queueRenameOfCollection.Subscribe(newName =>
+                _nameToChangeCollectionUponClosing = newName.Trim().SanitizeFilename('-')
             );
             _collectionSettings = collectionSettings;
             _collectionClosingEvent = collectionClosingEvent;
@@ -60,6 +61,14 @@ namespace Bloom
             InitializeComponent();
             Activated += (sender, args) =>
             {
+                // In at least one case (BL-15060) we seem to have gotten activated
+                // while Bloom was shutting down to switch to an updated version. It's dangerous
+                // to do the usual activation process in such a state, because we may be in
+                // the process of disposing the ProjectContext, which can lead to ObjectDisposed
+                // exceptions, and if we're really unlucky, trying to report that can lock things up.
+                // So if we know we're in the process of shutting down, ignore being activated.
+                if (AppIsShuttingDown)
+                    return;
                 // Some of the stuff we do to update things depends on a current editing view and model.
                 // So just don't try if the user is for some reason editing the videos while not editing
                 // the book. Hopefuly in that case he hasn't opened the book and none of its old state
@@ -137,6 +146,8 @@ namespace Bloom
             _audioRecording.PauseMonitoringAudio(true);
         }
 
+        public bool AppIsShuttingDown => _startedClosingEvent || _finishedClosingEvent;
+
         private bool _startedClosingEvent;
         private bool _finishedClosingEvent;
 
@@ -164,6 +175,8 @@ namespace Bloom
                 e.Cancel = true;
                 return;
             }
+
+            Logger.WriteMinorEvent("starting to shut Bloom down");
 
             _startedClosingEvent = true;
 
@@ -215,6 +228,7 @@ namespace Bloom
                         }
 
                         _finishedClosingEvent = true;
+                        Logger.WriteMinorEvent("closing the Shell");
                         Close();
                     },
                     FailureAction = () =>
@@ -223,7 +237,7 @@ namespace Bloom
                         // still trying to save after the first click on Close. But if the first attempt fails,
                         // we don't want to stay in a state where all attempts to close the program are ignored.
                         _startedClosingEvent = false;
-                    }
+                    },
                 }
             );
             e.Cancel = true;

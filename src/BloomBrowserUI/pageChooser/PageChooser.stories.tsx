@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import { lightTheme } from "../bloomMaterialUITheme";
 import * as React from "react";
@@ -12,7 +11,7 @@ import PageThumbnail from "./PageThumbnail";
 import {
     getTemplatePageImageSource,
     IBookGroup,
-    ITemplateBookInfo
+    ITemplateBookInfo,
 } from "./PageChooserDialog";
 import { TemplateBookErrorReplacement } from "./TemplateBookErrorReplacement";
 import { getBloomApiPrefix } from "../utils/bloomApi";
@@ -24,24 +23,27 @@ interface ITemplateBookPagesWrapperProps extends ITemplateBookPagesProps {
 const dummyTitleGroup: IBookGroup = {
     title: "Dummy Title",
     books: [],
-    errorPath: ""
+    errorPath: "",
 };
 
-const TemplateBookPagesWrapper: React.FunctionComponent<ITemplateBookPagesWrapperProps> = props => {
+const TemplateBookPagesWrapper: React.FunctionComponent<
+    ITemplateBookPagesWrapperProps
+> = (props) => {
     const [bg, setBg] = React.useState<IBookGroup | undefined>(undefined);
     React.useEffect(() => {
         axios
             .get(
                 getBloomApiPrefix(false) +
-                    encodeURIComponent(props.templateBook.templateBookPath)
+                    encodeURIComponent(props.templateBook.templateBookPath),
             )
-            .then(result => {
-                const resultPageData: HTMLElement = new DOMParser().parseFromString(
-                    result.data,
-                    "text/html"
-                ).body;
+            .then((result) => {
+                const resultPageData: HTMLElement =
+                    new DOMParser().parseFromString(
+                        result.data,
+                        "text/html",
+                    ).body;
                 const bloomPages: HTMLDivElement[] = Array.from(
-                    resultPageData.querySelectorAll(".bloom-page")
+                    resultPageData.querySelectorAll(".bloom-page"),
                 );
                 // do we need to filter for test purposes?
                 const bg: IBookGroup = {
@@ -53,17 +55,17 @@ const TemplateBookPagesWrapper: React.FunctionComponent<ITemplateBookPagesWrappe
                             dom: resultPageData,
                             pages: bloomPages,
                             id: "",
-                            pageToolId: ""
-                        }
+                            pageToolId: "",
+                        },
                     ],
-                    errorPath: ""
+                    errorPath: "",
                 };
                 setBg(bg);
             })
-            .catch(error => {
+            .catch((error) => {
                 alert(
                     "Error loading template book: " +
-                        props.templateBook.templateBookPath
+                        props.templateBook.templateBookPath,
                 );
             });
     }, [props.templateBook]);
@@ -73,7 +75,7 @@ const TemplateBookPagesWrapper: React.FunctionComponent<ITemplateBookPagesWrappe
     return <TemplateBookPages {...props} titleGroup={bg!} />;
 };
 
-const PreviewFrame: React.FC = props => (
+const PreviewFrame: React.FC = (props) => (
     <div
         css={css`
             height: 540px;
@@ -105,7 +107,7 @@ const PreviewFrame: React.FC = props => (
 );
 
 export default {
-    title: "Page Chooser"
+    title: "Page Chooser",
 };
 
 export const NormalPreview = () => {
@@ -121,7 +123,7 @@ export const NormalPreview = () => {
                 imageSource={getTemplatePageImageSource(
                     templateFolderUrl,
                     pageLabel,
-                    orientation
+                    orientation,
                 )}
                 pageIsDigitalOnly={false}
                 pageId="1235"
@@ -134,7 +136,7 @@ export const NormalPreview = () => {
 };
 
 NormalPreview.story = {
-    name: "normal preview"
+    name: "normal preview",
 };
 
 export const PreviewRequiresEnterprise = () => {
@@ -150,7 +152,7 @@ export const PreviewRequiresEnterprise = () => {
                 imageSource={getTemplatePageImageSource(
                     templateFolderUrl,
                     pageLabel,
-                    orientation
+                    orientation,
                 )}
                 featureName="foobar"
                 pageIsDigitalOnly={true}
@@ -165,7 +167,7 @@ export const PreviewRequiresEnterprise = () => {
 };
 
 PreviewRequiresEnterprise.story = {
-    name: "preview requiresEnterprise"
+    name: "preview requiresEnterprise",
 };
 
 export const PreviewChangeLayoutWillLoseData = () => {
@@ -180,7 +182,7 @@ export const PreviewChangeLayoutWillLoseData = () => {
                 imageSource={getTemplatePageImageSource(
                     templateFolderUrl,
                     pageLabel,
-                    orientation
+                    orientation,
                 )}
                 caption="Just Text"
                 pageDescription="This page has space for only text. But I want to put a bigger description in here to make sure."
@@ -198,7 +200,7 @@ export const PreviewChangeLayoutWillLoseData = () => {
 };
 
 PreviewChangeLayoutWillLoseData.story = {
-    name: "preview changeLayoutWillLoseData"
+    name: "preview changeLayoutWillLoseData",
 };
 
 export const _TemplateBookPages = () => {
@@ -206,7 +208,7 @@ export const _TemplateBookPages = () => {
         templateBookFolderUrl:
             "c:/bloomdesktop/output/browser/templates/template books/basic book",
         templateBookPath:
-            "c:/bloomdesktop/output/browser/templates/template books/basic book/basic book.html"
+            "c:/bloomdesktop/output/browser/templates/template books/basic book/basic book.html",
     };
     return (
         <PreviewFrame>
@@ -224,7 +226,7 @@ export const _TemplateBookPages = () => {
 };
 
 _TemplateBookPages.story = {
-    name: "TemplateBookPages"
+    name: "TemplateBookPages",
 };
 
 export const TemplateBookPagesActivityPortrait = () => {
@@ -232,7 +234,7 @@ export const TemplateBookPagesActivityPortrait = () => {
         templateBookFolderUrl:
             "c:/bloomdesktop/output/browser/templates/template books/activity",
         templateBookPath:
-            "c:/bloomdesktop/output/browser/templates/template books/activity/activity.html"
+            "c:/bloomdesktop/output/browser/templates/template books/activity/activity.html",
     };
     return (
         <PreviewFrame>
@@ -250,7 +252,7 @@ export const TemplateBookPagesActivityPortrait = () => {
 };
 
 TemplateBookPagesActivityPortrait.story = {
-    name: "TemplateBookPages-activity-portrait"
+    name: "TemplateBookPages-activity-portrait",
 };
 
 export const TemplateBookPagesActivityLandscape = () => {
@@ -258,7 +260,7 @@ export const TemplateBookPagesActivityLandscape = () => {
         templateBookFolderUrl:
             "c:/bloomdesktop/output/browser/templates/template books/activity",
         templateBookPath:
-            "c:/bloomdesktop/output/browser/templates/template books/activity/activity.html"
+            "c:/bloomdesktop/output/browser/templates/template books/activity/activity.html",
     };
     return (
         <PreviewFrame>
@@ -276,7 +278,7 @@ export const TemplateBookPagesActivityLandscape = () => {
 };
 
 TemplateBookPagesActivityLandscape.story = {
-    name: "TemplateBookPages-activity-landscape"
+    name: "TemplateBookPages-activity-landscape",
 };
 
 export const TemplateBookPagesCustom = () => {
@@ -284,7 +286,7 @@ export const TemplateBookPagesCustom = () => {
         templateBookFolderUrl:
             "c:/users/gordon/documents/bloom/sokoro books test/gaadi template",
         templateBookPath:
-            "c:/users/gordon/documents/bloom/sokoro books test/gaadi template/gaadi template.htm"
+            "c:/users/gordon/documents/bloom/sokoro books test/gaadi template/gaadi template.htm",
     };
     return (
         <PreviewFrame>
@@ -302,7 +304,7 @@ export const TemplateBookPagesCustom = () => {
 };
 
 TemplateBookPagesCustom.story = {
-    name: "TemplateBookPages-custom"
+    name: "TemplateBookPages-custom",
 };
 
 export const _TemplateBookErrorReplacement = () => (
@@ -312,7 +314,7 @@ export const _TemplateBookErrorReplacement = () => (
 );
 
 _TemplateBookErrorReplacement.story = {
-    name: "TemplateBookErrorReplacement"
+    name: "TemplateBookErrorReplacement",
 };
 
 export const _PageThumbnail = () => (
@@ -321,7 +323,7 @@ export const _PageThumbnail = () => (
             imageSource={getTemplatePageImageSource(
                 "c:/bloomdesktop/output/browser/templates/template books/basic book",
                 "Basic Text & Picture",
-                "landscape"
+                "landscape",
             )}
             isLandscape={true}
         />
@@ -329,5 +331,5 @@ export const _PageThumbnail = () => (
 );
 
 _PageThumbnail.story = {
-    name: "PageThumbnail"
+    name: "PageThumbnail",
 };

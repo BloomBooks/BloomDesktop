@@ -12,7 +12,6 @@ using Bloom.CollectionTab;
 using Bloom.History;
 using Bloom.MiscUI;
 using Bloom.Publish;
-using Bloom.Registration;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.Workspace;
@@ -140,8 +139,11 @@ namespace Bloom.TeamCollection
                 false
             );
             apiHandler.RegisterEndpointHandler(
-                "teamCollection/showRegistrationDialog",
-                HandleShowRegistrationDialog,
+                "teamCollection/mayChangeRegistrationEmail",
+                request =>
+                {
+                    request.ReplyWithBoolean(_tcManager.UserMayChangeEmail);
+                },
                 true,
                 false
             );
@@ -214,7 +216,7 @@ namespace Bloom.TeamCollection
                         { "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
                         { "User", CurrentUser },
                         { "BookId", _bookSelection?.CurrentSelection?.ID },
-                        { "BookName", _bookSelection?.CurrentSelection?.Title }
+                        { "BookName", _bookSelection?.CurrentSelection?.Title },
                     }
                 );
 
@@ -270,15 +272,6 @@ namespace Bloom.TeamCollection
                 ),
                 additionalFilesToInclude: new[] { file }
             );
-        }
-
-        private void HandleShowRegistrationDialog(ApiRequest request)
-        {
-            using (var dlg = new RegistrationDialog(false, _tcManager.UserMayChangeEmail))
-            {
-                dlg.ShowDialog();
-            }
-            request.PostSucceeded();
         }
 
         private void HandleShowCreateTeamCollectionDialog(ApiRequest request)
@@ -376,7 +369,7 @@ namespace Bloom.TeamCollection
                         { "CollectionName", _settings?.CollectionName },
                         { "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
                         { "User", CurrentUser },
-                        { "JoinType", joinType } // create, open, or merge
+                        { "JoinType", joinType }, // create, open, or merge
                     }
                 );
 
@@ -505,7 +498,7 @@ namespace Bloom.TeamCollection
                         isDisconnected = false,
                         isNewLocalBook = true,
                         checkinMessage = "",
-                        isUserAdmin = _tcManager.OkToEditCollectionSettings
+                        isUserAdmin = _tcManager.OkToEditCollectionSettings,
                     }
                 );
             }
@@ -586,7 +579,7 @@ namespace Bloom.TeamCollection
                     isDisconnected = _tcManager.CurrentCollectionEvenIfDisconnected?.IsDisconnected,
                     isNewLocalBook,
                     checkinMessage,
-                    isUserAdmin = _tcManager.OkToEditCollectionSettings
+                    isUserAdmin = _tcManager.OkToEditCollectionSettings,
                 }
             );
         }
@@ -663,7 +656,7 @@ namespace Bloom.TeamCollection
                             { "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
                             { "User", CurrentUser },
                             { "BookId", _bookSelection?.CurrentSelection?.ID },
-                            { "BookName", _bookSelection?.CurrentSelection?.Title }
+                            { "BookName", _bookSelection?.CurrentSelection?.Title },
                         }
                     );
 
@@ -864,7 +857,12 @@ namespace Bloom.TeamCollection
                 request,
                 reportCheckinProgress
             );
-            request.PostSucceeded();
+            // If CheckInOneBook reported a failure, which means the request has
+            // already received a response, trying to change it to success
+            // is not helpful...nor will it work; it will cause an object
+            // disposed exception.
+            if (!request.HasFailed)
+                request.PostSucceeded();
             // Force a full reload of the book from disk and update the UI to match.
             _bookSelection.SelectBook(_bookSelection.CurrentSelection);
         }
@@ -916,14 +914,15 @@ namespace Bloom.TeamCollection
 
                     var book = _collectionModel.GetBookFromBookInfo(bookInfo);
                     var message = BookHistory.GetPendingCheckinMessage(book);
-                    BookHistory.AddEvent(book, BookHistoryEventType.CheckIn, message);
-                    BookHistory.SetPendingCheckinMessage(book, "");
                     _tcManager.CurrentCollection.PutBook(
                         bookInfo.FolderPath,
                         true,
                         false,
                         reportProgressFraction
                     );
+                    // After we actually do the checkin, so if checkin throws, we don't record a checkin that didn't happen.
+                    BookHistory.AddEvent(book, BookHistoryEventType.CheckIn, message);
+                    BookHistory.SetPendingCheckinMessage(book, "");
                     progress?.MessageWithoutLocalizing($"Completed check-in of '{bookInfo.Title}'");
 
                     reportProgressFraction(0); // hides the progress bar (important if a different book has been selected that is still checked out)
@@ -937,7 +936,7 @@ namespace Bloom.TeamCollection
                             { "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
                             { "User", CurrentUser },
                             { "BookId", bookInfo.Id },
-                            { "BookName", bookInfo.Title }
+                            { "BookName", bookInfo.Title },
                         }
                     );
                 }
@@ -977,7 +976,7 @@ namespace Bloom.TeamCollection
                             { "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
                             { "User", CurrentUser },
                             { "BookId", bookInfo.Id },
-                            { "BookName", bookInfo.Title }
+                            { "BookName", bookInfo.Title },
                         }
                     );
                     BookHistory.AddEvent(bookInfo, BookHistoryEventType.SyncProblem, msg);
@@ -1055,10 +1054,18 @@ namespace Bloom.TeamCollection
                     "TeamCollection.SelectFolder",
                     "Select or create the folder where this collection will be shared"
                 );
+                // Enhance: it might be better to launch the dialog and handle the result
+                // using something like Application.Idle +=..., and then succeed unconditionally here.
+                // That way we would not tie up a server thread while the dialog is shown.
                 var sharedFolder = BloomFolderChooser.ChooseFolder(dropboxFolder, description);
                 if (string.IsNullOrEmpty(sharedFolder))
                 {
-                    request.Failed();
+                    // It's debatable whether it succeeded, but reporting that it failed
+                    // causes a JS exception, and we're otherwise ignoring the result anyway...
+                    // The JS is really looking for us to send the new folder path through
+                    // our websocket.
+                    request.PostSucceeded();
+                    //request.Failed();
                     return;
                 }
                 // We send the result through a websocket rather than simply returning it because
@@ -1110,7 +1117,7 @@ namespace Bloom.TeamCollection
                     //	"This folder appears to already be in use as a Team Collection");
                 }
 
-                if (Directory.EnumerateFiles(sharedFolder, "*.bloomCollection").Any())
+                if (CollectionSettings.TryGetSettingsFilePath(sharedFolder, out var _))
                 {
                     return defaultMessage;
                     //return LocalizationManager.GetString("TeamCollection.LocalCollection",
@@ -1145,16 +1152,13 @@ namespace Bloom.TeamCollection
             return "";
         }
 
+        // We must ensure that the user has registered a valid email address before making the call to the API endpoint which calls this.
         public void HandleCreateTeamCollection(ApiRequest request)
         {
             string repoFolderParentPath = null;
             try
             {
-                if (!TeamCollection.PromptForSufficientRegistrationIfNeeded())
-                {
-                    request.PostSucceeded();
-                    return;
-                }
+                Debug.Assert(!string.IsNullOrWhiteSpace(CurrentUser));
 
                 repoFolderParentPath = request.RequiredPostString();
 
@@ -1168,7 +1172,7 @@ namespace Bloom.TeamCollection
                         { "CollectionId", _settings?.CollectionId },
                         { "CollectionName", _settings?.CollectionName },
                         { "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
-                        { "User", CurrentUser }
+                        { "User", CurrentUser },
                     }
                 );
 

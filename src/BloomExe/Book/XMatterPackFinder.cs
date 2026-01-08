@@ -133,7 +133,7 @@ namespace Bloom.Book
                     var shortcut in Directory.GetFiles(path, "*.lnk", SearchOption.TopDirectoryOnly)
                 )
                 {
-                    var p = ResolveShortcut.Resolve(shortcut);
+                    var p = Shortcut.Resolve(shortcut);
                     if (Directory.Exists(p))
                         AddXMatterDir(p, factory);
                 }

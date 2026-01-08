@@ -1,7 +1,5 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
-import * as React from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -28,10 +26,10 @@ export interface IStyleAndFont {
 }
 export const StyleAndFontTable: React.FunctionComponent<{
     closeDialog: () => void;
-}> = props => {
+}> = (props) => {
     const rows: IStyleAndFont[] = useApiObject<IStyleAndFont[]>(
         "stylesAndFonts/getDataRows",
-        []
+        [],
     );
 
     function closeDialogAndJumpToPage(pageId: string) {
@@ -67,7 +65,7 @@ export const StyleAndFontTable: React.FunctionComponent<{
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {rows.map(row => (
+                    {rows.map((row) => (
                         <StyleAndFontRow
                             key={row.styleName + row.languageName}
                             row={row}
@@ -87,10 +85,10 @@ const StyleAndFontRow: React.FunctionComponent<{
 }> = ({ key, row, closeDialogAndJumpToPage }) => {
     const fontNotInstalledMessage = useL10n(
         "Font is not installed on this computer",
-        "BookSettings.Fonts.FontNotInstalled"
+        "BookSettings.Fonts.FontNotInstalled",
     );
     const fontMetaData: IFontMetaData | undefined = useFontMetaData(
-        row.fontName
+        row.fontName,
     );
     return (
         <TableRow key={key}>
@@ -124,9 +122,9 @@ const StyleAndFontRow: React.FunctionComponent<{
 export function useFontMetaData(fontName: string): IFontMetaData | undefined {
     const fontMetaData: IFontMetaData[] = useApiObject<IFontMetaData[]>(
         "fonts/metadata",
-        []
+        [],
     );
-    return fontMetaData.find(font => font.name === fontName);
+    return fontMetaData.find((font) => font.name === fontName);
 }
 
 // Displays font info based on font metadata.
@@ -168,7 +166,7 @@ const FontInfo: React.FunctionComponent<{
     name: string;
     warningMessage?: string;
     additionalInfo?: React.ReactElement;
-}> = props => {
+}> = (props) => {
     return (
         <div
             css={css`
@@ -201,9 +199,9 @@ const FontInfo: React.FunctionComponent<{
                     >
                         <Warning
                             sx={{
-                                color: theme => theme.palette.error.main,
+                                color: (theme) => theme.palette.error.main,
                                 fontSize: "1.1rem", // Default was too big
-                                paddingRight: "3px"
+                                paddingRight: "3px",
                             }}
                         />
                         {props.warningMessage}

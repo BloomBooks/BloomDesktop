@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import { FormGroup, Checkbox, FormControlLabel } from "@mui/material";
 import * as React from "react";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -24,46 +23,45 @@ export const LanguageSelectionSettingsGroup: React.FunctionComponent<{
 
     // If defined, will be invoked after the checkbox changes its value.
     onChange?: (item: LangCheckboxValue, newState: boolean) => void;
-}> = props => {
+}> = (props) => {
     const incompleteTag = useL10n(
         "(incomplete translation)",
-        "PublishTab.Upload.IncompleteTranslation"
+        "PublishTab.Upload.IncompleteTranslation",
     );
     const talkingLabel = useL10n(
         "Talking Book Languages",
-        "PublishTab.Android.TalkingBookLanguages"
+        "PublishTab.Android.TalkingBookLanguages",
     );
 
     const textLabel = useL10n(
         "Text Languages",
-        "PublishTab.Android.TextLanguages"
+        "PublishTab.Android.TextLanguages",
     );
 
     const tooltipStrings = {
         enabled: {
             text: {
-                l10nKey: "PublishTab.Language.Enabled"
+                l10nKey: "PublishTab.Language.Enabled",
             },
             audio: {
-                l10nKey: "PublishTab.AudioLanguage.Enabled"
-            }
+                l10nKey: "PublishTab.AudioLanguage.Enabled",
+            },
         },
         disabled: {
-            text:
-                "This situation does not happen; we don't language unless they are enabled or required.",
+            text: "This situation does not happen; we don't language unless they are enabled or required.",
             audio: {
-                l10nKey: "PublishTab.AudioLanguage.Disabled"
-            }
+                l10nKey: "PublishTab.AudioLanguage.Disabled",
+            },
         },
         required: {
             text: {
-                l10nKey: "PublishTab.Language.Required"
-            }
-        }
+                l10nKey: "PublishTab.Language.Required",
+            },
+        },
     };
 
     //: undefined // at the moment isn't ever possible. But maybe in the future we'll have a case where a language is disabled for another reason.
-    const languageCheckboxes = props.langCheckboxValues.map(item => (
+    const languageCheckboxes = props.langCheckboxValues.map((item) => (
         <BloomTooltip
             key={item.code}
             showDisabled={!item.isEnabled}
@@ -83,7 +81,7 @@ export const LanguageSelectionSettingsGroup: React.FunctionComponent<{
             <BloomCheckbox
                 disabled={!item.isEnabled}
                 checked={item.isChecked}
-                onCheckChanged={newState => {
+                onCheckChanged={(newState) => {
                     if (props.onChange) {
                         props.onChange(item, newState!);
                     }

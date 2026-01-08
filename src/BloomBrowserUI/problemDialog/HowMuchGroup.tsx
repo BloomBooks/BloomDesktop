@@ -7,21 +7,21 @@ import { useL10n } from "../react_components/l10nHooks";
 
 export const HowMuchGroup: React.FunctionComponent<{
     onHowMuchChange: (value: number) => void;
-}> = props => {
+}> = (props) => {
     const localizedHowMuch = useL10n(
         "How much has this happened?",
         "ReportProblemDialog.HowMuch",
-        "The label above the frequency slider."
+        "The label above the frequency slider.",
     );
     const localizedStartLabel = useL10n(
         "First Time",
         "ReportProblemDialog.FirstTime",
-        "The begin point label for the frequency slider."
+        "The begin point label for the frequency slider.",
     );
     const localizedEndLabel = useL10n(
         "It keeps happening",
         "ReportProblemDialog.ItKeepsHappening",
-        "The end point label for the frequency slider."
+        "The end point label for the frequency slider.",
     );
     return (
         <div id="how_much_group">
@@ -50,15 +50,15 @@ export const HowMuchGroup: React.FunctionComponent<{
 // do the styling just with css, have to use MUI's style system:
 const HowMuchSlider = withStyles({
     rail: {
-        backgroundColor: "#bfbfbf"
+        backgroundColor: "#bfbfbf",
     },
     mark: {
         width: 6,
         height: 6,
         backgroundColor: "lightgray",
-        borderRadius: 3
+        borderRadius: 3,
     },
     markActive: {
-        backgroundColor: "currentColor"
-    }
+        backgroundColor: "currentColor",
+    },
 })(Slider);

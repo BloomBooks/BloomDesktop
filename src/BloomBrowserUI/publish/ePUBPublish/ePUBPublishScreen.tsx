@@ -1,12 +1,11 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useState, useContext } from "react";
 import {
     PreviewPanel,
     SettingsPanel,
-    PublishPanel
+    PublishPanel,
 } from "../commonPublish/PublishScreenBaseComponents";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
@@ -14,7 +13,7 @@ import * as ReactDOM from "react-dom";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import {
     useSubscribeToWebSocketForStringMessage,
-    useSubscribeToWebSocketForEvent
+    useSubscribeToWebSocketForEvent,
 } from "../../utils/WebSocketManager";
 import BloomButton from "../../react_components/bloomButton";
 import { EPUBHelpGroup } from "./ePUBHelpGroup";
@@ -25,7 +24,7 @@ import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
 import {
     useApiBoolean,
     useApiStringState,
-    useWatchBooleanEvent
+    useWatchBooleanEvent,
 } from "../../utils/bloomApi";
 import { NoteBox } from "../../react_components/boxes";
 import { P } from "../../react_components/l10nComponents";
@@ -50,7 +49,7 @@ export const EPUBPublishScreen = () => {
     const defaultEpubModeRef = React.useRef("fixed");
     const [epubMode, setEpubmode] = useApiStringState(
         "publish/epub/epubMode",
-        defaultEpubModeRef.current
+        defaultEpubModeRef.current,
     );
 
     return (
@@ -75,7 +74,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
     showPreview: boolean;
     epubMode: string;
     setEpubMode: (mode: string) => void;
-}> = props => {
+}> = (props) => {
     const inStorybookMode = useContext(StorybookContext);
     const [closePending, setClosePending] = useState(false);
     const [highlightRefresh, setHighlightRefresh] = useState(false);
@@ -89,21 +88,20 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                   "//" +
                   window.location.host +
                   "/templates/Sample Shells/The Moon and the Cap" // Enhance: provide an actual epub in the source tree
-            : "" // otherwise, wait for the websocket to deliver a url when the c# has finished creating the epub
+            : "", // otherwise, wait for the websocket to deliver a url when the c# has finished creating the epub
     );
 
-    const [currentTaskApi, setCurrentTaskApi] = useState<string>(
-        kUpdatePreviewApi
-    );
+    const [currentTaskApi, setCurrentTaskApi] =
+        useState<string>(kUpdatePreviewApi);
 
     const [landscape] = useApiBoolean("publish/epub/landscape", false);
 
     useSubscribeToWebSocketForEvent(
         "publish-epub",
         "startingEbookCreation",
-        e => {
+        (e) => {
             setProgressState(ProgressState.Working);
-        }
+        },
     );
 
     // The c# api responds to changes of settings by auto-starting a new epub build. When
@@ -111,21 +109,21 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
     useSubscribeToWebSocketForStringMessage(
         "publish-epub",
         "newEpubReady",
-        url => {
+        (url) => {
             // add a random component so that react will reload the iframe
             setBookUrl(url + "&random=" + Math.random().toString());
             setClosePending(true);
             setHighlightRefresh(false);
-        }
+        },
     );
     const isLicenseOK = useWatchBooleanEvent(
         true,
         "publish-epub",
-        "publish/licenseOK"
+        "publish/licenseOK",
     );
     const [isPlaygroundBook, setIsPlaygroundBook] = useApiBoolean(
         "publish/isPlaygroundBook",
-        true
+        true,
     );
 
     const mainPanel = (
@@ -154,7 +152,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                             setPublishStarted(true);
                             setCurrentTaskApi("publish/epub/save");
                             setProgressDialogGeneration(
-                                oldValue => oldValue + 1
+                                (oldValue) => oldValue + 1,
                             );
                         }}
                         hasText={true}
@@ -255,7 +253,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
 
     const creatingHeading = useL10n(
         "Creating ePUB",
-        "PublishTab.Epub.Creating"
+        "PublishTab.Epub.Creating",
     );
 
     const onTaskComplete = React.useCallback(() => {

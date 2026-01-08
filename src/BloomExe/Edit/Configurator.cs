@@ -1,21 +1,21 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
-using Bloom.ToPalaso.Experimental;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.SafeXml;
+using Bloom.ToPalaso.Experimental;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SIL.Code;
 using SIL.Extensions;
-using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Xml;
-using Bloom.SafeXml;
 
 namespace Bloom.Edit
 {
@@ -82,19 +82,6 @@ namespace Bloom.Edit
             }
         }
 
-        public static void AddScriptFile(SafeXmlDocument doc, string src)
-        {
-            var head = doc.SelectSingleNode("//head") as SafeXmlElement;
-            if (
-                head.SelectSingleNode($"./script[@type='text/javascript' and @src='{src}']") != null
-            )
-                return; // already have it
-            var script = doc.CreateElement("script");
-            script.SetAttribute("src", src);
-            script.SetAttribute("type", "text/javascript");
-            head.AppendChild(script);
-        }
-
         public static void AddScriptText(SafeXmlDocument doc, string id, string text)
         {
             var head = doc.SelectSingleNode("//head") as SafeXmlElement;
@@ -124,10 +111,10 @@ namespace Bloom.Edit
         public static string SetupConfigurationHtml(string html, string settings)
         {
             var doc = XmlHtmlConverter.GetXmlDomFromHtml(html);
-            AddScriptFile(doc, "jquery-1.10.1.js");
-            AddScriptFile(doc, "form2object.js");
-            AddScriptFile(doc, "js2form.js");
-            AddScriptFile(doc, "underscore.js");
+            HtmlDom.AddScriptFile(doc, "jquery-1.10.1.js");
+            HtmlDom.AddScriptFile(doc, "form2object.js");
+            HtmlDom.AddScriptFile(doc, "js2form.js");
+            HtmlDom.AddScriptFile(doc, "underscore.js");
             AddScriptText(
                 doc,
                 "configuredScript",
@@ -276,7 +263,6 @@ namespace Bloom.Edit
         /// <param name="a"></param>
         /// <param name="b">b has priority</param>
         /// <returns></returns>
-
         private string MergeJsonData(string a, string b)
         {
             //NB: this has got to be the ugliest code I have written since HighSchool.  There are just all these weird bugs, missing functions, etc. in the

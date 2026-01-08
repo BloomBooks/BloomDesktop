@@ -30,7 +30,7 @@
 		{
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OpenAndCreateCollectionDialog));
-			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+			this._L10NSharpExtender = new L10NSharp.Windows.Forms.L10NSharpExtender(this.components);
 			this._openAndCreateControl = new Bloom.CollectionChoosing.OpenCreateCloneControl();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
@@ -84,7 +84,7 @@
 #endregion
 
         private OpenCreateCloneControl _openAndCreateControl;
-        private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
+        private L10NSharp.Windows.Forms.L10NSharpExtender _L10NSharpExtender;
 
 	}
 }

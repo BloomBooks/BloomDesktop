@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using Bloom.Book;
 using Bloom.Collection;
 using L10NSharp;
+using L10NSharp.Windows.Forms;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.Reporting;
@@ -29,7 +30,7 @@ namespace BloomTests.Book
                     ),
                     Language1Tag = "xyz",
                     Language2Tag = "en",
-                    Language3Tag = "fr"
+                    Language3Tag = "fr",
                 }
             );
             ErrorReport.IsOkToInteractWithUser = false;
@@ -37,8 +38,7 @@ namespace BloomTests.Book
             LocalizationManager.UseLanguageCodeFolders = true;
             var localizationDirectory =
                 FileLocationUtilities.GetDirectoryDistributedWithApplication("localization");
-            _localizationManager = LocalizationManager.Create(
-                TranslationMemory.XLiff,
+            _localizationManager = LocalizationManagerWinforms.Create(
                 "fr",
                 "Bloom",
                 "Bloom",
@@ -49,8 +49,7 @@ namespace BloomTests.Book
                 "",
                 new string[] { }
             );
-            _palasoLocalizationManager = LocalizationManager.Create(
-                TranslationMemory.XLiff,
+            _palasoLocalizationManager = LocalizationManagerWinforms.Create(
                 "fr",
                 "Palaso",
                 "Palaso",
@@ -83,7 +82,7 @@ namespace BloomTests.Book
         {
             string dataDivContent =
                 @"<div lang='en' data-book='licenseNotes'>my custom</div>
-					<div data-book='copyright' class='bloom-content1'>Copyright © 2012, test</div>";
+					<div data-book='copyright' lang='*' class='bloom-content1'>Copyright © 2012, test</div>";
             Assert.AreEqual("my custom", GetMetadata(dataDivContent).License.RightsStatement);
         }
 
@@ -92,7 +91,7 @@ namespace BloomTests.Book
         {
             string dataDivContent =
                 @"<div lang='en' data-book='licenseNotes'>my custom</div>
-					<div data-book='copyright' class='bloom-content1'>Copyright © 2012, test</div>";
+					<div data-book='copyright' lang='*' class='bloom-content1'>Copyright © 2012, test</div>";
             Assert.IsTrue(GetMetadata(dataDivContent).License is CustomLicense);
         }
 
@@ -133,7 +132,7 @@ namespace BloomTests.Book
             //nb: the real testing is done on the palaso class that does the reading, this is just a quick sanity check
             var dataDivContent =
                 @"<div lang='en' data-book='licenseDescription'>This could say anything</div>
-			<div data-book='copyright' class='bloom-content1'>Copyright © 2012, test</div>";
+			<div data-book='copyright' lang='*' class='bloom-content1'>Copyright © 2012, test</div>";
             Assert.IsTrue(GetMetadata(dataDivContent).License is NullLicense);
         }
 
@@ -141,7 +140,7 @@ namespace BloomTests.Book
         public void GetLicenseMetadata_HasSymbolInCopyright_FullCopyrightStatmentAcquired()
         {
             string dataDivContent =
-                @"<div data-book='copyright' class='bloom-content1'>Copyright © 2012, test</div>";
+                @"<div data-book='copyright' lang='*' class='bloom-content1'>Copyright © 2012, test</div>";
             Assert.AreEqual("Copyright © 2012, test", GetMetadata(dataDivContent).CopyrightNotice);
         }
 
@@ -245,10 +244,7 @@ namespace BloomTests.Book
             AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@data-book='licenseUrl']");
         }
 
-        [
-            Test,
-            Ignore("Enable once we have French CC License Localization") /*meanwhile, I have tested on my machine*/
-        ]
+        [Test]
         public void SetLicenseMetadata_CCLicenseWithFrenchNationalLanguage_DataDivHasFrenchDescription()
         {
             _collectionSettings.Language1Tag = "fr";
@@ -262,10 +258,10 @@ namespace BloomTests.Book
                         true,
                         true,
                         CreativeCommonsLicense.DerivativeRules.Derivatives
-                    )
+                    ),
                 },
                 startingDataDivContent: "",
-                xpath: "//*[@data-book='licenseDescription' and @lang='fr' and contains(text(),'Vous')]",
+                xpath: "//*[@data-book='licenseDescription' and @lang='fr' and contains(., 'création')]",
                 expectedCount: 1
             );
         }
@@ -281,7 +277,7 @@ namespace BloomTests.Book
                         true,
                         true,
                         CreativeCommonsLicense.DerivativeRules.Derivatives
-                    )
+                    ),
                 },
                 startingDataDivContent: "",
                 xpath: "//*[@data-book='licenseImage' and text()='license.png']",
@@ -321,7 +317,7 @@ namespace BloomTests.Book
                 new Metadata()
                 {
                     CopyrightNotice = "foo",
-                    License = new CustomLicense() { RightsStatement = "custom rights" }
+                    License = new CustomLicense() { RightsStatement = "custom rights" },
                 },
                 startingDataDivContent: "<div data-book='licenseDescription' lang='fr'>Some old French</div>",
                 xpath: "//*[@data-book='licenseDescription']",

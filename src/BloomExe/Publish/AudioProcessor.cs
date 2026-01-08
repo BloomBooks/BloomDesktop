@@ -98,8 +98,8 @@ namespace Bloom.Publish
         )
         {
             var audioFolderPath = GetAudioFolderPath(bookFolderPath);
-            return Book.HtmlDom
-                .SelectAudioSentenceElements(dom.DocumentElement)
+            return Book
+                .HtmlDom.SelectAudioSentenceElements(dom.DocumentElement)
                 .Cast<SafeXmlElement>()
                 .All(span =>
                 {
@@ -262,10 +262,9 @@ namespace Bloom.Publish
             if (matches.Count > 0)
             {
                 var countMp3 = mergeFileSpecs
-                    .Where(
-                        s =>
-                            s == "converted"
-                            || Regex.IsMatch(s, "Audio: mp3, [0-9]+ Hz, [^,]+, [^,]*, [0-9]+ kb/s")
+                    .Where(s =>
+                        s == "converted"
+                        || Regex.IsMatch(s, "Audio: mp3, [0-9]+ Hz, [^,]+, [^,]*, [0-9]+ kb/s")
                     )
                     .Count();
                 if (countMp3 != mergeFiles.Count() || matches.Count > mergeFiles.Count())

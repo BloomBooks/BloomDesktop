@@ -1,10 +1,10 @@
 import * as React from "react";
 import PlaybackOrderControls from "../playbackOrderControls";
 
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react-vite";
 
 const meta: Meta = {
-    title: "PlaybackOrderControls"
+    title: "PlaybackOrderControls",
 };
 
 export default meta;
@@ -15,18 +15,18 @@ const playbackControlsDivStyles: React.CSSProperties = {
     height: "80px",
     border: "1px solid red",
     display: "flex",
-    justifyContent: "center"
+    justifyContent: "center",
 };
 
 const bumpUp = (whichPositionToBump: number): void => {
     console.log(
-        `Bump up myOrderNum from ${whichPositionToBump} to ${++whichPositionToBump}`
+        `Bump up myOrderNum from ${whichPositionToBump} to ${++whichPositionToBump}`,
     );
 };
 
 const bumpDown = (whichPositionToBump: number): void => {
     console.log(
-        `Bump down myOrderNum from ${whichPositionToBump} to ${--whichPositionToBump}`
+        `Bump down myOrderNum from ${whichPositionToBump} to ${--whichPositionToBump}`,
     );
 };
 
@@ -59,5 +59,5 @@ export const PlaybackOrderButtonsStory: Story = {
                 />
             </div>
         </>
-    )
+    ),
 };

@@ -6,6 +6,7 @@ output/
 .svn/
 bin/
 obj/
+vite/
 userProject
 templates/A4LandscapeBooklet/starter.pdf
 src/_ReSharper.Bloom/
@@ -68,6 +69,7 @@ lib/dotnet/Palaso*.*
 lib/dotnet/Chorus*.*
 lib/lame/*
 lib/gm/*
+lib/ffmpeg/*
 lib/FirefoxDependencies/*
 lib/RedistributableDlls/*
 DistFiles/exiftool.exe
@@ -117,6 +119,9 @@ Andika-R.ttf
 .vs/Bloom/v17/*
 # The ** doesn't do anything unless you specifically unexclude the subdirectories
 !.vs/**/csharpier.json
+
+# These files are installed from a nuget package, no longer under source control
+DistFiles/**/Palaso.xlf
 
 build/Bloom*.nupkg
 src/BloomBrowserUI/filesToFix.lst
@@ -188,6 +193,9 @@ src/content/.yarn/*
 !src/content/.yarn/sdks
 !src/content/.yarn/versions
 
-.vite/vitest/results.json
-
 .github/copilot-instructions.md
+
+src/BloomBrowserUI/react_components/component-tester/test-results/
+
+src/BloomBrowserUI/test-results/
+critiqueAI.json

@@ -1,6 +1,11 @@
 "use strict";
 /// <reference path="localizationManager.ts" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
+import { describe, it, expect, vi } from "vitest";
+
+// Unmock localizationManager when testing it
+vi.unmock("./localizationManager");
+
 import theOneLocalizationManager from "./localizationManager";
 
 describe("localizationManager", () => {
@@ -20,35 +25,35 @@ describe("localizationManager", () => {
             }); */
 
     it("processSimpleMarkdown works properly", () => {
-        const result1 = theOneLocalizationManager.processSimpleMarkdown(
-            "This is a test."
-        );
+        const result1 =
+            theOneLocalizationManager.processSimpleMarkdown("This is a test.");
         expect(result1).toBe("This is a test.");
 
         const result2 = theOneLocalizationManager.processSimpleMarkdown(
-            "This is a **test**."
+            "This is a **test**.",
         );
         expect(result2).toBe("This is a <strong>test</strong>.");
 
-        const result3 = theOneLocalizationManager.processSimpleMarkdown(
-            "This is a *test*."
-        );
+        const result3 =
+            theOneLocalizationManager.processSimpleMarkdown(
+                "This is a *test*.",
+            );
         expect(result3).toBe("This is a <em>test</em>.");
 
         const result4 = theOneLocalizationManager.processSimpleMarkdown(
-            "This is a [test](https://sil.org)."
+            "This is a [test](https://sil.org).",
         );
         expect(result4).toBe('This is a <a href="https://sil.org">test</a>.');
 
         const result5 = theOneLocalizationManager.processSimpleMarkdown(
-            "*This* is a **more** complex [test](https://wherever.com)**!!**"
+            "*This* is a **more** complex [test](https://wherever.com)**!!**",
         );
         expect(result5).toBe(
-            '<em>This</em> is a <strong>more</strong> complex <a href="https://wherever.com">test</a><strong>!!</strong>'
+            '<em>This</em> is a <strong>more</strong> complex <a href="https://wherever.com">test</a><strong>!!</strong>',
         );
 
         const result6 = theOneLocalizationManager.processSimpleMarkdown(
-            "This is a [**] test (*)."
+            "This is a [**] test (*).",
         );
         expect(result6).toBe("This is a [**] test (*).");
     });
@@ -56,21 +61,21 @@ describe("localizationManager", () => {
     it("simpleFormat replaces %0 and %1 with l10nParams", () => {
         const result = theOneLocalizationManager.simpleFormat(
             "%1 likes %0, but %0 does not like %1",
-            ["Jack", "Jill"]
+            ["Jack", "Jill"],
         );
         expect(result).toBe("Jill likes Jack, but Jack does not like Jill");
     });
     it("simpleFormat replaces {0} and {1} with l10nParams", () => {
         const result = theOneLocalizationManager.simpleFormat(
             "{1} likes {0}, but {0} does not like {1}",
-            ["Jack", "Jill"]
+            ["Jack", "Jill"],
         );
         expect(result).toBe("Jill likes Jack, but Jack does not like Jill");
     });
     it("simpleFormat does not replace missing params", () => {
         const result = theOneLocalizationManager.simpleFormat(
             "{1} likes {0}, but {7} does not like %8",
-            ["Jack", undefined]
+            ["Jack", undefined],
         );
         expect(result).toBe("{1} likes Jack, but {7} does not like %8");
     });
@@ -78,7 +83,7 @@ describe("localizationManager", () => {
     it("simpleFormat can insert empty string", () => {
         const result = theOneLocalizationManager.simpleFormat(
             "the translation of '{0}' is '{1}'",
-            ["Jack", ""]
+            ["Jack", ""],
         );
         expect(result).toBe("the translation of 'Jack' is ''");
     });

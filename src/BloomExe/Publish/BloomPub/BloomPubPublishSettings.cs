@@ -164,7 +164,7 @@ namespace Bloom.Publish.BloomPub
                     .PublishSettings
                     .BloomPub
                     .PublishAsMotionBookIfApplicable,
-                ImagePublishSettings = bookInfo.PublishSettings.BloomPub.ImageSettings
+                ImagePublishSettings = bookInfo.PublishSettings.BloomPub.ImageSettings,
             };
         }
 

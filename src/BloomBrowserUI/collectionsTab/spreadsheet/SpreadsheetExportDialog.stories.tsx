@@ -1,9 +1,8 @@
-import * as React from "react";
 import { SpreadsheetExportDialogLauncher } from "./SpreadsheetExportDialog";
 import { StorybookDialogWrapper } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 
 export default {
-    title: "Spreadsheet Export Dialog"
+    title: "Spreadsheet Export Dialog",
 };
 
 export const Default = () => (

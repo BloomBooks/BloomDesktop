@@ -3,13 +3,15 @@ import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import {
     beginInitializeLeveledReaderTool,
     createToggle,
-    isToggleOff
+    isToggleOff,
 } from "../readerTools";
 import { ITool } from "../../toolbox";
 import { get } from "../../../../utils/bloomApi";
 
 export class LeveledReaderToolboxTool implements ITool {
-    imageUpdated(img: HTMLImageElement | undefined): void {}
+    imageUpdated(img: HTMLImageElement | undefined): void {
+        // No action needed for this tool
+    }
     public makeRootElement(): HTMLDivElement {
         throw new Error("Method not implemented.");
     }
@@ -25,13 +27,13 @@ export class LeveledReaderToolboxTool implements ITool {
                 // happens when you CHANGE the level in the toolbox.
                 getTheOneReaderToolsModel().setLevelNumber(
                     parseInt(opts["leveledReaderState"], 10),
-                    true
+                    true,
                 );
             } else {
-                get("readers/io/defaultLevel", result => {
+                get("readers/io/defaultLevel", (result) => {
                     // Presumably a brand new book. We'd better save the settings we come up with in it.
                     getTheOneReaderToolsModel().setLevelNumber(
-                        parseInt(result.data, 10)
+                        parseInt(result.data, 10),
                     );
                 });
             }
@@ -76,7 +78,7 @@ export class LeveledReaderToolboxTool implements ITool {
         // So we do want to set the appropriate markup, but if the toggle is off, we want the markup off.
         const isForLeveled = true;
         getTheOneReaderToolsModel().setMarkupType(
-            isToggleOff(isForLeveled) ? 0 : 2
+            isToggleOff(isForLeveled) ? 0 : 2,
         );
         // usually updateMarkup will do this, unless we are coming from showTool
         getTheOneReaderToolsModel().doMarkup();

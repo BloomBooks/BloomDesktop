@@ -1,11 +1,11 @@
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Bloom.Book;
 using Bloom.Spreadsheet;
-using NUnit.Framework;
-using System.Collections.Generic;
-using System.Linq;
-using System.IO;
 using BloomTemp;
 using Moq;
+using NUnit.Framework;
 
 namespace BloomTests.Spreadsheet
 {
@@ -188,8 +188,8 @@ namespace BloomTests.Spreadsheet
         {
             SetupFor(source);
             var starLangCol = _sheet.GetRequiredColumnForLang("*");
-            var styleNumberSequenceRow = _rows.Find(
-                x => x.MetadataKey.Equals("[style number sequence]")
+            var styleNumberSequenceRow = _rows.Find(x =>
+                x.MetadataKey.Equals("[style number sequence]")
             );
             Assert.That(styleNumberSequenceRow, Is.Not.Null);
             Assert.That(styleNumberSequenceRow.GetCell(starLangCol).Content, Is.EqualTo("0"));
@@ -200,8 +200,8 @@ namespace BloomTests.Spreadsheet
         public void MultilingualXmatterTest(string source)
         {
             SetupFor(source);
-            var contentLangRow = _rows.Find(
-                x => x.MetadataKey.Equals(InternalSpreadsheet.BookTitleRowLabel)
+            var contentLangRow = _rows.Find(x =>
+                x.MetadataKey.Equals(InternalSpreadsheet.BookTitleRowLabel)
             );
             Assert.That(contentLangRow, Is.Not.Null);
             Assert.That(
@@ -238,8 +238,8 @@ namespace BloomTests.Spreadsheet
             SetupFor(source);
             var imageSourceCol = _sheet.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
 
-            var coverImageRow = _rows.Find(
-                x => x.MetadataKey.Equals(InternalSpreadsheet.CoverImageRowLabel)
+            var coverImageRow = _rows.Find(x =>
+                x.MetadataKey.Equals(InternalSpreadsheet.CoverImageRowLabel)
             );
             Assert.That(coverImageRow, Is.Not.Null);
             Assert.That(
@@ -250,8 +250,8 @@ namespace BloomTests.Spreadsheet
             var licenseImageRow = _rows.Find(x => x.MetadataKey.Equals("[licenseImage]"));
             Assert.That(licenseImageRow, Is.Null);
 
-            var backImageRow = _rows.Find(
-                x => x.MetadataKey.Equals("[outside-back-cover-bottom-html]")
+            var backImageRow = _rows.Find(x =>
+                x.MetadataKey.Equals("[outside-back-cover-bottom-html]")
             );
             Assert.That(backImageRow, Is.Not.Null);
             Assert.That(
@@ -279,7 +279,7 @@ namespace BloomTests.Spreadsheet
                     new string[]
                     {
                         InternalSpreadsheet.BookTitleRowLabel,
-                        InternalSpreadsheet.CoverImageRowLabel
+                        InternalSpreadsheet.CoverImageRowLabel,
                     }.Contains(row.MetadataKey)
                 )
                     Assert.That(row.Hidden, Is.False);

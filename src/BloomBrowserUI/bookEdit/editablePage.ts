@@ -1,15 +1,18 @@
 /// <reference path="../typings/bundledFromTSC.d.ts" />
 /// <reference path="../typings/jquery.i18n.custom.d.ts" />
-/// <reference path="../lib/jquery.i18n.custom.ts" />
+// This is the root script for the editable page iframe, which gets transpiled into editablePageBundle.js.
 
-import * as $ from "jquery";
+// Note that code in this bundle depends on ckeditor.js also being loaded.
+// Currently that is done using a regular script tag in the HTML, not via an import here.
+
+import $ from "jquery";
 import { bootstrap } from "./js/bloomEditing";
 import { EditableDivUtils } from "./js/editableDivUtils";
-import "../lib/jquery.i18n.custom"; //localize()
+import "../lib/jquery.i18n.custom"; // side-effect: adds .localize() to $.fn (kept via sideEffects allow-list)
 import "errorHandler";
 import {
     theOneCanvasElementManager,
-    CanvasElementManager
+    CanvasElementManager,
 } from "./js/CanvasElementManager";
 import { renderDragActivityTabControl } from "./toolbox/games/DragActivityTabControl";
 
@@ -20,7 +23,7 @@ function getPageId(): string {
         // to its parent, so we won't see it, and the loading code will be frozen waiting for
         // a response to the alert. Hopefully the error will show up somewhere.
         throw new Error(
-            "Could not find the div.bloom-page; this often means editablePage.ts is being compiled into a bundle where it does not belong"
+            "Could not find the div.bloom-page; this often means editablePage.ts is being compiled into a bundle where it does not belong",
         );
     }
     return page.getAttribute("id")!;
@@ -52,7 +55,7 @@ export interface IPageFrameExports {
         html: string,
         parent?: JQuery,
         resizableArgs?,
-        draggableArgs?
+        draggableArgs?,
     ): JQuery;
     SetupElements(container: HTMLElement): void;
     attachToCkEditor(element: any): void;
@@ -77,6 +80,7 @@ import {
     requestPageContent,
     userStylesheetContent,
     pageUnloading,
+    topBarButtonClick,
     copySelection,
     cutSelection,
     pasteClipboard,
@@ -84,7 +88,7 @@ import {
     SetupElements,
     attachToCkEditor,
     removeImageId,
-    changeImage
+    changeImage,
 } from "./js/bloomEditing";
 import { showGamePromptDialog } from "./toolbox/games/GameTool";
 export {
@@ -92,6 +96,7 @@ export {
     requestPageContent,
     userStylesheetContent,
     pageUnloading,
+    topBarButtonClick,
     copySelection,
     cutSelection,
     pasteClipboard,
@@ -102,7 +107,7 @@ export {
     changeImage,
     renderDragActivityTabControl,
     getTheOneCanvasElementManager,
-    showGamePromptDialog
+    showGamePromptDialog,
 };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
 import { postString } from "../utils/bloomApi";
@@ -123,7 +128,7 @@ const styleSheets = [
     "lib/long-press/longpress.css",
     "bookEdit/toolbox/talkingBook/audioRecording.css",
     "react_components/playbackOrderControls.css",
-    "bookEdit/css/legacyQuizEditing.css"
+    "bookEdit/css/legacyQuizEditing.css",
 ];
 
 function getTheOneCanvasElementManager(): CanvasElementManager {
@@ -157,11 +162,18 @@ export function ckeditorUndo() {
 }
 
 for (let j = 0; j < styleSheets.length; j++) {
-    document.write(
-        '<link rel="stylesheet" type="text/css" href="/bloom/' +
-            styleSheets[j] +
-            '">'
-    );
+    // This doesn't work any more because we are now loading this code as a module,
+    // which means it is loaded after the document is parsed.
+    // document.write(
+    //     '<link rel="stylesheet" type="text/css" href="/bloom/' +
+    //         styleSheets[j] +
+    //         '">',
+    // );
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.type = "text/css";
+    link.href = "/bloom/" + styleSheets[j];
+    document.head.appendChild(link);
 }
 
 // TODO: move script stuff out of book.AddJavaScriptForEditing() and into here:
@@ -181,9 +193,7 @@ window["PasteImageCredits"] = () => {
 };
 
 $(document).ready(() => {
-    $("body")
-        .find("*[data-i18n]")
-        .localize();
+    $("body").find("*[data-i18n]").localize();
     bootstrap();
 
     // If the user clicks outside of the page thumbnail context menu, we want to close it.
@@ -192,10 +202,66 @@ $(document).ready(() => {
     // Note that to receive this, the c# code must be listening on this iframe.
     // We can remove this in 5.6, or whenever we replace the winforms context menu with a react menu.
     $(window).click(() => {
-        (window as any).chrome.webview.postMessage("browser-clicked");
+        (window as any).chrome?.webview?.postMessage("browser-clicked");
     });
 });
 
 export function SayHello() {
     alert("hello from editable page frame.");
 }
+
+// Legacy global exposure: mimic old webpack window["editablePageBundle"] contract used by other iframes / C#
+// NOTE: Keep this as a minimal curated surface: only expose functions intentionally callable cross-frame.
+interface EditablePageBundleApi {
+    requestPageContent: typeof requestPageContent;
+    getBodyContentForSavePage: typeof getBodyContentForSavePage;
+    userStylesheetContent: typeof userStylesheetContent;
+    pageUnloading: typeof pageUnloading;
+    copySelection: typeof copySelection;
+    cutSelection: typeof cutSelection;
+    pasteClipboard: typeof pasteClipboard;
+    topBarButtonClick: typeof topBarButtonClick;
+    makeElement: typeof makeElement;
+    SetupElements: typeof SetupElements;
+    attachToCkEditor: typeof attachToCkEditor;
+    removeImageId: typeof removeImageId;
+    changeImage: typeof changeImage;
+    origamiCanUndo: typeof origamiCanUndo;
+    origamiUndo: typeof origamiUndo;
+    getTheOneCanvasElementManager: typeof getTheOneCanvasElementManager;
+    ckeditorCanUndo: typeof ckeditorCanUndo;
+    ckeditorUndo: typeof ckeditorUndo;
+    SayHello: typeof SayHello;
+    renderDragActivityTabControl: typeof renderDragActivityTabControl;
+    showGamePromptDialog: typeof showGamePromptDialog;
+}
+
+declare global {
+    interface Window {
+        editablePageBundle: EditablePageBundleApi;
+    }
+}
+
+window.editablePageBundle = {
+    requestPageContent,
+    getBodyContentForSavePage,
+    userStylesheetContent,
+    pageUnloading,
+    copySelection,
+    cutSelection,
+    pasteClipboard,
+    topBarButtonClick,
+    makeElement,
+    SetupElements,
+    attachToCkEditor,
+    removeImageId,
+    changeImage,
+    origamiCanUndo,
+    origamiUndo,
+    getTheOneCanvasElementManager,
+    ckeditorCanUndo,
+    ckeditorUndo,
+    SayHello,
+    renderDragActivityTabControl,
+    showGamePromptDialog,
+};

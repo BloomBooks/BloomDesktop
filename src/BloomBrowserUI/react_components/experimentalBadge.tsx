@@ -1,9 +1,8 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { kBloomDarkTextOverWarning, kBloomWarning } from "../utils/colorUtils";
 
-export const ExperimentalBadge: React.FunctionComponent = props => {
+export const ExperimentalBadge: React.FunctionComponent = (props) => {
     return (
         <div
             className={"avatar " + props["className"]}

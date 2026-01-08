@@ -1,9 +1,22 @@
 @import (reference) "../../BloomBrowserUI/bloomUI.less";
+@import "./navigationButtonsAndGrid.less";
 @MinTextBoxWidth: 30px;
 @MinTextBoxHeight: 30px;
 @DefaultTextBoxWidth: 140px;
 @DefaultTextBoxHeight: @MinTextBoxHeight;
 @DragHandleBackgroundColor: transparent;
+
+// This file contains styles for elements that go on a bloom-canvas, that is, bloom-canvas itself
+// and bloom-canvas-elements that can represent text boxes, images, videos, buttons, etc. that
+// the user can position arbitrarily on the canvas.
+// Css that only applies in edit mode should go in editMode.less.
+// (We could make books very slightly smaller by putting these styles in a file that ships with
+// bloom-player, but instead we have chosen to keep all the CSS needed for the appearance of a
+// book as part of the book. This often allows new book features to work in bloom-player without
+// needing to update bloom-player, and means that older books just come with the styles they need
+// rather than requiring bloom-player to update them or have styles that cover all possible old
+// states of a book. Bloom-player only has CSS for its own controls and things that are specific
+// to its own function, like scaling the book to fit the window.)
 
 .bloom-canvas.ui-ctrlDown .bloom-canvas-element .ui-resizable-handle {
     display: none !important;
@@ -87,6 +100,8 @@
 
     .bloom-canvas-element {
         position: absolute;
+        // usually overwritten by inline style by the time we finish adding the element,
+        // but provides an initial width when not overridden.
         width: @DefaultTextBoxWidth;
         min-width: @MinTextBoxWidth;
         min-height: @MinTextBoxHeight;
@@ -123,7 +138,9 @@
             }
 
             // Language tip CSS
-            .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]) {
+            .bloom-editable[contentEditable="true"][data-languageTipContent]:not(
+                    [data-languageTipContent=""]
+                ) {
                 &:after {
                     // In editMode.less, it sets the "content" property for all text boxes (which normally always have the language tip visible).
                     // But here in text over picture, we want to default to not having the language tip visible.
@@ -235,8 +252,12 @@
     // 3) But if the text overflows the box, we don't want to center it, because that would make the top
     // and bottom of the text to disappear. So we exclude any box that has text overflow marked.  (Scrolling
     // doesn't work when the contents are forcibly centered.)  See BL-13606 (and BL-12750).
-    .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"]):not(:has(.overflow)),
-    .bloom-canvas-element[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]):not(:has(.overflow)) {
+    .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"]):not(
+            :has(.overflow)
+        ),
+    .bloom-canvas-element[data-bubble*="backgroundColors"]:not(
+            [data-bubble*="`backgroundColors`:[`transparent`]"]
+        ):not(:has(.overflow)) {
         // Center the translationGroup within the textOverPic box,
         // instead of having the 2 px difference all at the bottom.
         display: flex;
@@ -307,4 +328,76 @@
     box-sizing: border-box;
     height: 100%;
     width: 100%;
+}
+
+// When the bloom-canvas-element is a bloom-canvas-button with both image and text,
+// we want the image-container to fill any space not taken up by the text, and the image
+// to scale to fit that space.
+.bloom-canvas-element.bloom-canvas-button .bloom-imageContainer {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    // In this situation, if the image container has a translation group after it,
+    // we want the image to align to the top of the container, leaving any extra space
+    // between the image and the text.
+    &:has(+ .bloom-translationGroup) {
+        img {
+            align-self: flex-start;
+        }
+    }
+
+    img,
+    video {
+        max-width: 100%;
+        max-height: 100%;
+        height: auto;
+        width: auto;
+    }
+}
+
+.bloom-page .bloom-canvas-button {
+    display: inline-flex;
+    // for when it has both image and text
+    flex-direction: column;
+    align-items: center;
+    // when there are two items, we want extra space in the middle.
+    // In a row of buttons, this helps keep the tops and bottoms aligned.
+    justify-content: space-between;
+    padding: 0.6em;
+    border-radius: 8px;
+    border: solid 2px #ffffff;
+    background: transparent;
+    // GPT-5-Codex thinks this make it look like a typical button
+    box-shadow:
+        0 1px 1px rgba(0, 0, 0, 0.12),
+        0 2px 4px rgba(0, 0, 0, 0.14),
+        0 4px 8px rgba(0, 0, 0, 0.08);
+    font-family: inherit;
+    cursor: pointer;
+    box-sizing: border-box;
+    background-color: white; // eventually theme? or allow user to set directly?
+
+    &:has(> :only-child) {
+        // With only one element, center it vertically to mimic a typical text button
+        // (image-only would I think be centered anyway)
+        justify-content: center;
+    }
+}
+
+.bloom-page .bloom-canvas-button:hover {
+    // I think this was AI-generated...might want at runtime? but makes editing hard.
+    //background: #19818f;
+    box-shadow:
+        0 2px 2px rgba(0, 0, 0, 0.14),
+        0 4px 6px rgba(0, 0, 0, 0.16),
+        0 8px 12px rgba(0, 0, 0, 0.1);
+}
+
+.bloom-page .bloom-canvas-button:active {
+    background: #176f7a;
+    box-shadow:
+        0 1px 0 rgba(0, 0, 0, 0.18),
+        0 2px 4px rgba(0, 0, 0, 0.2);
 }

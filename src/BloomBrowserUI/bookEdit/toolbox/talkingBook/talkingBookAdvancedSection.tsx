@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css, ThemeProvider } from "@emotion/react";
+import { css, ThemeProvider } from "@emotion/react";
 import * as React from "react";
 import BloomButton from "../../../react_components/bloomButton";
 import { ImportIcon, InsertSegmentMarkerIcon } from "./TalkingBookToolboxIcons";
@@ -31,12 +30,12 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
 
     showingImageDescriptions: boolean;
     setShowingImageDescriptions: (isOn: boolean) => void;
-}> = props => {
+}> = (props) => {
     // return a triangle button. Its children are normally hidden. When you click it, it rotates and shows its children.
 
     const wholeTextBoxAudioFeatureStatus = useGetFeatureStatus(
         "WholeTextBoxAudio",
-        false
+        false,
     );
     const enabledImportRecordingButton =
         props.recordingMode === RecordingMode.TextBox &&
@@ -45,7 +44,7 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
     // The toolbox is currently its own iframe, so we can't spill out to the left yet.
     // Unfortunately, we can't spill out the bottom without bad side effects either (BL-12366), so we go topside.
     const commonTooltipProps = {
-        placement: "top-start" as TooltipProps["placement"]
+        placement: "top-start" as TooltipProps["placement"],
     };
 
     // Originally, this string was just the first part without the final sentence. When we added the final sentence,
@@ -54,12 +53,12 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
     const insertSegmentMarkerTooltipText =
         useL10n(
             `Click this to insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.`,
-            "EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip"
+            "EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip",
         ) +
         " " +
         useL10n(
             `Bloom will hide these when you publish.`,
-            "EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTipAddition"
+            "EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTipAddition",
         );
 
     return (
@@ -75,14 +74,14 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                     showDisabled={!props.hasRecordableDivs}
                     tipWhenDisabled={{
                         l10nKey:
-                            "EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip"
+                            "EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip",
                     }}
                     {...commonTooltipProps}
                 >
                     <BloomButton
                         id="insert-segment-marker-button"
                         iconBeforeText={React.createElement(
-                            InsertSegmentMarkerIcon
+                            InsertSegmentMarkerIcon,
                         )}
                         hasText={true}
                         variant="outlined"
@@ -98,7 +97,7 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                     tipWhenDisabled={
                         (!props.hasRecordableDivs && {
                             l10nKey:
-                                "EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip"
+                                "EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip",
                         }) ||
                         ""
                     }
@@ -116,19 +115,19 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                     <RadioGroup
                         value={props.recordingMode}
                         onChange={(
-                            event: React.ChangeEvent<HTMLInputElement>
+                            event: React.ChangeEvent<HTMLInputElement>,
                         ) =>
                             props.setRecordingMode(
                                 RecordingMode[
                                     (event.target as HTMLInputElement).value
-                                ]
+                                ],
                             )
                         }
                     >
                         <BloomTooltip
                             tip={{
                                 l10nKey:
-                                    "EditTab.Toolbox.TalkingBookTool.RecordingModeSentenceTip"
+                                    "EditTab.Toolbox.TalkingBookTool.RecordingModeSentenceTip",
                             }}
                             showDisabled={
                                 !props.hasRecordableDivs ||
@@ -136,7 +135,7 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                                 props.hasAudio
                             }
                             tipWhenDisabled={{
-                                l10nKey: `EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip`
+                                l10nKey: `EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip`,
                             }}
                             {...commonTooltipProps}
                         >
@@ -156,7 +155,7 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                             showDisabled={!props.hasRecordableDivs}
                             tip={{
                                 l10nKey:
-                                    "EditTab.Toolbox.TalkingBookTool.RecordingModeTextBoxTip"
+                                    "EditTab.Toolbox.TalkingBookTool.RecordingModeTextBoxTip",
                             }}
                             {...commonTooltipProps}
                         >
@@ -183,11 +182,11 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                         showDisabled={!enabledImportRecordingButton}
                         tip={{
                             l10nKey:
-                                "EditTab.Toolbox.TalkingBookTool.ImportRecordingTip"
+                                "EditTab.Toolbox.TalkingBookTool.ImportRecordingTip",
                         }}
                         tipWhenDisabled={{
                             l10nKey:
-                                "EditTab.Toolbox.TalkingBookTool.ImportRecordingDisabledTip"
+                                "EditTab.Toolbox.TalkingBookTool.ImportRecordingDisabledTip",
                         }}
                         {...commonTooltipProps}
                     >
@@ -210,7 +209,7 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                     `}
                     tip={{
                         l10nKey:
-                            "EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrderTip"
+                            "EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrderTip",
                     }}
                     {...commonTooltipProps}
                 >
@@ -220,7 +219,7 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                         checked={props.inShowPlaybackOrderMode}
                         onChange={() =>
                             props.setShowPlaybackOrder(
-                                !props.inShowPlaybackOrderMode
+                                !props.inShowPlaybackOrderMode,
                             )
                         }
                         l10nKey="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder"
@@ -232,7 +231,7 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                     checked={props.showingImageDescriptions}
                     onChange={() =>
                         props.setShowingImageDescriptions(
-                            !props.showingImageDescriptions
+                            !props.showingImageDescriptions,
                         )
                     }
                     highlightWhenChecked={true}

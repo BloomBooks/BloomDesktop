@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Bloom;
-using Bloom.Book;
 using Bloom.Publish;
 using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
 using NUnit.Framework;
-using SIL.IO;
-using SIL.TestUtilities;
 
 namespace BloomTests.Publish
 {
@@ -54,19 +48,6 @@ namespace BloomTests.Publish
             _helper = null;
         }
 
-        [TestCase("width", "width: 1433.16px; top: -146.703px; left: -706.162px;", 1433.16)]
-        [TestCase("top", "width: 1433.16px; top: -146.703px; left: -706.162px;", -146.703)]
-        [TestCase("left", "width: 1433.16px; top: -146.703px; left: -706.162px;", -706.162)]
-        [TestCase("left", "some silly nonsence", 0)]
-        [TestCase("left", "width: 20", 0)]
-        public void GetNumberFromPx(string label, string input, double expected)
-        {
-            Assert.That(
-                Math.Abs(expected - PublishHelper.GetNumberFromPx(label, input)),
-                Is.LessThan(0.001)
-            );
-        }
-
         private string _htmlCoverPage =
             @"
 <div class=""bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover side-right Device16x9Landscape"" data-page=""required singleton"" data-export=""front-matter-cover"" data-xmatter-page=""frontCover"" id=""adff8e4d-d01d-45bb-8325-9b5e28f980a5"" lang=""tpi"" data-page-number="""">
@@ -100,13 +81,13 @@ namespace BloomTests.Publish
             {
                 fontFamily = "ABeeZee",
                 fontStyle = "normal",
-                fontWeight = "700"
+                fontWeight = "700",
             };
             var secondFont = new PublishHelper.FontInfo
             {
                 fontFamily = "Aileron",
                 fontStyle = "normal",
-                fontWeight = "700"
+                fontWeight = "700",
             };
             Assert.That(_helper.FontsUsed.Contains(firstFont), Is.True);
             Assert.That(_helper.FontsUsed.Contains(secondFont), Is.True);
@@ -125,7 +106,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -137,7 +118,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "normal",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.True
@@ -149,7 +130,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "italic",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -161,7 +142,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "italic",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -173,7 +154,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -185,7 +166,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "normal",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.True
@@ -197,7 +178,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "italic",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -209,7 +190,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "italic",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -221,7 +202,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -233,7 +214,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "normal",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -245,7 +226,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "italic",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -257,7 +238,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "italic",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -297,25 +278,25 @@ namespace BloomTests.Publish
             {
                 fontFamily = "ABeeZee",
                 fontStyle = "normal",
-                fontWeight = "400"
+                fontWeight = "400",
             };
             var secondFont = new PublishHelper.FontInfo
             {
                 fontFamily = "Aileron",
                 fontStyle = "normal",
-                fontWeight = "400"
+                fontWeight = "400",
             };
             var thirdFont = new PublishHelper.FontInfo
             {
                 fontFamily = "Andika",
                 fontStyle = "italic",
-                fontWeight = "400"
+                fontWeight = "400",
             };
             var fourthFont = new PublishHelper.FontInfo
             {
                 fontFamily = "Andika",
                 fontStyle = "normal",
-                fontWeight = "400"
+                fontWeight = "400",
             };
             Assert.That(_helper.FontsUsed.Contains(firstFont), Is.True);
             Assert.That(_helper.FontsUsed.Contains(secondFont), Is.True);
@@ -336,7 +317,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.True
@@ -348,7 +329,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "normal",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -360,7 +341,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "italic",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -372,7 +353,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "italic",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -384,7 +365,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.True
@@ -396,7 +377,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "normal",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -408,7 +389,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "italic",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -420,7 +401,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "italic",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -432,7 +413,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -444,7 +425,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "normal",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -456,7 +437,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "italic",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.True
@@ -468,7 +449,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "italic",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -564,7 +545,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -576,7 +557,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "normal",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -588,7 +569,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "italic",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -600,7 +581,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "ABeeZee",
                         fontStyle = "italic",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -612,7 +593,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -624,7 +605,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "normal",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -636,7 +617,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "italic",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -648,7 +629,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Aileron",
                         fontStyle = "italic",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -660,7 +641,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "normal",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -672,7 +653,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "normal",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -684,7 +665,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "italic",
-                        fontWeight = "400"
+                        fontWeight = "400",
                     }
                 ),
                 Is.False
@@ -696,7 +677,7 @@ namespace BloomTests.Publish
                     {
                         fontFamily = "Andika",
                         fontStyle = "italic",
-                        fontWeight = "700"
+                        fontWeight = "700",
                     }
                 ),
                 Is.False
@@ -722,7 +703,7 @@ namespace BloomTests.Publish
                     fontFamily =
                         "Andika, \"Andika New Basic\", \"Andika Basic\", \"Gentium Basic\", \"Gentium Book Basic\", \"Doulos SIL\", sans-serif'",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -732,7 +713,7 @@ namespace BloomTests.Publish
                     fontFamily =
                         "Andika, \"Andika New Basic\", \"Andika Basic\", \"Gentium Basic\", \"Gentium Book Basic\", \"Doulos SIL\", sans-serif'",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -742,7 +723,7 @@ namespace BloomTests.Publish
                     fontFamily =
                         "Andika, \"Andika New Basic\", \"Andika Basic\", \"Gentium Basic\", \"Gentium Book Basic\", \"Doulos SIL\", sans-serif'",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -751,7 +732,7 @@ namespace BloomTests.Publish
                 {
                     fontFamily = "ABeeZee",
                     fontStyle = "normal",
-                    fontWeight = "700"
+                    fontWeight = "700",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -760,7 +741,7 @@ namespace BloomTests.Publish
                 {
                     fontFamily = "ABeeZee",
                     fontStyle = "normal",
-                    fontWeight = "700"
+                    fontWeight = "700",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -769,7 +750,7 @@ namespace BloomTests.Publish
                 {
                     fontFamily = "Aileron",
                     fontStyle = "normal",
-                    fontWeight = "700"
+                    fontWeight = "700",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -778,7 +759,7 @@ namespace BloomTests.Publish
                 {
                     fontFamily = "Andika",
                     fontStyle = "normal",
-                    fontWeight = "700"
+                    fontWeight = "700",
                 }
             );
 
@@ -795,7 +776,7 @@ namespace BloomTests.Publish
                     fontFamily =
                         "Andika, \"Andika New Basic\", \"Andika Basic\", \"Gentium Basic\", \"Gentium Book Basic\", \"Doulos SIL\", sans-serif'",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -805,7 +786,7 @@ namespace BloomTests.Publish
                     fontFamily =
                         "Andika, \"Andika New Basic\", \"Andika Basic\", \"Gentium Basic\", \"Gentium Book Basic\", \"Doulos SIL\", sans-serif'",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -815,7 +796,7 @@ namespace BloomTests.Publish
                     fontFamily =
                         "Andika, \"Andika New Basic\", \"Andika Basic\", \"Gentium Basic\", \"Gentium Book Basic\", \"Doulos SIL\", sans-serif'",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -824,7 +805,7 @@ namespace BloomTests.Publish
                 {
                     fontFamily = "Andika",
                     fontStyle = "italic",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -833,7 +814,7 @@ namespace BloomTests.Publish
                 {
                     fontFamily = "ABeeZee",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -842,7 +823,7 @@ namespace BloomTests.Publish
                 {
                     fontFamily = "Aileron",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
 
@@ -859,7 +840,7 @@ namespace BloomTests.Publish
                     fontFamily =
                         "Andika, \"Andika New Basic\", \"Andika Basic\", \"Gentium Basic\", \"Gentium Book Basic\", \"Doulos SIL\", sans-serif'",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -869,7 +850,7 @@ namespace BloomTests.Publish
                     fontFamily =
                         "Andika, \"Andika New Basic\", \"Andika Basic\", \"Gentium Basic\", \"Gentium Book Basic\", \"Doulos SIL\", sans-serif'",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -879,7 +860,7 @@ namespace BloomTests.Publish
                     fontFamily =
                         "Andika, \"Andika New Basic\", \"Andika Basic\", \"Gentium Basic\", \"Gentium Book Basic\", \"Doulos SIL\", sans-serif'",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -888,7 +869,7 @@ namespace BloomTests.Publish
                 {
                     fontFamily = "Andika",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -897,7 +878,7 @@ namespace BloomTests.Publish
                 {
                     fontFamily = "ABeeZee",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
             _helper.MapIdToFontInfo.Add(
@@ -906,7 +887,7 @@ namespace BloomTests.Publish
                 {
                     fontFamily = "Aileron",
                     fontStyle = "normal",
-                    fontWeight = "400"
+                    fontWeight = "400",
                 }
             );
         }
@@ -1163,314 +1144,6 @@ namespace BloomTests.Publish
                     //@"The feature ""Background Audio"" was removed from this book because it requires a higher subscription tier"
                     @"The feature ""PublishTab.Feature.Music"" was removed from this book because it requires a higher subscription tier"
                 )
-            );
-        }
-    }
-
-    [TestFixture]
-    public class ReallyCropImagesTests
-    {
-        private HtmlDom _dom;
-        private TemporaryFolder _folder;
-        private SafeXmlElement _p1bgi1;
-        private SafeXmlElement _p1i1c1;
-        private SafeXmlElement _p2i1c1;
-        private SafeXmlElement _p2i1c2;
-        private SafeXmlElement _p2i1c3;
-        private SafeXmlElement _p2i1a;
-        private SafeXmlElement _p2i1b;
-        private SafeXmlElement _p2i2a;
-        private SafeXmlElement _p1i2c4;
-        private SafeXmlElement _p1i3c5;
-        private SafeXmlElement _p2i3c5;
-        private byte[] _manPngBytes;
-        private byte[] _manJpgBytes;
-        private byte[] _lady24bPngBytes;
-        private byte[] _p1i1c1Bytes;
-        private byte[] _p2i1c2Bytes;
-        private byte[] _p2i1c3Bytes;
-        private byte[] _p1i2c4Bytes;
-        private byte[] _p1i3c54Bytes;
-
-        public static string MakeImageCanvasElement(
-            string imgId,
-            string src,
-            string ceStyle,
-            string imgStyle = null,
-            bool background = false
-        )
-        {
-            var backgroundString = background ? " bloom-backgroundImage" : "";
-            var imgStyleString = imgStyle == null ? "" : $"style=\"{imgStyle}\"";
-            return $"<div class=\"bloom-canvas-element{backgroundString}\" style=\"{ceStyle}\" data-bubble=\"{{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:4,`backgroundColors`:[`transparent`],`shadowOffset`:0}}\">"
-                + $"  <div tabindex=\"0\" class=\"bloom-imageContainer bloom-leadingElement\">"
-                + $"      <img id=\"{imgId}\" src=\"{src}\" {imgStyleString} />"
-                + $"  </div>"
-                + $"</div>";
-        }
-
-        [OneTimeSetUp]
-        public void Setup()
-        {
-            _folder = new TemporaryFolder("ReallyCropImagesTests");
-            // much simplified dom, but enough for this.
-            // We want: three uncropped images on two pages with the same name, all uncropped. Should remain the same names and file.
-            // Two more images using the same filename, both cropped the same, on two pages, should get cropped once to a new name.
-            // More versions of this image on two pages all cropped differently. Should get distinct names.
-            // Two images using the same file name, where the first one is cropped, should result in the
-            // uncropped one keeping the name, and the cropped one getting a new name.
-            // Two images using another file name, all cropped the same, should keep name but change file content.
-            _dom = new HtmlDom(
-                @"
-<html><head></head><body>
-    <div class=""bloom-page"" id=""page1"">
-        <div class=""marginBox"" id=""image1"">
-            <div class=""bloom-canvas"">"
-                    + MakeImageCanvasElement(
-                        "p1bgi1",
-                        "man.png",
-                        "height: 378.826px; left: 325px; top: 6px; width: 140px;",
-                        null,
-                        true
-                    )
-                    + MakeImageCanvasElement(
-                        "p1i1c1",
-                        "man.png",
-                        "height: 378.826px; left: 325px; top: 6px; width: 140px;",
-                        "width: 280px; left: -80px; top: -20px"
-                    )
-                    + MakeImageCanvasElement(
-                        "p1i2c4",
-                        "lady24b.png",
-                        "height: 378.826px; left: 325px; top: 6px; width: 140px;",
-                        "width: 280px; left: -80px; top: -20px"
-                    )
-                    + MakeImageCanvasElement(
-                        "p1i3c5",
-                        "man%203.jpg",
-                        "height: 378.826px; left: 325px; top: 6px; width: 140px;",
-                        "width: 280px; left: -80px; top: -20px"
-                    )
-                    + @"
-            </div>
-        </div>
-    </div>
-    <div class=""bloom-page"" id=""page2"">
-        <div class=""marginBox"" id=""image1"">
-            <div class=""bloom-canvas"">"
-                    + MakeImageCanvasElement(
-                        "p2i1a",
-                        "man.png",
-                        "height: 350px; left: 300px; top: 6px; width: 140px;"
-                    )
-                    + MakeImageCanvasElement(
-                        "p2i1b",
-                        "man.png",
-                        "height: 350px; left: 20px; top: 6px; width: 140px;"
-                    )
-                    // same image and crop as p1i1c1, should use same cropped file
-                    + MakeImageCanvasElement(
-                        "p2i1c1",
-                        "man.png",
-                        "height: 378.826px; left: 325px; top: 6px; width: 140px;",
-                        "width: 280px; left: -80px; top: -20px",
-                        true
-                    )
-                    // same image p1i1c1, but a different img style, so should get a different cropped file
-                    + MakeImageCanvasElement(
-                        "p2i1c2",
-                        "man.png",
-                        "height: 378.826px; left: 325px; top: 6px; width: 140px;",
-                        "width: 280px; left: -70px; top: -20px",
-                        true
-                    )
-                    // This one needs a different crop because the canvas element width is different
-                    + MakeImageCanvasElement(
-                        "p2i1c3",
-                        "man.png",
-                        "height: 378.826px; left: 325px; top: 6px; width: 130px;",
-                        "width: 280px; left: -70px; top: -20px",
-                        true
-                    )
-                    + MakeImageCanvasElement(
-                        "p2i2a",
-                        "lady24b.png",
-                        "height: 350px; left: 300px; top: 6px; width: 140px;"
-                    )
-                    + MakeImageCanvasElement(
-                        "p2i3c5",
-                        "man%203.jpg",
-                        "height: 378.826px; left: 325px; top: 6px; width: 140px;",
-                        "width: 280px; left: -80px; top: -20px"
-                    )
-                    + @"
-            </div>
-        </div>
-    </div>
-</body></html>"
-            );
-            var _pathToTestImages = "src\\BloomTests\\ImageProcessing\\images";
-            var path = FileLocationUtilities.GetFileDistributedWithApplication(
-                _pathToTestImages,
-                "man.png"
-            );
-            RobustFile.Copy(path, Path.Combine(_folder.Path, "man.png"));
-            _manPngBytes = RobustFile.ReadAllBytes(path);
-
-            path = FileLocationUtilities.GetFileDistributedWithApplication(
-                _pathToTestImages,
-                "man.jpg"
-            );
-            // We are deliberately changing the name slightly to test for a particular problem
-            // that was occurring when cropping renamed the output to an 'original' name
-            // containing a space. The space needs to be in the name of the image that does
-            // NOT occur uncropped.
-            RobustFile.Copy(path, Path.Combine(_folder.Path, "man 3.jpg"));
-            _manJpgBytes = RobustFile.ReadAllBytes(path);
-
-            path = FileLocationUtilities.GetFileDistributedWithApplication(
-                _pathToTestImages,
-                "lady24b.png"
-            );
-            RobustFile.Copy(path, Path.Combine(_folder.Path, "lady24b.png"));
-            _lady24bPngBytes = RobustFile.ReadAllBytes(path);
-
-            // SUT
-            PublishHelper.ReallyCropImages(_dom.RawDom, _folder.Path, _folder.Path);
-
-            _p1bgi1 = _dom.SelectSingleNode("//img[@id='p1bgi1']");
-            _p1i1c1 = _dom.SelectSingleNode("//img[@id='p1i1c1']");
-            _p2i1c1 = _dom.SelectSingleNode("//img[@id='p2i1c1']");
-            _p2i1c2 = _dom.SelectSingleNode("//img[@id='p2i1c2']");
-            _p2i1c3 = _dom.SelectSingleNode("//img[@id='p2i1c3']");
-            _p2i1a = _dom.SelectSingleNode("//img[@id='p2i1a']");
-            _p2i1b = _dom.SelectSingleNode("//img[@id='p2i1b']");
-            _p2i2a = _dom.SelectSingleNode("//img[@id='p2i2a']");
-            _p1i2c4 = _dom.SelectSingleNode("//img[@id='p1i2c4']");
-            _p1i3c5 = _dom.SelectSingleNode("//img[@id='p1i3c5']");
-            _p2i3c5 = _dom.SelectSingleNode("//img[@id='p2i3c5']");
-
-            _p1i1c1Bytes = RobustFile.ReadAllBytes(
-                Path.Combine(_folder.Path, _p1i1c1.GetAttribute("src"))
-            );
-            _p2i1c2Bytes = RobustFile.ReadAllBytes(
-                Path.Combine(_folder.Path, _p2i1c2.GetAttribute("src"))
-            );
-            _p2i1c3Bytes = RobustFile.ReadAllBytes(
-                Path.Combine(_folder.Path, _p2i1c3.GetAttribute("src"))
-            );
-            _p1i2c4Bytes = RobustFile.ReadAllBytes(
-                Path.Combine(_folder.Path, _p1i2c4.GetAttribute("src"))
-            );
-            _p1i3c54Bytes = RobustFile.ReadAllBytes(
-                // Tempting to read from _p1i3c5.GetAttribute("src")).
-                // But we're have assertions that the src is unchanged for this element.
-                // What we want to ensure is that the original file was overwritten, rather
-                // than a new one with the encoded name man%203.jpg being created.
-                Path.Combine(_folder.Path, "man 3.jpg")
-            );
-        }
-
-        [OneTimeTearDown]
-        public void TearDown()
-        {
-            _folder.Dispose();
-        }
-
-        [Test]
-        public void UncroppedImages_SrcUnchanged()
-        {
-            Assert.That(_p1bgi1.GetAttribute("src"), Is.EqualTo("man.png"));
-            Assert.That(_p2i1a.GetAttribute("src"), Is.EqualTo("man.png"));
-            Assert.That(_p2i1b.GetAttribute("src"), Is.EqualTo("man.png"));
-            Assert.That(_p2i2a.GetAttribute("src"), Is.EqualTo("lady24b.png"));
-        }
-
-        [Test]
-        public void CroppedImage_HaveUncroppedWithSameFile_NewName()
-        {
-            var newSrc = _p1i1c1.GetAttribute("src");
-            Assert.That(newSrc, Is.Not.EqualTo("man.png"));
-            Assert.That(Path.GetExtension(newSrc), Is.EqualTo(".png"));
-            newSrc = _p1i2c4.GetAttribute("src");
-            Assert.That(newSrc, Is.Not.EqualTo("lady24b.png"));
-            Assert.That(Path.GetExtension(newSrc), Is.EqualTo(".png"));
-        }
-
-        [Test]
-        public void CroppedImage_HasDifferentContent()
-        {
-            Assert.That(
-                _p1i1c1Bytes,
-                Is.Not.EqualTo(_manPngBytes),
-                "Cropped image should have different content from original"
-            );
-            Assert.That(
-                _p2i1c2Bytes,
-                Is.Not.EqualTo(_manPngBytes),
-                "Cropped image should have different content from original"
-            );
-            Assert.That(
-                _p2i1c3Bytes,
-                Is.Not.EqualTo(_manPngBytes),
-                "Cropped image should have different content from original"
-            );
-            Assert.That(
-                _p1i2c4Bytes,
-                Is.Not.EqualTo(_lady24bPngBytes),
-                "Cropped image should have different content from original"
-            );
-        }
-
-        [Test]
-        public void CroppedImages_WithDifferentCrops_ProduceDifferentFiles()
-        {
-            Assert.That(
-                _p1i1c1Bytes,
-                Is.Not.EqualTo(_p2i1c2Bytes),
-                "Cropped image file contents should be different"
-            );
-            Assert.That(
-                _p1i1c1Bytes,
-                Is.Not.EqualTo(_p2i1c3Bytes),
-                "Cropped image file contents should be different"
-            );
-            Assert.That(
-                _p2i1c3Bytes,
-                Is.Not.EqualTo(_p2i1c2Bytes),
-                "Cropped image file contents should be different"
-            );
-        }
-
-        [Test]
-        public void ImageWithSameSrcAndCrop_ShouldUseSameCroppedImgFile()
-        {
-            Assert.That(_p1i1c1.GetAttribute("src"), Is.EqualTo(_p2i1c1.GetAttribute("src")));
-            Assert.That(_p2i3c5.GetAttribute("src"), Is.EqualTo(_p1i3c5.GetAttribute("src")));
-        }
-
-        [Test]
-        public void ImageWithSameSrcButDifferentCrop_ShouldUseDifferentCroppedImgFile()
-        {
-            var i1c1Src = _p1i1c1.GetAttribute("src");
-            var i2c2Src = _p2i1c2.GetAttribute("src");
-            Assert.That(i1c1Src, Is.Not.EqualTo(i2c2Src));
-            Assert.That(i2c2Src, Is.Not.EqualTo("man.png"));
-        }
-
-        [Test]
-        public void CroppedImage_NoUncroppedWithSameName_UsesOriginalName()
-        {
-            Assert.That(_p1i3c5.GetAttribute("src"), Is.EqualTo("man%203.jpg"));
-        }
-
-        [Test]
-        public void CroppedImage_NoUncroppedWithSameName_HasModifiedContent()
-        {
-            Assert.That(
-                _p1i3c54Bytes,
-                Is.Not.EqualTo(_manJpgBytes),
-                "Cropped image should have different content from original"
             );
         }
     }

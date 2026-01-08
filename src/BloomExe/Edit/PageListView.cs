@@ -54,7 +54,7 @@ namespace Bloom.Edit
                         "Duplicate Page"
                     ),
                     EnableFunction = (page) => page != null && _model.CanDuplicatePage,
-                    ExecuteCommand = (page) => _model.DuplicatePage(page)
+                    ExecuteCommand = (page) => _model.DuplicatePage(page),
                 }
             );
             menuItems.Add(
@@ -65,7 +65,7 @@ namespace Bloom.Edit
                         "Duplicate Page Many Times..."
                     ),
                     EnableFunction = (page) => page != null && _model.CanDuplicatePage,
-                    ExecuteCommand = (page) => _model.DuplicateManyPages(page)
+                    ExecuteCommand = (page) => _model.DuplicateManyPages(page),
                 }
             );
             menuItems.Add(
@@ -73,7 +73,7 @@ namespace Bloom.Edit
                 {
                     Label = LocalizationManager.GetString("EditTab.CopyPage", "Copy Page"),
                     EnableFunction = (page) => page != null && _model.CanCopyPage,
-                    ExecuteCommand = (page) => _model.CopyPage(page)
+                    ExecuteCommand = (page) => _model.CopyPage(page),
                 }
             );
             menuItems.Add(
@@ -103,7 +103,7 @@ namespace Bloom.Edit
                             dlg.ReoccurrenceMessage = null;
                             dlg.Show();
                         }
-                    }
+                    },
                 }
             );
             menuItems.Add(
@@ -112,7 +112,7 @@ namespace Bloom.Edit
                     Label = LocalizationManager.GetString("EditTab.PastePage", "Paste Page"),
                     EnableFunction = (page) =>
                         page != null && _model.CanAddPages && _model.GetClipboardHasPage(),
-                    ExecuteCommand = (page) => _model.PastePage(page)
+                    ExecuteCommand = (page) => _model.PastePage(page),
                 }
             );
             menuItems.Add(
@@ -127,7 +127,7 @@ namespace Bloom.Edit
                     {
                         if (ConfirmRemovePageDialog.Confirm())
                             _model.DeletePage(page);
-                    }
+                    },
                 }
             );
             menuItems.Add(
@@ -152,7 +152,7 @@ namespace Bloom.Edit
                         // the dialog without interacting with the dialog first.
                         _model.GetEditingBrowser().Focus();
                         _model.ChangePageLayout(page);
-                    }
+                    },
                 }
             );
             // This sets up the context menu items that will be shown when the user clicks the

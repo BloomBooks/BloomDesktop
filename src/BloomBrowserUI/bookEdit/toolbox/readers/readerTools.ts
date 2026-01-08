@@ -2,15 +2,17 @@
 /// <reference path="directoryWatcher.ts" />
 /// <reference path="../../../typings/jquery.qtip.d.ts" />
 /// <reference path="../../../typings/jqueryui/jqueryui.d.ts" />
+import $ from "jquery";
+import jQuery from "jquery";
 import { DirectoryWatcher } from "./directoryWatcher";
 import { getTheOneReaderToolsModel } from "./readerToolsModel";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import {
     theOneLanguageDataInstance,
     theOneLibSynphony,
-    ResetLanguageDataInstance
+    ResetLanguageDataInstance,
 } from "./libSynphony/synphony_lib";
-import "./libSynphony/synphony_lib.js";
+import "./libSynphony/synphony_lib";
 import ReadersSynphonyWrapper from "./ReadersSynphonyWrapper";
 import { ReaderSettings } from "./ReaderSettings";
 import { clearWordCache } from "./libSynphony/bloomSynphonyExtensions";
@@ -55,7 +57,7 @@ function processDLRMessage(event: MessageEvent): void {
                     setupDialogWindow.postMessage(
                         "Files\n" +
                             getTheOneReaderToolsModel().texts.join("\r"),
-                        "*"
+                        "*",
                     );
                 }
             }
@@ -68,7 +70,7 @@ function processDLRMessage(event: MessageEvent): void {
                 //reviewslog
                 // params[1] is the stage number
                 words = getTheOneReaderToolsModel().selectWordsFromAllowedLists(
-                    parseInt(params[1])
+                    parseInt(params[1]),
                 );
             } else {
                 // params[1] is a list of known graphemes
@@ -77,7 +79,7 @@ function processDLRMessage(event: MessageEvent): void {
                     params[1].split(" "),
                     params[1].split(" "),
                     true,
-                    true
+                    true,
                 );
             }
 
@@ -90,7 +92,7 @@ function processDLRMessage(event: MessageEvent): void {
                 // It's more future proof to resolve this by making sure the handlers have unique names.
                 setupDialogWindow.postMessage(
                     "UpdateWordsDisplay\n" + JSON.stringify(words),
-                    "*"
+                    "*",
                 );
             }
             return;
@@ -101,7 +103,7 @@ function processDLRMessage(event: MessageEvent): void {
                 setupDialogWindow.postMessage(
                     "ConfigureActiveTab\n" +
                         getTheOneReaderToolsModel().setupType,
-                    "*"
+                    "*",
                 );
             }
             return;
@@ -125,22 +127,22 @@ function markDecodableStatus(): void {
     // q-tips; mark sight words and non-decodable words
     const sightWord = theOneLocalizationManager.getText(
         "EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord",
-        "Sight Word"
+        "Sight Word",
     );
     const notDecodable = theOneLocalizationManager.getText(
         "EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable",
-        "This word is not decodable in this stage."
+        "This word is not decodable in this stage.",
     );
     const editableElements = $(".bloom-content1");
     editableElements
         .find("span." + (<textMarkup>$).cssSightWord())
-        .each(function() {
+        .each(function () {
             this.qtip({ content: sightWord });
         });
 
     editableElements
         .find("span." + (<textMarkup>$).cssWordNotFound())
-        .each(function() {
+        .each(function () {
             this.qtip({ content: notDecodable });
         });
 
@@ -155,12 +157,12 @@ function markLeveledStatus(): void {
     // q-tips; mark sentences that are too long
     const tooLong = theOneLocalizationManager.getText(
         "EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong",
-        "This sentence is too long for this level."
+        "This sentence is too long for this level.",
     );
     const editableElements = $(".bloom-content1");
     editableElements
         .find("span." + (<textMarkup>$).cssSentenceTooLong())
-        .each(function() {
+        .each(function () {
             $(this).qtip({ content: tooLong });
         });
 }
@@ -230,8 +232,8 @@ export function beginLoadSynphonySettings(): JQueryPromise<void> {
     }
     readerToolsInitialized = true;
 
-    get("collection/defaultFont", result => setDefaultFont(result.data));
-    get("readers/io/readerToolSettings", settingsFileContent => {
+    get("collection/defaultFont", (result) => setDefaultFont(result.data));
+    get("readers/io/readerToolSettings", (settingsFileContent) => {
         initializeSynphony(settingsFileContent.data);
         //console.log("done synphony init");
         result.resolve();
@@ -257,11 +259,11 @@ function initializeSynphony(settingsFileContent: string): void {
     // set up a DirectoryWatcher on the Sample Texts directory
     getTheOneReaderToolsModel().directoryWatcher = new DirectoryWatcher(
         "Sample Texts",
-        10
+        10,
     );
     getTheOneReaderToolsModel().directoryWatcher.onChanged(
         "SampleFilesChanged.ReaderTools",
-        readerSampleFilesChanged
+        readerSampleFilesChanged,
     );
     getTheOneReaderToolsModel().directoryWatcher.start();
 
@@ -270,8 +272,8 @@ function initializeSynphony(settingsFileContent: string): void {
         getTheOneReaderToolsModel().getAllowedWordsLists();
     } else {
         // get the list of sample texts
-        get("readers/ui/sampleTextsList", result =>
-            beginSetTextsList(result.data)
+        get("readers/ui/sampleTextsList", (result) =>
+            beginSetTextsList(result.data),
         );
     }
 }
@@ -282,9 +284,9 @@ function initializeSynphony(settingsFileContent: string): void {
  */
 function beginSetTextsList(textsList: string): Promise<void> {
     return getTheOneReaderToolsModel().beginSetTextsList(
-        textsList.split(/\r/).filter(e => {
+        textsList.split(/\r/).filter((e) => {
             return e ? true : false;
-        })
+        }),
     );
 }
 
@@ -344,7 +346,7 @@ function beginRefreshEverything(settings: ReaderSettings): JQueryPromise<void> {
         return <any>(
             axios
                 .get("/bloom/api/readers/io/sampleTextsList")
-                .then(result => beginSetTextsList(result.data))
+                .then((result) => beginSetTextsList(result.data))
         );
     }
     // Nothing to do, so return an already-resolved promise.
@@ -359,7 +361,7 @@ function getAlreadyResolvedPromise(): JQueryDeferred<void> {
 export function beginSaveChangedSettings(
     settings: ReaderSettings,
     previousMoreWords: string,
-    previousLetters: string
+    previousLetters: string,
 ): Promise<void> {
     // Using axios directly because our api at this point calls for returning the promise.
     return <any>(
@@ -390,7 +392,7 @@ export function beginSaveChangedSettings(
  */
 export function addWordListChangedListener(
     listenerNameAndContext: string,
-    callback: () => void
+    callback: () => void,
 ) {
     getTheOneReaderToolsModel().wordListChangedListeners[
         listenerNameAndContext
@@ -411,13 +413,14 @@ export function makeLetterWordList(): void {
     for (let i = 0; i < settings.stages.length; i++) {
         const stageGPCS: string[] = settings.stages[i].letters.split(" ");
         knownGPCS = _.union(knownGPCS, stageGPCS);
-        const stageWords: string[] = getTheOneReaderToolsModel().selectWordsFromSynphony(
-            true,
-            stageGPCS,
-            knownGPCS,
-            true,
-            true
-        );
+        const stageWords: string[] =
+            getTheOneReaderToolsModel().selectWordsFromSynphony(
+                true,
+                stageGPCS,
+                knownGPCS,
+                true,
+                true,
+            );
         settings.stages[i].words = <string[]>_.toArray(stageWords);
     }
 
@@ -436,11 +439,11 @@ export function makeLetterWordList(): void {
     // export the word list
     const ajaxSettings = {
         type: "POST",
-        url: "/bloom/api/readers/ui/makeLetterAndWordList"
+        url: "/bloom/api/readers/ui/makeLetterAndWordList",
     };
     ajaxSettings["data"] = {
         settings: JSON.stringify(settings),
-        allWords: allWords.join("\t")
+        allWords: allWords.join("\t"),
     };
 
     $.ajax(<JQueryAjaxSettings>ajaxSettings);
@@ -452,7 +455,7 @@ export function makeLetterWordList(): void {
  */
 export function resizeWordList(startTimeout: boolean = true): void {
     const div: JQuery = $("body").find(
-        'div[data-toolId="decodableReaderTool"]'
+        'div[data-toolId="decodableReaderTool"]',
     );
     if (div.length === 0) return; // if not found, the tool was closed
 
@@ -517,14 +520,15 @@ export function createToggle(isForLeveled: boolean) {
         document.getElementById(
             `${
                 isForLeveled ? "leveled" : "decodable"
-            }-reader-tool-toggle-react-container`
-        )
+            }-reader-tool-toggle-react-container`,
+        ),
     );
 }
 
 export function isToggleOff(isForLeveled: boolean): boolean {
     const prefix = isForLeveled ? "leveled" : "decodable";
-    const classes = document.getElementById(prefix + "-reader-tool-content")
-        ?.classList;
+    const classes = document.getElementById(
+        prefix + "-reader-tool-content",
+    )?.classList;
     return classes?.contains("turned-off") ?? false;
 }

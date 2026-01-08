@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.SafeXml;
 using L10NSharp;
+using L10NSharp.Windows.Forms;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.Reporting;
@@ -25,7 +26,7 @@ namespace BloomTests.Book
                 Language1Tag = "xyz",
                 Language2Tag = "fr",
                 Language3Tag = "es",
-                XMatterPackName = "Factory"
+                XMatterPackName = "Factory",
             };
             ErrorReport.IsOkToInteractWithUser = false;
 
@@ -34,8 +35,7 @@ namespace BloomTests.Book
                 FileLocationUtilities.GetDirectoryDistributedWithApplication(
                     "src/BloomTests/TestLocalization"
                 );
-            _localizationManager = LocalizationManager.Create(
-                TranslationMemory.XLiff,
+            _localizationManager = LocalizationManagerWinforms.Create(
                 "en",
                 "Bloom",
                 "Bloom",
@@ -43,7 +43,8 @@ namespace BloomTests.Book
                 localizationDirectory,
                 "SIL/BloomTests",
                 null,
-                ""
+                "",
+                new string[] { }
             );
         }
 
@@ -415,8 +416,7 @@ namespace BloomTests.Book
   ""cover-title-L2-show"": false,
   ""cover-title-L3-show"": true,
   ""cover-topic-show"": true,
-  ""cover-languageName-show"": true,
-  ""pageNumber-show"": true
+  ""cover-languageName-show"": true
 }"
             );
             settings._areSettingsConsistentWithFiles = true; // needs to be set to allow the default theme to be used
@@ -467,8 +467,7 @@ namespace BloomTests.Book
   ""cover-title-L2-show"": true,
   ""cover-title-L3-show"": false,
   ""cover-topic-show"": true,
-  ""cover-languageName-show"": true,
-  ""pageNumber-show"": true
+  ""cover-languageName-show"": true
 }"
             );
 
@@ -666,7 +665,6 @@ namespace BloomTests.Book
         /// <summary>
         /// Checks that elements in bloomDataDiv are updated too
         /// </summary>
-
         [Test]
         public void UpdateContentLanguageClasses_BloomDataDiv_ElementsAreUpdatedToo()
         {
@@ -2231,8 +2229,8 @@ namespace BloomTests.Book
                     1
                 );
 
-            var groupElements = bookDom.RawDom
-                .SafeSelectNodes("//div[contains(@class,'bloom-translationGroup')]")
+            var groupElements = bookDom
+                .RawDom.SafeSelectNodes("//div[contains(@class,'bloom-translationGroup')]")
                 .Cast<SafeXmlElement>();
             Assert.That(groupElements.Count(), Is.EqualTo(5));
 

@@ -7,6 +7,20 @@
     h2 {
         font-size: 10pt;
     }
+    .bloomDialogTitleBar {
+        position: relative;
+    }
+
+    // this is an unfortunate ui hack because we can't yet put the language code as a tooltip on the language
+    // tag itself because it is a psuedo-element. (BL-15212)
+    #format-toolbar-lang-code {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.85em;
+        color: rgba(255, 255, 255, 0.75);
+    }
     // Styles specific to the Style Editor dialog
     .format-toolbar-description {
         font-size: small;

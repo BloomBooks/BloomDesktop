@@ -1,12 +1,12 @@
-﻿using SIL.IO;
-using SIL.PlatformUtilities;
-using SIL.Reporting;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using SIL.IO;
+using SIL.PlatformUtilities;
+using SIL.Reporting;
 
 namespace Bloom.ToPalaso
 {
@@ -30,23 +30,11 @@ namespace Bloom.ToPalaso
         public static void SafeStartInFront(string urlOrCmd)
         {
             LogDebugInfo($"DEBUG SafeStartInFront(\"{urlOrCmd}\")");
-            // On Linux, we need to temporarily clear the LD_LIBRARY_PATH environment variable
-            // so that programs we start don't pick up the wrong version of various libraries.
-            string libpath = null;
-            if (Platform.IsLinux)
-            {
-                libpath = Environment.GetEnvironmentVariable("LD_LIBRARY_PATH");
-                if (!String.IsNullOrEmpty(libpath))
-                    Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", null);
-            }
-            var processList = Process.GetProcesses();
             var windowMap = GetAllWindows();
-            Process.Start(urlOrCmd);
+            var processList = Process.GetProcesses();
 
-            if (Platform.IsLinux && !String.IsNullOrEmpty(libpath))
-            {
-                Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", libpath);
-            }
+            SIL.Program.Process.SafeStart(urlOrCmd);
+
             // The rest of this happens on a timeout, so that we don't have to sleep and hold things up
             // Passing in a folder path opens window explorer, which doesn't show up in the processlist.
             // But the path appears in the window title, so we can use that to find the window.
@@ -100,23 +88,9 @@ namespace Bloom.ToPalaso
         public static void SafeStartInFront(string command, string arguments)
         {
             LogDebugInfo($"DEBUG SafeStartInFront(\"{command}\", \"{arguments}\")");
-            // On Linux, we need to temporarily clear the LD_LIBRARY_PATH environment variable
-            // so that programs we start don't pick up the wrong version of various libraries.
-            string libpath = null;
-            if (Platform.IsLinux)
-            {
-                libpath = Environment.GetEnvironmentVariable("LD_LIBRARY_PATH");
-                if (!String.IsNullOrEmpty(libpath))
-                    Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", null);
-            }
-            var processList = Process.GetProcesses();
             var windowMap = GetAllWindows();
-            Process.Start(command, arguments);
-
-            if (Platform.IsLinux && !String.IsNullOrEmpty(libpath))
-            {
-                Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", libpath);
-            }
+            var processList = Process.GetProcesses();
+            SIL.Program.Process.SafeStart(command, arguments);
             // The rest of this happens on a timeout, so that we don't have to sleep and hold things up
             BringDesiredWindowToFront("", processList, windowMap);
         }

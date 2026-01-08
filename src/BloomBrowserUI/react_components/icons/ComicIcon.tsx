@@ -3,11 +3,11 @@ import * as React from "react";
 // The same SVG as the content of the icon file we use in Blorg; but because this is not a
 // Create React App there is apparently no easy way to adapt an SVG into a color-controllable
 // component.
-// Differernt from the Toolbox Overlay icon.
+// Differernt from the Toolbox Canvas icon.
 export const ComicIcon: React.FunctionComponent<{
     className?: string;
     color: string;
-}> = props => {
+}> = (props) => {
     return (
         <svg
             className={props.className}

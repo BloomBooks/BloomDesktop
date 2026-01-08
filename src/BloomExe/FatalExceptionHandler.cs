@@ -1,8 +1,8 @@
-﻿using Bloom.web.controllers;
-using System;
+﻿using System;
 using System.Threading;
-using SIL.Reporting;
 using System.Windows.Forms;
+using Bloom.web.controllers;
+using SIL.Reporting;
 using SIL.Windows.Forms.Reporting;
 
 namespace Bloom
@@ -82,7 +82,7 @@ namespace Bloom
             {
                 //Are we inside a Application.Run() statement?
                 if (Application.MessageLoop)
-                    Application.Exit();
+                    ProgramExit.Exit();
                 else
                     Environment.Exit(1); //the 1 here is just non-zero
             }

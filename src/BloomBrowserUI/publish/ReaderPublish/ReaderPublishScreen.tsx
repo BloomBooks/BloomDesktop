@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { useState, useContext } from "react";
 
@@ -8,7 +7,7 @@ import {
     HelpGroup,
     SettingsPanel,
     CommandsGroup,
-    PublishPanel
+    PublishPanel,
 } from "../commonPublish/PublishScreenBaseComponents";
 import { MethodChooser, ReaderPublishMethods } from "./MethodChooser";
 import { PublishFeaturesGroup } from "../commonPublish/PublishFeaturesGroup";
@@ -17,14 +16,14 @@ import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import {
     useSubscribeToWebSocketForStringMessage,
-    useSubscribeToWebSocketForEvent
+    useSubscribeToWebSocketForEvent,
 } from "../../utils/WebSocketManager";
 import { postData, useApiBoolean } from "../../utils/bloomApi";
 import HelpLink from "../../react_components/helpLink";
 import { Link, LinkWithDisabledStyles } from "../../react_components/link";
 import {
     RequiresSubscriptionAdjacentIconWrapper,
-    RequiresSubscriptionDialog
+    RequiresSubscriptionDialog,
 } from "../../react_components/requiresSubscription";
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -32,7 +31,7 @@ import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
 import { PublishLanguagesGroup } from "../commonPublish/PublishLanguagesGroup";
 import {
     BulkBloomPubDialog,
-    showBulkBloomPubDialog
+    showBulkBloomPubDialog,
 } from "./BulkBloomPub/BulkBloomPubDialog";
 import { EmbeddedProgressDialog } from "../../react_components/Progress/ProgressDialog";
 import { MustBeCheckedOut } from "../../react_components/MustBeCheckedOut";
@@ -61,10 +60,10 @@ const kUpdatePreviewApi = "publish/bloompub/updatePreview";
 const ReaderPublishScreenInternal: React.FunctionComponent<{
     onUpdatePreview: () => void;
     showPreview: boolean;
-}> = props => {
+}> = (props) => {
     const inStorybookMode = useContext(StorybookContext);
     const [heading, setHeading] = useState(
-        useL10n("Creating Digital Book", "PublishTab.Android.Creating")
+        useL10n("Creating Digital Book", "PublishTab.Android.Creating"),
     );
     const [closePending, setClosePending] = useState(false);
     const [highlightPreview, setHighlightPreview] = useState(false);
@@ -76,9 +75,8 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
 
     // Caution: Every time onReset() is called, key is updated -> new instance -> all state goes back to default
     // That means the initial state must be what you want when onReset() is called (AKA whenever "Preview" is clicked)
-    const [currentTaskApi, setCurrentTaskApi] = useState<string>(
-        kUpdatePreviewApi
-    );
+    const [currentTaskApi, setCurrentTaskApi] =
+        useState<string>(kUpdatePreviewApi);
 
     const onCurrentTaskComplete =
         currentTaskApi === kUpdatePreviewApi
@@ -96,20 +94,20 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                   window.location.host +
                   "/templates/Sample Shells/The Moon and the Cap" // Enhance: provide an actual bloompub in the source tree
             : // otherwise, wait for the websocket to deliver a url when the c# has finished creating the bloompub.
-              ""
+              "",
     );
 
     const [defaultLandscape] = useApiBoolean(
         "publish/bloompub/defaultLandscape",
-        false
+        false,
     );
     const [canRotate] = useApiBoolean("publish/bloompub/canRotate", false);
     useSubscribeToWebSocketForStringMessage(
         "publish-bloompub",
         "bloomPubPreview",
-        url => {
+        (url) => {
             setBookUrl(url);
-        }
+        },
     );
 
     const publishing = useL10n("Publishing", "PublishTab.Common.Publishing");
@@ -117,7 +115,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
     useSubscribeToWebSocketForEvent(
         "publish-bloompub",
         "publish/bloompub/state",
-        e => {
+        (e) => {
             switch (e.message) {
                 case "stopped":
                     setClosePending(true);
@@ -140,10 +138,10 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                 default:
                     throw new Error(
                         "Method Chooser does not understand the state: " +
-                            e.message
+                            e.message,
                     );
             }
-        }
+        },
     );
 
     let baseUrl = bookUrl;
@@ -182,18 +180,18 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
             >
                 <MethodChooser
                     onStartButtonClick={(
-                        publishMethod: ReaderPublishMethods
+                        publishMethod: ReaderPublishMethods,
                     ) => {
                         const apiSuffix =
                             publishMethod === "file"
                                 ? "file/save"
                                 : publishMethod === "usb"
-                                ? "usb/start"
-                                : "wifi/start";
+                                  ? "usb/start"
+                                  : "wifi/start";
                         const apiEndpoint = `publish/bloompub/${apiSuffix}`;
                         setPublishStarted(true);
                         setCurrentTaskApi(apiEndpoint);
-                        setProgressDialogGeneration(oldValue => oldValue + 1);
+                        setProgressDialogGeneration((oldValue) => oldValue + 1);
                     }}
                 />
             </PublishPanel>
@@ -219,7 +217,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                 onChange={() => {
                     setHighlightPreview(true);
                     // Forces features group to re-evaluate whether this will be a talking book.
-                    setGeneration(old => old + 1);
+                    setGeneration((old) => old + 1);
                 }}
             />
             <PublishFeaturesGroup

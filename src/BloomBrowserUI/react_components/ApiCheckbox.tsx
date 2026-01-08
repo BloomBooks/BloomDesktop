@@ -13,12 +13,13 @@ export const ApiCheckbox: React.FunctionComponent<{
     disabled?: boolean;
     icon?: React.ReactNode;
     iconScale?: number;
+    size?: "small" | "medium" | "large";
     // If defined, the checkbox should have this value when disabled,
     // whatever value we get from the API.
     forceDisabledValue?: boolean;
-    onChange?: () => void;
+    onChange?: (checked: boolean) => void;
     title?: React.ReactNode;
-}> = props => {
+}> = (props) => {
     const [checked, setChecked] = useApiBoolean(props.apiEndpoint, false);
 
     let showChecked = checked;
@@ -36,11 +37,12 @@ export const ApiCheckbox: React.FunctionComponent<{
             l10nParam0={props.l10nParam0}
             icon={props.icon}
             iconScale={props.iconScale}
+            size={props.size}
             tooltipContents={props.title}
             onCheckChanged={(newState: boolean | undefined) => {
                 setChecked(!!newState);
                 if (props.onChange) {
-                    props.onChange();
+                    props.onChange(!!newState);
                 }
             }}
         />

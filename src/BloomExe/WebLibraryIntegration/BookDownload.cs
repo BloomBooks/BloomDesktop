@@ -6,6 +6,7 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security;
 using System.Text;
 using System.Web;
 using System.Windows.Forms;
@@ -13,21 +14,20 @@ using Amazon.Runtime;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
+using Bloom.MiscUI;
+using Bloom.Publish.BloomLibrary;
+using Bloom.ToPalaso;
+using Bloom.ToPalaso;
+using Bloom.web.controllers;
+using BloomTemp;
 using DesktopAnalytics;
 using L10NSharp;
+using Microsoft.VisualBasic;
 using SIL.Extensions;
+using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.Progress;
-using Bloom.web.controllers;
-using Bloom.MiscUI;
-using Bloom.ToPalaso;
-using Microsoft.VisualBasic;
-using BloomTemp;
-using SIL.IO;
-using System.Security;
-using Bloom.Publish.BloomLibrary;
-using Bloom.ToPalaso;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -100,7 +100,7 @@ namespace Bloom.WebLibraryIntegration
                     new Dictionary<string, string>()
                     {
                         { "url", storageKeyOfBookFolderParentOnS3 },
-                        { "title", bookTitleForAnalytics }
+                        { "title", bookTitleForAnalytics },
                     }
                 );
                 return destinationPath;
@@ -116,7 +116,7 @@ namespace Bloom.WebLibraryIntegration
                         new Dictionary<string, string>()
                         {
                             { "url", storageKeyOfBookFolderParentOnS3 },
-                            { "title", bookTitleForAnalytics }
+                            { "title", bookTitleForAnalytics },
                         }
                     );
                     Analytics.ReportException(e);
@@ -162,16 +162,15 @@ namespace Bloom.WebLibraryIntegration
 
         private static void DisplayProblem(Exception e, string message, bool showSendReport = true)
         {
-            var action = new Action(
-                () =>
-                    NonFatalProblem.Report(
-                        ModalIf.Alpha,
-                        PassiveIf.All,
-                        message,
-                        null,
-                        e,
-                        showSendReport
-                    )
+            var action = new Action(() =>
+                NonFatalProblem.Report(
+                    ModalIf.Alpha,
+                    PassiveIf.All,
+                    message,
+                    null,
+                    e,
+                    showSendReport
+                )
             );
             var shellWindow = ShellWindow;
             if (shellWindow != null)
@@ -468,7 +467,7 @@ namespace Bloom.WebLibraryIntegration
                     MoveOrCopyDirectory(bookFolderPathTemp, bookFolder);
                     var collectionFilePath = Path.Combine(
                         collectionPath,
-                        collectionName + ".bloomCollection"
+                        CollectionSettings.GetFileName(collectionName)
                     );
                     RobustFile.Move(
                         Path.Combine(

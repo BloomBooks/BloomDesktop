@@ -1,12 +1,12 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Bloom.Book;
+using Bloom.Properties;
+using Bloom.Publish.BloomPub;
+using BloomTemp;
 using CommandLine;
 using L10NSharp;
-using Bloom.Properties;
-using Bloom.Book;
-using BloomTemp;
-using Bloom.Publish.BloomPub;
 using SIL.Reporting;
 
 namespace Bloom.CLI
@@ -33,10 +33,7 @@ namespace Bloom.CLI
             {
                 using (var applicationContainer = new ApplicationContainer())
                 {
-                    LocalizationManager.SetUILanguage(
-                        Settings.Default.UserInterfaceLanguage,
-                        false
-                    ); // Unclear if this line is needed or not.
+                    LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage); // Unclear if this line is needed or not.
                     Program.RunningHarvesterMode = true;
                     using (
                         _projectContext = applicationContainer.CreateProjectContext(

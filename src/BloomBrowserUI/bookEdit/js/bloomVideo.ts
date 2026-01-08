@@ -1,4 +1,3 @@
-import "../../lib/jquery.resize"; // makes jquery resize work on all elements
 import { post, postThatMightNavigate } from "../../utils/bloomApi";
 
 // The code in this file supports operations on video panels in custom pages (and potentially elsewhere).
@@ -8,14 +7,15 @@ import { post, postThatMightNavigate } from "../../utils/bloomApi";
 import { getToolboxBundleExports } from "./bloomFrames";
 import {
     SignLanguageToolControls,
-    SignLanguageTool
+    SignLanguageTool,
 } from "../toolbox/signLanguage/signLanguageTool";
-import { kGameToolId, kOverlayToolId } from "../toolbox/toolIds";
+import { kGameToolId, kCanvasToolId } from "../toolbox/toolIds";
 import { selectVideoContainer } from "./videoUtils";
 import { getPlayIcon } from "../img/playIcon";
 import { getPauseIcon } from "../img/pauseIcon";
 import { getReplayIcon } from "../img/replayIcon";
-import { kCanvasElementSelector } from "../toolbox/overlay/canvasElementUtils";
+import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementUtils";
+import $ from "jquery";
 
 export function SetupVideoEditing(container) {
     $(container)
@@ -39,22 +39,22 @@ export function SetupVideoEditing(container) {
                 // React for anything except to make use of an image which unfortunately is only
                 // available by default as a component.
                 getPlayIcon("#ffffff", videoElement),
-                "bloom-videoPlayIcon"
+                "bloom-videoPlayIcon",
             );
             playButton.addEventListener("click", handlePlayClick);
             const pauseButton = wrapVideoIcon(
                 videoElement,
                 getPauseIcon("#ffffff", videoElement),
-                "bloom-videoPauseIcon"
+                "bloom-videoPauseIcon",
             );
             pauseButton.addEventListener("click", handlePauseClick);
             const replayButton = wrapVideoIcon(
                 videoElement,
                 getReplayIcon("#ffffff", videoElement),
-                "bloom-videoReplayIcon"
+                "bloom-videoReplayIcon",
             );
             replayButton.addEventListener("click", handleReplayClick);
-        }
+        },
     );
 }
 
@@ -64,8 +64,8 @@ function SetupVideoContainer(videoContainerDiv: Element) {
         const video = videoElts[i] as HTMLVideoElement;
         // Early sign language code included this; now we do it only on hover.
         video.removeAttribute("controls");
-        video.addEventListener("playing", e => videoPlayingEventHandler(e));
-        video.addEventListener("ended", e => videoEndedEventHandler(e));
+        video.addEventListener("playing", (e) => videoPlayingEventHandler(e));
+        video.addEventListener("ended", (e) => videoEndedEventHandler(e));
     }
 
     SetupClickToShowSignLanguageTool(videoContainerDiv);
@@ -103,7 +103,7 @@ function videoPlayingEventHandler(e: Event) {
 
 function resetToStartAfterPlayingToEndPoint(
     video: HTMLVideoElement,
-    endPoint: number
+    endPoint: number,
 ) {
     window.setTimeout(() => {
         if (video.currentTime > endPoint) {
@@ -115,7 +115,7 @@ function resetToStartAfterPlayingToEndPoint(
             video.dispatchEvent(endedEvent);
             SignLanguageTool.setCurrentVideoPoint(
                 getVideoStartSeconds(video),
-                video
+                video,
             );
         } else {
             // Check again in another 100ms.
@@ -145,7 +145,7 @@ function getVideoEndSeconds(videoElt: HTMLVideoElement): number {
 function SetupClickToShowSignLanguageTool(videoContainerDiv: Element) {
     // if the user clicks on the video placeholder (or the video for that matter--see BL-6149),
     // bring up the sign language tool
-    $(videoContainerDiv).click(ev => {
+    $(videoContainerDiv).click((ev) => {
         if ((ev.currentTarget as HTMLElement).closest(".drag-activity-play")) {
             return;
         }
@@ -157,7 +157,7 @@ function SetupClickToShowSignLanguageTool(videoContainerDiv: Element) {
 
         if (
             toolbox?.toolboxIsShowing() &&
-            (currentToolId === kOverlayToolId ||
+            (currentToolId === kCanvasToolId ||
                 currentToolId === kGameToolId) &&
             videoContainerDiv.closest(kCanvasElementSelector) // only ones actually in a canvas element
         ) {
@@ -177,10 +177,10 @@ export function showSignLanguageTool() {
 
 export function doVideoCommand(
     videoContainer: Element,
-    command: "choose" | "record" | "playEarlier" | "playLater"
+    command: "choose" | "record" | "playEarlier" | "playLater",
 ) {
     if (command === "choose" && videoContainer) {
-        post("signLanguage/importVideo", result => {
+        post("signLanguage/importVideo", (result) => {
             if (result.data) {
                 updateVideoInContainer(videoContainer, result.data);
                 // Makes sure the page gets saved with a reference to the new video,
@@ -196,9 +196,8 @@ export function doVideoCommand(
         showSignLanguageTool();
     } else if (command === "playEarlier") {
         // Find the preceding video container element, if any, and move it after the current one
-        const previousVideoContainer = findPreviousVideoContainer(
-            videoContainer
-        );
+        const previousVideoContainer =
+            findPreviousVideoContainer(videoContainer);
         if (previousVideoContainer) {
             SwapVideoPositionsInDom(previousVideoContainer, videoContainer);
         }
@@ -212,7 +211,7 @@ export function doVideoCommand(
 }
 
 export function findNextVideoContainer(
-    videoContainer: Element
+    videoContainer: Element,
 ): Element | undefined {
     const canvasElement = videoContainer.closest(kCanvasElementSelector);
     if (canvasElement) {
@@ -220,7 +219,7 @@ export function findNextVideoContainer(
         while (next) {
             if (
                 next.firstElementChild?.classList.contains(
-                    "bloom-videoContainer"
+                    "bloom-videoContainer",
                 )
             ) {
                 return next.firstElementChild;
@@ -231,7 +230,7 @@ export function findNextVideoContainer(
     return undefined;
 }
 export function findPreviousVideoContainer(
-    videoContainer: Element
+    videoContainer: Element,
 ): Element | undefined {
     const canvasElement = videoContainer.closest(kCanvasElementSelector);
     if (canvasElement) {
@@ -239,7 +238,7 @@ export function findPreviousVideoContainer(
         while (previous) {
             if (
                 previous.firstElementChild?.classList.contains(
-                    "bloom-videoContainer"
+                    "bloom-videoContainer",
                 )
             ) {
                 return previous.firstElementChild;
@@ -252,13 +251,13 @@ export function findPreviousVideoContainer(
 // Swap the positions of two video containers (actually their parent canvas elements) in the DOM.
 function SwapVideoPositionsInDom(
     firstVideoContainer: Element,
-    secondVideoContainer: Element
+    secondVideoContainer: Element,
 ) {
     const firstCanvasElement = firstVideoContainer.closest(
-        kCanvasElementSelector
+        kCanvasElementSelector,
     );
     const secondCanvasElement = secondVideoContainer.closest(
-        kCanvasElementSelector
+        kCanvasElementSelector,
     );
     if (!firstCanvasElement || !secondCanvasElement) {
         return;
@@ -299,7 +298,7 @@ export function updateVideoInContainer(container: Element, url: string): void {
 function wrapVideoIcon(
     videoElement: HTMLVideoElement,
     icon: HTMLElement,
-    iconClass: string
+    iconClass: string,
 ): HTMLElement {
     const wrapper = videoElement.ownerDocument.createElement("div");
     wrapper.classList.add("bloom-videoControlContainer");

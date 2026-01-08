@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import Button from "@mui/material/Button";
@@ -22,8 +21,8 @@ const useButtonStyles = makeStyles({
     label: {
         color: "white",
         fontSize: "20pt",
-        height: "10px"
-    }
+        height: "10px",
+    },
 });
 
 // A more commented version of this, in Emotion, is below, with explanation of why
@@ -42,9 +41,9 @@ const useMenuStyles = makeStyles({
             right: "4px",
             borderLeft: "8px solid transparent",
             borderRight: "8px solid transparent",
-            borderBottom: "8px solid white"
-        }
-    }
+            borderBottom: "8px solid white",
+        },
+    },
 });
 
 // This class defines a simple menu. Currently it's optimized to be the pull-down from the "..." button
@@ -63,12 +62,12 @@ export const SimpleMenu: React.FunctionComponent<{
     l10nKey: string;
     temporarilyDisableI18nWarning?: boolean;
     items: (SimpleMenuItem | "-")[];
-}> = props => {
+}> = (props) => {
     // When this is not null, the menu appears, positioned relative to the anchorEl (which here is always the
     // main button).
     const [anchorEl, setAnchorEl] = React.useState(null);
 
-    const handleClick = event => {
+    const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
     };
 
@@ -82,7 +81,7 @@ export const SimpleMenu: React.FunctionComponent<{
         undefined,
         undefined,
         undefined,
-        props.temporarilyDisableI18nWarning
+        props.temporarilyDisableI18nWarning,
     );
 
     const items = props.items.map((item, index) =>
@@ -97,7 +96,7 @@ export const SimpleMenu: React.FunctionComponent<{
                     props.temporarilyDisableI18nWarning
                 }
             />
-        )
+        ),
     );
     const buttonClasses = useButtonStyles();
     const menuClasses = useMenuStyles();
@@ -170,7 +169,7 @@ const SimpleMenuRow: React.FunctionComponent<{
     handleClose: () => void;
     item: SimpleMenuItem;
     temporarilyDisableI18nWarning?: boolean;
-}> = props => {
+}> = (props) => {
     const itemText = useL10n(
         props.item.text,
         props.item.l10nKey,
@@ -178,7 +177,7 @@ const SimpleMenuRow: React.FunctionComponent<{
         undefined,
         undefined,
         props.item.temporarilyDisableI18nWarning ||
-            props.temporarilyDisableI18nWarning
+            props.temporarilyDisableI18nWarning,
     );
     return (
         <MenuItem

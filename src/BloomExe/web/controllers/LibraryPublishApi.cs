@@ -1,3 +1,9 @@
+using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Bloom.Api;
 using Bloom.Publish;
 using Bloom.Publish.BloomLibrary;
@@ -6,11 +12,6 @@ using Bloom.Workspace;
 using L10NSharp;
 using SIL.Progress;
 using SIL.Reporting;
-using System;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 
 namespace Bloom.web.controllers
 {
@@ -71,11 +72,31 @@ namespace Bloom.web.controllers
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
-            apiHandler.RegisterEndpointHandler("libraryPublish/upload", HandleUpload, true);
-            apiHandler.RegisterEndpointHandler(
+            // Review: Why is requiresSync false, and is it safe?
+            // We seem to get into trouble releasing the lock when using an async method,
+            // apparently because the continuation of the method, after the stack unwinds when
+            // doing the await, runs on a different thread, which does not own the lock it is
+            // trying to release. It appears, in fact, that you can't reliably claim a lock in an
+            // async method and release it after awaiting something. I find it hard to believe
+            // that there isn't a way around that, but there doesn't seem to be.
+            // There's also the consideration that we are now loading the document into a browser
+            // in order to evaluate what fonts are really used, and it may be that doing so will
+            // trigger calls to API methods. So we're safer from deadlocks and releasing the lock
+            // on the wrong thread if we just don't lock.
+            // So, could there be any data that these handlers manipulate that needs locking
+            // when other API calls are running? I can't think of any, but don't know how to
+            // prove that there is not.
+            apiHandler.RegisterAsyncEndpointHandler(
+                "libraryPublish/upload",
+                HandleUpload,
+                true,
+                false
+            );
+            apiHandler.RegisterAsyncEndpointHandler(
                 "libraryPublish/uploadWithNewUploader",
                 HandleUploadWithNewUploader,
-                true
+                true,
+                false
             );
             apiHandler.RegisterEndpointHandler(
                 "libraryPublish/uploadCollection",
@@ -103,8 +124,9 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler(
                 "libraryPublish/checkSubscriptionMatch",
                 HandleCheckSubscriptionMatch,
-                true);
-            apiHandler.RegisterEndpointHandler(
+                true
+            );
+            apiHandler.RegisterAsyncEndpointHandler(
                 "libraryPublish/uploadAfterChangingBookId",
                 HandleUploadAfterChangingBookId,
                 true
@@ -122,8 +144,8 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                "libraryPublish/goToEditBookCover",
-                HandleGoToEditBookCover,
+                "libraryPublish/goToEditBookTitle",
+                HandleGoToEditBookTitle,
                 true
             );
             apiHandler.RegisterEndpointHandler("libraryPublish/topic", HandleTopic, true);
@@ -144,7 +166,7 @@ namespace Bloom.web.controllers
                 licenseToken = Model.LicenseToken,
                 licenseRights = Model.LicenseRights,
                 isTemplate = Model.IsTemplate,
-                isTitleOKToPublish = Model.IsTitleOKToPublish
+                isTitleOKToPublish = Model.IsTitleOKToPublish,
             };
             request.ReplyWithJson(bookInfo);
         }
@@ -166,19 +188,19 @@ namespace Bloom.web.controllers
             request.PostSucceeded();
         }
 
-        private void HandleUpload(ApiRequest request)
+        private async Task HandleUpload(ApiRequest request)
         {
-            HandleUpload(request, false);
+            await HandleUpload(request, false);
         }
 
-        private void HandleUploadWithNewUploader(ApiRequest request)
+        private async Task HandleUploadWithNewUploader(ApiRequest request)
         {
-            HandleUpload(request, true);
+            await HandleUpload(request, true);
         }
 
         private bool _changeUploader = false;
 
-        private void HandleUpload(ApiRequest request, bool changeUploader)
+        private async Task HandleUpload(ApiRequest request, bool changeUploader)
         {
             if (request.HttpMethod == HttpMethods.Get)
                 return;
@@ -188,7 +210,7 @@ namespace Bloom.web.controllers
 
             try
             {
-                UploadBook();
+                await UploadBookAsync();
             }
             catch (Exception)
             {
@@ -197,105 +219,96 @@ namespace Bloom.web.controllers
             request.PostSucceeded();
         }
 
-        private void UploadBook()
+        private async Task UploadBookAsync()
         {
             _webSocketProgress.Message("Common.Starting", "Starting...");
+            SetParentControlsState(false); // Disable UI
 
-            var worker = new BackgroundWorker();
-            worker.DoWork += BackgroundUpload;
-            worker.RunWorkerCompleted += (_, completedEvent) =>
+            string uploadResult = null;
+            Exception caughtException = null;
+
+            try
             {
-                // Return all controls to normal state. (Do this first, just in case we get some further exception somehow.)
-                // I believe the event is guaranteed to be raised, even if something in the worker thread throws,
-                // so there should be no way to get stuck in the state where the tabs etc. are disabled.
-                SetParentControlsState(true);
-
-                if (_progress.CancelRequested)
+                uploadResult = await Task.Run(async () =>
                 {
-                    _webSocketProgress.Message(
-                        "Cancelled",
-                        "Upload was cancelled",
-                        ProgressKind.Error
+                    var checkerResult = Model.CheckBookBeforeUpload();
+                    if (checkerResult != null)
+                    {
+                        _webSocketProgress.MessageWithoutLocalizing(
+                            checkerResult,
+                            ProgressKind.Error
+                        );
+                        return "quiet"; // suppress other completion/fail messages
+                    }
+
+                    Model.UpdateBookMetadataFeatures(
+                        Model.Book.BookInfo.PublishSettings.BloomLibrary.AudioLangs.Any(),
+                        ModelIndicatesSignLanguageChecked
                     );
-                    _webSocketServer.SendEvent(kWebSocketContext, kWebSocketEventId_uploadCanceled);
-                    return;
-                }
 
-                if (completedEvent.Error != null)
-                {
-                    ReportBasicErrorDuringUpload();
-                    _webSocketProgress.Exception(completedEvent.Error);
-                    return;
-                }
+                    // We currently have no way to turn this off. This is by design, we don't think it is a needed complication.
+                    var includeBackgroundMusic = true;
 
-                // the book objectId if successful
-                // or "quiet" to suppress more failure messages
-                // or empty if otherwise failed
-                var uploadResult = (string)completedEvent.Result;
-
-                if (uploadResult == "quiet")
-                {
-                    // no more reporting, sufficient message already given.
-                }
-                else if (string.IsNullOrEmpty(uploadResult))
-                {
-                    // Something went wrong, possibly already reported.
-                    // If the book has sign language videos, we don't create a PDF, so we don't want to report a PDF generation failure.
-                    // Somewhere in 5.5, we lost setting PdfGenerationSucceeded; so I'm just commenting this out for now.
-                    //if (Model.PdfGenerationSucceeded || Model.Book.HasSignLanguageVideos())
-                    ReportTryAgainDuringUpload();
-                    //else
-                    //	ReportPdfGenerationFailed();
-                }
-                else
-                {
-                    var url = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(
-                        bookId: uploadResult,
-                        true
+                    var bookObjectId = await Model.UploadOneBook(
+                        Model.Book,
+                        _progress,
+                        _publishModel,
+                        !includeBackgroundMusic,
+                        _existingBookObjectIdOrNull,
+                        _changeUploader
                     );
-                    Model.AddHistoryRecordForLibraryUpload(url);
-                    dynamic result = new DynamicJson();
-                    result.bookId = Model.Book.BookInfo.Id;
-                    result.url = url;
-                    _webSocketServer.SendBundle(
-                        kWebSocketContext,
-                        kWebSocketEventId_uploadSuccessful,
-                        result
-                    );
-                }
-            };
-            SetParentControlsState(false); // Last thing we do before launching the worker, so we can't get stuck in this state.
-            worker.RunWorkerAsync(Model);
-        }
 
-        void BackgroundUpload(object _, DoWorkEventArgs e)
-        {
-            var checkerResult = Model.CheckBookBeforeUpload();
-            if (checkerResult != null)
+                    return bookObjectId;
+                });
+            }
+            catch (Exception ex)
             {
-                _webSocketProgress.MessageWithoutLocalizing(checkerResult, ProgressKind.Error);
-                e.Result = "quiet"; // suppress other completion/fail messages
+                caughtException = ex;
+            }
+            finally
+            {
+                SetParentControlsState(true); // Re-enable UI
+            }
+
+            if (_progress.CancelRequested)
+            {
+                _webSocketProgress.Message("Cancelled", "Upload was cancelled", ProgressKind.Error);
+                _webSocketServer.SendEvent(kWebSocketContext, kWebSocketEventId_uploadCanceled);
                 return;
             }
 
-            Model.UpdateBookMetadataFeatures(
-                Model.Book.BookInfo.PublishSettings.BloomLibrary.AudioLangs.Any(),
-                ModelIndicatesSignLanguageChecked
-            );
+            if (caughtException != null)
+            {
+                ReportBasicErrorDuringUpload();
+                _webSocketProgress.Exception(caughtException);
+                return;
+            }
 
-            // We currently have no way to turn this off. This is by design, we don't think it is a needed complication.
-            var includeBackgroundMusic = true;
-
-            var bookObjectId = Model.UploadOneBook(
-                Model.Book,
-                _progress,
-                _publishModel,
-                !includeBackgroundMusic,
-                _existingBookObjectIdOrNull,
-                _changeUploader
-            );
-
-            e.Result = bookObjectId;
+            if (uploadResult == "quiet")
+            {
+                // no more reporting, sufficient message already given.
+            }
+            else if (string.IsNullOrEmpty(uploadResult))
+            {
+                // Something went wrong, possibly already reported.
+                ReportTryAgainDuringUpload();
+            }
+            else
+            {
+                var url = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(
+                    bookId: uploadResult,
+                    true
+                );
+                Model.AddHistoryRecordForLibraryUpload(url);
+                dynamic result = new DynamicJson();
+                result.bookId = Model.Book.BookInfo.Id;
+                result.url = url;
+                _webSocketServer.SendBundle(
+                    kWebSocketContext,
+                    kWebSocketEventId_uploadSuccessful,
+                    result
+                );
+            }
         }
 
         private void ReportBasicErrorDuringUpload()
@@ -440,10 +453,10 @@ namespace Bloom.web.controllers
             new
             {
                 error = true, // Inform the client there was an error. Don't continue with the upload.
-                shouldShow = false // Don't show the dialog. (Currently this is ignored if error is true; in that case, we never show the dialog.)
+                shouldShow = false, // Don't show the dialog. (Currently this is ignored if error is true; in that case, we never show the dialog.)
             };
 
-        private void HandleUploadAfterChangingBookId(ApiRequest request)
+        private async Task HandleUploadAfterChangingBookId(ApiRequest request)
         {
             if (!Model.ChangeBookInstanceId(_progress))
             {
@@ -454,7 +467,7 @@ namespace Bloom.web.controllers
             // We're treating this upload as a new book; if we keep this around, it will
             // attempt an overwrite.
             _existingBookObjectIdOrNull = null;
-            HandleUpload(request);
+            await HandleUpload(request);
         }
 
         private void HandleCheckForLoggedInUser(ApiRequest request)
@@ -498,10 +511,12 @@ namespace Bloom.web.controllers
             }
         }
 
-        private void HandleGoToEditBookCover(ApiRequest request)
+        private void HandleGoToEditBookTitle(ApiRequest request)
         {
             // 0 is the index of the first page, the front cover.
-            Model.Book.UserPrefs.MostRecentPage = 0;
+            // A template book does not have a title on the front cover, but it
+            // can be edited on the second (title) page.
+            Model.Book.UserPrefs.MostRecentPage = Model.Book.IsTemplateBook ? 1 : 0;
             GetWorkspaceView()?.ChangeTab(WorkspaceTab.edit);
             request.PostSucceeded();
         }
@@ -510,8 +525,8 @@ namespace Bloom.web.controllers
         {
             if (request.HttpMethod == HttpMethods.Get)
             {
-                var currentTopicKey = Model.Book.BookData
-                    .GetVariableOrNull("topic", "en")
+                var currentTopicKey = Model
+                    .Book.BookData.GetVariableOrNull("topic", "en")
                     .Unencoded;
                 string result;
                 if (string.IsNullOrEmpty(currentTopicKey))

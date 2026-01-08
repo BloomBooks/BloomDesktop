@@ -38,7 +38,9 @@ function isL10nDefinition(obj: any): obj is l10nDefinition {
 // the children of the tooltip consume that context and display/act appropriately.
 export const DisabledContext = React.createContext(false);
 
-export const BloomTooltip: React.FunctionComponent<IBloomToolTipProps> = props => {
+export const BloomTooltip: React.FunctionComponent<IBloomToolTipProps> = (
+    props,
+) => {
     let tipContent: React.ReactNode;
     if (props.showDisabled) {
         const l10nDef = props.tipWhenDisabled as l10nDefinition;

@@ -6,8 +6,8 @@
 // this bundle is one of two loaded by pageThumbnailList.pug. It is imported last,
 // so things it exports are accessible from outside the bundle using editTabBundle.
 
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import $ from "jquery";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useState, useEffect, useMemo } from "react";
@@ -66,7 +66,7 @@ export interface IPage {
 // there ever being more than one instance of pageThumbnailList.
 const pageIdToRefreshMap = new Map<string, () => void>();
 
-const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
+const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
     const [realPageList, setRealPageList] = useState<IPage[]>([]);
     // a value to be bumped to force a reload of page content when the websocket detects
     // a request for this.
@@ -79,7 +79,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
     const [selectedPageId, setSelectedPageId] = useState("");
     const bookAttributesThatMayAffectDisplay = useApiData<any>(
         "pageList/bookAttributesThatMayAffectDisplay",
-        {}
+        {},
     );
 
     // All the code in this useEffect is one-time initialization.
@@ -90,7 +90,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
         // to be called when C# sends messages through the web socket.
         // We need a named function because it looks cleaner and we use it to remove the
         // listener when we shut down.
-        webSocketListenerFunction = event => {
+        webSocketListenerFunction = (event) => {
             switch (event.id) {
                 case "saving": {
                     toastr.info(localizedNotification, "", {
@@ -105,7 +105,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                         hideEasing: "linear",
                         hideMethod: "fadeOut",
                         messageClass: "toast-for-saved-message",
-                        iconClass: ""
+                        iconClass: "",
                     });
                     break;
                 }
@@ -122,7 +122,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                     // pass function so we're not incrementing a stale value captured
                     // when we set up this function. Bumping this number triggers
                     // re-running a useEffect.
-                    setReloadValue(oldReloadValue => oldReloadValue + 1);
+                    setReloadValue((oldReloadValue) => oldReloadValue + 1);
                     break;
                 case "pageListNeedsReset":
                     // Here we want to force a re-render to put the objects back in
@@ -131,7 +131,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                     // it is designed NOT to re-render when its props don't change, so
                     // that dragged positions are not too easily lost. See the trick
                     // below that uses resetValue for something we don't care about.
-                    setResetValue(oldResetValue => oldResetValue + 1);
+                    setResetValue((oldResetValue) => oldResetValue + 1);
                     break;
                 case "stopListening":
                     WebSocketManager.closeSocket(kWebsocketContext);
@@ -141,11 +141,11 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
 
         theOneLocalizationManager
             .asyncGetText("EditTab.SavingNotification", "Saving...", "")
-            .done(savingNotification => {
+            .done((savingNotification) => {
                 localizedNotification = savingNotification;
                 WebSocketManager.addListener(
                     kWebsocketContext,
-                    webSocketListenerFunction
+                    webSocketListenerFunction,
                 );
             });
     }, []);
@@ -156,7 +156,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
     // calls to fill in the page content. Then this runs again when the sequence
     // of pages changes (e.g., adding a page or re-ordering them).
     useEffect(() => {
-        get("pageList/pages", response => {
+        get("pageList/pages", (response) => {
             // We're using a double approach here. The WebThumbnailList actually gets
             // notified a few times of the initial selected page. Each time, it sends
             // a message to the listener above. But, there's async stuff involved
@@ -170,7 +170,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
             // The current page may need to be refreshed as well for new or retitled books.
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-9039.
             const callback = pageIdToRefreshMap.get(
-                response.data.selectedPageId
+                response.data.selectedPageId,
             );
             if (callback) callback();
 
@@ -188,7 +188,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
             // importantly including not scrolling at all if it's already visible.
             if (pageElement)
                 pageElement.scrollIntoView({
-                    block: "nearest"
+                    block: "nearest",
                 });
         }
         // Make LazyLoad component re-check for elements in viewport
@@ -222,7 +222,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                 const caption = pageElt.getAttribute("data-caption");
                 postJson("pageList/pageClicked", {
                     pageId,
-                    detail: caption
+                    detail: caption,
                 });
             }
         }
@@ -237,7 +237,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
             const pageId = pageElt.getAttribute("id");
             if (pageId === selectedPageId)
                 postJson("pageList/menuClicked", {
-                    pageId
+                    pageId,
                 });
         }
     };
@@ -249,9 +249,9 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
         {
             key: "placeholder",
             caption: "",
-            content: ""
+            content: "",
         },
-        ...realPageList
+        ...realPageList,
     ];
     const pages = useMemo(() => {
         const pages1 = pageList.map((pageContent, index) => {
@@ -283,7 +283,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                         <PageThumbnail
                             page={pageContent}
                             left={!(index % 2)}
-                            pageSize={props.pageSize}
+                            pageLayout={props.pageLayout}
                             configureReloadCallback={(id, callback) =>
                                 pageIdToRefreshMap.set(id, callback)
                             }
@@ -299,7 +299,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                                     viewBox="0 0 18 18"
                                     onClick={() => {
                                         postJson("pageList/menuClicked", {
-                                            pageId: pageContent.key
+                                            pageId: pageContent.key,
                                         });
                                     }}
                                 >
@@ -325,7 +325,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
             x: 0,
             y: index,
             w: 1,
-            h: 1
+            h: 1,
         };
     });
     const twoColLayout = pageList.map((page, index) => {
@@ -346,12 +346,12 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
             // the re-render we need when forcing objects back to their original positions
             // (e.g., after a forbidden drag).
             maxW: resetValue,
-            draggable // todo: not working.
+            draggable, // todo: not working.
         };
     });
     const layouts = {
         lg: twoColLayout,
-        sm: singleColLayout
+        sm: singleColLayout,
     };
 
     // Useful if we get responsive...figures out whether the responsive grid has
@@ -366,6 +366,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
             {...bookAttributesThatMayAffectDisplay}
         >
             <Responsive
+                className="page-thumbnail-list"
                 width={180}
                 layouts={layouts}
                 // lg (two-column) if it's more than 90px wide. That's barely enough for one column,
@@ -375,13 +376,13 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                 // it big enough for two full columns always.
                 breakpoints={{
                     lg: 90,
-                    sm: 0
+                    sm: 0,
                 }}
                 rowHeight={rowHeight}
                 compactType="wrap"
                 cols={{
                     lg: 2,
-                    sm: 1
+                    sm: 1,
                 }}
                 onLayoutChange={onLayoutChange}
                 onDragStop={onDragStop}
@@ -393,11 +394,11 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
 };
 
 $(window).ready(() => {
-    const pageSize =
+    const pageLayout =
         document.body.getAttribute("data-pageSize") || "A5Portrait";
     ReactDOM.render(
-        <PageList pageSize={pageSize} />,
-        document.getElementById("pageGridWrapper")
+        <PageList pageLayout={pageLayout} />,
+        document.getElementById("pageGridWrapper"),
     );
 
     // If the user clicks outside of the context menu, we want to close it.
@@ -410,7 +411,7 @@ $(window).ready(() => {
 });
 
 function NotifyCSharpOfClick() {
-    (window as any).chrome.webview.postMessage("browser-clicked");
+    (window as any).chrome?.webview?.postMessage("browser-clicked");
 }
 
 // Function invoked when dragging a page ends. Note that it is often
@@ -424,7 +425,7 @@ function onDragStop(
     newItem: ReactGridLayout.Layout,
     placeholder: ReactGridLayout.Layout,
     e: MouseEvent,
-    element: HTMLElement
+    element: HTMLElement,
 ) {
     const movedPageId = newItem.i;
 
@@ -438,7 +439,7 @@ function onDragStop(
         // click events than we really want.)
         postJson("pageList/pageClicked", {
             pageId: movedPageId,
-            detail: "unknown"
+            detail: "unknown",
         });
         return;
     }
@@ -450,7 +451,7 @@ function onDragStop(
 
 function ContinueAutomatedPageClicking(
     pagesRemaining: IPage[],
-    count: number = 0
+    count: number = 0,
 ) {
     const kHowManyPages = 1000; // no way other than code to change this at the moment
     if (count > kHowManyPages) return;
@@ -458,14 +459,14 @@ function ContinueAutomatedPageClicking(
     if (count === 0) {
         postString(
             "common/logger/writeEvent",
-            "**  pageThumbnailList: user initiated Automated Page Clicking test function"
+            "**  pageThumbnailList: user initiated Automated Page Clicking test function",
         );
     }
     postJson(
         "pageList/pageClicked",
         {
             pageId: pagesRemaining[0].key,
-            detail: pagesRemaining[0].caption
+            detail: pagesRemaining[0].caption,
         },
         () => {
             const remaining = pagesRemaining.slice(1);
@@ -474,9 +475,9 @@ function ContinueAutomatedPageClicking(
                     () => {
                         ContinueAutomatedPageClicking(remaining, count + 1);
                     },
-                    8 * 1000 // leave time for the browser to redraw
+                    8 * 1000, // leave time for the browser to redraw
                 );
             else window.alert("Done with automated page clicking");
-        }
+        },
     );
 }

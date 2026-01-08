@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useL10n } from "../react_components/l10nHooks";
@@ -12,7 +11,7 @@ import {
     DialogTitle,
     DialogBottomButtons,
     DialogBottomLeftButtons,
-    DialogMiddle
+    DialogMiddle,
 } from "../react_components/BloomDialog/BloomDialog";
 import { WarningBox } from "../react_components/boxes";
 
@@ -21,14 +20,14 @@ import { WarningBox } from "../react_components/boxes";
 export const ForgetChangesDialog: React.FunctionComponent<{
     open: boolean;
     close: () => void;
-}> = props => {
+}> = (props) => {
     const title = useL10n(
         "Forget Changes & Check in Book",
         "TeamCollection.ForgetChangesDialogTitle",
         undefined,
         undefined,
         undefined,
-        true
+        true,
     );
     return (
         <BloomDialog open={props.open} onClose={props.close}>
@@ -68,7 +67,7 @@ export const ForgetChangesDialog: React.FunctionComponent<{
                             post(
                                 "teamCollection/forgetChangesInSelectedBook",
                                 props.close,
-                                props.close
+                                props.close,
                             );
                         }}
                         hasText={true}

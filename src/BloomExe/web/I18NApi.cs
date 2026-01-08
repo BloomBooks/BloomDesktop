@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Windows;
 using Bloom.Collection;
 using L10NSharp;
 using Newtonsoft.Json;
 using Sentry;
+using SIL.Reporting;
 
 namespace Bloom.Api
 {
@@ -282,6 +284,36 @@ namespace Bloom.Api
                 null,
                 langId
             );
+# if DEBUG
+            // Check for an error in the XLF content that can mess up localization.
+            // If L10nSharp finds braces in the string such that String.Format can't handle
+            // them, it will choke, and return the English. This is meant to defend against
+            // translators messing up data placeholders in a way that would cause a crash.
+            // However, it can bite us if we wanted to insert something other than placeholders,
+            // using braces, like some Markdown formatting, resulting in the English having
+            // braces that String.Format doesn't like. So we added this to warn us.
+            if (!string.IsNullOrEmpty(localizedString))
+            {
+                var braceCount = localizedString.Count(c => c == '{');
+                try
+                {
+                    // This is similar to the code that L10NSharp uses itself to check whether
+                    // the string is OK.
+                    object[] args = Enumerable.Repeat("ar" as object, braceCount).ToArray();
+                    string.Format(localizedString, args);
+                }
+                catch (Exception e)
+                {
+                    ErrorReport.NotifyUserOfProblem(
+                        "Debug Only: '"
+                            // This replacement guards against anything going wrong if our error reporting tries
+                            // to use String.Format on the message.
+                            + localizedString.Replace("{", "(brace)").Replace("}", "(close brace)")
+                            + "' uses braces in a way that L10nSharp will not handle. Localization will not happen for it."
+                    );
+                }
+            }
+#endif
             if (string.IsNullOrEmpty(localizedString) || localizedString == id)
                 localizedString = LocalizationManager.GetDynamicStringOrEnglish(
                     "BloomMediumPriority",

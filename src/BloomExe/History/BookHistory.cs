@@ -44,7 +44,7 @@ namespace Bloom.History
                 UserName = ch.UserName,
                 Type = ch.Type,
                 When = ch.When,
-                BloomVersion = ch.BloomVersion
+                BloomVersion = ch.BloomVersion,
             };
         }
     }
@@ -245,7 +245,7 @@ namespace Bloom.History
                                 Type = eventType,
                                 // Be sure to use UTC, otherwise, order will not be preserved properly.
                                 When = DateTime.UtcNow,
-                                BloomVersion = Application.ProductVersion
+                                BloomVersion = Application.ProductVersion,
                             };
 
                             db.Insert(evt);
@@ -289,7 +289,7 @@ namespace Bloom.History
                 {
                     Id = bookId,
                     // TODO: update Name every time because it can change? Add an event if we notice that it changed?
-                    Name = bookName
+                    Name = bookName,
                 };
                 db.Insert(bookRecord);
             }

@@ -36,7 +36,7 @@
             this._districtLabel = new System.Windows.Forms.Label();
             this._provinceLabel = new System.Windows.Forms.Label();
             this.betterLabel1 = new SIL.Windows.Forms.Widgets.BetterLabel();
-            this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+            this._L10NSharpExtender = new L10NSharp.Windows.Forms.L10NSharpExtender(this.components);
             ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             this.SuspendLayout();
             // 
@@ -175,6 +175,6 @@
 		private System.Windows.Forms.Label _districtLabel;
 		private System.Windows.Forms.Label _provinceLabel;
 		private SIL.Windows.Forms.Widgets.BetterLabel betterLabel1;
-        private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
+        private L10NSharp.Windows.Forms.L10NSharpExtender _L10NSharpExtender;
 	}
 }

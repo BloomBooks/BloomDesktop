@@ -1,4 +1,4 @@
-import * as tinycolor from "tinycolor2";
+import tinycolor from "tinycolor2";
 
 // Corresponds to the colors defined in bloomUI.less
 // These can be useful for CSS-in-JS, where it's hard to get at the color definitions in the .less files
@@ -24,7 +24,7 @@ export const kFormBackground = "#f0f0f0"; // See @form-background;
 
 export const getRgbaColorStringFromColorAndOpacity = (
     color: string,
-    opacity: number
+    opacity: number,
 ): string => {
     const rgbColor = tinycolor(color).toRgb();
     rgbColor.a = opacity;

@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useL10n } from "../react_components/l10nHooks";
@@ -12,7 +11,7 @@ import {
     DialogTitle,
     DialogBottomButtons,
     DialogBottomLeftButtons,
-    DialogMiddle
+    DialogMiddle,
 } from "../react_components/BloomDialog/BloomDialog";
 import { kBloomRed } from "../utils/colorUtils";
 import { WarningBox } from "../react_components/boxes";
@@ -22,14 +21,14 @@ import { WarningBox } from "../react_components/boxes";
 export const ForceUnlockDialog: React.FunctionComponent<{
     open: boolean;
     close: () => void;
-}> = props => {
+}> = (props) => {
     const title = useL10n(
         "Force Unlock (Administrator Only)",
         "TeamCollection.ForceUnlockTitle",
         undefined,
         undefined,
         undefined,
-        true
+        true,
     );
     return (
         <BloomDialog

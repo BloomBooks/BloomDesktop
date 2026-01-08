@@ -13,8 +13,12 @@ const handler = (e: Event) => {
     if (!href) {
         return;
     }
-    if (href.startsWith("http") || href.startsWith("mailto") || href.startsWith('file')) {
-        console.log('handling link ', href);
+    if (
+        href.startsWith("http") ||
+        href.startsWith("mailto") ||
+        href.startsWith("file")
+    ) {
+        console.log("handling link ", href);
         e.preventDefault();
         e.stopPropagation();
         postString("link", href);

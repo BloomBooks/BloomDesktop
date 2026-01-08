@@ -8,7 +8,7 @@ namespace Bloom.SubscriptionAndFeatures
         BasicPage, // we don't really need this, it's just a basic feature and not experimental or anything. It's for test cases.
         DeleteBook, // we don't really need this, it's just a basic feature and not experimental or anything. It's for test cases.
 
-        Overlay,
+        Canvas, // was Overlay
         Game, // This does not include HTML5 widgets
         Widget, //HTML5 Widget
         Spreadsheet,
@@ -27,7 +27,7 @@ namespace Bloom.SubscriptionAndFeatures
         PrintShopReady,
         BulkUpload,
         BulkBloomPub,
-        Bookshelf
+        Bookshelf,
     }
 
     public static class FeatureRegistry
@@ -45,12 +45,12 @@ namespace Bloom.SubscriptionAndFeatures
             new FeatureInfo
             {
                 Feature = FeatureName.BasicPage,
-                SubscriptionTier = SubscriptionTier.Basic
+                SubscriptionTier = SubscriptionTier.Basic,
             },
             new FeatureInfo
             {
                 Feature = FeatureName.DeleteBook,
-                SubscriptionTier = SubscriptionTier.Basic
+                SubscriptionTier = SubscriptionTier.Basic,
             },
             // ----------------------------------------
             // Pro Tier Features
@@ -65,7 +65,7 @@ namespace Bloom.SubscriptionAndFeatures
                 SupportedMediums = PublishingMediums.BloomPub | PublishingMediums.Video,
                 PreventPublishingInDerivativeBooks = PreventionMethod.None,
                 PreventPublishingInOriginalBooks = PreventionMethod.DisabledInUi,
-                PreventPublishingInUnsupportedMediums = PreventionMethod.DisabledInUi
+                PreventPublishingInUnsupportedMediums = PreventionMethod.DisabledInUi,
             },
             new FeatureInfo
             {
@@ -77,7 +77,7 @@ namespace Bloom.SubscriptionAndFeatures
                 PreventPublishingInOriginalBooks = PreventionMethod.DisabledByModifyingDom,
                 PreventPublishingInUnsupportedMediums = PreventionMethod.DisabledByModifyingDom,
                 AttributesToRemoveToDisable = "data-backgroundaudio",
-                L10NId = "PublishTab.Feature.Music"
+                L10NId = "PublishTab.Feature.Music",
             },
             new FeatureInfo
             {
@@ -100,12 +100,12 @@ namespace Bloom.SubscriptionAndFeatures
             new FeatureInfo
             {
                 Feature = FeatureName.ExportEPUB,
-                SubscriptionTier = SubscriptionTier.Pro
+                SubscriptionTier = SubscriptionTier.Pro,
             },
             new FeatureInfo
             {
                 Feature = FeatureName.ExportAudioVideo,
-                SubscriptionTier = SubscriptionTier.Pro
+                SubscriptionTier = SubscriptionTier.Pro,
             },
             new FeatureInfo
             {
@@ -127,7 +127,7 @@ namespace Bloom.SubscriptionAndFeatures
             },
             new FeatureInfo
             {
-                Feature = FeatureName.Overlay,
+                Feature = FeatureName.Canvas,
                 SubscriptionTier = SubscriptionTier.Pro,
                 SupportedMediums = PublishingMediums.All,
                 PreventPublishingInDerivativeBooks = PreventionMethod.None,
@@ -137,7 +137,7 @@ namespace Bloom.SubscriptionAndFeatures
                     + Bloom.Book.HtmlDom.kCanvasElementClass
                     + "') and not(contains(@class,'"
                     + Bloom.Book.HtmlDom.kBackgroundImageClass
-                    + "'))]"
+                    + "'))]",
             },
             new FeatureInfo
             {
@@ -172,7 +172,7 @@ namespace Bloom.SubscriptionAndFeatures
                 PreventPublishingInDerivativeBooks = PreventionMethod.DisabledByModifyingDom,
                 PreventPublishingInOriginalBooks = PreventionMethod.DisabledByModifyingDom,
                 ClassesToRemoveToDisable = "cover-is-image no-margin-page",
-                L10NId = "BookSettings.CoverIsImage"
+                L10NId = "BookSettings.CoverIsImage",
             },
             // ----------------------------------------
             // LocalCommunity Tier Features
@@ -180,17 +180,17 @@ namespace Bloom.SubscriptionAndFeatures
             new FeatureInfo
             {
                 Feature = FeatureName.Spreadsheet,
-                SubscriptionTier = SubscriptionTier.LocalCommunity
+                SubscriptionTier = SubscriptionTier.LocalCommunity,
             },
             new FeatureInfo
             {
                 Feature = FeatureName.TeamCollection,
-                SubscriptionTier = SubscriptionTier.LocalCommunity
+                SubscriptionTier = SubscriptionTier.LocalCommunity,
             },
             new FeatureInfo
             {
                 Feature = FeatureName.ViewBookHistory,
-                SubscriptionTier = SubscriptionTier.LocalCommunity
+                SubscriptionTier = SubscriptionTier.LocalCommunity,
             },
             // ----------------------------------------
             // Enterprise Tier Features
@@ -198,23 +198,23 @@ namespace Bloom.SubscriptionAndFeatures
             new FeatureInfo
             {
                 Feature = FeatureName.PrintShopReady,
-                SubscriptionTier = SubscriptionTier.Enterprise
+                SubscriptionTier = SubscriptionTier.Enterprise,
             },
             new FeatureInfo
             {
                 Feature = FeatureName.BulkUpload,
-                SubscriptionTier = SubscriptionTier.Enterprise
+                SubscriptionTier = SubscriptionTier.Enterprise,
             },
             new FeatureInfo
             {
                 Feature = FeatureName.BulkBloomPub,
-                SubscriptionTier = SubscriptionTier.Enterprise
+                SubscriptionTier = SubscriptionTier.Enterprise,
             },
             new FeatureInfo
             {
                 Feature = FeatureName.Bookshelf,
-                SubscriptionTier = SubscriptionTier.Enterprise
-            }
+                SubscriptionTier = SubscriptionTier.Enterprise,
+            },
         };
     }
 }

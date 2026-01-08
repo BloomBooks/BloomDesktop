@@ -55,7 +55,7 @@ namespace Bloom.web.controllers
         {
             RedGreen,
             BlueYellow,
-            Complete
+            Complete,
         }
 
         private KindOfColorBlindness _kindOfColorBlindness;
@@ -109,8 +109,8 @@ namespace Bloom.web.controllers
                 kApiUrlPart + "showAccessibilityChecker",
                 request =>
                 {
-                    AccessibilityCheckWindow.StaticShow(
-                        () => _webSocketServer.SendEvent(kWebSocketContext, kWindowActivated)
+                    AccessibilityCheckWindow.StaticShow(() =>
+                        _webSocketServer.SendEvent(kWebSocketContext, kWindowActivated)
                     );
                     request.PostSucceeded();
                 },
@@ -543,8 +543,8 @@ namespace Bloom.web.controllers
             }
             else
             {
-                var programPath = System.Reflection.Assembly
-                    .GetEntryAssembly()
+                var programPath = System
+                    .Reflection.Assembly.GetEntryAssembly()
                     .ManifestModule.FullyQualifiedName;
                 var folder = Path.GetDirectoryName(programPath);
                 if (folder.EndsWith("/output/Debug") || folder.EndsWith("/output/Release"))

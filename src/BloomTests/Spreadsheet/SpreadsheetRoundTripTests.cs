@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Xml;
 using Bloom.Book;
 using Bloom.SafeXml;
 using Bloom.Spreadsheet;
@@ -5,11 +10,6 @@ using Moq;
 using NUnit.Framework;
 using OfficeOpenXml;
 using SIL.IO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Xml;
 
 namespace BloomTests.Spreadsheet
 {

@@ -9,7 +9,7 @@ import {
     ListItemText,
     MenuItem,
     TypographyProps,
-    TypographyPropsVariantOverrides
+    TypographyPropsVariantOverrides,
 } from "@mui/material";
 import { OverridableStringUnion } from "@mui/types";
 import NestedMenuItem from "mui-nested-menu-item";
@@ -21,7 +21,7 @@ import { kUiFontStack } from "../bloomMaterialUITheme";
 import { Variant } from "@mui/material/styles/createTypography";
 import {
     useGetFeatureStatus,
-    useGetFeatureAvailabilityMessage
+    useGetFeatureAvailabilityMessage,
 } from "./featureStatus";
 
 interface IBaseLocalizableMenuItemProps {
@@ -61,6 +61,7 @@ export interface ILocalizableMenuItemProps
     dontGiveAffordanceForCheckbox?: boolean;
     subscriptionTooltipOverride?: string;
     className?: string;
+    isDivider?: boolean;
 }
 
 interface ILocalizableCheckboxMenuItemProps
@@ -72,24 +73,28 @@ interface ILocalizableCheckboxMenuItemProps
 export const divider: ILocalizableMenuItemProps = {
     l10nId: "-",
     english: "",
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    onClick: () => {}
+    onClick: () => {},
+    isDivider: true,
 };
 
 const kIconCheckboxAffordance = 28;
 const kEnterpriseStickerAffordance = 28;
 const menuItemColor = "black";
 
-export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemProps> = props => {
+export const LocalizableMenuItem: React.FunctionComponent<
+    ILocalizableMenuItemProps
+> = (props) => {
     const variant = props.variant ?? "h6";
-    const typographyProps: TypographyProps = {
-        variant: variant
+    const typographyProps:
+        | TypographyProps<"span", { component?: "span" | undefined }>
+        | undefined = {
+        variant: variant,
     };
     const label = useL10n(
         props.english,
         props.l10nId,
         undefined,
-        props.l10nParam0
+        props.l10nParam0,
     );
     const featureStatus = useGetFeatureStatus(props.featureName);
     const enabled = featureStatus === undefined ? true : featureStatus.enabled;
@@ -193,23 +198,27 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
     );
 };
 
-export const LocalizableCheckboxMenuItem: React.FunctionComponent<ILocalizableCheckboxMenuItemProps> = props => {
+export const LocalizableCheckboxMenuItem: React.FunctionComponent<
+    ILocalizableCheckboxMenuItemProps
+> = (props) => {
     const variant = props.variant ?? "h6";
-    const typographyProps: TypographyProps = {
-        variant: variant
+    const typographyProps:
+        | TypographyProps<"span", { component?: "span" | undefined }>
+        | undefined = {
+        variant: variant,
     };
     const label = useL10n(
         props.english,
         props.l10nId,
         undefined,
-        props.l10nParam0
+        props.l10nParam0,
     );
     const [checked, setChecked] = useState(false);
     useEffect(() => {
-        getBoolean(props.apiEndpoint, value => {
+        getBoolean(props.apiEndpoint, (value) => {
             setChecked(value);
         });
-    }, []);
+    }, [props.apiEndpoint]);
 
     // The "div" wrapper is necessary to get the tooltip to work on a disabled item.
     return (
@@ -234,7 +243,7 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<ILocalizableCh
                     }
                     checkedIcon={<CheckBoxIcon htmlColor={menuItemColor} />}
                     checked={checked}
-                    onChange={e => {
+                    onChange={(e) => {
                         postBoolean(props.apiEndpoint, e.target.checked);
                         setChecked(e.target.checked);
                     }}
@@ -263,12 +272,14 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<ILocalizableCh
     );
 };
 
-export const LocalizableNestedMenuItem: React.FunctionComponent<INestedMenuItemProps> = props => {
+export const LocalizableNestedMenuItem: React.FunctionComponent<
+    INestedMenuItemProps
+> = (props) => {
     const label = useL10n(
         props.english,
         props.l10nId,
         undefined,
-        props.l10nParam0
+        props.l10nParam0,
     );
     const subLabel = useL10n("", props.subLabelL10nId ?? null);
     if (!props.children) {

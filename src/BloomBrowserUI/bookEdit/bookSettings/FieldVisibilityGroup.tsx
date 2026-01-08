@@ -29,39 +29,36 @@ export const FieldVisibilityGroup: React.FunctionComponent<{
     // so we can't just import it. And it does complex and important work, especially to
     // support allowing xmatter and branding to lock certain settings. So the only way I could
     // make it work and let that functionality be shared was to pass it in.
-    getAdditionalProps: (
-        subPath: string
-    ) => {
+    getAdditionalProps: (subPath: string) => {
         path: string;
         overrideValue: boolean;
         overrideDescription?: string;
     };
-}> = props => {
+}> = (props) => {
     // Enhance: we may decide to let the dialog retrieve these and pass them in, to reduce API calls,
     // if we actually start having more than one field configured with this component.
-    const languageNameValues: ILanguageNameValues = useApiObject<
-        ILanguageNameValues
-    >("settings/languageNames", {
-        language1Name: "",
-        language2Name: ""
-    });
+    const languageNameValues: ILanguageNameValues =
+        useApiObject<ILanguageNameValues>("settings/languageNames", {
+            language1Name: "",
+            language2Name: "",
+        });
     const showWrittenLanguage1TitleLabel = useL10n(
         props.labelFrame,
         props.labelFrameL10nKey,
         "",
-        languageNameValues.language1Name
+        languageNameValues.language1Name,
     );
     const showWrittenLanguage2TitleLabel = useL10n(
         props.labelFrame,
         props.labelFrameL10nKey,
         "",
-        languageNameValues.language2Name
+        languageNameValues.language2Name,
     );
     const showWrittenLanguage3TitleLabel = useL10n(
         props.labelFrame,
         props.labelFrameL10nKey,
         undefined,
-        languageNameValues.language3Name
+        languageNameValues.language3Name,
     );
 
     const L1Field = `${props.field}-L1-show`;
@@ -102,7 +99,7 @@ export const FieldVisibilityGroup: React.FunctionComponent<{
             appearance[L1Field],
             appearance[L2Field],
             appearance[L3Field],
-            count
+            count,
         ];
     }, [
         L1Field,
@@ -111,7 +108,7 @@ export const FieldVisibilityGroup: React.FunctionComponent<{
         props.settings,
         props.settingsToReturnLater,
         showL2Control,
-        showL3Control
+        showL3Control,
     ]);
 
     return (
@@ -128,28 +125,32 @@ export const FieldVisibilityGroup: React.FunctionComponent<{
                 }
                 {...props.getAdditionalProps(L1Field)}
             />
-            {// Only makes sense to show a control for L2 if it is different from L1
-            showL2Control && (
-                <ConfigrBoolean
-                    label={showWrittenLanguage2TitleLabel}
-                    disabled={props.disabled}
-                    // The second expression should never be false if L1 must be turned on;
-                    // but we need it when that is false, and it's harmless when L1 must be on
-                    // because showL1 will be true.
-                    locked={!props.disabled && numberShowing <= 1 && showL2}
-                    {...props.getAdditionalProps(L2Field)}
-                />
-            )}
+            {
+                // Only makes sense to show a control for L2 if it is different from L1
+                showL2Control && (
+                    <ConfigrBoolean
+                        label={showWrittenLanguage2TitleLabel}
+                        disabled={props.disabled}
+                        // The second expression should never be false if L1 must be turned on;
+                        // but we need it when that is false, and it's harmless when L1 must be on
+                        // because showL1 will be true.
+                        locked={!props.disabled && numberShowing <= 1 && showL2}
+                        {...props.getAdditionalProps(L2Field)}
+                    />
+                )
+            }
 
-            {// Only show this one if it exists and is different from the others
-            showL3Control && (
-                <ConfigrBoolean
-                    label={showWrittenLanguage3TitleLabel}
-                    disabled={props.disabled}
-                    locked={!props.disabled && numberShowing <= 1 && showL3}
-                    {...props.getAdditionalProps(L3Field)}
-                />
-            )}
+            {
+                // Only show this one if it exists and is different from the others
+                showL3Control && (
+                    <ConfigrBoolean
+                        label={showWrittenLanguage3TitleLabel}
+                        disabled={props.disabled}
+                        locked={!props.disabled && numberShowing <= 1 && showL3}
+                        {...props.getAdditionalProps(L3Field)}
+                    />
+                )
+            }
         </div>
     );
 };

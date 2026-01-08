@@ -1,10 +1,10 @@
-﻿using Amazon.S3;
-using Amazon.S3.Model;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Amazon.S3;
+using Amazon.S3.Model;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -29,7 +29,7 @@ namespace Bloom.WebLibraryIntegration
             // Note: S3 only allows a max of 1,000 objects in one go.
             do
             {
-                matchingItemsResponse = s3.ListObjectsV2(request);
+                matchingItemsResponse = s3.ListObjectsV2Async(request).GetAwaiter().GetResult();
                 allMatchingItems.AddRange(matchingItemsResponse.S3Objects);
                 // matchingItemsResponse.ContinuationToken indicates where the request that generated the response started
                 // matchingItemsResponse.NextContinuationToken indicates where the next request (if needed) should start

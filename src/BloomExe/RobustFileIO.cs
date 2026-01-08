@@ -1,12 +1,8 @@
-﻿#if !__MonoCS__
-using NAudio.Wave;
-#endif
 using System.IO;
+using Bloom.ImageProcessing;
 using SIL.Code;
 using SIL.IO;
 using SIL.Windows.Forms.ClearShare;
-using TidyManaged;
-using Bloom.ImageProcessing;
 
 namespace Bloom
 {
@@ -21,11 +17,6 @@ namespace Bloom
     /// </summary>
     public class RobustFileIO
     {
-        public static Document DocumentFromFile(string filePath)
-        {
-            return RetryUtility.Retry(() => Document.FromFile(filePath));
-        }
-
         /// <summary>
         /// Get the image metadata from the file as reliably as possible.
         /// </summary>

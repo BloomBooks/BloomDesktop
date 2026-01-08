@@ -10,20 +10,20 @@
 // to use this package. We qualify as non-commercial as a charitable organization
 // (also as educational).
 
-using Bloom.ImageProcessing;
-using OfficeOpenXml;
-using OfficeOpenXml.Style;
-using SIL.IO;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Bloom.ImageProcessing;
 using Bloom.web;
-using System.Linq;
+using OfficeOpenXml;
+using OfficeOpenXml.Style;
+using SIL.IO;
 using static SQLite.TableMapping;
-using System.Drawing.Imaging;
 
 namespace Bloom.Spreadsheet
 {
@@ -142,7 +142,11 @@ namespace Bloom.Spreadsheet
                             var imageSrc = sourceCell.Content;
 
                             // if this row has an image source value that is not a header
-                            if (imageSrc != "" && !row.IsHeader)
+                            if (
+                                imageSrc != ""
+                                && !ImageUtils.IsPlaceholderImageFilename(imageSrc)
+                                && !row.IsHeader
+                            )
                             {
                                 var sheetFolder = Path.GetDirectoryName(outputPath);
                                 var imagePath = Path.Combine(sheetFolder, imageSrc);
@@ -281,7 +285,7 @@ namespace Bloom.Spreadsheet
                 InternalSpreadsheet.RowTypeColumnLabel,
                 InternalSpreadsheet.ImageSourceColumnLabel,
                 InternalSpreadsheet.ImageThumbnailColumnLabel,
-                InternalSpreadsheet.PageNumberColumnLabel
+                InternalSpreadsheet.PageNumberColumnLabel,
             }
         );
 

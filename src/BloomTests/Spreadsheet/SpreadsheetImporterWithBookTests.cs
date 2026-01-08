@@ -1,15 +1,15 @@
-﻿using Bloom;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
+using System.Xml;
+using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.Spreadsheet;
-using SIL.IO;
-using NUnit.Framework;
-using System.IO;
-using BloomTemp;
-using System.Xml;
-using System;
-using System.Threading.Tasks;
 using Bloom.SafeXml;
+using Bloom.Spreadsheet;
+using BloomTemp;
+using NUnit.Framework;
+using SIL.IO;
 
 namespace BloomTests.Spreadsheet
 {
@@ -107,8 +107,6 @@ namespace BloomTests.Spreadsheet
 
         public static string templateDom =
             @"
-<!DOCTYPE html>
-
 <html>
 <head>
 </head>

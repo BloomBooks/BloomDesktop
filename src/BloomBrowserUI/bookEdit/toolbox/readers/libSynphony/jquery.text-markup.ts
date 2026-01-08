@@ -7,16 +7,18 @@
  *
  */
 
+import jQuery from "jquery";
+import $ from "jquery";
 import * as _ from "underscore";
 import { theOneLibSynphony, LibSynphony } from "./synphony_lib";
-import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
+import "./bloomSynphonyExtensions"; //add several functions to LanguageData
 import { ReaderToolsModel } from "../readerToolsModel";
 
 /**
  * Use an 'Immediately Invoked Function Expression' to make this compatible with jQuery.noConflict().
  * @param {jQuery} $
  */
-($ => {
+(($) => {
     const cssSentenceTooLong = "sentence-too-long";
     const cssSightWord = "sight-word";
     const cssWordNotFound = "word-not-found";
@@ -30,7 +32,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
      * @param {Object} options
      * @returns {Object}
      */
-    $.fn.checkLeveledReader = function(options) {
+    $.fn.checkLeveledReader = function (options) {
         let allWords = "";
         const longWords: string[] = [];
 
@@ -39,9 +41,9 @@ import { ReaderToolsModel } from "../readerToolsModel";
                 maxWordsPerSentence: Infinity,
                 maxWordsPerPage: Infinity,
                 maxSentencesPerPage: Infinity,
-                maxGlyphsPerWord: Infinity
+                maxGlyphsPerWord: Infinity,
             },
-            options
+            options,
         );
 
         // 0 means unlimited. So convert them to Infinity
@@ -63,14 +65,14 @@ import { ReaderToolsModel } from "../readerToolsModel";
         // initialize sentences per page
         let totalSentenceCount = 0;
 
-        const checkLeaf = leaf => {
+        const checkLeaf = (leaf) => {
             stashNonTextUIElementsInEditBox(leaf);
             // split into sentences. We need it both with markup
             // (to preserve bold/italic/ckEditor landmarks in the output)
             // and without (because some markup, especially ckEditor invisible landmarks,
             // may alter word counts and lists)
             const fragments = theOneLibSynphony.stringToSentences(
-                $(leaf).html()
+                $(leaf).html(),
             );
 
             let newHtml = "";
@@ -96,11 +98,10 @@ import { ReaderToolsModel } from "../readerToolsModel";
                     // removeAllHtmlMarkupFromString cleans out <br>, which otherwise becomes an element in
                     // the list.
                     const cleanText = removeAllHtmlMarkupFromString(
-                        fragment.text
+                        fragment.text,
                     );
-                    const words = theOneLibSynphony.getWordsFromHtmlString(
-                        cleanText
-                    );
+                    const words =
+                        theOneLibSynphony.getWordsFromHtmlString(cleanText);
                     if (opts.maxGlyphsPerWord > 0) {
                         for (const w of words) {
                             if (
@@ -124,9 +125,8 @@ import { ReaderToolsModel } from "../readerToolsModel";
                         // all of those leading close </span> tags to preserve proper
                         // nesting of the marked sentence.
                         let leadingClosers = "";
-                        const leadingCloseSpans = fragment.text.match(
-                            /^( *<\/span>)+ */
-                        );
+                        const leadingCloseSpans =
+                            fragment.text.match(/^( *<\/span>)+ */);
                         if (leadingCloseSpans) {
                             leadingClosers = leadingCloseSpans[0];
                         }
@@ -153,7 +153,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
                     newHtml,
                     longWords,
                     cssWordTooLong,
-                    ' data-segment="word"'
+                    ' data-segment="word"',
                 );
             }
 
@@ -162,7 +162,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
             restoreNonTextUIElementsInEditBox(leaf);
         };
 
-        const checkRoot = root => {
+        const checkRoot = (root) => {
             const children = root.children();
             let processedChild = false; // Did we find a significant child?
             for (let i = 0; i < children.length; i++) {
@@ -189,20 +189,20 @@ import { ReaderToolsModel } from "../readerToolsModel";
             // Review: is there a need to handle elements that contain both sentence text AND child elements with their own text?
         };
 
-        this.each(function() {
+        this.each(function () {
             checkRoot($(this));
         });
         // highlight the page for too many words or sentences found
         // (or remove any previous highlighting if it's all okay now)
         let pageDiv: JQuery;
         const page = parent.window.document.getElementById(
-            "page"
+            "page",
         ) as HTMLIFrameElement;
         if (!page || !page.contentWindow) {
             pageDiv = $("body").find("div.bloom-page");
         } else {
             pageDiv = $("body", page.contentWindow.document).find(
-                "div.bloom-page"
+                "div.bloom-page",
             );
         }
         if (
@@ -223,15 +223,15 @@ import { ReaderToolsModel } from "../readerToolsModel";
      * @param {Object} options
      * @returns {Object}
      */
-    $.fn.checkDecodableReader = function(options) {
+    $.fn.checkDecodableReader = function (options) {
         const opts = $.extend(
             {
                 focusWords: [],
                 previousWords: [],
                 sightWords: [],
-                knownGraphemes: []
+                knownGraphemes: [],
             },
-            options
+            options,
         );
         let text = "";
 
@@ -239,7 +239,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
         this.removeSynphonyMarkup();
 
         // get all text
-        this.each(function() {
+        this.each(function () {
             text += " " + removeAllHtmlMarkupFromString($(this).html());
         });
 
@@ -251,11 +251,11 @@ import { ReaderToolsModel } from "../readerToolsModel";
             opts.previousWords,
             opts.knownGraphemes,
             text,
-            opts.sightWords.join(" ")
+            opts.sightWords.join(" "),
         );
 
         // markup
-        this.each(function() {
+        this.each(function () {
             stashNonTextUIElementsInEditBox(this);
             let html = $(this).html();
 
@@ -265,26 +265,26 @@ import { ReaderToolsModel } from "../readerToolsModel";
                     html,
                     results.sight_words,
                     cssSightWord,
-                    ' data-segment="word"'
+                    ' data-segment="word"',
                 );
                 html = theOneLibSynphony.wrap_words_extra(
                     html,
                     results.possible_words,
                     cssPossibleWord,
-                    ' data-segment="word"'
+                    ' data-segment="word"',
                 );
 
                 // remove numbers from list of bad words
                 const notFound = _.difference(
                     results.remaining_words,
-                    results.getNumbers()
+                    results.getNumbers(),
                 );
 
                 html = theOneLibSynphony.wrap_words_extra(
                     html,
                     notFound,
                     cssWordNotFound,
-                    ' data-segment="word"'
+                    ' data-segment="word"',
                 );
                 $(this).html(html);
             }
@@ -298,27 +298,26 @@ import { ReaderToolsModel } from "../readerToolsModel";
      * Finds the maximum word count in the selected sentences.
      * @returns {int}
      */
-    $.fn.getMaxSentenceLength = function() {
+    $.fn.getMaxSentenceLength = function () {
         let maxWords = 0;
 
-        this.each(function() {
+        this.each(function () {
             // split into sentences
             let fragments = theOneLibSynphony.stringToSentences(
-                removeAllHtmlMarkupFromString($(this).html())
+                removeAllHtmlMarkupFromString($(this).html()),
             );
 
             if (!fragments || fragments.length === 0) return;
 
             // remove inter-sentence space
-            fragments = fragments.filter(frag => {
+            fragments = fragments.filter((frag) => {
                 return frag.isSentence;
             });
 
-            const subMax = Math.max.apply(
-                Math,
-                fragments.map(frag => {
+            const subMax = Math.max(
+                ...fragments.map((frag) => {
                     return frag.wordCount();
-                })
+                }),
             );
 
             if (subMax > maxWords) maxWords = subMax;
@@ -331,17 +330,17 @@ import { ReaderToolsModel } from "../readerToolsModel";
      * Returns the count of all words in the selected elements.
      * @returns {int}
      */
-    $.fn.getTotalWordCount = function() {
+    $.fn.getTotalWordCount = function () {
         let wordCount = 0;
 
-        this.each(function() {
+        this.each(function () {
             // split into sentences
             let fragments = theOneLibSynphony.stringToSentences(
-                removeAllHtmlMarkupFromString($(this).html())
+                removeAllHtmlMarkupFromString($(this).html()),
             );
 
             // remove inter-sentence space
-            fragments = fragments.filter(frag => {
+            fragments = fragments.filter((frag) => {
                 return frag.isSentence;
             });
 
@@ -356,37 +355,22 @@ import { ReaderToolsModel } from "../readerToolsModel";
     /**
      * Removes all the markup that was inserted by this addin
      */
-    $.fn.removeSynphonyMarkup = function() {
-        this.each(function() {
+    $.fn.removeSynphonyMarkup = function () {
+        this.each(function () {
             // remove markup for deleted text
-            $(this)
-                .find("span[data-segment=sentence]:empty")
-                .remove();
-            $(this)
-                .find("span[data-segment=word]:empty")
-                .remove();
-            $(this)
-                .find("span[data-segment=grapheme]:empty")
-                .remove();
+            $(this).find("span[data-segment=sentence]:empty").remove();
+            $(this).find("span[data-segment=word]:empty").remove();
+            $(this).find("span[data-segment=grapheme]:empty").remove();
 
             // remove previous sentence markup
-            $(this)
-                .find("span[data-segment=sentence]")
-                .contents()
-                .unwrap();
-            $(this)
-                .find("span[data-segment=word]")
-                .contents()
-                .unwrap();
-            $(this)
-                .find("span[data-segment=grapheme]")
-                .contents()
-                .unwrap();
+            $(this).find("span[data-segment=sentence]").contents().unwrap();
+            $(this).find("span[data-segment=word]").contents().unwrap();
+            $(this).find("span[data-segment=grapheme]").contents().unwrap();
         });
 
         // remove page markup
         const page = parent.window.document.getElementById(
-            "page"
+            "page",
         ) as HTMLIFrameElement;
         if (!page || !page.contentWindow)
             $("body")
@@ -430,28 +414,28 @@ import { ReaderToolsModel } from "../readerToolsModel";
             }
 
             return returnVal;
-        }
+        },
     });
 
     $.extend({
         cssSentenceTooLong: () => {
             return cssSentenceTooLong;
-        }
+        },
     });
     $.extend({
         cssSightWord: () => {
             return cssSightWord;
-        }
+        },
     });
     $.extend({
         cssWordNotFound: () => {
             return cssWordNotFound;
-        }
+        },
     });
     $.extend({
         cssPossibleWord: () => {
             return cssPossibleWord;
-        }
+        },
     });
 
     function oldMarkup(gpcForm, desiredGPCs) {
@@ -518,7 +502,8 @@ export function removeAllHtmlMarkupFromString(textHtml: string): string {
     textHtml = textHtml.replace(ckeRegex, "");
 
     // Remove phrase delimiters used by the talking book tool.
-    const phraseDelimeterRegex = /<span class=["']bloom-audio-split-marker["']>.<\/span>/g;
+    const phraseDelimeterRegex =
+        /<span class=["']bloom-audio-split-marker["']>.<\/span>/g;
     textHtml = textHtml.replace(phraseDelimeterRegex, "");
 
     // Both open and close tags for markup

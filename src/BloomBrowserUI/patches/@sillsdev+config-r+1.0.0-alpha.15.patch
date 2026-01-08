@@ -1,0 +1,15 @@
+diff --git a/node_modules/@sillsdev/config-r/package.json b/node_modules/@sillsdev/config-r/package.json
+index 1234567..abcdefg 100644
+--- a/node_modules/@sillsdev/config-r/package.json
++++ b/node_modules/@sillsdev/config-r/package.json
+@@ -92,7 +92,9 @@
+   "types": "./dist/index.d.ts",
+   "exports": {
+     ".": {
+-      "require": "./dist/configr.es.js"
++      "import": "./dist/configr.es.js",
++      "require": "./dist/configr.es.js",
++      "default": "./dist/configr.es.js"
+     }
+   },
+   "publishConfig": {

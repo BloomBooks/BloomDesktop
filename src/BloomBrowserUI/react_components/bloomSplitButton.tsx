@@ -9,7 +9,7 @@ import Popper from "@mui/material/Popper";
 import MenuList from "@mui/material/MenuList";
 import {
     ILocalizableMenuItemProps,
-    LocalizableMenuItem
+    LocalizableMenuItem,
 } from "./localizableMenuItem";
 
 // Creates a button which has a drop-down menu of options.
@@ -19,12 +19,12 @@ export const BloomSplitButton: React.FunctionComponent<{
     options: ILocalizableMenuItemProps[];
     disabled?: boolean;
     hideArrow?: boolean;
-}> = props => {
+}> = (props) => {
     const [open, setOpen] = React.useState(false);
     const anchorRef = React.useRef<HTMLDivElement>(null);
     const [selectedIndex, setSelectedIndex] = React.useState(0);
 
-    const handleButtonClick = event => {
+    const handleButtonClick = (event) => {
         props.options[selectedIndex].onClick(event);
     };
 
@@ -34,7 +34,7 @@ export const BloomSplitButton: React.FunctionComponent<{
     };
 
     const handleToggle = () => {
-        setOpen(prevOpen => !prevOpen);
+        setOpen((prevOpen) => !prevOpen);
     };
 
     const handleClose = (event: Event) => {
@@ -74,7 +74,7 @@ export const BloomSplitButton: React.FunctionComponent<{
             </ButtonGroup>
             <Popper
                 sx={{
-                    zIndex: 1
+                    zIndex: 1,
                 }}
                 open={open}
                 anchorEl={anchorRef.current}
@@ -89,7 +89,7 @@ export const BloomSplitButton: React.FunctionComponent<{
                             transformOrigin:
                                 placement === "bottom"
                                     ? "center top"
-                                    : "center bottom"
+                                    : "center bottom",
                         }}
                     >
                         <Paper>
@@ -102,10 +102,10 @@ export const BloomSplitButton: React.FunctionComponent<{
                                             {...option}
                                             // Override option's onClick here.
                                             // The real one will be called in handleButtonClick.
-                                            onClick={event =>
+                                            onClick={(event) =>
                                                 handleMenuItemClick(
                                                     event,
-                                                    index
+                                                    index,
                                                 )
                                             }
                                         ></LocalizableMenuItem>

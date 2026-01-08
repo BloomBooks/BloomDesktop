@@ -10,7 +10,7 @@ import {
     post,
     postDataWithConfig,
     postJson,
-    postThatMightNavigate
+    postThatMightNavigate,
 } from "../../../utils/bloomApi";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import { UrlUtils } from "../../../utils/urlUtils";
@@ -20,6 +20,7 @@ import calculateAspectRatio from "calculate-aspect-ratio";
 import VideoTrimSlider from "../../../react_components/videoTrimSlider";
 import { updateVideoInContainer } from "../../js/bloomVideo";
 import { selectVideoContainer } from "../../js/videoUtils";
+import $ from "jquery";
 
 // The recording process can be in one of these states:
 // idle...the initial state, returned to when stopped; red record button shows; stop button and all labels hidden
@@ -74,7 +75,7 @@ const emptyVideoStatistics = {
     fileFormat: "",
     startSeconds: UNTRIMMED_TIMING,
     endSeconds: UNTRIMMED_TIMING,
-    aspectRatio: ""
+    aspectRatio: "",
 };
 
 // This react class implements the UI for the sign language (video) toolbox.
@@ -93,9 +94,8 @@ export class SignLanguageToolControls extends React.Component<
         // and have 'this' refer to the right thing.
         // See: https://reactjs.org/docs/handling-events.html
         this.handleSliderRangeChange = this.handleSliderRangeChange.bind(this);
-        this.handleSliderRangeAfterChange = this.handleSliderRangeAfterChange.bind(
-            this
-        );
+        this.handleSliderRangeAfterChange =
+            this.handleSliderRangeAfterChange.bind(this);
     }
     public static kToolID = "signLanguage";
     public readonly state: IComponentState = {
@@ -109,7 +109,7 @@ export class SignLanguageToolControls extends React.Component<
         minutesRecorded: "",
         secondsRecorded: "",
         videoStatistics: emptyVideoStatistics,
-        videoInfoLoaded: false
+        videoInfoLoaded: false,
     };
     private videoStream: MediaStream | null;
     private chunks: Blob[];
@@ -276,7 +276,7 @@ export class SignLanguageToolControls extends React.Component<
         return this.showDefaultSlider()
             ? 5
             : SignLanguageTool.convertTimeStringToSecondsNumber(
-                  this.state.videoStatistics.duration
+                  this.state.videoStatistics.duration,
               );
     }
 
@@ -360,11 +360,13 @@ export class SignLanguageToolControls extends React.Component<
                 <Label l10nKey="Common.Info">Info</Label>
                 {this.state.videoStatistics.duration !== "unknown" && (
                     <div>
-                        {/* duration is stored with tenths of seconds, but only displayed with seconds*/
-                        this.state.videoStatistics.duration.substr(
-                            0,
-                            this.state.videoStatistics.duration.length - 2
-                        )}
+                        {
+                            /* duration is stored with tenths of seconds, but only displayed with seconds*/
+                            this.state.videoStatistics.duration.substr(
+                                0,
+                                this.state.videoStatistics.duration.length - 2,
+                            )
+                        }
                     </div>
                 )}
                 <div>{this.state.videoStatistics.fileSize}</div>
@@ -384,7 +386,7 @@ export class SignLanguageToolControls extends React.Component<
 
     private handleSliderRangeChange(
         newStartSeconds: number,
-        newEndSeconds: number
+        newEndSeconds: number,
     ) {
         const newStartString = newStartSeconds.toFixed(1);
         const newEndString = newEndSeconds.toFixed(1);
@@ -411,7 +413,7 @@ export class SignLanguageToolControls extends React.Component<
         this.setState({
             haveRecording: false,
             videoStatistics: emptyVideoStatistics,
-            videoInfoLoaded: doneLoading
+            videoInfoLoaded: doneLoading,
         });
     }
 
@@ -460,7 +462,7 @@ export class SignLanguageToolControls extends React.Component<
         }
         const paramsObj = {
             source: UrlUtils.extractPathComponent(pathAndTiming),
-            timings: ""
+            timings: "",
         };
         const indexOfHash = pathAndTiming.indexOf("#");
         if (indexOfHash >= 0) {
@@ -478,7 +480,7 @@ export class SignLanguageToolControls extends React.Component<
         getWithConfig(
             "signLanguage/getStats",
             { params: paramsObj },
-            result => {
+            (result) => {
                 if (result.statusText != "OK") {
                     this.setNoVideo(true);
                 } else {
@@ -490,17 +492,17 @@ export class SignLanguageToolControls extends React.Component<
                             const y = parseInt(frameSize.substring(index + 3));
                             result.data.aspectRatio = calculateAspectRatio(
                                 x,
-                                y
+                                y,
                             ) as string;
                         }
                     }
                     this.setState({
                         videoStatistics: result.data,
                         haveRecording: true,
-                        videoInfoLoaded: true
+                        videoInfoLoaded: true,
                     });
                 }
-            }
+            },
         );
     }
 
@@ -517,7 +519,7 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     private importRecording() {
-        post("signLanguage/importVideo", result => {
+        post("signLanguage/importVideo", (result) => {
             this.updateVideo(result.data);
             // Makes sure the page gets saved with a reference to the new video,
             // and incidentally that everything gets updated to be consistent with the
@@ -535,7 +537,7 @@ export class SignLanguageToolControls extends React.Component<
             "signLanguage/deleteVideo",
             "",
             { params: paramsObj },
-            result => {
+            (result) => {
                 if (result.data == "deleted") {
                     const elt = this.getSelectedVideoContainer();
                     if (elt) {
@@ -548,10 +550,10 @@ export class SignLanguageToolControls extends React.Component<
                     // and incidentally that everything gets updated to be consistent with the
                     // new state of things.
                     postThatMightNavigate(
-                        "common/saveChangesAndRethinkPageEvent"
+                        "common/saveChangesAndRethinkPageEvent",
                     );
                 }
-            }
+            },
         );
     }
 
@@ -564,16 +566,16 @@ export class SignLanguageToolControls extends React.Component<
         const constraints = { video: true };
         navigator.mediaDevices
             .getUserMedia(constraints)
-            .then(stream => this.startMonitoring(stream))
-            .catch(reason => this.errorCallback(reason));
+            .then((stream) => this.startMonitoring(stream))
+            .catch((reason) => this.errorCallback(reason));
     }
 
     public turnOffVideo() {
         if (this.videoStream) {
             const oldStream = this.videoStream;
             this.videoStream = null; // prevent recursive calls
-            oldStream.getVideoTracks().forEach(t => t.stop());
-            oldStream.getAudioTracks().forEach(t => t.stop());
+            oldStream.getVideoTracks().forEach((t) => t.stop());
+            oldStream.getAudioTracks().forEach((t) => t.stop());
         }
     }
 
@@ -588,7 +590,7 @@ export class SignLanguageToolControls extends React.Component<
                 reason &&
                 reason.name &&
                 (reason.name === "NotReadableError" || // Gecko63 or so
-                    reason.name == "SourceUnavailableError") // Gecko45
+                    reason.name == "SourceUnavailableError"), // Gecko45
         });
         // In case the user plugs in a camera, try once a second to turn it on.
         window.setTimeout(() => this.turnOnVideo(), 1000);
@@ -597,11 +599,11 @@ export class SignLanguageToolControls extends React.Component<
     // callback from getUserMedia when it succeeds; gives us a stream we can monitor and record from.
     private startMonitoring(stream: MediaStream) {
         this.setState({
-            cameraAccess: true
+            cameraAccess: true,
         });
         this.videoStream = stream;
         const videoMonitor = document.getElementById(
-            "videoMonitor"
+            "videoMonitor",
         ) as HTMLVideoElement;
         videoMonitor.srcObject = stream;
     }
@@ -639,7 +641,7 @@ export class SignLanguageToolControls extends React.Component<
                     this.timerId = window.setTimeout(() => {
                         this.setState({
                             stateClass: "recording",
-                            recording: true
+                            recording: true,
                         });
                         this.startRecording();
                     }, 1000);
@@ -690,14 +692,14 @@ export class SignLanguageToolControls extends React.Component<
             // I found a couple of examples online with these rates for video/mp4 and the results
             // look reasonable. It's possible we could get useful recordings with lower rates.
             audioBitsPerSecond: 128000,
-            videoBitsPerSecond: 2500000
+            videoBitsPerSecond: 2500000,
             // Setting this after the move to Geckofx60 results in an error, but
             // the default seems to produce the same result.
             //mimeType: "video/mp4"
         };
         this.mediaRecorder = new MediaRecorder(
             this.videoStream as MediaStream,
-            options
+            options,
         );
         // if (this.videoStream) {
         //     const track = this.videoStream.getVideoTracks()[0];
@@ -706,7 +708,7 @@ export class SignLanguageToolControls extends React.Component<
         //         "Video Stream/Track settings = " + JSON.stringify(settings)
         //     );
         // }
-        this.mediaRecorder.ondataavailable = e => {
+        this.mediaRecorder.ondataavailable = (e) => {
             // called periodically during recording and once more with the rest of the data
             // when recording stops. So all the chunks which make up the recording come here.
             this.chunks.push(e.data);
@@ -720,18 +722,18 @@ export class SignLanguageToolControls extends React.Component<
                 blob,
                 {
                     headers: {
-                        "Content-Type": "video/mp4"
-                    }
+                        "Content-Type": "video/mp4",
+                    },
                 },
-                result => {
+                (result) => {
                     this.updateVideo(result.data);
                     // Makes sure the page gets saved with a reference to the new video,
                     // and incidentally that everything gets updated to be consistent with the
                     // new state of things.
                     postThatMightNavigate(
-                        "common/saveChangesAndRethinkPageEvent"
+                        "common/saveChangesAndRethinkPageEvent",
                     );
-                }
+                },
             );
             // Don't know why this is necessary, but for some reason, the stream we have is no
             // longer useful after calling mediaRecorder.stop(). The monitor freezes and
@@ -758,7 +760,7 @@ export class SignLanguageToolControls extends React.Component<
         const seconds = elapsed - Math.floor(minutes) * 60;
         this.setState({
             minutesRecorded: this.twoDigits(minutes),
-            secondsRecorded: this.twoDigits(seconds)
+            secondsRecorded: this.twoDigits(seconds),
         });
     }
 
@@ -775,10 +777,10 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     public static setup(root): SignLanguageToolControls {
-        return (ReactDOM.render(
+        return ReactDOM.render(
             <SignLanguageToolControls />,
-            root
-        ) as unknown) as SignLanguageToolControls;
+            root,
+        ) as unknown as SignLanguageToolControls;
     }
 }
 
@@ -814,9 +816,9 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             classes += " bloom-selected";
         }
         const page = ToolBox.getPage();
-        return (page
-            ? Array.from(page.getElementsByClassName(classes))
-            : []) as HTMLElement[];
+        return (
+            page ? Array.from(page.getElementsByClassName(classes)) : []
+        ) as HTMLElement[];
     }
 
     public static getSelectedVideoPathAndTiming(): string | null {
@@ -840,7 +842,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         // strip off the ?now= param we sometimes use to prevent use of cached old versions,
         // and the #t= fragment used to trim videos.
         return UrlUtils.extractPathComponent(
-            SignLanguageTool.getSelectedVideoPathAndTiming() as string
+            SignLanguageTool.getSelectedVideoPathAndTiming() as string,
         );
     }
 
@@ -855,7 +857,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             for (let i = 0; i < containers.length; i++) {
                 containers[i].removeEventListener(
                     "click",
-                    this.containerClickListener
+                    this.containerClickListener,
                 );
             }
         }
@@ -899,8 +901,8 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         if (
             y < clientRect.height - 40 * scale && // above the control bar across the bottom
             (y < heightOfPlayCenter - buttonRadius || // above the play button
-            y > heightOfPlayCenter + buttonRadius || // below the play button
-            x < clientRect.width / 2 - buttonRadius || // left of play button
+                y > heightOfPlayCenter + buttonRadius || // below the play button
+                x < clientRect.width / 2 - buttonRadius || // left of play button
                 x > clientRect.width / 2 + buttonRadius)
         ) {
             // right of play button
@@ -917,14 +919,14 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-6752.
             videoStatistics: emptyVideoStatistics,
             haveRecording: false,
-            videoInfoLoaded: false
+            videoInfoLoaded: false,
         });
         const containers = SignLanguageTool.getVideoContainers(false);
         if (!containers || containers.length === 0) {
             if (this.reactControls.state.enabled) {
                 this.reactControls.turnOffVideo();
                 this.reactControls.setState({
-                    enabled: false
+                    enabled: false,
                 });
             }
         } else {
@@ -944,11 +946,11 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
                 // removing it before adding.
                 container.removeEventListener(
                     "click",
-                    this.containerClickListener
+                    this.containerClickListener,
                 );
                 container.addEventListener(
                     "click",
-                    this.containerClickListener
+                    this.containerClickListener,
                 );
             }
             // we turn it off when we leave a page, so even if we already have enabled:true,
@@ -992,20 +994,20 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             // URL should already be %encoded. But video filenames in Bloom are currently
             // all GUIDs, even for imported videos, so this isn't really an issue.
             "toolbox/fileExists?filename=" + UrlUtils.extractPathComponent(src),
-            result => {
+            (result) => {
                 const fileExists: boolean = result.data;
                 if (fileExists) {
                     this.reactControls.getVideoStatsFromFile(); // (async) also sets reactControls state
                     SignLanguageTool.setCurrentVideoPoint(
                         parseFloat(
                             this.reactControls.state.videoStatistics
-                                .startSeconds
-                        )
+                                .startSeconds,
+                        ),
                     );
                 } else {
                     this.reactControls.setNoVideo(true);
                 }
-            }
+            },
         );
     }
 
@@ -1023,7 +1025,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             container.ownerDocument &&
             (!container.previousElementSibling ||
                 !container.previousElementSibling.classList.contains(
-                    SignLanguageTool.videoOverlayClass
+                    SignLanguageTool.videoOverlayClass,
                 ))
         ) {
             // bloom-ui class makes sure this div is removed before saving
@@ -1034,9 +1036,9 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             container.parentElement.insertBefore(
                 SignLanguageTool.createNode(
                     container.ownerDocument,
-                    overlayDiv
+                    overlayDiv,
                 ) as Node,
-                container
+                container,
             );
         }
     }
@@ -1048,13 +1050,14 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         const container = videoContainers[0];
         theOneLocalizationManager
             .asyncGetText("EditTab.Toolbox.SignLanguage." + key, key, "")
-            .done(recordingLabel => {
+            .done((recordingLabel) => {
                 if (
                     container &&
                     container.previousElementSibling &&
                     container.previousElementSibling.firstChild
                 )
-                    container.previousElementSibling.firstChild.textContent = recordingLabel;
+                    container.previousElementSibling.firstChild.textContent =
+                        recordingLabel;
             });
     }
 
@@ -1067,7 +1070,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         const overlayElement = container.previousElementSibling;
         if (
             overlayElement.classList.contains(
-                SignLanguageTool.videoOverlayClass
+                SignLanguageTool.videoOverlayClass,
             )
         ) {
             container.previousElementSibling.remove();
@@ -1082,12 +1085,12 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
 
     public static setVideoTimingsInSrcAttr(
         newStartString: string,
-        newEndString: string
+        newEndString: string,
     ) {
         const video = this.getSelectedVideoElement();
         if (!video) return;
         const source = video.getElementsByTagName(
-            "source"
+            "source",
         )[0] as HTMLSourceElement;
         let src = source.getAttribute("src");
         if (!src) src = "";
@@ -1095,7 +1098,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         src = urlTimingObj.url;
         source.setAttribute(
             "src",
-            src + "#t=" + newStartString + "," + newEndString
+            src + "#t=" + newStartString + "," + newEndString,
         );
     }
 
@@ -1103,7 +1106,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         const selectedContainers = SignLanguageTool.getVideoContainers(true); // s/b only one selected container
         if (selectedContainers && selectedContainers.length > 0)
             return selectedContainers[0].getElementsByTagName(
-                "video"
+                "video",
             )[0] as HTMLVideoElement;
         else return undefined;
     }
@@ -1125,7 +1128,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     // Seeks the video in 'videoElement' to 'timeInSeconds'.
     public static setCurrentVideoPoint(
         timeInSeconds: number,
-        videoElement?: HTMLVideoElement
+        videoElement?: HTMLVideoElement,
     ): void {
         if (!videoElement) {
             videoElement = SignLanguageTool.getSelectedVideoElement();
@@ -1167,7 +1170,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             .reverse()
             .reduce(
                 (prev, curr, i) => prev + parseFloat(curr) * Math.pow(60, i),
-                0
+                0,
             );
     }
 }

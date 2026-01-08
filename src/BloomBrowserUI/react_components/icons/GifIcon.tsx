@@ -6,7 +6,9 @@ interface ImagePlaceholderIconProps extends React.SVGProps<SVGSVGElement> {
 }
 
 // An icon that looks like our image placeholder.
-export const GifIcon: React.FunctionComponent<ImagePlaceholderIconProps> = props => {
+export const GifIcon: React.FunctionComponent<ImagePlaceholderIconProps> = (
+    props,
+) => {
     const { color, strokeColor, ...rest } = props;
     return (
         <svg

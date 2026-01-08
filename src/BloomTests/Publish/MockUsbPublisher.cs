@@ -73,7 +73,7 @@ namespace BloomTests.Publish
         {
             DeviceFull,
             DeviceHung,
-            HandleDeviceFull
+            HandleDeviceFull,
         }
     }
 }

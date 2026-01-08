@@ -1,3 +1,11 @@
+using System;
+using System.Diagnostics;
+using System.Dynamic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Publish;
@@ -5,16 +13,8 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using Newtonsoft.Json;
 using SIL.IO;
-using System;
-using System.Diagnostics;
 using SIL.PlatformUtilities;
-using System.Linq;
-using System.Net;
-using System.Windows.Forms;
-using System.IO;
-using System.Threading;
 using ThirdParty.Json.LitJson;
-using System.Dynamic;
 
 namespace Bloom.web.controllers
 {
@@ -155,9 +155,8 @@ namespace Bloom.web.controllers
                     FileName = Path.GetFileName(requestParameters.defaultPath),
                     Filter = string.Join(
                         "|",
-                        requestParameters.fileTypes.Select(
-                            fileType =>
-                                $"{fileType.name}|{string.Join(";", fileType.extensions.Select(e => "*." + e))}"
+                        requestParameters.fileTypes.Select(fileType =>
+                            $"{fileType.name}|{string.Join(";", fileType.extensions.Select(e => "*." + e))}"
                         )
                     ),
                 }
@@ -230,7 +229,10 @@ namespace Bloom.web.controllers
 
             try
             {
-                ProcessExtra.SafeStartInFront(jsonData.path);
+                // The client-side code URL-encodes file paths before sending them in JSON.
+                // We need to decode them to get actual file system paths.
+                var path = System.Web.HttpUtility.UrlDecode((string)jsonData.path);
+                ProcessExtra.SafeStartInFront(path);
             }
             catch (Exception e)
             {
@@ -259,7 +261,12 @@ namespace Bloom.web.controllers
 
             try
             {
-                var source = jsonData.from;
+                // The client-side code URL-encodes file paths before sending them in JSON.
+                // We need to decode them to get actual file system paths.
+                // See https://issues.bloomlibrary.org/youtrack/issue/BL-15384
+                var source = System.Web.HttpUtility.UrlDecode((string)jsonData.from);
+                var dest = System.Web.HttpUtility.UrlDecode((string)jsonData.to);
+
                 if (
                     !Path.IsPathRooted(source)
                     && (
@@ -278,7 +285,7 @@ namespace Bloom.web.controllers
                         source
                     );
                 }
-                RobustFile.Copy(source, jsonData.to, true);
+                RobustFile.Copy(source, dest, true);
             }
             catch (Exception e)
             {
@@ -318,7 +325,6 @@ namespace Bloom.web.controllers
             // when the dialog closes and handle the results, but FolderBrowserDialog
             // does not offer such an API. Instead, we just ignore any timeout
             // in our Javascript code.
-
 
             _webSocketServer.SendBundle("fileIO", "chooseFolder-results", result);
             request.PostSucceeded();
@@ -392,7 +398,7 @@ namespace Bloom.web.controllers
                         FileName = "wmctrl",
                         Arguments = "-a \"" + folderName + "\"",
                         UseShellExecute = false,
-                        ErrorDialog = false // do not show a message if not successful
+                        ErrorDialog = false, // do not show a message if not successful
                     }
                 );
             }
@@ -401,6 +407,6 @@ namespace Bloom.web.controllers
 
     enum SpecialLocation
     {
-        CurrentBookAudioDirectory
+        CurrentBookAudioDirectory,
     }
 }

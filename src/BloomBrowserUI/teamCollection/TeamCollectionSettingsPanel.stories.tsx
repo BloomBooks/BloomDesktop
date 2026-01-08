@@ -1,8 +1,7 @@
-import * as React from "react";
 import { TeamCollectionSettingsPanel } from "./TeamCollectionSettingsPanel";
 
 export default {
-    title: "Team Collection components"
+    title: "Team Collection components",
 };
 
 export const _TeamCollectionSettingsPanel = () => (
@@ -10,5 +9,5 @@ export const _TeamCollectionSettingsPanel = () => (
 );
 
 _TeamCollectionSettingsPanel.story = {
-    name: "TeamCollectionSettingsPanel"
+    name: "TeamCollectionSettingsPanel",
 };

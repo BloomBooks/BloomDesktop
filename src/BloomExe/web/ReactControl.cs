@@ -1,11 +1,13 @@
-using SIL.IO;
-using SIL.Windows.Forms.Extensions;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 using Bloom.Utils;
 using Newtonsoft.Json;
+using SIL.IO;
+using SIL.Windows.Forms.Extensions;
 
 namespace Bloom.web
 {
@@ -48,6 +50,9 @@ namespace Bloom.web
         }
 
         public bool UseEditContextMenu;
+        public bool HideVerticalOverflow;
+        public event EventHandler OnBrowserClick;
+
         private Browser _browser;
 
         private void ReactControl_Load(object sender, System.EventArgs e)
@@ -71,8 +76,13 @@ namespace Bloom.web
             var browserControl = _browser;
 
             browserControl.Dock = DockStyle.Fill;
-            browserControl.Location = new Point(3, 3);
-            browserControl.Size = new Size(Width - 6, Height - 6);
+            browserControl.Location = new Point(0, 0);
+            browserControl.Size = new Size(Width, Height);
+
+            // These three lines eliminate a border that was showing up in the Copy/Paste control in the Edit Tab toolbar, BL-15024
+            browserControl.BackColor = this.BackColor;
+            browserControl.Margin = new Padding(0);
+            browserControl.Padding = new Padding(0);
 
             // currently this is used only in ReactDialog. E.g., "Report a problem".
             if (UseEditContextMenu)
@@ -96,6 +106,11 @@ namespace Bloom.web
                 };
 
             _browser.EnsureHandleCreated();
+
+            _browser.OnBrowserClick += (s, args) =>
+            {
+                OnBrowserClick?.Invoke(this, args);
+            };
 
             // If the control gets added before it has navigated somewhere,
             // it shows as solid black, despite setting the BackColor to white.
@@ -161,17 +176,160 @@ namespace Bloom.web
             // to prevent a flash of white while the React is rendering.
             var backColor = MiscUtils.ColorToHtmlCode(BackColor);
 
-            // The 'body' height: auto rule keeps a winforms tab that only contains a ReactControl
-            // from unnecessary scrolling.
-            RobustFile.WriteAllText(
-                tempFile.Path,
-                $@"<!DOCTYPE html>
+            var overflowY = HideVerticalOverflow ? " overflow-y: hidden;" : "";
+
+            var bundleToViteModulePathMap = new Dictionary<string, string>
+            {
+                { "collectionsTabPaneBundle", "/collectionsTab/CollectionsTabPane.entry.tsx" },
+                { "bookMakingSettingsBundle", "/collection/bookMakingSettingsControl.entry.tsx" },
+                {
+                    "autoUpdateSoftwareDlgBundle",
+                    "/react_components/AutoUpdateSoftwareDialog.entry.tsx"
+                },
+                {
+                    "copyrightAndLicenseBundle",
+                    "/bookEdit/copyrightAndLicense/CopyrightAndLicenseDialog.entry.tsx"
+                },
+                {
+                    "createTeamCollectionDialogBundle",
+                    "/teamCollection/CreateTeamCollection.entry.tsx"
+                },
+                { "editTopBarControlsBundle", "/bookEdit/topbar/editTopBarControls.entry.tsx" },
+                { "duplicateManyDlgBundle", "/bookEdit/duplicateManyDialog.entry.tsx" },
+                {
+                    "joinTeamCollectionDialogBundle",
+                    "/teamCollection/JoinTeamCollectionDialog.entry.tsx"
+                },
+                { "languageChooserBundle", "/collection/LanguageChooserDialog.entry.tsx" },
+                { "messageBoxBundle", "/utils/BloomMessageBox.entry.tsx" },
+                {
+                    "newCollectionLanguageChooserBundle",
+                    "/collection/NewCollectionLanguageChooser.entry.tsx"
+                },
+                { "problemReportBundle", "/problemDialog/ProblemDialog.entry.tsx" },
+                { "progressDialogBundle", "/react_components/Progress/ProgressDialog.entry.tsx" },
+                { "publishTabPaneBundle", "/publish/PublishTab/PublishTabPane.entry.tsx" },
+                { "registrationDialogBundle", "/react_components/registrationDialog.entry.tsx" },
+                { "subscriptionSettingsBundle", "/collection/subscriptionSettingsTab.entry.tsx" },
+                {
+                    "teamCollectionSettingsBundle",
+                    "/teamCollection/TeamCollectionSettingsPanel.entry.tsx"
+                },
+            };
+            // Should we load relevant assets from the Vite Dev server?
+            // To save time, only consider it if this is a dev build.
+            // This also guards against trying to load assets from the vite server
+            // if a developer runs some other version. Though, it could still be a
+            // problem if a dev is trying to run dev builds of two versions at once.
+            var useViteDev =
+                ApplicationUpdateSupport.IsDev
+                && bundleToViteModulePathMap.ContainsKey(_javascriptBundleName);
+            var viteModulePath = useViteDev
+                ? bundleToViteModulePathMap[_javascriptBundleName]
+                : null;
+            // If still an option, see if localhost:5173 is running. This is quite slow when it is not.
+            // The original version used 400ms, which meant a 1200ms delay; but if it's going to succeed,
+            // it typically does so in 2ms. I compromised on 40.
+            useViteDev &= IsLocalPortOpen(5173, 40);
+            var body =
+                $@"
+                <body style='margin:0; height:100%; display: flex; flex: 1; flex-direction: column; background-color:{backColor};{overflowY}'>
+                    <div id='reactRoot' style='height:100%'>
+                    <div class='spinner-container' style='position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);'>
+                        <svg class='spinner' width='40' height='40' viewBox='0 0 40 40' style='animation: spin 1s linear infinite;'>
+                            <circle cx='20' cy='20' r='16' fill='none' stroke='#808080' stroke-width='4' stroke-dasharray='75.4 25.13' stroke-linecap='round'/>
+                        </svg>
+                    </div>
+                    <style>
+                        @keyframes spin {{
+                            to {{ transform: rotate(360deg); }}
+                        }}
+                    </style>
+                    </div>
+                </body>";
+
+            if (viteModulePath != null && useViteDev)
+            {
+                RobustFile.WriteAllText(
+                    tempFile.Path,
+                    $@"<!DOCTYPE html>
+                <html style='height:100%'>
+                <head>
+                    <title>ReactControl (Vite {_javascriptBundleName})</title>
+                    <meta charset='UTF-8' />
+                    <script>
+                        // Provide no-op React Fast Refresh globals so dev transforms don't crash in WebView.
+                        window.__vite_plugin_react_preamble_installed__ = true;
+                        window.$RefreshSig$ = window.$RefreshSig$ || (function () {{ return function (type) {{ return type; }}; }});
+                        window.$RefreshReg$ = window.$RefreshReg$ || function () {{}};
+                        window.__reactControlProps__ = {props};
+                        // Shim Node-style globals for browser-only environment
+                        if (typeof window.global === 'undefined') window.global = window;
+                        if (typeof window.globalThis === 'undefined') window.globalThis = window;
+                    </script>
+                    <script type='importmap'>
+                    {{
+                      ""imports"": {{
+                        ""jquery"": ""http://localhost:5173/@id/jquery"",
+                        ""xregexp"": ""http://localhost:5173/@id/xregexp"",
+                        ""underscore"": ""http://localhost:5173/@id/underscore""
+                      }}
+                    }}
+                    </script>
+
+                    <!-- Vite HMR client -->
+                    <script type='module' src='http://localhost:5173/@vite/client'></script>
+
+                    <!-- Wait for Vite to finish optimizing deps, then import and expose globals, then load the entry. -->
+                    <script type='module'>
+
+
+
+                        async function main() {{
+                            try {{
+
+                                // Import via bare specifiers (resolved by import map) and assign globals expected by legacy libs.
+                                const jQuery = (await import('jquery')).default;
+                                // Some builds export default, others export the function itself. Normalize.
+                                const jq = jQuery && jQuery.fn ? jQuery : (jQuery && jQuery.default ? jQuery.default : jQuery);
+                                window.$ = jq;
+                                window.jQuery = jq;
+                                console.log('jQuery ready via Vite prebundle');
+
+                                const XRegExp = (await import('xregexp')).default || (await import('xregexp'));
+                                window.XRegExp = XRegExp.default || XRegExp;
+                                console.log('XRegExp ready via Vite prebundle');
+
+                                const _mod = await import('underscore');
+                                window._ = _mod.default || _mod;
+                                console.log('Underscore ready via Vite prebundle');
+
+                                // Finally, load the app entry.
+                                await import('http://localhost:5173{viteModulePath}');
+                            }} catch (e) {{
+                                console.error('Failed to initialize Vite dev page:', e);
+                            }}
+                        }}
+
+                        main();
+                    </script>
+                </head>
+                {body}
+                </html>"
+                );
+            }
+            else
+            {
+                // The 'body' height: auto rule keeps a winforms tab that only contains a ReactControl
+                // from unnecessary scrolling.
+                RobustFile.WriteAllText(
+                    tempFile.Path,
+                    $@"<!DOCTYPE html>
 				<html style='height:100%'>
 				<head>
 					<title>ReactControl ({_javascriptBundleName})</title>
 					<meta charset = 'UTF-8' />
-					<script src = '/commonBundle.js' ></script>
-                    <script src = '/{bundleNameWithExtension}'></script>
+                    <script src = '/{bundleNameWithExtension}'  type='module'></script>
 					<script>
 						window.onload = () => {{
 							const rootDiv = document.getElementById('reactRoot');
@@ -179,12 +337,51 @@ namespace Bloom.web
 						}};
 					</script>
 				</head>
-				<body style='margin:0; height:100%; display: flex; flex: 1; flex-direction: column; background-color:{backColor};'>
-					<div id='reactRoot' style='height:100%'>Javascript should have replaced this. Make sure that the javascript bundle '{bundleNameWithExtension}' includes a single call to WireUpForWinforms()</div>
-				</body>
+				{body}
 				</html>"
-            );
+                );
+            }
             return tempFile;
+        }
+
+        private static bool IsLocalPortOpen(int port, int timeoutMs = 400)
+        {
+            try
+            {
+                // Try IPv6 localhost first (common on Windows), then IPv4.
+                if (TryConnect("::1", port, timeoutMs))
+                    return true;
+                if (TryConnect("127.0.0.1", port, timeoutMs))
+                    return true;
+                // As a fallback, try host name which may resolve differently.
+                if (TryConnect("localhost", port, timeoutMs))
+                    return true;
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static bool TryConnect(string host, int port, int timeoutMs)
+        {
+            try
+            {
+                using (var client = new System.Net.Sockets.TcpClient())
+                {
+                    var asyncResult = client.BeginConnect(host, port, null, null);
+                    var ok = asyncResult.AsyncWaitHandle.WaitOne(timeoutMs);
+                    if (!ok)
+                        return false;
+                    client.EndConnect(asyncResult);
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

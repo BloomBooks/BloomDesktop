@@ -31,7 +31,7 @@ using SIL.Xml;
 
 namespace Bloom.CollectionTab
 {
-    public class CollectionModel
+    public partial class CollectionModel
     {
         private readonly BookSelection _bookSelection;
         private readonly string _pathToCollection;
@@ -423,19 +423,6 @@ namespace Bloom.CollectionTab
                 AttemptMissingImageReplacements(selectedPath);
         }
 
-        public void MakeReaderTemplateBloompack()
-        {
-            using (var dlg = new MakeReaderTemplateBloomPackDlg())
-            {
-                dlg.SetLanguage(LanguageName);
-                dlg.SetTitles(BookTitles);
-                var mainWindow = MainShell;
-                if (dlg.ShowDialog(mainWindow) != DialogResult.OK)
-                    return;
-                MakeBloomPack(forReaderTools: true);
-            }
-        }
-
         public void SelectBook(Book.Book book)
         {
             _bookSelection.SelectBook(book);
@@ -453,7 +440,8 @@ namespace Bloom.CollectionTab
             Debug.Assert(book.FolderPath == _bookSelection.CurrentSelection?.FolderPath);
 
             if (
-                _bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanDelete
+                _bookSelection.CurrentSelection != null
+                && _bookSelection.CurrentSelection.CanDelete
             )
             {
                 if (IsCurrentBookInCollection())
@@ -596,11 +584,11 @@ namespace Bloom.CollectionTab
                         {
                             Text = "Cancel",
                             Id = "cancel",
-                            Default = true
-                        }
+                            Default = true,
+                        },
                     };
-                    var formToInvokeOn = Application.OpenForms
-                        .Cast<Form>()
+                    var formToInvokeOn = Application
+                        .OpenForms.Cast<Form>()
                         .FirstOrDefault(f => f is Shell);
                     formToInvokeOn.Invoke(
                         (Action)(
@@ -631,12 +619,12 @@ namespace Bloom.CollectionTab
                         {
                             Text = "Cancel",
                             Id = "cancel",
-                            Default = true
-                        }
+                            Default = true,
+                        },
                     };
                     string result = null;
-                    var formToInvokeOn = Application.OpenForms
-                        .Cast<Form>()
+                    var formToInvokeOn = Application
+                        .OpenForms.Cast<Form>()
                         .FirstOrDefault(f => f is Shell);
                     formToInvokeOn.Invoke(
                         (Action)(
@@ -731,7 +719,7 @@ namespace Bloom.CollectionTab
         {
             UpdateThumbnailAsync(
                 book,
-                new HtmlThumbNailer.ThumbnailOptions(),
+                BookThumbNailer.GetCoverThumbnailOptions(-1, Guid.Empty),
                 RefreshOneThumbnail,
                 HandleThumbnailerErrror
             );
@@ -897,7 +885,7 @@ namespace Bloom.CollectionTab
                 // want audio in bloompack: see https://issues.bloomlibrary.org/youtrack/issue/BL-11741.
                 NarrationLanguages = null, // all audio
                 WantMusic = true,
-                WantVideo = true
+                WantVideo = true,
             };
             // these are artifacts of uploading book to BloomLibrary.org and not useful in BloomPubs
             filter.AlwaysReject(new Regex("^thumbnail-"));
@@ -1059,7 +1047,7 @@ namespace Bloom.CollectionTab
                         {
                             { "Category", sourceBook.CategoryForUsageReporting },
                             { "BookId", newBook.ID },
-                            { "Country", _collectionSettings.Country }
+                            { "Country", _collectionSettings.Country },
                         }
                     );
                 }
@@ -1082,8 +1070,8 @@ namespace Bloom.CollectionTab
             // This might need adjustment if we ever get Linux/Mac versions working. But I think not. See the
             // comment in BookCollection.GetBookInfoByFolderPath.
             var collection = GetBookCollections()
-                .FirstOrDefault(
-                    c => c.PathToDirectory.ToLowerInvariant() == collectionPath.ToLowerInvariant()
+                .FirstOrDefault(c =>
+                    c.PathToDirectory.ToLowerInvariant() == collectionPath.ToLowerInvariant()
                 );
             if (collection == null)
                 return null;
@@ -1127,7 +1115,7 @@ namespace Bloom.CollectionTab
                     ".bloombookorder",
                     ".map",
                     ".bloompack",
-                    ".db"
+                    ".db",
                 };
 
                 Logger.WriteEvent("Zipping up {0} ...", destFileName);
@@ -1152,6 +1140,27 @@ namespace Bloom.CollectionTab
                 return false;
             }
             return true;
+        }
+
+        /// <summary>
+        /// Get a requested book by id or fall back to the current selection when no id is provided.
+        /// Returns null if the requested id cannot be resolved.
+        /// </summary>
+        public Book.Book GetRequestedBookOrDefaultOrNull(string requestedBookId)
+        {
+            if (!string.IsNullOrWhiteSpace(requestedBookId))
+            {
+                try
+                {
+                    return GetBookFromId(requestedBookId);
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+
+            return _bookSelection?.CurrentSelection;
         }
     }
 }

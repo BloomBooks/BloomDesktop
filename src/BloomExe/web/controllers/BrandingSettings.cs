@@ -1,12 +1,12 @@
-﻿using Newtonsoft.Json;
-using SIL.IO;
-using SIL.Linq;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Dynamic;
 using System.IO; // Add this for Path operations
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json;
+using SIL.IO;
+using SIL.Linq;
 
 namespace Bloom.Api
 {
@@ -167,7 +167,6 @@ namespace Bloom.Api
         /// <param name="brandingNameOrFolderPath"> Normally, the branding is just a name, which we look up in the official branding folder
         //but unit tests can instead provide a path to the folder.
         /// </param>
-
         public static Settings CachedBrandingSettings;
         private static string CachedBrandingSettingsName;
         private static string CachedBrandingSettingsPath;
@@ -196,8 +195,11 @@ namespace Bloom.Api
                 string brandingFolderName = null;
                 string flavor = null;
 
-                // First check if this is a direct path to a folder
-                if (Directory.Exists(brandingNameOrFolderPath))
+                // First check if this is a direct path to a folder (only in tests)
+                if (
+                    Path.IsPathRooted(brandingNameOrFolderPath)
+                    && Directory.Exists(brandingNameOrFolderPath)
+                )
                 {
                     // If it's a directory path, look for branding.json directly in that folder
                     settingsPath = Path.Combine(brandingNameOrFolderPath, "branding.json");

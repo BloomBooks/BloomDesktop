@@ -6,7 +6,7 @@
 /// <reference path="./directoryWatcher.ts" />
 /// <reference path="../../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="readerTools.ts" />
-/// <reference path="./libSynphony/synphony_lib.d.ts" />
+import $ from "jquery";
 import { DirectoryWatcher } from "./directoryWatcher";
 import { resizeWordList } from "./readerTools";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
@@ -17,34 +17,38 @@ import { ReaderStage, ReaderLevel } from "./ReaderSettings";
 import * as _ from "underscore";
 import {
     theOneLanguageDataInstance,
-    theOneLibSynphony
+    theOneLibSynphony,
 } from "./libSynphony/synphony_lib";
 import ReadersSynphonyWrapper from "./ReadersSynphonyWrapper";
-import { DataWord, TextFragment } from "./libSynphony/bloomSynphonyExtensions";
+import {
+    DataGPC,
+    DataWord,
+    TextFragment,
+} from "./libSynphony/bloomSynphonyExtensions";
 import axios from "axios";
 import {
     get,
     getWithConfig,
     post,
     postData,
-    postString
+    postString,
 } from "../../../utils/bloomApi";
 import { EditableDivUtils } from "../../js/editableDivUtils";
 import {
     allPromiseSettled,
-    setTimeoutPromise
+    setTimeoutPromise,
 } from "../../../utils/asyncUtils";
 
 const SortType = {
     alphabetic: "alphabetic",
     byLength: "byLength",
-    byFrequency: "byFrequency"
+    byFrequency: "byFrequency",
 };
 
 export const MarkupType = {
     None: 0,
     Leveled: 1,
-    Decodable: 2
+    Decodable: 2,
 };
 
 const sortIconSelectedClass = "sortIconSelected"; // The class we apply to the selected sort icon
@@ -104,7 +108,7 @@ export class ReaderToolsModel {
     public async initAsync(): Promise<void> {
         const keys = {
             "EditTab.Toolbox.DecodableReaderTool.StageNofM": "Stage {0} of {1}",
-            "EditTab.Toolbox.LeveledReaderTool.LevelNofM": "Level {0} of {1}"
+            "EditTab.Toolbox.LeveledReaderTool.LevelNofM": "Level {0} of {1}",
         };
 
         // Asynchronously pre-load the localizations (in the UI language) of the specified keys
@@ -154,7 +158,7 @@ export class ReaderToolsModel {
 
     public async setStageNumber(
         stage: number,
-        skipSave?: boolean
+        skipSave?: boolean,
     ): Promise<void> {
         if (!this.synphony) {
             return; // Synphony not loaded yet
@@ -173,7 +177,7 @@ export class ReaderToolsModel {
 
         return theOneLocalizationManager
             .asyncGetText("Common.Loading", "Loading...", "")
-            .then(loadingMessage => {
+            .then((loadingMessage) => {
                 // this may result in a need to resize the word list
                 this.previousHeight = 0;
                 $("#letterList").html(loadingMessage);
@@ -198,7 +202,7 @@ export class ReaderToolsModel {
                                 this.updateLetterList();
                             }
                         },
-                        0
+                        0,
                     );
 
                     const updateWordListDonePromise = setTimeoutPromise(() => {
@@ -221,14 +225,14 @@ export class ReaderToolsModel {
                                     () => {
                                         resolve();
                                     },
-                                    r => {
+                                    (r) => {
                                         reject(r);
-                                    }
+                                    },
                                 );
                             } else {
                                 resolve();
                             }
-                        }
+                        },
                     );
 
                     if (this.readyToDoMarkup()) {
@@ -238,7 +242,7 @@ export class ReaderToolsModel {
                     return allPromiseSettled([
                         updateLetterListDonePromise,
                         updateWordListDonePromise,
-                        defaultStagePostedPromise
+                        defaultStagePostedPromise,
                     ]);
 
                     // The 1/2 second delay here gives us a chance to click quickly and change the stage before we start working
@@ -266,7 +270,7 @@ export class ReaderToolsModel {
 
     // Gets the string representing which stage we're on.
     // Precondition: the stage number must be properly updated first. Synphony should be loaded too, else will return undefined.
-    private getStageLabel() {
+    public getStageLabel() {
         if (!this.synphony) {
             return undefined; // Synphony not loaded yet
         }
@@ -364,15 +368,15 @@ export class ReaderToolsModel {
     public updateSortStatus(): void {
         this.updateSelectedStatus(
             "sortAlphabetic",
-            this.sort === SortType.alphabetic
+            this.sort === SortType.alphabetic,
         );
         this.updateSelectedStatus(
             "sortLength",
-            this.sort === SortType.byLength
+            this.sort === SortType.byLength,
         );
         this.updateSelectedStatus(
             "sortFrequency",
-            this.sort === SortType.byFrequency
+            this.sort === SortType.byFrequency,
         );
     }
 
@@ -420,7 +424,7 @@ export class ReaderToolsModel {
             "EditTab.Toolbox.DecodableReaderTool.StageNofM",
             "Stage {0} of {1}",
             stageLabel,
-            numStages.toString()
+            numStages.toString(),
         );
 
         stageParent.innerText = localizedFormattedText;
@@ -445,7 +449,7 @@ export class ReaderToolsModel {
             "EditTab.Toolbox.LeveledReaderTool.LevelNofM",
             "Level {0} of {1}",
             levelLabel,
-            numLevels.toString()
+            numLevels.toString(),
         );
 
         levelParent.innerText = localizedFormattedText;
@@ -466,7 +470,7 @@ export class ReaderToolsModel {
         }
         this.updateDisabledStatus(
             "incStage",
-            this.stageNumber >= this.synphony.getStages().length
+            this.stageNumber >= this.synphony.getStages().length,
         );
     }
 
@@ -483,7 +487,7 @@ export class ReaderToolsModel {
     public setPresenceOfClass(
         eltId: string,
         isWanted: boolean,
-        className: string
+        className: string,
     ): void {
         let old = this.getElementAttribute(eltId, "class");
 
@@ -494,16 +498,13 @@ export class ReaderToolsModel {
             this.setElementAttribute(
                 eltId,
                 "class",
-                old + (old.length ? " " : "") + className
+                old + (old.length ? " " : "") + className,
             );
         } else if (!isWanted && old.indexOf(className) >= 0) {
             this.setElementAttribute(
                 eltId,
                 "class",
-                old
-                    .replace(className, "")
-                    .replace("  ", " ")
-                    .trim()
+                old.replace(className, "").replace("  ", " ").trim(),
             );
         }
     }
@@ -515,7 +516,7 @@ export class ReaderToolsModel {
         }
         this.updateDisabledStatus(
             "incLevel",
-            this.levelNumber >= this.synphony.getLevels().length
+            this.levelNumber >= this.synphony.getLevels().length,
         );
     }
 
@@ -529,36 +530,36 @@ export class ReaderToolsModel {
         this.updateLevelLimit("maxWordsPerPage", level.getMaxWordsPerPage());
         this.updateLevelLimit(
             "maxWordsPerPageBook",
-            level.getMaxWordsPerPage()
+            level.getMaxWordsPerPage(),
         );
         this.updateLevelLimit(
             "maxWordsPerSentence",
-            level.getMaxWordsPerSentence()
+            level.getMaxWordsPerSentence(),
         );
         this.updateLevelLimit("maxWordsPerBook", level.getMaxWordsPerBook());
         this.updateLevelLimit(
             "maxUniqueWordsPerBook",
-            level.getMaxUniqueWordsPerBook()
+            level.getMaxUniqueWordsPerBook(),
         );
         this.updateLevelLimit(
             "maxAverageWordsPerSentence",
-            level.getMaxAverageWordsPerSentence()
+            level.getMaxAverageWordsPerSentence(),
         );
         this.updateLevelLimit(
             "maxAverageGlyphsPerWord",
-            level.getMaxAverageGlyphsPerWord()
+            level.getMaxAverageGlyphsPerWord(),
         );
         this.updateLevelLimit(
             "maxAverageSentencesPerPage",
-            level.getMaxAverageSentencesPerPage()
+            level.getMaxAverageSentencesPerPage(),
         );
         this.updateLevelLimit(
             "maxAverageWordsPerPage",
-            level.getMaxAverageWordsPerPage()
+            level.getMaxAverageWordsPerPage(),
         );
         this.updateLevelLimit(
             "maxSentencesPerPage",
-            level.getMaxSentencesPerPage()
+            level.getMaxSentencesPerPage(),
         );
         this.updateLevelLimit("maxLettersPerWord", level.getMaxGlyphsPerWord());
 
@@ -606,27 +607,27 @@ export class ReaderToolsModel {
             mlwld.style.display = useAllowedWords ? "none" : "";
             this.setDisplayForHTMLElementById(
                 "letters-in-this-stage",
-                useAllowedWords
+                useAllowedWords,
             );
             const ltrList = document.getElementById("letterList");
             if (ltrList && ltrList.parentElement) {
                 this.setDisplayForHTMLElement(
                     ltrList.parentElement,
-                    useAllowedWords
+                    useAllowedWords,
                 );
             }
             this.setDisplayForHTMLElementById(
                 "sample-words-this-stage",
-                useAllowedWords
+                useAllowedWords,
             );
             this.setDisplayForHTMLElementById("sortFrequency", useAllowedWords);
             this.setDisplayForHTMLElementById(
                 "allowed-words-this-stage",
-                !useAllowedWords
+                !useAllowedWords,
             );
             this.setDisplayForHTMLElementById(
                 "allowed-word-list-truncated",
-                !useAllowedWords
+                !useAllowedWords,
             );
         }
 
@@ -643,7 +644,7 @@ export class ReaderToolsModel {
             words = this.getAllowedWordsAsObjects(this.stageNumber);
         else {
             const stageWords = this.getStageWordsAndSightWords(
-                this.stageNumber
+                this.stageNumber,
             );
             if (stageWords) {
                 words = stageWords;
@@ -711,7 +712,7 @@ export class ReaderToolsModel {
 
     private setDisplayForHTMLElement(
         element: HTMLElement,
-        conditionForNone: boolean
+        conditionForNone: boolean,
     ): void {
         if (!element) return; // safety first!
         element.style.display = conditionForNone ? "none" : "";
@@ -719,7 +720,7 @@ export class ReaderToolsModel {
 
     private setDisplayForHTMLElementById(
         elementId: string,
-        conditionForNone: boolean
+        conditionForNone: boolean,
     ): void {
         const elt = document.getElementById(elementId);
         if (!elt) return;
@@ -792,7 +793,7 @@ export class ReaderToolsModel {
                 if (stages[i].sightWords)
                     sightWords = _.union(
                         sightWords,
-                        stages[i].sightWords.split(" ")
+                        stages[i].sightWords.split(" "),
                     );
             }
         }
@@ -839,11 +840,7 @@ export class ReaderToolsModel {
         const stages = this.synphony.getStages(stageNumber);
 
         // compact to remove empty items if no graphemes are selected
-        return _.compact(
-            _.pluck(stages, "letters")
-                .join(" ")
-                .split(" ")
-        );
+        return _.compact(_.pluck(stages, "letters").join(" ").split(" "));
     }
 
     /**
@@ -857,7 +854,7 @@ export class ReaderToolsModel {
             this.stageGraphemes,
             this.stageGraphemes,
             true,
-            true
+            true,
         );
     }
 
@@ -908,7 +905,7 @@ export class ReaderToolsModel {
             if (contentWindow)
                 $(
                     ".bloom-editable",
-                    contentWindow.document
+                    contentWindow.document,
                 ).removeSynphonyMarkup();
             this.currentMarkupType = newMarkupType;
             this.doMarkup();
@@ -933,7 +930,7 @@ export class ReaderToolsModel {
             return $(".bloom-page")
                 .not(".bloom-frontMatter, .bloom-backMatter")
                 .find(
-                    ".bloom-translationGroup:not(.bloom-imageDescription) .bloom-content1"
+                    ".bloom-translationGroup:not(.bloom-imageDescription) .bloom-content1",
                 );
         }
 
@@ -947,7 +944,7 @@ export class ReaderToolsModel {
                 .not(".bloom-frontMatter, .bloom-backMatter")
                 // don't count image descriptions
                 .find(
-                    ".bloom-translationGroup:not(.bloom-imageDescription) .bloom-content1"
+                    ".bloom-translationGroup:not(.bloom-imageDescription) .bloom-content1",
                 )
         );
     }
@@ -960,8 +957,8 @@ export class ReaderToolsModel {
             html: element.innerHTML,
             text: element.textContent,
             offset: EditableDivUtils.getElementSelectionIndex(
-                this.activeElement
-            )
+                this.activeElement,
+            ),
         });
     }
 
@@ -978,16 +975,15 @@ export class ReaderToolsModel {
         ) {
             this.redoStack.push(this.undoStack.pop());
         }
-        this.activeElement.innerHTML = this.undoStack[
-            this.undoStack.length - 1
-        ].html;
+        this.activeElement.innerHTML =
+            this.undoStack[this.undoStack.length - 1].html;
         const restoreOffset = this.undoStack[this.undoStack.length - 1].offset;
         if (restoreOffset < 0) return;
         EditableDivUtils.makeSelectionIn(
             this.activeElement,
             restoreOffset,
             -1,
-            true
+            true,
         );
     }
 
@@ -1008,16 +1004,15 @@ export class ReaderToolsModel {
         if (this.redoStack.length > 0) {
             this.undoStack.push(this.redoStack.pop());
         }
-        this.activeElement.innerHTML = this.undoStack[
-            this.undoStack.length - 1
-        ].html;
+        this.activeElement.innerHTML =
+            this.undoStack[this.undoStack.length - 1].html;
         const restoreOffset = this.undoStack[this.undoStack.length - 1].offset;
         if (restoreOffset < 0) return;
         EditableDivUtils.makeSelectionIn(
             this.activeElement,
             restoreOffset,
             -1,
-            true
+            true,
         );
     }
 
@@ -1037,7 +1032,7 @@ export class ReaderToolsModel {
         let oldSelectionPosition = -1;
         if (this.activeElement)
             oldSelectionPosition = EditableDivUtils.getElementSelectionIndex(
-                this.activeElement
+                this.activeElement,
             );
 
         const editableElements = this.getElementsToCheck();
@@ -1063,10 +1058,10 @@ export class ReaderToolsModel {
                 bookmarksForEachEditable = EditableDivUtils.doCkEditorCleanup(
                     editableElements
                         .filter(
-                            (index, element) => !!(element as HTMLDivElement)
+                            (index, element) => !!(element as HTMLDivElement),
                         )
                         .toArray() as HTMLDivElement[],
-                    createCkEditorBookMarks
+                    createCkEditorBookMarks,
                 );
         }
 
@@ -1074,10 +1069,11 @@ export class ReaderToolsModel {
             case MarkupType.Leveled:
                 if (editableElements.length > 0) {
                     const options = {
-                        maxWordsPerSentence: this.maxWordsPerSentenceOnThisPage(),
+                        maxWordsPerSentence:
+                            this.maxWordsPerSentenceOnThisPage(),
                         maxWordsPerPage: this.maxWordsPerPage(),
                         maxGlyphsPerWord: this.maxGlyphsPerWord(),
-                        maxSentencesPerPage: this.maxSentencesPerPage()
+                        maxSentencesPerPage: this.maxSentencesPerPage(),
                     };
                     editableElements.checkLeveledReader(options);
 
@@ -1086,7 +1082,7 @@ export class ReaderToolsModel {
                     const topPageWindow = this.getTopPageWindow();
                     if (topPageWindow) {
                         const pageDiv = $("body", topPageWindow.document).find(
-                            "div.bloom-page"
+                            "div.bloom-page",
                         );
                         if (
                             pageDiv.length &&
@@ -1114,7 +1110,7 @@ export class ReaderToolsModel {
                 if (this.synphony.source.useAllowedWords === 1) {
                     cumulativeWords = [];
                     sightWords = this.selectWordsFromAllowedLists(
-                        this.stageNumber
+                        this.stageNumber,
                     );
                 } else {
                     cumulativeWords = this.getStageWords();
@@ -1125,11 +1121,8 @@ export class ReaderToolsModel {
                     focusWords: cumulativeWords,
                     previousWords: cumulativeWords,
                     // theOneLibSynphony lowercases the text, so we must do the same with sight words.  (BL-2550)
-                    sightWords: sightWords
-                        .join(" ")
-                        .toLowerCase()
-                        .split(/\s/),
-                    knownGraphemes: this.stageGraphemes
+                    sightWords: sightWords.join(" ").toLowerCase().split(/\s/),
+                    knownGraphemes: this.stageGraphemes,
                 });
 
                 break;
@@ -1146,7 +1139,7 @@ export class ReaderToolsModel {
                 editableElements
                     .filter((index, element) => !!(element as HTMLDivElement))
                     .toArray() as HTMLDivElement[],
-                bookmarksForEachEditable
+                bookmarksForEachEditable,
             );
 
         // console.log("end of doMarkup:");
@@ -1160,7 +1153,7 @@ export class ReaderToolsModel {
             this.undoStack.push({
                 html: this.activeElement.innerHTML,
                 text: this.activeElement.textContent,
-                offset: oldSelectionPosition
+                offset: oldSelectionPosition,
             });
             this.redoStack = []; // ok because only referred to by this variable.
         }
@@ -1173,7 +1166,7 @@ export class ReaderToolsModel {
     }
 
     private getValueFromCurrentLevel(
-        getter: (level: ReaderLevel) => number
+        getter: (level: ReaderLevel) => number,
     ): number {
         if (!this.synphony) {
             return Infinity; // not loaded yet
@@ -1186,55 +1179,57 @@ export class ReaderToolsModel {
     }
 
     public maxWordsPerSentenceOnThisPage(): number {
-        return this.getValueFromCurrentLevel(l => l.getMaxWordsPerSentence());
+        return this.getValueFromCurrentLevel((l) => l.getMaxWordsPerSentence());
     }
 
     public maxWordsPerBook(): number {
-        return this.getValueFromCurrentLevel(l => l.getMaxWordsPerBook());
+        return this.getValueFromCurrentLevel((l) => l.getMaxWordsPerBook());
     }
 
     public maxUniqueWordsPerBook(): number {
-        return this.getValueFromCurrentLevel(l => l.getMaxUniqueWordsPerBook());
+        return this.getValueFromCurrentLevel((l) =>
+            l.getMaxUniqueWordsPerBook(),
+        );
     }
 
     public maxSentencesPerBook(): number {
-        return this.getValueFromCurrentLevel(l => l.getMaxSentencesPerBook());
+        return this.getValueFromCurrentLevel((l) => l.getMaxSentencesPerBook());
     }
 
     public maxAverageWordsPerSentence(): number {
-        return this.getValueFromCurrentLevel(l =>
-            l.getMaxAverageWordsPerSentence()
+        return this.getValueFromCurrentLevel((l) =>
+            l.getMaxAverageWordsPerSentence(),
         );
     }
 
     public maxAverageWordsPerPage(): number {
-        return this.getValueFromCurrentLevel(l =>
-            l.getMaxAverageWordsPerPage()
+        return this.getValueFromCurrentLevel((l) =>
+            l.getMaxAverageWordsPerPage(),
         );
     }
 
     public maxAverageGlyphsPerWord(): number {
-        return this.getValueFromCurrentLevel(l =>
-            l.getMaxAverageGlyphsPerWord()
+        return this.getValueFromCurrentLevel((l) =>
+            l.getMaxAverageGlyphsPerWord(),
         );
     }
 
     public maxAverageSentencesPerPage(): number {
-        return this.getValueFromCurrentLevel(l =>
-            l.getMaxAverageSentencesPerPage()
+        return this.getValueFromCurrentLevel((l) =>
+            l.getMaxAverageSentencesPerPage(),
         );
     }
 
     public maxWordsPerPage(): number {
-        return this.getValueFromCurrentLevel(l => l.getMaxWordsPerPage());
+        return this.getValueFromCurrentLevel((l) => l.getMaxWordsPerPage());
     }
 
     public maxSentencesPerPage(): number {
-        return this.getValueFromCurrentLevel(l => l.getMaxSentencesPerPage());
+        return this.getValueFromCurrentLevel((l) => l.getMaxSentencesPerPage());
     }
 
     public maxGlyphsPerWord(): number {
-        return this.getValueFromCurrentLevel(l => l.getMaxGlyphsPerWord());
+        return this.getValueFromCurrentLevel((l) => l.getMaxGlyphsPerWord());
     }
 
     // Though I'm not using this now, it was hard-won, and instructive. So I'm leaving it here
@@ -1256,7 +1251,7 @@ export class ReaderToolsModel {
     //   }
 
     public getTextOfWholeBook(): void {
-        get("readers/io/textOfContentPages", result => {
+        get("readers/io/textOfContentPages", (result) => {
             this.gettingTextOfWholeBook = false;
             //result.data looks like {'0bbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'Jane saw spot', 'AAbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'words of this page', etc.}
             this.pageIDToText = result.data as any[];
@@ -1283,101 +1278,101 @@ export class ReaderToolsModel {
             // don't stop getting it forever.
             window.setTimeout(
                 () => (this.gettingTextOfWholeBook = false),
-                1000
+                1000,
             );
             this.getTextOfWholeBook();
             return;
         }
 
         this.bookStatistics = {};
-        const pageStrings = _.values(this.pageIDToText).map(x =>
-            removeAllHtmlMarkupFromString(x)
+        const pageStrings = _.values(this.pageIDToText).map((x) =>
+            removeAllHtmlMarkupFromString(x),
         );
 
         const pageElementsToCheck = this.getElementsToCheck();
         const pageText = pageElementsToCheck
             .toArray()
-            .map(x => x.innerText) // this has newlines between paragraph content, text has none
+            .map((x) => x.innerText) // this has newlines between paragraph content, text has none
             .join(" ");
         const sentences = theOneLibSynphony
             .stringToSentences(pageText)
-            .filter(x => x.isSentence);
+            .filter((x) => x.isSentence);
         const sentenceFragmentsByPage = this.getSentences(pageStrings);
         this.bookStatistics["levelNumber"] = this.levelNumber;
         this.bookStatistics["pageCount"] = sentenceFragmentsByPage.length;
         this.updateActualCount(
             ReaderToolsModel.countSentences(sentences),
             this.maxSentencesPerPage(),
-            "actualSentencesPerPage"
+            "actualSentencesPerPage",
         );
 
         this.updateActualCount(
             ReaderToolsModel.maxWordLength(pageText),
             this.maxGlyphsPerWord(),
-            "actualLettersPerWord"
+            "actualLettersPerWord",
         );
 
         this.updateActualCount(
             pageElementsToCheck.getTotalWordCount(),
             this.maxWordsPerPage(),
-            "actualWordsPerPage"
+            "actualWordsPerPage",
         );
 
         this.updateActualCount(
             pageElementsToCheck.getMaxSentenceLength(),
             this.maxWordsPerSentenceOnThisPage(),
-            "actualWordsPerSentence"
+            "actualWordsPerSentence",
         );
 
         this.updateActualCount(
             this.countWordsInBook(sentenceFragmentsByPage),
             this.maxWordsPerBook(),
-            "actualWordCount"
+            "actualWordCount",
         );
         this.updateActualCount(
             this.maxWordsPerPageInBook(sentenceFragmentsByPage),
             this.maxWordsPerPage(),
-            "actualWordsPerPageBook"
+            "actualWordsPerPageBook",
         );
         this.updateActualCount(
             this.uniqueWordsInBook(sentenceFragmentsByPage),
             this.maxUniqueWordsPerBook(),
-            "actualUniqueWords"
+            "actualUniqueWords",
         );
         this.updateActualCount(
             ReaderToolsModel.totalSentencesInBook(sentenceFragmentsByPage),
             this.maxSentencesPerBook(),
-            "actualSentenceCount"
+            "actualSentenceCount",
         );
         this.updateActualCount(
             ReaderToolsModel.maxGlyphsInWord(sentenceFragmentsByPage),
             this.maxGlyphsPerWord(),
-            "actualMaxGlyphsPerWord"
+            "actualMaxGlyphsPerWord",
         );
         this.updateActualCount(
             ReaderToolsModel.maxSentenceLengthInBook(sentenceFragmentsByPage),
             this.maxWordsPerSentenceOnThisPage(),
-            "actualMaxWordsPerSentence"
+            "actualMaxWordsPerSentence",
         );
         this.updateActualAverageCount(
             ReaderToolsModel.averageWordsInSentence(sentenceFragmentsByPage),
             this.maxAverageWordsPerSentence(),
-            "actualAverageWordsPerSentence"
+            "actualAverageWordsPerSentence",
         );
         this.updateActualAverageCount(
             ReaderToolsModel.averageWordsInPage(sentenceFragmentsByPage),
             this.maxAverageWordsPerPage(),
-            "actualAverageWordsPerPage"
+            "actualAverageWordsPerPage",
         );
         this.updateActualAverageCount(
             ReaderToolsModel.averageGlyphsInWord(sentenceFragmentsByPage),
             this.maxAverageGlyphsPerWord(),
-            "actualAverageGlyphsPerWord"
+            "actualAverageGlyphsPerWord",
         );
         this.updateActualAverageCount(
             ReaderToolsModel.averageSentencesInPage(sentenceFragmentsByPage),
             this.maxAverageSentencesPerPage(),
-            "actualAverageSentencesPerPage"
+            "actualAverageSentencesPerPage",
         );
     }
 
@@ -1389,12 +1384,11 @@ export class ReaderToolsModel {
         const result: TextFragment[][] = [];
         for (let i = 0; i < pageStrings.length; i++) {
             const page = pageStrings[i];
-            let fragments: TextFragment[] = theOneLibSynphony.stringToSentences(
-                page
-            );
+            let fragments: TextFragment[] =
+                theOneLibSynphony.stringToSentences(page);
 
             // remove inter-sentence space
-            fragments = fragments.filter(frag => {
+            fragments = fragments.filter((frag) => {
                 return frag.isSentence;
             });
             result.push(fragments);
@@ -1415,7 +1409,7 @@ export class ReaderToolsModel {
     }
 
     public uniqueWordsInBook(
-        sentenceFragmentsByPage: TextFragment[][]
+        sentenceFragmentsByPage: TextFragment[][],
     ): number {
         const wordMap = {};
         for (let i = 0; i < sentenceFragmentsByPage.length; i++) {
@@ -1432,7 +1426,7 @@ export class ReaderToolsModel {
     }
 
     public maxWordsPerPageInBook(
-        sentenceFragmentsByPage: TextFragment[][]
+        sentenceFragmentsByPage: TextFragment[][],
     ): number {
         let maxWords = 0;
         for (let i = 0; i < sentenceFragmentsByPage.length; i++) {
@@ -1450,7 +1444,7 @@ export class ReaderToolsModel {
     }
 
     public static averageWordsInSentence(
-        sentenceFragmentsByPage: TextFragment[][]
+        sentenceFragmentsByPage: TextFragment[][],
     ): number {
         let sentenceCount = 0;
         let wordCount = 0;
@@ -1473,7 +1467,7 @@ export class ReaderToolsModel {
     }
 
     public static averageWordsInPage(
-        sentenceFragmentsByPage: TextFragment[][]
+        sentenceFragmentsByPage: TextFragment[][],
     ): number {
         let wordCount = 0;
         for (let i = 0; i < sentenceFragmentsByPage.length; i++) {
@@ -1489,7 +1483,7 @@ export class ReaderToolsModel {
     }
 
     public static averageGlyphsInWord(
-        sentenceFragmentsByPage: TextFragment[][]
+        sentenceFragmentsByPage: TextFragment[][],
     ): number {
         let wordCount = 0;
         let glyphCount = 0;
@@ -1509,19 +1503,19 @@ export class ReaderToolsModel {
     }
 
     public static averageSentencesInPage(
-        sentenceFragmentsByPage: TextFragment[][]
+        sentenceFragmentsByPage: TextFragment[][],
     ): number {
         if (sentenceFragmentsByPage.length == 0) {
             return 0;
         }
         const sentenceCount = ReaderToolsModel.totalSentencesInBook(
-            sentenceFragmentsByPage
+            sentenceFragmentsByPage,
         );
         return sentenceCount / sentenceFragmentsByPage.length;
     }
 
     public static maxGlyphsInWord(
-        sentenceFragmentsByPage: TextFragment[][]
+        sentenceFragmentsByPage: TextFragment[][],
     ): number {
         let maxGlyphCount = 0;
         for (let i = 0; i < sentenceFragmentsByPage.length; i++) {
@@ -1530,7 +1524,7 @@ export class ReaderToolsModel {
                 for (const w of fragments[j].words) {
                     maxGlyphCount = Math.max(
                         maxGlyphCount,
-                        ReaderToolsModel.getWordLength(w)
+                        ReaderToolsModel.getWordLength(w),
                     );
                 }
             }
@@ -1539,7 +1533,7 @@ export class ReaderToolsModel {
     }
 
     public static maxSentenceLengthInBook(
-        sentenceFragmentsByPage: TextFragment[][]
+        sentenceFragmentsByPage: TextFragment[][],
     ): number {
         let maxSentenceLength = 0;
         for (let i = 0; i < sentenceFragmentsByPage.length; i++) {
@@ -1547,7 +1541,7 @@ export class ReaderToolsModel {
             for (let j = 0; j < fragments.length; j++) {
                 maxSentenceLength = Math.max(
                     maxSentenceLength,
-                    fragments[j].words.length
+                    fragments[j].words.length,
                 );
             }
         }
@@ -1555,7 +1549,7 @@ export class ReaderToolsModel {
     }
 
     public static totalSentencesInBook(
-        sentenceFragmentsByPage: TextFragment[][]
+        sentenceFragmentsByPage: TextFragment[][],
     ): number {
         let sentenceCount = 0;
         if (sentenceFragmentsByPage.length == 0) {
@@ -1582,7 +1576,7 @@ export class ReaderToolsModel {
     public updateActualAverageCount(
         average: number,
         max: number,
-        id: string
+        id: string,
     ): void {
         $("#" + id).html(average.toFixed(1));
         const acceptable = average <= max || max === 0;
@@ -1595,7 +1589,7 @@ export class ReaderToolsModel {
     }
 
     public static countSentences(sentences: TextFragment[]): number {
-        return sentences.filter(f => f.words.length > 0).length;
+        return sentences.filter((f) => f.words.length > 0).length;
     }
 
     public static maxWordLength(text: string): number {
@@ -1609,16 +1603,17 @@ export class ReaderToolsModel {
 
     // We'd like to use /\p{Mn}/gu to match diacritics, but FF60 apparently doesn't support it.
     // https://apps.timwhitlock.info/js/regex# provided this which is claimed to be equivalent.
-    private static unicodeMn = /[\u0300-\u036f\u0483-\u0487\u0591-\u05bd\u05bf\u05c1-\u05c2\u05c4-\u05c5\u05c7\u0610-\u061a\u064b-\u065e\u0670\u06d6-\u06dc\u06df-\u06e4\u06e7-\u06e8\u06ea-\u06ed\u0711\u0730-\u074a\u07a6-\u07b0\u07eb-\u07f3\u0901-\u0902\u093c\u0941-\u0948\u094d\u0951-\u0954\u0962-\u0963\u0981\u09bc\u09c1-\u09c4\u09cd\u09e2-\u09e3\u0a01-\u0a02\u0a3c\u0a41-\u0a42\u0a47-\u0a48\u0a4b-\u0a4d\u0a51\u0a70-\u0a71\u0a75\u0a81-\u0a82\u0abc\u0ac1-\u0ac5\u0ac7-\u0ac8\u0acd\u0ae2-\u0ae3\u0b01\u0b3c\u0b3f\u0b41-\u0b44\u0b4d\u0b56\u0b62-\u0b63\u0b82\u0bc0\u0bcd\u0c3e-\u0c40\u0c46-\u0c48\u0c4a-\u0c4d\u0c55-\u0c56\u0c62-\u0c63\u0cbc\u0cbf\u0cc6\u0ccc-\u0ccd\u0ce2-\u0ce3\u0d41-\u0d44\u0d4d\u0d62-\u0d63\u0dca\u0dd2-\u0dd4\u0dd6\u0e31\u0e34-\u0e3a\u0e47-\u0e4e\u0eb1\u0eb4-\u0eb9\u0ebb-\u0ebc\u0ec8-\u0ecd\u0f18-\u0f19\u0f35\u0f37\u0f39\u0f71-\u0f7e\u0f80-\u0f84\u0f86-\u0f87\u0f90-\u0f97\u0f99-\u0fbc\u0fc6\u102d-\u1030\u1032-\u1037\u1039-\u103a\u103d-\u103e\u1058-\u1059\u105e-\u1060\u1071-\u1074\u1082\u1085-\u1086\u108d\u135f\u1712-\u1714\u1732-\u1734\u1752-\u1753\u1772-\u1773\u17b7-\u17bd\u17c6\u17c9-\u17d3\u17dd\u180b-\u180d\u18a9\u1920-\u1922\u1927-\u1928\u1932\u1939-\u193b\u1a17-\u1a18\u1b00-\u1b03\u1b34\u1b36-\u1b3a\u1b3c\u1b42\u1b6b-\u1b73\u1b80-\u1b81\u1ba2-\u1ba5\u1ba8-\u1ba9\u1c2c-\u1c33\u1c36-\u1c37\u1dc0-\u1de6\u1dfe-\u1dff\u20d0-\u20dc\u20e1\u20e5-\u20f0\u2de0-\u2dff\u302a-\u302f\u3099-\u309a\ua66f\ua67c-\ua67d\ua802\ua806\ua80b\ua825-\ua826\ua8c4\ua926-\ua92d\ua947-\ua951\uaa29-\uaa2e\uaa31-\uaa32\uaa35-\uaa36\uaa43\uaa4c\ufb1e\ufe00-\ufe0f\ufe20-\ufe26]|\ud800\uddfd|\ud802[\ude01-\ude03\ude05-\ude06\ude0c-\ude0f\ude38-\ude3a\ude3f]|\ud834[\udd67-\udd69\udd7b-\udd82\udd85-\udd8b\uddaa-\uddad\ude42-\ude44]|\udb40[\udd00-\uddef]/g;
+    private static unicodeMn =
+        /[\u0300-\u036f\u0483-\u0487\u0591-\u05bd\u05bf\u05c1-\u05c2\u05c4-\u05c5\u05c7\u0610-\u061a\u064b-\u065e\u0670\u06d6-\u06dc\u06df-\u06e4\u06e7-\u06e8\u06ea-\u06ed\u0711\u0730-\u074a\u07a6-\u07b0\u07eb-\u07f3\u0901-\u0902\u093c\u0941-\u0948\u094d\u0951-\u0954\u0962-\u0963\u0981\u09bc\u09c1-\u09c4\u09cd\u09e2-\u09e3\u0a01-\u0a02\u0a3c\u0a41-\u0a42\u0a47-\u0a48\u0a4b-\u0a4d\u0a51\u0a70-\u0a71\u0a75\u0a81-\u0a82\u0abc\u0ac1-\u0ac5\u0ac7-\u0ac8\u0acd\u0ae2-\u0ae3\u0b01\u0b3c\u0b3f\u0b41-\u0b44\u0b4d\u0b56\u0b62-\u0b63\u0b82\u0bc0\u0bcd\u0c3e-\u0c40\u0c46-\u0c48\u0c4a-\u0c4d\u0c55-\u0c56\u0c62-\u0c63\u0cbc\u0cbf\u0cc6\u0ccc-\u0ccd\u0ce2-\u0ce3\u0d41-\u0d44\u0d4d\u0d62-\u0d63\u0dca\u0dd2-\u0dd4\u0dd6\u0e31\u0e34-\u0e3a\u0e47-\u0e4e\u0eb1\u0eb4-\u0eb9\u0ebb-\u0ebc\u0ec8-\u0ecd\u0f18-\u0f19\u0f35\u0f37\u0f39\u0f71-\u0f7e\u0f80-\u0f84\u0f86-\u0f87\u0f90-\u0f97\u0f99-\u0fbc\u0fc6\u102d-\u1030\u1032-\u1037\u1039-\u103a\u103d-\u103e\u1058-\u1059\u105e-\u1060\u1071-\u1074\u1082\u1085-\u1086\u108d\u135f\u1712-\u1714\u1732-\u1734\u1752-\u1753\u1772-\u1773\u17b7-\u17bd\u17c6\u17c9-\u17d3\u17dd\u180b-\u180d\u18a9\u1920-\u1922\u1927-\u1928\u1932\u1939-\u193b\u1a17-\u1a18\u1b00-\u1b03\u1b34\u1b36-\u1b3a\u1b3c\u1b42\u1b6b-\u1b73\u1b80-\u1b81\u1ba2-\u1ba5\u1ba8-\u1ba9\u1c2c-\u1c33\u1c36-\u1c37\u1dc0-\u1de6\u1dfe-\u1dff\u20d0-\u20dc\u20e1\u20e5-\u20f0\u2de0-\u2dff\u302a-\u302f\u3099-\u309a\ua66f\ua67c-\ua67d\ua802\ua806\ua80b\ua825-\ua826\ua8c4\ua926-\ua92d\ua947-\ua951\uaa29-\uaa2e\uaa31-\uaa32\uaa35-\uaa36\uaa43\uaa4c\ufb1e\ufe00-\ufe0f\ufe20-\ufe26]|\ud800\uddfd|\ud802[\ude01-\ude03\ude05-\ude06\ude0c-\ude0f\ude38-\ude3a\ude3f]|\ud834[\udd67-\udd69\udd7b-\udd82\udd85-\udd8b\uddaa-\uddad\ude42-\ude44]|\udb40[\udd00-\uddef]/g;
 
     public static getWordLength(word: string): number {
         // I'm not completely sure that all and only class Mn characters
         // should be ignored. Many will have been excluded by the word-breaking
         // algorithm; there shouldn't be punctuation characters in the word.
         const knownGraphemes = theOneLanguageDataInstance.GPCS.map(
-            x => x.GPC.replace(this.unicodeMn, "") // drop diacritics
+            (x: DataGPC) => x.GPC.replace(this.unicodeMn, ""), // drop diacritics
         )
-            .filter(x => x.length > 1)
+            .filter((x) => x.length > 1)
             .sort((x, y) => y.length - x.length);
         let w = word.replace(this.unicodeMn, ""); // drop diacritics here too
         // convert known graphemes to a PUA character that should not be occurring.
@@ -1656,7 +1651,7 @@ export class ReaderToolsModel {
     public setElementAttribute(
         id: string,
         attrName: string,
-        val: string
+        val: string,
     ): void {
         $("#" + id).attr(attrName, val);
     }
@@ -1680,15 +1675,14 @@ export class ReaderToolsModel {
             } else {
                 console.warn(
                     "ReaderToolsModel.AddWordsFromFile() - this.synphony is null, fileContents starts: " +
-                        fileContents.substr(0, 24)
+                        fileContents.substr(0, 24),
                 );
             }
         }
         // handle sample texts files that are just a set of space-delimited words
         else {
-            const words = theOneLibSynphony.getWordsFromHtmlString(
-                fileContents
-            );
+            const words =
+                theOneLibSynphony.getWordsFromHtmlString(fileContents);
             // Limit the number of words processed from files.  The program hangs on very long lists.
             let lim = words.length;
             const wordNames = Object.keys(this.allWords);
@@ -1703,7 +1697,7 @@ export class ReaderToolsModel {
 
     public beginSetTextsList(textsArg: string[]): Promise<void> {
         // only save the file types we can read
-        this.texts = textsArg.filter(t => {
+        this.texts = textsArg.filter((t) => {
             const ext = t.split(".").pop();
             if (!ext) return false;
             return this.getReadableFileExtensions().indexOf(ext) > -1;
@@ -1724,7 +1718,7 @@ export class ReaderToolsModel {
                 //This ends up being written to a ReaderToolsWords-xyz.json (matching its use, if not it contents).
                 postData(
                     "readers/io/synphonyLanguageData",
-                    theOneLanguageDataInstance
+                    theOneLanguageDataInstance,
                 );
             }, 200);
         });
@@ -1738,12 +1732,12 @@ export class ReaderToolsModel {
         // The <any> works around a flaw in the declaration of axios.all in axios.d.ts.
         // Using axios directly because api calls for returning the promise.
         return (<any>axios).all(
-            this.texts.map(fileName => {
+            this.texts.map((fileName) => {
                 return axios
                     .get("/bloom/api/readers/io/sampleFileContents", {
-                        params: { fileName: fileName }
+                        params: { fileName: fileName },
                     })
-                    .then(result => {
+                    .then((result) => {
                         // this same code runs both for simple word list text files, and for synphony .json files
                         // downstream here, code actually changes the json string back into an object, sigh. But
                         // we're looking for a non-risky patch here as 3.7 is about to go out the door.
@@ -1755,11 +1749,11 @@ export class ReaderToolsModel {
                             this.setSampleFileContents(result.data); // simple wordlist file
                         } else {
                             this.setSampleFileContents(
-                                JSON.stringify(result.data)
+                                JSON.stringify(result.data),
                             ); //synphony json
                         }
                     });
-            })
+            }),
         );
     }
 
@@ -1809,7 +1803,7 @@ export class ReaderToolsModel {
         allowUpperCase?: boolean,
         syllableLengths?: number[],
         selectedGroups?: string[],
-        partsOfSpeech?: string[]
+        partsOfSpeech?: string[],
     ): any[] {
         if (!selectedGroups) {
             selectedGroups = [];
@@ -1837,7 +1831,7 @@ export class ReaderToolsModel {
                 allowUpperCase,
                 syllableLengths,
                 selectedGroups,
-                partsOfSpeech
+                partsOfSpeech,
             );
         else
             return theOneLibSynphony.selectGPCWordsFromCache(
@@ -1847,7 +1841,7 @@ export class ReaderToolsModel {
                 allowUpperCase,
                 syllableLengths,
                 selectedGroups,
-                partsOfSpeech
+                partsOfSpeech,
             );
     }
 
@@ -1896,11 +1890,9 @@ export class ReaderToolsModel {
         } else {
             msgDiv.html(
                 theOneLocalizationManager.simpleFormat(
-                    $(toolbox)
-                        .find("#allowed_word_list_truncated_text")
-                        .html(),
-                    [this.maxAllowedWords.toLocaleString(uiLang)]
-                )
+                    $(toolbox).find("#allowed_word_list_truncated_text").html(),
+                    [this.maxAllowedWords.toLocaleString(uiLang)],
+                ),
             );
         }
 
@@ -1922,11 +1914,11 @@ export class ReaderToolsModel {
                 "stage:" +
                 this.stageNumber +
                 ";sort:" +
-                this.sort
+                this.sort,
         );
         postString(
             "editView/saveToolboxSetting",
-            "state\tleveledReader\t" + this.levelNumber
+            "state\tleveledReader\t" + this.levelNumber,
         );
     }
 
@@ -1962,8 +1954,8 @@ export class ReaderToolsModel {
                     getWithConfig(
                         "readers/io/allowedWordsList",
                         { params: { fileName: stage.allowedWordsFile } },
-                        result =>
-                            this.setAllowedWordsListList(result.data, index)
+                        (result) =>
+                            this.setAllowedWordsListList(result.data, index),
                     );
                 } else {
                     this.setAllowedWordsListList(undefined, index);
@@ -1971,13 +1963,13 @@ export class ReaderToolsModel {
                 // During Linux testing of BL-3498, the this (_this in the TS converted to JS), in the axios.get callback was
                 // undefined without this bind().  This .bind() is also the fix for BL-3496.
                 // But apparently when we switched to TS v2.0, it's no longer needed
-            } /*.bind(this)*/
+            } /*.bind(this)*/,
         );
     }
 
     public setAllowedWordsListList(
         fileContents: string | undefined,
-        stageIndex: number
+        stageIndex: number,
     ): void {
         // remove this one from the count of files remaining
         this.allowedWordFilesRemaining--;

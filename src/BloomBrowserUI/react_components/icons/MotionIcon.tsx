@@ -7,7 +7,7 @@ import * as React from "react";
 export const MotionIcon: React.FunctionComponent<{
     className?: string;
     color?: string;
-}> = props => {
+}> = (props) => {
     return (
         <svg
             className={props.className}

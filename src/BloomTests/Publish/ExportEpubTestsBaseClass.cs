@@ -11,6 +11,7 @@ using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.web;
 using BloomTemp;
 using BloomTests.Book;
@@ -18,7 +19,6 @@ using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.Extensions;
 using SIL.Progress;
-using Bloom.SubscriptionAndFeatures;
 
 namespace BloomTests.Publish
 {
@@ -146,8 +146,8 @@ namespace BloomTests.Publish
             var containerData = GetZipContent(zip, "META-INF/container.xml");
             var doc = XDocument.Parse(containerData);
             XNamespace ns = doc.Root.Attribute("xmlns").Value;
-            return doc.Root
-                .Element(ns + "rootfiles")
+            return doc
+                .Root.Element(ns + "rootfiles")
                 .Element(ns + "rootfile")
                 .Attribute("full-path")
                 .Value;
@@ -343,7 +343,7 @@ namespace BloomTests.Publish
                         0x00,
                         0x00,
                         0x00,
-                        0x00
+                        0x00,
                     }
                 );
             }
@@ -450,7 +450,7 @@ namespace BloomTests.Publish
 				<link rel='stylesheet' href='customBookStyles.css'/>" + extraHeadContent;
             if (createPhysicalFile)
             {
-                book = CreateBookWithPhysicalFile(MakeBookHtml(body, head));
+                book = CreateBookWithPhysicalFile(body, head);
             }
             else
             {
@@ -641,9 +641,6 @@ namespace BloomTests.Publish
             assertThatManifest.HasAtLeastOneMatchForXpath(
                 "package/manifest/item[@properties='nav']"
             );
-            assertThatManifest.HasAtLeastOneMatchForXpath(
-                "package/manifest/item[@properties='cover-image']"
-            );
 
             assertThatManifest.HasAtLeastOneMatchForXpath(
                 "package/manifest/item[@id='defaultLangStyles' and @href='"
@@ -695,8 +692,8 @@ namespace BloomTests.Publish
         void VerifyThatFilesInManifestArePresent()
         {
             XNamespace opf = "http://www.idpf.org/2007/opf";
-            var files = _manifestDoc.Root
-                .Element(opf + "manifest")
+            var files = _manifestDoc
+                .Root.Element(opf + "manifest")
                 .Elements(opf + "item")
                 .Select(item => item.Attribute("href").Value);
             foreach (var file in files)

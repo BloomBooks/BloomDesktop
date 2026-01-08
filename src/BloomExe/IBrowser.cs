@@ -1,10 +1,3 @@
-using Bloom.Api;
-using Bloom.Book;
-using Bloom.ErrorReporter;
-using Bloom.ToPalaso;
-using L10NSharp;
-using SIL.IO;
-using SIL.Reporting;
 using System;
 using System.Diagnostics;
 using System.Drawing;
@@ -12,6 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
+using Bloom.Api;
+using Bloom.Book;
+using Bloom.ErrorReporter;
+using Bloom.ToPalaso;
+using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom
 {
@@ -288,6 +287,7 @@ namespace Bloom
         public abstract string RunJavascriptWithStringResult_Sync_Dangerous(string script);
 
         public abstract Task<string> GetStringFromJavascriptAsync(string script);
+        public abstract Task<string> GetObjectFromJavascriptAsync(string script);
         public abstract Task RunJavascriptAsync(string script);
         public abstract void RunJavascriptFireAndForget(string script);
 

@@ -37,8 +37,6 @@ namespace Bloom.Edit
     {
         private readonly BookSelection _bookSelection;
         private readonly PageSelection _pageSelection;
-        private readonly DuplicatePageCommand _duplicatePageCommand;
-        private readonly DeletePageCommand _deletePageCommand;
         private readonly CollectionSettings _collectionSettings;
         private readonly ITemplateFinder _sourceCollectionsList;
         private bool _havePageToSave;
@@ -111,8 +109,6 @@ namespace Bloom.Edit
             RelocatePageEvent relocatePageEvent,
             BookRefreshEvent bookRefreshEvent,
             PageRefreshEvent pageRefreshEvent,
-            DuplicatePageCommand duplicatePageCommand,
-            DeletePageCommand deletePageCommand,
             SelectedTabChangedEvent selectedTabChangedEvent,
             SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
             CollectionClosing collectionClosingEvent,
@@ -125,8 +121,6 @@ namespace Bloom.Edit
         {
             _bookSelection = bookSelection;
             _pageSelection = pageSelection;
-            _duplicatePageCommand = duplicatePageCommand;
-            _deletePageCommand = deletePageCommand;
             _collectionSettings = collectionSettings;
             _server = server;
             _webSocketServer = webSocketServer;
@@ -202,8 +196,6 @@ namespace Bloom.Edit
 
             selectedTabChangedEvent.Subscribe(OnTabChanged);
             selectedTabAboutToChangeEvent.Subscribe(OnTabAboutToChange);
-            duplicatePageCommand.Implementer = OnDuplicatePage;
-            deletePageCommand.Implementer = OnDeletePage;
             pageListChangedEvent.Subscribe(needFullUpdate => _view.UpdatePageList(needFullUpdate));
             relocatePageEvent.Subscribe(OnRelocatePage);
             collectionClosingEvent.Subscribe(args =>
@@ -245,7 +237,6 @@ namespace Bloom.Edit
                 if (_view != null)
                 {
                     _view.NextReloadChangesUiLanguage();
-                    _view.UpdateButtonLocalizations();
                 }
 
                 //this is visible was added for https://jira.sil.org/browse/BL-267, where the edit tab has never been
@@ -326,11 +317,10 @@ namespace Bloom.Edit
             if (string.IsNullOrEmpty(bodyHtml))
                 throw new ApplicationException("Got an empty body while trying to save page");
 
-            var content = bodyHtml;
             SafeXmlDocument dom;
 
-            //todo: deal with exception that can come out of this
-            dom = XmlHtmlConverter.GetXmlDomFromHtml(content, false);
+            var htmlDoc = XmlHtmlConverter.CreateHtmlString(bodyHtml);
+            dom = XmlHtmlConverter.GetXmlDomFromHtml(htmlDoc, false);
             var bodyDom = dom.SelectSingleNode("//body");
 
             var browserDomPage = bodyDom.SelectSingleNode(
@@ -353,7 +343,6 @@ namespace Bloom.Edit
             }
 
             SaveCustomizedCssRules(dom, userCssContent);
-            XmlHtmlConverter.ThrowIfHtmlHasErrors(dom.OuterXml);
             return dom;
         }
 
@@ -653,7 +642,7 @@ namespace Bloom.Edit
                                 new Dictionary<string, string>
                                 {
                                     { "template-source", (page as IPage).Book.Title },
-                                    { "page", (page as IPage).Caption }
+                                    { "page", (page as IPage).Caption },
                                 }
                             );
                         }
@@ -760,21 +749,21 @@ namespace Bloom.Edit
                 // update which ones are selected. Since there may be ones with Selected true from a previous book,
                 // clear them first, so we end up with selections appropriate to this one.
                 _contentLanguages.ForEach(l => l.Selected = false);
-                var lang1 = _contentLanguages.FirstOrDefault(
-                    l => l.LangTag == _bookSelection.CurrentSelection.Language1Tag
+                var lang1 = _contentLanguages.FirstOrDefault(l =>
+                    l.LangTag == _bookSelection.CurrentSelection.Language1Tag
                 );
                 // We must have one language selected. If nothing matches, select the first.
                 if (lang1 == null)
                     lang1 = _contentLanguages[0];
                 lang1.Selected = true;
 
-                var lang2 = _contentLanguages.FirstOrDefault(
-                    l => l.LangTag == _bookSelection.CurrentSelection.Language2Tag
+                var lang2 = _contentLanguages.FirstOrDefault(l =>
+                    l.LangTag == _bookSelection.CurrentSelection.Language2Tag
                 );
                 if (lang2 != null)
                     lang2.Selected = true;
-                var lang3 = _contentLanguages.FirstOrDefault(
-                    l => l.LangTag == _bookSelection.CurrentSelection.Language3Tag
+                var lang3 = _contentLanguages.FirstOrDefault(l =>
+                    l.LangTag == _bookSelection.CurrentSelection.Language3Tag
                 );
                 if (lang3 != null)
                     lang3.Selected = true;
@@ -966,8 +955,8 @@ namespace Bloom.Edit
                 // Trace memory usage in case it may be useful
                 // First see if we seem to have a problem without taking time (~100ms in a large book/fast computer) to force GC.
                 // If we seem to have a problem do it again forcing the GC and possibly warning the user.
-                if (MemoryManagement.CheckMemory(false, "switched page in edit", false, false))
-                    MemoryManagement.CheckMemory(false, "switched page in edit", true);
+                //if (MemoryManagement.CheckMemory(false, "switched page in edit", false, false))
+                //    MemoryManagement.CheckMemory(false, "switched page in edit", true);
 
                 if (_view != null)
                 {
@@ -989,9 +978,6 @@ namespace Bloom.Edit
                     CurrentBook.ConvertPreOrigamiPages(page.GetDivNodeForThisPage());
                     if (Visible)
                         _view.StartNavigationToEditPage(page);
-
-                    _duplicatePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
-                    _deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
 
                     CheckForBL8852();
 
@@ -1106,8 +1092,8 @@ namespace Bloom.Edit
         public void UpdateMetaData(string url)
         {
             var match = UrlPathString.CreateFromUnencodedString(url).UrlEncoded;
-            var imgElt = _pageSelection.CurrentSelection
-                .GetDivNodeForThisPage()
+            var imgElt = _pageSelection
+                .CurrentSelection.GetDivNodeForThisPage()
                 .SafeSelectNodes($".//img[@src='{match}']")
                 .Cast<SafeXmlElement>()
                 .FirstOrDefault();
@@ -1184,8 +1170,8 @@ namespace Bloom.Edit
             // But that situation is not currently possible through our UI, and further thought
             // suggests we want to know who says it is CC0. So commenting that aspect out.
             var copyrightOk = metadata.IsMinimallyComplete; // || metadata.License?.Token == "cc0";
-            var firstElementChild = licenseBlock.ChildNodes
-                .Cast<SafeXmlNode>()
+            var firstElementChild = licenseBlock
+                .ChildNodes.Cast<SafeXmlNode>()
                 .FirstOrDefault(x => x is SafeXmlElement);
             var haveMissingNotice =
                 firstElementChild?.GetAttribute("class") == "ui-missingCopyrightNotice";
@@ -1670,8 +1656,8 @@ namespace Bloom.Edit
         public void UpdateImageInBrowser(PageEditingModel.ImageInfoForJavascript args)
         {
             // We generally don't need to wait. Even if we decide to save, its call to RunJavascriptAsync() will come in after ours.
-            // But be careful about depending on that (or any subsequent running Javascript) on pages that might have overlays:
-            // updating the image on an overlay page can involve async code that adjusts things after the image is loaded
+            // But be careful about depending on that (or any subsequent running Javascript) on pages that might have canvas elements:
+            // updating the image on a canvas page can involve async code that adjusts things after the image is loaded
             // enough to get its dimensions, and that adjustment might not complete before the next Javascript is run from C#
             GetEditingBrowser()
                 .RunJavascriptFireAndForget(
@@ -1689,8 +1675,8 @@ namespace Bloom.Edit
              * And as noted above, a reason not to save is that it's a problem to run the Javascript that gets the page
              * content before any async consequences of running the changeImage above (that affect the saved DOM content)
              * have completed.
-             * For now, it's OK to Save on the cover, because we don't support overlays there, and overlays are the only
-             * known case where the async consequences of the changeImage might affect the saved DOM.
+             * For now, it's OK to Save on the cover, because we don't support canvas elements there, and canvas elements
+             * are the only known case where the async consequences of the changeImage might affect the saved DOM.
              * But this is more fragile than I like. Hope we can soon find a better way to get the cover image transparency
              * and maybe even update the thumbnails without forcing a save.
              */
@@ -1817,8 +1803,8 @@ namespace Bloom.Edit
         {
             using (var dlg = new ProgressDialogForeground()) //REVIEW: this foreground dialog has known problems in other contexts... it was used here because of its ability to handle exceptions well. TODO: make the background one handle exceptions well
             {
-                dlg.ShowAndDoWork(
-                    progress => CurrentBook.CopyImageMetadataToWholeBookAndSave(metadata, progress)
+                dlg.ShowAndDoWork(progress =>
+                    CurrentBook.CopyImageMetadataToWholeBookAndSave(metadata, progress)
                 );
             }
         }
@@ -1991,7 +1977,7 @@ namespace Bloom.Edit
 
         /// <summary>
         /// Make sure the book folder contains a current version of the video placeholder.
-        /// We don't copy this to every book like placeHolder.png, since relatively few books need it,
+        /// We don't copy this to every book, since relatively few books need it,
         /// but if it's used it needs to be there so things look right when opened in a browser.
         /// I don't think our image deletion code is smart enough to detect that something a CSS
         /// file says is needed as a background should not be deleted, so I've just made this
@@ -2025,7 +2011,7 @@ namespace Bloom.Edit
             // This speeds up the process of tweaking branding files
             if (Debugger.IsAttached)
             {
-                _developerFileWatcher = new FileSystemWatcher { IncludeSubdirectories = true, };
+                _developerFileWatcher = new FileSystemWatcher { IncludeSubdirectories = true };
                 _developerFileWatcher.Path =
                     FileLocationUtilities.GetDirectoryDistributedWithApplication(
                         BloomFileLocator.BrowserRoot
@@ -2047,8 +2033,8 @@ namespace Bloom.Edit
                         return;
                     // if we've been called already in the past 5 seconds, don't do it again
                     if (
-                        DateTime.Now
-                            .Subtract(_lastTimeWeReloadedBecauseOfDeveloperChange)
+                        DateTime
+                            .Now.Subtract(_lastTimeWeReloadedBecauseOfDeveloperChange)
                             .TotalSeconds >= 2
                     )
                     {

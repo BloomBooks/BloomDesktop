@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
-using Bloom.ToPalaso;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
@@ -12,11 +11,11 @@ using Microsoft.Win32;
 using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Reporting;
+using Velopack.Logging;
 #if __MonoCS__
 using System.Diagnostics;
 #else
-using Squirrel;
-using Squirrel.SimpleSplat;
+using Velopack;
 #endif
 
 namespace Bloom
@@ -63,7 +62,7 @@ namespace Bloom
         /// <summary>
         /// Note: this actually has to go out over the web to get the answer, and so it may fail
         /// </summary>
-        internal static UpdateVersionTable.UpdateTableLookupResult LookupUrlOfSquirrelUpdate(
+        internal static UpdateVersionTable.UpdateTableLookupResult LookupUrlOfVelopackUpdate(
             bool forceReload = false
         )
         {
@@ -82,167 +81,94 @@ namespace Bloom
             return _updateTableLookupResult;
         }
 
-        internal static void HandleSquirrelInstallEvent(string[] args)
+        class logger : IVelopackLogger
         {
-#if __MonoCS__
-            Debug.Fail("HandleSquirrelInstallEvent should not run on Linux!"); // and the code below doesn't compile on Linux
-            return;
-#else
-            bool isUninstalling = args.Any(x => x.Contains("uninstall"));
-            var updateUrlResult = LookupUrlOfSquirrelUpdate();
-            // Should only be null if we're not online. Not sure how squirrel will handle that,
-            // but at least one of these operations is responsible for setting up shortcuts to the program,
-            // which we'd LIKE to work offline. Passing it a plausible url, even though it will presumably fail,
-            // seems less likely to cause problems than passing null.
-            if (string.IsNullOrEmpty(updateUrlResult.URL))
-                updateUrlResult.URL = @"https://s3.amazonaws.com/bloomlibrary.org/squirrel";
-            if (args[0] == "--squirrel-uninstall")
+            public void Log(VelopackLogLevel logLevel, string message, Exception exception)
             {
-                RemoveBloomRegistryEntries();
-            }
-            if (args[0] == "--squirrel-updated")
-            {
-                var props = new Dictionary<string, string>();
-                if (args.Length > 1)
-                    props["newVersion"] = args[1];
-                props["channel"] = ApplicationUpdateSupport.ChannelName;
-                Analytics.Track("Update Version", props);
-            }
-            string iconPath = null;
-            if (args[0] == "--squirrel-install")
-            {
-                //Using an icon in the root folder fixes the problem of losing the shortcut icon when we
-                //upgrade, lose the original, and eventually the windows explorer cache loses it.
-                //There was another attempt at fixing this by finding all the shortcuts and updating them, but that didn't work in our testing and this seems simpler and more robust.
-                //There may be some other reason for the old approach of pointing at the icon of the app itself (e.g. could be a different icon)?
-                var exePath = Application.ExecutablePath;
-                var rootAppDirectory = Path.GetDirectoryName(Path.GetDirectoryName(exePath));
-                // directory that holds e.g. /3.6/Bloom.exe
-                var versionIconPath = Path.ChangeExtension(exePath, "ico"); // where this installation has icon
-                iconPath = Path.ChangeExtension(
-                    Path.Combine(rootAppDirectory, Path.GetFileName(exePath)),
-                    "ico"
-                );
-                // where we will put a version-independent icon
-                try
+                if (exception != null)
                 {
-                    if (RobustFile.Exists(versionIconPath))
-                        RobustFile.Copy(versionIconPath, iconPath, true);
+                    Logger.WriteError("Velopack error: " + message, exception);
+                    return;
                 }
-                catch (Exception)
-                {
-                    // ignore...most likely some earlier version of the icon is locked somehow, fairly harmless.
-                }
-                // Normally this is done on every run of the program, but if we're doing a silent allUsers install,
-                // this is our only time running with admin privileges so we can actually make the entries for all users.
-                MakeBloomRegistryEntries(args);
+                Logger.WriteEvent("Velopack: " + message);
             }
-            switch (args[0])
-            {
-                // args[1] is version number
-                case "--squirrel-install": // (first?) installed
-                case "--squirrel-updated": // updated to specified version
-                case "--squirrel-obsolete": // this version is no longer newest
-                case "--squirrel-uninstall": // being uninstalled
-                case "--squirrel-firstrun": // first run after install (last chance to create shortcuts)
-                    using (var mgr = new UpdateManager(updateUrlResult.URL, Application.ProductName))
+        }
+
+        /// <summary>
+        /// Mainly to handle the various special startups that Velopack executes when Bloom is installed,
+        /// updated, or uninstalled. However, Velopack wants this to be called on every startup.
+        /// One thing that won't work otherwise is looking for updates.
+        /// </summary>
+        /// <returns>false if there is a problem, and Bloom should not continue to start up.</returns>
+        internal static bool HandleVelopackStartup(string[] commandLineArgs)
+        {
+            var log = new logger();
+            VelopackApp
+                .Build()
+                .SetLogger(log)
+                .OnBeforeUninstallFastCallback(
+                    (v) =>
                     {
-                        // WARNING, in most of these scenarios, the app exits at the end of HandleEvents;
-                        // thus, the method call does not return and nothing can be done after it!
-                        // We replace two of the usual calls in order to take control of where shortcuts are installed.
-                        SquirrelAwareApp.HandleEvents(
-                            onInitialInstall: v =>
-                            {
-                                mgr.CreateShortcutsForExecutable(
-                                    Path.GetFileName(Assembly.GetEntryAssembly().Location),
-                                    StartMenuLocations,
-                                    false, // not just an update, since this is case initial install
-                                    null, // can provide arguments to pass to Update.exe in shortcut, defaults are OK
-                                    iconPath,
-                                    SharedByAllUsers()
-                                );
-                            },
-                            onAppUpdate: v =>
-                            {
-                                HandleAppUpdate(mgr);
-                            },
-                            onAppUninstall: v =>
-                            {
-                                mgr.RemoveShortcutsForExecutable(
-                                    Path.GetFileName(Assembly.GetEntryAssembly().Location),
-                                    StartMenuLocations,
-                                    SharedByAllUsers()
-                                );
-                            },
-                            onFirstRun: () =>
-                            {
-                                // If the shortcuts were not created during the initial install, create them now.
-                                // See BL-14084.
-                                var desktopDir = Environment.GetFolderPath(
-                                    Environment.SpecialFolder.DesktopDirectory
-                                );
-                                if (SharedByAllUsers())
-                                    desktopDir = Environment.GetFolderPath(
-                                        Environment.SpecialFolder.CommonDesktopDirectory
-                                    );
-                                var linkFile = Path.ChangeExtension(
-                                    Path.GetFileName(Application.ExecutablePath),
-                                    "lnk"
-                                );
-                                var shortcutPath = Path.Combine(desktopDir, linkFile);
-                                if (!RobustFile.Exists(shortcutPath))
-                                {
-                                    mgr.CreateShortcutsForExecutable(
-                                        Path.GetFileName(Assembly.GetEntryAssembly().Location),
-                                        StartMenuLocations,
-                                        false, // not just an update, since this is case initial install
-                                        null, // can provide arguments to pass to Update.exe in shortcut, defaults are OK
-                                        iconPath,
-                                        SharedByAllUsers()
-                                    );
-                                }
-                            },
-                            arguments: args
-                        );
+                        RemoveBloomRegistryEntries();
                     }
-                    break;
-            }
-#endif
+                )
+                .OnAfterInstallFastCallback(v =>
+                {
+                    // If we implement all-users install, we should make the registry entries here.
+                    //MakeBloomRegistryEntries(args); // add an argument or something to tell it to go ahead even though installed for all users.
+                })
+                .OnFirstRun(
+                    (v) => {
+                        // Nothing to do for now (we get a message some other way about first install).
+                    }
+                )
+                .OnAfterUpdateFastCallback(v =>
+                {
+                    var props = new Dictionary<string, string>
+                    {
+                        ["newVersion"] = v.ToString(),
+                        ["channel"] = ApplicationUpdateSupport.ChannelName,
+                    };
+                    Analytics.Track("Update Version", props);
+                })
+                .Run();
+            if (commandLineArgs.Length == 0)
+                return !CheckForBadInstall();
+            return true;
         }
 
-#if !__MonoCS__
-        private static void HandleAppUpdate(UpdateManager mgr)
+        // returns true if there's a problem
+        static bool CheckForBadInstall()
         {
-            mgr.CreateShortcutForThisExe();
-
-            // See BL-4590 where an upgrade from a clean 3.7.22 to 3.8 either would get no Bloom.exe stub, or get one of 0KB.
-            // This is nominally because the installer in 3.7.22 did not use this stub technique... though we don't know why the upgrade
-            // process gave us a 0kb attempt at the stub. So we're fixing it here because we need to push this out quickly.
-            var stubPath = Application.ExecutablePath.Replace(".exe", "_ExecutionStub.exe");
-
-            // If the move succeeds, then the stub file won't be in our main bin directory anymore... it will already be moved up to the parent
-            // directory. So basically we're just "trying again" here, sigh...
-            if (RobustFile.Exists(stubPath))
+            // If we are running from a messed-up install resulting from an imperfect update from a version installed by Squirrel,
+            // this should clean things up.
+            // Velopack always puts our EXE in a directory called "current" under one that contains "Update.exe".
+            // If Update.exe is present, then it's fair to assume this is an installed build.
+            // In that case, if we're not in a "current" directory, we need run Update.exe to clean up the mess.
+            var location = Assembly.GetExecutingAssembly().Location;
+            var bloomDir = Path.GetDirectoryName(location);
+            var mainInstallDir = Path.GetDirectoryName(bloomDir);
+            var updateExePath = Path.Combine(mainInstallDir, "Update.exe");
+            if (
+                RobustFile.Exists(updateExePath)
+                && Path.GetFileName(bloomDir).ToLowerInvariant() != "current"
+            )
             {
-                try
-                {
-                    // the target is the parent directory, and the file name without the "_ExecutionStub" part of the name.
-                    var targetPath = Path.Combine(
-                        Path.GetDirectoryName(Path.GetDirectoryName(Application.ExecutablePath)),
-                        Path.GetFileName(Application.ExecutablePath)
-                    );
-                    RobustFile.Copy(stubPath, targetPath, true);
-                }
-                catch (Exception e)
-                {
-                    throw new ApplicationException(
-                        "Bloom failed to copy the execution stub: " + e.Message,
-                        e
-                    );
-                }
+                // We can tell Update.exe to wait for this process to finish before it continues
+                // with tasks that may involve replacing or moving our exe. The "start" argument tells it
+                // to complete any updates that are in progress (which will be an incomplete update from
+                // Squirrel, that happens because our update logic for Squirrel did not use Update.exe to
+                // restart the app, as was apparently expected).
+                var processId = Process.GetCurrentProcess().Id;
+                var args = "start --waitPid " + processId;
+
+                Process.Start(updateExePath, args);
+                // Program.main() will exit so Update.exe can finish the install and then restart us.
+                return true;
             }
+
+            return false;
         }
-#endif
 
         /// <summary>
         /// True if we consider our install to be shared by all users of the computer.
@@ -258,20 +184,6 @@ namespace Bloom
             );
         }
 
-#if !__MonoCS__
-        private static ShortcutLocation StartMenuLocations
-        {
-            get { return ShortcutLocation.Desktop | ShortcutLocation.StartMenuPrograms; }
-        }
-#endif
-
-        static bool IsFirstTimeInstall(string[] programArgs)
-        {
-            if (programArgs.Length < 1)
-                return false;
-            return programArgs[0] == "--squirrel-install";
-        }
-
         private static bool _installInLocalMachine;
 
         /// <summary>
@@ -282,9 +194,8 @@ namespace Bloom
         {
             if (Program.RunningUnitTests)
                 return; // unit testing.
-            // When installed in program files we only do registry entries when we are first installed,
-            // thus keeping them consistent for all users, stored in HKLM.
-            if (SharedByAllUsers() && !IsFirstTimeInstall(programArgs))
+            // If we support allUsers installs, we will need to make an exception here when called during installation.
+            if (SharedByAllUsers())
                 return;
             _installInLocalMachine = SharedByAllUsers();
             if (Platform.IsLinux)
@@ -306,7 +217,7 @@ namespace Bloom
                 );
                 ProblemReportApi.ShowProblemDialog(null, exception, "", "fatal");
                 // Not sure these lines are reachable. Just making sure.
-                Application.Exit();
+                ProgramExit.Exit();
                 return;
             }
 
@@ -394,7 +305,11 @@ namespace Bloom
             var bloomFileKey = "Bloom" + fileKey;
             EnsureRegistryValue(bloomFileKey + @"\shell\open", "Open");
             // e.g.: HKLM\SOFTWARE\Classes\Bloom.BloomCollectionFile\shell\open\command\: ""C:\Program Files (x86)\Bloom\Bloom.exe" "%1""
-            var exe = Assembly.GetExecutingAssembly().Location;
+            // With Velopack and .net 8, most ways of getting the exe path give a path to Bloom.dll,
+            // which does not work for this purpose. For example, Assembly.GetExecutingAssembly().Location,
+            // Assembly.GetEntryAssembly().Location, and Environment.GetCommandLineArgs()[0]
+            // all yield the path to Bloom.dll. This AI suggestion seems to work.
+            var exe = Process.GetCurrentProcess().MainModule.FileName;
             EnsureRegistryValue(bloomFileKey + @"\shell\open\command", "\"" + exe + "\" \"%1\"");
         }
 

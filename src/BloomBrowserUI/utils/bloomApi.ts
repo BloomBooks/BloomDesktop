@@ -20,7 +20,7 @@ function isRunningStorybook(): boolean {
         if (window.location.href.startsWith("http://localhost:58886"))
             // storybook port is specified in package.json
             return true;
-    } catch (e) {
+    } catch {
         //ignore
     }
     return false;
@@ -51,7 +51,7 @@ let pageIsClosing: boolean = false;
 export async function wrapAxios<T>(
     call: Promise<void | AxiosResponse<T>>,
     report: boolean = true,
-    url: string = "unknown"
+    url: string = "unknown",
 ): Promise<void | AxiosResponse<T>> {
     // Save the place where the original axios call was made.
     // The stack in the error passed to catch is usually not very
@@ -66,7 +66,7 @@ export async function wrapAxios<T>(
     // But fortunately, axios calls tend not to be used for very
     // performance-critical calls.
     const axiosCallState = new Error("dummy");
-    return call.catch(error => {
+    return call.catch((error) => {
         if (!report) {
             return;
         }
@@ -103,16 +103,16 @@ export async function wrapAxios<T>(
         if (error && error.message && error.stack) {
             reportPreliminaryError(
                 msg,
-                axiosCallState.stack + "\ninner exception\n" + error.stack
+                axiosCallState.stack + "\ninner exception\n" + error.stack,
             );
         } else {
             reportPreliminaryError(msg, axiosCallState.stack);
         }
 
         // If all goes well this better report will replace it:
-        StackTrace.fromError(axiosCallState).then(stackframes => {
-            const stringifiedStackAxiosCall = stackframes
-                .map(sf => {
+        StackTrace.fromError(axiosCallState).then((stackFrames) => {
+            const stringifiedStackAxiosCall = stackFrames
+                .map((sf) => {
                     return sf.toString();
                 })
                 .join("\n");
@@ -121,9 +121,9 @@ export async function wrapAxios<T>(
             // property, though we code defensively against the possibility
             // that it does not.
             if (error && error.message && error.stack) {
-                StackTrace.fromError(error).then(stackframes => {
-                    const stringifiedStackError = stackframes
-                        .map(sf => {
+                StackTrace.fromError(error).then((stackFrames) => {
+                    const stringifiedStackError = stackFrames
+                        .map((sf) => {
                             return sf.toString();
                         })
                         .join("\n");
@@ -131,7 +131,7 @@ export async function wrapAxios<T>(
                         msg,
                         stringifiedStackAxiosCall +
                             "\ninner exception\n" +
-                            stringifiedStackError
+                            stringifiedStackError,
                     );
                 });
             } else {
@@ -152,16 +152,16 @@ export function NotifyPageClosing() {
 
 export function getString(
     urlSuffix: string,
-    successCallback: (value: string) => void
+    successCallback: (value: string) => void,
 ) {
-    get(urlSuffix, result => {
+    get(urlSuffix, (result) => {
         successCallback(result.data);
     });
 }
 
 export function getWithPromise(
-    urlSuffix: string
-): Promise<void | AxiosResponse<any>> {
+    urlSuffix: string,
+): Promise<void | AxiosResponse> {
     return wrapAxios(axios.get(getBloomApiPrefix() + urlSuffix));
 }
 
@@ -169,25 +169,26 @@ export function getWithPromise(
 export function get(
     urlSuffix: string,
     successCallback: (r: AxiosResponse) => void,
-    errorCallback?: (r: AxiosError) => void
+    errorCallback?: (r: AxiosError) => void,
 ) {
     if (mockReplies[urlSuffix]) {
         // like the "real thing", this is going to return and
         // then some time in the future will call the callback
         // (here, we're just saying do it asap)
         window.setTimeout(() => successCallback(mockReplies[urlSuffix]), 0);
+        return; // Don't make the real request if we have a mock
     }
     wrapAxios(
         axios
             .get(getBloomApiPrefix() + urlSuffix)
             .then(successCallback)
-            .catch(r => {
+            .catch((r) => {
                 if (errorCallback) {
                     errorCallback(r);
                 } else {
                     throw r;
                 }
-            })
+            }),
     );
 }
 
@@ -203,11 +204,11 @@ export async function getAsync(urlSuffix: string) {
 // the component will call this again, but this time the tuple will contain the new value.
 export function useApiBoolean(
     urlSuffix: string,
-    defaultValue: boolean
+    defaultValue: boolean,
 ): [boolean, (value: boolean) => void] {
     const [value, setValue] = useState(defaultValue);
     useEffect(() => {
-        getBoolean(urlSuffix, c => {
+        getBoolean(urlSuffix, (c) => {
             setValue(c);
         });
     }, []);
@@ -222,7 +223,7 @@ export function useApiBoolean(
 export function useCanModifyCurrentBook(): boolean {
     const [canModifyCurrentBook] = useApiBoolean(
         "common/canModifyCurrentBook",
-        false
+        false,
     );
     return canModifyCurrentBook;
 }
@@ -232,14 +233,14 @@ export function useApiObject<T>(
     defaultValue: T,
     // Set to true to skip making the API query and just return defaultValue.
     // This is useful when certain conditions are met where we don't need the data.
-    skipQuery: boolean = false
+    skipQuery: boolean = false,
 ): T {
     const [value, setValue] = useState<T>(defaultValue);
     useEffect(() => {
         if (skipQuery) {
             setValue(defaultValue);
         } else {
-            get(urlSuffix, c => {
+            get(urlSuffix, (c) => {
                 if (typeof c.data === "string") {
                     setValue(JSON.parse(c.data as string));
                 } else setValue(c.data);
@@ -269,11 +270,11 @@ export function useApiData<T>(urlSuffix: string, defaultValue: T): T {
 function useApiDataInternal<T>(
     urlSuffix: string,
     defaultValue: T,
-    generation?: number
+    generation?: number,
 ): T {
     const [value, setValue] = useState<T>(defaultValue);
     useEffect(() => {
-        get(urlSuffix, c => {
+        get(urlSuffix, (c) => {
             setValue(c.data);
         });
     }, [generation, urlSuffix]);
@@ -290,12 +291,12 @@ export function useWatchApiData<T>(
     urlSuffix: string,
     defaultValue: T,
     clientContext: string,
-    eventId: string
+    eventId: string,
 ): T {
     const [generation, setGeneration] = useState(0);
     // Force a reload when the specified event happens.
     useSubscribeToWebSocketForEvent(clientContext, eventId, () => {
-        setGeneration(old => old + 1);
+        setGeneration((old) => old + 1);
     });
     return useApiDataInternal(urlSuffix, defaultValue, generation);
 }
@@ -303,10 +304,10 @@ export function useWatchApiData<T>(
 export function useWatchBooleanEvent(
     defaultValue: boolean,
     clientContext: string,
-    eventId: string
+    eventId: string,
 ) {
     const [val, setVal] = useState(defaultValue);
-    useSubscribeToWebSocketForEvent(clientContext, eventId, data => {
+    useSubscribeToWebSocketForEvent(clientContext, eventId, (data) => {
         setVal(data.message === "true");
     });
     return val;
@@ -317,15 +318,15 @@ export function useWatchBooleanEvent(
 export function useWatchString(
     defaultValue: string,
     clientContext: string,
-    eventId: string
+    eventId: string,
 ): string {
     const [val, setVal] = useState(defaultValue);
-    useSubscribeToWebSocketForEvent(clientContext, eventId, data => {
+    useSubscribeToWebSocketForEvent(clientContext, eventId, (data) => {
         setVal(data.message!);
     });
     // If we get re-rendered with a different defaultValue, update our result to that.
     useEffect(() => {
-        if (val != defaultValue) {
+        if (val !== defaultValue) {
             setVal(defaultValue);
         }
     }, [defaultValue]);
@@ -339,11 +340,11 @@ export function useApiString(urlSuffix: string, defaultValue: string): string {
 // Like UseApiData, except you also get a function for changing the state on the server.
 export function useApiState<T>(
     urlSuffix: string,
-    defaultValue: T
+    defaultValue: T,
 ): [T, (value: T) => void] {
     const [value, setValue] = useState<T>(defaultValue);
     useEffect(() => {
-        get(urlSuffix, c => {
+        get(urlSuffix, (c) => {
             setValue(c.data);
         });
     }, []);
@@ -355,18 +356,18 @@ export function useApiState<T>(
     return [value, setFunction];
 }
 
-// A vairiant of useApiState which returns a third value indicating whether we actually got the data yet.
+// A variant of useApiState which returns a third value indicating whether we actually got the data yet.
 // Possibly this could just replace useApiState, and clients that don't want the third argument could
 // ignore it. But I'm not sure that there might not be an extra render resulting from setting the
 // extra state variable, so I think it's worth having a separate function.
 export function useApiStateWithStatus<T>(
     urlSuffix: string,
-    defaultValue: T
+    defaultValue: T,
 ): [T, (value: T) => void, boolean] {
     const [value, setValue] = useState<T>(defaultValue);
-    const [gotit, setGotIt] = useState(false);
+    const [gotIt, setGotIt] = useState(false);
     useEffect(() => {
-        get(urlSuffix, c => {
+        get(urlSuffix, (c) => {
             setValue(c.data);
             setGotIt(true);
         });
@@ -376,7 +377,7 @@ export function useApiStateWithStatus<T>(
         postData(urlSuffix, value);
         setValue(value);
     };
-    return [value, setFunction, gotit];
+    return [value, setFunction, gotIt];
 }
 
 // Like useApiState, except it doesn't send the state back to the server when something changes.
@@ -384,11 +385,11 @@ export function useApiStateWithStatus<T>(
 // state back.
 export function useApiOneWayState<T>(
     urlSuffix: string,
-    defaultValue: T
+    defaultValue: T,
 ): [T, (value: T) => void] {
     const [value, setValue] = useState<T>(defaultValue);
     useEffect(() => {
-        get(urlSuffix, c => {
+        get(urlSuffix, (c) => {
             setValue(c.data);
         });
     }, []);
@@ -406,10 +407,10 @@ export function useApiOneWayState<T>(
 export function useApiStringState(
     urlSuffix: string,
     defaultValue: string,
-    conditional?: () => boolean
+    conditional?: () => boolean,
 ) {
     const generateSetStateWrapper = (
-        setState: React.Dispatch<React.SetStateAction<string>>
+        setState: React.Dispatch<React.SetStateAction<string>>,
     ) => {
         const setStateWrapper = (value: string) => {
             postString(urlSuffix, value);
@@ -423,7 +424,7 @@ export function useApiStringState(
         urlSuffix,
         defaultValue,
         conditional,
-        generateSetStateWrapper
+        generateSetStateWrapper,
     );
 }
 
@@ -435,10 +436,10 @@ export function useApiStringState(
 export function useApiStringStatePromise(
     urlSuffix: string,
     defaultValue: string,
-    conditional?: () => boolean
+    conditional?: () => boolean,
 ) {
     const generateSetStateWrapper = (
-        setState: React.Dispatch<React.SetStateAction<string>>
+        setState: React.Dispatch<React.SetStateAction<string>>,
     ) => {
         // Note that this returns Promise<void> instead of void
         const setStateWrapper = async (value: string) => {
@@ -453,7 +454,7 @@ export function useApiStringStatePromise(
         urlSuffix,
         defaultValue,
         conditional,
-        generateSetStateWrapper
+        generateSetStateWrapper,
     );
 }
 
@@ -470,13 +471,13 @@ function useApiStringStateInternal<T>(
     defaultValue: string,
     conditional: (() => boolean) | undefined,
     generateSetStateWrapper: (
-        setValue: React.Dispatch<React.SetStateAction<string>>
-    ) => T
+        setValue: React.Dispatch<React.SetStateAction<string>>,
+    ) => T,
 ): [string, T] {
     const [value, setValue] = useState(defaultValue);
     useEffect(() => {
         if (!conditional || conditional()) {
-            getString(urlSuffix, c => {
+            getString(urlSuffix, (c) => {
                 setValue(c);
             });
         }
@@ -488,31 +489,23 @@ function useApiStringStateInternal<T>(
 
 export function getBoolean(
     urlSuffix: string,
-    successCallback: (value: boolean) => void
+    successCallback: (value: boolean) => void,
 ) {
-    return get(urlSuffix, result => {
+    return get(urlSuffix, (result) => {
         successCallback(result.data);
     });
-}
-
-export function useApiJson(urlSuffix: string): [any | undefined] {
-    const [value, setValue] = useState<any | undefined>();
-    useEffect(() => {
-        get(urlSuffix, c => {
-            setValue(c.data);
-        });
-    }, []);
-    return value;
 }
 
 // This method is used to get a result from Bloom, passing parameters to the nested axios call.
 export function getWithConfig(
     urlSuffix: string,
     config: AxiosRequestConfig,
-    successCallback: (r: AxiosResponse) => void
+    successCallback: (r: AxiosResponse) => void,
 ) {
     wrapAxios(
-        axios.get(getBloomApiPrefix() + urlSuffix, config).then(successCallback)
+        axios
+            .get(getBloomApiPrefix() + urlSuffix, config)
+            .then(successCallback),
     );
 }
 
@@ -523,7 +516,7 @@ export function getWithConfig(
  */
 export async function getWithConfigAsync<T>(
     urlSuffix: string,
-    config: AxiosRequestConfig
+    config: AxiosRequestConfig,
 ) {
     return wrapAxios(axios.get<T>(getBloomApiPrefix() + urlSuffix, config));
 }
@@ -532,9 +525,9 @@ export function postString(urlSuffix: string, value: string) {
     return wrapAxios(
         axios.post(getBloomApiPrefix() + urlSuffix, value, {
             headers: {
-                "Content-Type": "text/plain"
-            }
-        })
+                "Content-Type": "text/plain",
+            },
+        }),
     );
 }
 
@@ -544,11 +537,11 @@ export function postBoolean(urlSuffix: string, value: boolean) {
     wrapAxios(
         axios.post(url, data, {
             headers: {
-                "Content-Type": "application/json"
-            }
+                "Content-Type": "application/json",
+            },
         }),
         true,
-        url
+        url,
     );
 }
 
@@ -556,9 +549,14 @@ export function postBoolean(urlSuffix: string, value: boolean) {
 export function post(
     urlSuffix: string,
     successCallback?: (r: AxiosResponse) => void,
-    failureCallback?: (r: AxiosResponse) => void
+    failureCallback?: (r: AxiosResponse) => void,
 ) {
-    if ((window as any).__karma__) {
+    // Check if we're running in a test environment (Vitest)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const isTest =
+        typeof process !== "undefined" && process.env.NODE_ENV === "test";
+
+    if (isTest) {
         console.log(`skipping post to ${urlSuffix} because in unit tests`);
         if (successCallback) {
             successCallback({} as AxiosResponse); // A dummy AxiosResponse for compiling purposes. Unit tests should avoid using it.
@@ -574,10 +572,10 @@ export function post(
                 failureCallback
                     ? failureCallback
                     : // leave failure unhandled if no callback
-                      r => {
+                      (r) => {
                           throw r;
-                      }
-            )
+                      },
+            ),
     );
 }
 
@@ -594,30 +592,30 @@ export function postThatMightNavigate(urlSuffix: string) {
     // false to wrapAxios further suppresses any error reporting.
     return wrapAxios(
         axios.post(getBloomApiPrefix() + urlSuffix).catch(),
-        false
+        false,
     );
 }
 
 // Post something to Bloom server with data.
 export function postData(
     urlSuffix: string,
-    data: any,
+    data: unknown,
     successCallback?: (r: AxiosResponse) => void,
-    errorCallback?: (r: AxiosResponse) => void
-): Promise<void | AxiosResponse<any>> {
+    errorCallback?: (r: AxiosResponse) => void,
+): Promise<void | AxiosResponse> {
     data = adjustFalsyData(data);
 
     return wrapAxios(
         axios
             .post(getBloomApiPrefix() + urlSuffix, data)
             .then(successCallback)
-            .catch(r => {
+            .catch((r) => {
                 if (errorCallback) {
                     errorCallback(r);
                 } else {
                     throw r;
                 }
-            })
+            }),
     );
 }
 
@@ -629,11 +627,11 @@ export function postData(
 // result.]
 export function postDataWithConfig(
     urlSuffix: string,
-    data: any,
+    data: unknown,
     config: AxiosRequestConfig,
     successCallback?: (r: AxiosResponse) => void,
-    errorCallback?: (r: AxiosResponse) => void
-): Promise<void | AxiosResponse<any>> {
+    errorCallback?: (r: AxiosResponse) => void,
+): Promise<void | AxiosResponse> {
     data = adjustFalsyData(data);
     return wrapAxios(
         axios
@@ -641,17 +639,17 @@ export function postDataWithConfig(
             .then(
                 successCallback
                     ? successCallback
-                    : r => {
+                    : (r) => {
                           return r; // Need to return the response (instead of having an empty body) so that the returned promise contains the AxiosResponse
-                      }
+                      },
             )
-            .catch(r => {
+            .catch((r) => {
                 if (errorCallback) {
                     errorCallback(r);
                 } else {
                     throw r;
                 }
-            })
+            }),
     );
 }
 
@@ -659,9 +657,9 @@ export function postDataWithConfig(
 // Follow-up work must use the async/await pattern.
 export async function postDataWithConfigAsync(
     urlSuffix: string,
-    data: any,
-    config: AxiosRequestConfig
-): Promise<void | AxiosResponse<any>> {
+    data: unknown,
+    config: AxiosRequestConfig,
+): Promise<void | AxiosResponse> {
     data = adjustFalsyData(data);
     // Review: do we need something like wrapAxios here? I _think_ the browser is pretty
     // good about showing complete call stacks in async code, so I hope not.
@@ -675,33 +673,33 @@ export async function postDataWithConfigAsync(
 // result.]
 export function postJson(
     urlSuffix: string,
-    data: any,
+    data: unknown,
     successCallback?: (r: AxiosResponse) => void,
-    errorCallback?: (r: AxiosResponse) => void
-): Promise<void | AxiosResponse<any>> {
+    errorCallback?: (r: AxiosResponse) => void,
+): Promise<void | AxiosResponse> {
     data = adjustFalsyData(data);
     return postDataWithConfig(
         urlSuffix,
         data,
         {
             headers: {
-                "Content-Type": "application/json; charset=utf-8" // JSON normally uses UTF-8. Need to explicitly set it because UTF-8 is not the default.
-            }
+                "Content-Type": "application/json; charset=utf-8", // JSON normally uses UTF-8. Need to explicitly set it because UTF-8 is not the default.
+            },
         },
         successCallback,
-        errorCallback
+        errorCallback,
     );
 }
 
 export async function postJsonAsync(
     urlSuffix: string,
-    data: any
-): Promise<void | AxiosResponse<any>> {
+    data: unknown,
+): Promise<void | AxiosResponse> {
     data = adjustFalsyData(data);
     return await postDataWithConfigAsync(urlSuffix, data, {
         headers: {
-            "Content-Type": "application/json; charset=utf-8" // JSON normally uses UTF-8. Need to explicitly set it because UTF-8 is not the default.
-        }
+            "Content-Type": "application/json; charset=utf-8", // JSON normally uses UTF-8. Need to explicitly set it because UTF-8 is not the default.
+        },
     });
 }
 
@@ -714,12 +712,12 @@ export function postDebugMessage(message: string): void {
         "common/debugMessage",
         debugMessageCount.toString() + "/ " + message,
         {
-            headers: { "Content-Type": "text/plain" }
-        }
+            headers: { "Content-Type": "text/plain" },
+        },
     );
 }
 
-function adjustFalsyData(data: any): any {
+function adjustFalsyData(data: unknown): unknown {
     // Need to stringify FALSE value starting in axios 0.20. (See https://github.com/axios/axios/issues/3549)
     // Starting in axios 0.20.0, it was observed that 0 and false would cause an empty body to be sent, whereas previously they sent the value itself.
     // (This is because 0 and false are falsy, and axios now checks for whether data is falsy or not, whereas previously it checked whether data is undefined or not).
@@ -728,4 +726,6 @@ function adjustFalsyData(data: any): any {
     return data === 0 || data === false ? JSON.stringify(data) : data;
 }
 
-window.addEventListener("beforeunload", () => NotifyPageClosing());
+if (typeof window !== "undefined") {
+    window.addEventListener("beforeunload", () => NotifyPageClosing());
+}

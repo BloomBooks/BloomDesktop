@@ -1,13 +1,13 @@
-﻿using Bloom.Utils;
-using ICSharpCode.SharpZipLib.Tar;
-using NUnit.Framework;
-using SIL.IO;
-using SIL.TestUtilities;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Bloom.Utils;
+using ICSharpCode.SharpZipLib.Tar;
+using NUnit.Framework;
+using SIL.IO;
+using SIL.TestUtilities;
 
 namespace BloomTests.Utils
 {

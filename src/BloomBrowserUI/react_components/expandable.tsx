@@ -29,7 +29,7 @@ interface IProps extends ILocalizationProps {
 
 export class Expandable extends React.Component<IProps, IState> {
     public readonly state: IState = {
-        expanded: false
+        expanded: false,
     };
 
     constructor(props: IProps) {
@@ -38,7 +38,7 @@ export class Expandable extends React.Component<IProps, IState> {
 
     public static getDerivedStateFromProps(
         nextProps: IProps,
-        prevState: IState
+        prevState: IState,
     ) {
         return { expanded: prevState.expanded || nextProps.alwaysExpanded };
     }
@@ -76,7 +76,7 @@ export class Expandable extends React.Component<IProps, IState> {
                     style={{
                         height: this.state.expanded
                             ? this.props.expandedHeight
-                            : "0"
+                            : "0",
                     }}
                 >
                     {this.props.children}

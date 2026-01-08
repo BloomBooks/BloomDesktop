@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import Typography from "@mui/material/Typography";
 import * as React from "react";
@@ -9,15 +8,13 @@ import {
     StyledEngineProvider,
     useTheme,
     createTheme,
-    adaptV4Theme
+    adaptV4Theme,
 } from "@mui/material/styles";
 import "./statusPanelCommon.less"; // Now we have .less and emotion going here. Someday we should unify.
-import { StatusPanelState } from "./TeamCollectionBookStatusPanel";
 import { IconHeadingBodyMenuPanel } from "../react_components/iconHeadingBodyMenuPanel";
 
 declare module "@mui/styles/defaultTheme" {
-    // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-empty-interface
     interface DefaultTheme extends Theme {}
 }
 
@@ -33,7 +30,7 @@ export interface IStatusPanelProps {
 }
 
 export const StatusPanelCommon: React.FunctionComponent<IStatusPanelProps> = (
-    props: IStatusPanelProps
+    props: IStatusPanelProps,
 ) => {
     const outerTheme = useTheme();
     const buttonColor = props.useWarningColorForButton
@@ -43,15 +40,15 @@ export const StatusPanelCommon: React.FunctionComponent<IStatusPanelProps> = (
         adaptV4Theme({
             palette: {
                 primary: {
-                    main: buttonColor
+                    main: buttonColor,
                 },
                 action: {
                     // Yagni: currently the only time we disable a button is when using the warning color
                     // If we ever disable the other version, we probably want primary.dark here.
-                    disabledBackground: outerTheme.palette.warning.dark
-                }
-            }
-        })
+                    disabledBackground: outerTheme.palette.warning.dark,
+                },
+            },
+        }),
     );
     // Get button to inherit outerTheme typography.
     // Review: I couldn't find a way to clone a theme. I also tried creating a button theme and changing

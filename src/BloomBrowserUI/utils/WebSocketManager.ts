@@ -19,7 +19,7 @@ export interface IBloomWebSocketProgressEvent extends IBloomWebSocketEvent {
 
 export function useWebSocketListener(
     clientContext: string,
-    listener: (messageEvent: IBloomWebSocketEvent) => void
+    listener: (messageEvent: IBloomWebSocketEvent) => void,
 ) {
     useEffect(() => {
         WebSocketManager.addListener(clientContext, listener);
@@ -32,7 +32,7 @@ function useWebSocketListenerInnerWithMessage<T>(
     eventId: string,
     listener: (T) => void,
     processEvent: (e: IBloomWebSocketEvent) => T,
-    filter?: (e: IBloomWebSocketEvent) => boolean
+    filter?: (e: IBloomWebSocketEvent) => boolean,
 ) {
     useEffect(() => {
         const l = (e: IBloomWebSocketEvent) => {
@@ -50,27 +50,27 @@ export function useSubscribeToWebSocketForEvent(
     clientContext: string,
     eventId: string,
     listener: (e: IBloomWebSocketEvent) => void,
-    onlyCallListenerIfMessageIsTruthy?: boolean
+    onlyCallListenerIfMessageIsTruthy?: boolean,
 ) {
     useWebSocketListenerInnerWithMessage<IBloomWebSocketEvent>(
         clientContext,
         eventId,
         listener,
-        e => e,
-        onlyCallListenerIfMessageIsTruthy ? e => !!e.message : e => true
+        (e) => e,
+        onlyCallListenerIfMessageIsTruthy ? (e) => !!e.message : (e) => true,
     );
 }
 export function useSubscribeToWebSocketForStringMessage(
     clientContext: string,
     eventId: string,
-    listener: (message: string) => void
+    listener: (message: string) => void,
 ) {
     useWebSocketListenerInnerWithMessage<string>(
         clientContext,
         eventId,
         listener,
-        e => e.message!,
-        e => !!e.message // ignore if no message
+        (e) => e.message!,
+        (e) => !!e.message, // ignore if no message
     );
 }
 
@@ -78,12 +78,12 @@ export function useSubscribeToWebSocketForStringMessage(
 export function useSubscribeToWebSocketForObject<T>(
     clientContext: string,
     eventId: string,
-    listener: (message: T) => void
+    listener: (message: T) => void,
 ) {
     useEffect(() => {
-        const websocketListener = e => {
+        const websocketListener = (e) => {
             if (e.id === eventId) {
-                listener((e as unknown) as T);
+                listener(e as unknown as T);
             }
         };
         WebSocketManager.addListener(clientContext, websocketListener);
@@ -100,14 +100,14 @@ export function useSubscribeToWebSocketForObject<T>(
 export function useSubscribeToWebSocketForObjectInMessageParam<T>(
     clientContext: string,
     eventId: string,
-    listener: (message: T) => void
+    listener: (message: T) => void,
 ) {
     useWebSocketListenerInnerWithMessage<T>(
         clientContext,
         eventId,
         listener,
-        e => JSON.parse(e.message!) as T,
-        e => !!e.message // ignore if no message
+        (e) => JSON.parse(e.message!) as T,
+        (e) => !!e.message, // ignore if no message
     );
 }
 
@@ -149,7 +149,7 @@ export default class WebSocketManager {
     // alpha user will have to ignore them or go back to beta.)
     private static ReconnectClosedSockets() {
         const keys = Object.getOwnPropertyNames(this.socketMap);
-        keys.forEach(clientContext => {
+        keys.forEach((clientContext) => {
             const socket: WebSocket = WebSocketManager.socketMap[clientContext];
             if (socket.readyState === WebSocket.CLOSED) {
                 delete WebSocketManager.socketMap[clientContext]; // force re-creating
@@ -221,7 +221,7 @@ export default class WebSocketManager {
 
             const ws = new WebSocket(
                 address,
-                isGeckoFxOrFirefox ? clientContext : undefined
+                isGeckoFxOrFirefox ? clientContext : undefined,
             );
 
             WebSocketManager.socketMap[clientContext] = ws;
@@ -240,15 +240,14 @@ export default class WebSocketManager {
                 } else if (e.clientContext === clientContext) {
                     WebSocketManager.clientContextCallbacks[
                         clientContext
-                    ].forEach(callback => callback(e));
+                    ].forEach((callback) => callback(e));
                 }
             };
-            WebSocketManager.clientContextToDispatcherFunction[
-                clientContext
-            ] = listener;
+            WebSocketManager.clientContextToDispatcherFunction[clientContext] =
+                listener;
             WebSocketManager.socketMap[clientContext].addEventListener(
                 "message",
-                listener
+                listener,
             );
         }
         return WebSocketManager.socketMap[clientContext];
@@ -266,7 +265,7 @@ export default class WebSocketManager {
                 "message",
                 WebSocketManager.clientContextToDispatcherFunction[
                     clientContext
-                ]
+                ],
             );
             webSocket.close();
             delete WebSocketManager.socketMap[clientContext];
@@ -279,7 +278,7 @@ export default class WebSocketManager {
      */
     public static closeSocketsWithPrefix(prefix: string) {
         const keys = Object.getOwnPropertyNames(this.socketMap);
-        keys.forEach(clientContext => {
+        keys.forEach((clientContext) => {
             if (clientContext.startsWith(prefix)) {
                 WebSocketManager.closeSocket(clientContext);
             }
@@ -295,11 +294,14 @@ export default class WebSocketManager {
     public static addListener<T extends IBloomWebSocketEvent>(
         clientContext: string,
         listener: (messageEvent: T) => void,
-        tagForDebugging?: string
+        tagForDebugging?: string,
     ): void {
-        if (clientContext.indexOf("mock_") > -1) {
-            // this is used in storybook stories. Don't try finding a server because there isn't one.
-            // Events will come in via mockSend().
+        // Skip WebSocket creation in test/mock environments
+        if (
+            clientContext.indexOf("mock_") > -1 ||
+            (window as any)._SKIP_WEBSOCKET_CREATION_
+        ) {
+            // this is used in storybook stories and playwright tests when not in "with-bloom" mode.
             if (!WebSocketManager.clientContextCallbacks[clientContext])
                 WebSocketManager.clientContextCallbacks[clientContext] = [];
         } else {
@@ -322,19 +324,19 @@ export default class WebSocketManager {
             "book", // via useWatchString
             "bookTeamCollectionStatus", // via useTColBookStatus
             // each book collection subscribes to this
-            "editableCollectionList"
+            "editableCollectionList",
         ];
 
         // in the case of the progressDialog, we expect to have 2: one for the dialog, which is listening, and one for the ProgressBox.
         if (count > 2 && !frequentlyListenedContexts.includes(clientContext)) {
             console.error(
-                `addListener sees that we have ${count} listeners on "${clientContext}". Normally if everything is disconnecting appropriately, these should not add up.`
+                `addListener sees that we have ${count} listeners on "${clientContext}". Normally if everything is disconnecting appropriately, these should not add up.`,
             );
         }
     }
     public static once<T extends IBloomWebSocketEvent>(
         clientContext: string,
-        listener: (messageEvent: T) => void
+        listener: (messageEvent: T) => void,
     ): void {
         const onceListener = (messageEvent: T) => {
             listener(messageEvent);
@@ -345,23 +347,22 @@ export default class WebSocketManager {
 
     public static removeListener(
         clientContext: string,
-        listener: (messageEvent: IBloomWebSocketEvent) => void
+        listener: (messageEvent: IBloomWebSocketEvent) => void,
     ): void {
-        WebSocketManager.clientContextCallbacks[
-            clientContext
-        ] = WebSocketManager.clientContextCallbacks[clientContext].filter(
-            l => l !== listener
-        );
+        WebSocketManager.clientContextCallbacks[clientContext] =
+            WebSocketManager.clientContextCallbacks[clientContext].filter(
+                (l) => l !== listener,
+            );
     }
 
     // useful for storybook stories to send messages
     public static mockSend<T extends IBloomWebSocketEvent>(
         clientContext: string,
-        event: T
+        event: T,
     ) {
-        WebSocketManager.clientContextCallbacks[
-            clientContext
-        ].forEach(listener => listener(event));
+        WebSocketManager.clientContextCallbacks[clientContext].forEach(
+            (listener) => listener(event),
+        );
     }
 
     /**
@@ -374,7 +375,7 @@ export default class WebSocketManager {
         const socket = WebSocketManager.getOrCreateWebSocket(clientContext);
         console.log(
             "WebSocketManager:notifyReady. readyState = " +
-                socket.readyState.toString()
+                socket.readyState.toString(),
         );
         if (socket.readyState === 0) {
             // CONNECTING

@@ -14,20 +14,20 @@ interface IProps extends SwitchProps {
 }
 
 // Displays a Switch control
-export const BloomSwitch: React.FunctionComponent<IProps> = props => {
+export const BloomSwitch: React.FunctionComponent<IProps> = (props) => {
     const label = useL10n(props.english ?? "", props.l10nKey);
 
     // Rules of hooks mean we have to call useL10n even if we won't use the result.
     const possibleLabelWhenChecked = useL10n(
         props.englishWhenChecked ?? "",
-        props.l10nKeyWhenChecked ?? props.l10nKey
+        props.l10nKeyWhenChecked ?? props.l10nKey,
     );
     const labelWhenChecked = props.l10nKeyWhenChecked
         ? possibleLabelWhenChecked
         : label;
 
     const [internalChecked, setInternalChecked] = React.useState<boolean>(
-        props.checked ?? props.defaultChecked ?? false
+        props.checked ?? props.defaultChecked ?? false,
     );
 
     const isControlled = props.checked !== undefined;

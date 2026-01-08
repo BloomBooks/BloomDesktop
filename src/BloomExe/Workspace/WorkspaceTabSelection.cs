@@ -10,7 +10,7 @@ namespace Bloom.Workspace
     {
         collection,
         edit,
-        publish
+        publish,
     }
 
     /// <summary>

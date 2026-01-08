@@ -6,7 +6,9 @@ interface ImagePlaceholderIconProps extends React.SVGProps<SVGSVGElement> {
 }
 
 // An icon that looks like our image placeholder.
-export const ImagePlaceholderIcon: React.FunctionComponent<ImagePlaceholderIconProps> = props => {
+export const ImagePlaceholderIcon: React.FunctionComponent<
+    ImagePlaceholderIconProps
+> = (props) => {
     const { color, strokeColor, ...rest } = props;
     return (
         <svg
@@ -26,7 +28,9 @@ export const ImagePlaceholderIcon: React.FunctionComponent<ImagePlaceholderIconP
     );
 };
 
-export const WrongImagePlaceholderIcon: React.FunctionComponent<ImagePlaceholderIconProps> = props => {
+export const WrongImagePlaceholderIcon: React.FunctionComponent<
+    ImagePlaceholderIconProps
+> = (props) => {
     const { color, strokeColor, ...rest } = props;
     return (
         <svg
@@ -53,7 +57,7 @@ export const WrongImagePlaceholderIcon: React.FunctionComponent<ImagePlaceholder
 
 export const RectangleIcon: React.FunctionComponent<{
     color?: string;
-}> = props => {
+}> = (props) => {
     const { color, ...rest } = props;
     return (
         <svg

@@ -2,7 +2,7 @@ import { TeamCollectionDialogLauncher } from "./TeamCollectionDialog";
 import { StorybookDialogWrapper } from "../react_components/BloomDialog/BloomDialogPlumbing";
 
 export default {
-    title: "Team Collection components/TeamCollectionDialog"
+    title: "Team Collection components/TeamCollectionDialog",
 };
 
 export const WithReloadButton = () => (
@@ -15,7 +15,7 @@ export const WithReloadButton = () => (
 );
 
 WithReloadButton.story = {
-    name: "With reload button"
+    name: "With reload button",
 };
 
 export const WithoutReloadButton = () => (
@@ -28,5 +28,5 @@ export const WithoutReloadButton = () => (
 );
 
 WithoutReloadButton.story = {
-    name: "Without reload button"
+    name: "Without reload button",
 };

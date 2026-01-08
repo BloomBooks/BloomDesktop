@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using SIL.Reporting;
 
 namespace Bloom
@@ -15,14 +16,36 @@ namespace Bloom
     /// </summary>
     public class UpdateVersionTable
     {
-        //unit tests can change this
-        public string URLOfTable = "http://bloomlibrary.org/channels/UpgradeTable{0}.txt";
+        // {0} is the channel name, like "Alpha" or "Release"
+        // {1} is the architecture suffix, like "-x86" or "-arm64" (or "" for x64)
+        // unit tests can change this template; in normal operation, it's a const.
+        public string URLOfTableFormat = "http://bloomlibrary.org/channels/UpgradeTable{0}{1}.txt";
 
         //unit tests can pre-set this
         public string TextContentsOfTable { get; set; }
 
         //unit tests can pre-set this
         public Version RunningVersion { get; set; }
+
+        /// <summary>
+        /// Returns the name of the current process architecture in lower case, with a preceding
+        /// hyphen (e.g., "-arm64", "-x86").
+        /// This is used to determine where to look for updates.
+        /// As a special legacy case, it returns an empty string for x64
+        /// </summary>
+        public static string ArchitectureSuffix
+        {
+            get
+            {
+                var architecture = RuntimeInformation.ProcessArchitecture;
+                if (architecture == Architecture.X64)
+                {
+                    return "";
+                }
+
+                return "-" + architecture.ToString().ToLowerInvariant();
+            }
+        }
 
         public class UpdateTableLookupResult
         {
@@ -119,7 +142,7 @@ namespace Bloom
             return new UpdateTableLookupResult
             {
                 URL = String.Empty,
-                Error = new WebException(parsingErrorMsg)
+                Error = new WebException(parsingErrorMsg),
             };
         }
 
@@ -164,7 +187,7 @@ namespace Bloom
                     errorResult = new UpdateTableLookupResult
                     {
                         URL = string.Empty,
-                        Error = new WebException(msg)
+                        Error = new WebException(msg),
                     };
                     return false;
                 }
@@ -220,7 +243,11 @@ namespace Bloom
 
         private string GetUrlOfTable()
         {
-            return String.Format(URLOfTable, ApplicationUpdateSupport.ChannelName);
+            return String.Format(
+                URLOfTableFormat,
+                ApplicationUpdateSupport.ChannelName,
+                UpdateVersionTable.ArchitectureSuffix
+            );
         }
 
         private bool IsConnectionError(WebException ex)

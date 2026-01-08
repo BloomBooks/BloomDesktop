@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import { Button, CircularProgress } from "@mui/material";
 import * as React from "react";
@@ -8,7 +7,7 @@ import { post, postJson } from "../../utils/bloomApi";
 import WebSocketManager, {
     IBloomWebSocketProgressEvent,
     useSubscribeToWebSocketForEvent,
-    useSubscribeToWebSocketForObject
+    useSubscribeToWebSocketForObject,
 } from "../../utils/WebSocketManager";
 import BloomButton from "../bloomButton";
 import { ProgressBox } from "./progressBox";
@@ -18,16 +17,16 @@ import {
     DialogBottomButtons,
     DialogBottomLeftButtons,
     DialogMiddle,
-    DialogTitle
+    DialogTitle,
 } from "../BloomDialog/BloomDialog";
 import {
     DialogCancelButton,
-    DialogCloseButton
+    DialogCloseButton,
 } from "../BloomDialog/commonDialogComponents";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import {
     IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
+    useSetupBloomDialog,
 } from "../BloomDialog/BloomDialogPlumbing";
 
 export interface IProgressDialogProps {
@@ -49,12 +48,11 @@ export interface IProgressDialogProps {
     size?: "small"; // For a much smaller dialog, when we only expect a few lines.
 }
 
-export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
+    props,
+) => {
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
     const {
         onClose: _, // Remove it from propsToPassToBloomDialog, but we don't actually want this variable (causes confusion with props.onClose)
         ...propsToPassToBloomDialog
@@ -65,9 +63,8 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
     const [sawAWarning, setSawAWarning] = useState(false);
     const [sawFatalError, setSawFatalError] = useState(false);
     const [percent, setPercent] = useState(0); // for determinate progress
-    const [messagesForErrorReporting, setMessagesForErrorReporting] = useState(
-        ""
-    );
+    const [messagesForErrorReporting, setMessagesForErrorReporting] =
+        useState("");
     const [messages, setMessages] = React.useState<Array<JSX.Element>>([]);
 
     const [listenerReady, setListenerReady] = useState(false);
@@ -120,7 +117,7 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
         const listener = (e: IBloomWebSocketProgressEvent) => {
             if (e.id === "message") {
                 setMessagesForErrorReporting(
-                    current => current + "\r\n" + e.message
+                    (current) => current + "\r\n" + e.message,
                 );
             }
             if (e.id === "show-buttons") {
@@ -261,8 +258,8 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
                             ?.dialogFrameProvidedExternally
                             ? "100%"
                             : props.size === "small"
-                            ? "80px"
-                            : "400px"};
+                              ? "80px"
+                              : "400px"};
                         min-width: ${props.size === "small"
                             ? "250px"
                             : "540px"};
@@ -290,7 +287,7 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
                                     onClick={() => {
                                         postJson("problemReport/showDialog", {
                                             message: messagesForErrorReporting,
-                                            shortMessage: `The user reported a problem from "${props.title}".`
+                                            shortMessage: `The user reported a problem from "${props.title}".`,
                                         });
                                     }}
                                 >
@@ -354,7 +351,9 @@ type IWinFormsProgressDialogProps = Omit<
  * The open state of ProgressDialog is initialized from {dialogEnvironment.initiallyOpen},
  * but then subsequently managed by this component
  */
-export const WinFormsProgressDialog: React.FunctionComponent<IWinFormsProgressDialogProps> = props => {
+export const WinFormsProgressDialog: React.FunctionComponent<
+    IWinFormsProgressDialogProps
+> = (props) => {
     const [isOpen, setIsOpen] = useState(props.dialogEnvironment.initiallyOpen);
     return (
         <ProgressDialog
@@ -389,16 +388,15 @@ interface IEmbeddedProgressDialogConfig {
 // an event tells it to show up. See C# BrowserProgressDialog.
 export const EmbeddedProgressDialog: React.FunctionComponent<{
     id: string;
-}> = props => {
+}> = (props) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [progressConfig, setProgressConfig] = useState<
-        IEmbeddedProgressDialogConfig
-    >({
-        which: "",
-        // just lets us know something is wrong if it shows up; a real title should
-        // be supplied by the code that causes it to become visible.
-        title: "This should not be seen"
-    });
+    const [progressConfig, setProgressConfig] =
+        useState<IEmbeddedProgressDialogConfig>({
+            which: "",
+            // just lets us know something is wrong if it shows up; a real title should
+            // be supplied by the code that causes it to become visible.
+            title: "This should not be seen",
+        });
     const openProgress = (args: IEmbeddedProgressDialogConfig) => {
         if (args.which !== props.id) {
             return; // message for another progress dialog, typically in another browser instance
@@ -409,14 +407,14 @@ export const EmbeddedProgressDialog: React.FunctionComponent<{
         // the "open" prop for controlling that instead.
         // args are sent from the C# code that wants to open the dialog.
         setProgressConfig({
-            ...args
+            ...args,
         });
         setIsOpen(true);
     };
     useSubscribeToWebSocketForObject(
         "progress",
         "open-progress",
-        (args: IEmbeddedProgressDialogConfig) => openProgress(args)
+        (args: IEmbeddedProgressDialogConfig) => openProgress(args),
     );
     useSubscribeToWebSocketForEvent("progress", "close-progress", () => {
         // Handles "close" initiated from over the websocket
@@ -434,7 +432,7 @@ export const EmbeddedProgressDialog: React.FunctionComponent<{
             onReadyToReceive={() => post("progress/ready")}
             dialogEnvironment={{
                 initiallyOpen: false,
-                dialogFrameProvidedExternally: false
+                dialogFrameProvidedExternally: false,
             }}
         />
     );

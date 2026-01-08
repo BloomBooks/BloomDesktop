@@ -1,14 +1,11 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
-import * as React from "react";
 import {
     ILocalizationProps,
     LocalizableElement,
     Label,
-    ILocalizationState
+    ILocalizationState,
 } from "./l10nComponents";
-import { FormControlLabel, Switch } from "@mui/material";
 
 interface ICheckboxProps extends ILocalizationProps {
     id?: string;
@@ -82,10 +79,10 @@ export class Checkbox extends LocalizableElement<
                     name={this.props.name}
                     disabled={this.props.disabled}
                     checked={this.props.checked}
-                    onChange={event => {
+                    onChange={(event) => {
                         this.onChange(event.target);
                     }}
-                    ref={input => (this.input = input)}
+                    ref={(input) => (this.input = input)}
                     css={css`
                         margin-right: 10px;
                     `}

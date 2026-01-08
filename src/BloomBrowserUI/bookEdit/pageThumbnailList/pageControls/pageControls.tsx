@@ -32,7 +32,7 @@ class PageControls extends React.Component<unknown, IPageControlsState> {
     public readonly state: IPageControlsState = {
         canAddState: true,
         canDeleteState: false,
-        canDuplicateState: false
+        canDuplicateState: false,
     };
 
     constructor(props) {
@@ -44,7 +44,7 @@ class PageControls extends React.Component<unknown, IPageControlsState> {
         this.updateStateForEvent = this.updateStateForEvent.bind(this);
 
         // Listen for changes to state from C#-land
-        WebSocketManager.addListener(kPageControlsContext, e => {
+        WebSocketManager.addListener(kPageControlsContext, (e) => {
             if (e.id === "edit/pageControls/state" && e.message) {
                 this.updateStateForEvent(e.message);
             }
@@ -54,7 +54,7 @@ class PageControls extends React.Component<unknown, IPageControlsState> {
     public componentDidMount() {
         window.addEventListener("beforeunload", this.componentCleanup);
         // Get the initial state from C#-land, now that we're ready for it.
-        get("edit/pageControls/requestState", result => {
+        get("edit/pageControls/requestState", (result) => {
             const jsonObj = result.data; // Axios apparently recognizes the JSON and parses it automatically.
             // something like: {"CanAddPages":true,"CanDeletePage":true,"CanDuplicatePage":true,"BookLockedState":"OriginalBookMode"}
             this.setPageControlState(jsonObj);
@@ -69,7 +69,7 @@ class PageControls extends React.Component<unknown, IPageControlsState> {
     }
 
     public componentCleanup() {
-        post("edit/pageControls/cleanup", result => {
+        post("edit/pageControls/cleanup", (result) => {
             WebSocketManager.closeSocket(kPageControlsContext);
         });
     }
@@ -84,7 +84,7 @@ class PageControls extends React.Component<unknown, IPageControlsState> {
         this.setState({
             canAddState: data.CanAddPages,
             canDeleteState: data.CanDeletePage,
-            canDuplicateState: data.CanDuplicatePage
+            canDuplicateState: data.CanDuplicatePage,
         });
         //console.log("this.state is " + JSON.stringify(this.state));
     }

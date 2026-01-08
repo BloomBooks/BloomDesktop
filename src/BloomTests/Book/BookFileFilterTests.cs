@@ -73,11 +73,11 @@ namespace BloomTests.Book
             _normalFilter = new BookFileFilter(_normalBookFolderPath);
             _filterForEdit = new BookFileFilter(_normalBookFolderPath)
             {
-                IncludeFilesForContinuedEditing = true
+                IncludeFilesForContinuedEditing = true,
             };
             _filterForInteractive = new BookFileFilter(_normalBookFolderPath)
             {
-                IncludeFilesNeededForBloomPlayer = true
+                IncludeFilesNeededForBloomPlayer = true,
             };
         }
 

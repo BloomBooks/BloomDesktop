@@ -1,4 +1,5 @@
 import * as ReactDOM from "react-dom";
+import $ from "jquery";
 import { ITool, IReactTool } from "./toolbox";
 import { ReactElement } from "react";
 import { isPageBloomGame } from "./games/GameInfo";
@@ -6,7 +7,8 @@ import { isPageBloomGame } from "./games/GameInfo";
 // Provides a base class with some common code for react-based tools that live
 // in Bloom's Edit Page Toolbox.
 export default abstract class ToolboxToolReactAdaptor
-    implements ITool, IReactTool {
+    implements ITool, IReactTool
+{
     imageUpdated(img: HTMLImageElement | undefined): void {
         // does nothing by default
     }
@@ -60,7 +62,7 @@ export default abstract class ToolboxToolReactAdaptor
 
     public static getPageFrame(): HTMLIFrameElement {
         return parent.window.document.getElementById(
-            "page"
+            "page",
         ) as HTMLIFrameElement;
     }
 
@@ -86,7 +88,7 @@ export default abstract class ToolboxToolReactAdaptor
 
     public static encodeAndSetPageAttr(
         name: string,
-        unencodedValue: string
+        unencodedValue: string,
     ): void {
         const page = this.getBloomPage();
         if (!page) return;

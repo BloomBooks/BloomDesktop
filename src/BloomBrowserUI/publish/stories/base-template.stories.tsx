@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react-vite";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import PublishScreenBanner from "../commonPublish/PublishScreenBanner";
 import { Button, Typography } from "@mui/material";
@@ -33,7 +33,7 @@ const testMainPanelContents = (
 );
 
 const meta: Meta = {
-    title: "Publish/BaseTemplate"
+    title: "Publish/BaseTemplate",
 };
 
 export default meta;
@@ -52,7 +52,7 @@ export const PublishScreenTemplateStory: Story = {
         >
             {testMainPanelContents}
         </PublishScreenTemplate>
-    )
+    ),
 };
 
 export const PublishScreenBannerEPub: Story = {
@@ -64,5 +64,5 @@ export const PublishScreenBannerEPub: Story = {
         >
             {someButton}
         </PublishScreenBanner>
-    )
+    ),
 };

@@ -9,6 +9,7 @@ import * as mobxReact from "mobx-react";
 import BloomButton from "../../react_components/bloomButton";
 import { DialogTitle, DialogActions, DialogContent } from "@mui/material";
 import { LocalizedString } from "../../react_components/l10nComponents";
+import { DialogHelpButton } from "../../react_components/BloomDialog/commonDialogComponents";
 
 interface IState {
     isOpen: boolean;
@@ -25,7 +26,7 @@ export default class BookMetadataDialog extends React.Component<
     public readonly state: IState = { isOpen: false };
 
     // We want mobx to watch this, because we will pass it to the BookMetadataTable, which can change it.
-    @mobx.observable
+    @mobx.observable.deep
     private metadata: any;
 
     // We will also pass this to the BookMetadataTable, but mobx doesn't need to watch it, since it won't change.
@@ -33,6 +34,7 @@ export default class BookMetadataDialog extends React.Component<
 
     constructor(props) {
         super(props);
+        mobx.makeObservable(this);
         BookMetadataDialog.singleton = this;
     }
     public componentDidMount() {
@@ -56,13 +58,13 @@ export default class BookMetadataDialog extends React.Component<
 
     public static show(signalChangeOnClose?: () => void) {
         BookMetadataDialog.signalChangeOnClose = signalChangeOnClose;
-        get("book/metadata", result => {
+        get("book/metadata", (result) => {
             BookMetadataDialog.singleton.metadata = result.data.metadata;
             BookMetadataDialog.singleton.translatedControlStrings =
                 result.data.translatedStringPairs;
 
             BookMetadataDialog.singleton.setState({
-                isOpen: true
+                isOpen: true,
             });
         });
     }
@@ -94,16 +96,10 @@ export default class BookMetadataDialog extends React.Component<
                         />
                     </DialogContent>
                     <DialogActions>
-                        <BloomButton
+                        <DialogHelpButton
                             id="helpButton"
-                            variant="outlined"
-                            enabled={true}
-                            l10nKey="Common.Help"
-                            clickApiEndpoint="help?topic=User_Interface/Dialog_boxes/Book_Metadata_dialog_box.htm"
-                            hasText={true}
-                        >
-                            Help
-                        </BloomButton>
+                            helpId="User_Interface/Dialog_boxes/Book_Metadata_dialog_box.htm"
+                        />
                         <BloomButton
                             id="okButton"
                             enabled={true}

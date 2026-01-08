@@ -1,14 +1,15 @@
+import { describe, it, expect, beforeAll, afterEach, vi } from "vitest";
 import AudioRecording, {
     AudioTextFragment,
     initializeTalkingBookToolAsync,
     AudioMode,
     getAllAudioModes,
-    kAnyRecordingApiUrl
+    kAnyRecordingApiUrl,
+    theOneAudioRecorder,
 } from "./audioRecording";
 import { RecordingMode } from "./recordingMode";
-import { customJasmineMatchers } from "../../../utils/testHelper";
 import axios from "axios";
-import * as $ from "jquery";
+import $ from "jquery";
 import { mockReplies } from "../../../utils/bloomApi";
 
 // Notes:
@@ -18,21 +19,24 @@ import { mockReplies } from "../../../utils/bloomApi";
 //     If you don't catch it, the error message will only say a Timeout error occurred, not the actual error.
 //     If you do catch it and then call fail(error), that's better but the stack trace won't be quite right.
 //     It'll show the line where fail() was called.
-//     Easier to just let Jasmine handle it (you get that by not having done() callback).
+//     Easier to just let vitest handle it (you get that by not having done() callback).
 //   There's also a promise based syntax available,
 //     but I think async/await with try/catch/finally is more readable than promises. (Less nesting and more consistent levels of nesting).
 //   Summary: Use Async/Await with NO done callback
 //   * Just add async() in front of the anonymous function passed to it().
 //   * The anonymous function should have no input parameters
 //   * Await whatever async stuff needs to be awaited.
-//   * Let Jasmine handle the rest
+//   * Let vitest handle the rest
 
 describe("audio recording tests", () => {
-    const extendedTimeoutInMs = 15000; // 15,000 = 15 seconds
     beforeAll(async () => {
-        jasmine.addMatchers(customJasmineMatchers); // must be in a beforeAll/beforeEach or it
-
         await setupForAudioRecordingTests();
+    });
+
+    afterEach(() => {
+        // Clean up any pending timers to prevent "parent is not defined" errors
+        // when tests finish before timers fire
+        theOneAudioRecorder?.clearTimeouts();
     });
 
     // In an earlier version of our API, checkForAnyRecording was designed to fail (404) if there was no recording.
@@ -42,8 +46,9 @@ describe("audio recording tests", () => {
     // Unfortunately, we're not allowed to call it directly from describe(); it has to be called from an it() or beforeEach/All()
     // It would be nice to call it more in beforeAll(), but some of the tests need to set up other things
     // to return while spying on axios.get, and Jasmine doesn't allow more than one spy on the same function.
+    // (maybe vitest would allow that?)
     function setupDefaultApiResponses() {
-        spyOn(axios, "get").and.callFake((url: string) => {
+        vi.spyOn(axios, "get").mockImplementation((url: string) => {
             if (url.includes(kAnyRecordingApiUrl)) {
                 return Promise.resolve({ data: false });
             } else {
@@ -55,16 +60,16 @@ describe("audio recording tests", () => {
     // Returns the HTML for a single text box for a variety of recording modes
     function getTextBoxHtmlSimple1(scenario: AudioMode) {
         if (scenario === AudioMode.PureSentence) {
-            return `<div class="bloom-editable" id="div1" data-audioRecordingMode="Sentence"><p><span id="1.1" class="audio-sentence ui-audioCurrent">Sentence 1.1.</span> <span id="1.2" class="audio-sentence">Sentence 1.2</span></p></div>`;
+            return `<div class="bloom-translationGroup"><div class="bloom-editable" id="div1" data-audioRecordingMode="Sentence"><p><span id="1.1" class="audio-sentence ui-audioCurrent">Sentence 1.1.</span> <span id="1.2" class="audio-sentence">Sentence 1.2</span></p></div></div>`;
         } else if (scenario === AudioMode.PreTextBox) {
-            return `<div class="bloom-editable ui-audioCurrent" id="div1" data-audioRecordingMode="TextBox"><p><span id="1.1" class="audio-sentence">Sentence 1.1.</span> <span id="1.2" class="audio-sentence">Sentence 1.2</span></p></div>`;
+            return `<div class="bloom-translationGroup"><div class="bloom-editable ui-audioCurrent" id="div1" data-audioRecordingMode="TextBox"><p><span id="1.1" class="audio-sentence">Sentence 1.1.</span> <span id="1.2" class="audio-sentence">Sentence 1.2</span></p></div></div>`;
         } else if (scenario === AudioMode.PureTextBox) {
-            return `<div class="bloom-editable audio-sentence ui-audioCurrent" id="div1" data-audioRecordingMode="TextBox"><p>Sentence 1.1. Sentence 1.2</p></div>`;
+            return `<div class="bloom-translationGroup"><div class="bloom-editable audio-sentence ui-audioCurrent" id="div1" data-audioRecordingMode="TextBox"><p>Sentence 1.1. Sentence 1.2</p></div></div>`;
         } else if (scenario === AudioMode.HardSplitTextBox) {
             // FYI: Yes, it is confirmed that in hardSplit, ui-audioCurrent goes on the div, not the span.
-            return `<div class="bloom-editable ui-audioCurrent bloom-postAudioSplit" id="div1" data-audioRecordingMode="TextBox"><p><span id="1.1" class="audio-sentence">Sentence 1.1.</span> <span id="1.2" class="audio-sentence">Sentence 1.2</span></p></div>`;
+            return `<div class="bloom-translationGroup"><div class="bloom-editable ui-audioCurrent bloom-postAudioSplit" id="div1" data-audioRecordingMode="TextBox"><p><span id="1.1" class="audio-sentence">Sentence 1.1.</span> <span id="1.2" class="audio-sentence">Sentence 1.2</span></p></div></div>`;
         } else if (scenario === AudioMode.SoftSplitTextBox) {
-            return `<div class="bloom-editable audio-sentence ui-audioCurrent bloom-postAudioSplit" id="div1" data-audioRecordingMode="TextBox" data-audiorecordingendtimes="1.0 2.0"><p><span id="1.1" class="bloom-highlightSegment">Sentence 1.1.</span> <span id="1.2" class="bloom-highlightSegment">Sentence 1.2</span></p></div>`;
+            return `<div class="bloom-translationGroup"><div class="bloom-editable audio-sentence ui-audioCurrent bloom-postAudioSplit" id="div1" data-audioRecordingMode="TextBox" data-audiorecordingendtimes="1.0 2.0"><p><span id="1.1" class="bloom-highlightSegment">Sentence 1.1.</span> <span id="1.2" class="bloom-highlightSegment">Sentence 1.2</span></p></div></div>`;
         } else {
             throw new Error("Unknown scenario: " + AudioMode[scenario]);
         }
@@ -73,7 +78,7 @@ describe("audio recording tests", () => {
     describe("- Next()", () => {
         it("Record=Sentence, last sentence returns disabled for Next button", () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div class='bloom-editable' data-audiorecordingmode='Sentence'><p><span id='id1' class='audio-sentence ui-audioCurrent'>Sentence 1.</span></p></div></div>"
+                "<div id='page1'><div class='bloom-editable' data-audiorecordingmode='Sentence'><p><span id='id1' class='audio-sentence ui-audioCurrent'>Sentence 1.</span></p></div></div>",
             );
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.Sentence;
@@ -85,7 +90,7 @@ describe("audio recording tests", () => {
 
         it("Record=TextBox/Play=Sentence, last sentence returns disabled for Next button", () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'><p><span id='id1' class='audio-sentence'>Sentence 1.</span></p></div></div>"
+                "<div id='page1'><div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'><p><span id='id1' class='audio-sentence'>Sentence 1.</span></p></div></div>",
             );
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.TextBox;
@@ -97,7 +102,7 @@ describe("audio recording tests", () => {
 
         it("Record=TextBox/Play=TextBox, last sentence returns disabled for Next button", () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div></div>"
+                "<div id='page1'><div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div></div>",
             );
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.TextBox;
@@ -113,7 +118,7 @@ describe("audio recording tests", () => {
             const box2Html =
                 "<div id='box2' class='bloom-editable bloom-visibility-code-on' data-audiorecordingmode='Sentence'><p><span id='sentence2' class='audio-sentence'>Sentence 2.</span><span id='sentence3' class='audio-sentence'>Sentence 3.</span></p></div>";
             SetupIFrameFromHtml(
-                `<div id='page1'><div class='bloom-translationGroup'>${box1Html}${box2Html}</div></div>`
+                `<div id='page1'><div class='bloom-translationGroup'>${box1Html}${box2Html}</div></div>`,
             );
 
             const recording = new AudioRecording();
@@ -130,7 +135,7 @@ describe("audio recording tests", () => {
             const box2Html =
                 "<div id='box2' class='bloom-editable bloom-visibility-code-on audio-sentence' data-audiorecordingmode='TextBox'><p><span id='sentence2' class='audio-sentence'>Sentence 2.</span><span id='sentence3' class=''>Sentence 3.</span></p></div>";
             SetupIFrameFromHtml(
-                `<div id='page1'><div class='bloom-translationGroup'>${box1Html}${box2Html}</div></div>`
+                `<div id='page1'><div class='bloom-translationGroup'>${box1Html}${box2Html}</div></div>`,
             );
 
             const recording = new AudioRecording();
@@ -143,7 +148,7 @@ describe("audio recording tests", () => {
 
         it("TT -> TT, returns next box", () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div class='bloom-translationGroup'><div id='box1' class='bloom-editable bloom-visibility-code-on audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable bloom-visibility-code-on audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div></div>"
+                "<div id='page1'><div class='bloom-translationGroup'><div id='box1' class='bloom-editable bloom-visibility-code-on audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable bloom-visibility-code-on audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div></div>",
             );
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.TextBox;
@@ -163,7 +168,7 @@ describe("audio recording tests", () => {
             const box3Html = boxTemplate(3, "");
 
             SetupIFrameFromHtml(
-                `<div id="page1"><div class='bloom-translationGroup'>${box1Html}${box2Html}${box3Html}</div></div>`
+                `<div id="page1"><div class='bloom-translationGroup'>${box1Html}${box2Html}${box3Html}</div></div>`,
             );
 
             const recording = new AudioRecording();
@@ -179,7 +184,7 @@ describe("audio recording tests", () => {
     describe("- Prev()", () => {
         it("Record=Sentence, first sentence returns disabled for Back button", () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div class='bloom-editable' data-audiorecordingmode='Sentence'><p><span id='id1' class='audio-sentence ui-audioCurrent'>Sentence 1.</span></p></div></div>"
+                "<div id='page1'><div class='bloom-editable' data-audiorecordingmode='Sentence'><p><span id='id1' class='audio-sentence ui-audioCurrent'>Sentence 1.</span></p></div></div>",
             );
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.Sentence;
@@ -191,7 +196,7 @@ describe("audio recording tests", () => {
 
         it("Record=TextBox/Play=Sentence, first sentence returns disabled for Back button", () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'><p><span id='id1' class='audio-sentence'>Sentence 1.</span></p></div></div>"
+                "<div id='page1'><div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'><p><span id='id1' class='audio-sentence'>Sentence 1.</span></p></div></div>",
             );
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.TextBox;
@@ -203,7 +208,7 @@ describe("audio recording tests", () => {
 
         it("Record=TextBox/Play=TextBox, first sentence returns disabled for Back button", () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div></div>"
+                "<div id='page1'><div class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div></div>",
             );
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.TextBox;
@@ -219,7 +224,7 @@ describe("audio recording tests", () => {
             const box2Html =
                 "<div id='box2' class='bloom-editable bloom-visibility-code-on' data-audiorecordingmode='Sentence'><p><span id='sentence3' class='audio-sentence ui-audioCurrent'>Sentence 3.</span></p></div>";
             SetupIFrameFromHtml(
-                `<div id='page1'><div class='bloom-translationGroup'>${box1Html}${box2Html}</div></div>`
+                `<div id='page1'><div class='bloom-translationGroup'>${box1Html}${box2Html}</div></div>`,
             );
 
             const recording = new AudioRecording();
@@ -236,7 +241,7 @@ describe("audio recording tests", () => {
             const box2Html =
                 "<div id='box2' class='bloom-editable bloom-visibility-code-on audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'><p><span id='sentence3' class=''>Sentence 3.</span></p></div>";
             SetupIFrameFromHtml(
-                `<div id='page1'><div class='bloom-translationGroup'>${box1Html}${box2Html}</div></div>`
+                `<div id='page1'><div class='bloom-translationGroup'>${box1Html}${box2Html}</div></div>`,
             );
 
             const recording = new AudioRecording();
@@ -249,7 +254,7 @@ describe("audio recording tests", () => {
 
         it("TT <- TT, returns previous box", () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div class='bloom-translationGroup'><div id='box1' class='bloom-editable bloom-visibility-code-on audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable bloom-visibility-code-on audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div></div>"
+                "<div id='page1'><div class='bloom-translationGroup'><div id='box1' class='bloom-editable bloom-visibility-code-on audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable bloom-visibility-code-on audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div></div>",
             );
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.TextBox;
@@ -269,7 +274,7 @@ describe("audio recording tests", () => {
             const box3Html = boxTemplate(3, " ui-audioCurrent");
 
             SetupIFrameFromHtml(
-                `<div id="page1"><div class='bloom-translationGroup'>${box1Html}${box2Html}${box3Html}</div></div>`
+                `<div id="page1"><div class='bloom-translationGroup'>${box1Html}${box2Html}${box3Html}</div></div>`,
             );
 
             const recording = new AudioRecording();
@@ -285,7 +290,7 @@ describe("audio recording tests", () => {
     describe("- PlayingMultipleAudio()", () => {
         it("returns true while in listen to whole page with multiple text boxes", async () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div class='bloom-translationGroup'><div id='box1' class='bloom-editable bloom-visibility-code-on audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div></div>"
+                "<div id='page1'><div class='bloom-translationGroup'><div id='box1' class='bloom-editable bloom-visibility-code-on audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div></div>",
             );
             const recording = new AudioRecording();
             await recording.listenAsync();
@@ -294,7 +299,7 @@ describe("audio recording tests", () => {
 
         it("returns true while in listen to whole page with only one box", async () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div class='bloom-translationGroup'><div id='box1' class='bloom-editable bloom-visibility-code-on audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div></div></div>"
+                "<div id='page1'><div class='bloom-translationGroup'><div id='box1' class='bloom-editable bloom-visibility-code-on audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div></div></div>",
             );
             const recording = new AudioRecording();
             await recording.listenAsync();
@@ -303,7 +308,7 @@ describe("audio recording tests", () => {
 
         it("returns false while preloading", () => {
             SetupIFrameFromHtml(
-                "<div id='page1'><div id='box1' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div>"
+                "<div id='page1'><div id='box1' class='bloom-editable audio-sentence' data-audiorecordingmode='TextBox'>p>Sentence 1.</p></div><div id='box2' class='bloom-editable audio-sentence ui-audioCurrent' data-audiorecordingmode='TextBox'>p>Sentence 2.</p></div></div>",
             );
 
             const recording = new AudioRecording();
@@ -324,7 +329,7 @@ describe("audio recording tests", () => {
             const recording = new AudioRecording();
             recording.makeAudioSentenceElementsTest(
                 div,
-                RecordingMode.Sentence
+                RecordingMode.Sentence,
             );
             const spans = div.find("span");
             expect(spans.length).toBe(2);
@@ -332,22 +337,19 @@ describe("audio recording tests", () => {
             expect(spans[1].innerHTML).toBe("This is another");
             expect(div.text()).toBe("This is a sentence. This is another");
             expect(spans.first().attr("id")).not.toBe(
-                spans
-                    .first()
-                    .next()
-                    .attr("id")
+                spans.first().next().attr("id"),
             );
             expect(spans.first().attr("class")).toBe("audio-sentence");
             expect(spans.last().attr("class")).toBe("audio-sentence");
         });
         it("retains matching sentence spans with same ids.keeps md5s and adds missing ones", () => {
             const div = $(
-                '<div><p><span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span> This is another</p></div>'
+                '<div><p><span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span> This is another</p></div>',
             );
             const recording = new AudioRecording();
             recording.makeAudioSentenceElementsTest(
                 div,
-                RecordingMode.Sentence
+                RecordingMode.Sentence,
             );
             const spans = div.find("span");
             expect(spans.length).toBe(2);
@@ -356,25 +358,22 @@ describe("audio recording tests", () => {
             expect(div.text()).toBe("This is a sentence. This is another");
             expect(spans.first().attr("id")).toBe("abc");
             expect(spans.first().attr("recordingmd5")).toBe(
-                "d15ba5f31fa7c797c093931328581664"
+                "d15ba5f31fa7c797c093931328581664",
             );
             expect(spans.first().attr("id")).not.toBe(
-                spans
-                    .first()
-                    .next()
-                    .attr("id")
+                spans.first().next().attr("id"),
             );
             expect(spans.first().attr("class")).toBe("audio-sentence");
             expect(spans.last().attr("class")).toBe("audio-sentence");
         });
         it("retains markup within sentences", () => {
             const div = $(
-                '<div><p><span id="abc" class="audio-sentence">This <b>is</b> a sentence.</span> This <i>is</i> another</p></div>'
+                '<div><p><span id="abc" class="audio-sentence">This <b>is</b> a sentence.</span> This <i>is</i> another</p></div>',
             );
             const recording = new AudioRecording();
             recording.makeAudioSentenceElementsTest(
                 div,
-                RecordingMode.Sentence
+                RecordingMode.Sentence,
             );
             const spans = div.find("span");
             expect(spans.length).toBe(2);
@@ -385,75 +384,63 @@ describe("audio recording tests", () => {
             "Phrase 1| Phrase 2.",
             "phrase 1| phrase 2.",
             "1 | 2",
-            "1 ||| 2" // collapse multiple
-        ].forEach(testInput => {
+            "1 ||| 2", // collapse multiple
+        ].forEach((testInput) => {
             it(`treats vertical bar as a phrase delimiter (Input=${testInput})`, () => {
                 const div = $(`<div><p>${testInput}</p></div>`);
                 const recording = new AudioRecording();
                 recording.makeAudioSentenceElementsTest(
                     div,
-                    RecordingMode.Sentence
+                    RecordingMode.Sentence,
                 );
                 const spans = div.find("span");
-                expect(spans.length).toBe(
-                    2,
-                    `Input "${testInput}" should be split into 2 phrase.`
-                );
-                expect(spans[0].innerText.endsWith("|")).toBe(
-                    true,
-                    `${spans[0].innerText} should end with "|"`
-                );
-                expect(div[0].innerText).toBe(
+                expect(
+                    spans.length,
+                    `Input "${testInput}" should be split into 2 phrase.`,
+                ).toBe(2);
+                expect(
+                    spans[0].innerText.endsWith("|"),
+                    `${spans[0].innerText} should end with "|"`,
+                ).toBe(true);
+                expect(div[0].innerText, "InnerText no longer matches").toBe(
                     testInput,
-                    "InnerText no longer matches"
                 );
             });
         });
         it("keeps id with unchanged recorded sentence when new inserted before", () => {
             const div = $(
-                '<div><p>This is a new sentence. <span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span></p></div>'
+                '<div><p>This is a new sentence. <span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span></p></div>',
             );
             const recording = new AudioRecording();
             recording.makeAudioSentenceElementsTest(
                 div,
-                RecordingMode.Sentence
+                RecordingMode.Sentence,
             );
             const spans = div.find("span");
             expect(spans.length).toBe(2);
             expect(spans[0].innerHTML).toBe("This is a new sentence.");
             expect(spans[1].innerHTML).toBe("This is a sentence.");
             expect(div.text()).toBe(
-                "This is a new sentence. This is a sentence."
+                "This is a new sentence. This is a sentence.",
             );
-            expect(
-                spans
-                    .first()
-                    .next()
-                    .attr("id")
-            ).toBe("abc"); // with matching md5 id should stay with sentence
-            expect(
-                spans
-                    .first()
-                    .next()
-                    .attr("recordingmd5")
-            ).toBe("d15ba5f31fa7c797c093931328581664");
+            expect(spans.first().next().attr("id")).toBe("abc"); // with matching md5 id should stay with sentence
+            expect(spans.first().next().attr("recordingmd5")).toBe(
+                "d15ba5f31fa7c797c093931328581664",
+            );
             expect(spans.first().attr("id")).not.toBe(
-                spans
-                    .first()
-                    .next()
-                    .attr("id")
+                spans.first().next().attr("id"),
             );
             expect(spans.first().attr("class")).toBe("audio-sentence");
             expect(spans.last().attr("class")).toBe("audio-sentence");
         });
         it("keeps ids and md5s when inserted between", () => {
             const div = $(
-                '<div><p><span id="abcd" recordingmd5="qed" class="audio-sentence">This is the first sentence.</span> This is inserted. <span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span> Inserted after.</p></div>'
+                '<div><p><span id="abcd" recordingmd5="qed" class="audio-sentence">This is the first sentence.</span> This is inserted. <span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span> Inserted after.</p></div>',
             );
             const recording = new AudioRecording();
             recording.makeAudioSentenceElementsTest(
                 div,
-                RecordingMode.Sentence
+                RecordingMode.Sentence,
             );
             const spans = div.find("span");
             expect(spans.length).toBe(4);
@@ -462,101 +449,67 @@ describe("audio recording tests", () => {
             expect(spans[2].innerHTML).toBe("This is a sentence.");
             expect(spans[3].innerHTML).toBe("Inserted after.");
             expect(div.text()).toBe(
-                "This is the first sentence. This is inserted. This is a sentence. Inserted after."
+                "This is the first sentence. This is inserted. This is a sentence. Inserted after.",
             );
             expect(spans.first().attr("id")).toBe("abcd"); // with matching md5 id should stay with sentence
-            expect(
-                spans
-                    .first()
-                    .next()
-                    .next()
-                    .attr("id")
-            ).toBe("abc"); // with matching md5 id should stay with sentence
-            expect(
-                spans
-                    .first()
-                    .next()
-                    .next()
-                    .attr("recordingmd5")
-            ).toBe("d15ba5f31fa7c797c093931328581664");
+            expect(spans.first().next().next().attr("id")).toBe("abc"); // with matching md5 id should stay with sentence
+            expect(spans.first().next().next().attr("recordingmd5")).toBe(
+                "d15ba5f31fa7c797c093931328581664",
+            );
             // The first span is reused just by position, since its md5 doesn't match, but it should still keep it.
             expect(spans.first().attr("recordingmd5")).toBe("qed");
             expect(spans.first().attr("id")).not.toBe(
-                spans
-                    .first()
-                    .next()
-                    .attr("id")
+                spans.first().next().attr("id"),
             );
-            expect(
-                spans
-                    .first()
-                    .next()
-                    .attr("id")
-            ).not.toBe(
-                spans
-                    .first()
-                    .next()
-                    .next()
-                    .attr("id")
+            expect(spans.first().next().attr("id")).not.toBe(
+                spans.first().next().next().attr("id"),
             );
-            expect(
-                spans
-                    .first()
-                    .next()
-                    .next()
-                    .attr("id")
-            ).not.toBe(
-                spans
-                    .first()
-                    .next()
-                    .next()
-                    .next()
-                    .attr("id")
+            expect(spans.first().next().next().attr("id")).not.toBe(
+                spans.first().next().next().next().attr("id"),
             );
             expect(spans.first().attr("class")).toBe("audio-sentence");
             expect(spans.last().attr("class")).toBe("audio-sentence");
-            expect(
-                spans
-                    .first()
-                    .next()
-                    .attr("class")
-            ).toBe("audio-sentence");
+            expect(spans.first().next().attr("class")).toBe("audio-sentence");
         });
 
         // We can get something like this when we paste from Word
         it("ignores empty span", () => {
             const div = $(
-                '<div><p>This is the first sentence.<span data-cke-bookmark="1" style="display: none;" id="cke_bm_35C"> </span></p></div>'
+                '<div><p>This is the first sentence.<span data-cke-bookmark="1" style="display: none;" id="cke_bm_35C"> </span></p></div>',
             );
             const recording = new AudioRecording();
             recording.makeAudioSentenceElementsTest(
                 div,
-                RecordingMode.Sentence
+                RecordingMode.Sentence,
             );
             const spans = div.find("span");
             expect(spans.length).toBe(2);
             expect(spans[0].innerHTML).toBe("This is the first sentence.");
             expect(spans[1].innerHTML).toBe(" ");
             expect(spans.first().attr("class")).toBe("audio-sentence");
-            expect(spans.last().attr("class")).not.toContain("audio-sentence");
+            expect(spans.last().attr("class") ?? "").not.toContain(
+                "audio-sentence",
+            );
         });
 
         // We can get something like this when we paste from Word
         it("ignores empty span and <br>", () => {
             const p = $(
-                '<p><span data-cke-bookmark="1" style="display: none;" id="cke_bm_35C">&nbsp;</span><br></p>'
+                '<p><span data-cke-bookmark="1" style="display: none;" id="cke_bm_35C">&nbsp;</span><br></p>',
             );
             const recording = new AudioRecording();
             recording.makeAudioSentenceElementsTest(p, RecordingMode.Sentence);
             const spans = p.find("span");
             expect(spans.length).toBe(1);
             expect(spans[0].innerHTML).toBe("&nbsp;");
-            expect(spans.first().attr("class")).not.toContain("audio-sentence");
+            expect(spans.first().attr("class") ?? "").not.toContain(
+                "audio-sentence",
+            );
         });
 
         it("flattens nested audio spans", () => {
             const p = $(
-                '<p><span id="efgh" recordingmd5="xyz" class="audio-sentence"><span id="abcd" recordingmd5="qed" class="audio-sentence">This is the first.</span> <span id="abde" recordingmd5="qef" class="audio-sentence">This is the second.</span> This is the third.</span></p>'
+                '<p><span id="efgh" recordingmd5="xyz" class="audio-sentence"><span id="abcd" recordingmd5="qed" class="audio-sentence">This is the first.</span> <span id="abde" recordingmd5="qef" class="audio-sentence">This is the second.</span> This is the third.</span></p>',
             );
             const recording = new AudioRecording();
             recording.makeAudioSentenceElementsTest(p, RecordingMode.Sentence);
@@ -564,35 +517,21 @@ describe("audio recording tests", () => {
             // Should have removed the outer span and left the two inner ones and added a third one.
             expect(spans.length).toBe(3);
             expect(spans.first().attr("id")).toBe("abcd");
-            expect(
-                spans
-                    .first()
-                    .next()
-                    .attr("id")
-            ).toBe("abde");
+            expect(spans.first().next().attr("id")).toBe("abde");
             expect(spans[0].innerHTML).toBe("This is the first.");
             expect(spans[1].innerHTML).toBe("This is the second.");
             expect(spans[2].innerHTML).toBe("This is the third.");
             expect(spans.first().attr("class")).toBe("audio-sentence");
-            expect(
-                spans
-                    .first()
-                    .next()
-                    .attr("class")
-            ).toBe("audio-sentence");
-            expect(
-                spans
-                    .first()
-                    .next()
-                    .next()
-                    .attr("class")
-            ).toBe("audio-sentence");
+            expect(spans.first().next().attr("class")).toBe("audio-sentence");
+            expect(spans.first().next().next().attr("class")).toBe(
+                "audio-sentence",
+            );
         });
 
         it("does not create nested spans", () => {
             // This scenario could happen when trying to perform soft-split again on a text box that has already been soft-split previously.
             const p = $(
-                '<div class="bloom-editable" data-audiorecordingmode="TextBox" class="audio-sentence"><p><span id="a" class="bloom-highlightSegment">One.</span> <span id="b" class="bloom-highlightSegment">Two.</span> <span id="c" class="bloom-highlightSegment">Three.</span></p></div>'
+                '<div class="bloom-editable" data-audiorecordingmode="TextBox" class="audio-sentence"><p><span id="a" class="bloom-highlightSegment">One.</span> <span id="b" class="bloom-highlightSegment">Two.</span> <span id="c" class="bloom-highlightSegment">Three.</span></p></div>',
             );
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.Sentence;
@@ -605,7 +544,7 @@ describe("audio recording tests", () => {
         it("ensures full span coverage of paragraph", () => {
             // based on BL-6038 user data
             const p = $(
-                '<p>Random text <strong><span data-duration="9.400227" id="abcd" class="audio-sentence" recordingmd5="undefined"><u>underlined</u></span></strong> finish the sentence. Another sentence <u><strong>boldunderlined</strong></u> finish the second.</p>'
+                '<p>Random text <strong><span data-duration="9.400227" id="abcd" class="audio-sentence" recordingmd5="undefined"><u>underlined</u></span></strong> finish the sentence. Another sentence <u><strong>boldunderlined</strong></u> finish the second.</p>',
             );
             const recording = new AudioRecording();
             recording.makeAudioSentenceElementsTest(p, RecordingMode.Sentence);
@@ -615,18 +554,13 @@ describe("audio recording tests", () => {
             expect(spans.first().attr("id")).toBe("abcd");
             // expect(spans.first().next().attr("id")).toBe("abde");
             expect(spans[0].innerHTML).toBe(
-                "Random text <strong><u>underlined</u></strong> finish the sentence."
+                "Random text <strong><u>underlined</u></strong> finish the sentence.",
             );
             expect(spans[1].innerHTML).toBe(
-                "Another sentence <u><strong>boldunderlined</strong></u> finish the second."
+                "Another sentence <u><strong>boldunderlined</strong></u> finish the second.",
             );
             expect(spans.first().attr("class")).toBe("audio-sentence");
-            expect(
-                spans
-                    .first()
-                    .next()
-                    .attr("class")
-            ).toBe("audio-sentence");
+            expect(spans.first().next().attr("class")).toBe("audio-sentence");
         });
 
         it("handles hyperlinks", () => {
@@ -637,7 +571,7 @@ describe("audio recording tests", () => {
             const recording = new AudioRecording();
             recording.makeAudioSentenceElementsTest(
                 div,
-                RecordingMode.Sentence
+                RecordingMode.Sentence,
             );
             const spans = div.find("span");
             expect(spans.length).toBe(3);
@@ -645,13 +579,10 @@ describe("audio recording tests", () => {
             expect(spans[1].innerHTML).toBe(sentence2); // Make sure the anchor is not lost in the HTML
             expect(spans[2].innerHTML).toBe(sentence3);
             expect(div.text()).toBe(
-                "This is a link. This is another. Click them."
+                "This is a link. This is another. Click them.",
             );
             expect(spans.first().attr("id")).not.toBe(
-                spans
-                    .first()
-                    .next()
-                    .attr("id")
+                spans.first().next().attr("id"),
             );
             expect(spans.first().attr("class")).toBe("audio-sentence");
             expect(spans.last().attr("class")).toBe("audio-sentence");
@@ -674,82 +605,77 @@ describe("audio recording tests", () => {
             recording.recordingMode = RecordingMode.TextBox;
             recording.makeAudioSentenceElementsTest(div, RecordingMode.TextBox);
 
-            expect(div.text()).toBe(
+            expect(div.text(), "div text").toBe(
                 "Paragraph 1 Sentence 1. Paragraph 1, Sentence 2. Paragraph 2, Sentence 1. Paragraph 2, Sentence 2.",
-                "div text"
             );
 
             const spans = div.find("span");
-            expect(spans.length).toBe(
-                0,
-                "number of spans does not match expected count"
-            );
+            expect(
+                spans.length,
+                "number of spans does not match expected count",
+            ).toBe(0);
 
-            const parent = $("<div>")
-                .append(div)
-                .clone();
+            const parent = $("<div>").append(div).clone();
 
             const divs = parent.find("div");
-            expect(divs.length).toBe(
-                2,
-                "number of divs does not match expected count"
-            );
+            expect(
+                divs.length,
+                "number of divs does not match expected count",
+            ).toBe(2);
 
-            expect($(divs[0]).is(".audio-sentence")).toBe(
+            expect($(divs[0]).is(".audio-sentence"), "textbox's class").toBe(
                 true,
-                "textbox's class"
             );
-            expect($(divs[0]).attr("id")).not.toBe(undefined, "textbox's id");
-            expect($(divs[0]).attr("id").length).toBeGreaterThan(
-                31,
-                "textbox's id"
-            ); // GUID without hyphens is 32 chars longs
-            expect($(divs[0]).attr("id").length).toBeLessThan(
+            expect($(divs[0]).attr("id"), "textbox's id").not.toBe(undefined);
+            expect(
+                $(divs[0]).attr("id").length,
+                "textbox's id",
+            ).toBeGreaterThan(31); // GUID without hyphens is 32 chars longs
+            expect($(divs[0]).attr("id").length, "textbox's id").toBeLessThan(
                 38,
-                "textbox's id"
             ); // GUID with hyphens adds 4 chars. And we sometimes insert a 1-char prefix, adding up to 37.
 
-            expect($(divs[1]).is(".audio-sentence")).toBe(
-                false,
-                "formatButton's class"
-            );
-            expect($(divs[1]).attr("id")).toBe(
+            expect(
+                $(divs[1]).is(".audio-sentence"),
+                "formatButton's class",
+            ).toBe(false);
+            expect($(divs[1]).attr("id"), "formatButton's id").toBe(
                 "formatButton",
-                "formatButton's id"
             );
-            expect(divs[1].outerHTML).toBe(
+            expect(divs[1].outerHTML, "formatButton's outerHTML").toBe(
                 formatButtonHtml,
-                "formatButton's outerHTML"
             );
 
             const paragraphs = div.find("p");
-            expect(paragraphs.length).toBe(2, "number of paragraphs");
+            expect(paragraphs.length, "number of paragraphs").toBe(2);
             paragraphs.each((index, paragraph) => {
-                expect($(paragraph).is(".audio-sentence")).toBe(
-                    false,
-                    "paragraph " + index + " class"
-                );
-                expect(paragraph.id).toBe("", "paragraph " + index + " id"); // If id attribute is not set, this actually returns empty string, which is kinda surprising.
+                expect(
+                    $(paragraph).is(".audio-sentence"),
+                    "paragraph " + index + " class",
+                ).toBe(false);
+                expect(paragraph.id, "paragraph " + index + " id").toBe(""); // If id attribute is not set, this actually returns empty string, which is kinda surprising.
             });
 
-            expect(parent.html().indexOf('id=""')).toBe(
-                -1,
-                "IDs should not be set to empty string. (Can easily cause duplicate ID validation errors and prevent saving)"
-            );
+            expect(
+                parent.html().indexOf('id=""'),
+                "IDs should not be set to empty string. (Can easily cause duplicate ID validation errors and prevent saving)",
+            ).toBe(-1);
 
-            expect(StripAllGuidIds(StripEmptyClasses(parent.html()))).toBe(
+            expect(
+                StripAllGuidIds(StripEmptyClasses(parent.html())),
+                "Parent HTML",
+            ).toBe(
                 '<div class="bloom-editable audio-sentence" data-audiorecordingmode="TextBox"><p>Paragraph 1 Sentence 1. Paragraph 1, Sentence 2.</p> <p>Paragraph 2, Sentence 1. Paragraph 2, Sentence 2.</p>' +
                     formatButtonHtml +
                     "</div>",
-                "Parent HTML"
             );
 
             recording.recordingMode = RecordingMode.Sentence;
             recording.makeAudioSentenceElementsTest(
                 div,
-                RecordingMode.Sentence
+                RecordingMode.Sentence,
             );
-            expect(div.text).toBe($(originalHtml).text, "Swap back test");
+            expect(div.text, "Swap back test").toBe($(originalHtml).text);
             // Note: It is not expected that going to by-sentence to here will lead back the original HTML structure. (Because we started with unmarked text, not by-sentence)
         });
 
@@ -769,65 +695,62 @@ describe("audio recording tests", () => {
             recording.recordingMode = RecordingMode.TextBox;
             recording.makeAudioSentenceElementsTest(div, RecordingMode.TextBox);
 
-            expect(div.text()).toBe("Hello world", "div text");
+            expect(div.text(), "div text").toBe("Hello world");
 
             const spans = div.find("span");
-            expect(spans.length).toBe(0, "number of spans");
+            expect(spans.length, "number of spans").toBe(0);
 
-            const parent = $("<div>")
-                .append(div)
-                .clone();
-            expect(StripAllGuidIds(StripEmptyClasses(parent.html()))).toBe(
+            const parent = $("<div>").append(div).clone();
+            expect(
+                StripAllGuidIds(StripEmptyClasses(parent.html())),
+                "Parent HTML",
+            ).toBe(
                 '<div class="bloom-editable audio-sentence" data-audiorecordingmode="TextBox"><p>Hello world</p>' +
                     formatButtonHtml +
                     "</div>",
-                "Parent HTML"
             );
 
             const divs = parent.find("div");
-            expect(divs.length).toBe(2, "number of divs");
+            expect(divs.length, "number of divs").toBe(2);
 
-            expect($(divs[0]).is(".audio-sentence")).toBe(
+            expect($(divs[0]).is(".audio-sentence"), "textbox's class").toBe(
                 true,
-                "textbox's class"
             );
-            expect(divs[0].id.length).toBeGreaterThan(
+            expect(divs[0].id.length, "textbox's id length").toBeGreaterThan(
                 31,
-                "textbox's id length"
             );
-            expect(divs[0].id.length).toBeLessThan(38, "textbox's id length");
+            expect(divs[0].id.length, "textbox's id length").toBeLessThan(38);
 
-            expect($(divs[1]).is(".audio-sentence")).toBe(
-                false,
-                "formatButton's class"
-            );
-            expect(divs[1].id).toBe("formatButton", "formatButton's id");
-            expect(divs[1].outerHTML).toBe(
+            expect(
+                $(divs[1]).is(".audio-sentence"),
+                "formatButton's class",
+            ).toBe(false);
+            expect(divs[1].id, "formatButton's id").toBe("formatButton");
+            expect(divs[1].outerHTML, "formatButton's outerHTML").toBe(
                 formatButtonHtml,
-                "formatButton's outerHTML"
             );
 
             const paragraphs = div.find("p");
-            expect(paragraphs.length).toBe(1, "number of paragraphs");
+            expect(paragraphs.length, "number of paragraphs").toBe(1);
             paragraphs.each((index, paragraph) => {
-                expect($(paragraph).is(".audio-sentence")).toBe(
-                    false,
-                    "paragraph " + index + " class"
-                );
-                expect(paragraph.id).toBe("", "paragraph " + index + " id");
+                expect(
+                    $(paragraph).is(".audio-sentence"),
+                    "paragraph " + index + " class",
+                ).toBe(false);
+                expect(paragraph.id, "paragraph " + index + " id").toBe("");
             });
 
-            expect(parent.html().indexOf('id=""')).toBe(
-                -1,
-                "IDs should not be set to empty string. (Can easily cause duplicate ID validation errors and prevent saving)"
-            );
+            expect(
+                parent.html().indexOf('id=""'),
+                "IDs should not be set to empty string. (Can easily cause duplicate ID validation errors and prevent saving)",
+            ).toBe(-1);
 
             recording.recordingMode = RecordingMode.Sentence;
             recording.makeAudioSentenceElementsTest(
                 div,
-                RecordingMode.Sentence
+                RecordingMode.Sentence,
             );
-            expect(div.text).toBe($(originalHtml).text, "Swap back test");
+            expect(div.text, "Swap back test").toBe($(originalHtml).text);
             // Note: It is not expected that going to by-sentence to here will lead back the original HTML structure. (Because we started with unmarked text, not by-sentence)
         });
 
@@ -847,57 +770,54 @@ describe("audio recording tests", () => {
             recording.recordingMode = RecordingMode.TextBox;
             recording.makeAudioSentenceElementsTest(div, RecordingMode.TextBox);
 
-            expect(div.text()).toBe("Hello world", "div text");
+            expect(div.text(), "div text").toBe("Hello world");
 
-            const parent = $("<div>")
-                .append(div)
-                .clone();
-            expect(StripAllGuidIds(StripEmptyClasses(parent.html()))).toBe(
+            const parent = $("<div>").append(div).clone();
+            expect(
+                StripAllGuidIds(StripEmptyClasses(parent.html())),
+                "Parent HTML",
+            ).toBe(
                 '<div class="bloom-editable audio-sentence" role="textbox" data-audiorecordingmode="TextBox"><p>Hello world</p>' +
                     formatButtonHtml +
                     "</div>",
-                "Parent HTML"
             );
 
             const divs = parent.find("div");
-            expect(divs.length).toBe(2, "number of divs");
+            expect(divs.length, "number of divs").toBe(2);
 
-            expect($(divs[0]).is(".audio-sentence")).toBe(
+            expect($(divs[0]).is(".audio-sentence"), "textbox's class").toBe(
                 true,
-                "textbox's class"
             );
-            expect($(divs[0]).attr("id")).not.toBe(undefined, "textbox's id");
-            expect(divs[0].id.length).toBeGreaterThan(
+            expect($(divs[0]).attr("id"), "textbox's id").not.toBe(undefined);
+            expect(divs[0].id.length, "textbox's id length").toBeGreaterThan(
                 31,
-                "textbox's id length"
             );
             // Enhance: It would be great if it preserve the original one
             //expect(divs[0].id).toBe("ef142986-373a-4353-808f-a05d9478c0ed", "textbox's id");
 
-            expect($(divs[1]).is(".audio-sentence")).toBe(
-                false,
-                "formatButton's class"
-            );
-            expect(divs[1].id).toBe("formatButton", "formatButton's id");
-            expect(divs[1].outerHTML).toBe(
+            expect(
+                $(divs[1]).is(".audio-sentence"),
+                "formatButton's class",
+            ).toBe(false);
+            expect(divs[1].id, "formatButton's id").toBe("formatButton");
+            expect(divs[1].outerHTML, "formatButton's outerHTML").toBe(
                 formatButtonHtml,
-                "formatButton's outerHTML"
             );
 
             const spans = div.find("span");
-            expect(spans.length).toBe(0, "number of spans");
+            expect(spans.length, "number of spans").toBe(0);
 
-            expect(parent.html().indexOf('id=""')).toBe(
-                -1,
-                "IDs should not be set to empty string. (Can easily cause duplicate ID validation errors and prevent saving)"
-            );
+            expect(
+                parent.html().indexOf('id=""'),
+                "IDs should not be set to empty string. (Can easily cause duplicate ID validation errors and prevent saving)",
+            ).toBe(-1);
 
             recording.recordingMode = RecordingMode.Sentence;
             recording.makeAudioSentenceElementsTest(
                 div,
-                RecordingMode.Sentence
+                RecordingMode.Sentence,
             );
-            expect(div.text).toBe($(originalHtml).text, "Swap back test");
+            expect(div.text, "Swap back test").toBe($(originalHtml).text);
             // Note: It is not expected that going to by-sentence to here will lead back the original HTML structure. (Because we started with unmarked text, not by-sentence)
         });
 
@@ -909,22 +829,22 @@ describe("audio recording tests", () => {
             recording.recordingMode = RecordingMode.Sentence; // Should be the new mode
             recording.makeAudioSentenceElementsTest(
                 div,
-                RecordingMode.Sentence
+                RecordingMode.Sentence,
             );
 
-            const parent = $("<div>")
-                .append(div)
-                .clone();
+            const parent = $("<div>").append(div).clone();
 
             const spans = parent.find("span");
-            expect(spans.length).toBe(1, "number of spans");
+            expect(spans.length, "number of spans").toBe(1);
 
             const paragraphs = parent.find("p");
-            expect(paragraphs.length).toBe(1, "number of spans");
+            expect(paragraphs.length, "number of spans").toBe(1);
 
-            expect(StripAllGuidIds(StripEmptyClasses(parent.html()))).toBe(
+            expect(
+                StripAllGuidIds(StripEmptyClasses(parent.html())),
+                "Parent html",
+            ).toBe(
                 '<div class="bloom-editable bloom-content1 bloom-contentNational1 bloom-visibility-code-on cke_editable cke_editable_inline cke_contents_ltr normal-style" data-languagetipcontent="English" style="min-height: 24px;" tabindex="0" spellcheck="true" role="textbox" aria-label="false" data-audiorecordingmode="Sentence" lang="en" contenteditable="true"><p><span class="audio-sentence">hi<br></span></p><div id="formatButton" class="bloom-ui" style="bottom: 0px;" contenteditable="false"><img src="/bloom/bookEdit/img/cogGrey.svg" contenteditable="false"></div></div>',
-                "Parent html"
             );
         });
 
@@ -947,51 +867,46 @@ describe("audio recording tests", () => {
             recording.recordingMode = RecordingMode.TextBox;
             recording.makeAudioSentenceElementsTest(div, RecordingMode.TextBox);
 
-            let parent = $("<div>")
-                .append(div)
-                .clone();
+            let parent = $("<div>").append(div).clone();
 
             const spans = parent.find("span");
-            expect(spans.length).toBe(0, "number of spans");
+            expect(spans.length, "number of spans").toBe(0);
 
             const divs = parent.find("div");
-            expect(divs.length).toBe(2, "number of divs");
-            expect($(divs[0]).is(".audio-sentence")).toBe(
+            expect(divs.length, "number of divs").toBe(2);
+            expect($(divs[0]).is(".audio-sentence"), "textbox's class").toBe(
                 true,
-                "textbox's class"
             );
             // GUID without hyphens is 32 chars longs
-            expect($(divs[0]).attr("id").length).toBeGreaterThan(
-                31,
-                "textbox's id"
-            );
+            expect(
+                $(divs[0]).attr("id").length,
+                "textbox's id",
+            ).toBeGreaterThan(31);
             // GUID with hyphens adds 4 chars. And we sometimes insert a 1-char prefix, adding up to 37.
-            expect($(divs[0]).attr("id").length).toBeLessThan(
+            expect($(divs[0]).attr("id").length, "textbox's id").toBeLessThan(
                 38,
-                "textbox's id"
             );
-            expect($(divs[1]).attr("id")).toBe(
+            expect($(divs[1]).attr("id"), "formatButton's id").toBe(
                 "formatButton",
-                "formatButton's id"
             );
 
             const paragraphs = parent.find("p");
-            expect(paragraphs.length).toBe(2, "number of paragraphs");
+            expect(paragraphs.length, "number of paragraphs").toBe(2);
             paragraphs.each((index, paragraph) => {
-                expect($(paragraph).attr("id")).toBe(
-                    undefined,
-                    "paragraph " + index + " id"
-                ); // If id attribute is not set, this actually returns empty string, which is kinda surprising.
-                expect($(paragraph).hasClass("audio-sentence")).toBe(
-                    false,
-                    "paragraph " + index + " class"
-                );
+                expect(
+                    $(paragraph).attr("id"),
+                    "paragraph " + index + " id",
+                ).toBe(undefined); // If id attribute is not set, this actually returns empty string, which is kinda surprising.
+                expect(
+                    $(paragraph).hasClass("audio-sentence"),
+                    "paragraph " + index + " class",
+                ).toBe(false);
             });
 
-            expect(parent.html().indexOf('id=""')).toBe(
-                -1,
-                "IDs should not be set to empty string. (Can easily cause duplicate ID validation errors and prevent saving)"
-            );
+            expect(
+                parent.html().indexOf('id=""'),
+                "IDs should not be set to empty string. (Can easily cause duplicate ID validation errors and prevent saving)",
+            ).toBe(-1);
 
             const expectedTextBoxDiv = $(textBoxDivHtml)
                 .attr("data-audiorecordingmode", "TextBox")
@@ -1000,27 +915,29 @@ describe("audio recording tests", () => {
                 .append(expectedTextBoxDiv)
                 .html()
                 .replace(/<\/div>/, "");
-            expect(StripAllGuidIds(StripEmptyClasses(parent.html()))).toBe(
+            expect(
+                StripAllGuidIds(StripEmptyClasses(parent.html())),
+                "Parent HTML",
+            ).toBe(
                 expectedTextBoxDivHtml +
                     "<p>Sentence 1. Sentence 2. Sentence 3.<br></p><p>Paragraph 2.<br></p>" +
                     StripAllGuidIds(formatButtonHtml) +
                     "</div>",
-                "Parent HTML"
             );
 
             recording.recordingMode = RecordingMode.Sentence;
             recording.makeAudioSentenceElementsTest(
                 div,
-                RecordingMode.Sentence
+                RecordingMode.Sentence,
             );
-            parent = $("<div>")
-                .append(div)
-                .clone();
-            expect(StripAllGuidIds(StripEmptyClasses(parent.html()))).toBe(
+            parent = $("<div>").append(div).clone();
+            expect(
+                StripAllGuidIds(StripEmptyClasses(parent.html())),
+                "Swap back to original",
+            ).toBe(
                 StripAllGuidIds(
-                    StripEmptyClasses(StripAudioCurrent(originalHtml))
+                    StripEmptyClasses(StripAudioCurrent(originalHtml)),
                 ),
-                "Swap back to original"
             );
         });
 
@@ -1036,51 +953,47 @@ describe("audio recording tests", () => {
             const pageFrame = parent.window.document.getElementById("page");
             const div = $(
                 (<HTMLIFrameElement>pageFrame).contentDocument!.getElementById(
-                    "numberedPage"
-                )!
+                    "numberedPage",
+                )!,
             );
 
             let recording = new AudioRecording();
             recording.recordingMode = RecordingMode.Sentence;
             recording.makeAudioSentenceElementsTest(
                 div,
-                RecordingMode.Sentence
+                RecordingMode.Sentence,
             );
 
-            expect(div.text()).toBe(
+            expect(div.text(), "div text").toBe(
                 "Sentence 1. Sentence 2. Sentence 3.Paragraph 2.",
-                "div text"
             );
 
             const spans = div.find("span");
-            expect(spans.length).toBe(4, "number of spans");
+            expect(spans.length, "number of spans").toBe(4);
             spans.each((index, span) => {
-                expect(span.id.length).toBeGreaterThan(
+                expect(span.id.length, "span " + index + " id").toBeGreaterThan(
                     31,
-                    "span " + index + " id"
                 );
-                expect($(span).hasClass("audio-sentence")).toBe(
-                    true,
-                    "span " + index + " class"
-                );
+                expect(
+                    $(span).hasClass("audio-sentence"),
+                    "span " + index + " class",
+                ).toBe(true);
             });
 
             expect($(spans[0]).text()).toBe("Sentence 1.");
             expect($(spans[3]).text()).toBe("Paragraph 2.");
 
             const paragraphs = div.find("p");
-            expect(paragraphs.length).toBe(2, "number of paragraphs");
+            expect(paragraphs.length, "number of paragraphs").toBe(2);
             paragraphs.each((index, paragraph) => {
-                expect(paragraph.id).toBe("", "paragraph " + index + " id"); // If id attribute is not set, this actually returns empty string, which is kinda surprising.
-                expect($(paragraph).hasClass("audio-sentence")).toBe(
-                    false,
-                    "paragraph " + index + " class"
-                );
+                expect(paragraph.id, "paragraph " + index + " id").toBe(""); // If id attribute is not set, this actually returns empty string, which is kinda surprising.
+                expect(
+                    $(paragraph).hasClass("audio-sentence"),
+                    "paragraph " + index + " class",
+                ).toBe(false);
             });
 
-            let parentDiv = $("<div>")
-                .append(div)
-                .clone();
+            let parentDiv = $("<div>").append(div).clone();
             const expectedTextBoxDiv = $(textBoxDivHtml)
                 .attr("data-audiorecordingmode", "Sentence")
                 .removeClass("audio-sentence")
@@ -1094,7 +1007,7 @@ describe("audio recording tests", () => {
 
             console.log(
                 "we got this: " +
-                    StripAllGuidIds(StripEmptyClasses(parentDiv.html()))
+                    StripAllGuidIds(StripEmptyClasses(parentDiv.html())),
             );
             console.log(
                 "we expected: " +
@@ -1102,34 +1015,36 @@ describe("audio recording tests", () => {
                     expectedTextBoxDivHtml +
                     expectedTextBoxInnerHtml +
                     formatButtonHtml +
-                    "</div></div>"
+                    "</div></div>",
             );
-            expect(StripAllGuidIds(StripEmptyClasses(parentDiv.html()))).toBe(
+            expect(
+                StripAllGuidIds(StripEmptyClasses(parentDiv.html())),
+                "parent.html",
+            ).toBe(
                 '<div id="numberedPage">' +
                     expectedTextBoxDivHtml +
                     expectedTextBoxInnerHtml +
                     formatButtonHtml +
                     "</div></div>",
-                "parent.html"
             );
 
-            expect(parentDiv.html().indexOf('id=""')).toBe(
-                -1,
-                "IDs should not be set to empty string. (Can easily cause duplicate ID validation errors and prevent saving)"
-            );
+            expect(
+                parentDiv.html().indexOf('id=""'),
+                "IDs should not be set to empty string. (Can easily cause duplicate ID validation errors and prevent saving)",
+            ).toBe(-1);
 
             // Test that you can switch back and recover more-or-less the original
             recording = new AudioRecording();
             recording.recordingMode = RecordingMode.TextBox;
             recording.makeAudioSentenceElementsTest(div, RecordingMode.TextBox);
-            parentDiv = $("<div>")
-                .append(div)
-                .clone();
-            expect(StripAllGuidIds(StripEmptyClasses(parentDiv.html()))).toBe(
+            parentDiv = $("<div>").append(div).clone();
+            expect(
+                StripAllGuidIds(StripEmptyClasses(parentDiv.html())),
+                "Swap back to original",
+            ).toBe(
                 StripAllGuidIds(
-                    StripEmptyClasses(StripAudioCurrent(originalHtml))
+                    StripEmptyClasses(StripAudioCurrent(originalHtml)),
                 ),
-                "Swap back to original"
             );
         });
 
@@ -1151,12 +1066,9 @@ describe("audio recording tests", () => {
             recording.recordingMode = RecordingMode.TextBox;
             recording.makeAudioSentenceElementsTest(div, RecordingMode.TextBox);
 
-            const parent = $("<div>")
-                .append(div)
-                .clone();
-            expect(parent.html()).toBe(
+            const parent = $("<div>").append(div).clone();
+            expect(parent.html(), "re-load identical content test").toBe(
                 originalHtml,
-                "re-load identical content test"
             );
         });
 
@@ -1171,18 +1083,17 @@ describe("audio recording tests", () => {
             recording.recordingMode = RecordingMode.TextBox;
             recording.makeAudioSentenceElementsTest(div, RecordingMode.TextBox);
 
-            expect(div.text()).toBe(
+            expect(div.text(), "div text").toBe(
                 "Paragraph 1A. Paragraph 1B.Paragraph 2A. Paragraph 2B.",
-                "div text"
             );
-            const parent = $("<div>")
-                .append(div)
-                .clone();
-            expect(StripAllGuidIds(StripEmptyClasses(parent.html()))).toBe(
+            const parent = $("<div>").append(div).clone();
+            expect(
+                StripAllGuidIds(StripEmptyClasses(parent.html())),
+                "Parent HTML",
+            ).toBe(
                 '<div class="bloom-editable audio-sentence" data-audiorecordingmode="TextBox">' +
                     textBoxInnerHtml +
                     "</div>",
-                "Parent HTML"
             );
         });
 
@@ -1209,9 +1120,7 @@ describe("audio recording tests", () => {
             recording.recordingMode = RecordingMode.TextBox;
             recording.makeAudioSentenceElementsTest(div, RecordingMode.TextBox);
 
-            const parent = $("<div>")
-                .append(div)
-                .clone();
+            const parent = $("<div>").append(div).clone();
             const expectedAudioRun1Html =
                 "<p>Paragraph 1A. Paragraph 1B.<br></p><p>Paragraph 2A. Paragraph 2B.<br></p>";
             const expectedAudioRun2Html =
@@ -1223,10 +1132,10 @@ describe("audio recording tests", () => {
                 nonAudioRun2Html +
                 expectedAudioRun2Html +
                 "</div>";
-            expect(StripAllGuidIds(StripEmptyClasses(parent.html()))).toBe(
-                expectedHtml,
-                "Parent HTML"
-            );
+            expect(
+                StripAllGuidIds(StripEmptyClasses(parent.html())),
+                "Parent HTML",
+            ).toBe(expectedHtml);
         });
     });
 
@@ -1234,7 +1143,7 @@ describe("audio recording tests", () => {
     describe("endRecordCurrentAsync", () => {
         function setupMockRecording() {
             // Make all the startRecord and endRecord post calls "succeed".
-            spyOn(axios, "post").and.returnValue(Promise.resolve());
+            vi.spyOn(axios, "post").mockReturnValue(Promise.resolve());
         }
 
         function setupTest(checksumSetting: string, scenario: AudioMode) {
@@ -1334,7 +1243,7 @@ describe("audio recording tests", () => {
 
     describe("clearRecording", () => {
         function setupClearRecordingTest(
-            scenario: AudioMode = AudioMode.PureSentence
+            scenario: AudioMode = AudioMode.PureSentence,
         ) {
             setupDefaultApiResponses();
             const divHtml = getTextBoxHtmlSimple1(scenario);
@@ -1353,13 +1262,13 @@ describe("audio recording tests", () => {
                     ? ["div1"]
                     : ["1.1", "1.2"];
 
-            audioSentenceIds.forEach(id => {
+            audioSentenceIds.forEach((id) => {
                 const elem = getFrameElementById("page", id)!;
                 elem.setAttribute("recordingmd5", "fakeMd5");
             });
         }
 
-        const runClearRecordingAsync = async scenario => {
+        const runClearRecordingAsync = async (scenario) => {
             const recording = new AudioRecording();
             if (scenario === AudioMode.PureSentence) {
                 recording.recordingMode = RecordingMode.Sentence;
@@ -1370,7 +1279,7 @@ describe("audio recording tests", () => {
             await recording.clearRecordingAsync();
         };
 
-        getAllAudioModes().forEach(scenario => {
+        getAllAudioModes().forEach((scenario) => {
             const scenarioName = AudioMode[scenario];
             it(`clearRecording() removes recordingmd5 (scenario=${scenarioName}`, async () => {
                 await runClearRecordingMd5TestAsync(scenario);
@@ -1385,24 +1294,24 @@ describe("audio recording tests", () => {
             if (scenario === AudioMode.PureSentence) {
                 // Deleted
                 const span1 = getFrameElementById("page", "1.1");
-                expect(span1).not.toHaveAttr("recordingmd5");
+                expect(span1).not.toHaveAttribute("recordingmd5");
 
                 // The other spans aren't deleted though.
                 const span2 = getFrameElementById("page", "1.2");
-                expect(span2).toHaveAttr("recordingmd5", "fakeMd5");
+                expect(span2).toHaveAttribute("recordingmd5", "fakeMd5");
             } else if (
                 scenario === AudioMode.PreTextBox ||
                 scenario === AudioMode.HardSplitTextBox
             ) {
                 // All recordings within the text box should be cleared out
                 const spanIds = ["1.1", "1.2"];
-                spanIds.forEach(id => {
+                spanIds.forEach((id) => {
                     const span = getFrameElementById("page", id);
-                    expect(span).not.toHaveAttr("recordingmd5");
+                    expect(span).not.toHaveAttribute("recordingmd5");
                 });
             } else {
                 const div = getFrameElementById("page", "div1");
-                expect(div).not.toHaveAttr("recordingmd5");
+                expect(div).not.toHaveAttribute("recordingmd5");
             }
         }
 
@@ -1416,7 +1325,7 @@ describe("audio recording tests", () => {
             expect(clearButton).toHaveClass("disabled");
         });
 
-        getAllAudioModes().forEach(scenario => {
+        getAllAudioModes().forEach((scenario) => {
             const scenarioName = AudioMode[scenario];
             it(`clearRecording() deletes recordings (${scenarioName})`, async () => {
                 await runClearRecordingDeleteTest(scenario);
@@ -1424,7 +1333,8 @@ describe("audio recording tests", () => {
         });
 
         async function runClearRecordingDeleteTest(scenario: AudioMode) {
-            spyOn(axios, "post").and.callFake((url: string) => {
+            vi.restoreAllMocks();
+            vi.spyOn(axios, "post").mockImplementation((url: string) => {
                 if (url.includes("/bloom/api/audio/deleteSegment?id")) {
                     // Helps it test a more realistic scenario, instead of always testing the 404s
                     return Promise.resolve();
@@ -1460,11 +1370,11 @@ describe("audio recording tests", () => {
                     }
                     default:
                         throw new Error(
-                            "Unrecognized scenario: " + AudioMode[scenario]
+                            "Unrecognized scenario: " + AudioMode[scenario],
                         );
                 }
 
-                ids.forEach(id => {
+                ids.forEach((id) => {
                     const path = "/bloom/api/audio/deleteSegment?id=" + id;
                     expect(axios.post).toHaveBeenCalledWith(path);
                 });
@@ -1508,7 +1418,7 @@ describe("audio recording tests", () => {
     describe("- initializeAudioRecordingMode()", () => {
         it("initializeAudioRecordingMode gets mode from current div if available (synchronous) (Text Box)", () => {
             SetupIFrameFromHtml(
-                "<div class='bloom-editable' lang='en' data-audiorecordingmode='Sentence'>Sentence 1. Sentence 2.</div><div class='bloom-editable ui-audioCurrent' lang='es' data-audiorecordingmode='TextBox'>Paragraph 2.</div>"
+                "<div class='bloom-translationGroup'><div class='bloom-editable' lang='en' data-audiorecordingmode='Sentence'>Sentence 1. Sentence 2.</div></div><div class='bloom-translationGroup'><div class='bloom-editable ui-audioCurrent' lang='es' data-audiorecordingmode='TextBox'>Paragraph 2.</div></div>",
             );
 
             const recording = new AudioRecording();
@@ -1516,9 +1426,10 @@ describe("audio recording tests", () => {
 
             // Just to make sure that the code under test can read the current div at all.
             const currentTextBox = recording.getCurrentTextBox();
-            expect(currentTextBox).toBeTruthy(
-                "Could not find currentDiv. Possible test setup problem?"
-            );
+            expect(
+                currentTextBox,
+                "Could not find currentDiv. Possible test setup problem?",
+            ).toBeTruthy();
 
             recording.initializeAudioRecordingMode();
 
@@ -1527,7 +1438,7 @@ describe("audio recording tests", () => {
 
         it("initializeAudioRecordingMode gets mode from current div if available (synchronous) (Sentence)", () => {
             SetupIFrameFromHtml(
-                "<div class='bloom-editable' lang='en' data-audiorecordingmode='TextBox'>Paragraph 1.</div><div class='bloom-editable ui-audioCurrent' lang='es' data-audiorecordingmode='Sentence'>Paragraph 2.</div>"
+                "<div class='bloom-translationGroup'><div class='bloom-editable' lang='en' data-audiorecordingmode='TextBox'>Paragraph 1.</div></div><div class='bloom-translationGroup'><div class='bloom-editable ui-audioCurrent' lang='es' data-audiorecordingmode='Sentence'>Paragraph 2.</div></div>",
             );
 
             const recording = new AudioRecording();
@@ -1535,9 +1446,10 @@ describe("audio recording tests", () => {
 
             // Just to make sure that the code under test can read the current div at all.
             const currentDiv = recording.getCurrentTextBox();
-            expect(currentDiv).toBeTruthy(
-                "Could not find currentDiv. Possible test setup problem?"
-            );
+            expect(
+                currentDiv,
+                "Could not find currentDiv. Possible test setup problem?",
+            ).toBeTruthy();
 
             recording.initializeAudioRecordingMode();
 
@@ -1546,7 +1458,7 @@ describe("audio recording tests", () => {
 
         it("initializeAudioRecordingMode gets mode from other divs on page as fallback (synchronous) (TextBox)", () => {
             SetupIFrameFromHtml(
-                "<div class='audio-sentence bloom-editable' lang='en' data-audiorecordingmode='TextBox'>Paragraph 1</div><div class='bloom-editable' lang='es'><span id='id2' class='audio-sentence ui-audioCurrent'>Paragraph 2.</span></div>"
+                "<div class='bloom-translationGroup'><div class='audio-sentence bloom-editable' lang='en' data-audiorecordingmode='TextBox'>Paragraph 1</div></div><div class='bloom-translationGroup'><div class='bloom-editable' lang='es'><span id='id2' class='audio-sentence ui-audioCurrent'>Paragraph 2.</span></div></div>",
             );
 
             const recording = new AudioRecording();
@@ -1554,9 +1466,10 @@ describe("audio recording tests", () => {
 
             // Just to make sure that the code under test can read the current div at all.
             const currentDiv = recording.getCurrentTextBox();
-            expect(currentDiv).toBeTruthy(
-                "Could not find currentDiv. Possible test setup problem?"
-            );
+            expect(
+                currentDiv,
+                "Could not find currentDiv. Possible test setup problem?",
+            ).toBeTruthy();
 
             recording.initializeAudioRecordingMode();
 
@@ -1567,7 +1480,7 @@ describe("audio recording tests", () => {
             // The 2nd div doesn't really look well-formed because we're trying to get the test to exercise some fallback cases
             // The first div doesn't look well-formed either but I want the test to exercise that it is getting it from the data-audiorecordingmode attribute not from any of the div's innerHTML markup.
             SetupIFrameFromHtml(
-                "<div class='bloom-editable' lang='en' data-audiorecordingmode='Sentence'>Paragraph 1</div><div class='bloom-editable audio-sentence ui-audioCurrent' lang='es'>Paragraph 2.</div>"
+                "<div class='bloom-translationGroup'><div class='bloom-editable' lang='en' data-audiorecordingmode='Sentence'>Paragraph 1</div></div><div class='bloom-translationGroup'><div class='bloom-editable audio-sentence ui-audioCurrent' lang='es'>Paragraph 2.</div></div>",
             );
 
             const recording = new AudioRecording();
@@ -1575,9 +1488,10 @@ describe("audio recording tests", () => {
 
             // Just to make sure that the code under test can read the current div at all.
             const currentDiv = recording.getCurrentTextBox();
-            expect(currentDiv).toBeTruthy(
-                "Could not find currentDiv. Possible test setup problem?"
-            );
+            expect(
+                currentDiv,
+                "Could not find currentDiv. Possible test setup problem?",
+            ).toBeTruthy();
 
             recording.initializeAudioRecordingMode();
 
@@ -1586,7 +1500,7 @@ describe("audio recording tests", () => {
 
         it("initializeAudioRecordingMode identifies 4.3 audio-sentences (synchronous)", () => {
             SetupIFrameFromHtml(
-                "<div class='bloom-editable' lang='en'><span id='id1' class='audio-sentence'>Sentence 1.</span> <span id='id2' class='audio-sentence'>Sentence 2.</span></div><div class='bloom-editable ui-audioCurrent' lang='es'>Paragraph 2.</div>"
+                "<div class='bloom-translationGroup'><div class='bloom-editable' lang='en'><span id='id1' class='audio-sentence'>Sentence 1.</span> <span id='id2' class='audio-sentence'>Sentence 2.</span></div></div><div class='bloom-translationGroup'><div class='bloom-editable ui-audioCurrent' lang='es'>Paragraph 2.</div></div>",
             );
 
             const recording = new AudioRecording();
@@ -1594,9 +1508,10 @@ describe("audio recording tests", () => {
 
             // Just to make sure that the code under test can read the current div at all.
             const currentDiv = recording.getCurrentTextBox();
-            expect(currentDiv).toBeTruthy(
-                "Could not find currentDiv. Possible test setup problem?"
-            );
+            expect(
+                currentDiv,
+                "Could not find currentDiv. Possible test setup problem?",
+            ).toBeTruthy();
 
             recording.initializeAudioRecordingMode();
 
@@ -1614,7 +1529,7 @@ describe("audio recording tests", () => {
             const textBox2 =
                 "<div id='testId2' data-audioRecordingMode='TextBox' class='bloom-editable bloom-visibility-code-on' lang='en' tabindex='-1'><p>Sentence 2.</p></div>";
             SetupIFrameFromHtml(
-                `<div class='bloom-translationGroup'>${textBox1}${textBox2}</div>`
+                `<div class='bloom-translationGroup'>${textBox1}${textBox2}</div>`,
             );
 
             const recording = new AudioRecording();
@@ -1648,7 +1563,7 @@ describe("audio recording tests", () => {
         it("setupAndUpdateMarkupAsync() repairs faulty setup, Sentence div has no spans", async () => {
             setupDefaultApiResponses();
             SetupIFrameFromHtml(
-                "<div class='bloom-translationGroup'><div id='testId' data-audioRecordingMode='Sentence' class='bloom-editable bloom-visibility-code-on' lang='en'><p>Sentence 1.</p></div></div>"
+                "<div class='bloom-translationGroup'><div id='testId' data-audioRecordingMode='Sentence' class='bloom-editable bloom-visibility-code-on' lang='en'><p>Sentence 1.</p></div></div>",
             );
 
             const recording = new AudioRecording();
@@ -1662,7 +1577,7 @@ describe("audio recording tests", () => {
 
             expect(recording.recordingMode).toBe(RecordingMode.Sentence);
             expect(
-                currentDiv!.querySelectorAll("span.audio-sentence").length
+                currentDiv!.querySelectorAll("span.audio-sentence").length,
             ).toBe(1);
         });
     });
@@ -1671,40 +1586,48 @@ describe("audio recording tests", () => {
         setupDefaultApiResponses();
         const recording = new AudioRecording();
 
+        const translationGroup = document.createElement("div");
+        translationGroup.classList.add("bloom-translationGroup");
+        document.body.appendChild(translationGroup);
+
         let elem = document.createElement("div");
-        document.body.appendChild(elem);
+        translationGroup.appendChild(elem);
         elem.classList.add("bloom-editable");
-        expect(recording.isRecordableDiv(elem)).toBe(false, "Case 1A: no text");
+        expect(recording.isRecordableDiv(elem), "Case 1A: no text").toBe(false);
 
         elem.appendChild(document.createTextNode("Hello world"));
-        expect(recording.isRecordableDiv(elem)).toBe(true, "Case 1B: text");
+        expect(recording.isRecordableDiv(elem), "Case 1B: text").toBe(true);
 
         const parent = document.createElement("div");
         document.body.appendChild(parent);
         parent.classList.add("bloom-noAudio");
         parent.appendChild(elem);
-        expect(recording.isRecordableDiv(elem)).toBe(
-            false,
-            "Case 2: parent is no-audio"
-        );
+        expect(
+            recording.isRecordableDiv(elem),
+            "Case 2: parent is no-audio",
+        ).toBe(false);
 
         elem = document.createElement("div");
         document.body.appendChild(elem);
         elem.appendChild(document.createTextNode("Layout: Basic Picture"));
-        expect(recording.isRecordableDiv(elem)).toBe(
-            false,
-            "Case 3: not recordable (no bloom-editable class)"
-        );
+        expect(
+            recording.isRecordableDiv(elem),
+            "Case 3: not recordable (no bloom-editable class)",
+        ).toBe(false);
+
+        const translationGroup2 = document.createElement("div");
+        translationGroup2.classList.add("bloom-translationGroup");
+        document.body.appendChild(translationGroup2);
 
         elem = document.createElement("div");
-        document.body.appendChild(elem);
+        translationGroup2.appendChild(elem);
         elem.style.display = "none";
         elem.classList.add("bloom-editable");
         elem.appendChild(document.createTextNode("Hello world"));
-        expect(recording.isRecordableDiv(elem)).toBe(
-            false,
-            "Case 4: Element not visible"
-        );
+        expect(
+            recording.isRecordableDiv(elem),
+            "Case 4: Element not visible",
+        ).toBe(false);
     });
 
     it("getCurrentText works", () => {
@@ -1721,7 +1644,7 @@ describe("audio recording tests", () => {
     it("getAutoSegmentLanguageCode works", () => {
         setupDefaultApiResponses();
         SetupIFrameFromHtml(
-            "<div class='ui-audioCurrent' lang='es'>Hello world</div>"
+            "<div class='ui-audioCurrent' lang='es'>Hello world</div>",
         );
 
         const recording = new AudioRecording();
@@ -1733,16 +1656,17 @@ describe("audio recording tests", () => {
     it("extractFragmentsForAudioSegmentation works", () => {
         setupDefaultApiResponses();
         SetupIFrameFromHtml(
-            "<div class='ui-audioCurrent' lang='es'>Sentence 1. Sentence 2.</div>"
+            "<div class='ui-audioCurrent' lang='es'>Sentence 1. Sentence 2.</div>",
         );
 
         const recording = new AudioRecording();
-        const returnedFragmentIds: AudioTextFragment[] = recording.extractFragmentsAndSetSpanIdsForAudioSegmentation();
+        const returnedFragmentIds: AudioTextFragment[] =
+            recording.extractFragmentsAndSetSpanIdsForAudioSegmentation();
 
         expect(returnedFragmentIds.length).toBe(2);
         for (let i = 0; i < returnedFragmentIds.length; ++i) {
             expect(returnedFragmentIds[i].fragmentText).toBe(
-                `Sentence ${i + 1}.`
+                `Sentence ${i + 1}.`,
             );
             expect(returnedFragmentIds[i].id).toBeTruthy();
         }
@@ -1751,15 +1675,16 @@ describe("audio recording tests", () => {
     it("extractFragmentsForAudioSegmentation handles duplicate sentences separately", () => {
         setupDefaultApiResponses();
         SetupIFrameFromHtml(
-            "<div class='ui-audioCurrent' lang='en'>What color is the sky? Blue. What color is the ocean? Blue. Hello. Hello.</p></div>"
+            "<div class='ui-audioCurrent' lang='en'>What color is the sky? Blue. What color is the ocean? Blue. Hello. Hello.</p></div>",
         );
 
         const recording = new AudioRecording();
         recording.recordingMode = RecordingMode.TextBox;
-        const returnedFragmentIds: AudioTextFragment[] = recording.extractFragmentsAndSetSpanIdsForAudioSegmentation();
+        const returnedFragmentIds: AudioTextFragment[] =
+            recording.extractFragmentsAndSetSpanIdsForAudioSegmentation();
 
         expect(
-            Object.keys(recording.__testonly__sentenceToIdListMap).length
+            Object.keys(recording.__testonly__sentenceToIdListMap).length,
         ).toBe(4); // the number of distinct sentences
 
         // Check that the stored map actually maps back to the correct ID (even if there are duplicate sentences)
@@ -1769,9 +1694,8 @@ describe("audio recording tests", () => {
             const expectedId = returnedFragmentIds[i].id;
             const idList =
                 recording.__testonly__sentenceToIdListMap[fragmentText];
-            expect(idList[0]).toBe(
+            expect(idList[0], `Fragment ${i} (${fragmentText})`).toBe(
                 expectedId,
-                `Fragment ${i} (${fragmentText})`
             );
 
             idList.shift(); // The existing one is all done, move on to next one.
@@ -1783,40 +1707,40 @@ describe("audio recording tests", () => {
         function testAllFormsMatch(
             rawForm: string, // Directly after typing text, immediately upon clicking AutoSegment, before anything is modified
             processingForm: string, // After clicking AutoSegment and the response is being proc, during MakeAudioSentenceElementsLeaf
-            savedForm // After saving the page.
+            savedForm, // After saving the page.
         ) {
             expect(AudioRecording.normalizeText(rawForm)).toBe(
-                AudioRecording.normalizeText(processingForm)
+                AudioRecording.normalizeText(processingForm),
             );
             expect(AudioRecording.normalizeText(rawForm)).toBe(
-                AudioRecording.normalizeText(savedForm)
+                AudioRecording.normalizeText(savedForm),
             );
             // 3rd check is unnecessary because transitive property
         }
         testAllFormsMatch(
             "John 3:16 (NIV)\n\n\n",
             "John 3:16 (NIV)<br />",
-            "John 3:16 (NIV)"
+            "John 3:16 (NIV)",
         );
         testAllFormsMatch(
             "\u00a0\u00a0\u00a0 In the beginning...",
             "\u00a0\u00a0\u00a0 In the beginning...",
-            "&nbsp;&nbsp;&nbsp; In the beginning..."
+            "&nbsp;&nbsp;&nbsp; In the beginning...",
         );
         // Test what happens when inserting <em> (italics) in the HTML version.  (This input corresponds to the text() version).
         testAllFormsMatch(
             "Title: The Cat in the Hat .",
             "Title:  The Cat in the Hat  .",
-            "Title:  The Cat in the Hat  ."
+            "Title:  The Cat in the Hat  .",
         );
     });
 
     describe("- importRecordingAsync()", () => {
         function simulateBloomApiResponses(
             audioToCopyFilePath: string,
-            bookPath: string
+            bookPath: string,
         ) {
-            spyOn(axios, "get").and.callFake((url: string, config) => {
+            vi.spyOn(axios, "get").mockImplementation((url: string) => {
                 if (url.endsWith("fileIO/chooseFile")) {
                     return Promise.resolve({ data: audioToCopyFilePath });
                 } else if (url.includes(kAnyRecordingApiUrl)) {
@@ -1826,7 +1750,7 @@ describe("audio recording tests", () => {
                 }
             });
 
-            spyOn(axios, "post").and.callFake((url: string, config) => {
+            vi.spyOn(axios, "post").mockImplementation((url: string) => {
                 if (url.endsWith("fileIO/getSpecialLocation")) {
                     return Promise.resolve({ data: `${bookPath}/audio` });
                 } else if (url.endsWith("fileIO/copyFile")) {
@@ -1840,7 +1764,7 @@ describe("audio recording tests", () => {
         function encodeFilenameForHttpRequest(
             filename: string,
             baseName: string,
-            encodedBaseName: string
+            encodedBaseName: string,
         ) {
             return replaceAll(filename, baseName, encodedBaseName)
                 .replace(/ /g, "%20")
@@ -1870,17 +1794,16 @@ describe("audio recording tests", () => {
             // Verification
             const encodedBaseName =
                 "A%60B~C!D%40E%23F%24G%25H%5EI%26J(K)L-M_N%3DO%2BP%5BQ%7BR%5DS%7DT%3BU'V%2CW.X";
-            const encodedAudioToCopyFilePath = encodeFilenameForHttpRequest(
+            // const encodedAudioToCopyFilePath =
+            encodeFilenameForHttpRequest(
                 audioToCopyFilePath,
                 baseName,
-                encodedBaseName
+                encodedBaseName,
             );
             const destPath = `${bookPath}/audio/div1.mp3`;
-            const encodedDestPath = encodeFilenameForHttpRequest(
-                destPath,
-                baseName,
-                encodedBaseName
-            );
+            // const encodedDestPath =
+            encodeFilenameForHttpRequest(destPath, baseName, encodedBaseName);
+
             // this got more complicated... doesn't seem worth having a test track
             // the exact details of the request
             // expect(axios.post).toHaveBeenCalledWith(
@@ -1919,7 +1842,7 @@ describe("audio recording tests", () => {
         expect(
             elt2
                 .html()
-                .endsWith('" class="audio-sentence">This is a test!</span>')
+                .endsWith('" class="audio-sentence">This is a test!</span>'),
         ).toBe(true);
     });
 
@@ -1934,11 +1857,11 @@ describe("audio recording tests", () => {
         expect(elt1$.text()).toBe("One. Two. Three.");
         const elt1 = elt1$.get(0);
         const sentences = Array.from(
-            elt1.getElementsByClassName("audio-sentence")
+            elt1.getElementsByClassName("audio-sentence"),
         );
         expect(sentences.length).toBe(3);
         const ids: Array<any> = sentences.map((s: HTMLElement) =>
-            s.getAttribute("id")
+            s.getAttribute("id"),
         );
         ids.forEach((id: any) => expect(id?.length).toBeGreaterThan(35));
         expect(ids[0]).not.toBe(ids[1]);
@@ -1947,7 +1870,7 @@ describe("audio recording tests", () => {
 
         sentences.forEach((s: any) => expect(s.parentElement).toBe(elt1));
         const colorSpans = Array.from(elt1.getElementsByTagName("span")).filter(
-            (s: any) => s.getAttribute("style") === "color:#ff1616;"
+            (s: any) => s.getAttribute("style") === "color:#ff1616;",
         ) as HTMLElement[];
         expect(colorSpans.length).toBe(5);
         for (let i = 0; i < 3; i++) {
@@ -1961,10 +1884,10 @@ describe("audio recording tests", () => {
     describe("- fixHighlighting()", () => {
         const scenarios: ("Check" | "Listen to whole page")[] = [
             "Check",
-            "Listen to whole page"
+            "Listen to whole page",
         ];
 
-        scenarios.forEach(scenario => {
+        scenarios.forEach((scenario) => {
             it(`[${scenario}] doesn't change anything for two or fewer whitespace in split text box w/single highlight segment`, () => {
                 const originalHtml =
                     '<div id="page1"><div id="box1" class="bloom-editable audio-sentence ui-audioCurrent" data-audiorecordingmode="TextBox"><p><span id="span1" class="bloom-highlightSegment">One Two&nbsp; Three</span></p></div></div>';
@@ -1973,7 +1896,7 @@ describe("audio recording tests", () => {
 
                 const recording = new AudioRecording();
                 recording.fixHighlighting(
-                    scenario === "Check" ? box1 : undefined
+                    scenario === "Check" ? box1 : undefined,
                 );
 
                 // Verification
@@ -1982,23 +1905,24 @@ describe("audio recording tests", () => {
 
             it(`[${scenario}] disables highlight on 3 or more whitespace in split text box w/single highlight segment`, () => {
                 SetupIFrameFromHtml(
-                    '<div id="page1"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on audio-sentence ui-audioCurrent" data-audiorecordingmode="TextBox"><p><span id="span1" class="bloom-highlightSegment">One Two&nbsp; Three&nbsp;&nbsp; Four&nbsp;&nbsp;&nbsp; End</span></p></div></div></div>'
+                    '<div id="page1"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on audio-sentence ui-audioCurrent" data-audiorecordingmode="TextBox"><p><span id="span1" class="bloom-highlightSegment">One Two&nbsp; Three&nbsp;&nbsp; Four&nbsp;&nbsp;&nbsp; End</span></p></div></div></div>',
                 );
                 const box1 = getFrameElementById("page", "box1")!;
 
                 const recording = new AudioRecording();
                 recording.fixHighlighting(
-                    scenario === "Check" ? box1 : undefined
+                    scenario === "Check" ? box1 : undefined,
                 );
 
                 // Verification
                 const childSpan = box1.querySelector("span")!;
                 expect(
-                    childSpan.classList.contains("ui-disableHighlight")
-                ).toBe(true, "missing ui-disableHighlight");
+                    childSpan.classList.contains("ui-disableHighlight"),
+                    "missing ui-disableHighlight",
+                ).toBe(true);
 
-                expect(childSpan.innerHTML).toBeString(
-                    '<span class="ui-enableHighlight">One Two&nbsp; Three</span>&nbsp;&nbsp; <span class="ui-enableHighlight">Four</span>&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight">End</span>'
+                expect(childSpan.innerHTML).toBe(
+                    '<span class="ui-enableHighlight">One Two&nbsp; Three</span>&nbsp;&nbsp; <span class="ui-enableHighlight">Four</span>&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight">End</span>',
                 );
             });
 
@@ -2010,16 +1934,16 @@ describe("audio recording tests", () => {
 
                 const recording = new AudioRecording();
                 recording.fixHighlighting(
-                    scenario === "Check" ? box1 : undefined
+                    scenario === "Check" ? box1 : undefined,
                 );
 
                 // Verification
-                expect(box1.innerHTML).toBeString(
+                expect(box1.innerHTML).toBe(
                     "<p>" +
                         '<span id="span1" class="bloom-highlightSegment">One Two&nbsp; End1.</span>' +
                         '<span id="span2" class="bloom-highlightSegment ui-disableHighlight"><span class="ui-enableHighlight">Three</span>&nbsp;&nbsp; <span class="ui-enableHighlight">End2.</span></span>' +
                         '<span id="span3" class="bloom-highlightSegment ui-disableHighlight"><span class="ui-enableHighlight">Four</span>&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight">Five</span>&nbsp;&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight">End3.</span></span>' +
-                        "</p>"
+                        "</p>",
                 );
             });
 
@@ -2031,33 +1955,33 @@ describe("audio recording tests", () => {
 
                 const recording = new AudioRecording();
                 recording.fixHighlighting(
-                    scenario === "Check" ? box1 : undefined
+                    scenario === "Check" ? box1 : undefined,
                 );
 
                 // Verification
-                expect(box1.outerHTML).toBeString(originalHtml);
+                expect(box1.outerHTML).toBe(originalHtml);
             });
 
             it(`[${scenario}] disables highlight on 3 or more whitespace in record-by-sentence box`, () => {
                 const originalHtml =
                     '<div id="box1" class="bloom-editable bloom-visibility-code-on data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence ui-audioCurrent">One Two&nbsp; End1.</span><span id="span2" class="audio-sentence">Three&nbsp;&nbsp; End2.</span><span id="span3" class="audio-sentence">Four&nbsp;&nbsp;&nbsp; Five&nbsp;&nbsp;&nbsp;&nbsp; End3.</span></p></div>';
                 SetupIFrameFromHtml(
-                    `<div id="page1"><div class='bloom-translationGroup'>${originalHtml}</div></div>`
+                    `<div id="page1"><div class='bloom-translationGroup'>${originalHtml}</div></div>`,
                 );
                 const box1 = getFrameElementById("page", "box1")!;
 
                 const recording = new AudioRecording();
                 recording.fixHighlighting(
-                    scenario === "Check" ? box1 : undefined
+                    scenario === "Check" ? box1 : undefined,
                 );
 
                 // Verification
-                expect(box1.innerHTML).toBeString(
+                expect(box1.innerHTML).toBe(
                     "<p>" +
                         '<span id="span1" class="audio-sentence ui-audioCurrent">One Two&nbsp; End1.</span>' +
                         '<span id="span2" class="audio-sentence ui-disableHighlight"><span class="ui-enableHighlight">Three</span>&nbsp;&nbsp; <span class="ui-enableHighlight">End2.</span></span>' +
                         '<span id="span3" class="audio-sentence ui-disableHighlight"><span class="ui-enableHighlight">Four</span>&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight">Five</span>&nbsp;&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight">End3.</span></span>' +
-                        "</p>"
+                        "</p>",
                 );
             });
 
@@ -2069,14 +1993,14 @@ describe("audio recording tests", () => {
 
                 const recording = new AudioRecording();
                 recording.fixHighlighting(
-                    scenario === "Check" ? box1 : undefined
+                    scenario === "Check" ? box1 : undefined,
                 );
 
                 // Verification
-                expect(box1.innerHTML).toBeString(
+                expect(box1.innerHTML).toBe(
                     "<p>" +
                         '<span id="span1" class="audio-sentence ui-audioCurrent ui-disableHighlight"><span class="ui-enableHighlight">T</span><em><span class="ui-enableHighlight">hree</span>&nbsp;&nbsp; <span class="ui-enableHighlight">End2.</span></em></span>' +
-                        "</p>"
+                        "</p>",
                 );
             });
 
@@ -2084,37 +2008,37 @@ describe("audio recording tests", () => {
                 const originalHtml =
                     '<div id="box1" class="bloom-editable bloom-visibility-code-on data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence ui-audioCurrent">T<em>hree\u200B \u200BEnd2.</em></span></p></div>';
                 SetupIFrameFromHtml(
-                    `<div id="page1"><div class='bloom-translationGroup'>${originalHtml}</div></div>`
+                    `<div id="page1"><div class='bloom-translationGroup'>${originalHtml}</div></div>`,
                 );
                 const box1 = getFrameElementById("page", "box1")!;
 
                 const recording = new AudioRecording();
                 recording.fixHighlighting(
-                    scenario === "Check" ? box1 : undefined
+                    scenario === "Check" ? box1 : undefined,
                 );
 
                 // Verification
-                expect(box1.innerHTML).toBeString(
+                expect(box1.innerHTML).toBe(
                     "<p>" +
                         '<span id="span1" class="audio-sentence ui-audioCurrent ui-disableHighlight"><span class="ui-enableHighlight">T</span><em><span class="ui-enableHighlight">hree</span>\u200B \u200B<span class="ui-enableHighlight">End2.</span></em></span>' +
-                        "</p>"
+                        "</p>",
                 );
             });
 
             it(`[${scenario}] disables highlight for complex html from real user`, () => {
                 SetupIFrameFromHtml(
-                    `<div id="page1"><div class='bloom-translationGroup'>${getComplexHtmlFromUser()}</div></div>`
+                    `<div id="page1"><div class='bloom-translationGroup'>${getComplexHtmlFromUser()}</div></div>`,
                 );
                 const box1 = getFrameElementById("page", "box1")!;
 
                 const recording = new AudioRecording();
                 recording.fixHighlighting(
-                    scenario === "Check" ? box1 : undefined
+                    scenario === "Check" ? box1 : undefined,
                 );
 
                 // Verification
-                expect(box1.innerHTML).toBeString(
-                    getExpectedResultForComplexHtmlFromUser()
+                expect(box1.innerHTML).toBe(
+                    getExpectedResultForComplexHtmlFromUser(),
                 );
             });
 
@@ -2126,12 +2050,12 @@ describe("audio recording tests", () => {
 
                 const recording = new AudioRecording();
                 recording.fixHighlighting(
-                    scenario === "Check" ? box1 : undefined
+                    scenario === "Check" ? box1 : undefined,
                 );
                 recording.revertFixHighlighting();
 
                 // Verification
-                expect(box1.outerHTML).toBeString(originalHtml);
+                expect(box1.outerHTML).toBe(originalHtml);
             });
         });
     });
@@ -2142,6 +2066,7 @@ function StripEmptyClasses(html) {
     return html.replace(/ class=""/g, "");
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function StripAllIds(html) {
     // Note: add the "g" (global) flag to the end of the search setting if you want to replace all instead.
     return html.replace(/ id="[^"]*"/g, "").replace(/ id=""/g, "");
@@ -2152,7 +2077,7 @@ export function StripAllGuidIds(html) {
     return html
         .replace(
             / id="i?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"/g,
-            ""
+            "",
         )
         .replace(/ id=""/g, "");
 }
@@ -2175,7 +2100,7 @@ async function SetupIFrameAsync(id = "page"): Promise<HTMLIFrameElement> {
     if (element) {
         if (element.tagName.toLowerCase() !== "iframe") {
             throw new Error(
-                `An element with the id ${id} already exists, but it is a ${element.tagName} not an iframe.`
+                `An element with the id ${id} already exists, but it is a ${element.tagName} not an iframe.`,
             );
         } else {
             iframe = element as HTMLIFrameElement;
@@ -2183,7 +2108,7 @@ async function SetupIFrameAsync(id = "page"): Promise<HTMLIFrameElement> {
                 return iframe;
             } else {
                 throw new Error(
-                    "Not implemented exception: An iframe with that id already exists, but is loading."
+                    "Not implemented exception: An iframe with that id already exists, but is loading.",
                 );
                 // Enhance: I guess you could do setTimeouts and wait until the readyState is complete.
                 // If so, then you resolve the promise.
@@ -2196,13 +2121,13 @@ async function SetupIFrameAsync(id = "page"): Promise<HTMLIFrameElement> {
     parent.window.document.body.appendChild(iframe);
     iframe.id = id;
     iframe.name = id;
-    // This will be overwritten later, but Chrome won't raise onload unless there is SOME src value.
+    // Use about:blank but we'll override src later for tests that need specific URLs
     iframe.src = "about:blank";
 
     // It needs to be asynchronous because an iframe may not be valid to use until its onload is called.
     // Notably, it's contentDocument will be re-written during the loading process... changes made before onload() finishes (asynchronously)
     // can get wiped out.
-    return new Promise<HTMLIFrameElement>(resolve => {
+    return new Promise<HTMLIFrameElement>((resolve) => {
         iframe.onload = () => {
             resolve(iframe);
         };
@@ -2214,17 +2139,65 @@ async function SetupIFrameAsync(id = "page"): Promise<HTMLIFrameElement> {
 export function SetupIFrameFromHtml(bodyContentHtml: string, id = "page") {
     const iframe = <HTMLIFrameElement>parent.window.document.getElementById(id);
 
-    if (iframe.contentDocument!.readyState !== "complete") {
+    // In jsdom, readyState might not always be "complete" but the document is still usable
+    // Only check that contentDocument exists
+    if (!iframe.contentDocument) {
         throw new Error(
-            "Possible setup error: IFrame's readyState is not complete. The content document might change under you asynchronously!!!"
+            "Possible setup error: IFrame's contentDocument is null!",
         );
     }
-    iframe.contentDocument!.body.innerHTML = bodyContentHtml;
+
+    // Ensure the iframe has a body element
+    if (!iframe.contentDocument.body) {
+        iframe.contentDocument.write("<html><body></body></html>");
+        iframe.contentDocument.close();
+    }
+
+    iframe.contentDocument.body.innerHTML = bodyContentHtml;
+
+    // Apply polyfills to the iframe's content document (jsdom creates new prototypes for each document)
+    applyPolyfillsToIframe(iframe);
+}
+
+// Apply necessary polyfills to iframe content documents
+function applyPolyfillsToIframe(iframe: HTMLIFrameElement) {
+    const iframeWindow = iframe.contentWindow;
+    if (!iframeWindow) return;
+
+    // Polyfill innerText for jsdom in iframe context
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const win = iframeWindow as any;
+    [
+        win.HTMLElement.prototype,
+        win.Element.prototype,
+        win.Node.prototype,
+    ].forEach((proto) => {
+        if (!Object.getOwnPropertyDescriptor(proto, "innerText")) {
+            Object.defineProperty(proto, "innerText", {
+                get() {
+                    const text = this.textContent;
+                    return text !== null && text !== undefined ? text : "";
+                },
+                set(value) {
+                    this.textContent = value;
+                },
+                configurable: true,
+            });
+        }
+    });
+
+    // Mock scrollIntoView in iframe context
+    if (!win.HTMLElement.prototype.scrollIntoView) {
+        win.HTMLElement.prototype.scrollIntoView = vi.fn();
+    }
 }
 
 export async function setupForAudioRecordingTests() {
     SetupTalkingBookUIElements();
-    await SetupIFrameAsync();
+    const iframe = await SetupIFrameAsync();
+
+    // Keep iframe src as about:blank to avoid jsdom trying to load a file
+    iframe.src = "about:blank";
 
     // initializeTalkingBookToolAsync will call this endpoint; if we don't set up a
     // mock reply, it will throw an error and the whole test suite will fail.
@@ -2232,11 +2205,20 @@ export async function setupForAudioRecordingTests() {
         "features/status?featureName=WholeTextBoxAudio&forPublishing=false"
     ] = {
         data: {
-            enabled: true
-        }
+            enabled: true,
+        },
     };
 
     await initializeTalkingBookToolAsync();
+
+    // Mock urlPrefix to return the correct base URL for tests
+    // The real implementation constructs from iframe.src, but in tests iframe.src is "about:blank"
+    // Real format: "/bloom/api/audio/wavFile?id=" + bookFolderUrl + "audio/"
+    // In tests, we simulate the full path as if bookFolderUrl was "http://localhost:63315/bloom/C%23Injection/"
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.spyOn(theOneAudioRecorder as any, "urlPrefix").mockReturnValue(
+        "http://localhost:63315/bloom/api/audio/wavFile?id=audio/",
+    );
 }
 
 // Just sets up some dummy elements so that they're non-null.
@@ -2259,7 +2241,7 @@ export function StripPlayerSrcNoCacheSuffix(url: string): string {
 
 export function getFrameElementById(
     frameId: string,
-    elementId: string
+    elementId: string,
 ): HTMLElement | null {
     const frame = parent.window.document.getElementById(frameId);
     if (!frame) {
@@ -2267,7 +2249,7 @@ export function getFrameElementById(
     }
 
     return (frame as HTMLIFrameElement).contentDocument!.getElementById(
-        elementId
+        elementId,
     );
 }
 

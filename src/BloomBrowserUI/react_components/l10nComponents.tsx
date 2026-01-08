@@ -8,22 +8,26 @@ import { getLocalization } from "./l10n";
 const highlightTranslatedStrings: boolean = false;
 
 export let channelName: string = ""; // ensure it's defined non-null
-get("/common/channel", r => {
-    channelName = r.data;
-    // Setting the class on the body element here to include the channel appears
-    // to work for the places that this code affects.  Should we want to expand
-    // marking untranslated strings visually in other places, then it would be
-    // necessary to make this assignment in C# code.  Which unfortunately would
-    // have to happen in at least half a dozen places.
-    let channelClass = channelName.toLowerCase();
-    if (channelClass.startsWith("developer/")) channelClass = "developer";
-    if (document && document.body) {
-        document.body.classList.add(channelClass);
-        if (highlightTranslatedStrings) {
-            document.body.classList.add("highlightTranslatedStrings");
+
+// Only fetch channel name if localization is not bypassed (i.e., not in test mode)
+if (!theOneLocalizationManager.isBypassEnabled()) {
+    get("/common/channel", (r) => {
+        channelName = r.data;
+        // Setting the class on the body element here to include the channel appears
+        // to work for the places that this code affects.  Should we want to expand
+        // marking untranslated strings visually in other places, then it would be
+        // necessary to make this assignment in C# code.  Which unfortunately would
+        // have to happen in at least half a dozen places.
+        let channelClass = channelName.toLowerCase();
+        if (channelClass.startsWith("developer/")) channelClass = "developer";
+        if (document && document.body) {
+            document.body.classList.add(channelClass);
+            if (highlightTranslatedStrings) {
+                document.body.classList.add("highlightTranslatedStrings");
+            }
         }
-    }
-});
+    });
+}
 
 // This would be used by a control that doesn't have any text of its own,
 // but has children that need to be localized.
@@ -62,7 +66,7 @@ export interface ILocalizationState {
 // A base class for all elements that display text. It uses Bloom's localizationManager wrapper to get strings.
 export class LocalizableElement<
     P extends ILocalizationProps,
-    S extends ILocalizationState
+    S extends ILocalizationState,
 > extends React.Component<P, ILocalizationState> {
     public readonly state: ILocalizationState = {};
     private localizationRequestCancelToken: CancelTokenStatic;
@@ -121,7 +125,7 @@ export class LocalizableElement<
             if (typeof children === "string") {
                 return `<${type}${this.attributeString(
                     type,
-                    props
+                    props,
                 )}>${children}</${type}>`;
             }
         }
@@ -133,16 +137,16 @@ export class LocalizableElement<
         // Otherwise, fall back to the individual l10nParam0 and l10nParam1 properties
         const params = this.props.l10nParams || [
             this.props.l10nParam0,
-            this.props.l10nParam1
+            this.props.l10nParam1,
         ];
 
         const newText = theOneLocalizationManager.simpleFormat(
             this.state.retrievedTranslation ?? this.getOriginalStringContent(),
-            params
+            params,
         );
         if (newText != this.state.translation) {
             this.setState({
-                translation: newText
+                translation: newText,
             });
         }
         if (this.props.l10nKey != this.previousL10nKey) {
@@ -195,16 +199,16 @@ export class LocalizableElement<
                 // getLocalization when they change...they are used in the output that it produces.
                 // l10nParam0: this.props.l10nParam0,
                 // l10nParam1: this.props.l10nParam1,
-                temporarilyDisableI18nWarning: this.props
-                    .temporarilyDisableI18nWarning,
+                temporarilyDisableI18nWarning:
+                    this.props.temporarilyDisableI18nWarning,
                 callback: (localizedText, success) => {
                     if (this.isComponentMounted) {
                         this.setState({
                             retrievedTranslation: localizedText,
-                            lookupSuccessful: success
+                            lookupSuccessful: success,
                         });
                     }
-                }
+                },
             });
         }
         if (this.props.l10nTipEnglishEnabled) {
@@ -212,9 +216,9 @@ export class LocalizableElement<
                 .asyncGetText(
                     this.tooltipKey,
                     this.props.l10nTipEnglishEnabled!,
-                    this.props.l10nComment
+                    this.props.l10nComment,
                 )
-                .done(result => {
+                .done((result) => {
                     if (this.isComponentMounted) {
                         this.setState({ tipEnabledTranslation: result });
                     }
@@ -225,9 +229,9 @@ export class LocalizableElement<
                 .asyncGetText(
                     this.disabledTooltipKey,
                     this.props.l10nTipEnglishDisabled!,
-                    this.props.l10nComment
+                    this.props.l10nComment,
                 )
-                .done(result => {
+                .done((result) => {
                     if (this.isComponentMounted) {
                         this.setState({ tipDisabledTranslation: result });
                     }
@@ -274,7 +278,7 @@ export class LocalizableElement<
                 l10nClass = "assumedTranslated";
             }
             text = theOneLocalizationManager.processSimpleMarkdown(
-                this.state.translation
+                this.state.translation,
             );
         } else if (this.props.temporarilyDisableI18nWarning) {
             l10nClass = "assumedTranslated";
@@ -293,8 +297,8 @@ export class LocalizableElement<
             (controlIsEnabled
                 ? this.state.tipEnabledTranslation
                 : this.state.tipDisabledTranslation
-                ? this.state.tipDisabledTranslation
-                : this.state.tipEnabledTranslation) || ""
+                  ? this.state.tipDisabledTranslation
+                  : this.state.tipEnabledTranslation) || ""
         );
     }
 

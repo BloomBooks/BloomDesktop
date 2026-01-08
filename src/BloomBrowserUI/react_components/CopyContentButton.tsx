@@ -10,7 +10,7 @@ export interface ICopyContentButtonProps {
     onClick: () => void;
 }
 
-const CopyContentButton: React.FC<ICopyContentButtonProps> = props => {
+const CopyContentButton: React.FC<ICopyContentButtonProps> = (props) => {
     const copiedText = useL10n("Copied", "EditTab.SourceBubbleCopied");
     const copyTooltip = useL10n("Copy", "Common.Copy");
     const [showTransition, setShowTransition] = useState(false);

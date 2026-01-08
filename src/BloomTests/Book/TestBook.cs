@@ -43,7 +43,11 @@ namespace BloomTests.Book
             // and needs the file locator to know this folder so it can find it.
             // May later need to include more folders or allow the individual tests to do so.
             var locator = new FileLocator(
-                new string[] { codeBaseDir + "/../browser/templates/xMatter" }
+                new string[]
+                {
+                    codeBaseDir
+                        + $"{BloomFileLocatorTests.kRelativePathToBrowserFolder}/templates/xMatter",
+                }
             );
             var storage = new BookStorage(BookFolder, locator, new BookRenamedEvent(), settings);
             // very minimal...enhance if we need to test something that can really find source collections.
@@ -69,7 +73,7 @@ namespace BloomTests.Book
                     ),
                     Language1Tag = "xyz",
                     Language2Tag = "en",
-                    Language3Tag = "fr"
+                    Language3Tag = "fr",
                 }
             );
         }

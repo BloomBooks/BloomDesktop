@@ -12,7 +12,9 @@ export enum ProblemKind {
     Fatal = "fatal",
 }
 
-export const ProblemDialog: React.FC<{level:ProblemKind} & Partial<INotifyDialogProps>> = props => {
+export const ProblemDialog: React.FC<
+    { level: ProblemKind } & Partial<INotifyDialogProps>
+> = (props) => {
     if (props.level === ProblemKind.Notify) {
         return <NotifyDialog {...props} />;
     } else {

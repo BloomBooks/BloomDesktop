@@ -1,42 +1,44 @@
 using System;
+using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Collections.Generic;
-using System.Configuration;
+using Bloom.Api;
+using Bloom.CLI;
 using Bloom.Collection;
 using Bloom.Collection.BloomPack;
+using Bloom.CollectionChoosing;
+using Bloom.ErrorReporter;
+using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Registration;
+using Bloom.SafeXml;
+using Bloom.TeamCollection;
 using Bloom.ToPalaso;
+using Bloom.Utils;
+using Bloom.web;
+using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
+using CommandLine;
 using L10NSharp;
+using L10NSharp.Windows.Forms;
+using Sentry;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.Miscellaneous;
 using SIL.Windows.Forms.Registration;
 using SIL.Windows.Forms.Reporting;
 using SIL.Windows.Forms.UniqueToken;
-using System.Linq;
-using System.Threading.Tasks;
-using Bloom.CLI;
-using Bloom.CollectionChoosing;
-using Bloom.ErrorReporter;
-using Bloom.TeamCollection;
-using Bloom.MiscUI;
-using Bloom.web;
-using CommandLine;
-using Sentry;
 using SIL.WritingSystems;
-using System.Text;
-using Bloom.Utils;
-using Bloom.web.controllers;
-using Bloom.SafeXml;
 
 namespace Bloom
 {
@@ -102,7 +104,7 @@ namespace Bloom
         static int Main(string[] args1)
         {
             // AttachConsole(-1);	// Enable this to allow Console.Out.WriteLine to be viewable (must run Bloom from terminal, AFAIK)
-            bool gotUniqueToken = false;
+            _gotUniqueToken = false;
             _uiThreadId = Thread.CurrentThread.ManagedThreadId;
             Logger.Init();
             // Configure TempFile to create temp files with a "bloom" prefix so we can
@@ -121,6 +123,10 @@ namespace Bloom
             // SetUpLocalization().  See BL-13708.
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            // The next line preserves the appearance from before we changed to .NET 8.
+            // This includes the dialog sizes because WinForms scaling is based on the default font,
+            // which changed in .NET 8.  See BL-15518.
+            Application.SetDefaultFont(new System.Drawing.Font("Microsoft Sans Serif", 8.25f));
 
             // We use crowdin for localizing, and they require a directory per language setup.
             LocalizationManager.UseLanguageCodeFolders = true;
@@ -160,7 +166,7 @@ namespace Bloom
                     "createArtifacts",
                     "spreadsheetExport",
                     "spreadsheetImport",
-                    "sendFontAnalytics"
+                    "sendFontAnalytics",
                 }.Contains(args1[0])
             ) //restrict using the commandline parser to cases were it should work
             {
@@ -170,8 +176,8 @@ namespace Bloom
 
                 RunningInConsoleMode = true;
 
-                var mainTask = CommandLine.Parser.Default
-                    .ParseArguments(
+                var mainTask = CommandLine
+                    .Parser.Default.ParseArguments(
                         args1,
                         new[]
                         {
@@ -290,12 +296,10 @@ namespace Bloom
                 // Migrate from old monolithic experimental features setting.
                 ExperimentalFeatures.MigrateFromOldSettings();
 
-                if (IsInstallerLaunch(args))
-                {
-                    InstallerSupport.HandleSquirrelInstallEvent(args); // may exit program
-                }
+                if (!InstallerSupport.HandleVelopackStartup(args)) // may exit program itself
+                    return 0; // or may conclude that we need to abort starting up.
 
-                // Needs to be AFTER HandleSquirrelInstallEvent, because that can happen when the program is launched by Update rather than
+                // Needs to be AFTER HandleVelopackStartup, because that can happen when the program is launched by Update rather than
                 // by the user.
                 if (!Settings.Default.LicenseAccepted)
                 {
@@ -401,7 +405,7 @@ namespace Bloom
                                         BloomMessageBox.ShowInfo(msg);
                                         return 1;
                                     }
-                                    gotUniqueToken = true;
+                                    _gotUniqueToken = true;
 
                                     if (
                                         projectContext.TeamCollectionManager.CurrentCollection
@@ -467,7 +471,7 @@ namespace Bloom
                         // and now we need to get the lock as usual before going on to load the new collection.
                         if (!UniqueToken.AcquireToken(_mutexId, "Bloom"))
                             return 1;
-                        gotUniqueToken = true;
+                        _gotUniqueToken = true;
                     }
                     else if (IsBloomBookOrder(args))
                     {
@@ -477,7 +481,7 @@ namespace Bloom
                         {
                             // No other instance isrunning. Start up normally (and show the book just downloaded).
                             // See https://silbloom.myjetbrains.com/youtrack/issue/BL-3822
-                            gotUniqueToken = true;
+                            _gotUniqueToken = true;
                         }
                         else if (forEdit)
                         {
@@ -498,7 +502,7 @@ namespace Bloom
                             // control key is held down so allow second instance to run; note that we're deliberately in this state
                             if (UniqueToken.AcquireTokenQuietly(_mutexId))
                             {
-                                gotUniqueToken = true;
+                                _gotUniqueToken = true;
                             }
                             else
                             {
@@ -508,7 +512,7 @@ namespace Bloom
                         else if (UniqueToken.AcquireToken(_mutexId, "Bloom"))
                         {
                             // No other instance is running. We own the token and should release it on quitting.
-                            gotUniqueToken = true;
+                            _gotUniqueToken = true;
                         }
                         else
                         {
@@ -561,11 +565,8 @@ namespace Bloom
                                 if (Utils.LongPathAware.GetExceedsMaxPath(path))
                                 {
                                     var pathForWantOfAClosure = path;
-                                    StartupScreenManager.AddStartupAction(
-                                        () =>
-                                            Utils.LongPathAware.ReportLongPath(
-                                                pathForWantOfAClosure
-                                            )
+                                    StartupScreenManager.AddStartupAction(() =>
+                                        Utils.LongPathAware.ReportLongPath(pathForWantOfAClosure)
                                     );
                                     // go forwards as if we weren't given an explicit collection to open (except we're showing a report about what happened)
                                     // (That is, if the collection path is too long to open successfully, we don't add it to MruProjects, so will start up
@@ -620,17 +621,14 @@ namespace Bloom
                             Environment.Exit(-1);
                         }
 
-                        LocalizationManager.SetUILanguage(
-                            Settings.Default.UserInterfaceLanguage,
-                            false
-                        );
+                        LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage);
                         // TODO-WV2: Can we set the browser language for WV2?  Do we need to?
 
                         // Kick off getting all the font metadata for fonts currently installed in the system.
                         // This can take several seconds on slow machines with lots of fonts installed, so we
                         // run it in the background once at startup.  (The results are cached automatically.)
-                        System.Threading.Tasks.Task.Run(
-                            () => FontProcessing.FontsApi.GetAllFontMetadata()
+                        System.Threading.Tasks.Task.Run(() =>
+                            FontProcessing.FontsApi.GetAllFontMetadata()
                         );
 
                         // This has served its purpose on Linux, and with Geckofx60 it interferes with CommandLineRunner.
@@ -644,9 +642,8 @@ namespace Bloom
             finally
             {
                 // Check memory one final time for the benefit of developers.  The user won't see anything.
-                Bloom.Utils.MemoryManagement.CheckMemory(true, "Bloom finished and exiting", false);
-                if (gotUniqueToken)
-                    UniqueToken.ReleaseToken();
+                //Bloom.Utils.MemoryManagement.CheckMemory(true, "Bloom finished and exiting", false);
+                ReleaseBloomToken();
 
                 _sentry?.Dispose();
                 // In a debug build we want to be able to see if we're leaving garbage around. (Note: this doesn't seem to be working.)
@@ -655,13 +652,23 @@ namespace Bloom
                 // - we might delete something in use by the instance that has the token
                 // - we would delete the token itself (since _mutexid and NamePrefix happen to be the same),
                 // allowing a later duplicate process to start normally.
-                if (gotUniqueToken)
+                if (_gotUniqueToken)
                     TempFile.CleanupTempFolder();
 #endif
             }
             Settings.Default.FirstTimeRun = false;
             Settings.Default.Save();
             return 0;
+        }
+
+        /// <summary>
+        /// Normally only used as Main() cleans up on exit.
+        /// Also in forced shutdown on timeout.
+        /// </summary>
+        public static void ReleaseBloomToken()
+        {
+            if (_gotUniqueToken)
+                UniqueToken.ReleaseToken();
         }
 
         private static bool IsWebviewMissingOrTooOld()
@@ -737,7 +744,7 @@ namespace Bloom
             _supressRegistrationDialog = true;
             return new DesktopAnalytics.Analytics(
                 "rw21mh2piu",
-                RegistrationDialog.GetAnalyticsUserInfo(),
+                RegistrationManager.GetAnalyticsUserInfo(),
                 propertiesThatGoWithEveryEvent,
                 allowTracking: false, // change to true if you want to test sending
                 retainPii: true,
@@ -753,7 +760,7 @@ namespace Bloom
 
             return new DesktopAnalytics.Analytics(
                 "c8ndqrrl7f0twbf2s6cv",
-                RegistrationDialog.GetAnalyticsUserInfo(),
+                RegistrationManager.GetAnalyticsUserInfo(),
                 propertiesThatGoWithEveryEvent,
                 allowTracking,
                 retainPii: true,
@@ -844,7 +851,7 @@ namespace Bloom
             {
                 //JT please review: is this needed? InstallerSupport.MakeBloomRegistryEntries(args);
                 BookDownloadSupport.EnsureDownloadFolderExists();
-                LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
+                LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage);
                 var downloader = new BookDownload(ProjectContext.CreateBloomS3Client());
                 downloader.HandleBloomBookOrder(bookOrderUrl);
                 PathToBookDownloadedAtStartup = downloader.LastBookDownloadedPath;
@@ -912,7 +919,7 @@ namespace Bloom
                 Thread.Sleep(2000);
                 if (hardExit || _projectContext?.ProjectWindow == null)
                 {
-                    Application.Exit();
+                    ProgramExit.Exit();
                 }
                 else
                 {
@@ -927,7 +934,7 @@ namespace Bloom
 
         private static bool IsInstallerLaunch(string[] args)
         {
-            return args.Length > 0 && args[0].ToLowerInvariant().StartsWith("--squirrel");
+            return args.Length > 0 && args[0].ToLowerInvariant().StartsWith("--veloapp-");
         }
 
         private static bool IsLocalizationHarvestingLaunch(string[] args)
@@ -946,13 +953,6 @@ namespace Bloom
         // </ProgId>
         // (But I'm not completely sure all these come from that)
 
-        // The folder where we tell squirrel to look for upgrades.
-        // As of 2-20-15 this is  = @"https://s3.amazonaws.com/bloomlibrary.org/squirrel";
-        // Controlled by the file at "http://bloomlibrary.org/channels/SquirrelUpgradeTable.txt".
-        // This allows us to have different sets of deltas and upgrade targets for betas and stable releases,
-        // or indeed to do something special for any particular version(s) of Bloom,
-        // or even to switch to a different upgrade path after releasing a version.
-
         internal static void SetProjectContext(ProjectContext projectContext)
         {
             _projectContext = projectContext;
@@ -967,11 +967,11 @@ namespace Bloom
             Settings.Default.Save();
 
             // Note: MainContext needs to be set from WinForms land (Application.Run() from System.Windows.Forms), not from here.
-            StartupScreenManager.AddStartupAction(
-                () => MainContext = SynchronizationContext.Current
+            StartupScreenManager.AddStartupAction(() =>
+                MainContext = SynchronizationContext.Current
             );
-            StartupScreenManager.AddStartupAction(
-                () => StartUpShellBasedOnMostRecentUsedIfPossible()
+            StartupScreenManager.AddStartupAction(() =>
+                StartUpShellBasedOnMostRecentUsedIfPossible()
             );
             StartupScreenManager.DoLastOfAllAfterClosingSplashScreen = () =>
             {
@@ -989,14 +989,13 @@ namespace Bloom
                 {
                     CheckRegistration();
                 },
-                shouldHideSplashScreen: RegistrationDialog.ShouldWeShowRegistrationDialog(),
+                shouldHideSplashScreen: RegistrationManager.ShouldWeShowRegistrationDialog(),
                 lowPriority: true
             );
 
             // Crashes if initialized twice, and there's at least once case when joining a TC
             // where we can come here twice.
-            if (!Sldr.IsInitialized)
-                Sldr.Initialize();
+            WritingSystem.EnsureSldrInitialized();
             try
             {
                 Application.Run();
@@ -1061,6 +1060,7 @@ namespace Bloom
             }
 
             Sldr.Cleanup();
+            Logger.WriteMinorEvent("shutting down logger, about to dispose project context");
             Logger.ShutDown();
 
             if (_projectContext != null)
@@ -1121,23 +1121,8 @@ namespace Bloom
 
         private static void CheckRegistration()
         {
-            if (RegistrationDialog.ShouldWeShowRegistrationDialog() && !_supressRegistrationDialog)
-            {
-                using (
-                    var dlg = new RegistrationDialog(
-                        false,
-                        _projectContext.TeamCollectionManager.UserMayChangeEmail
-                    )
-                )
-                {
-                    if (_projectContext != null && _projectContext.ProjectWindow != null)
-                        dlg.ShowDialog(_projectContext.ProjectWindow);
-                    else
-                    {
-                        dlg.ShowDialog();
-                    }
-                }
-            }
+            if (RegistrationManager.ShouldWeShowRegistrationDialog() && !_supressRegistrationDialog)
+                RegistrationManager.ShowRegistrationDialog(_projectContext.ProjectWindow);
         }
 
 #if PerProjectMutex
@@ -1153,7 +1138,6 @@ namespace Bloom
             //First, we try to get the mutex quickly and quitely.
             //If that fails, we put up a dialog and wait a number of seconds,
             //while we wait for the mutex to come free.
-
 
             string mutexId = "bloom";
             //			string mutexId = pathToProject;
@@ -1341,6 +1325,8 @@ namespace Bloom
             // FileException is a Bloom exception to capture the filepath. We want to report the inner, original exception.
             Exception originalError = FileException.UnwrapIfFileException(error);
             string errorFilePath = FileException.GetFilePathIfPresent(error);
+            // We want to skip over exceptions thrown by Autofac.
+            originalError = MiscUtils.UnwrapUntilInterestingException(originalError);
             Logger.WriteError(
                 $"*** Error loading collection {Path.GetFileNameWithoutExtension(projectPath)}, on filepath: {errorFilePath}",
                 originalError
@@ -1400,7 +1386,7 @@ namespace Bloom
         /// <param name="formToClose">If provided, this form will be closed after choosing a
         /// collection and before opening it. Currently, this is used to close the Shell at the proper
         /// time when switching collectons.</param>
-        /// <returns>true if we switched collections. (However, in this case we may call Application.Exit(), so the
+        /// <returns>true if we switched collections. (However, in this case we may exit the application, so the
         /// caller shouldn't do anything unnecessary.)</returns>
         public static bool ChooseACollection(Shell formToClose = null)
         {
@@ -1439,7 +1425,7 @@ namespace Bloom
                             // and we don't want to exit the application. Otherwise, we are in initial startup and
                             // closing the chooser should exit the application.
                             if (formToClose == null)
-                                Application.Exit();
+                                ProgramExit.Exit();
                             return false;
                         }
 
@@ -1504,11 +1490,11 @@ namespace Bloom
             }
             else if (((Shell)sender).QuitForVersionUpdate)
             {
-                Application.Exit();
+                ProgramExit.Exit();
             }
             else
             {
-                Application.Exit();
+                ProgramExit.Exit();
             }
         }
 
@@ -1540,7 +1526,7 @@ namespace Bloom
                 // Ideally we would dispose this at some point, but I don't know when we safely can. Normally this should never happen,
                 // so I'm not very worried.
                 var fakeLocalDir = new TemporaryFolder("Bloom fake localization").FolderPath;
-                lm = LocalizationManager.Create(
+                lm = LocalizationManagerWinforms.Create(
                     "en",
                     "Bloom",
                     "Bloom",
@@ -1560,7 +1546,7 @@ namespace Bloom
                 // If the user has not set the interface language, try to use the system language if we can.
                 // (See http://issues.bloomlibrary.org/youtrack/issue/BL-4393.)
                 var desiredLanguage = GetDesiredUiLanguage(installedStringFileFolder);
-                lm = LocalizationManager.Create(
+                lm = LocalizationManagerWinforms.Create(
                     desiredLanguage,
                     "Bloom",
                     "Bloom",
@@ -1589,7 +1575,7 @@ namespace Bloom
                 if (uiLanguage != desiredLanguage)
                     Settings.Default.UserInterfaceLanguageSetExplicitly = true;
 
-                LocalizationManager.Create(
+                LocalizationManagerWinforms.Create(
                     uiLanguage,
                     "Palaso",
                     "Palaso", /*review: this is just bloom's version*/
@@ -1601,7 +1587,7 @@ namespace Bloom
                     new string[] { "SIL" }
                 );
 
-                LocalizationManager.Create(
+                LocalizationManagerWinforms.Create(
                     uiLanguage,
                     "BloomMediumPriority",
                     "BloomMediumPriority",
@@ -1613,7 +1599,7 @@ namespace Bloom
                     new string[] { "Bloom" }
                 );
 
-                LocalizationManager.Create(
+                LocalizationManagerWinforms.Create(
                     uiLanguage,
                     "BloomLowPriority",
                     "BloomLowPriority",
@@ -1758,6 +1744,7 @@ namespace Bloom
 
         private static bool _errorHandlingHasBeenSetUp;
         private static IDisposable _sentry;
+        private static bool _gotUniqueToken;
 
         /// ------------------------------------------------------------------------------------
         internal static void SetUpErrorHandling()
@@ -1799,7 +1786,7 @@ namespace Bloom
             var orderedReporters = new IBloomErrorReporter[]
             {
                 SentryErrorReporter.Instance,
-                HtmlErrorReporter.Instance
+                HtmlErrorReporter.Instance,
             };
             var htmlAndSentryReporter = new CompositeErrorReporter(
                 orderedReporters,
@@ -1829,7 +1816,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
             ExceptionReportingDialog.PrivacyNotice = string.Format(msgTemplate, issueTrackingUrl);
             SIL.Reporting.ErrorReport.EmailAddress = "issues@bloomlibrary.org";
             SIL.Reporting.ErrorReport.AddStandardProperties();
-            // with squirrel, the file's dates only reflect when they were installed, so we override this version thing which
+            // with Velopack, the file's dates only reflect when they were installed, so we override this version thing which
             // normally would include a bogus "Apparently Built On" date:
             var versionNumber = Program.RunningUnitTests
                 ? "Current build" // for some reason VersionNumberString throws when running unit tests, so just use this.
@@ -1891,7 +1878,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
                 {
                     "bloom-collection.png",
                     Path.Combine(imageDir, "application-bloom-collection.png")
-                }
+                },
             }; // Dictionary<sourceFileName, destinationFullFileName>
 
             // check each file now
@@ -1923,9 +1910,9 @@ Anyone looking specifically at our issue tracking system can read what you sent 
                 {
                     FileName = "update-desktop-database",
                     Arguments = Path.Combine(shareDir, "applications"),
-                    UseShellExecute = false
+                    UseShellExecute = false,
                 },
-                EnableRaisingEvents = true // so we can run another process when this one finishes
+                EnableRaisingEvents = true, // so we can run another process when this one finishes
             };
 
             // after the desktop database is updated, update the mime database
@@ -1937,9 +1924,9 @@ Anyone looking specifically at our issue tracking system can read what you sent 
                     {
                         FileName = "update-mime-database",
                         Arguments = Path.Combine(shareDir, "mime"),
-                        UseShellExecute = false
+                        UseShellExecute = false,
                     },
-                    EnableRaisingEvents = true // so we can run another process when this one finishes
+                    EnableRaisingEvents = true, // so we can run another process when this one finishes
                 };
 
                 // after the mime database is updated, set the file association
@@ -1951,8 +1938,8 @@ Anyone looking specifically at our issue tracking system can read what you sent 
                         {
                             FileName = "xdg-mime",
                             Arguments = "default bloom.desktop application/bloom-collection",
-                            UseShellExecute = false
-                        }
+                            UseShellExecute = false,
+                        },
                     };
 
                     Debug.Print("Setting file association");
@@ -2080,9 +2067,40 @@ Anyone looking specifically at our issue tracking system can read what you sent 
             }
         }
 
+        private static bool? _runningUnitTests;
         public static bool RunningUnitTests
         {
-            get { return Assembly.GetEntryAssembly() == null; }
+            get
+            {
+                if (_runningUnitTests.HasValue)
+                    return _runningUnitTests.Value;
+
+                // In .NET 8, Assembly.GetEntryAssembly() doesn't reliably return null for unit tests.
+                // Check if any test framework assemblies are loaded
+                var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                foreach (var assembly in assemblies)
+                {
+                    var name = assembly.FullName;
+                    if (
+                        name != null
+                        && (
+                            name.StartsWith("BloomTests", StringComparison.OrdinalIgnoreCase)
+                            // Quite the hack... but with the switch to .NET 8, we started having to explicitly look for BloomTests above.
+                            // And when running unit tests from harvester, it was thus failing to detect that we were running unit tests.
+                            || name.StartsWith(
+                                "BloomHarvesterTests",
+                                StringComparison.OrdinalIgnoreCase
+                            )
+                        )
+                    )
+                    {
+                        _runningUnitTests = true;
+                        return true;
+                    }
+                }
+                _runningUnitTests = false;
+                return false;
+            }
         }
 
         // Set to true when Bloom is running one of the command line verbs, e.g. hydrate or createArtifacts

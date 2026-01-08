@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useEffect, useState } from "react";
@@ -15,7 +14,7 @@ interface PageNumberStyle {
 const PageNumberStyleControl: React.FunctionComponent = () => {
     const pageNumberingLabel = useL10n(
         "Page Numbering Style",
-        "CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel"
+        "CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel",
     );
 
     // Default of empty string fed into Mui Select's value prop works, where 'undefined' doesn't.
@@ -26,7 +25,7 @@ const PageNumberStyleControl: React.FunctionComponent = () => {
     // to store in the CollectionSettings file.
     const [selectedStyle, setSelectedStyle] = useState<string>("");
 
-    const handleSelectChange = event => {
+    const handleSelectChange = (event) => {
         const newSelectedStyle = event.target.value as string;
         setSelectedStyle(newSelectedStyle);
         postString("settings/numberingStyle", newSelectedStyle);
@@ -38,10 +37,10 @@ const PageNumberStyleControl: React.FunctionComponent = () => {
 
     useEffect(() => {
         // Gets all available numbering styles and the current style
-        get("settings/numberingStyle", result => {
+        get("settings/numberingStyle", (result) => {
             setSelectedStyle(result.data.currentPageNumberStyle as string);
             setNumberingStyles(
-                result.data.numberingStyleData as PageNumberStyle[]
+                result.data.numberingStyleData as PageNumberStyle[],
             );
         });
     }, []);
@@ -96,14 +95,14 @@ const PageNumberStyleControl: React.FunctionComponent = () => {
                 MenuProps={{
                     anchorOrigin: {
                         vertical: "bottom",
-                        horizontal: "left"
+                        horizontal: "left",
                     },
                     transformOrigin: {
                         vertical: "top",
-                        horizontal: "left"
-                    }
+                        horizontal: "left",
+                    },
                 }}
-                onChange={event => {
+                onChange={(event) => {
                     handleSelectChange(event);
                 }}
             >

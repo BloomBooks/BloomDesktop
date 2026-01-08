@@ -1,4 +1,5 @@
 @import (reference) "../../bloomUI.less";
+@import "../../placeHolderImages.less";
 
 // This is wanted only for previewing templates, not real books.
 // Real books always have a data-l1 attribute added, and the standard basePage rules work for them.
@@ -50,7 +51,8 @@ div.bloom-page.coverColor {
 // When in preview, people often think they are looking at something editable. Give them this visual feedback.
 // (Setting the cursor doesn't seem to work in inert elements, so this rule is applied one level above
 // the body, which is what we set to inert.)
-html {
+// Only apply to the preview iframe, not to dialogs or other UI elements
+#previewFrame html {
     cursor: not-allowed;
 }
 
@@ -134,9 +136,11 @@ and as a result, the labels are shifted to this many pixels to the width. This s
 }
 
 // when making a PDF or a thumbnail, if no image is chosen, just don't show anything
+// repeated class is necessary to override the data-tool-id="canvas" case in placeHolderImages.less
 // note that the *= here is needed in case there is a path, as happens in folio pdfs e.g. ../foo/placheholder.png
-.hidePlaceHolders img[src*="placeHolder.png"] {
-    display: none;
+.hidePlaceHolders.hidePlaceHolders.hidePlaceHolders.hidePlaceHolders
+    .bloom-canvas-element:has(img[src*="placeHolder.png"]) {
+    background-image: none;
 }
 
 @stripeGrey: #f0f0f0;

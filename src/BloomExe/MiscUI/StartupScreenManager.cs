@@ -88,7 +88,7 @@ namespace Bloom.MiscUI
                 Task = task,
                 NeedsToRun = needsToRun,
                 WaitForMilestone = waitForMilestone,
-                TickWaitForMilestone = maxTickWaitForMilestone
+                TickWaitForMilestone = maxTickWaitForMilestone,
             };
             _startupActions.Add(startupAction);
             EnableProcessing();
@@ -153,8 +153,8 @@ namespace Bloom.MiscUI
                 // got Idle event while startup action in progress. Wait till it finishes.
                 return;
             }
-            _current = _startupActions.FirstOrDefault(
-                a => a.Enabled && a.Priority == StartupActionPriority.high
+            _current = _startupActions.FirstOrDefault(a =>
+                a.Enabled && a.Priority == StartupActionPriority.high
             );
             if (_current == null)
                 _current = _startupActions.FirstOrDefault(a => a.Enabled);
@@ -341,7 +341,7 @@ namespace Bloom.MiscUI
         enum StartupActionPriority
         {
             high,
-            low
+            low,
         }
 
         /// <summary>

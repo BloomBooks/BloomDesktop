@@ -4,20 +4,23 @@
 import {
     DRTState,
     getTheOneReaderToolsModel,
-    MarkupType
+    MarkupType,
 } from "../readerToolsModel";
 import {
     beginInitializeDecodableReaderTool,
     createToggle,
-    isToggleOff
+    isToggleOff,
 } from "../readerTools";
 import { isLongPressEvaluating, ITool } from "../../toolbox";
 import theOneLocalizationManager from "../../../../lib/localizationManager/localizationManager";
 import { get } from "../../../../utils/bloomApi";
 import StyleEditor from "../../../StyleEditor/StyleEditor";
+import $ from "jquery";
 
 export class DecodableReaderToolboxTool implements ITool {
-    imageUpdated(img: HTMLImageElement | undefined): void {}
+    imageUpdated(img: HTMLImageElement | undefined): void {
+        // No action needed for this tool
+    }
     public makeRootElement(): HTMLDivElement {
         throw new Error("Method not implemented.");
     }
@@ -43,14 +46,14 @@ export class DecodableReaderToolboxTool implements ITool {
                     // old state
                     getTheOneReaderToolsModel().setStageNumber(
                         parseInt(decState, 10),
-                        true
+                        true,
                     );
                 }
             } else {
-                get("readers/io/defaultStage", result => {
+                get("readers/io/defaultStage", (result) => {
                     // Presumably a brand new book. We'd better save the settings we come up with in it.
                     getTheOneReaderToolsModel().setStageNumber(
-                        parseInt(result.data, 10)
+                        parseInt(result.data, 10),
                     );
                 });
             }
@@ -67,7 +70,7 @@ export class DecodableReaderToolboxTool implements ITool {
         // invoke function when a bloom-editable element loses focus.
         $(container)
             .find(".bloom-editable")
-            .focusout(event => {
+            .focusout((event) => {
                 let createCkEditorBookMarks = true;
                 // We don't want to create bookmarks if we are switching from one text box on the page to another.
                 // Otherwise, we prevent switching text boxes altogether because the restoration of the bookmark
@@ -99,7 +102,7 @@ export class DecodableReaderToolboxTool implements ITool {
 
         $(container)
             .find(".bloom-editable")
-            .focusin(function() {
+            .focusin(function () {
                 getTheOneReaderToolsModel().noteFocus(this); // 'This' is the element that just got focus.
             });
 
@@ -137,9 +140,9 @@ export class DecodableReaderToolboxTool implements ITool {
             .asyncGetText(
                 "EditTab.Toolbox.DecodableReaderTool.SortAlphabetically",
                 "Sort alphabetically",
-                ""
+                "",
             )
-            .done(result => {
+            .done((result) => {
                 this.setTitleOfI(paneDOM, "sortAlphabetic", result);
             });
 
@@ -147,9 +150,9 @@ export class DecodableReaderToolboxTool implements ITool {
             .asyncGetText(
                 "EditTab.Toolbox.DecodableReaderTool.SortByWordLength",
                 "Sort by word length",
-                ""
+                "",
             )
-            .done(result => {
+            .done((result) => {
                 this.setTitleOfI(paneDOM, "sortLength", result);
             });
 
@@ -157,9 +160,9 @@ export class DecodableReaderToolboxTool implements ITool {
             .asyncGetText(
                 "EditTab.Toolbox.DecodableReaderTool.SortByFrequency",
                 "Sort by frequency",
-                ""
+                "",
             )
-            .done(result => {
+            .done((result) => {
                 // there are actually two here, but JQuery nicely just does it
                 this.setTitleOfI(paneDOM, "sortFrequency", result);
             });
@@ -195,7 +198,7 @@ export class DecodableReaderToolboxTool implements ITool {
         // So we do want to set the appropriate markup, but if the toggle is off, we want the markup off.
         const isForLeveled = false;
         getTheOneReaderToolsModel().setMarkupType(
-            isToggleOff(isForLeveled) ? 0 : 1
+            isToggleOff(isForLeveled) ? 0 : 1,
         );
         // usually updateMarkup will do this, unless we are coming from showTool
         getTheOneReaderToolsModel().doMarkup();

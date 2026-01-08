@@ -7,7 +7,6 @@ using System.Net;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Web;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
@@ -107,7 +106,7 @@ namespace Bloom.WebLibraryIntegration
             return new AmazonS3Credentials
             {
                 AccessKey = accessKeys.S3AccessKey,
-                SecretAccessKey = accessKeys.S3SecretAccessKey
+                SecretAccessKey = accessKeys.S3SecretAccessKey,
             };
         }
 
@@ -188,17 +187,17 @@ namespace Bloom.WebLibraryIntegration
                     BucketName = _bucketName,
                     FilePath = pathToFile,
                     Key = Path.GetFileName(pathToFile),
-                    CannedACL = S3CannedACL.PublicRead // Allows any browser to download it.
+                    CannedACL = S3CannedACL.PublicRead, // Allows any browser to download it.
                 };
                 // no-cache means "The response may be stored by any cache, even if the response is normally non-cacheable. However,
                 // the stored response MUST always go through validation with the origin server first before using it..."
                 request.Headers.CacheControl = "no-cache";
                 if (!BookUpload.IsDryRun)
-                    transferUtility.Upload(request);
+                    transferUtility.UploadAsync(request).GetAwaiter().GetResult();
                 return "https://s3.amazonaws.com/"
                     + _bucketName
                     + "/"
-                    + HttpUtility.UrlEncode(request.Key);
+                    + WebUtility.UrlEncode(request.Key);
             }
         }
 
@@ -255,7 +254,7 @@ namespace Bloom.WebLibraryIntegration
                 Key = s3Key,
                 // Allows any browser to download it.
                 // Purposefully, this is the only ACL our temporary permissions allow us to set.
-                CannedACL = S3CannedACL.PublicRead
+                CannedACL = S3CannedACL.PublicRead,
             };
 
             SetContentDisposition(request, localFilePath);
@@ -270,7 +269,7 @@ namespace Bloom.WebLibraryIntegration
             );
             progress.WriteStatus(uploadMsgFmt, Path.GetFileName(localFilePath));
 
-            _amazonS3ForBookUpload.PutObject(request);
+            _amazonS3ForBookUpload.PutObjectAsync(request).GetAwaiter().GetResult();
         }
 
         // Usually, the S3 ETag is just the md5 hash of the file contents.
@@ -310,11 +309,16 @@ namespace Bloom.WebLibraryIntegration
             var request = new GetObjectRequest()
             {
                 BucketName = bucketName,
-                Key = storageKeyOfFile
+                Key = storageKeyOfFile,
             };
             // We actually don't need any credentials to download the files we are dealing with because they are public read,
             // but it simplifies the code a bit to just reuse the existing IAmazonS3 object.
-            using (var response = GetAmazonS3WithAccessKey(bucketName).GetObject(request))
+            using (
+                var response = GetAmazonS3WithAccessKey(bucketName)
+                    .GetObjectAsync(request)
+                    .GetAwaiter()
+                    .GetResult()
+            )
             using (var stream = response.ResponseStream)
             using (var reader = new StreamReader(stream, Encoding.UTF8))
             {
@@ -497,7 +501,7 @@ namespace Bloom.WebLibraryIntegration
                     {
                         BucketName = bucketName,
                         Key = objKey,
-                        FilePath = Path.Combine(tempDestPath, filepath)
+                        FilePath = Path.Combine(tempDestPath, filepath),
                     };
                     transferUtility.Download(req);
                     if (downloadProgress != null)
@@ -566,7 +570,15 @@ namespace Bloom.WebLibraryIntegration
             // Yes, this encoding means the slashes are converted to %2f.
             // That's unfortunate, but that's how we've always done it.
             // And that's how old Blooms expect to receive it, so we're stuck with it.
-            return $"https://s3.amazonaws.com/{_bucketName}/{HttpUtility.UrlEncode(prefixForBookFiles)}";
+            var encodedPrefix = WebUtility.UrlEncode(prefixForBookFiles);
+            // Ensure hex values in percent-encoding are lowercase. This is for historical reasons.
+            // Older Blooms can only handle %2f, not %2F.
+            encodedPrefix = Regex.Replace(
+                encodedPrefix,
+                @"%[0-9A-F]{2}",
+                match => match.Value.ToLowerInvariant()
+            );
+            return $"https://s3.amazonaws.com/{_bucketName}/{encodedPrefix}";
         }
 
         private static Regex s_s3UrlRegex = new Regex(
@@ -597,10 +609,12 @@ namespace Bloom.WebLibraryIntegration
         // Note that baseUrl is url-encoded, including (who knows why?...) the slashes (%2f). Older Blooms expect the %2f.
         public static string GetPrefixFromBaseUrl(string baseUrl)
         {
-            var match = s_s3UrlRegex.Match(baseUrl.Replace("%2f", "/"));
+            var match = s_s3UrlRegex.Match(
+                baseUrl.Replace("%2f", "/", StringComparison.InvariantCultureIgnoreCase)
+            );
             if (!match.Success)
                 throw new ArgumentException("Not a valid base URL", nameof(baseUrl));
-            return HttpUtility.UrlDecode(match.Groups[1].Value);
+            return WebUtility.UrlDecode(match.Groups[1].Value);
         }
 
         public void Dispose()

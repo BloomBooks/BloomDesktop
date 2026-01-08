@@ -1,8 +1,3 @@
-using Bloom.Api;
-using Bloom.MiscUI;
-using Bloom.web;
-using L10NSharp;
-using SIL.IO;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -13,16 +8,20 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.History;
-using Bloom.Registration;
+using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Bloom.Utils;
+using Bloom.web;
 using Bloom.web.controllers;
-using SIL.Reporting;
 using DesktopAnalytics;
+using L10NSharp;
 using SIL.Code;
+using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom.TeamCollection
 {
@@ -649,12 +648,12 @@ namespace Bloom.TeamCollection
         }
 
         // Lock the book, making it available for the specified user to edit. Return true if successful.
+        // We must ensure that the user has registered a valid email address before making the call to the API endpoint which calls this.
         public bool AttemptLock(string bookName, string email = null)
         {
-            if (!PromptForSufficientRegistrationIfNeeded())
-                return false;
-
             var whoBy = email ?? TeamCollectionManager.CurrentUser;
+            Debug.Assert(!string.IsNullOrWhiteSpace(whoBy));
+
             var status = GetStatus(bookName);
             if (String.IsNullOrEmpty(status.lockedBy) && !IsDisconnected)
             {
@@ -916,7 +915,7 @@ namespace Bloom.TeamCollection
         {
             None,
             ColorPalette,
-            Other
+            Other,
         }
 
         /// <summary>
@@ -1028,23 +1027,22 @@ namespace Bloom.TeamCollection
         /// Gets the path to the bloomCollection file, given the folder.
         /// If the folder name ends in " - TC" we will strip that off.
         /// </summary>
-        /// <param name="parentFolder"></param>
-        /// <returns></returns>
         public static string CollectionPath(string parentFolder)
         {
+            // Note that collectionName is the name of the collection, not the folder.
+            // So our normal simple approach of using the folder name may fail here.
             var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(parentFolder));
-            // Avoiding use of ChangeExtension as it's just possible the collectionName could have period.
-            var collectionPath = Path.Combine(parentFolder, collectionName + ".bloomCollection");
+            var collectionPath = Path.Combine(
+                parentFolder,
+                CollectionSettings.GetFileName(collectionName)
+            );
             if (RobustFile.Exists(collectionPath))
                 return collectionPath;
             // occasionally, mainly when making a temp folder during joining, the bloomCollection file may not
             // have the expected name
-            var result = Directory
-                .EnumerateFiles(parentFolder, "*.bloomCollection")
-                .FirstOrDefault();
-            if (result == null)
-                return collectionPath; // sometimes we use this method to get the expected path where there is no .bloomCollection
-            return result;
+            if (CollectionSettings.TryGetSettingsFilePath(parentFolder, out var realPath))
+                return realPath;
+            return collectionPath; // sometimes we use this method to get the expected path where there is no .bloomCollection
         }
 
         public static List<string> RootLevelCollectionFilesIn(string folder)
@@ -2004,8 +2002,8 @@ namespace Bloom.TeamCollection
                         "https://docs.bloomlibrary.org/team-collections-advanced-topics/#2488e17a8a6140bebcef068046cc57b7";
                     var admins = string.Join(
                         ", ",
-                        (_tcManager?.Settings?.Administrators ?? new string[0]).Select(
-                            e => ProblemReportApi.GetObfuscatedEmail(e)
+                        (_tcManager?.Settings?.Administrators ?? new string[0]).Select(e =>
+                            ProblemReportApi.GetObfuscatedEmail(e)
                         )
                     );
                     var extraInfo =
@@ -2044,7 +2042,7 @@ namespace Bloom.TeamCollection
             "Cópia em conflito", // Spanish
             "конфликтующая копия", // Russian
             "冲突副本", // zh-cn, mainland chinese
-            "衝突複本" // zh-tx, taiwan
+            "衝突複本", // zh-tx, taiwan
             // Probably many others
         };
 
@@ -2726,14 +2724,14 @@ namespace Bloom.TeamCollection
                             titleIcon = "/bloom/teamCollection/Team Collection.svg",
                             titleColor = "white",
                             titleBackgroundColor = Palette.kBloomBlueHex,
-                            showReportButton = "never"
+                            showReportButton = "never",
                         },
                         "Sync Team Collection"
                     )
                     // winforms dialog properties
                     {
                         Width = 620,
-                        Height = 550
+                        Height = 550,
                     },
                 doWhat,
                 doWhenMainActionFalse
@@ -2772,7 +2770,7 @@ namespace Bloom.TeamCollection
                     { "CollectionId", CollectionId },
                     { "CollectionName", _tcManager?.Settings?.CollectionName },
                     { "Backend", GetBackendType() },
-                    { "User", TeamCollectionManager.CurrentUser }
+                    { "User", TeamCollectionManager.CurrentUser },
                 }
             );
 
@@ -3004,16 +3002,6 @@ namespace Bloom.TeamCollection
             // ENHANCE: Right now, if the book selection is checked in or checked out by another user,
             // we will update the icon in LibraryListView, but not the one in the book preview pane.
             // It'd be nice to update the book preview pane data too.
-        }
-
-        /// <summary>
-        /// Returns true if registration is sufficient (after prompting the user if needed); false otherwise
-        /// </summary>
-        public static bool PromptForSufficientRegistrationIfNeeded()
-        {
-            return RegistrationDialog.RequireRegistrationEmail(
-                "You will need to register this copy of Bloom with an email address before participating in a Team Collection"
-            );
         }
 
         public virtual bool CannotDeleteBecauseDisconnected(string bookFolderPath)

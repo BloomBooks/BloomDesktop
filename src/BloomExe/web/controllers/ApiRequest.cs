@@ -8,8 +8,8 @@ using System.Net;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using System.Web;
-using System.Web.Script.Serialization;
 using System.Windows.Forms;
+using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Utils;
 using Newtonsoft.Json;
@@ -159,6 +159,11 @@ namespace Bloom.Api
             _requestInfo.ReplyWithImage(imagePath);
         }
 
+        public void ReplyWithFileContent(string path)
+        {
+            _requestInfo.ReplyWithFileContent(path);
+        }
+
         public void ReplyWithStreamContent(Stream input, string responseType)
         {
             _requestInfo.ReplyWithStreamContent(input, responseType);
@@ -173,17 +178,39 @@ namespace Bloom.Api
             Failed(HttpStatusCode.ServiceUnavailable, text);
         }
 
+        private string _failedText;
+
+        public bool HasFailed => _failedText != null;
+
         public void Failed(HttpStatusCode statusCode, string text = null)
         {
+            // We can't WriteError twice in the same request; WriteError
+            // closes the response, and subsequent attempts will generate
+            // an object disposed error, which for some reason I can't figure
+            // out will NOT be caught by the try...catch here but show up
+            // later when we try to flush the request. The second call is
+            // likely from an outer exception handler and has less useful
+            // information, and anyway it's too late to fix it, so just
+            // keep what we already recorded.
+            if (_failedText != null)
+                return;
+            _failedText = text;
             _requestInfo.ResponseContentType = "text/plain";
             int statusCodeInt = (int)statusCode;
-            if (text == null)
+            try
             {
-                _requestInfo.WriteError(statusCodeInt);
+                if (text == null)
+                {
+                    _requestInfo.WriteError(statusCodeInt);
+                }
+                else
+                {
+                    _requestInfo.WriteError(statusCodeInt, text);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _requestInfo.WriteError(statusCodeInt, text);
+                Debug.Fail("could not WriteError to requestInfo (is it disposed?)");
             }
         }
 

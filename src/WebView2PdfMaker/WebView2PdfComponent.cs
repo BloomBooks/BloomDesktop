@@ -1,12 +1,12 @@
 using System;
 using System.ComponentModel;
+using System.Drawing;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
-using System.Threading;
-using System.Drawing;
 using SIL.IO;
 
 namespace WebView2PdfMaker

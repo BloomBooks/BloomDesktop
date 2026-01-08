@@ -1,3 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
@@ -9,23 +19,8 @@ using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
-using SIL.Windows.Forms.Miscellaneous;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using Bloom.web.controllers;
 using SIL.Windows.Forms.ImageToolbox;
-
-#if DEBUG
-using System.Media;
-#endif
+using SIL.Windows.Forms.Miscellaneous;
 
 namespace Bloom
 {
@@ -39,13 +34,56 @@ namespace Bloom
         private CutCommand _cutCommand;
         private bool _inDisposeMethod;
 
+        // All our existing code assumes we can just construct a browser. And it seems to work.
+        // But in some newer code involving awaits and multiple browsers in unit tests, we
+        // really need to properly await InitWebView. The dummy argument is just so we can force this
+        // constructor to be called in those cases, while still allowing the default constructor
+        // to work the old way.
+        private WebView2Browser(string dummy) { }
+
+        /// <summary>
+        /// This gives us a way to create a WebView2Browser with the async init properly awaited.
+        /// It would be good to use this everywhere, but I think a lot of stuff would have to become async.
+        /// </summary>
+        /// <returns></returns>
+        public static async Task<WebView2Browser> CreateAsync()
+        {
+            // the argument forces it to use the special private constructor that does nothing.
+            var browser = new WebView2Browser("dummy");
+            // The rest of this should match the other constructor, except we can await InitWebView
+            // (or anything else we need to).
+            browser.InitializeComponent();
+            await browser.InitWebView();
+            return browser;
+        }
+
         public WebView2Browser()
         {
             InitializeComponent();
 
-            // I don't think anything we're doing here will take long enough for us to need to await it.
+            // This should be awaited, but we can't use await in a constructor. If possible, use CreateAsync.
+            // Otherwise, this method will return a new browser, and eventually it will get initialized, but
+            // EnsureCoreWebView2Async may not have completed, so the CoreWebView2 property may not be set yet,
+            // and the CoreWebView2InitializationCompleted event may not have been raised yet, so all kinds of
+            // stuff is not set up.
+            // We work around this by not setting _readyToNavigate to true until the event IS raised,
+            // and having various things call EnsureBrowserReadyToNavigate which waits until that is true.
+            // This is ugly, but so is using async code all over the place. (Not only does every caller of an
+            // async method have to change its signature and be awaited, but also we can't use ref or out
+            // parameters, and we can't hold a lock while awaiting, because the continuation may take place
+            // in a different thread. This is a problem for most of our API handlers.
+            // Moreover, async code is reentrant: user events like handling a mouse click could
+            // happen between awaiting something and continuing the method, and even a lock won't prevent it;
+            // the reentrancy happens on the main thread.
+            // Moreover anyc code depends on pumping events in the main message loop, and if it needs to invoke
+            // something on that thread, it's really easy to deadlock.
+            // A lot of this is because of the way that WinForms works, and when we finally get away from WinForms,
+            // we may be able to get to an environment where we don't need to try so hard to avoid async.)
             InitWebView();
+        }
 
+        private void SetupEventHandling()
+        {
             _webview.CoreWebView2InitializationCompleted += (
                 object sender,
                 CoreWebView2InitializationCompletedEventArgs args
@@ -69,7 +107,7 @@ namespace Bloom
                 try
                 {
                     Logger.WriteEvent(
-                        $"Initialized a WebView2  {_webview.CoreWebView2.Environment.BrowserVersionString} with UserDataFolder at '{_webview.CoreWebView2.Environment.UserDataFolder}"
+                        $"Initialized a WebView2 (version {_webview.CoreWebView2.Environment.BrowserVersionString}) with UserDataFolder=\"{_webview.CoreWebView2.Environment.UserDataFolder}\""
                     );
 
                     // prevent the browser from opening external links, by intercepting NavigationStarting
@@ -203,7 +241,7 @@ namespace Bloom
 
         static int dataFolderCounter = 0;
 
-        private async void InitWebView()
+        private async Task InitWebView()
         {
             // based on https://stackoverflow.com/questions/63404822/how-to-disable-cors-in-wpf-webview2
             // this should disable CORS, but it doesn't seem to work, at least for fixing communication from
@@ -311,6 +349,10 @@ namespace Bloom
                         + dataFolderCounter++
                 );
             } while (Directory.Exists(dataFolder));
+            // This sets up a handler for the CoreWebView2InitializationCompleted event, which will run before
+            // EnsureCoreWebView2Async returns if we're awaiting properly, so we need to set up that handler
+            // before calling EnsureCoreWebView2Async.
+            SetupEventHandling();
             var env = await CoreWebView2Environment.CreateAsync(
                 browserExecutableFolder: AlternativeWebView2Path,
                 userDataFolder: dataFolder,
@@ -318,7 +360,7 @@ namespace Bloom
             );
             await _webview.EnsureCoreWebView2Async(env);
 
-            // I is kinda hard to get a click event from webview2. This needs to be explicitly sent from the browser code,
+            // It is kinda hard to get a click event from webview2. This needs to be explicitly sent from the browser code,
             // e.g. (window as any).chrome.webview.postMessage("browser-clicked");
             _webview.WebMessageReceived += (o, e) =>
             {
@@ -507,9 +549,11 @@ namespace Bloom
                     return false;
                 }
             }
+            //Debug.WriteLine(
+            //    $"DEBUG: Navigation wait loop ended after {navTimer.Elapsed}: done={done}"
+            //);
 
             navTimer.Stop();
-
             if (!done)
             {
                 if (throwOnTimeout)
@@ -600,6 +644,15 @@ namespace Bloom
             return result3;
         }
 
+        /// <summary>
+        /// Executes a JavaScript script asynchronously and retrieves the result as a JSON-encoded string.
+        /// </summary>
+        public override async Task<string> GetObjectFromJavascriptAsync(string script)
+        {
+            // Whatever the javascript produces gets JSON encoded automatically by ExecuteScriptAsync.
+            return await _webview.ExecuteScriptAsync(script);
+        }
+
         public override void SaveHTML(string path)
         {
             throw new NotImplementedException();
@@ -617,21 +670,18 @@ namespace Bloom
             _pasteCommand = pasteCommand;
             _undoCommand = undoCommand;
 
-            // These implementations are all specific to our Edit tab. This is currently the only place
-            // we show the buttons that use these commands, but we will have to generalize somehow if
+            // Once these buttons are in the same browser as the page and we don't have to go through C#,
+            // we can get rid of the commands completely. Until then, if we don't set an Implementer,
+            // Enabled will always be false.
+            _cutCommand.Implementer = () => { };
+            _copyCommand.Implementer = () => { };
+            _undoCommand.Implementer = () => { };
+
+            // This implementation is specific to our Edit tab. This is currently the only place
+            // we show the paste button that uses this command, but we will have to generalize somehow if
             // that changes. I'm not sure whether the checks for existence of editTabBundle etc are needed.
             // I deliberately use RunJavaScriptAsync here without awaiting it, because nothing requires the
-            // result (we only care about the side effects on the clipboard and document)
-            _cutCommand.Implementer = () =>
-            {
-                RunJavascriptAsync("editTabBundle?.getEditablePageBundleExports()?.cutSelection()");
-            };
-            _copyCommand.Implementer = () =>
-            {
-                RunJavascriptAsync(
-                    "editTabBundle?.getEditablePageBundleExports()?.copySelection()"
-                );
-            };
+            // result (we only care about the side effects on the document)
             _pasteCommand.Implementer = () =>
             {
                 PalasoImage clipboardImage = null;
@@ -648,12 +698,6 @@ namespace Bloom
                 RunJavascriptAsync(
                     $"editTabBundle?.getEditablePageBundleExports()?.pasteClipboard({haveClipboardImage})"
                 );
-            };
-            _undoCommand.Implementer = () =>
-            {
-                // Note: this is only used for the Undo button in the toolbar;
-                // ctrl-z is handled in JavaScript directly.
-                RunJavascriptAsync("editTabBundle.handleUndo()"); // works fine async in testing
             };
         }
 
@@ -862,6 +906,8 @@ namespace Bloom
                     {
                         try
                         {
+                            // The most efficient way to detect that a process with a given id is not
+                            // running is to try to access it and get an exception thrown.
                             var process = Process.GetProcessById((int)key);
                         }
                         catch (ArgumentException)

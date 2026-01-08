@@ -3,39 +3,40 @@ html
 	body
 		h3#toolbox-settings-header(data-order='999', data-i18n='EditTab.Toolbox.More') More...
 		#toolbox-settings
-			//- Add new tools in alphabetical order
-			.checkbox-and-label
-				.checkbox.clear#decodableReaderCheck(data-tool='decodableReaderTool', onclick='toolboxBundle.showOrHideTool_click(this);')
-				.toolbox-checkbox-label
-					.toolbox-checkbox-label-text(data-i18n='EditTab.Toolbox.DecodableReaderTool') Decodable Reader Tool
-			.checkbox-and-label
-				.checkbox.clear#imageDescriptionCheck(data-tool='imageDescriptionTool', onclick='toolboxBundle.showOrHideTool_click(this);')
-				.toolbox-checkbox-label
-					.toolbox-checkbox-label-text(data-i18n='EditTab.Toolbox.ImageDescriptionTool') Image Description Tool
-			.checkbox-and-label
-				.checkbox.clear#impairmentVisualizerCheck(data-tool='impairmentVisualizer', onclick='toolboxBundle.showOrHideTool_click(this);')
-				.toolbox-checkbox-label
-					.toolbox-checkbox-label-text(data-i18n='EditTab.Toolbox.ImpairmentVisualizer') Impairment Visualizer
-			.checkbox-and-label
-				.checkbox.clear#leveledReaderCheck(data-tool='leveledReaderTool', onclick='toolboxBundle.showOrHideTool_click(this);')
-				.toolbox-checkbox-label
-					.toolbox-checkbox-label-text(data-i18n='EditTab.Toolbox.LeveledReaderTool') Leveled Reader Tool
-			.checkbox-and-label
-				.checkbox.clear#motionCheck(data-tool='motionTool', onclick='toolboxBundle.showOrHideTool_click(this);')
-				.toolbox-checkbox-label(data-feature='motion') 
-					.toolbox-checkbox-label-text(data-i18n='EditTab.Toolbox.MotionTool') Motion Tool
-					.subscription-badge
-			.checkbox-and-label
-				.checkbox.clear#musicCheck(data-tool='musicTool', onclick='toolboxBundle.showOrHideTool_click(this);')
-				.toolbox-checkbox-label(data-feature='music')
-					.toolbox-checkbox-label-text(data-i18n='EditTab.Toolbox.MusicTool') Music Tool
-					.subscription-badge
-			.checkbox-and-label
-				.checkbox.clear#overlayCheck(data-tool='overlayTool', onclick='toolboxBundle.showOrHideTool_click(this);')
-				.toolbox-checkbox-label(data-feature='overlay')
-					.toolbox-checkbox-label-text(data-i18n='EditTab.Toolbox.OverlayTool') Overlay Tool
-					.subscription-badge
-			.checkbox-and-label
-				.checkbox.clear#signLanguageCheck(data-tool='signLanguageTool', onclick='toolboxBundle.showOrHideTool_click(this);')
-				.toolbox-checkbox-label
-					.toolbox-checkbox-label-text(data-i18n='EditTab.Toolbox.SignLanguageTool') Sign Language Tool
+			.toolbox-settings-content
+				//- Keep tools in alphabetical order (although translations won't be in order)
+				.checkbox-and-label
+					.checkbox.clear#canvasCheck(data-tool='canvasTool', onclick='toolboxBundle.showOrHideTool_click(this);')
+					.toolbox-checkbox-label(data-feature='canvas')
+						.toolbox-checkbox-label-text(data-i18n='EditTab.Toolbox.CanvasTool') Canvas Tool
+						.subscription-badge
+				.checkbox-and-label
+					.checkbox.clear#decodableReaderCheck(data-tool='decodableReaderTool', onclick='toolboxBundle.showOrHideTool_click(this);')
+					.toolbox-checkbox-label
+						.toolbox-checkbox-label-text(data-i18n='EditTab.Toolbox.DecodableReaderTool') Decodable Reader Tool
+				.checkbox-and-label
+					.checkbox.clear#imageDescriptionCheck(data-tool='imageDescriptionTool', onclick='toolboxBundle.showOrHideTool_click(this);')
+					.toolbox-checkbox-label
+						.toolbox-checkbox-label-text(data-i18n='EditTab.Toolbox.ImageDescriptionTool') Image Description Tool
+				.checkbox-and-label
+					.checkbox.clear#impairmentVisualizerCheck(data-tool='impairmentVisualizer', onclick='toolboxBundle.showOrHideTool_click(this);')
+					.toolbox-checkbox-label
+						.toolbox-checkbox-label-text(data-i18n='EditTab.Toolbox.ImpairmentVisualizer') Impairment Visualizer
+				.checkbox-and-label
+					.checkbox.clear#leveledReaderCheck(data-tool='leveledReaderTool', onclick='toolboxBundle.showOrHideTool_click(this);')
+					.toolbox-checkbox-label
+						.toolbox-checkbox-label-text(data-i18n='EditTab.Toolbox.LeveledReaderTool') Leveled Reader Tool
+				.checkbox-and-label
+					.checkbox.clear#motionCheck(data-tool='motionTool', onclick='toolboxBundle.showOrHideTool_click(this);')
+					.toolbox-checkbox-label(data-feature='motion')
+						.toolbox-checkbox-label-text(data-i18n='EditTab.Toolbox.MotionTool') Motion Tool
+						.subscription-badge
+				.checkbox-and-label
+					.checkbox.clear#musicCheck(data-tool='musicTool', onclick='toolboxBundle.showOrHideTool_click(this);')
+					.toolbox-checkbox-label(data-feature='music')
+						.toolbox-checkbox-label-text(data-i18n='EditTab.Toolbox.MusicTool') Music Tool
+						.subscription-badge
+				.checkbox-and-label
+					.checkbox.clear#signLanguageCheck(data-tool='signLanguageTool', onclick='toolboxBundle.showOrHideTool_click(this);')
+					.toolbox-checkbox-label
+						.toolbox-checkbox-label-text(data-i18n='EditTab.Toolbox.SignLanguageTool') Sign Language Tool

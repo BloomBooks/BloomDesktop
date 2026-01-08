@@ -1,51 +1,67 @@
 // not yet: neither bloomEditing nor this is yet a module import {SetupImage} from './bloomEditing';
 ///<reference path="../../lib/split-pane/split-pane.d.ts" />
-import { kBloomCanvasClass, SetupImage } from "./bloomImages";
+import { SetupImage } from "./bloomImages";
+import { kBloomCanvasClass } from "../toolbox/canvas/canvasElementUtils";
 import "../../lib/split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
 import { post, postThatMightNavigate } from "../../utils/bloomApi";
 import { ElementQueries } from "css-element-queries";
 import { theOneCanvasElementManager } from "./CanvasElementManager";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
+import $ from "jquery";
+import { splitPane } from "../../lib/split-pane/split-pane";
+import { kCanvasToolId } from "../toolbox/toolIds";
 
 $(() => {
-    $("div.split-pane").splitPane();
+    splitPane($("div.split-pane"));
 });
 
 export function setupOrigami() {
-    getFeatureStatusAsync("widget").then(featureStatus => {
-        const isWidgetFeatureEnabled: boolean = featureStatus?.enabled || false;
-        const customPages = document.getElementsByClassName("customPage");
-        if (customPages.length > 0) {
-            const width = customPages[0].clientWidth;
-            const origamiControl = getAbovePageControlContainer()
-                .append(createTypeSelectors(isWidgetFeatureEnabled))
-                .append(createTextBoxIdentifier());
-            // The order of this is not important in most ways, since it is positioned absolutely.
-            // However, we position the page label, also absolutely, in the same screen area, and
-            // we want it on top of origami control, so that in template pages the user can edit it.
-            // The page label is part of the page, so we want the page to come after the origami control.
-            // (Could also do this with z-order, but I prefer to do what I can by ordering elements,
-            // and save z-order for when it is really needed.)
-            $("#page-scaling-container").prepend(origamiControl);
-            // The container width is set to 100% in the CSS, but we need to
-            // limit it to no more than the actual width of the page.
-            const toggleContainer = $(".above-page-control-container").get(0);
-            toggleContainer.style.maxWidth = width + "px";
-        }
-        // I'm not clear why the rest of this needs to wait until we have
-        // the two results, but none of the controls shows up if we leave it all
-        // outside the bloomApi functions.
-        $(".origami-toggle .onoffswitch").change(layoutToggleClickHandler);
+    getFeatureStatusAsync("widget").then((widgetFeatureStatus) => {
+        getFeatureStatusAsync("canvas").then((canvasFeatureStatus) => {
+            const isWidgetFeatureEnabled: boolean =
+                widgetFeatureStatus?.enabled || false;
+            const isCanvasFeatureEnabled: boolean =
+                canvasFeatureStatus?.enabled || false;
+            const customPages = document.getElementsByClassName("customPage");
+            if (customPages.length > 0) {
+                const width = customPages[0].clientWidth;
+                const origamiControl = getAbovePageControlContainer()
+                    .append(
+                        createTypeSelectors(
+                            isWidgetFeatureEnabled,
+                            isCanvasFeatureEnabled,
+                        ),
+                    )
+                    .append(createTextBoxIdentifier());
+                // The order of this is not important in most ways, since it is positioned absolutely.
+                // However, we position the page label, also absolutely, in the same screen area, and
+                // we want it on top of origami control, so that in template pages the user can edit it.
+                // The page label is part of the page, so we want the page to come after the origami control.
+                // (Could also do this with z-order, but I prefer to do what I can by ordering elements,
+                // and save z-order for when it is really needed.)
+                $("#page-scaling-container").prepend(origamiControl);
+                // The container width is set to 100% in the CSS, but we need to
+                // limit it to no more than the actual width of the page.
+                const toggleContainer = $(".above-page-control-container").get(
+                    0,
+                );
+                toggleContainer.style.maxWidth = width + "px";
+            }
+            // I'm not clear why the rest of this needs to wait until we have
+            // the two results, but none of the controls shows up if we leave it all
+            // outside the bloomApi functions.
+            $(".origami-toggle .onoffswitch").change(layoutToggleClickHandler);
 
-        if ($(".customPage .marginBox.origami-layout-mode").length) {
-            setupLayoutMode();
-            $("#myonoffswitch").prop("checked", true);
-        }
+            if ($(".customPage .marginBox.origami-layout-mode").length) {
+                setupLayoutMode();
+                $("#myonoffswitch").prop("checked", true);
+            }
 
-        $(".customPage, .above-page-control-container")
-            .find("*[data-i18n]")
-            .localize();
+            $(".customPage, .above-page-control-container")
+                .find("*[data-i18n]")
+                .localize();
+        });
     });
 }
 
@@ -60,7 +76,7 @@ function isEmpty(el) {
 }
 function setupLayoutMode() {
     theOneCanvasElementManager.suspendComicEditing("forTool");
-    $(".split-pane-component-inner").each(function(): boolean {
+    $(".split-pane-component-inner").each(function (): boolean {
         const $this = $(this);
         if ($this.find(".split-pane").length) {
             // This is an unexpected situation, probably caused by using a broken version of the
@@ -88,11 +104,9 @@ function setupLayoutMode() {
     $(".bloom-editable[contentEditable=true]").removeAttr("contentEditable");
     // Images cannot be changed (other than growing/shrinking with their containing bloom-canvas) in layout mode
     // I'm not sure these handlers still do anything we wouldn't want in layout mode, but leaving the code just in case.
-    $(".bloom-canvas")
-        .off("mouseenter")
-        .off("mouseleave");
+    $(".bloom-canvas").off("mouseenter").off("mouseleave");
     // Attaching to html allows it to work even if nothing has focus.
-    $("html").on("keydown.origami", e => {
+    $("html").on("keydown.origami", (e) => {
         if (e.keyCode === 89 && e.ctrlKey) {
             origamiRedo();
         }
@@ -112,7 +126,7 @@ const bloomContainerClasses =
 
 function isSplitPaneComponentInnerEmpty(spci: JQuery) {
     return !spci.find(
-        `${bloomContainerClasses} .bloom-translationGroup:not(.box-header-off)`
+        `${bloomContainerClasses} .bloom-translationGroup:not(.box-header-off)`,
     ).length;
 }
 
@@ -135,7 +149,7 @@ function layoutToggleClickHandler() {
         // Hook up TextBoxProperties dialog to each text box (via its origami overlay)
         const dialog = GetTextBoxPropertiesDialog();
         const overlays = marginBox.find(".textBox-identifier");
-        overlays.each(function() {
+        overlays.each(function () {
             dialog.AttachToBox(this); // put the gear button in each text box identifier div
         });
     } else {
@@ -180,7 +194,7 @@ function performSplit(
     verticalOrHorizontal,
     existingContentPosition,
     newContentPosition,
-    prependNew
+    prependNew,
 ) {
     addUndoPoint();
     innerElement.wrap(getSplitPaneHtml(verticalOrHorizontal));
@@ -189,15 +203,15 @@ function performSplit(
     if (prependNew) {
         newSplitPane.prepend(getSplitPaneDividerHtml(verticalOrHorizontal));
         newSplitPane.prepend(
-            getSplitPaneComponentWithNewContent(newContentPosition)
+            getSplitPaneComponentWithNewContent(newContentPosition),
         );
     } else {
         newSplitPane.append(getSplitPaneDividerHtml(verticalOrHorizontal));
         newSplitPane.append(
-            getSplitPaneComponentWithNewContent(newContentPosition)
+            getSplitPaneComponentWithNewContent(newContentPosition),
         );
     }
-    newSplitPane.splitPane();
+    splitPane(newSplitPane);
     adjustModifiedChild(innerElement.get(0) as HTMLElement);
     theOneCanvasElementManager.setupSplitterEventHandling();
 }
@@ -209,8 +223,8 @@ function adjustModifiedChild(resizedElt: HTMLElement | undefined) {
     }
 }
 
-var origamiUndoStack: any[] = [];
-var origamiUndoIndex = 0; // of item that should be redone next, if any
+const origamiUndoStack: any[] = [];
+let origamiUndoIndex = 0; // of item that should be redone next, if any
 
 // Add a point to which the user can return using 'undo'. Call this before making any change that
 // would make sense to Undo in origami mode.
@@ -236,7 +250,7 @@ export function origamiUndo() {
         // The main point is that the first Undo should make a new clone
         // indicating the state of things before the Undo.
         origamiUndoStack[origamiUndoIndex] = {
-            original: origamiRoot.clone(true)
+            original: origamiRoot.clone(true),
         };
         origamiUndoIndex--;
         origamiRoot.replaceWith(origamiUndoStack[origamiUndoIndex].original);
@@ -251,7 +265,7 @@ function origamiRedo() {
     if (origamiCanRedo()) {
         origamiUndoIndex++;
         $(".marginBox").replaceWith(
-            origamiUndoStack[origamiUndoIndex].original
+            origamiUndoStack[origamiUndoIndex].original,
         );
     }
 }
@@ -294,31 +308,31 @@ function closeClickHandler() {
     sibling.addClass(positionClass);
     sibling.attr("style", positionStyle);
     adjustModifiedChild(
-        (sibling.get(0) as HTMLElement).firstElementChild as HTMLElement
+        (sibling.get(0) as HTMLElement).firstElementChild as HTMLElement,
     );
 }
 
 function getSplitPaneHtml(verticalOrHorizontal) {
     return $(
-        "<div class='split-pane " + verticalOrHorizontal + "-percent'></div>"
+        "<div class='split-pane " + verticalOrHorizontal + "-percent'></div>",
     );
 }
 function getSplitPaneComponentHtml(position) {
     return $(
-        "<div class='split-pane-component position-" + position + "'></div>"
+        "<div class='split-pane-component position-" + position + "'></div>",
     );
 }
 function getSplitPaneDividerHtml(verticalOrHorizontal) {
     const divider = $(
         "<div class='split-pane-divider " +
             verticalOrHorizontal +
-            "-divider'></div>"
+            "-divider'></div>",
     );
     return divider;
 }
 function getSplitPaneComponentWithNewContent(position) {
     const spc = $(
-        "<div class='split-pane-component position-" + position + "'>"
+        "<div class='split-pane-component position-" + position + "'>",
     );
     spc.append(getSplitPaneComponentInner());
     return spc;
@@ -355,13 +369,13 @@ function getAbovePageControlContainer(): JQuery {
         </label> \
     </div> \
 </div> \
-</div>"
+</div>",
     );
 }
 
 function getButtons() {
     const buttons = $(
-        "<div class='origami-controls bloom-ui origami-ui'></div>"
+        "<div class='origami-controls bloom-ui origami-ui'></div>",
     );
     buttons
         .append(getHorizontalButtons())
@@ -411,33 +425,33 @@ function getCloseButton() {
 }
 
 // N.B. If we ever add a new type, make sure you also modify 'bloomContainerClasses'.
-function createTypeSelectors(includeWidget: boolean) {
+function createTypeSelectors(includeWidget: boolean, includeCanvas: boolean) {
     const space = " ";
     const links = $("<div class='selector-links bloom-ui origami-ui'></div>");
-    const pictureLink = $(
-        "<a href='' data-i18n='EditTab.CustomPage.Picture'>Picture</a>"
+    const imageLink = $(
+        "<a href='' data-i18n='EditTab.CustomPage.Image'>Image</a>",
     );
-    pictureLink.click(makePictureFieldClickHandler);
+    imageLink.click(makeImageFieldClickHandler);
+    const canvasLink = $(
+        "<a href='' data-i18n='EditTab.CustomPage.Canvas'>Canvas</a>",
+    );
+    canvasLink.click(makeCanvasFieldClickHandler);
     const textLink = $(
-        "<a href='' data-i18n='EditTab.CustomPage.Text'>Text</a>"
+        "<a href='' data-i18n='EditTab.CustomPage.Text'>Text</a>",
     );
     textLink.click(makeTextFieldClickHandler);
     const videoLink = $(
-        "<a href='' data-i18n='EditTab.CustomPage.Video'>Video</a>"
+        "<a href='' data-i18n='EditTab.CustomPage.Video'>Video</a>",
     );
     videoLink.click(makeVideoFieldClickHandler);
     const orDiv = $("<div data-i18n='EditTab.CustomPage.Or'>or</div>");
     const htmlWidgetLink = $(
-        "<a href='' data-i18n='EditTab.CustomPage.HtmlWidget'>HTML Widget</a>"
+        "<a href='' data-i18n='EditTab.CustomPage.HtmlWidget'>HTML Widget</a>",
     );
     htmlWidgetLink.click(makeHtmlWidgetFieldClickHandler);
-    links
-        .append(pictureLink)
-        .append(",")
-        .append(space)
-        .append(videoLink)
-        .append(",")
-        .append(space);
+    links.append(imageLink).append(",").append(space);
+    if (includeCanvas) links.append(canvasLink).append(",");
+    links.append(space).append(videoLink).append(",").append(space);
     if (includeWidget) {
         links
             .append(textLink)
@@ -447,21 +461,18 @@ function createTypeSelectors(includeWidget: boolean) {
             .append(space)
             .append(htmlWidgetLink);
     } else {
-        links
-            .append(orDiv)
-            .append(space)
-            .append(textLink);
+        links.append(orDiv).append(space).append(textLink);
     }
     return $(
-        "<div class='container-selector-links bloom-ui origami-ui'></div>"
+        "<div class='container-selector-links bloom-ui origami-ui'></div>",
     ).append(links);
 }
 function createTextBoxIdentifier() {
     const textBoxId = $(
-        "<div class='textBox-identifier bloom-ui origami-ui' data-i18n='EditTab.CustomPage.TextBox'>Text Box</div>"
+        "<div class='textBox-identifier bloom-ui origami-ui' data-i18n='EditTab.CustomPage.TextBox'>Text Box</div>",
     );
     return $(
-        "<div class='container-textBox-id bloom-ui origami.ui'></div>"
+        "<div class='container-textBox-id bloom-ui origami.ui'></div>",
     ).append(textBoxId);
 }
 function getTypeSelectors() {
@@ -477,36 +488,43 @@ function makeTextFieldClickHandler(e) {
     //note, we're leaving it to some other part of the system, later, to add the needed .bloom-editable
     //   divs (and set the right classes on them) inside of this new .bloom-translationGroup.
     const translationGroup = $(
-        "<div class='bloom-translationGroup bloom-trailingElement'></div>"
+        "<div class='bloom-translationGroup bloom-trailingElement'></div>",
     );
     $(translationGroup).addClass("normal-style"); // replaces above to make new text boxes normal
     container.append(translationGroup).append(getTextBoxIdentifier());
-    $(this)
-        .closest(".selector-links")
-        .remove();
+    $(this).closest(".selector-links").remove();
     // hook up TextBoxProperties dialog to this new Text Box (via its origami overlay)
     const dialog = GetTextBoxPropertiesDialog();
     const overlays = container.find(".textBox-identifier");
-    overlays.each(function() {
+    overlays.each(function () {
         dialog.AttachToBox(this);
     });
 }
-function makePictureFieldClickHandler(e) {
-    e.preventDefault();
-    const container = $(this).closest(".split-pane-component-inner");
+function makeImageOrCanvasFieldClickHandler(
+    clickedElement: JQuery,
+    isCanvasClick: boolean,
+) {
+    const container = clickedElement.closest(".split-pane-component-inner");
     addUndoPoint();
     const bloomCanvas = $(
-        "<div class='bloom-canvas bloom-leadingElement'></div>"
+        `<div class='bloom-canvas bloom-leadingElement'${
+            isCanvasClick ? ` data-tool-id='${kCanvasToolId}'` : ""
+        }></div>`,
     );
-    const image = $(
-        "<img src='placeHolder.png' alt='Could not load the picture'/>"
-    );
+    const image = $("<img src='placeHolder.png'/>");
     bloomCanvas.append(image);
     SetupImage(image); // Must attach it first so event handler gets added to parent
     container.append(bloomCanvas);
-    $(this)
-        .closest(".selector-links")
-        .remove();
+    clickedElement.closest(".selector-links").remove();
+}
+function makeImageFieldClickHandler(e) {
+    e.preventDefault();
+    makeImageOrCanvasFieldClickHandler($(this), false);
+}
+
+function makeCanvasFieldClickHandler(e) {
+    e.preventDefault();
+    makeImageOrCanvasFieldClickHandler($(this), true);
 }
 
 function makeVideoFieldClickHandler(e) {
@@ -514,7 +532,7 @@ function makeVideoFieldClickHandler(e) {
     const container = $(this).closest(".split-pane-component-inner");
     addUndoPoint();
     const videoContainer = $(
-        "<div class='bloom-videoContainer bloom-leadingElement bloom-noVideoSelected'></div>"
+        "<div class='bloom-videoContainer bloom-leadingElement bloom-noVideoSelected'></div>",
     );
     container.append(videoContainer);
     // For the book to look right when simply opened in an editor without the help of our local server,
@@ -522,9 +540,7 @@ function makeVideoFieldClickHandler(e) {
     // everywhere, this one is only meant to be around when needed. This call asks the server to make
     // sure it is present in the book folder.
     post("edit/pageControls/requestVideoPlaceHolder");
-    $(this)
-        .closest(".selector-links")
-        .remove();
+    $(this).closest(".selector-links").remove();
 }
 
 function makeHtmlWidgetFieldClickHandler(e) {
@@ -532,7 +548,7 @@ function makeHtmlWidgetFieldClickHandler(e) {
     const container = $(this).closest(".split-pane-component-inner");
     addUndoPoint();
     const widgetContainer = $(
-        "<div class='bloom-widgetContainer bloom-leadingElement bloom-noWidgetSelected'></div>"
+        "<div class='bloom-widgetContainer bloom-leadingElement bloom-noWidgetSelected'></div>",
     );
     container.append(widgetContainer);
     // For the book to look right when simply opened in an editor without the help of our local server,
@@ -540,7 +556,5 @@ function makeHtmlWidgetFieldClickHandler(e) {
     // everywhere, this one is only meant to be around when needed. This call asks the server to make
     // sure it is present in the book folder.
     post("edit/pageControls/requestWidgetPlaceHolder");
-    $(this)
-        .closest(".selector-links")
-        .remove();
+    $(this).closest(".selector-links").remove();
 }

@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useEffect, useState } from "react";
@@ -22,14 +21,14 @@ export const DefaultBookshelfControl: React.FunctionComponent = () => {
         project, // not needed here, but we'll need it elsewhere.
         defaultBookshelfUrlKey,
         validBookshelves,
-        error
+        error,
     } = useGetEnterpriseBookshelves();
 
     useEffect(() => {
         setProjectBookshelfUrlKey(defaultBookshelfUrlKey);
     }, [defaultBookshelfUrlKey]);
 
-    const items = validBookshelves.map(x => (
+    const items = validBookshelves.map((x) => (
         <MenuItem key={x.value} value={x.value} title={x.tooltip}>
             {x.label}
         </MenuItem>
@@ -46,7 +45,7 @@ export const DefaultBookshelfControl: React.FunctionComponent = () => {
         undefined,
         undefined,
         undefined,
-        true // don't localize for now
+        true, // don't localize for now
     );
 
     const errorCaseDescription = useL10n(
@@ -55,7 +54,7 @@ export const DefaultBookshelfControl: React.FunctionComponent = () => {
         undefined,
         undefined,
         undefined,
-        true // don't localize for now
+        true, // don't localize for now
     );
 
     const defaultCaseDescription = useL10n(
@@ -64,7 +63,7 @@ export const DefaultBookshelfControl: React.FunctionComponent = () => {
         undefined,
         undefined,
         undefined,
-        true // don't localize for now
+        true, // don't localize for now
     );
 
     const commonDescriptionCss =
@@ -89,7 +88,7 @@ export const DefaultBookshelfControl: React.FunctionComponent = () => {
             borderRadius: 1,
             marginLeft: "-16px",
             "& ul": {
-                padding: 0
+                padding: 0,
             },
             "& li": {
                 padding: "1px !important",
@@ -100,9 +99,9 @@ export const DefaultBookshelfControl: React.FunctionComponent = () => {
                 // making the items way to big for a desktop (and apparently showing
                 // a different behavior in Gecko and FF, though actually the difference
                 // is window width).
-                minHeight: "auto"
-            }
-        }
+                minHeight: "auto",
+            },
+        },
     });
     const classes = useStyles(); // part of the magic of MaterialUI styles. Possibly could be inlined.
     return (
@@ -160,16 +159,16 @@ export const DefaultBookshelfControl: React.FunctionComponent = () => {
                             classes: { paper: classes.select },
                             anchorOrigin: {
                                 vertical: "bottom",
-                                horizontal: "left"
+                                horizontal: "left",
                             },
                             transformOrigin: {
                                 vertical: "top",
-                                horizontal: "left"
-                            }
+                                horizontal: "left",
+                            },
                         }}
                         // If we can't get the options from contentful, or there are none, disable.
                         disabled={disableControl}
-                        onChange={event => {
+                        onChange={(event) => {
                             const newShelf = event.target.value as string;
                             setProjectBookshelfUrlKey(newShelf);
                             postString("settings/bookShelfData", newShelf);

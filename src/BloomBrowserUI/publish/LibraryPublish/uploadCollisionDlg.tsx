@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import { Radio, Typography } from "@mui/material";
 import * as React from "react";
 import { useState } from "react";
@@ -9,12 +8,12 @@ import {
     DialogBottomButtons,
     DialogBottomLeftButtons,
     DialogMiddle,
-    DialogTitle
+    DialogTitle,
 } from "../../react_components/BloomDialog/BloomDialog";
 
 import {
     DialogCancelButton,
-    DialogReportButton
+    DialogReportButton,
 } from "../../react_components/BloomDialog/commonDialogComponents";
 import { BookInfoCard } from "../../react_components/bookInfoCard";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -25,7 +24,7 @@ import { lightTheme } from "../../bloomMaterialUITheme";
 import HelpLink from "../../react_components/helpLink";
 import {
     IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
+    useSetupBloomDialog,
 } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 import { default as RightIcon } from "@mui/icons-material/Forward";
@@ -73,22 +72,21 @@ export let showUploadCollisionDialog: () => void = () => {
     console.error("showUploadCollisionDialog is not set up yet.");
 };
 
-export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProps> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+export const UploadCollisionDlg: React.FunctionComponent<
+    IUploadCollisionDlgProps
+> = (props) => {
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
     showUploadCollisionDialog = showDialog;
 
     enum RadioState {
         Indeterminate,
         Same,
-        Different
+        Different,
     }
 
     const [buttonState, setButtonState] = useState<RadioState>(
-        RadioState.Indeterminate
+        RadioState.Indeterminate,
     );
 
     const [doChangeUploader, setDoChangeUploader] = useState(false);
@@ -103,26 +101,26 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
     const sameBook = useL10n(
         "Is this an update of your existing book?",
         "PublishTab.UploadCollisionDialog.SameBook",
-        "This is the dialog title"
+        "This is the dialog title",
     );
     const sameBookNotMine = useL10n(
         "Is this an update of an existing book?",
         "PublishTab.UploadCollisionDialog.SameBookNotMine",
-        "This is the dialog title when this user is not allowed to upload"
+        "This is the dialog title when this user is not allowed to upload",
     );
     const mainTitle = hasOverwritePermission ? sameBook : sameBookNotMine;
 
     const bloomLibraryHasOne = useL10n(
         "BloomLibrary.org already has a book with this ID.",
         "PublishTab.UploadCollisionDialog.HaveOne2",
-        "This is the dialog subtitle."
+        "This is the dialog subtitle.",
     );
 
     const bloomLibraryHasMany = useL10n(
         "BloomLibrary.org already has {0} books that have the same ID as this one.",
         "PublishTab.UploadCollisionDialog.HaveMany",
         "This is the dialog subtitle.",
-        props.count.toString()
+        props.count.toString(),
     );
 
     const subtitle =
@@ -131,7 +129,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
     const existingCardHeader = useL10n(
         "Already in Bloom Library",
         "PublishTab.UploadCollisionDialog.AlreadyIn",
-        "This is the header for the book that is in bloomlibrary.org already."
+        "This is the header for the book that is in bloomlibrary.org already.",
     );
 
     const uploadingCardHeader = useL10n("Uploading", "Common.Uploading");
@@ -139,7 +137,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
     const differentBooksCommentary = useL10n(
         "Bloom will fix the ID of your book and upload it as a new book. The old book on Bloom Library will stay the same.",
         "PublishTab.UploadCollisionDialog.Radio.DifferentBooks.Commentary2",
-        "This is explanatory commentary on a radio button."
+        "This is explanatory commentary on a radio button.",
     );
 
     const changeSubscriptionMessage = useL10n(
@@ -147,32 +145,32 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
         "PublishTab.UploadCollisionDialog.ChangeSubscription",
         "",
         props.oldSubscriptionDescriptor,
-        props.newSubscriptionDescriptor
+        props.newSubscriptionDescriptor,
     );
 
     const sameBookRadioLabel = useL10n(
         "Yes, I want to update this book",
         "PublishTab.UploadCollisionDialog.Radio.SameBook2",
-        "This is the label on a radio button."
+        "This is the label on a radio button.",
     );
 
     const sameBookCancelRadioLabel = useL10n(
         "Yes, these are the same book -- Cancel upload for now",
         "PublishTab.UploadCollisionDialog.Radio.CancelUpload",
-        "This is the label on a radio button."
+        "This is the label on a radio button.",
     );
 
     const differentBooksRadioLabel = useL10n(
         "No, these are different books",
         "PublishTab.UploadCollisionDialog.Radio.DifferentBooks",
-        "This is the label on a radio button."
+        "This is the label on a radio button.",
     );
 
     const changeTheUploader = useL10n(
         "Change the official uploader to {0}. (Bloom Library will hide part of your email address)",
         "PublishTab.UploadCollisionDialog.ChangeUploader",
         undefined,
-        props.userEmail
+        props.userEmail,
     );
 
     lightTheme.palette.text.secondary = kDarkerSecondaryTextColor;
@@ -185,7 +183,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
         radioLabel: string;
         ariaLabel: string;
         commentaryChildren: JSX.Element;
-    }> = props => (
+    }> = (props) => (
         <div
             css={css`
                 flex-direction: row;
@@ -199,7 +197,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                 onChange={() => setButtonState(props.buttonStateToMatch)}
                 name="radio-buttons"
                 inputProps={{
-                    "aria-label": props.ariaLabel
+                    "aria-label": props.ariaLabel,
                 }}
                 color="primary"
             />
@@ -295,7 +293,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
 
     const whatCausedThisStyles: React.CSSProperties = {
         fontSize: "smaller",
-        textDecoration: "underline"
+        textDecoration: "underline",
     };
 
     function cancel() {
@@ -406,7 +404,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                                             onClick={() => {
                                                 if (props.conflictIndex > 0)
                                                     props.setConflictIndex(
-                                                        props.conflictIndex - 1
+                                                        props.conflictIndex - 1,
                                                     );
                                             }}
                                         />
@@ -434,7 +432,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                                                     props.count - 1
                                                 )
                                                     props.setConflictIndex(
-                                                        props.conflictIndex + 1
+                                                        props.conflictIndex + 1,
                                                     );
                                             }}
                                         />
@@ -545,7 +543,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                                         // easy to actually take control of the radio button embedded in the
                                         // RadioWithLabelAndCommentary from here. So for now, the user must do both.)
                                         setDoChangeSubscription(
-                                            !doChangeSubscription
+                                            !doChangeSubscription,
                                         );
                                     }}
                                 ></BloomCheckbox>
@@ -562,7 +560,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                                         checked={doChangeUploader}
                                         onCheckChanged={() => {
                                             setDoChangeUploader(
-                                                !doChangeUploader
+                                                !doChangeUploader,
                                             );
                                         }}
                                     ></BloomCheckbox>
@@ -623,12 +621,11 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                         // reported the problem to the user, so just eat the error.
                         post(
                             `libraryPublish/${command}`,
-                            // eslint-disable-next-line @typescript-eslint/no-empty-function
                             () => {},
                             () => {
                                 // error indicates we could not change ID.
                                 props.onCancel?.();
-                            }
+                            },
                         );
                         closeDialog();
                     }}

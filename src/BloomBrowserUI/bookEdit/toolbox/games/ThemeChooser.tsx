@@ -5,7 +5,7 @@ import { ToolBox } from "../toolbox";
 import { getVariationsOnClass } from "../../../utils/getVariationsOnClass";
 import {
     kOptionPanelBackgroundColor,
-    toolboxMenuPopupTheme
+    toolboxMenuPopupTheme,
 } from "../../../bloomMaterialUITheme";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
@@ -28,7 +28,7 @@ const isMissingTheme = (themeName: string): boolean => {
 
 export const ThemeChooser: React.FunctionComponent<{
     pageGeneration: number; // to force re-render when the page changes
-}> = props => {
+}> = (props) => {
     // The set of possible themes, derived from stylesheet rules that start with a dot
     // followed by gameThemePrefix
     const [themes, setThemes] = useState<string[]>([]);
@@ -43,8 +43,15 @@ export const ThemeChooser: React.FunctionComponent<{
     function openSelect() {
         setIsSelectOpen(true);
         ToolBox.addWhenClosingToolTask(() => setIsSelectOpen(false));
+        window.addEventListener(
+            "blur",
+            () => {
+                setIsSelectOpen(false);
+            },
+            { once: true },
+        );
     }
-    const handleChooseTheme = event => {
+    const handleChooseTheme = (event) => {
         const newTheme = event.target.value;
         if (newTheme === currentTheme) {
             return;
@@ -79,7 +86,7 @@ export const ThemeChooser: React.FunctionComponent<{
         const pageThemeName =
             missingThemeName ||
             Array.from(page.classList)
-                .find(c => c.startsWith(gameThemePrefix))
+                .find((c) => c.startsWith(gameThemePrefix))
                 ?.substring(gameThemePrefix.length);
         if (
             currentTheme &&
@@ -101,7 +108,7 @@ export const ThemeChooser: React.FunctionComponent<{
         getVariationsOnClass(
             gameThemePrefix,
             page.ownerDocument,
-            stylesheetThemes => {
+            (stylesheetThemes) => {
                 // Ensure kDefaultTheme is always available
                 const availableThemes = stylesheetThemes.includes(kDefaultTheme)
                     ? stylesheetThemes
@@ -114,7 +121,7 @@ export const ThemeChooser: React.FunctionComponent<{
                     // Theme is missing - store it and fall back to kDefaultTheme
                     page.setAttribute(
                         kMissingThemeDataAttribute,
-                        pageThemeName
+                        pageThemeName,
                     );
                     page.classList.remove(`${gameThemePrefix}${pageThemeName}`);
                     page.classList.add(`${gameThemePrefix}${kDefaultTheme}`);
@@ -123,7 +130,7 @@ export const ThemeChooser: React.FunctionComponent<{
                     // Add the missing theme to the list for display
                     const themesWithMissing = [
                         ...availableThemes,
-                        pageThemeName
+                        pageThemeName,
                     ];
                     setThemes(themesWithMissing.sort());
                 } else {
@@ -131,15 +138,15 @@ export const ThemeChooser: React.FunctionComponent<{
                         // Theme was missing; now it isn't.
                         page.removeAttribute(kMissingThemeDataAttribute);
                         page.classList.remove(
-                            `${gameThemePrefix}${kDefaultTheme}`
+                            `${gameThemePrefix}${kDefaultTheme}`,
                         );
                         page.classList.add(
-                            `${gameThemePrefix}${pageThemeName}`
+                            `${gameThemePrefix}${pageThemeName}`,
                         );
                     }
                     setThemes(availableThemes.sort());
                 }
-            }
+            },
         );
 
         // We don't need to run again if currentTheme changes, since it can only change to something
@@ -176,10 +183,10 @@ export const ThemeChooser: React.FunctionComponent<{
                                 {
                                     name: "offset",
                                     options: {
-                                        offset: [0, -8]
-                                    }
-                                }
-                            ]
+                                        offset: [0, -8],
+                                    },
+                                },
+                            ],
                         },
                         // This fiddle, suggested by copilot, prevents the tooltip from
                         // being much wider than the text inside it. It might be a problem
@@ -189,9 +196,9 @@ export const ThemeChooser: React.FunctionComponent<{
                             sx: {
                                 maxWidth: "fit-content",
                                 width: "auto",
-                                whiteSpace: "nowrap"
-                            }
-                        }
+                                whiteSpace: "nowrap",
+                            },
+                        },
                     }}
                 />
             </div>
@@ -201,13 +208,13 @@ export const ThemeChooser: React.FunctionComponent<{
                 open={isSelectOpen}
                 onOpen={() => openSelect()}
                 onClose={() => setIsSelectOpen(false)}
-                onChange={event => {
+                onChange={(event) => {
                     handleChooseTheme(event);
                     setIsSelectOpen(false);
                 }}
                 inputProps={{
                     name: "style",
-                    id: "game-theme-dropdown"
+                    id: "game-theme-dropdown",
                 }}
                 css={css`
                     svg.MuiSvgIcon-root {
@@ -222,7 +229,7 @@ export const ThemeChooser: React.FunctionComponent<{
                 `}
                 size="small"
             >
-                {themes.map(theme => (
+                {themes.map((theme) => (
                     <MenuItem value={theme} key={theme} disabled={false}>
                         <Div l10nKey={`EditTab.Toolbox.Games.Themes.${theme}`}>
                             {isMissingTheme(theme)

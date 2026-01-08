@@ -1,5 +1,7 @@
+import { describe, it, expect } from "vitest";
 import { getTestRoot, removeTestRoot } from "../../utils/testHelper";
 import { CanvasElementManager } from "./CanvasElementManager";
+import jQuery from "jquery";
 
 // A (currently very incomplete) set of tests for CanvasElementManager.
 
@@ -13,7 +15,7 @@ describe("CanvasElementManager.getLabeledNumber", () => {
     it("extracts integer size from style", () => {
         const result = CanvasElementManager.getLabeledNumberInPx(
             "width",
-            "left: 224px; top: 79.6px; width: 66px; height: 30px;"
+            "left: 224px; top: 79.6px; width: 66px; height: 30px;",
         );
         expect(result).toBe(66);
     });
@@ -21,14 +23,14 @@ describe("CanvasElementManager.getLabeledNumber", () => {
     it("extracts float size from style", () => {
         const result = CanvasElementManager.getLabeledNumberInPx(
             "top",
-            "left: 224px; top: 79.6px; width: 66px; height: 30px;"
+            "left: 224px; top: 79.6px; width: 66px; height: 30px;",
         );
         expect(result).toBe(79.6);
     });
     it("extracts negative size from style", () => {
         const result = CanvasElementManager.getLabeledNumberInPx(
             "left",
-            "left: -10.4px; top: 79.6px; width: 66px; height: 30px;"
+            "left: -10.4px; top: 79.6px; width: 66px; height: 30px;",
         );
         expect(result).toBe(-10.4);
     });
@@ -48,7 +50,7 @@ describe("CanvasElementManager.adjustLabeledNumber", () => {
             2, // making stuff 2x larger
             7, // the old area being resized was 7px from the left
             13, // the new area is 13px from the left
-            20 // the object we're adjusting is 20px wide
+            20, // the object we're adjusting is 20px wide
         );
         // So, the point we're adjusting is the center, originally 40px from the container left
         // That's 33px from the left of the area being scaled, which becomes 66px
@@ -56,7 +58,7 @@ describe("CanvasElementManager.adjustLabeledNumber", () => {
         // which we add to get 79. The left is still 10px (half the width) less,
         // so we get 69
         expect(result).toBe(
-            "left: 69px; top: 79.6px; width: 66px; height: 30px;"
+            "left: 69px; top: 79.6px; width: 66px; height: 30px;",
         );
     });
 });

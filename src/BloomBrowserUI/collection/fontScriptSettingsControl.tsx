@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { get } from "../utils/bloomApi";
@@ -17,26 +16,26 @@ export const FontScriptSettingsControl: React.FunctionComponent = () => {
         IFontMetaData[] | undefined
     >(undefined);
     const [language1Name, setLanguage1Name] = useState<string | undefined>(
-        undefined
+        undefined,
     );
     const [language2Name, setLanguage2Name] = useState<string | undefined>(
-        undefined
+        undefined,
     );
     const [language3Name, setLanguage3Name] = useState<string | undefined>(
-        undefined
+        undefined,
     );
     const [language1Font, setLanguage1Font] = useState<string | undefined>(
-        undefined
+        undefined,
     );
     const [language2Font, setLanguage2Font] = useState<string | undefined>(
-        undefined
+        undefined,
     );
     const [language3Font, setLanguage3Font] = useState<string | undefined>(
-        undefined
+        undefined,
     );
 
     useEffect(() => {
-        get("settings/currentFontData", result => {
+        get("settings/currentFontData", (result) => {
             // fontData should be 2 or 3 sets of (language display name and current font name)
             const fontData = result.data;
             // Language 1 data
@@ -52,7 +51,7 @@ export const FontScriptSettingsControl: React.FunctionComponent = () => {
     }, []);
 
     useEffect(() => {
-        get("fonts/metadata", result => {
+        get("fonts/metadata", (result) => {
             const fontMetadata: IFontMetaData[] = result.data;
             setFontMetadata(fontMetadata);
         });

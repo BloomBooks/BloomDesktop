@@ -9,13 +9,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
-using Bloom.ImageProcessing;
 using Bloom.Api;
-using SIL.Reporting;
 using Bloom.Book;
+using Bloom.ImageProcessing;
 using Bloom.Properties;
-using SIL.IO;
 using Bloom.SafeXml;
+using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom
 {
@@ -77,7 +77,7 @@ namespace Bloom
             {
                 Solid,
                 Dashed,
-                None
+                None,
             }
 
             public Color BackgroundColor = Color.White;
@@ -86,10 +86,11 @@ namespace Bloom
 
             /// <summary>
             /// Use this when all thumbnails need to be the centered in the same size png.
-            /// Unfortunately as long as we're using the winform listview, we seem to need to make the icons
-            /// the same size otherwise the title-captions don't line up.
+            /// The default was originally 'true' when we were using a lot of WinForms lists.
+            /// Now the icon is mostly shown in HTML, and centering is easy, so we usually
+            /// don't want it.
             /// </summary>
-            public bool CenterImageUsingTransparentPadding = true;
+            public bool CenterImageUsingTransparentPadding = false;
 
             public int Width = 70;
             public int Height = DefaultHeight;

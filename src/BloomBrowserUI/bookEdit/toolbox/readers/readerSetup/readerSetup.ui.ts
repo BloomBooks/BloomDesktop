@@ -9,8 +9,9 @@ import {
     setPreviousMoreWords,
     getPreviousMoreWords,
     levelSettings,
-    spanForSettingWithText
+    spanForSettingWithText,
 } from "./readerSetup.io";
+import $ from "jquery";
 import { DataWord } from "../libSynphony/bloomSynphonyExtensions";
 import axios from "axios";
 import { get, post } from "../../../../utils/bloomApi";
@@ -33,10 +34,10 @@ function process_UI_Message(event: MessageEvent): void {
                 const files: string[] = s.split("\r");
                 const extensions: string[] = ["txt", "js", "json"]; // reviewSlog ReaderToolsModel.getReadableFileExtensions(); but do NOT want to import that here; it should only be in toolbox iframe
                 const needsTxtExtension: string = getInnerHtmlSafely(
-                    "needs_txt_extension"
+                    "needs_txt_extension",
                 );
                 const notSupported: string = getInnerHtmlSafely(
-                    "format_not_supported"
+                    "format_not_supported",
                 );
                 let foundNotSupported: boolean = false;
                 files.forEach((element, index, array) => {
@@ -50,9 +51,8 @@ function process_UI_Message(event: MessageEvent): void {
                             "</span>";
                         foundNotSupported = true;
                     } else {
-                        const ext:
-                            | string
-                            | undefined = filenameComponents.pop();
+                        const ext: string | undefined =
+                            filenameComponents.pop();
                         if (!ext || extensions.indexOf(ext) === -1) {
                             array[index] =
                                 element +
@@ -72,9 +72,8 @@ function process_UI_Message(event: MessageEvent): void {
             const fileList: string =
                 s || getInnerHtmlSafely("please-add-texts");
 
-            (<HTMLElement>(
-                document.getElementById("dls_word_lists")
-            )).innerHTML = fileList.replace(/\r/g, "<br>");
+            (<HTMLElement>document.getElementById("dls_word_lists")).innerHTML =
+                fileList.replace(/\r/g, "<br>");
             return;
         }
 
@@ -163,9 +162,9 @@ function getInnerHtmlSafely(elementName: string): string {
  */
 export function displayLetters(): void {
     let letters: string[] = cleanSpaceDelimitedList(
-        (<HTMLInputElement>document.getElementById("dls_letters")).value.trim()
+        (<HTMLInputElement>document.getElementById("dls_letters")).value.trim(),
     ).split(" ");
-    letters = letters.filter(n => {
+    letters = letters.filter((n) => {
         return n !== "";
     });
 
@@ -197,12 +196,12 @@ export function displayLetters(): void {
     for (let i = 0; i < letters.length; i++) {
         div.append(
             $(
-                `<div class="lang1InATool book-font unselected-letter rs-letters rs-letters-${suffix}">${letters[i]}</div>`
-            )
+                `<div class="lang1InATool book-font unselected-letter rs-letters rs-letters-${suffix}">${letters[i]}</div>`,
+            ),
         );
     }
 
-    $("div.rs-letters").onSafe("click", function() {
+    $("div.rs-letters").onSafe("click", function () {
         selectLetter(this);
     });
 }
@@ -225,16 +224,14 @@ export function selectStage(tr: HTMLTableRowElement): void {
     if (tr.classList.contains("selected")) return;
 
     const currentStage = (<HTMLTableCellElement>tr.cells[0]).innerHTML;
-    (<HTMLElement>(
-        document.getElementById("setup-stage-number")
-    )).innerHTML = currentStage;
-    (<HTMLElement>(
-        document.getElementById("setup-remove-stage")
-    )).innerHTML = theOneLocalizationManager.getText(
-        "ReaderSetup.RemoveStage",
-        "Remove Stage {0}",
-        currentStage
-    );
+    (<HTMLElement>document.getElementById("setup-stage-number")).innerHTML =
+        currentStage;
+    (<HTMLElement>document.getElementById("setup-remove-stage")).innerHTML =
+        theOneLocalizationManager.getText(
+            "ReaderSetup.RemoveStage",
+            "Remove Stage {0}",
+            currentStage,
+        );
     (<HTMLInputElement>(
         document.getElementById("setup-stage-sight-words")
     )).value = (<HTMLTableCellElement>tr.cells[2]).innerHTML;
@@ -254,33 +251,33 @@ export function selectStage(tr: HTMLTableRowElement): void {
 }
 
 function requestWordsForSelectedStage(): void {
-    const tr = <HTMLTableRowElement>$("#stages-table")
-        .find("tbody tr.selected")
-        .get(0);
+    const tr = <HTMLTableRowElement>(
+        $("#stages-table").find("tbody tr.selected").get(0)
+    );
 
     desiredGPCs = (<HTMLTableCellElement>tr.cells[1]).innerHTML.split(" ");
     previousGPCs = $.makeArray(
         $(tr)
             .prevAll()
-            .map(function() {
+            .map(function () {
                 return (<HTMLTableCellElement>this.cells[1]).innerHTML.split(
-                    " "
+                    " ",
                 );
-            })
+            }),
     );
 
     const knownGPCS = previousGPCs.join(" ") + " " + desiredGPCs.join(" ");
     currentSightWords = (<HTMLTableCellElement>tr.cells[2]).innerHTML.split(
-        " "
+        " ",
     );
     sightWords = $.makeArray(
         $(tr)
             .prevAll()
-            .map(function() {
+            .map(function () {
                 return (<HTMLTableCellElement>this.cells[2]).innerHTML.split(
-                    " "
+                    " ",
                 );
-            })
+            }),
     );
 
     sightWords = _.union(sightWords, currentSightWords);
@@ -298,7 +295,7 @@ function requestWordsForSelectedStage(): void {
     if (useSampleWords)
         win.postMessage(
             "Words\n" + (<HTMLTableCellElement>tr.cells[0]).innerHTML,
-            "*"
+            "*",
         );
     else win.postMessage("Words\n" + knownGPCS, "*");
 }
@@ -315,17 +312,13 @@ function selectLetter(div: HTMLDivElement): void {
 
     // update the css classes
     if (div.classList.contains("unselected-letter"))
-        $(div)
-            .removeClass("unselected-letter")
-            .addClass("current-letter");
+        $(div).removeClass("unselected-letter").addClass("current-letter");
     else if (div.classList.contains("current-letter"))
-        $(div)
-            .removeClass("current-letter")
-            .addClass("unselected-letter");
+        $(div).removeClass("current-letter").addClass("unselected-letter");
     else return;
 
     // update the stages table
-    const letters = $(".current-letter").map(function() {
+    const letters = $(".current-letter").map(function () {
         return this.innerHTML;
     });
     tr.find("td:nth-child(2)").html($.makeArray(letters).join(" "));
@@ -356,11 +349,11 @@ export function selectLetters(tr: HTMLTableRowElement) {
     stage_letters = $.makeArray(
         $(tr)
             .prevAll()
-            .map(function() {
+            .map(function () {
                 return (<HTMLTableCellElement>this.cells[1]).innerHTML.split(
-                    " "
+                    " ",
                 );
-            })
+            }),
     );
     const previous = letters.filter((index, element) => {
         return stage_letters.indexOf((<HTMLElement>element).innerHTML) > -1;
@@ -383,7 +376,7 @@ function setLevelLabel(level: string) {
     let innerHtml = labelElt.innerHTML;
     innerHtml = innerHtml.replace(
         /\{0\}|<span[^>]*>\d*<\/span>/,
-        `<span class="rs-subheading">${level}</span>`
+        `<span class="rs-subheading">${level}</span>`,
     );
     labelElt.innerHTML = innerHtml;
 }
@@ -397,32 +390,29 @@ export function selectLevel(tr: HTMLTableRowElement) {
 
     const currentLevel = getCellInnerHTML(tr, 0);
     setLevelLabel(currentLevel);
-    (<HTMLElement>(
-        document.getElementById("setup-remove-level")
-    )).innerHTML = theOneLocalizationManager.getText(
-        "ReaderSetup.RemoveLevel",
-        "Remove Level {0}",
-        currentLevel
-    );
+    (<HTMLElement>document.getElementById("setup-remove-level")).innerHTML =
+        theOneLocalizationManager.getText(
+            "ReaderSetup.RemoveLevel",
+            "Remove Level {0}",
+            currentLevel,
+        );
 
     $("#levels-table")
         .find("tbody tr.selected")
         .removeClass("selected")
         .addClass("linked");
-    $(tr)
-        .removeClass("linked")
-        .addClass("selected");
+    $(tr).removeClass("linked").addClass("selected");
 
     // check boxes and text boxes
     for (let i = 0; i < levelSettings.length; i++) {
         setLevelCheckBoxValue(
             levelSettings[i].cellClass,
-            getSpanContent(tr, levelSettings[i].cellClass)
+            getSpanContent(tr, levelSettings[i].cellClass),
         );
         if (levelSettings[i].subcell) {
             setLevelCheckBoxValue(
                 levelSettings[i].subcell!.cellClass,
-                getSpanContent(tr, levelSettings[i].subcell!.cellClass)
+                getSpanContent(tr, levelSettings[i].subcell!.cellClass),
             );
         }
     }
@@ -444,9 +434,12 @@ export function selectLevel(tr: HTMLTableRowElement) {
 
 // prevent pasting anything but plain text into the contenteditable children of the argument
 export function forcePlainTextPaste(parent: ParentNode): void {
-    [].forEach.call(parent.querySelectorAll('[contenteditable="true"]'), el => {
-        addForcePlainTextPasteHandler(el);
-    });
+    [].forEach.call(
+        parent.querySelectorAll('[contenteditable="true"]'),
+        (el) => {
+            addForcePlainTextPasteHandler(el);
+        },
+    );
 }
 
 function addForcePlainTextPasteHandler(element: HTMLElement) {
@@ -471,7 +464,7 @@ function getSpanContent(tr: HTMLTableRowElement, childClass: string): string {
     const child = tr.getElementsByClassName(childClass)[0];
     if (!child) {
         throw new Error(
-            "element with class " + childClass + " was unexpectedly not found"
+            "element with class " + childClass + " was unexpectedly not found",
         );
     }
     return child.textContent || "";
@@ -518,9 +511,8 @@ function displayAllowedWordsForSelectedStage(wordsStr: string): void {
     $.divsToColumnsBasedOnLongestWord("word", longestWord);
 
     // display the count
-    (<HTMLElement>(
-        document.getElementById("setup-words-count")
-    )).innerHTML = words.length.toString();
+    (<HTMLElement>document.getElementById("setup-words-count")).innerHTML =
+        words.length.toString();
 }
 
 function displayWordsForSelectedStage(wordsStr: string): void {
@@ -553,7 +545,7 @@ function displayWordsForSelectedStage(wordsStr: string): void {
     });
 
     // sort the list
-    words = _.sortBy(words, w => {
+    words = _.sortBy(words, (w) => {
         return w.Name;
     });
 
@@ -579,9 +571,8 @@ function displayWordsForSelectedStage(wordsStr: string): void {
     $.divsToColumnsBasedOnLongestWord("word", longestWord);
 
     // display the count
-    (<HTMLElement>(
-        document.getElementById("setup-words-count")
-    )).innerHTML = words.length.toString();
+    (<HTMLElement>document.getElementById("setup-words-count")).innerHTML =
+        words.length.toString();
 }
 
 function addNewStage(): void {
@@ -589,11 +580,11 @@ function addNewStage(): void {
     tbody.append(
         '<tr class="linked"><td>' +
             (tbody.children().length + 1) +
-            '</td><td class="book-font"></td><td class="book-font"></td><td class="book-font"></td></tr>'
+            '</td><td class="book-font"></td><td class="book-font"></td><td class="book-font"></td></tr>',
     );
 
     // click event for stage rows
-    tbody.find("tr:last").onSafe("click", function() {
+    tbody.find("tr:last").onSafe("click", function () {
         selectStage(this);
         displayLetters();
         selectLetters(this);
@@ -610,22 +601,22 @@ function addNewLevel(): void {
             (tbody.children().length + 1) +
             "</td>" +
             levelSettings
-                .map(s => {
+                .map((s) => {
                     const subcell = s.subcell
                         ? spanForSettingWithText(s.subcell, "-", true)
                         : "";
                     return `<td>${spanForSettingWithText(
                         s,
                         "-",
-                        false
+                        false,
                     )}${subcell}</td>`;
                 })
                 .join("") +
-            '<td style="display: none"></td></tr>'
+            '<td style="display: none"></td></tr>',
     );
 
     // click event for stage rows
-    tbody.find("tr:last").onSafe("click", function() {
+    tbody.find("tr:last").onSafe("click", function () {
         selectLevel(this);
     });
 
@@ -642,7 +633,7 @@ function tabBeforeActivate(ui): void {
         const allLetters: string[] = cleanSpaceDelimitedList(
             (<HTMLInputElement>(
                 document.getElementById("dls_letters")
-            )).value.trim()
+            )).value.trim(),
         ).split(" ");
         const tbody: JQuery = $("#stages-table").find("tbody");
 
@@ -651,10 +642,10 @@ function tabBeforeActivate(ui): void {
 
         // update letters in stages
         const rows: JQuery = tbody.find("tr");
-        rows.each(function() {
+        rows.each(function () {
             // get the letters for this stage
             let letters = (<HTMLTableCellElement>this.cells[1]).innerHTML.split(
-                " "
+                " ",
             );
 
             // make sure each letter for this stage is all in the allLetters list
@@ -698,7 +689,7 @@ function handleThingsToRemember(jqueryEvent: JQueryEventObject): void {
         case 13: {
             // carriage return - add new li
             const x = $('<li contenteditable="true"></li>').insertAfter(
-                jqueryEvent.target
+                jqueryEvent.target,
             );
             jqueryEvent.preventDefault();
             addForcePlainTextPasteHandler(x[0]);
@@ -748,9 +739,7 @@ function handleThingsToRemember(jqueryEvent: JQueryEventObject): void {
  */
 function updateSightWords(ta: HTMLInputElement): void {
     const words: string = cleanSpaceDelimitedList(ta.value);
-    $("#stages-table")
-        .find("tbody tr.selected td:nth-child(3)")
-        .html(words);
+    $("#stages-table").find("tbody tr.selected td:nth-child(3)").html(words);
 }
 
 function removeStage(): void {
@@ -758,18 +747,10 @@ function removeStage(): void {
 
     // remove the current stage
     const current_row: JQuery = tbody.find("tr.selected");
-    const current_stage: number = parseInt(
-        current_row
-            .find("td")
-            .eq(0)
-            .html()
-    );
+    const current_stage: number = parseInt(current_row.find("td").eq(0).html());
 
     // remember for the next step
-    const allowedWordsFile = current_row
-        .find("td")
-        .eq(3)
-        .html();
+    const allowedWordsFile = current_row.find("td").eq(3).html();
 
     current_row.remove();
 
@@ -807,10 +788,9 @@ function resetStageDetail(): void {
 function renumberRows(rows: JQuery): void {
     let rowNum = 1;
 
-    $.each(rows, function() {
-        (<HTMLTableCellElement>(
-            (<HTMLTableRowElement>this).cells[0]
-        )).innerHTML = (rowNum++).toString();
+    $.each(rows, function () {
+        (<HTMLTableCellElement>(<HTMLTableRowElement>this).cells[0]).innerHTML =
+            (rowNum++).toString();
     });
 }
 
@@ -819,12 +799,7 @@ function removeLevel(): void {
 
     // remove the current level
     const current_row: JQuery = tbody.find("tr.selected");
-    const current_stage: number = parseInt(
-        current_row
-            .find("td")
-            .eq(0)
-            .html()
-    );
+    const current_stage: number = parseInt(current_row.find("td").eq(0).html());
     current_row.remove();
 
     const rows = tbody.find("tr");
@@ -868,7 +843,7 @@ function storeThingsToRemember(): void {
         .split("</li>");
 
     // remove blank lines
-    vals = vals.filter(e => {
+    vals = vals.filter((e) => {
         const x = e.trim();
         return x.length > 0 && x !== "&nbsp;";
     });
@@ -888,24 +863,21 @@ function updateNumbers(tableId: string): void {
 
     if (tableId === "levels-table") {
         setLevelLabel(currentStage);
-        (<HTMLElement>(
-            document.getElementById("setup-remove-level")
-        )).innerHTML = theOneLocalizationManager.getText(
-            "ReaderSetup.RemoveLevel",
-            "Remove Level {0}",
-            currentStage
-        );
+        (<HTMLElement>document.getElementById("setup-remove-level")).innerHTML =
+            theOneLocalizationManager.getText(
+                "ReaderSetup.RemoveLevel",
+                "Remove Level {0}",
+                currentStage,
+            );
     } else {
-        (<HTMLElement>(
-            document.getElementById("setup-stage-number")
-        )).innerHTML = currentStage;
-        (<HTMLElement>(
-            document.getElementById("setup-remove-stage")
-        )).innerHTML = theOneLocalizationManager.getText(
-            "ReaderSetup.RemoveStage",
-            "Remove Stage {0}",
-            currentStage
-        );
+        (<HTMLElement>document.getElementById("setup-stage-number")).innerHTML =
+            currentStage;
+        (<HTMLElement>document.getElementById("setup-remove-stage")).innerHTML =
+            theOneLocalizationManager.getText(
+                "ReaderSetup.RemoveStage",
+                "Remove Stage {0}",
+                currentStage,
+            );
     }
 }
 
@@ -947,7 +919,7 @@ function attachEventHandlers(): void {
             return false;
         });
 
-        $("#setup-stage-sight-words").onSafe("keyup", function() {
+        $("#setup-stage-sight-words").onSafe("keyup", function () {
             updateSightWords(this);
             requestWordsForSelectedStage();
         });
@@ -972,7 +944,7 @@ function attachEventHandlers(): void {
         toRemember.onSafe("keyup", storeThingsToRemember);
 
         const levelDetail = $("#level-detail");
-        levelDetail.find(".level-checkbox").onSafe("change", function() {
+        levelDetail.find(".level-checkbox").onSafe("change", function () {
             const mainTableSpanClass = this.id.replace(/^use-/, "");
             const txtBox: HTMLInputElement = <HTMLInputElement>(
                 document.getElementById("max-" + mainTableSpanClass)
@@ -981,11 +953,11 @@ function attachEventHandlers(): void {
 
             updateMainTableWithValue(
                 mainTableSpanClass,
-                this.checked ? txtBox.value : "-"
+                this.checked ? txtBox.value : "-",
             );
         });
 
-        levelDetail.find(".level-textbox").onSafe("keyup", function() {
+        levelDetail.find(".level-textbox").onSafe("keyup", function () {
             // By design, the id of the .level-textbox element (in the detail pane) is
             // always "max-" appended to the class used to mark the corresponding elements
             // (one per row, so we can't use ID there) in the main table.
@@ -998,14 +970,12 @@ function attachEventHandlers(): void {
         });
 
         $("#setup-choose-allowed-words-file").onSafe("click", () => {
-            get("readers/ui/chooseAllowedWordsListFile", result => {
+            get("readers/ui/chooseAllowedWordsListFile", (result) => {
                 const fileName = result.data;
                 if (fileName) setAllowedWordsFile(fileName);
 
                 // hide stale controls
-                $("#setup-stage-matching-words")
-                    .find("div")
-                    .hide();
+                $("#setup-stage-matching-words").find("div").hide();
             });
             return false;
         });
@@ -1014,25 +984,21 @@ function attachEventHandlers(): void {
             setAllowedWordsFile("");
 
             // hide stale controls
-            $("#setup-stage-matching-words")
-                .find("div")
-                .hide();
+            $("#setup-stage-matching-words").find("div").hide();
 
             return false;
         });
 
         const allowedDiv = $("#allowed-words-file-div");
-        allowedDiv.onSafe("mouseenter", function() {
+        allowedDiv.onSafe("mouseenter", function () {
             const title = getInnerHtmlSafely("remove_word_list");
             const anchor = $(this).find("a");
             anchor.attr("title", title);
             anchor.show();
         });
 
-        allowedDiv.onSafe("mouseleave", function() {
-            $(this)
-                .find("a")
-                .hide();
+        allowedDiv.onSafe("mouseleave", function () {
+            $(this).find("a").hide();
         });
     }
 }
@@ -1066,7 +1032,7 @@ function updateMainTableWithValue(mainTableSpanClass: string, newVal: string) {
 function getMainTableSpan(spanClassName: string): HTMLSpanElement {
     const levelsTable = document.getElementById("levels-table")!;
     return levelsTable.querySelector(
-        `tbody tr.selected td span.${spanClassName}`
+        `tbody tr.selected td span.${spanClassName}`,
     ) as HTMLSpanElement;
 }
 
@@ -1088,9 +1054,7 @@ function setAllowedWordsFile(fileName: string): void {
         fileName = ""; // to be sure it isn't undefined
     }
 
-    $("#stages-table")
-        .find("tbody tr.selected td:nth-child(4)")
-        .html(fileName);
+    $("#stages-table").find("tbody tr.selected td:nth-child(4)").html(fileName);
 
     // remove file if no longer used
     if (currentFile) {
@@ -1109,7 +1073,7 @@ function checkAndDeleteAllowedWordsFile(fileName: string): void {
         const row: HTMLTableRowElement = <HTMLTableRowElement>stages[i];
 
         // if this file name is still in use, return now
-        if ((<HTMLTableCellElement>row.cells[3]).innerHTML == fileName) {
+        if ((<HTMLTableCellElement>row.cells[3]).innerHTML === fileName) {
             return;
         }
     }
@@ -1118,7 +1082,7 @@ function checkAndDeleteAllowedWordsFile(fileName: string): void {
     // Using axios directly because delete doesn't return a promise and doesn't need the bloomApi
     // treatment.
     axios.delete("/bloom/api/readers/io/allowedWordsList", {
-        params: { fileName: fileName }
+        params: { fileName: fileName },
     });
 }
 
@@ -1154,7 +1118,7 @@ export function enableSampleWords() {
 
 function setElementDisplay(
     elementName: string,
-    conditionForNone: boolean
+    conditionForNone: boolean,
 ): void {
     const element = document.getElementById(elementName);
     if (!element) return;
@@ -1164,7 +1128,7 @@ function setElementDisplay(
 function setWordContainerHeight() {
     // set height of word list
     const div: JQuery = $("#setup-stage-matching-words").find(
-        "div:first-child"
+        "div:first-child",
     );
     const ht = $("setup-words-count").height();
     div.css("height", "calc(100% - " + ht + "px)");
@@ -1196,16 +1160,12 @@ export function processMarkdown(e: HTMLElement) {
  * Called after localized strings are loaded.
  */
 function finishInitializing() {
-    document.querySelectorAll("[data-i18n]").forEach(matchingElem => {
+    document.querySelectorAll("[data-i18n]").forEach((matchingElem) => {
         processMarkdown(matchingElem as HTMLElement);
     });
 
-    $("#stages-table")
-        .find("tbody")
-        .sortable({ stop: updateStageNumbers });
-    $("#levels-table")
-        .find("tbody")
-        .sortable({ stop: updateLevelNumbers });
+    $("#stages-table").find("tbody").sortable({ stop: updateStageNumbers });
+    $("#levels-table").find("tbody").sortable({ stop: updateLevelNumbers });
     const window = toolboxWindow();
     if (window) {
         window.postMessage("Texts", "*");
@@ -1228,13 +1188,11 @@ import { getToolboxBundleExports } from "../../../js/bloomFrames";
 
 $(document).ready(() => {
     attachEventHandlers();
-    $("body")
-        .find("*[data-i18n]")
-        .localize(finishInitializing);
+    $("body").find("*[data-i18n]").localize(finishInitializing);
     //This should always be found in real life, but in unit tests it may not exist.
     getToolboxBundleExports()?.addWordListChangedListener(
         "wordListChanged.ReaderSetup",
-        wordListChangedCallback
+        wordListChangedCallback,
     );
     // found solution to longpress access here:
     // http://stackoverflow.com/questions/3032770/execute-javascript-function-in-a-another-iframe-when-parent-is-from-different-do

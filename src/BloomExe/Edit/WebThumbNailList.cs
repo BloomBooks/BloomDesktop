@@ -4,11 +4,11 @@ using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Drawing;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using System.Linq;
-using Bloom.Book;
 using Bloom.Api;
+using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.Utils;
 using Bloom.web;
@@ -250,8 +250,8 @@ namespace Bloom.Edit
             _usingTwoColumns = RoomForTwoColumns;
             var sizeClass =
                 result.Count > 1
-                    ? Book.Layout
-                        .FromPage(result[1].GetDivNodeForThisPage(), Book.Layout.A5Portrait)
+                    ? Book
+                        .Layout.FromPage(result[1].GetDivNodeForThisPage(), Book.Layout.A5Portrait)
                         .SizeAndOrientation.ClassName
                     : "A5Portrait";
 

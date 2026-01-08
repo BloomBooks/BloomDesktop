@@ -1,29 +1,29 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Text;
-using System.Linq;
-using System.IO;
-using System.Xml;
-using Bloom.Collection;
-using Newtonsoft.Json;
-using SIL.Xml;
-using SIL.IO;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using System.Xml;
 using Amazon.Runtime.Internal.Util;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Properties;
+using Bloom.SafeXml;
 using Bloom.TeamCollection;
+using Bloom.ToPalaso;
 using Bloom.web.controllers;
 using Bloom.Workspace;
 using L10NSharp;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Windows.Forms.Miscellaneous;
-using Bloom.ToPalaso;
-using Bloom.SafeXml;
+using SIL.Xml;
 
 namespace Bloom.Api
 {
@@ -45,7 +45,7 @@ namespace Bloom.Api
             ' ',
             '\t',
             '\r',
-            '\n'
+            '\n',
         };
 
         private FileSystemWatcher _sampleTextsWatcher;
@@ -61,7 +61,7 @@ namespace Bloom.Api
         private enum WordFileType
         {
             SampleFile,
-            AllowedWordsFile
+            AllowedWordsFile,
         }
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -436,8 +436,10 @@ namespace Bloom.Api
         {
             var pageTexts = new List<string>();
 
-            var pages = CurrentBook.RawDom
-                .SafeSelectNodes("//div[" + GenerateXPathClassStringSearch("bloom-page") + "]")
+            var pages = CurrentBook
+                .RawDom.SafeSelectNodes(
+                    "//div[" + GenerateXPathClassStringSearch("bloom-page") + "]"
+                )
                 .Cast<SafeXmlElement>()
                 .Where(p =>
                 {
@@ -832,10 +834,12 @@ namespace Bloom.Api
                 "Text files"
             );
             string srcFile = null;
-            using (var dlg = new MiscUI.BloomOpenFileDialog
-            {
-                Filter = String.Format("{0} (*.txt;*.csv;*.tab)|*.txt;*.csv;*.tab", textFiles)
-            })
+            using (
+                var dlg = new MiscUI.BloomOpenFileDialog
+                {
+                    Filter = String.Format("{0} (*.txt;*.csv;*.tab)|*.txt;*.csv;*.tab", textFiles),
+                }
+            )
             {
                 var result = dlg.ShowDialog();
                 if (result == DialogResult.OK)

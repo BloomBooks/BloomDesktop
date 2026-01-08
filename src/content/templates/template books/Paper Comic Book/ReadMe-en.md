@@ -6,7 +6,7 @@ it should probably be changed in both readmes.
 
 # Paper Comic Book {i18n="comic.template.paper.title"}
 
-Note: The Overlay Tool requires that you have a valid <a href="" onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">Bloom subscription</a>. However, you can localize a shellbook that contains overlay elements into your own language without a Bloom subscription. {i18n="comic.template.subscription"}
+Note: The Canvas Tool requires that you have a valid <a href="" onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">Bloom subscription</a>. However, you can localize a shellbook that contains canvas elements into your own language without a Bloom subscription. {i18n="comic.template.subscription"}
 
 Use this template as a starting point for comics designed for print. The size will be set to "US Comic Portrait," which is 6.625 in x 10.25 in (16.826 cm X 26.04 cm). {i18n="comic.template.paper.use"}
 
@@ -22,7 +22,7 @@ This template tells Bloom that this book is a candidate for "[full bleed](https:
 - Comic books can show only one language on an image at the same time.
 - If a comic book contains multiple languages (as sources), users can switch between languages in Bloom Reader, the web, etc.
 
-## Tips on using the Overlay Toolbox
+## Tips on using the Canvas Toolbox
 
 - To move a bubble, click on it once, then drag anywhere in the bubble.
 - To edit the text in a bubble, click on it once a second time.

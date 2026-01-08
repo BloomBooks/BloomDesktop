@@ -109,7 +109,7 @@ namespace Bloom.Publish.BloomPub.wifi
                 BookVersion = Book.Book.MakeVersionCode(
                     RobustFile.ReadAllText(pathHtmlFile),
                     pathHtmlFile
-                )
+                ),
             };
 
             PublishToBloomPubApi.CheckBookLayout(book, _progress);

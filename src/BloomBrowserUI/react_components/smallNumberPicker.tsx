@@ -12,12 +12,12 @@ export interface INumberChooserProps {
 }
 
 export const SmallNumberPicker: React.FunctionComponent<INumberChooserProps> = (
-    props: INumberChooserProps
+    props: INumberChooserProps,
 ) => {
     const initialValue = props.minLimit === undefined ? 1 : props.minLimit;
     const [chosenNumber, setChosenNumber] = useState(initialValue);
 
-    const handleNumberChange = (event: any) => {
+    const handleNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const newString = event.target.value;
         const newNum = parseInt(newString);
         if (

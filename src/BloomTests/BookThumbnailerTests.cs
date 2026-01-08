@@ -108,7 +108,7 @@ namespace BloomTests
                 (0, thumbnailSize - 1),
                 (thumbnailSize - 1, 0),
                 (thumbnailSize - 1, thumbnailSize - 1),
-                (thumbnailCenter, thumbnailCenter)
+                (thumbnailCenter, thumbnailCenter),
             };
 
             var transparentPoints = Enumerable.Empty<(int, int)>();
@@ -139,7 +139,7 @@ namespace BloomTests
                 (thumbnailSize - 1, thumbnailCenter), // Right
                 (thumbnailCenter, 50), // Top
                 (thumbnailCenter, 249), // Bottom
-                (thumbnailCenter, thumbnailCenter) // Center
+                (thumbnailCenter, thumbnailCenter), // Center
             };
 
             var transparentPoints = new List<(int, int)>()
@@ -174,7 +174,7 @@ namespace BloomTests
                 (249, thumbnailCenter), // Right
                 (thumbnailCenter, 0), // Top
                 (thumbnailCenter, thumbnailSize - 1), // Bottom
-                (thumbnailCenter, thumbnailCenter) // Center
+                (thumbnailCenter, thumbnailCenter), // Center
             };
 
             var transparentPoints = new List<(int, int)>()
@@ -212,7 +212,7 @@ namespace BloomTests
                 // Test for top
                 (thumbnailCenter, 100),
                 // Test for bottom
-                (thumbnailCenter, 199)
+                (thumbnailCenter, 199),
             };
 
             var transparentPoints = new List<(int, int)>()
@@ -224,7 +224,7 @@ namespace BloomTests
                 // Test for top
                 (thumbnailCenter, 100 - 1),
                 // Test for bottom
-                (thumbnailCenter, 199 + 1)
+                (thumbnailCenter, 199 + 1),
             };
 
             // Run the test helper
@@ -260,7 +260,7 @@ namespace BloomTests
                 // Test for top
                 (thumbnailSize - 1, 0),
                 // Test for bottom
-                (thumbnailSize - 1, thumbnailSize - 1)
+                (thumbnailSize - 1, thumbnailSize - 1),
             };
 
             // Run the test helper

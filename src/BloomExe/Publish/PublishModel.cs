@@ -1,3 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
@@ -15,13 +22,6 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Windows.Forms;
 
 namespace Bloom.Publish
 {
@@ -48,7 +48,7 @@ namespace Bloom.Publish
             AllPagesNoBooklet,
             BookletCover,
             BookletPages, //include front and back matter that isn't coverstock
-            InnerContent //excludes all front and back matter
+            InnerContent, //excludes all front and back matter
         }
 
         public enum BookletLayoutMethod
@@ -56,7 +56,7 @@ namespace Bloom.Publish
             NoBooklet,
             SideFold,
             CutAndStack,
-            Calendar
+            Calendar,
         }
 
         private Book.Book _currentlyLoadedBook;
@@ -313,11 +313,11 @@ namespace Bloom.Publish
                     BookletLayoutMethod layoutMethod = GetBookletLayoutMethod();
 
                     // Check memory for the benefit of developers.  The user won't see anything.
-                    Bloom.Utils.MemoryManagement.CheckMemory(
-                        true,
-                        "about to create PDF file",
-                        false
-                    );
+                    //Bloom.Utils.MemoryManagement.CheckMemory(
+                    //    true,
+                    //    "about to create PDF file",
+                    //    false
+                    //);
                     _pdfMaker.MakePdf(
                         new PdfMakingSpecs()
                         {
@@ -336,18 +336,18 @@ namespace Bloom.Publish
                             Author = _currentlyLoadedBook.BookInfo.MetaData.Author,
                             Title = _currentlyLoadedBook.BookInfo.MetaData.Title,
                             Summary = _currentlyLoadedBook.BookInfo.MetaData.Summary,
-                            Keywords = GetKeywords(_currentlyLoadedBook.BookInfo.MetaData)
+                            Keywords = GetKeywords(_currentlyLoadedBook.BookInfo.MetaData),
                         },
                         worker,
                         doWorkEventArgs,
                         owner
                     );
                     // Warn the user if we're starting to use too much memory.
-                    Bloom.Utils.MemoryManagement.CheckMemory(
-                        false,
-                        "finished creating PDF file",
-                        true
-                    );
+                    //Bloom.Utils.MemoryManagement.CheckMemory(
+                    //    false,
+                    //    "finished creating PDF file",
+                    //    true
+                    //);
                 }
             }
             catch (Exception e)
@@ -422,10 +422,6 @@ namespace Bloom.Publish
             dom.RawDom.AddClassToBody("pdfPublishMode");
 
             PageLayout.UpdatePageSplitMode(dom.RawDom);
-            if (_currentlyLoadedBook.FullBleed && !GetPrintingWithFullBleed())
-            {
-                ClipBookToRemoveFullBleed(dom);
-            }
 
             XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom.RawDom);
             dom.UseOriginalImages = true; // don't want low-res images or transparency in PDF.
@@ -448,25 +444,6 @@ namespace Bloom.Publish
                 dom,
                 source: InMemoryHtmlFileSource.Pub
             );
-        }
-
-        private void ClipBookToRemoveFullBleed(HtmlDom dom)
-        {
-            // example: A5 book is full bleed. What the user saw and configured in Edit mode is RA5 paper, 3mm larger on each side.
-            // But we're not printing for full bleed. We will create an A5 page with no inset trim box.
-            // We want it to hold the trim box part of the RA5 page.
-            // to do this, we simply need to move the bloom-page element up and left by 3mm. Clipping to the page will do the rest.
-            // It would be more elegant to do this by introducing a CSS rule involving .bloom-page, but to introduce a new stylesheet
-            // we have to make it findable in the book folder, which is messy. Or, we could add a stylesheet element to the DOM;
-            // but that's messy, too, we need stuff like /*<![CDATA[*/ to make the content survive the trip from XML to HTML.
-            // So it's easiest just to stick it in the style attribute of each page.
-            foreach (
-                var page in dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]")
-                    .Cast<SafeXmlElement>()
-            )
-            {
-                page.SetAttribute("style", "margin-left: -3mm; margin-top: -3mm;");
-            }
         }
 
         private void AddStylesheetClasses(SafeXmlDocument dom)
@@ -704,7 +681,7 @@ namespace Bloom.Publish
                         { "Portion", Enum.GetName(typeof(BookletPortions), BookletPortion) },
                         { "Layout", PageLayout.ToString() },
                         { "BookId", BookSelection.CurrentSelection.ID },
-                        { "Country", _collectionSettings.Country }
+                        { "Country", _collectionSettings.Country },
                     }
                 );
                 this._currentlyLoadedBook.ReportSimplisticFontAnalytics(
@@ -866,7 +843,7 @@ namespace Bloom.Publish
                         new Layout()
                         {
                             SizeAndOrientation = SizeAndOrientation.FromString("B5Portrait"),
-                            Style = "HideProductionNotes"
+                            Style = "HideProductionNotes",
                         }
                     );
                     foreach (var page in book.GetPages())
@@ -892,7 +869,7 @@ namespace Bloom.Publish
                     new Layout()
                     {
                         SizeAndOrientation = SizeAndOrientation.FromString("B5Portrait"),
-                        Style = "HideProductionNotes"
+                        Style = "HideProductionNotes",
                     }
                 );
 
@@ -951,8 +928,8 @@ namespace Bloom.Publish
             // If that happens, removing the outer loop and checking the data-book attribute (and
             // maybe the data-derived attribute) may become necessary.
             foreach (
-                var page in dom.RawDom
-                    .SafeSelectNodes("//div[contains(@class,'bloom-page')]")
+                var page in dom
+                    .RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
                     .Cast<SafeXmlElement>()
                     .ToList()
             )
@@ -1089,12 +1066,11 @@ namespace Bloom.Publish
                         .Cast<SafeXmlElement>();
 
                     var mergeFiles = audioSentenceElements
-                        .Select(
-                            s =>
-                                AudioProcessor.GetOrCreateCompressedAudio(
-                                    this.BookSelection.CurrentSelection.FolderPath,
-                                    s.GetAttribute("id")
-                                )
+                        .Select(s =>
+                            AudioProcessor.GetOrCreateCompressedAudio(
+                                this.BookSelection.CurrentSelection.FolderPath,
+                                s.GetAttribute("id")
+                            )
                         )
                         .Where(s => !string.IsNullOrEmpty(s));
                     if (mergeFiles.Any())

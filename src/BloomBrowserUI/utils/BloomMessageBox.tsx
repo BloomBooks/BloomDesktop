@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
@@ -12,11 +11,11 @@ import {
     DialogBottomButtons,
     DialogBottomLeftButtons,
     DialogMiddle,
-    DialogTitle
+    DialogTitle,
 } from "../react_components/BloomDialog/BloomDialog";
 import {
     IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
+    useSetupBloomDialog,
 } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import HtmlHelpLink from "../react_components/htmlHelpLink";
 import { kBloomBlue } from "../bloomMaterialUITheme";
@@ -50,15 +49,12 @@ export const BloomMessageBox: React.FunctionComponent<{
     closeWithAPICall?: boolean;
     // When called from Typescript, we could provide a callback like this, but we haven't needed it yet.
     //buttonClicked?: (buttonId: string) => void;
-}> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+}> = (props) => {
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
     showBloomMessageBox = showDialog;
 
-    const closeDialogForButton = buttonId => {
+    const closeDialogForButton = (buttonId) => {
         if (props.closeWithAPICall) {
             postString("common/closeReactDialog", buttonId);
         } else {
@@ -69,7 +65,7 @@ export const BloomMessageBox: React.FunctionComponent<{
         }
     };
 
-    const rightButtons = props.rightButtonDefinitions.map(button => (
+    const rightButtons = (props.rightButtonDefinitions ?? []).map((button) => (
         <BloomButton
             className={button.default ? "initialFocus" : ""}
             key={button.id}
@@ -96,9 +92,7 @@ export const BloomMessageBox: React.FunctionComponent<{
                 Learn More
             </HtmlHelpLink>
         </DialogBottomLeftButtons>
-    ) : (
-        undefined
-    );
+    ) : undefined;
 
     const icon = (): JSX.Element | undefined => {
         switch (props.icon) {
@@ -146,7 +140,7 @@ export const BloomMessageBox: React.FunctionComponent<{
                             padding-top: 7px;
                         `}
                         dangerouslySetInnerHTML={{
-                            __html: props.messageHtml || ""
+                            __html: props.messageHtml || "",
                         }}
                     />
                 </div>

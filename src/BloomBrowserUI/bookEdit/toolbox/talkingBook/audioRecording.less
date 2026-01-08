@@ -76,7 +76,9 @@ div.ui-audioCurrent p {
     position: unset; // BL-11633, works around Chromium bug
 }
 
-.ui-audioCurrent.bloom-postAudioSplit[data-audiorecordingmode="TextBox"]:not(.ui-suppressHighlight):not(.ui-disableHighlight) {
+.ui-audioCurrent.bloom-postAudioSplit[data-audiorecordingmode="TextBox"]:not(
+        .ui-suppressHighlight
+    ):not(.ui-disableHighlight) {
     // Special highlighting after the Split button completes to show it completed.
     // Note: This highlighting is expected to persist across sessions, but to be hidden (displayed with the yellow color) while each segment is playing.
     //       This is accomplished because this rule temporarily drops out of effect when .ui-audioCurrent is moved to the span as that segment plays.
@@ -106,9 +108,8 @@ div.ui-audioCurrent p {
 .ui-audioBody {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    padding-left: 15px;
-    padding-right: 15px;
+    height: @toolboxContentHeight;
+    padding: @toolboxContentPadding;
 
     .ui-audioJqueryStuff {
         *,
@@ -347,6 +348,10 @@ div.ui-audioCurrent p {
     .help-link {
         z-index: @disablingOverlayZindex + 1;
         margin-top: auto; //push to the bottom
+        text-decoration: none;
+        &:hover {
+            text-decoration: underline;
+        }
     }
 }
 

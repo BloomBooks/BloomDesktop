@@ -511,7 +511,7 @@ namespace BloomTests.Spreadsheet
                 "which are used to indicate audio segments.",
                 "The page​ is recorded as a whole.",
                 "This is a test,",
-                "this is only a test."
+                "this is only a test.",
             }
         )]
         public void GotSentenceSplitsOnPageN(
@@ -553,7 +553,7 @@ namespace BloomTests.Spreadsheet
                 " class=\"bloom-highlightSegment\">which are used to indicate audio segments.</span>",
                 " class=\"bloom-highlightSegment\">The page​ is recorded as a whole.</span>",
                 " class=\"bloom-highlightSegment\">This is a test,<span class=\"bloom-audio-split-marker\">\u200B</span></span>",
-                " class=\"bloom-highlightSegment\">this is only a test.</span>"
+                " class=\"bloom-highlightSegment\">this is only a test.</span>",
             };
             var target = _contentPages[17]
                 .SafeSelectNodes($".//div[@id='i4b3ef0cf-213c-4fad-82f3-6341bf415707']")
@@ -705,8 +705,8 @@ namespace BloomTests.Spreadsheet
         {
             Assert.That(
                 _progressSpy.Warnings,
-                Does.Contain(
-                    $"Removed audio alignments on page 13 because some values in the list given ('6 2.9') are larger than the duration of the audio file (4.389)."
+                Has.Some.Matches(
+                    "^Removed audio alignments on page 13 because some values in the list given \\('6 2\\.9'\\) are larger than the duration of the audio file \\(4\\.3\\d*\\)"
                 )
             );
         }

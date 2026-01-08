@@ -2,16 +2,16 @@ using System;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
-using SIL.Windows.Forms.Extensions;
-using SIL.i18n;
-using System.Linq;
-using Bloom.Workspace;
-using SIL.IO;
 using Bloom.Utils;
+using Bloom.Workspace;
+using SIL.i18n;
+using SIL.IO;
+using SIL.Windows.Forms.Extensions;
 
 namespace Bloom.CollectionChoosing
 {
@@ -82,13 +82,7 @@ namespace Bloom.CollectionChoosing
                 collectionsToShow.AddRange(
                     Directory
                         .GetDirectories(NewCollectionWizard.DefaultParentDirectoryForCollections)
-                        .Select(
-                            d =>
-                                Path.Combine(
-                                    d,
-                                    Path.ChangeExtension(Path.GetFileName(d), "bloomCollection")
-                                )
-                        )
+                        .Select(d => CollectionSettings.GetSettingsFilePath(d))
                         .Where(c => RobustFile.Exists(c) && !collectionsToShow.Contains(c))
                         .OrderBy(c => Directory.GetLastWriteTime(Path.GetDirectoryName(c)))
                         .Reverse()

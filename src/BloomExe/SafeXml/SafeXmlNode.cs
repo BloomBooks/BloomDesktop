@@ -388,8 +388,8 @@ namespace Bloom.SafeXml
             get
             {
                 lock (_doc.Lock)
-                    return _wrappedNode.Attributes
-                        ?.Cast<XmlAttribute>()
+                    return _wrappedNode
+                        .Attributes?.Cast<XmlAttribute>()
                         .Select(attr => attr.Name)
                         .ToArray();
             }
@@ -404,8 +404,8 @@ namespace Bloom.SafeXml
             get
             {
                 lock (_doc.Lock)
-                    return _wrappedNode.Attributes
-                        ?.Cast<XmlAttribute>()
+                    return _wrappedNode
+                        .Attributes?.Cast<XmlAttribute>()
                         .Select(attr => new NameValue(attr.Name, attr.Value))
                         .ToArray();
             }

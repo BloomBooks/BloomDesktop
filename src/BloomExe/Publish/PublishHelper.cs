@@ -5,6 +5,8 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
@@ -26,7 +28,6 @@ namespace Bloom.Publish
 {
     public class PublishHelper : IDisposable
     {
-        public const string kSimpleComprehensionQuizJs = "simpleComprehensionQuiz.js";
         public const string kVideoPlaceholderImageFile = "video-placeholder.svg";
         private static PublishHelper _latestInstance;
 
@@ -173,6 +174,36 @@ namespace Bloom.Publish
         }
     });
     return { results: elementsInfo };
+})();";
+
+        // A bit of JavaScript we can run, after hacking the DOM to make all languages visible
+        // in bloom-editables, to get all the font families that are needed to render it in
+        // any of the included languages.
+        // Review: what elements should we retrieve font data for? I don't want to just use *,
+        // because there are many elements that don't hold text (or only children with different
+        // font settings hold text), and we don't care what font they may be set to use.
+        // OTOH, it's just possible that there are elements that are not our expected Bloom
+        // multilingual fields that do contain text that uses a problem font. We ought to be
+        // able to assume that Branding data has suitable fonts. Is there anything else we
+        // might want to include?
+        // Note: it would be something of an optimization to make this code return a set
+        // of the first font in each family, since that's all we really want. However, this
+        // bit of Javascript is completely outside our build process; there's no compile time
+        // checking, no access to libraries, no help at all getting it right. I want to keep
+        // it as simple as will possibly do the job. And I don't think the performance cost
+        // of passing more results back will be significant. (Moreover, we already had the
+        // quite tricky code to extract the first font family in C#.)
+        public const string GetElementFontFamilyInfoJavascript =
+            @"(() =>
+{
+	const elementsInfo = [];
+	document.querySelectorAll(""textarea, .bloom-editable *"").forEach(elt => {
+		const style = getComputedStyle(elt, null);
+		if (style) {
+			elementsInfo.push(style.getPropertyValue(""font-family""));
+		}
+	});
+	return elementsInfo;
 })();";
 
         /// <summary>
@@ -350,7 +381,7 @@ namespace Bloom.Publish
             {
                 // Ensuring a proper alt attribute is handled elsewhere
                 var src = img.GetOptionalStringAttribute("src", null);
-                if (String.IsNullOrEmpty(src) || src == "placeHolder.png")
+                if (String.IsNullOrEmpty(src) || ImageUtils.IsPlaceholderImageFilename(src))
                 {
                     // If this is a template book, then the whole point of the book is to not have content. So then we want to preserve the placeholders so
                     // that people looking at the book on Bloom Library can see how the template pages are constructed.
@@ -374,8 +405,10 @@ namespace Bloom.Publish
             {
                 // epub-check doesn't like these attributes (BL-6036).  I suppose BloomReader might find them useful.
                 foreach (
-                    var div in dom.Body
-                        .SafeSelectNodes("//div[contains(@class, 'split-pane-component-inner')]")
+                    var div in dom
+                        .Body.SafeSelectNodes(
+                            "//div[contains(@class, 'split-pane-component-inner')]"
+                        )
                         .Cast<SafeXmlElement>()
                 )
                 {
@@ -389,8 +422,8 @@ namespace Bloom.Publish
             // exists, it probably has a style attribute (position:fixed) that epubcheck won't like.
             // (fixed position way off the screen to hide it)
             foreach (
-                var div in dom.Body
-                    .SafeSelectNodes("//*[@data-cke-hidden-sel]")
+                var div in dom
+                    .Body.SafeSelectNodes("//*[@data-cke-hidden-sel]")
                     .Cast<SafeXmlElement>()
             )
             {
@@ -476,7 +509,7 @@ namespace Bloom.Publish
                                 {
                                     fontFamily = font,
                                     fontStyle = info.fontStyle,
-                                    fontWeight = info.fontWeight
+                                    fontWeight = info.fontWeight,
                                 }
                             );
                         }
@@ -489,7 +522,7 @@ namespace Bloom.Publish
                     {
                         fontFamily = info.fontFamily,
                         fontStyle = info.fontStyle,
-                        fontWeight = info.fontWeight
+                        fontWeight = info.fontWeight,
                     };
                     _mapIdToFontInfo[info.id] = fontInfo;
                 }
@@ -705,8 +738,8 @@ namespace Bloom.Publish
             }
         }
 
-        // Not really sure what we need here; embedding the simple comprehension quiz JS is
-        // probably obsolete in all situations, but there may be some old version of Bloom Player
+        // Not really sure what we need here; embedding the simple comprehension quiz JS has been
+        // obsolete in all situations, but there may be some old version of Bloom Player
         // that needs it. But for sure we don't need it if the game feature is disabled and thus
         // there are no games in the publication.
         // The old code did not distinguish derivatives, but we're moving more in the
@@ -721,7 +754,7 @@ namespace Bloom.Publish
                         .GetFeatureStatus(book.CollectionSettings.Subscription, FeatureName.Game)
                         .Enabled
                 )
-                    RobustFile.Delete(Path.Combine(book.FolderPath, kSimpleComprehensionQuizJs));
+                    RobustFile.Delete(Path.Combine(book.FolderPath, "simpleComprehensionQuiz.js"));
             }
         }
 
@@ -748,7 +781,7 @@ namespace Bloom.Publish
         public Dictionary<string, HashSet<string>> FontsAndLangsUsed =
             new Dictionary<string, HashSet<string>>();
 
-        private string ExtractFontNameFromFontFamily(string fontFamily)
+        private static string ExtractFontNameFromFontFamily(string fontFamily)
         {
             // we actually can get a comma-separated list with fallback font options: split into an array so we can
             // use just the first one.  We don't need to worry about the fallback fonts, just the primary one.  It
@@ -805,7 +838,7 @@ namespace Bloom.Publish
                     {
                         fontFamily = font,
                         fontStyle = fontInfo.fontStyle,
-                        fontWeight = fontInfo.fontWeight
+                        fontWeight = fontInfo.fontWeight,
                     }
                 )
             )
@@ -818,7 +851,7 @@ namespace Bloom.Publish
                 {
                     fontFamily = font,
                     fontStyle = fontInfo.fontStyle,
-                    fontWeight = fontInfo.fontWeight
+                    fontWeight = fontInfo.fontWeight,
                 }
             );
             // We need more information for font analytics.  This still suffers from the limitation on multiple languages being
@@ -895,7 +928,7 @@ namespace Bloom.Publish
                             {
                                 fontFamily = font1,
                                 fontStyle = newCurrentFont.fontStyle,
-                                fontWeight = newCurrentFont.fontWeight
+                                fontWeight = newCurrentFont.fontWeight,
                             };
                         if (
                             IsRealTextDisplayedInDesiredFont(
@@ -973,7 +1006,7 @@ namespace Bloom.Publish
                 IncludeFilesNeededForBloomPlayer = includeVideoAndActivities,
                 WantVideo = includeVideoAndActivities,
                 NarrationLanguages = narrationLanguages,
-                WantMusic = true
+                WantMusic = true,
             };
             filter.CopyBookFolderFiltered(tempFolderPath);
             var collectionStylesSource = Path.Combine(
@@ -994,7 +1027,7 @@ namespace Bloom.Publish
             // We can always save in a temp book
             var bookInfo = new BookInfo(tempFolderPath, true, new AlwaysEditSaveContext())
             {
-                UseDeviceXMatter = !isTemplateBook
+                UseDeviceXMatter = !isTemplateBook,
             };
 
             var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
@@ -1015,7 +1048,11 @@ namespace Bloom.Publish
                     SignLanguageApi.ProcessVideos(videoContainerElements, modifiedBook.FolderPath);
                 }
             }
-            ReallyCropImages(modifiedBook.RawDom, modifiedBook.FolderPath, modifiedBook.FolderPath);
+            ImageUtils.ReallyCropImages(
+                modifiedBook.RawDom,
+                modifiedBook.FolderPath,
+                modifiedBook.FolderPath
+            );
             // Must come after ReallyCropImages, because any cropping for background images is
             // destroyed by SimplifyBackgroundImages.
             SimplifyBackgroundImages(modifiedBook.RawDom);
@@ -1068,14 +1105,14 @@ namespace Bloom.Publish
                 // One exception that has occurred is in an old, migrated book where an element in the data-div
                 // had this class, but only the image file name as content.
                 var imgContainer =
-                    canvasElement.ChildNodes.FirstOrDefault(
-                        c => c is SafeXmlElement ce && ce.LocalName == "div"
+                    canvasElement.ChildNodes.FirstOrDefault(c =>
+                        c is SafeXmlElement ce && ce.LocalName == "div"
                     ) as SafeXmlElement;
                 if (imgContainer == null || !imgContainer.HasClass("bloom-imageContainer"))
                     continue;
                 var img =
-                    imgContainer.ChildNodes.FirstOrDefault(
-                        c => c is SafeXmlElement ce && ce.LocalName == "img"
+                    imgContainer.ChildNodes.FirstOrDefault(c =>
+                        c is SafeXmlElement ce && ce.LocalName == "img"
                     ) as SafeXmlElement;
                 if (img == null)
                     continue;
@@ -1086,18 +1123,21 @@ namespace Bloom.Publish
                 if (bloomCanvas == null || !bloomCanvas.HasClass(HtmlDom.kBloomCanvasClass))
                     continue;
                 var bcImg =
-                    bloomCanvas.ChildNodes.FirstOrDefault(
-                        c => c is SafeXmlElement ce && ce.LocalName == "img"
+                    bloomCanvas.ChildNodes.FirstOrDefault(c =>
+                        c is SafeXmlElement ce && ce.LocalName == "img"
                     ) as SafeXmlElement;
-                if (bcImg != null && bcImg.GetAttribute("src") != "placeHolder.png")
+                if (
+                    bcImg != null
+                    && !ImageUtils.IsPlaceholderImageFilename(bcImg.GetAttribute("src"))
+                )
                     continue; // paranoia
                 if (bcImg != null)
                 {
                     bloomCanvas.RemoveChild(bcImg);
                 }
                 var svg =
-                    bloomCanvas.ChildNodes.FirstOrDefault(
-                        c => c is SafeXmlElement ce && ce.LocalName == "svg"
+                    bloomCanvas.ChildNodes.FirstOrDefault(c =>
+                        c is SafeXmlElement ce && ce.LocalName == "svg"
                     ) as SafeXmlElement;
                 var insertBefore = svg != null ? svg.NextSibling : bloomCanvas.FirstChild;
                 bloomCanvas.InsertBefore(img, insertBefore);
@@ -1111,8 +1151,8 @@ namespace Bloom.Publish
                     );
                 canvasElement.ParentNode.RemoveChild(canvasElement);
                 if (
-                    !bloomCanvas.ChildNodes.Any(
-                        c => c is SafeXmlElement ce && ce.HasClass("bloom-canvas-element")
+                    !bloomCanvas.ChildNodes.Any(c =>
+                        c is SafeXmlElement ce && ce.HasClass("bloom-canvas-element")
                     )
                 )
                 {
@@ -1139,223 +1179,6 @@ namespace Bloom.Publish
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Permanently remove the cropped areas from all image files, saving any cropped images to the given folder.
-        /// Source and destination folders CAN be the same (in which case the original images are overwritten, if
-        /// there is any cropping to do).
-        /// </summary>
-        /// <param name="bookDom"></param>
-        /// <param name="imageSourceFolder"></param>
-        /// <param name="imageDestFolder"></param>
-        public static void ReallyCropImages(
-            SafeXmlDocument bookDom,
-            string imageSourceFolder,
-            string imageDestFolder
-        )
-        {
-            var images = bookDom.SafeSelectNodes("//img").Cast<SafeXmlElement>().ToArray();
-            // src values that occur in uncropped images. Note, it is NOT the case that an img whose src
-            // is in this set never cropped; it just means that at least one occurrence of it is not
-            // cropped, which makes the image name unavailable to use for a cropped image.
-            var uncroppedSrcNames = new HashSet<string>();
-            // key is a combination of src, style, and canvas element style height and width that determines
-            // the name of an image file that should be used for this combination, which is the value.
-            var cropped = new Dictionary<string, string>();
-            foreach (var img in images)
-            {
-                var src = img.GetAttribute("src");
-                // We don't want to crop placeHolder.png, just not display it.  (BL-15201)
-                if (src == "placeHolder.png")
-                    continue;
-                var style = img.GetAttribute("style");
-                if (!SignifiesCropping(style))
-                {
-                    uncroppedSrcNames.Add(src);
-                }
-            }
-
-            foreach (var img in images)
-            {
-                var src = img.GetAttribute("src");
-                if (src == "placeHolder.png")
-                    continue; // we still don't want to crop placeHolder.png (BL-15229)
-                var style = img.GetAttribute("style");
-                var imgContainer = img.ParentNode as SafeXmlElement;
-                var canvasElement = imgContainer?.ParentNode as SafeXmlElement;
-                var canvasElementStyle = canvasElement?.GetAttribute("style");
-                if (!SignifiesCropping(style) || canvasElementStyle == null)
-                    continue;
-                var canvasElementWidth = GetNumberFromPx("width", canvasElementStyle);
-                var canvasElementHeight = GetNumberFromPx("height", canvasElementStyle);
-
-                var key = $"{src}|{style}|{canvasElementWidth}|{canvasElementHeight}";
-                if (cropped.TryGetValue(key, out string fileName))
-                {
-                    // This is a duplicate. We can use the same cropped image file.
-                    img.SetAttribute("src", fileName);
-                    continue;
-                }
-
-                var croppedFileName = ReallyCropImage(
-                    img,
-                    imageSourceFolder,
-                    imageDestFolder,
-                    uncroppedSrcNames.Contains(src)
-                );
-                cropped[key] = croppedFileName;
-            }
-        }
-
-        private static bool SignifiesCropping(string imgStyle)
-        {
-            if (string.IsNullOrEmpty(imgStyle))
-                return false;
-            var width = GetNumberFromPx("width", imgStyle);
-            return width > 0;
-        }
-
-        private static string ReallyCropImage(
-            SafeXmlElement img,
-            string imageSourceFolder,
-            string imageDestFolder,
-            bool useNewName
-        )
-        {
-            var croppedImagePath = MakeCroppedImage(img, imageSourceFolder, imageDestFolder);
-            var src = img.GetAttribute("src");
-            // a good default if we can't produce a cropped image for any reason.
-            // (The tests in MakeCroppedImage are a bit more robus than the ones we do before
-            // deciding to call this method.) Capture this before we unencode, since it wants
-            // to be a value we can put in a src attribute (if it doesn't get changed)
-            // to lead to the file we may put at an unchanged file name.
-            var result = src;
-            // We don't need the path here, but this function may correct 'src' (e.g.,
-            // removing some url encoding to find the actual file). And if we're not
-            // using a new name, we want to exactly overwrite the original image file.
-            UrlPathString.GetFullyDecodedPath(imageSourceFolder, ref src);
-            if (croppedImagePath != null)
-            {
-                if (useNewName)
-                {
-                    // It's tempting to try to come up with a name based on the original image name,
-                    // but it's quite tricky (with arbitrary characters possibly in the name)
-                    // to be sure that the value we put in the src will actually lead the browser to
-                    // the right file. I decided to just stick with the guid that MakeCroppedImage
-                    // produces, which contains no characters that need to be encoded.
-
-                    // All images with this name and crop should use this
-                    result = Path.GetFileName(croppedImagePath);
-                    // Including the current image
-                    img.SetAttribute("src", result);
-                }
-                else
-                {
-                    var destPath = Path.Combine(imageDestFolder, src);
-                    RobustFile.Move(croppedImagePath, destPath, true);
-                    // If it failed, it should have already logged the reason. I think all we can do
-                    // is leave the image alone.
-                }
-            }
-            img.RemoveAttribute("style"); // so nothing can possibly think it needs more cropping
-            return result;
-        }
-
-        /// <summary>
-        /// If the specified img is cropped, and we can find and successfully crop the
-        /// appropriate image file, make a new file containing the cropped image in imageDestFolder
-        /// and return the path to it.
-        /// If anything prevents doing this successfully, including that the image is not cropped, return null.
-        /// </summary>
-        /// <param name="img">An img element, which might need cropping if we find it in the right context.</param>
-        /// <param name="imageSourceFolder">The folder where image files live; can be combined with the src
-        /// of the image to find it. Typically the book folder.</param>
-        /// <param name="imageDestFolder">The folder where we want the cropped image placed. May be the same
-        /// as imageSourceFolder.</param>
-        /// Enhance: possibly this wants to live somewhere like ImageUtils? But so far it only has one other use.
-        public static string MakeCroppedImage(
-            SafeXmlElement img,
-            string imageSourceFolder,
-            string imageDestFolder
-        )
-        {
-            var imgContainer = img.ParentNode as SafeXmlElement;
-            var canvasElement = imgContainer?.ParentNode as SafeXmlElement;
-            // Cropping is implemented using the interaction between a canvas element
-            // which specifies the visible area of the image by its height and width, and the img two levels
-            // down which may have adjusted width, left, and top to position part of itself in the canvas element.
-            // An image can only be cropped, and we can only know what part of it to remove, if it occurs in
-            // this structure. Other images (e.g., branding) are left alone. (At the stage where this code is run,
-            // background images, including all normal page content images, are still represented as canvas elements.)
-            if (
-                canvasElement == null
-                || !canvasElement.HasClass(HtmlDom.kCanvasElementClass)
-                || !imgContainer.HasClass("bloom-imageContainer")
-            )
-                return null;
-            var src = img.GetAttribute("src");
-            var srcPath = UrlPathString.GetFullyDecodedPath(imageSourceFolder, ref src);
-            if (!RobustFile.Exists(srcPath))
-                return null;
-            var imgStyle = img.GetAttribute("style");
-            if (string.IsNullOrEmpty(imgStyle))
-                return null;
-            var imgWidth = GetNumberFromPx("width", imgStyle);
-            var imgLeft = GetNumberFromPx("left", imgStyle);
-            var imgTop = GetNumberFromPx("top", imgStyle);
-            var canvasElementStyle = canvasElement.GetAttribute("style");
-            var canvasElementWidth = GetNumberFromPx("width", canvasElementStyle);
-            var canvasElementHeight = GetNumberFromPx("height", canvasElementStyle);
-            if (imgWidth == 0 || canvasElementWidth == 0)
-                return null;
-            if (!ImageUtils.TryGetImageSize(srcPath, out Size size))
-            {
-                Logger.WriteEvent(
-                    "Unable to calculate image size for cropping during publication: " + srcPath
-                );
-                return null; // can't crop the image if we can't get its size.
-            }
-            var scale = imgWidth / size.Width;
-            var selWidth = canvasElementWidth / scale;
-            var selHeight = canvasElementHeight / scale;
-            var selLeft = -imgLeft / scale;
-            var selTop = -imgTop / scale;
-            var ext = Path.GetExtension(srcPath).ToLowerInvariant();
-            var tempPath = Path.ChangeExtension(
-                Path.Combine(imageDestFolder, Guid.NewGuid().ToString()),
-                ext
-            );
-            var cropRectangle = new Rectangle(
-                Convert.ToInt32(selLeft),
-                Convert.ToInt32(selTop),
-                Convert.ToInt32(selWidth),
-                Convert.ToInt32(selHeight)
-            );
-            var result = ImageUtils.CropImage(srcPath, tempPath, cropRectangle);
-            if (result.ExitCode == 0)
-                return tempPath;
-            return null;
-        }
-
-        internal static double GetNumberFromPx(string label, string input)
-        {
-            var parts = input.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-            var part = parts.FirstOrDefault(p => p.Trim().StartsWith(label + ":"));
-            if (part == null)
-                return 0;
-            var number = part.Trim().Substring(label.Length + 1);
-            number = number.Substring(0, number.Length - 2); // remove "px"
-            if (
-                double.TryParse(
-                    number,
-                    System.Globalization.NumberStyles.Any,
-                    System.Globalization.CultureInfo.InvariantCulture,
-                    out double result
-                )
-            )
-                return result;
-            return 0;
         }
 
         #region IDisposable Support
@@ -1713,7 +1536,7 @@ namespace Bloom.Publish
                 var fontNames = new List<string>
                 {
                     DefaultFont, // Ensure that Andika's metadata is always available.
-                    "ABeeZee" // Another font distributed with Bloom
+                    "ABeeZee", // Another font distributed with Bloom
                 };
                 foreach (var font in fontsWanted)
                 {
@@ -1811,26 +1634,141 @@ namespace Bloom.Publish
             return false;
         }
 
-        public static void ReportInvalidFonts(string destDirName, IProgress progress)
+        public static async Task ReportInvalidFontsAsync(
+            string destDirName,
+            IProgress progress,
+            Control controlToInvokeOn
+        )
         {
-            // For ePUB and BloomPub, we display the book to determine exactly which fonts are
-            // actually used.  We don't have a browser available to do that for uploads, so we scan
-            // css files and the styles set in the html file to see what font-family values are present.
-            // There's also the question of multilanguage books having data that isn't actively
-            // displayed but could potentially be displayed.
+            // Make a browser so we can accurately determine what fonts are actually requested by
+            // the stylesheets in the book, or might be if other languages being uploaded are activated.
             HashSet<string> fontsFound = new HashSet<string>();
-            foreach (var filepath in Directory.EnumerateFiles(destDirName, "*.css"))
+            var bookPath = BookStorage.FindBookHtmlInFolder(destDirName);
+            var dom = HtmlDom.CreateFromHtmlFile(bookPath);
+            dom.BaseForRelativePaths = destDirName;
+            foreach (
+                var editable in dom.RawDom.SafeSelectElements(
+                    "//div[contains(@class, 'bloom-editable')]"
+                )
+            )
             {
-                var cssContent = RobustFile.ReadAllText(filepath);
-                HtmlDom.FindFontsUsedInCss(cssContent, fontsFound, includeFallbackFonts: true);
+                // stuff has to be visible for us to compute the font family used for it
+                // We can make all the bloom-editable elements visible, since we already removed
+                // the ones that are not going to be uploaded, and we are not going to use this
+                // DOM for anything else.
+                if (editable.GetAttribute("lang") == "z")
+                    continue; // will never be visible.
+                editable.AddClass("bloom-visibility-code-on");
             }
-            // There should be only one html file with the same name as the directory it's in, but let's
-            // not make any assumptions here.
-            foreach (var filepath in Directory.EnumerateFiles(destDirName, "*.htm"))
+
+            // This function, which is what we want to do next, may be either invoked
+            // or simply run, depending on whether we need to force running it on the UI thread.
+            // We can only manipulate the browser on the UI thread (except in tests).
+            var getFontsAction = async () =>
             {
-                var cssContent = RobustFile.ReadAllText(filepath);
-                HtmlDom.FindFontsUsedInCss(cssContent, fontsFound, includeFallbackFonts: true); // works on HTML files as well
+                // This will usually be the main UI thread, but in tests it could be anything.
+                // In production, we must make sure we're on the UI thread to create and manipulate a browser,
+                // but we may no longer be after we await RunJavaScriptAsync. We have to be on the same
+                // thread to dispose it, so keep track of which thread it is.
+                var threadWhereWeMadeBrowser = Thread.CurrentThread;
+                // Even trying controlToInvokeOn.Invoke everywhere the browser is referenced, I couldn't get
+                // "await WebView2Browser.CreateAsync()" to produce a browser that would successfully navigate
+                // to the page for checking fonts.  The navigation would always time out and report failure,
+                // unless it crashed before the timeout and stopped the program with exit code 0x80000003.
+                // If it didn't crash, often the scan for fonts would return an empty array which looks
+                // innocuous (but possibly misleading) to the user.  When it didn't return an empty array,
+                // it returned an array full of nothing but "Times New Roman", the default browser font on
+                // Windows which is illegal to embed or distribute, and complained vociferously to the user.
+                // See BL-15292 for more details and discussion.
+                var browser = new WebView2Browser(); // NOT await WebView2Browser.CreateAsync();
+                try
+                {
+                    // Logically, if any await can result in a thread switch, we might need to invoke again here.
+                    // (But invoking again here doesn't work!?)
+                    if (
+                        !browser.NavigateAndWaitTillDone(
+                            dom,
+                            10000,
+                            InMemoryHtmlFileSource.JustCheckingPage,
+                            () => false,
+                            false
+                        )
+                    )
+                    {
+                        // We had problems with timeouts here in similar code (BL-7892).
+                        // We may as well carry on and detect as many problem fonts as we can.
+                        Debug.WriteLine("Failed to navigate fully to ReportInvalidFontsAsync DOM");
+                        Logger.WriteEvent(
+                            "Failed to navigate fully to ReportInvalidFontsAsync DOM"
+                        );
+                    }
+
+                    // Get and store the display and font information for each element in the DOM.
+                    var rawInfo = await browser.GetObjectFromJavascriptAsync(
+                        GetElementFontFamilyInfoJavascript
+                    );
+                    //Debug.WriteLine($"DEBUG ReportInvalidFontsAsync: rawInfo={rawInfo}");
+                    var fontFamilyInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<string[]>(
+                        rawInfo
+                    );
+
+                    if (fontFamilyInfo != null)
+                    {
+                        foreach (var family in fontFamilyInfo)
+                        {
+                            var font = ExtractFontNameFromFontFamily(family);
+                            if (!string.IsNullOrEmpty(font))
+                            {
+                                fontsFound.Add(font);
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    if (threadWhereWeMadeBrowser == Thread.CurrentThread)
+                    {
+                        // This seems to happen in tests. In live code, given the bizarre way
+                        // Windows.Forms implements await and resumes on a different thread,
+                        // we don't take this branch, but we normally have a controlToInvokeOn,
+                        // which is usually null in tests.
+                        browser.Dispose();
+                    }
+                    else if (controlToInvokeOn != null)
+                    {
+                        // If we made the browser on this control's thread, we can dispose of it properly by invoking
+                        // to that thread. This is the usual path in production.
+                        controlToInvokeOn.Invoke(() => browser.Dispose());
+                    }
+                    // Otherwise, we just can't dispose of it properly. Probably we're running tests
+                    // and it doesn't matter much.
+                }
+            };
+            if (controlToInvokeOn == null)
+            {
+                await getFontsAction();
             }
+            else
+            {
+                await (Task)controlToInvokeOn.Invoke(getFontsAction);
+            }
+
+            // The old approach. Enhance: this is probably much faster to run. We think its only
+            // problem is false positives. Possibly if it finds no problems, we don't need to run
+            /// the more expensive browser-based approach.
+            //foreach (var filepath in Directory.EnumerateFiles(destDirName, "*.css"))
+            //{
+            //    var cssContent = RobustFile.ReadAllText(filepath);
+            //    HtmlDom.FindFontsUsedInCss(cssContent, fontsFound, includeFallbackFonts: true);
+            //}
+            //// There should be only one html file with the same name as the directory it's in, but let's
+            //// not make any assumptions here.
+            //foreach (var filepath in Directory.EnumerateFiles(destDirName, "*.htm"))
+            //{
+            //    var cssContent = RobustFile.ReadAllText(filepath);
+            //    HtmlDom.FindFontsUsedInCss(cssContent, fontsFound, includeFallbackFonts: true); // works on HTML files as well
+            //}
+
             if (_fontMetadataMap == null)
             {
                 _fontMetadataMap = new Dictionary<string, FontMetadata>();
@@ -1843,7 +1781,7 @@ namespace Bloom.Publish
                 "sans-serif",
                 "cursive",
                 "fantasy",
-                "monospace"
+                "monospace",
             };
             foreach (var font in fontsFound)
             {

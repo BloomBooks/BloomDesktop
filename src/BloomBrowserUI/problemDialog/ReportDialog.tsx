@@ -5,8 +5,7 @@ import {
     DialogContent,
     DialogTitle,
     Link,
-    TextField,
-    Typography
+    Typography,
 } from "@mui/material";
 import { post, postJson, useApiStringState } from "../utils/bloomApi";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
@@ -17,8 +16,8 @@ import { useState, useEffect, useRef } from "react";
 import { HowMuchGroup } from "./HowMuchGroup";
 import { PrivacyNotice } from "./PrivacyNotice";
 import { makeTheme, kindParams } from "./theme";
-import { EmailField, isValidEmail } from "./EmailField";
-import { useDrawAttention } from "../react_components/UseDrawAttention";
+import { AttentionTextField } from "../react_components/AttentionTextField";
+import { isValidEmail } from "../utils/emailUtils";
 import { PrivacyScreen } from "./PrivacyScreen";
 import { useL10n } from "../react_components/l10nHooks";
 import { ProblemKind } from "./ProblemDialog";
@@ -28,12 +27,12 @@ enum Mode {
     submitting,
     submitted,
     showPrivacyDetails,
-    submissionFailed
+    submissionFailed,
 }
 
 export const ReportDialog: React.FunctionComponent<{
     kind: ProblemKind;
-}> = props => {
+}> = (props) => {
     const [mode, setMode] = useState(Mode.gather);
     const [includeBook, setIncludeBook] = useState(true);
     const [includeScreenshot, setIncludeScreenshot] = useState(true);
@@ -42,11 +41,11 @@ export const ReportDialog: React.FunctionComponent<{
     // which are not meant to be treated as HTML code.
     const [reportHeadingHtml] = useApiStringState(
         "problemReport/reportHeadingHtml",
-        ""
+        "",
     );
     const [email, setEmail] = useApiStringState(
         "problemReport/emailAddress",
-        ""
+        "",
     );
     const [submitAttempts, setSubmitAttempts] = useState(0);
     const theme = makeTheme(props.kind);
@@ -66,11 +65,6 @@ export const ReportDialog: React.FunctionComponent<{
     const readyToSubmit = (email: string, userInput: string): boolean => {
         return isValidEmail(email) && userInput.trim().length !== 0;
     };
-
-    const whatWereYouDoingAttentionClass = useDrawAttention(
-        submitAttempts,
-        () => whatDoing.trim().length > 0
-    );
 
     const submitButton = useRef(null);
     useCtrlEnterToSubmit(() => {
@@ -104,9 +98,9 @@ export const ReportDialog: React.FunctionComponent<{
                     email,
                     userInput: `${whatDoing}\n\nHow much: ${stringifyHowMuch()}`,
                     includeBook,
-                    includeScreenshot
+                    includeScreenshot,
                 },
-                result => {
+                (result) => {
                     if (result.data.failed) {
                         // result.data.zippedReportPath may or may not be set; we deal with that elsewhere.
                         setZippedReportPath(result.data.zippedReportPath);
@@ -115,7 +109,7 @@ export const ReportDialog: React.FunctionComponent<{
                         setIssueLink(result.data.issueLink);
                         setMode(Mode.submitted);
                     }
-                }
+                },
             );
         }
     };
@@ -128,31 +122,26 @@ export const ReportDialog: React.FunctionComponent<{
     const englishTitle = kindParams[props.kind.toString()].title;
     const titleKey = kindParams[props.kind.toString()].l10nKey;
     const localizedDlgTitle = useL10n(englishTitle, titleKey);
-    const localizedWhatDoingLabel = useL10n(
-        "What were you doing?",
-        "ReportProblemDialog.WhatDoing",
-        "This is the label for the text field where the user enters what they were doing at the time of the problem."
-    );
     const localizedPleaseHelpUs = useL10n(
         "Please help us reproduce this problem on our computers.",
-        "ReportProblemDialog.PleaseHelpUs"
+        "ReportProblemDialog.PleaseHelpUs",
     );
     const localizedIssueLinkLabel = useL10n(
         "This issue can be viewed here:",
         "ReportProblemDialog.IssueLink",
-        "This label is displayed before a link to the issue after it is created."
+        "This label is displayed before a link to the issue after it is created.",
     );
     const localizedSubmittingMsg = useL10n(
         "Submitting to server...",
         "ReportProblemDialog.Submitting",
-        "This is shown while Bloom is sending the problem report to our server."
+        "This is shown while Bloom is sending the problem report to our server.",
     );
     const localizedFailureWithZipMsg = useL10n(
         "Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.",
         "ReportProblemDialog.CouldNotSendToServer",
         undefined,
         zippedReportPath,
-        "issues@bloomlibrary.org"
+        "issues@bloomlibrary.org",
     );
     // This general failure message without a zip path should be extremely rare, and it isn't worth localizing.
     const generalFailureMsg =
@@ -293,7 +282,7 @@ export const ReportDialog: React.FunctionComponent<{
                                             <Typography
                                                 className="report-heading allowSelect"
                                                 dangerouslySetInnerHTML={{
-                                                    __html: reportHeadingHtml
+                                                    __html: reportHeadingHtml,
                                                 }}
                                             ></Typography>
                                             <Typography id="please_help_us">
@@ -301,51 +290,50 @@ export const ReportDialog: React.FunctionComponent<{
                                             </Typography>
                                             <div id="row2">
                                                 <div className="column1">
-                                                    <TextField
+                                                    <AttentionTextField
                                                         // can't use id for css because that goes down to a child element
                                                         className={
-                                                            "what_were_you_doing " +
-                                                            whatWereYouDoingAttentionClass
+                                                            "what_were_you_doing "
                                                         }
                                                         autoFocus={true}
-                                                        variant="outlined"
-                                                        label={
-                                                            localizedWhatDoingLabel
-                                                        }
+                                                        label="What were you doing?"
+                                                        l10nKey="ReportProblemDialog.WhatDoing"
+                                                        l10nComment="This is the label for the text field where the user enters what they were doing at the time of the problem."
                                                         rows="3"
-                                                        InputLabelProps={{
-                                                            shrink: true
-                                                        }}
                                                         multiline={true}
                                                         aria-label="What were you doing?"
-                                                        onChange={event => {
-                                                            setWhatDoing(
-                                                                event.target
-                                                                    .value
-                                                            );
-                                                        }}
-                                                        error={
-                                                            submitAttempts >
-                                                                0 &&
-                                                            whatDoing.trim()
-                                                                .length === 0
+                                                        onChange={(v) =>
+                                                            setWhatDoing(v)
+                                                        }
+                                                        isValid={(v) =>
+                                                            !!v.trim()
                                                         }
                                                         value={whatDoing}
-                                                    />
-                                                    <HowMuchGroup
-                                                        onHowMuchChange={value =>
-                                                            setHowMuch(value)
+                                                        submitAttempts={
+                                                            submitAttempts
                                                         }
                                                     />
+                                                    <HowMuchGroup
+                                                        onHowMuchChange={(
+                                                            value,
+                                                        ) => setHowMuch(value)}
+                                                    />
 
-                                                    <EmailField
-                                                        email={email}
-                                                        onChange={v =>
+                                                    <AttentionTextField
+                                                        label="Email"
+                                                        l10nKey="ReportProblemDialog.Email"
+                                                        value={email}
+                                                        isValid={isValidEmail}
+                                                        onChange={(v) =>
                                                             setEmail(v)
                                                         }
                                                         submitAttempts={
                                                             submitAttempts
                                                         }
+                                                        className="email"
+                                                        aria-label="email"
+                                                        rows="1"
+                                                        multiline={false}
                                                     />
                                                 </div>
                                                 <div className="column2">
@@ -358,9 +346,9 @@ export const ReportDialog: React.FunctionComponent<{
                                                         disabled={
                                                             bookName === "??"
                                                         }
-                                                        onCheckChanged={v =>
+                                                        onCheckChanged={(v) =>
                                                             setIncludeBook(
-                                                                v as boolean
+                                                                v as boolean,
                                                             )
                                                         }
                                                     />
@@ -370,9 +358,9 @@ export const ReportDialog: React.FunctionComponent<{
                                                         checked={
                                                             includeScreenshot
                                                         }
-                                                        onCheckChanged={v =>
+                                                        onCheckChanged={(v) =>
                                                             setIncludeScreenshot(
-                                                                v as boolean
+                                                                v as boolean,
                                                             )
                                                         }
                                                     />
@@ -384,7 +372,7 @@ export const ReportDialog: React.FunctionComponent<{
                                                     <PrivacyNotice
                                                         onLearnMore={() =>
                                                             setMode(
-                                                                Mode.showPrivacyDetails
+                                                                Mode.showPrivacyDetails,
                                                             )
                                                         }
                                                     />
@@ -404,7 +392,7 @@ export const ReportDialog: React.FunctionComponent<{
 
 function useCtrlEnterToSubmit(callback) {
     useEffect(() => {
-        const handler = event => {
+        const handler = (event) => {
             if (event.ctrlKey && event.key === "Enter") {
                 callback();
             }

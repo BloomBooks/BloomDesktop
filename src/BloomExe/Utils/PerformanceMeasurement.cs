@@ -119,7 +119,7 @@ namespace Bloom.Utils
         readonly string[] _majorActions = new string[]
         {
             "EditBookCommand",
-            "SelectedTabChangedEvent"
+            "SelectedTabChangedEvent",
         };
 
         /// <summary>
@@ -274,7 +274,7 @@ namespace Bloom.Utils
                     action = _actionLabel + " measurement failed",
                     details = _actionDetails,
                     privateBytes = 0,
-                    duration = 0
+                    duration = 0,
                 };
             }
             return new
@@ -282,7 +282,7 @@ namespace Bloom.Utils
                 action = _actionLabel,
                 details = _actionDetails,
                 privateBytes = _end.privateBytesKb,
-                duration = Duration
+                duration = Duration,
             };
         }
 
@@ -387,9 +387,22 @@ namespace Bloom.Utils
                                 .Get()
                                 .Cast<ManagementObject>()
                         );
-                        var subProcs = listMOs.Select(
-                            mo => Process.GetProcessById(Convert.ToInt32(mo["ProcessID"]))
-                        );
+                        var subProcs = listMOs
+                            .Select(mo =>
+                            {
+                                // It is possible that the process has exited since we got the list from WMI.
+                                // See BL-15638.
+                                try
+                                {
+                                    return Process.GetProcessById(Convert.ToInt32(mo["ProcessID"]));
+                                }
+                                catch
+                                {
+                                    return null;
+                                }
+                            })
+                            .Where(p => p != null)
+                            .ToList();
                         if (subProcs.Any())
                             subProcesses.AddRange(subProcs);
                     }

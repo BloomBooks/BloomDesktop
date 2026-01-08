@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using Bloom.Publish.Video;
 using Moq;
-using Assert = NUnit.Framework.Assert;
 using NUnit.Framework;
 using SIL.IO;
+using Assert = NUnit.Framework.Assert;
 
 namespace BloomTests.Publish.Video
 {

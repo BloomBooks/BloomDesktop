@@ -18,20 +18,16 @@ namespace BloomTests.Book
         [Test]
         public void CheckDescriptionsForAllImages_No_Images_NoProblems()
         {
-            var html =
-                @"<html>
-					<body>
-						<div class='bloom-page'>
+            var bodyContent =
+                @"<div class='bloom-page'>
 							<div class='marginBox'>
 								<div class='bloom-translationGroup normal-style'>
 									<div class='bloom-editable normal-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on' lang='en'>
 									</div>
 								</div>
 							</div>
-						</div>
-					</body>
-				</html>";
-            var testBook = CreateBookWithPhysicalFile(html);
+						</div>";
+            var testBook = CreateBookWithPhysicalFile(bodyContent);
             var results = AccessibilityCheckers.CheckDescriptionsForAllImages(testBook);
             Assert.AreEqual(0, results.Count(), "No problems were expected.");
         }
@@ -109,14 +105,12 @@ namespace BloomTests.Book
 					</div>
 				</div>";
 
-            var html =
-                $@"<html> <body>
-					{MakeHtmlForPageWithImage(divWithDescription)}
+            var bodyContent =
+                $@"{MakeHtmlForPageWithImage(divWithDescription)}
 					{MakeHtmlForPageWithImage(divWithoutCorrectLangDescription)}
 					{MakeHtmlForPageWithImage(divWithDescription)}
-					{MakeHtmlForPageWithImage(divWithoutCorrectLangDescription)}
-				</body> </html>";
-            var testBook = CreateBookWithPhysicalFile(html);
+					{MakeHtmlForPageWithImage(divWithoutCorrectLangDescription)}";
+            var testBook = CreateBookWithPhysicalFile(bodyContent);
             var results = AccessibilityCheckers.CheckDescriptionsForAllImages(testBook);
             Assert.AreEqual(2, results.Count(), "Should point out missing image description");
         }
@@ -138,14 +132,12 @@ namespace BloomTests.Book
 					</div>
 				</div>";
 
-            var html =
-                $@"<html> <body>
-					{MakeHtmlForPageWithImage(divWithDescription)}
+            var bodyContent =
+                $@"{MakeHtmlForPageWithImage(divWithDescription)}
 					{MakeHtmlForPageWithImage(divWithoutCorrectLangDescription)}
 					{MakeHtmlForPageWithImageAriaHidden(divWithDescription)}
-					{MakeHtmlForPageWithImageAriaHidden(divWithoutCorrectLangDescription)}
-				</body> </html>";
-            var testBook = CreateBookWithPhysicalFile(html);
+					{MakeHtmlForPageWithImageAriaHidden(divWithoutCorrectLangDescription)}";
+            var testBook = CreateBookWithPhysicalFile(bodyContent);
             var results = AccessibilityCheckers.CheckDescriptionsForAllImages(testBook);
             Assert.AreEqual(1, results.Count(), "Should point out missing image description");
         }
@@ -371,11 +363,8 @@ namespace BloomTests.Book
             string pageLabel = "Some page label"
         )
         {
-            var html =
-                $@"<html> <body>
-					{MakeHtmlForPageWithImage(translationGroupText, pageNumber, pageLabel)}
-				</body> </html>";
-            return CreateBookWithPhysicalFile(html);
+            var bodyContent = MakeHtmlForPageWithImage(translationGroupText, pageNumber, pageLabel);
+            return CreateBookWithPhysicalFile(bodyContent);
         }
 
         private string MakeHtmlForPageWithImage(
@@ -418,11 +407,8 @@ namespace BloomTests.Book
             string pageLabel = "Some page label"
         )
         {
-            var html =
-                $@"<html> <body>
-					{GetHtmlForPage(translationGroupText, pageNumber, pageLabel)}
-				</body> </html>";
-            var book = CreateBookWithPhysicalFile(html);
+            var bodyContent = GetHtmlForPage(translationGroupText, pageNumber, pageLabel);
+            var book = CreateBookWithPhysicalFile(bodyContent);
 
             var audioDir = AudioProcessor.GetAudioFolderPath(book.FolderPath);
             Directory.CreateDirectory(audioDir);

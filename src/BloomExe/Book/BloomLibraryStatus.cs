@@ -1,5 +1,5 @@
-﻿using Bloom.web;
-using System;
+﻿using System;
+using Bloom.web;
 
 namespace Bloom.Book
 {
@@ -9,7 +9,7 @@ namespace Bloom.Book
         InProgress, // includes New or Updated harvestStates in book record
         Failed,
         FailedIndefinitely, // marked by staff as not worth trying again
-        Multiple // multiple books with this id, who knows what the harvester state of this is
+        Multiple, // multiple books with this id, who knows what the harvester state of this is
     }
 
     public class BloomLibraryStatus

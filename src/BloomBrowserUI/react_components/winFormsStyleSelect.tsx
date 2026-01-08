@@ -1,14 +1,17 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { ThemeProvider, Theme } from "@mui/material/styles";
 import { makeStyles } from "@mui/styles";
 import { lightTheme } from "../bloomMaterialUITheme";
-import { FormControl, MenuProps, Select } from "@mui/material";
+import {
+    FormControl,
+    MenuProps,
+    Select,
+    SelectChangeEvent,
+} from "@mui/material";
 
 declare module "@mui/styles/defaultTheme" {
-    // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-empty-interface
     interface DefaultTheme extends Theme {}
 }
 
@@ -17,15 +20,15 @@ declare module "@mui/styles/defaultTheme" {
 const useStyles = makeStyles(() => ({
     menuPaper: {
         maxHeight: 225,
-        padding: 3
-    }
+        padding: 3,
+    },
 }));
 
 interface FormsSelectProps {
     // Originally used to distinguish multiple Selects on one container, but as we move to having
     // more and more of Bloom in React, it's probably better that each Select have its own key.
     idKey?: string;
-    onChangeHandler: (event: any) => void;
+    onChangeHandler: (event: SelectChangeEvent) => void;
     currentValue: string;
     // Use this if you need to modify the style of popup menus by increasing z-index
     // (e.g., to make the popup be in front of the bloom font dialog)
@@ -34,11 +37,13 @@ interface FormsSelectProps {
 
 // This component initially attempted to imitate a winforms combobox in React.
 // Since we're moving away from winforms, that restriction has relaxed somewhat.
-const WinFormsStyleSelect: React.FunctionComponent<FormsSelectProps> = props => {
+const WinFormsStyleSelect: React.FunctionComponent<FormsSelectProps> = (
+    props,
+) => {
     const selectMenuProps: Partial<MenuProps> = {
         classes: {
-            paper: useStyles().menuPaper
-        }
+            paper: useStyles().menuPaper,
+        },
     };
 
     if (props.popoverZindex) {
@@ -47,9 +52,9 @@ const WinFormsStyleSelect: React.FunctionComponent<FormsSelectProps> = props => 
                 ...lightTheme.components.MuiPopover,
                 styleOverrides: {
                     root: {
-                        zIndex: props.popoverZindex + " !important"
-                    }
-                }
+                        zIndex: props.popoverZindex + " !important",
+                    },
+                },
             };
     }
 

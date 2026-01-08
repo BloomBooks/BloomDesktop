@@ -9,17 +9,18 @@
  *  Modified August 2015 to add instructions at the bottom
  *  Modified September 2015 to set focus before selection in restoreCaretPosition()
  */
+import jQuery from "jquery";
 import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
 import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
-require("./jquery.mousewheel.js");
+import "./jquery.mousewheel.js";
 
-(function($, window, undefined) {
+(function ($, window, undefined) {
     var lengthOfPreviouslyInsertedCharacter = 1; //when we convert to Typescript, this is a member variable
 
     var pluginName = "longPress",
         document = window.document,
         defaults = {
-            instructions: ""
+            instructions: "",
         };
 
     // See https://issues.bloomlibrary.org/youtrack/issue/BL-8683.
@@ -112,7 +113,7 @@ require("./jquery.mousewheel.js");
         "=": "≈≠≡",
         "/": "÷",
         "\u0020": narrowNoBreakSpace, // Spacebar; see comment on narrowNoBreakSpace above
-        "\u00a0": narrowNoBreakSpace // Spacebar (see BL-12191); see comment on narrowNoBreakSpace above
+        "\u00a0": narrowNoBreakSpace, // Spacebar (see BL-12191); see comment on narrowNoBreakSpace above
     });
     // http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
     // 8  backspace
@@ -135,41 +136,10 @@ require("./jquery.mousewheel.js");
     // Review: there are others we could add, function keys, num lock, scroll lock, break, forward & back slash, etc.
     //  not sure how much we gain from that...
     var ignoredKeyDownKeyCodes = [
-        8,
-        9,
-        13,
-        16,
-        17,
-        18,
-        27,
-        33,
-        34,
-        35,
-        36,
-        37,
-        38,
-        39,
-        40,
-        45,
-        46
+        8, 9, 13, 16, 17, 18, 27, 33, 34, 35, 36, 37, 38, 39, 40, 45, 46,
     ];
     var ignoredKeyUpKeys = [
-        8,
-        9,
-        13,
-        /*16,*/ 17,
-        18,
-        27,
-        33,
-        34,
-        35,
-        36,
-        37,
-        38,
-        39,
-        40,
-        45,
-        46
+        8, 9, 13, /*16,*/ 17, 18, 27, 33, 34, 35, 36, 37, 38, 39, 40, 45, 46,
     ];
 
     var selectedCharIndex;
@@ -182,7 +152,7 @@ require("./jquery.mousewheel.js");
     var popup;
     var longpressPopupVisible = false;
 
-    $(window).mousewheel(onWheel);
+    window.addEventListener("wheel", onWheel, { passive: false });
 
     //https://stackoverflow.com/questions/10758913/unicode-string-split-by-chars/39846360#39846360
     function splitIntoGraphemes(s) {
@@ -199,7 +169,7 @@ require("./jquery.mousewheel.js");
     //     'a': [ā, a_, ɑ]  (the underline there represents the "combining macron below" (U+0331))
     function splitCharacterSetsByGrapheme(sets) {
         var output = {};
-        Object.keys(sets).forEach(key => {
+        Object.keys(sets).forEach((key) => {
             output[key] = splitIntoGraphemes(sets[key]);
         });
         return output;
@@ -282,12 +252,12 @@ require("./jquery.mousewheel.js");
     }
     function onTimer() {
         var typedChar = isTextArea()
-            ? $(activeElement)
-                  .val()
-                  .split("")[getTextAreaCaretPosition(activeElement) - 1]
-            : $(activeElement)
-                  .text()
-                  .split("")[getCaretPositionOffset(activeElement) - 1];
+            ? $(activeElement).val().split("")[
+                  getTextAreaCaretPosition(activeElement) - 1
+              ]
+            : $(activeElement).text().split("")[
+                  getCaretPositionOffset(activeElement) - 1
+              ];
 
         if (characterSets[typedChar]) {
             storeCaretPosition();
@@ -302,7 +272,7 @@ require("./jquery.mousewheel.js");
         [nonBreakingHyphen]:
             "- (non-breaking hyphen / trait d'union insécable)",
         [enDash]: "– (en dash / tiret demi-cadratin)",
-        [emDash]: "— (em dash / tiret cadratin)"
+        [emDash]: "— (em dash / tiret cadratin)",
     };
     function createOneButton(replacementText, shortcutText) {
         let cssClass = "long-press-letter";
@@ -310,7 +280,7 @@ require("./jquery.mousewheel.js");
 
         if (
             Object.keys(charactersRepresentedByAlternativeText).includes(
-                replacementText
+                replacementText,
             )
         ) {
             cssClass += " small-text";
@@ -319,7 +289,7 @@ require("./jquery.mousewheel.js");
         }
 
         const letter = $(
-            `<li class="${cssClass}" data-value=${replacementText} data-shortcut="${shortcutText}">${buttonText}</li>`
+            `<li class="${cssClass}" data-value=${replacementText} data-shortcut="${shortcutText}">${buttonText}</li>`,
         );
         letter.mouseenter(activateLetter);
         letter.click(onPopupLetterClick);
@@ -367,7 +337,7 @@ require("./jquery.mousewheel.js");
     function activateRelativeLetter(i) {
         selectCharIndex(
             ($(".long-press-letter").length + selectedCharIndex + i) %
-                $(".long-press-letter").length
+                $(".long-press-letter").length,
         );
     }
     function activateNextLetter() {
@@ -380,16 +350,31 @@ require("./jquery.mousewheel.js");
         longpressPopupVisible = false;
         popup.detach();
     }
-    function onWheel(e, delta, deltaX, deltaY) {
+
+    // Update handler signature to accept a native WheelEvent and normalize delta.
+    function onWheel(e) {
         if ($(".long-press-popup").length == 0) return;
+        // We need preventDefault to stop the page from scrolling when the popup is open.
         e.preventDefault();
-        delta < 0 ? activateNextLetter() : activePreviousLetter();
+
+        // Normalize delta so positive means scroll down (next), negative means up (previous).
+        // WheelEvent: deltaY > 0 is down. Legacy wheelDelta: positive is up, so negate it.
+        const dy =
+            typeof e.deltaY === "number"
+                ? e.deltaY
+                : typeof e.wheelDelta === "number"
+                ? -e.wheelDelta
+                : 0;
+
+        if (dy > 0) {
+            activateNextLetter();
+        } else if (dy < 0) {
+            activePreviousLetter();
+        }
     }
     function selectCharIndex(i) {
         $(".long-press-letter.selected").removeClass("selected");
-        $(".long-press-letter")
-            .eq(i)
-            .addClass("selected");
+        $(".long-press-letter").eq(i).addClass("selected");
         selectedCharIndex = i;
         updateChar();
     }
@@ -409,9 +394,8 @@ require("./jquery.mousewheel.js");
         if (isTextArea()) {
             textAreaCaretPosition = getTextAreaCaretPosition(activeElement);
         } else {
-            storedOffset = EditableDivUtils.getElementSelectionIndex(
-                activeElement
-            );
+            storedOffset =
+                EditableDivUtils.getElementSelectionIndex(activeElement);
         }
     }
 
@@ -454,7 +438,7 @@ require("./jquery.mousewheel.js");
                         // It's possible that we're at a boundary between two text nodes, especially since
                         // longpress likes to insert the text as an extra node, but in that case it doesn't
                         // matter which one we make the selection in.)
-                        false
+                        false,
                     );
                     // Check for a problem where something, probably CkEditor, inserts a zero-width space before the
                     // special character we just inserted.
@@ -482,7 +466,7 @@ require("./jquery.mousewheel.js");
     }
 
     function setFocusDelayed() {
-        window.setTimeout(function() {
+        window.setTimeout(function () {
             if (activeElement && typeof activeElement.focus != "undefined") {
                 activeElement.focus();
             }
@@ -493,9 +477,7 @@ require("./jquery.mousewheel.js");
     function replacePreviousLetterWithNewLetter(newLetter) {
         if (isTextArea()) {
             const pos = getTextAreaCaretPosition(activeElement);
-            const arVal = $(activeElement)
-                .val()
-                .split("");
+            const arVal = $(activeElement).val().split("");
             arVal[pos - 1] = newLetter;
             $(activeElement).val(arVal.join(""));
             setTextAreaCaretPosition(activeElement, pos);
@@ -515,20 +497,23 @@ require("./jquery.mousewheel.js");
                     //That code has been changed, so this should not happen, but if it does, this will save
                     //some debugging time.
                     if (insertPointRange.startContainer.nodeName != "#text") {
-                        throw "longpress: aborting becuase deleteContents() would have deleted all contents of a " +
-                            insertPointRange.startContainer.nodeName;
+                        throw (
+                            "longpress: aborting becuase deleteContents() would have deleted all contents of a " +
+                            insertPointRange.startContainer.nodeName
+                        );
                     }
 
                     //remove the character they typed to open this tool
-                    const rangeToRemoveStarterCharacter = insertPointRange.cloneRange();
+                    const rangeToRemoveStarterCharacter =
+                        insertPointRange.cloneRange();
                     rangeToRemoveStarterCharacter.setStart(
                         insertPointRange.startContainer,
                         insertPointRange.startOffset -
-                            lengthOfPreviouslyInsertedCharacter
+                            lengthOfPreviouslyInsertedCharacter,
                     );
                     rangeToRemoveStarterCharacter.setEnd(
                         insertPointRange.startContainer,
-                        insertPointRange.startOffset
+                        insertPointRange.startOffset,
                     );
                     rangeToRemoveStarterCharacter.deleteContents();
 
@@ -618,25 +603,25 @@ require("./jquery.mousewheel.js");
         popup = window.top.$(
             '<div id="longpress" class="long-press-popup"><ul />' +
                 this.options.instructions +
-                "</div>"
+                "</div>",
         );
         this.init();
     }
 
     LongPress.prototype = {
-        init: function() {
+        init: function () {
             $(this.element).keydown(onKeyDown);
             $(this.element).keyup(onKeyUp);
-        }
+        },
     };
 
-    $.fn[pluginName] = function(options) {
-        return this.each(function() {
+    $.fn[pluginName] = function (options) {
+        return this.each(function () {
             if (!$.data(this, "plugin_" + pluginName)) {
                 $.data(
                     this,
                     "plugin_" + pluginName,
-                    new LongPress(this, options)
+                    new LongPress(this, options),
                 );
             }
         });

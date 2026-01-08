@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { get } from "../utils/bloomApi";
@@ -11,7 +10,7 @@ import { LocalizedString } from "./l10nComponents";
 
 export const BookOnBlorgBadge: React.FunctionComponent<{
     book: any;
-}> = props => {
+}> = (props) => {
     const [bookOnBlorgUrl, setBookOnBlorgUrl] = useState("");
 
     enum BadgeType {
@@ -19,7 +18,7 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
         Harvesting,
         Published,
         Draft,
-        Problem
+        Problem,
     }
 
     const [badge, setBadge] = useState<BadgeType>(BadgeType.None);
@@ -27,7 +26,7 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
     const updateBadge = () => {
         get(
             `collections/getBookOnBloomBadgeInfo?book-id=${props.book.id}`,
-            result => {
+            (result) => {
                 if (result.data.bookUrl) {
                     setBookOnBlorgUrl(result.data.bookUrl);
 
@@ -49,18 +48,18 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
                 } else {
                     setBadge(BadgeType.None);
                 }
-            }
+            },
         );
     };
 
     useSubscribeToWebSocketForStringMessage(
         "bookCollection",
         "updateBookBadge",
-        idMsg => {
+        (idMsg) => {
             if (idMsg === props.book.id) {
                 updateBadge();
             }
-        }
+        },
     );
 
     useEffect(() => {
@@ -132,10 +131,10 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
                                 badge === BadgeType.Published
                                     ? "/bloom/images/on-blorg-badges/on-blorg-normal.svg"
                                     : badge === BadgeType.Draft
-                                    ? "/bloom/images/on-blorg-badges/on-blorg-draft.svg"
-                                    : badge === BadgeType.Harvesting
-                                    ? "/bloom/images/on-blorg-badges/on-blorg-harvesting.svg"
-                                    : "/bloom/images/on-blorg-badges/on-blorg-problem.svg"
+                                      ? "/bloom/images/on-blorg-badges/on-blorg-draft.svg"
+                                      : badge === BadgeType.Harvesting
+                                        ? "/bloom/images/on-blorg-badges/on-blorg-harvesting.svg"
+                                        : "/bloom/images/on-blorg-badges/on-blorg-problem.svg"
                             }
                         />
                     </BloomTooltip>

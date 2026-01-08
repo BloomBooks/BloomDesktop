@@ -1,4 +1,4 @@
-/// <reference path="../../../typings/jquery/jquery.d.ts" />
+import jQuery from "jquery";
 
 /**
  * jquery.div-columns.js
@@ -18,7 +18,7 @@ interface JQueryStatic {
  * Use an 'Immediately Invoked Function Expression' to make this compatible with jQuery.noConflict().
  * @param {jQuery} $
  */
-($ => {
+(($) => {
     $.extend({
         /**
          * Set the width of the column (div) to be a multiple of the min-width.
@@ -26,7 +26,7 @@ interface JQueryStatic {
          * will line up correctly.
          * @param {String} cssClassName
          */
-        divsToColumns: cssClassName => {
+        divsToColumns: (cssClassName) => {
             const div = $("div." + cssClassName + ":first");
             if (div.length === 0) return;
 
@@ -35,7 +35,7 @@ interface JQueryStatic {
             const marginRight = parseInt(div.css("margin-right"));
 
             // limit the list to elements with text wider than min-width allows
-            const elements = $("div." + cssClassName).filter(function() {
+            const elements = $("div." + cssClassName).filter(function () {
                 return this.offsetWidth > minWidth;
             });
 
@@ -55,7 +55,7 @@ interface JQueryStatic {
          */
         divsToColumnsBasedOnLongestWord: (
             cssClassName: string,
-            longestWord: string
+            longestWord: string,
         ) => {
             const div = $("div." + cssClassName + ":first");
             if (div.length === 0) return;
@@ -71,7 +71,7 @@ interface JQueryStatic {
             let colCount = Math.floor(parentWidth / maxWidth);
             if (colCount === 0) colCount = 1;
             parent.css("column-count", colCount);
-        }
+        },
     });
 
     /**
@@ -88,7 +88,7 @@ interface JQueryStatic {
         const _lastSpan = jQuery("span").last();
         _lastSpan.css({
             "font-size": _t.css("font-size"),
-            "font-family": _t.css("font-family")
+            "font-family": _t.css("font-family"),
         });
 
         const width = _lastSpan.width() + 5;

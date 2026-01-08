@@ -89,8 +89,8 @@ namespace Bloom.web.controllers
             // 1) What is the longest prefix?
             // 2) All the valid lengths of the prefixes
             // So we create this list to help us look up that info easily later
-            this.keyLengthsThatHaveMappings = this.mappings.Keys
-                .Select(x => x.Length) // the number of characters in the key (unmapped) side of the mapping
+            this.keyLengthsThatHaveMappings = this
+                .mappings.Keys.Select(x => x.Length) // the number of characters in the key (unmapped) side of the mapping
                 .Where(x => x > 0) // Ensure no empty strings
                 .Distinct() // Make distinct count
                 .OrderByDescending(x => x); // Sorted it from biggest to smallest

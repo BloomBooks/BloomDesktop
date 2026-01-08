@@ -6,7 +6,7 @@ import * as React from "react";
 export const VisuallyImpairedIcon: React.FunctionComponent<{
     className?: string;
     color?: string;
-}> = props => {
+}> = (props) => {
     return (
         <svg
             className={props.className}

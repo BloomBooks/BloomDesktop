@@ -12,7 +12,7 @@ namespace BloomTests.web
     {
         First,
         Second,
-        Third
+        Third,
     }
 
     /// <summary>

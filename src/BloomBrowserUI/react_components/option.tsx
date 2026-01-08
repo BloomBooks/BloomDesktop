@@ -1,8 +1,7 @@
-import * as React from "react";
 import {
     ILocalizationProps,
     ILocalizationState,
-    LocalizableElement
+    LocalizableElement,
 } from "./l10nComponents";
 
 interface IOptionProps extends ILocalizationProps {

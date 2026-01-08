@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import FormGroup from "@mui/material/FormGroup";
 import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
@@ -9,7 +8,7 @@ import {
     post,
     useApiBoolean,
     useApiObject,
-    useApiStringState
+    useApiStringState,
 } from "../../utils/bloomApi";
 import { kBloomBlue } from "../../utils/colorUtils";
 import { useState } from "react";
@@ -29,7 +28,7 @@ interface PdfReadyMessage {
 export const PDFPrintFeaturesGroup: React.FunctionComponent<{
     onChange?: (mode: string) => void;
     onGotPdf: (path: string) => void;
-}> = props => {
+}> = (props) => {
     useSubscribeToWebSocketForObject(
         "publish",
         "pdfReady",
@@ -39,7 +38,7 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                 // indicates canceled
                 setActiveButton(""); // no pdf, no button selected
             }
-        }
+        },
     );
     const [activeButton, setActiveButton] = useState("");
     const [allowBooklet] = useApiBoolean("publish/pdf/allowBooklet", true);
@@ -48,15 +47,15 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
     const noProfile = useL10n("None", "PublishTab.PdfMaker.None");
     const cmykSwop2 = useL10n(
         "U.S. Web Coated (SWOP) v2",
-        "PublishTab.PdfMaker.PdfWithCmykSwopV2"
+        "PublishTab.PdfMaker.PdfWithCmykSwopV2",
     );
     const [allowFullBleed] = useApiBoolean("publish/pdf/allowFullBleed", false);
     const [colorProfile, setColorProfile] = useApiStringState(
         "publish/pdf/colorProfile",
-        "none"
+        "none",
     );
     const colorProfiles = useApiObject<string[]>("publish/pdf/colorProfiles", [
-        "none"
+        "none",
     ]);
     return (
         <div
@@ -67,7 +66,7 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
             <SettingsGroup
                 label={useL10n(
                     "Booklet Mode",
-                    "PublishTab.PdfPrint.BookletModes"
+                    "PublishTab.PdfPrint.BookletModes",
                 )}
             >
                 <div
@@ -97,7 +96,7 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                         tipWhenDisabled={{
                             english:
                                 "This is disabled because Bloom cannot make booklets using the current size and orientation.",
-                            l10nKey: "PublishTab.NoBookletsMessage"
+                            l10nKey: "PublishTab.NoBookletsMessage",
                         }}
                         showDisabled={!allowBooklet}
                     >
@@ -122,7 +121,7 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                         tipWhenDisabled={{
                             english:
                                 "This is disabled because Bloom cannot make booklets using the current size and orientation.",
-                            l10nKey: "PublishTab.NoBookletsMessage"
+                            l10nKey: "PublishTab.NoBookletsMessage",
                         }}
                         showDisabled={!allowBooklet}
                     >
@@ -146,7 +145,7 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
             <SettingsGroup
                 label={useL10n(
                     "Prepare for Printshop",
-                    "PublishTab.PdfPrint.PrintshopOptions"
+                    "PublishTab.PdfPrint.PrintshopOptions",
                 )}
             >
                 <FormGroup>
@@ -156,7 +155,7 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                             // This is a lame explanation... at least it tells us that the problem is not the enterprise status?
                             tipWhenDisabled={{
                                 l10nKey:
-                                    "PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed"
+                                    "PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed",
                             }}
                         >
                             <ApiCheckbox
@@ -202,11 +201,11 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                                         ? colorProfile
                                         : "none"
                                 }
-                                onChange={e => {
+                                onChange={(e) => {
                                     const newVal = e.target.value as string;
                                     if (!colorProfiles.includes(newVal)) {
                                         console.error(
-                                            `Unexpected color profile ${newVal}`
+                                            `Unexpected color profile ${newVal}`,
                                         );
                                         return;
                                     }
@@ -217,13 +216,13 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                                     }
                                 }}
                             >
-                                {colorProfiles.map(profile => (
+                                {colorProfiles.map((profile) => (
                                     <MenuItem key={profile} value={profile}>
                                         {profile === "none"
                                             ? noProfile
                                             : profile === "USWebCoatedSWOP"
-                                            ? cmykSwop2
-                                            : profile}
+                                              ? cmykSwop2
+                                              : profile}
                                     </MenuItem>
                                 ))}
                             </Select>
@@ -245,7 +244,7 @@ const PdfModeButton: React.FunctionComponent<{
     selected: boolean;
     title?: string;
     disabled?: boolean;
-}> = props => {
+}> = (props) => {
     const title = useL10n(props.label, props.labelId);
     const description = useL10n(props.desc, props.descId);
 

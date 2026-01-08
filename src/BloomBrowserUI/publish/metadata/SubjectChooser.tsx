@@ -16,7 +16,7 @@ export class SubjectChooser extends React.Component<IProps> {
     public render() {
         SubjectTreeNode.markSelectedSubjectNodes(
             themaSubjectData,
-            this.props.subjects.value
+            this.props.subjects.value,
         );
         // The current react-dropdown-tree-select "button" shows the label of only
         // a parent node if checked, and none of the labels of its children even if
@@ -29,7 +29,6 @@ export class SubjectChooser extends React.Component<IProps> {
                 <DropdownTreeSelect
                     data={themaSubjectData}
                     onChange={(a, b) => this.handleSubjectChange(a, b)}
-                    placeholderText={""}
                 />
             </div>
         );
@@ -42,7 +41,7 @@ export class SubjectChooser extends React.Component<IProps> {
     // Public for testing.
     public handleSubjectChange(
         currentNode: SubjectTreeNode,
-        selectedNodes: SubjectTreeNode[] | null // not useful for our purposes: branches (parents) only
+        selectedNodes: SubjectTreeNode[] | null, // not useful for our purposes: branches (parents) only
     ) {
         let metadataSubjects: SubjectTreeNode[] = this.props.subjects.value;
         if (!metadataSubjects) metadataSubjects = [];
@@ -65,9 +64,9 @@ export class SubjectChooser extends React.Component<IProps> {
 
     private remove(
         subjects: SubjectTreeNode[],
-        subjectToRemove: SubjectTreeNode
+        subjectToRemove: SubjectTreeNode,
     ) {
-        const matches = subjects.filter(subj => {
+        const matches = subjects.filter((subj) => {
             return subj.value === subjectToRemove.value;
         });
         if (matches.length !== 1) {

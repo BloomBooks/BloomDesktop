@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { useL10n } from "../../react_components/l10nHooks";
 import Typography from "@mui/material/Typography";
@@ -11,7 +10,7 @@ export const PublishScreenBanner: React.FunctionComponent<{
     titleL10nId: string;
     descriptionMarkdown?: string;
     descriptionL10nId?: string;
-}> = props => {
+}> = (props) => {
     const localizedTitle = useL10n(props.titleEnglish, props.titleL10nId);
 
     return (

@@ -14,7 +14,7 @@ export const InfoIconUrl: React.FunctionComponent<{
     // optional, specifies the tooltip text. If not provided, it should just show the href,
     // but I haven't tested that.
     l10nKey?: string;
-}> = props => {
+}> = (props) => {
     // English is deliberately empty. If we don't get an l10nKey, localizedTip will be empty,
     // so we should get the href below.
     const localizedTip = useL10n("", props.l10nKey ?? null);

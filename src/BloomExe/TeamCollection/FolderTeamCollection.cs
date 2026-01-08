@@ -7,6 +7,8 @@ using System.Text.RegularExpressions;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
 using Bloom.MiscUI;
+using Bloom.Registration;
+using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
 using L10NSharp;
@@ -23,8 +25,8 @@ namespace Bloom.TeamCollection
     public class FolderTeamCollection : TeamCollection
     {
         private string _repoFolderPath; // the (presumably somehow shared) folder storing the repo
-        private FileSystemWatcher _booksWatcher; // watches the _repoFolderPath/Books for changes
-        private FileSystemWatcher _otherWatcher; // watches the _repoFolderPath/Other for changes
+        private FileSystemWatcherWrapper _booksWatcher; // watches the _repoFolderPath/Books for changes
+        private FileSystemWatcherWrapper _otherWatcher; // watches the _repoFolderPath/Other for changes
 
         // These four variables work together to track the last book we modified and whether we
         // are still doing so (and to lock access to the other two). They are manipulated
@@ -116,8 +118,8 @@ namespace Bloom.TeamCollection
                     // operation, such as checking out and then immediately in again (BL-9926).
                     // Also, if there is any sort of crash while writing the book, we won't
                     // leave a corrupt, incomplete zip file pretending to be a valid book.
-                    // I'm not entirely happy with putting the tmp file in the shared
-                    // directory. It's conceivable that Dropbox might try to replicate it.
+                    // We put the temp file in an unsynced folder in the shared folder.
+                    // I wish we didn't need this folder and could use the system temp folder.
                     // But RobustFile.Replace() won't handle things on different volumes,
                     // and we can't count on the system temp folder being on the same volume.
                     // In fact, in the LAN case, the shared directory may be the ONLY place
@@ -126,7 +128,11 @@ namespace Bloom.TeamCollection
                     // Dropbox sometimes throws up user warnings when Bloom deletes a Dropbox file;
                     // it doesn't seem to do so with Replace(). So this is the best option
                     // I can find.
-                    pathToWrite = AvailablePath(bookFolderName, bookDirectoryPath, ".tmp");
+                    pathToWrite = AvailablePath(
+                        bookFolderName,
+                        GetFolderForTempBookWriting(bookDirectoryPath),
+                        ".tmp"
+                    );
                 }
             }
 
@@ -168,6 +174,65 @@ namespace Bloom.TeamCollection
                 _lastWriteBookTime = DateTime.Now;
                 _writeBookInProgress = false;
             }
+        }
+
+        string GetFolderForTempBookWriting(string sharedBookFolder)
+        {
+            var tempPath = Path.Combine(sharedBookFolder, "Temp");
+            if (Directory.Exists(tempPath))
+            {
+                // We've had some issues with .tmp files being accumulated, presumably
+                // because something went wrong with a Save. So if there are old ones hanging
+                // around, delete them.
+                var tmpFiles = Directory
+                    .EnumerateFiles(tempPath, "*.tmp")
+                    .Where(t => new FileInfo(t).LastWriteTime < DateTime.Now.AddDays(-1))
+                    .ToList();
+                var deletedFiles = 0;
+                foreach (var tmpFile in tmpFiles)
+                {
+                    try
+                    {
+                        RobustFile.Delete(tmpFile);
+                        // to save time we'll do a limited amount of cleanup each Save.
+                        if (deletedFiles++ > 5)
+                            break;
+                    }
+                    catch (Exception) { }
+                }
+            }
+            else
+            {
+                Directory.CreateDirectory(tempPath);
+                // Everything in this folder should not be sync'd.
+                // This should
+                // - prevent Dropbox locking our tmp files
+                // - prevent wasted time and bandwidth
+                // - prevent any kind of conflict over these tmp files; they are private to this Bloom
+                // (The above applies to Dropbox. In a LAN collection, of course, the Temp folder
+                // is still shared. However, each Bloom finds a unique name each time it wants one,
+                // so there should not be conflict there, either.)
+                IgnoreDropboxFileOrFolder(tempPath);
+            }
+
+            return tempPath;
+        }
+
+        // google AI code to make file or folder be ignored by DropBox
+        // (that is, it will stay local but never be copied to the cloud)
+        private static void IgnoreDropboxFileOrFolder(string fullPath)
+        {
+            string powerShellPath = $"'{fullPath}'";
+            string command =
+                $"Set-Content -Path {powerShellPath} -Stream com.dropbox.ignored -Value 1";
+
+            var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+                "powershell.exe",
+                $"-Command \"{command}\"",
+                "", // working directory
+                10, // timeout in seconds
+                new SIL.Progress.NullProgress()
+            );
         }
 
         public override bool KnownToHaveBeenDeleted(string bookFolderPath)
@@ -457,11 +522,10 @@ namespace Bloom.TeamCollection
                 // changes until reloading for some other reason.
                 return Directory
                     .EnumerateFiles(Path.Combine(_repoFolderPath, "Other"))
-                    .Any(
-                        p => // We don't care about colorPalettes.json changing because the
-                            // local copy is always two-way merged with the repo copy.  See BL-14254.
-                            Path.GetFileName(p) != "colorPalettes.json"
-                            && new FileInfo(p).LastWriteTime > savedModTime
+                    .Any(p => // We don't care about colorPalettes.json changing because the
+                        // local copy is always two-way merged with the repo copy.  See BL-14254.
+                        Path.GetFileName(p) != "colorPalettes.json"
+                        && new FileInfo(p).LastWriteTime > savedModTime
                     );
             }
             catch (Exception ex)
@@ -739,7 +803,7 @@ namespace Bloom.TeamCollection
         protected internal override void StartMonitoring()
         {
             base.StartMonitoring();
-            _booksWatcher = new FileSystemWatcher();
+            _booksWatcher = new FileSystemWatcherWrapper();
 
             var booksPath = Path.Combine(_repoFolderPath, "Books");
             if (!Directory.Exists(booksPath))
@@ -761,7 +825,7 @@ namespace Bloom.TeamCollection
             // Begin watching.
             _booksWatcher.EnableRaisingEvents = true;
 
-            _otherWatcher = new FileSystemWatcher(Path.Combine(_repoFolderPath, "Other"));
+            _otherWatcher = new FileSystemWatcherWrapper(Path.Combine(_repoFolderPath, "Other"));
             _otherWatcher.NotifyFilter = NotifyFilters.LastWrite;
             _otherWatcher.DebounceChanged(OnCollectionFilesChanged, kDebouncePeriodInMs);
             _otherWatcher.EnableRaisingEvents = true;
@@ -786,6 +850,10 @@ namespace Bloom.TeamCollection
                 // (If by any chance a .tmp file gets propagated to another system, we're
                 // still not interested in it, so harmless to respond 'true'.)
                 if (Path.GetExtension(path) == ".tmp")
+                    return true;
+                // The creation of the temp folder where we write local stuff during put
+                // is not interesting.
+                if (path.Replace("\\", "/").ToLowerInvariant().EndsWith("/books/temp"))
                     return true;
                 // Not the book we most recently wrote, so not an 'own write'.
                 // Note that our zip library sometimes creates a temp file by adding a suffix to the
@@ -1048,7 +1116,7 @@ namespace Bloom.TeamCollection
                     + "Please try again later. If the problem continues, restart your computer.";
                 throw new CannotLockException(msg)
                 {
-                    SyncAgent = isDropbox ? @"Dropbox" : "Unknown"
+                    SyncAgent = isDropbox ? @"Dropbox" : "Unknown",
                 };
             }
             lock (_lockObject)
@@ -1156,7 +1224,7 @@ namespace Bloom.TeamCollection
             TeamCollectionManager tcManager
         )
         {
-            if (!PromptForSufficientRegistrationIfNeeded())
+            if (!RegistrationManager.PromptForRegistrationIfNeeded())
                 return null;
 
             _joinCollectionPath = path;
@@ -1211,7 +1279,7 @@ namespace Bloom.TeamCollection
                         conflictingCollection = repoFolderPathFromLinkPath,
                         joiningRepo = repoFolder,
                         joiningGuid,
-                        localGuid
+                        localGuid,
                     },
                     "Join Team Collection"
                 )
@@ -1219,10 +1287,13 @@ namespace Bloom.TeamCollection
             {
                 dlg.Width = 560;
                 dlg.Height = 400;
-                // This dialog is neater without a task bar. We don't need to be able to
+                // This dialog is neater without a title bar. We don't need to be able to
                 // drag it around. There's nothing left to give it one if we don't set a title
                 // and remove the control box.
                 dlg.ControlBox = false;
+                // It is good to have this dialog with a task bar since no other window is giving a task bar,
+                // so if someone brings another window to the foreground, it will be easier to get this back
+                dlg.ShowInTaskbar = true;
                 dlg.ShowDialog();
             }
 

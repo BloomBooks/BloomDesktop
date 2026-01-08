@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useState } from "react";
@@ -14,15 +13,15 @@ import {
     BloomDialog,
     DialogBottomButtons,
     DialogTitle,
-    DialogMiddle
+    DialogMiddle,
 } from "../../react_components/BloomDialog/BloomDialog";
 import {
     IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
+    useSetupBloomDialog,
 } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import {
     DialogCancelButton,
-    DialogOkButton
+    DialogOkButton,
 } from "../../react_components/BloomDialog/commonDialogComponents";
 import { BloomTabs } from "../../react_components/BloomTabs";
 import { LocalizedString } from "../../react_components/l10nComponents";
@@ -52,12 +51,9 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
     isForBook: boolean; // or image
     data: ICopyrightAndLicenseData;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
-}> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+}> = (props) => {
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
 
     // Configure the local function (`show`) for showing the dialog to be the one derived from useSetupBloomDialog (`showDialog`)
     // which allows js launchers of the dialog to make it visible (by calling showCopyrightAndLicenseInfoOrDialog)
@@ -75,15 +71,13 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
         postBoolean("editView/setModalState", propsForBloomDialog.open);
     }, [propsForBloomDialog.open]);
 
-    const [
-        useOriginalCopyrightAndLicense,
-        setUseOriginalCopyrightAndLicense
-    ] = useState(
-        !!props.data.derivativeInfo &&
-            props.data.derivativeInfo.useOriginalCopyright
-    );
+    const [useOriginalCopyrightAndLicense, setUseOriginalCopyrightAndLicense] =
+        useState(
+            !!props.data.derivativeInfo &&
+                props.data.derivativeInfo.useOriginalCopyright,
+        );
     const [copyrightInfo, setCopyrightInfo] = useState(
-        props.data.copyrightInfo
+        props.data.copyrightInfo,
     );
     const [licenseInfo, setLicenseInfo] = useState(props.data.licenseInfo);
 
@@ -93,7 +87,7 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
     function onCopyrightChange(
         copyrightInfo: ICopyrightInfo,
         useOriginalCopyrightAndLicense: boolean,
-        isValid: boolean
+        isValid: boolean,
     ) {
         setCopyrightInfo(copyrightInfo);
         setUseOriginalCopyrightAndLicense(useOriginalCopyrightAndLicense);
@@ -110,12 +104,12 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
             isBookDerivative:
                 !!props.data.derivativeInfo &&
                 props.data.derivativeInfo.isBookDerivative,
-            useOriginalCopyright: useOriginalCopyrightAndLicense
+            useOriginalCopyright: useOriginalCopyrightAndLicense,
         };
         const data: ICopyrightAndLicenseData = {
             copyrightInfo,
             licenseInfo,
-            derivativeInfo
+            derivativeInfo,
         };
         postData(getApiUrlSuffix(props.isForBook), data);
         closeDialog();
@@ -130,29 +124,32 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
                     margin-bottom: 0;
                 `}
             />
-            {// This absolutely positioned div will appear to the right of the title text
-            licenseInfo && (
-                <div
-                    css={css`
-                        position: absolute;
-                        top: 20px;
-                        right: 20px;
-                        z-index: 1; // Otherwise, the DialogMiddle can end up on top of it
-                    `}
-                >
-                    <LicenseBadge
-                        licenseInfo={
-                            useOriginalCopyrightAndLicense
-                                ? props.data.derivativeInfo!.originalLicense!
-                                : licenseInfo
-                        }
-                        onChange={(newLicenseInfo: ILicenseInfo) => {
-                            setLicenseInfo(newLicenseInfo);
-                        }}
-                        disabled={useOriginalCopyrightAndLicense}
-                    />
-                </div>
-            )}
+            {
+                // This absolutely positioned div will appear to the right of the title text
+                licenseInfo && (
+                    <div
+                        css={css`
+                            position: absolute;
+                            top: 20px;
+                            right: 20px;
+                            z-index: 1; // Otherwise, the DialogMiddle can end up on top of it
+                        `}
+                    >
+                        <LicenseBadge
+                            licenseInfo={
+                                useOriginalCopyrightAndLicense
+                                    ? props.data.derivativeInfo!
+                                          .originalLicense!
+                                    : licenseInfo
+                            }
+                            onChange={(newLicenseInfo: ILicenseInfo) => {
+                                setLicenseInfo(newLicenseInfo);
+                            }}
+                            disabled={useOriginalCopyrightAndLicense}
+                        />
+                    </div>
+                )
+            }
             <DialogMiddle
                 css={css`
                     width: ${props.dialogEnvironment
@@ -195,12 +192,12 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
                                 onChange={(
                                     copyrightInfo,
                                     useOriginalCopyrightAndLicense,
-                                    isValid
+                                    isValid,
                                 ) =>
                                     onCopyrightChange(
                                         copyrightInfo,
                                         useOriginalCopyrightAndLicense,
-                                        isValid
+                                        isValid,
                                     )
                                 }
                             />
@@ -240,12 +237,12 @@ let show: () => void = () => {
 
 function showCopyrightAndLicenseDialog(
     isForBook: boolean,
-    data: ICopyrightAndLicenseData
+    data: ICopyrightAndLicenseData,
 ) {
     try {
         ReactDOM.render(
             <CopyrightAndLicenseDialog isForBook={isForBook} data={data} />,
-            getModalContainer()
+            getModalContainer(),
         );
     } catch (error) {
         console.error(error);
@@ -261,14 +258,14 @@ export function showCopyrightAndLicenseInfoOrDialog(imageUrl?: string) {
     get(
         // We don't uri-encode the imageUrl because we are getting it from the html tag (and therefore its already encoded).
         getApiUrlSuffix(isForBook) + (imageUrl ? `?imageUrl=${imageUrl}` : ""),
-        result => {
+        (result) => {
             if (result.data) {
                 showCopyrightAndLicenseDialog(isForBook, result.data);
             }
         },
-        err => {
+        (err) => {
             console.error(err);
-        }
+        },
     );
 }
 
@@ -284,7 +281,7 @@ function getApiUrlSuffix(isForBook: boolean): string {
 // So we just always use our own, new, unique container.
 function getModalContainer(): HTMLElement {
     let modalDialogContainer = document.getElementById(
-        "CopyrightAndLicenseDialogContainer"
+        "CopyrightAndLicenseDialogContainer",
     );
     if (modalDialogContainer) {
         modalDialogContainer.remove();

@@ -11,6 +11,12 @@
         .bloom-content3 {
             display: none;
         }
+        // makes the header look like those in other games (which are no-margin-page)
+        > .bloom-translationGroup:first-child {
+            margin-top: calc(var(--page-margin-top) * -1);
+            margin-left: calc(var(--page-margin-left) * -1);
+            margin-right: calc(var(--page-margin-right) * -1);
+        }
 
         // When an image is the prompt, it looks bad if a closely-cropped image is right up against the colored background of the page.
         // When an image is the answer, there is a white border but it still looks better with some padding. These don't necessarily
@@ -25,11 +31,6 @@
             border-radius: 8px;
         }
 
-        .Prompt-style {
-            // note that .Prompt-style is also a user-modifiable style in the .htm file
-            margin-bottom: 10px;
-        }
-
         .player-button {
             display: block;
             border: 1px solid var(--game-button-outline-color);
@@ -37,7 +38,7 @@
             margin-right: 7px; // need room to show any button shadows
 
             .bloom-translationGroup {
-                &.childOverflowingThis {
+                &.childOverflowingThis:after {
                     border-bottom: unset !important; // ENHANCE: instead, we shouldn't set this flag. We need a way to tell the JS that sets it not to.
                 }
 
@@ -272,13 +273,6 @@
 
     & {
         color: var(--game-text-color);
-        // in previous versions, a definition of Prompt-style set color:white.
-        // Migrating this causes a problem if the book is opened using an older Bloom.
-        // So, this stronger rule defeats that one.
-        .bloom-editable.Prompt-style {
-            color: var(--game-header-color);
-            background-color: var(--game-header-bg-color);
-        }
     }
     // page number
     &.numberedPage::after {
@@ -290,7 +284,8 @@
 
     .player-button {
         //box-shadow: 0px 4px 0px rgba(0, 0, 0, 0.32);
-        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.19),
+        box-shadow:
+            0 5px 10px rgba(0, 0, 0, 0.19),
             0 6px 6px rgba(0, 0, 0, 0.09);
         border-radius: 10px;
         background-color: white;

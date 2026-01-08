@@ -8,11 +8,11 @@ import {
     BloomDialog,
     DialogBottomButtons,
     DialogMiddle,
-    DialogTitle
+    DialogTitle,
 } from "./BloomDialog/BloomDialog";
 import {
     IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
+    useSetupBloomDialog,
 } from "./BloomDialog/BloomDialogPlumbing";
 import { useL10n } from "./l10nHooks";
 import { MuiRadio } from "./muiRadio";
@@ -20,22 +20,22 @@ import { DialogOkButton } from "./BloomDialog/commonDialogComponents";
 
 export const AutoUpdateSoftwareDialog: React.FunctionComponent<{
     dialogEnvironment?: IBloomDialogEnvironmentParams;
-}> = props => {
+}> = (props) => {
     const { propsForBloomDialog } = useSetupBloomDialog(
-        props.dialogEnvironment
+        props.dialogEnvironment,
     );
 
     const [chosenRadio, setChosenRadio] = useState<"automatic" | "inform">(
-        "automatic"
+        "automatic",
     );
     useEffect(() => {
-        get("app/userSetting?settingName=AutoUpdate", result => {
+        get("app/userSetting?settingName=AutoUpdate", (result) => {
             const autoUpdateValue: boolean = result.data.settingValue;
             setChosenRadio(autoUpdateValue ? "automatic" : "inform");
         });
     }, []);
 
-    const handleChange = event => {
+    const handleChange = (event) => {
         setChosenRadio(event.target.value);
     };
 
@@ -46,7 +46,7 @@ export const AutoUpdateSoftwareDialog: React.FunctionComponent<{
             <DialogTitle
                 title={useL10n(
                     "Software Updates",
-                    "AutoUpdateSoftwareDialog.SoftwareUpdates"
+                    "AutoUpdateSoftwareDialog.SoftwareUpdates",
                 )}
             />
             <DialogMiddle>
@@ -79,11 +79,11 @@ export const AutoUpdateSoftwareDialog: React.FunctionComponent<{
                     onClick={() => {
                         postData("app/userSetting", {
                             settingName: "AutoUpdateDialogShown",
-                            settingValue: 1
+                            settingValue: 1,
                         });
                         postData("app/userSetting", {
                             settingName: "AutoUpdate",
-                            settingValue: isAutoUpdate
+                            settingValue: isAutoUpdate,
                         });
                         post("common/closeReactDialog");
                     }}

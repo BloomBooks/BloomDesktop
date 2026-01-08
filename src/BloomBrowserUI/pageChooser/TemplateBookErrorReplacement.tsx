@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import Typography from "@mui/material/Typography";
@@ -11,7 +10,9 @@ interface ITemplateBookErrorReplacementProps {
 
 // This component replaces the usual Title/template page thumbnails group, when we can't find the template
 // book that our JSON input refers to.
-export const TemplateBookErrorReplacement: React.FunctionComponent<ITemplateBookErrorReplacementProps> = props => {
+export const TemplateBookErrorReplacement: React.FunctionComponent<
+    ITemplateBookErrorReplacementProps
+> = (props) => {
     const path = props.templateBookPath;
     const index = path.lastIndexOf("/");
     const templateName = path.substring(index + 1, path.length);
@@ -23,7 +24,7 @@ export const TemplateBookErrorReplacement: React.FunctionComponent<ITemplateBook
         "Could not find {0}",
         "EditTab.AddPageDialog.NoTemplate",
         "Seen when the book's main template page file is missing.",
-        props.templateBookPath
+        props.templateBookPath,
     );
 
     return (

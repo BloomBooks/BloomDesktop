@@ -1,5 +1,6 @@
 /// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
 
+import $ from "jquery";
 import "../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "../../lib/jquery.i18n.custom";
 import "../../lib/jquery.onSafe";
@@ -10,7 +11,7 @@ import { hookupLinkHandler } from "../../utils/linkHandler";
 import {
     ckeditableSelector,
     getPageIFrame,
-    getPageIframeBody
+    getPageIframeBody,
 } from "../../utils/shared";
 import { GameTool } from "./games/GameTool";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
@@ -29,7 +30,7 @@ let savedSettings: string;
 
 let keypressTimer: any = null;
 
-let showExperimentalTools = false; // set by Toolbox.initialize()
+const showExperimentalTools = false; // set by Toolbox.initialize()
 
 // Each tool implements this interface and adds an instance of its implementation to the
 // list maintained here. The methods support the different things individual tools
@@ -84,14 +85,14 @@ export interface IReactTool {
 // Class that represents the whole toolbox. Gradually we will move more functionality in here.
 export class ToolBox {
     public toolboxIsShowing() {
-        return (<HTMLInputElement>$(parent.window.document)
-            .find("#pure-toggle-right")
-            .get(0)).checked;
+        return (<HTMLInputElement>(
+            $(parent.window.document).find("#pure-toggle-right").get(0)
+        )).checked;
     }
     public toggleToolbox() {
-        (<HTMLInputElement>$(parent.window.document)
-            .find("#pure-toggle-right")
-            .get(0)).click();
+        (<HTMLInputElement>(
+            $(parent.window.document).find("#pure-toggle-right").get(0)
+        )).click();
     }
     private builtToolbox: boolean = false;
     public adjustToolListForPage(page: HTMLElement) {
@@ -118,13 +119,13 @@ export class ToolBox {
                     // Adapt the tool object id to the value used as the ID of the element
                     // for that tool in the toolbox.
                     const toolId = ToolBox.addToolToString(
-                        masterToolList[i].id()
+                        masterToolList[i].id(),
                     );
                     // Get the header element that represents the tool in the DOM.
                     const toolHeader = toolbox.querySelector(
                         "[data-toolid='" +
                             ToolBox.addToolToString(toolId) +
-                            "']"
+                            "']",
                     ) as HTMLElement;
                     const haveTool = !!toolHeader;
                     const wantTool = requiredToolId === masterToolList[i].id();
@@ -133,7 +134,7 @@ export class ToolBox {
                         showOrHideTool(
                             "dummy", // required tools don't have check boxes.
                             ToolBox.addToolToString(masterToolList[i].id()),
-                            wantTool
+                            wantTool,
                         );
                         toolsAdjusted = wantTool;
                     }
@@ -204,7 +205,7 @@ export class ToolBox {
 
             $(container)
                 .find(".bloom-editable")
-                .keyup(event => {
+                .keyup((event) => {
                     //don't do markup on cursor keys
                     if (event.keyCode >= 37 && event.keyCode <= 40) {
                         // this is check is another workaround for one scenario of BL-3490, but one that, as far as I can tell makes sense.
@@ -214,7 +215,7 @@ export class ToolBox {
                     }
                     handleKeyboardInput();
                 })
-                .on("compositionend", argument => {
+                .on("compositionend", (argument) => {
                     // Keyman (and other IME's?) don't send keydown events, but do send compositionend events
                     // See https://silbloom.myjetbrains.com/youtrack/issue/BL-5440.
                     handleKeyboardInput();
@@ -257,7 +258,7 @@ export class ToolBox {
     // Put a space between the name and "Tool" if addSpace is true.
     public static addToolToString(
         toolName: string,
-        addSpace: boolean = false
+        addSpace: boolean = false,
     ): string {
         if (toolName) {
             if (
@@ -326,7 +327,7 @@ export class ToolBox {
         $(parent.window.document).ready(() => {
             $(parent.window.document)
                 .find("#pure-toggle-right")
-                .change(function() {
+                .change(function () {
                     showToolboxChanged(!this.checked);
                 });
         });
@@ -337,7 +338,7 @@ export class ToolBox {
             axios
                 .all([
                     this.getEnabledExperimentalFeatures(),
-                    this.getEnabledTools()
+                    this.getEnabledTools(),
                 ])
                 .then(
                     axios.spread((experimentalFeatures, enabledTools) => {
@@ -349,7 +350,7 @@ export class ToolBox {
                         for (let i = toolsToLoad.length - 1; i >= 0; i--) {
                             if (
                                 !masterToolList.some(
-                                    mod => mod.id() === toolsToLoad[i]
+                                    (mod) => mod.id() === toolsToLoad[i],
                                 )
                             ) {
                                 toolsToLoad.splice(i, 1);
@@ -373,17 +374,15 @@ export class ToolBox {
                         const loadNextTool = () => {
                             if (toolsToLoad.length === 0) {
                                 $("#toolbox").accordion({
-                                    heightStyle: "fill"
+                                    heightStyle: "fill",
                                 });
-                                $("body")
-                                    .find("*[data-i18n]")
-                                    .localize(); // run localization
+                                $("body").find("*[data-i18n]").localize(); // run localization
 
-                                get("currentUiLanguage", result => {
+                                get("currentUiLanguage", (result) => {
                                     const langName = result.data;
 
                                     const nodeList = document.querySelectorAll(
-                                        ':not([data-i18n=""])'
+                                        ':not([data-i18n=""])',
                                     );
                                     for (let i = 0; i < nodeList.length; ++i) {
                                         const node = nodeList.item(i);
@@ -397,9 +396,8 @@ export class ToolBox {
                                         // TODO: This only works when the tool is loaded up for the first time.
                                         // It doesn't work if you open a new tool after the talking book tool is initialized for the first time.
                                         // TODO: How to re-translate when UI lang changed.
-                                        const i18nId = node.getAttribute(
-                                            "data-i18n"
-                                        );
+                                        const i18nId =
+                                            node.getAttribute("data-i18n");
                                         if (!i18nId) {
                                             node.setAttribute("lang", langName);
                                         } else {
@@ -409,17 +407,17 @@ export class ToolBox {
                                                     i18nId,
                                                     "",
                                                     langName,
-                                                    ""
+                                                    "",
                                                 )
-                                                .done(result => {
+                                                .done((result) => {
                                                     if (result) {
                                                         node.setAttribute(
                                                             "lang",
-                                                            langName
+                                                            langName,
                                                         );
                                                     } else {
                                                         node.removeAttribute(
-                                                            "lang"
+                                                            "lang",
                                                         ); // Or maybe set to "en" instead?
                                                     }
                                                 });
@@ -432,7 +430,7 @@ export class ToolBox {
                                     clearTimeout(resizeTimer); // resizeTimer variable is defined outside of ready function
                                     resizeTimer = setTimeout(
                                         resizeToolbox,
-                                        100
+                                        100,
                                     );
                                 });
                                 this.builtToolbox = true;
@@ -446,24 +444,23 @@ export class ToolBox {
                                 // optimize: maybe we can overlap these?
                                 const nextToolId = toolsToLoad.pop();
                                 const checkBoxId = nextToolId + "Check";
-                                const toolId = ToolBox.addToolToString(
-                                    nextToolId
-                                );
+                                const toolId =
+                                    ToolBox.addToolToString(nextToolId);
                                 beginAddTool(checkBoxId, toolId, false, () =>
-                                    loadNextTool()
+                                    loadNextTool(),
                                 );
                             }
                         };
                         loadNextTool();
-                    })
-                )
+                    }),
+                ),
         );
     }
 
     // Adds "lang" attributes into the DOM for toolbox elements which have internationalization. (AKA, have data-i18n)
     // TODO: This only works with non-React toolbox components. For now, we only need it for talking book tool though.
     public static insertLangAttributesIntoToolboxElements() {
-        get("currentUiLanguage", result => {
+        get("currentUiLanguage", (result) => {
             const langName = result.data;
 
             const nodeList = document.querySelectorAll(':not([data-i18n=""])');
@@ -483,7 +480,7 @@ export class ToolBox {
                     // Double-check that it's actually in this language and not just using an English fallback
                     theOneLocalizationManager
                         .asyncGetTextInLang(i18nId, "", langName, "")
-                        .done(result => {
+                        .done((result) => {
                             if (result) {
                                 node.setAttribute("lang", langName);
                             } else {
@@ -503,7 +500,7 @@ export class ToolBox {
     // Returns 'true' if the checkbox in the More... tab for the requested tool (w/"Tool" suffix!) is checked.
     public isToolActive(toolId: string): boolean {
         const tools = $("*[data-toolId]");
-        const filteredTools = tools.filter(function() {
+        const filteredTools = tools.filter(function () {
             return $(this).attr("data-toolId") === toolId;
         });
         return filteredTools.length > 0;
@@ -520,10 +517,6 @@ export class ToolBox {
             alert(msg);
             return;
         }
-
-        if (!this.toolboxIsShowing()) {
-            this.toggleToolbox();
-        }
         const checkBox = $("#" + toolId + "Check").get(0) as HTMLDivElement;
         if (checkBox) {
             // if it was an actual "input" element, we would just check for "checked",
@@ -538,13 +531,16 @@ export class ToolBox {
             // no corresponding checkbox, probably a required tool for this page type
             const toolbox = document.getElementById("toolbox") as HTMLElement;
             const toolHeader = toolbox.querySelector(
-                "[data-toolid='" + ToolBox.addToolToString(toolId) + "']"
+                "[data-toolid='" + ToolBox.addToolToString(toolId) + "']",
             ) as HTMLElement;
             if (toolHeader) {
                 setCurrentTool(toolId);
             } else {
                 showOrHideTool("dummy", ToolBox.addToolToString(toolId), true);
             }
+        }
+        if (!this.toolboxIsShowing()) {
+            this.toggleToolbox();
         }
     }
 
@@ -596,13 +592,13 @@ export function showOrHideTool_click(chkbox) {
         chkbox.innerHTML = checkMarkString;
         postString(
             "editView/saveToolboxSetting",
-            "active\t" + chkbox.id + "\t1"
+            "active\t" + chkbox.id + "\t1",
         );
     } else {
         chkbox.innerHTML = "";
         postString(
             "editView/saveToolboxSetting",
-            "active\t" + chkbox.id + "\t0"
+            "active\t" + chkbox.id + "\t0",
         );
     }
     showOrHideTool(chkbox.id, tool, turnOn);
@@ -613,7 +609,7 @@ function showOrHideTool(chkboxId: string, tool: string, turnOn: boolean) {
         beginAddTool(chkboxId, tool, true);
     } else {
         $("*[data-toolId]")
-            .filter(function() {
+            .filter(function () {
                 return $(this).attr("data-toolId") === tool;
             })
             .remove();
@@ -622,14 +618,14 @@ function showOrHideTool(chkboxId: string, tool: string, turnOn: boolean) {
 }
 
 export function restoreToolboxSettings() {
-    get("toolbox/settings", result => {
+    get("toolbox/settings", (result) => {
         savedSettings = result.data;
         const pageFrame = ToolBox.getPageFrame();
         const contentWin = pageFrame.contentWindow;
         if (contentWin && contentWin.document.readyState === "loading") {
             // We can't finish restoring settings until the main document is loaded, so arrange to call the next stage when it is.
-            $(contentWin.document).ready(e =>
-                restoreToolboxSettingsWhenPageReady(result.data)
+            $(contentWin.document).ready((e) =>
+                restoreToolboxSettingsWhenPageReady(result.data),
             );
             return;
         }
@@ -656,7 +652,7 @@ function doWhenPageReady(action: () => void) {
         // Somehow, despite firing this function when the document is supposedly ready,
         // it may not really be ready when this is first called. If it doesn't even have a body yet,
         // we need to try again later.
-        setTimeout(e => doWhenPageReady(action), 100);
+        setTimeout((e) => doWhenPageReady(action), 100);
         return;
     }
     doWhenCkEditorReady(action, page);
@@ -672,9 +668,9 @@ function doWhenCkEditorReady(action: () => void, page: HTMLElement) {
         {
             removers: removers,
             done: false,
-            action: action
+            action: action,
         },
-        page
+        page,
     );
 }
 
@@ -684,7 +680,7 @@ function doWhenCkEditorReadyCore(
         done: boolean;
         action: () => void;
     },
-    page: HTMLElement
+    page: HTMLElement,
 ): void {
     if ((<any>ToolBox.getPageFrame().contentWindow).CKEDITOR) {
         const editorInstances = (<any>ToolBox.getPageFrame().contentWindow)
@@ -702,9 +698,9 @@ function doWhenCkEditorReadyCore(
             gotOne = true;
             if (!instance.instanceReady) {
                 arg.removers.push(
-                    instance.on("instanceReady", e => {
+                    instance.on("instanceReady", (e) => {
                         doWhenCkEditorReadyCore(arg, page);
-                    })
+                    }),
                 );
                 return;
             }
@@ -716,10 +712,10 @@ function doWhenCkEditorReadyCore(
                 arg.removers.push(
                     (<any>ToolBox.getPageFrame().contentWindow).CKEDITOR.on(
                         "instanceReady",
-                        e => {
+                        (e) => {
                             doWhenCkEditorReadyCore(arg, page);
-                        }
-                    )
+                        },
+                    ),
                 );
                 return;
             }
@@ -729,7 +725,7 @@ function doWhenCkEditorReadyCore(
     if (!arg.done) {
         // We are the first call-back to find all ready! Any other editors invoking this should be ignored.
         arg.done = true; // ensures action only done once
-        arg.removers.map(r => r.removeListener()); // try to prevent future callbacks for this action
+        arg.removers.map((r) => r.removeListener()); // try to prevent future callbacks for this action
         arg.action();
     }
 }
@@ -806,7 +802,7 @@ function getToolElement(tool: ITool): HTMLElement | null {
         const toolName = ToolBox.addToolToString(tool.id());
         $("#toolbox")
             .find("> h3")
-            .each(function() {
+            .each(function () {
                 if ($(this).attr("data-toolId") === toolName) {
                     // REVIEW: this may in fact be unneeded but I'm just trying to get eslint set up and conceivably it is intentional
                     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -821,7 +817,7 @@ function getToolElement(tool: ITool): HTMLElement | null {
 
 async function activateToolInternalAsync(
     newTool: ITool,
-    toolElt: HTMLElement | null
+    toolElt: HTMLElement | null,
 ): Promise<void> {
     if (toolElt) {
         newTool.finishToolLocalization(toolElt);
@@ -830,6 +826,8 @@ async function activateToolInternalAsync(
     // Await it so that we can guarantee that newPageReady() and insertLangAttributesIntoToolboxElements()
     // happen after showTool.
     await newTool.showTool();
+
+    postString("logger/writeEvent", `Toolbox activated: ${newTool.id()}`);
 
     // Note: Allowed to begin some async work too, and we will await its result.
     // (This apparently solves the single flash mentioned in BL-10471.)
@@ -856,7 +854,7 @@ function setCurrentTool(toolID: string) {
     if (toolID) {
         let foundTool = false;
         // find the index of the tool whose "data-toolId" attribute equals the value of "currentTool"
-        accordionHeaders.each(function() {
+        accordionHeaders.each(function () {
             if ($(this).attr("data-toolId") === toolID) {
                 foundTool = true;
                 // break from the each() loop
@@ -872,10 +870,7 @@ function setCurrentTool(toolID: string) {
     }
     if (!toolID) {
         // Leave idx at 0, and update currentTool to the corresponding ID.
-        toolID = toolbox
-            .find("> h3")
-            .first()
-            .attr("data-toolId");
+        toolID = toolbox.find("> h3").first().attr("data-toolId");
     }
     if (idx >= accordionHeaders.length - 1) {
         // don't pick the More... tool, pick whatever happens to be first.
@@ -919,7 +914,7 @@ function getITool(toolId: string): ITool {
         toolId.indexOf("Tool") > -1
             ? toolId.substring(0, toolId.length - 4)
             : toolId; // strip off "Tool"
-    return (<any>masterToolList).find(tool => tool.id() === reactToolId);
+    return (<any>masterToolList).find((tool) => tool.id() === reactToolId);
 }
 
 /**
@@ -932,7 +927,7 @@ function beginAddTool(
     checkBoxId: string,
     toolId: string,
     openTool: boolean,
-    whenLoaded?: () => void
+    whenLoaded?: () => void,
 ): void {
     const chkBox = document.getElementById(checkBoxId);
     if (chkBox) {
@@ -948,7 +943,7 @@ function beginAddTool(
             "readers/leveledReader/leveledReaderToolboxTool.html",
         toolboxSettingsTool:
             "toolboxSettingsTool/toolboxSettingsToolboxTool.html",
-        settingsTool: "settings/Settings.html"
+        settingsTool: "settings/Settings.html",
         // none for music: done in React
     };
     const subPathToPremadeHtml = subpath[toolId];
@@ -959,19 +954,19 @@ function beginAddTool(
         wrapAxios(
             axios
                 .get("/bloom/bookEdit/toolbox/" + subPathToPremadeHtml)
-                .then(result => {
+                .then((result) => {
                     loadToolboxToolText(result.data, toolId, openTool);
                     if (whenLoaded) {
                         whenLoaded();
                     }
-                })
+                }),
         );
     } else {
         // new-style tool implemented in React
         const tool = getITool(toolId);
         if (!tool) {
             console.error(
-                `Tool ${toolId} not found, assuming that was from a different version of Bloom.`
+                `Tool ${toolId} not found, assuming that was from a different version of Bloom.`,
             );
             return;
         }
@@ -993,14 +988,14 @@ function beginAddTool(
         let toolLabel = toolIdUpper.replace(/([A-Z])/g, " $1").trim();
         toolLabel = ToolBox.addToolToString(toolLabel, true);
 
-        const reactTool = (tool as unknown) as IReactTool;
+        const reactTool = tool as unknown as IReactTool;
 
         // Currently, all subscription tools are React, so we haven't implemented a way to add the subscription badge to old-style tools
         const possibleSubscriptionBadge = reactTool.featureName
             ? `<span class="subscription-badge"></span>`
             : "";
         const header = $(
-            `<h3><div class="toolbox-accordion-header-text" data-i18n=${i18Id}>${toolLabel}</div>${possibleSubscriptionBadge}</span></h3>`
+            `<h3><div class="toolbox-accordion-header-text" data-i18n=${i18Id}>${toolLabel}</div>${possibleSubscriptionBadge}</span></h3>`,
         );
         header.attr("data-toolId", toolName);
         content.attr("data-toolId", toolName);
@@ -1010,14 +1005,16 @@ function beginAddTool(
             header.attr("data-feature", reactTool.featureName);
             addFeatureStatusMessageTitlesToSubscriptionBadges(header);
 
-            getFeatureStatusAsync(reactTool.featureName).then(featureStatus => {
-                if (
-                    featureStatus &&
-                    featureStatus.subscriptionTier !== "Basic"
-                ) {
-                    header.addClass("requiresSubscription");
-                }
-            });
+            getFeatureStatusAsync(reactTool.featureName).then(
+                (featureStatus) => {
+                    if (
+                        featureStatus &&
+                        featureStatus.subscriptionTier !== "Basic"
+                    ) {
+                        header.addClass("requiresSubscription");
+                    }
+                },
+            );
         }
 
         loadToolboxTool(header, content, toolId, openTool);
@@ -1065,9 +1062,9 @@ function handleKeyboardInput(): void {
 
         const selection: Selection | null = page.contentWindow.getSelection();
         const anchor: Node | null = selection ? selection.anchorNode : null;
-        const active = anchor ? <HTMLDivElement>$(anchor)
-                  .closest("div")
-                  .get(0) : null;
+        const active = anchor
+            ? <HTMLDivElement>$(anchor).closest("div").get(0)
+            : null;
         if (
             !active ||
             (selection &&
@@ -1159,7 +1156,8 @@ function handleKeyboardInput(): void {
                         ckeditorSelection = ckeditorOfThisBox.getSelection();
                         bookmarks = ckeditorSelection.createBookmarks(true);
 
-                        const actualUpdateFunc = await currentTool.updateMarkupAsync();
+                        const actualUpdateFunc =
+                            await currentTool.updateMarkupAsync();
                         if (
                             keydownEventCounter ==
                             counterValueThatIdentifiesThisKeyDown
@@ -1206,7 +1204,7 @@ function RemoveNonPTags(editableDivHtml: string): string {
 // Check if the &nbsp; is at the start or end of a paragraph, regardless of any other tags in between (e.g. the empty talking book spans)
 function NbspIsOnEdgeOfParagraph(
     editableDivHtml: string,
-    nbspIndex: number
+    nbspIndex: number,
 ): boolean {
     const beforeNbsp = editableDivHtml.substring(0, nbspIndex);
     const afterNbsp = editableDivHtml.substring(nbspIndex + "&nbsp;".length);
@@ -1249,7 +1247,7 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
     // the actual replacement is done in the html so as to keep the markup.
     // We also make the replacements in the text as we go so that, for example,
     // if we change one nbsp to a regular space, that space prevents converting an adjacent nbsp.
-    // eslint-disable-next-line no-constant-condition
+
     while (true) {
         i = editableDivHtml.indexOf("&nbsp;", i + 1); // i+1 works whether or not we replaced the previous nbsp
         if (i === -1) break;
@@ -1260,7 +1258,7 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
             // invisibles, but if it is still there at this point something must have gone wrong)
             // Follow do no harm principle and just leave the div unaltered.
             console.error(
-                "Unexpected situation discovered in cleanUpNbsps. Html has nbsp but text doesn't."
+                "Unexpected situation discovered in cleanUpNbsps. Html has nbsp but text doesn't.",
             );
             console.error("editableDivHtml: " + editableDivHtml);
             console.error("editableDivText: " + editableDivText);
@@ -1269,7 +1267,7 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
             if (originalBookMarkContent)
                 setCkeditorBookmarkContent(
                     editableDiv,
-                    originalBookMarkContent
+                    originalBookMarkContent,
                 );
             return;
         }
@@ -1303,12 +1301,12 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
 // Return the original content (of the last one... we have to pick one...) so we can restore it later.
 function setCkeditorBookmarkContent(
     editableDiv: HTMLElement,
-    content: string
+    content: string,
 ): string | undefined {
     let existingContent: string | undefined = undefined;
 
     const ckeBookmarks = editableDiv.querySelectorAll("[id^='cke_bm_']");
-    ckeBookmarks.forEach(bm => {
+    ckeBookmarks.forEach((bm) => {
         existingContent = bm.innerHTML;
         bm.innerHTML = content;
     });
@@ -1346,10 +1344,10 @@ function resizeToolbox() {
  * @returns A Promise that resolves to the localized title text
  */
 async function getFeatureEnabledAndMessage(
-    featureName: string
+    featureName: string,
 ): Promise<{ enabled: boolean; message: string }> {
-    return new Promise<{ enabled: boolean; message: string }>(resolve => {
-        get(`features/status?featureName=${featureName}`, c => {
+    return new Promise<{ enabled: boolean; message: string }>((resolve) => {
+        get(`features/status?featureName=${featureName}`, (c) => {
             const featureStatus = c.data;
             const localizedTier = featureStatus?.localizedTier;
 
@@ -1358,13 +1356,13 @@ async function getFeatureEnabledAndMessage(
                 titleText = theOneLocalizationManager.getText(
                     "Subscription.FeatureIsIncludedSentence",
                     "This feature is included in your {0} subscription.",
-                    localizedTier
+                    localizedTier,
                 );
             } else {
                 titleText = theOneLocalizationManager.getText(
                     "Subscription.RequiredTierForFeatureSentence",
                     'This feature requires a Bloom subscription tier of at least "{0}".',
-                    localizedTier
+                    localizedTier,
                 );
             }
             resolve({ enabled: featureStatus.enabled, message: titleText });
@@ -1381,25 +1379,23 @@ function showSubscriptionDialog(featureName: string): void {
  * @param element The jQuery element containing subscription badges
  */
 async function addFeatureStatusMessageTitlesToSubscriptionBadges(
-    element: JQuery
+    element: JQuery,
 ): Promise<void> {
     const subscriptionBadges = element.find(".subscription-badge");
     const promises: Promise<void>[] = [];
-    subscriptionBadges.each(function(_i, subscriptionBadge: HTMLElement) {
+    subscriptionBadges.each(function (_i, subscriptionBadge: HTMLElement) {
         if (subscriptionBadge.hasAttribute("title")) return;
-        const featureName = subscriptionBadge.parentElement?.getAttribute(
-            "data-feature"
-        );
+        const featureName =
+            subscriptionBadge.parentElement?.getAttribute("data-feature");
         if (!featureName) return;
 
         const promise = (async () => {
-            const { enabled, message } = await getFeatureEnabledAndMessage(
-                featureName
-            );
+            const { enabled, message } =
+                await getFeatureEnabledAndMessage(featureName);
             subscriptionBadge.setAttribute("title", message);
             if (!enabled) {
                 subscriptionBadge.addEventListener("click", () =>
-                    showSubscriptionDialog(featureName)
+                    showSubscriptionDialog(featureName),
                 );
                 subscriptionBadge.style.cursor = "pointer";
             }
@@ -1421,7 +1417,7 @@ async function addFeatureStatusMessageTitlesToSubscriptionBadges(
 function loadToolboxToolText(
     newContent: string,
     toolId: string,
-    openTool: boolean
+    openTool: boolean,
 ) {
     const parts = $($.parseHTML(newContent, document, true));
 
@@ -1444,7 +1440,7 @@ function loadToolboxTool(
     header: JQuery,
     content: JQuery,
     toolId,
-    openTool: boolean
+    openTool: boolean,
 ) {
     const toolboxElt = $("#toolbox");
     const label = header.text();
@@ -1465,7 +1461,7 @@ function loadToolboxTool(
         let insertBefore = toolboxElt
             .children() // children() includes both the headers and the contents of the tools
             .filter(".ui-accordion-header") // we only want to sort this into the headers...
-            .filter(function() {
+            .filter(function () {
                 // Note that we aren't (as of 4.4) setting the "locale" of the browser to match the
                 // UI language. In my tests, it's stuck at "en-US" (navigator.language). But if we ever do
                 // set this, then this will do a better job of ordering. Meanwhile, no worse.
@@ -1475,7 +1471,7 @@ function loadToolboxTool(
         if (insertBefore.length === 0) {
             // Nothing is greater, but still insert before "More". Two children represent "More", so before the second last.
             insertBefore = $(
-                toolboxElt.children()[toolboxElt.children.length - 2]
+                toolboxElt.children()[toolboxElt.children.length - 2],
             );
         }
         header.insertBefore(insertBefore);
@@ -1494,12 +1490,16 @@ function loadToolboxTool(
 function showToolboxChanged(wasShowing: boolean): void {
     postString(
         "editView/saveToolboxSetting",
-        "visibility\t" + (wasShowing ? "" : "visible")
+        "visibility\t" + (wasShowing ? "" : "visible"),
     );
     if (currentTool) {
         if (wasShowing) {
             detachCurrentTool();
             currentTool.hideTool();
+            postString(
+                "logger/writeEvent",
+                `Toolbox deactivating: ${currentTool.id()}`,
+            );
         } else {
             activateTool(currentTool);
         }

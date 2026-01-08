@@ -1,9 +1,18 @@
+import {
+    describe,
+    it,
+    expect,
+    beforeAll,
+    beforeEach,
+    afterEach,
+    vi,
+} from "vitest";
 import TalkingBookTool from "./talkingBook";
 import AudioRecording, {
     theOneAudioRecorder,
     AudioMode,
     getAllAudioModes,
-    kAnyRecordingApiUrl
+    kAnyRecordingApiUrl,
 } from "./audioRecording";
 import { RecordingMode } from "./recordingMode";
 import {
@@ -11,15 +20,22 @@ import {
     getFrameElementById,
     StripPlayerSrcNoCacheSuffix,
     StripRecordingMd5,
-    setupForAudioRecordingTests
+    setupForAudioRecordingTests,
 } from "./audioRecordingSpec";
-import * as XRegExp from "xregexp"; // Not sure why, but import * as XRegExp works better. import XRegExp causes "xregexp_1.default is undefined" error
-import { setSentenceEndingPunctuationForBloom } from "../readers/libSynphony/bloom_xregexp_categories";
+import XRegExp from "xregexp";
 import axios from "axios";
+import { setSentenceEndingPunctuationForBloom } from "../readers/libSynphony/bloom_xregexp_categories";
+import $ from "jquery";
 
 describe("talking book tests", () => {
     beforeAll(async () => {
         await setupForAudioRecordingTests();
+    });
+
+    afterEach(() => {
+        // Clean up any pending timers to prevent "parent is not defined" errors
+        // when tests finish before timers fire
+        theOneAudioRecorder?.handleToolHiding();
     });
 
     describe("- de/enshroudPhraseDelimiters", () => {
@@ -33,23 +49,23 @@ describe("talking book tests", () => {
             const page = getFrameElementById("page", "page1");
             expect(
                 page?.getElementsByClassName("bloom-audio-split-marker")
-                    .length ?? 0
+                    .length ?? 0,
             ).toBe(0);
             TalkingBookTool.enshroudPhraseDelimiters(page);
             expect(
-                page?.getElementsByClassName("bloom-audio-split-marker").length
+                page?.getElementsByClassName("bloom-audio-split-marker").length,
             ).toBe(2);
             TalkingBookTool.deshroudPhraseDelimiters(page);
             expect(
                 page?.getElementsByClassName("bloom-audio-split-marker")
-                    .length ?? 0
+                    .length ?? 0,
             ).toBe(0);
         });
     });
 
     describe("- updateMarkup()", () => {
         it("moves highlight after focus changes", async () => {
-            spyOn(axios, "get").and.callFake((url: string) => {
+            vi.spyOn(axios, "get").mockImplementation((url: string) => {
                 if (url.includes(kAnyRecordingApiUrl)) {
                     return Promise.resolve({ data: false });
                 } else {
@@ -94,8 +110,8 @@ describe("talking book tests", () => {
                 {
                     name: "SEP",
                     alias: "Sentence_Ending_Punctuation",
-                    bmp: "\u104b"
-                }
+                    bmp: "\u104b",
+                },
             ]);
         });
 
@@ -107,7 +123,7 @@ describe("talking book tests", () => {
         function setAudioFilesDontExist() {
             // Mark that the recording doesn't exist.
             // FYI - spies only last for the scope of the "describe" or "it" block in which it was defined.
-            spyOn(axios, "get").and.callFake((url: string) => {
+            vi.spyOn(axios, "get").mockImplementation(() => {
                 return Promise.resolve({ data: false });
             });
         }
@@ -131,21 +147,21 @@ describe("talking book tests", () => {
                 }
                 default: {
                     throw new Error(
-                        `Unhandled scenario: ${scenario} (${AudioMode[scenario]})`
+                        `Unhandled scenario: ${scenario} (${AudioMode[scenario]})`,
                     );
                 }
             }
 
             const urlToResponse = {};
-            anyPresent.forEach(params => {
+            anyPresent.forEach((params) => {
                 const url = kAnyRecordingApiUrl + params;
                 urlToResponse[url] = Promise.resolve({ data: true });
             });
-            allPresent.forEach(params => {
+            allPresent.forEach((params) => {
                 const url = "/bloom/api/audio/checkForAllRecording?" + params;
                 urlToResponse[url] = Promise.resolve({ data: true });
             });
-            spyOn(axios, "get").and.callFake((url: string) => {
+            vi.spyOn(axios, "get").mockImplementation((url: string) => {
                 const response = urlToResponse[url];
                 if (response) {
                     return response;
@@ -161,7 +177,7 @@ describe("talking book tests", () => {
 
         function getTestMd5s(
             md5ValueSetting: string,
-            scenario: AudioMode
+            scenario: AudioMode,
         ): string[] {
             if (md5ValueSetting === "missing") {
                 return ["undefined", "undefined", "undefined", "undefined"];
@@ -176,14 +192,14 @@ describe("talking book tests", () => {
                             "28e9f104eacb2cf2afe90c7074733103",
                             "4aaf751627dd525fb2a5ebb7928ff353",
                             "3de477f0b8b44a793a313b344d6687d6",
-                            "b82352b9566d3bf74be60fb2d1a81a7b"
+                            "b82352b9566d3bf74be60fb2d1a81a7b",
                         ];
                     }
                     case AudioMode.PureTextBox:
                     case AudioMode.SoftSplitTextBox: {
                         return [
                             "b65fad901ce36fb8251f21f9aca8e2d0",
-                            "ad15831c388fb93285cbb18306a4b734"
+                            "ad15831c388fb93285cbb18306a4b734",
                         ];
                     }
                     default: {
@@ -254,7 +270,7 @@ describe("talking book tests", () => {
         function setupSentenceSplitTest(
             scenario: AudioMode,
             checksumSetting: string,
-            areRecordingsPresent: string
+            areRecordingsPresent: string,
         ): void {
             const checksums = getTestMd5s(checksumSetting, scenario);
 
@@ -282,13 +298,13 @@ describe("talking book tests", () => {
                 }
                 default: {
                     throw new Error(
-                        `Unhandled scenario: ${scenario} (${AudioMode[scenario]})`
+                        `Unhandled scenario: ${scenario} (${AudioMode[scenario]})`,
                     );
                 }
             }
 
             SetupIFrameFromHtml(
-                `<div id="page1"><div class="bloom-translationGroup">${innerHtml}</div></div>`
+                `<div id="page1"><div class="bloom-translationGroup">${innerHtml}</div></div>`,
             );
 
             if (scenario === AudioMode.PureSentence) {
@@ -311,7 +327,7 @@ describe("talking book tests", () => {
             } else {
                 throw new Error(
                     "Unhandled value of areRecordingsPresent: " +
-                        areRecordingsPresent
+                        areRecordingsPresent,
                 );
             }
         }
@@ -348,8 +364,8 @@ describe("talking book tests", () => {
                     const spans = getAudioSentenceSpans(`div${i}`);
 
                     expect(spans).toHaveLength(1);
-                    expect(spans[0]).toHaveText(
-                        `Sentence ${i}.1၊ Sentence ${i}.2`
+                    expect(spans[0].textContent).toBe(
+                        `Sentence ${i}.1၊ Sentence ${i}.2`,
                     );
                 }
             } else if (scenario === AudioMode.PureTextBox) {
@@ -369,7 +385,7 @@ describe("talking book tests", () => {
                 verifyHtmlPreserved(scenario);
             } else {
                 throw new Error(
-                    `Unhandled scenario: ${scenario} (${AudioMode[scenario]})`
+                    `Unhandled scenario: ${scenario} (${AudioMode[scenario]})`,
                 );
             }
         }
@@ -378,18 +394,18 @@ describe("talking book tests", () => {
             const currentHtml1 = getFrameElementById("page", "div1")
                 ?.outerHTML as string;
             expect(StripRecordingMd5(currentHtml1)).toBe(
-                StripRecordingMd5(originalDiv1Html)
+                StripRecordingMd5(originalDiv1Html),
             );
             const currentHtml2 = getFrameElementById("page", "div2")
                 ?.outerHTML as string;
             expect(StripRecordingMd5(currentHtml2)).toBe(
-                StripRecordingMd5(originalDiv2Html)
+                StripRecordingMd5(originalDiv2Html),
             );
         }
 
         function expectMd5(id, expectedMd5) {
             const elem = getFrameElementById("page", id);
-            expect(elem).not.toBeNull(`Could not find element "${id}"`);
+            expect(elem, `Could not find element "${id}"`).not.toBeNull();
             if (elem) {
                 const md5 = elem.getAttribute("recordingmd5");
 
@@ -399,27 +415,27 @@ describe("talking book tests", () => {
                     return;
                 }
 
-                expect(md5).toBe(
-                    expectedMd5,
-                    `recordingmd5 does not match for element: ${elem.outerHTML}`
-                );
+                expect(
+                    md5,
+                    `recordingmd5 does not match for element: ${elem.outerHTML}`,
+                ).toBe(expectedMd5);
             }
         }
 
         function verifyCurrentHighlight(scenario: AudioMode) {
             const div = getFrameElementById("page", "div1");
             if (!div) {
-                expect(div).not.toBeNull("div1 is null");
+                expect(div, "div1 is null").not.toBeNull();
                 return;
             }
 
             const page1 = getFrameElementById("page", "page1");
-            const numCurrents = page1?.querySelectorAll(".ui-audioCurrent")
-                .length;
-            expect(numCurrents).toBe(
-                1,
-                "Only 1 item is allowed to be the current: " + page1?.innerHTML
-            );
+            const numCurrents =
+                page1?.querySelectorAll(".ui-audioCurrent").length;
+            expect(
+                numCurrents,
+                "Only 1 item is allowed to be the current: " + page1?.innerHTML,
+            ).toBe(1);
 
             switch (scenario) {
                 case AudioMode.PureSentence: {
@@ -438,7 +454,7 @@ describe("talking book tests", () => {
 
                 default: {
                     throw new Error(
-                        `Unhandled scenario: ${scenario} (${AudioMode[scenario]})`
+                        `Unhandled scenario: ${scenario} (${AudioMode[scenario]})`,
                     );
                 }
             }
@@ -452,13 +468,13 @@ describe("talking book tests", () => {
         function verifySound(
             scenario: AudioMode,
             firstDivId: string,
-            firstSpanId: string
+            firstSpanId: string,
         ): void {
             const player = document.getElementById(
-                "player"
+                "player",
             ) as HTMLMediaElement | null;
             if (!player) {
-                expect(player).not.toBeNull("player is null");
+                expect(player, "player is null").not.toBeNull();
                 return;
             }
 
@@ -483,13 +499,13 @@ describe("talking book tests", () => {
             }
 
             expect(StripPlayerSrcNoCacheSuffix(player.src)).toBe(
-                `http://localhost:9876/bloom/api/audio/wavFile?id=audio/${expectedSrc}.wav`
+                `http://localhost:63315/bloom/api/audio/wavFile?id=audio/${expectedSrc}.wav`,
             );
         }
 
         function verifyChecksumsUpToDate(
             scenario: AudioMode,
-            splitUpdateSetting: string
+            splitUpdateSetting: string,
         ) {
             const expectedMd5s = getTestMd5s("same", scenario);
             if (
@@ -515,7 +531,7 @@ describe("talking book tests", () => {
 
         function verifyChecksumsNotUpdated(
             scenario: AudioMode,
-            splitUpdateSetting: string
+            splitUpdateSetting: string,
         ) {
             if (
                 scenario === AudioMode.PureSentence ||
@@ -533,7 +549,7 @@ describe("talking book tests", () => {
                     // because it's been updated down to just 1 span.
                 } else {
                     throw new Error(
-                        "Unhandled splitUpdateSetting: " + splitUpdateSetting
+                        "Unhandled splitUpdateSetting: " + splitUpdateSetting,
                     );
                 }
             } else {
@@ -560,7 +576,7 @@ describe("talking book tests", () => {
         }
 
         describe("showTool(checksum=missing, audio=missing, scenario=*) => UPDATE", () => {
-            getAllAudioModes().forEach(scenario => {
+            getAllAudioModes().forEach((scenario) => {
                 const scenarioName = AudioMode[scenario];
                 it(`showTool(checksum=missing, audio=missing, scenario=${scenarioName}) => UPDATE`, async () => {
                     return runNoChecksumNoAudioTestAsync(scenario);
@@ -568,7 +584,7 @@ describe("talking book tests", () => {
             });
 
             const runNoChecksumNoAudioTestAsync = async (
-                scenario: AudioMode
+                scenario: AudioMode,
             ) => {
                 // Setup
                 const checksumSetting = "missing";
@@ -585,7 +601,7 @@ describe("talking book tests", () => {
         });
 
         describe("showTool(checksum=missing, audio=present, scenario=*) => SKIP UPDATE", () => {
-            getAllAudioModes().forEach(scenario => {
+            getAllAudioModes().forEach((scenario) => {
                 const scenarioName = AudioMode[scenario];
                 it(`showTool(checksum=missing, audio=present, scenario=${scenarioName}) => SKIP UPDATE`, async () => {
                     return runNoChecksumYesAudioTestAsync(scenario);
@@ -593,7 +609,7 @@ describe("talking book tests", () => {
             });
 
             const runNoChecksumYesAudioTestAsync = async (
-                scenario: AudioMode
+                scenario: AudioMode,
             ) => {
                 // Setup
                 const checksumSetting = "missing";
@@ -610,7 +626,7 @@ describe("talking book tests", () => {
         });
 
         describe("showTool(checksum=same, audio=missing, scenario=*) => UPDATE", () => {
-            getAllAudioModes().forEach(scenario => {
+            getAllAudioModes().forEach((scenario) => {
                 const scenarioName = AudioMode[scenario];
                 it(`showTool(checksum=same, audio=missing, scenario=${scenarioName}) => UPDATE`, async () => {
                     return runSameChecksumNoAudioTestAsync(scenario);
@@ -618,7 +634,7 @@ describe("talking book tests", () => {
             });
 
             const runSameChecksumNoAudioTestAsync = async (
-                scenario: AudioMode
+                scenario: AudioMode,
             ) => {
                 // Setup
                 const checksumSetting = "same";
@@ -640,9 +656,9 @@ describe("talking book tests", () => {
             const scenarios = [
                 AudioMode.PureSentence,
                 AudioMode.PreTextBox,
-                AudioMode.HardSplitTextBox
+                AudioMode.HardSplitTextBox,
             ];
-            scenarios.forEach(scenario => {
+            scenarios.forEach((scenario) => {
                 const scenarioName = AudioMode[scenario];
                 it(`showTool(checksum=same, audio=partial, scenario=${scenarioName}) => UPDATE`, async () => {
                     return runSameChecksumPartialAudioTestAsync(scenario);
@@ -650,7 +666,7 @@ describe("talking book tests", () => {
             });
 
             const runSameChecksumPartialAudioTestAsync = async (
-                scenario: AudioMode
+                scenario: AudioMode,
             ) => {
                 // Setup
                 const checksumSetting = "same";
@@ -666,7 +682,7 @@ describe("talking book tests", () => {
         });
 
         describe("showTool(checksum=same, audio=present, scenario=*) => SKIP UPDATE", () => {
-            getAllAudioModes().forEach(scenario => {
+            getAllAudioModes().forEach((scenario) => {
                 const scenarioName = AudioMode[scenario];
                 it(`showTool(checksum=same, audio=present, scenario=${scenarioName}) => SKIP UPDATE`, async () => {
                     return runSameChecksumYesAudioTestAsync(scenario);
@@ -674,7 +690,7 @@ describe("talking book tests", () => {
             });
 
             const runSameChecksumYesAudioTestAsync = async (
-                scenario: AudioMode
+                scenario: AudioMode,
             ) => {
                 const checksumSetting = "same";
                 const audioPresent = "present";
@@ -690,7 +706,7 @@ describe("talking book tests", () => {
         });
 
         describe("showTool(checksum=differs, recording=*, scenario=*) => UPDATE", () => {
-            getAllAudioModes().forEach(scenario => {
+            getAllAudioModes().forEach((scenario) => {
                 const scenarioName = AudioMode[scenario];
                 it(`showTool(checksum=differs, recording=*, scenario=${scenarioName}) => UPDATE`, async () => {
                     return runDifferentChecksumTestAsync(scenario);
@@ -698,7 +714,7 @@ describe("talking book tests", () => {
             });
 
             const runDifferentChecksumTestAsync = async (
-                scenario: AudioMode
+                scenario: AudioMode,
             ) => {
                 // Setup
                 const checksumSetting = "differs";
@@ -725,7 +741,7 @@ describe("talking book tests", () => {
             // Setup
             const checksums = [
                 "ec04d9efb823169732254a756f9fa641",
-                "99070d1ff8cd1dbe8f6273089fce9176"
+                "99070d1ff8cd1dbe8f6273089fce9176",
             ];
             const divHtml = `<div class="bloom-editable" id="div1" data-audioRecordingMode="Sentence"><p><span id="1.1" class="audio-sentence ui-audioCurrent" recordingmd5="${checksums[0]}">Phrase 1|</span> <span id="1.2" class="audio-sentence" recordingmd5="${checksums[1]}">Phrase 2.</span></p></div>`;
             SetupIFrameFromHtml(divHtml);
@@ -734,7 +750,7 @@ describe("talking book tests", () => {
 
             // System under test
             // Simulate user deleting the vertical bar character
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
             getFrameElementById("page", "1.1")!.innerText = "Phrase 1";
             const tbTool = new TalkingBookTool();
             const doUpdate = await tbTool.updateMarkupAsync();
@@ -743,8 +759,8 @@ describe("talking book tests", () => {
             // Verify - That splits were unchanged.
             const spans = getAudioSentenceSpans("div1");
             expect(spans).toHaveLength(2); // Should preserve the phrase splits instead of converting to sentence splits
-            expect(spans[0]).toHaveAttr("recordingmd5", checksums[0]);
-            expect(spans[1]).toHaveAttr("recordingmd5", checksums[1]);
+            expect(spans[0]).toHaveAttribute("recordingmd5", checksums[0]);
+            expect(spans[1]).toHaveAttribute("recordingmd5", checksums[1]);
         });
     });
 
@@ -759,9 +775,8 @@ describe("talking book tests", () => {
                     </p>
                 </div>`);
             // System under test
-            const fragments = await AudioRecording.elementToSentencesWithCleanup(
-                divHtml
-            );
+            const fragments =
+                await AudioRecording.elementToSentencesWithCleanup(divHtml);
 
             // Verify
             // removed because empty
@@ -769,13 +784,13 @@ describe("talking book tests", () => {
             expect(divHtml.get(0).getElementsByTagName("b")).toHaveLength(0);
             // kept because it has content
             expect(divHtml.get(0).getElementsByTagName("strong")).toHaveLength(
-                1
+                1,
             );
             const spans = divHtml.get(0).getElementsByTagName("span");
             // The redundant one around Sentence2 should have been removed.
             expect(spans).toHaveLength(2);
-            expect(spans[0]).toHaveText("Sentence 1.");
-            expect(spans[1]).toHaveText("Sentence 2 2");
+            expect(spans[0]).toHaveTextContent("Sentence 1.");
+            expect(spans[1]).toHaveTextContent("Sentence 2 2");
         });
     });
 });
@@ -783,7 +798,7 @@ describe("talking book tests", () => {
 function getAudioSentenceSpans(divId: string): HTMLSpanElement[] {
     const element = getFrameElementById("page", divId);
 
-    expect(element).toBeTruthy(`${divId} should exist.`);
+    expect(element, `${divId} should exist.`).toBeTruthy();
 
     const htmlElement = element as HTMLElement;
     const collection = htmlElement.querySelectorAll("span.audio-sentence");
@@ -797,7 +812,7 @@ function verifyRecordButtonEnabled() {
 function setAllAudioFilesPresent() {
     // Mark that the recording exists.
     // FYI - spies only last for the scope of the "describe" or "it" block in which it was defined.
-    spyOn(axios, "get").and.callFake((url: string) => {
+    vi.spyOn(axios, "get").mockImplementation((url: string) => {
         if (url.includes("/bloom/api/audio/checkForAllRecording?ids=")) {
             return Promise.resolve({ data: true });
         } else if (url.includes(kAnyRecordingApiUrl)) {

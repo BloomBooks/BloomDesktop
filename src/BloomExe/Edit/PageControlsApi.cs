@@ -1,7 +1,7 @@
-using Bloom.Api;
-using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
+using Bloom.Api;
+using Newtonsoft.Json;
 
 namespace Bloom.Edit
 {
@@ -158,7 +158,7 @@ namespace Bloom.Edit
                     {
                         _editingModel.CanAddPages,
                         _editingModel.CanDeletePage,
-                        _editingModel.CanDuplicatePage
+                        _editingModel.CanDuplicatePage,
                     }
                 );
             }

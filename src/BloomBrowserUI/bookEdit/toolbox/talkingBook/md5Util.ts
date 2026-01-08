@@ -27,7 +27,23 @@ export function getMd5(message): string {
 
     do {
         blocks[0] = blocks[16];
-        blocks[16] = blocks[1] = blocks[2] = blocks[3] = blocks[4] = blocks[5] = blocks[6] = blocks[7] = blocks[8] = blocks[9] = blocks[10] = blocks[11] = blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
+        blocks[16] =
+            blocks[1] =
+            blocks[2] =
+            blocks[3] =
+            blocks[4] =
+            blocks[5] =
+            blocks[6] =
+            blocks[7] =
+            blocks[8] =
+            blocks[9] =
+            blocks[10] =
+            blocks[11] =
+            blocks[12] =
+            blocks[13] =
+            blocks[14] =
+            blocks[15] =
+                0;
         for (i = start; index < length && i < 64; ++index) {
             code = message.charCodeAt(index);
             if (code < 0x80) {
@@ -55,7 +71,7 @@ export function getMd5(message): string {
         }
         bytes += i - start;
         start = i - 64;
-        if (index == length) {
+        if (index === length) {
             blocks[i >> 2] |= EXTRA[i & 3];
             ++index;
         }

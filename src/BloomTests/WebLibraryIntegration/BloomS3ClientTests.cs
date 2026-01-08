@@ -53,13 +53,12 @@ namespace BloomTests.WebLibraryIntegration
         [Test]
         public void DownloadBook_DoesNotExist_Throws()
         {
-            Assert.Throws<DirectoryNotFoundException>(
-                () =>
-                    _client.DownloadBook(
-                        BloomS3Client.UnitTestBucketName,
-                        "notthere",
-                        _workFolder.FolderPath
-                    )
+            Assert.Throws<DirectoryNotFoundException>(() =>
+                _client.DownloadBook(
+                    BloomS3Client.UnitTestBucketName,
+                    "notthere",
+                    _workFolder.FolderPath
+                )
             );
         }
 
@@ -105,6 +104,39 @@ namespace BloomTests.WebLibraryIntegration
             Assert.False(BloomS3Client.AvoidThisFile(objectKey, false));
             Assert.False(BloomS3Client.AvoidThisFile(objectKey, true));
         }
+
+        [TestCase(
+            "simple/path",
+            "https://s3.amazonaws.com/BloomLibraryBooks-UnitTests/simple%2fpath"
+        )]
+        [TestCase(
+            "path with spaces/",
+            "https://s3.amazonaws.com/BloomLibraryBooks-UnitTests/path+with+spaces%2f"
+        )]
+        [TestCase(
+            "path/with/slashes/",
+            "https://s3.amazonaws.com/BloomLibraryBooks-UnitTests/path%2fwith%2fslashes%2f"
+        )]
+        [TestCase(
+            "path with special chars: &=+",
+            "https://s3.amazonaws.com/BloomLibraryBooks-UnitTests/path+with+special+chars%3a+%26%3d%2b"
+        )]
+        [TestCase(
+            "MyBook/With CAPITAL Letters",
+            "https://s3.amazonaws.com/BloomLibraryBooks-UnitTests/MyBook%2fWith+CAPITAL+Letters"
+        )]
+        [TestCase(
+            "ZU3tR5PJj7/1757426779123/Motion Book/",
+            "https://s3.amazonaws.com/BloomLibraryBooks-UnitTests/ZU3tR5PJj7%2f1757426779123%2fMotion+Book%2f"
+        )]
+        public void GetBaseUrl_EncodesWithLowercaseHex(
+            string prefixForBookFiles,
+            string expectedUrl
+        )
+        {
+            var result = _client.GetBaseUrl(prefixForBookFiles);
+            Assert.AreEqual(expectedUrl, result);
+        }
     }
 
     public class BloomS3ClientTestDouble : BloomS3Client
@@ -129,14 +161,14 @@ namespace BloomTests.WebLibraryIntegration
             return GetMatchingItems(UnitTestBucketName, prefix).Count;
         }
 
-        public void DeleteFromUnitTestBucket(string prefix)
+        public async System.Threading.Tasks.Task DeleteFromUnitTestBucketAsync(string prefix)
         {
             var amazonS3 = GetAmazonS3WithAccessKey(UnitTestBucketName);
 
             var listMatchingObjectsRequest = new ListObjectsV2Request()
             {
                 BucketName = UnitTestBucketName,
-                Prefix = prefix
+                Prefix = prefix,
             };
 
             ListObjectsV2Response matchingFilesResponse;
@@ -145,19 +177,21 @@ namespace BloomTests.WebLibraryIntegration
                 // Note: ListObjects can only return 1,000 objects at a time,
                 //       and DeleteObjects can only delete 1,000 objects at a time.
                 //       So a loop is needed if the book contains 1,001+ objects.
-                matchingFilesResponse = amazonS3.ListObjectsV2(listMatchingObjectsRequest);
+                matchingFilesResponse = await amazonS3.ListObjectsV2Async(
+                    listMatchingObjectsRequest
+                );
                 if (matchingFilesResponse.S3Objects.Count == 0)
                     return;
 
                 var deleteObjectsRequest = new DeleteObjectsRequest()
                 {
                     BucketName = UnitTestBucketName,
-                    Objects = matchingFilesResponse.S3Objects
-                        .Select(s3Object => new KeyVersion() { Key = s3Object.Key })
-                        .ToList()
+                    Objects = matchingFilesResponse
+                        .S3Objects.Select(s3Object => new KeyVersion() { Key = s3Object.Key })
+                        .ToList(),
                 };
 
-                var response = amazonS3.DeleteObjects(deleteObjectsRequest);
+                var response = await amazonS3.DeleteObjectsAsync(deleteObjectsRequest);
                 System.Diagnostics.Debug.Assert(response.DeleteErrors.Count == 0);
 
                 // Prep the next request (if needed)

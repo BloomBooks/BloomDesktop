@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file original="velopack.exe" source-language="en" target-language="en" datatype="plaintext">
+    <body>
+      <trans-unit id="templates.setup_title">
+        <source xml:lang="en">{app_title} Setup {app_version}</source>
+      </trans-unit>
+      <trans-unit id="templates.setup_title_no_version">
+        <source xml:lang="en">{app_title} Setup</source>
+      </trans-unit>
+      <trans-unit id="templates.update_title">
+        <source xml:lang="en">{app_title} Update {app_version}</source>
+      </trans-unit>
+      <trans-unit id="templates.update_title_no_version">
+        <source xml:lang="en">{app_title} Update</source>
+      </trans-unit>
+      <trans-unit id="templates.uninstall_title">
+        <source xml:lang="en">{app_title} Uninstall</source>
+      </trans-unit>
+      <trans-unit id="templates.error_title">
+        <source xml:lang="en">{program_name} Error</source>
+      </trans-unit>
+      <trans-unit id="templates.install_directory_default">
+        <source xml:lang="en">The install directory is '&lt;A HREF="na"&gt;%LocalAppData%\{app_id}&lt;/A&gt;'</source>
+      </trans-unit>
+      <trans-unit id="templates.install_directory_custom">
+        <source xml:lang="en">The install directory is '&lt;A HREF="na"&gt;{path}&lt;/A&gt;'</source>
+      </trans-unit>
+      <trans-unit id="progress.installing_app">
+        <source xml:lang="en">Installing {app_title}...</source>
+      </trans-unit>
+      <trans-unit id="progress.downloading_runtime">
+        <source xml:lang="en">Downloading {runtime_name}...</source>
+      </trans-unit>
+      <trans-unit id="buttons.ok">
+        <source xml:lang="en">Ok</source>
+      </trans-unit>
+      <trans-unit id="buttons.yes">
+        <source xml:lang="en">Yes</source>
+      </trans-unit>
+      <trans-unit id="buttons.no">
+        <source xml:lang="en">No</source>
+      </trans-unit>
+      <trans-unit id="buttons.install_update">
+        <source xml:lang="en">Install Update</source>
+      </trans-unit>
+      <trans-unit id="buttons.install_and_update">
+        <source xml:lang="en">Install &amp; Update</source>
+      </trans-unit>
+      <trans-unit id="buttons.install">
+        <source xml:lang="en">Install</source>
+      </trans-unit>
+      <trans-unit id="buttons.hide">
+        <source xml:lang="en">Hide</source>
+      </trans-unit>
+      <trans-unit id="buttons.retry_close_programs">
+        <source xml:lang="en">Retry\nTry again if you've closed the program(s)</source>
+        <note>Note: you must preserve the '\n' after the first word.</note>
+      </trans-unit>
+      <trans-unit id="buttons.continue_close_programs">
+        <source xml:lang="en">Continue\nAttempt to close the program(s) automatically</source>
+        <note>Note: you must preserve the '\n' after the first word.</note>
+      </trans-unit>
+      <trans-unit id="buttons.cancel_stop_update">
+        <source xml:lang="en">Cancel\nThe update will not continue</source>
+        <note>Note: you must preserve the '\n' after the first word.</note>
+      </trans-unit>
+      <trans-unit id="buttons.repair">
+        <source xml:lang="en">Repair\nErase the application and re-install version {app_version}.</source>
+        <note>Note: you must preserve the '\n' after the first word.</note>
+      </trans-unit>
+      <trans-unit id="buttons.update">
+        <source xml:lang="en">Update\nTo version {target_version}</source>
+        <note>Note: you must preserve the '\n' after the first word.</note>
+      </trans-unit>
+      <trans-unit id="buttons.downgrade">
+        <source xml:lang="en">Downgrade\nTo version {target_version}</source>
+        <note>Note: you must preserve the '\n' after the first word.</note>
+      </trans-unit>
+      <trans-unit id="buttons.cancel_backup_first">
+        <source xml:lang="en">Cancel\nBackup or save your work first</source>
+        <note>Note: you must preserve the '\n' after the first word.</note>
+      </trans-unit>
+      <trans-unit id="dialogs.restart_required.instruction">
+        <source xml:lang="en">Restart Required</source>
+      </trans-unit>
+      <trans-unit id="dialogs.restart_required.content">
+        <source xml:lang="en">A restart is required before Setup can continue. Please restart your computer and try again.</source>
+      </trans-unit>
+      <trans-unit id="dialogs.update_missing_dependencies.header">
+        <source xml:lang="en">{app_title} would like to update from {from_version} to {to_version}</source>
+      </trans-unit>
+      <trans-unit id="dialogs.update_missing_dependencies.content">
+        <source xml:lang="en">{app_title} {to_version} has missing dependencies which need to be installed: {dependency_list}. Would you like to continue?</source>
+      </trans-unit>
+      <trans-unit id="dialogs.setup_missing_dependencies.header">
+        <source xml:lang="en">{app_title} has missing system dependencies.</source>
+      </trans-unit>
+      <trans-unit id="dialogs.setup_missing_dependencies.content">
+        <source xml:lang="en">{app_title} requires the following packages to be installed: {dependency_list}. Would you like to continue?</source>
+      </trans-unit>
+      <trans-unit id="dialogs.uninstall_complete_with_errors.instruction">
+        <source xml:lang="en">{app_title} uninstall has completed with errors.</source>
+      </trans-unit>
+      <trans-unit id="dialogs.uninstall_complete_with_errors.content">
+        <source xml:lang="en">There may be left-over files or directories on your system. You can attempt to remove these manually or re-install the application and try again.</source>
+      </trans-unit>
+      <trans-unit id="dialogs.uninstall_complete_with_errors.footer">
+        <source xml:lang="en">Log file: '&lt;A HREF="na"&gt;{log_path}&lt;/A&gt;'</source>
+      </trans-unit>
+      <trans-unit id="dialogs.processes_locking_folder.content">
+        <source xml:lang="en">There are programs ({process_names}) preventing the {app_title} update from proceeding.\n\nYou can press Continue to have this updater attempt to close them automatically, or if you've closed them yourself press Retry for the updater to check again.</source>
+      </trans-unit>
+      <trans-unit id="dialogs.overwrite_repair.default_instruction">
+        <source xml:lang="en">{app_title} is already installed.</source>
+      </trans-unit>
+      <trans-unit id="dialogs.overwrite_repair.default_content">
+        <source xml:lang="en">This application is installed on your computer. If it is not functioning correctly, you can attempt to repair it.</source>
+      </trans-unit>
+      <trans-unit id="dialogs.overwrite_repair.update_instruction">
+        <source xml:lang="en">An older version of {app_title} is installed.</source>
+      </trans-unit>
+      <trans-unit id="dialogs.overwrite_repair.update_content">
+        <source xml:lang="en">Would you like to update from {old_version} to {new_version}?</source>
+      </trans-unit>
+      <trans-unit id="dialogs.overwrite_repair.downgrade_instruction">
+        <source xml:lang="en">A newer version of {app_title} is installed.</source>
+      </trans-unit>
+      <trans-unit id="dialogs.overwrite_repair.downgrade_content">
+        <source xml:lang="en">You already have {old_version} installed. Would you like to downgrade this application to an older version?</source>
+      </trans-unit>
+      <trans-unit id="dialogs.elevation_prompt.content">
+        <source xml:lang="en">{app_title} would like to update to version {new_version}, but requires elevated permissions to do so. Would you like to proceed?</source>
+      </trans-unit>
+      <trans-unit id="dialogs.install_hook_failed.content">
+        <source xml:lang="en">Installation has completed, but the application install hook failed. It may not have installed correctly.</source>
+      </trans-unit>
+      <trans-unit id="dialogs.legacy_migration_failed.header">
+        <source xml:lang="en">Unable to start app</source>
+      </trans-unit>
+      <trans-unit id="dialogs.legacy_migration_failed.content">
+        <source xml:lang="en">This app installation has been corrupted and cannot be started. Please re-install the app.</source>
+      </trans-unit>
+      <trans-unit id="dialogs.uninstall_success.content">
+          <source xml:lang="en">{app_title} was successfully uninstalled.</source>
+      </trans-unit>
+      </body>
+  </file>
+</xliff>

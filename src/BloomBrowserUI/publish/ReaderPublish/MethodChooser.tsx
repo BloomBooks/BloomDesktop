@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { RadioGroup } from "../../react_components/RadioGroup";
@@ -8,7 +7,7 @@ import {
     post,
     useApiBoolean,
     useApiStringState,
-    useWatchBooleanEvent
+    useWatchBooleanEvent,
 } from "../../utils/bloomApi";
 import { isLinux } from "../../utils/isLinux";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -27,7 +26,7 @@ const methodNameToImageFileName: {
 } = {
     wifi: "publish-via-wifi.svg",
     usb: "publish-via-usb.svg",
-    file: "publish-to-file.svg"
+    file: "publish-to-file.svg",
 };
 
 /**
@@ -42,19 +41,19 @@ export function isReaderPublishMethods(x: string): x is ReaderPublishMethods {
 export const MethodChooser: React.FunctionComponent<{
     // A callback that runs when the start button for that process (e.g. "Save", "Share", etc) is clicked
     onStartButtonClick: (publishMethod: ReaderPublishMethods) => void;
-}> = props => {
+}> = (props) => {
     const [method, setMethod] = useApiStringState(
         "publish/bloompub/method",
-        "file"
+        "file",
     );
     const isLicenseOK = useWatchBooleanEvent(
         true,
         "publish-bloompub",
-        "publish/licenseOK"
+        "publish/licenseOK",
     );
     const [isPlaygroundBook, setIsPlaygroundBook] = useApiBoolean(
         "publish/isPlaygroundBook",
-        true
+        true,
     );
 
     const methodImageFileName: string = methodNameToImageFileName[method];
@@ -101,33 +100,33 @@ export const MethodChooser: React.FunctionComponent<{
                 >
                     <RadioGroup
                         value={method}
-                        onChange={m => setMethod(m)}
+                        onChange={(m) => setMethod(m)}
                         choices={{
                             file: radioLabelElement(
                                 useL10n(
                                     "Save BloomPUB File",
-                                    "PublishTab.Android.ChooseBloomPUBFile"
-                                )
+                                    "PublishTab.Android.ChooseBloomPUBFile",
+                                ),
                             ),
                             wifi: radioLabelElement(
                                 useL10n(
                                     "Share over Wi-Fi",
-                                    "PublishTab.Android.ChooseWifi"
-                                )
+                                    "PublishTab.Android.ChooseWifi",
+                                ),
                             ),
                             usb: radioLabelElement(
                                 useL10n(
                                     "Send over USB Cable",
-                                    "PublishTab.Android.ChooseUSB"
-                                )
-                            )
+                                    "PublishTab.Android.ChooseUSB",
+                                ),
+                            ),
                         }}
                     />
                     {getStartButton(
                         method,
                         isLicenseOK,
                         isPlaygroundBook,
-                        props.onStartButtonClick
+                        props.onStartButtonClick,
                     )}
                 </div>
                 <div
@@ -160,7 +159,7 @@ function getStartButton(
     method: string,
     licenseOK: boolean,
     isPlaygroundBook: boolean,
-    onStartButtonClick: (publishMethod: ReaderPublishMethods) => void
+    onStartButtonClick: (publishMethod: ReaderPublishMethods) => void,
 ) {
     if (!isReaderPublishMethods(method)) {
         throw new Error("Unhandled method choice");

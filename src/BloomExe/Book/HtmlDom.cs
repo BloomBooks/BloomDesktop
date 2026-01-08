@@ -49,9 +49,22 @@ namespace Bloom.Book
             _dom.LoadXml("<html><head></head><body></body></html>");
         }
 
-        public HtmlDom(SafeXmlDocument domToWrap)
+        // Cloning used to be automatic, but I don't know why. Seems like quite often
+        // we created the SafeXmlDocument precisely to be the content of an HtmlDom,
+        // and cloning it just wastes time. For now I'm relaxing it very slightly,
+        // allowing one to be created without cloning only when our own CreateFromHtmlFile
+        // method produced the SafeXmlDocument.
+        private HtmlDom(SafeXmlDocument domToWrap, bool clone)
         {
-            _dom = domToWrap.Clone();
+            _dom = clone ? domToWrap.Clone() : domToWrap;
+        }
+
+        public HtmlDom(SafeXmlDocument domToWrap)
+            : this(domToWrap, true) { }
+
+        public static HtmlDom CreateFromHtmlFile(string path)
+        {
+            return new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path), false);
         }
 
         /// <summary>
@@ -135,8 +148,8 @@ namespace Bloom.Book
             {
                 var doc = SafeXmlDocument.Create();
                 doc.LoadXml("<div>" + xmlContent + "</div>"); // may be multiple paragraphs
-                var nodes = doc.FirstChild
-                    .SafeSelectNodes("(.//div|.//span)[@id]")
+                var nodes = doc
+                    .FirstChild.SafeSelectNodes("(.//div|.//span)[@id]")
                     .Cast<SafeXmlElement>()
                     .ToList();
                 foreach (var node in nodes)
@@ -280,7 +293,6 @@ namespace Bloom.Book
             // This version is in libpalaso, and it does weird things that are file:/// oriented, like looking for the file and giving it file path
             // RawDom.AddStyleSheet(path);
 
-
             // Remember, Linux filenames are case sensitive.
             var pathToCheck = path;
             pathToCheck = pathToCheck.Replace('\\', '/');
@@ -323,19 +335,45 @@ namespace Bloom.Book
             return _dom.SelectSingleNodeHonoringDefaultNS(xpath) as SafeXmlElement;
         }
 
-        public void AddJavascriptFile(string pathToJavascript)
+        public void AddJavascriptFile(string pathToJavascript, bool module = false)
         {
-            Head.AppendChild(MakeJavascriptElement(pathToJavascript));
+            Head.AppendChild(MakeJavascriptElement(pathToJavascript, module));
         }
 
-        private SafeXmlElement MakeJavascriptElement(string pathToJavascript)
+        private SafeXmlElement MakeJavascriptElement(string pathToJavascript, bool module = false)
         {
-            var element = Head.AppendChild(_dom.CreateElement("script")) as SafeXmlElement;
+            return AddScriptFile(RawDom, pathToJavascript.ToLocalhost(), module);
+        }
 
-            element.IsEmpty = false; // IF it is empty, write with open and close tags.
-            element.SetAttribute("type", "text/javascript");
-            element.SetAttribute("src", pathToJavascript.ToLocalhost());
-            return element;
+        public static SafeXmlElement AddScriptFile(
+            SafeXmlDocument doc,
+            string src,
+            bool module = false
+        )
+        {
+            var head = doc.Head;
+            // Our Vite build system is configured to build bundles using ESNext,
+            // which produces files that require type module.
+            // I wish for a better way to know which files need it.
+            // If modules are imported as text/javascript, the browser complains
+            // if the js has import or export statements.
+            // Conceivably we could load the js and look for those as strings, but it would
+            // be slow and unreliable (the words might occur in comments).
+            var typeAttr =
+                module || src.ToLowerInvariant().EndsWith("bundle.js")
+                    ? "module"
+                    : "text/javascript";
+            var existingScript = head.SelectSingleNode(
+                $"./script[@type='{typeAttr}' and @src='{src}']"
+            );
+            if (existingScript != null)
+                return existingScript as SafeXmlElement; // already have it
+            var script = doc.CreateElement("script");
+            script.IsEmpty = false; // IF it is empty, write with open and close tags.
+            script.SetAttribute("src", src);
+            script.SetAttribute("type", typeAttr);
+            head.AppendChild(script);
+            return script;
         }
 
         public void AddOrReplaceMetaElement(string name, string content)
@@ -443,10 +481,12 @@ namespace Bloom.Book
 
             var x = builder.ToString().Trim();
             if (x.Length == 0)
-                Logger.WriteEvent(
-                    "HtmlDom.ValidateBook({0}): No Errors",
-                    descriptionOfBookForErrorLog
-                );
+            {
+                //Logger.WriteEvent(
+                //    "HtmlDom.ValidateBook({0}): No Errors",
+                //    descriptionOfBookForErrorLog
+                //);
+            }
             else
             {
                 Logger.WriteEvent(
@@ -619,11 +659,11 @@ namespace Bloom.Book
 
         public static bool HasBackgroundImage(SafeXmlElement imageContainer)
         {
-            var overlay =
-                imageContainer.ChildNodes.FirstOrDefault(
-                    child => child is SafeXmlElement e && e.HasClass(kCanvasElementClass)
+            var canvasElement =
+                imageContainer.ChildNodes.FirstOrDefault(child =>
+                    child is SafeXmlElement e && e.HasClass(kCanvasElementClass)
                 ) as SafeXmlElement;
-            return overlay != null && (overlay.HasClass("bloom-backgroundImage"));
+            return canvasElement != null && (canvasElement.HasClass("bloom-backgroundImage"));
         }
 
         /// <summary>
@@ -782,8 +822,8 @@ namespace Bloom.Book
                     var name = Path.GetFileName(href).ToLowerInvariant();
                     if (
                         name.EndsWith("xmatter.css")
-                        || BookStorage.AutomaticallyAddedCssFilePrefixes.Any(
-                            prefix => name.StartsWith(prefix.ToLowerInvariant())
+                        || BookStorage.AutomaticallyAddedCssFilePrefixes.Any(prefix =>
+                            name.StartsWith(prefix.ToLowerInvariant())
                         )
                     )
                     {
@@ -1132,8 +1172,8 @@ namespace Bloom.Book
 
             // Search the bloom-page for which elements are the language divs,
             // then flattern the list of lists into a single list.
-            var langDivs = pageElements.SelectMany(
-                page => page.SafeSelectNodes(".//div[@class and @lang]").Cast<SafeXmlElement>()
+            var langDivs = pageElements.SelectMany(page =>
+                page.SafeSelectNodes(".//div[@class and @lang]").Cast<SafeXmlElement>()
             );
 
             // Check each language div against some additional criteria
@@ -1144,16 +1184,14 @@ namespace Bloom.Book
                 .Where(div => !string.IsNullOrEmpty(div.ParentNode.GetAttribute("class")))
                 // At least up through 4.7, bloom-ignoreChildrenForBookLanguageList is used to prevent counting localized
                 // headers in comprehension quiz as languages of the book.
-                .Where(
-                    div =>
-                        !div.ParentNode
-                            .GetAttribute("class")
-                            .Contains("bloom-ignoreChildrenForBookLanguageList")
+                .Where(div =>
+                    !div
+                        .ParentNode.GetAttribute("class")
+                        .Contains("bloom-ignoreChildrenForBookLanguageList")
                 )
-                .Where(
-                    div =>
-                        div.GetAttribute("class")
-                            .IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0
+                .Where(div =>
+                    div.GetAttribute("class")
+                        .IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0
                 )
                 .Where(div => HtmlDom.IsLanguageValid(div.GetAttribute("lang")));
 
@@ -1439,8 +1477,8 @@ namespace Bloom.Book
                 {
                     // If the translationGroup doesn't have a style, try the first bloom-editable div in the
                     // template's translationGroup that has a style.
-                    defaultStyle = desiredStyleByLang.Values.FirstOrDefault(
-                        x => x != null && x.EndsWith("-style")
+                    defaultStyle = desiredStyleByLang.Values.FirstOrDefault(x =>
+                        x != null && x.EndsWith("-style")
                     );
                     if (string.IsNullOrEmpty(defaultStyle))
                     {
@@ -1850,8 +1888,8 @@ namespace Bloom.Book
             // of html that are used during editing but are not saved to disk.  (It calls javascript to deal with items inserted
             // by javascript.)
             string[] classNamesToUnion = new string[] { "bloom-ui", "ui-resizable-handle" };
-            var selectorsToUnion = classNamesToUnion.Select(
-                className => $"//*[contains(concat(' ', @class, ' '), ' {className} ')]"
+            var selectorsToUnion = classNamesToUnion.Select(className =>
+                $"//*[contains(concat(' ', @class, ' '), ' {className} ')]"
             );
             var unionedXPathExpression = String.Join(" | ", selectorsToUnion);
             foreach (var node in edittedPageDiv.SafeSelectNodes(unionedXPathExpression))
@@ -1884,7 +1922,7 @@ namespace Bloom.Book
                 "data-same-size",
                 "data-show-targets-during-play",
                 "data-show-answers-in-targets",
-                "data-missing-game-theme"
+                "data-missing-game-theme",
             };
             foreach (var attr in attrsToCopy)
             {
@@ -2741,9 +2779,8 @@ namespace Bloom.Book
             return HtmlDom
                 .SelectAudioSentenceElements(RawDom.DocumentElement)
                 .Cast<SafeXmlElement>()
-                .Where(
-                    span =>
-                        AudioProcessor.DoesAudioExistForSegment(bookFolder, span.GetAttribute("id"))
+                .Where(span =>
+                    AudioProcessor.DoesAudioExistForSegment(bookFolder, span.GetAttribute("id"))
                 );
         }
 
@@ -2912,12 +2949,11 @@ namespace Bloom.Book
             // Search the bloom-page for which elements are the language divs (under image descriptions),
             // then flattern the list of lists into a single list.
             var langDivs = pageElements
-                .SelectMany(
-                    page =>
-                        page.SafeSelectNodes(
-                                ".//*[contains(@class, 'bloom-imageDescription')]/div[@lang]"
-                            )
-                            .Cast<SafeXmlElement>()
+                .SelectMany(page =>
+                    page.SafeSelectNodes(
+                            ".//*[contains(@class, 'bloom-imageDescription')]/div[@lang]"
+                        )
+                        .Cast<SafeXmlElement>()
                 )
                 .ToList();
 
@@ -3296,10 +3332,8 @@ namespace Bloom.Book
             // from the image description if it is the main background image of the bloom-canvas.
             if (bloomCanvas != null && IsBackgroundImage(img))
             {
-                var description = bloomCanvas.ChildNodes.FirstOrDefault(
-                    n =>
-                        n is SafeXmlElement
-                        && ((SafeXmlElement)n).HasClass("bloom-imageDescription")
+                var description = bloomCanvas.ChildNodes.FirstOrDefault(n =>
+                    n is SafeXmlElement && ((SafeXmlElement)n).HasClass("bloom-imageDescription")
                 );
                 if (description != null)
                 {
@@ -3432,8 +3466,8 @@ namespace Bloom.Book
         public void FixDivOrdering()
         {
             FixDivOrdering(
-                RawDom.DocumentElement
-                    .SafeSelectNodes("//div[contains(@class, 'translationGroup')]")
+                RawDom
+                    .DocumentElement.SafeSelectNodes("//div[contains(@class, 'translationGroup')]")
                     .Cast<SafeXmlElement>()
             );
         }
@@ -3580,11 +3614,10 @@ namespace Bloom.Book
         /// </summary>
         public static void RemoveOtherLanguages(SafeXmlElement group, List<string> languagesToKeep)
         {
-            var deletableChildren = @group.ChildNodes
-                .Where(
-                    x =>
-                        x is SafeXmlElement e
-                        && (e.GetAttribute("class") ?? "").Contains("bloom-editable")
+            var deletableChildren = @group
+                .ChildNodes.Where(x =>
+                    x is SafeXmlElement e
+                    && (e.GetAttribute("class") ?? "").Contains("bloom-editable")
                 )
                 .Cast<SafeXmlElement>()
                 .ToList();
@@ -3614,11 +3647,10 @@ namespace Bloom.Book
 
         public static SafeXmlElement GetEditableChildInLang(SafeXmlElement parent, string lang)
         {
-            return parent.ChildNodes.FirstOrDefault(
-                    x =>
-                        x is SafeXmlElement e
-                        && (lang == null || e.GetAttribute("lang") == lang)
-                        && (e.GetAttribute("class") ?? "").Contains("bloom-editable")
+            return parent.ChildNodes.FirstOrDefault(x =>
+                    x is SafeXmlElement e
+                    && (lang == null || e.GetAttribute("lang") == lang)
+                    && (e.GetAttribute("class") ?? "").Contains("bloom-editable")
                 ) as SafeXmlElement;
         }
 
@@ -3690,10 +3722,11 @@ namespace Bloom.Book
                 if (!userStyleKeyDict.Keys.Contains(newKey))
                 {
                     // The value includes the key, so we can't just add a new key with the old value.
-                    var value = userStyleKeyDict[key].Replace(
-                        ".ui-audioCurrent {",
-                        ".ui-audioCurrent > span.ui-enableHighlight {"
-                    );
+                    var value = userStyleKeyDict[key]
+                        .Replace(
+                            ".ui-audioCurrent {",
+                            ".ui-audioCurrent > span.ui-enableHighlight {"
+                        );
                     userStyleKeyDict.Add(newKey, value);
                     updatedRule = true;
                 }

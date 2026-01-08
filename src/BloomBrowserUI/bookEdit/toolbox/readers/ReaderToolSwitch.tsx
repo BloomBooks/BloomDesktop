@@ -8,7 +8,7 @@ import { postBoolean } from "../../../utils/bloomApi";
 
 export const ReaderToolSwitch: React.FunctionComponent<{
     isForLeveled: boolean;
-}> = props => {
+}> = (props) => {
     const prefix = props.isForLeveled ? "leveled" : "decodable";
 
     // The page body will have a copy of the classes from the book's body.

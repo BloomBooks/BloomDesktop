@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import "./DeviceFrame.less";
 import { useState, useEffect } from "react";
@@ -39,7 +38,7 @@ export const DeviceAndControls: React.FunctionComponent<{
     onPreviewButtonClicked?: () => void;
     // hide theactual preview (typically if we're waiting for some data, especially orientation)
     hidePreview?: boolean;
-}> = props => {
+}> = (props) => {
     const [landscape, setLandscape] = useState(props.defaultLandscape);
 
     useEffect(() => {
@@ -50,7 +49,7 @@ export const DeviceAndControls: React.FunctionComponent<{
         props.highlightPreviewButton ? 1 : 0,
         () => {
             return !props.highlightPreviewButton;
-        }
+        },
     );
 
     return (
@@ -143,7 +142,7 @@ const OrientationButton: React.FunctionComponent<{
     landscape: boolean;
     selected: boolean;
     onClick: (landscape: boolean) => void;
-}> = props => (
+}> = (props) => (
     <div
         css={css`
             ${commonDeviceFrameCss}

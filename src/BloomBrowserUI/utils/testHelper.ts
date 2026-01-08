@@ -2,7 +2,7 @@ const kTestRoot = "testRoot";
 
 // Gets the element (or creates it if necessary) that represents the root div for unit tests to insert any HTML needed for their test.
 //
-// Note: The HTML and even the body already has lots of stuff attached to it from Karma etc.
+// Note: The HTML and even the body already has lots of stuff attached to it from Vitest etc.
 // So you don't want to completely reinitialize either of those.
 // Just have a wrapper div inside the body instead.
 export function getTestRoot() {
@@ -43,34 +43,15 @@ export function removeTestRoot() {
 // Makes sure that the specified HTML element ids do not exist in the document.
 // Throws an exception if one does.
 export function ensureIdsDontExist(ids: string[]) {
-    ids.forEach(id => {
+    ids.forEach((id) => {
         const elem = document.getElementById(id);
         if (elem) {
             throw new Error(
-                `ID ${id} not expected to exist but was found. Element = ${elem.outerHTML}`
+                `ID ${id} not expected to exist but was found. Element = ${elem.outerHTML}`,
             );
         }
     });
 }
-
-export const customJasmineMatchers = {
-    // This upgrades toBe with an arrow that points to the first character that differs.
-    toBeString: matchersUtil => {
-        return {
-            compare: (actual, expected) => {
-                const pass = actual === expected;
-                const message = pass
-                    ? undefined
-                    : getStringDifference(actual, expected);
-
-                return {
-                    pass,
-                    message
-                };
-            }
-        };
-    }
-};
 
 export function getStringDifference(actual: string, expected: string) {
     const index = findFirstDiffPos(actual, expected);
@@ -102,13 +83,13 @@ export function getStringContext(str: string, index: number) {
     if (startIndex < 0) {
         return {
             context: str.slice(0, endIndex),
-            diffMarker: " ".repeat(index - 1) + String.fromCharCode(9660)
+            diffMarker: " ".repeat(index - 1) + String.fromCharCode(9660),
         };
     } else {
         return {
             context: "[...]" + str.slice(startIndex, endIndex),
             diffMarker:
-                " ".repeat(index - startIndex + 5) + String.fromCharCode(9660)
+                " ".repeat(index - startIndex + 5) + String.fromCharCode(9660),
         };
     }
 }

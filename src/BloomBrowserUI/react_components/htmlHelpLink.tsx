@@ -1,8 +1,7 @@
-import * as React from "react";
 import {
     ILocalizationProps,
     ILocalizationState,
-    LocalizableElement
+    LocalizableElement,
 } from "./l10nComponents";
 import Link from "@mui/material/Link";
 import { getString } from "../utils/bloomApi";
@@ -30,7 +29,7 @@ export default class HtmlHelpLink extends LocalizableElement<
             <Link
                 target="_blank"
                 onClick={() =>
-                    getString(this.target, dummy => {
+                    getString(this.target, () => {
                         // Do nothing
                     })
                 }

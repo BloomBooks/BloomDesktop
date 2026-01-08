@@ -37,7 +37,7 @@ namespace Bloom.FontProcessing
             ".ttf",
             ".otf",
             ".woff",
-            ".woff2"
+            ".woff2",
         };
 
         // Four possible values for determinedSuitability
@@ -216,6 +216,19 @@ namespace Bloom.FontProcessing
             GlyphTypeface gtf = null;
             try
             {
+                if (
+                    fileExtension.ToLowerInvariant() == ".woff"
+                    || fileExtension.ToLowerInvariant() == ".woff2"
+                )
+                {
+                    // WOFF and WOFF2 are not supported by GlyphTypeface, so we have to use a different method.
+                    if (ProcessWithFontServer(fontName))
+                        return;
+                    Console.WriteLine("GlyphTypeface cannot handle \"{0}\"", fontPath);
+                    determinedSuitability = kInvalid;
+                    determinedSuitabilityNotes = $"GlyphTypeface cannot handle woff: {fontName}";
+                    return;
+                }
                 gtf = new GlyphTypeface(new Uri("file:///" + fontPath));
                 var english = System.Globalization.CultureInfo.GetCultureInfo("en-US");
                 if (string.IsNullOrEmpty(fontName))
@@ -262,34 +275,20 @@ namespace Bloom.FontProcessing
             }
             catch (Exception e)
             {
-                var serve = FontServe.GetInstance();
-                if (!serve.HasFamily(fontName))
-                {
-                    // file is somehow corrupt or not really a font file? Just ignore it.
-                    Console.WriteLine(
-                        "GlyphTypeface for \"{0}\" threw an exception: {1}",
-                        fontPath,
-                        e
-                    );
-                    determinedSuitability = kInvalid;
-                    determinedSuitabilityNotes = $"GlyphTypeface exception: {e}";
-                    return;
-                }
-                var info = serve.GetFontInformationForFamily(fontName);
-                // These values are for the version of the font that Bloom ships with.
-                copyright = info.metadata.copyright;
-                designer = info.metadata.designer;
-                designerURL = info.metadata.designerURL;
-                fsType = info.metadata.fsType;
-                license = info.metadata.license;
-                licenseURL = info.metadata.licenseURL;
-                manufacturer = info.metadata.manufacturer;
-                manufacturerURL = info.metadata.manufacturerURL;
-                trademark = info.metadata.trademark;
-                version = info.metadata.version;
+                if (ProcessWithFontServer(fontName))
+                    return; // we got the metadata from the font server, so we are done.
+                // file is somehow corrupt or not really a font file? Just ignore it.
+                Console.WriteLine("GlyphTypeface for \"{0}\" threw an exception: {1}", fontPath, e);
+                determinedSuitability = kInvalid;
+                determinedSuitabilityNotes = $"GlyphTypeface exception: {e}";
+                return;
             }
 #endif
+            DetermineSuitability();
+        }
 
+        private void DetermineSuitability()
+        {
             // Now for the hard part: setting DeterminedSuitability
             // Check out the license information.
             if (!String.IsNullOrEmpty(license))
@@ -473,6 +472,29 @@ namespace Bloom.FontProcessing
             // Give up.  More heuristics may suggest themselves.
             determinedSuitability = kUnknown;
             determinedSuitabilityNotes = "no reliable information";
+        }
+
+        private bool ProcessWithFontServer(string fontName)
+        {
+            var serve = FontServe.GetInstance();
+            if (serve.HasFamily(fontName))
+            {
+                var info = serve.GetFontInformationForFamily(fontName);
+                // These values are for the version of the font that Bloom ships with.
+                copyright = info.metadata.copyright;
+                designer = info.metadata.designer;
+                designerURL = info.metadata.designerURL;
+                fsType = info.metadata.fsType;
+                license = info.metadata.license;
+                licenseURL = info.metadata.licenseURL;
+                manufacturer = info.metadata.manufacturer;
+                manufacturerURL = info.metadata.manufacturerURL;
+                trademark = info.metadata.trademark;
+                version = info.metadata.version;
+                DetermineSuitability();
+                return true;
+            }
+            return false;
         }
 
 #if __MonoCS__

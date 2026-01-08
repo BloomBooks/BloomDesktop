@@ -1,4 +1,4 @@
-## Can't Paste Hyperlink {i18n="hyperlink.title"}
+## Can't Set Up Hyperlink {i18n="hyperlink.heading"}
 
 ### Bloom was not able to make a link. Try selecting only simple text. {i18n="EditTab.HyperlinkPasteFailure"}
 
