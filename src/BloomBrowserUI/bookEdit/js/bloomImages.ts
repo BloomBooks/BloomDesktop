@@ -53,6 +53,11 @@ export function cleanupImages() {
 }
 
 export function SetupImagesInContainer(container) {
+    // Prevent problems in case an ancestor has rtl, e.g. on xmatter pages of RTL language books (BL-15653)
+    $(container)
+        .find(".bloom-imageContainer, .bloom-videoContainer")
+        .css("direction", "ltr");
+
     $(container)
         .find(".bloom-imageContainer > img") // the ">" here prevents finding img's of ui affordances deep in comics
         .each(function () {
