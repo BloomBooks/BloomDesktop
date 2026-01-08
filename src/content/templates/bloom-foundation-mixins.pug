@@ -116,9 +116,10 @@ mixin field-version1(placeholder)
 //- and sized when the page opens in our editor.
 mixin image
 	- requireZeroArguments('image', arguments);
-	.bloom-canvas&attributes(attributes)
-		img(src="placeHolder.png", width=attributes.initialImageWidth)
-		block
+	.bloom-canvas.bloom-has-canvas-element&attributes(attributes)
+		.bloom-canvas-element.bloom-backgroundImage(style="width:100%; height:100%;")
+			.bloom-imageContainer
+				img(src="placeHolder.png") 
 
 mixin video
 	- requireZeroArguments('video', arguments);
