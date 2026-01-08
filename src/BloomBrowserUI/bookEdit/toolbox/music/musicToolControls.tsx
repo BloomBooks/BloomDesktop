@@ -145,10 +145,11 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
                             onChange={(val) => this.setRadio(val)}
                             value={this.state.activeRadioValue}
                             choices={{
-                                noMusic: this.radioLabelElement(
-                                    "No Music",
-                                    "EditTab.Toolbox.Music.NoMusic",
-                                ),
+                                // "No Music" option not working (BL-14846) is under "Issues We'll Live With for now"
+                                // noMusic: this.radioLabelElement(
+                                //     "No Music",
+                                //     "EditTab.Toolbox.Music.NoMusic",
+                                // ),
                                 continueMusic: this.radioLabelElement(
                                     "Continue music from previous page",
                                     "EditTab.Toolbox.Music.ContinueMusic",
