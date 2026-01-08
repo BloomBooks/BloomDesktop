@@ -8,6 +8,7 @@ export enum BloomPalette {
     BloomReaderBookshelf = "bloom-reader-bookshelf",
     TextBackground = "overlay-background",
     HighlightBackground = "highlight-background",
+    PageColors = "page-colors",
 }
 
 // This array provides a useful default palette for the color picker dialog.
@@ -64,6 +65,25 @@ export const HighlightBackgroundPalette: string[] = [
     "#C5F0FF",
 ];
 
+// Light background colors suitable for page backgrounds.
+// (Users can still pick any color, but these are the suggested defaults.)
+export const PageColorsPalette: string[] = [
+    "#FFFFFF", // white
+    "#F7F7F7", // very light gray
+    "#FFF7E6", // warm cream
+    "#FFF1F2", // very light pink
+    "#FCE7F3", // pale rose
+    "#F3E8FF", // pale lavender
+    "#EDE9FE", // pale purple
+    "#E0F2FE", // pale sky
+    "#E0F7FA", // pale cyan
+    "#E6FFFA", // pale teal
+    "#ECFDF3", // pale green
+    "#F7FEE7", // pale lime
+    "#FFFBEB", // pale amber
+    "#FEF3C7", // light beige
+];
+
 const specialColors: IColorInfo[] = [
     // #DFB28B is the color Comical has been using as the default for captions.
     // It's fairly close to the "Calico" color defined at https://www.htmlcsscolor.com/hex/D5B185 (#D5B185)
@@ -110,6 +130,9 @@ export async function getHexColorsForPalette(
         case BloomPalette.CoverBackground:
             factoryColors = CoverBackgroundPalette;
             break;
+        case BloomPalette.PageColors:
+            factoryColors = PageColorsPalette;
+            break;
         case BloomPalette.Text:
             factoryColors = TextColorPalette;
             break;
@@ -155,6 +178,9 @@ export function getDefaultColorsFromPalette(
         case BloomPalette.BloomReaderBookshelf:
         case BloomPalette.CoverBackground:
             palette = CoverBackgroundPalette;
+            break;
+        case BloomPalette.PageColors:
+            palette = PageColorsPalette;
             break;
         case BloomPalette.Text:
             palette = TextColorPalette;
