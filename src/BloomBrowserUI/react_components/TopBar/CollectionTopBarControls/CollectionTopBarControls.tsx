@@ -11,11 +11,7 @@ import {
 } from "../../../utils/bloomApi";
 import { WireUpForWinforms } from "../../../utils/WireUpWinform";
 import { useSubscribeToWebSocketForStringMessage } from "../../../utils/WebSocketManager";
-import {
-    kBloomBlue,
-    kBloomPurple,
-    lightTheme,
-} from "../../../bloomMaterialUITheme";
+import { kBloomBlue, lightTheme } from "../../../bloomMaterialUITheme";
 const bloomApiPrefix = getBloomApiPrefix(false);
 
 const kOpenCreateCollectionIcon = `${bloomApiPrefix}images/OpenCreateCollection24x24.png`;
@@ -94,4 +90,4 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
         </ThemeProvider>
     );
 };
-WireUpForWinforms(CollectionTopBarControls, kBloomPurple);
+WireUpForWinforms(CollectionTopBarControls, kBloomBlue);
