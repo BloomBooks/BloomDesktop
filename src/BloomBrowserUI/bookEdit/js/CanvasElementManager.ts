@@ -3165,11 +3165,18 @@ export class CanvasElementManager {
             // existing element types. When we're really making a bubble shape, we
             // need to let Comical.js handle the background color, so it is the right
             // shape to match the bubble. For text without a bubble shape, it would
-            // probably be simpler to just set it with style.backgroundColor, but it
+            // probably be simpler to just set it like we do here, but it
             // doesn't matter much. For text buttons, we definitely want to do it using
             // the style, so the background color obeys the border radius of the button
             // and the shadow appears in the right place...makes everything simpler.
-            this.activeElement.style.backgroundColor = newBackgroundColors[0];
+            if (newBackgroundColors.length === 1) {
+                this.activeElement.style.background = "";
+                this.activeElement.style.backgroundColor =
+                    newBackgroundColors[0];
+            } else {
+                this.activeElement.style.backgroundColor = "";
+                this.activeElement.style.background = `linear-gradient(${newBackgroundColors.join(", ")})`;
+            }
             return;
         }
         this.updateSelectedItemBubbleSpec({

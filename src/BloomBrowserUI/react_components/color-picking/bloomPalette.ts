@@ -187,7 +187,7 @@ export const getSpecialColorName = (
     colorArray: string[],
 ): string | undefined => {
     const special = specialColors.find(
-        (elem) => elem.colors[1] === colorArray[1],
+        (elem) => elem.colors[1]?.toLowerCase() === colorArray[1].toLowerCase(),
     );
     return special ? special.name : undefined;
 };
