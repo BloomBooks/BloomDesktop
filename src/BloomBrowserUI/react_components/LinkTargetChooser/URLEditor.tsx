@@ -103,19 +103,21 @@ export const URLEditor: React.FunctionComponent<{
         }
     };
 
+    // Only websites. I.e. not books or pages which will start with /book or #.
+    // Also, it isn't helpful to open mailto: links in the browser. (And we don't expect file:// links.)
+    function shouldOpenInBrowser(url: string): boolean {
+        return /^(https?:)?\/\//i.test(url);
+    }
+
     const handleOpenInBrowser = () => {
-        const normalizedUrl = url.trim();
-        if (!normalizedUrl || normalizedUrl.startsWith("/book")) {
+        const trimmedUrl = url.trim();
+        if (!shouldOpenInBrowser(trimmedUrl)) {
             return;
         }
 
         // Use the Bloom API to open the URL in the default browser
-        postString("link", encodeURIComponent(normalizedUrl));
+        postString("link", encodeURIComponent(trimmedUrl));
     };
-
-    const normalizedUrl = url.trim();
-    const isOpenButtonDisabled =
-        normalizedUrl.length === 0 || normalizedUrl.startsWith("/book");
 
     return (
         <Box
@@ -204,7 +206,7 @@ export const URLEditor: React.FunctionComponent<{
                     <IconButton
                         onClick={handleOpenInBrowser}
                         size="small"
-                        disabled={isOpenButtonDisabled}
+                        disabled={!shouldOpenInBrowser(url.trim())}
                         css={css`
                             color: ${kBloomBlue};
                             &:disabled {
