@@ -22,13 +22,13 @@
 
 // When previewing templates in the Collection Tab, and also when in Change Layout mode in the Edit tab,
 // img elements may not be wrapped in canvas-element divs (see BL-15514). Also below.
-.preview:not([data-l1]), //  Real books always have a data-l1 attribute added
-.origami-layout-mode {
+//  Real books always have a data-l1 attribute added
+.preview:not([data-l1]) .bloom-canvas:has(img[src*="placeHolder.png"]),
+.origami-layout-mode
     .bloom-canvas:not(:has(.bloom-canvas-element)):has(
-            img[src*="placeHolder.png"]
-        ) {
-        .image-placeholder-background();
-    }
+        img[src*="placeHolder.png"]
+    ) {
+    .image-placeholder-background();
 }
 
 // Use the easel placeholder instead of the usual flower placeholder for the background image whenever there is data-tool-id="canvas"
