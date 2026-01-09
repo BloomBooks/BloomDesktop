@@ -493,7 +493,9 @@ body:not(.origami-drag) .bloom-canvas:hover {
 // to load.  Clicking on it would just show an error message anyway, and the button would
 // obscure part of the alt attribute error message.
 .bloom-canvas:has(.bloom-backgroundImage:has(img.bloom-imageLoadError)),
-.bloom-canvas:has(.bloom-backgroundImage:has(img[src*="placeHolder.png"])) {
+.bloom-canvas:has(
+    .bloom-backgroundImage:has(img[src*="image-placeholder.png"])
+) {
     .editMetadataButton.imgMetadataProblem {
         display: none !important;
     }
@@ -594,7 +596,7 @@ body.bloom-fullBleed {
 .bloom-describedImage {
     // Repeated class name so we override even the rules for data-tool-id="canvas" in placeHolderImages.less
     .bloom-backgroundImage.bloom-canvas-element.bloom-canvas-element:has(
-            img[src*="placeHolder.png"]
+            img[src*="image-placeholder.png"]
         ) {
         background-image: none;
     }
@@ -1118,7 +1120,7 @@ body.simulateCataracts {
 // publications.)
 body.simulateColorBlindness {
     .bloom-canvas {
-        img:not([src="placeHolder.png"]) {
+        img:not([src="image-placeholder.png"]) {
             visibility: hidden;
         }
     }
@@ -1289,12 +1291,12 @@ body.hideAllCKEditors .cke_chrome {
     visibility: hidden;
 }
 
-// We have all kinds of code that knows placeHolder.png is special. So it's nontrivial to
+// We have all kinds of code that knows image-placeholder.png is special. So it's nontrivial to
 // switch and use a different placeholder image for GIFs. However, some of that code we
 // already have prevents showing the placeholder except while editing. So we can get the
 // effect we want (a different placeholder for GIFs) by just making the placeholder src
 // and changing the content of the image.
-.bloom-gif img[src="placeHolder.png"] {
+.bloom-gif img[src="image-placeholder.png"] {
     content: url("/bloom/images/Gif.svg");
     opacity: 0.4;
 }
@@ -1676,7 +1678,7 @@ svg.bloom-videoControl {
 .bloom-page[data-tool-id="game"]:not([data-activity="simple-dom-choice"]) {
     .bloom-canvas
         .bloom-backgroundImage.bloom-canvas-element:has(
-            img[src="placeHolder.png"]
+            img[src="image-placeholder.png"]
         ) {
         background-image: none;
     }

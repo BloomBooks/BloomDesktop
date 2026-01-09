@@ -135,7 +135,7 @@ namespace BloomTests.Book
       <div class=""pageDescription"" lang=""en""></div>
       <div class=""marginBox"">
         <div class=""split-pane-component-inner"">
-          <div class=""bloom-canvas""><img src=""placeHolder.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly.""/>
+          <div class=""bloom-canvas""><img src=""image-placeholder.png"" alt=""This picture, image-placeholder.png, is missing or was loading too slowly.""/>
           </div>
         </div>
       </div>
@@ -146,7 +146,7 @@ namespace BloomTests.Book
 	  <div>
 		  <div class=""marginBox"">
 		    <div class=""split-pane-component-inner"">
-		      <div class=""bloom-canvas""><img src=""placeHolder.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly.""/>
+		      <div class=""bloom-canvas""><img src=""image-placeholder.png"" alt=""This picture, image-placeholder.png, is missing or was loading too slowly.""/>
 		      </div>
 		    </div>
 		  </div>
@@ -785,7 +785,7 @@ namespace BloomTests.Book
                     "<div class='bloom-page'><div class='marginBox'></div></div>"
                 )
             );
-            var placeholder = MakeSamplePngImage(Path.Combine(_folder.Path, "placeholder.png"));
+            var placeholder = MakeSamplePngImage(Path.Combine(_folder.Path, "image-placeholder.png"));
             storage.CleanupUnusedImageFiles();
             Assert.IsFalse(File.Exists(placeholder.Path));
         }
@@ -2536,7 +2536,7 @@ These are similar but already have game-theme classes
         <div class=""split-pane-component-inner"">
           <div class=""bloom-canvas bloom-has-canvas-element"" data-title=""For the current paper size: � The image container is 672 x 378 dots. � For print publications, you want between 300-600 DPI (Dots Per Inch). � An image with 2100 x 1182 dots would fill this container at 300 DPI."" title="""" data-imgsizebasedon=""672,378"">
             <div class=""bloom-canvas-element bloom-backgroundImage"" data-bubble=""{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"" style="" width: 672px; top: 0px; left: 0px; height: 378px;"">
-              <div class=""bloom-imageContainer"" data-title=""For the current paper size: � The image container is 652 x 358 dots. � For print publications, you want between 300-600 DPI (Dots Per Inch). � An image with 2038 x 1119 dots would fill this container at 300 DPI."" title=""For the current paper size: � The image container is 652 x 358 dots. � For print publications, you want between 300-600 DPI (Dots Per Inch). � An image with 2038 x 1119 dots would fill this container at 300 DPI.""><img src=""placeHolder.png"" style="" width: 672px; top: -141.088px; left: 0px;"" alt="""" /></div>
+              <div class=""bloom-imageContainer"" data-title=""For the current paper size: � The image container is 652 x 358 dots. � For print publications, you want between 300-600 DPI (Dots Per Inch). � An image with 2038 x 1119 dots would fill this container at 300 DPI."" title=""For the current paper size: � The image container is 652 x 358 dots. � For print publications, you want between 300-600 DPI (Dots Per Inch). � An image with 2038 x 1119 dots would fill this container at 300 DPI.""><img src=""image-placeholder.png"" style="" width: 672px; top: -141.088px; left: 0px;"" alt="""" /></div>
             </div>
             <div class=""bloom-canvas-element bloom-gif drag-item-correct"" style="" height: 220px; left: 370px; top: 70px; width: 230px; position: absolute;"" data-bubble=""{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:14,`backgroundColors`:[`transparent`],`shadowOffset`:0}"">
               <div tabindex=""0"" class=""bloom-imageContainer"" title=""""><img src=""smiling-flowers.gif"" alt="""" data-copyright=""Copyright � 2025, Ilona Spaeder"" data-creator=""Ilona Spaeder"" data-license=""Custom License"" /></div>

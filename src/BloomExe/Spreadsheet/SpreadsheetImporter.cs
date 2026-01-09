@@ -810,7 +810,7 @@ namespace Bloom.Spreadsheet
                 .Content;
             if (spreadsheetImgPath == InternalSpreadsheet.BlankContentIndicator)
             {
-                spreadsheetImgPath = "placeHolder.png";
+                spreadsheetImgPath = "image-placeholder.png";
             }
 
             var destFileName = Path.GetFileName(spreadsheetImgPath);
@@ -1282,7 +1282,7 @@ namespace Bloom.Spreadsheet
             foreach (var c in bloomCanvases)
             {
                 var img = GetImgFromContainer(c);
-                img?.SetAttribute("src", "placeHolder.png");
+                img?.SetAttribute("src", "image-placeholder.png");
                 foreach (
                     var attr in new[] { "alt", "data-copyright", "data-creator", "data-license" }
                 )

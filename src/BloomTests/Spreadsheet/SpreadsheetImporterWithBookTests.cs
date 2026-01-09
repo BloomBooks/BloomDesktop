@@ -122,7 +122,7 @@ namespace BloomTests.Spreadsheet
         <div data-book=""topic"" lang=""en"">
             Health
 		</div>
-		<div data-book=""coverImage"" lang=""*"" src=""cover.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly."">
+		<div data-book=""coverImage"" lang=""*"" src=""cover.png"" alt=""This picture, image-placeholder.png, is missing or was loading too slowly."">
 			cover.png
 		</div>
 		<div data-book=""licenseImage"" lang= ""*"" >

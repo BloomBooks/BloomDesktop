@@ -514,8 +514,8 @@ namespace BloomTests.Book
         <div style='min-height: 42px;' class='split-pane horizontal-percent'>
           <div class='split-pane-component position-top' style='bottom: 50%'>
             <div class='split-pane-component-inner'>
-              <div title='placeHolder.png 6.58 KB 341 x 335 81 DPI (should be 300-600) Bit Depth: 32' class='bloom-canvas bloom-leadingElement'>
-                <img src='placeHolder.png' alt='place holder'></img>
+              <div title='image-placeholder.png 6.58 KB 341 x 335 81 DPI (should be 300-600) Bit Depth: 32' class='bloom-canvas bloom-leadingElement'>
+                <img src='image-placeholder.png' alt='place holder'></img>
                 <div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement'></div>
               </div>
             </div>

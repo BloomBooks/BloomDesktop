@@ -5188,8 +5188,8 @@ namespace Bloom.Book
                 StoragePageFolder,
                 ref coverImageFileName
             );
-            // We no longer put placeHolder.png files in books (BL-15441) but we still need to detect when the placeholder
-            // is called for, so here we return placeHolder.png instead of null. Callers of this method should handle this special case.
+            // We no longer put image-placeholder.png files in books (BL-15441) but we still need to detect when the placeholder
+            // is called for, so here we return image-placeholder.png instead of null. Callers of this method should handle this special case.
             if (ImageUtils.IsPlaceholderImageFilename(coverImagePath))
             {
                 return coverImagePath;

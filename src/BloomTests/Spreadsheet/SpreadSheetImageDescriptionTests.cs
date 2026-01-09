@@ -63,7 +63,7 @@ namespace BloomTests.Spreadsheet
                 </div>
             </div>
 			<div class=""bloom-canvas"">
-				<img src=""placeHolder.png""></img>
+				<img src=""image-placeholder.png""></img>
 				<div class=""bloom-translationGroup bloom-imageDescription bloom-trailingElement"">
                     <div class=""bloom-editable normal-style bloom-content1 bloom-visibility-code-on"" contenteditable=""true"" lang=""akl"" data-languagetipcontent=""Aklanon"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-audiorecordingmode=""Sentence"">
                         <p><span id=""i46a016d9-9032-4c1c-98e5-ae48bded567d"" class=""audio-sentence"" recordingmd5=""c829ae37804119adee364bbcdbddae5a"" data-duration=""3.709388"">A fish jumping above a lake with mountains behind</span></p>
@@ -85,7 +85,7 @@ namespace BloomTests.Spreadsheet
 
         <div class=""split-pane-component marginBox"" style="""">
 			<div class=""bloom-canvas"">
-				<img src=""placeHolder.png""></img>
+				<img src=""image-placeholder.png""></img>
 				<div class=""bloom-translationGroup bloom-imageDescription bloom-trailingElement"">
                     <div class=""bloom-editable normal-style bloom-content1 bloom-visibility-code-on"" contenteditable=""true"" lang=""akl"" data-languagetipcontent=""Aklanon"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-audiorecordingmode=""Sentence"">
                         <p><span id=""i46a016d9-9032-4c1c-98e5-ae48bded567d"" class=""audio-sentence"" recordingmd5=""c829ae37804119adee364bbcdbddae5a"" data-duration=""3.709388"">Another image description</span></p>

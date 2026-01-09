@@ -589,7 +589,7 @@ namespace BloomTests.Book
 			  <div class='split-pane horizontal-percent'>
 				<div style='bottom: 30%' class='split-pane-component position-top'>
 				  <div class='split-pane-component-inner'>
-					<div class='bloom-canvas bloom-leadingElement'><img src='placeHolder.png' alt='Could not load the picture'/>
+					<div class='bloom-canvas bloom-leadingElement'><img src='image-placeholder.png' alt='Could not load the picture'/>
 					</div>
 				  </div>
 				</div>
@@ -700,8 +700,8 @@ namespace BloomTests.Book
                         new DivContent("Corre muy rápido", "es")
                     )
                     + MakeBloomImageGroup("something.png", 95, 107),
-                MakeBloomImageGroup("placeHolder.png", 23, 67)
-                    + MakeBloomImageGroup("placeHolder.png", 195, 207)
+                MakeBloomImageGroup("image-placeholder.png", 23, 67)
+                    + MakeBloomImageGroup("image-placeholder.png", 195, 207)
                     + MakeBloomTranslationGroup("big-style", new DivContent("", "z"))
                     + MakeBloomTranslationGroup("small-style", new DivContent("", "z"))
             );

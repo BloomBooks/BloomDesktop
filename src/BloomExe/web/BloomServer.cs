@@ -736,6 +736,14 @@ namespace Bloom.Api
 
                 imageFile = Path.Combine(sourceDir, imageFile);
 
+                // We now use css to put in the placeholder images, but still use "image-placeholder.png" to mark them.
+                // So we actually don't want to provide an image file for image-placeholder.png.
+                if (ImageUtils.IsPlaceholderImageFilename(imageFile))
+                {
+                    info.WriteCompleteOutput("");
+                    return true;
+                }
+
                 if (!RobustFileExistsWithCaseCheck(imageFile))
                 {
                     // There are a few special cases where it's not desirable to change the source of the image
@@ -745,13 +753,6 @@ namespace Bloom.Api
                     if (imageFile.EndsWith("ckeditor/skins/flat/icons.png"))
                     {
                         imageFile = imageFile.Replace("flat", "icy_orange");
-                    }
-                    else if (ImageUtils.IsPlaceholderImageFilename(imageFile))
-                    {
-                        // We now use css to put in the placeholder images, but still use "placeHolder.png" to mark them
-                        // So we actually don't want to provide an image file for placeHolder.png.
-                        info.WriteCompleteOutput("");
-                        return true;
                     }
                     // If the user does add a video or widget, these placeholder .svgs will get copied to the
                     // book folder and used from there. But we don't copy to the book folder while the user

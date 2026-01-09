@@ -185,7 +185,7 @@ namespace Bloom
         /// <summary>
         /// Check if the cover image is valid
         /// </summary>
-        /// <returns>True if it's valid. It may be invalid if imageSrc is missing. In certain scenarios, if the imageSrc is "placeHolder.png", that's not valid either.</returns>
+        /// <returns>True if it's valid. It may be invalid if imageSrc is missing. In certain scenarios, if the imageSrc is "image-placeholder.png", that's not valid either.</returns>
         internal static bool IsCoverImageSrcValid(
             string imageSrc,
             HtmlThumbNailer.ThumbnailOptions options
@@ -235,7 +235,7 @@ namespace Bloom
             if (!Directory.Exists(book.FolderPath))
                 return false;
             var imageSrc = book.GetCoverImagePathAndElt(out SafeXmlElement coverImgElt);
-            // We still use src="placeHolder.png" to indicate no image has been chosen, but we use css rather than a file to display it.
+            // We still use src="image-placeholder.png" to indicate no image has been chosen, but we use css rather than a file to display it.
             // Detect this case and use a placeHolder file to make the thumbnail.
             // Enhance: skip unnecessary checking and processing below in the case where this is a placeholder image
             if (!String.IsNullOrEmpty(imageSrc) && ImageUtils.IsPlaceholderImageFilename(imageSrc))
@@ -243,7 +243,7 @@ namespace Bloom
                 var bloomRoot = FileLocationUtilities.GetDirectoryDistributedWithApplication(
                     BloomFileLocator.BrowserRoot
                 );
-                imageSrc = Path.Combine(bloomRoot, "images", "placeHolder.png");
+                imageSrc = Path.Combine(bloomRoot, "images", "image-placeholder.png");
             }
             if (!IsCoverImageSrcValid(imageSrc, options))
             {

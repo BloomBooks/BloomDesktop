@@ -560,9 +560,9 @@ namespace Bloom.Publish.BloomPub
             );
             if (
                 !modifiedBook.IsTemplateBook
-                && RobustFile.Exists(Path.Combine(modifiedBookFolderPath, "placeHolder.png"))
+                && RobustFile.Exists(Path.Combine(modifiedBookFolderPath, "image-placeholder.png"))
             )
-                RobustFile.Delete(Path.Combine(modifiedBookFolderPath, "placeHolder.png"));
+                RobustFile.Delete(Path.Combine(modifiedBookFolderPath, "image-placeholder.png"));
             modifiedBook.RemoveObsoleteAudioMarkup();
 
             // We want these to run after RemoveUnwantedContent() so that the metadata will more accurately reflect
@@ -752,7 +752,7 @@ namespace Bloom.Publish.BloomPub
                 var imgElt in dom.SafeSelectNodes("//img[@src]").Cast<SafeXmlElement>().ToArray()
             )
             {
-                // As of BL-15441, we use css rather than real files to display placeholders, but we still mark the img elements with src="placeHolder.png".
+                // As of BL-15441, we use css rather than real files to display placeholders, but we still mark the img elements with src="image-placeholder.png".
                 // Don't strip such img elements here - we want them to persist in template books. For other books we
                 // are already removing them in PublishHelper.RemoveUnwantedContent.
                 string src = imgElt.GetAttribute("src");

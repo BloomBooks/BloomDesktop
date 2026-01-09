@@ -242,7 +242,7 @@ namespace BloomTests
         {
             int originalWidth = 341;
             int originalHeight = 335;
-            var book = SetupBook("placeHolder.png", originalWidth, originalHeight);
+            var book = SetupBook("image-placeholder.png", originalWidth, originalHeight);
 
             int thumbnailSize = 300;
             int thumbnailCenter = thumbnailSize / 2;
@@ -340,7 +340,7 @@ namespace BloomTests
         {
             var options = new HtmlThumbNailer.ThumbnailOptions { FileName = newThumbnailFileName };
 
-            bool isValid = BookThumbNailer.IsCoverImageSrcValid("placeHolder.png", options);
+            bool isValid = BookThumbNailer.IsCoverImageSrcValid("image-placeholder.png", options);
 
             Assert.That(isValid, Is.True);
         }
@@ -358,7 +358,7 @@ namespace BloomTests
         {
             var options = new HtmlThumbNailer.ThumbnailOptions { FileName = newThumbnailFileName };
 
-            bool isValid = BookThumbNailer.IsCoverImageSrcValid("placeHolder.png", options);
+            bool isValid = BookThumbNailer.IsCoverImageSrcValid("image-placeholder.png", options);
 
             Assert.That(isValid, Is.False);
         }

@@ -321,7 +321,7 @@ namespace Bloom.Book
         /// code for those tasks has no business knowing about that status file. OTOH,
         /// some of those functions don't need some of the audio files; but a generic
         /// cleanup function like this doesn't know which ones. For now, it just deals
-        /// with TC cleanup and any copies of the placeHolder.png image file left from older versions of Bloom.
+        /// with TC cleanup and any copies of the image-placeholder.png image file left from older versions of Bloom.
         /// </summary>
         public static List<string> LocalOnlyFiles(string folderPath)
         {
@@ -332,14 +332,14 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Add any copies of the placeHolder.png image file left from older versions of Bloom to accumulator. We don't use them anymore.
+        /// Add any copies of the image-placeholder.png image file left from older versions of Bloom to accumulator. We don't use them anymore.
         /// </summary>
         private static void AddUnusedPlaceholderImages(
             string bookFolderPath,
             List<string> accumulator
         )
         {
-            // We now no longer use placeHolder.png file in books (BL-15441)
+            // We now no longer use image-placeholder.png file in books (BL-15441)
             // They may be there from older version of Bloom, remove them.
             var placeholders = Directory.GetFiles(bookFolderPath, "placeHolder*.png");
             accumulator.AddRange(placeholders);

@@ -91,7 +91,7 @@ namespace BloomTests.web.controllers
 			</div>
 			<div class='bloom-translationGroup'></div>
 			<div class='bloom-canvas'>
-				<img src='placeHolder.png'/>
+				<img src='image-placeholder.png'/>
 			</div>
 			<div class='bloom-canvas bloom-background-image-in-style-attr' style='background-image:url(""AOR_aa017m.png"")'/>
 			<div class='bloom-translationGroup'></div>
@@ -206,7 +206,7 @@ namespace BloomTests.web.controllers
                 "Branding images get filtered out"
             );
             Assert.IsFalse(
-                imageNameToPages.ContainsKey("placeHolder.png"),
+                imageNameToPages.ContainsKey("image-placeholder.png"),
                 "Placeholder images get filtered out"
             );
             Assert.IsTrue(
@@ -265,7 +265,7 @@ namespace BloomTests.web.controllers
 			</div>
 			<div class=""bloom-translationGroup""></div>
 			<div class=""bloom-canvas"">
-				<img src=""placeHolder.png""/>
+				<img src=""image-placeholder.png""/>
 			</div>
 			<div class=""bloom-canvas bloom-background-image-in-style-attr"" style=""background-image:url('AOR_aa017m.png')""/>
 			<div class=""bloom-translationGroup""></div>

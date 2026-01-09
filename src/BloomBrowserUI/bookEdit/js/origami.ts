@@ -511,7 +511,7 @@ function makeImageOrCanvasFieldClickHandler(
             isCanvasClick ? ` data-tool-id='${kCanvasToolId}'` : ""
         }></div>`,
     );
-    const image = $("<img src='placeHolder.png'/>");
+    const image = $("<img src='image-placeholder.png'/>");
     bloomCanvas.append(image);
     SetupImage(image); // Must attach it first so event handler gets added to parent
     container.append(bloomCanvas);

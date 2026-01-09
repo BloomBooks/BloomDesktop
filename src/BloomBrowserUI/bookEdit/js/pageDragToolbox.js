@@ -62,9 +62,9 @@ function AddToolbox(container) {
                 '<div class="widgetInPageDragToolbox" data-classesafterdrop="bloom-translationGroup bloom-resizable bloom-deletable bloom-draggable"><div data-classesafterdrop="bloom-editable bloom-content1" lang="' +
                 lang1Tag +
                 '"> A block of normal text.</div></div>';
-            // old one: var imageWidget = '<div class="bloom-canvas bloom-resizable bloom-draggable  bloom-deletable widgetInPageDragToolbox"><img src="placeHolder.png"></div>';
+            // old one: var imageWidget = '<div class="bloom-canvas bloom-resizable bloom-draggable  bloom-deletable widgetInPageDragToolbox"><img src="image-placeholder.png"></div>';
             var imageWidget =
-                '<div class="widgetInPageDragToolbox " data-classesafterdrop="bloom-canvas  bloom-resizable bloom-draggable  bloom-deletable"><img src="placeHolder.png"></div>';
+                '<div class="widgetInPageDragToolbox " data-classesafterdrop="bloom-canvas  bloom-resizable bloom-draggable  bloom-deletable"><img src="image-placeholder.png"></div>';
 
             var toolbox = $(this)
                 .parent()

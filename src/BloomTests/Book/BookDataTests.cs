@@ -304,7 +304,7 @@ namespace BloomTests.Book
     </div>
     <div class='bloom-page' id='guid2'>
         <div class=""bloom-canvas"" >
-            <img data-book=""coverImage"" src=""placeHolder.png""/>
+            <img data-book=""coverImage"" src=""image-placeholder.png""/>
         </div>
     </div>
 
@@ -3079,7 +3079,7 @@ namespace BloomTests.Book
 				</div>
 				<div class='bloom-page'>
 					 <div class='bloom-canvas {containerClass}'>
-						<img data-book='coverImage' src='placeholder.png' ></img>
+						<img data-book='coverImage' src='image-placeholder.png' ></img>
 					</div>
 				</div>
 				</body></html>"

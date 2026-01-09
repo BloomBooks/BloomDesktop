@@ -15,12 +15,12 @@
     background-size: contain;
 
     // Don't show the default "missing image" icon
-    img[src*="placeHolder.png"] {
+    img[src*="image-placeholder.png"] {
         display: none;
     }
 }
 
-.bloom-canvas .bloom-canvas-element:has(img[src*="placeHolder.png"]) {
+.bloom-canvas .bloom-canvas-element:has(img[src*="image-placeholder.png"]) {
     .image-placeholder-background();
 }
 
@@ -44,11 +44,11 @@
 // (there are no legacy-style templates that should have the easel icon)
 .bloom-canvas[data-tool-id="canvas"]
     .bloom-backgroundImage.bloom-canvas-element:has(
-        img[src*="placeHolder.png"]
+        img[src*="image-placeholder.png"]
     ),
 .origami-layout-mode
     .bloom-canvas[data-tool-id="canvas"]:not(:has(.bloom-canvas-element)):has(
-        img[src*="placeHolder.png"]
+        img[src*="image-placeholder.png"]
     ) {
     background-image: @canvas-placeholder;
 }
@@ -60,16 +60,16 @@
     ) {
     .bloom-canvas-element.bloom-backgroundImage:not(
             [data-bloom-active="true"]
-        ):has(img[src*="placeHolder.png"]) {
+        ):has(img[src*="image-placeholder.png"]) {
         background-image: none;
     }
 }
 
 // For template books (made from the Template Starter), we do want to display the placeholder images in the bloompub.
-// Hopefully we don't in any way put the string "placeHolder.png" in the inline style of canvases which should not get it!
+// Hopefully we don't in any way put the string "image-placeholder.png" in the inline style of canvases which should not get it!
 // We need !important here to override the inline style attribute background-image which we normally use to put images in bloompubs
 .bloomPlayer-page.template
-    .bloom-canvas[style*="background-image"][style*="placeHolder.png"] {
+    .bloom-canvas[style*="background-image"][style*="image-placeholder.png"] {
     background-image: @image-placeholder !important;
 
     &[data-tool-id="canvas"] {

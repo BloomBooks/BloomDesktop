@@ -99,7 +99,7 @@ namespace Bloom.Book
 
         private static readonly string[] _imagesThatShouldBeSingletons = new string[]
         {
-            "placeholder.png",
+            "image-placeholder.png",
             "license.png",
         };
 
@@ -110,7 +110,7 @@ namespace Bloom.Book
 
         private static readonly string[] ExcludedFiles =
         {
-            "placeholder.png",
+            "image-placeholder.png",
             "license.png",
             "thumbnail.png",
             "nonPaddedThumbnail.png",

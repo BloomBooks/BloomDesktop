@@ -384,7 +384,7 @@ namespace BloomTests.Spreadsheet
             </div>
 			<div class=""split-pane-component position-top"">
                 <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
-                    <div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{2}""><img src=""placeHolder.png"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>{4}</div>
+                    <div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{2}""><img src=""image-placeholder.png"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>{4}</div>
                 </div>
             </div>
         </div>
@@ -679,7 +679,7 @@ namespace BloomTests.Spreadsheet
 			<div class=""split-pane-component position-top"">
                 <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
                     <div class=""bloom-canvas bloom-leadingElement"" title=""this might be nonsense after import"" data-test-id=""ic{1}"">
-						<img src=""placeholder.png"" alt="""" data-copyright="""" data-creator="""" data-license="""" height=""100"" width=""200""></img>
+						<img src=""image-placeholder.png"" alt="""" data-copyright="""" data-creator="""" data-license="""" height=""100"" width=""200""></img>
 						<div class=""bloom-translationGroup bloom-imageDescription bloom-trailingElement"" data-default-languages=""auto"">
 		                    <div class=""bloom-editable ImageDescriptionEdit-style"" lang=""z"" contenteditable=""true"" data-book=""coverImageDescription""></div>
 		                </div>
@@ -805,7 +805,7 @@ namespace BloomTests.Spreadsheet
         <div data-book=""topic"" lang=""en"">
             Health
 		</div>
-		<div data-book=""coverImage"" lang=""*"" src=""cover.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly."">
+		<div data-book=""coverImage"" lang=""*"" src=""cover.png"" alt=""This picture, image-placeholder.png, is missing or was loading too slowly."">
 			cover.png
 		</div>
 		<div data-book=""licenseImage"" lang= ""*"" >
@@ -1080,10 +1080,10 @@ namespace BloomTests.Spreadsheet
         }
 
         [TestCase(1, "ic1", "lady24b.png")]
-        [TestCase(2, "ic2", "placeHolder.png")] // not filled, because next row has both text and picture
+        [TestCase(2, "ic2", "image-placeholder.png")] // not filled, because next row has both text and picture
         [TestCase(3, "ic3", "missingBird.png")]
         [TestCase(4, "ic4", "man.png")]
-        [TestCase(5, "ic5", "placeHolder.png")] // Todo: should be placeholder
+        [TestCase(5, "ic5", "image-placeholder.png")] // Todo: should be placeholder
         [TestCase(5, "ic6", "shirt.png")]
         [TestCase(11, "ic7", "Mars%204.png")]
         [TestCase(13, "ic7", "shirt1.png")]
@@ -1694,7 +1694,7 @@ namespace BloomTests.Spreadsheet
         [TestCase(0, "ic1", "lady24b.png")]
         [TestCase(0, "ic2", "shirt.png")]
         [TestCase(1, "ic1", "man.png")]
-        [TestCase(1, "ic2", "placeHolder.png")]
+        [TestCase(1, "ic2", "image-placeholder.png")]
         public void GotImageSourceOnPageN(int n, string tag, string text)
         {
             AssertThatXmlIn
