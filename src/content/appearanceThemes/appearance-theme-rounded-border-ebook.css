@@ -21,6 +21,14 @@
     /* move so that page number doesn't it hide it if the text box is in the lower left */
     --formatButton-pageNumber-dodge: 20px;
 }
+[class*="Device"].numberedPage > .marginBox:has(> .split-pane-component-inner) {
+    /* The --marginBox-padding value set above causes the bottom to be set to -1.5mm, which
+       is wrong.  With absolute positioning, a negative value for bottom causes the top to be
+       offset, resulting in a white gap at the top and the bottom extending below where it
+       should go with the page number too high relative to the bottom.  It's possible that the
+       --marginBox-padding value above should be removed, but resetting it here may be safer. */
+    --marginBox-padding: 0mm;
+}
 
 /* using "where:" so that the user's custom appearance can override the theme if specified */
 .numberedPage:where([class*="Device"]:not(.bloom-interactive-page)) {
