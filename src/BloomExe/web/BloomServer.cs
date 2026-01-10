@@ -686,6 +686,12 @@ namespace Bloom.Api
             if (!IsImageTypeThatCanBeDegraded(imageFile) && !isSvg)
                 return false;
 
+            if (ImageUtils.IsPlaceholderImageFilename(imageFile))
+            {
+                info.WriteNoContent();
+                return true;
+            }
+
             // This can't be right. At some point it may have had something to do with
             // images in page thumbnails, but that is now handled by a param.
             // But we definitely don't want Bloom to fail to find any picture of a thumbnail!
@@ -738,9 +744,10 @@ namespace Bloom.Api
 
                 // We now use css to put in the placeholder images, but still use "image-placeholder.png" to mark them.
                 // So we actually don't want to provide an image file for image-placeholder.png.
+                // Return 204 No Content to avoid browser showing broken image icon.
                 if (ImageUtils.IsPlaceholderImageFilename(imageFile))
                 {
-                    info.WriteCompleteOutput("");
+                    info.WriteNoContent();
                     return true;
                 }
 

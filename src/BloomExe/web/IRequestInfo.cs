@@ -34,6 +34,7 @@ namespace Bloom.Api
         string GetPostString(bool unescape = true);
         HttpMethods HttpMethod { get; }
         void ExternalLinkSucceeded();
+        void WriteNoContent();
         string DoNotCacheFolder { set; }
         byte[] GetRawPostData();
         Stream GetRawPostStream();

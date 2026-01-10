@@ -79,6 +79,12 @@ namespace Bloom.Api
             HaveOutput = true;
         }
 
+        public void WriteNoContent()
+        {
+            _actualContext.Response.StatusCode = 204; // No Content
+            HaveOutput = true;
+        }
+
         public string DoNotCacheFolder { get; set; }
 
         public void WriteCompleteOutput(string s)
