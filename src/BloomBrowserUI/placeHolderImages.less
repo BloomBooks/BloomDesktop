@@ -8,6 +8,7 @@
 
 @video-placeholder: url('data:image/svg+xml,<svg width="163" height="114" viewBox="0 0 163 114" fill="none" xmlns="http://www.w3.org/2000/svg"><g opacity="@{placeholder-opacity}"><path d="M105.562 40.6008L142.533 22.1193C143.771 21.5008 145.146 21.2088 146.528 21.2711C147.91 21.3333 149.254 21.7478 150.431 22.475C151.608 23.2022 152.58 24.2181 153.254 25.4264C153.928 26.6346 154.282 27.9951 154.283 29.3787V84.3035C154.282 85.6871 153.928 87.0475 153.254 88.2558C152.58 89.464 151.608 90.4799 150.431 91.2072C149.254 91.9344 147.91 92.3488 146.528 92.4111C145.146 92.4733 143.771 92.1813 142.533 91.5629L105.562 73.0814V40.6008ZM8.12015 24.3604C8.12015 20.0532 9.83118 15.9224 12.8768 12.8768C15.9225 9.83115 20.0533 8.12012 24.3605 8.12012H89.3217C93.6289 8.12012 97.7597 9.83115 100.805 12.8768C103.851 15.9224 105.562 20.0532 105.562 24.3604V89.3217C105.562 93.6289 103.851 97.7597 100.805 100.805C97.7597 103.851 93.6289 105.562 89.3217 105.562H24.3605C20.0533 105.562 15.9225 103.851 12.8768 100.805C9.83118 97.7597 8.12015 93.6289 8.12015 89.3217V24.3604Z" stroke="@{placeholder-color-encoded}" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></g></svg>');
 
+// Versions before 6.3 used the older filename "placeHolder.png".
 .image-placeholder-background() {
     background-image: @image-placeholder;
     background-repeat: no-repeat;
@@ -15,12 +16,15 @@
     background-size: contain;
 
     // Don't show the default "missing image" icon
-    img[src*="image-placeholder.png"] {
+    img:is([src*="image-placeholder.png"], [src*="placeHolder.png"]) {
         display: none;
     }
 }
 
-.bloom-canvas .bloom-canvas-element:has(img[src*="image-placeholder.png"]) {
+.bloom-canvas
+    .bloom-canvas-element:has(
+        img:is([src*="image-placeholder.png"], [src*="placeHolder.png"])
+    ) {
     .image-placeholder-background();
 }
 
@@ -32,10 +36,13 @@
 // When previewing templates in the Collection Tab, and also when in Change Layout mode in the Edit tab,
 // img elements may not be wrapped in canvas-element divs (see BL-15514). Also below.
 //  Real books always have a data-l1 attribute added
-.preview:not([data-l1]) .bloom-canvas:has(img[src*="placeHolder.png"]),
+.preview:not([data-l1])
+    .bloom-canvas:has(
+        img:is([src*="image-placeholder.png"], [src*="placeHolder.png"])
+    ),
 .origami-layout-mode
     .bloom-canvas:not(:has(.bloom-canvas-element)):has(
-        img[src*="placeHolder.png"]
+        img:is([src*="image-placeholder.png"], [src*="placeHolder.png"])
     ) {
     .image-placeholder-background();
 }
@@ -44,11 +51,11 @@
 // (there are no legacy-style templates that should have the easel icon)
 .bloom-canvas[data-tool-id="canvas"]
     .bloom-backgroundImage.bloom-canvas-element:has(
-        img[src*="image-placeholder.png"]
+        img:is([src*="image-placeholder.png"], [src*="placeHolder.png"])
     ),
 .origami-layout-mode
     .bloom-canvas[data-tool-id="canvas"]:not(:has(.bloom-canvas-element)):has(
-        img[src*="image-placeholder.png"]
+        img:is([src*="image-placeholder.png"], [src*="placeHolder.png"])
     ) {
     background-image: @canvas-placeholder;
 }
@@ -60,7 +67,9 @@
     ) {
     .bloom-canvas-element.bloom-backgroundImage:not(
             [data-bloom-active="true"]
-        ):has(img[src*="image-placeholder.png"]) {
+        ):has(
+            img:is([src*="image-placeholder.png"], [src*="placeHolder.png"])
+        ) {
         background-image: none;
     }
 }
@@ -69,7 +78,10 @@
 // Hopefully we don't in any way put the string "image-placeholder.png" in the inline style of canvases which should not get it!
 // We need !important here to override the inline style attribute background-image which we normally use to put images in bloompubs
 .bloomPlayer-page.template
-    .bloom-canvas[style*="background-image"][style*="image-placeholder.png"] {
+    .bloom-canvas[style*="background-image"]:is(
+        [style*="image-placeholder.png"],
+        [style*="placeHolder.png"]
+    ) {
     background-image: @image-placeholder !important;
 
     &[data-tool-id="canvas"] {

@@ -60,7 +60,9 @@ textarea,
 .bloom-canvas.bloom-imageObjectFit-cover {
     background-size: cover;
 }
-.bloom-canvas.bloom-has-canvas-element > img[src="image-placeholder.png"] {
+// Versions before 6.3 used the older filename "placeHolder.png".
+.bloom-canvas.bloom-has-canvas-element
+    > img:is([src="image-placeholder.png"], [src="placeHolder.png"]) {
     display: none;
 }
 .bloom-canvas .bloom-imageDescription {

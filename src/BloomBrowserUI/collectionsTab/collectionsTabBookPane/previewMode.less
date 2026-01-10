@@ -138,8 +138,11 @@ and as a result, the labels are shifted to this many pixels to the width. This s
 // when making a PDF or a thumbnail, if no image is chosen, just don't show anything
 // repeated class is necessary to override the data-tool-id="canvas" case in placeHolderImages.less
 // note that the *= here is needed in case there is a path, as happens in folio pdfs e.g. ../foo/placheholder.png
+// Versions before 6.3 used the older filename "placeHolder.png".
 .hidePlaceHolders.hidePlaceHolders.hidePlaceHolders.hidePlaceHolders
-    .bloom-canvas-element:has(img[src*="image-placeholder.png"]) {
+    .bloom-canvas-element:has(
+        img:is([src*="image-placeholder.png"], [src*="placeHolder.png"])
+    ) {
     background-image: none;
 }
 

@@ -494,7 +494,10 @@ body:not(.origami-drag) .bloom-canvas:hover {
 // obscure part of the alt attribute error message.
 .bloom-canvas:has(.bloom-backgroundImage:has(img.bloom-imageLoadError)),
 .bloom-canvas:has(
-    .bloom-backgroundImage:has(img[src*="image-placeholder.png"])
+    .bloom-backgroundImage:has(
+        // Versions before 6.3 used the older filename "placeHolder.png".
+        img:is([src="image-placeholder.png"], [src="placeHolder.png"])
+    )
 ) {
     .editMetadataButton.imgMetadataProblem {
         display: none !important;
@@ -596,7 +599,8 @@ body.bloom-fullBleed {
 .bloom-describedImage {
     // Repeated class name so we override even the rules for data-tool-id="canvas" in placeHolderImages.less
     .bloom-backgroundImage.bloom-canvas-element.bloom-canvas-element:has(
-            img[src*="image-placeholder.png"]
+            // Versions before 6.3 used the older filename "placeHolder.png".
+            img:is([src="image-placeholder.png"], [src="placeHolder.png"])
         ) {
         background-image: none;
     }
@@ -1120,7 +1124,8 @@ body.simulateCataracts {
 // publications.)
 body.simulateColorBlindness {
     .bloom-canvas {
-        img:not([src="image-placeholder.png"]) {
+        // Versions before 6.3 used the older filename "placeHolder.png".
+        img:not([src="image-placeholder.png"]):not([src="placeHolder.png"]) {
             visibility: hidden;
         }
     }
@@ -1296,7 +1301,8 @@ body.hideAllCKEditors .cke_chrome {
 // already have prevents showing the placeholder except while editing. So we can get the
 // effect we want (a different placeholder for GIFs) by just making the placeholder src
 // and changing the content of the image.
-.bloom-gif img[src="image-placeholder.png"] {
+// Versions before 6.3 used the older filename "placeHolder.png".
+.bloom-gif img:is([src="image-placeholder.png"], [src="placeHolder.png"]) {
     content: url("/bloom/images/Gif.svg");
     opacity: 0.4;
 }
@@ -1678,7 +1684,8 @@ svg.bloom-videoControl {
 .bloom-page[data-tool-id="game"]:not([data-activity="simple-dom-choice"]) {
     .bloom-canvas
         .bloom-backgroundImage.bloom-canvas-element:has(
-            img[src="image-placeholder.png"]
+            // Versions before 6.3 used the older filename "placeHolder.png".
+            img:is([src="image-placeholder.png"], [src="placeHolder.png"])
         ) {
         background-image: none;
     }

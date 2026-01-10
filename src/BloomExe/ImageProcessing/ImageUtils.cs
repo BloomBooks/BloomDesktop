@@ -259,10 +259,12 @@ namespace Bloom.ImageProcessing
 
         /// <summary>
         /// Check whether the given path represents a placeholder image.
+        /// Versions before 6.3 used the older filename "placeHolder.png".
         /// </summary>
         public static bool IsPlaceholderImageFilename(string filename)
         {
-            return Path.GetFileName(filename)?.ToLowerInvariant() == "image-placeholder.png";
+            var name = Path.GetFileName(filename)?.ToLowerInvariant();
+            return name == "image-placeholder.png" || name == "placeholder.png";
         }
 
         public static bool AppearsToBePng(PalasoImage imageInfo)

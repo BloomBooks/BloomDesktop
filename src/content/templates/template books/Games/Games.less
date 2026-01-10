@@ -92,7 +92,8 @@
 .drag-activity-wrong .bloom-canvas-element:not(.drag-item-wrong),
 .drag-activity-play .bloom-canvas-element,
 .drag-activity-solution .bloom-canvas-element {
-    img[src="image-placeholder.png"] {
+    // Versions before 6.3 used the older filename "placeHolder.png".
+    img:is([src="image-placeholder.png"], [src="placeHolder.png"]) {
         display: none;
     }
 }

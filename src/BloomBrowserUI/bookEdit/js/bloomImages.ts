@@ -35,11 +35,16 @@ export const kImageContainerSelector = `.${kImageContainerClass}`;
 
 // We don't use actual image-placeholder.png files anymore, but we do continue to use
 // src="image-placeholder.png" to mark placeholders
+// Versions before 6.3 used the older filename "placeHolder.png".
 export function isPlaceHolderImage(url: string | null | undefined): boolean {
     if (!url) {
         return false;
     }
-    return url.toLowerCase().includes("image-placeholder.png");
+    const normalizedUrl = url.toLowerCase();
+    return (
+        normalizedUrl.includes("image-placeholder.png") ||
+        normalizedUrl.includes("placeholder.png")
+    );
 }
 
 export function cleanupImages() {
