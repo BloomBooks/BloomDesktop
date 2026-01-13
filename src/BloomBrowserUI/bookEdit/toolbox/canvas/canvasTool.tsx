@@ -215,7 +215,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
             const isButton =
                 currentBubble.content.classList.contains(kBloomButtonClass);
             const backColor = isButton
-                ? currentBubble.content.style.backgroundColor
+                ? getBackgroundColorValueForButton(currentBubble.content)
                 : getBackgroundColorValue(currentBubbleSpec);
             const newSwatch =
                 getColorInfoFromSpecialNameOrColorString(backColor);
@@ -338,6 +338,67 @@ const CanvasToolControls: React.FunctionComponent = () => {
         } else {
             return "white";
         }
+    };
+
+    // For buttons, a single BG color is stored in style.backgroundColor, and a gradient
+    // as a linear-gradient in style.background. We return a single string even for gradients,
+    // like getBackgroundColorValue, by only handling the special color names that we've decided
+    // to support. I don't know why we decided on that limitation; it may have to do with
+    // the fact that our color chooser is not powerful enough to handle gradients.
+    // This code will need enhancing if we want to support gradients with a variety of colors
+    // or any other direction than the default top-to-bottom.
+    const getBackgroundColorValueForButton = (
+        canvasElement: HTMLElement,
+    ): string => {
+        const bgColor = canvasElement.style.backgroundColor;
+        // For some reason when it is empty, what we get here is "initial"
+        if (bgColor && bgColor !== "initial") {
+            return bgColor;
+        }
+        const bgGradient = canvasElement.style.background;
+        if (bgGradient && bgGradient.startsWith("linear-gradient")) {
+            // get the array of colors from the gradient
+            const colors = bgGradient.substring(
+                bgGradient.indexOf("(") + 1,
+                bgGradient.lastIndexOf(")"),
+            );
+            // Parsing the linear-gradient is quite tricky because even though we write the colors
+            // as hash values, they come back as rgb() strings, and then commas are used both
+            // to separate the arguments to rgb() and to separate the colors in the gradient.
+            // And then we have to convert back to hex to match our special color names.
+            const colorArray: string[] = [];
+            let currentToken = "";
+            let parenDepth = 0;
+            for (let i = 0; i < colors.length; i++) {
+                const char = colors[i];
+                if (char === "(") {
+                    parenDepth++;
+                    currentToken += char;
+                } else if (char === ")") {
+                    parenDepth--;
+                    currentToken += char;
+                } else if (char === "," && parenDepth === 0) {
+                    colorArray.push(currentToken.trim());
+                    currentToken = "";
+                } else {
+                    currentToken += char;
+                }
+            }
+            if (currentToken) {
+                colorArray.push(currentToken.trim());
+            }
+            // Convert any rgb() colors to hex format
+            const hexColorArray = colorArray.map((color) => {
+                if (color.startsWith("rgb(")) {
+                    const tc = tinycolor(color);
+                    return tc.isValid() ? tc.toHexString() : color;
+                }
+                return color;
+            });
+            const specialName = getSpecialColorName(hexColorArray);
+            return specialName ? specialName : "white"; // maybe from a later version of Bloom? All we can do.
+        }
+        return "white"; // best we can do
     };
 
     // We come into this from chooser change
