@@ -1772,6 +1772,14 @@ namespace Bloom.Spreadsheet
             {
                 (group.ParentNode as SafeXmlElement).RemoveClass("empty");
             }
+
+            // Don't add additional automatically generated translations to translation groups where we are importing
+            // language editables from spreadsheet
+            foreach (SafeXmlElement e in group.SafeSelectNodes(".//*[@data-generate-translations]"))
+            {
+                e.RemoveAttribute("data-generate-translations");
+            }
+
             var attributeData = row.GetCell(InternalSpreadsheet.AttributeColumnLabel)?.Content;
             if (!string.IsNullOrEmpty(attributeData))
             {
