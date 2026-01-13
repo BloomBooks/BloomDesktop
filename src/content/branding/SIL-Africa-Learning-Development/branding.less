@@ -1,0 +1,31 @@
+@import "../branding-base.less";
+
+.marginBox [data-book="outside-back-cover-branding-bottom-html"] {
+    margin-top: auto !important;
+    margin-bottom: 0.5cm;
+
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 1cm;
+    > img.branding {
+        align-self: flex-start;
+    }
+}
+img.branding {
+    height: 2cm;
+    margin: 0;
+}
+
+.titlePage,
+div.Device16x9Portrait,
+div.A6Portrait {
+    img.branding {
+        height: 1.5cm;
+    }
+}
+
+img.bloom-badge {
+    height: 1.5cm;
+}
