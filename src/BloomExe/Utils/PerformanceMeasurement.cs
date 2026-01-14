@@ -382,7 +382,16 @@ namespace Bloom.Utils
                     // If the fast Windows approach fails for any reason, fall back to WMI below.
                 }
 
-                return GetAllDescendantProcessesWmi(parent.Id);
+                try
+                {
+                    return GetAllDescendantProcessesWmi(parent.Id);
+                }
+                catch
+                {
+                    // If WMI fails, return empty list. We don't want performance monitoring to crash the application.
+                }
+
+                return new List<Process>();
             }
 
             private static List<Process> GetAllDescendantProcessesWindows(int parentPid)
