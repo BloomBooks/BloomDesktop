@@ -78,9 +78,12 @@
 // Hopefully we don't in any way put the string "image-placeholder.png" in the inline style of canvases which should not get it!
 // We need !important here to override the inline style attribute background-image which we normally use to put images in bloompubs
 .bloomPlayer-page.template
-    .bloom-canvas[style*="background-image"]:is(
-        [style*="image-placeholder.png"],
-        [style*="placeHolder.png"]
+    .bloom-canvas:is(
+        [style*="background-image"][style*="image-placeholder.png"],
+        [style*="background-image"][style*="placeHolder.png"],
+        /* BloomPlayer moves background-image URLs to data-background for lazy loading, so include that too. */
+        [data-background*="image-placeholder.png"],
+        [data-background*="placeHolder.png"]
     ) {
     background-image: @image-placeholder !important;
 
