@@ -630,7 +630,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
     );
 
     const getControlOptionsRegion = (): JSX.Element => {
-        if (isBookGrid) return noControlsSection;
+        if (isBookGrid) return <>{backgroundColorControl}</>;
         if (isButton)
             return (
                 <>
