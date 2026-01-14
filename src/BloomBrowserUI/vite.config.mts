@@ -522,9 +522,8 @@ export default defineConfig(async ({ command }) => {
             "./bookEdit/pageThumbnailList/pageThumbnailList.tsx",
         pageControlsBundle:
             "./bookEdit/pageThumbnailList/pageControls/pageControls.tsx",
-        accessibilityCheckBundle: glob.sync(
-            "./publish/accessibilityCheck/**/*.tsx",
-        )[0], // Take first match
+        accessibilityCheckBundle:
+            "./publish/accessibilityCheck/accessibilityCheckScreen.tsx",
         subscriptionSettingsBundle: "./collection/subscriptionSettingsTab.tsx",
         performanceLogBundle: "./performance/PerformanceLogPage.tsx",
         appBundle: "./app/App.tsx",

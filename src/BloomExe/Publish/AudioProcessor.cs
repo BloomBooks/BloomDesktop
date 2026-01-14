@@ -261,12 +261,13 @@ namespace Bloom.Publish
             );
             if (matches.Count > 0)
             {
-                var countMp3 = mergeFileSpecs
-                    .Where(s =>
-                        s == "converted"
-                        || Regex.IsMatch(s, "Audio: mp3, [0-9]+ Hz, [^,]+, [^,]*, [0-9]+ kb/s")
+                var countMp3 = mergeFileSpecs.Count(s =>
+                    s == "converted"
+                    || Regex.IsMatch(
+                        s,
+                        "Audio: mp3(?: \\(mp3float\\))?, [0-9]+ Hz, [^,]+, [^,]*, [0-9]+ kb/s"
                     )
-                    .Count();
+                );
                 if (countMp3 != mergeFiles.Count() || matches.Count > mergeFiles.Count())
                 {
                     // If one or more input files don't match as an MP3, or too many invalid packets occur,

@@ -219,6 +219,10 @@ namespace Bloom.web
                     "teamCollectionSettingsBundle",
                     "/teamCollection/TeamCollectionSettingsPanel.entry.tsx"
                 },
+                {
+                    "accessibilityCheckBundle",
+                    "/publish/accessibilityCheck/accessibilityCheckScreen.entry.tsx"
+                },
             };
             string viteModulePath = null;
             var useViteDev = ShouldUseViteDev(() =>
