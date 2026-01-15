@@ -314,8 +314,14 @@ namespace Bloom.web.controllers
             // returns 'true' if 'name' is among the list of ones we don't want to paste image credits for
             // includes CC license image, placeholder and branding images
             var normalName = BookStorage.GetNormalizedPathForOS(name);
+            var normalizedFileName = BookStorage.GetNormalizedPathForOS(
+                Path.GetFileName(name) ?? name
+            );
+            var lowerFileName = normalizedFileName.ToLowerInvariant();
             return _doNotPasteArray.Contains(normalName)
-                || name.ToLowerInvariant().StartsWith("placeholder");
+                || _doNotPasteArray.Contains(normalizedFileName)
+                || lowerFileName.StartsWith("placeholder")
+                || lowerFileName.StartsWith("image-placeholder");
         }
 
         /// <summary>

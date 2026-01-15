@@ -129,6 +129,12 @@ namespace Bloom.Api
 
         public void ExternalLinkSucceeded() { }
 
+        public void WriteNoContent()
+        {
+            StatusCode = 204; // No Content
+            HaveOutput = true;
+        }
+
         public string DoNotCacheFolder { get; set; }
 
         public string RawUrl { get; private set; }

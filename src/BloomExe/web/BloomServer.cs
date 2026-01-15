@@ -674,6 +674,18 @@ namespace Bloom.Api
             return path.Replace("\\", "/").StartsWith(CurrentBook.FolderPath.Replace("\\", "/"));
         }
 
+        private bool TryHandlePlaceholderImageRequest(IRequestInfo info, string imageFile)
+        {
+            if (!ImageUtils.IsPlaceholderImageFilename(imageFile))
+                return false;
+
+            // We now use css to put in the placeholder images, but still use "image-placeholder.png" to mark them.
+            // So we actually don't want to provide an image file for image-placeholder.png.
+            // Return 204 No Content to avoid browser showing broken image icon.
+            info.WriteNoContent();
+            return true;
+        }
+
         // Handle requests for image files, that is, URLs that end in one of our image extensions.
         // Returns true if this is, in fact, a request for an image, in which case it will have
         // been handled; any reporting of problems will have been done, and a response generated.
@@ -686,11 +698,8 @@ namespace Bloom.Api
             if (!IsImageTypeThatCanBeDegraded(imageFile) && !isSvg)
                 return false;
 
-            if (ImageUtils.IsPlaceholderImageFilename(imageFile))
-            {
-                info.WriteNoContent();
+            if (TryHandlePlaceholderImageRequest(info, imageFile))
                 return true;
-            }
 
             // This can't be right. At some point it may have had something to do with
             // images in page thumbnails, but that is now handled by a param.
@@ -742,14 +751,8 @@ namespace Bloom.Api
 
                 imageFile = Path.Combine(sourceDir, imageFile);
 
-                // We now use css to put in the placeholder images, but still use "image-placeholder.png" to mark them.
-                // So we actually don't want to provide an image file for image-placeholder.png.
-                // Return 204 No Content to avoid browser showing broken image icon.
-                if (ImageUtils.IsPlaceholderImageFilename(imageFile))
-                {
-                    info.WriteNoContent();
+                if (TryHandlePlaceholderImageRequest(info, imageFile))
                     return true;
-                }
 
                 if (!RobustFileExistsWithCaseCheck(imageFile))
                 {

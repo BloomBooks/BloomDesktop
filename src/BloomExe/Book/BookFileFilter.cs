@@ -172,9 +172,9 @@ namespace Bloom.Book
                 _theOneHtmlRelativePath = _theOneHtmlPath.Substring(_bookFolderPrefixLength);
                 _theOneHtmlRelativePath = normalizePath(_theOneHtmlRelativePath);
             }
-            // We don't ever need placeHolders. In publications we don't want to display
+            // We don't ever need placeholders. In publications we don't want to display
             // them, and BloomEditor already has this image.
-            _thingsToExclude.Add(new Regex(normalizePath("^placeHolder")));
+            _thingsToExclude.Add(new Regex(normalizePath("^(image-)?placeholder")));
         }
 
         HtmlDom Dom

@@ -244,6 +244,7 @@ namespace BloomTests.Book
         public void ShouldAllow_ExcludesPlaceholdersInRootFolder()
         {
             Assert.That(_normalFilter.ShouldAllowRelativePath("image-placeholder.png"), Is.False);
+            Assert.That(_normalFilter.ShouldAllowRelativePath("placeHolder.png"), Is.False);
             Assert.That(_normalFilter.ShouldAllowRelativePath("placeHolder122.png"), Is.False);
         }
 

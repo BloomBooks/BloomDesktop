@@ -2361,8 +2361,12 @@ namespace Bloom.Book
                 }
                 var imgNode = imgNodes[0];
                 var src = imgNode.GetAttribute("src");
-                coverImageElement.InnerText =
-                    (string.IsNullOrEmpty(src)) ? string.Empty : HttpUtility.UrlDecode(src);
+                // If malformed markup omits a src, treat it as the legacy placeholder marker
+                // so downstream code sees an intentional placeholder rather than a missing value.
+                // This preserves expectations in BringBookUpToDate_EmbeddedEmptyImgTagRemoved.
+                if (string.IsNullOrWhiteSpace(src))
+                    src = "image-placeholder.png";
+                coverImageElement.InnerText = HttpUtility.UrlDecode(src);
             }
         }
 
@@ -5189,7 +5193,7 @@ namespace Bloom.Book
                 ref coverImageFileName
             );
             // We no longer put image-placeholder.png files in books (BL-15441) but we still need to detect when the placeholder
-            // is called for, so here we return image-placeholder.png instead of null. Callers of this method should handle this special case.
+            // is called for, so return coverImagePath unchanged when it is a placeholder. Callers of this method should handle this special-case value.
             if (ImageUtils.IsPlaceholderImageFilename(coverImagePath))
             {
                 return coverImagePath;

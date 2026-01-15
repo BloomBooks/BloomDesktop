@@ -178,6 +178,26 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void LocalOnlyFiles_IncludesLegacyPlaceholderImages()
+        {
+            using (var testFolder = new TemporaryFolder(_fixtureFolder, "placeholderCleanup"))
+            {
+                var legacyPlaceholder = Path.Combine(testFolder.Path, "placeHolder.png");
+                var currentPlaceholder = Path.Combine(testFolder.Path, "image-placeholder.png");
+                var realImage = Path.Combine(testFolder.Path, "something-else.png");
+                File.WriteAllText(legacyPlaceholder, "legacy");
+                File.WriteAllText(currentPlaceholder, "current");
+                File.WriteAllText(realImage, "real");
+
+                var localOnlyFiles = BookStorage.LocalOnlyFiles(testFolder.Path);
+
+                Assert.That(localOnlyFiles, Does.Contain(legacyPlaceholder));
+                Assert.That(localOnlyFiles, Does.Contain(currentPlaceholder));
+                Assert.That(localOnlyFiles, Does.Not.Contain(realImage));
+            }
+        }
+
+        [Test]
         public void MoveBookToSafeName_NameGood_DoesNothing()
         {
             var oldName = "Some nice book";
@@ -785,7 +805,9 @@ namespace BloomTests.Book
                     "<div class='bloom-page'><div class='marginBox'></div></div>"
                 )
             );
-            var placeholder = MakeSamplePngImage(Path.Combine(_folder.Path, "image-placeholder.png"));
+            var placeholder = MakeSamplePngImage(
+                Path.Combine(_folder.Path, "image-placeholder.png")
+            );
             storage.CleanupUnusedImageFiles();
             Assert.IsFalse(File.Exists(placeholder.Path));
         }
