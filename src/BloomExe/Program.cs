@@ -65,6 +65,11 @@ namespace Bloom
         private static ProjectContext _projectContext;
         private static int _uiThreadId;
         private static ApplicationContainer _applicationContainer;
+
+        // When switching collections from inside the app, we need to fully close the current Shell and
+        // dispose the current ProjectContext before starting to open the next collection.
+        private static string _collectionPathToOpenAfterCurrentProjectClosed;
+
         public static bool StartUpWithFirstOrNewVersionBehavior;
 
         static string _originalPreload; // saves LD_PRELOAD environment variable for restarting Bloom
@@ -1390,6 +1395,11 @@ namespace Bloom
         /// caller shouldn't do anything unnecessary.)</returns>
         public static bool ChooseACollection(Shell formToClose = null)
         {
+            if (formToClose != null)
+            {
+                // Clear any previous value; we'll set it again only if the user clicks OK.
+                _collectionPathToOpenAfterCurrentProjectClosed = null;
+            }
             while (true)
             {
                 // We decided to stop doing this (BL-1229) since the wizard can feel like part
@@ -1431,8 +1441,10 @@ namespace Bloom
 
                         if (formToClose != null)
                         {
+                            _collectionPathToOpenAfterCurrentProjectClosed = dlg.SelectedPath;
                             formToClose.UserWantsToOpenADifferentProject = true;
                             formToClose.Close();
+                            return true;
                         }
 
                         if (OpenCollection(dlg.SelectedPath))
@@ -1482,6 +1494,7 @@ namespace Bloom
                 // On this path, we have already shown the collection chooser,
                 // and we are closing the Shell just to open it again with the selected collection.
                 // See ChooseACollection().
+                Application.Idle += new EventHandler(OpenCollectionChosenInDialog);
                 return;
             }
             else if (((Shell)sender).UserWantsToOpeReopenProject)
@@ -1502,6 +1515,19 @@ namespace Bloom
         {
             Application.Idle -= ReopenProject;
             OpenCollection(Settings.Default.MruProjects.Latest);
+        }
+
+        private static void OpenCollectionChosenInDialog(object sender, EventArgs e)
+        {
+            Application.Idle -= OpenCollectionChosenInDialog;
+            var pathToOpen = _collectionPathToOpenAfterCurrentProjectClosed;
+            _collectionPathToOpenAfterCurrentProjectClosed = null;
+            Debug.Assert(!string.IsNullOrEmpty(pathToOpen));
+            if (!OpenCollection(pathToOpen))
+            {
+                // If opening failed, fall back to letting the user choose again.
+                ChooseACollection();
+            }
         }
 
         public static void SetUpLocalization()
