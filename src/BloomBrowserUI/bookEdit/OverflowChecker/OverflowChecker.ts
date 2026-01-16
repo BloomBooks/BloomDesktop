@@ -332,8 +332,19 @@ export default class OverflowChecker {
             // search ancestors starting with nearest
             const currentAncestor = $(parents[i]);
             const parentBottom =
+                // this gives an offset of the border box, that is the outside of the border, relative to
+                // the document. It's not the outside of the margin, which means, any margin on the TG
+                // changes it. Apart from any border on the TG, offsets of children will be relative to this.
                 (currentAncestor.offset()?.top ?? 0) / scaleY +
-                currentAncestor.outerHeight(true);
+                // the false here makes it give a size without margins. We want the children to fit in
+                // the content region of the parent, not overflow into its bottom margin. Also, if we
+                // include margin, then any top margin on the TG will introduce a discrepancy since
+                // it affects both parent and child offsets, and cancels out unless we include it here.
+                // Note: pre-6.3 code used outerHeight(true) here, which includes margin. This was first
+                // noticed as wrongly reporting overflow because of a place in bloom games where the TG
+                // had a negative top margin. However, fixing it could cause a lot of new overflow
+                // reports where there were previously false negatives, but the overflow wasn't noticeable.
+                currentAncestor.outerHeight(false);
             const elemTop = ($(element).offset()?.top ?? 0) / scaleY;
             const elemBottom = elemTop + $(element).outerHeight(false);
             // console.log("Offset top: " + elemTop + " Outer Height: " + $(element).outerHeight(false));
