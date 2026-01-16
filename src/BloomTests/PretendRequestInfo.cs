@@ -127,7 +127,17 @@ namespace Bloom.Api
             return "";
         }
 
-        public void ExternalLinkSucceeded() { }
+        public void ExternalLinkSucceeded()
+        {
+            StatusCode = 200;
+            HaveOutput = true;
+        }
+
+        public void WriteNoContent()
+        {
+            StatusCode = 204;
+            HaveOutput = true;
+        }
 
         public void WriteNoContent()
         {

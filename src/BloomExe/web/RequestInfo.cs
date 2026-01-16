@@ -75,13 +75,31 @@ namespace Bloom.Api
         //used when an anchor has given us info, but we don't actually want the browser to navigate
         public void ExternalLinkSucceeded()
         {
-            _actualContext.Response.StatusCode = 200; //Completed
+            try
+            {
+                _actualContext.Response.StatusCode = 200; // Completed
+                _actualContext.Response.ContentLength64 = 0;
+                _actualContext.Response.Close();
+            }
+            catch (HttpListenerException e)
+            {
+                ReportHttpListenerProblem(e);
+            }
             HaveOutput = true;
         }
 
         public void WriteNoContent()
         {
-            _actualContext.Response.StatusCode = 204; // No Content
+            try
+            {
+                _actualContext.Response.StatusCode = 204; // No Content
+                _actualContext.Response.ContentLength64 = 0;
+                _actualContext.Response.Close();
+            }
+            catch (HttpListenerException e)
+            {
+                ReportHttpListenerProblem(e);
+            }
             HaveOutput = true;
         }
 
