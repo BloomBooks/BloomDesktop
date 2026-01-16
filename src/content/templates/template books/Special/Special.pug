@@ -21,6 +21,7 @@ html
 			.split-pane-component-inner
 				+field-mono-meta('*','').bloom-noAudio
 
-		+page-choice('Page with Simple Book Grid', 'A simple Table of Contents page for use in Bloom Apps.' ).grid-page#1b9c2ca6-f1f2-4de1-8824-a0a7f095cf16(data-feature='canvas')
-			.split-pane-component-inner
-				.bloom-link-grid
+		+page-choice('Page with Simple Book Grid', 'A simple Table of Contents page for use in Bloom Apps.').customPage#1b9c2ca6-f1f2-4de1-8824-a0a7f095cf16(data-feature='canvas')
+			+canvasPageContents
+				.bloom-canvas-element.ui-resizable.ui-draggable(style="width:100%; height:100%;")
+					.bloom-link-grid

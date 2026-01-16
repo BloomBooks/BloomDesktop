@@ -177,16 +177,9 @@ mixin field-mono-meta(language, dataBookName)
 		+editable(language)(data-book=dataBookName)&attributes(attributes)
 			block
 
-mixin  page-splittable-choice-custom(englishLabel, englishDescription)
+mixin page-splittable-choice-custom(englishLabel, englishDescription)
 	+page-choice(englishLabel, englishDescription).customPage.bloom-combinedPage&attributes(attributes)
 			block
-
-//- A splittable page is one that has each element tagged with either 'bloom-leadingElement' or 'bloom-trailingElement'.
-//- The css for the page should then respond to the page having either bloom-combined (when not split) and
-//- either bloom-leadingPage or bloom-trailingPage (when split). See "Split Page Support" in the Bloom Format Documentation.
-mixin  page-splittable-choice(englishLabel, englishDescription)
-	+page-choice(englishLabel, englishDescription)(class='bloom-combinedPage')&attributes(attributes)
-		block
 
 mixin script(javascriptfileName)
 	script(type='text/javascript', src=javascriptfileName)
