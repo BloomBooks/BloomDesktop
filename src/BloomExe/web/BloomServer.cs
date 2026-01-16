@@ -544,6 +544,23 @@ namespace Bloom.Api
             if (await ApiHandler.ProcessRequestAsync(request, localPath))
                 return true;
 
+            // If an API request isn't handled by BloomApiHandler, it should not fall through into file handling.
+            // That produces misleading "Cannot Find File" reports for URLs that were never meant to be files.
+            if (
+                localPath.StartsWith(
+                    BloomApiHandler.ApiPrefix,
+                    StringComparison.InvariantCultureIgnoreCase
+                )
+            )
+            {
+                if (ShouldReportFailedRequest(request, CurrentBook?.FolderPath))
+                {
+                    ReportMissingApiEndpoint(request, localPath);
+                }
+                request.WriteError(404, "API endpoint not found");
+                return true;
+            }
+
             // note: this is placed as low as I could before some things started to handle the request that should not
             if (
                 CurrentCollectionSettings != null
@@ -1193,6 +1210,22 @@ namespace Bloom.Api
                 );
                 NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, userMsg, detailMsg);
             }
+        }
+
+        private static void ReportMissingApiEndpoint(IRequestInfo info, string localPath)
+        {
+            var userMsg = LocalizationManager.GetString(
+                "WebServer.Warning.NoApiEndpoint",
+                "Cannot Find API Endpoint"
+            );
+            var detailMsg = String.Format(
+                "Server could not find an API endpoint for {0}. LocalPath was {1}. Method was {2}.{3}",
+                localPath,
+                localPath,
+                info.HttpMethod,
+                Environment.NewLine
+            );
+            NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, userMsg, detailMsg);
         }
 
         private static bool IsSimulatedFileUrl(string localPath)
