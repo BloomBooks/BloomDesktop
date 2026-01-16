@@ -78,8 +78,8 @@ namespace BloomTests.Spreadsheet
             French
         </div>
 
-        <div data-book=""coverImage"" lang=""*"" src=""image-placeholder.png"" alt=""This picture, image-placeholder.png, is missing or was loading too slowly."">
-            image-placeholder.png
+        <div data-book=""coverImage"" lang=""*"" src=""placeHolder.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly."">
+            placeHolder.png
         </div>
 
         {0}

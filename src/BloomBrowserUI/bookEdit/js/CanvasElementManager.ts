@@ -5176,8 +5176,7 @@ export class CanvasElementManager {
     ): HTMLElement {
         const standardImageClasses =
             kImageContainerClass + " bloom-leadingElement";
-        const imagePlaceHolderHtml =
-            "<img src='image-placeholder.png' alt=''></img>";
+        const imagePlaceHolderHtml = "<img src='placeHolder.png' alt=''></img>";
         const imageContainerHtml =
             // The tabindex here is necessary to get focus to work on an image.
             "<div tabindex='0' class='" +
@@ -5234,8 +5233,7 @@ export class CanvasElementManager {
     private makeImageContainerHtml() {
         const standardImageClasses =
             kImageContainerClass + " bloom-leadingElement";
-        const imagePlaceHolderHtml =
-            "<img src='image-placeholder.png' alt=''></img>";
+        const imagePlaceHolderHtml = "<img src='placeHolder.png' alt=''></img>";
         const imageContainerHtml =
             // The tabindex here is necessary to get focus to work on an image.
             `<div tabindex='0' class = '${standardImageClasses}'> ${imagePlaceHolderHtml}</div>`;
@@ -5699,7 +5697,7 @@ export class CanvasElementManager {
             if (img) {
                 img.classList.remove("bloom-imageLoadError");
                 img.onerror = HandleImageError;
-                img.src = "image-placeholder.png";
+                img.src = "placeHolder.png";
                 this.updateCanvasElementForChangedImage(img);
                 notifyToolOfChangedImage(img);
             }
@@ -6806,7 +6804,7 @@ export class CanvasElementManager {
             } else {
                 // Otherwise, we'll make a placeholder image. Src may get set below.
                 newImg = document.createElement("img");
-                newImg.setAttribute("src", "image-placeholder.png");
+                newImg.setAttribute("src", "placeHolder.png");
             }
             newImg.classList.remove("bloom-imageLoadError");
             newImgContainer.appendChild(newImg);
@@ -6853,7 +6851,7 @@ export class CanvasElementManager {
         bgImage.onerror = HandleImageError;
         bgImage.setAttribute(
             "src",
-            oldBgImage?.getAttribute("src") ?? "image-placeholder.png",
+            oldBgImage?.getAttribute("src") ?? "placeHolder.png",
         );
         this.adjustBackgroundImageSize(bloomCanvas, bgCanvasElement, true);
         bgCanvasElement.style.visibility = ""; // now we can show it, if it was new and hidden
@@ -6967,7 +6965,7 @@ export class CanvasElementManager {
         // image has the special class indicating that it failed to load.  (The class is supposed
         // to be removed when we change the src attribute, which leads to a new load attempt.)
         failedImage =
-            // As of BL-15441, we use css instead of real image-placeholder.png files but still set src="image-placeholder.png"
+            // As of BL-15441, we use css instead of real placeHolder.png files but still set src="placeHolder.png"
             // to indicate placeholders. Treat this case as a failed image for dimensions purposes
             isPlaceHolderImage(img.getAttribute("src")) ||
             (img.naturalHeight === 0 && // not loaded successfully (yet)

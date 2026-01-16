@@ -210,7 +210,7 @@ namespace BloomTests.Book
             );
             Assert.That(
                 _filterForInteractive.ShouldAllowRelativePath(
-                    Path.Combine("activities", "image-placeholder.png")
+                    Path.Combine("activities", "placeHolder.png")
                 ),
                 Is.True
             );
@@ -243,7 +243,7 @@ namespace BloomTests.Book
         [Test]
         public void ShouldAllow_ExcludesPlaceholdersInRootFolder()
         {
-            Assert.That(_normalFilter.ShouldAllowRelativePath("image-placeholder.png"), Is.False);
+            Assert.That(_normalFilter.ShouldAllowRelativePath("placeHolder.png"), Is.False);
             Assert.That(_normalFilter.ShouldAllowRelativePath("placeHolder.png"), Is.False);
             Assert.That(_normalFilter.ShouldAllowRelativePath("placeHolder122.png"), Is.False);
         }

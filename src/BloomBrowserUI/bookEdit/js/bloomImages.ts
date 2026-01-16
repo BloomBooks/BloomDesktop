@@ -33,18 +33,14 @@ const kBrowserDpi = 96;
 export const kImageContainerClass = "bloom-imageContainer";
 export const kImageContainerSelector = `.${kImageContainerClass}`;
 
-// We don't use actual image-placeholder.png files anymore, but we do continue to use
-// src="image-placeholder.png" to mark placeholders
-// Versions before 6.3 used the older filename "placeHolder.png".
+// We don't use actual placeHolder.png files anymore, but we do continue to use
+// src="placeHolder.png" to mark placeholders.
 export function isPlaceHolderImage(url: string | null | undefined): boolean {
     if (!url) {
         return false;
     }
     const normalizedUrl = url.toLowerCase();
-    return (
-        normalizedUrl.includes("image-placeholder.png") ||
-        normalizedUrl.includes("placeholder.png")
-    );
+    return /(^|[\/"'=])placeholder\.png/i.test(normalizedUrl);
 }
 
 export function cleanupImages() {
@@ -387,7 +383,7 @@ export function getBackgroundCanvasElementFromBloomCanvas(
 }
 
 // Shortcut to get the img element from the background canvas element (if any) of a bloom-canvas.
-// This, rather than the obsolete img that is a direct child and is always image-placeholder.png,
+// This, rather than the obsolete img that is a direct child and is always placeHolder.png,
 // is the background image that is actually displayed.
 export function getBackgroundImageFromBloomCanvas(
     bloomCanvas: HTMLElement,
@@ -761,9 +757,9 @@ function SetAlternateTextOnImages(element) {
     const rawImageUrl = GetRawImageUrl(element);
     if (rawImageUrl.length > 0) {
         if (isPlaceHolderImage(rawImageUrl)) {
-            // We now use css to display the placeholder image instead of an actual image-placeholder.png file,
-            // but we are continuing to set and use  src=image-placeholder.png to trigger place holder behavior. So we
-            // don't expect to find a image-placeholder.png file, and we don't want to display alt text.
+            // We now use css to display the placeholder image instead of an actual placeHolder.png file,
+            // but we are continuing to set and use src=placeHolder.png to trigger place holder behavior. So we
+            // don't expect to find a placeHolder.png file, and we don't want to display alt text.
             return;
         }
         //don't show this on the empty license image when we don't know the license yet

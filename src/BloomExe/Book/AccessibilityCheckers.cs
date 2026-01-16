@@ -34,7 +34,7 @@ namespace Bloom.web.controllers
                 "The {0} is where the page number will be inserted."
             );
 
-            // Note in BL-6089 we may decide to except image-placeholder.png from these complaints, if
+            // Note in BL-6089 we may decide to except placeHolder.png from these complaints, if
             // if we are going to trim them out of epub and bloom reader publishing.
 
             // Note that we intentionally are not dealing with unusual hypothetical situations like where

@@ -151,7 +151,7 @@ namespace BloomTests.Spreadsheet
         <div class=""pageDescription"" lang=""en""></div>
         <div class=""marginBox"">
 			<div class=""bloom-canvas bloom-leadingElement"" title=""Name: lady24b.png Size: 3.86 kb Dots: 225 x 225 For the current paper size: • The image container is 406 x 335 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 64 DPI. • An image with 1269 x 1047 dots would fill this container at 300 DPI.""><img src=""lady24b.png"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
-			<div class=""bloom-canvas bloom-leadingElement"" title=""Name: image-placeholder.png Size: 3.86 kb Dots: 225 x 225 For the current paper size: • The image container is 406 x 335 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 64 DPI. • An image with 1269 x 1047 dots would fill this container at 300 DPI.""><img src=""image-placeholder.png""></img></div>
+			<div class=""bloom-canvas bloom-leadingElement"" title=""Name: placeHolder.png Size: 3.86 kb Dots: 225 x 225 For the current paper size: • The image container is 406 x 335 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 64 DPI. • An image with 1269 x 1047 dots would fill this container at 300 DPI.""><img src=""placeHolder.png""></img></div>
         </div>
     </div>
 </body>
@@ -194,7 +194,7 @@ namespace BloomTests.Spreadsheet
                 _pathToTestImages
             );
 
-            // We need all these files in one place so we can verify that all of them get copied except image-placeholder.png
+            // We need all these files in one place so we can verify that all of them get copied except placeHolder.png
             foreach (
                 var name in new[]
                 {
@@ -306,7 +306,7 @@ namespace BloomTests.Spreadsheet
             Assert.That(File.Exists(Path.Combine(destImageFolder, "man.jpg")));
             Assert.That(File.Exists(Path.Combine(destImageFolder, "Mars 2.png")));
             Assert.That(File.Exists(Path.Combine(destImageFolder, "lady24b.png")));
-            Assert.That(File.Exists(Path.Combine(destImageFolder, "image-placeholder.png")), Is.False);
+            Assert.That(File.Exists(Path.Combine(destImageFolder, "placeHolder.png")), Is.False);
         }
 
         [TestCase("fromExport")]

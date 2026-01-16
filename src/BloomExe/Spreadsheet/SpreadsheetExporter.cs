@@ -235,7 +235,7 @@ namespace Bloom.Spreadsheet
                     var image = (SafeXmlElement)imageContainer.SafeSelectNodes(".//img")[0];
                     var imagePath = ImagePath(
                         bookFolderPath,
-                        image?.GetAttribute("src") ?? "image-placeholder.png"
+                        image?.GetAttribute("src") ?? "placeHolder.png"
                     );
                     var fileName = Path.GetFileName(imagePath);
                     var outputPath = Path.Combine("images", fileName);

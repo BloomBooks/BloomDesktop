@@ -2053,16 +2053,16 @@ p {
 							</div>
 						</div>
 						<div class='split-pane-component-inner'>
-							<div id='canvasElementSlot' title='image-placeholder.png' class='bloom-canvas'>
-								<img src='image-placeholder.png' alt=''></img>
+							<div id='canvasElementSlot' title='placeHolder.png' class='bloom-canvas'>
+								<img src='placeHolder.png' alt=''></img>
 							</div>
 						</div>
 						<div class='split-pane-component-inner'>
 							<div class='bloom-translationGroup'>
 								<div class='bloom-editable ' contenteditable='true' lang='en'></div>
 							</div>
-							<div id='imageSlot2' title='image-placeholder.png' class='bloom-canvas'>
-								<img src='image-placeholder.png' alt=''></img>
+							<div id='imageSlot2' title='placeHolder.png' class='bloom-canvas'>
+								<img src='placeHolder.png' alt=''></img>
 							</div>
 						</div>
 					</div>
@@ -2171,8 +2171,8 @@ p {
 							</div>
 						</div>
 						<div class='split-pane-component-inner'>
-							<div title='image-placeholder.png' class='bloom-canvas'>
-								<img src='image-placeholder.png' alt=''></img>
+							<div title='placeHolder.png' class='bloom-canvas'>
+								<img src='placeHolder.png' alt=''></img>
 							</div>
 						</div>
 						<div class='split-pane-component-inner'>

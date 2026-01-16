@@ -1296,12 +1296,12 @@ body.hideAllCKEditors .cke_chrome {
     visibility: hidden;
 }
 
-// We have all kinds of code that knows image-placeholder.png is special. So it's nontrivial to
+// We have all kinds of code that knows placeHolder.png is special. So it's nontrivial to
 // switch and use a different placeholder image for GIFs. However, some of that code we
 // already have prevents showing the placeholder except while editing. So we can get the
 // effect we want (a different placeholder for GIFs) by just making the placeholder src
 // and changing the content of the image.
-// Versions before 6.3 used the older filename "placeHolder.png".
+// placeHolder.png is the expected placeholder marker.
 .bloom-gif @{placeholder-image-selector} {
     content: url("/bloom/images/Gif.svg");
     opacity: 0.4;

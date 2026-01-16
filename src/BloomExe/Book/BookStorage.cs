@@ -321,7 +321,7 @@ namespace Bloom.Book
         /// code for those tasks has no business knowing about that status file. OTOH,
         /// some of those functions don't need some of the audio files; but a generic
         /// cleanup function like this doesn't know which ones. For now, it just deals
-        /// with TC cleanup and any copies of legacy placeholder image files (placeHolder.png, and any leftover image-placeholder.png) left from older versions of Bloom.
+        /// with TC cleanup and any copies of legacy placeholder image files (placeHolder.png) left from older versions of Bloom.
         /// </summary>
         public static List<string> LocalOnlyFiles(string folderPath)
         {

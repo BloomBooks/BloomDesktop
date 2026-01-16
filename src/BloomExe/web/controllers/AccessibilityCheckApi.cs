@@ -321,7 +321,7 @@ namespace Bloom.web.controllers
                 if (!RobustFile.Exists(answerPath))
                 {
                     // This hasn't been effectively reproduced, but there was a case where this would fail at least
-                    // half the time on a book, reproducable. That book had 2 pages pointing at image-placeholder.png,
+                    // half the time on a book, reproducable. That book had 2 pages pointing at placeHolder.png,
                     // and we were getting an error related to it being locked. So we deduce that ace was trying
                     // to copy the file twice, at the same time (normal nodejs code is highly async).
                     // Now the problem is not reproducable, but I'm leaving in this code that tried to deal with it.

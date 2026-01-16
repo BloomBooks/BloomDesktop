@@ -158,7 +158,7 @@ mixin standard-cover-image
 		//- We're using the old structure with the img a direct child of the bloom-canvas,
 		//- because we can't set the right size of the new background-image structure until
 		//- we've loaded the page into a browser.
-		img(data-book="coverImage", src="image-placeholder.png")&attributes(attributes)
+		img(data-book="coverImage", src="placeHolder.png")&attributes(attributes)
 		+field-cover-image("auto").bloom-imageDescription.bloom-trailingElement
 
 mixin field-cover-image(languages)

@@ -259,12 +259,11 @@ namespace Bloom.ImageProcessing
 
         /// <summary>
         /// Check whether the given path represents a placeholder image.
-        /// Versions before 6.3 used the older filename "placeHolder.png".
         /// </summary>
         public static bool IsPlaceholderImageFilename(string filename)
         {
             var name = Path.GetFileName(filename)?.ToLowerInvariant();
-            return name == "image-placeholder.png" || name == "placeholder.png";
+            return name == "placeholder.png";
         }
 
         public static bool AppearsToBePng(PalasoImage imageInfo)
@@ -1907,7 +1906,7 @@ namespace Bloom.ImageProcessing
             {
                 // BL-3227 Occasionally get The process cannot access the file '...\license.png' because it is being used by another process.
                 // That's worth a toast, since the user might like a hint why the license image isn't up to date.  Note that these reports
-                // don't always involve license.png.  They may involve branding.png, image-placeholder.png, or thumbnail.png (or possibly other PNG
+                // don't always involve license.png.  They may involve branding.png, placeHolder.png, or thumbnail.png (or possibly other PNG
                 // files).
                 // BL-9533: these errors keep happening, but we can't help users who respond to a toast and send in an error report.
                 // Logging it will allow us to possibly correlate an error here with another problem that does get reported.
@@ -2056,7 +2055,7 @@ namespace Bloom.ImageProcessing
             foreach (var img in images)
             {
                 var src = img.GetAttribute("src");
-                // We don't want to crop image-placeholder.png, just not display it.  (BL-15201)
+                // We don't want to crop placeholder images, just not display them.  (BL-15201)
                 if (IsPlaceholderImageFilename(src))
                     continue;
                 var style = img.GetAttribute("style");
@@ -2070,7 +2069,7 @@ namespace Bloom.ImageProcessing
             {
                 var src = img.GetAttribute("src");
                 if (IsPlaceholderImageFilename(src))
-                    continue; // we still don't want to crop image-placeholder.png (BL-15229)
+                    continue; // we still don't want to crop placeholder images (BL-15229)
                 var style = img.GetAttribute("style");
                 var imgContainer = img.ParentNode as SafeXmlElement;
                 var canvasElement = imgContainer?.ParentNode as SafeXmlElement;

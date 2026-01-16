@@ -265,7 +265,7 @@ namespace BloomTests.Book
         public void BringBookUpToDate_EmbeddedEmptyImgTagRemoved()
         {
             const string imgTag = "<img>bad tag contents</img>";
-            const string placeHolderFile = "image-placeholder.png";
+            const string placeHolderFile = "placeHolder.png";
             SetDom(
                 @"<div id='bloomDataDiv'>
 						<div data-book='coverImage' lang='*'>
@@ -4756,10 +4756,10 @@ namespace BloomTests.Book
 						</div>
 						<div class='bloom-editable bloom-content1' contenteditable='true'>This is hidden.</div>
 						<div class='bloom-canvas'>
-							<img src='image-placeholder.png'></img>
+							<img src='placeHolder.png'></img>
 						</div>
 						<div class='bloom-canvas bloom-background-image-in-style-attr' style="
-                    + "\"background-image:url('image-placeholder.png')\""
+                    + "\"background-image:url('placeHolder.png')\""
                     + @" ></div>
 					</div>
 				  </body></html>"

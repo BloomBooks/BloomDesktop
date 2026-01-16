@@ -320,8 +320,7 @@ namespace Bloom.web.controllers
             var lowerFileName = normalizedFileName.ToLowerInvariant();
             return _doNotPasteArray.Contains(normalName)
                 || _doNotPasteArray.Contains(normalizedFileName)
-                || lowerFileName.StartsWith("placeholder")
-                || lowerFileName.StartsWith("image-placeholder");
+                || lowerFileName.StartsWith("placeholder");
         }
 
         /// <summary>

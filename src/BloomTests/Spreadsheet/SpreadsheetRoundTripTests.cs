@@ -172,7 +172,7 @@ namespace BloomTests.Spreadsheet
                     <p></p>
                 </div>
             </div>
-			<div class=""bloom-canvas""><img src=""image-placeholder.png""></img></div>
+			<div class=""bloom-canvas""><img src=""placeHolder.png""></img></div>
 			<div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"" data-test-id=""tg2"">
                 <div class=""bloom-editable normal-style bloom-content1 bloom-visibility-code-on"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""español"" lang=""es"" contenteditable=""true"">
                     <p>This should round trip to the second group.</p>

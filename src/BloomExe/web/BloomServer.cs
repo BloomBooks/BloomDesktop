@@ -679,8 +679,8 @@ namespace Bloom.Api
             if (!ImageUtils.IsPlaceholderImageFilename(imageFile))
                 return false;
 
-            // We now use css to put in the placeholder images, but still use "image-placeholder.png" to mark them.
-            // So we actually don't want to provide an image file for image-placeholder.png.
+            // We now use css to put in the placeholder images, but still use "placeHolder.png" to mark them.
+            // So we actually don't want to provide an image file for this placeholder marker.
             // Return 204 No Content to avoid browser showing broken image icon.
             info.WriteNoContent();
             return true;

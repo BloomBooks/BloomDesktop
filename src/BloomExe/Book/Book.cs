@@ -2365,7 +2365,7 @@ namespace Bloom.Book
                 // so downstream code sees an intentional placeholder rather than a missing value.
                 // This preserves expectations in BringBookUpToDate_EmbeddedEmptyImgTagRemoved.
                 if (string.IsNullOrWhiteSpace(src))
-                    src = "image-placeholder.png";
+                    src = "placeHolder.png";
                 coverImageElement.InnerText = HttpUtility.UrlDecode(src);
             }
         }
@@ -5192,7 +5192,7 @@ namespace Bloom.Book
                 StoragePageFolder,
                 ref coverImageFileName
             );
-            // We no longer put image-placeholder.png files in books (BL-15441) but we still need to detect when the placeholder
+            // We no longer put placeHolder.png files in books (BL-15441) but we still need to detect when the placeholder
             // is called for, so return coverImagePath unchanged when it is a placeholder. Callers of this method should handle this special-case value.
             if (ImageUtils.IsPlaceholderImageFilename(coverImagePath))
             {
