@@ -76,6 +76,20 @@ namespace Bloom.Api
         public void ExternalLinkSucceeded()
         {
             _actualContext.Response.StatusCode = 200; //Completed
+        }
+
+        public void WriteNoContent()
+        {
+            try
+            {
+                _actualContext.Response.StatusCode = 204; // No Content
+                _actualContext.Response.ContentLength64 = 0;
+                _actualContext.Response.Close();
+            }
+            catch (HttpListenerException e)
+            {
+                ReportHttpListenerProblem(e);
+            }
             HaveOutput = true;
         }
 

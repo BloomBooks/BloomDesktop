@@ -32,6 +32,7 @@
 // When previewing templates in the Collection Tab, and also when in Change Layout mode in the Edit tab,
 // img elements may not be wrapped in canvas-element divs (see BL-15514). Also below.
 //  Real books always have a data-l1 attribute added
+.preview.template .bloom-canvas:has(img[src*="placeHolder.png"]),
 .preview:not([data-l1]) .bloom-canvas:has(img[src*="placeHolder.png"]),
 .origami-layout-mode
     .bloom-canvas:not(:has(.bloom-canvas-element)):has(
@@ -69,7 +70,11 @@
 // Hopefully we don't in any way put the string "placeHolder.png" in the inline style of canvases which should not get it!
 // We need !important here to override the inline style attribute background-image which we normally use to put images in bloompubs
 .bloomPlayer-page.template
-    .bloom-canvas[style*="background-image"][style*="placeHolder.png"] {
+    .bloom-canvas:is(
+        [style*="background-image"][style*="placeHolder.png"],
+        /* BloomPlayer moves background-image URLs to data-background for lazy loading, so include that too. */
+        [data-background*="placeHolder.png"]
+    ) {
     background-image: @image-placeholder !important;
 
     &[data-tool-id="canvas"] {
