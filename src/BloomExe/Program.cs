@@ -1433,6 +1433,7 @@ namespace Bloom
                         {
                             formToClose.UserWantsToOpenADifferentProject = true;
                             formToClose.Close();
+                            formToClose = null; // can't use it after it's closed and disposed
                         }
 
                         if (OpenCollection(dlg.SelectedPath))
