@@ -1915,6 +1915,14 @@ namespace Bloom.Book
             //html file in a browser.
             destinationPageDiv.SetAttribute("lang", edittedPageDiv.GetAttribute("lang"));
 
+            // Allow saving per-page CSS custom properties (e.g. --page-background-color) stored on the page div.
+            // If missing, remove any previously-saved style.
+            var style = edittedPageDiv.GetAttribute("style");
+            if (string.IsNullOrEmpty(style))
+                destinationPageDiv.RemoveAttribute("style");
+            else
+                destinationPageDiv.SetAttribute("style", style);
+
             // Copy the two background audio attributes which can be set using the music toolbox.
             // Ensuring that volume is missing unless the main attribute is non-empty is
             // currently redundant, everything should work if we just copied all attributes.
