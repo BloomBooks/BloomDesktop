@@ -5,6 +5,7 @@ import {
     applyToolboxStateToUpdatedPage,
     removeToolboxMarkup,
     showOrHideTool_click,
+    handleClickOutsideToolbox,
 } from "./toolbox";
 import { getTheOneReaderToolsModel } from "./readers/readerToolsModel";
 import { ToolBox } from "./toolbox";
@@ -47,6 +48,7 @@ export interface IToolboxFrameExports {
     removeToolboxMarkup(): void;
     setActiveDragActivityTab(tab: number): void;
     getTheOneAudioRecorderForExportOnly(): IAudioRecorder;
+    handleClickOutsideToolbox(): void;
 }
 
 // each of these exports shows up under this window's toolboxBundle object (see bloomFrames.ts)
@@ -144,6 +146,7 @@ interface ToolboxBundleApi {
     setActiveDragActivityTab: typeof setActiveDragActivityTab;
     getTheOneAudioRecorderForExportOnly: typeof getTheOneAudioRecorderForExportOnly;
     copyLeveledReaderStatsToClipboard: typeof copyLeveledReaderStatsToClipboard;
+    handleClickOutsideToolbox: typeof import("./toolbox").handleClickOutsideToolbox;
 }
 
 declare global {
@@ -171,4 +174,5 @@ window.toolboxBundle = {
     setActiveDragActivityTab,
     getTheOneAudioRecorderForExportOnly,
     copyLeveledReaderStatsToClipboard,
+    handleClickOutsideToolbox,
 };

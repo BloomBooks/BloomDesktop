@@ -51,7 +51,7 @@ import {
 } from "./canvasElementUtils";
 import { deselectVideoContainers } from "../../js/videoUtils";
 import { CanvasElementKeyHints } from "./CanvasElementKeyHints";
-import { ToolBox } from "../toolbox";
+import { callWhenFocusLost, ToolBox } from "../toolbox";
 import {
     kBloomBlue,
     kToolboxContentPadding,
@@ -88,30 +88,12 @@ const CanvasToolControls: React.FunctionComponent = () => {
     function openStyleSelect() {
         setIsStyleSelectOpen(true);
         // Make sure we don't leave the select open when the tool closes.
-        ToolBox.addWhenClosingToolTask(() => {
-            setIsStyleSelectOpen(false);
-        });
-        window.addEventListener(
-            "blur",
-            () => {
-                setIsStyleSelectOpen(false);
-            },
-            { once: true },
-        );
+        callWhenFocusLost(() => setIsStyleSelectOpen(false));
     }
     function openOutlineColorSelect() {
         setIsOutlineColorSelectOpen(true);
         // Make sure we don't leave the select open when the tool closes.
-        ToolBox.addWhenClosingToolTask(() => {
-            setIsOutlineColorSelectOpen(false);
-        });
-        window.addEventListener(
-            "blur",
-            () => {
-                setIsOutlineColorSelectOpen(false);
-            },
-            { once: true },
-        );
+        callWhenFocusLost(() => setIsOutlineColorSelectOpen(false));
     }
 
     // Calls to useL10n
