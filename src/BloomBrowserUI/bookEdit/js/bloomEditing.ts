@@ -1061,6 +1061,17 @@ export function bootstrap() {
             reportedTextSelected = textSelected;
         }
     });
+
+    // Before we do anything else on mouse down, tell the toolbox it happened.
+    // Currently this is used to close popup menus.
+    document.addEventListener(
+        "mousedown",
+        () => {
+            getToolboxBundleExports()?.handleClickOutsideToolbox();
+        },
+        { capture: true },
+    );
+
     // We could force this in C#, but it's easier to just send a message to convey the state
     // that the page is in to begin with. I think this is always false at bootstrap.
     reportedTextSelected = isTextSelected();

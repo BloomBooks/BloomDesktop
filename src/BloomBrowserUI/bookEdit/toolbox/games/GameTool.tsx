@@ -63,6 +63,7 @@ import {
     kCanvasElementSelector,
 } from "../canvas/canvasElementUtils";
 import { ThemeChooser } from "./ThemeChooser";
+import { SoundSelect } from "./SoundSelect";
 import GameIntroText, { Instructions } from "./GameIntroText";
 import { getGameType, isPageBloomGame } from "./GameInfo";
 import {
@@ -1518,12 +1519,12 @@ const SoundControls: React.FunctionComponent<{
                 }
             />
 
-            {soundSelect(
-                props.soundType,
-                props.soundOptions,
-                props.currentSound,
-                props.onSoundItemChosen,
-            )}
+            <SoundSelect
+                soundType={props.soundType}
+                options={props.soundOptions}
+                value={props.currentSound}
+                setValue={props.onSoundItemChosen}
+            />
         </div>
     );
 };
@@ -1626,52 +1627,6 @@ export const makeDuplicateOfDragBubble = () => {
 // Three kinds of sound we can set with a dropdown.
 // Temporarily we also allowed "image", so it was not a boolean
 export type SoundType = "correct" | "wrong";
-
-// Make a <Select> for choosing a sound file. The arguments allow reusing this for various sounds;
-// the "which" argument is only used to pass to the setValue function.
-export const soundSelect = (
-    soundType: SoundType,
-    options: { label: string; id: string; divider: boolean }[],
-    value: string,
-    setValue: (soundType: SoundType, value: string) => void,
-) => {
-    return (
-        <ThemeProvider theme={toolboxMenuPopupTheme}>
-            <Select
-                variant="standard"
-                css={css`
-                    svg.MuiSvgIcon-root {
-                        color: white !important;
-                    }
-                    ul {
-                        background-color: ${kOptionPanelBackgroundColor} !important;
-                    }
-                    fieldset {
-                        border-color: rgba(255, 255, 255, 0.5) !important;
-                    }
-                `}
-                size="small"
-                value={value}
-                onChange={(event) => {
-                    const newSoundId = event.target.value as string;
-                    setValue(soundType, newSoundId);
-                }}
-                disabled={false}
-            >
-                {options.map((option) => (
-                    <MenuItem
-                        value={option.id}
-                        key={option.id}
-                        disabled={false}
-                        divider={option.divider}
-                    >
-                        <div>{option.label}</div>
-                    </MenuItem>
-                ))}
-            </Select>
-        </ThemeProvider>
-    );
-};
 
 // Function to produce the CSS for an option button.
 const optionCss = (turnedOn) => `background-color: ${

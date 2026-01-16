@@ -1,7 +1,7 @@
 import { css, ThemeProvider } from "@emotion/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { ToolBox } from "../toolbox";
+import { callWhenFocusLost, ToolBox } from "../toolbox";
 import { getVariationsOnClass } from "../../../utils/getVariationsOnClass";
 import {
     kOptionPanelBackgroundColor,
@@ -42,14 +42,7 @@ export const ThemeChooser: React.FunctionComponent<{
     const [isSelectOpen, setIsSelectOpen] = useState(false);
     function openSelect() {
         setIsSelectOpen(true);
-        ToolBox.addWhenClosingToolTask(() => setIsSelectOpen(false));
-        window.addEventListener(
-            "blur",
-            () => {
-                setIsSelectOpen(false);
-            },
-            { once: true },
-        );
+        callWhenFocusLost(() => setIsSelectOpen(false));
     }
     const handleChooseTheme = (event) => {
         const newTheme = event.target.value;
