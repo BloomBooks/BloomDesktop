@@ -1522,3 +1522,34 @@ function showToolboxChanged(wasShowing: boolean): void {
         switchTool(newToolName);
     }
 }
+
+// The current use of this variable and the following two functions is to allow popup menus
+// to be closed when a click outside the toolbox occurs, or when the toolbox closes.
+// Only one such menu can be opened, so at this point we only need to register one function.
+// Most activity outside the toolbox, even outside Bloom altogether, causes its window
+// to lose focus, so we listen for that event.
+// However, some clicks in the document iframe...at least clicks on images...do not have
+// that effect, so we have an explict mousedown listener there that calls
+// handleClickOutsideToolbox().
+// The function is typically a React useState setter that is fairly harmless to call
+// multiple times, but to reduce renders we try to only call it once, though it is
+// possible that handleClickOutsideToolbox will be called both by the blur listener
+// and the iframe mousedown listener as a result of the same click.
+let losingFocusFunction: (() => void) | undefined;
+
+export function handleClickOutsideToolbox(): void {
+    losingFocusFunction?.();
+    losingFocusFunction = undefined;
+}
+
+export function callWhenFocusLost(fn: () => void): void {
+    losingFocusFunction = fn;
+    ToolBox.addWhenClosingToolTask(fn);
+    window.addEventListener(
+        "blur",
+        () => {
+            handleClickOutsideToolbox();
+        },
+        { once: true },
+    );
+}
