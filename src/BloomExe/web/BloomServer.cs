@@ -1222,14 +1222,21 @@ namespace Bloom.Api
             // BL-2219: "OriginalImages" means we're generating a pdf and want full images,
             // but it has nothing to do with css files and defeats the following 'if'
             var localPath = incomingPath.Replace(OriginalImageMarker + "/", "");
+            var fileName = Path.GetFileName(localPath);
             if (IsInBookFolder(localPath))
             {
-                // Any CSS files that are in the book folder should be up to date so we'll just use them.
                 info.ResponseContentType = "text/css";
-                if (!RobustFile.Exists(localPath))
+                // For CSS files that are part of the app (not user/collection-customizable),
+                // always use the version from the file locator to ensure bug fixes and updates apply.
+                // CssFilesThatAreDynamicallyUpdated contains files with book/collection-specific data
+                // that should come from the book folder.
+                if (
+                    !RobustFile.Exists(localPath)
+                    || !BookStorage.CssFilesThatAreDynamicallyUpdated.Contains(fileName)
+                )
                 {
-                    // Some supporting css files, like editMode.css, are not copied to the book folder
-                    // because they are not needed for viewing or publishing.
+                    // For app CSS files (previewMode.css, origami.css, etc.), get the current version
+                    // from the file locator to ensure updates and fixes apply to existing books.
                     localPath = _bookSelection.CurrentSelection?.Storage.GetSupportingFile(
                         Path.GetFileName(localPath)
                     );
@@ -1243,9 +1250,6 @@ namespace Bloom.Api
 
                 return true;
             }
-
-            // if not a full path, try to find the correct file
-            var fileName = Path.GetFileName(localPath);
 
             // try to find the css file in the xmatter and templates
             if (_fileLocator == null)
