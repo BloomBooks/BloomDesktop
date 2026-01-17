@@ -204,6 +204,9 @@
 
 //Assume too small to show
 .split-pane-component-inner {
+    container-type: size;
+    container-name: split-pane-component-inner;
+
     .vertical-adders {
         display: none;
     }
@@ -214,7 +217,7 @@
 }
 
 //If wide enough, show the horizontal adders with medium size
-.split-pane-component-inner[min-width~="60px"] {
+@container split-pane-component-inner (min-width: 60px) {
     .horizontal-adders {
         width: @mediumClusterThickness;
         height: @mediumSplitterLength;
@@ -222,22 +225,23 @@
 }
 
 //If tall enough, show the vertical adders with medium size
-.split-pane-component-inner[min-height~="60px"] {
+@container split-pane-component-inner (min-height: 60px) {
     .vertical-adders {
         width: @mediumSplitterLength;
         height: @mediumClusterThickness;
     }
 }
 
-.split-pane-component-inner[min-width~="150px"][min-height~="150px"]
+@container split-pane-component-inner (min-width: 150px) and (min-height: 150px) {
     .textBox-identifier {
-    transition-property: font-size;
-    transition-duration: 0.5s;
-    font-size: 24pt;
+        transition-property: font-size;
+        transition-duration: 0.5s;
+        font-size: 24pt;
+    }
 }
 
 //If really tall, show the vertical adders with large size
-.split-pane-component-inner[min-height~="250px"] {
+@container split-pane-component-inner (min-height: 250px) {
     .vertical-adders {
         height: @largeClusterThickness;
     }
@@ -248,7 +252,7 @@
 }
 
 //If really wide, show the horizontal adders with large size
-.split-pane-component-inner[min-width~="250px"] {
+@container split-pane-component-inner (min-width: 250px) {
     .vertical-adders {
         width: @largeSplitterLength;
     }
