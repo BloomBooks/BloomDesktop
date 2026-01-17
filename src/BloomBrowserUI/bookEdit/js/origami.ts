@@ -4,7 +4,6 @@ import { kBloomCanvasClass, SetupImage } from "./bloomImages";
 import "../../lib/split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
 import { post, postThatMightNavigate } from "../../utils/bloomApi";
-import { ElementQueries } from "css-element-queries";
 import { theOneCanvasElementManager } from "./CanvasElementManager";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 
@@ -100,9 +99,6 @@ function setupLayoutMode() {
             origamiUndo();
         }
     });
-
-    //have  css-element-queries notice the new elements and track them, adding classes that let rules trigger depending on size
-    ElementQueries.init();
 }
 
 // N.B. If you add/remove a container class, you'll likely need to modify 'createTypeSelectors()' too.
@@ -171,8 +167,6 @@ function splitClickHandler() {
         performSplit(myInner, "horizontal", "top", "bottom", false);
     else if ($(this).hasClass("add-left"))
         performSplit(myInner, "vertical", "right", "left", true);
-
-    ElementQueries.init(); //notice the new elements and track them, adding classes that let rules trigger depending on size
 }
 
 function performSplit(
