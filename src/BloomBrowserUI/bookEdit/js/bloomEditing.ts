@@ -122,7 +122,6 @@ function Cleanup() {
 
     bloomQtipUtils.cleanupBubbles(); // all 3 kinds!
 
-    $("*.resize-sensor").remove(); // from css-element-queries
     $("*.editTimeOnly").remove();
     $("*.dragHandle").remove();
     $("*").removeAttr("data-easytabs");
