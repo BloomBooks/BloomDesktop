@@ -380,9 +380,23 @@ namespace Bloom.Utils
                 catch
                 {
                     // If the fast Windows approach fails for any reason, fall back to WMI below.
+                    Debug.WriteLine(
+                        $"Failed to get descendant processes for {parent.Id} using Windows API"
+                    );
                 }
 
-                return GetAllDescendantProcessesWmi(parent.Id);
+                try
+                {
+                    return GetAllDescendantProcessesWmi(parent.Id);
+                }
+                catch
+                {
+                    // Just give up. Our memory report won't include subprocesses.
+                    Debug.WriteLine(
+                        $"Failed to get descendant processes for {parent.Id} at all. Memory used report won't be accurate"
+                    );
+                    return new List<Process>();
+                }
             }
 
             private static List<Process> GetAllDescendantProcessesWindows(int parentPid)
@@ -468,13 +482,12 @@ namespace Bloom.Utils
                 var listMOs = new List<ManagementObject>();
                 try
                 {
-                    listMOs.AddRange(
-                        new ManagementObjectSearcher(
+                    using (
+                        var searcher = new ManagementObjectSearcher(
                             "Select ProcessId, ParentProcessId From Win32_Process"
                         )
-                            .Get()
-                            .Cast<ManagementObject>()
-                    );
+                    )
+                        listMOs.AddRange(searcher.Get().Cast<ManagementObject>());
 
                     foreach (var mo in listMOs)
                     {
