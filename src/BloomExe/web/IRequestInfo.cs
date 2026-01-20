@@ -24,6 +24,7 @@ namespace Bloom.Api
         void WriteCompleteOutput(string s);
         void ReplyWithFileContent(string path, string originalPath = null);
         void ReplyWithStreamContent(Stream input, string responseType);
+        void ReplyWithStreamContent(Stream input, string responseType, int length);
         void ReplyWithImage(string path, string originalPath = null);
         void WriteError(int errorCode);
         void WriteError(int errorCode, string errorDescription);

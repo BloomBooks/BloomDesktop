@@ -169,6 +169,11 @@ namespace Bloom.Api
             _requestInfo.ReplyWithStreamContent(input, responseType);
         }
 
+        public void ReplyWithStreamContent(Stream input, string responseType, int length)
+        {
+            _requestInfo.ReplyWithStreamContent(input, responseType, length);
+        }
+
         /// <summary>
         /// Use this one in cases where the error has already been output to a progress box,
         /// and repeating the error is just noise.
