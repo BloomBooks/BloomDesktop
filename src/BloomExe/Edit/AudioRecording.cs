@@ -89,7 +89,9 @@ namespace Bloom.Edit
         {
             _bookSelection = bookSelection;
             _startRecordingTimer = new Timer();
-            _startRecordingTimer.Interval = 300; //  ms from click to actual recording
+            //  ms from click to actual recording
+            // Should match the delay in JS startRecordCurrentAsync (audioRecording.ts)
+            _startRecordingTimer.Interval = 300;
             _startRecordingTimer.Tick += OnStartRecordingTimer_Elapsed;
             _backupPathForRecordableAudio = Path.GetTempFileName();
             _backupPathForPublishableAudio = Path.GetTempFileName();
