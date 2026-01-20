@@ -59,7 +59,7 @@ export const BookGridSetupDialog: React.FunctionComponent<{
         id: book.id,
         folderName: book.folderName,
         title: book.title,
-        thumbnail: `/bloom/api/collections/book/thumbnail?book-id=${book.id}`,
+        thumbnail: `/bloom/api/collections/book/coverImage?book-id=${book.id}`,
     }));
 
     // Create lookup tables to efficiently map book IDs to their folder names and titles.

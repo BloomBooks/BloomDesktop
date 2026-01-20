@@ -13,6 +13,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
 using Bloom.CollectionTab;
+using Bloom.ImageProcessing;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.ToPalaso;
@@ -94,6 +95,12 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "book/thumbnail",
                 HandleThumbnailRequest,
+                false,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "book/coverImage",
+                HandleCoverImageRequest,
                 false,
                 false
             );
@@ -670,6 +677,42 @@ namespace Bloom.web.controllers
             }
 
             return collection;
+        }
+
+        public void HandleCoverImageRequest(ApiRequest request)
+        {
+            var bookInfo = GetBookInfoFromRequestParam(request);
+
+            // If anything goes wrong, we'll accept whatever (possibly low-res) image
+            // the older HandleThumbnailRequest routine comes up with. This method
+            // is for providing something better in the cases where we have it.
+            if (bookInfo == null)
+            {
+                HandleThumbnailRequest(request);
+                return;
+            }
+
+            string fullImagePath = _collectionModel
+                .GetBookFromBookInfo(bookInfo)
+                .GetCoverImagePath();
+            if (string.IsNullOrEmpty(fullImagePath))
+            {
+                HandleThumbnailRequest(request);
+                return;
+            }
+
+            if (
+                ImageUtils.IsPlaceholderImageFilename(fullImagePath)
+                || !RobustFile.Exists(fullImagePath)
+            )
+            {
+                // Thumbnail of a placeHolder will be ugly, but shouldn't be trying to
+                // make link grids of books that don't have cover images yet!
+                HandleThumbnailRequest(request);
+                return;
+            }
+
+            request.ReplyWithImage(fullImagePath);
         }
 
         public void HandleThumbnailRequest(ApiRequest request)

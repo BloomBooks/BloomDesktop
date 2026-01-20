@@ -2010,16 +2010,37 @@ namespace Bloom.Edit
                         var filePath = Path.Combine(_model.CurrentBook.FolderPath, fileName);
 
                         // Save the image to the book's folder
+                        // Enhance: currently this is used to make images for use as thumbnails in
+                        // the linkGrid control. We don't need the full resolution of the cover image
+                        // which is currently the source. We do need more than the 70-px max thumbnail.png
+                        // that is made for the collection tab, because this image may be rendered on various
+                        // devices with various scaling, and we want it to look reasonable at various
+                        // pixelations (BL-15689). Some intermediate resolution...maybe capping width at
+                        // 256 px...would probably be OK. But for now, we're just copying the cover image
+                        // from the destination book to the button.
                         using (var fs = RobustFile.Create(filePath))
                         {
                             memoryStream.Position = 0;
                             await memoryStream.CopyToAsync(fs);
-                            // tell the caller that we have added the image
-                            BloomWebSocketServer.Instance.SendEvent(
+                            // tell the caller that we have added the image.
+                            // Why is most of the file name both part of the client context and
+                            // sent as the message? For the context, we need something that
+                            // doesn't depend on whether we make a jpg or png, because we don't
+                            // find that out until the code just above here executes, and long
+                            // before that, JS code needs to set up the listener with a clientContext
+                            // based on which image we're expecting. OTOH, the code that receives
+                            // the message needs to know exactly what file was created.
+                            // We could just pass the extension, but it doesn't cost much to
+                            // include the whole filename, and one day we might use this for
+                            // something that would need to de-duplicate file names.
+                            dynamic eventBundle = new DynamicJson();
+                            eventBundle.message = fileName;
+                            _webSocketServer.SendBundle(
                                 "makeThumbnailFile-" + desiredFileNameWithoutExtension,
-                                "success"
+                                "success",
+                                eventBundle
                             );
-                            Debug.WriteLine("Added image for: " + desiredFileNameWithoutExtension);
+                            Debug.WriteLine("Added image for: " + fileName);
                         }
                     }
                 }
