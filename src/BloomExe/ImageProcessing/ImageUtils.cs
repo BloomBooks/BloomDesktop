@@ -145,6 +145,32 @@ namespace Bloom.ImageProcessing
             return false;
         }
 
+        private static void ConfigureGraphicsForHighQualityScaling(Graphics g)
+        {
+            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            g.SmoothingMode = SmoothingMode.HighQuality;
+            g.CompositingQuality = CompositingQuality.HighQuality;
+        }
+
+        private static void ConfigureGraphicsForFastScaling(Graphics g)
+        {
+            // Intended for intermediate bitmaps that will be further downscaled/rendered as thumbnails/buttons.
+            // Avoid the more expensive high-quality settings (which can increase CPU and memory usage).
+            g.InterpolationMode = InterpolationMode.Bilinear;
+            g.PixelOffsetMode = PixelOffsetMode.Half;
+            g.SmoothingMode = SmoothingMode.None;
+            g.CompositingQuality = CompositingQuality.HighSpeed;
+            // GPT-5.2 suggested these alternative settings for high-quality.
+            // However there is some evidence...see comments elsewhere in this file...
+            // the memory problems might ensue; if we need high quality probably
+            // better to use the ImageMagick approach.
+            //g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            //g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            //g.SmoothingMode = SmoothingMode.HighQuality;
+            //g.CompositingQuality = CompositingQuality.HighQuality;
+        }
+
         /// <summary>
         /// Check whether this color is near white or grayish, and store the first two colors
         /// encountered.  Return false if we encounter a third color and any of the three colors
@@ -1150,8 +1176,57 @@ namespace Bloom.ImageProcessing
                             newTag.NodeTree.AddChild(node);
                         }
                     }
+
+                    // For some reason, you have to call `Save()` on the tag to actually commit changes.
+                    // In this code path we don't save the tag here; the caller does that.
                 }
             }
+        }
+
+        /// <summary>
+        /// Produce a smaller copy of <paramref name="image"/> based on max/min dimension constraints.
+        /// We want to either make the largest dimension <paramref name="idealSize"/>
+        /// or the smallest dimension <paramref name="minDim"/>, whichever shrinks it the least.
+        /// (In other words, no dimension of the resulting image may be less than minDim,
+        /// and subject to that constraint, no dimension should be larger than idealSize.)
+        /// Aspect ratio is preserved (to pixel accuracy).
+        /// Never upscales. Returns null if no shrinking is needed.
+        /// </summary>
+        /// <remarks>
+        /// Caller owns the returned Bitmap and must dispose it.
+        /// This method is subtly different from DrawResizedImage. In that method,
+        /// both dimensions of the Size are maximums: the resulting image will fit
+        /// in a rectangle that size. Here, we're trying to make an image smaller
+        /// than the original, while being careful not to make either dimension
+        /// so small that further scaling (typically to a thumbnail of unpredictable
+        /// size in real pixels) will have reasonable quality. For very short or
+        /// wide images, the returned image may have one dimension larger than idealSize.
+        /// This method is not designed to be used to make images that must fit inside
+        /// a particular rectangle.
+        /// </remarks>
+        public static Bitmap TryShrinkImageToApproxSize(Image image, int idealSize, int minDim)
+        {
+            if (image == null)
+                return null;
+            if (idealSize <= 0 || minDim <= 0)
+                return null;
+
+            var maxOriginal = Math.Max(image.Width, image.Height);
+            var minOriginal = Math.Min(image.Width, image.Height);
+
+            var scaleForMax = (double)idealSize / maxOriginal;
+            var scaleForMin = (double)minDim / minOriginal;
+            var scale = Math.Max(scaleForMax, scaleForMin);
+            if (scale > 1.0)
+                scale = 1.0;
+
+            if (scale >= 1.0)
+                return null;
+
+            var newWidth = Math.Max(1, (int)Math.Round(image.Width * scale));
+            var newHeight = Math.Max(1, (int)Math.Round(image.Height * scale));
+
+            return CreateScaledBitmap(image, newWidth, newHeight, 0, 0);
         }
 
         private static void RemoveTransparency(
@@ -1740,6 +1815,15 @@ namespace Bloom.ImageProcessing
         /// image.
         /// Note that this method never returns a larger image than the original: only one the
         /// same size or smaller.
+        /// This routine is mainly for making thumbnails like those used in the Collection tab,
+        /// that need to fit into a shape that is a known size in real pixels; accordingly,
+        /// the ideal output image is as large as it can be while fitting in that space
+        /// (exactly, in at least one dimension). We also have TryShrinkImageToApproxSize,
+        /// which is also useful for making thumbnails, but in that case ones that will
+        /// typically be shrunk using object-fit:cover and/or used with an unpredictable
+        /// DPI and exact size. Since in that situation we expect the browser to do some
+        /// more shrinking, the more important constraint is not to make the minimum
+        /// dimension too small.
         /// </remarks>
         private static Image DrawResizedImage(
             Size maxSize,
@@ -1782,34 +1866,69 @@ namespace Bloom.ImageProcessing
                     newHeight = desiredHeight;
                 }
             }
-            Image newImage = centerImage
-                ? new Bitmap(desiredWidth, desiredHeight)
-                : new Bitmap(newWidth, newHeight);
-            using (var graphic = Graphics.FromImage(newImage))
-            {
-                // I tried using HighSpeed settings in here with no appreciable difference in loading speed.
-                // However, the "High Quality" settings can greatly increase memory use, possibly causing "Out of Memory"
-                // errors when creating thumbnail images.  So we use the default settings for drawing the image here.
-                // Some thumbnails may be a bit uglier, but they're supposed to just give an idea of what the front cover
-                // looks like: they're not works of art themselves.
-                // See https://stackoverflow.com/questions/15438509/graphics-drawimage-throws-out-of-memory-exception?lq=1
-                // (the second answer).
-                // The following x and y are only non-zero when centering an image and then one or the other will be (non-zero).
-                var x = (newImage.Width - newWidth) / 2;
-                var y = (newImage.Height - newHeight) / 2;
-                graphic.DrawImage(image, x, y, newWidth, newHeight);
-                if (shouldAddDashedBorder)
-                {
-                    var pen = GetDashedBlackPen();
-                    graphic.DrawRectangle(pen, new Rectangle(x, y, newWidth, newHeight));
-                }
-            }
-            return newImage;
+            // The following x and y are only non-zero when centering an image and then one or the other will be (non-zero).
+            var canvasWidth = centerImage ? desiredWidth : newWidth;
+            var canvasHeight = centerImage ? desiredHeight : newHeight;
+            var x = (canvasWidth - newWidth) / 2;
+            var y = (canvasHeight - newHeight) / 2;
+            return CreateScaledBitmap(
+                image,
+                newWidth,
+                newHeight,
+                x,
+                y,
+                canvasWidth,
+                canvasHeight,
+                shouldAddDashedBorder
+            );
         }
 
         private static Pen GetDashedBlackPen()
         {
             return new Pen(Brushes.Black, 2) { DashStyle = DashStyle.Dash };
+        }
+
+        /// <summary>
+        /// Create a bitmap with the specified dimensions and draw the source image scaled to fit.
+        /// Uses fast scaling settings suitable for thumbnails and intermediate images.
+        /// </summary>
+        /// <param name="sourceImage">The image to draw</param>
+        /// <param name="drawWidth">Width of the source image in the target bitmap</param>
+        /// <param name="drawHeight">Height of the source image in the target bitmap</param>
+        /// <param name="drawX">X offset where the image should be drawn (for centering)</param>
+        /// <param name="drawY">Y offset where the image should be drawn (for centering)</param>
+        /// <param name="canvasWidth">Width of the bitmap to create (defaults to drawWidth if 0)</param>
+        /// <param name="canvasHeight">Height of the bitmap to create (defaults to drawHeight if 0)</param>
+        /// <param name="shouldAddDashedBorder">If true, adds a dashed black border around the drawn image</param>
+        /// <returns>A new Bitmap containing the scaled image</returns>
+        private static Bitmap CreateScaledBitmap(
+            Image sourceImage,
+            int drawWidth,
+            int drawHeight,
+            int drawX = 0,
+            int drawY = 0,
+            int canvasWidth = 0,
+            int canvasHeight = 0,
+            bool shouldAddDashedBorder = false
+        )
+        {
+            if (canvasWidth == 0)
+                canvasWidth = drawWidth;
+            if (canvasHeight == 0)
+                canvasHeight = drawHeight;
+
+            var bitmap = new Bitmap(canvasWidth, canvasHeight);
+            using (var g = Graphics.FromImage(bitmap))
+            {
+                ConfigureGraphicsForFastScaling(g);
+                g.DrawImage(sourceImage, drawX, drawY, drawWidth, drawHeight);
+                if (shouldAddDashedBorder)
+                {
+                    var pen = GetDashedBlackPen();
+                    g.DrawRectangle(pen, new Rectangle(drawX, drawY, drawWidth, drawHeight));
+                }
+            }
+            return bitmap;
         }
 
         private static Image AddDashedBorderToOtherwiseUnchangedImage(Image source)
@@ -2168,35 +2287,15 @@ namespace Bloom.ImageProcessing
             string imageDestFolder
         )
         {
-            var imgContainer = img.ParentNode as SafeXmlElement;
-            var canvasElement = imgContainer?.ParentNode as SafeXmlElement;
-            // Cropping is implemented using the interaction between a canvas element
-            // which specifies the visible area of the image by its height and width, and the img two levels
-            // down which may have adjusted width, left, and top to position part of itself in the canvas element.
-            // An image can only be cropped, and we can only know what part of it to remove, if it occurs in
-            // this structure. Other images (e.g., branding) are left alone. (At the stage where this code is run,
-            // background images, including all normal page content images, are still represented as canvas elements.)
-            if (
-                canvasElement == null
-                || !canvasElement.HasClass(HtmlDom.kCanvasElementClass)
-                || !imgContainer.HasClass("bloom-imageContainer")
-            )
+            var cropMetadata = TryGetCropMetadata(img);
+            if (cropMetadata == null)
                 return null;
+
             var src = img.GetAttribute("src");
             var srcPath = UrlPathString.GetFullyDecodedPath(imageSourceFolder, ref src);
             if (!RobustFile.Exists(srcPath))
                 return null;
-            var imgStyle = img.GetAttribute("style");
-            if (string.IsNullOrEmpty(imgStyle))
-                return null;
-            var imgWidth = GetNumberFromPx("width", imgStyle);
-            var imgLeft = GetNumberFromPx("left", imgStyle);
-            var imgTop = GetNumberFromPx("top", imgStyle);
-            var canvasElementStyle = canvasElement.GetAttribute("style");
-            var canvasElementWidth = GetNumberFromPx("width", canvasElementStyle);
-            var canvasElementHeight = GetNumberFromPx("height", canvasElementStyle);
-            if (imgWidth == 0 || canvasElementWidth == 0)
-                return null;
+
             if (!ImageUtils.TryGetImageSize(srcPath, out Size size))
             {
                 Logger.WriteEvent(
@@ -2204,26 +2303,94 @@ namespace Bloom.ImageProcessing
                 );
                 return null; // can't crop the image if we can't get its size.
             }
-            var scale = imgWidth / size.Width;
-            var selWidth = canvasElementWidth / scale;
-            var selHeight = canvasElementHeight / scale;
-            var selLeft = -imgLeft / scale;
-            var selTop = -imgTop / scale;
+
+            var cropRectangle = ComputeCropRectangle(cropMetadata, size);
             var ext = Path.GetExtension(srcPath).ToLowerInvariant();
             var tempPath = Path.ChangeExtension(
                 Path.Combine(imageDestFolder, Guid.NewGuid().ToString()),
                 ext
             );
-            var cropRectangle = new Rectangle(
+            var result = ImageUtils.CropImage(srcPath, tempPath, cropRectangle);
+            if (result.ExitCode == 0)
+                return tempPath;
+            return null;
+        }
+
+        /// <summary>
+        /// Holds the cropping metadata extracted from an img element and its containing canvas element.
+        /// </summary>
+        private class CropMetadata
+        {
+            public double ImgWidth { get; set; }
+            public double ImgLeft { get; set; }
+            public double ImgTop { get; set; }
+            public double CanvasElementWidth { get; set; }
+            public double CanvasElementHeight { get; set; }
+        }
+
+        /// <summary>
+        /// Extract cropping metadata from an img element if it is cropped.
+        /// Returns null if the image is not cropped or not in the expected structure.
+        /// </summary>
+        private static CropMetadata TryGetCropMetadata(SafeXmlElement img)
+        {
+            var imgContainer = img.ParentNode as SafeXmlElement;
+            var canvasElement = imgContainer?.ParentNode as SafeXmlElement;
+
+            // Cropping is implemented using the interaction between a canvas element
+            // which specifies the visible area of the image by its height and width, and the img two levels
+            // down which may have adjusted width, left, and top to position part of itself in the canvas element.
+            // An image can only be cropped, and we can only know what part of it to remove, if it occurs in
+            // this structure.
+            if (
+                canvasElement == null
+                || !canvasElement.HasClass(HtmlDom.kCanvasElementClass)
+                || !imgContainer.HasClass("bloom-imageContainer")
+            )
+                return null;
+
+            var imgStyle = img.GetAttribute("style");
+            if (string.IsNullOrEmpty(imgStyle))
+                return null;
+
+            var imgWidth = GetNumberFromPx("width", imgStyle);
+            var imgLeft = GetNumberFromPx("left", imgStyle);
+            var imgTop = GetNumberFromPx("top", imgStyle);
+
+            var canvasElementStyle = canvasElement.GetAttribute("style");
+            var canvasElementWidth = GetNumberFromPx("width", canvasElementStyle);
+            var canvasElementHeight = GetNumberFromPx("height", canvasElementStyle);
+
+            if (imgWidth == 0 || canvasElementWidth == 0)
+                return null;
+
+            return new CropMetadata
+            {
+                ImgWidth = imgWidth,
+                ImgLeft = imgLeft,
+                ImgTop = imgTop,
+                CanvasElementWidth = canvasElementWidth,
+                CanvasElementHeight = canvasElementHeight,
+            };
+        }
+
+        /// <summary>
+        /// Compute the crop rectangle from crop metadata and the actual image size.
+        /// </summary>
+        private static Rectangle ComputeCropRectangle(CropMetadata cropMetadata, Size imageSize)
+        {
+            var scale = cropMetadata.ImgWidth / imageSize.Width;
+            var selWidth = cropMetadata.CanvasElementWidth / scale;
+            var selHeight = cropMetadata.CanvasElementHeight / scale;
+            var selLeft = -cropMetadata.ImgLeft / scale;
+            var selTop = -cropMetadata.ImgTop / scale;
+
+            return new Rectangle(
                 Convert.ToInt32(selLeft),
                 Convert.ToInt32(selTop),
                 Convert.ToInt32(selWidth),
                 Convert.ToInt32(selHeight)
             );
-            var result = ImageUtils.CropImage(srcPath, tempPath, cropRectangle);
-            if (result.ExitCode == 0)
-                return tempPath;
-            return null;
         }
 
         internal static double GetNumberFromPx(string label, string input)
@@ -2244,6 +2411,86 @@ namespace Bloom.ImageProcessing
             )
                 return result;
             return 0;
+        }
+
+        /// <summary>
+        /// If <paramref name="imgElement"/> represents an image cropped using Bloom's inline styles,
+        /// return a Bitmap cropped from <paramref name="fullImagePath"/>. Otherwise return null.
+        /// </summary>
+        /// <remarks>
+        /// Cropping is detected by checking the img element's style for left/top/width and its
+        /// parent's parent style for left/top/width/height. Values must be in px.
+        /// The caller owns the returned Bitmap and must dispose it.
+        /// This routine is useful when you want the cropped image in memory, for example,
+        /// to directly return to the browser. Use MakeCroppedImage when you want to produce
+        /// a new, cropped file. This method is several times faster than making a temp file
+        /// with MakeCroppedImage and reading it.
+        /// </remarks>
+        public static Bitmap TryGetCroppedImageFromImgElement(
+            string fullImagePath,
+            SafeXmlElement imgElement
+        )
+        {
+            if (string.IsNullOrEmpty(fullImagePath) || imgElement == null)
+                return null;
+
+            var cropMetadata = TryGetCropMetadata(imgElement);
+            if (cropMetadata == null)
+                return null;
+
+            try
+            {
+                using (var sourceImage = Image.FromFile(fullImagePath))
+                {
+                    var cropRectangle = ComputeCropRectangle(
+                        cropMetadata,
+                        new Size(sourceImage.Width, sourceImage.Height)
+                    );
+
+                    var srcX = cropRectangle.X;
+                    var srcY = cropRectangle.Y;
+                    var srcW = cropRectangle.Width;
+                    var srcH = cropRectangle.Height;
+                    // These checks shouldn't be necessary, but AI thought we should have
+                    // them. They may prevent rounding errors causing out-of-bounds errors
+                    // in DrawImage.
+                    if (srcX < 0)
+                    {
+                        srcW += srcX;
+                        srcX = 0;
+                    }
+                    if (srcY < 0)
+                    {
+                        srcH += srcY;
+                        srcY = 0;
+                    }
+                    if (srcX + srcW > sourceImage.Width)
+                        srcW = sourceImage.Width - srcX;
+                    if (srcY + srcH > sourceImage.Height)
+                        srcH = sourceImage.Height - srcY;
+
+                    if (srcW <= 0 || srcH <= 0)
+                        return null;
+
+                    var cropped = new Bitmap(srcW, srcH);
+                    using (var g = Graphics.FromImage(cropped))
+                    {
+                        ConfigureGraphicsForFastScaling(g);
+                        g.DrawImage(
+                            sourceImage,
+                            new Rectangle(0, 0, srcW, srcH),
+                            new Rectangle(srcX, srcY, srcW, srcH),
+                            GraphicsUnit.Pixel
+                        );
+                    }
+
+                    return cropped;
+                }
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }
