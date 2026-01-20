@@ -1858,6 +1858,23 @@ namespace Bloom.Api
                 return false;
             }
 
+            // If we don't have a book or collection established, we are probably in a
+            // state where not everything is set up yet.  So don't complain about missing
+            // either translation data or items for a problem report.  (BL-15676)
+            if (currentBookFolderPath == null && collectionPath == null)
+            {
+                if (
+                    localPath.ToLowerInvariant().Contains("/problemreport/")
+                    || localPath.ToLowerInvariant().Contains("/i18n/translate")
+                )
+                {
+                    Logger.WriteEvent(
+                        $"BloomServer: neither CurrentBookFolder nor CurrentCollection is set. Cannot find {localPath}"
+                    );
+                    return false;
+                }
+            }
+
             var stuffToIgnore = new[]
             {
                 // browser/debugger stuff
