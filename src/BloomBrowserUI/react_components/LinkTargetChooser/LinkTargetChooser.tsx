@@ -60,7 +60,7 @@ export const LinkTargetChooser: React.FunctionComponent<{
                 folderPath: book.folderPath,
                 thumbnail:
                     extendedBook.thumbnail ??
-                    `/bloom/api/collections/book/thumbnail?book-id=${book.id}`,
+                    `/bloom/api/collections/book/coverImage?book-id=${book.id}`,
                 pageLength,
             } as BookInfoForLinks;
         });
