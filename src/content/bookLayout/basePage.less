@@ -323,8 +323,13 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
             background-size: contain;
         }
 
-        // above canvas so we can click playback controls
-        z-index: @canvasElementCanvasZIndex + 1;
+        // When the book is viewed in an older version of BloomPlayer, we want to set z-index to make the video controls
+        // clickable like we used to do before BL-15721, even that means any speech bubbles will be behind the video.
+        // Newer versions of BloomPlayer will add a .videoMouseDetector element to detect clicks so that in that case
+        // we can avoid setting z-index here and so allow speech bubbles to be in front of the video.
+        &:not(:has(.bloom-videoMouseDetector)):not(:has(.videoMouseDetector)) {
+            z-index: @canvasElementCanvasZIndex + 1;
+        }
 
         video {
             // I don't know exactly why this works, but it makes the video shrink to fit,

@@ -30,9 +30,14 @@ export function SetupVideoEditing(container) {
             // debugging, and just might prevent a problem in normal operation.
             videoElement.parentElement?.classList.remove("playing");
             videoElement.parentElement?.classList.remove("paused");
-            videoElement.addEventListener("click", handleVideoClick);
+            const mouseDetector =
+                videoElement.ownerDocument.createElement("div");
+            mouseDetector.classList.add("bloom-videoMouseDetector");
+            mouseDetector.classList.add("bloom-ui"); // don't save as part of document
+            mouseDetector.addEventListener("click", handleVideoClick);
+            videoElement.parentElement?.appendChild(mouseDetector);
             const playButton = wrapVideoIcon(
-                videoElement,
+                mouseDetector,
                 // Alternatively, we could import the Material UI icon, make this file a TSX, and use
                 // ReactDom.render to render the icon into the div. But just creating the SVG
                 // ourselves (as these methods do) seems more natural to me. We would not be using
@@ -43,13 +48,13 @@ export function SetupVideoEditing(container) {
             );
             playButton.addEventListener("click", handlePlayClick);
             const pauseButton = wrapVideoIcon(
-                videoElement,
+                mouseDetector,
                 getPauseIcon("#ffffff", videoElement),
                 "bloom-videoPauseIcon",
             );
             pauseButton.addEventListener("click", handlePauseClick);
             const replayButton = wrapVideoIcon(
-                videoElement,
+                mouseDetector,
                 getReplayIcon("#ffffff", videoElement),
                 "bloom-videoReplayIcon",
             );
@@ -296,17 +301,17 @@ export function updateVideoInContainer(container: Element, url: string): void {
 // configure one of the icons we display over videos. We put a div around it and apply
 // various classes and append it to the parent of the video.
 function wrapVideoIcon(
-    videoElement: HTMLVideoElement,
+    parent: HTMLElement,
     icon: HTMLElement,
     iconClass: string,
 ): HTMLElement {
-    const wrapper = videoElement.ownerDocument.createElement("div");
+    const wrapper = parent.ownerDocument.createElement("div");
     wrapper.classList.add("bloom-videoControlContainer");
     wrapper.classList.add("bloom-ui"); // don't save as part of document
     wrapper.appendChild(icon);
     wrapper.classList.add(iconClass);
     icon.classList.add("bloom-videoControl");
-    videoElement.parentElement?.appendChild(wrapper);
+    parent.appendChild(wrapper);
     return icon;
 }
 
