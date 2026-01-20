@@ -145,6 +145,32 @@ namespace Bloom.ImageProcessing
             return false;
         }
 
+        private static void ConfigureGraphicsForHighQualityScaling(Graphics g)
+        {
+            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            g.SmoothingMode = SmoothingMode.HighQuality;
+            g.CompositingQuality = CompositingQuality.HighQuality;
+        }
+
+        private static void ConfigureGraphicsForFastScaling(Graphics g)
+        {
+            // Intended for intermediate bitmaps that will be further downscaled/rendered as thumbnails/buttons.
+            // Avoid the more expensive high-quality settings (which can increase CPU and memory usage).
+            g.InterpolationMode = InterpolationMode.Bilinear;
+            g.PixelOffsetMode = PixelOffsetMode.Half;
+            g.SmoothingMode = SmoothingMode.None;
+            g.CompositingQuality = CompositingQuality.HighSpeed;
+            // GPT-5.2 suggested these alternative settings for high-quality.
+            // However there is some evidence...see comments elsewhere in this file...
+            // the memory problems might ensue; if we need high quality probably
+            // better to use the ImageMagick approach.
+            //g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            //g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            //g.SmoothingMode = SmoothingMode.HighQuality;
+            //g.CompositingQuality = CompositingQuality.HighQuality;
+        }
+
         /// <summary>
         /// Check whether this color is near white or grayish, and store the first two colors
         /// encountered.  Return false if we encounter a third color and any of the three colors
@@ -1150,8 +1176,55 @@ namespace Bloom.ImageProcessing
                             newTag.NodeTree.AddChild(node);
                         }
                     }
+
+                    // For some reason, you have to call `Save()` on the tag to actually commit changes.
+                    // In this code path we don't save the tag here; the caller does that.
                 }
             }
+        }
+
+        /// <summary>
+        /// Produce a smaller copy of <paramref name="image"/> based on max/min dimension constraints.
+        /// We want to either make the largest dimension <paramref name="maxDim"/>
+        /// or the smallest dimension <paramref name="minDim"/>, whichever shrinks it the least.
+        /// (In other words, no dimension of the resulting image may be less than minDim,
+        /// and subject to that constraint, no dimension should be larger than maxDim.)
+        /// Aspect ratio is preserved (to pixel accuracy).
+        /// Never upscales. Returns null if no shrinking is needed.
+        /// </summary>
+        /// <remarks>
+        /// Caller owns the returned Bitmap and must dispose it.
+        /// </remarks>
+        public static Bitmap TryShrinkImageToBounds(Image image, int maxDim, int minDim)
+        {
+            if (image == null)
+                return null;
+            if (maxDim <= 0 || minDim <= 0)
+                return null;
+
+            var maxOriginal = Math.Max(image.Width, image.Height);
+            var minOriginal = Math.Min(image.Width, image.Height);
+
+            var scaleForMax = (double)maxDim / maxOriginal;
+            var scaleForMin = (double)minDim / minOriginal;
+            var scale = Math.Max(scaleForMax, scaleForMin);
+            if (scale > 1.0)
+                scale = 1.0;
+
+            if (scale >= 1.0)
+                return null;
+
+            var newWidth = Math.Max(1, (int)Math.Round(image.Width * scale));
+            var newHeight = Math.Max(1, (int)Math.Round(image.Height * scale));
+
+            var resized = new Bitmap(newWidth, newHeight);
+            using (var g = Graphics.FromImage(resized))
+            {
+                ConfigureGraphicsForFastScaling(g);
+                g.DrawImage(image, 0, 0, newWidth, newHeight);
+            }
+
+            return resized;
         }
 
         private static void RemoveTransparency(
@@ -2244,6 +2317,104 @@ namespace Bloom.ImageProcessing
             )
                 return result;
             return 0;
+        }
+
+        /// <summary>
+        /// If <paramref name="imgElement"/> represents an image cropped using Bloom's inline styles,
+        /// return a Bitmap cropped from <paramref name="fullImagePath"/>. Otherwise return null.
+        /// </summary>
+        /// <remarks>
+        /// Cropping is detected by checking the img element's style for left/top/width and its
+        /// parent's parent style for left/top/width/height. Values must be in px.
+        /// The caller owns the returned Bitmap and must dispose it.
+        /// </remarks>
+        public static Bitmap TryGetCroppedImageFromImgElement(
+            string fullImagePath,
+            SafeXmlElement imgElement
+        )
+        {
+            if (string.IsNullOrEmpty(fullImagePath) || imgElement == null)
+                return null;
+
+            var imgStyle = imgElement.GetAttribute("style") ?? "";
+            if (
+                !imgStyle.Contains("left")
+                || !imgStyle.Contains("top")
+                || !imgStyle.Contains("width")
+            )
+            {
+                return null;
+            }
+
+            var container = imgElement.ParentNode?.ParentNode as SafeXmlElement;
+            var containerStyle = container?.GetAttribute("style") ?? "";
+            if (
+                !containerStyle.Contains("left")
+                || !containerStyle.Contains("top")
+                || !containerStyle.Contains("width")
+                || !containerStyle.Contains("height")
+            )
+            {
+                return null;
+            }
+
+            var imgWidthCss = GetNumberFromPx("width", imgStyle);
+            var imgLeftCss = GetNumberFromPx("left", imgStyle);
+            var imgTopCss = GetNumberFromPx("top", imgStyle);
+            var containerWidthCss = GetNumberFromPx("width", containerStyle);
+            var containerHeightCss = GetNumberFromPx("height", containerStyle);
+
+            if (imgWidthCss <= 0 || containerWidthCss <= 0 || containerHeightCss <= 0)
+                return null;
+
+            try
+            {
+                using (var sourceImage = Image.FromFile(fullImagePath))
+                {
+                    var scale = sourceImage.Width / imgWidthCss;
+
+                    var srcX = (int)Math.Round(-imgLeftCss * scale);
+                    var srcY = (int)Math.Round(-imgTopCss * scale);
+                    var srcW = (int)Math.Round(containerWidthCss * scale);
+                    var srcH = (int)Math.Round(containerHeightCss * scale);
+
+                    if (srcX < 0)
+                    {
+                        srcW += srcX;
+                        srcX = 0;
+                    }
+                    if (srcY < 0)
+                    {
+                        srcH += srcY;
+                        srcY = 0;
+                    }
+                    if (srcX + srcW > sourceImage.Width)
+                        srcW = sourceImage.Width - srcX;
+                    if (srcY + srcH > sourceImage.Height)
+                        srcH = sourceImage.Height - srcY;
+
+                    if (srcW <= 0 || srcH <= 0)
+                        return null;
+
+                    var cropped = new Bitmap(srcW, srcH);
+                    using (var g = Graphics.FromImage(cropped))
+                    {
+                        ConfigureGraphicsForFastScaling(g);
+                        g.DrawImage(
+                            sourceImage,
+                            new Rectangle(0, 0, srcW, srcH),
+                            new Rectangle(srcX, srcY, srcW, srcH),
+                            GraphicsUnit.Pixel
+                        );
+                    }
+
+                    return cropped;
+                }
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }
