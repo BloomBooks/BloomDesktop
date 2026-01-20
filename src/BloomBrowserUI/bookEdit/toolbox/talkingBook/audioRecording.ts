@@ -1185,8 +1185,14 @@ export default class AudioRecording implements IAudioRecorder {
 
         return axios
             .post("/bloom/api/audio/startRecord?id=" + id)
-            .then((result) => {
-                this.setStatus("record", Status.Active);
+            .then(() => {
+                setTimeout(() => {
+                    // C# has a 300ms delay before it really starts recording. I think this is to prevent
+                    // capturing any part of the click. We don't want the visual indication that we are
+                    // recording to show before we really are recording.
+                    this.setStatus("record", Status.Active);
+                }, 300);
+
                 // The active device MIGHT have changed, if the user unplugged since we
                 // chose it.
                 this.updateInputDeviceDisplay();
