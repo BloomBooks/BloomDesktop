@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Management;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.ToPalaso;
@@ -348,12 +349,9 @@ namespace Bloom.Utils
                     if (refreshSubprocessList)
                     {
                         CleanupSubprocessList();
-                        var subsubProcs = GetSubProcesses(new List<Process> { proc });
-                        while (subsubProcs.Any())
-                        {
-                            _subProcesses.AddRange(subsubProcs);
-                            subsubProcs = GetSubProcesses(subsubProcs);
-                        }
+                        var descendants = GetAllDescendantProcesses(proc);
+                        if (descendants.Any())
+                            _subProcesses.AddRange(descendants);
                     }
                     // Enhance: we could report the bytes of each sub-process, but that would be a lot of data.
                     // Or: we could report the total bytes of all sub-processes, but would that be helpful?
@@ -372,48 +370,214 @@ namespace Bloom.Utils
                 Debug.WriteLine($"PerfPoint created in {(whenReady - when).TotalMilliseconds}ms");
             }
 
-            private static List<Process> GetSubProcesses(List<Process> processes)
+            private static List<Process> GetAllDescendantProcesses(Process parent)
             {
-                var subProcesses = new List<Process>();
-                foreach (var proc in processes)
+                try
                 {
-                    var listMOs = new List<ManagementObject>();
-                    try
+                    if (SIL.PlatformUtilities.Platform.IsWindows)
+                        return GetAllDescendantProcessesWindows(parent.Id);
+                }
+                catch
+                {
+                    // If the fast Windows approach fails for any reason, fall back to WMI below.
+                    Debug.WriteLine(
+                        $"Failed to get descendant processes for {parent.Id} using Windows API"
+                    );
+                }
+
+                try
+                {
+                    return GetAllDescendantProcessesWmi(parent.Id);
+                }
+                catch
+                {
+                    // Just give up. Our memory report won't include subprocesses.
+                    Debug.WriteLine(
+                        $"Failed to get descendant processes for {parent.Id} at all. Memory used report won't be accurate"
+                    );
+                    return new List<Process>();
+                }
+            }
+
+            private static List<Process> GetAllDescendantProcessesWindows(int parentPid)
+            {
+                // Build a parent->children map in one pass over a toolhelp snapshot, then walk descendants.
+                var childMap = GetChildProcessMapWindows();
+                var descendantPids = new HashSet<int>();
+                var queue = new Queue<int>();
+                queue.Enqueue(parentPid);
+
+                while (queue.Count > 0)
+                {
+                    var pid = queue.Dequeue();
+                    if (!childMap.TryGetValue(pid, out var children))
+                        continue;
+
+                    foreach (var childPid in children)
                     {
-                        listMOs.AddRange(
-                            new ManagementObjectSearcher(
-                                $"Select * From Win32_Process Where ParentProcessID={proc.Id}"
-                            )
-                                .Get()
-                                .Cast<ManagementObject>()
-                        );
-                        var subProcs = listMOs
-                            .Select(mo =>
-                            {
-                                // It is possible that the process has exited since we got the list from WMI.
-                                // See BL-15638.
-                                try
-                                {
-                                    return Process.GetProcessById(Convert.ToInt32(mo["ProcessID"]));
-                                }
-                                catch
-                                {
-                                    return null;
-                                }
-                            })
-                            .Where(p => p != null)
-                            .ToList();
-                        if (subProcs.Any())
-                            subProcesses.AddRange(subProcs);
-                    }
-                    finally
-                    {
-                        foreach (var mo in listMOs)
-                            mo.Dispose();
+                        if (descendantPids.Add(childPid))
+                            queue.Enqueue(childPid);
                     }
                 }
-                return subProcesses;
+
+                var result = new List<Process>();
+                foreach (var pid in descendantPids)
+                {
+                    try
+                    {
+                        result.Add(Process.GetProcessById(pid));
+                    }
+                    catch
+                    {
+                        // It is possible that the process has exited since we took the snapshot.
+                    }
+                }
+                return result;
             }
+
+            private static Dictionary<int, List<int>> GetChildProcessMapWindows()
+            {
+                var map = new Dictionary<int, List<int>>();
+                var snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+                if (snapshot == IntPtr.Zero || snapshot == INVALID_HANDLE_VALUE)
+                    return map;
+
+                try
+                {
+                    var entry = new PROCESSENTRY32();
+                    entry.dwSize = (uint)Marshal.SizeOf(entry);
+
+                    if (!Process32First(snapshot, ref entry))
+                        return map;
+
+                    do
+                    {
+                        var pid = unchecked((int)entry.th32ProcessID);
+                        var parentPid = unchecked((int)entry.th32ParentProcessID);
+                        if (!map.TryGetValue(parentPid, out var children))
+                        {
+                            children = new List<int>();
+                            map[parentPid] = children;
+                        }
+                        children.Add(pid);
+                    } while (Process32Next(snapshot, ref entry));
+                }
+                finally
+                {
+                    CloseHandle(snapshot);
+                }
+
+                return map;
+            }
+
+            /// <summary>
+            /// Code generated by ChatGPT 5.2, probably never tried; the version above should work on Windows,
+            /// which is the only platform we currently support.
+            /// </summary>
+            private static List<Process> GetAllDescendantProcessesWmi(int parentPid)
+            {
+                // Slower fallback: still avoid querying "per generation" by doing a single WMI query for all processes,
+                // then building a parent->children map and walking it.
+                var map = new Dictionary<int, List<int>>();
+                var listMOs = new List<ManagementObject>();
+                try
+                {
+                    using (
+                        var searcher = new ManagementObjectSearcher(
+                            "Select ProcessId, ParentProcessId From Win32_Process"
+                        )
+                    )
+                        listMOs.AddRange(searcher.Get().Cast<ManagementObject>());
+
+                    foreach (var mo in listMOs)
+                    {
+                        int pid;
+                        int ppid;
+                        try
+                        {
+                            pid = Convert.ToInt32(mo["ProcessId"]);
+                            ppid = Convert.ToInt32(mo["ParentProcessId"]);
+                        }
+                        catch
+                        {
+                            continue;
+                        }
+
+                        if (!map.TryGetValue(ppid, out var children))
+                        {
+                            children = new List<int>();
+                            map[ppid] = children;
+                        }
+                        children.Add(pid);
+                    }
+                }
+                finally
+                {
+                    foreach (var mo in listMOs)
+                        mo.Dispose();
+                }
+
+                var descendantPids = new HashSet<int>();
+                var queue = new Queue<int>();
+                queue.Enqueue(parentPid);
+                while (queue.Count > 0)
+                {
+                    var pid = queue.Dequeue();
+                    if (!map.TryGetValue(pid, out var children))
+                        continue;
+                    foreach (var childPid in children)
+                    {
+                        if (descendantPids.Add(childPid))
+                            queue.Enqueue(childPid);
+                    }
+                }
+
+                var result = new List<Process>();
+                foreach (var pid in descendantPids)
+                {
+                    try
+                    {
+                        result.Add(Process.GetProcessById(pid));
+                    }
+                    catch
+                    {
+                        // process exited
+                    }
+                }
+                return result;
+            }
+
+            private const uint TH32CS_SNAPPROCESS = 0x00000002;
+            private static readonly IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
+
+            [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+            private struct PROCESSENTRY32
+            {
+                public uint dwSize;
+                public uint cntUsage;
+                public uint th32ProcessID;
+                public IntPtr th32DefaultHeapID;
+                public uint th32ModuleID;
+                public uint cntThreads;
+                public uint th32ParentProcessID;
+                public int pcPriClassBase;
+                public uint dwFlags;
+
+                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+                public string szExeFile;
+            }
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            private static extern IntPtr CreateToolhelp32Snapshot(uint dwFlags, uint th32ProcessID);
+
+            [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+            private static extern bool Process32First(IntPtr hSnapshot, ref PROCESSENTRY32 lppe);
+
+            [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+            private static extern bool Process32Next(IntPtr hSnapshot, ref PROCESSENTRY32 lppe);
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            private static extern bool CloseHandle(IntPtr hObject);
 
             internal static void CleanupSubprocessList()
             {
