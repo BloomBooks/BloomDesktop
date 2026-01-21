@@ -381,10 +381,6 @@ namespace Bloom
             server.SetCollectionSettingsDuringInitialization(_scope.Resolve<CollectionSettings>());
             server.EnsureListening();
 
-            // The Api Handler is now at the application level and has a longer lifetime than
-            // the project context. We need to clear out any project-level handlers that may have
-            // been added by an earlier project context.
-            server.ApiHandler.ClearProjectLevelHandlers();
             // A few APIs are now registered in the constructor of ApplicationContainer
             _scope.Resolve<AudioRecording>().RegisterWithApiHandler(server.ApiHandler);
 
@@ -850,8 +846,20 @@ namespace Bloom
             // Disposing ProjectContext disables api functionality and disposes WorkspaceModel/View, BloomServer, et al.,
             // so we need to resort to our fallback error handler.
             ResetToFallbackHandler();
-            _scope.Dispose();
-            _scope = null;
+
+            // We now keep BloomApiHandler alive for the application lifetime, but many endpoints are project-scoped.
+            // Disposing the ProjectContext should fully shut down the project (including webviews) before we clear
+            // those project-scoped endpoints.
+            var server = _scope.Resolve<BloomServer>();
+            try
+            {
+                _scope.Dispose();
+            }
+            finally
+            {
+                _scope = null;
+                server.ApiHandler.ClearProjectLevelHandlers();
+            }
 
             //REVIEW: by debugging, I see that _httpServer is already (and properly) disposed of by the
             //_scope.Dispose() above.
