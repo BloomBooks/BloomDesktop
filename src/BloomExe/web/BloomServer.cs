@@ -1818,6 +1818,12 @@ namespace Bloom.Api
             if (hasOptionalQueryParam)
                 return false;
 
+            // If we are requesting another book, and that book is not there,
+            // we don't need both bloom-player and Bloom reporting it.
+            // So, don't report if we have `book/{guid}...`
+            if (EditingViewApi.BloomHyperlinkRegex.IsMatch(info.LocalPathWithoutQuery))
+                return false;
+
             var localPath = GetLocalPathWithoutQuery(info);
             var localFolderTestPath = localPath;
             // We don't need even a toast for missing files in the book folder. That's the user's problem
