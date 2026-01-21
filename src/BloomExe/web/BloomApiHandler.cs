@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Amazon.Runtime.Internal.Util;
 using Bloom.Book;
 using Bloom.Collection;
 
@@ -270,6 +271,27 @@ namespace Bloom.Api
                 {
                     return await ProcessRequestAsync(epRegistration, info, localPathLc);
                 }
+                // It's a mistake for any request to reach here without a registered handler.
+                if (_exactEndpointRegistrations.Count() == 0)
+                {
+                    // There is some history (BL-15716) of a request...specifically api/edit/pageControls/cleanup...
+                    // being sent during shutdown or while restarting, and not being found.
+                    // If there are no registrations at all, it's likely some sort of cleanup,
+                    // and if we're lucky, it can be ignored. At least, that seems more helpful
+                    // than reporting it as a missing file. In fact, if there are no registrations,
+                    // our normal error reporting will not work properly. Seems best to just do nothing.
+                    // This may at least allow the application to exit cleanly.
+                    // We will log the problem in case that helps later diagnosis.
+                    SIL.Reporting.Logger.WriteEvent(
+                        $"BloomServer received API request {info.RawUrl} when no endpoints were registered"
+                    );
+                    info.WriteError(404, $"Server could not process {localPath}");
+                    return true; // we sort of handled it.
+                }
+                // otherwise it's a programmer error we want to know about.
+                throw new ApplicationException(
+                    $"No API handler registered for endpoint '{endpointPath}'"
+                );
             }
             return false;
         }
