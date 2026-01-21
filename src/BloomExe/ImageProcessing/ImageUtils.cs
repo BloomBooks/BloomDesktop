@@ -353,6 +353,8 @@ namespace Bloom.ImageProcessing
             bool isEncodedAsJpeg = false;
             try
             {
+                var originalCurrentPath = imageInfo.GetCurrentFilePath();
+                var imageRemade = false;
                 var size = GetDesiredImageSize(imageInfo.Image.Width, imageInfo.Image.Height);
 
                 if (
@@ -369,6 +371,7 @@ namespace Bloom.ImageProcessing
                     if (img != null)
                     {
                         imageInfo.Image = img;
+                        imageRemade = true;
                     }
                 }
                 var needToStripMetadata = imageInfo.Metadata.ExceptionCaughtWhileLoading != null;
@@ -397,6 +400,13 @@ namespace Bloom.ImageProcessing
                         isEncodedAsJpeg
                     );
                 var sourcePath = imageInfo.GetCurrentFilePath();
+                if (imageRemade & sourcePath == originalCurrentPath)
+                {
+                    // We don't want to copy the original file if we have remade the image.  (BL-15708)
+                    // If graphicsmagick succeeds, it produces a temp file with a random name and changes
+                    // the current path setting.
+                    sourcePath = null;
+                }
                 var destinationPath = Path.Combine(bookFolderPath, imageFileName);
                 if (isEncodedAsJpeg || isEncodedAsPng)
                 {
@@ -422,6 +432,7 @@ namespace Bloom.ImageProcessing
                     else if (!isSameFile)
                     {
                         // Pasting an image can result in sourcePath being null.
+                        // So can graphicsmagick failures where we had to remake the image. (BL-15708)
                         if (sourcePath == null)
                             imageInfo.Image.Save(
                                 destinationPath,
