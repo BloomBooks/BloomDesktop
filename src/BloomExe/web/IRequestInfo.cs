@@ -20,7 +20,7 @@ namespace Bloom.Api
         string RequestContentType { get; }
         string ResponseContentType { set; }
         string RawUrl { get; }
-        bool HaveOutput { get; }
+        bool HaveFullyProcessedRequest { get; }
         void WriteCompleteOutput(string s);
         void ReplyWithFileContent(string path, string originalPath = null);
         void ReplyWithStreamContent(Stream input, string responseType);
