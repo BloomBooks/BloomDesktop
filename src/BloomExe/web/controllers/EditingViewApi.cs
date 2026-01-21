@@ -327,7 +327,7 @@ namespace Bloom.web.controllers
             request.ReplyWithBoolean(IsBloomHyperlink(clipContent, request.CurrentBook));
         }
 
-        public static Regex BloomHyperlinkRegex = new Regex(
+        static Regex _bloomHyperlinkRegex = new Regex(
             @"^(/book/([-A-Fa-f0-9]+))?(#(cover|[-A-Fa-f0-9]+))?",
             RegexOptions.Compiled
         );
@@ -343,7 +343,7 @@ namespace Bloom.web.controllers
                 || text.StartsWith("mailto:")
             )
                 return true;
-            var match = BloomHyperlinkRegex.Match(text);
+            var match = _bloomHyperlinkRegex.Match(text);
             if (match.Success)
             {
                 var bookId = match.Groups[2].Value;
