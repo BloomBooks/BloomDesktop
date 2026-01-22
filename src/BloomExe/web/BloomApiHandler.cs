@@ -287,18 +287,20 @@ namespace Bloom.Api
                     .ToLowerInvariant()
                     .Trim(new char[] { '/' });
                 BaseEndpointRegistration epRegistration;
+                int exactCount,
+                    appLevelCount;
                 lock (_endpointRegistrationsLock)
                 {
                     _exactEndpointRegistrations.TryGetValue(endpointPath, out epRegistration);
+                    exactCount = _exactEndpointRegistrations.Count;
+                    appLevelCount = _applicationLevelRegistrationKeys.Count;
                 }
 
                 if (epRegistration != null)
                 {
                     return await ProcessRequestAsync(epRegistration, info, localPathLc);
                 }
-                if (
-                    _exactEndpointRegistrations.Count() <= _applicationLevelRegistrationKeys.Count()
-                )
+                if (exactCount <= appLevelCount)
                 {
                     // There is some history (BL-15716) of a request...specifically api/edit/pageControls/cleanup...
                     // being sent during shutdown or while restarting, and not being found.
