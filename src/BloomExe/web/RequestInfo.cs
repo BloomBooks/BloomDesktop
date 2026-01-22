@@ -76,7 +76,22 @@ namespace Bloom.Api
         public void ExternalLinkSucceeded()
         {
             _actualContext.Response.StatusCode = 200; //Completed
-            HaveOutput = true;
+            HaveFullyProcessedRequest = true;
+        }
+
+        public void WriteNoContent()
+        {
+            try
+            {
+                _actualContext.Response.StatusCode = 204; // No Content
+                _actualContext.Response.ContentLength64 = 0;
+                _actualContext.Response.Close();
+            }
+            catch (HttpListenerException e)
+            {
+                ReportHttpListenerProblem(e);
+            }
+            HaveFullyProcessedRequest = true;
         }
 
         public string DoNotCacheFolder { get; set; }
@@ -105,7 +120,7 @@ namespace Bloom.Api
             {
                 ReportHttpListenerProblem(e);
             }
-            HaveOutput = true;
+            HaveFullyProcessedRequest = true;
         }
 
         private static void ReportHttpListenerProblem(HttpListenerException e)
@@ -119,7 +134,7 @@ namespace Bloom.Api
             Debug.WriteLine(e.Message);
         }
 
-        public bool HaveOutput { get; private set; }
+        public bool HaveFullyProcessedRequest { get; private set; }
 
         public void ReplyWithFileContent(string path, string originalPath = null)
         {
@@ -129,7 +144,7 @@ namespace Bloom.Api
             {
                 // Earlier there was concern that we were coming here to look for .wav file existence, but that task
                 // is now handled in the "/bloom/api/audio" endpoint. So if we get here, we're looking for a different file.
-                // Besides, if we don't set HaveOutput to true (w/WriteError), we'll have other problems.
+                // Besides, if we don't set HaveFullyProcessedRequest to true (w/WriteError), we'll have other problems.
                 Logger.WriteError("Server could not find" + path, new FileNotFoundException());
                 WriteError(404, "Server could not find " + path);
                 return;
@@ -146,7 +161,7 @@ namespace Bloom.Api
                 // BL-12237 actually had a FileNotFoundException here, in a Team Collection setting, which should
                 // have been caught by the RobustFile.Exists() above. So we'll just log it and continue.
                 // The important thing for avoiding a big ugly EndpointHandler error (in the case of BL-12237) is to
-                // set HaveOutput to true, which WriteError() does.
+                // set HaveFullyProcessedRequest to true, which WriteError() does.
                 Logger.WriteError("Server could not read " + path, error);
                 WriteError(500, "Server could not read " + path + ": " + error.Message);
                 return;
@@ -268,7 +283,7 @@ namespace Bloom.Api
                     fs.Dispose();
             }
 
-            HaveOutput = true;
+            HaveFullyProcessedRequest = true;
         }
 
         public void ReplyWithStreamContent(Stream input, string responseType)
@@ -304,7 +319,7 @@ namespace Bloom.Api
                 _actualContext.Response.Close(buffer, false);
             }
 
-            HaveOutput = true;
+            HaveFullyProcessedRequest = true;
         }
 
         readonly HashSet<string> _cacheableExtensions = new HashSet<string>(
@@ -386,7 +401,7 @@ namespace Bloom.Api
             if (LocalPathWithoutQuery.ToLowerInvariant().EndsWith(".json"))
                 _actualContext.Response.ContentType = "application/json";
             _actualContext.Response.Close();
-            HaveOutput = true;
+            HaveFullyProcessedRequest = true;
         }
 
         private string SanitizeForAscii(string errorDescription)
@@ -598,6 +613,7 @@ namespace Bloom.Api
             // This supports Bloom Player Storybook's "Live from Bloom Editor" feature, preventing CORS errors on the redirect.
             _actualContext.Response.AppendHeader("Access-Control-Allow-Origin", "*");
             _actualContext.Response.Close();
+            HaveFullyProcessedRequest = true;
         }
     }
 }
