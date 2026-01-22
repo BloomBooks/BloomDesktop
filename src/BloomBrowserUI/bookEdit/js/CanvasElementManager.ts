@@ -2671,135 +2671,139 @@ export class CanvasElementManager {
             );
             return;
         }
-        const imgOrVideo = this.getImageOrVideo();
-        if (!imgOrVideo || imgOrVideo.style.width) {
-            // We don't have an image, or we've already done cropping on it, so we should not force the
-            // container back to the original image shape.
-            this.alignControlFrameWithActiveElement();
-            return;
-        }
-        const containerWidth = canvasElement.clientWidth;
-        const containerHeight = canvasElement.clientHeight;
-        let imgWidth = 1;
-        let imgHeight = 1;
-        if (imgOrVideo instanceof HTMLImageElement) {
-            imgWidth = imgOrVideo.naturalWidth;
-            imgHeight = imgOrVideo.naturalHeight;
-            if (
-                isPlaceHolderImage(imgOrVideo.getAttribute("src")) ||
-                (imgOrVideo.naturalHeight === 0 && // not loaded successfully (yet)
-                    !useSizeOfNewImage && // not waiting for new dimensions
-                    imgOrVideo.classList.contains("bloom-imageLoadError")) // error occurred while trying to load
-            ) {
-                // Image is in an error state or is just a placeholder; we probably won't ever get useful dimensions. Just leave
-                // the canvas element the shape it is.
+        if (canvasElement.classList.contains(kBloomButtonClass)) {
+            // Let image buttons keep their manually set size (BL-15738)
+        } else {
+            const imgOrVideo = this.getImageOrVideo();
+            if (!imgOrVideo || imgOrVideo.style.width) {
+                // We don't have an image, or we've already done cropping on it, so we should not force the
+                // container back to the original image shape.
                 this.alignControlFrameWithActiveElement();
                 return;
             }
-            if (imgHeight === 0 || useSizeOfNewImage) {
-                // image not ready yet, try again later.
-                const handle = setTimeout(
-                    () =>
-                        this.adjustContainerAspectRatio(
-                            canvasElement,
-                            false, // if we've got dimensions just use them
-                            0,
-                        ), // if we get this call we don't have a timeout to cancel
-                    // I think this is long enough that we won't be seeing obsolete data (from a previous src).
-                    // OTOH it's not hopelessly long for the user to wait when we don't get an onload.
-                    // If by any chance this happens when the image really isn't loaded enough to
-                    // have naturalHeight/Width, the zero checks above will force another iteration.
-                    100,
-                    // somehow Typescript is confused and thinks this is a NodeJS version of setTimeout.
-                ) as unknown as number;
-                imgOrVideo.addEventListener(
-                    "load",
-                    () =>
-                        this.adjustContainerAspectRatio(
-                            canvasElement,
-                            false, // it's loaded, we don't want to wait again
-                            handle,
-                        ), // if we get this call we can cancel the timeout above.
-                    { once: true },
-                );
-                return; // control frame will be aligned when the image is loaded
+            const containerWidth = canvasElement.clientWidth;
+            const containerHeight = canvasElement.clientHeight;
+            let imgWidth = 1;
+            let imgHeight = 1;
+            if (imgOrVideo instanceof HTMLImageElement) {
+                imgWidth = imgOrVideo.naturalWidth;
+                imgHeight = imgOrVideo.naturalHeight;
+                if (
+                    isPlaceHolderImage(imgOrVideo.getAttribute("src")) ||
+                    (imgOrVideo.naturalHeight === 0 && // not loaded successfully (yet)
+                        !useSizeOfNewImage && // not waiting for new dimensions
+                        imgOrVideo.classList.contains("bloom-imageLoadError")) // error occurred while trying to load
+                ) {
+                    // Image is in an error state or is just a placeholder; we probably won't ever get useful dimensions. Just leave
+                    // the canvas element the shape it is.
+                    this.alignControlFrameWithActiveElement();
+                    return;
+                }
+                if (imgHeight === 0 || useSizeOfNewImage) {
+                    // image not ready yet, try again later.
+                    const handle = setTimeout(
+                        () =>
+                            this.adjustContainerAspectRatio(
+                                canvasElement,
+                                false, // if we've got dimensions just use them
+                                0,
+                            ), // if we get this call we don't have a timeout to cancel
+                        // I think this is long enough that we won't be seeing obsolete data (from a previous src).
+                        // OTOH it's not hopelessly long for the user to wait when we don't get an onload.
+                        // If by any chance this happens when the image really isn't loaded enough to
+                        // have naturalHeight/Width, the zero checks above will force another iteration.
+                        100,
+                        // somehow Typescript is confused and thinks this is a NodeJS version of setTimeout.
+                    ) as unknown as number;
+                    imgOrVideo.addEventListener(
+                        "load",
+                        () =>
+                            this.adjustContainerAspectRatio(
+                                canvasElement,
+                                false, // it's loaded, we don't want to wait again
+                                handle,
+                            ), // if we get this call we can cancel the timeout above.
+                        { once: true },
+                    );
+                    return; // control frame will be aligned when the image is loaded
+                }
+            } else {
+                const video = imgOrVideo as HTMLVideoElement;
+                imgWidth = video.videoWidth;
+                imgHeight = video.videoHeight;
+                if (imgWidth === 0 || imgHeight === 0) {
+                    // video not ready yet, try again later.
+                    // I'm not sure this has ever been tested; the dimensions seem to be
+                    // always available by the time this routine is called.
+                    video.addEventListener(
+                        "loadedmetadata",
+                        () => this.adjustContainerAspectRatio(canvasElement),
+                        { once: true },
+                    );
+                    return;
+                }
             }
-        } else {
-            const video = imgOrVideo as HTMLVideoElement;
-            imgWidth = video.videoWidth;
-            imgHeight = video.videoHeight;
-            if (imgWidth === 0 || imgHeight === 0) {
-                // video not ready yet, try again later.
-                // I'm not sure this has ever been tested; the dimensions seem to be
-                // always available by the time this routine is called.
-                video.addEventListener(
-                    "loadedmetadata",
-                    () => this.adjustContainerAspectRatio(canvasElement),
-                    { once: true },
-                );
-                return;
+            const imgRatio = imgWidth / imgHeight;
+            const containerRatio = containerWidth / containerHeight;
+            let newHeight = containerHeight;
+            let newWidth = containerWidth;
+            if (imgRatio > containerRatio) {
+                // remove white bars at top and bottom by reducing container height
+                newHeight = containerWidth / imgRatio;
+                if (newHeight < this.minHeight) {
+                    newHeight = this.minHeight;
+                    newWidth = newHeight * imgRatio;
+                }
+            } else {
+                // remove white bars at left and right by reducing container width
+                newWidth = containerHeight * imgRatio;
+                if (newWidth < this.minWidth) {
+                    newWidth = this.minWidth;
+                    newHeight = newWidth / imgRatio;
+                }
             }
-        }
-        const imgRatio = imgWidth / imgHeight;
-        const containerRatio = containerWidth / containerHeight;
-        let newHeight = containerHeight;
-        let newWidth = containerWidth;
-        if (imgRatio > containerRatio) {
-            // remove white bars at top and bottom by reducing container height
-            newHeight = containerWidth / imgRatio;
-            if (newHeight < this.minHeight) {
-                newHeight = this.minHeight;
-                newWidth = newHeight * imgRatio;
+            const oldHeight = canvasElement.clientHeight;
+            if (Math.abs(oldHeight - newHeight) <= 0.1) {
+                // don't let small rounding errors accumulate
+                newHeight = oldHeight;
+            } else {
+                canvasElement.style.height = `${newHeight}px`;
             }
-        } else {
-            // remove white bars at left and right by reducing container width
-            newWidth = containerHeight * imgRatio;
-            if (newWidth < this.minWidth) {
-                newWidth = this.minWidth;
-                newHeight = newWidth / imgRatio;
-            }
-        }
-        const oldHeight = canvasElement.clientHeight;
-        if (Math.abs(oldHeight - newHeight) <= 0.1) {
-            // don't let small rounding errors accumulate
-            newHeight = oldHeight;
-        } else {
-            canvasElement.style.height = `${newHeight}px`;
-        }
-        // and move container down so image does not move
-        const oldTop = canvasElement.offsetTop;
-        let newTop = oldTop + (oldHeight - newHeight) / 2;
+            // and move container down so image does not move
+            const oldTop = canvasElement.offsetTop;
+            let newTop = oldTop + (oldHeight - newHeight) / 2;
 
-        const oldWidth = canvasElement.clientWidth;
-        if (Math.abs(oldWidth - newWidth) <= 0.1) {
-            newWidth = oldWidth;
-        } else {
-            canvasElement.style.width = `${newWidth}px`;
-        }
-        // and move container right so image does not move
-        const oldLeft = canvasElement.offsetLeft;
-        let newLeft = oldLeft + (oldWidth - newWidth) / 2;
+            const oldWidth = canvasElement.clientWidth;
+            if (Math.abs(oldWidth - newWidth) <= 0.1) {
+                newWidth = oldWidth;
+            } else {
+                canvasElement.style.width = `${newWidth}px`;
+            }
+            // and move container right so image does not move
+            const oldLeft = canvasElement.offsetLeft;
+            let newLeft = oldLeft + (oldWidth - newWidth) / 2;
 
-        // except, if it was "on the grid" before, such as a newly added placeholder,
-        // or we just changed the image, we want to keep it on the grid.
-        const adjustedOld = this.snapProvider.getPosition(
-            undefined,
-            oldLeft,
-            oldTop,
-        );
-        if (adjustedOld.x === oldLeft && adjustedOld.y === oldTop) {
-            // it was on the grid, so we want to keep it there.
-            const adjustedNew = this.snapProvider.getPosition(
+            // except, if it was "on the grid" before, such as a newly added placeholder,
+            // or we just changed the image, we want to keep it on the grid.
+            const adjustedOld = this.snapProvider.getPosition(
                 undefined,
-                newLeft,
-                newTop,
+                oldLeft,
+                oldTop,
             );
-            newLeft = adjustedNew.x;
-            newTop = adjustedNew.y;
-        }
+            if (adjustedOld.x === oldLeft && adjustedOld.y === oldTop) {
+                // it was on the grid, so we want to keep it there.
+                const adjustedNew = this.snapProvider.getPosition(
+                    undefined,
+                    newLeft,
+                    newTop,
+                );
+                newLeft = adjustedNew.x;
+                newTop = adjustedNew.y;
+            }
 
-        canvasElement.style.left = `${newLeft}px`;
-        canvasElement.style.top = `${newTop}px`;
+            canvasElement.style.left = `${newLeft}px`;
+            canvasElement.style.top = `${newTop}px`;
+        }
         this.alignControlFrameWithActiveElement();
         if (this.doAfterNewImageAdjusted) {
             this.doAfterNewImageAdjusted();
