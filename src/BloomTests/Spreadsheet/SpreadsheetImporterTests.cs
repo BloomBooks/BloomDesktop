@@ -679,7 +679,7 @@ namespace BloomTests.Spreadsheet
 			<div class=""split-pane-component position-top"">
                 <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
                     <div class=""bloom-canvas bloom-leadingElement"" title=""this might be nonsense after import"" data-test-id=""ic{1}"">
-						<img src=""placeholder.png"" alt="""" data-copyright="""" data-creator="""" data-license="""" height=""100"" width=""200""></img>
+						<img src=""placeHolder.png"" alt="""" data-copyright="""" data-creator="""" data-license="""" height=""100"" width=""200""></img>
 						<div class=""bloom-translationGroup bloom-imageDescription bloom-trailingElement"" data-default-languages=""auto"">
 		                    <div class=""bloom-editable ImageDescriptionEdit-style"" lang=""z"" contenteditable=""true"" data-book=""coverImageDescription""></div>
 		                </div>
