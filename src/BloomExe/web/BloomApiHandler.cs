@@ -5,11 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Bloom.Book;
 using Bloom.Collection;
+using L10NSharp;
 
 namespace Bloom.Api
 {
@@ -26,6 +26,8 @@ namespace Bloom.Api
         // This one can really be used as a dictionary, because the keys match exactly, not just as a prefix.
         private Dictionary<string, BaseEndpointRegistration> _exactEndpointRegistrations =
             new Dictionary<string, BaseEndpointRegistration>();
+
+        private readonly object _endpointRegistrationsLock = new object();
 
         // Endpoints that are registered by the application container rather than the project context
         // and so should not get cleared when we switch project context
@@ -61,9 +63,12 @@ namespace Bloom.Api
         /// </summary>
         public void RecordApplicationLevelHandlers()
         {
-            _applicationLevelRegistrationKeys = new HashSet<string>(
-                _exactEndpointRegistrations.Keys
-            );
+            lock (_endpointRegistrationsLock)
+            {
+                _applicationLevelRegistrationKeys = new HashSet<string>(
+                    _exactEndpointRegistrations.Keys
+                );
+            }
         }
 
         /// <summary>
@@ -71,18 +76,24 @@ namespace Bloom.Api
         /// </summary>
         public void ClearProjectLevelHandlers()
         {
-            foreach (var key in _exactEndpointRegistrations.Keys.ToList())
+            lock (_endpointRegistrationsLock)
             {
-                if (!_applicationLevelRegistrationKeys.Contains(key))
+                foreach (var key in _exactEndpointRegistrations.Keys.ToList())
                 {
-                    _exactEndpointRegistrations.Remove(key);
+                    if (!_applicationLevelRegistrationKeys.Contains(key))
+                    {
+                        _exactEndpointRegistrations.Remove(key);
+                    }
                 }
             }
         }
 
         public void ClearEndpointHandlers()
         {
-            _exactEndpointRegistrations.Clear();
+            lock (_endpointRegistrationsLock)
+            {
+                _exactEndpointRegistrations.Clear();
+            }
         }
 
         /// <summary>
@@ -124,10 +135,13 @@ namespace Bloom.Api
                 RequiresSync = requiresSync,
                 MeasurementLabel = pattern, // can be overridden... this is just a default
             };
-            _exactEndpointRegistrations.Add(
-                pattern.ToLowerInvariant().Trim(new char[] { '/' }),
-                registration
-            );
+            lock (_endpointRegistrationsLock)
+            {
+                _exactEndpointRegistrations.Add(
+                    pattern.ToLowerInvariant().Trim(new char[] { '/' }),
+                    registration
+                );
+            }
             return registration; // return it so the caller can say  RegisterEndpointHandler().Measurable();
         }
 
@@ -145,10 +159,13 @@ namespace Bloom.Api
                 RequiresSync = requiresSync,
                 MeasurementLabel = pattern, // can be overridden... this is just a default
             };
-            _exactEndpointRegistrations.Add(
-                pattern.ToLowerInvariant().Trim(new char[] { '/' }),
-                registration
-            );
+            lock (_endpointRegistrationsLock)
+            {
+                _exactEndpointRegistrations.Add(
+                    pattern.ToLowerInvariant().Trim(new char[] { '/' }),
+                    registration
+                );
+            }
             return registration; // return it so the caller can say  RegisterEndpointHandler().Measurable();
         }
 
@@ -202,13 +219,16 @@ namespace Bloom.Api
             bool handleOnUiThread
         )
         {
-            _exactEndpointRegistrations[pattern.ToLowerInvariant().Trim(new char[] { '/' })] =
-                new EndpointRegistration()
-                {
-                    Handler = handler,
-                    HandleOnUIThread = handleOnUiThread,
-                    RequiresSync = false,
-                };
+            lock (_endpointRegistrationsLock)
+            {
+                _exactEndpointRegistrations[pattern.ToLowerInvariant().Trim(new char[] { '/' })] =
+                    new EndpointRegistration()
+                    {
+                        Handler = handler,
+                        HandleOnUIThread = handleOnUiThread,
+                        RequiresSync = false,
+                    };
+            }
         }
 
         /// <summary>
@@ -266,12 +286,61 @@ namespace Bloom.Api
                     .Substring(3)
                     .ToLowerInvariant()
                     .Trim(new char[] { '/' });
-                if (_exactEndpointRegistrations.TryGetValue(endpointPath, out var epRegistration))
+                BaseEndpointRegistration epRegistration;
+                lock (_endpointRegistrationsLock)
+                {
+                    _exactEndpointRegistrations.TryGetValue(endpointPath, out epRegistration);
+                }
+
+                if (epRegistration != null)
                 {
                     return await ProcessRequestAsync(epRegistration, info, localPathLc);
                 }
+                if (
+                    _exactEndpointRegistrations.Count() <= _applicationLevelRegistrationKeys.Count()
+                )
+                {
+                    // There is some history (BL-15716) of a request...specifically api/edit/pageControls/cleanup...
+                    // being sent during shutdown or while restarting, and not being found.
+                    // We hope to have made this unlikely or impossible, but just in case,
+                    // handle such failures gracefully. We don't launch browsers before registering handlers,
+                    // so if there are no project-level registrations, it's likely some sort of cleanup,
+                    // and if we're lucky, it can be ignored. At least, that seems more helpful
+                    // than reporting it as a missing file. In fact, if without these registrations,
+                    // I don't think our normal error reporting will work properly. Seems best to just do nothing.
+                    // This may at least allow the application to exit cleanly.
+                    // We will log the problem in case that helps later diagnosis.
+                    SIL.Reporting.Logger.WriteEvent(
+                        $"BloomServer received API request {info.RawUrl} when no endpoints were registered"
+                    );
+                    info.WriteError(404, $"Server could not process {localPath}");
+                    return true; // we sort of handled it.
+                }
+                // otherwise it's a programmer error we want to know about.
+                ReportMissingApiEndpoint(info, localPath);
+                // If the user continues from there, we need to pretend to have handled
+                // the request. Otherwise the caller will keep trying to handle it in
+                // other ways.
+                info.WriteError(404, "API endpoint not found");
+                return true;
             }
             return false;
+        }
+
+        private static void ReportMissingApiEndpoint(IRequestInfo info, string localPath)
+        {
+            var userMsg = LocalizationManager.GetString(
+                "WebServer.Warning.NoApiEndpoint",
+                "Cannot Find API Endpoint"
+            );
+            var detailMsg = String.Format(
+                "Server could not find an API endpoint for {0}. LocalPath was {1}. Method was {2}.{3}",
+                info.RawUrl,
+                localPath,
+                info.HttpMethod,
+                Environment.NewLine
+            );
+            NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, userMsg, detailMsg);
         }
 
         private async Task<bool> ProcessRequestAsync(
