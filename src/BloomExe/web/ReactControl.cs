@@ -215,6 +215,10 @@ namespace Bloom.web
                     "teamCollectionSettingsBundle",
                     "/teamCollection/TeamCollectionSettingsPanel.entry.tsx"
                 },
+                {
+                    "accessibilityCheckBundle",
+                    "/publish/accessibilityCheck/accessibilityCheckScreen.entry.tsx"
+                },
             };
             // Should we load relevant assets from the Vite Dev server?
             // To save time, only consider it if this is a dev build.

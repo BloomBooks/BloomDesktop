@@ -60,20 +60,20 @@ namespace Bloom.Api
 
         // get is required to fulfil interface contract. Not currently used in tests.
         // set is required to satisfy (Team City version of) compiler for a valid auto-implemented property.
-        public bool HaveOutput { get; set; }
+        public bool HaveFullyProcessedRequest { get; set; }
 
         public void WriteCompleteOutput(string s)
         {
             var buffer = Encoding.UTF8.GetBytes(s);
             ReplyContents = Encoding.UTF8.GetString(buffer);
-            HaveOutput = true;
+            HaveFullyProcessedRequest = true;
         }
 
         public void ReplyWithFileContent(string path, string originalPath = null)
         {
             ReplyImagePath = path;
             WriteCompleteOutput(RobustFile.ReadAllText(path));
-            HaveOutput = true;
+            HaveFullyProcessedRequest = true;
         }
 
         public void ReplyWithStreamContent(Stream input, string responseType)
@@ -90,7 +90,7 @@ namespace Bloom.Api
         {
             StatusCode = errorCode;
             StatusDescription = errorDescription;
-            HaveOutput = true;
+            HaveFullyProcessedRequest = true;
         }
 
         public void WriteError(int errorCode)
@@ -127,7 +127,17 @@ namespace Bloom.Api
             return "";
         }
 
-        public void ExternalLinkSucceeded() { }
+        public void ExternalLinkSucceeded()
+        {
+            StatusCode = 200;
+            HaveFullyProcessedRequest = true;
+        }
+
+        public void WriteNoContent()
+        {
+            StatusCode = 204;
+            HaveFullyProcessedRequest = true;
+        }
 
         public string DoNotCacheFolder { get; set; }
 

@@ -67,7 +67,10 @@
         // note that here the property has "always"
         left: var(
             --pageNumber-left-margin-override,
-            var(--pageNumber-always-left-margin)
+            calc(
+                var(--pageNumber-full-bleed-extra-margin, 0mm) +
+                    var(--pageNumber-always-left-margin)
+            )
         );
     }
 

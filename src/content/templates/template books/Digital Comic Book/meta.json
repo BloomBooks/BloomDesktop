@@ -5,11 +5,11 @@
     "suitableForMakingShells": "true",
     "tools": [
         {
-            "name": "overlay",
+            "name": "canvas",
             "enabled": true,
             "state": null
         }
     ],
-    "currentTool": "overlayTool",
+    "currentTool": "canvasTool",
     "toolboxIsOpen": true
 }

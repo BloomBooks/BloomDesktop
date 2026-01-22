@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using Bloom.web;
 using SIL.Program;
 
 namespace Bloom.Publish.AccessibilityChecker
@@ -44,13 +45,9 @@ namespace Bloom.Publish.AccessibilityChecker
             _onWindowActivated = onWindowActivated;
             InitializeComponent();
 
-            var path = BloomFileLocator.GetBrowserFile(
-                false,
-                "publish",
-                "accessibilityCheck",
-                "accessibilityCheckScreen.html"
-            );
-            _browser.Navigate(path.ToLocalhost(), false);
+            var reactControl = ReactControl.Create("accessibilityCheckBundle");
+            reactControl.Dock = DockStyle.Fill;
+            this.Controls.Add(reactControl);
         }
 
         private void AccessibilityCheckWindow_FormClosed(object sender, FormClosedEventArgs e)

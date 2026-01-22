@@ -272,7 +272,7 @@ namespace Bloom.Api
                         }
                     }
                 }
-                if (!info.HaveOutput)
+                if (!info.HaveFullyProcessedRequest)
                 {
                     throw new ApplicationException(
                         $"The EndpointHandler for {info.RawUrl} never called a Succeeded(), Failed(), or ReplyWith() Function."

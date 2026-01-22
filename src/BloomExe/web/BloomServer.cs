@@ -674,6 +674,18 @@ namespace Bloom.Api
             return path.Replace("\\", "/").StartsWith(CurrentBook.FolderPath.Replace("\\", "/"));
         }
 
+        private bool TryHandlePlaceholderImageRequest(IRequestInfo info, string imageFile)
+        {
+            if (!ImageUtils.IsPlaceholderImageFilename(imageFile))
+                return false;
+
+            // We now use css to put in the placeholder images, but still use "placeHolder.png" to mark them.
+            // So we actually don't want to provide an image file for this placeholder marker.
+            // Return 204 No Content to avoid browser showing broken image icon.
+            info.WriteNoContent();
+            return true;
+        }
+
         // Handle requests for image files, that is, URLs that end in one of our image extensions.
         // Returns true if this is, in fact, a request for an image, in which case it will have
         // been handled; any reporting of problems will have been done, and a response generated.
@@ -685,6 +697,9 @@ namespace Bloom.Api
             var isSvg = imageFile.EndsWith(".svg", StringComparison.OrdinalIgnoreCase);
             if (!IsImageTypeThatCanBeDegraded(imageFile) && !isSvg)
                 return false;
+
+            if (TryHandlePlaceholderImageRequest(info, imageFile))
+                return true;
 
             // This can't be right. At some point it may have had something to do with
             // images in page thumbnails, but that is now handled by a param.
@@ -736,6 +751,9 @@ namespace Bloom.Api
 
                 imageFile = Path.Combine(sourceDir, imageFile);
 
+                if (TryHandlePlaceholderImageRequest(info, imageFile))
+                    return true;
+
                 if (!RobustFileExistsWithCaseCheck(imageFile))
                 {
                     // There are a few special cases where it's not desirable to change the source of the image
@@ -745,13 +763,6 @@ namespace Bloom.Api
                     if (imageFile.EndsWith("ckeditor/skins/flat/icons.png"))
                     {
                         imageFile = imageFile.Replace("flat", "icy_orange");
-                    }
-                    else if (ImageUtils.IsPlaceholderImageFilename(imageFile))
-                    {
-                        // We now use css to put in the placeholder images, but still use "placeHolder.png" to mark them
-                        // So we actually don't want to provide an image file for placeHolder.png.
-                        info.WriteCompleteOutput("");
-                        return true;
                     }
                     // If the user does add a video or widget, these placeholder .svgs will get copied to the
                     // book folder and used from there. But we don't copy to the book folder while the user
@@ -1856,6 +1867,23 @@ namespace Bloom.Api
             )
             {
                 return false;
+            }
+
+            // If we don't have a book or collection established, we are probably in a
+            // state where not everything is set up yet.  So don't complain about missing
+            // either translation data or items for a problem report.  (BL-15676)
+            if (currentBookFolderPath == null && collectionPath == null)
+            {
+                if (
+                    localPath.ToLowerInvariant().Contains("/problemreport/")
+                    || localPath.ToLowerInvariant().Contains("/i18n/translate")
+                )
+                {
+                    Logger.WriteEvent(
+                        $"BloomServer: neither CurrentBookFolder nor CurrentCollection is set. Cannot find {localPath}"
+                    );
+                    return false;
+                }
             }
 
             var stuffToIgnore = new[]

@@ -187,7 +187,11 @@ export const getSpecialColorName = (
     colorArray: string[],
 ): string | undefined => {
     const special = specialColors.find(
-        (elem) => elem.colors[1]?.toLowerCase() === colorArray[1].toLowerCase(),
+        // All our special colors have two colors. But the argument colorArray might not.
+        // So we use optional chaining to avoid an error.
+        (specialColor) =>
+            specialColor.colors[1].toLowerCase() ===
+            colorArray[1]?.toLowerCase(),
     );
     return special ? special.name : undefined;
 };

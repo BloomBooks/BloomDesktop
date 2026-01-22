@@ -44,6 +44,7 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
     private static musicAttrName = "data-backgroundaudio";
     private static musicVolumeAttrName =
         MusicToolControls.musicAttrName + "volume";
+    private static noMusicAttrValue = "none";
 
     private static narrationPlayer: AudioRecording | undefined;
     private addedListenerToPlayer: boolean;
@@ -67,19 +68,18 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
         let audioFileName = ToolboxToolReactAdaptor.getBloomPageAttrDecoded(
             MusicToolControls.musicAttrName,
         );
-        const hasMusicAttr = typeof audioFileName === typeof ""; // may be false or undefined if missing
         if (!audioFileName) {
             audioFileName = ""; // undefined won't handle split
         }
-        if (!hasMusicAttr) {
+        if (!audioFileName) {
             // No data-backgroundAudio attr at all is our default state, continue from previous page
             // (including possibly no audio, if previous page had none). If audio is set on a previous
             // page, it can flow over into this one.
             musicState.activeRadioValue = "continueMusic";
             musicState.musicName = "";
             musicState.audioEnabled = false;
-        } else if (audioFileName) {
-            // If we have a non-empty music attr, we're setting new music right here.
+        } else if (audioFileName !== MusicToolControls.noMusicAttrValue) {
+            // We're setting new music right here.
             musicState.activeRadioValue = "newMusic";
             musicState.audioEnabled = true;
             musicState.volume =
@@ -93,7 +93,7 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
             musicState.musicName =
                 this.getDisplayNameOfMusicFile(audioFileName);
         } else {
-            // If we have the attribute, but the value is empty, we're explicitly turning it off.
+            // We're explicitly turning it off
             musicState.activeRadioValue = "noMusic";
             musicState.musicName = "";
             musicState.audioEnabled = false;
@@ -325,7 +325,7 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
             case "noMusic":
                 ToolboxToolReactAdaptor.encodeAndSetPageAttr(
                     MusicToolControls.musicAttrName,
-                    "",
+                    MusicToolControls.noMusicAttrValue,
                 );
                 this.setState({ musicName: "" });
                 this.pausePlaying(); // pauses player and sets playing state to false
