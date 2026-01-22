@@ -2671,6 +2671,13 @@ export class CanvasElementManager {
             );
             return;
         }
+        if (canvasElement.classList.contains(kBloomButtonClass)) {
+            // Let image buttons keep their manually set size (BL-15738)
+            // Enhance: refactor the whole method so we don't have to remember to call alignControlFrameWithActiveElement
+            // separately on every return path
+            this.alignControlFrameWithActiveElement();
+            return;
+        }
         const imgOrVideo = this.getImageOrVideo();
         if (!imgOrVideo || imgOrVideo.style.width) {
             // We don't have an image, or we've already done cropping on it, so we should not force the
