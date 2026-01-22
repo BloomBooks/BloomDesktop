@@ -254,6 +254,10 @@ namespace Bloom.Publish
         /// <note>This was previously cached, and possibly should be if it is called often, as it
         /// is fairly expensive to compute. Currently, however, it is only called once each time
         /// the preview tab is shown. </note>
+        /// <remarks>
+        /// This property is not carried forward to Bloom 6.1.  The restrictions due to "Enterprise"
+        /// (aka subscriptions) are handled in a more general way.
+        /// </remarks>
         public bool CannotPublishWithoutEnterprise
         {
             get
@@ -264,7 +268,7 @@ namespace Bloom.Publish
                 // - Book is not a translated shell
 
                 var overlayElementNodes = BookSelection?.CurrentSelection?.RawDom.SafeSelectNodes(
-                    "//div[contains(@class, 'bloom-textOverPicture')]"
+                    "//div[contains(@class,'bloom-textOverPicture') and not(contains(@class,'bloom-backgroundImage'))]"
                 );
                 var bookContainsOverlayElements = (overlayElementNodes?.Length ?? 0) > 0;
 
