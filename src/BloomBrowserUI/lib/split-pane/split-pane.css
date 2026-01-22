@@ -32,13 +32,19 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
  * are omitted, so we need to add a rule to set position:absolute on the
  * .split-pane-component-inner element.
  * This prevents the strange behavior reported in BL-15093.
+ * Note that position:absolute causes padding of the parent to be ignored, so we
+ * have to set the top, left, right, and bottom to what would be the padding value
+ * in order to get the correct layout.  We also really want to restrict this rule
+ * to only "Just Text" pages (BL-15611).
  */
-.marginBox > .split-pane-component-inner {
+.marginBox > .split-pane-component-inner:has(> .bloom-translationGroup) {
     position: absolute;
-    top: auto;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: var(--marginBox-padding);
+    left: var(--marginBox-padding);
+    right: var(--marginBox-padding);
+    bottom: var(--marginBox-padding);
+    width: initial;
+    height: initial;
 }
 
 .split-pane.fixed-top > .split-pane-component:first-child,
