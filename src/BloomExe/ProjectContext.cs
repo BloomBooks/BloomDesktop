@@ -381,10 +381,6 @@ namespace Bloom
             server.SetCollectionSettingsDuringInitialization(_scope.Resolve<CollectionSettings>());
             server.EnsureListening();
 
-            // The Api Handler is now at the application level and has a longer lifetime than
-            // the project context. We need to clear out any project-level handlers that may have
-            // been added by an earlier project context.
-            server.ApiHandler.ClearProjectLevelHandlers();
             // A few APIs are now registered in the constructor of ApplicationContainer
             _scope.Resolve<AudioRecording>().RegisterWithApiHandler(server.ApiHandler);
 
@@ -850,8 +846,29 @@ namespace Bloom
             // Disposing ProjectContext disables api functionality and disposes WorkspaceModel/View, BloomServer, et al.,
             // so we need to resort to our fallback error handler.
             ResetToFallbackHandler();
-            _scope.Dispose();
-            _scope = null;
+
+            // We now keep BloomApiHandler alive for the application lifetime, but many endpoints are project-scoped.
+            // Disposing the ProjectContext should fully shut down the project (including webviews) before we clear
+            // those project-scoped endpoints.
+            var server = _scope.Resolve<BloomServer>();
+            try
+            {
+                // The order of these is tricky. The problem is that browsers could still be
+                // running and trying to call APIs while we are shutting down.
+                // Disposing the scope disposes the browsers, after which they shouldn't be able
+                // to make requests. But some requests might still be queued up in the server.
+                // If we clear the project level handlers first, then those requests could fail
+                // because no handler is registered. If we dispose the scope first, then those
+                // requests will find the handlers, but they may rely on objects that have been
+                // disposed. On the whole, I think it's best to clear the handlers first; that way,
+                // at least we avoid mysterious errors in the API handlers due to disposed objects.
+                server.ApiHandler.ClearProjectLevelHandlers();
+                _scope.Dispose();
+            }
+            finally
+            {
+                _scope = null;
+            }
 
             //REVIEW: by debugging, I see that _httpServer is already (and properly) disposed of by the
             //_scope.Dispose() above.
