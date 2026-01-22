@@ -59,11 +59,6 @@ namespace Bloom.web.controllers
             );
             apiHandler.RegisterEndpointHandler("editView/getBookLangs", HandleGetBookLangs, false);
             apiHandler.RegisterEndpointHandler(
-                "editView/isClipboardBookHyperlink",
-                HandleIsClipboardBookHyperlink,
-                false
-            );
-            apiHandler.RegisterEndpointHandler(
                 "editView/requestTranslationGroupContent",
                 RequestDefaultTranslationGroupContent,
                 true
@@ -294,75 +289,6 @@ namespace Bloom.web.controllers
                 );
             });
             request.PostSucceeded();
-        }
-
-        // Answer true if the current clipboard contents are something that makes sense to paste into the href
-        // of a hyperlink in a Bloom Book. Currently we allow all http(s) and mailto links, plus internal links
-        // (starting with #) provided they are to a non-xmatter page that is present in the book.
-        private void HandleIsClipboardBookHyperlink(ApiRequest request)
-        {
-            string clipContent = ""; // initial value is not used, delegate will set it.
-            Program.MainContext.Send(
-                o =>
-                {
-                    try
-                    {
-                        clipContent = PortableClipboard.GetText();
-                    }
-                    catch (Exception e)
-                    {
-                        // Need to make sure to handle exceptions.
-                        // If the worker thread dies with an unhandled exception,
-                        // it causes the whole program to immediately crash without opportunity for error reporting
-                        Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
-
-                        // Causes the final result to be false
-                        // Don't just ReplyWithBoolean here, that could result in trying to send two replies, which will fail.
-                        clipContent = "";
-                    }
-                },
-                null
-            );
-
-            request.ReplyWithBoolean(IsBloomHyperlink(clipContent, request.CurrentBook));
-        }
-
-        static Regex _bloomHyperlinkRegex = new Regex(
-            @"^(/book/([-A-Fa-f0-9]+))?(#(cover|[-A-Fa-f0-9]+))?",
-            RegexOptions.Compiled
-        );
-
-        private bool IsBloomHyperlink(string text, Book.Book book)
-        {
-            if (string.IsNullOrEmpty(text) || book == null)
-                return false;
-            // This is simplistic but enough to prevent most nonsensical URLs being put in links.
-            if (
-                text.StartsWith("http://")
-                || text.StartsWith("https://")
-                || text.StartsWith("mailto:")
-            )
-                return true;
-            var match = _bloomHyperlinkRegex.Match(text);
-            if (match.Success)
-            {
-                var bookId = match.Groups[2].Value;
-                var pageId = match.Groups[4].Value;
-                // It is no good linking to xmatter pages by id because their IDs change.
-                // We maintain a link to the outside front cover using the id "cover" to get
-                // around this problem.
-                if (bookId == book.ID)
-                {
-                    return pageId == "cover"
-                        || book.GetPages().Any(page => page.Id == pageId && !page.IsXMatter);
-                }
-                else
-                {
-                    return Guid.TryParse(bookId, out var bookGuid)
-                        && (pageId == "cover" || Guid.TryParse(pageId, out var pageGuid));
-                }
-            }
-            return false;
         }
 
         private void RequestDefaultTranslationGroupContent(ApiRequest request)
