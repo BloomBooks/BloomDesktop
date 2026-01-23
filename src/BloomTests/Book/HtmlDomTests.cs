@@ -212,6 +212,30 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void AppendInlineStyle_ExistingStyleMissingSemicolon_InsertsSeparator()
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml("<div style='font-size:12px' />");
+            var element = (SafeXmlElement)dom.FirstChild;
+
+            HtmlDom.AppendInlineStyle(element, "color: red;");
+
+            Assert.AreEqual("font-size:12px; color: red;", element.GetAttribute("style"));
+        }
+
+        [Test]
+        public void AppendInlineStyle_ExistingStyleHasSemicolon_DoesNotDoubleSemicolons()
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml("<div style='font-size:12px;' />");
+            var element = (SafeXmlElement)dom.FirstChild;
+
+            HtmlDom.AppendInlineStyle(element, "; color: red;");
+
+            Assert.AreEqual("font-size:12px; color: red;", element.GetAttribute("style"));
+        }
+
+        [Test]
         public void AddClass_AlreadyThere_LeavesAlone()
         {
             var dom = SafeXmlDocument.Create();
