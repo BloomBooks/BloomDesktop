@@ -21,7 +21,9 @@
 }
 
 .bloom-canvas .bloom-canvas-element:has(img[src*="placeHolder.png"]) {
-    .image-placeholder-background();
+    .bloom-imageContainer {
+        .image-placeholder-background();
+    }
 }
 
 .customPage .bloom-videoContainer.bloom-noVideoSelected {
@@ -51,7 +53,9 @@
     .bloom-canvas[data-tool-id="canvas"]:not(:has(.bloom-canvas-element)):has(
         img[src*="placeHolder.png"]
     ) {
-    background-image: @canvas-placeholder;
+    .bloom-imageContainer {
+        background-image: @canvas-placeholder;
+    }
 }
 
 // In a bloom-canvas that has canvas elements other than the background image, we want to
@@ -62,7 +66,9 @@
     .bloom-canvas-element.bloom-backgroundImage:not(
             [data-bloom-active="true"]
         ):has(img[src*="placeHolder.png"]) {
-        background-image: none;
+        .bloom-imageContainer {
+            background-image: none;
+        }
     }
 }
 

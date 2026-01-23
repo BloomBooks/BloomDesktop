@@ -140,7 +140,9 @@ and as a result, the labels are shifted to this many pixels to the width. This s
 // note that the *= here is needed in case there is a path, as happens in folio pdfs e.g. ../foo/placheholder.png
 .hidePlaceHolders.hidePlaceHolders.hidePlaceHolders.hidePlaceHolders
     .bloom-canvas-element:has(img[src*="placeHolder.png"]) {
-    background-image: none;
+    .bloom-imageContainer {
+        background-image: none;
+    }
 }
 
 @stripeGrey: #f0f0f0;
