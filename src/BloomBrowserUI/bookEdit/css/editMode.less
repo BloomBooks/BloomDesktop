@@ -596,7 +596,9 @@ body.bloom-fullBleed {
     .bloom-backgroundImage.bloom-canvas-element.bloom-canvas-element:has(
             img[src*="placeHolder.png"]
         ) {
-        background-image: none;
+        .bloom-imageContainer {
+            background-image: none;
+        }
     }
     height: 100%;
     width: 100%;
@@ -1678,7 +1680,9 @@ svg.bloom-videoControl {
         .bloom-backgroundImage.bloom-canvas-element:has(
             img[src="placeHolder.png"]
         ) {
-        background-image: none;
+        .bloom-imageContainer {
+            background-image: none;
+        }
     }
 }
 
