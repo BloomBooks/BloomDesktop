@@ -6530,6 +6530,11 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="pt-PT" state="final">Uma página com uma língua acima da imagem e outra em baixo dela.</target>
         <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Canvas" sil:dynamic="true">
+        <source xml:lang="en">A page with an empty canvas you can add to.</source>
+        <target xml:lang="pt-PT" state="needs-translation">A page with an empty canvas you can add to.</target>
+        <note>ID: TemplateBooks.PageDescription.Canvas</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Comprehension Quiz" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A simple quiz game that checks if readers understand key parts of the story they just read.</source>
         <target xml:lang="pt-PT" state="final">Um jogo de teste simples que verifica se os leitores entendem as principais partes da história que acabaram de ler.</target>
@@ -7020,6 +7025,11 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Just an Image</source>
         <target xml:lang="pt-PT" state="final">Só um imagem</target>
         <note>ID: TemplateBooks.PageLabel.Just an Image</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Canvas" sil:dynamic="true">
+        <source xml:lang="en">Canvas</source>
+        <target xml:lang="pt-PT" state="needs-translation">Canvas</target>
+        <note>ID: TemplateBooks.PageLabel.Canvas</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Just Video" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Just Video</source>
