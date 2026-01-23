@@ -486,7 +486,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     {isLinkGrid && (
                         <>
                             <ButtonWithTooltip
-                                tipL10nKey="EditTab.ClickToEditBookGrid"
+                                tipL10nKey="EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks"
                                 icon={CogIcon}
                                 relativeSize={0.8}
                                 onClick={() => {
