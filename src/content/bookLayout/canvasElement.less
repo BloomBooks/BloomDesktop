@@ -357,6 +357,54 @@
     }
 }
 
+.bloom-page .bloom-canvas-button[data-image-fit="contain"],
+.bloom-page .bloom-canvas-button[data-image-fit="cover"] {
+    padding: 0;
+    overflow: hidden;
+}
+
+.bloom-page
+    .bloom-canvas-button[data-image-fit="contain"]
+    .bloom-imageContainer,
+.bloom-page .bloom-canvas-button[data-image-fit="cover"] .bloom-imageContainer {
+    img,
+    video {
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        max-height: none;
+    }
+}
+
+.bloom-page
+    .bloom-canvas-button[data-image-fit="contain"]
+    .bloom-imageContainer {
+    img,
+    video {
+        object-fit: contain;
+    }
+}
+
+.bloom-page .bloom-canvas-button[data-image-fit="cover"] .bloom-imageContainer {
+    img,
+    video {
+        object-fit: cover;
+    }
+}
+
+// In contain/cover modes, move padding from the button to the text group so
+// the image can reach the edge while labels keep their spacing.
+.bloom-page
+    .bloom-canvas-button:is(
+        [data-image-fit="contain"],
+        [data-image-fit="cover"]
+    ):has(> .bloom-translationGroup)
+    .bloom-translationGroup {
+    padding: 0.6em;
+    width: 100%;
+    box-sizing: border-box;
+}
+
 .bloom-page .bloom-canvas-button {
     display: inline-flex;
     // for when it has both image and text
