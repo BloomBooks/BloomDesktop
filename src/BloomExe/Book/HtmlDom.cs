@@ -3440,15 +3440,26 @@ namespace Bloom.Book
         /// Intended for Export to Word/Libre Office only. Sets an inline style to a given value, adding to what
         /// might already be there.
         /// </summary>
-        /// <param name="element"></param>
-        /// <param name="styleToSet"></param>
-        public static void SetInlineStyle(SafeXmlElement element, string styleToSet)
+        public static void AppendInlineStyle(SafeXmlElement element, string styleToAppend)
         {
-            var styleString = element.GetAttribute("style");
-            if (!String.IsNullOrWhiteSpace(styleString))
-                styleString += " ";
-            styleString += styleToSet;
-            element.SetAttribute("style", styleString);
+            if (String.IsNullOrWhiteSpace(styleToAppend))
+                return;
+
+            var existingStyle = element.GetAttribute("style")?.Trim() ?? String.Empty;
+            var appendStyle = styleToAppend.Trim().TrimStart(';').TrimStart();
+            if (appendStyle.Length == 0)
+                return;
+
+            if (existingStyle.Length == 0)
+            {
+                element.SetAttribute("style", appendStyle);
+                return;
+            }
+
+            if (!existingStyle.EndsWith(";", StringComparison.Ordinal))
+                existingStyle += ";";
+
+            element.SetAttribute("style", existingStyle + " " + appendStyle);
         }
 
         /// <summary>
