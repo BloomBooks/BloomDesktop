@@ -10,6 +10,7 @@ import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
 import $ from "jquery";
+import { kBloomButtonClass } from "../toolbox/canvas/canvasElementUtils";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -480,9 +481,11 @@ export default class OverflowChecker {
             if (overflowY > 0 && page.length) {
                 OverflowChecker.fixScrollBarsSoon(page[0]);
             }
-
-            if ($editable.parents("[class*=Device]").length === 0) {
-                // don't show an overflow warning if we have scrolling available
+            if (
+                $editable.parents("[class*=Device]").length === 0 ||
+                $editable.closest("." + kBloomButtonClass).length > 0
+            ) {
+                // don't show an overflow warning if we have scrolling available (unless it's a button)
                 theOneLocalizationManager
                     .asyncGetText(
                         "EditTab.Overflow",
@@ -526,8 +529,10 @@ export default class OverflowChecker {
             const overflowingAncestor = OverflowChecker.overflowingAncestor(
                 $this[0],
             );
+            console.log(2.5);
             if (overflowingAncestor == null) {
                 if (!OverflowChecker.IsOverflowingSelf($this[0])) {
+                    console.log("not overflowing self");
                     $this.removeClass("overflow"); // might be a remnant from earlier overflow
                     $this.removeClass("thisOverflowingParent");
                 }
@@ -540,12 +545,14 @@ export default class OverflowChecker {
                 const oldQtip =
                     OverflowChecker.GetQtipContent($overflowingAncestor);
                 if (oldQtip && !OverflowChecker.DoesQtipMarkOverflow(oldQtip)) {
+                    console.log(3);
                     return; // don't override existing qtip (probably hint or source bubble)
                 }
                 // BL-1261: don't want the typed-in box to be marked overflow just because it made another box
                 // go past the margins
                 // $box.addClass('overflow'); // probably typing in the focused element caused this
                 if (quizPage.length) {
+                    console.log(4);
                     // We want to ignore overflow on quiz pages.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9952.
                     return;
                 }
