@@ -75,6 +75,18 @@ mixin standardPage-Custom
       .split-pane-component-inner
 
 
+//- Shared contents for pages that use the Canvas tool.
+//- Allows callers to optionally insert additional .bloom-canvas-element items.
+mixin canvasPageContents
+  .split-pane-component-inner
+    .bloom-canvas.bloom-has-canvas-element(data-tool-id="canvas")
+      if block
+        block
+      .bloom-canvas-element.bloom-backgroundImage(style="width:100%; height:100%;")
+        .bloom-imageContainer(data-tool-id="canvas")
+          img(src="placeHolder.png")
+
+
 //- The following list all the pages in Basic Book, Decodable Reader, & Leveled Reader
 mixin include-standard-pages
    +page-splittable-choice-custom('Basic Text & Picture')#adcd48df-e9ab-4a07-afd4-6a24d0398382&attributes(attributes)
@@ -123,6 +135,9 @@ mixin include-standard-pages
          +imagex
    +standardPage-JustPicture&attributes(attributes)
    +standardPage-JustText&attributes(attributes)
+
+   +page-splittable-choice-custom('Canvas', 'A canvas...')#3d5adbdc-d42e-4b32-8032-04910cea0036(data-feature='canvas')
+      +canvasPageContents
 
    +page-splittable-choice-custom('Picture & Word', 'Page with a picture on top and a large, centered word below.').customPage#aD115DFF-0415-4444-8E76-3D2A18DBBD27&attributes(attributes)
      +stack
