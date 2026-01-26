@@ -145,6 +145,11 @@ and as a result, the labels are shifted to this many pixels to the width. This s
     }
 }
 
+// As of 6.3 it is currently still possible to get old-style placeholder img elements wrapped in nothing but a bloom-canvas (BL-15763) at publication.
+.hidePlaceHolders img[src*="placeHolder.png"] {
+    display: none;
+}
+
 @stripeGrey: #f0f0f0;
 
 // To show where text goes, this has stripes.
