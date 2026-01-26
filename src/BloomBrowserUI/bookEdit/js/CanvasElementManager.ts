@@ -2579,52 +2579,64 @@ export class CanvasElementManager {
         }
     }
 
-    // If the background canvas element doesn't fill the container, we can expand the image to make it so.
-    public canExpandToFillSpace(): boolean {
+    // Calculates the new dimensions and position for expanding the image to fill the container.
+    // Returns an object with the new width and top/left values if changes are needed, or null otherwise.
+    private getExpandedImageDimensions(): {
+        imgWidth: number;
+        imgTop?: number;
+        imgLeft?: number;
+    } | null {
         if (
             !this.activeElement ||
             !this.activeElement.classList.contains(kBackgroundImageClass)
         )
-            return false;
-        const bloomCanvas = this.activeElement.closest(
-            kBloomCanvasSelector,
-        ) as HTMLElement;
-        if (!bloomCanvas) return false;
-        return (
-            bloomCanvas.clientWidth !== this.activeElement.clientWidth ||
-            bloomCanvas.clientHeight !== this.activeElement.clientHeight
-        );
-    }
-
-    public expandImageToFillSpace() {
-        if (
-            !this.activeElement ||
-            !this.activeElement.classList.contains(kBackgroundImageClass)
-        )
-            return;
+            return null;
         const img = getImageFromCanvasElement(this.activeElement);
-        if (!img) return;
+        if (!img) return null;
         const bloomCanvas = this.activeElement.closest(
             kBloomCanvasSelector,
         ) as HTMLElement;
-        if (!bloomCanvas) return;
-        // Remove any existing cropping
-        this.resetCropping(false);
+        if (!bloomCanvas) return null;
+
         const imgAspectRatio = img.naturalWidth / img.naturalHeight;
         const containerAspectRatio =
             bloomCanvas.clientWidth / bloomCanvas.clientHeight;
-        this.activeElement.style.width = `${bloomCanvas.clientWidth}px`;
-        this.activeElement.style.height = `${bloomCanvas.clientHeight}px`;
+        const imgStyleWidth = img.style.width;
+        const currentImgWidth = imgStyleWidth
+            ? CanvasElementManager.pxToNumber(imgStyleWidth)
+            : img.clientWidth;
+        // using <= here becuse client  values are whole pixels and rounding easily
+        // produces a spurious 1px difference.
+        const canvasElementFillsCanvas =
+            Math.abs(
+                bloomCanvas.clientHeight - this.activeElement!.clientHeight,
+            ) <= 1 &&
+            Math.abs(
+                bloomCanvas.clientWidth - this.activeElement!.clientWidth,
+            ) <= 1;
+
         if (imgAspectRatio < containerAspectRatio) {
             // When the image fills the width of the container, it will be too tall,
             // and will need cropping top and bottom.
             const imgHeightForFullWidth =
                 bloomCanvas.clientWidth / imgAspectRatio;
             const delta = imgHeightForFullWidth - bloomCanvas.clientHeight;
-            if (delta >= 1) {
-                // let's not switch into cropped mode if it's this close already
-                img.style.width = `${bloomCanvas.clientWidth}px`;
-                img.style.top = `${-delta / 2}px`;
+            const currentImgTop = CanvasElementManager.pxToNumber(
+                img.style.top,
+            );
+            const newImgTop = -delta / 2;
+
+            if (
+                Math.abs(bloomCanvas.clientWidth - currentImgWidth) >= 1 ||
+                Math.abs(currentImgTop - newImgTop) >= 1 ||
+                !canvasElementFillsCanvas
+            ) {
+                // let's not switch into cropped mode if it would make almost no difference.
+                // (or we've already done it)
+                return {
+                    imgWidth: bloomCanvas.clientWidth,
+                    imgTop: -delta / 2,
+                };
             }
         } else {
             // When the image fills the height of the container, it will be too wide,
@@ -2632,17 +2644,59 @@ export class CanvasElementManager {
             const imgWidthForFullHeight =
                 bloomCanvas.clientHeight * imgAspectRatio;
             const delta = imgWidthForFullHeight - bloomCanvas.clientWidth;
-            if (delta >= 1) {
-                img.style.width = `${imgWidthForFullHeight}px`;
-                img.style.left = `${-delta / 2}px`;
+            const currentImgLeft = CanvasElementManager.pxToNumber(
+                img.style.left,
+            );
+            const newImgLeft = -delta / 2;
+            if (
+                Math.abs(imgWidthForFullHeight - currentImgWidth) >= 1 ||
+                Math.abs(currentImgLeft - newImgLeft) >= 1 ||
+                !canvasElementFillsCanvas
+            ) {
+                return {
+                    imgWidth: imgWidthForFullHeight,
+                    imgLeft: -delta / 2,
+                };
             }
         }
+        return null;
+    }
+
+    // If the background canvas element doesn't fill the container, we can expand the image to make it so.
+    public canExpandToFillSpace(): boolean {
+        return this.getExpandedImageDimensions() !== null;
+    }
+
+    public expandImageToFillSpace() {
+        const dimensions = this.getExpandedImageDimensions();
+        if (!dimensions) return;
+
+        const img = getImageFromCanvasElement(this.activeElement!);
+        if (!img) return;
+        const bloomCanvas = this.activeElement!.closest(
+            kBloomCanvasSelector,
+        ) as HTMLElement;
+        if (!bloomCanvas) return;
+
+        // Remove any existing cropping
+        this.resetCropping(false);
+        this.activeElement!.style.width = `${bloomCanvas.clientWidth}px`;
+        this.activeElement!.style.height = `${bloomCanvas.clientHeight}px`;
+
+        img.style.width = `${dimensions.imgWidth}px`;
+        if (dimensions.imgTop !== undefined) {
+            img.style.top = `${dimensions.imgTop}px`;
+        }
+        if (dimensions.imgLeft !== undefined) {
+            img.style.left = `${dimensions.imgLeft}px`;
+        }
+
         // I think this is redundant, but it may (now or one day) do something that needs doing
         // when the background image changes size.
-        this.adjustBackgroundImageSize(bloomCanvas, this.activeElement, false);
+        this.adjustBackgroundImageSize(bloomCanvas, this.activeElement!, false);
         // We will have changed the state of the fill space button, but the React code
         // doesn't know this unless we force a render.
-        renderCanvasElementContextControls(this.activeElement, false);
+        renderCanvasElementContextControls(this.activeElement!, false);
     }
 
     // If this canvas element contains an image, and it has not already been adjusted so that the canvas element
@@ -3931,6 +3985,11 @@ export class CanvasElementManager {
         );
         this.adjustMoveCropHandleVisibility();
         this.alignControlFrameWithActiveElement();
+        if (this.activeElement?.classList.contains(kBackgroundImageClass)) {
+            // currently we only need to do this because the command to expand to fill
+            // the container might have become enabled.
+            renderCanvasElementContextControls(this.activeElement, false);
+        }
     }
 
     // MUST be defined this way, rather than as a member function, so that it can
