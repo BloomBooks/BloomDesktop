@@ -20,6 +20,7 @@ using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.PlatformUtilities;
+using SIL.Progress;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
@@ -100,6 +101,88 @@ namespace BloomTests.Publish.BloomPub
                     testBook.Title + BloomPubMaker.BloomPubExtensionWithDot,
                     Path.GetFileName(bloomdTempFile.Path)
                 );
+            }
+        }
+
+        private Bloom.Book.Book CreateBookWithPhysicalFileAndFolderName(
+            string bookFolderName,
+            string bodyContent,
+            string headContent
+        )
+        {
+            var collectionSettings = CreateDefaultCollectionsSettings();
+            var fileLocator = new BloomFileLocator(
+                new CollectionSettings(),
+                new XMatterPackFinder(new string[] { }),
+                ProjectContext.GetFactoryFileLocations(),
+                ProjectContext.GetFoundFileLocations(),
+                ProjectContext.GetAfterXMatterFileLocations()
+            );
+
+            var bookFolderPath = Path.Combine(_testFolder.Path, bookFolderName);
+            Directory.CreateDirectory(bookFolderPath);
+
+            var bookHtml = XmlHtmlConverter.CreateHtmlString(bodyContent, headContent);
+            var htmPath = Path.Combine(bookFolderPath, bookFolderName + ".htm");
+            File.WriteAllText(htmPath, bookHtml);
+
+            var storage = new BookStorage(
+                bookFolderPath,
+                fileLocator,
+                new BookRenamedEvent(),
+                collectionSettings
+            );
+
+            var book = new Bloom.Book.Book(
+                new BookInfo(bookFolderPath, true),
+                storage,
+                _templateFinder.Object,
+                collectionSettings,
+                _pageListChangedEvent,
+                new BookRefreshEvent()
+            );
+
+            return book;
+        }
+
+        [TestCase("My Test Book")]
+        [TestCase("index")]
+        [TestCase("INDEX")]
+        public void CompressBookForDevice_OutputContainsOnlyIndexHtm(string bookFolderName)
+        {
+            var testBook = CreateBookWithPhysicalFileAndFolderName(
+                bookFolderName,
+                kMinimumValidBookBodyContent,
+                kMinimumValidBookHeadContent
+            );
+
+            using (
+                var bloompubTempFile = TempFile.WithFilenameInTempFolder(
+                    bookFolderName + BloomPubMaker.BloomPubExtensionWithDot
+                )
+            )
+            {
+                BloomPubMaker.CreateBloomPub(
+                    new BloomPubPublishSettings(),
+                    bloompubTempFile.Path,
+                    testBook,
+                    _bookServer,
+                    new NullWebSocketProgress()
+                );
+
+                var zip = new ZipFile(bloompubTempFile.Path);
+                var htmEntries = new List<string>();
+                foreach (ZipEntry entry in zip)
+                {
+                    if (!entry.IsFile)
+                        continue;
+
+                    if (entry.Name.EndsWith(".htm", StringComparison.OrdinalIgnoreCase))
+                        htmEntries.Add(entry.Name);
+                }
+
+                Assert.That(htmEntries, Has.Count.EqualTo(1));
+                Assert.That(htmEntries[0], Is.EqualTo("index.htm"));
             }
         }
 
@@ -1796,7 +1879,7 @@ namespace BloomTests.Publish.BloomPub
         }
 
         private void TestHtmlAfterCompression(
-            string bookbodyContent,
+            string bookBodyContent,
             string bookHeadContent = "",
             Action<string> actionsOnFolderBeforeCompressing = null,
             Action<string> assertionsOnResultingHtmlString = null,
@@ -1808,7 +1891,7 @@ namespace BloomTests.Publish.BloomPub
         )
         {
             var testBook = CreateBookWithPhysicalFile(
-                bookbodyContent,
+                bookBodyContent,
                 bookHeadContent,
                 bringBookUpToDate: true
             );
@@ -1816,12 +1899,10 @@ namespace BloomTests.Publish.BloomPub
                 tier
             );
 
-            var bookFileName = Path.GetFileName(testBook.GetPathHtmlFile());
-
             actionsOnFolderBeforeCompressing?.Invoke(testBook.FolderPath);
 
             using (
-                var bloomdTempFile = TempFile.WithFilenameInTempFolder(
+                var bloompubTempFile = TempFile.WithFilenameInTempFolder(
                     testBook.Title + BloomPubMaker.BloomPubExtensionWithDot
                 )
             )
@@ -1838,15 +1919,15 @@ namespace BloomTests.Publish.BloomPub
                     bloomPubPublishSettings.LanguagesToInclude = languagesToInclude;
                 BloomPubMaker.CreateBloomPub(
                     settings: bloomPubPublishSettings,
-                    outputPath: bloomdTempFile.Path,
+                    outputPath: bloompubTempFile.Path,
                     bookFolderPath: testBook.FolderPath,
                     bookServer: _bookServer,
                     progress: new NullWebSocketProgress(),
                     isTemplateBook: false,
                     creator: creator
                 );
-                var zip = new ZipFile(bloomdTempFile.Path);
-                var newHtml = GetEntryContents(zip, bookFileName);
+                var zip = new ZipFile(bloompubTempFile.Path);
+                var newHtml = GetEntryContents(zip, "index.htm");
                 var paramObj = new ZipHtmlObj(zip, newHtml);
                 assertionsOnZipArchive?.Invoke(paramObj); // send in html in case we need to compare it with the zip contents
                 assertionsOnResultingHtmlString?.Invoke(newHtml);
