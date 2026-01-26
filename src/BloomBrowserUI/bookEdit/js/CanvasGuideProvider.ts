@@ -1,7 +1,7 @@
 // This class that helps visually align elements during drag operations by showing red lines
 // and highlighting elements with equal dimensions during resize operations.
 
-import { kBackgroundImageClass } from "./CanvasElementManager";
+import { kBackgroundImageClass } from "../toolbox/canvas/canvasElementConstants";
 
 // ALIGNMENT RULES:
 // 1. When a dragged element aligns horizontally (top/middle/bottom) or vertically (left/center/right)

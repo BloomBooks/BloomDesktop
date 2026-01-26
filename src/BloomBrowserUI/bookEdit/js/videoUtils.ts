@@ -2,10 +2,8 @@
 // to minimize code that is pulled into both bundles.
 
 import { getPageIframeBody } from "../../utils/shared";
-import {
-    kCanvasElementSelector,
-    getCanvasElementManager,
-} from "../toolbox/canvas/canvasElementUtils";
+import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
+import { getCanvasElementManager } from "../toolbox/canvas/canvasElementUtils";
 
 export const kVideoContainerClass = "bloom-videoContainer";
 

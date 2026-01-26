@@ -61,7 +61,7 @@ export { showRegistrationDialogForEditTab as showRegistrationDialog };
 import { showAboutDialog } from "../react_components/aboutDialog";
 export { showAboutDialog };
 import { reportError } from "../lib/errorHandler";
-import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
+import type { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
 import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
 import * as ReactDOM from "react-dom";

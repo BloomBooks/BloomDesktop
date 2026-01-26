@@ -1,19 +1,32 @@
-// This file exposes some utility functions that are needed in both iframes. The idea is
-// to make them available to import with a minimum of dependencies.
+// Cross-frame bridge utilities for canvas element code.
+//
+// This module intentionally imports bloomFrames so Toolbox code can reach the page-frame
+// CanvasElementManager via bundle exports.
+//
+// Prefer importing DOM selector constants from canvasElementConstants instead of this file.
 
-import { getEditablePageBundleExports } from "../../editViewFrame";
-import { CanvasElementManager } from "../../js/CanvasElementManager";
+import { getEditablePageBundleExports } from "../../js/bloomFrames";
+import type { CanvasElementManager } from "../../js/CanvasElementManager";
+import {
+    kBloomButtonClass,
+    kBloomCanvasClass,
+    kBloomCanvasSelector,
+    kCanvasElementClass,
+    kCanvasElementSelector,
+    kHasCanvasElementClass,
+} from "./canvasElementConstants";
 
-export const kCanvasElementClass = "bloom-canvas-element";
-export const kCanvasElementSelector = `.${kCanvasElementClass}`;
-export const kHasCanvasElementClass = "bloom-has-canvas-element";
-// also declared in split-pane.js, which needs it but doesn't want to be a module.
-export const kBloomCanvasClass = "bloom-canvas";
-export const kBloomCanvasSelector = `.${kBloomCanvasClass}`;
-export const kBloomButtonClass = "bloom-canvas-button";
+// Re-export the dependency-light DOM constants for backwards compatibility.
+// Prefer importing these directly from canvasElementConstants instead of this bridge.
+export {
+    kBloomButtonClass,
+    kBloomCanvasClass,
+    kBloomCanvasSelector,
+    kCanvasElementClass,
+    kCanvasElementSelector,
+    kHasCanvasElementClass,
+};
 
-// Enhance: we could reduce cross-bundle dependencies by separately defining the CanvasElementManager interface
-// and just importing that here.
 export function getCanvasElementManager(): CanvasElementManager | undefined {
     const editablePageBundleExports = getEditablePageBundleExports();
     return editablePageBundleExports
