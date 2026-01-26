@@ -3826,12 +3826,25 @@ namespace Bloom.Book
             // Also, each back migration has the potential to cause problems since the corresponding forward
             // migration is likely to be run again. Make sure that each migration that might be re-run will
             // not cause problems if it is run repeatedly, and comment it to reinforce this.
-            if (breakingFeatureRequirements.Any(fr => fr.FeatureId == "bloomCanvas"))
+
+            // This is how it was supposed to be done. Keeping as a model for future back migrations.
+            //if (breakingFeatureRequirements.Any(fr => fr.FeatureId == "bloomCanvas"))
+            //{
+            //    MigrateBackFromLevel7BloomCanvas();
+            //}
+            //if (breakingFeatureRequirements.Any(fr => fr.FeatureId == "canvasElement"))
+            //{
+            //    MigrateBackFromLevel5CanvasElement();
+            //}
+
+            // patch for BL-15417. Somehow, a book got to maintenance level 8 and contained both
+            // canvas elements and bloom-canvas divs, but did not contain the expected feature requirements.
+            // So we just do the back migrations if the maintenance level indicates they
+            // might be needed. They will do nothing if the book does not contain the classes
+            // they are looking for.
+            if (GetMaintenanceLevel() >= 5)
             {
                 MigrateBackFromLevel7BloomCanvas();
-            }
-            if (breakingFeatureRequirements.Any(fr => fr.FeatureId == "canvasElement"))
-            {
                 MigrateBackFromLevel5CanvasElement();
             }
         }
