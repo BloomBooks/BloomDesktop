@@ -1,4 +1,6 @@
-import WebSocketManager from "../../utils/WebSocketManager";
+import WebSocketManager, {
+    IBloomWebSocketEvent,
+} from "../../utils/WebSocketManager";
 import { postJson } from "../../utils/bloomApi";
 import { showBookGridSetupDialog } from "../../react_components/BookGridSetup/BookGridSetupDialog";
 import { Link } from "../../react_components/BookGridSetup/BookLinkTypes";
@@ -40,7 +42,7 @@ export function editLinkGrid(linkGrid: HTMLElement) {
                     id,
                     title: titleElement?.textContent || "",
                     // we don't know what the server path to this book would be at the moment
-                    thumbnail: `${window.location.origin}/bloom/api/collections/book/thumbnail?book-id=${id}`,
+                    thumbnail: `${window.location.origin}/bloom/api/collections/book/coverImage?book-id=${id}`,
                 },
             };
         });
@@ -78,11 +80,8 @@ export function editLinkGrid(linkGrid: HTMLElement) {
 
                     // listen for a websocket message that the image has been saved
                     // and then update the src attribute
-                    const setImgSrc = () => {
-                        img.setAttribute(
-                            "src",
-                            desiredFileNameWithoutExtension + ".png",
-                        ); // note, img.src = "foo" does something different!
+                    const setImgSrc = (evt: IBloomWebSocketEvent) => {
+                        img.setAttribute("src", evt.message as string); // note, img.src = "foo" does something different!
                     };
                     WebSocketManager.notifyReady(messageContext, () => {
                         postJson("editView/addImageFromUrl", {

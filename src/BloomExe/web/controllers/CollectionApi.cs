@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.Dynamic;
 using System.IO;
@@ -13,8 +14,10 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
 using Bloom.CollectionTab;
+using Bloom.ImageProcessing;
 using Bloom.MiscUI;
 using Bloom.Properties;
+using Bloom.SafeXml;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.WebLibraryIntegration;
@@ -94,6 +97,12 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "book/thumbnail",
                 HandleThumbnailRequest,
+                false,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "book/coverImage",
+                HandleCoverImageRequest,
                 false,
                 false
             );
@@ -672,6 +681,68 @@ namespace Bloom.web.controllers
             return collection;
         }
 
+        public void HandleCoverImageRequest(ApiRequest request)
+        {
+            var bookInfo = GetBookInfoFromRequestParam(request);
+
+            // If anything goes wrong, we'll accept whatever (possibly low-res) image
+            // the older HandleThumbnailRequest routine comes up with. This method
+            // is for providing something better in the cases where we have it.
+            if (bookInfo == null)
+            {
+                HandleThumbnailRequest(request);
+                return;
+            }
+
+            string fullImagePath = _collectionModel
+                .GetBookFromBookInfo(bookInfo)
+                .GetCoverImagePathAndElt(out SafeXmlElement imgElement);
+            if (string.IsNullOrEmpty(fullImagePath))
+            {
+                HandleThumbnailRequest(request);
+                return;
+            }
+
+            if (
+                ImageUtils.IsPlaceholderImageFilename(fullImagePath)
+                || !RobustFile.Exists(fullImagePath)
+            )
+            {
+                // Thumbnail of a placeHolder will be ugly, but shouldn't be trying to
+                // make link grids of books that don't have cover images yet!
+                HandleThumbnailRequest(request);
+                return;
+            }
+
+            try
+            {
+                using (
+                    var cropped = ImageUtils.TryGetCroppedImageFromImgElement(
+                        fullImagePath,
+                        imgElement
+                    )
+                )
+                {
+                    if (cropped != null)
+                    {
+                        using (var stream = new MemoryStream())
+                        {
+                            cropped.Save(stream, ImageFormat.Png);
+                            stream.Seek(0, SeekOrigin.Begin);
+                            request.ReplyWithStreamContent(stream, "image/png", (int)stream.Length);
+                        }
+                        return;
+                    }
+                }
+            }
+            catch
+            {
+                // If cropping fails for any reason, fall back to the uncropped image.
+            }
+
+            request.ReplyWithImage(fullImagePath);
+        }
+
         public void HandleThumbnailRequest(ApiRequest request)
         {
             lock (_thumbnailEventsLock)
@@ -692,7 +763,7 @@ namespace Bloom.web.controllers
             {
                 using (var stream = ConvertImageToStream(Resources.Error70x70))
                 {
-                    request.ReplyWithStreamContent(stream, "image/png");
+                    request.ReplyWithStreamContent(stream, "image/png", (int)stream.Length);
                 }
                 return;
             }
@@ -720,7 +791,7 @@ namespace Bloom.web.controllers
                     errorImg = Resources.Error70x70;
                 using (var stream = ConvertImageToStream(errorImg))
                 {
-                    request.ReplyWithStreamContent(stream, "image/png");
+                    request.ReplyWithStreamContent(stream, "image/png", (int)stream.Length);
                     //request.Failed("Thumbnail doesn't exist, and making a new thumbnail is not yet implemented.");
                 }
             }

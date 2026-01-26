@@ -22,6 +22,7 @@ using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.Workspace;
 using L10NSharp;
+using Microsoft.Win32;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
@@ -2001,25 +2002,65 @@ namespace Bloom.Edit
                     using (var memoryStream = new MemoryStream(bytes))
                     using (var image = System.Drawing.Image.FromStream(memoryStream))
                     {
-                        // Determine file extension based on image format
-                        string extension = ".png"; // default
-                        if (ImageUtils.AppearsToBeJpeg(new PalasoImage(image)))
-                            extension = ".jpg";
-
-                        var fileName = desiredFileNameWithoutExtension + extension;
-                        var filePath = Path.Combine(_model.CurrentBook.FolderPath, fileName);
-
-                        // Save the image to the book's folder
-                        using (var fs = RobustFile.Create(filePath))
+                        string extension = ".png";
+                        // Don't be tempted to close this 'using' after we're done with the
+                        // palasoImage. Disposing it will also dispose the image, so keep
+                        // it until we're done with that.
+                        using (var palasoImage = new PalasoImage(image))
                         {
-                            memoryStream.Position = 0;
-                            await memoryStream.CopyToAsync(fs);
-                            // tell the caller that we have added the image
-                            BloomWebSocketServer.Instance.SendEvent(
+                            // Determine output format (keep original JPEG vs default to PNG)
+                            var isJpeg = ImageUtils.AppearsToBeJpeg(palasoImage);
+                            if (isJpeg)
+                                extension = ".jpg";
+
+                            var fileName = desiredFileNameWithoutExtension + extension;
+                            var filePath = Path.Combine(_model.CurrentBook.FolderPath, fileName);
+
+                            // Scale down large images.
+                            // - Prefer scaling so the largest dimension is at most 256px.
+                            // - But avoid making the smaller dimension too small; aim for it to be at least 128px.
+                            // We choose the scale factor that shrinks the least while satisfying both constraints,
+                            // and never upscale.
+                            const int kMaxDim = 256;
+                            const int kMinDim = 128;
+                            using var fs = RobustFile.Create(filePath);
+                            var format = isJpeg
+                                ? System.Drawing.Imaging.ImageFormat.Jpeg
+                                : System.Drawing.Imaging.ImageFormat.Png;
+
+                            using (
+                                var resized = ImageUtils.TryShrinkImageToApproxSize(
+                                    image,
+                                    kMaxDim,
+                                    kMinDim
+                                )
+                            )
+                            {
+                                if (resized != null)
+                                    resized.Save(fs, format);
+                                else
+                                    image.Save(fs, format);
+                            }
+
+                            // tell the caller that we have added the image.
+                            // Why is most of the file name both part of the client context and
+                            // sent as the message? For the context, we need something that
+                            // doesn't depend on whether we make a jpg or png, because we don't
+                            // find that out until the code just above here executes, and long
+                            // before that, JS code needs to set up the listener with a clientContext
+                            // based on which image we're expecting. OTOH, the code that receives
+                            // the message needs to know exactly what file was created.
+                            // We could just pass the extension, but it doesn't cost much to
+                            // include the whole filename, and one day we might use this for
+                            // something that would need to de-duplicate file names.
+                            dynamic eventBundle = new DynamicJson();
+                            eventBundle.message = fileName;
+                            _webSocketServer.SendBundle(
                                 "makeThumbnailFile-" + desiredFileNameWithoutExtension,
-                                "success"
+                                "success",
+                                eventBundle
                             );
-                            Debug.WriteLine("Added image for: " + desiredFileNameWithoutExtension);
+                            Debug.WriteLine("Added image for: " + fileName);
                         }
                     }
                 }

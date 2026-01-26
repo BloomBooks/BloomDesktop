@@ -288,16 +288,21 @@ namespace Bloom.Api
 
         public void ReplyWithStreamContent(Stream input, string responseType)
         {
+            // Use the overload with the default buffer size of 2MB,
+            // hopefully plenty big enough for any resource we want to return this way...
+            // if possible, use the other overload with a length, which is much more
+            // efficient for small items.
+            ReplyWithStreamContent(input, responseType, 2 * 1024 * 1024);
+        }
+
+        public void ReplyWithStreamContent(Stream input, string responseType, int length)
+        {
             ResponseContentType = responseType;
-            var buffer = new byte[2 * 1024 * 1024]; // hopefully plenty big enough for any resource we want to return this way
-            var length = input.Read(buffer, 0, buffer.Length);
+            var buffer = new byte[length];
+            var actualLength = input.Read(buffer, 0, buffer.Length);
 
-            _actualContext.Response.ContentLength64 = length;
+            _actualContext.Response.ContentLength64 = actualLength;
             _actualContext.Response.AppendHeader("Access-Control-Allow-Origin", "*");
-
-            // Any reason to cache?
-            //_actualContext.Response.AppendHeader("Cache-Control",
-            //	"max-age=600000"); // about a week...if someone spends longer editing one book, well, files will get loaded one more time...
 
             // A HEAD request (rather than a GET or POST request) is a request for just headers, and nothing can be written
             // to the OutputStream. It is normally used to check if the contents of the file have changed without taking the
