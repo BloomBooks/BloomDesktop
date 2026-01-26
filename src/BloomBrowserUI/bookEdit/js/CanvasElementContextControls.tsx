@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 
 import * as React from "react";
-import { useState, useEffect, Fragment, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import * as ReactDOM from "react-dom";
 import { kBloomBlue, lightTheme } from "../../bloomMaterialUITheme";
 import { SvgIconProps } from "@mui/material";
@@ -46,13 +46,15 @@ import {
 import Menu from "@mui/material/Menu";
 import { Divider } from "@mui/material";
 import { DuplicateIcon } from "./DuplicateIcon";
+import { getCanvasElementManager } from "../toolbox/canvas/canvasElementUtils";
 import {
-    CanvasElementManager,
-    isDraggable,
     kBackgroundImageClass,
+    kBloomButtonClass,
+} from "../toolbox/canvas/canvasElementConstants";
+import {
+    isDraggable,
     kDraggableIdAttribute,
-    theOneCanvasElementManager,
-} from "./CanvasElementManager";
+} from "../toolbox/canvas/canvasElementDraggables";
 import { copySelection, GetEditor, pasteClipboard } from "./bloomEditing";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -60,14 +62,19 @@ import { CogIcon } from "./CogIcon";
 import { MissingMetadataIcon } from "./MissingMetadataIcon";
 import { FillSpaceIcon } from "./FillSpaceIcon";
 import { kBloomDisabledOpacity } from "../../utils/colorUtils";
-import { Span } from "../../react_components/l10nComponents";
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import { getAudioSentencesOfVisibleEditables } from "bloom-player";
 import { GameType, getGameType } from "../toolbox/games/GameInfo";
 import { setGeneratedDraggableId } from "../toolbox/canvas/CanvasElementItem";
 import { editLinkGrid } from "./linkGrid";
 import { showLinkTargetChooserDialog } from "../../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
-import { kBloomButtonClass } from "../toolbox/canvas/canvasElementUtils";
+import { CanvasElementType } from "../toolbox/canvas/canvasElementTypes";
+import {
+    CanvasElementMenuSection,
+    CanvasElementToolbarButton,
+    canvasElementDefinitions,
+} from "../toolbox/canvas/canvasElementDefinitions";
+import { inferCanvasElementType } from "../toolbox/canvas/canvasElementTypeInference";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -76,9 +83,9 @@ interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
 // These names are not quite consistent, but the behaviors we want to control are currently
 // specific to navigation buttons, while the class name is meant to cover buttons in general.
 // Eventually we may need a way to distinguish buttons used for navigation from other buttons.
-function isNavigationButton(canvasElement: HTMLElement) {
-    return canvasElement.classList.contains(kBloomButtonClass);
-}
+const isNavigationButtonType = (
+    canvasElementType: CanvasElementType,
+): boolean => canvasElementType.startsWith("navigation-");
 
 // This is the controls bar that appears beneath a canvas element when it is selected. It contains buttons
 // for the most common operations that apply to the canvas element in its current state, and a menu for less common
@@ -96,16 +103,54 @@ const CanvasElementContextControls: React.FunctionComponent<{
     setMenuOpen: (open: boolean) => void;
     menuAnchorPosition?: { left: number; top: number };
 }> = (props) => {
+    const canvasElementManager = getCanvasElementManager();
+
     const imgContainer =
         props.canvasElement.getElementsByClassName(kImageContainerClass)[0];
     const hasImage = !!imgContainer;
     const hasText =
         props.canvasElement.getElementsByClassName("bloom-editable").length > 0;
+    const editable = props.canvasElement.getElementsByClassName(
+        "bloom-editable bloom-visibility-code-on",
+    )[0] as HTMLElement | undefined;
+    const langName = editable?.getAttribute("data-languagetipcontent");
     const linkGrid = props.canvasElement.getElementsByClassName(
         "bloom-link-grid",
     )[0] as HTMLElement | undefined;
     const isLinkGrid = !!linkGrid;
-    const isNavButton = isNavigationButton(props.canvasElement);
+    const inferredCanvasElementType = inferCanvasElementType(
+        props.canvasElement,
+    );
+    if (!inferredCanvasElementType) {
+        const canvasElementId = props.canvasElement.getAttribute("id");
+        const canvasElementClasses = props.canvasElement.getAttribute("class");
+        throw new Error(
+            `inferCanvasElementType() returned undefined for a selected canvas element${canvasElementId ? ` id='${canvasElementId}'` : ""}${canvasElementClasses ? ` (class='${canvasElementClasses}')` : ""}.`,
+        );
+    }
+
+    if (
+        !Object.prototype.hasOwnProperty.call(
+            canvasElementDefinitions,
+            inferredCanvasElementType,
+        )
+    ) {
+        throw new Error(
+            `Canvas element type '${inferredCanvasElementType}' is not registered in canvasElementDefinitions.`,
+        );
+    }
+
+    const canvasElementType: CanvasElementType = inferredCanvasElementType;
+    const isNavButton = isNavigationButtonType(canvasElementType);
+
+    const allowedMenuSections = new Set<CanvasElementMenuSection>(
+        canvasElementDefinitions[canvasElementType].menuSections,
+    );
+    const isMenuSectionAllowed = (
+        section: CanvasElementMenuSection,
+    ): boolean => {
+        return allowedMenuSections.has(section);
+    };
     const rectangles =
         props.canvasElement.getElementsByClassName("bloom-rectangle");
     // This is only used by the menu option that toggles it. If the menu stayed up, we would need a state
@@ -121,9 +166,6 @@ const CanvasElementContextControls: React.FunctionComponent<{
         "bloom-videoContainer",
     )[0];
     const hasVideo = !!videoContainer;
-    const video = videoContainer?.getElementsByTagName("video")[0];
-    const videoSource = video?.getElementsByTagName("source")[0];
-    const videoAlreadyChosen = !!videoSource?.getAttribute("src");
     const isPlaceHolder =
         hasImage && isPlaceHolderImage(img?.getAttribute("src"));
     const missingMetadata =
@@ -136,7 +178,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
         // or some other code somewhere is doing it when we choose a menu item. So we tell the CanvasElementManager
         // to ignore focus changes while the menu is open.
         if (open) {
-            CanvasElementManager.ignoreFocusChanges = true;
+            canvasElementManager?.setIgnoreFocusChanges?.(true);
         }
         props.setMenuOpen(open);
         // Setting ignoreFocusChanges to false immediately after closing the menu doesn't work,
@@ -146,14 +188,15 @@ const CanvasElementContextControls: React.FunctionComponent<{
         // a dialog opened by the menu command closes.  See BL-14123.
         if (!open) {
             setTimeout(() => {
-                if (launchingDialog)
-                    CanvasElementManager.skipNextFocusChange = true;
-                CanvasElementManager.ignoreFocusChanges = false;
+                canvasElementManager?.setIgnoreFocusChanges?.(
+                    false,
+                    launchingDialog,
+                );
             }, 0);
         }
     };
 
-    const menuEl = useRef<HTMLElement | null>();
+    const menuEl = useRef<HTMLElement | null>(null);
 
     const noneLabel = useL10n("None", "EditTab.Toolbox.DragActivity.None", "");
     const aRecordingLabel = useL10n("A Recording", "ARecording", "");
@@ -169,7 +212,9 @@ const CanvasElementContextControls: React.FunctionComponent<{
         HTMLElement | undefined
     >();
     // After deleting a draggable, we may get rendered again, and page will be null.
-    const page = props.canvasElement.closest(".bloom-page") as HTMLElement;
+    const page = props.canvasElement.closest(
+        ".bloom-page",
+    ) as HTMLElement | null;
     useEffect(() => {
         if (!currentDraggableTargetId) {
             setCurrentDraggableTarget(undefined);
@@ -183,7 +228,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
         );
         // We need to re-evaluate when changing pages, it's possible the initially selected item
         // on a new page has the same currentDraggableTargetId.
-    }, [currentDraggableTargetId]);
+    }, [currentDraggableTargetId, page]);
 
     // The audio menu item states the audio will play when the item is touched.
     // That isn't true yet outside of games, so don't show it.
@@ -213,9 +258,64 @@ const CanvasElementContextControls: React.FunctionComponent<{
         "EditTab.Image.BackgroundImage",
     );
     const canExpandBackgroundImage =
-        theOneCanvasElementManager?.canExpandToFillSpace();
+        canvasElementManager?.canExpandToFillSpace();
+
+    const showMissingMetadataButton = hasImage && missingMetadata;
+    const showChooseImageButton = hasImage;
+    const showPasteImageButton = hasImage;
+    const showFormatButton = !!editable;
+    const showChooseVideoButtons = hasVideo;
+    const showExpandToFillSpaceButton = isBackgroundImage;
+
+    const canModifyImage =
+        !!imgContainer &&
+        !imgContainer.classList.contains("bloom-unmodifiable-image") &&
+        !!img;
+
+    const allowWholeElementCommandsSection = isMenuSectionAllowed(
+        "wholeElementCommands",
+    );
+    const allowDuplicateMenu =
+        allowWholeElementCommandsSection &&
+        !isLinkGrid &&
+        !isBackgroundImage &&
+        !isSpecialGameElementSelected;
+    const allowDuplicateToolbar =
+        !isLinkGrid && !isBackgroundImage && !isSpecialGameElementSelected;
+    const showDeleteMenuItem = allowWholeElementCommandsSection && !isLinkGrid;
+    const showDeleteToolbarButton =
+        !isLinkGrid && !isSpecialGameElementSelected;
+
+    interface IToolbarItem {
+        key: string;
+        node: React.ReactNode;
+        isSpacer?: boolean;
+    }
+
+    const normalizeToolbarItems = (items: IToolbarItem[]): IToolbarItem[] => {
+        const normalized: IToolbarItem[] = [];
+        items.forEach((item) => {
+            if (item.isSpacer) {
+                if (normalized.length === 0) {
+                    return;
+                }
+                if (normalized[normalized.length - 1].isSpacer) {
+                    return;
+                }
+            }
+            normalized.push(item);
+        });
+        while (
+            normalized.length > 0 &&
+            normalized[normalized.length - 1].isSpacer
+        ) {
+            normalized.pop();
+        }
+        return normalized;
+    };
 
     const canToggleDraggability =
+        page !== null &&
         isInDraggableGame &&
         getGameType(activityType, page) !== GameType.DragSortSentence &&
         // wrong and correct view items cannot be made draggable
@@ -257,9 +357,470 @@ const CanvasElementContextControls: React.FunctionComponent<{
         return null;
     }
 
-    let menuOptions: IMenuItemWithSubmenu[] = [];
+    const runMetadataDialog = () => {
+        if (!props.canvasElement) return;
+        if (!imgContainer) return;
+        showCopyrightAndLicenseDialog(
+            getImageUrlFromImageContainer(imgContainer as HTMLElement),
+        );
+    };
+
+    const urlMenuItems: IMenuItemWithSubmenu[] = [];
+    const videoMenuItems: IMenuItemWithSubmenu[] = [];
+    const imageMenuItems: IMenuItemWithSubmenu[] = [];
+    const audioMenuItems: IMenuItemWithSubmenu[] = [];
+    const bubbleMenuItems: IMenuItemWithSubmenu[] = [];
+    const textMenuItems: IMenuItemWithSubmenu[] = [];
+    const wholeElementCommandsMenuItems: IMenuItemWithSubmenu[] = [];
+
+    let deleteEnabled = true;
+    if (isBackgroundImage) {
+        // We can't delete the placeholder (or if there isn't an img, somehow)
+        deleteEnabled = hasRealImage(img);
+    } else if (isSpecialGameElementSelected) {
+        // Don't allow deleting the single drag item in a sentence drag game.
+        deleteEnabled = false;
+    }
+
+    type CanvasElementCommandId = Exclude<CanvasElementToolbarButton, "spacer">;
+
+    const makeMenuItem = (props: {
+        l10nId: string;
+        english: string;
+        onClick: () => void;
+        icon: React.ReactNode;
+        disabled?: boolean;
+        featureName?: string;
+    }): IMenuItemWithSubmenu => {
+        return {
+            l10nId: props.l10nId,
+            english: props.english,
+            onClick: props.onClick,
+            icon: props.icon,
+            disabled: props.disabled,
+            featureName: props.featureName,
+        };
+    };
+
+    const makeToolbarButton = (props: {
+        key: string;
+        tipL10nKey: string;
+        icon: React.FunctionComponent<SvgIconProps>;
+        onClick: () => void;
+        relativeSize?: number;
+        disabled?: boolean;
+    }): IToolbarItem => {
+        return {
+            key: props.key,
+            node: (
+                <ButtonWithTooltip
+                    tipL10nKey={props.tipL10nKey}
+                    icon={props.icon}
+                    relativeSize={props.relativeSize}
+                    disabled={props.disabled}
+                    onClick={props.onClick}
+                />
+            ),
+        };
+    };
+
+    const canvasElementCommands: Record<
+        CanvasElementCommandId,
+        {
+            getToolbarItem: () => IToolbarItem | undefined;
+            getMenuItem?: () => IMenuItemWithSubmenu | undefined;
+        }
+    > = {
+        setDestination: {
+            getToolbarItem: () => {
+                if (!isNavButton) return undefined;
+                return makeToolbarButton({
+                    key: "setDestination",
+                    tipL10nKey: "EditTab.Toolbox.CanvasTool.ClickToSetLinkDest",
+                    icon: LinkIcon,
+                    relativeSize: 0.8,
+                    onClick: () => setLinkDestination(),
+                });
+            },
+            getMenuItem: () => {
+                if (!isNavButton) return undefined;
+                return makeMenuItem({
+                    l10nId: "EditTab.Toolbox.CanvasTool.SetDest",
+                    english: "Set Destination",
+                    onClick: () => setLinkDestination(),
+                    icon: <LinkIcon css={getMenuIconCss()} />,
+                    featureName: "canvas",
+                });
+            },
+        },
+        chooseVideo: {
+            getToolbarItem: () => {
+                if (!showChooseVideoButtons || !videoContainer)
+                    return undefined;
+                return makeToolbarButton({
+                    key: "chooseVideo",
+                    tipL10nKey: "EditTab.Toolbox.ComicTool.Options.ChooseVideo",
+                    icon: SearchIcon,
+                    onClick: () => doVideoCommand(videoContainer, "choose"),
+                });
+            },
+            getMenuItem: () => {
+                if (!hasVideo) return undefined;
+                return makeMenuItem({
+                    l10nId: "EditTab.Toolbox.ComicTool.Options.ChooseVideo",
+                    english: "Choose Video from your Computer...",
+                    onClick: () => {
+                        doVideoCommand(videoContainer, "choose");
+                        setMenuOpen(false, true);
+                    },
+                    icon: <SearchIcon css={getMenuIconCss()} />,
+                });
+            },
+        },
+        recordVideo: {
+            getToolbarItem: () => {
+                if (!showChooseVideoButtons || !videoContainer)
+                    return undefined;
+                return makeToolbarButton({
+                    key: "recordVideo",
+                    tipL10nKey:
+                        "EditTab.Toolbox.ComicTool.Options.RecordYourself",
+                    icon: CircleIcon,
+                    relativeSize: 0.8,
+                    onClick: () => doVideoCommand(videoContainer, "record"),
+                });
+            },
+            getMenuItem: () => {
+                if (!hasVideo) return undefined;
+                return makeMenuItem({
+                    l10nId: "EditTab.Toolbox.ComicTool.Options.RecordYourself",
+                    english: "Record yourself...",
+                    onClick: () => {
+                        setMenuOpen(false, true);
+                        doVideoCommand(videoContainer, "record");
+                    },
+                    icon: <CircleIcon css={getMenuIconCss(0.85)} />,
+                });
+            },
+        },
+        chooseImage: {
+            getToolbarItem: () => {
+                if (!showChooseImageButton || !canModifyImage) return undefined;
+                return makeToolbarButton({
+                    key: "chooseImage",
+                    tipL10nKey: "EditTab.Image.ChooseImage",
+                    icon: SearchIcon,
+                    onClick: () =>
+                        doImageCommand(img as HTMLImageElement, "change"),
+                });
+            },
+            getMenuItem: () => {
+                if (!canModifyImage) return undefined;
+                return makeMenuItem({
+                    l10nId: "EditTab.Image.ChooseImage",
+                    english: "Choose image from your computer...",
+                    onClick: () => {
+                        doImageCommand(img as HTMLImageElement, "change");
+                        setMenuOpen(false, true);
+                    },
+                    icon: <SearchIcon css={getMenuIconCss()} />,
+                });
+            },
+        },
+        pasteImage: {
+            getToolbarItem: () => {
+                if (!showPasteImageButton || !canModifyImage) return undefined;
+                return makeToolbarButton({
+                    key: "pasteImage",
+                    tipL10nKey: "EditTab.Image.PasteImage",
+                    icon: PasteIcon,
+                    relativeSize: 0.9,
+                    onClick: () =>
+                        doImageCommand(img as HTMLImageElement, "paste"),
+                });
+            },
+            getMenuItem: () => {
+                if (!canModifyImage) return undefined;
+                return makeMenuItem({
+                    l10nId: "EditTab.Image.PasteImage",
+                    english: "Paste image",
+                    onClick: () =>
+                        doImageCommand(img as HTMLImageElement, "paste"),
+                    icon: <PasteIcon css={getMenuIconCss()} />,
+                });
+            },
+        },
+        missingMetadata: {
+            getToolbarItem: () => {
+                if (!showMissingMetadataButton) return undefined;
+                return makeToolbarButton({
+                    key: "missingMetadata",
+                    tipL10nKey: "EditTab.Image.EditMetadataOverlay",
+                    icon: MissingMetadataIcon,
+                    onClick: () => runMetadataDialog(),
+                });
+            },
+            getMenuItem: () => {
+                if (!canModifyImage) return undefined;
+                const realImagePresent = hasRealImage(img);
+                return makeMenuItem({
+                    l10nId: "EditTab.Image.EditMetadataOverlay",
+                    english: "Set Image Information...",
+                    onClick: () => {
+                        setMenuOpen(false, true);
+                        runMetadataDialog();
+                    },
+                    disabled: !realImagePresent,
+                    icon: <CopyrightIcon css={getMenuIconCss()} />,
+                });
+            },
+        },
+        expandToFillSpace: {
+            getToolbarItem: () => {
+                if (!showExpandToFillSpaceButton) return undefined;
+                return makeToolbarButton({
+                    key: "expandToFillSpace",
+                    tipL10nKey: "EditTab.Toolbox.ComicTool.Options.FillSpace",
+                    icon: FillSpaceIcon,
+                    disabled: !canExpandBackgroundImage,
+                    onClick: () =>
+                        canvasElementManager?.expandImageToFillSpace(),
+                });
+            },
+            getMenuItem: () => {
+                if (!isBackgroundImage) return undefined;
+                return makeMenuItem({
+                    l10nId: "EditTab.Toolbox.ComicTool.Options.FillSpace",
+                    english: "Fit Space",
+                    onClick: () =>
+                        canvasElementManager?.expandImageToFillSpace(),
+                    disabled: !canExpandBackgroundImage,
+                    icon: (
+                        <img
+                            src="/bloom/images/fill image black.svg"
+                            css={getMenuIconCss(1, "left: -3px;")}
+                        />
+                    ),
+                });
+            },
+        },
+        format: {
+            getToolbarItem: () => {
+                if (!showFormatButton) return undefined;
+                return makeToolbarButton({
+                    key: "format",
+                    tipL10nKey: "EditTab.Toolbox.ComicTool.Options.Format",
+                    icon: CogIcon,
+                    relativeSize: 0.8,
+                    onClick: () => {
+                        if (!editable) return;
+                        GetEditor().runFormatDialog(editable);
+                    },
+                });
+            },
+        },
+        duplicate: {
+            getToolbarItem: () => {
+                if (!allowDuplicateToolbar) return undefined;
+                return makeToolbarButton({
+                    key: "duplicate",
+                    tipL10nKey: "EditTab.Toolbox.ComicTool.Options.Duplicate",
+                    icon: DuplicateIcon,
+                    relativeSize: 0.9,
+                    onClick: () => {
+                        if (!props.canvasElement) return;
+                        makeDuplicateOfDragBubble();
+                    },
+                });
+            },
+            getMenuItem: () => {
+                if (!allowDuplicateMenu) return undefined;
+                return makeMenuItem({
+                    l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
+                    english: "Duplicate",
+                    onClick: () => {
+                        if (!props.canvasElement) return;
+                        makeDuplicateOfDragBubble();
+                    },
+                    icon: <DuplicateIcon css={getMenuIconCss()} />,
+                });
+            },
+        },
+        delete: {
+            getToolbarItem: () => {
+                if (!showDeleteToolbarButton) return undefined;
+                return makeToolbarButton({
+                    key: "delete",
+                    tipL10nKey: "Common.Delete",
+                    icon: DeleteIcon,
+                    disabled: !deleteEnabled,
+                    onClick: () =>
+                        canvasElementManager?.deleteCurrentCanvasElement(),
+                });
+            },
+            getMenuItem: () => {
+                if (!showDeleteMenuItem) return undefined;
+                return makeMenuItem({
+                    l10nId: "Common.Delete",
+                    english: "Delete",
+                    disabled: !deleteEnabled,
+                    onClick: () =>
+                        canvasElementManager?.deleteCurrentCanvasElement?.(),
+                    icon: <DeleteIcon css={getMenuIconCss()} />,
+                });
+            },
+        },
+        linkGridChooseBooks: {
+            getToolbarItem: () => {
+                if (!isLinkGrid || !linkGrid) return undefined;
+                return {
+                    key: "linkGridChooseBooks",
+                    node: (
+                        <>
+                            <ButtonWithTooltip
+                                tipL10nKey="EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks"
+                                icon={CogIcon}
+                                relativeSize={0.8}
+                                onClick={() => {
+                                    editLinkGrid(linkGrid);
+                                }}
+                            />
+                            <span
+                                css={css`
+                                    color: ${kBloomBlue};
+                                    font-size: 10px;
+                                    margin-left: 4px;
+                                    cursor: pointer;
+                                `}
+                                onClick={() => {
+                                    editLinkGrid(linkGrid);
+                                }}
+                            >
+                                {chooseBooksLabel}
+                            </span>
+                        </>
+                    ),
+                };
+            },
+            getMenuItem: () => {
+                if (!isLinkGrid || !linkGrid) return undefined;
+                return makeMenuItem({
+                    l10nId: "EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks",
+                    english: "Choose books...",
+                    onClick: () => {
+                        setMenuOpen(false, true);
+                        editLinkGrid(linkGrid);
+                    },
+                    icon: <CogIcon css={getMenuIconCss()} />,
+                });
+            },
+        },
+    };
+
+    if (isMenuSectionAllowed("url")) {
+        const setDestMenuItem =
+            canvasElementCommands.setDestination.getMenuItem?.();
+        if (setDestMenuItem) {
+            urlMenuItems.push(setDestMenuItem);
+        }
+    }
+
+    if (hasVideo) {
+        const chooseVideoMenuItem =
+            canvasElementCommands.chooseVideo.getMenuItem?.();
+        if (chooseVideoMenuItem) {
+            videoMenuItems.push(chooseVideoMenuItem);
+        }
+        const recordVideoMenuItem =
+            canvasElementCommands.recordVideo.getMenuItem?.();
+        if (recordVideoMenuItem) {
+            videoMenuItems.push(recordVideoMenuItem);
+        }
+        videoMenuItems.push(
+            {
+                l10nId: "EditTab.Toolbox.ComicTool.Options.PlayEarlier",
+                english: "Play Earlier",
+                onClick: () => {
+                    doVideoCommand(videoContainer, "playEarlier");
+                },
+                icon: <ArrowUpwardIcon css={getMenuIconCss()} />,
+                disabled: !findPreviousVideoContainer(videoContainer),
+            },
+            {
+                l10nId: "EditTab.Toolbox.ComicTool.Options.PlayLater",
+                english: "Play Later",
+                onClick: () => {
+                    doVideoCommand(videoContainer, "playLater");
+                },
+                icon: <ArrowDownwardIcon css={getMenuIconCss()} />,
+                disabled: !findNextVideoContainer(videoContainer),
+            },
+        );
+    }
+
+    if (hasImage && canModifyImage) {
+        const chooseImageMenuItem =
+            canvasElementCommands.chooseImage.getMenuItem?.();
+        if (chooseImageMenuItem) {
+            imageMenuItems.push(chooseImageMenuItem);
+        }
+        const pasteImageMenuItem =
+            canvasElementCommands.pasteImage.getMenuItem?.();
+        if (pasteImageMenuItem) {
+            imageMenuItems.push(pasteImageMenuItem);
+        }
+        const realImagePresent = hasRealImage(img);
+        imageMenuItems.push({
+            l10nId: "EditTab.Image.CopyImage",
+            english: "Copy image",
+            onClick: () => doImageCommand(img as HTMLImageElement, "copy"),
+            icon: <CopyIcon css={getMenuIconCss()} />,
+            disabled: !realImagePresent,
+        });
+        const metadataMenuItem =
+            canvasElementCommands.missingMetadata.getMenuItem?.();
+        if (metadataMenuItem) {
+            imageMenuItems.push(metadataMenuItem);
+        }
+
+        const isCropped = !!(img as HTMLElement | undefined)?.style?.width;
+        imageMenuItems.push({
+            l10nId: "EditTab.Image.Reset",
+            english: "Reset Image",
+            onClick: () => {
+                getCanvasElementManager()?.resetCropping();
+            },
+            disabled: !isCropped,
+            icon: (
+                <img
+                    src="/bloom/images/reset image black.svg"
+                    // tweak to align better and make it look the same size as the other icons
+                    css={getMenuIconCss(1, "left: -1px; width: 22px;")}
+                />
+            ),
+        });
+    }
+
+    const expandToFillSpaceMenuItem =
+        canvasElementCommands.expandToFillSpace.getMenuItem?.();
+    if (expandToFillSpaceMenuItem) {
+        imageMenuItems.push(expandToFillSpaceMenuItem);
+    }
+
+    if (canChooseAudioForElement) {
+        audioMenuItems.push(
+            hasText
+                ? getAudioMenuItemForTextItem(textHasAudio, setMenuOpen)
+                : getAudioMenuItemForImage(
+                      imageSound,
+                      setImageSound,
+                      setMenuOpen,
+                  ),
+        );
+    }
+
     if (hasRectangle) {
-        menuOptions.splice(0, 0, {
+        textMenuItems.push({
             l10nId: "EditTab.Toolbox.ComicTool.Options.FillBackground",
             english: "Fill Background",
             onClick: () => {
@@ -272,16 +833,16 @@ const CanvasElementContextControls: React.FunctionComponent<{
             ),
         });
     }
-    if (hasText && !isInDraggableGame && !isNavButton) {
-        menuOptions.splice(0, 0, {
+    if (isMenuSectionAllowed("bubble") && hasText && !isInDraggableGame) {
+        bubbleMenuItems.push({
             l10nId: "EditTab.Toolbox.ComicTool.Options.AddChildBubble",
             english: "Add Child Bubble",
-            onClick: theOneCanvasElementManager?.addChildCanvasElement,
+            onClick: () => canvasElementManager?.addChildCanvasElement?.(),
         });
     }
     if (canToggleDraggability) {
         addMenuItemForTogglingDraggability(
-            menuOptions,
+            textMenuItems,
             props.canvasElement,
             currentDraggableTarget,
             setCurrentDraggableTarget,
@@ -289,118 +850,55 @@ const CanvasElementContextControls: React.FunctionComponent<{
     }
     if (currentDraggableTargetId) {
         addMenuItemsForDraggable(
-            menuOptions,
+            textMenuItems,
             props.canvasElement,
             currentDraggableTargetId,
             currentDraggableTarget,
             setCurrentDraggableTarget,
         );
     }
-    if (canChooseAudioForElement) {
-        const audioMenuItem = hasText
-            ? getAudioMenuItemForTextItem(textHasAudio, setMenuOpen)
-            : getAudioMenuItemForImage(imageSound, setImageSound, setMenuOpen);
 
-        menuOptions.push(divider);
-        menuOptions.push(audioMenuItem);
-    }
-    if (hasImage) {
-        const canModifyImage = !imgContainer.classList.contains(
-            "bloom-unmodifiable-image",
-        );
-        if (canModifyImage)
-            addImageMenuOptions(
-                menuOptions,
-                props.canvasElement,
-                img,
-                setMenuOpen,
-            );
-    }
-    if (hasVideo) {
-        addVideoMenuItems(menuOptions, videoContainer, setMenuOpen);
+    const linkGridChooseBooksMenuItem =
+        canvasElementCommands.linkGridChooseBooks.getMenuItem?.();
+    if (linkGridChooseBooksMenuItem) {
+        textMenuItems.push(linkGridChooseBooksMenuItem);
     }
 
-    if (isLinkGrid) {
-        // For link grids, add edit and delete options in the menu
-        menuOptions.push({
-            l10nId: "EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks",
-            english: "Choose books...",
-            onClick: () => {
-                if (!linkGrid) return;
-                editLinkGrid(linkGrid);
-            },
-            icon: <CogIcon css={getMenuIconCss()} />,
-        });
-        menuOptions.push({
-            l10nId: "Common.Delete",
-            english: "Delete",
-            onClick: theOneCanvasElementManager?.deleteCurrentCanvasElement,
-            icon: <DeleteIcon css={getMenuIconCss()} />,
-        });
+    const duplicateMenuItem = canvasElementCommands.duplicate.getMenuItem?.();
+    if (duplicateMenuItem) {
+        wholeElementCommandsMenuItems.push(duplicateMenuItem);
     }
 
-    menuOptions.push(divider);
-
-    if (!isBackgroundImage && !isSpecialGameElementSelected && !isLinkGrid) {
-        menuOptions.push({
-            l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
-            english: "Duplicate",
-            onClick: () => {
-                if (!props.canvasElement) return;
-                makeDuplicateOfDragBubble();
-            },
-            icon: <DuplicateIcon css={getMenuIconCss()} />,
-        });
+    const deleteMenuItem = canvasElementCommands.delete.getMenuItem?.();
+    if (deleteMenuItem) {
+        wholeElementCommandsMenuItems.push(deleteMenuItem);
     }
 
-    let deleteEnabled = true;
-    if (isBackgroundImage) {
-        const fillItem = {
-            l10nId: "EditTab.Toolbox.ComicTool.Options.FillSpace",
-            english: "Fit Space",
-            onClick: () => theOneCanvasElementManager?.expandImageToFillSpace(),
-            disabled: !canExpandBackgroundImage,
-            icon: (
-                <img
-                    src="/bloom/images/fill image black.svg"
-                    // tweak to align better for an icon that is wider than most
-                    css={getMenuIconCss(1, "left: -3px;")}
-                />
-            ),
-        };
-        let index = menuOptions.findIndex(
-            (option) => option.l10nId === "EditTab.Image.Reset",
-        );
-        if (index < 0) {
-            index = menuOptions.indexOf(divider);
-        }
-        menuOptions.splice(index, 0, fillItem);
-
-        // we can't delete the placeholder (or if there isn't an img, somehow)
-        deleteEnabled = hasRealImage(img);
-    } else if (isSpecialGameElementSelected || isLinkGrid) {
-        deleteEnabled = false; // don't allow deleting the single drag item in a sentence drag game or link grids
+    if (editable) {
+        addTextMenuItems(textMenuItems, editable, props.canvasElement);
     }
 
-    // last one
-    if (!isLinkGrid) {
-        menuOptions.push({
-            l10nId: "Common.Delete",
-            english: "Delete",
-            disabled: !deleteEnabled,
-            onClick: theOneCanvasElementManager?.deleteCurrentCanvasElement,
-            icon: <DeleteIcon css={getMenuIconCss()} />,
-        });
-    }
-    if (isNavButton) {
-        menuOptions.splice(0, 0, {
-            l10nId: "EditTab.Toolbox.CanvasTool.SetDest",
-            english: "Set Destination",
-            onClick: () => setLinkDestination(),
-            icon: <LinkIcon css={getMenuIconCss()} />,
-            featureName: "canvas",
-        });
-    }
+    const orderedMenuSections: Array<
+        [CanvasElementMenuSection, IMenuItemWithSubmenu[]]
+    > = [
+        ["url", urlMenuItems],
+        ["video", videoMenuItems],
+        ["image", imageMenuItems],
+        ["audio", audioMenuItems],
+        ["bubble", bubbleMenuItems],
+        ["text", textMenuItems],
+        ["wholeElementCommands", wholeElementCommandsMenuItems],
+    ];
+    const menuOptions = joinMenuSectionsWithSingleDividers(
+        orderedMenuSections
+            .filter(([section, items]) => {
+                if (items.length === 0) {
+                    return false;
+                }
+                return isMenuSectionAllowed(section);
+            })
+            .map((entry) => entry[1]),
+    );
     const handleMenuButtonMouseDown = (e: React.MouseEvent) => {
         // This prevents focus leaving the text box.
         e.preventDefault();
@@ -412,31 +910,40 @@ const CanvasElementContextControls: React.FunctionComponent<{
         e.stopPropagation();
         setMenuOpen(true); // Review: better on mouse down? But then the mouse up may be missed, if the menu is on top...
     };
-    const editable = props.canvasElement.getElementsByClassName(
-        "bloom-editable bloom-visibility-code-on",
-    )[0] as HTMLElement;
-    const langName = editable?.getAttribute("data-languagetipcontent");
-    // and these for text boxes
-    if (editable) {
-        addTextMenuItems(menuOptions, editable, props.canvasElement);
-    }
-
-    const runMetadataDialog = () => {
-        if (!props.canvasElement) return;
-        if (!imgContainer) return;
-        showCopyrightAndLicenseDialog(
-            getImageUrlFromImageContainer(imgContainer as HTMLElement),
-        );
-    };
-
-    // I don't particularly like this, but the logic of when to add items is
-    // so convoluted with most things being added at the beginning of the list instead
-    // the end, that it is almost impossible to reason about. It would be great to
-    // give it a more linear flow, but we're not taking that on just before releasing 6.2a.
-    // But this is also future-proof.
-    menuOptions = cleanUpDividers(menuOptions);
+    // editable and langName are computed earlier, but keep them here for the UI below.
 
     const maxMenuWidth = 260;
+
+    const getSpacerToolbarItem = (index: number): IToolbarItem => {
+        return {
+            key: `spacer-${index}`,
+            isSpacer: true,
+            node: (
+                <div
+                    css={css`
+                        width: ${buttonWidth};
+                    `}
+                />
+            ),
+        };
+    };
+
+    const getToolbarItemForButton = (
+        button: CanvasElementToolbarButton,
+        index: number,
+    ): IToolbarItem | undefined => {
+        if (button === "spacer") {
+            return getSpacerToolbarItem(index);
+        }
+        const command = canvasElementCommands[button as CanvasElementCommandId];
+        return command.getToolbarItem();
+    };
+
+    const toolbarItems = normalizeToolbarItems(
+        canvasElementDefinitions[canvasElementType].toolbarButtons
+            .map((button, index) => getToolbarItemForButton(button, index))
+            .filter((item): item is IToolbarItem => !!item),
+    );
 
     return (
         <ThemeProvider theme={lightTheme}>
@@ -483,183 +990,11 @@ const CanvasElementContextControls: React.FunctionComponent<{
                         }
                     `}
                 >
-                    {isLinkGrid && (
-                        <>
-                            <ButtonWithTooltip
-                                tipL10nKey="EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks"
-                                icon={CogIcon}
-                                relativeSize={0.8}
-                                onClick={() => {
-                                    if (!linkGrid) return;
-                                    editLinkGrid(linkGrid);
-                                }}
-                            />
-                            <span
-                                css={css`
-                                    color: ${kBloomBlue};
-                                    font-size: 10px;
-                                    margin-left: 4px;
-                                    cursor: pointer;
-                                `}
-                                onClick={() => {
-                                    if (!linkGrid) return;
-                                    editLinkGrid(linkGrid);
-                                }}
-                            >
-                                {chooseBooksLabel}
-                            </span>
-                        </>
-                    )}
-                    {isNavButton && (
-                        <ButtonWithTooltip
-                            tipL10nKey="EditTab.Toolbox.CanvasTool.ClickToSetLinkDest"
-                            icon={LinkIcon}
-                            relativeSize={0.8}
-                            onClick={setLinkDestination}
-                        />
-                    )}
-                    {hasImage && (
-                        <Fragment>
-                            {
-                                // Want an attention-grabbing version of set metadata if there is none.)
-                                missingMetadata && !isNavButton && (
-                                    <ButtonWithTooltip
-                                        tipL10nKey="EditTab.Image.EditMetadataOverlay"
-                                        icon={MissingMetadataIcon}
-                                        onClick={() => runMetadataDialog()}
-                                    />
-                                )
-                            }
-                            {
-                                // Choose image is only a LIKELY choice if we don't yet have one.
-                                // (or if it's a background image...not sure why, except otherwise
-                                // the toolbar might not have any icons for a background image.)
-                                (isPlaceHolder || isBackgroundImage) && (
-                                    <ButtonWithTooltip
-                                        tipL10nKey="EditTab.Image.ChooseImage"
-                                        icon={SearchIcon}
-                                        onClick={(_) => {
-                                            if (!props.canvasElement) return;
-                                            const imgContainer =
-                                                props.canvasElement.getElementsByClassName(
-                                                    kImageContainerClass,
-                                                )[0] as HTMLElement;
-                                            if (!imgContainer) return;
-                                            doImageCommand(
-                                                imgContainer.getElementsByTagName(
-                                                    "img",
-                                                )[0] as HTMLImageElement,
-                                                "change",
-                                            );
-                                        }}
-                                    />
-                                )
-                            }
-                            {(isPlaceHolder || isBackgroundImage) && (
-                                <ButtonWithTooltip
-                                    tipL10nKey="EditTab.Image.PasteImage"
-                                    icon={PasteIcon}
-                                    relativeSize={0.9}
-                                    onClick={(_) => {
-                                        if (!props.canvasElement) return;
-                                        const imgContainer =
-                                            props.canvasElement.getElementsByClassName(
-                                                kImageContainerClass,
-                                            )[0] as HTMLElement;
-                                        if (!imgContainer) return;
-                                        doImageCommand(
-                                            imgContainer.getElementsByTagName(
-                                                "img",
-                                            )[0] as HTMLImageElement,
-                                            "paste",
-                                        );
-                                    }}
-                                ></ButtonWithTooltip>
-                            )}
-                        </Fragment>
-                    )}
-                    {editable && !isNavButton && (
-                        <ButtonWithTooltip
-                            tipL10nKey="EditTab.Toolbox.ComicTool.Options.Format"
-                            icon={CogIcon}
-                            relativeSize={0.8}
-                            onClick={() => {
-                                if (!props.canvasElement) return;
-                                GetEditor().runFormatDialog(editable);
-                            }}
-                        />
-                    )}
-                    {hasVideo && !videoAlreadyChosen && (
-                        <Fragment>
-                            <ButtonWithTooltip
-                                tipL10nKey="EditTab.Toolbox.ComicTool.Options.ChooseVideo"
-                                icon={SearchIcon}
-                                onClick={() =>
-                                    doVideoCommand(videoContainer, "choose")
-                                }
-                            />
-                            <ButtonWithTooltip
-                                tipL10nKey="EditTab.Toolbox.ComicTool.Options.RecordYourself"
-                                icon={CircleIcon}
-                                relativeSize={0.8}
-                                onClick={() =>
-                                    doVideoCommand(videoContainer, "record")
-                                }
-                            />
-                        </Fragment>
-                    )}
-                    {(!(hasImage && isPlaceHolder) &&
-                        !editable &&
-                        !(hasVideo && !videoAlreadyChosen)) || (
-                        // Add a spacer if there is any button before these
-                        <div
-                            css={css`
-                                width: ${buttonWidth};
-                            `}
-                        />
-                    )}
-                    {!hasVideo &&
-                        !isBackgroundImage &&
-                        !isSpecialGameElementSelected &&
-                        !isLinkGrid && (
-                            <ButtonWithTooltip
-                                tipL10nKey="EditTab.Toolbox.ComicTool.Options.Duplicate"
-                                icon={DuplicateIcon}
-                                relativeSize={0.9}
-                                onClick={() => {
-                                    if (!props.canvasElement) return;
-                                    makeDuplicateOfDragBubble();
-                                }}
-                            />
-                        )}
-                    {
-                        // Not sure of the reasoning here, since we do have a way to 'delete' a background image,
-                        // not by removing the canvas element but by setting the image back to a placeholder.
-                        // But the mockup in BL-14069 definitely doesn't have it.
-                        isBackgroundImage ||
-                            isSpecialGameElementSelected ||
-                            isLinkGrid || (
-                                <ButtonWithTooltip
-                                    tipL10nKey="Common.Delete"
-                                    icon={DeleteIcon}
-                                    onClick={() => {
-                                        if (!props.canvasElement) return;
-                                        theOneCanvasElementManager?.deleteCurrentCanvasElement();
-                                    }}
-                                />
-                            )
-                    }
-                    {isBackgroundImage && (
-                        <ButtonWithTooltip
-                            tipL10nKey="EditTab.Toolbox.ComicTool.Options.FillSpace"
-                            icon={FillSpaceIcon}
-                            disabled={!canExpandBackgroundImage}
-                            onClick={() => {
-                                if (!props.canvasElement) return;
-                                theOneCanvasElementManager?.expandImageToFillSpace();
-                            }}
-                        />
-                    )}
+                    {toolbarItems.map((item) => (
+                        <React.Fragment key={item.key}>
+                            {item.node}
+                        </React.Fragment>
+                    ))}
                     <button
                         ref={(ref) => (menuEl.current = ref)}
                         css={getIconCss()}
@@ -692,8 +1027,13 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                 }
                             }
                         `}
-                        open={props.menuOpen}
-                        anchorEl={menuEl.current!}
+                        open={
+                            props.menuOpen &&
+                            (!!props.menuAnchorPosition || !!menuEl.current)
+                        }
+                        anchorEl={
+                            props.menuAnchorPosition ? null : menuEl.current
+                        }
                         anchorReference={
                             props.menuAnchorPosition
                                 ? "anchorPosition"
@@ -793,7 +1133,6 @@ const CanvasElementContextControls: React.FunctionComponent<{
             subLabelL10nId: "EditTab.Image.PlayWhenTouched",
             onClick: () => {},
             icon: <VolumeUpIcon css={getMenuIconCss(1, "left:2px;")} />,
-            featureName: "canvas",
             subMenu,
         };
     }
@@ -986,7 +1325,10 @@ function addTextMenuItems(
     const autoHeight = !canvasElement.classList.contains("bloom-noAutoHeight");
     const toggleAutoHeight = () => {
         canvasElement.classList.toggle("bloom-noAutoHeight");
-        theOneCanvasElementManager.updateAutoHeight();
+        const canvasElementManager = getCanvasElementManager();
+        if (canvasElementManager) {
+            canvasElementManager.updateAutoHeight();
+        }
         // In most contexts, we would need to do something now to make the control render, so we get
         // an updated value for autoHeight. But the menu is going to be hidden, and showing it again
         // will involve a re-render, and we don't care until then.
@@ -1020,7 +1362,7 @@ function addTextMenuItems(
     // height vs adjusting the image size, when both are present. Also, our current auto-height
     // code doesn't handle padding where our canvas-buttons have it.
     if (!canvasElement.classList.contains(kBloomButtonClass)) {
-        textMenuItem.push(divider, {
+        textMenuItem.push({
             l10nId: "EditTab.Toolbox.ComicTool.Options.AutoHeight",
             english: "Auto Height",
             // We don't actually know there's no image on the clipboard, but it's not relevant for a text box.
@@ -1031,188 +1373,8 @@ function addTextMenuItems(
     menuOptions.push(...textMenuItem);
 }
 
-function addVideoMenuItems(
-    menuOptions: IMenuItemWithSubmenu[],
-    videoContainer: Element,
-    setMenuOpen: (open: boolean, launchingDialog?: boolean) => void,
-) {
-    menuOptions.unshift(
-        {
-            l10nId: "EditTab.Toolbox.ComicTool.Options.ChooseVideo",
-            english: "Choose Video from your Computer...",
-            onClick: () => {
-                doVideoCommand(videoContainer, "choose");
-                setMenuOpen(false, true);
-            },
-            icon: <SearchIcon css={getMenuIconCss()} />,
-        },
-        {
-            l10nId: "EditTab.Toolbox.ComicTool.Options.RecordYourself",
-            english: "Record yourself...",
-            onClick: () => doVideoCommand(videoContainer, "record"),
-            icon: <CircleIcon css={getMenuIconCss(0.85)} />,
-        },
-        divider,
-        {
-            l10nId: "EditTab.Toolbox.ComicTool.Options.PlayEarlier",
-            english: "Play Earlier",
-            onClick: () => {
-                doVideoCommand(videoContainer, "playEarlier");
-            },
-            icon: <ArrowUpwardIcon css={getMenuIconCss()} />,
-            disabled: !findPreviousVideoContainer(videoContainer),
-        },
-        {
-            l10nId: "EditTab.Toolbox.ComicTool.Options.PlayLater",
-            english: "Play Later",
-            onClick: () => {
-                doVideoCommand(videoContainer, "playLater");
-            },
-            icon: <ArrowDownwardIcon css={getMenuIconCss()} />,
-            disabled: !findNextVideoContainer(videoContainer),
-        },
-        divider,
-    );
-}
-
 function hasRealImage(img) {
     return img && !isPlaceHolderImage(img.getAttribute("src"));
-}
-
-function addImageMenuOptions(
-    menuOptions: IMenuItemWithSubmenu[],
-    canvasElement: HTMLElement,
-    img: HTMLElement,
-    setMenuOpen: (open: boolean, launchingDialog?: boolean) => void,
-) {
-    const imgContainer = canvasElement.getElementsByClassName(
-        kImageContainerClass,
-    )[0] as HTMLElement;
-
-    const isCropped = !!img?.style.width;
-
-    const runMetadataDialog = () => {
-        if (!canvasElement) return;
-        if (!imgContainer) return;
-        showCopyrightAndLicenseDialog(
-            getImageUrlFromImageContainer(imgContainer),
-        );
-    };
-
-    const realImagePresent = hasRealImage(img);
-    const imageMenuOptions: IMenuItemWithSubmenu[] = [
-        {
-            l10nId: "EditTab.Image.ChooseImage",
-            english: "Choose image from your computer...",
-            onClick: () => {
-                doImageCommand(img, "change");
-                setMenuOpen(false, true);
-            },
-            icon: <SearchIcon css={getMenuIconCss()} />,
-        },
-        {
-            l10nId: "EditTab.Image.PasteImage",
-            english: "Paste image",
-            onClick: () => doImageCommand(img, "paste"),
-            icon: <PasteIcon css={getMenuIconCss()} />,
-        },
-        {
-            l10nId: "EditTab.Image.CopyImage",
-            english: "Copy image",
-            onClick: () => doImageCommand(img, "copy"),
-            icon: <CopyIcon css={getMenuIconCss()} />,
-            disabled: !realImagePresent,
-        },
-        {
-            l10nId: "EditTab.Image.EditMetadataOverlay",
-            english: "Set Image Information...",
-            subLabelL10nId: "EditTab.Image.EditMetadataOverlayMore",
-            onClick: runMetadataDialog,
-            icon: <CopyrightIcon css={getMenuIconCss()} />,
-            disabled: !realImagePresent,
-        },
-        {
-            l10nId: "EditTab.Image.Reset",
-            english: "Reset Image",
-            onClick: () => {
-                theOneCanvasElementManager?.resetCropping();
-            },
-            disabled: !isCropped,
-            icon: (
-                <img
-                    src="/bloom/images/reset image black.svg"
-                    // tweak to align better and make it look the same size as the other icons
-                    css={getMenuIconCss(1, "left: -1px; width: 22px;")}
-                />
-            ),
-        },
-    ];
-
-    if (
-        // Don't include the Set Up Hyperlink item for navigation buttons
-        // because they have their own Set Destination item.
-        !isNavigationButton(canvasElement) &&
-        // It would be too confusing and difficult for the element to be both draggable and clickable with different
-        //  behavior such that we'd have to distinguish between the two.
-        !isDraggable(canvasElement)
-    ) {
-        imageMenuOptions.push({
-            l10nId: "EditTab.SetupHyperlink",
-            english: "Set Up Hyperlink",
-            subLabel: imgContainer.getAttribute("data-href") && (
-                <Span
-                    // This is tricky and I don't fully understand it myself.
-                    // The default behavior seems to be to extend the string beyond the width of
-                    // a couple of containers, so it extends all the way to the right edge of the menu
-                    // before it wraps. However, this span is nested inside an element that is to the left
-                    // of the Subscription icon, so most approaches limit the width to that, leaving more
-                    // space on the right than we really want. Providing a min-width actually makes
-                    // a very long URL smaller than it otherwise would be, overriding what I think is
-                    // the default: the min-width of the longest 'word' (usually the whole URL).
-                    // Making it 110% rather than zero makes it use up a bit more of the available space;
-                    // I adjusted it so that (a) the margins are about even when there is a long URL, and
-                    // (b) by happy coincidence, the URL only fits on the same line as "Currently: "
-                    // when it is short enough to stop just before it runs into the Subscription icon.
-                    // I think the other parameters don't take effect in a span unless display is set
-                    // to block.
-                    css={css`
-                        min-width: 110%;
-                        overflow-wrap: anywhere; /* so it wraps */
-                        display: block;
-                    `}
-                    l10nKey="EditTab.PasteHyperlink.Currently"
-                    l10nParam0={imgContainer.getAttribute("data-href") || ""}
-                >
-                    Currently: %0
-                </Span>
-            ),
-            featureName: "canvas",
-            onClick: () => {
-                // Initially, we could only set links on images. For some reason,
-                // we decided to put it on the image container rather than the canvas element.
-                // Now we have implemented other canvas elements (navigation buttons) which
-                // can have links. Those set the data-href on the canvas element itself.
-                // But we didn't modify how the existing image link setup works so as not to break 6.2.
-                // Thus, for images, we put data-href on the image container, but for other elements, we
-                // put it on the canvas element.
-                const imgContainer = canvasElement.getElementsByClassName(
-                    kImageContainerClass,
-                )[0] as HTMLElement;
-                showLinkTargetChooserDialog(
-                    imgContainer.getAttribute("data-href") || "",
-                    (url) => {
-                        if (url) {
-                            imgContainer.setAttribute("data-href", url);
-                        } else if (imgContainer.hasAttribute("data-href")) {
-                            imgContainer.removeAttribute("data-href");
-                        }
-                    },
-                );
-            },
-        });
-    }
-
-    menuOptions.unshift(...imageMenuOptions);
 }
 
 // applies the modification to all classes of element
@@ -1279,7 +1441,10 @@ function addMenuItemForTogglingDraggability(
                 imageContainer.removeAttribute("data-href");
             }
 
-            theOneCanvasElementManager.setActiveElement(canvasElement);
+            const canvasElementManager = getCanvasElementManager();
+            if (canvasElementManager) {
+                canvasElementManager.setActiveElement(canvasElement);
+            }
             if (
                 canvasElement.getElementsByClassName("bloom-editable").length >
                 0
@@ -1297,13 +1462,29 @@ function addMenuItemForTogglingDraggability(
     const visibilityCss = isDraggable(canvasElement)
         ? ""
         : "visibility: hidden;";
-    menuOptions.push(divider, {
+    menuOptions.push({
         l10nId: "EditTab.Toolbox.DragActivity.Draggability",
         english: "Draggable",
         subLabelL10nId: "EditTab.Toolbox.DragActivity.DraggabilityMore",
         onClick: toggleDragability,
         icon: <CheckIcon css={getMenuIconCss(1, visibilityCss)} />,
     });
+}
+
+function joinMenuSectionsWithSingleDividers(
+    menuSections: IMenuItemWithSubmenu[][],
+): IMenuItemWithSubmenu[] {
+    const nonEmptySections = menuSections.filter(
+        (section) => section.length > 0,
+    );
+    const menuItems: IMenuItemWithSubmenu[] = [];
+    nonEmptySections.forEach((section, index) => {
+        if (index > 0) {
+            menuItems.push(divider as IMenuItemWithSubmenu);
+        }
+        menuItems.push(...section);
+    });
+    return menuItems;
 }
 
 function addMenuItemsForDraggable(
@@ -1338,26 +1519,8 @@ function addMenuItemsForDraggable(
 }
 
 // Make sure we don't start/end with a divider, and there aren't two in a row.
-function cleanUpDividers(menuItems: IMenuItemWithSubmenu[]) {
-    let lastDividerIndex = -1;
-    const cleanMenuItems = menuItems.filter((option, index) => {
-        if (option === divider) {
-            if (
-                lastDividerIndex === index - 1 ||
-                index === menuItems.length - 1
-            ) {
-                return false;
-            } else {
-                lastDividerIndex = index;
-            }
-        }
-        return true;
-    });
-    return cleanMenuItems;
-}
-
 function setLinkDestination(): void {
-    const activeElement = theOneCanvasElementManager?.getActiveElement();
+    const activeElement = getCanvasElementManager()?.getActiveElement();
     if (!activeElement) return;
 
     // Note that here we place data-href on the canvas element itself.

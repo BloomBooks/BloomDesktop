@@ -24,11 +24,11 @@ import {
     initializeCanvasElementManager,
     theOneCanvasElementManager,
 } from "./CanvasElementManager";
+import { getCanvasElementManager } from "../toolbox/canvas/canvasElementUtils";
 import {
-    getCanvasElementManager,
     kCanvasElementClass,
     kCanvasElementSelector,
-} from "../toolbox/canvas/canvasElementUtils";
+} from "../toolbox/canvas/canvasElementConstants";
 import { showTopicChooserDialog } from "../TopicChooser/TopicChooserDialog";
 import "../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "./jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
