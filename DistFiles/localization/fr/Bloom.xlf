@@ -6530,9 +6530,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="needs-translation">A page with one language above the image and another below it.</target>
         <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Canvas" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Canvas" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A page with an empty canvas you can add to.</source>
-        <target xml:lang="fr" state="needs-translation">A page with an empty canvas you can add to.</target>
+        <target xml:lang="fr" state="final">Une page avec une toile vide que vous pouvez exploiter.</target>
         <note>ID: TemplateBooks.PageDescription.Canvas</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Comprehension Quiz" sil:dynamic="true" approved="yes">
@@ -7025,9 +7025,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="final">Seulement une image</target>
         <note>ID: TemplateBooks.PageLabel.Just an Image</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Canvas" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Canvas" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Canvas</source>
-        <target xml:lang="fr" state="needs-translation">Canvas</target>
+        <target xml:lang="fr" state="final">Toile</target>
         <note>ID: TemplateBooks.PageLabel.Canvas</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Just Video" sil:dynamic="true" approved="yes">
