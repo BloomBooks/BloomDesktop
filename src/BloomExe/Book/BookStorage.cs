@@ -1975,6 +1975,9 @@ namespace Bloom.Book
                     }
                     continue;
                 }
+                // Placeholder images are now CSS-based and rather than actual files
+                if (ImageUtils.IsPlaceholderImageFilename(imageFileName))
+                    continue;
                 // Certain .svg files (cogGrey.svg, FontSizeLetter.svg) aren't really part of the book and are stored elsewhere.
                 // Also, at present the user can't insert them into a book. Don't report them.
                 // TODO: if we ever allow the user to add .svg files, we'll need to change this
