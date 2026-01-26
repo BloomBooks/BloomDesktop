@@ -19,7 +19,7 @@ using SIL.Extensions;
 using SIL.PlatformUtilities;
 using BloomBook = Bloom.Book.Book;
 
-namespace BloomTests.Publish
+namespace BloomTests.Publish.Epub
 {
     [TestFixture]
     public class ExportEpubTests : ExportEpubTestsBaseClass

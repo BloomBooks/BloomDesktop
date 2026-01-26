@@ -26,9 +26,9 @@ using SIL.Windows.Forms.ImageToolbox;
 using Directory = System.IO.Directory;
 using File = System.IO.File;
 
-namespace BloomTests.Publish
+namespace BloomTests.Publish.BloomPub
 {
-    class BloomReaderPublishTests : BookTestsBase
+    class BloomPubMakerTests : BookTestsBase
     {
         private BookServer _bookServer;
         protected BloomServer s_bloomServer;

@@ -5,7 +5,7 @@ using Bloom.Publish.PDF;
 using NUnit.Framework;
 using SIL.IO;
 
-namespace BloomTests
+namespace BloomTests.Publish.PDF
 {
     [TestFixture]
 #if __MonoCS__
