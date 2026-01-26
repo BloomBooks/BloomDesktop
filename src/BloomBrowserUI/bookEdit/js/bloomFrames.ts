@@ -13,9 +13,9 @@
         to hide the details so that we can easily change it later.
 */
 
-import { IPageFrameExports } from "../editablePage";
-import { IEditViewFrameExports } from "../editViewFrame";
-import { IToolboxFrameExports } from "../toolbox/toolboxBootstrap";
+import type { IPageFrameExports } from "../editablePage";
+import type { IEditViewFrameExports } from "../editViewFrame";
+import type { IToolboxFrameExports } from "../toolbox/toolboxBootstrap";
 
 interface WindowWithExports extends Window {
     editTabBundle: any;

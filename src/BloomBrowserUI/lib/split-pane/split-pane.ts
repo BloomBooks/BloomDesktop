@@ -23,7 +23,7 @@ import { get } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../localizationManager/localizationManager";
 import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
 import jQuery from "jquery";
-import { kBloomCanvasClass } from "../../bookEdit/toolbox/canvas/canvasElementUtils";
+import { kBloomCanvasClass } from "../../bookEdit/toolbox/canvas/canvasElementConstants";
 
 var SPLITPANERESIZE_HANDLER = "_splitpaneparentresizeHandler";
 

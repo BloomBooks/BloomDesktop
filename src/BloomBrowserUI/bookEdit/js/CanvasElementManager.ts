@@ -17,7 +17,6 @@ import {
 } from "comicaljs";
 import { Point, PointScaling } from "./point";
 import { isLinux } from "../../utils/isLinux";
-import { reportError } from "../../lib/errorHandler";
 import { getRgbaColorStringFromColorAndOpacity } from "../../utils/colorUtils";
 import {
     IImageInfo,
@@ -53,22 +52,27 @@ import BloomHintBubbles from "./BloomHintBubbles";
 import { renderCanvasElementContextControls } from "./CanvasElementContextControls";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import {
+    kBackgroundImageClass,
+    kBloomButtonClass,
+    kBloomCanvasClass,
+    kBloomCanvasSelector,
     kCanvasElementClass,
     kCanvasElementSelector,
     kHasCanvasElementClass,
-    kBloomCanvasClass,
-    kBloomCanvasSelector,
-    kBloomButtonClass,
-} from "../toolbox/canvas/canvasElementUtils";
+} from "../toolbox/canvas/canvasElementConstants";
+import { updateCanvasElementClass } from "../toolbox/canvas/canvasElementDomUtils";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { handlePlayClick } from "./bloomVideo";
 import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
 import { needsToBeKeptSameSize } from "../toolbox/games/gameUtilities";
+import { makeTargetAndMatchSize } from "../toolbox/canvas/CanvasElementItem";
+import { CanvasElementType } from "../toolbox/canvas/canvasElementTypes";
 import {
-    CanvasElementType,
-    makeTargetAndMatchSize,
-} from "../toolbox/canvas/CanvasElementItem";
+    getAllDraggables,
+    isDraggable,
+    kDraggableIdAttribute,
+} from "../toolbox/canvas/canvasElementDraggables";
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
@@ -81,7 +85,28 @@ import { showRequiresSubscriptionDialogInEditView } from "../../react_components
 import { FeatureStatus } from "../../react_components/featureStatus";
 import $ from "jquery";
 import { kCanvasToolId } from "../toolbox/toolIds";
-import { getToolboxBundleExports } from "./bloomFrames";
+import { showCanvasTool } from "./CanvasElementManagerPublicFunctions";
+import {
+    convertPointFromViewportToElementFrame as convertPointFromViewportToElementFrameFromGeometry,
+    getCombinedBorderWidths as getCombinedBorderWidthsFromGeometry,
+    getCombinedBordersAndPaddings as getCombinedBordersAndPaddingsFromGeometry,
+    getCombinedPaddings as getCombinedPaddingsFromGeometry,
+    getLeftAndTopBorderWidths as getLeftAndTopBorderWidthsFromGeometry,
+    getLeftAndTopPaddings as getLeftAndTopPaddingsFromGeometry,
+    getPadding as getPaddingFromGeometry,
+    getRightAndBottomBorderWidths as getRightAndBottomBorderWidthsFromGeometry,
+    getRightAndBottomPaddings as getRightAndBottomPaddingsFromGeometry,
+    getScrollAmount as getScrollAmountFromGeometry,
+    extractNumber as extractNumberFromGeometry,
+} from "./canvasElementManager/CanvasElementGeometry";
+import { saveStateOfCanvasElementAsCurrentLangAlternate } from "./canvasElementManager/CanvasElementAlternates";
+import {
+    getBloomCanvas as getBloomCanvasFromPositioning,
+    getChildPositionFromParentCanvasElement as getChildPositionFromParentCanvasElementFromPositioning,
+    getInteriorWidthHeight as getInteriorWidthHeightFromPositioning,
+    inPlayMode as inPlayModeFromPositioning,
+    setCanvasElementPosition as setCanvasElementPositionFromPositioning,
+} from "./canvasElementManager/CanvasElementPositioning";
 
 export interface ITextColorInfo {
     color: string;
@@ -91,18 +116,15 @@ export interface ITextColorInfo {
 const kComicalGeneratedClass: string = "comical-generated";
 
 const kTransformPropName = "bloom-zoomTransformForInitialFocus";
-export const kBackgroundImageClass = "bloom-backgroundImage"; // split-pane.js and editMode.less know about this too
+export { kBackgroundImageClass } from "../toolbox/canvas/canvasElementConstants";
 
 type ResizeDirection = "ne" | "nw" | "sw" | "se";
 
-export const kDraggableIdAttribute = "data-draggable-id";
-export function isDraggable(canvasElement): boolean {
-    return !!canvasElement?.getAttribute(kDraggableIdAttribute);
-}
-
-export function getAllDraggables(page: HTMLElement | Document) {
-    return Array.from(page.querySelectorAll(`[${kDraggableIdAttribute}]`));
-}
+export {
+    getAllDraggables,
+    isDraggable,
+    kDraggableIdAttribute,
+} from "../toolbox/canvas/canvasElementDraggables";
 
 // Canvas elements are the movable items that can be placed over images (or empty image containers).
 // Some of them are associated with ComicalJs bubbles. Earlier in Bloom's history, they were variously
@@ -162,7 +184,7 @@ export class CanvasElementManager {
     public moveActiveCanvasElement(
         dx: number,
         dy: number,
-        event: KeyboardEvent,
+        _event: KeyboardEvent,
     ): void {
         if (!this.activeElement) return;
 
@@ -700,10 +722,12 @@ export class CanvasElementManager {
         const bubble =
             BloomSourceBubbles.ProduceSourceBubbles(translationGroup);
         const divsThatHaveSourceBubbles: HTMLElement[] = [];
-        const bubbleDivs: any[] = [];
+        const bubbleDivs: Element[] = [];
+        const bubbleJqs: JQuery[] = [];
         if (bubble.length !== 0) {
             divsThatHaveSourceBubbles.push(translationGroup);
-            bubbleDivs.push(bubble);
+            bubbleDivs.push(bubble.get(0));
+            bubbleJqs.push(bubble);
         }
         BloomHintBubbles.addHintBubbles(
             translationGroup.parentElement!,
@@ -717,7 +741,7 @@ export class CanvasElementManager {
         if (divsThatHaveSourceBubbles.length > 0) {
             BloomSourceBubbles.MakeSourceBubblesIntoQtips(
                 divsThatHaveSourceBubbles[0],
-                bubbleDivs[0],
+                bubbleJqs[0],
             );
             BloomSourceBubbles.setupSizeChangedHandling(
                 divsThatHaveSourceBubbles,
@@ -802,25 +826,10 @@ export class CanvasElementManager {
         canvasElement: HTMLElement,
         canvasElementLangIn?: string,
     ) {
-        const canvasElementLang =
-            canvasElementLangIn ?? GetSettings().languageForNewTextBoxes;
-
-        const editable = Array.from(
-            canvasElement.getElementsByClassName("bloom-editable"),
-        ).find((e) => e.getAttribute("lang") === canvasElementLang);
-        if (editable) {
-            const bubbleData = canvasElement.getAttribute("data-bubble") ?? "";
-            const bubbleDataObj = JSON.parse(bubbleData.replace(/`/g, '"'));
-            const alternate = {
-                lang: canvasElementLang,
-                style: canvasElement.getAttribute("style") ?? "",
-                tails: bubbleDataObj.tails as object[],
-            };
-            editable.setAttribute(
-                "data-bubble-alternate",
-                JSON.stringify(alternate).replace(/"/g, "`"),
-            );
-        }
+        saveStateOfCanvasElementAsCurrentLangAlternate(
+            canvasElement,
+            canvasElementLangIn,
+        );
     }
 
     // Save the current state of things so that we can later position everything
@@ -1092,7 +1101,7 @@ export class CanvasElementManager {
     // to the appropriate one and removing it from all others.
     // There are also 'wrong' pictures that don't have a corresponding text box.
     // If one of these is selected, it gets the class bloom-activePicture.
-    private showCorrespondingTextBox(element: HTMLElement | undefined) {
+    private showCorrespondingTextBox(_element: HTMLElement | undefined) {
         //Slider: if (!element) {
         //     return;
         // }
@@ -1139,6 +1148,16 @@ export class CanvasElementManager {
     // If the menu command brings up a dialog, we still don't want the active bubble to
     // change. This flag allows us to ignore the next focus change.  See BL-14123.
     public static skipNextFocusChange: boolean;
+
+    public setIgnoreFocusChanges(
+        ignore: boolean,
+        skipNextFocusChange?: boolean,
+    ) {
+        CanvasElementManager.ignoreFocusChanges = ignore;
+        if (skipNextFocusChange) {
+            CanvasElementManager.skipNextFocusChange = true;
+        }
+    }
 
     public setActiveElementToClosest(element: HTMLElement) {
         this.setActiveElement(
@@ -1415,7 +1434,7 @@ export class CanvasElementManager {
         });
         this.startMoving();
     };
-    private endMoveCrop = (event: MouseEvent) => {
+    private endMoveCrop = (_event: MouseEvent) => {
         document.removeEventListener("mousemove", this.continueMoveCrop, {
             capture: true,
         });
@@ -1482,7 +1501,6 @@ export class CanvasElementManager {
         this.startResizeDragX = event.clientX;
         this.startResizeDragY = event.clientY;
         this.resizeDragCorner = corner;
-        const style = this.activeElement.style;
         this.oldWidth = this.activeElement.clientWidth;
         this.oldHeight = this.activeElement.clientHeight;
         this.oldTop = this.activeElement.offsetTop;
@@ -2076,8 +2094,8 @@ export class CanvasElementManager {
         let newCanvasElementHeight = this.oldHeight;
         // ctrl key suppresses snapping, and we also suppress it if we started
         // snapped and haven't moved far. This is to allow very small adjustments.
-        const snapping = !event.ctrlKey && !this.cropSnapDisabled;
-        const snapDelta = 30;
+        const _snapping = !event.ctrlKey && !this.cropSnapDisabled;
+        const _snapDelta = 30;
         let shouldSnapForBackground = "";
         let backgroundSnapDelta = 0;
         if (
@@ -3384,10 +3402,10 @@ export class CanvasElementManager {
             );
             changed =
                 changed || // using changed ||= works but defeats prettier
-                spec.tipX != tipPoint.getUnscaledX() ||
-                spec.tipY != tipPoint.getUnscaledY() ||
-                spec.midpointX != midPoint.getUnscaledX() ||
-                spec.midpointY != midPoint.getUnscaledY();
+                spec.tipX !== tipPoint.getUnscaledX() ||
+                spec.tipY !== tipPoint.getUnscaledY() ||
+                spec.midpointX !== midPoint.getUnscaledX() ||
+                spec.midpointY !== midPoint.getUnscaledY();
             return {
                 ...spec,
                 tipX: tipPoint.getUnscaledX(),
@@ -3471,21 +3489,32 @@ export class CanvasElementManager {
     // This uses the browser's caretPositionFromPoint or caretRangeFromPoint, which are not
     // supported by all browsers, but at least one of them works in WebView2, which is all we need.
     private moveInsertionPointAndFocusTo = (x, y): Range | undefined => {
-        const doc = document as any;
+        type DocumentWithCaret = Document & {
+            caretPositionFromPoint?: (
+                x: number,
+                y: number,
+            ) => CaretPosition | null;
+            caretRangeFromPoint?: (x: number, y: number) => Range | null;
+        };
+        const doc = document as DocumentWithCaret;
         const rangeOrCaret = doc.caretPositionFromPoint
             ? doc.caretPositionFromPoint(x, y)
             : doc.caretRangeFromPoint
               ? doc.caretRangeFromPoint(x, y)
               : null;
-        let range = rangeOrCaret;
-        if (!range) {
+
+        if (!rangeOrCaret) {
             return undefined;
         }
+
         // We really seem to need to handle both possibilities. I had it working with just the
         // code for range, then restarted Bloom and started getting CaretPositions. Maybe a new
         // version of WebView2 got auto-installed? Anyway, now it should handle both.
-        if (!range.endContainer) {
-            // probably a CaretPositon. We need a range to use with addRange.
+        let range: Range;
+        if ("endContainer" in rangeOrCaret) {
+            range = rangeOrCaret;
+        } else {
+            // Probably a CaretPosition. We need a Range to use with addRange.
             range = document.createRange();
             range.setStart(rangeOrCaret.offsetNode, rangeOrCaret.offset);
             range.setEnd(rangeOrCaret.offsetNode, rangeOrCaret.offset);
@@ -4152,49 +4181,17 @@ export class CanvasElementManager {
         pointRelativeToViewport: Point, // The current point, relative to the top-left of the viewport
         element: Element, // The element to reference for the new origin
     ): Point {
-        const referenceBounds = element.getBoundingClientRect();
-        const origin = new Point(
-            referenceBounds.left,
-            referenceBounds.top,
-            PointScaling.Scaled,
-            "BoundingClientRect (Relative to viewport)",
+        return convertPointFromViewportToElementFrameFromGeometry(
+            pointRelativeToViewport,
+            element,
         );
-
-        // Origin gives the location of the outside edge of the border. But we want values relative to the inside edge of the padding.
-        // So we need to subtract out the border and padding
-        // Exterior gives the location of the outside edge of the border. But we want values relative to the inside edge of the padding.
-        // So we need to subtract out the border and padding
-        const border = CanvasElementManager.getLeftAndTopBorderWidths(element);
-        const padding = CanvasElementManager.getLeftAndTopPaddings(element);
-        const borderAndPadding = border.add(padding);
-
-        // Try not to be scrolled. It's not easy to figure out how to adjust the calculations
-        // properly across all zoom levels if the box is scrolled.
-        const scroll = CanvasElementManager.getScrollAmount(element);
-        if (scroll.length() > 0.001) {
-            const error = new Error(
-                `Assert failed. container.scroll expected to be (0, 0), but it was: (${scroll.getScaledX()}, ${scroll.getScaledY()})`,
-            );
-            // Reports a non-fatal passive if on Alpha
-            reportError(error.message, error.stack || "");
-        }
-
-        const transposedPoint = pointRelativeToViewport
-            .subtract(origin)
-            .subtract(borderAndPadding);
-        return transposedPoint;
     }
 
     // Gets an element's border width/height of an element
     //   The x coordinate of the point represents the left border width
     //   The y coordinate of the point represents the top border height
     private static getLeftAndTopBorderWidths(element: Element): Point {
-        return new Point(
-            element.clientLeft,
-            element.clientTop,
-            PointScaling.Unscaled,
-            "Element ClientLeft/Top (Unscaled)",
-        );
+        return getLeftAndTopBorderWidthsFromGeometry(element);
     }
 
     // Gets an element's border width/height of an element
@@ -4204,24 +4201,7 @@ export class CanvasElementManager {
         element: Element,
         styleInfo?: CSSStyleDeclaration,
     ): Point {
-        // There is no such field as element.clientRight, so we have to get it from the CSS style info instead.
-        if (!styleInfo) {
-            styleInfo = window.getComputedStyle(element);
-        }
-
-        const borderRight: number = CanvasElementManager.extractNumber(
-            styleInfo.getPropertyValue("border-right-width"),
-        );
-        const borderBottom: number = CanvasElementManager.extractNumber(
-            styleInfo.getPropertyValue("border-bottom-width"),
-        );
-
-        return new Point(
-            borderRight,
-            borderBottom,
-            PointScaling.Unscaled,
-            "Element ClientRight/Bottom (Unscaled)",
-        );
+        return getRightAndBottomBorderWidthsFromGeometry(element, styleInfo);
     }
 
     // Gets an element's border width/height
@@ -4231,13 +4211,7 @@ export class CanvasElementManager {
         element: Element,
         styleInfo?: CSSStyleDeclaration,
     ): Point {
-        if (!styleInfo) {
-            styleInfo = window.getComputedStyle(element);
-        }
-
-        return this.getLeftAndTopBorderWidths(element).add(
-            this.getRightAndBottomBorderWidths(element, styleInfo),
-        );
+        return getCombinedBorderWidthsFromGeometry(element, styleInfo);
     }
 
     // Given a CSSStyleDeclearation, retrieves the requested padding and converts it to a number
@@ -4245,10 +4219,7 @@ export class CanvasElementManager {
         side: string,
         styleInfo: CSSStyleDeclaration,
     ): number {
-        const propertyKey = `padding-${side}`;
-        const paddingString = styleInfo.getPropertyValue(propertyKey);
-        const padding: number = this.extractNumber(paddingString);
-        return padding;
+        return getPaddingFromGeometry(side, styleInfo);
     }
 
     // Gets the padding of an element
@@ -4258,16 +4229,7 @@ export class CanvasElementManager {
         element: Element, // The element to check
         styleInfo?: CSSStyleDeclaration, // Optional. If you have it handy, you can pass in the computed style of the element. Otherwise, it will be determined for you
     ): Point {
-        if (!styleInfo) {
-            styleInfo = window.getComputedStyle(element);
-        }
-
-        return new Point(
-            this.getPadding("left", styleInfo),
-            this.getPadding("top", styleInfo),
-            PointScaling.Unscaled,
-            "CSSStyleDeclaration padding",
-        );
+        return getLeftAndTopPaddingsFromGeometry(element, styleInfo);
     }
 
     // Gets the padding of an element
@@ -4277,16 +4239,7 @@ export class CanvasElementManager {
         element: Element, // The element to check
         styleInfo?: CSSStyleDeclaration, // Optional. If you have it handy, you can pass in the computed style of the element. Otherwise, it will be determined for you
     ): Point {
-        if (!styleInfo) {
-            styleInfo = window.getComputedStyle(element);
-        }
-
-        return new Point(
-            this.getPadding("right", styleInfo),
-            this.getPadding("bottom", styleInfo),
-            PointScaling.Unscaled,
-            "Padding",
-        );
+        return getRightAndBottomPaddingsFromGeometry(element, styleInfo);
     }
 
     // Gets the padding of an element
@@ -4296,57 +4249,24 @@ export class CanvasElementManager {
         element: Element,
         styleInfo?: CSSStyleDeclaration,
     ): Point {
-        if (!styleInfo) {
-            styleInfo = window.getComputedStyle(element);
-        }
-
-        return this.getLeftAndTopPaddings(element, styleInfo).add(
-            this.getRightAndBottomPaddings(element, styleInfo),
-        );
+        return getCombinedPaddingsFromGeometry(element, styleInfo);
     }
 
     // Gets the sum of an element's borders and paddings
     // The x coordinate of the point represents the sum of the left and right
     // The y coordinate of the point represents the sum of the top and bottom
     private static getCombinedBordersAndPaddings(element: Element): Point {
-        const styleInfo = window.getComputedStyle(element);
-
-        const borders = this.getCombinedBorderWidths(element);
-        const paddings = this.getCombinedPaddings(element, styleInfo);
-        return borders.add(paddings);
+        return getCombinedBordersAndPaddingsFromGeometry(element);
     }
 
     // Returns the amount the element has been scrolled, as a Point
     private static getScrollAmount(element: Element): Point {
-        return new Point(
-            element.scrollLeft,
-            element.scrollTop,
-            PointScaling.Unscaled,
-            "Element ScrollLeft/Top (Unscaled)",
-        );
+        return getScrollAmountFromGeometry(element);
     }
 
     // Removes the units from a string like "10px"
     public static extractNumber(text: string | undefined | null): number {
-        if (!text) {
-            return 0;
-        }
-
-        let i = 0;
-        for (i = 0; i < text.length; ++i) {
-            const c = text.charAt(i);
-            if ((c < "0" || c > "9") && c != "-" && c != "+" && c != ".") {
-                break;
-            }
-        }
-
-        let numberStr = "";
-        if (i > 0) {
-            // At this point, i points to the first non-numeric character in the string
-            numberStr = text.substring(0, i);
-        }
-
-        return Number(numberStr);
+        return extractNumberFromGeometry(text);
     }
 
     // Returns a string representing which style of resize to use
@@ -6299,7 +6219,7 @@ export class CanvasElementManager {
     private draggingSplitter = false;
 
     // mouse down in an origami slider: if comic editing is on, remember that, and turn it off.
-    private dividerMouseDown = (ev: Event) => {
+    private dividerMouseDown = (_ev: Event) => {
         if (this.comicEditingSuspendedState === "forTool") {
             // We're in change layout mode. We want to get the usual behavior of any
             // existing images while dragging the splitter, but we don't need to turn
@@ -6445,8 +6365,8 @@ export class CanvasElementManager {
             const allCanvasElements = $("body").find(kCanvasElementSelector);
             // Removes the resizable functionality completely. This will return the element back to its pre-init state.
             allCanvasElements.resizable("destroy");
-        } catch (e) {
-            //console.log(`Error removing resizable widget: ${e}`);
+        } catch {
+            //console.log("Error removing resizable widget");
         }
     }
 
@@ -6534,31 +6454,11 @@ export class CanvasElementManager {
         unscaledRelativeLeft: number,
         unscaledRelativeTop: number,
     ) {
-        if (canvasElement.classList.contains("bloom-passive-element")) {
-            // Don't set possition for passive elements. They are not supposed to be moved. (BL-14685)
-            return;
-        }
-        // We always want to set the position here.
-        canvasElement.style.left = unscaledRelativeLeft + "px";
-        canvasElement.style.top = unscaledRelativeTop + "px";
-        // The width value should always end in "px" (even if it is 0px).
-        // In days of yore, we used %, but that turned out to be a bad idea, as
-        // discussed above.  We don't need to change the width/height if they're
-        // already in px.
-        const currentWidth = canvasElement.style.width;
-        if (!currentWidth || !currentWidth.endsWith("px")) {
-            const clientWidth = canvasElement.clientWidth;
-            const clientHeight = canvasElement.clientHeight;
-            canvasElement.style.width = clientWidth + "px";
-            canvasElement.style.height = clientHeight + "px";
-            // if the width/height have changed in actuality, not just in representation,
-            // then we have a problem.
-            console.assert(
-                clientWidth === canvasElement.clientWidth &&
-                    clientHeight === canvasElement.clientHeight,
-                "CanvasElementManager.setCanvasElementPosition(): clientWidth/Height mismatch!",
-            );
-        }
+        setCanvasElementPositionFromPositioning(
+            canvasElement,
+            unscaledRelativeLeft,
+            unscaledRelativeTop,
+        );
     }
 
     // Determines the unrounded width/height of the content of an element (i.e, excluding its margin, border, padding)
@@ -6567,33 +6467,14 @@ export class CanvasElementManager {
     // This differs from getBoundingClientRect().width because that function includes the border and padding of the element in the width.
     // This function returns the interior content's width/height (unrounded), without any margin, border, or padding
     private static getInteriorWidthHeight(element: HTMLElement): Point {
-        const boundingRect = element.getBoundingClientRect();
-
-        const exterior = new Point(
-            boundingRect.width,
-            boundingRect.height,
-            PointScaling.Scaled,
-            "getBoundingClientRect() result (Relative to viewport)",
-        );
-
-        // Exterior gives the location of the outside edge of the border. But we want values relative to the inside edge of the padding.
-        // So we need to subtract out the border and padding, once for each side of the box
-        const borderAndPadding = this.getCombinedBordersAndPaddings(element);
-        const interior = exterior.subtract(borderAndPadding);
-        return interior;
+        return getInteriorWidthHeightFromPositioning(element);
     }
 
     // Lots of places we need to find the bloom-canvas that a particular element resides in.
     // Method is static because several of the callers are static.
     // Return null if element isn't in a bloom-canvas at all.
     private static getBloomCanvas(element: Element): HTMLElement | null {
-        if (!element?.closest) {
-            // It's possible for the target to be the root document object. If so, it doesn't
-            // have a 'closest' function, so we'd better not try to call it.
-            // It's also certainly not inside a bloom-canvas, so null is a safe result.
-            return null;
-        }
-        return element.closest(kBloomCanvasSelector);
+        return getBloomCanvasFromPositioning(element);
     }
 
     // When showing a tail for a canvas element style that doesn't have one by default, we get one here.
@@ -6606,9 +6487,7 @@ export class CanvasElementManager {
     }
 
     private static inPlayMode(someElt: Element) {
-        return someElt
-            .closest(".bloom-page")
-            ?.parentElement?.classList.contains("drag-activity-play");
+        return inPlayModeFromPositioning(someElt);
     }
 
     public deleteCurrentCanvasElement(): void {
@@ -6671,41 +6550,10 @@ export class CanvasElementManager {
         parentElement: HTMLElement,
         parentBubbleSpec: BubbleSpec | undefined,
     ): number[] {
-        let offsetX = parentElement.clientWidth;
-        let offsetY = parentElement.clientHeight;
-
-        if (
-            parentBubbleSpec &&
-            parentBubbleSpec.tails &&
-            parentBubbleSpec.tails.length > 0
-        ) {
-            const tail = parentBubbleSpec.tails[0];
-
-            const canvasElementCenterX =
-                parentElement.offsetLeft + parentElement.clientWidth / 2.0;
-            const canvasElementCenterY =
-                parentElement.offsetTop + parentElement.clientHeight / 2.0;
-
-            const deltaX = tail.tipX - canvasElementCenterX;
-            const deltaY = tail.tipY - canvasElementCenterY;
-
-            // Place the new child in the opposite quandrant of the tail
-            if (deltaX > 0) {
-                // ENHANCE: SHould be the child's width
-                offsetX = -parentElement.clientWidth;
-            } else {
-                offsetX = parentElement.clientWidth;
-            }
-
-            if (deltaY > 0) {
-                // ENHANCE: SHould be the child's height
-                offsetY = -parentElement.clientHeight;
-            } else {
-                offsetY = parentElement.clientHeight;
-            }
-        }
-
-        return [offsetX, offsetY];
+        return getChildPositionFromParentCanvasElementFromPositioning(
+            parentElement,
+            parentBubbleSpec,
+        );
     }
 
     // 6.2 is the release that should properly handle background canvas elements.
@@ -7602,15 +7450,6 @@ export class CanvasElementManager {
     }
 }
 
-// For use by bloomImages.ts, so that newly opened books get this class updated for their images.
-export function updateCanvasElementClass(bloomCanvas: HTMLElement) {
-    if (bloomCanvas.getElementsByClassName(kCanvasElementClass).length > 0) {
-        bloomCanvas.classList.add(kHasCanvasElementClass);
-    } else {
-        bloomCanvas.classList.remove(kHasCanvasElementClass);
-    }
-}
-
 // Note: do NOT use this directly in toolbox code; it will import its own copy of
 // CanvasElementManager and not use the proper one from the page iframe. Instead, use
 // the CanvasElementUtils.getCanvasElementManager().
@@ -7628,34 +7467,10 @@ interface IAlternate {
     tails: object[]; // The tails of the data-bubble; determines placing of tail.
 }
 
-// This is just for debugging. It produces a string that describes the canvas element, generally
-// well enough to identify it in console.log.
-export function canvasElementDescription(
-    e: Element | null | undefined,
-): string {
-    const elt = e as HTMLElement;
-    if (!elt) {
-        return "no canvas element";
-    }
-    const result =
-        "canvas element at (" + elt.style.left + ", " + elt.style.top + ") ";
-    const imageContainer = elt.getElementsByClassName(kImageContainerClass)[0];
-    if (imageContainer) {
-        const img = imageContainer.getElementsByTagName("img")[0];
-        if (img) {
-            return result + "with image : " + img.getAttribute("src");
-        }
-    }
-    const videoSrc = elt.getElementsByTagName("source")[0];
-    if (videoSrc) {
-        return result + "with video " + videoSrc.getAttribute("src");
-    }
-    // Enhance: look for videoContainer similarly
-    else {
-        return result + "with text " + elt.innerText;
-    }
-    return result;
-}
+export {
+    canvasElementDescription,
+    showCanvasTool,
+} from "./CanvasElementManagerPublicFunctions";
 
 async function copyAudioFileAsync(
     sourceId: string,
@@ -7681,7 +7496,7 @@ async function copyAudioFileAsync(
 
 function SetupClickToShowCanvasTool(canvas: Element) {
     // if the user clicks on a canvas element, bring up the canvas tool
-    $(canvas).click((ev) => {
+    $(canvas).click((_ev) => {
         // don't interfere with editing or recording of an image description of this canvas
         if (canvas.getElementsByClassName("bloom-describedImage").length > 0) {
             return;
@@ -7691,8 +7506,4 @@ function SetupClickToShowCanvasTool(canvas: Element) {
     });
 }
 
-export function showCanvasTool() {
-    getToolboxBundleExports()
-        ?.getTheOneToolbox()
-        .activateToolFromId(kCanvasToolId);
-}
+// showCanvasTool moved to CanvasElementManagerPublicFunctions.ts
