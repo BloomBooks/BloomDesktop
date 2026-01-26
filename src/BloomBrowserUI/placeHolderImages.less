@@ -21,7 +21,9 @@
 }
 
 .bloom-canvas .bloom-canvas-element:has(img[src*="placeHolder.png"]) {
-    .image-placeholder-background();
+    .bloom-imageContainer {
+        .image-placeholder-background();
+    }
 }
 
 .customPage .bloom-videoContainer.bloom-noVideoSelected {
@@ -46,7 +48,11 @@
 .bloom-canvas[data-tool-id="canvas"]
     .bloom-backgroundImage.bloom-canvas-element:has(
         img[src*="placeHolder.png"]
-    ),
+    ) {
+    .bloom-imageContainer {
+        background-image: @canvas-placeholder;
+    }
+}
 .origami-layout-mode
     .bloom-canvas[data-tool-id="canvas"]:not(:has(.bloom-canvas-element)):has(
         img[src*="placeHolder.png"]
@@ -62,7 +68,9 @@
     .bloom-canvas-element.bloom-backgroundImage:not(
             [data-bloom-active="true"]
         ):has(img[src*="placeHolder.png"]) {
-        background-image: none;
+        .bloom-imageContainer {
+            background-image: none;
+        }
     }
 }
 

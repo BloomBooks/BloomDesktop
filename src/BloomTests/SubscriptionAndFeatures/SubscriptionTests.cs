@@ -77,7 +77,7 @@ namespace BloomTests.SubscriptionAndFeatures
         [TestCase(null, true)]
         [TestCase("", true)]
         [TestCase("incomplete", true)]
-        [TestCase("UnitTest-E-006046-3301", false)] // when this test starts failing, give it a newer code
+        [TestCase("UnitTest-E-179148-3647", false)]
         [TestCase("Test-Expired-Code-005658-9576", true)] // Using the test code that should be valid
         public void IsExpired_ReturnsCorrectValue(string code, bool expectedResult)
         {
