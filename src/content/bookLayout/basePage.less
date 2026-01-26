@@ -387,12 +387,12 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
         box-sizing: border-box; // review: appearance
     }
 
-    // In a button, we want the TG to take on its natural size, allowing the
+    // In a button, we want the TG to take on its natural height, allowing the
     // image to grow as much as possible, and leave any excess space between them
+    // though the width still needs to be wider to avoid spurious overflow detection
     .bloom-canvas-button {
         .bloom-translationGroup {
             height: auto;
-            width: auto;
         }
     }
 
