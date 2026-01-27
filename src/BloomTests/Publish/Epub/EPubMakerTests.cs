@@ -5,7 +5,7 @@ using Bloom.SafeXml;
 using NUnit.Framework;
 using Assert = NUnit.Framework.Assert;
 
-namespace BloomTests.Publish
+namespace BloomTests.Publish.Epub
 {
     [TestFixture]
     public class EPubMakerTests

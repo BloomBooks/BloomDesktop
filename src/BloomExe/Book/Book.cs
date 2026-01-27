@@ -2186,7 +2186,8 @@ namespace Bloom.Book
                         if (idxQuote > 0)
                         {
                             var lang = line.Substring(kLangTag.Length, idxQuote - kLangTag.Length);
-                            copyCurrentRule = !languagesWeAlreadyHave.Contains(lang);
+                            // Don't let empty language tag creep in (or stay in). (BL-15784)
+                            copyCurrentRule = !String.IsNullOrEmpty(lang) && !languagesWeAlreadyHave.Contains(lang);
                             languagesWeAlreadyHave.Add(lang); // don't copy if another css block has crept in.
                         }
                     }

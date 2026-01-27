@@ -13,7 +13,7 @@ using BloomTests.web;
 using NUnit.Framework;
 using SIL.IO;
 
-namespace BloomTests.Publish
+namespace BloomTests.Publish.BloomPub.usb
 {
     [TestFixture]
     public class UsbPublisherTests : BookTestsBase

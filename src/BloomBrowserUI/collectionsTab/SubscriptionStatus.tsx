@@ -164,12 +164,11 @@ export const SubscriptionStatus: React.FunctionComponent<{
     else if (props.minimalUI) return null;
     // in the collection tab, we show a subtle message
     else {
-        if (subscriptionTier === "Pro") {
-            // We want Pro subscriptions to show in red. We can't put the {.bloom-Red} in the l10n string
-            // because it somehow messes up finding the translations in other languages.
-            // So for the Pro message, we add all the descriptor formatting here.
-            descriptorToShow = `**${descriptorToShow}**{.bloom-Red}`;
-        }
+        // We want subscription descriptors to show in red. We can't put the {.bloom-Red}
+        // in the l10n string because it somehow messes up finding the translations in other
+        // languages.  So for the message, we add all the descriptor formatting here,
+        // including the ** to signal <strong>.
+        descriptorToShow = `**${descriptorToShow}**{.bloom-Red}`;
         return (
             <Markdown
                 css={css`

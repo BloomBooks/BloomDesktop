@@ -12,7 +12,7 @@ using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using SIL.IO;
 
-namespace BloomTests.Publish
+namespace BloomTests.Publish.BloomLibrary
 {
     public class BloomLibraryPublishModelTests
     {
@@ -29,7 +29,7 @@ namespace BloomTests.Publish
 
         ""email"": ""bob.someone@example.com"",
       },
-      
+
     }
 "
             );
@@ -66,7 +66,7 @@ namespace BloomTests.Publish
         ""email"": ""bob.someone@example.com"",
       },
     ""phashOfFirstContentImage"": ""hash2"",
-      
+
     }
 "
             );
@@ -80,7 +80,7 @@ namespace BloomTests.Publish
       ""titleFromUpload"": ""hello world"",
       ""instanceId"": ""c2e3212c-ee59-4e75-bd98-41e4784e24ca"",
       ""uploader"": {
-        
+
         ""email"": ""bob.someone@example.com"",
       },
       ""phashOfFirstContentImage"": ""hashWeWant"",
@@ -97,7 +97,7 @@ namespace BloomTests.Publish
       ""titleFromUpload"": ""hello world"",
       ""instanceId"": ""c2e3212c-ee59-4e75-bd98-41e4784e24ca"",
       ""uploader"": {
-        
+
         ""email"": ""bob.someone@example.com"",
       },
       ""phashOfFirstContentImage"": ""hash3"",
@@ -117,7 +117,7 @@ namespace BloomTests.Publish
         ""email"": ""fred_james@sil.org"",
       },
     ""phashOfFirstContentImage"": ""hashWeWant"",
-      
+
     }
 "
             );
@@ -134,7 +134,7 @@ namespace BloomTests.Publish
         ""email"": ""friend@sil.org"",
       },
     ""phashOfFirstContentImage"": ""hash2"",
-      
+
     }
 "
             );
@@ -150,7 +150,7 @@ namespace BloomTests.Publish
         ""email"": ""joe_blow@sil.org"",
       },
     ""phashOfFirstContentImage"": ""hashWeWant"",
-      
+
     }
 "
             );
@@ -165,7 +165,7 @@ namespace BloomTests.Publish
         ""email"": ""sally_problem@sil.org"",
       },
     ""phashOfFirstContentImage"": ""hash2"",
-      
+
     }
 "
             );
@@ -267,22 +267,22 @@ namespace BloomTests.Publish
             dynamic data = JObject.Parse(
                 @"{""languages"":[
         {
-        
+
           ""tag"": ""en"",
           ""name"": ""English""
         },
         {
-          
+
           ""tag"": ""fr"",
           ""name"": ""Francais""
         },
         {
-         
+
           ""tag"": ""abc"",
           ""name"": ""Sign1""
         },
         {
-          
+
           ""tag"": ""de"",
           ""name"": ""German""
         }]}"

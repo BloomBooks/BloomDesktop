@@ -463,6 +463,13 @@ namespace Bloom.Book
                 var image = originalImage.Image;
                 int originalWidth = image.Width;
                 int originalHeight = image.Height;
+                // Adjust maxWidth and maxHeight to match the orientation of the original image. (BL-15710)
+                if (originalWidth < originalHeight && maxWidth > maxHeight)
+                {
+                    var t = maxWidth;
+                    maxWidth = maxHeight;
+                    maxHeight = t;
+                }
                 var appearsToBeJpeg = ImageUtils.AppearsToBeJpeg(originalImage);
                 if (originalWidth > maxWidth || originalHeight > maxHeight || !appearsToBeJpeg)
                 {

@@ -6,7 +6,7 @@ using Bloom.Publish.Epub;
 using NUnit.Framework;
 using SIL.Extensions;
 
-namespace BloomTests.Publish
+namespace BloomTests.Publish.Epub
 {
     [TestFixture]
     // This class implements what is conceptually one or two tests in the ExportEpubTests group.
@@ -102,7 +102,7 @@ namespace BloomTests.Publish
 		</div>
 		<div class=""copyright Credits-Page-style"" data-derived=""copyright"" lang=""*"">
 			Copyright © 2018, Stephen R. McConnel...this would not normally be on a content page
-		</div>	
+		</div>
 	</div>
 </div>
 <div class=""bloom-page titlePage bloom-backMatter A5Portrait layout-style-Default side-left"" data-page=""required singleton"" id=""60ae9f18-b7b8-405b-8dd0-2cb5926eacde"" data-page-number=""10"">

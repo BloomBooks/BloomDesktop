@@ -20,7 +20,7 @@ using NUnit.Framework;
 using SIL.Extensions;
 using SIL.Progress;
 
-namespace BloomTests.Publish
+namespace BloomTests.Publish.Epub
 {
     /// <summary>
     /// Contains a chunk of common code useful for testing export of epubs.

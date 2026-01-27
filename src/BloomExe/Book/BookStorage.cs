@@ -1123,7 +1123,7 @@ namespace Bloom.Book
                 BloomDesktopMinVersion = "6.2",
                 BloomPlayerMinVersion = "2.0",
                 // This is used for all images so will nearly always succeed fast.
-                XPath = $"//div[contains(@class,'{HtmlDom.kBloomCanvasClass}') ]",
+                XPath = $"//div[contains(concat(' ', normalize-space(@class), ' '), ' {HtmlDom.kBloomCanvasClass} ') ]",
             },
         };
 
@@ -1975,6 +1975,9 @@ namespace Bloom.Book
                     }
                     continue;
                 }
+                // Placeholder images are now CSS-based rather than actual files
+                if (ImageUtils.IsPlaceholderImageFilename(imageFileName))
+                    continue;
                 // Certain .svg files (cogGrey.svg, FontSizeLetter.svg) aren't really part of the book and are stored elsewhere.
                 // Also, at present the user can't insert them into a book. Don't report them.
                 // TODO: if we ever allow the user to add .svg files, we'll need to change this

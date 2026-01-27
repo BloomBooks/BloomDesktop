@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 using NUnit.Framework;
 using SIL.IO;
 
-namespace BloomTests.Publish
+namespace BloomTests.Publish.Epub
 {
     public class EpubMakerReadiumManifestTests
     {
