@@ -48,6 +48,9 @@ import {
 import {
     getCanvasElementManager,
     kBloomButtonClass,
+    kImageFitModeAttribute,
+    kImageFitModeContainValue,
+    kImageFitModeCoverValue,
 } from "./canvasElementUtils";
 import { deselectVideoContainers } from "../../js/videoUtils";
 import { CanvasElementKeyHints } from "./CanvasElementKeyHints";
@@ -63,6 +66,23 @@ import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { text } from "stream/consumers";
 
+const kImageFillModePaddedValue = "padded";
+type ImageFillMode =
+    | typeof kImageFillModePaddedValue
+    | typeof kImageFitModeContainValue
+    | typeof kImageFitModeCoverValue;
+
+const getImageFillModeForElement = (element: HTMLElement): ImageFillMode => {
+    const currentFillMode = element.getAttribute(kImageFitModeAttribute);
+    if (
+        currentFillMode === kImageFitModeContainValue ||
+        currentFillMode === kImageFitModeCoverValue
+    ) {
+        return currentFillMode;
+    }
+    return kImageFillModePaddedValue;
+};
+
 const CanvasToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
     type CanvasElementType = "text" | "image" | "video" | undefined;
@@ -77,6 +97,9 @@ const CanvasToolControls: React.FunctionComponent = () => {
     const [showTailChecked, setShowTailChecked] = useState(false);
     const [isRoundedCornersChecked, setIsRoundedCornersChecked] =
         useState(false);
+    const [imageFillMode, setImageFillMode] = useState<ImageFillMode>(
+        kImageFillModePaddedValue,
+    );
     const [isXmatter, setIsXmatter] = useState(true);
     // This 'counter' increments on new page ready so we can re-check if the book is locked.
     const [pageRefreshIndicator, setPageRefreshIndicator] = useState(0);
@@ -85,16 +108,22 @@ const CanvasToolControls: React.FunctionComponent = () => {
     const [isStyleSelectOpen, setIsStyleSelectOpen] = useState(false);
     const [isOutlineColorSelectOpen, setIsOutlineColorSelectOpen] =
         useState(false);
-    function openStyleSelect() {
+    const [isImageFillSelectOpen, setIsImageFillSelectOpen] = useState(false);
+    const openStyleSelect = () => {
         setIsStyleSelectOpen(true);
         // Make sure we don't leave the select open when the tool closes.
         callWhenFocusLost(() => setIsStyleSelectOpen(false));
-    }
-    function openOutlineColorSelect() {
+    };
+    const openOutlineColorSelect = () => {
         setIsOutlineColorSelectOpen(true);
         // Make sure we don't leave the select open when the tool closes.
         callWhenFocusLost(() => setIsOutlineColorSelectOpen(false));
-    }
+    };
+    const openImageFillSelect = () => {
+        setIsImageFillSelectOpen(true);
+        // Make sure we don't leave the select open when the tool closes.
+        callWhenFocusLost(() => setIsImageFillSelectOpen(false));
+    };
 
     // Calls to useL10n
     const deleteTooltip = useL10n("Delete", "Common.Delete");
@@ -205,6 +234,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
 
             const canvasElementManager = getCanvasElementManager();
             setCanvasElementType(getBubbleType(canvasElementManager));
+            setImageFillMode(getImageFillModeForElement(currentBubble.content));
             if (canvasElementManager) {
                 // Get the current canvas element's textColor and set it
                 const canvasElementTextColorInformation: ITextColorInfo =
@@ -219,6 +249,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
             }
         } else {
             setCanvasElementType(undefined);
+            setImageFillMode(kImageFillModePaddedValue);
         }
     }, [currentBubble]);
 
@@ -436,6 +467,27 @@ const CanvasToolControls: React.FunctionComponent = () => {
         const bubble = canvasElementManager.getPatriarchBubbleOfActiveElement();
         setCurrentBubble(bubble);
     };
+    const handleImageFillChanged = (event) => {
+        const newMode = event.target.value as ImageFillMode;
+        setImageFillMode(newMode);
+        const activeElement = getCanvasElementManager()?.getActiveElement();
+        if (!activeElement) {
+            return;
+        }
+        if (newMode === kImageFitModeCoverValue) {
+            activeElement.setAttribute(
+                kImageFitModeAttribute,
+                kImageFitModeCoverValue,
+            );
+        } else if (newMode === kImageFitModeContainValue) {
+            activeElement.setAttribute(
+                kImageFitModeAttribute,
+                kImageFitModeContainValue,
+            );
+        } else {
+            activeElement.removeAttribute(kImageFitModeAttribute);
+        }
+    };
 
     // Callback when outline color of the bubble is changed
     const handleOutlineColorChanged = (event) => {
@@ -576,6 +628,52 @@ const CanvasToolControls: React.FunctionComponent = () => {
             />
         </FormControl>
     );
+    const imageFillControl = (
+        <FormControl variant="standard">
+            <InputLabel htmlFor="image-fill-mode-dropdown">
+                <Span l10nKey="EditTab.Toolbox.CanvasTool.ImageFit">
+                    Image Fit
+                </Span>
+            </InputLabel>
+            <ThemeProvider theme={toolboxMenuPopupTheme}>
+                <Select
+                    variant="standard"
+                    value={imageFillMode}
+                    open={isImageFillSelectOpen}
+                    onOpen={openImageFillSelect}
+                    onClose={() => setIsImageFillSelectOpen(false)}
+                    onChange={(event) => {
+                        handleImageFillChanged(event);
+                        setIsImageFillSelectOpen(false);
+                    }}
+                    className="canvasElementOptionDropdown"
+                    inputProps={{
+                        name: "imageFillMode",
+                        id: "image-fill-mode-dropdown",
+                    }}
+                    MenuProps={{
+                        className: "canvasElement-options-dropdown-menu",
+                    }}
+                >
+                    <MenuItem value={kImageFillModePaddedValue}>
+                        <Div l10nKey="EditTab.Toolbox.CanvasTool.ImageFit.Margin">
+                            Fit with Margin
+                        </Div>
+                    </MenuItem>
+                    <MenuItem value={kImageFitModeContainValue}>
+                        <Div l10nKey="EditTab.Toolbox.CanvasTool.ImageFit.FitToEdge">
+                            Fit to Edge
+                        </Div>
+                    </MenuItem>
+                    <MenuItem value={kImageFitModeCoverValue}>
+                        <Div l10nKey="EditTab.Toolbox.CanvasTool.ImageFit.Fill">
+                            Fill
+                        </Div>
+                    </MenuItem>
+                </Select>
+            </ThemeProvider>
+        </FormControl>
+    );
     const textColorControl = (
         <FormControl variant="standard">
             <InputLabel htmlFor="text-color-bar" shrink={true}>
@@ -595,6 +693,9 @@ const CanvasToolControls: React.FunctionComponent = () => {
     const activeElement = canvasElementManager?.getActiveElement();
     const isButton =
         activeElement?.classList.contains(kBloomButtonClass) ?? false;
+    const hasImage =
+        (activeElement?.getElementsByClassName("bloom-imageContainer")
+            ?.length ?? 0) > 0;
     const hasText =
         (activeElement?.getElementsByClassName("bloom-translationGroup")
             ?.length ?? 0) > 0;
@@ -625,6 +726,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
                 <>
                     {hasText && textColorControl}
                     {backgroundColorControl}
+                    {hasImage && imageFillControl}
                 </>
             );
         switch (canvasElementType) {

@@ -59,6 +59,9 @@ import {
     kBloomCanvasClass,
     kBloomCanvasSelector,
     kBloomButtonClass,
+    kImageFitModeAttribute,
+    kImageFitModeContainValue,
+    kImageFitModeCoverValue,
 } from "../toolbox/canvas/canvasElementUtils";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
@@ -5901,6 +5904,16 @@ export class CanvasElementManager {
             patriarchDuplicateElement.classList.add("bloom-gif");
         if (sourceElement.classList.contains(kBloomButtonClass))
             patriarchDuplicateElement.classList.add(kBloomButtonClass);
+        const imageFitMode = sourceElement.getAttribute(kImageFitModeAttribute);
+        if (
+            imageFitMode === kImageFitModeCoverValue ||
+            imageFitMode === kImageFitModeContainValue
+        ) {
+            patriarchDuplicateElement.setAttribute(
+                kImageFitModeAttribute,
+                imageFitMode,
+            );
+        }
 
         // copy any data-sound
         const sourceDataSound = sourceElement.getAttribute("data-sound");
