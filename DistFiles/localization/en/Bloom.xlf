@@ -1595,6 +1595,16 @@
         <note>ID: EditTab.FormatDialog.DefaultStyles.Title-On-Title-Page-style</note>
         <note>Used on the Title Page of most Front/Back Matter packs</note>
       </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Navigation-Button-Label-style" sil:dynamic="true">
+        <source xml:lang="en">Navigation Button Label</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Navigation-Button-Label-style</note>
+        <note>Used for the text of a navigation button with only text.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Navigation-Button-With-Image-Label-style" sil:dynamic="true">
+        <source xml:lang="en">Navigation Button With Image Label</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Navigation-Button-With-Image-Label-style</note>
+        <note>Used for the text section of a navigation button with both image and text.</note>
+      </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DontSeeNeed" sil:dynamic="true">
         <source xml:lang="en">Don't see what you need?</source>
         <note>ID: EditTab.FormatDialog.DontSeeNeed</note>
