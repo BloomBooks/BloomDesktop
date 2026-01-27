@@ -1123,7 +1123,7 @@ namespace Bloom.Book
                 BloomDesktopMinVersion = "6.2",
                 BloomPlayerMinVersion = "2.0",
                 // This is used for all images so will nearly always succeed fast.
-                XPath = $"//div[contains(@class,'{HtmlDom.kBloomCanvasClass}') ]",
+                XPath = $"//div[contains(concat(' ', normalize-space(@class), ' '), ' {HtmlDom.kBloomCanvasClass} ') ]",
             },
         };
 
