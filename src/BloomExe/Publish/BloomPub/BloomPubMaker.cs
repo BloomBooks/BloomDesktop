@@ -168,11 +168,11 @@ namespace Bloom.Publish.BloomPub
                 modifiedBook.FolderPath
             );
             var newContent = XmlHtmlConverter.ConvertDomToHtml5(modifiedBook.RawDom);
-            RobustFile.WriteAllText(
-                BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath),
-                newContent,
-                Encoding.UTF8
-            );
+
+            var originalBookHtmlPath = BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath);
+            RobustFile.Delete(originalBookHtmlPath);
+            var indexHtmPath = Path.Combine(modifiedBook.FolderPath, "index.htm");
+            RobustFile.WriteAllText(indexHtmPath, newContent, Encoding.UTF8);
 
             BookCompressor.CompressBookDirectory(
                 outputPath,
