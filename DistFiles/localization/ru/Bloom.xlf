@@ -1819,6 +1819,16 @@
         <target xml:lang="ru" state="translated">Заголовок на титульной странице</target>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Title-On-Title-Page-style</note>
       </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Navigation-Button-Label-style" sil:dynamic="true">
+        <source xml:lang="en">Navigation Button Label</source>
+        <target xml:lang="ru" state="needs-translation">Navigation Button Label</target>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Navigation-Button-Label-style</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Navigation-Button-With-Image-Label-style" sil:dynamic="true">
+        <source xml:lang="en">Navigation Button With Image Label</source>
+        <target xml:lang="ru" state="needs-translation">Navigation Button With Image Label</target>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Navigation-Button-With-Image-Label-style</note>
+      </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DontSeeNeed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Don't see what you need?</source>
         <target xml:lang="ru" state="final">Вы не можете найти то, что нужно?</target>
@@ -6210,13 +6220,13 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: SubscriptionStatus.UsingProSubscription</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingLocalCommunitySubscription">
-        <source xml:lang="en">Using **Local Community** subscription for **{0}**. Expires {1}</source>
-        <target xml:lang="ru" state="needs-translation">Using **Local Community** subscription for **{0}**. Expires {1}</target>
+        <source xml:lang="en">Using **Local Community** subscription for {0}. Expires {1}</source>
+        <target xml:lang="ru" state="needs-translation">Using **Local Community** subscription for {0}. Expires {1}</target>
         <note>ID: SubscriptionStatus.UsingLocalCommunitySubscription</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingEnterpriseSubscription">
-        <source xml:lang="en">Using **Enterprise** subscription for **{0}**. Expires **{1}**</source>
-        <target xml:lang="ru" state="needs-translation">Using **Enterprise** subscription for **{0}**. Expires **{1}**</target>
+        <source xml:lang="en">Using **Enterprise** subscription for {0}. Expires **{1}**</source>
+        <target xml:lang="ru" state="needs-translation">Using **Enterprise** subscription for {0}. Expires **{1}**</target>
         <note>ID: SubscriptionStatus.UsingEnterpriseSubscription</note>
       </trans-unit>
       <trans-unit id="TeamCollection.DuplicateIds">
