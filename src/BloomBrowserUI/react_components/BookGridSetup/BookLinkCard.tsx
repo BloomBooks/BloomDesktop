@@ -111,8 +111,7 @@ export const BookLinkCard: React.FC<BookCardProps> = ({
                         css={css`
                             width: 100%;
                             height: 100px;
-                            object-fit: cover;
-                            object-position: center top;
+                            object-fit: contain;
                             margin-bottom: 8px;
                         `}
                     />
