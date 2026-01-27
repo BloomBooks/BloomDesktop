@@ -47,6 +47,8 @@ namespace Bloom.web.controllers
             {
                 if (bloomCanvas.GetAttribute("aria-hidden") == "true")
                     continue; // no description needed if hidden from accessibility
+                if (!bloomCanvas.HasClass(HtmlDom.kBloomCanvasClass))
+                    continue;   // false hit in xpath, could be bloom-canvas-element. (BL-15714)
                 var visibleElements =
                     bloomCanvas.SelectSingleNode(
                         $@"./div[contains(@class,'bloom-imageDescription')]
