@@ -1819,6 +1819,16 @@
         <target xml:lang="pt-PT" state="final">Título na folha de rosto</target>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Title-On-Title-Page-style</note>
       </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Navigation-Button-Label-style" sil:dynamic="true">
+        <source xml:lang="en">Navigation Button Label</source>
+        <target xml:lang="pt-PT" state="needs-translation">Navigation Button Label</target>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Navigation-Button-Label-style</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Navigation-Button-With-Image-Label-style" sil:dynamic="true">
+        <source xml:lang="en">Navigation Button With Image Label</source>
+        <target xml:lang="pt-PT" state="needs-translation">Navigation Button With Image Label</target>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Navigation-Button-With-Image-Label-style</note>
+      </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DontSeeNeed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Don't see what you need?</source>
         <target xml:lang="pt-PT" state="final">Não vê o que você precisa?</target>
@@ -6200,14 +6210,14 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="pt-PT" state="final">Usando a assinatura **Pro** para {0}. Expira {1}</target>
         <note>ID: SubscriptionStatus.UsingProSubscription</note>
       </trans-unit>
-      <trans-unit id="SubscriptionStatus.UsingLocalCommunitySubscription" approved="yes">
-        <source xml:lang="en">Using **Local Community** subscription for **{0}**. Expires {1}</source>
-        <target xml:lang="pt-PT" state="final">Usando a assinatura da **Comunidade Local** por **{0}**. Expira {1}</target>
+      <trans-unit id="SubscriptionStatus.UsingLocalCommunitySubscription">
+        <source xml:lang="en">Using **Local Community** subscription for {0}. Expires {1}</source>
+        <target xml:lang="pt-PT" state="translated">Usando a assinatura da **Comunidade Local** por **{0}**. Expira {1}</target>
         <note>ID: SubscriptionStatus.UsingLocalCommunitySubscription</note>
       </trans-unit>
-      <trans-unit id="SubscriptionStatus.UsingEnterpriseSubscription" approved="yes">
-        <source xml:lang="en">Using **Enterprise** subscription for **{0}**. Expires **{1}**</source>
-        <target xml:lang="pt-PT" state="final">Usando a assinatura de **Enterprise** para **{0}**. Expira **{1}**</target>
+      <trans-unit id="SubscriptionStatus.UsingEnterpriseSubscription">
+        <source xml:lang="en">Using **Enterprise** subscription for {0}. Expires **{1}**</source>
+        <target xml:lang="pt-PT" state="translated">Usando a assinatura de **Enterprise** para **{0}**. Expira **{1}**</target>
         <note>ID: SubscriptionStatus.UsingEnterpriseSubscription</note>
       </trans-unit>
       <trans-unit id="TeamCollection.DuplicateIds" approved="yes">
