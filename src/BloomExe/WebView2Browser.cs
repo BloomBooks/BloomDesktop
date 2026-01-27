@@ -359,6 +359,14 @@ namespace Bloom
                 options: op
             );
             await _webview.EnsureCoreWebView2Async(env);
+            // Added as a footnote to BL-15466 to prevent popups generated from title
+            // attributes being white on black, presumably because of some setting the
+            // user has made for Chrome/Edge generally.
+            _webview.CoreWebView2.Profile.PreferredColorScheme =
+                CoreWebView2PreferredColorScheme.Light;
+            // If we were changing this after possibly loading a document we would now
+            // want to reload it, but we are just initializing this WebView2, so no need.
+            // _webview.Reload();
 
             // It is kinda hard to get a click event from webview2. This needs to be explicitly sent from the browser code,
             // e.g. (window as any).chrome.webview.postMessage("browser-clicked");
