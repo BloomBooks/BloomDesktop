@@ -41,7 +41,7 @@ namespace Bloom.web.controllers
             // someone might want the language of the description to be something other than language1.
             foreach (
                 SafeXmlElement bloomCanvas in book.OurHtmlDom.SafeSelectNodes(
-                    $"//div[contains(@class, '{HtmlDom.kBloomCanvasClass}')]"
+                    $"//div[contains(concat(' ', normalize-space(@class), ' '), ' {HtmlDom.kBloomCanvasClass} ')]"
                 )
             )
             {
