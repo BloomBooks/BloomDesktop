@@ -463,6 +463,25 @@
         <source xml:lang="en">Drag any of these onto a canvas:</source>
         <note>ID: EditTab.Toolbox.CanvasTool.DragInstructions2</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Image Fit</source>
+        <note>ID: EditTab.Toolbox.CanvasTool.ImageFit</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.Margin" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Fit with Margin</source>
+        <note>ID: EditTab.Toolbox.CanvasTool.ImageFit.Margin</note>
+        <note>Leave a margin around the image within the button.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.FitToEdge" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Fit to Edge</source>
+        <note>ID: EditTab.Toolbox.CanvasTool.ImageFit.FitToEdge</note>
+        <note>Fill up the button with the image, leaving a margin on the sides as needed.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.Fill" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Fill</source>
+        <note>Fill up the button with the image, leaving no margin, cropping if necessary</note>
+        <note>ID: EditTab.Toolbox.CanvasTool.ImageFit.Fill</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks" sil:dynamic="true"  translate="no">
         <source xml:lang="en">Choose books...</source>
         <note>ID: EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks</note>
