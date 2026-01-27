@@ -64,7 +64,6 @@ import {
 import $ from "jquery";
 import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
-import { text } from "stream/consumers";
 
 const kImageFillModePaddedValue = "padded";
 type ImageFillMode =
@@ -485,6 +484,11 @@ const CanvasToolControls: React.FunctionComponent = () => {
                 kImageFitModeContainValue,
             );
         } else {
+            // Why not have a specific "padded" value? Because the absence of the attribute
+            // represents the default state, and if we introduce a fourth equivalent state "padded"
+            // then we either have to do extra work to treat "padded" and missing attribute as equivalent,
+            // or do data migration and other work to make sure that every relevant canvas element
+            // has the attribute set to "padded".
             activeElement.removeAttribute(kImageFitModeAttribute);
         }
     };
