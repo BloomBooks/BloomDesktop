@@ -5324,7 +5324,9 @@ export class CanvasElementManager {
         },
     ): HTMLElement {
         const imageContainerHtml = this.makeImageContainerHtml();
-        const transGroupHtml = this.makeTranslationGroup("Label");
+        const transGroupHtml = this.makeTranslationGroup(
+            "Navigation-Button-With-Image-Label",
+        );
         const result = this.finishAddingCanvasElement(
             bloomCanvasJQuery,
             imageContainerHtml + transGroupHtml,
@@ -5352,7 +5354,7 @@ export class CanvasElementManager {
             location,
             bloomCanvasJQuery,
             "none", // no comical bubble style
-            "navigation-label-button",
+            "Navigation-Button-Label",
             rightTopOffset,
             true,
         );
