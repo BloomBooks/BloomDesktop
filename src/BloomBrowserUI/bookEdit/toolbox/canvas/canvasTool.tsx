@@ -13,7 +13,6 @@ import {
 import { Bubble, BubbleSpec, TailSpec } from "comicaljs";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
 import { MenuItem, Typography } from "@mui/material";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { Div, Span } from "../../../react_components/l10nComponents";
@@ -54,7 +53,8 @@ import {
 } from "./canvasElementUtils";
 import { deselectVideoContainers } from "../../js/videoUtils";
 import { CanvasElementKeyHints } from "./CanvasElementKeyHints";
-import { callWhenFocusLost, ToolBox } from "../toolbox";
+import { ToolBox } from "../toolbox";
+import BloomSelect from "../../../react_components/bloomSelect";
 import {
     kBloomBlue,
     kToolboxContentPadding,
@@ -102,27 +102,6 @@ const CanvasToolControls: React.FunctionComponent = () => {
     const [isXmatter, setIsXmatter] = useState(true);
     // This 'counter' increments on new page ready so we can re-check if the book is locked.
     const [pageRefreshIndicator, setPageRefreshIndicator] = useState(0);
-
-    // Add state to track whether each dropdown is open
-    const [isStyleSelectOpen, setIsStyleSelectOpen] = useState(false);
-    const [isOutlineColorSelectOpen, setIsOutlineColorSelectOpen] =
-        useState(false);
-    const [isImageFillSelectOpen, setIsImageFillSelectOpen] = useState(false);
-    const openStyleSelect = () => {
-        setIsStyleSelectOpen(true);
-        // Make sure we don't leave the select open when the tool closes.
-        callWhenFocusLost(() => setIsStyleSelectOpen(false));
-    };
-    const openOutlineColorSelect = () => {
-        setIsOutlineColorSelectOpen(true);
-        // Make sure we don't leave the select open when the tool closes.
-        callWhenFocusLost(() => setIsOutlineColorSelectOpen(false));
-    };
-    const openImageFillSelect = () => {
-        setIsImageFillSelectOpen(true);
-        // Make sure we don't leave the select open when the tool closes.
-        callWhenFocusLost(() => setIsImageFillSelectOpen(false));
-    };
 
     // Calls to useL10n
     const deleteTooltip = useL10n("Delete", "Common.Delete");
@@ -640,15 +619,11 @@ const CanvasToolControls: React.FunctionComponent = () => {
                 </Span>
             </InputLabel>
             <ThemeProvider theme={toolboxMenuPopupTheme}>
-                <Select
+                <BloomSelect
                     variant="standard"
                     value={imageFillMode}
-                    open={isImageFillSelectOpen}
-                    onOpen={openImageFillSelect}
-                    onClose={() => setIsImageFillSelectOpen(false)}
                     onChange={(event) => {
                         handleImageFillChanged(event);
-                        setIsImageFillSelectOpen(false);
                     }}
                     className="canvasElementOptionDropdown"
                     inputProps={{
@@ -674,7 +649,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
                             Fill
                         </Div>
                     </MenuItem>
-                </Select>
+                </BloomSelect>
             </ThemeProvider>
         </FormControl>
     );
@@ -748,15 +723,11 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                 </Span>
                             </InputLabel>
                             <ThemeProvider theme={toolboxMenuPopupTheme}>
-                                <Select
+                                <BloomSelect
                                     variant="standard"
                                     value={style}
-                                    open={isStyleSelectOpen}
-                                    onOpen={openStyleSelect}
-                                    onClose={() => setIsStyleSelectOpen(false)}
                                     onChange={(event) => {
                                         handleStyleChanged(event);
-                                        setIsStyleSelectOpen(false);
                                     }}
                                     className="canvasElementOptionDropdown"
                                     inputProps={{
@@ -808,7 +779,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                             Rectangle
                                         </Div>
                                     </MenuItem>
-                                </Select>
+                                </BloomSelect>
                             </ThemeProvider>
 
                             <BloomCheckbox
@@ -851,14 +822,9 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                 </Span>
                             </InputLabel>
                             <ThemeProvider theme={toolboxMenuPopupTheme}>
-                                <Select
+                                <BloomSelect
                                     variant="standard"
                                     value={outlineColor ? outlineColor : "none"}
-                                    open={isOutlineColorSelectOpen}
-                                    onOpen={openOutlineColorSelect}
-                                    onClose={() =>
-                                        setIsOutlineColorSelectOpen(false)
-                                    }
                                     className="canvasElementOptionDropdown"
                                     inputProps={{
                                         name: "outlineColor",
@@ -875,7 +841,6 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                             )
                                         ) {
                                             handleOutlineColorChanged(event);
-                                            setIsOutlineColorSelectOpen(false);
                                         }
                                     }}
                                 >
@@ -894,7 +859,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                             Crimson
                                         </Div>
                                     </MenuItem>
-                                </Select>
+                                </BloomSelect>
                             </ThemeProvider>
                         </FormControl>
                     </form>

@@ -1,16 +1,16 @@
 import { css, ThemeProvider } from "@emotion/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { callWhenFocusLost, ToolBox } from "../toolbox";
+import { ToolBox } from "../toolbox";
 import { getVariationsOnClass } from "../../../utils/getVariationsOnClass";
 import {
     kOptionPanelBackgroundColor,
     toolboxMenuPopupTheme,
 } from "../../../bloomMaterialUITheme";
-import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { Div } from "../../../react_components/l10nComponents";
 import { InfoIconUrl } from "../../../react_components/icons/InfoIconUrl";
+import BloomSelect from "../../../react_components/bloomSelect";
 
 const getPage = () => {
     const pageBody = ToolBox.getPage();
@@ -37,13 +37,6 @@ export const ThemeChooser: React.FunctionComponent<{
     // gameThemePrefix, or "default" if there is none (but migration code and this tool makes sure
     // that game pages always do).
     const [currentTheme, setCurrentTheme] = useState("");
-    // State to track and control whether the dropdown is open.
-    // We make it a controlled component so that we can close it when the tool closes.
-    const [isSelectOpen, setIsSelectOpen] = useState(false);
-    function openSelect() {
-        setIsSelectOpen(true);
-        callWhenFocusLost(() => setIsSelectOpen(false));
-    }
     const handleChooseTheme = (event) => {
         const newTheme = event.target.value;
         if (newTheme === currentTheme) {
@@ -182,9 +175,7 @@ export const ThemeChooser: React.FunctionComponent<{
                             ],
                         },
                         // This fiddle, suggested by copilot, prevents the tooltip from
-                        // being much wider than the text inside it. It might be a problem
-                        // having nowrap if a localization of "Learn More" is very long,
-                        // but I think it's unlikely, and it makes the English look much better.
+                        // being much wider than the text inside it.
                         tooltip: {
                             sx: {
                                 maxWidth: "fit-content",
@@ -195,15 +186,11 @@ export const ThemeChooser: React.FunctionComponent<{
                     }}
                 />
             </div>
-            <Select
+            <BloomSelect
                 variant="standard"
                 value={currentTheme}
-                open={isSelectOpen}
-                onOpen={() => openSelect()}
-                onClose={() => setIsSelectOpen(false)}
                 onChange={(event) => {
                     handleChooseTheme(event);
-                    setIsSelectOpen(false);
                 }}
                 inputProps={{
                     name: "style",
@@ -231,7 +218,7 @@ export const ThemeChooser: React.FunctionComponent<{
                         </Div>
                     </MenuItem>
                 ))}
-            </Select>
+            </BloomSelect>
         </ThemeProvider>
     );
 };
