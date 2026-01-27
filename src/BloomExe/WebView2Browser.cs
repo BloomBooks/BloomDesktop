@@ -509,6 +509,20 @@ namespace Bloom
             }
         }
 
+        // This variation should be used by clients that use a stopwatch
+        // to enforce a time limit. At least once (in a bulk upload),
+        // the previous version of NavigateAndWaitTillDone waited forever,
+        // instead of at most 10s, waiting for the function above to terminate.
+        // Callers should check that _readyToNavigate is true on return.
+        private void EnsureBrowserReadyToNavigate(Stopwatch navTimer, int timeLimit)
+        {
+            while (!_readyToNavigate && navTimer.ElapsedMilliseconds < timeLimit)
+            {
+                Application.DoEvents();
+                Thread.Sleep(10);
+            }
+        }
+
         public override bool NavigateAndWaitTillDone(
             HtmlDom htmlDom,
             int timeLimit,
@@ -531,14 +545,21 @@ namespace Bloom
             );
             var done = false;
             var navTimer = new Stopwatch();
-            EnsureBrowserReadyToNavigate();
-
             navTimer.Start();
-            _webview.CoreWebView2.NavigationCompleted += (sender, args) => done = true;
-            // The Gecko implementation also had _browser.NavigationError += (sender, e) => done = true;
-            // I can't find any equivalent for WebView2 and I think the doc says it will raise NavigationCompleted
-            // even if there was an error, but consider this if implementing for yet another browser.
-            Navigate(htmlDom, source: source);
+            EnsureBrowserReadyToNavigate(navTimer, timeLimit);
+
+            EventHandler<CoreWebView2NavigationCompletedEventArgs> navigationCompletedHandler =
+                null;
+            if (_readyToNavigate) // should always be true, unless we timed out
+            {
+                navigationCompletedHandler = (sender, args) => done = true;
+                _webview.CoreWebView2.NavigationCompleted += navigationCompletedHandler;
+                // The Gecko implementation also had _browser.NavigationError += (sender, e) => done = true;
+                // I can't find any equivalent for WebView2 and I think the doc says it will raise NavigationCompleted
+                // even if there was an error, but consider this if implementing for yet another browser.
+                Navigate(htmlDom, source: source);
+            } // else we've timed out and will immediately exit the next loop and report it
+
             // If done is set (by NavigationError?) prematurely, we still need to wait while IsBusy
             // is true to give the loaded document time to become available for the checks later.
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-8741.
@@ -554,6 +575,8 @@ namespace Bloom
                 if (cancelCheck != null && cancelCheck())
                 {
                     navTimer.Stop();
+                    if (navigationCompletedHandler != null)
+                        _webview.CoreWebView2.NavigationCompleted -= navigationCompletedHandler;
                     return false;
                 }
             }
@@ -562,11 +585,15 @@ namespace Bloom
             //);
 
             navTimer.Stop();
+            if (navigationCompletedHandler != null)
+                _webview.CoreWebView2.NavigationCompleted -= navigationCompletedHandler;
             if (!done)
             {
                 if (throwOnTimeout)
                     throw new ApplicationException(
-                        "Browser unexpectedly took too long to load a page"
+                        _readyToNavigate
+                            ? "Browser unexpectedly took too long to load a page"
+                            : "Browser unexpectedly took too long to initialize"
                     );
                 else
                     return false;
