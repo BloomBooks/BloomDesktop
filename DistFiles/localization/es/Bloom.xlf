@@ -1822,12 +1822,12 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Navigation-Button-Label-style" sil:dynamic="true">
         <source xml:lang="en">Navigation Button Label</source>
-        <target xml:lang="es-ES" state="needs-translation">Navigation Button Label</target>
+        <target xml:lang="es-ES" state="translated">Etiqueta de botón de navegación</target>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Navigation-Button-Label-style</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Navigation-Button-With-Image-Label-style" sil:dynamic="true">
         <source xml:lang="en">Navigation Button With Image Label</source>
-        <target xml:lang="es-ES" state="needs-translation">Navigation Button With Image Label</target>
+        <target xml:lang="es-ES" state="translated">Botón de navegación con etiqueta de imagen</target>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Navigation-Button-With-Image-Label-style</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DontSeeNeed" sil:dynamic="true" approved="yes">
