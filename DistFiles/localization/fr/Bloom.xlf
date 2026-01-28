@@ -1819,14 +1819,14 @@
         <target xml:lang="fr" state="final">Titre sur la Page de titre</target>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Title-On-Title-Page-style</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Navigation-Button-Label-style" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Navigation-Button-Label-style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Navigation Button Label</source>
-        <target xml:lang="fr" state="needs-translation">Navigation Button Label</target>
+        <target xml:lang="fr" state="final">Libellé du Bouton de Navigation</target>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Navigation-Button-Label-style</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Navigation-Button-With-Image-Label-style" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Navigation-Button-With-Image-Label-style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Navigation Button With Image Label</source>
-        <target xml:lang="fr" state="needs-translation">Navigation Button With Image Label</target>
+        <target xml:lang="fr" state="final">Bouton de Navigation avec Libellé en Image</target>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Navigation-Button-With-Image-Label-style</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DontSeeNeed" sil:dynamic="true" approved="yes">
