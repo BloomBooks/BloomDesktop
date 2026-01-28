@@ -131,10 +131,6 @@
                 min-width: @MinTextBoxWidth - 3;
                 min-height: @MinTextBoxHeight - 3 !important;
                 text-align: center;
-
-                // canvas elements usually do automatic vertical sizing, so hiding overflow is rarely helpful.
-                // and if line-height is small, may need overflow visible to show descenders.
-                overflow: visible;
             }
 
             // Language tip CSS
@@ -162,6 +158,12 @@
                     }
                 }
             }
+        }
+
+        &:not(.bloom-canvas-button) .bloom-translationGroup .bloom-editable {
+            // canvas elements (other than buttons) usually do automatic vertical sizing, so hiding overflow is rarely helpful.
+            // and if line-height is small, may need overflow visible to show descenders.
+            overflow: visible;
         }
     }
     [data-target-of] {
@@ -354,6 +356,16 @@
         max-height: 100%;
         height: auto;
         width: auto;
+    }
+}
+
+.bloom-canvas-element.bloom-canvas-button {
+    .bloom-translationGroup {
+        max-height: 100%;
+    }
+
+    &:has(.bloom-imageContainer) .bloom-translationGroup {
+        max-height: 80%; // don't let the image disappear entirely
     }
 }
 

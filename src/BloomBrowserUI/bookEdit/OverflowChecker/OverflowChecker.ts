@@ -10,6 +10,7 @@ import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
 import $ from "jquery";
+import { kBloomButtonClass } from "../toolbox/canvas/canvasElementUtils";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -123,6 +124,15 @@ export default class OverflowChecker {
                     },
                 );
             });
+
+        // Add a handler to check overflow when button canvas elements are resized
+        $(container).on("buttonCanvasElementResized", function () {
+            $(getElementsThatCanOverflowOrNeedToBeResized(container)).each(
+                function () {
+                    OverflowChecker.AdjustSizeOrMarkOverflowSoon(this);
+                },
+            );
+        });
 
         // Turn off any overflow indicators that might have been leftover from before
         $(container)
@@ -480,9 +490,10 @@ export default class OverflowChecker {
             if (overflowY > 0 && page.length) {
                 OverflowChecker.fixScrollBarsSoon(page[0]);
             }
-
-            if ($editable.parents("[class*=Device]").length === 0) {
-                // don't show an overflow warning if we have scrolling available
+            const isButton =
+                $editable.closest("." + kBloomButtonClass).length > 0;
+            if ($editable.parents("[class*=Device]").length === 0 || isButton) {
+                // don't show an overflow warning if we have scrolling available (unless it's a button)
                 theOneLocalizationManager
                     .asyncGetText(
                         "EditTab.Overflow",
@@ -497,8 +508,10 @@ export default class OverflowChecker {
                             show: { event: "mouseenter" },
                             hide: { event: "mouseleave" },
                             position: {
-                                my: "top right",
-                                at: "right bottom",
+                                // Anchor the tooltip at the top left of buttons to avoid overlap with the canvas-element-context-controls
+                                // and avoid getting cut off by the left edge of the editing pane
+                                my: isButton ? "bottom left" : "top right",
+                                at: isButton ? "left top" : "right bottom",
                                 container: bloomQtipUtils.qtipZoomContainer(),
                             },
                         });

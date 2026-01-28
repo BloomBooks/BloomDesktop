@@ -765,8 +765,11 @@ div.bloom-templateMode {
 }
 
 // We only make a big deal out of "overflow" if the layout is a *paper* size, rather than a *device* size.
-.bloom-page:not([class*="Device"]) {
+// Or the overflowing text is on a button
+.bloom-page:not([class*="Device"]),
+.bloom-page .bloom-canvas-button.bloom-canvas-button {
     // We need this three times to beat a rule that gives the focusd editable box a blue outline
+    // And for buttons we need to beat the rule on .bloom-canvas-element[data-bloom-active="true"] div.bloom-editable
     .overflow.overflow.overflow {
         color: @OverflowColor !important;
         outline: solid thin @OverflowColor !important; //rather than border so it doesn't affect layout
