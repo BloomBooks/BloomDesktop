@@ -39,6 +39,8 @@
     --pageNumber-background-width: unset; /* for when we need to have a colored background, e.g. a circle */
     /* background-color: value in .numberedPage:after to display the page number */
     --pageNumber-background-color: transparent;
+    /* color: value in .numberedPage:after to display the page number */
+    --pageNumber-color: black;
     /* border-radius: value in .numberedPage:after to display the page number */
     --pageNumber-border-radius: 0px;
     /* left: value in .numberedPage.side-left:after to display the page number */
