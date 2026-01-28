@@ -20,7 +20,9 @@
     }
 }
 
-.bloom-canvas .bloom-canvas-element:has(img[src*="placeHolder.png"]) {
+// Note, gifs have their own placeholder, so we exclude them here.
+.bloom-canvas
+    .bloom-canvas-element:has(img[src*="placeHolder.png"]):not(.bloom-gif) {
     .bloom-imageContainer {
         .image-placeholder-background();
     }
