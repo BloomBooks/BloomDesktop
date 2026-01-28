@@ -20,10 +20,8 @@
     }
 }
 
-.bloom-canvas .bloom-canvas-element:has(img[src*="placeHolder.png"]) {
-    .bloom-imageContainer {
-        .image-placeholder-background();
-    }
+.bloom-canvas .bloom-imageContainer:has(img[src*="placeHolder.png"]) {
+    .image-placeholder-background();
 }
 
 .customPage .bloom-videoContainer.bloom-noVideoSelected {
@@ -31,25 +29,22 @@
     background-size: contain;
 }
 
-// When previewing templates in the Collection Tab, and also when in Change Layout mode in the Edit tab,
-// img elements may not be wrapped in canvas-element divs (see BL-15514). Also below.
-//  Real books always have a data-l1 attribute added
-.preview.template .bloom-canvas:has(img[src*="placeHolder.png"]),
-.preview:not([data-l1]) .bloom-canvas:has(img[src*="placeHolder.png"]),
-.origami-layout-mode
-    .bloom-canvas:not(:has(.bloom-canvas-element)):has(
-        img[src*="placeHolder.png"]
-    ) {
-    .image-placeholder-background();
+// When previewing in the Collection Tab, and also when in Change Layout mode in the Edit tab,
+// img elements may not always be wrapped in canvas-element divs (see BL-15514 and BL-15763). Also below.
+.preview,
+.origami-layout-mode {
+    .bloom-canvas:not(:has(.bloom-imageContainer)):has(
+            img[src*="placeHolder.png"]
+        ) {
+        .image-placeholder-background();
+    }
 }
 
 // Use the easel placeholder instead of the usual flower placeholder for the background image whenever there is data-tool-id="canvas"
 // (there are no legacy-style templates that should have the easel icon)
 .bloom-canvas[data-tool-id="canvas"]
-    .bloom-backgroundImage.bloom-canvas-element:has(
-        img[src*="placeHolder.png"]
-    ) {
-    .bloom-imageContainer {
+    .bloom-backgroundImage.bloom-canvas-element {
+    .bloom-imageContainer:has(img[src*="placeHolder.png"]) {
         background-image: @canvas-placeholder;
     }
 }
