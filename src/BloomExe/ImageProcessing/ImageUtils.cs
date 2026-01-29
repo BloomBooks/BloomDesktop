@@ -2164,7 +2164,7 @@ namespace Bloom.ImageProcessing
 
         /// <summary>
         /// Permanently remove the cropped areas from all image files, saving any cropped images to the given folder.
-        /// Source and destination folders CAN be the same (in which case the original images are overwritten, if
+        /// Source and destination folders CAN be the same (in which case the original images can be overwritten, if
         /// there is any cropping to do).
         /// </summary>
         public static void ReallyCropImages(
@@ -2181,6 +2181,11 @@ namespace Bloom.ImageProcessing
             // key is a combination of src, style, and canvas element style height and width that determines
             // the name of an image file that should be used for this combination, which is the value.
             var cropped = new Dictionary<string, string>();
+            // If an image file is used more than once, we may need to crop it differently in
+            // different places.  We certainly don't want to crop it once and crop the result again
+            // for an additional use.  So we need to know if an image file is used more than once.
+            var srcUsageCount = new Dictionary<string, int>();
+
             foreach (var img in images)
             {
                 var src = img.GetAttribute("src");
@@ -2192,6 +2197,10 @@ namespace Bloom.ImageProcessing
                 {
                     uncroppedSrcNames.Add(src);
                 }
+                if (srcUsageCount.ContainsKey(src))
+                    srcUsageCount[src]++;
+                else
+                    srcUsageCount[src] = 1;
             }
 
             foreach (var img in images)
@@ -2216,11 +2225,13 @@ namespace Bloom.ImageProcessing
                     continue;
                 }
 
+                var needNewName = uncroppedSrcNames.Contains(src) || srcUsageCount[src] > 1;
+
                 var croppedFileName = ReallyCropImage(
                     img,
                     imageSourceFolder,
                     imageDestFolder,
-                    uncroppedSrcNames.Contains(src)
+                    needNewName
                 );
                 cropped[key] = croppedFileName;
             }
