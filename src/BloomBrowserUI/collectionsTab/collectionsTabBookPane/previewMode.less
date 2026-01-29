@@ -140,7 +140,14 @@ and as a result, the labels are shifted to this many pixels to the width. This s
 // note that the *= here is needed in case there is a path, as happens in folio pdfs e.g. ../foo/placheholder.png
 .hidePlaceHolders.hidePlaceHolders.hidePlaceHolders.hidePlaceHolders
     .bloom-canvas-element:has(img[src*="placeHolder.png"]) {
-    background-image: none;
+    .bloom-imageContainer {
+        background-image: none;
+    }
+}
+
+// As of 6.3 it is currently still possible to get old-style placeholder img elements wrapped in nothing but a bloom-canvas (BL-15763) at publication.
+.hidePlaceHolders img[src*="placeHolder.png"] {
+    display: none;
 }
 
 @stripeGrey: #f0f0f0;

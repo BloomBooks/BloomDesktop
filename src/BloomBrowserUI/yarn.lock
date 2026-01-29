@@ -4196,9 +4196,9 @@ bindings@^1.5.0:
     file-uri-to-path "1.0.0"
 
 bloom-player@^2.17.3:
-  version "2.17.3"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.17.3.tgz#90fbd4b359c1583ed32219f078eda45e5d8ff23b"
-  integrity sha512-SuivlGwFvNo2hc1B33OaEIcW4i/e5TYUbk5M1N3H9vrc56/SxDgwbwt2wCmVTIqvKrMwP6SrkBZyA3kfpEZGzw==
+  version "2.17.5"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.17.5.tgz#064fd2895919b568a9fb3cc7fe47cf7e07e34b9d"
+  integrity sha512-BKVth3y3RREK3IVKXgn7PlyfAl5tSxflW6cuagfvHgOZHvmyARiYG5h2enjtOr4lDYfYU9m8Eni6cq26wDklkg==
 
 boom@2.x.x:
   version "2.10.1"
@@ -4663,9 +4663,9 @@ combined-stream@^1.0.5, combined-stream@~1.0.5:
     delayed-stream "~1.0.0"
 
 comicaljs@^0.3.100:
-  version "0.3.100"
-  resolved "https://registry.yarnpkg.com/comicaljs/-/comicaljs-0.3.100.tgz#09a877ec8b65aa32c39868c066470fdfa785b6fc"
-  integrity sha512-au9Ghbb4EFX9rCix4oMo/m4cSbk0+temqprvrQ9uR7BjgzuoNdCRx3sHtvifp4v1KadCa/pq/auUuaqtbVQw8A==
+  version "0.3.102"
+  resolved "https://registry.yarnpkg.com/comicaljs/-/comicaljs-0.3.102.tgz#df6a6b634767fdb025f08306b84a759b3421c313"
+  integrity sha512-h0lnhpAO75wpx3492FxKdR7snw9oe84v0KwAfZpDpcNHEFIkLiAHIx/HhRlUhjF/52sda2TT3isv1BuXvbDVhw==
   dependencies:
     paper "0.12.8"
 
@@ -4909,11 +4909,6 @@ css-color-keywords@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/css-color-keywords/-/css-color-keywords-1.0.0.tgz#fea2616dc676b2962686b3af8dbdbe180b244e05"
   integrity sha512-FyyrDHZKEjXDpNJYvVsV960FiqQyXc/LlYmsxl2BcdMb2WPx0OGRVgTg55rPSyLSNMqP52R9r8geSp7apN3Ofg==
-
-css-element-queries@^1.2.3:
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/css-element-queries/-/css-element-queries-1.2.3.tgz#e14940b1fcd4bf0da60ea4145d05742d7172e516"
-  integrity sha512-QK9uovYmKTsV2GXWQiMOByVNrLn2qz6m3P7vWpOR4IdD6I3iXoDw5qtgJEN3Xq7gIbdHVKvzHjdAtcl+4Arc4Q==
 
 css-to-react-native@^3.0.0:
   version "3.1.0"

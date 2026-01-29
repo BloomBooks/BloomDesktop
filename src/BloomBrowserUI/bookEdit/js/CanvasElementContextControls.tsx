@@ -339,6 +339,28 @@ const CanvasElementContextControls: React.FunctionComponent<{
         });
     }
 
+    const editableTextElement = props.canvasElement.getElementsByClassName(
+        "bloom-editable bloom-visibility-code-on",
+    )[0] as HTMLElement;
+
+    if (isNavButton) {
+        menuOptions.splice(0, 0, {
+            l10nId: "EditTab.Toolbox.CanvasTool.SetDest",
+            english: "Set Destination",
+            onClick: () => setLinkDestination(),
+            icon: <LinkIcon css={getMenuIconCss()} />,
+            featureName: "canvas",
+        });
+        if (editableTextElement) {
+            menuOptions.push(divider);
+            addTextMenuItems(
+                menuOptions,
+                editableTextElement,
+                props.canvasElement,
+            );
+        }
+    }
+
     menuOptions.push(divider);
 
     if (!isBackgroundImage && !isSpecialGameElementSelected && !isLinkGrid) {
@@ -392,15 +414,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
             icon: <DeleteIcon css={getMenuIconCss()} />,
         });
     }
-    if (isNavButton) {
-        menuOptions.splice(0, 0, {
-            l10nId: "EditTab.Toolbox.CanvasTool.SetDest",
-            english: "Set Destination",
-            onClick: () => setLinkDestination(),
-            icon: <LinkIcon css={getMenuIconCss()} />,
-            featureName: "canvas",
-        });
-    }
+
     const handleMenuButtonMouseDown = (e: React.MouseEvent) => {
         // This prevents focus leaving the text box.
         e.preventDefault();
@@ -412,13 +426,12 @@ const CanvasElementContextControls: React.FunctionComponent<{
         e.stopPropagation();
         setMenuOpen(true); // Review: better on mouse down? But then the mouse up may be missed, if the menu is on top...
     };
-    const editable = props.canvasElement.getElementsByClassName(
-        "bloom-editable bloom-visibility-code-on",
-    )[0] as HTMLElement;
-    const langName = editable?.getAttribute("data-languagetipcontent");
+    const langName = editableTextElement?.getAttribute(
+        "data-languagetipcontent",
+    );
     // and these for text boxes
-    if (editable) {
-        addTextMenuItems(menuOptions, editable, props.canvasElement);
+    if (editableTextElement && !isNavButton) {
+        addTextMenuItems(menuOptions, editableTextElement, props.canvasElement);
     }
 
     const runMetadataDialog = () => {
@@ -486,7 +499,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     {isLinkGrid && (
                         <>
                             <ButtonWithTooltip
-                                tipL10nKey="EditTab.ClickToEditBookGrid"
+                                tipL10nKey="EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks"
                                 icon={CogIcon}
                                 relativeSize={0.8}
                                 onClick={() => {
@@ -578,14 +591,16 @@ const CanvasElementContextControls: React.FunctionComponent<{
                             )}
                         </Fragment>
                     )}
-                    {editable && !isNavButton && (
+                    {editableTextElement && !isNavButton && (
                         <ButtonWithTooltip
                             tipL10nKey="EditTab.Toolbox.ComicTool.Options.Format"
                             icon={CogIcon}
                             relativeSize={0.8}
                             onClick={() => {
                                 if (!props.canvasElement) return;
-                                GetEditor().runFormatDialog(editable);
+                                GetEditor().runFormatDialog(
+                                    editableTextElement,
+                                );
                             }}
                         />
                     )}
@@ -609,7 +624,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                         </Fragment>
                     )}
                     {(!(hasImage && isPlaceHolder) &&
-                        !editable &&
+                        !editableTextElement &&
                         !(hasVideo && !videoAlreadyChosen)) || (
                         // Add a spacer if there is any button before these
                         <div

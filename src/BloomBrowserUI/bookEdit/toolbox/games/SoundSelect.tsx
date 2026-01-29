@@ -1,8 +1,7 @@
 import { css, ThemeProvider } from "@emotion/react";
 import * as React from "react";
-import { useState } from "react";
-import { MenuItem, Select } from "@mui/material";
-import { callWhenFocusLost } from "../toolbox";
+import { MenuItem } from "@mui/material";
+import BloomSelect from "../../../react_components/bloomSelect";
 import {
     kOptionPanelBackgroundColor,
     toolboxMenuPopupTheme,
@@ -15,16 +14,9 @@ export const SoundSelect: React.FunctionComponent<{
     value: string;
     setValue: (soundType: SoundType, value: string) => void;
 }> = (props) => {
-    const [isSelectOpen, setIsSelectOpen] = useState(false);
-    const closeSelect = () => setIsSelectOpen(false);
-    const openSelect = () => {
-        setIsSelectOpen(true);
-        callWhenFocusLost(() => setIsSelectOpen(false));
-    };
-
     return (
         <ThemeProvider theme={toolboxMenuPopupTheme}>
-            <Select
+            <BloomSelect
                 variant="standard"
                 css={css`
                     svg.MuiSvgIcon-root {
@@ -39,13 +31,9 @@ export const SoundSelect: React.FunctionComponent<{
                 `}
                 size="small"
                 value={props.value}
-                open={isSelectOpen}
-                onOpen={openSelect}
-                onClose={closeSelect}
                 onChange={(event) => {
                     const newSoundId = event.target.value as string;
                     props.setValue(props.soundType, newSoundId);
-                    closeSelect();
                 }}
                 disabled={false}
             >
@@ -59,7 +47,7 @@ export const SoundSelect: React.FunctionComponent<{
                         <div>{option.label}</div>
                     </MenuItem>
                 ))}
-            </Select>
+            </BloomSelect>
         </ThemeProvider>
     );
 };

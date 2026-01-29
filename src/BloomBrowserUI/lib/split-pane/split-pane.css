@@ -35,7 +35,9 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
  * Note that position:absolute causes padding of the parent to be ignored, so we
  * have to set the top, left, right, and bottom to what would be the padding value
  * in order to get the correct layout.  We also really want to restrict this rule
- * to only "Just Text" pages (BL-15611).
+ * to only "Just Text" pages. The ":has()" pseudo-class does that since the "Just
+ * a Picture" page will not have an immediate child with the .bloom-translationGroup
+ * class.  (BL-15611, BL-15720)
  */
 .marginBox > .split-pane-component-inner:has(> .bloom-translationGroup) {
     position: absolute;
@@ -43,8 +45,8 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
     left: var(--marginBox-padding);
     right: var(--marginBox-padding);
     bottom: var(--marginBox-padding);
-    width:initial;
-    height:initial;
+    width: initial;
+    height: initial;
 }
 
 .split-pane.fixed-top > .split-pane-component:first-child,

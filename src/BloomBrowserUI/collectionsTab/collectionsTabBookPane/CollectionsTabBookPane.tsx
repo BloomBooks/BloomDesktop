@@ -342,7 +342,8 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                 {showTabs ? (
                     <BloomTabs
                         id="tabs"
-                        defaultIndex={0}
+                        key={selectedBookId} // Reset to default tab when book changes
+                        defaultIndex={1} // History tab
                         color="white"
                         selectedColor="white"
                         labelBackgroundColor={kDarkestBackground}

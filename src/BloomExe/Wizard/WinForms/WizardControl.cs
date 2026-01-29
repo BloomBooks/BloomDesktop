@@ -151,6 +151,12 @@ namespace Bloom.Wizard.WinForms
                 return;
             }
 
+            // Prevent navigation if AllowNext is false (e.g., from double-clicking)
+            if (!_currentShownPage.AllowNext)
+            {
+                return;
+            }
+
             ShowPage(GetNextPage());
             InvokePagedChangedEvent();
         }

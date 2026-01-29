@@ -4,7 +4,7 @@ using Bloom.Book;
 using Bloom.SafeXml;
 using NUnit.Framework;
 
-namespace BloomTests.Publish
+namespace BloomTests.Publish.Epub
 {
     [TestFixture]
     // This class implements what is conceptually one or two tests in the ExportEpubTests group.
