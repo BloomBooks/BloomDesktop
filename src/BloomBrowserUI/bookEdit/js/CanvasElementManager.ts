@@ -22,10 +22,12 @@ import { getRgbaColorStringFromColorAndOpacity } from "../../utils/colorUtils";
 import {
     IImageInfo,
     SetupElements,
+    addRequestPageContentDelay,
     attachToCkEditor,
     changeImageInfo,
     kMakeNewCanvasElement,
     notifyToolOfChangedImage,
+    removeRequestPageContentDelay,
 } from "./bloomEditing";
 import { addSkeletonIfEmpty } from "./linkGrid";
 import {
@@ -6981,12 +6983,17 @@ export class CanvasElementManager {
         Comical.update(canvasElement.parentElement as HTMLElement);
     }
 
+    private pageContentDelayRequestId = "adjustBackgroundImageSize";
     private adjustBackgroundImageSize(
         bloomCanvas: HTMLElement,
         bgCanvasElement: HTMLElement,
         useSizeOfNewImage: boolean,
     ) {
-        return this.adjustBackgroundImageSizeToFit(
+        // adjustBackgroundImageSizeInternal may wait for the image to load and make modifications after, and we want to make
+        // sure those modifications are included in any save that occurs in the meanwhile
+        addRequestPageContentDelay(this.pageContentDelayRequestId);
+        // adjustBackgroundImageSizeInternal will revoke the delay when it is actually finished making adjustments, potentially after a timeout
+        this.adjustBackgroundImageSizeInternal(
             bloomCanvas,
             bgCanvasElement,
             useSizeOfNewImage,
@@ -7009,7 +7016,11 @@ export class CanvasElementManager {
     // A further complication is that the image may fail to load, so we never get natural
     // dimensions. In this case, we expand the bgCanvasElement to the full size of the container so
     // all the space is available to display the error icon and message.
-    private adjustBackgroundImageSizeToFit(
+    //
+    // Before this method is called, we send a notification to delay any RequestPageContent from returning before we finish setting the size
+    // Once we have finished either setting the size or determining no adjustment is necessary,
+    // We must call removeRequestPageContentDelay(this.pageContentDelayRequestId) to revoke the notification and allow saving
+    private adjustBackgroundImageSizeInternal(
         bloomCanvas: HTMLElement,
         // The canvas element div that contains the background image.
         // (Since this is the background that we overlay things on, it is itself a
@@ -7040,6 +7051,7 @@ export class CanvasElementManager {
         let failedImage = false;
         // We don't ever expect there not to be an img. If it happens, we'll just do nothing.
         if (!img) {
+            removeRequestPageContentDelay(this.pageContentDelayRequestId);
             return;
         }
         // The image may not have loaded yet or may have failed to load.  If either of these
@@ -7071,14 +7083,15 @@ export class CanvasElementManager {
             // and have not yet waited for new dimensions, go ahead and wait.
             // We set up this timeout
             const handle = setTimeout(
-                () =>
-                    this.adjustBackgroundImageSizeToFit(
+                () => {
+                    this.adjustBackgroundImageSizeInternal(
                         bloomCanvas,
                         bgCanvasElement,
                         // after the timeout we don't consider that we MUST wait if we have dimensions
                         false,
                         0, // when we get this call, we're responding to the timeout, so don't need to cancel.
-                    ),
+                    );
+                },
                 // I think this is long enough that we won't be seeing obsolete data (from a previous src).
                 // OTOH it's not hopelessly long for the user to wait when we don't get an onload.
                 // If by any chance this happens when the image really isn't loaded enough to
@@ -7089,13 +7102,14 @@ export class CanvasElementManager {
             // preferably we update when we are loaded.
             img.addEventListener(
                 "load",
-                () =>
-                    this.adjustBackgroundImageSizeToFit(
+                () => {
+                    this.adjustBackgroundImageSizeInternal(
                         bloomCanvas,
                         bgCanvasElement,
                         false, // when this call happens we have the new dimensions.
                         handle, // if this callback happens we can cancel the timeout.
-                    ),
+                    );
+                },
                 { once: true },
             );
             return; // try again once we have valid image data
@@ -7261,6 +7275,8 @@ export class CanvasElementManager {
             // in that case, we must not try to render the controls as if they belonged to it.)
             renderCanvasElementContextControls(bgCanvasElement, false);
         }
+
+        removeRequestPageContentDelay(this.pageContentDelayRequestId);
     }
 
     // Store away the current size of the bloom-canvas. At any later time if we notice that

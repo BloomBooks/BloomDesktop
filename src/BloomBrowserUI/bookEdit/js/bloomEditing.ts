@@ -1195,10 +1195,59 @@ function removeEditingDebris() {
     cleanupNiceScroll(); // don't leave the nicescroll debris around
 }
 
+// Delay notification management for requestPageContent
+const activeDelays: string[] = [];
+const kMaxWaitTimeMs = 2000;
+let requestPageContentTimeout;
+
+// Add a delay notification that will prevent requestPageContent from running immediately.
+// The caller must provide a string ID and pass it to removeRequestPageContentDelay when done.
+// IDs do not need to be unique; the same ID can be added multiple times.
+export function addRequestPageContentDelay(id: string): void {
+    activeDelays.push(id);
+}
+
+// Remove a delay notification, allowing requestPageContent to proceed if no other delays are active.
+// If this was the last delay, proceed with requesting page content
+export function removeRequestPageContentDelay(id: string): void {
+    const index = activeDelays.indexOf(id);
+    if (index === -1) {
+        console.error(
+            `removeRequestPageContentDelay: ID "${id}" not found in active delays. Active delays: [${activeDelays.join(
+                ", ",
+            )}]`,
+        );
+        return;
+    }
+    activeDelays.splice(index, 1);
+
+    // If there are no more delays, go on and request page content
+    if (activeDelays.length === 0 && requestPageContentTimeout) {
+        requestPageContentInternal();
+    }
+}
+
 // This is invoked from C# when we are about to change pages. It removes markup we don't want to save.
 // Then it calls an API with the information we need to save. This works around the lack of a
 // non-async runJavascript API in WebView2.
+// The current delay mechanism is not designed to handle multiple concurrent requests.
 export function requestPageContent() {
+    // Check if there are active delay requests
+    if (activeDelays.length > 0) {
+        requestPageContentTimeout = setTimeout(() => {
+            console.warn(
+                `requestPageContent: Maximum wait time (${kMaxWaitTimeMs}ms) exceeded with active delay(s): [${activeDelays.join(", ")}]. Proceeding anyway.`,
+            );
+            requestPageContentInternal();
+        }, kMaxWaitTimeMs);
+    } else {
+        requestPageContentInternal();
+    }
+}
+
+function requestPageContentInternal() {
+    clearTimeout(requestPageContentTimeout);
+    requestPageContentTimeout = null;
     try {
         // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports().
         getToolboxBundleExports()?.removeToolboxMarkup();
