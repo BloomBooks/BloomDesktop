@@ -2018,7 +2018,10 @@ namespace Bloom.Edit
 
         public void SetZoom(int zoom)
         {
-            RunJavascriptAsync($"editTabBundle.setZoom({zoom / 100.0});");
+            // If we just put zoom/100.0 in the setZoom call, the implicit toString()
+            // uses the regional settings and can produce e.g. 1,3 when we need 1.3
+            var zoomFactor = (zoom / 100.0).ToString(CultureInfo.InvariantCulture);
+            RunJavascriptAsync($"editTabBundle.setZoom({zoomFactor});");
             Settings.Default.PageZoom = zoom.ToString(CultureInfo.InvariantCulture);
             Settings.Default.Save();
             // Note: July 29 2025 we removed code that handled zoom by reloading the page,

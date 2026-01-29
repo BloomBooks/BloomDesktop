@@ -703,7 +703,7 @@ namespace Bloom.CollectionTab
             );
             foreach (SafeXmlElement editableDiv in bloomEditableDivs)
             {
-                HtmlDom.SetInlineStyle(
+                HtmlDom.AppendInlineStyle(
                     editableDiv,
                     editableDiv.HasClass("bloom-visibility-code-on")
                         ? "display: block;"
