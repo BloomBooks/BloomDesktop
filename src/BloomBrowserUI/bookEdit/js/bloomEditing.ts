@@ -1227,9 +1227,32 @@ export function removeRequestPageContentDelay(id: string): void {
     }
 }
 
-// This is invoked from C# when we are about to change pages. It removes markup we don't want to save.
+// Wrap a function that returns a promise with delay management.
+// The delay is added before the function is called, and removed when the promise settles (resolves or rejects).
+// This ensures that requestPageContent waits for the async operation to complete before saving the page.
+export async function wrapWithRequestPageContentDelay<T>(
+    fn: () => Promise<T>,
+    delayId: string,
+): Promise<T> {
+    addRequestPageContentDelay(delayId);
+    try {
+        const result = await fn();
+        removeRequestPageContentDelay(delayId);
+        return result;
+    } catch (error) {
+        removeRequestPageContentDelay(delayId);
+        throw error;
+    }
+}
+
+// This is invoked from C# to get the current page content when we want to save it. It removes markup we don't want to save.
 // Then it calls an API with the information we need to save. This works around the lack of a
 // non-async runJavascript API in WebView2.
+//
+// When other javascript code is doing something that will change the page DOM asynchronously and will also cause the
+// document to be saved, race conditions are possible. In such cases the delay functions above should wrap the
+// asynchronous DOM changes to ensure that this function does not return the page content for saving until after the
+// changes have been completed.
 // The current delay mechanism is not designed to handle multiple concurrent requests.
 export function requestPageContent() {
     // Check if there are active delay requests
