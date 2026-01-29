@@ -12,7 +12,6 @@ import {
 import { Bubble, BubbleSpec, TailSpec } from "comicaljs";
 import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
 import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
 import { MenuItem, Typography } from "@mui/material";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { Div, Span } from "../../../react_components/l10nComponents";
@@ -45,10 +44,14 @@ import {
 import {
     getCanvasElementManager,
     kBloomButtonClass,
+    kImageFitModeAttribute,
+    kImageFitModeContainValue,
+    kImageFitModeCoverValue,
 } from "./canvasElementUtils";
 import { deselectVideoContainers } from "../../js/videoUtils";
 import { CanvasElementKeyHints } from "./CanvasElementKeyHints";
-import { callWhenFocusLost, ToolBox } from "../toolbox";
+import { ToolBox } from "../toolbox";
+import BloomSelect from "../../../react_components/bloomSelect";
 import {
     kBloomBlue,
     kToolboxContentPadding,
@@ -58,6 +61,23 @@ import {
 import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { CanvasTool } from "./canvasTool";
+
+const kImageFillModePaddedValue = "padded";
+type ImageFillMode =
+    | typeof kImageFillModePaddedValue
+    | typeof kImageFitModeContainValue
+    | typeof kImageFitModeCoverValue;
+
+const getImageFillModeForElement = (element: HTMLElement): ImageFillMode => {
+    const currentFillMode = element.getAttribute(kImageFitModeAttribute);
+    if (
+        currentFillMode === kImageFitModeContainValue ||
+        currentFillMode === kImageFitModeCoverValue
+    ) {
+        return currentFillMode;
+    }
+    return kImageFillModePaddedValue;
+};
 
 const CanvasToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
@@ -73,24 +93,12 @@ const CanvasToolControls: React.FunctionComponent = () => {
     const [showTailChecked, setShowTailChecked] = useState(false);
     const [isRoundedCornersChecked, setIsRoundedCornersChecked] =
         useState(false);
+    const [imageFillMode, setImageFillMode] = useState<ImageFillMode>(
+        kImageFillModePaddedValue,
+    );
     const [isXmatter, setIsXmatter] = useState(true);
     // This 'counter' increments on new page ready so we can re-check if the book is locked.
     const [pageRefreshIndicator, setPageRefreshIndicator] = useState(0);
-
-    // Add state to track whether each dropdown is open
-    const [isStyleSelectOpen, setIsStyleSelectOpen] = useState(false);
-    const [isOutlineColorSelectOpen, setIsOutlineColorSelectOpen] =
-        useState(false);
-    function openStyleSelect() {
-        setIsStyleSelectOpen(true);
-        // Make sure we don't leave the select open when the tool closes.
-        callWhenFocusLost(() => setIsStyleSelectOpen(false));
-    }
-    function openOutlineColorSelect() {
-        setIsOutlineColorSelectOpen(true);
-        // Make sure we don't leave the select open when the tool closes.
-        callWhenFocusLost(() => setIsStyleSelectOpen(false));
-    }
 
     // While renaming Comic -> Overlay, I (gjm) intentionally left several (21) "keys" with
     // the old "ComicTool" to avoid the whole deprecate/invalidate/retranslate issue.
@@ -198,6 +206,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
 
             const canvasElementManager = getCanvasElementManager();
             setCanvasElementType(getBubbleType(canvasElementManager));
+            setImageFillMode(getImageFillModeForElement(currentBubble.content));
             if (canvasElementManager) {
                 // Get the current canvas element's textColor and set it
                 const canvasElementTextColorInformation: ITextColorInfo =
@@ -212,6 +221,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
             }
         } else {
             setCanvasElementType(undefined);
+            setImageFillMode(kImageFillModePaddedValue);
         }
     }, [currentBubble]);
 
@@ -430,6 +440,33 @@ const CanvasToolControls: React.FunctionComponent = () => {
         setCurrentBubble(bubble);
     };
 
+    const handleImageFillChanged = (event) => {
+        const newMode = event.target.value as ImageFillMode;
+        setImageFillMode(newMode);
+        const activeElement = getCanvasElementManager()?.getActiveElement();
+        if (!activeElement) {
+            return;
+        }
+        if (newMode === kImageFitModeCoverValue) {
+            activeElement.setAttribute(
+                kImageFitModeAttribute,
+                kImageFitModeCoverValue,
+            );
+        } else if (newMode === kImageFitModeContainValue) {
+            activeElement.setAttribute(
+                kImageFitModeAttribute,
+                kImageFitModeContainValue,
+            );
+        } else {
+            // Why not have a specific "padded" value? Because the absence of the attribute
+            // represents the default state, and if we introduce a fourth equivalent state "padded"
+            // then we either have to do extra work to treat "padded" and missing attribute as equivalent,
+            // or do data migration and other work to make sure that every relevant canvas element
+            // has the attribute set to "padded".
+            activeElement.removeAttribute(kImageFitModeAttribute);
+        }
+    };
+
     // Callback when outline color of the bubble is changed
     const handleOutlineColorChanged = (event) => {
         let newValue = event.target.value;
@@ -588,6 +625,9 @@ const CanvasToolControls: React.FunctionComponent = () => {
     const activeElement = canvasElementManager?.getActiveElement();
     const isButton =
         activeElement?.classList.contains(kBloomButtonClass) ?? false;
+    const hasImage =
+        (activeElement?.getElementsByClassName("bloom-imageContainer")
+            ?.length ?? 0) > 0;
     const hasText =
         (activeElement?.getElementsByClassName("bloom-translationGroup")
             ?.length ?? 0) > 0;
@@ -611,6 +651,49 @@ const CanvasToolControls: React.FunctionComponent = () => {
         </div>
     );
 
+    const imageFillControl = (
+        <FormControl variant="standard">
+            <InputLabel htmlFor="image-fill-mode-dropdown">
+                <Span l10nKey="EditTab.Toolbox.CanvasTool.ImageFit">
+                    Image Fit
+                </Span>
+            </InputLabel>
+            <ThemeProvider theme={toolboxMenuPopupTheme}>
+                <BloomSelect
+                    variant="standard"
+                    value={imageFillMode}
+                    onChange={(event) => {
+                        handleImageFillChanged(event);
+                    }}
+                    className="canvasElementOptionDropdown"
+                    inputProps={{
+                        name: "imageFillMode",
+                        id: "image-fill-mode-dropdown",
+                    }}
+                    MenuProps={{
+                        className: "canvasElement-options-dropdown-menu",
+                    }}
+                >
+                    <MenuItem value={kImageFillModePaddedValue}>
+                        <Div l10nKey="EditTab.Toolbox.CanvasTool.ImageFit.Margin">
+                            Fit with Margin
+                        </Div>
+                    </MenuItem>
+                    <MenuItem value={kImageFitModeContainValue}>
+                        <Div l10nKey="EditTab.Toolbox.CanvasTool.ImageFit.FitToEdge">
+                            Fit to Edge
+                        </Div>
+                    </MenuItem>
+                    <MenuItem value={kImageFitModeCoverValue}>
+                        <Div l10nKey="EditTab.Toolbox.CanvasTool.ImageFit.Fill">
+                            Fill
+                        </Div>
+                    </MenuItem>
+                </BloomSelect>
+            </ThemeProvider>
+        </FormControl>
+    );
+
     const getControlOptionsRegion = (): JSX.Element => {
         if (isBookGrid) return <>{backgroundColorControl}</>;
         if (isButton)
@@ -618,6 +701,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
                 <>
                     {hasText && textColorControl}
                     {backgroundColorControl}
+                    {hasImage && imageFillControl}
                 </>
             );
         switch (canvasElementType) {
@@ -635,15 +719,11 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                 </Span>
                             </InputLabel>
                             <ThemeProvider theme={toolboxMenuPopupTheme}>
-                                <Select
+                                <BloomSelect
                                     variant="standard"
                                     value={style}
-                                    open={isStyleSelectOpen}
-                                    onOpen={openStyleSelect}
-                                    onClose={() => setIsStyleSelectOpen(false)}
                                     onChange={(event) => {
                                         handleStyleChanged(event);
-                                        setIsStyleSelectOpen(false);
                                     }}
                                     className="canvasElementOptionDropdown"
                                     inputProps={{
@@ -695,7 +775,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                             Rectangle
                                         </Div>
                                     </MenuItem>
-                                </Select>
+                                </BloomSelect>
                             </ThemeProvider>
 
                             <BloomCheckbox
@@ -738,14 +818,9 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                 </Span>
                             </InputLabel>
                             <ThemeProvider theme={toolboxMenuPopupTheme}>
-                                <Select
+                                <BloomSelect
                                     variant="standard"
                                     value={outlineColor ? outlineColor : "none"}
-                                    open={isOutlineColorSelectOpen}
-                                    onOpen={openOutlineColorSelect}
-                                    onClose={() =>
-                                        setIsOutlineColorSelectOpen(false)
-                                    }
                                     className="canvasElementOptionDropdown"
                                     inputProps={{
                                         name: "outlineColor",
@@ -762,7 +837,6 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                             )
                                         ) {
                                             handleOutlineColorChanged(event);
-                                            setIsOutlineColorSelectOpen(false);
                                         }
                                     }}
                                 >
@@ -781,7 +855,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                             Crimson
                                         </Div>
                                     </MenuItem>
-                                </Select>
+                                </BloomSelect>
                             </ThemeProvider>
                         </FormControl>
                     </form>

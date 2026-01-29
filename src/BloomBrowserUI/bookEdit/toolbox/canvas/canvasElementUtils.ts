@@ -11,6 +11,9 @@ export const kHasCanvasElementClass = "bloom-has-canvas-element";
 export const kBloomCanvasClass = "bloom-canvas";
 export const kBloomCanvasSelector = `.${kBloomCanvasClass}`;
 export const kBloomButtonClass = "bloom-canvas-button";
+export const kImageFitModeAttribute = "data-image-fit";
+export const kImageFitModeContainValue = "contain";
+export const kImageFitModeCoverValue = "cover";
 
 // Enhance: we could reduce cross-bundle dependencies by separately defining the CanvasElementManager interface
 // and just importing that here.

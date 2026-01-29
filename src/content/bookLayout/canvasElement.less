@@ -384,19 +384,57 @@
         // (image-only would I think be centered anyway)
         justify-content: center;
     }
-}
 
-.bloom-page .bloom-canvas-button:hover {
-    // I think this was AI-generated...might want at runtime? but makes editing hard.
-    //background: #19818f;
-    box-shadow:
-        0 2px 2px rgba(0, 0, 0, 0.14),
-        0 4px 6px rgba(0, 0, 0, 0.16),
-        0 8px 12px rgba(0, 0, 0, 0.1);
-}
+    &[data-image-fit="contain"],
+    &[data-image-fit="cover"] {
+        padding: 0;
+        overflow: hidden;
 
-.bloom-page .bloom-canvas-button:active {
-    box-shadow:
-        0 1px 0 rgba(0, 0, 0, 0.18),
-        0 2px 4px rgba(0, 0, 0, 0.2);
+        .bloom-imageContainer {
+            img,
+            video {
+                width: 100%;
+                height: 100%;
+                max-width: none;
+                max-height: none;
+            }
+        }
+
+        // In contain/cover modes, move padding from the button to the text group so
+        // the image can reach the edge while labels keep their spacing.
+        &:has(> .bloom-translationGroup) .bloom-translationGroup {
+            padding: 0.6em;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    }
+
+    &[data-image-fit="contain"] .bloom-imageContainer {
+        img,
+        video {
+            object-fit: contain;
+        }
+    }
+
+    &[data-image-fit="cover"] .bloom-imageContainer {
+        img,
+        video {
+            object-fit: cover;
+        }
+    }
+
+    &:hover {
+        // I think this was AI-generated...might want at runtime? but makes editing hard.
+        //background: #19818f;
+        box-shadow:
+            0 2px 2px rgba(0, 0, 0, 0.14),
+            0 4px 6px rgba(0, 0, 0, 0.16),
+            0 8px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    &:active {
+        box-shadow:
+            0 1px 0 rgba(0, 0, 0, 0.18),
+            0 2px 4px rgba(0, 0, 0, 0.2);
+    }
 }

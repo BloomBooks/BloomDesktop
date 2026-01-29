@@ -1,61 +1,34 @@
 import * as React from "react";
-import Select from "react-select";
-import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
-import * as mobxReact from "mobx-react";
-import { IBloomSelectProps } from "./bloomSelectTypes";
+import { useState } from "react";
+import Select, { SelectProps } from "@mui/material/Select";
+import { callWhenFocusLost } from "../bookEdit/toolbox/toolbox";
 
-// @mobxReact.observer means mobx will automatically track which observables this component uses
-// in its render attribute function, and then re-render when they change. The "observable" here
-// would be currentOption as set somewhere in a parent control.  That is why currentOption is
-// defined as "any" instead of "string", so that the object reference can tie back to the parent
-// control's data.  If nothing is set as an observable, then there won't be automatic re-rendering.
-@mobxReact.observer
-export class BloomSelect extends React.Component<IBloomSelectProps> {
-    constructor(props: IBloomSelectProps) {
-        super(props);
+const BloomSelect = <TValue,>(
+    props: SelectProps<TValue>,
+): React.ReactElement => {
+    const [isOpen, setIsOpen] = useState(false);
 
-        this.props.options.map((item) => {
-            if (item.l10nKey) {
-                theOneLocalizationManager
-                    .asyncGetTextAndSuccessInfo(
-                        item.l10nKey,
-                        item.label,
-                        item.comment ? item.comment : "",
-                        false,
-                    )
-                    .done((result) => {
-                        item.label = result.text;
-                    });
-            }
-        });
-    }
+    const handleOpen: NonNullable<SelectProps<TValue>["onOpen"]> = (event) => {
+        setIsOpen(true);
+        props.onOpen?.(event);
+        callWhenFocusLost(() => setIsOpen(false));
+    };
 
-    public render() {
-        const selectedOption = this.props.currentOption.value
-            ? this.props.options.filter(
-                  (x) => x.value === this.props.currentOption.value,
-              )[0]
-            : this.props.options.filter(
-                  (x) => x.value === this.props.nullOption,
-              )[0];
+    const handleClose: NonNullable<SelectProps<TValue>["onClose"]> = (
+        event,
+    ) => {
+        setIsOpen(false);
+        props.onClose?.(event);
+    };
 
-        return (
-            <Select
-                value={selectedOption}
-                onChange={(selectedOption) => this.handleChange(selectedOption)}
-                options={this.props.options}
-                className={this.props.className}
-            />
-        );
-    }
-
-    public handleChange(selectedOption) {
-        if (selectedOption.value == this.props.nullOption) {
-            this.props.currentOption.value = "";
-        } else {
-            this.props.currentOption.value = selectedOption.value;
-        }
-    }
-}
+    return (
+        <Select
+            {...props}
+            open={isOpen}
+            onOpen={handleOpen}
+            onClose={handleClose}
+        />
+    );
+};
 
 export default BloomSelect;

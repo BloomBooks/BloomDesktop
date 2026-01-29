@@ -59,6 +59,9 @@ import {
     kBloomCanvasClass,
     kBloomCanvasSelector,
     kBloomButtonClass,
+    kImageFitModeAttribute,
+    kImageFitModeContainValue,
+    kImageFitModeCoverValue,
 } from "../toolbox/canvas/canvasElementUtils";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
@@ -5901,6 +5904,17 @@ export class CanvasElementManager {
             patriarchDuplicateElement.classList.add("bloom-gif");
         if (sourceElement.classList.contains(kBloomButtonClass))
             patriarchDuplicateElement.classList.add(kBloomButtonClass);
+        const imageFitMode = sourceElement.getAttribute(kImageFitModeAttribute);
+        // Could just copy it unconditionally, but we're using the absence of the
+        // attribute to represent the default state, so that would introduce a
+        // fourth state (empty string) that may complicate things. We don't need
+        // to remove it if absent because we created a fresh element.
+        if (imageFitMode) {
+            patriarchDuplicateElement.setAttribute(
+                kImageFitModeAttribute,
+                imageFitMode,
+            );
+        }
 
         // copy any data-sound
         const sourceDataSound = sourceElement.getAttribute("data-sound");

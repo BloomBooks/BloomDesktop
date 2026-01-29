@@ -1,6 +1,6 @@
 import * as React from "react";
-import { BloomSelect } from "../../react_components/bloomSelect";
 import { IOption } from "../../react_components/bloomSelectTypes";
+import { BloomReactSelect } from "../../react_components/bloomReactSelect";
 
 export interface IProps {
     // I don't know how to express exact types in Typescript here and it doesn't seem worth a lot of effort.
@@ -35,7 +35,7 @@ const levelOptions: IOption[] = [
 export class A11yLevelChooser extends React.Component<IProps> {
     public render() {
         return (
-            <BloomSelect
+            <BloomReactSelect
                 currentOption={this.props.a11yLevel}
                 options={levelOptions}
                 nullOption="none"
