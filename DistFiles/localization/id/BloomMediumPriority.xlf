@@ -534,6 +534,26 @@
         <target xml:lang="id" state="needs-translation">Drag any of these onto a canvas:</target>
         <note>ID: EditTab.Toolbox.CanvasTool.DragInstructions2</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Image Fit</source>
+        <target xml:lang="id" state="needs-translation">Image Fit</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.ImageFit</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.Margin" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Fit with Margin</source>
+        <target xml:lang="id" state="needs-translation">Fit with Margin</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.ImageFit.Margin</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.FitToEdge" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Fit to Edge</source>
+        <target xml:lang="id" state="needs-translation">Fit to Edge</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.ImageFit.FitToEdge</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.Fill" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Fill</source>
+        <target xml:lang="id" state="needs-translation">Fill</target>
+        <note>Fill up the button with the image, leaving no margin, cropping if necessary</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks" sil:dynamic="true" translate="no">
         <source xml:lang="en">Choose books...</source>
         <target xml:lang="id" state="needs-translation">Choose books...</target>
