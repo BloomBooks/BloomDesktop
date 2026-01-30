@@ -33,6 +33,8 @@ export const PublishProgressDialog: React.FunctionComponent<{
     const [accumulatedMessages, setAccumulatedMessages] = useState("");
 
     const [errorEncountered, setErrorEncountered] = useState(false);
+    const [interestingMessageEncountered, setInterestingMessageEncountered] =
+        useState(false);
 
     const {
         setProgressState: setProgressStateProp,
@@ -47,6 +49,7 @@ export const PublishProgressDialog: React.FunctionComponent<{
         setAccumulatedMessages("");
         setInstructionMessage(undefined);
         setErrorEncountered(false);
+        setInterestingMessageEncountered(false);
     }, [setProgressStateProp, setClosePendingProp]);
 
     //Note, originally this was just a function, closeIfNoError().
@@ -55,12 +58,8 @@ export const PublishProgressDialog: React.FunctionComponent<{
     // update we notice that and see about closing.
     React.useEffect(() => {
         if (props.closePending) {
-            if (errorEncountered) {
-                setProgressStateProp(() =>
-                    errorEncountered
-                        ? ProgressState.Done
-                        : ProgressState.Closed,
-                );
+            if (errorEncountered || interestingMessageEncountered) {
+                setProgressStateProp(ProgressState.Done);
                 // Although we may be in state 'Done' and thus not actually closed yet,
                 // we're no longer in the state that closePending is meant to handle,
                 // where we've finished but don't yet have enough information to know
@@ -75,11 +74,15 @@ export const PublishProgressDialog: React.FunctionComponent<{
         }
     }, [
         props.closePending,
+        errorEncountered,
         setProgressStateProp,
         setClosePendingProp,
         closeAndResetDialog,
+        interestingMessageEncountered,
     ]);
 
+    // Kick off the server-side task only after the websocket is ready,
+    // so we don't miss early progress messages.
     React.useEffect(() => {
         props.setProgressState(ProgressState.Working);
         // we need to be ready to listen to progress messages from the server,
@@ -103,7 +106,13 @@ export const PublishProgressDialog: React.FunctionComponent<{
                 },
             );
         });
-    }, [props.apiForStartingTask, props.generation]); // Every time the start API endpoint changes, we basically restart the component
+    }, [
+        props.apiForStartingTask,
+        props.generation,
+        props.onTaskComplete,
+        props.setProgressState,
+        props.webSocketClientContext,
+    ]); // Every time the start API endpoint changes, we basically restart the component
 
     useSubscribeToWebSocketForEvent(
         props.webSocketClientContext,
@@ -121,11 +130,15 @@ export const PublishProgressDialog: React.FunctionComponent<{
                     case "Error":
                     case "Warning":
                         setErrorEncountered(true);
+                        setInterestingMessageEncountered(true);
                     // deliberately fall through
                     case "Progress":
 
                     // eslint-disable-next-line no-fallthrough
                     case "Note":
+                        if (progressEvent.progressKind === "Note") {
+                            setInterestingMessageEncountered(true);
+                        }
                         setAccumulatedMessages(
                             (oldMessages) => oldMessages + html,
                         );
