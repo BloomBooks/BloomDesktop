@@ -2791,6 +2791,7 @@ namespace Bloom.Publish.Epub
                 }
             }
             var sb = new StringBuilder();
+            var normalFacesAdded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var font in _fontsUsedInBook.OrderBy(x => x.ToString()))
             {
                 if (badFonts.Contains(font.fontFamily))
@@ -2816,7 +2817,14 @@ namespace Bloom.Publish.Epub
                     // The fonts.css file is stored in a subfolder as are the font files.  They are in different
                     // subfolders, and the reference to the font file has to take the relative path to fonts.css
                     // into account.
-                    AddFontFace(sb, font, group, "../" + kFontsFolder + "/", true);
+                    AddFontFace(
+                        sb,
+                        font,
+                        group,
+                        normalFacesAdded,
+                        "../" + kFontsFolder + "/",
+                        true
+                    );
                 }
             }
             if (
@@ -2889,26 +2897,73 @@ namespace Bloom.Publish.Epub
             StringBuilder sb,
             PublishHelper.FontInfo font,
             FontGroup group,
+            HashSet<string> normalFacesAdded,
             string relativePathFromCss = "",
             bool sanitizeFileName = false
         )
         {
+            // What we are doing here (See BL-15558)
+            // On the one hand, we have the fonts that the html/css call for.
+            // On the other hand, we have the actual fonts (not typefaces, actual "fonts")
+            // that are available on this machine. When we "add a font face" here, we are
+            // creating a css rule that points to an actual font file that will be embedding.
+            // If the font face we want isn't available, the browser can synthesize one.
+            // So for example if you want italic, but we only have normal, that's fine we
+            // have no italic font face to add, so we just add the normal one and the browser will
+            // do its best. This is what is needed for WYSIWYG, because that is what is happening
+            // in the Editor view. But if you *do* have a font file matching the requested face,
+            // then we want to emit a font-face rule for it which points to the font file.
+
             var weight = font.fontWeight == "700" ? "bold" : "normal";
-            string path = null;
-            if (font.fontStyle == "italic" && font.fontWeight == "700")
-                path = group.BoldItalic;
-            if (string.IsNullOrEmpty(path) && font.fontStyle == "italic")
-                path = group.Italic;
-            if (string.IsNullOrEmpty(path) && font.fontWeight == "700")
-                path = group.Bold;
-            if (string.IsNullOrEmpty(path))
-                path = group.Normal;
+            var wantsItalic = font.fontStyle == "italic";
+            var wantsBold = font.fontWeight == "700";
+            string exactPath = null;
+
+            // Step 1: prefer an exact face match for the requested style/weight (no substitution).
+            if (wantsItalic && wantsBold && !string.IsNullOrEmpty(group.BoldItalic))
+                exactPath = group.BoldItalic;
+            else if (wantsItalic && !string.IsNullOrEmpty(group.Italic))
+                exactPath = group.Italic;
+            else if (wantsBold && !wantsItalic && !string.IsNullOrEmpty(group.Bold))
+                exactPath = group.Bold;
+            else if (!wantsItalic && !wantsBold && !string.IsNullOrEmpty(group.Normal))
+                exactPath = group.Normal;
+
+            if (!string.IsNullOrEmpty(exactPath))
+            {
+                // Step 2: only emit one normal/normal rule per family to keep output deterministic.
+                if (!wantsItalic && !wantsBold)
+                {
+                    if (normalFacesAdded.Contains(font.fontFamily))
+                        return;
+                    normalFacesAdded.Add(font.fontFamily);
+                }
+                // Step 3: use the exact face with the requested style/weight.
+                AddFontFace(
+                    sb,
+                    font.fontFamily,
+                    weight,
+                    font.fontStyle,
+                    exactPath,
+                    relativePathFromCss,
+                    sanitizeFileName
+                );
+                return;
+            }
+
+            // Step 4: no exact face. Fall back to the normal face and declare it as normal/normal
+            // to avoid synthetic italics/bold in readers (root cause of BL-15558).
+            if (string.IsNullOrEmpty(group.Normal))
+                return;
+            if (normalFacesAdded.Contains(font.fontFamily))
+                return;
+            normalFacesAdded.Add(font.fontFamily);
             AddFontFace(
                 sb,
                 font.fontFamily,
-                weight,
-                font.fontStyle,
-                path,
+                "normal",
+                "normal",
+                group.Normal,
                 relativePathFromCss,
                 sanitizeFileName
             );

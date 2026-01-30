@@ -8,6 +8,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Bloom;
 using Bloom.Book;
+using Bloom.FontProcessing;
 using Bloom.Publish;
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
@@ -2558,6 +2559,27 @@ namespace BloomTests.Publish.Epub
             var sb = new StringBuilder();
             Assert.DoesNotThrow(() => EpubMaker.AddFontFace(sb, "myFont", "bold", "italic", null));
             Assert.That(sb.Length, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void AddFontFaceAvoidingSyntheticStyles_MissingItalicFace_UsesNormalStyle()
+        {
+            var sb = new StringBuilder();
+            var group = new FontGroup { Normal = "Test Font R.ttf" };
+            var normalFacesAdded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var font = new PublishHelper.FontInfo
+            {
+                fontFamily = "Test Font",
+                fontStyle = "italic",
+                fontWeight = "400",
+            };
+
+            EpubMaker.AddFontFace(sb, font, group, normalFacesAdded);
+
+            var css = sb.ToString();
+            Assert.That(css, Does.Contain("font-style:normal"));
+            Assert.That(css, Does.Not.Contain("font-style:italic"));
+            Assert.That(css, Does.Contain("Test Font R.ttf"));
         }
 
         [Test]
