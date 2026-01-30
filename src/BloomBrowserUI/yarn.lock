@@ -4196,9 +4196,9 @@ bindings@^1.5.0:
     file-uri-to-path "1.0.0"
 
 bloom-player@^2.17.3:
-  version "2.17.5"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.17.5.tgz#064fd2895919b568a9fb3cc7fe47cf7e07e34b9d"
-  integrity sha512-BKVth3y3RREK3IVKXgn7PlyfAl5tSxflW6cuagfvHgOZHvmyARiYG5h2enjtOr4lDYfYU9m8Eni6cq26wDklkg==
+  version "2.17.6"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.17.6.tgz#0111b68abbd3c29215e26bd18cfa56bbd94da7f1"
+  integrity sha512-e/taS0PDn0gwvhB5tKNsZVSQiv8fvdGBD06obCfkBXwmMaKjLgySmpMo5Ae4Mb5J3yGtwdcPEvWMYdB07pXsqg==
 
 boom@2.x.x:
   version "2.10.1"
@@ -4663,9 +4663,9 @@ combined-stream@^1.0.5, combined-stream@~1.0.5:
     delayed-stream "~1.0.0"
 
 comicaljs@^0.3.100:
-  version "0.3.102"
-  resolved "https://registry.yarnpkg.com/comicaljs/-/comicaljs-0.3.102.tgz#df6a6b634767fdb025f08306b84a759b3421c313"
-  integrity sha512-h0lnhpAO75wpx3492FxKdR7snw9oe84v0KwAfZpDpcNHEFIkLiAHIx/HhRlUhjF/52sda2TT3isv1BuXvbDVhw==
+  version "0.3.103"
+  resolved "https://registry.yarnpkg.com/comicaljs/-/comicaljs-0.3.103.tgz#e8fcd1820848465cfcbf90413ffce4526436aa52"
+  integrity sha512-zGWhbAWtZU7ei2fvjYzJvChGT1pzS/UKZmcHv/yCAYx8444iFidaAzoCLkJBE6jwe3Oon7gKDfc4hCdvktDX9A==
   dependencies:
     paper "0.12.8"
 

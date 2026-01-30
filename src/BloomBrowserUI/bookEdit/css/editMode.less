@@ -765,8 +765,11 @@ div.bloom-templateMode {
 }
 
 // We only make a big deal out of "overflow" if the layout is a *paper* size, rather than a *device* size.
-.bloom-page:not([class*="Device"]) {
+// Or the overflowing text is on a button
+.bloom-page:not([class*="Device"]),
+.bloom-page .bloom-canvas-button.bloom-canvas-button {
     // We need this three times to beat a rule that gives the focusd editable box a blue outline
+    // And for buttons we need to beat the rule on .bloom-canvas-element[data-bloom-active="true"] div.bloom-editable
     .overflow.overflow.overflow {
         color: @OverflowColor !important;
         outline: solid thin @OverflowColor !important; //rather than border so it doesn't affect layout
@@ -1289,16 +1292,6 @@ body {
 body.hideAllCKEditors .cke_chrome {
     // "display" is manipulated on the `style` element by ckeditor, so we can't use that
     visibility: hidden;
-}
-
-// We have all kinds of code that knows placeHolder.png is special. So it's nontrivial to
-// switch and use a different placeholder image for GIFs. However, some of that code we
-// already have prevents showing the placeholder except while editing. So we can get the
-// effect we want (a different placeholder for GIFs) by just making the placeholder src
-// and changing the content of the image.
-.bloom-gif img[src="placeHolder.png"] {
-    content: url("/bloom/images/Gif.svg");
-    opacity: 0.4;
 }
 
 .invisibles {
