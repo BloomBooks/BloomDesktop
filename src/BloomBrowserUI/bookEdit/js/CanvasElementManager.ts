@@ -1530,6 +1530,15 @@ export class CanvasElementManager {
         this.currentDragControl?.classList.remove("active-control");
         this.guideProvider.endDrag();
         this.snapProvider.endDrag();
+        // If this is a button, notify the overflow checker to recheck overflow
+        if (this.activeElement?.classList.contains(kBloomButtonClass)) {
+            this.activeElement.dispatchEvent(
+                new Event("buttonCanvasElementResized", {
+                    bubbles: true,
+                    cancelable: false,
+                }),
+            );
+        }
     };
 
     private minWidth = 30; // @MinTextBoxWidth in canvasTool.less
@@ -6210,7 +6219,9 @@ export class CanvasElementManager {
         return (
             !htmlElement ||
             (htmlElement.classList &&
-                htmlElement.classList.contains("bloom-ui"))
+                (htmlElement.classList.contains("bloom-ui") ||
+                    htmlElement.classList.contains("nicescroll-rails") ||
+                    htmlElement.classList.contains("nicescroll-cursors")))
         );
     }
 

@@ -155,7 +155,10 @@ namespace Bloom.Publish.BloomPub
 
             BookCompressor.MakeSizedThumbnail(modifiedBook, modifiedBook.FolderPath, 256);
 
-            MakeSha(BookStorage.FindBookHtmlInFolder(bookFolderPath), modifiedBook.FolderPath);
+            CreateVersionFileWithSha(
+                BookStorage.FindBookHtmlInFolder(bookFolderPath),
+                modifiedBook.FolderPath
+            );
             CompressImages(
                 modifiedBook.FolderPath,
                 settings.ImagePublishSettings,
@@ -364,14 +367,14 @@ namespace Bloom.Publish.BloomPub
             return System.Web.HttpUtility.UrlDecode(filename);
         }
 
-        private static void MakeSha(string pathToFileForSha, string folderForSha)
+        private static void CreateVersionFileWithSha(string bookFilePath, string outputDirectory)
         {
-            var sha = Book.Book.ComputeHashForAllBookRelatedFiles(pathToFileForSha);
+            var sha = Book.Book.ComputeHashForAllBookRelatedFiles(bookFilePath);
             var name = "version.txt"; // must match what BloomReader is looking for in NewBookListenerService.IsBookUpToDate()
             // We send the straight string without a BOM in our advertisement, so that needs to be what we write
             // in the file, otherwise, BR never recognizes that it already has the current version.
             RobustFile.WriteAllText(
-                Path.Combine(folderForSha, name),
+                Path.Combine(outputDirectory, name),
                 sha,
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)
             );
@@ -391,7 +394,6 @@ namespace Bloom.Publish.BloomPub
         )
         {
             // MakeDeviceXmatterTempBook needs to be able to copy customCollectionStyles.css etc into parent of bookFolderPath
-            // And bloom-player expects folder name to match html file name.
             var htmPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
             var tentativeBookFolderPath = Path.Combine(
                 temp.FolderPath,

@@ -3,6 +3,8 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Reflection;
+using System.Text.RegularExpressions;
+using Bloom;
 using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.SafeXml;
@@ -650,11 +652,10 @@ namespace BloomTests.ImageProcessing
                 Path.Combine(_folder.Path, _p1i2c4.GetAttribute("src"))
             );
             _p1i3c54Bytes = RobustFile.ReadAllBytes(
-                // Tempting to read from _p1i3c5.GetAttribute("src")).
-                // But we're have assertions that the src is unchanged for this element.
-                // What we want to ensure is that the original file was overwritten, rather
-                // than a new one with the encoded name man%203.jpg being created.
-                Path.Combine(_folder.Path, "man 3.jpg")
+                // The filename is now changing for this because there is more than one img
+                // element using this source.  The original file remains, but the cropped one gets
+                // a new name.
+                Path.Combine(_folder.Path, _p1i3c5.GetAttribute("src"))
             );
         }
 
@@ -748,7 +749,16 @@ namespace BloomTests.ImageProcessing
         [Test]
         public void CroppedImage_NoUncroppedWithSameName_UsesOriginalName()
         {
-            Assert.That(_p1i3c5.GetAttribute("src"), Is.EqualTo("man%203.jpg"));
+            var src = _p1i3c5.GetAttribute("src");
+            Assert.That(src, Is.Not.EqualTo("man%203.jpg"));
+            // The new name will be something like "f7a07501-4163-409b-9b65-5331423a06ab.jpg"
+            Assert.That(
+                Regex.IsMatch(
+                    src,
+                    @"^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\.jpg"
+                ),
+                Is.True
+            );
         }
 
         [Test]
@@ -759,6 +769,321 @@ namespace BloomTests.ImageProcessing
                 Is.Not.EqualTo(_manJpgBytes),
                 "Cropped image should have different content from original"
             );
+        }
+
+        [Test]
+        public void ReallyCropImages_SameFolderOrphanedFile_DeletesUnreferencedOriginal()
+        {
+            // This test verifies that when source and destination are the same,
+            // and an image is replaced with a cropped version, the original is deleted
+            // if no other img elements reference it.
+
+            using (var folder = new TemporaryFolder("OrphanCleanupTest"))
+            {
+                // Setup: Create a simple image file
+                var imagePath = Path.Combine(folder.Path, "orphan.png");
+                var _pathToTestImages = "src\\BloomTests\\ImageProcessing\\images";
+                var sourcePath = FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestImages,
+                    "bird.png"
+                );
+                RobustFile.Copy(sourcePath, imagePath);
+
+                // Create a DOM with only one cropped usage of the image
+                var dom = new HtmlDom(
+                    @"<html><head></head><body>
+                <div class=""bloom-page"">
+                    <div class=""marginBox"">
+                        <div class=""bloom-canvas"">"
+                        + MakeImageCanvasElement(
+                            "testImg",
+                            "orphan.png",
+                            "height: 300px; left: 10px; top: 10px; width: 200px;",
+                            "width: 400px; left: -50px; top: -50px"
+                        )
+                        + @"</div>
+                    </div>
+                </div>
+                <div class=""bloom-page"">
+                    <div class=""marginBox"">
+                        <div class=""bloom-canvas"">"
+                        + MakeImageCanvasElement(
+                            "testImg2",
+                            "orphan.png",
+                            "height: 300px; left: 10px; top: 10px; width: 200px;",
+                            "width: 400px; left: -50px; top: -50px"
+                        )
+                        + @"</div>
+                    </div>
+                </div>
+            </body></html>"
+                );
+
+                // Verify the original file exists before cropping
+                Assert.That(
+                    File.Exists(imagePath),
+                    Is.True,
+                    "Original file should exist before cropping"
+                );
+
+                // SUT
+                ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path);
+
+                // Verify the original file was deleted (orphaned)
+                Assert.That(
+                    File.Exists(imagePath),
+                    Is.False,
+                    "Original file should be deleted when replaced and no longer referenced"
+                );
+
+                // Verify a new cropped file exists
+                var img = dom.SelectSingleNode("//img[@id='testImg']");
+                var newSrc = img.GetAttribute("src");
+                Assert.That(newSrc, Is.Not.EqualTo("orphan.png"));
+                Assert.That(
+                    File.Exists(Path.Combine(folder.Path, newSrc)),
+                    Is.True,
+                    "New cropped file should exist"
+                );
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_SameFolderWithUncropped_KeepsOriginalFile()
+        {
+            // This test verifies that when an image appears both cropped and uncropped,
+            // the original file is kept (not orphaned).
+
+            using (var folder = new TemporaryFolder("KeepOriginalTest"))
+            {
+                var imagePath = Path.Combine(folder.Path, "shared.png");
+                var _pathToTestImages = "src\\BloomTests\\ImageProcessing\\images";
+                var sourcePath = FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestImages,
+                    "bird.png"
+                );
+                RobustFile.Copy(sourcePath, imagePath);
+
+                // Create a DOM with both cropped and uncropped usage
+                var dom = new HtmlDom(
+                    @"<html><head></head><body>
+                <div class=""bloom-page"">
+                    <div class=""marginBox"">
+                        <div class=""bloom-canvas"">"
+                        + MakeImageCanvasElement(
+                            "uncroppedImg",
+                            "shared.png",
+                            "height: 300px; left: 10px; top: 10px; width: 200px;"
+                        )
+                        + MakeImageCanvasElement(
+                            "croppedImg",
+                            "shared.png",
+                            "height: 300px; left: 10px; top: 10px; width: 200px;",
+                            "width: 400px; left: -50px; top: -50px"
+                        )
+                        + @"</div>
+                    </div>
+                </div>
+            </body></html>"
+                );
+
+                var originalBytes = RobustFile.ReadAllBytes(imagePath);
+
+                // SUT
+                ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path);
+
+                // Verify the original file still exists
+                Assert.That(
+                    File.Exists(imagePath),
+                    Is.True,
+                    "Original file should be kept when still referenced by uncropped image"
+                );
+
+                // Verify the original file content is unchanged
+                var currentBytes = RobustFile.ReadAllBytes(imagePath);
+                Assert.That(
+                    currentBytes,
+                    Is.EqualTo(originalBytes),
+                    "Original file content should be unchanged"
+                );
+
+                // Verify uncropped image still references original
+                var uncroppedImg = dom.SelectSingleNode("//img[@id='uncroppedImg']");
+                Assert.That(uncroppedImg.GetAttribute("src"), Is.EqualTo("shared.png"));
+
+                // Verify cropped image has new name
+                var croppedImg = dom.SelectSingleNode("//img[@id='croppedImg']");
+                var croppedSrc = croppedImg.GetAttribute("src");
+                Assert.That(croppedSrc, Is.Not.EqualTo("shared.png"));
+                Assert.That(File.Exists(Path.Combine(folder.Path, croppedSrc)), Is.True);
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_DifferentFolders_DoesNotDeleteOriginal()
+        {
+            // This test verifies that when source and destination folders are different,
+            // the original file is never deleted.
+
+            using (var sourceFolder = new TemporaryFolder("SourceFolder"))
+            using (var destFolder = new TemporaryFolder("DestFolder"))
+            {
+                var imagePath = Path.Combine(sourceFolder.Path, "original.png");
+                var _pathToTestImages = "src\\BloomTests\\ImageProcessing\\images";
+                var sourcePath = FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestImages,
+                    "bird.png"
+                );
+                RobustFile.Copy(sourcePath, imagePath);
+
+                var dom = new HtmlDom(
+                    @"<html><head></head><body>
+                <div class=""bloom-page"">
+                    <div class=""marginBox"">
+                        <div class=""bloom-canvas"">"
+                        + MakeImageCanvasElement(
+                            "testImg",
+                            "original.png",
+                            "height: 300px; left: 10px; top: 10px; width: 200px;",
+                            "width: 400px; left: -50px; top: -50px"
+                        )
+                        + @"</div>
+                    </div>
+                </div>
+            </body></html>"
+                );
+
+                // SUT
+                ImageUtils.ReallyCropImages(dom.RawDom, sourceFolder.Path, destFolder.Path);
+
+                // Verify original file still exists in source folder
+                Assert.That(
+                    RobustFile.Exists(imagePath),
+                    Is.True,
+                    "Original file should not be deleted when using different folders"
+                );
+
+                // Verify cropped file exists in destination folder
+                var img = dom.SelectSingleNode("//img[@id='testImg']");
+                var newSrc = img.GetAttribute("src");
+                var croppedPath = Path.Combine(destFolder.Path, newSrc);
+                Assert.That(
+                    RobustFile.Exists(croppedPath),
+                    Is.True,
+                    "Cropped file should exist in destination folder"
+                );
+
+                // Verify cropped file is different than original file
+                var originalBytes = RobustFile.ReadAllBytes(imagePath);
+                var croppedBytes = RobustFile.ReadAllBytes(croppedPath);
+                Assert.That(originalBytes, Is.Not.EqualTo(croppedBytes));
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_WithNullSrc_DoesNotThrow()
+        {
+            // Verify robustness with invalid data
+            using (var folder = new TemporaryFolder("NullSrcTest"))
+            {
+                var dom = new HtmlDom(
+                    @"<html><head></head><body>
+                <div class=""bloom-page"">
+                    <div class=""marginBox"">
+                        <div class=""bloom-canvas"">
+                            <div class=""bloom-canvas-element"" style=""height: 300px; width: 200px;"">
+                                <div class=""bloom-imageContainer"">
+                                    <img id=""nullImg"" style=""width: 400px;"" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </body></html>"
+                );
+
+                // SUT - Should not throw
+                Assert.DoesNotThrow(() =>
+                    ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path)
+                );
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_WithEmptySrc_DoesNotThrow()
+        {
+            // Verify robustness with invalid data
+            using (var folder = new TemporaryFolder("EmptySrcTest"))
+            {
+                var dom = new HtmlDom(
+                    @"<html><head></head><body>
+                <div class=""bloom-page"">
+                    <div class=""marginBox"">
+                        <div class=""bloom-canvas"">"
+                        + MakeImageCanvasElement(
+                            "emptyImg",
+                            "",
+                            "height: 300px; left: 10px; top: 10px; width: 200px;",
+                            "width: 400px; left: -50px; top: -50px"
+                        )
+                        + @"</div>
+                    </div>
+                </div>
+            </body></html>"
+                );
+
+                // SUT - Should not throw
+                Assert.DoesNotThrow(() =>
+                    ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path)
+                );
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_WithUrlEncodedSpace_HandlesCorrectly()
+        {
+            // Test handling of URL-encoded filenames
+            using (var folder = new TemporaryFolder("UrlEncodedTest"))
+            {
+                var imagePath = Path.Combine(folder.Path, "image with space.png");
+                var _pathToTestImages = "src\\BloomTests\\ImageProcessing\\images";
+                var sourcePath = FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestImages,
+                    "bird.png"
+                );
+                RobustFile.Copy(sourcePath, imagePath);
+
+                var dom = new HtmlDom(
+                    @"<html><head></head><body>
+                <div class=""bloom-page"">
+                    <div class=""marginBox"">
+                        <div class=""bloom-canvas"">"
+                        + MakeImageCanvasElement(
+                            "encodedImg",
+                            "image%20with%20space.png", // URL encoded
+                            "height: 300px; left: 10px; top: 10px; width: 200px;",
+                            "width: 400px; left: -50px; top: -50px"
+                        )
+                        + @"</div>
+                    </div>
+                </div>
+            </body></html>"
+                );
+
+                // SUT - Should not throw
+                Assert.DoesNotThrow(() =>
+                    ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path)
+                );
+
+                var img = dom.SelectSingleNode("//img[@id='encodedImg']");
+                var newSrc = img.GetAttribute("src");
+                var newPath = UrlPathString.GetFullyDecodedPath(folder.Path, ref newSrc);
+                Assert.That(
+                    File.Exists(newPath),
+                    Is.True,
+                    "Cropped file should exist even with URL-encoded source"
+                );
+            }
         }
     }
 }
