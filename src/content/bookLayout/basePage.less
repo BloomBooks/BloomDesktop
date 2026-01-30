@@ -765,16 +765,6 @@ div.bloom-page.coverColor {
     --cover-margin-top: 0mm;
     --cover-margin-bottom: 0mm;
 
-    // We're setting the background color to the same dark color used for paper comic pages.
-    // Since the image is covering the whole page, it doesn't matter much in practice.
-
-    // This would be the ideal way to set this, but it doesn't actually work currently;
-    // the variable only works for inside pages because the cover color overrides it.
-    --page-background-color: @dark !important;
-
-    background-color: @dark !important;
-    color: white !important; // Ensure any error message is visible.  See BL-14241.
-
     .bloom-canvas-element.bloom-backgroundImage img.bloom-imageLoadError {
         // Ensure the error message is not cropped.  See BL-14241.
         padding: 20px;
