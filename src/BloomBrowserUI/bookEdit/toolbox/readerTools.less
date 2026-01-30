@@ -1,17 +1,23 @@
 @import "../../bloomUI.less";
 
+@toggle-button-height: 32px;
+
 #leveled-reader-tool-content,
 #decodable-reader-tool-content {
     // Slide/fade the content in and out when toggled.
     transition-property: max-height, opacity;
     transition-duration: 0.5s;
     transition-timing-function: ease-in-out;
-    max-height: 100%;
-    overflow: hidden;
+    max-height: calc(100% - @toggle-button-height);
+    overflow: auto;
     &.turned-off {
         max-height: 0;
         opacity: 0;
     }
+}
+#leveled-reader-tool-toggle-react-container,
+#decodable-reader-tool-toggle-react-container {
+    max-height: @toggle-button-height;
 }
 
 /*Styles for ReaderTools.htm*/
