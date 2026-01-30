@@ -33,6 +33,8 @@ export const PublishProgressDialog: React.FunctionComponent<{
     const [accumulatedMessages, setAccumulatedMessages] = useState("");
 
     const [errorEncountered, setErrorEncountered] = useState(false);
+    const [interestingMessageEncountered, setInterestingMessageEncountered] =
+        useState(false);
 
     const {
         setProgressState: setProgressStateProp,
@@ -47,6 +49,7 @@ export const PublishProgressDialog: React.FunctionComponent<{
         setAccumulatedMessages("");
         setInstructionMessage(undefined);
         setErrorEncountered(false);
+        setInterestingMessageEncountered(false);
     }, [setProgressStateProp, setClosePendingProp]);
 
     //Note, originally this was just a function, closeIfNoError().
@@ -55,9 +58,9 @@ export const PublishProgressDialog: React.FunctionComponent<{
     // update we notice that and see about closing.
     React.useEffect(() => {
         if (props.closePending) {
-            if (errorEncountered) {
+            if (errorEncountered || interestingMessageEncountered) {
                 setProgressStateProp(() =>
-                    errorEncountered
+                    errorEncountered || interestingMessageEncountered
                         ? ProgressState.Done
                         : ProgressState.Closed,
                 );
@@ -78,6 +81,7 @@ export const PublishProgressDialog: React.FunctionComponent<{
         setProgressStateProp,
         setClosePendingProp,
         closeAndResetDialog,
+        interestingMessageEncountered,
     ]);
 
     React.useEffect(() => {
@@ -121,11 +125,15 @@ export const PublishProgressDialog: React.FunctionComponent<{
                     case "Error":
                     case "Warning":
                         setErrorEncountered(true);
+                        setInterestingMessageEncountered(true);
                     // deliberately fall through
                     case "Progress":
 
                     // eslint-disable-next-line no-fallthrough
                     case "Note":
+                        if (progressEvent.progressKind === "Note") {
+                            setInterestingMessageEncountered(true);
+                        }
                         setAccumulatedMessages(
                             (oldMessages) => oldMessages + html,
                         );
