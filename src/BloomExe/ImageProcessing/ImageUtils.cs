@@ -2164,8 +2164,9 @@ namespace Bloom.ImageProcessing
 
         /// <summary>
         /// Permanently remove the cropped areas from all image files, saving any cropped images to the given folder.
-        /// Source and destination folders CAN be the same (in which case the original images are overwritten, if
-        /// there is any cropping to do).
+        /// Source and destination folders CAN be the same (in which case the original images can be overwritten, if
+        /// there is any cropping to do). When folders are the same, original image files that are no longer referenced
+        /// will be deleted.
         /// </summary>
         public static void ReallyCropImages(
             SafeXmlDocument bookDom,
@@ -2181,23 +2182,34 @@ namespace Bloom.ImageProcessing
             // key is a combination of src, style, and canvas element style height and width that determines
             // the name of an image file that should be used for this combination, which is the value.
             var cropped = new Dictionary<string, string>();
+            // If an image file is used more than once, we may need to crop it differently in
+            // different places.  We certainly don't want to crop it once and crop the result again
+            // for an additional use.  So we need to know if an image file is used more than once.
+            var srcUsageCount = new Dictionary<string, int>();
+            // Track which original files were replaced with new cropped versions (for cleanup)
+            var replacedOriginals = new HashSet<string>();
+
             foreach (var img in images)
             {
                 var src = img.GetAttribute("src");
                 // We don't want to crop placeHolder.png, just not display it.  (BL-15201)
-                if (IsPlaceholderImageFilename(src))
+                if (string.IsNullOrWhiteSpace(src) || IsPlaceholderImageFilename(src))
                     continue;
                 var style = img.GetAttribute("style");
                 if (!SignifiesCropping(style))
                 {
                     uncroppedSrcNames.Add(src);
                 }
+                if (srcUsageCount.ContainsKey(src))
+                    srcUsageCount[src]++;
+                else
+                    srcUsageCount[src] = 1;
             }
 
             foreach (var img in images)
             {
                 var src = img.GetAttribute("src");
-                if (IsPlaceholderImageFilename(src))
+                if (string.IsNullOrWhiteSpace(src) || IsPlaceholderImageFilename(src))
                     continue; // we still don't want to crop placeHolder.png (BL-15229)
                 var style = img.GetAttribute("style");
                 var imgContainer = img.ParentNode as SafeXmlElement;
@@ -2216,13 +2228,79 @@ namespace Bloom.ImageProcessing
                     continue;
                 }
 
+                var needNewName = uncroppedSrcNames.Contains(src) || srcUsageCount[src] > 1;
+
                 var croppedFileName = ReallyCropImage(
                     img,
                     imageSourceFolder,
                     imageDestFolder,
-                    uncroppedSrcNames.Contains(src)
+                    needNewName
                 );
+
+                // Track if we replaced an original file with a new one
+                if (croppedFileName != null && needNewName && croppedFileName != src)
+                {
+                    replacedOriginals.Add(src);
+                }
+
                 cropped[key] = croppedFileName;
+            }
+            DeleteOrphanedImageFiles(imageSourceFolder, imageDestFolder, images, replacedOriginals);
+        }
+
+        private static void DeleteOrphanedImageFiles(
+            string imageSourceFolder,
+            string imageDestFolder,
+            SafeXmlElement[] images,
+            HashSet<string> replacedOriginals
+        )
+        {
+            // Clean up orphaned original files if source and destination are the same folder
+            if (imageSourceFolder.Equals(imageDestFolder, StringComparison.OrdinalIgnoreCase))
+            {
+                // Collect all currently referenced src values after cropping
+                var referencedSrcs = new HashSet<string>();
+                foreach (var img in images)
+                {
+                    var currentSrc = img.GetAttribute("src");
+                    if (
+                        !string.IsNullOrWhiteSpace(currentSrc)
+                        && !IsPlaceholderImageFilename(currentSrc)
+                    )
+                    {
+                        referencedSrcs.Add(currentSrc);
+                    }
+                }
+                // Delete original files that were replaced and are no longer referenced
+                foreach (var originalSrc in replacedOriginals)
+                {
+                    if (!referencedSrcs.Contains(originalSrc))
+                    {
+                        try
+                        {
+                            // Decode the src to get the actual file path
+                            var decodedSrc = originalSrc;
+                            var filePath = UrlPathString.GetFullyDecodedPath(
+                                imageSourceFolder,
+                                ref decodedSrc
+                            );
+                            if (RobustFile.Exists(filePath))
+                            {
+                                RobustFile.Delete(filePath);
+                                Logger.WriteEvent(
+                                    $"Deleted orphaned original image: {originalSrc}"
+                                );
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log but don't fail the operation if we can't delete an orphaned file
+                            Logger.WriteEvent(
+                                $"Failed to delete orphaned image {originalSrc}: {ex.Message}"
+                            );
+                        }
+                    }
+                }
             }
         }
 
