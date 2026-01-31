@@ -68,6 +68,9 @@ export interface IPageFrameExports {
     ckeditorCanUndo(): boolean;
     ckeditorUndo(): void;
 
+    addRequestPageContentDelay(id: string): void;
+    removeRequestPageContentDelay(id: string): void;
+
     SayHello(): void;
     renderDragActivityTabControl(currentTab: number): void;
     showGamePromptDialog: (onlyIfEmpty: boolean) => void;
@@ -89,6 +92,8 @@ import {
     attachToCkEditor,
     removeImageId,
     changeImage,
+    addRequestPageContentDelay,
+    removeRequestPageContentDelay,
 } from "./js/bloomEditing";
 import { showGamePromptDialog } from "./toolbox/games/GameTool";
 export {
@@ -105,6 +110,8 @@ export {
     attachToCkEditor,
     removeImageId,
     changeImage,
+    addRequestPageContentDelay,
+    removeRequestPageContentDelay,
     renderDragActivityTabControl,
     getTheOneCanvasElementManager,
     showGamePromptDialog,
@@ -231,6 +238,8 @@ interface EditablePageBundleApi {
     getTheOneCanvasElementManager: typeof getTheOneCanvasElementManager;
     ckeditorCanUndo: typeof ckeditorCanUndo;
     ckeditorUndo: typeof ckeditorUndo;
+    addRequestPageContentDelay: typeof addRequestPageContentDelay;
+    removeRequestPageContentDelay: typeof removeRequestPageContentDelay;
     SayHello: typeof SayHello;
     renderDragActivityTabControl: typeof renderDragActivityTabControl;
     showGamePromptDialog: typeof showGamePromptDialog;
@@ -261,6 +270,8 @@ window.editablePageBundle = {
     getTheOneCanvasElementManager,
     ckeditorCanUndo,
     ckeditorUndo,
+    addRequestPageContentDelay,
+    removeRequestPageContentDelay,
     SayHello,
     renderDragActivityTabControl,
     showGamePromptDialog,
