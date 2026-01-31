@@ -7,6 +7,7 @@
     // themes can override this as needed. If you have reasonable margins, you don't need to add anything to fit in a pageNumber
     --pageNumber-extra-height: 0mm; // must have units
 }
+
 .numberedPage {
     &:after {
         content: attr(data-page-number);
@@ -22,6 +23,8 @@
         bottom: var(--pageNumber-bottom);
         top: var(--pageNumber-top);
         background-color: var(--pageNumber-background-color);
+        color: var(--pageNumber-color);
+
         border-radius: var(--pageNumber-border-radius);
         z-index: 1000;
         // These are needed to get the number centered in a circle.  They have
