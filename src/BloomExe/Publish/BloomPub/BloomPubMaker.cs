@@ -930,6 +930,7 @@ namespace Bloom.Publish.BloomPub
             }
             // Create the fonts.css file, which tells the browser where to find the fonts for those families.
             var sb = new StringBuilder();
+            var normalFacesAdded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var font in fontsWanted.OrderBy(x => x.ToString()))
             {
                 if (badFonts.Contains(font.fontFamily))
@@ -937,7 +938,7 @@ namespace Bloom.Publish.BloomPub
                 var group = fontFileFinder.GetGroupForFont(font.fontFamily);
                 if (group != null)
                 {
-                    EpubMaker.AddFontFace(sb, font, group);
+                    EpubMaker.AddFontFace(sb, font, group, normalFacesAdded);
                 }
                 // We don't need (or want) a rule to use Andika instead.
                 // The reader typically WILL use Andika, because we have a rule making it the default font
