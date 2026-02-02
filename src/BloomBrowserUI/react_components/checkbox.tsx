@@ -6,6 +6,7 @@ import {
     Label,
     ILocalizationState,
 } from "./l10nComponents";
+import { kBloomBlue } from "../utils/colorUtils";
 
 interface ICheckboxProps extends ILocalizationProps {
     id?: string;
@@ -70,6 +71,15 @@ export class Checkbox extends LocalizableElement<
                 css={css`
                     display: flex;
                     align-items: self-start;
+                    label a,
+                    label a:visited {
+                        color: ${kBloomBlue};
+                        text-decoration: none;
+                    }
+
+                    label a:hover {
+                        text-decoration: underline;
+                    }
                 `}
             >
                 <input

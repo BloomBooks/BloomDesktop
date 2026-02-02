@@ -63,6 +63,11 @@
         <source xml:lang="en">Draggable Target</source>
         <note>ID: EditTab.Toolbox.DragActivity.DraggableTarget</note>
       </trans-unit>
+      <trans-unit id="TeamCollection.DropboxSettingsAcknowledgement" sil:dynamic="true">
+        <source xml:lang="en">I will ensure that all team members have properly configured [Critical Dropbox Settings](https://docs.bloomlibrary.org/critical-dropbox-settings/).</source>
+        <note>ID: TeamCollection.DropboxSettingsAcknowledgement</note>
+        <note>Checkbox acknowledgement shown when creating a Team Collection.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.FixedInPlace">
         <source xml:lang="en">Objects that do not Move</source>
         <note>ID: EditTab.Toolbox.DragActivity.FixedInPlace</note>
