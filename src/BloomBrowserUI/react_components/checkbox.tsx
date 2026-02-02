@@ -1,4 +1,5 @@
 import { css } from "@emotion/react";
+import * as React from "react";
 
 import {
     ILocalizationProps,
@@ -6,6 +7,7 @@ import {
     Label,
     ILocalizationState,
 } from "./l10nComponents";
+import { kBloomBlue } from "../utils/colorUtils";
 
 interface ICheckboxProps extends ILocalizationProps {
     id?: string;
@@ -44,7 +46,11 @@ export class Checkbox extends LocalizableElement<
         }
     }
 
-    private onLabelClicked() {
+    private onLabelClicked(event: React.MouseEvent<HTMLElement>) {
+        const target = event.target as HTMLElement | null;
+        if (target && target.closest("a")) {
+            return;
+        }
         // We expect the effect of clicking the label will be to set the check to the
         // opposite state, so that's what we pass. (But whether it really changes is
         // up to the owner changing the prop value. So it won't have happened yet.)
@@ -89,7 +95,7 @@ export class Checkbox extends LocalizableElement<
                 />
                 <Label
                     {...this.props}
-                    onClick={() => this.onLabelClicked()}
+                    onClick={(event) => this.onLabelClicked(event)}
                     className={this.props.disabled ? "disabled" : ""}
                 >
                     {/* this.props.children is the English text */}
