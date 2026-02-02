@@ -8,6 +8,7 @@
 /// <reference path="./collectionSettings.d.ts"/>
 
 import { EditableDivUtils } from "./editableDivUtils";
+import { shouldHideToolsOverImages } from "./editablePageUtils";
 import {
     Bubble,
     BubbleSpec,
@@ -1151,6 +1152,10 @@ export class CanvasElementManager {
     }
 
     public setActiveElement(element: HTMLElement | undefined) {
+        // Don't allow activating canvas elements when the motion tool is active
+        if (element && shouldHideToolsOverImages()) {
+            return;
+        }
         // Seems it should be sufficient to remove this from the old active element if any.
         // But there's at least one case where code that adds a new canvas element sets it as
         // this.activeElement before calling this method. It's safest to make sure this

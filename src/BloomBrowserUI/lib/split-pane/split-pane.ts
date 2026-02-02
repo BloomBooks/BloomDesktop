@@ -24,6 +24,7 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
 import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
 import jQuery from "jquery";
 import { kBloomCanvasClass } from "../../bookEdit/toolbox/canvas/canvasElementUtils";
+import { shouldHideToolsOverImages } from "../../bookEdit/js/editablePageUtils";
 
 var SPLITPANERESIZE_HANDLER = "_splitpaneparentresizeHandler";
 
@@ -129,6 +130,9 @@ export function splitPane($splitPanes: JQuery): void {
     let $resizeShim: JQuery;
 
     function mousedownHandler(event) {
+        if (shouldHideToolsOverImages()) {
+            return; // Don't allow dragging when motion tool is active
+        }
         event.preventDefault();
         $divider = jQuery(this);
         var isTouchEvent = event.type.match(/^touch/),
@@ -179,11 +183,18 @@ export function splitPane($splitPanes: JQuery): void {
     }
 
     function mouseenterHandler(event: Event) {
+        const divider = event.currentTarget as HTMLElement;
+        if (shouldHideToolsOverImages()) {
+            // Don't show snap popups when motion tool is active
+            // Clear any existing label and title to prevent hover effects
+            divider.removeAttribute("data-splitter-label");
+            divider.title = "";
+            return;
+        }
         const mouseEvent = event as MouseEvent;
         if (mouseEvent.buttons !== 0) {
             return; // typically drag in progress
         }
-        const divider = event.currentTarget as HTMLElement;
         theOneLocalizationManager
             .asyncGetText(
                 "EditTab.Snap.Hint",

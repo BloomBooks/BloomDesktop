@@ -30,8 +30,8 @@
 }
 
 .split-pane.vertical-percent > .vertical-divider {
-    &:hover:after,
-    &.dragged:after {
+    &:hover[data-splitter-label]:after,
+    &.dragged[data-splitter-label]:after {
         content: attr(data-splitter-label);
         position: absolute;
         left: 5px;
@@ -48,9 +48,11 @@
     }
 }
 
-.split-pane.vertical-percent > .vertical-divider:hover,
-.origami-layout-mode .split-pane.vertical-percent > .vertical-divider,
-.vertical-divider.dragged {
+.split-pane.vertical-percent > .vertical-divider:hover[data-splitter-label],
+.origami-layout-mode
+    .split-pane.vertical-percent
+    > .vertical-divider[data-splitter-label],
+.vertical-divider.dragged[data-splitter-label] {
     border-right-color: @OrigamiActiveColor !important;
 
     &.snapped {
@@ -58,12 +60,26 @@
     }
 }
 
-.split-pane.vertical-percent > .vertical-divider {
+.split-pane.vertical-percent > .vertical-divider[data-splitter-label] {
     cursor: col-resize;
 }
 
-.split-pane.horizontal-percent > .horizontal-divider {
+// when there is no label, we don't want to suggest it can be dragged
+// (We remove this attribute, or don't add it, when the splitter is not draggable.
+// Our own rules contain selectors so that they don't apply unless there is a label,
+// but here we override a rule in split-pane.less so as to minimize what we
+// change in the library code.)
+.split-pane.vertical-percent > .vertical-divider:not([data-splitter-label]) {
+    cursor: default;
+}
+
+.split-pane.horizontal-percent > .horizontal-divider[data-splitter-label] {
     cursor: row-resize;
+}
+
+.split-pane.horizontal-percent
+    > .horizontal-divider:not([data-splitter-label]) {
+    cursor: default;
 }
 
 .origami-drag {
@@ -80,8 +96,8 @@
 }
 
 .split-pane.horizontal-percent > .horizontal-divider {
-    &:hover:after,
-    &.dragged:after {
+    &:hover[data-splitter-label]:after,
+    &.dragged[data-splitter-label]:after {
         content: attr(data-splitter-label);
         position: absolute;
         bottom: 0;
@@ -101,9 +117,11 @@
     }
 }
 
-.split-pane.horizontal-percent > .horizontal-divider:hover,
-.origami-layout-mode .split-pane.horizontal-percent > .horizontal-divider,
-.horizontal-divider.dragged {
+.split-pane.horizontal-percent > .horizontal-divider:hover[data-splitter-label],
+.origami-layout-mode
+    .split-pane.horizontal-percent
+    > .horizontal-divider[data-splitter-label],
+.horizontal-divider.dragged[data-splitter-label] {
     border-bottom-color: @OrigamiActiveColor !important;
 
     &.snapped {
