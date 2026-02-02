@@ -152,9 +152,19 @@ namespace Bloom.Utils
             if (e is Bloom.Utils.PathTooLongException)
             {
                 var x = (Bloom.Utils.PathTooLongException)e;
+                var path = x.Path;
+                try
+                {
+                    // It might be a short (8.3) path, so try to get the long version for the report.
+                    path = GetLongPath(path);
+                }
+                catch
+                {
+                    // if we can't get the long path, just use what we had
+                }
                 ErrorReport.NotifyUserOfProblem(
                     x,
-                    $"{GetGenericPathTooLongMessage()} <br> <span style='font-size:7pt'>Path was '{x.Path}'. {x.AdditionalInfo}</span>"
+                    $"{GetGenericPathTooLongMessage()} <br> <span style='font-size:7pt'>Path was '{path}'. {x.AdditionalInfo}</span>"
                 );
             }
             else
