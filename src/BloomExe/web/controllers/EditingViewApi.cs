@@ -358,7 +358,7 @@ namespace Bloom.web.controllers
                 }
 
                 var fullWidgetPath = dlg.FileName;
-                var ext = Path.GetExtension(fullWidgetPath);
+                var ext = Path.GetExtension(fullWidgetPath).ToLowerInvariant();
                 if (ext.EndsWith("htm") || ext.EndsWith("html"))
                 {
                     fullWidgetPath = WidgetHelper.CreateWidgetFromHtmlFolder(fullWidgetPath);

@@ -8,10 +8,21 @@ echo Checking for calling Application.Exit rather than Program.Exit.
 # 3) Screen out all the test code since we don't need to worry about zombie processes there
 # 4) For any remaining files, look for possible uses of Application.Exit.
 # 5) If anything is found (grep returns 0), then we stop everything and complain.
-git status --porcelain=v1 --untracked=no --ignored=no --no-renames | grep '^[AM]' | cut -c4- | grep '\.cs$' | \
-  grep -v 'src/BloomExe/ProgramExit.cs$' | \
-  grep -v 'src/BloomTests/' | \
-  xargs grep -H 'Application.Exit'
-status=$?
+filesToCheck=filesToCheck.lst
+git diff --cached --name-only --diff-filter=AM -z -- '*.cs' | tr '\0' '\n' >$filesToCheck
+status=1
+if [ -s $filesToCheck ]; then
+  while IFS= read -r file; do
+    case "$file" in
+      src/BloomExe/ProgramExit.cs) continue;;
+      src/BloomTests/*) continue;;
+    esac
+    if grep -H 'Application.Exit' "$file"; then
+      status=0
+      break
+    fi
+  done < $filesToCheck
+fi
+rm $filesToCheck
 # if grep finds instances of unwanted calls, then stop the commit.
 [ $status -eq 0 ] && exit 1 || exit 0

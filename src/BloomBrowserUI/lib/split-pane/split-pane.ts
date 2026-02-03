@@ -24,6 +24,7 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
 import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
 import jQuery from "jquery";
 import { kBloomCanvasClass } from "../../bookEdit/toolbox/canvas/canvasElementUtils";
+import { shouldHideToolsOverImages } from "../../bookEdit/js/editablePageUtils";
 
 var SPLITPANERESIZE_HANDLER = "_splitpaneparentresizeHandler";
 
@@ -129,6 +130,9 @@ export function splitPane($splitPanes: JQuery): void {
     let $resizeShim: JQuery;
 
     function mousedownHandler(event) {
+        if (shouldHideToolsOverImages()) {
+            return; // Don't allow dragging when motion tool is active
+        }
         event.preventDefault();
         $divider = jQuery(this);
         var isTouchEvent = event.type.match(/^touch/),
@@ -179,11 +183,19 @@ export function splitPane($splitPanes: JQuery): void {
     }
 
     function mouseenterHandler(event: Event) {
+        const divider = event.currentTarget as HTMLElement;
+        if (shouldHideToolsOverImages()) {
+            // Don't show snap popups and other visual effects related to dragging
+            // the splitter when motion tool is active. All these effects look for
+            // this attribute so they can be prevented when dragging is disabled.
+            divider.removeAttribute("data-splitter-label");
+            divider.title = "";
+            return;
+        }
         const mouseEvent = event as MouseEvent;
         if (mouseEvent.buttons !== 0) {
             return; // typically drag in progress
         }
-        const divider = event.currentTarget as HTMLElement;
         theOneLocalizationManager
             .asyncGetText(
                 "EditTab.Snap.Hint",
@@ -242,6 +254,12 @@ export function splitPane($splitPanes: JQuery): void {
     }
 
     function mousedblclickHandler(event) {
+        // Handling double-click doesn't have any negative impact on the usuability of
+        // the motion tool, but since we disabled all the indications that there is
+        // a splitter active, it might be surprising. May as well disable it also.
+        if (shouldHideToolsOverImages()) {
+            return;
+        }
         const divider = event.currentTarget;
 
         if (isSnappableSplitter(divider)) {

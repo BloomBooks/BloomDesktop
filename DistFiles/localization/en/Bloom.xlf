@@ -1841,6 +1841,7 @@
       <trans-unit id="EditTab.HowToUseHyperlink">
         <source xml:lang="en">To use this hyperlink, go to the page where you are making a Table of Contents. Next, select some text and then click on the image of chain link. This will turn the selected text into a hyperlink to this page.</source>
         <note>ID: EditTab.HowToUseHyperlink</note>
+        <note>Obsolete as of Bloom 6.3</note>
       </trans-unit>
       <trans-unit id="EditTab.HyperlinkPasteFailure">
         <source xml:lang="en">Bloom was not able to make a link. Try selecting only simple text.</source>
@@ -2874,6 +2875,7 @@
         <source xml:lang="en">Using a hyperlink</source>
         <note>ID: EditTab.UsingHyperlink</note>
         <note>Title for dialog box showing the message for EditTab.HowToUseHyperlink</note>
+        <note>Obsolete as of Bloom 6.3</note>
       </trans-unit>
       <trans-unit id="EditTab.Widget.ChooseWidget" sil:dynamic="true">
         <source xml:lang="en">Choose Widget</source>

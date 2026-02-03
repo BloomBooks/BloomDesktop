@@ -125,7 +125,8 @@ namespace Bloom.Edit
             controlKeyEvent.Subscribe(HandleControlKeyEvent);
 
             //we're giving it to the parent control through the TopBarControls property
-            Controls.Remove(_topBarPanel);
+            if (_topBarPanel.Parent != null)
+                _topBarPanel.Parent.Controls.Remove(_topBarPanel);
             bookRenamedEvent.Subscribe(
                 (oldToNewPath) =>
                 {
