@@ -32,7 +32,7 @@ namespace Bloom.TeamCollection
     /// The idea is to leave open the possibility of other implementations, for example, based on
     /// a DVCS.
     /// </summary>
-    public abstract class TeamCollection : IDisposable, ISaveContext
+    public abstract partial class TeamCollection : IDisposable, ISaveContext
     {
         // special value for BookStatus.lockedBy when the book is newly created and not in the repo at all.
         public const string FakeUserIndicatingNewBook = "this user";
@@ -1859,177 +1859,6 @@ namespace Bloom.TeamCollection
             return !string.IsNullOrEmpty(BookStorage.FindBookHtmlInFolder(folderPath));
         }
 
-        // During Startup, we want messages to go to both the current progress dialog and the permanent
-        // change log. This method handles sending to both.
-        // Note that errors logged here will not result in the TC dialog showing the Reload Collection
-        // button, because we are here doing a reload, so all errors are logged as ErrorNoReload.
-        void ReportProgressAndLog(
-            IWebSocketProgress progress,
-            ProgressKind kind,
-            string l10nIdSuffix,
-            string message,
-            string param0 = null,
-            string param1 = null
-        )
-        {
-            var fullL10nId = string.IsNullOrEmpty(l10nIdSuffix)
-                ? ""
-                : "TeamCollection." + l10nIdSuffix;
-            var msg = string.IsNullOrEmpty(l10nIdSuffix)
-                ? message
-                : string.Format(LocalizationManager.GetString(fullL10nId, message), param0, param1);
-            progress.MessageWithoutLocalizing(msg, kind);
-            _tcLog.WriteMessage(
-                (kind == ProgressKind.Progress)
-                    ? MessageAndMilestoneType.History
-                    : MessageAndMilestoneType.ErrorNoReload,
-                fullL10nId,
-                message,
-                param0,
-                param1
-            );
-        }
-
-        /// <summary>
-        /// This overload reports the problem to the progress box, log, and Analytics. It should not be
-        /// called directly; it is the common part of the two versions of ReportProblemSyncingBook which also
-        /// save the report either in the book or collection history.
-        /// </summary>
-        void CoreReportProblemSyncingBook(
-            IWebSocketProgress progress,
-            ProgressKind kind,
-            string l10nIdSuffix,
-            string message,
-            string param0 = null,
-            string param1 = null
-        )
-        {
-            ReportProgressAndLog(progress, kind, l10nIdSuffix, message, param0, param1);
-            var msg = string.Format(message, param0, param1);
-            Analytics.Track(
-                "TeamCollectionError",
-                new Dictionary<string, string> { { "message", msg } }
-            );
-        }
-
-        /// <summary>
-        /// This overload reports the problem to the progress box, log, and Analytics, and also makes an entry in
-        /// the book's history.
-        /// </summary>
-        void ReportProblemSyncingBook(
-            string folderPath,
-            string bookId,
-            IWebSocketProgress progress,
-            ProgressKind kind,
-            string l10nIdSuffix,
-            string message,
-            string param0 = null,
-            string param1 = null,
-            bool alsoMakeYouTrackIssue = false
-        )
-        {
-            CoreReportProblemSyncingBook(progress, kind, l10nIdSuffix, message, param0, param1);
-            var msg = string.Format(message, param0, param1);
-            // The second argument is not the ideal name for the book, but unless it has no previous history,
-            // the bookName will not be used. I don't think this is the place to be trying to instantiate
-            // a Book object to get the ideal name for it. So I decided to live with using the file name.
-            BookHistory.AddEvent(
-                folderPath,
-                Path.GetFileNameWithoutExtension(folderPath),
-                bookId,
-                BookHistoryEventType.SyncProblem,
-                msg
-            );
-            if (alsoMakeYouTrackIssue)
-            {
-                MakeYouTrackIssue(progress, msg, folderPath);
-            }
-        }
-
-        /// <summary>
-        /// This overload reports the problem to the progress box, log, and Analytics, and also makes an entry in
-        /// the collection's book history. Use it when the problem will result in the book going away, so
-        /// it can't be recorded in the book's own history.
-        /// </summary>
-        void ReportProblemSyncingBook(
-            string collectionPath,
-            string bookName,
-            string bookId,
-            IWebSocketProgress progress,
-            ProgressKind kind,
-            string l10nIdSuffix,
-            string message,
-            string param0 = null,
-            string param1 = null,
-            bool alsoMakeYouTrackIssue = false
-        )
-        {
-            CoreReportProblemSyncingBook(progress, kind, l10nIdSuffix, message, param0, param1);
-            var msg = string.Format(message, param0, param1);
-            CollectionHistory.AddBookEvent(
-                collectionPath,
-                bookName,
-                bookId,
-                BookHistoryEventType.SyncProblem,
-                msg
-            );
-            if (alsoMakeYouTrackIssue)
-                MakeYouTrackIssue(progress, msg, Path.Combine(collectionPath, bookName));
-        }
-
-        /// <summary>
-        /// Make a YouTrack issue (unless we're running unit tests, or the user is unregistered,
-        /// in which case don't bother, since the main point of creating the issue is so we
-        /// can get in touch and offer help).
-        /// </summary>
-        private void MakeYouTrackIssue(IWebSocketProgress progress, string msg, string folderPath)
-        {
-            if (
-                !Program.RunningUnitTests
-                && !string.IsNullOrWhiteSpace(Bloom.Registration.Registration.Default.Email)
-            )
-            {
-                var issue = new YouTrackIssueSubmitter(ProblemReportApi.YouTrackProjectKey);
-                try
-                {
-                    var email = Bloom.Registration.Registration.Default.Email;
-                    var standardUserInfo = ProblemReportApi.GetStandardUserInfo(
-                        email,
-                        Bloom.Registration.Registration.Default.FirstName,
-                        Bloom.Registration.Registration.Default.Surname
-                    );
-                    var lostAndFoundUrl =
-                        "https://docs.bloomlibrary.org/team-collections-advanced-topics/#2488e17a8a6140bebcef068046cc57b7";
-                    var admins = string.Join(
-                        ", ",
-                        (_tcManager?.Settings?.Administrators ?? new string[0]).Select(e =>
-                            ProblemReportApi.GetObfuscatedEmail(e)
-                        )
-                    );
-                    var extraInfo =
-                        $"This is a {GetBackendType()} Repo at {RepoDescription}\n{ProblemReportApi.GetBookHistoryAsString(folderPath)}";
-                    // Note: there is deliberately no period after {msg} since msg usually ends with one already.
-                    var fullMsg =
-                        $"{standardUserInfo} \n(Admins: {admins}):\n\nThere was a book synchronization problem that required putting a version in Lost and Found:\n{msg}\n\nSee {lostAndFoundUrl}.\n\n{extraInfo}";
-                    var issueId = issue.SubmitToYouTrack("Book synchronization failed", fullMsg);
-                    var issueLink = "https://issues.bloomlibrary.org/youtrack/issue/" + issueId;
-                    ReportProgressAndLog(
-                        progress,
-                        ProgressKind.Note,
-                        "ProblemReported",
-                        "Bloom reported this problem to the developers."
-                    );
-                    // Originally added " You can see the report at {0}. Also see {1}", issueLink, lostAndFoundUrl); but JohnH says not to (BL-11867)
-                }
-                catch (Exception e)
-                {
-                    Debug.Fail(
-                        "Submitting problem report to YouTrack failed with '" + e.Message + "'."
-                    );
-                }
-            }
-        }
-
         /// <summary>
         /// A list of strings known to occur in filenames Dropbox generates when it resolves conflicting changes.
         /// Not a completely reliable way to identify them, especially with an incomplete list of localizations,
@@ -2189,7 +2018,7 @@ namespace Bloom.TeamCollection
                                     id,
                                     progress,
                                     ProgressKind.Error,
-                                    "TeamCollection.ConflictingIdMove",
+                                    "ConflictingIdMove",
                                     "The book \"{0}\" was moved to Lost and Found, since it has the same ID as the book \"{1}\" in the team collection.",
                                     bookFolderName,
                                     repoState.Item1
@@ -2736,24 +2565,6 @@ namespace Bloom.TeamCollection
                 doWhat,
                 doWhenMainActionFalse
             );
-        }
-
-        public void AddHelpMessageIfProblems(IWebSocketProgress progress)
-        {
-            if (progress.HaveProblemsBeenReported)
-            {
-                var message = LocalizationManager.GetString(
-                    "TeamCollection.GetHelp",
-                    "For help with Team Collection problems, click {here}."
-                );
-                message = message
-                    .Replace(
-                        "{",
-                        "<a href='https://docs.bloomlibrary.org/team-collections-problems'>"
-                    )
-                    .Replace("}", "</a>");
-                progress.MessageWithoutLocalizing(message);
-            }
         }
 
         /// <summary>
