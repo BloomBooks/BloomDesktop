@@ -85,7 +85,10 @@ import { showRequiresSubscriptionDialogInEditView } from "../../react_components
 import { FeatureStatus } from "../../react_components/featureStatus";
 import $ from "jquery";
 import { kCanvasToolId } from "../toolbox/toolIds";
-import { getToolboxBundleExports } from "./bloomFrames";
+import {
+    doWhenEditTabBundleLoaded,
+    getToolboxBundleExports,
+} from "./bloomFrames";
 
 export interface ITextColorInfo {
     color: string;
@@ -7778,19 +7781,51 @@ async function copyAudioFileAsync(
 }
 
 function SetupClickToShowCanvasTool(canvas: Element) {
-    // if the user clicks on a canvas element, bring up the canvas tool
+    // When the user clicks the canvas background, we want to ensure the Canvas tool is available.
+    // (If they click on an existing canvas element/text box, we let the normal editing behavior
+    // proceed without changing toolbox state.)
     $(canvas).click((ev) => {
         // don't interfere with editing or recording of an image description of this canvas
         if (canvas.getElementsByClassName("bloom-describedImage").length > 0) {
             return;
         }
-
+        const targetElement =
+            ev.target instanceof Element
+                ? ev.target
+                : (ev.target as Node | null)?.parentElement;
+        if (targetElement?.closest(kCanvasElementSelector)) {
+            return;
+        }
         showCanvasTool();
     });
 }
 
 export function showCanvasTool() {
-    getToolboxBundleExports()
-        ?.getTheOneToolbox()
-        .activateToolFromId(kCanvasToolId);
+    const handleToolbox = (toolbox) => {
+        // We choose behavior based on whether the toolbox is showing.
+        // This matters because we may have to delay the actual work until the toolbox bundle is loaded.
+        // - If the toolbox is already open, don't switch tools; just ensure Canvas is available.
+        // - If the toolbox is closed, activate Canvas (which also opens the toolbox).
+        if (toolbox.toolboxIsShowing()) {
+            toolbox.ensureToolEnabled(kCanvasToolId);
+        } else {
+            toolbox.activateToolFromId(kCanvasToolId);
+        }
+    };
+
+    const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
+    if (toolbox) {
+        handleToolbox(toolbox);
+        return;
+    }
+
+    doWhenEditTabBundleLoaded((rootFrameExports) => {
+        rootFrameExports.doWhenToolboxLoaded((toolboxFrameExports) => {
+            const loadedToolbox = toolboxFrameExports.getTheOneToolbox();
+            if (!loadedToolbox) {
+                return;
+            }
+            handleToolbox(loadedToolbox);
+        });
+    });
 }
