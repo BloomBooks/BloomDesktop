@@ -175,12 +175,24 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
                             temporarilyDisableI18nWarning={true}
                             css={css`
                                 margin-top: 20px;
-                                margin-bottom: 15px;
                             `}
                         >
                             I understand that as the creator of the project, I
                             will be the only person who can change Collection
                             Settings.
+                        </Checkbox>
+                        <Checkbox
+                            l10nKey="TeamCollection.DropboxSettingsAcknowledgement"
+                            onCheckChanged={checkChanged}
+                            temporarilyDisableI18nWarning={true}
+                            css={css`
+                                margin-top: 20px;
+                                margin-bottom: 15px;
+                            `}
+                        >
+                            I will ensure that all team members have properly
+                            configured [Critical Dropbox
+                            Settings](https://docs.bloomlibrary.org/critical-dropbox-settings/).
                         </Checkbox>
                     </DialogControlGroup>
                 )}
@@ -192,7 +204,7 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
                     l10nKey="TeamCollection.CreateAndRestart"
                     hasText={true}
                     enabled={
-                        !!repoFolderPath && !errorMessage && boxesChecked == 3
+                        !!repoFolderPath && !errorMessage && boxesChecked == 4
                     }
                     temporarilyDisableI18nWarning={true}
                     onClick={() => {

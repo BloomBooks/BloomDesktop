@@ -5508,6 +5508,11 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <!--
 // Don't want these actually translated until things stabilize. Will need re-ordering.
+      <trans-unit id="TeamCollection.DropboxSettingsAcknowledgement" sil:dynamic="true">
+        <source xml:lang="en">I will ensure that all team members have properly configured [Critical Dropbox Settings](https://docs.bloomlibrary.org/critical-dropbox-settings/).</source>
+        <note>ID: TeamCollection.DropboxSettingsAcknowledgement</note>
+        <note>Checkbox acknowledgement shown when creating a Team Collection.</note>
+      </trans-unit>
       <trans-unit id="TeamCollection.AvailableDescription" sil:dynamic="true">
         <source xml:lang="en">When you check it out, no one on the team will be able to modify it or see your changes until you check it back in.</source>
         <note>ID: TeamCollection.AvailableDescription</note>
