@@ -27,6 +27,7 @@ import {
     changeImageInfo,
     kMakeNewCanvasElement,
     notifyToolOfChangedImage,
+    wrapWithRequestPageContentDelay,
 } from "./bloomEditing";
 import { addSkeletonIfEmpty } from "./linkGrid";
 import {
@@ -7002,17 +7003,35 @@ export class CanvasElementManager {
         Comical.update(canvasElement.parentElement as HTMLElement);
     }
 
+    private pageContentDelayRequestId = "adjustBackgroundImageSize";
     private adjustBackgroundImageSize(
         bloomCanvas: HTMLElement,
         bgCanvasElement: HTMLElement,
         useSizeOfNewImage: boolean,
     ) {
-        return this.adjustBackgroundImageSizeToFit(
-            bloomCanvas,
-            bgCanvasElement,
-            useSizeOfNewImage,
-            0,
+        // adjustBackgroundImageSizeInternal may wait for the image to load and make modifications after, and we want to make
+        // sure those modifications are included in any save that occurs in the meanwhile.
+        // wrapWithRequestPageContentDelay will add the delay before calling the function and remove it when the promise settles.
+        wrapWithRequestPageContentDelay(
+            () =>
+                this.adjustBackgroundImageSizeInternal(
+                    bloomCanvas,
+                    bgCanvasElement,
+                    useSizeOfNewImage,
+                ),
+            this.pageContentDelayRequestId,
         );
+    }
+
+    // Track background image load listener to prevent duplicates
+    // Even if we adjustBackgroundImageSize is somehow running simultaneously on different images and they race on
+    // these, currently nothing bad can happen (worst case we leave around an event listener that does nothing when triggered)
+    private bgImageLoadListener: ((event: Event) => void) | undefined;
+    private clearImageLoadListener(img) {
+        if (this.bgImageLoadListener) {
+            img.removeEventListener("load", this.bgImageLoadListener);
+            this.bgImageLoadListener = undefined;
+        }
     }
 
     // Given a bg canvas element, which is a canvas element having the bloom-backgroundImage
@@ -7030,7 +7049,11 @@ export class CanvasElementManager {
     // A further complication is that the image may fail to load, so we never get natural
     // dimensions. In this case, we expand the bgCanvasElement to the full size of the container so
     // all the space is available to display the error icon and message.
-    private adjustBackgroundImageSizeToFit(
+    //
+    // This method returns a Promise that resolves when the background image size has been adjusted.
+    // If the image needs to load, the promise will resolve after the image loads (or after a timeout).
+    // The caller should use wrapWithRequestPageContentDelay to ensure page content requests wait for this to complete.
+    private adjustBackgroundImageSizeInternal(
         bloomCanvas: HTMLElement,
         // The canvas element div that contains the background image.
         // (Since this is the background that we overlay things on, it is itself a
@@ -7043,16 +7066,7 @@ export class CanvasElementManager {
         // We'll always have to wait for it to load in this case, otherwise, we may get
         // the dimensions of a previous image.
         useSizeOfNewImage: boolean,
-        // Sometimes we think we need to wait for onload, but the data arrives before we set up
-        // the watcher. We make a timeout so we will go ahead and adjust if we have dimensions
-        // and don't get an onload in a reasonable time. If we DO get the onload before we
-        // timeout, we use this handle to clear it.
-        // This is set when we arrange an onload callback and receive it
-        timeoutHandler: number,
-    ) {
-        if (timeoutHandler) {
-            clearTimeout(timeoutHandler);
-        }
+    ): Promise<void> {
         const { width: bloomCanvasWidth, height: bloomCanvasHeight } =
             getExactClientSize(bloomCanvas);
         let imgAspectRatio =
@@ -7061,7 +7075,7 @@ export class CanvasElementManager {
         let failedImage = false;
         // We don't ever expect there not to be an img. If it happens, we'll just do nothing.
         if (!img) {
-            return;
+            return Promise.resolve();
         }
         // The image may not have loaded yet or may have failed to load.  If either of these
         // cases is true, then the naturalHeight and naturalWidth will be zero.  If the image
@@ -7090,36 +7104,45 @@ export class CanvasElementManager {
         ) {
             // if we don't have a height and width, or we know the image src changed
             // and have not yet waited for new dimensions, go ahead and wait.
-            // We set up this timeout
-            const handle = setTimeout(
-                () =>
-                    this.adjustBackgroundImageSizeToFit(
-                        bloomCanvas,
-                        bgCanvasElement,
-                        // after the timeout we don't consider that we MUST wait if we have dimensions
-                        false,
-                        0, // when we get this call, we're responding to the timeout, so don't need to cancel.
-                    ),
-                // I think this is long enough that we won't be seeing obsolete data (from a previous src).
-                // OTOH it's not hopelessly long for the user to wait when we don't get an onload.
-                // If by any chance this happens when the image really isn't loaded enough to
-                // have naturalHeight/Width, the zero checks above will force another iteration.
-                100,
-                // somehow Typescript is confused and thinks this is a NodeJS version of setTimeout.
-            ) as unknown as number;
-            // preferably we update when we are loaded.
-            img.addEventListener(
-                "load",
-                () =>
-                    this.adjustBackgroundImageSizeToFit(
+            // Return a promise that resolves when the image loads or after a timeout.
+            return new Promise<void>((resolve) => {
+                const handle = setTimeout(
+                    () => {
+                        this.adjustBackgroundImageSizeInternal(
+                            bloomCanvas,
+                            bgCanvasElement,
+                            // after the timeout we don't consider that we MUST wait if we have dimensions
+                            false,
+                        ).then(resolve);
+                    },
+                    // I think this is long enough that we won't be seeing obsolete data (from a previous src).
+                    // OTOH it's not hopelessly long for the user to wait when we don't get an onload.
+                    // If by any chance this happens when the image really isn't loaded enough to
+                    // have naturalHeight/Width, the zero checks above will force another iteration.
+                    100,
+                    // somehow Typescript is confused and thinks this is a NodeJS version of setTimeout.
+                ) as unknown as number;
+                // preferably we update when we are loaded.
+                // Remove any existing listener to prevent duplicates
+                this.clearImageLoadListener(img);
+                // Store the listener so the timer can remove it if its no longer needed
+                // If we get this method running simultaneously on 2 different images (which we think is very unlikely),
+                // it's possible that they will race here and one of the load listeners won't get removed. But it seems
+                // like the worst this could cause is the promise gets resolved twice on the next adjustment, which
+                // would just get ignored. So we don't think this is worth addressing.
+                this.bgImageLoadListener = () => {
+                    clearTimeout(handle);
+                    this.adjustBackgroundImageSizeInternal(
                         bloomCanvas,
                         bgCanvasElement,
                         false, // when this call happens we have the new dimensions.
-                        handle, // if this callback happens we can cancel the timeout.
-                    ),
-                { once: true },
-            );
-            return; // try again once we have valid image data
+                    ).then(resolve);
+                    this.bgImageLoadListener = undefined;
+                };
+                img.addEventListener("load", this.bgImageLoadListener, {
+                    once: true,
+                });
+            });
         } else if (img.style.width) {
             // there is established cropping. Use the cropped size to determine the
             // aspect ratio.
@@ -7282,6 +7305,8 @@ export class CanvasElementManager {
             // in that case, we must not try to render the controls as if they belonged to it.)
             renderCanvasElementContextControls(bgCanvasElement, false);
         }
+        this.clearImageLoadListener(img);
+        return Promise.resolve();
     }
 
     // Store away the current size of the bloom-canvas. At any later time if we notice that
