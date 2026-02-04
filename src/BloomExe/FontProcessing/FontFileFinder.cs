@@ -119,14 +119,16 @@ namespace Bloom.FontProcessing
                 // The order of the tests is important, since we want to return the most
                 // specific match possible.  Even if the user asked for Bold Italic, we
                 // might return Normal if that's all we have.
+                // For bold-italic requests, we prefer: BoldItalic > Italic > Bold > Normal
+                // This matches EpubMaker.AddFontFace to ensure CSS references align with embedded files.
                 if (fontStyle == "italic" && fontWeight == "700")
                 {
                     if (!string.IsNullOrEmpty(group.BoldItalic))
                         return group.BoldItalic;
-                    else if (!string.IsNullOrEmpty(group.Bold))
-                        return group.Bold;
                     else if (!string.IsNullOrEmpty(group.Italic))
                         return group.Italic;
+                    else if (!string.IsNullOrEmpty(group.Bold))
+                        return group.Bold;
                     else if (!string.IsNullOrEmpty(group.Normal))
                         return group.Normal;
                 }
