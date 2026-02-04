@@ -72,6 +72,18 @@ namespace Bloom.Book
             return name;
         }
 
+        /// <summary>
+        /// Determines whether this page size and orientation supports full bleed printing.
+        /// </summary>
+        /// <returns>True if full bleed is supported for this size and orientation, false otherwise</returns>
+        public bool SupportsFullBleed()
+        {
+            return Bloom.Publish.PDF.MakePdfUsingExternalPdfMakerProgram.GetFullBleedPageSize(
+                    PageSizeName,
+                    IsLandScape
+                ) != null;
+        }
+
         public static void AddClassesForLayout(HtmlDom dom, Layout layout)
         {
             UpdatePageSizeAndOrientationClasses(dom.RawDom, layout);

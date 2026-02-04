@@ -2163,7 +2163,9 @@ namespace Bloom.Book
                         {
                             var lang = line.Substring(kLangTag.Length, idxQuote - kLangTag.Length);
                             // Don't let empty language tag creep in (or stay in). (BL-15784)
-                            copyCurrentRule = !String.IsNullOrEmpty(lang) && !languagesWeAlreadyHave.Contains(lang);
+                            copyCurrentRule =
+                                !String.IsNullOrEmpty(lang)
+                                && !languagesWeAlreadyHave.Contains(lang);
                             languagesWeAlreadyHave.Add(lang); // don't copy if another css block has crept in.
                         }
                     }
@@ -4048,15 +4050,9 @@ namespace Bloom.Book
                     this
                 )
                 .Enabled;
-
         public bool FullBleed =>
-            (
-                // Wants to be
-                // BookInfo.AppearanceSettings.FullBleed
-                // but we haven't put that in the book settings yet.
-                BookData.GetVariableOrNull("fullBleed", "*").Xml == "true"
-                || CoverIsImage
-            )
+            PageSizeSupportsFullBleed()
+            && BookInfo.AppearanceSettings.FullBleed
             && FeatureStatus
                 .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.PrintShopReady, this)
                 .Enabled;
@@ -4639,6 +4635,12 @@ namespace Bloom.Book
         public virtual Layout GetLayout()
         {
             return Layout.FromDom(OurHtmlDom, Layout.A5Portrait);
+        }
+
+        public bool PageSizeSupportsFullBleed()
+        {
+            var layout = GetLayout();
+            return layout?.SizeAndOrientation?.SupportsFullBleed() ?? false;
         }
 
         public IEnumerable<Layout> GetSizeAndOrientationChoices()
