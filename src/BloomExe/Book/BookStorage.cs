@@ -3445,25 +3445,25 @@ namespace Bloom.Book
         /// <returns>a path to the directory containing the duplicate</returns>
         public string Duplicate()
         {
-            // get the book name and copy number of the current directory
+            // get the book name of the current directory
             var baseName = Path.GetFileName(FolderPath);
 
-            // see if this already has a name like "foo Copy 3"
-            // If it does, we will use that number plus 1 as the starting point for looking for a new unique folder name
-            var regexToGetCopyNumber = new Regex(@"^(.+)(\s-\sCopy)(\s[0-9]+)?$");
-            var match = regexToGetCopyNumber.Match(baseName);
-            var copyNum = 1;
+            // see if this already has a name like "foo - Copy-abc12345"
+            // If it does, remove that suffix so we get back to the base name
+            var regexToRemoveCopySuffix = new Regex(@"^(.+)(\s-\sCopy)(-[0-9a-f]+)?$");
+            var match = regexToRemoveCopySuffix.Match(baseName);
 
             if (match.Success)
             {
                 baseName = match.Groups[1].Value;
-                if (match.Groups[3].Success)
-                    copyNum = 1 + Int32.Parse(match.Groups[3].Value.Trim());
             }
+
+            // Generate a new instance ID for the duplicate
+            var newInstanceId = Guid.NewGuid().ToString();
 
             // directory for the new book
             var collectionDir = Path.GetDirectoryName(FolderPath);
-            var newBookName = GetAvailableDirectory(collectionDir, baseName, copyNum);
+            var newBookName = GetAvailableDirectory(collectionDir, baseName, newInstanceId);
             var newBookDir = Path.Combine(collectionDir, newBookName);
             Directory.CreateDirectory(newBookDir);
 
@@ -3476,7 +3476,7 @@ namespace Bloom.Book
             );
             var metaPath = Path.Combine(newBookDir, "meta.json");
 
-            ChangeInstanceId(metaPath);
+            UpdateInstanceId(metaPath, newInstanceId);
 
             // rename the book htm file
             var oldName = Path.Combine(newBookDir, Path.GetFileName(PathToExistingHtml));
@@ -3485,7 +3485,7 @@ namespace Bloom.Book
             return newBookDir;
         }
 
-        private void ChangeInstanceId(string metaDataPath)
+        private void UpdateInstanceId(string metaDataPath, string newInstanceId)
         {
             // Update the InstanceId. This was not done prior to Bloom 4.2.104
             // If the meta.json file is missing, ok that's weird but that means we
@@ -3493,35 +3493,75 @@ namespace Bloom.Book
             if (RobustFile.Exists(metaDataPath))
             {
                 var meta = DynamicJson.Parse(RobustFile.ReadAllText(metaDataPath));
-                meta.bookInstanceId = Guid.NewGuid().ToString();
+                meta.bookInstanceId = newInstanceId;
                 RobustFile.WriteAllText(metaDataPath, meta.ToString());
             }
         }
 
         /// <summary>
-        /// Get an available directory name for a new copy of a book
+        /// Get an available directory name for a new copy of a book using part of the instance ID
         /// </summary>
         /// <param name="collectionDir"></param>
         /// <param name="baseName"></param>
-        /// <param name="copyNum"></param>
+        /// <param name="instanceId">The new instance ID to use for generating a unique suffix</param>
         /// <returns></returns>
         private static string GetAvailableDirectory(
             string collectionDir,
             string baseName,
-            int copyNum
+            string instanceId
         )
         {
-            string newName;
-            if (copyNum == 1)
-                newName = baseName + " - Copy";
-            else
-                newName = baseName + " - Copy " + copyNum;
+            return GetUniqueBookFolderName(collectionDir, baseName, instanceId, " - Copy-");
+        }
 
-            while (Directory.Exists(Path.Combine(collectionDir, newName)))
+        /// <summary>
+        /// Get a unique book folder name using part of the instance ID.
+        /// Shared by both book creation and duplication.
+        /// </summary>
+        /// <param name="parentPath">Parent directory path</param>
+        /// <param name="baseName">Base name for the book</param>
+        /// <param name="instanceId">The instance ID to use for generating a unique suffix</param>
+        /// <param name="separator">Separator string before the ID suffix (e.g., " - Copy-" or "-")</param>
+        /// <returns>A unique folder name</returns>
+        internal static string GetUniqueBookFolderName(
+            string parentPath,
+            string baseName,
+            string instanceId,
+            string separator = "-"
+        )
+        {
+            // Use first 8 characters of the instance ID (without hyphens) as the unique suffix
+            // This provides good uniqueness while keeping names readable
+            var instanceSuffix = instanceId.Replace("-", "").Substring(0, 8).ToLowerInvariant();
+            
+            var proposedName = baseName + separator + instanceSuffix;
+            
+            // Respect the maximum filename length
+            // Calculate how much space we need for separator + instanceSuffix
+            var suffixLength = separator.Length + instanceSuffix.Length;
+            var maxBaseNameLength = kMaxFilenameLength - suffixLength;
+            if (baseName.Length > maxBaseNameLength)
             {
-                copyNum++;
-                newName = baseName + " - Copy " + copyNum;
+                baseName = MiscUtils.TruncateSafely(baseName, maxBaseNameLength);
+                // Remove trailing whitespace and periods after truncation
+                baseName = Regex.Replace(baseName, "[\\s.]+$", "", RegexOptions.Compiled);
+                proposedName = baseName + separator + instanceSuffix;
             }
+
+            // In the extremely unlikely case of a collision, append a number
+            if (!Directory.Exists(Path.Combine(parentPath, proposedName)))
+            {
+                return proposedName;
+            }
+
+            // Collision detected - try with a number suffix
+            int collisionNum = 2;
+            string newName;
+            do
+            {
+                newName = proposedName + "-" + collisionNum;
+                collisionNum++;
+            } while (Directory.Exists(Path.Combine(parentPath, newName)));
 
             return newName;
         }
