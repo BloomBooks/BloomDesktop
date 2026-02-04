@@ -664,8 +664,6 @@ namespace Bloom.Book
         // adding them will full paths seems to be diastrous. I think cross-domain rules
         // prevent them from being loaded, and so we lose the page size information, and the
         // thumbs come out random sizes. Not sure why this isn't a problem in GetPreviewXmlDocumentForPage.
-        // Also, since this is used for thumbnails of template pages, we insert some arbitrary text
-        // into empty editable divs to give a better idea of what a typical page will look like.
         internal HtmlDom GetThumbnailXmlDocumentForPage(IPage page)
         {
             if (HasFatalError)
@@ -674,6 +672,7 @@ namespace Bloom.Book
             }
             var pageDom = GetHtmlDomWithJustOnePage(page);
             AddPreviewJavascript(pageDom);
+            pageDom.EnsureStylesheetLinks(this.Storage.GetCssFilesToLinkForPreview());
             pageDom.Body.AddClass("bloom-templateThumbnail");
             return pageDom;
         }
@@ -2163,7 +2162,9 @@ namespace Bloom.Book
                         {
                             var lang = line.Substring(kLangTag.Length, idxQuote - kLangTag.Length);
                             // Don't let empty language tag creep in (or stay in). (BL-15784)
-                            copyCurrentRule = !String.IsNullOrEmpty(lang) && !languagesWeAlreadyHave.Contains(lang);
+                            copyCurrentRule =
+                                !String.IsNullOrEmpty(lang)
+                                && !languagesWeAlreadyHave.Contains(lang);
                             languagesWeAlreadyHave.Add(lang); // don't copy if another css block has crept in.
                         }
                     }

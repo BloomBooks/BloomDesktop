@@ -383,8 +383,6 @@ namespace Bloom
         ///   Currently used by the image server
         ///   to get thumbnails that are used in the add page dialog. Since this dialog can show
         ///   an enlarged version of the page, we generate these at a higher resolution than usual.
-        ///   Also, to make more realistic views of template pages we insert fake text wherever
-        ///   there is an empty edit block.
         ///
         ///   The result is cached for possible future use so the caller should not dispose of it.
         ///   </summary>
@@ -397,6 +395,7 @@ namespace Bloom
         )
         {
             var pageDom = book.GetThumbnailXmlDocumentForPage(page);
+            // var pageDom = book.GetPreviewXmlDocumentForPage(page);
             var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
             {
                 BackgroundColor = Color.White, // matches the hand-made previews.
