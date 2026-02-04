@@ -5,6 +5,7 @@ import { post, postThatMightNavigate } from "../../utils/bloomApi";
 // Currently the button actions are entirely in C#.
 
 import { getToolboxBundleExports } from "./bloomFrames";
+import { shouldHideToolsOverImages } from "./editablePageUtils";
 import {
     SignLanguageToolControls,
     SignLanguageTool,
@@ -147,6 +148,11 @@ function SetupClickToShowSignLanguageTool(videoContainerDiv: Element) {
     // bring up the sign language tool
     $(videoContainerDiv).click((ev) => {
         if ((ev.currentTarget as HTMLElement).closest(".drag-activity-play")) {
+            return;
+        }
+
+        // Don't activate video tool when motion tool is active
+        if (shouldHideToolsOverImages()) {
             return;
         }
 
