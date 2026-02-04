@@ -4048,15 +4048,9 @@ namespace Bloom.Book
                     this
                 )
                 .Enabled;
-
         public bool FullBleed =>
-            (
-                // Wants to be
-                // BookInfo.AppearanceSettings.FullBleed
-                // but we haven't put that in the book settings yet.
-                BookData.GetVariableOrNull("fullBleed", "*").Xml == "true"
-                || CoverIsImage
-            )
+            PageSizeSupportsFullBleed()
+            && BookInfo.AppearanceSettings.FullBleed
             && FeatureStatus
                 .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.PrintShopReady, this)
                 .Enabled;
@@ -4639,6 +4633,15 @@ namespace Bloom.Book
         public virtual Layout GetLayout()
         {
             return Layout.FromDom(OurHtmlDom, Layout.A5Portrait);
+        }
+
+        public bool PageSizeSupportsFullBleed()
+        {
+            var layout = GetLayout();
+            var sizeName = layout?.SizeAndOrientation?.PageSizeName ?? "A5";
+            
+            // Device sizes do not support full bleed
+            return !sizeName.StartsWith("Device", System.StringComparison.OrdinalIgnoreCase);
         }
 
         public IEnumerable<Layout> GetSizeAndOrientationChoices()
