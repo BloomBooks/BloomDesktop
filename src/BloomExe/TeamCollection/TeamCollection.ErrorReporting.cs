@@ -4,10 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Bloom.Api;
 using Bloom.History;
-using Bloom.MiscUI;
 using Bloom.web;
+using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
 
@@ -80,12 +79,12 @@ namespace Bloom.TeamCollection
             if (string.IsNullOrEmpty(warning))
             {
                 ReportProgressAndLog(progress, kind, l10nIdSuffix, message, param0, param1);
-                var msg = string.Format(message, param0, param1);
+                var msgForAnalytics = string.Format(message, param0, param1);
                 Analytics.Track(
                     "TeamCollectionError",
-                    new Dictionary<string, string> { { "message", msg } }
+                    new Dictionary<string, string> { { "message", msgForAnalytics } }
                 );
-                return msg;
+                return msgForAnalytics;
             }
 
             var fullL10nId = string.IsNullOrEmpty(l10nIdSuffix)
