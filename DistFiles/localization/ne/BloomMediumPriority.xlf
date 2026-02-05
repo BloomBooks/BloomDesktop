@@ -854,6 +854,21 @@
         <target xml:lang="ne-NP" state="needs-translation">Using this option turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</target>
         <note>BookSettings.CoverIsImage.Description</note>
       </trans-unit>
+      <trans-unit id="BookSettings.CoverIsImage.Description.V2" sil:dynamic="true">
+        <source xml:lang="en">Replace the front cover content with a single full-bleed image. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</source>
+        <target xml:lang="ne-NP" state="needs-translation">Replace the front cover content with a single full-bleed image. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</target>
+        <note>BookSettings.CoverIsImage.Description.V2</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.FullBleed" sil:dynamic="true">
+        <source xml:lang="en">Use full bleed page layout</source>
+        <target xml:lang="ne-NP" state="needs-translation">Use full bleed page layout</target>
+        <note>BookSettings.FullBleed</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.FullBleed.Description" sil:dynamic="true">
+        <source xml:lang="en">Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on all page layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
+        <target xml:lang="ne-NP" state="needs-translation">Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on all page layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</target>
+        <note>BookSettings.FullBleed.Description</note>
+      </trans-unit>
       <trans-unit id="BookSettings.ContentPagesGroupLabel" sil:dynamic="true">
         <source xml:lang="en">Content Pages</source>
         <target xml:lang="ne-NP" state="needs-translation">Content Pages</target>
