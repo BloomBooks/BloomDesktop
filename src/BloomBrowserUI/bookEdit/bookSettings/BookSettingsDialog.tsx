@@ -28,8 +28,10 @@ import {
     DialogResult,
 } from "../../react_components/color-picking/colorPickerDialog";
 import {
+    get,
     post,
     postJson,
+    useApiBoolean,
     useApiObject,
     useApiStringState,
 } from "../../utils/bloomApi";
@@ -119,6 +121,11 @@ export const BookSettingsDialog: React.FunctionComponent<{
             "book/settings/overrides",
             defaultOverrides,
         );
+
+    const [pageSizeSupportsFullBleed] = useApiBoolean(
+        "book/settings/pageSizeSupportsFullBleed",
+        true,
+    );
 
     const xmatterLockedBy = useL10n(
         "Locked by {0} Front/Back matter",
@@ -256,8 +263,17 @@ export const BookSettingsDialog: React.FunctionComponent<{
         "BookSettings.CoverIsImage",
     );
     const coverIsImageDescription = useL10n(
-        "Using this option turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.",
-        "BookSettings.CoverIsImage.Description",
+        "Replace the front cover content with a single full-bleed image. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.",
+        "BookSettings.CoverIsImage.Description.V2",
+    );
+
+    const fullBleedLabel = useL10n(
+        "Use full bleed page layout",
+        "BookSettings.FullBleed",
+    );
+    const fullBleedDescription = useL10n(
+        "Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on all page layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.",
+        "BookSettings.FullBleed.Description",
     );
 
     // This is a helper function to make it easier to pass the override information
@@ -357,6 +373,8 @@ export const BookSettingsDialog: React.FunctionComponent<{
 
     const tierAllowsFullPageCoverImage =
         useGetFeatureStatus("fullPageCoverImage")?.enabled;
+
+    const tierAllowsFullBleed = useGetFeatureStatus("PrintshopReady")?.enabled;
 
     function saveSettingsAndCloseDialog() {
         if (settingsToReturnLater) {
@@ -472,6 +490,36 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                     >
                                         <BloomSubscriptionIndicatorIconAndText
                                             feature="fullPageCoverImage"
+                                            css={css`
+                                                margin-left: auto;
+                                            `}
+                                            disabled={appearanceDisabled}
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <ConfigrBoolean
+                                        label={fullBleedLabel}
+                                        description={fullBleedDescription}
+                                        {...getAdditionalProps<boolean>(
+                                            `fullBleed`,
+                                        )}
+                                        disabled={
+                                            appearanceDisabled ||
+                                            !tierAllowsFullBleed ||
+                                            !pageSizeSupportsFullBleed
+                                        }
+                                    />
+                                    <div
+                                        css={css`
+                                            display: flex;
+                                            padding-bottom: 5px;
+                                            font-size: 12px;
+                                            font-weight: bold;
+                                        `}
+                                    >
+                                        <BloomSubscriptionIndicatorIconAndText
+                                            feature="PrintshopReady"
                                             css={css`
                                                 margin-left: auto;
                                             `}

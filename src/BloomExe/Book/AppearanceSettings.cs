@@ -118,10 +118,8 @@ public class AppearanceSettings
             requiresXmatterUpdate: true,
             valueRequiredIfLegacyTheme: false
         ), // If true, cover page is just a full bleed image.
-        // Not implemented yet. When it is, it needs to be tied together with the coverIsImage setting
-        // such that coverIsImage cannot be true unless fullBleed is also true.
-        //new BooleanPropertyDef("fullBleed", "fullBleed", false), // If true, book is full bleed.
-
+        // If true, book uses full bleed page layout in edit mode. Printing that way is still optional.
+        new BooleanPropertyDef("fullBleed", "fullBleed", defaultValue: false),
         // Does not correspond to a css variable. We will set the relevant page number css variables based on this setting.
         new StringPropertyDef(kPageNumberPositionVar, null, PageNumberPosition.Automatic),
         new CssStringVariableDef("cover-background-color", "colors"),
@@ -229,11 +227,11 @@ public class AppearanceSettings
         get { return _properties.coverIsImage; }
     }
 
-    //public bool FullBleed
-    //{
-    //    get { return _properties.fullBleed; }
-    //    set { _properties.fullBleed = value; }
-    //}
+    public bool FullBleed
+    {
+        get { return _properties.fullBleed; }
+        set { _properties.fullBleed = value; }
+    }
 
     // When this is set to true, we ensure that the xmatter is updated before saving the book.
     public bool PendingChangeRequiresXmatterUpdate;
