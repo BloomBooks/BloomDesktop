@@ -37,9 +37,11 @@
     background-size: contain;
 }
 
-// When previewing in the Collection Tab, and also when in Change Layout mode in the Edit tab,
+// When previewing in the Collection Tab, and also when in Change Layout mode in the Edit tab, or when dealing with
+// freshly added pages that have not yet been touched by the Canvas Element Manager,
 // img elements may not always be wrapped in canvas-element divs (see BL-15514 and BL-15763). Also below.
 .preview,
+.bloom-templateThumbnail,
 .origami-layout-mode {
     .bloom-canvas:not(:has(.bloom-imageContainer)):has(
             img[src*="placeHolder.png"]

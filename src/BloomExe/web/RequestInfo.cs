@@ -613,7 +613,8 @@ namespace Bloom.Api
         public void WriteRedirect(string url, bool permanent)
         {
             _actualContext.Response.StatusCode = permanent ? 301 : 302;
-            var encodedUrl = Uri.EscapeUriString(url); // handle, e.g. http://localhost:8089/bloom/C:/foo/bar/ปก2.jpg
+            // handle, e.g. http://localhost:8089/bloom/C:/foo/bar/ปก2.jpg
+            var encodedUrl = UrlPathString.CreateFromUnencodedString(url).UrlEncodedForHttpPath;
             _actualContext.Response.Headers.Add("Location", encodedUrl);
             // This supports Bloom Player Storybook's "Live from Bloom Editor" feature, preventing CORS errors on the redirect.
             _actualContext.Response.AppendHeader("Access-Control-Allow-Origin", "*");
