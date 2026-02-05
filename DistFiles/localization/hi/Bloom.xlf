@@ -3310,6 +3310,11 @@
         <target xml:lang="hi" state="needs-translation">Please give your collection a shorter name or move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by one of two things: 1) the collection has a very long name, or 2) the collection is too deeply nested inside many folders on your hard drive.</target>
         <note>ID: Errors.PathTooLong</note>
       </trans-unit>
+      <trans-unit id="Errors.PathTooLong2">
+        <source xml:lang="en">A file Bloom was working with had a path that was too long. You may need to give it a shorter name, or give your collection a shorter name, or move your collection closer to the root of your hard drive.</source>
+        <target xml:lang="hi" state="needs-translation">A file Bloom was working with had a path that was too long. You may need to give it a shorter name, or give your collection a shorter name, or move your collection closer to the root of your hard drive.</target>
+        <note>ID: Errors.PathTooLong2</note>
+      </trans-unit>
       <trans-unit id="Errors.BookProblem" approved="yes">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
         <target xml:lang="hi" state="final">ब्लूम को यह पुस्तक दिखाने में कोई समस्या आई है। इसका मतलब यह नहीं है कि आपका काम नष्ट हो गया है, लेकिन इसका मतलब यह है कि कुछ पुराना है, मौजूद नहीं है, या कुछ गलत हुआ है।</target>
@@ -6256,6 +6261,11 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <!--
 // Don't want these actually translated until things stabilize. Will need re-ordering.
+      <trans-unit id="TeamCollection.DropboxSettingsAcknowledgement" sil:dynamic="true">
+        <source xml:lang="en">I will ensure that all team members have properly configured [Critical Dropbox Settings](https://docs.bloomlibrary.org/critical-dropbox-settings/).</source>
+        <note>ID: TeamCollection.DropboxSettingsAcknowledgement</note>
+        <note>Checkbox acknowledgement shown when creating a Team Collection.</note>
+      </trans-unit>
       <trans-unit id="TeamCollection.AvailableDescription" sil:dynamic="true">
         <source xml:lang="en">When you check it out, no one on the team will be able to modify it or see your changes until you check it back in.</source>
         <note>ID: TeamCollection.AvailableDescription</note>
