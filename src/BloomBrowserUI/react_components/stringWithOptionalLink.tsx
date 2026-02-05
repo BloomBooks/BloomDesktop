@@ -6,11 +6,13 @@ import { post, postString } from "../utils/bloomApi";
 // (Currently the href must use single quotes.)
 // If there is no link, the result is a single span, the message.
 // If there are links, we interleave spans and anchor tags for each segment.
-// Currently the href is assumed to be something to send to our API,
-// but NOT to actually navigate to. We could support more options as needed.
+// For internal links, the href is treated as something to send to our API rather than
+// something for the browser to navigate to directly. External http/mailto hrefs are
+// sent to the 'link' API endpoint, which opens them in an external browser.
 export const StringWithOptionalLink: React.FunctionComponent<{
     message: string;
 }> = (props) => {
+    // Create a fresh regex for each render to avoid lastIndex issues
     const linkRegex = /<a[^>]*?href='([^>']+)'[^>]*>(.*?)<\/a>/g;
     const elements: React.ReactNode[] = [];
     let lastIndex = 0;
