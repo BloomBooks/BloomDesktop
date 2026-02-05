@@ -85,10 +85,17 @@ namespace Bloom.Book
         /// </summary>
         public bool WriteFontFaces = true;
 
-        //for moq'ing only; parameterless ctor required by Moq
+        // For moq'ing only; parameterless ctor required by Moq.
         public Book()
+            : this(false) { }
+
+        // Allow specific subclasses (like ErrorBook) to bypass the unit-test guard.
+        protected Book(bool allowNonTestCtor)
         {
-            Guard.Against(!Program.RunningUnitTests, "Only use this ctor for tests!");
+            if (!allowNonTestCtor)
+            {
+                Guard.Against(!Program.RunningUnitTests, "Only use this ctor for tests!");
+            }
         }
 
         public Book(BookInfo info = null, IBookStorage storage = null)

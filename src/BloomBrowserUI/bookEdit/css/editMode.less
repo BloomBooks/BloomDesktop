@@ -492,8 +492,8 @@ body:not(.origami-drag) .bloom-canvas:hover {
 // In an active background canvas element, don't show the edit metadata icon if the image failed
 // to load.  Clicking on it would just show an error message anyway, and the button would
 // obscure part of the alt attribute error message.
-.bloom-canvas:has(.bloom-backgroundImage:has(img.bloom-imageLoadError)),
-.bloom-canvas:has(.bloom-backgroundImage:has(img[src*="placeHolder.png"])) {
+.bloom-canvas:has(.bloom-backgroundImage):has(img.bloom-imageLoadError),
+.bloom-canvas:has(.bloom-backgroundImage):has(img[src*="placeHolder.png"]) {
     .editMetadataButton.imgMetadataProblem {
         display: none !important;
     }
