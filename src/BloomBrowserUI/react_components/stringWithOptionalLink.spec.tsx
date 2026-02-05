@@ -141,7 +141,7 @@ describe("StringWithOptionalLink", () => {
         expect(spanElements[0].textContent).toBe(" to continue");
     });
 
-    it("handles message that terminates with a link", () => {
+    it("handles message that ends with a link", () => {
         const msgEndingWithLink =
             "Please visit <a href='http://bloomlibrary.org'>our site</a>";
         const rendered = renderToStaticMarkup(
@@ -178,7 +178,7 @@ describe("StringWithOptionalLink", () => {
         expect(spanElements[0].textContent).toBe("Links: ");
     });
 
-    it("handles blank message string", () => {
+    it("handles empty message string", () => {
         const emptyMessage = "";
         const rendered = renderToStaticMarkup(
             <StringWithOptionalLink message={emptyMessage} />,
