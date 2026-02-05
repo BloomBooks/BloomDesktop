@@ -12,7 +12,7 @@ import { post, postString } from "../utils/bloomApi";
 export const StringWithOptionalLink: React.FunctionComponent<{
     message: string;
 }> = (props) => {
-    // Create regex fresh on each render to avoid lastIndex mutation issues
+    // Create a fresh regex for each render to avoid lastIndex issues
     const linkRegex = /<a[^>]*?href='([^>']+)'[^>]*>(.*?)<\/a>/g;
     const elements: React.ReactNode[] = [];
     let lastIndex = 0;
