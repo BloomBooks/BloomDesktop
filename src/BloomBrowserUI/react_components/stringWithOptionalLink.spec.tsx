@@ -106,4 +106,88 @@ describe("StringWithOptionalLink", () => {
         );
         expect(postMock).not.toHaveBeenCalled();
     });
+
+    it("produces just a span when no links exist in message", () => {
+        const plainMessage = "This is plain text without any links";
+        const rendered = renderToStaticMarkup(
+            <StringWithOptionalLink message={plainMessage} />,
+        );
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = rendered;
+
+        const spanElements = wrapper.querySelectorAll("span");
+        const linkElements = wrapper.querySelectorAll("a");
+
+        expect(spanElements.length).toBe(1);
+        expect(linkElements.length).toBe(0);
+        expect(spanElements[0].textContent).toBe(plainMessage);
+    });
+
+    it("handles message that begins with a link", () => {
+        const msgStartingWithLink =
+            "<a href='/bloom/api/action'>Click</a> to continue";
+        const rendered = renderToStaticMarkup(
+            <StringWithOptionalLink message={msgStartingWithLink} />,
+        );
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = rendered;
+
+        const linkElements = wrapper.querySelectorAll("a");
+        const spanElements = wrapper.querySelectorAll("span");
+
+        expect(linkElements.length).toBe(1);
+        expect(linkElements[0].textContent).toBe("Click");
+        expect(spanElements.length).toBe(1);
+        expect(spanElements[0].textContent).toBe(" to continue");
+    });
+
+    it("handles message that terminates with a link", () => {
+        const msgEndingWithLink =
+            "Please visit <a href='http://bloomlibrary.org'>our site</a>";
+        const rendered = renderToStaticMarkup(
+            <StringWithOptionalLink message={msgEndingWithLink} />,
+        );
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = rendered;
+
+        const spanElements = wrapper.querySelectorAll("span");
+        const linkElements = wrapper.querySelectorAll("a");
+
+        expect(spanElements.length).toBe(1);
+        expect(spanElements[0].textContent).toBe("Please visit ");
+        expect(linkElements.length).toBe(1);
+        expect(linkElements[0].textContent).toBe("our site");
+    });
+
+    it("handles consecutive links without text between", () => {
+        const adjacentLinks =
+            "Links: <a href='/bloom/api/first'>one</a><a href='http://example.org'>two</a>";
+        const rendered = renderToStaticMarkup(
+            <StringWithOptionalLink message={adjacentLinks} />,
+        );
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = rendered;
+
+        const linkElements = wrapper.querySelectorAll("a");
+        const spanElements = wrapper.querySelectorAll("span");
+
+        expect(linkElements.length).toBe(2);
+        expect(linkElements[0].textContent).toBe("one");
+        expect(linkElements[1].textContent).toBe("two");
+        expect(spanElements.length).toBe(1);
+        expect(spanElements[0].textContent).toBe("Links: ");
+    });
+
+    it("handles blank message string", () => {
+        const emptyMessage = "";
+        const rendered = renderToStaticMarkup(
+            <StringWithOptionalLink message={emptyMessage} />,
+        );
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = rendered;
+
+        const spanElements = wrapper.querySelectorAll("span");
+        expect(spanElements.length).toBe(1);
+        expect(spanElements[0].textContent).toBe("");
+    });
 });
