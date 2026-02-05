@@ -1,8 +1,10 @@
+import { css } from "@emotion/react";
 import { CancelTokenStatic } from "axios";
 import * as React from "react";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 import { get } from "../utils/bloomApi";
 import { getLocalization } from "./l10n";
+import { kBloomBlue } from "../bloomMaterialUITheme";
 
 // set the following boolean to highlight all translated strings to see if any are missing
 const highlightTranslatedStrings: boolean = false;
@@ -46,7 +48,7 @@ export interface ILocalizationProps extends IUILanguageAwareProps {
     l10nParams?: string[]; // Array of parameters to use in format strings
     l10nParam0?: string; // Legacy parameter 0 (for backward compatibility)
     l10nParam1?: string; // Legacy parameter 1 (for backward compatibility)
-    onClick?: () => void; // not yet implemented by String subclass and maybe others outside this file
+    onClick?: (event?: React.MouseEvent<HTMLElement>) => void; // not yet implemented by String subclass and maybe others outside this file
     id?: string; // not yet implented by all
 
     // Set to true if we don't want the yellow highlighting in the UI for now.
@@ -317,9 +319,9 @@ export class H1 extends LocalizableElement<
         return (
             <h1
                 className={this.getClassName()}
-                onClick={() => {
+                onClick={(event) => {
                     if (this.props.onClick) {
-                        this.props.onClick();
+                        this.props.onClick(event);
                     }
                 }}
             >
@@ -337,9 +339,9 @@ export class H2 extends LocalizableElement<
         return (
             <h2
                 className={this.getClassName()}
-                onClick={() => {
+                onClick={(event) => {
                     if (this.props.onClick) {
-                        this.props.onClick();
+                        this.props.onClick(event);
                     }
                 }}
             >
@@ -357,9 +359,9 @@ export class H3 extends LocalizableElement<
         return (
             <h3
                 className={this.getClassName()}
-                onClick={() => {
+                onClick={(event) => {
                     if (this.props.onClick) {
-                        this.props.onClick();
+                        this.props.onClick(event);
                     }
                 }}
             >
@@ -377,9 +379,9 @@ export class P extends LocalizableElement<
         return (
             <p
                 className={this.getClassName()}
-                onClick={() => {
+                onClick={(event) => {
                     if (this.props.onClick) {
-                        this.props.onClick();
+                        this.props.onClick(event);
                     }
                 }}
             >
@@ -398,9 +400,9 @@ export class Div extends LocalizableElement<
             <div
                 className={this.getClassName()}
                 id={this.props.id}
-                onClick={() => {
+                onClick={(event) => {
                     if (this.props.onClick) {
-                        this.props.onClick();
+                        this.props.onClick(event);
                     }
                 }}
             >
@@ -432,9 +434,20 @@ export class Label extends LocalizableElement<
             <label
                 htmlFor={this.props.htmlFor}
                 className={this.getClassName()}
-                onClick={() => {
+                css={css`
+                    a,
+                    a:visited {
+                        color: ${kBloomBlue};
+                        text-decoration: none;
+                    }
+
+                    a:hover {
+                        text-decoration: underline;
+                    }
+                `}
+                onClick={(event) => {
                     if (this.props.onClick) {
-                        this.props.onClick();
+                        this.props.onClick(event);
                     }
                 }}
             >
@@ -454,9 +467,9 @@ export class Span extends LocalizableElement<
             <span
                 {...restOfProps}
                 className={this.getClassName()}
-                onClick={() => {
+                onClick={(event) => {
                     if (this.props.onClick) {
-                        this.props.onClick();
+                        this.props.onClick(event);
                     }
                 }}
             >

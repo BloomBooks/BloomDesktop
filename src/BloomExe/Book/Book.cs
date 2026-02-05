@@ -86,10 +86,17 @@ namespace Bloom.Book
         /// </summary>
         public bool WriteFontFaces = true;
 
-        //for moq'ing only; parameterless ctor required by Moq
+        // For moq'ing only; parameterless ctor required by Moq.
         public Book()
+            : this(false) { }
+
+        // Allow specific subclasses (like ErrorBook) to bypass the unit-test guard.
+        protected Book(bool allowNonTestCtor)
         {
-            Guard.Against(!Program.RunningUnitTests, "Only use this ctor for tests!");
+            if (!allowNonTestCtor)
+            {
+                Guard.Against(!Program.RunningUnitTests, "Only use this ctor for tests!");
+            }
         }
 
         public Book(BookInfo info = null, IBookStorage storage = null)
@@ -669,26 +676,7 @@ namespace Bloom.Book
             return result;
         }
 
-        public HtmlDom GetPreviewXmlDocumentForPage(IPage page)
-        {
-            if (HasFatalError)
-            {
-                return GetErrorDom();
-            }
-            var pageDom = GetHtmlDomWithJustOnePage(page);
-            pageDom.RemoveModeStyleSheets();
-            pageDom.EnsureStylesheetLinks(this.Storage.GetCssFilesToLinkForPreview());
-            // Note: it would be a fine enhancement here to first check for "branding-{flavor}.css",
-            // but we'll leave that until we need it.
-            AddPreviewJavascript(pageDom); //review: this is just for thumbnails... should we be having the javascript run?
-            return pageDom;
-        }
-
-        // Differs from GetPreviewXmlDocumentForPage() by not adding the three stylesheets
-        // adding them will full paths seems to be diastrous. I think cross-domain rules
-        // prevent them from being loaded, and so we lose the page size information, and the
-        // thumbs come out random sizes. Not sure why this isn't a problem in GetPreviewXmlDocumentForPage.
-        // Also, since this is used for thumbnails of template pages, we insert some arbitrary text
+        // Since this is used for thumbnails of template pages, we insert text placeholders (grey bars)
         // into empty editable divs to give a better idea of what a typical page will look like.
         internal HtmlDom GetThumbnailXmlDocumentForPage(IPage page)
         {
@@ -698,6 +686,7 @@ namespace Bloom.Book
             }
             var pageDom = GetHtmlDomWithJustOnePage(page);
             AddPreviewJavascript(pageDom);
+            pageDom.EnsureStylesheetLinks(this.Storage.GetCssFilesToLinkForPreview());
             pageDom.Body.AddClass("bloom-templateThumbnail");
             return pageDom;
         }
@@ -2187,7 +2176,9 @@ namespace Bloom.Book
                         {
                             var lang = line.Substring(kLangTag.Length, idxQuote - kLangTag.Length);
                             // Don't let empty language tag creep in (or stay in). (BL-15784)
-                            copyCurrentRule = !String.IsNullOrEmpty(lang) && !languagesWeAlreadyHave.Contains(lang);
+                            copyCurrentRule =
+                                !String.IsNullOrEmpty(lang)
+                                && !languagesWeAlreadyHave.Contains(lang);
                             languagesWeAlreadyHave.Add(lang); // don't copy if another css block has crept in.
                         }
                     }
@@ -4072,15 +4063,9 @@ namespace Bloom.Book
                     this
                 )
                 .Enabled;
-
         public bool FullBleed =>
-            (
-                // Wants to be
-                // BookInfo.AppearanceSettings.FullBleed
-                // but we haven't put that in the book settings yet.
-                BookData.GetVariableOrNull("fullBleed", "*").Xml == "true"
-                || CoverIsImage
-            )
+            PageSizeSupportsFullBleed()
+            && BookInfo.AppearanceSettings.FullBleed
             && FeatureStatus
                 .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.PrintShopReady, this)
                 .Enabled;
@@ -4663,6 +4648,12 @@ namespace Bloom.Book
         public virtual Layout GetLayout()
         {
             return Layout.FromDom(OurHtmlDom, Layout.A5Portrait);
+        }
+
+        public bool PageSizeSupportsFullBleed()
+        {
+            var layout = GetLayout();
+            return layout?.SizeAndOrientation?.SupportsFullBleed() ?? false;
         }
 
         public IEnumerable<Layout> GetSizeAndOrientationChoices()
