@@ -539,6 +539,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                     <ButtonWithTooltip
                                         tipL10nKey="EditTab.Image.EditMetadataOverlay"
                                         icon={MissingMetadataIcon}
+                                        disabled={!hasRealImage(img)}
                                         onClick={() => runMetadataDialog()}
                                     />
                                 )
@@ -1091,7 +1092,13 @@ function addVideoMenuItems(
 }
 
 function hasRealImage(img) {
-    return img && !isPlaceHolderImage(img.getAttribute("src"));
+    return (
+        img &&
+        !isPlaceHolderImage(img.getAttribute("src")) &&
+        !img.classList.contains("bloom-imageLoadError") &&
+        img.parentElement &&
+        !img.parentElement.classList.contains("bloom-imageLoadError")
+    );
 }
 
 function addImageMenuOptions(
