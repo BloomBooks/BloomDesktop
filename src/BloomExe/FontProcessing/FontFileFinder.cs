@@ -123,10 +123,10 @@ namespace Bloom.FontProcessing
                 {
                     if (!string.IsNullOrEmpty(group.BoldItalic))
                         return group.BoldItalic;
-                    else if (!string.IsNullOrEmpty(group.Bold))
-                        return group.Bold;
                     else if (!string.IsNullOrEmpty(group.Italic))
                         return group.Italic;
+                    else if (!string.IsNullOrEmpty(group.Bold))
+                        return group.Bold;
                     else if (!string.IsNullOrEmpty(group.Normal))
                         return group.Normal;
                 }

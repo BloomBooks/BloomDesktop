@@ -8,6 +8,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Bloom;
 using Bloom.Book;
+using Bloom.FontProcessing;
 using Bloom.Publish;
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
@@ -2558,6 +2559,114 @@ namespace BloomTests.Publish.Epub
             var sb = new StringBuilder();
             Assert.DoesNotThrow(() => EpubMaker.AddFontFace(sb, "myFont", "bold", "italic", null));
             Assert.That(sb.Length, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void AddFontFace_MissingItalicFace_DoesNotDeclareItalicStyle()
+        {
+            var sb = new StringBuilder();
+            var group = new FontGroup { Normal = "Test Font R.ttf" };
+            var normalFacesAdded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var font = new PublishHelper.FontInfo
+            {
+                fontFamily = "Test Font",
+                fontStyle = "italic",
+                fontWeight = "400",
+            };
+
+            EpubMaker.AddFontFace(sb, font, group, normalFacesAdded);
+
+            var css = sb.ToString();
+            Assert.That(css, Does.Contain("font-style:normal"));
+            Assert.That(css, Does.Not.Contain("font-style:italic"));
+            Assert.That(css, Does.Contain("Test Font R.ttf"));
+        }
+
+        [Test]
+        public void AddFontFace_BoldItalicRequest_WithOnlyItalic_DeclaresItalicNormalFace()
+        {
+            var sb = new StringBuilder();
+            var group = new FontGroup { Italic = "Test Font I.ttf" };
+            var normalFacesAdded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var font = new PublishHelper.FontInfo
+            {
+                fontFamily = "Test Font",
+                fontStyle = "italic",
+                fontWeight = "700",
+            };
+
+            EpubMaker.AddFontFace(sb, font, group, normalFacesAdded);
+
+            var css = sb.ToString();
+            Assert.That(css, Does.Contain("font-style:italic"));
+            Assert.That(css, Does.Contain("font-weight:normal"));
+            Assert.That(css, Does.Contain("Test Font I.ttf"));
+            Assert.That(css, Does.Not.Contain("font-weight:bold"));
+        }
+
+        [Test]
+        public void AddFontFace_BoldItalicRequest_WithOnlyBold_DeclaresBoldNormalStyleFace()
+        {
+            var sb = new StringBuilder();
+            var group = new FontGroup { Bold = "Test Font B.ttf" };
+            var normalFacesAdded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var font = new PublishHelper.FontInfo
+            {
+                fontFamily = "Test Font",
+                fontStyle = "italic",
+                fontWeight = "700",
+            };
+
+            EpubMaker.AddFontFace(sb, font, group, normalFacesAdded);
+
+            var css = sb.ToString();
+            Assert.That(css, Does.Contain("font-style:normal"));
+            Assert.That(css, Does.Contain("font-weight:bold"));
+            Assert.That(css, Does.Contain("Test Font B.ttf"));
+            Assert.That(css, Does.Not.Contain("font-style:italic"));
+        }
+
+        [Test]
+        public void AddFontFace_BoldItalicRequest_WithItalicAndBold_PrefersItalicForSynthesis()
+        {
+            var sb = new StringBuilder();
+            var group = new FontGroup { Bold = "Test Font B.ttf", Italic = "Test Font I.ttf" };
+            var normalFacesAdded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var font = new PublishHelper.FontInfo
+            {
+                fontFamily = "Test Font",
+                fontStyle = "italic",
+                fontWeight = "700",
+            };
+
+            EpubMaker.AddFontFace(sb, font, group, normalFacesAdded);
+
+            var css = sb.ToString();
+            Assert.That(css, Does.Contain("font-style:italic"));
+            Assert.That(css, Does.Contain("font-weight:normal"));
+            Assert.That(css, Does.Contain("Test Font I.ttf"));
+            Assert.That(css, Does.Not.Contain("Test Font B.ttf"));
+        }
+
+        [Test]
+        public void AddFontFace_BoldItalicRequest_WithBoldItalic_DeclaresBoldItalicFace()
+        {
+            var sb = new StringBuilder();
+            var group = new FontGroup { BoldItalic = "Test Font BI.ttf" };
+            var normalFacesAdded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var font = new PublishHelper.FontInfo
+            {
+                fontFamily = "Test Font",
+                fontStyle = "italic",
+                fontWeight = "700",
+            };
+
+            EpubMaker.AddFontFace(sb, font, group, normalFacesAdded);
+
+            var css = sb.ToString();
+            Assert.That(css, Does.Contain("font-style:italic"));
+            Assert.That(css, Does.Contain("font-weight:bold"));
+            Assert.That(css, Does.Contain("Test Font BI.ttf"));
         }
 
         [Test]
