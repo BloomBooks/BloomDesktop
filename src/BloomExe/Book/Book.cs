@@ -645,26 +645,7 @@ namespace Bloom.Book
             return result;
         }
 
-        public HtmlDom GetPreviewXmlDocumentForPage(IPage page)
-        {
-            if (HasFatalError)
-            {
-                return GetErrorDom();
-            }
-            var pageDom = GetHtmlDomWithJustOnePage(page);
-            pageDom.RemoveModeStyleSheets();
-            pageDom.EnsureStylesheetLinks(this.Storage.GetCssFilesToLinkForPreview());
-            // Note: it would be a fine enhancement here to first check for "branding-{flavor}.css",
-            // but we'll leave that until we need it.
-            AddPreviewJavascript(pageDom); //review: this is just for thumbnails... should we be having the javascript run?
-            return pageDom;
-        }
-
-        // Differs from GetPreviewXmlDocumentForPage() by not adding the three stylesheets
-        // adding them will full paths seems to be diastrous. I think cross-domain rules
-        // prevent them from being loaded, and so we lose the page size information, and the
-        // thumbs come out random sizes. Not sure why this isn't a problem in GetPreviewXmlDocumentForPage.
-        // Also, since this is used for thumbnails of template pages, we insert some arbitrary text
+        // Since this is used for thumbnails of template pages, we insert text placeholders (grey bars)
         // into empty editable divs to give a better idea of what a typical page will look like.
         internal HtmlDom GetThumbnailXmlDocumentForPage(IPage page)
         {
@@ -674,6 +655,7 @@ namespace Bloom.Book
             }
             var pageDom = GetHtmlDomWithJustOnePage(page);
             AddPreviewJavascript(pageDom);
+            pageDom.EnsureStylesheetLinks(this.Storage.GetCssFilesToLinkForPreview());
             pageDom.Body.AddClass("bloom-templateThumbnail");
             return pageDom;
         }

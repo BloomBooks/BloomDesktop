@@ -114,6 +114,19 @@ div.bloomPlayer-page {
         display: none;
     }
 
+    // bloom-canvas-elements may have their height and width specified in a style attribute, and this size may not be
+    // right if we use a different paper size when making thumbnails for the add page dialog.
+    // And ReplaceAnyVideoElementsWithPlaceholder adds video placeholders without making them the right size.
+    // We want to override any such sizing and just blow all the placeholders up big so that the resulting thumbnail
+    // will show the user the layout of the page. We don't need precision here.
+    .bloom-imageContainer:has(img[src*="video-placeholder.svg"]),
+    .bloom-canvas-element.bloom-backgroundImage:has(
+            img[src*="placeHolder.png"]
+        ) {
+        height: 100% !important;
+        width: 100% !important;
+    }
+
     .bloom-translationGroup {
         // Height in ems so it is sensitive to font size. The '1 transparent/3 grey' here is not necessarily
         // ideal, and was just arrived at through experimentation, balancing accuracy
