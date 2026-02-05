@@ -14,14 +14,12 @@ namespace Bloom.Book
         private bool _canDelete;
 
         /// <summary>
-        /// this is a bit of a hack to handle representing a book for which we got an exception while loading the storage... a better architecture wouldn't have this...
+        /// This is a bit of a hack to handle representing a book for which we got an exception while loading the storage.
+        /// A better architecture wouldn't have this.
         /// </summary>
         public ErrorBook(Exception exception, string folderPath, bool canDelete)
+            : base(true)
         {
-            // ENHANCE: Address that a Guard fails when this constructor is called.
-            // This class inherits from Book. So it calls Book's default constructor here.
-            // But Book's default constructor has a Guard that says it's only supposed to be called from the unit tests.
-            // One potential route is to create an interface... IBook or ISimpleBook
             Exception = exception;
             _folderPath = folderPath;
             _canDelete = canDelete;
