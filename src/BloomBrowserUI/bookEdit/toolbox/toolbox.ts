@@ -541,6 +541,14 @@ export class ToolBox {
             alert(msg);
             return;
         }
+        // Making it visible first allows the simulated click to actually activate the tool.
+        // We don't seem to get flicker seeing some other tool first, and if we do it after
+        // the simulated click and the tool we're activating wasn't previously enabled,
+        // it somehow ends up enabled but not active.
+        const toolboxWasShowing = this.toolboxIsShowing();
+        if (!toolboxWasShowing) {
+            this.toggleToolbox();
+        }
         const checkBox = $("#" + toolId + "Check").get(0) as HTMLDivElement;
         if (checkBox) {
             // if it was an actual "input" element, we would just check for "checked",
@@ -562,9 +570,6 @@ export class ToolBox {
             } else {
                 showOrHideTool("dummy", ToolBox.addToolToString(toolId), true);
             }
-        }
-        if (!this.toolboxIsShowing()) {
-            this.toggleToolbox();
         }
     }
 
