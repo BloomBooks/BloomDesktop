@@ -554,6 +554,8 @@ export default defineConfig(async ({ command }) => {
         editTopBarControlsBundle: "./bookEdit/topbar/editTopBarControls.tsx",
         collectionTopBarControlsBundle:
             "./react_components/TopBar/CollectionTopBarControls/CollectionTopBarControls.tsx",
+        workspaceTopRightControlsBundle:
+            "./react_components/TopBar/workspaceTopRightControls/workspaceTopRightControls.entry.tsx",
     };
 
     // MAIN VITE CONFIGURATION
