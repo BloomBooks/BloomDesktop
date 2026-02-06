@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="comic.template.paper.full.bleed.header">
         <source xml:lang="en">About Full Bleed</source>
-        <target xml:lang="es-ES" state="needs-translation">About Full Bleed</target>
+        <target xml:lang="es-ES" state="translated">Acerca de sangría completa</target>
         <note>ID: comic.template.paper.full.bleed.header</note>
       </trans-unit>
       <trans-unit id="comic.template.paper.full.bleed">
