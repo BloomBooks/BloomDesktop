@@ -102,6 +102,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
         "bloom-theme-background"
     );
     const img = imgContainer?.getElementsByTagName("img")[0];
+    const missingImage = img?.classList.contains("bloom-imageLoadError");
     //const hasLicenseProblem = hasImage && !img.getAttribute("data-copyright");
     const videoContainer = props.canvasElement.getElementsByClassName(
         "bloom-videoContainer"
@@ -292,6 +293,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 menuOptions,
                 props.canvasElement,
                 img,
+                missingImage,
                 setMenuOpen
             );
     }
@@ -441,6 +443,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                 <ButtonWithTooltip
                                     tipL10nKey="EditTab.Image.EditMetadataOverlay"
                                     icon={MissingMetadataIcon}
+                                    disabled={missingImage}
                                     onClick={() => runMetadataDialog()}
                                 />
                             )}
@@ -979,6 +982,7 @@ function addImageMenuOptions(
     menuOptions: IMenuItemWithSubmenu[],
     canvasElement: HTMLElement,
     img: HTMLElement,
+    missingImage: boolean,
     setMenuOpen: (open: boolean, launchingDialog?: boolean) => void
 ) {
     const imgContainer = canvasElement.getElementsByClassName(
@@ -1022,6 +1026,7 @@ function addImageMenuOptions(
             english: "Set Image Information...",
             subLabelL10nId: "EditTab.Image.EditMetadataOverlayMore",
             onClick: runMetadataDialog,
+            disabled: missingImage,
             icon: <CopyrightIcon css={getMenuIconCss()} />
         },
         {
