@@ -825,10 +825,20 @@ namespace Bloom.TeamCollection
             // Begin watching.
             _booksWatcher.EnableRaisingEvents = true;
 
-            _otherWatcher = new FileSystemWatcherWrapper(Path.Combine(_repoFolderPath, "Other"));
-            _otherWatcher.NotifyFilter = NotifyFilters.LastWrite;
-            _otherWatcher.DebounceChanged(OnCollectionFilesChanged, kDebouncePeriodInMs);
-            _otherWatcher.EnableRaisingEvents = true;
+            var otherFilesDirPath = Path.Combine(_repoFolderPath, "Other");
+            // If it doesn't exist we can't watch it. Rather bizarre since we normally create
+            // it if it doesn't exist as part of syncing. But BL-15838 seems to have been
+            // caused by not checking. If we can't set it up, unfortunately we won't find
+            // out immediately if some remote user modifies something in the collection.
+            // But we should find out on the next startup, and from then on we'll be able to
+            // monitor it, so I don't think it's very serious.
+            if (Directory.Exists(otherFilesDirPath))
+            {
+                _otherWatcher = new FileSystemWatcherWrapper(otherFilesDirPath);
+                _otherWatcher.NotifyFilter = NotifyFilters.LastWrite;
+                _otherWatcher.DebounceChanged(OnCollectionFilesChanged, kDebouncePeriodInMs);
+                _otherWatcher.EnableRaisingEvents = true;
+            }
         }
 
         private void OnDeleted(object sender, FileSystemEventArgs e)
