@@ -4062,7 +4062,8 @@ namespace Bloom.Book
                 .Enabled;
 
         public bool FullBleed =>
-            (
+            !GetLayout().IsDeviceLayout
+            && (
                 // Wants to be
                 // BookInfo.AppearanceSettings.FullBleed
                 // but we haven't put that in the book settings yet.
