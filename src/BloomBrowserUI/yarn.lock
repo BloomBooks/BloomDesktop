@@ -2225,32 +2225,32 @@
     "@eslint/core" "^0.15.2"
     levn "^0.4.1"
 
-"@ethnolib/find-language@0.1.11":
-  version "0.1.11"
-  resolved "https://registry.yarnpkg.com/@ethnolib/find-language/-/find-language-0.1.11.tgz#8f80febb67c514c1f92592ceec42d94576defc02"
-  integrity sha512-O4hk+L4Q9qhrRGIq7clfxqmEIEiJUXGneML10uZZo1L+z+qmYDi4rlXlv//31JmdCIJDNYb58qqAZ+eTrvqY5Q==
-  dependencies:
-    fuse.js "^7.0.0"
-    iso-15924 "^3.2.0"
-    iso-3166 "^4.3.0"
-
-"@ethnolib/language-chooser-react-hook@0.1.12":
+"@ethnolib/find-language@0.1.12":
   version "0.1.12"
-  resolved "https://registry.yarnpkg.com/@ethnolib/language-chooser-react-hook/-/language-chooser-react-hook-0.1.12.tgz#05a37ef62023d82d8e1b5eb01041caea5aced25c"
-  integrity sha512-8Zmmitze4aCetnAzzYdIuSEUmeMYBmwlzdFHnWUfgz8SyciOoGVxBc/XNJz/U2H7Er1DKAzxCXte+oJIrtsBxA==
+  resolved "https://registry.yarnpkg.com/@ethnolib/find-language/-/find-language-0.1.12.tgz#234266d976bcaf08250f2a05af7e74691a48794a"
+  integrity sha512-Q95OIhwQZ0BFS3HS20d04SCkL6sZuXIli2SpwYCtVomtPNbHuuGeUWtnwmANbn4XrdrNPEIR0LkLcU22XnoaQA==
   dependencies:
-    "@ethnolib/find-language" "0.1.11"
     fuse.js "^7.0.0"
     iso-15924 "^3.2.0"
     iso-3166 "^4.3.0"
 
-"@ethnolib/language-chooser-react-mui@^0.1.14":
-  version "0.1.14"
-  resolved "https://registry.yarnpkg.com/@ethnolib/language-chooser-react-mui/-/language-chooser-react-mui-0.1.14.tgz#87f3b0e5f97643da9c3acc58e23b307fd0cad06c"
-  integrity sha512-gtbzhTcfV3xMHJDoBlNeq5yJp9lF70gm50Jm01x+RtJFIHkmSz60V4d40/DodMQvCyIBAvD/rkNgO6+RXY85qw==
+"@ethnolib/language-chooser-react-hook@0.1.13":
+  version "0.1.13"
+  resolved "https://registry.yarnpkg.com/@ethnolib/language-chooser-react-hook/-/language-chooser-react-hook-0.1.13.tgz#6c1a85a633155f3d5a973f209b4291dc1d93cdd8"
+  integrity sha512-5hdY/Z9uOrhg4OVWEnwuO9oj8F8Gk3Oqk6/iw4TWFyCZkDtpJwTqoZoK94TKZJIlt5in3ExMv1vualwkDhB7Yg==
   dependencies:
-    "@ethnolib/find-language" "0.1.11"
-    "@ethnolib/language-chooser-react-hook" "0.1.12"
+    "@ethnolib/find-language" "0.1.12"
+    fuse.js "^7.0.0"
+    iso-15924 "^3.2.0"
+    iso-3166 "^4.3.0"
+
+"@ethnolib/language-chooser-react-mui@^0.1.15":
+  version "0.1.15"
+  resolved "https://registry.yarnpkg.com/@ethnolib/language-chooser-react-mui/-/language-chooser-react-mui-0.1.15.tgz#74566403fedc9e69c5cf763f0adc65e02f6b71f5"
+  integrity sha512-znZM0L6XKqZS7c0dovVtaz97mbAKxzaVu8tFPU4QYIVuG2XpJolR6qvwbonk18lUhy/fekG39XaCNxqZJnwqAQ==
+  dependencies:
+    "@ethnolib/find-language" "0.1.12"
+    "@ethnolib/language-chooser-react-hook" "0.1.13"
     "@mui/icons-material" "^5.15.19"
     lodash "^4.17.21"
     react-lazyload "^3.2.1"
@@ -4196,9 +4196,9 @@ bindings@^1.5.0:
     file-uri-to-path "1.0.0"
 
 bloom-player@^2.17.3:
-  version "2.17.6"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.17.6.tgz#0111b68abbd3c29215e26bd18cfa56bbd94da7f1"
-  integrity sha512-e/taS0PDn0gwvhB5tKNsZVSQiv8fvdGBD06obCfkBXwmMaKjLgySmpMo5Ae4Mb5J3yGtwdcPEvWMYdB07pXsqg==
+  version "2.18.2"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.18.2.tgz#3a5a8f53dad0eb9ec0bbbac819affe1ade210257"
+  integrity sha512-eBm/rL7kzslxxvMzwn0E52AIRGonRiR9xguj4RFobVESus5kcmXmacy/tMp4drl4LeBQo9+0hAmgAkmnaLXhXA==
 
 boom@2.x.x:
   version "2.10.1"

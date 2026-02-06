@@ -62,6 +62,12 @@ namespace Bloom.Api
                 HandleDeleteCustomBookStyles,
                 false
             );
+            apiHandler.RegisterBooleanEndpointHandler(
+                "book/settings/pageSizeSupportsFullBleed",
+                request => _bookSelection.CurrentSelection.PageSizeSupportsFullBleed(),
+                null,
+                false
+            );
         }
 
         private void HandleGetOverrides(ApiRequest request)

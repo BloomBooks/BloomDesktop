@@ -383,7 +383,7 @@ namespace Bloom
         ///   Currently used by the image server
         ///   to get thumbnails that are used in the add page dialog. Since this dialog can show
         ///   an enlarged version of the page, we generate these at a higher resolution than usual.
-        ///   Also, to make more realistic views of template pages we insert fake text wherever
+        ///   Also, to make more realistic views of template pages we insert text placeholders (grey bars) wherever
         ///   there is an empty edit block.
         ///
         ///   The result is cached for possible future use so the caller should not dispose of it.

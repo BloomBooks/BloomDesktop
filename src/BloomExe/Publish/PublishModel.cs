@@ -831,63 +831,6 @@ namespace Bloom.Publish
                 _currentlyLoadedBook.EnsureUpToDate();
         }
 
-        public IEnumerable<HtmlDom> GetPageDoms()
-        {
-            if (BookSelection.CurrentSelection.IsFolio)
-            {
-                foreach (var bi in _currentBookCollectionSelection.CurrentSelection.GetBookInfos())
-                {
-                    var book = _bookServer.GetBookFromBookInfo(bi);
-                    //need to hide the "notes for illustrators" on SHRP, which is controlled by the layout
-                    book.SetLayout(
-                        new Layout()
-                        {
-                            SizeAndOrientation = SizeAndOrientation.FromString("B5Portrait"),
-                            Style = "HideProductionNotes",
-                        }
-                    );
-                    foreach (var page in book.GetPages())
-                    {
-                        //yield return book.GetPreviewXmlDocumentForPage(page);
-
-                        var previewXmlDocumentForPage = book.GetPreviewXmlDocumentForPage(page);
-                        BookStorage.SetBaseForRelativePaths(
-                            previewXmlDocumentForPage,
-                            book.FolderPath
-                        );
-
-                        AddStylesheetClasses(previewXmlDocumentForPage.RawDom);
-
-                        yield return previewXmlDocumentForPage;
-                    }
-                }
-            }
-            else //this one is just for testing, it's not especially fruitful to export for a single book
-            {
-                //need to hide the "notes for illustrators" on SHRP, which is controlled by the layout
-                BookSelection.CurrentSelection.SetLayout(
-                    new Layout()
-                    {
-                        SizeAndOrientation = SizeAndOrientation.FromString("B5Portrait"),
-                        Style = "HideProductionNotes",
-                    }
-                );
-
-                foreach (var page in BookSelection.CurrentSelection.GetPages())
-                {
-                    var previewXmlDocumentForPage =
-                        BookSelection.CurrentSelection.GetPreviewXmlDocumentForPage(page);
-                    //get the original images, not compressed ones (just in case the thumbnails are, like, full-size & they want quality)
-                    BookStorage.SetBaseForRelativePaths(
-                        previewXmlDocumentForPage,
-                        BookSelection.CurrentSelection.FolderPath
-                    );
-                    AddStylesheetClasses(previewXmlDocumentForPage.RawDom);
-                    yield return previewXmlDocumentForPage;
-                }
-            }
-        }
-
         /// <summary>
         /// Remove all text data that is not in a desired language.
         /// Keeps all xmatter data if shouldPruneXmatter is false; if it is true, keeps xmatter data in xmatterLangsToKeep.

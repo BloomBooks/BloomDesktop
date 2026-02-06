@@ -8,11 +8,22 @@ echo Checking for possible uses of C\# XmlNode based classes.
 # 3) Search for any lines matching the XmlNode based class names.  (Unfortunately,
 #    this includes commments so those must be adjusted properly as well.)
 # 4) If anything is found (grep returns 0), then we stop everything and complain.
-git status --porcelain=v1 --untracked=no --ignored=no --no-renames | grep '^[AM]' | cut -c4- | grep '\.cs$' | \
-  grep -v '/SafeXml/SafeXml' | \
-  grep -v '/CollectionChoosing/MostRecentPathsList.cs$' | \
-  grep -v '/BloomTests/FluentAssertXml.cs$' | \
-  xargs grep -H '[^A-Za-z0-9_]Xml\(Document\|Element\|Node\|Attribute\|Text\|Whitespace\|CDataSection\|Comment\|CharacterData\)[^A-Za-z0-9_]'
-status=$?
+filesToCheck=filesToCheck.lst
+git diff --cached --name-only --diff-filter=AM -z -- '*.cs' | tr '\0' '\n' >$filesToCheck
+status=1
+if [ -s $filesToCheck ]; then
+  while IFS= read -r file; do
+    case "$file" in
+      */SafeXml/SafeXml*) continue;;
+      */CollectionChoosing/MostRecentPathsList.cs) continue;;
+      */BloomTests/FluentAssertXml.cs) continue;;
+    esac
+    if grep -H '[^A-Za-z0-9_]Xml\(Document\|Element\|Node\|Attribute\|Text\|Whitespace\|CDataSection\|Comment\|CharacterData\)[^A-Za-z0-9_]' "$file"; then
+      status=0
+      break
+    fi
+  done < $filesToCheck
+fi
+rm $filesToCheck
 # if grep finds instances of unwanted class names, then stop the commit.
 [ $status -eq 0 ] && exit 1 || exit 0

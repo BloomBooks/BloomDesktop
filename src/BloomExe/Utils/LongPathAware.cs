@@ -122,8 +122,8 @@ namespace Bloom.Utils
         private static string GetGenericPathTooLongMessage()
         {
             return L10NSharp.LocalizationManager.GetString(
-                "Errors.PathTooLong",
-                "Please give your collection a shorter name or move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by one of two things: 1) the collection has a very long name, or 2) the collection is too deeply nested inside many folders on your hard drive."
+                "Errors.PathTooLong2",
+                "A file Bloom was working with had a path that was too long. You may need to give it a shorter name, or give your collection a shorter name, or move your collection closer to the root of your hard drive."
             );
         }
 
@@ -152,9 +152,19 @@ namespace Bloom.Utils
             if (e is Bloom.Utils.PathTooLongException)
             {
                 var x = (Bloom.Utils.PathTooLongException)e;
+                var path = x.Path;
+                try
+                {
+                    // It might be a short (8.3) path, so try to get the long version for the report.
+                    path = GetLongPath(path);
+                }
+                catch
+                {
+                    // if we can't get the long path, just use what we had
+                }
                 ErrorReport.NotifyUserOfProblem(
                     x,
-                    $"{GetGenericPathTooLongMessage()} <br> <span style='font-size:7pt'>Path was '{x.Path}'. {x.AdditionalInfo}</span>"
+                    $"{GetGenericPathTooLongMessage()} <br> <span style='font-size:7pt'>Path was '{path}'. {x.AdditionalInfo}</span>"
                 );
             }
             else

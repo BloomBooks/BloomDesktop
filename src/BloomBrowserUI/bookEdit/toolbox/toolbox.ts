@@ -506,6 +506,30 @@ export class ToolBox {
         return filteredTools.length > 0;
     }
 
+    // Ensure the requested tool is available in the toolbox accordion without changing the
+    // currently-active tool. This supports scenarios like clicking on a canvas background while
+    // another tool is open: we want to make Canvas available, but not steal focus.
+    public ensureToolEnabled(toolId: string): void {
+        const toolIdWithTool = ToolBox.addToolToString(toolId);
+        if (this.isToolActive(toolIdWithTool)) {
+            return;
+        }
+        const toolboxElt = $("#toolbox");
+        const activeHeader = toolboxElt
+            .find("> h3.ui-accordion-header-active")
+            .get(0) as HTMLElement | undefined;
+        const checkBoxId = toolId + "Check";
+        beginAddTool(checkBoxId, toolIdWithTool, false, () => {
+            toolboxElt.accordion("refresh");
+            if (activeHeader) {
+                const activeIndex = toolboxElt.find("> h3").index(activeHeader);
+                if (activeIndex >= 0) {
+                    toolboxElt.accordion("option", "active", activeIndex);
+                }
+            }
+        });
+    }
+
     public activateToolFromId(toolId: string) {
         if (!getITool(toolId)) {
             // Normally we won't even give a way to see this tool if it's
@@ -516,6 +540,14 @@ export class ToolBox {
                 "This tool requires that you enable Settings : Advanced Program Settings : Show Experimental Features";
             alert(msg);
             return;
+        }
+        // Making it visible first allows the simulated click to actually activate the tool.
+        // We don't seem to get flicker seeing some other tool first, and if we do it after
+        // the simulated click and the tool we're activating wasn't previously enabled,
+        // it somehow ends up enabled but not active.
+        const toolboxWasShowing = this.toolboxIsShowing();
+        if (!toolboxWasShowing) {
+            this.toggleToolbox();
         }
         const checkBox = $("#" + toolId + "Check").get(0) as HTMLDivElement;
         if (checkBox) {
@@ -538,9 +570,6 @@ export class ToolBox {
             } else {
                 showOrHideTool("dummy", ToolBox.addToolToString(toolId), true);
             }
-        }
-        if (!this.toolboxIsShowing()) {
-            this.toggleToolbox();
         }
     }
 
