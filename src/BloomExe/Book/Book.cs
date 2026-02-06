@@ -4067,7 +4067,7 @@ namespace Bloom.Book
                 // BookInfo.AppearanceSettings.FullBleed
                 // but we haven't put that in the book settings yet.
                 BookData.GetVariableOrNull("fullBleed", "*").Xml == "true"
-                || CoverIsImage
+                || (CoverIsImage && !GetLayout().IsDeviceLayout)
             )
             && FeatureStatus
                 .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.PrintShopReady, this)
