@@ -3311,7 +3311,7 @@
       </trans-unit>
       <trans-unit id="Errors.PathTooLong2">
         <source xml:lang="en">A file Bloom was working with had a path that was too long. You may need to give it a shorter name, or give your collection a shorter name, or move your collection closer to the root of your hard drive.</source>
-        <target xml:lang="fr" state="needs-translation">A file Bloom was working with had a path that was too long. You may need to give it a shorter name, or give your collection a shorter name, or move your collection closer to the root of your hard drive.</target>
+        <target xml:lang="fr" state="translated">Le chemin d'accès d'un fichier sur lequel travaillait Bloom était trop long. Vous devrez peut-être lui donner un nom plus court, donner un nom plus court à votre collection ou déplacer votre collection plus près de la racine de votre disque dur.</target>
         <note>ID: Errors.PathTooLong2</note>
       </trans-unit>
       <trans-unit id="Errors.BookProblem" approved="yes">
