@@ -3309,9 +3309,9 @@
         <target xml:lang="fr" state="translated">Veuillez déplacer votre collection plus près de la racine de votre disque dur et réessayez. Un fichier avec lequel Bloom travaillait avait un chemin trop long. Cela est généralement dû au fait que votre collection est trop imbriquée dans de nombreux dossiers sur votre disque dur.</target>
         <note>ID: Errors.PathTooLong</note>
       </trans-unit>
-      <trans-unit id="Errors.PathTooLong2">
+      <trans-unit id="Errors.PathTooLong2" approved="yes">
         <source xml:lang="en">A file Bloom was working with had a path that was too long. You may need to give it a shorter name, or give your collection a shorter name, or move your collection closer to the root of your hard drive.</source>
-        <target xml:lang="fr" state="translated">Le chemin d'accès d'un fichier sur lequel travaillait Bloom était trop long. Vous devrez peut-être lui donner un nom plus court, donner un nom plus court à votre collection ou déplacer votre collection plus près de la racine de votre disque dur.</target>
+        <target xml:lang="fr" state="final">Le chemin d'accès d'un fichier sur lequel travaillait Bloom était trop long. Vous devrez peut-être lui donner un nom plus court, donner un nom plus court à votre collection ou déplacer votre collection plus près de la racine de votre disque dur.</target>
         <note>ID: Errors.PathTooLong2</note>
       </trans-unit>
       <trans-unit id="Errors.BookProblem" approved="yes">
