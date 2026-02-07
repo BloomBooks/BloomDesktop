@@ -146,6 +146,10 @@ export const BookSettingsDialog: React.FunctionComponent<{
         "Content Pages",
         "BookSettings.ContentPagesGroupLabel",
     );
+    const printPublishingLabel = useL10n(
+        "Print Publishing",
+        "BookSettings.PrintPublishingGroupLabel",
+    );
     const languagesToShowNormalSubgroupLabel = useL10n(
         "Languages to show in normal text boxes",
         "BookSettings.NormalTextBoxLangsLabel",
@@ -272,7 +276,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
         "BookSettings.FullBleed",
     );
     const fullBleedDescription = useL10n(
-        "Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on all page layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.",
+        "Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.",
         "BookSettings.FullBleed.Description",
     );
 
@@ -490,36 +494,6 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                     >
                                         <BloomSubscriptionIndicatorIconAndText
                                             feature="fullPageCoverImage"
-                                            css={css`
-                                                margin-left: auto;
-                                            `}
-                                            disabled={appearanceDisabled}
-                                        />
-                                    </div>
-                                </div>
-                                <div>
-                                    <ConfigrBoolean
-                                        label={fullBleedLabel}
-                                        description={fullBleedDescription}
-                                        {...getAdditionalProps<boolean>(
-                                            `fullBleed`,
-                                        )}
-                                        disabled={
-                                            appearanceDisabled ||
-                                            !tierAllowsFullBleed ||
-                                            !pageSizeSupportsFullBleed
-                                        }
-                                    />
-                                    <div
-                                        css={css`
-                                            display: flex;
-                                            padding-bottom: 5px;
-                                            font-size: 12px;
-                                            font-weight: bold;
-                                        `}
-                                    >
-                                        <BloomSubscriptionIndicatorIconAndText
-                                            feature="PrintshopReady"
                                             css={css`
                                                 margin-left: auto;
                                             `}
@@ -799,6 +773,38 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         `page-gutter`,
                                     )}
                                 />
+                            </ConfigrSubgroup>
+                        </ConfigrGroup>
+                        <ConfigrGroup label={printPublishingLabel} level={1}>
+                            <ConfigrSubgroup label="" path={`appearance`}>
+                                <div>
+                                    <ConfigrBoolean
+                                        label={fullBleedLabel}
+                                        description={fullBleedDescription}
+                                        {...getAdditionalProps<boolean>(
+                                            `fullBleed`,
+                                        )}
+                                        disabled={
+                                            !tierAllowsFullBleed ||
+                                            !pageSizeSupportsFullBleed
+                                        }
+                                    />
+                                    <div
+                                        css={css`
+                                            display: flex;
+                                            padding-bottom: 5px;
+                                            font-size: 12px;
+                                            font-weight: bold;
+                                        `}
+                                    >
+                                        <BloomSubscriptionIndicatorIconAndText
+                                            feature="PrintshopReady"
+                                            css={css`
+                                                margin-left: auto;
+                                            `}
+                                        />
+                                    </div>
+                                </div>
                             </ConfigrSubgroup>
                         </ConfigrGroup>
                         <ConfigrGroup label={bloomPubLabel} level={1}>
