@@ -119,7 +119,12 @@ public class AppearanceSettings
             valueRequiredIfLegacyTheme: false
         ), // If true, cover page is just a full bleed image.
         // If true, book uses full bleed page layout in edit mode. Printing that way is still optional.
-        new BooleanPropertyDef("fullBleed", "fullBleed", defaultValue: false),
+        new BooleanPropertyDef(
+            "fullBleed",
+            "fullBleed",
+            defaultValue: false,
+            valueRequiredIfLegacyTheme: false
+        ),
         // Does not correspond to a css variable. We will set the relevant page number css variables based on this setting.
         new StringPropertyDef(kPageNumberPositionVar, null, PageNumberPosition.Automatic),
         new CssStringVariableDef("cover-background-color", "colors"),

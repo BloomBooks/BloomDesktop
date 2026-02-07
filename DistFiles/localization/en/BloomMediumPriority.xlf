@@ -782,12 +782,17 @@
         <note>BookSettings.FullBleed</note>
       </trans-unit>
       <trans-unit id="BookSettings.FullBleed.Description" sil:dynamic="true">
-        <source xml:lang="en">Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on all page layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
+        <source xml:lang="en">Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
         <note>BookSettings.FullBleed.Description</note>
       </trans-unit>
       <trans-unit id="BookSettings.ContentPagesGroupLabel" sil:dynamic="true">
         <source xml:lang="en">Content Pages</source>
         <note>BookSettings.ContentPagesGroupLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PrintPublishingGroupLabel" sil:dynamic="true">
+        <source xml:lang="en">Print Publishing</source>
+        <note>ID: BookSettings.PrintPublishingGroupLabel</note>
+        <note>Main section label in the Book Settings dialog that contains print-related options such as Full Bleed.</note>
       </trans-unit>
       <trans-unit id="BookSettings.NormalTextBoxLangsLabel" sil:dynamic="true">
         <source xml:lang="en">Languages to show in normal text boxes</source>
