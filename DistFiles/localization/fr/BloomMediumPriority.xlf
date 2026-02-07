@@ -854,19 +854,19 @@
         <target xml:lang="fr" state="needs-translation">Using this option turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</target>
         <note>BookSettings.CoverIsImage.Description</note>
       </trans-unit>
-      <trans-unit id="BookSettings.CoverIsImage.Description.V2" sil:dynamic="true">
+      <trans-unit id="BookSettings.CoverIsImage.Description.V2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Replace the front cover content with a single full-bleed image. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</source>
-        <target xml:lang="fr" state="translated">Remplacez le contenu de la page de couverture par une seule image à fond perdu. Consultez la section [Images de couverture pleine page](https://docs.bloomlibrary.org/full-page-cover-images) pour plus d'informations sur le redimensionnement de votre image.</target>
+        <target xml:lang="fr" state="final">Remplacez le contenu de la page de couverture par une seule image à fond perdu. Consultez la section [Images de couverture pleine page](https://docs.bloomlibrary.org/full-page-cover-images) pour plus d'informations sur le redimensionnement de votre image.</target>
         <note>BookSettings.CoverIsImage.Description.V2</note>
       </trans-unit>
-      <trans-unit id="BookSettings.FullBleed" sil:dynamic="true">
+      <trans-unit id="BookSettings.FullBleed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Use full bleed page layout</source>
-        <target xml:lang="fr" state="translated">Utiliser une mise en page à fond perdu</target>
+        <target xml:lang="fr" state="final">Utiliser une mise en page à fond perdu</target>
         <note>BookSettings.FullBleed</note>
       </trans-unit>
-      <trans-unit id="BookSettings.FullBleed.Description" sil:dynamic="true">
+      <trans-unit id="BookSettings.FullBleed.Description" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on all page layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
-        <target xml:lang="fr" state="translated">Activer la mise en page de fond complete pour l'impression. Cela active les indicateurs [Imprimer le saignement](https://en.wikipedia.org/wiki/Bleed_%28printing%29) pour toutes les mises en page. Veuillez consulter [Plan de saignement complet](https://docs.bloomlibrary.org/full-bleed) pour plus d'informations.</target>
+        <target xml:lang="fr" state="final">Activez la mise en page à fond perdu pour l'impression. Cela active les indicateurs [Impression à fond perdu](https://en.wikipedia.org/wiki/Bleed_%28printing%29) sur toutes les mises en page. Pour plus d'informations, consultez [Mise en page à fond perdu](https://docs.bloomlibrary.org/full-bleed).</target>
         <note>BookSettings.FullBleed.Description</note>
       </trans-unit>
       <trans-unit id="BookSettings.ContentPagesGroupLabel" sil:dynamic="true" approved="yes">
