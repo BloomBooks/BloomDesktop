@@ -1356,7 +1356,8 @@ namespace Bloom.Publish.Video
             // up anything we will need for that. See code at start of StopRecordingAsync,
             // which sets things up so that Close will not mess things up.
             _saveReceived = false;
-            _webSocketServer.SendString("recordVideo", "recording", "false");
+            if (_webSocketServer != null)
+                _webSocketServer.SendString("recordVideo", "recording", "false");
             base.OnClosed(e);
             QuitFfmpegProcess();
 
