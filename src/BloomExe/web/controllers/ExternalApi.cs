@@ -28,10 +28,26 @@ namespace Bloom.web.controllers
                 {
                     if (request.HttpMethod == HttpMethods.Post)
                     {
-                        var requestData = DynamicJson.Parse(request.RequiredPostJson());
-                        string token = requestData.sessionToken;
-                        string email = requestData.email;
-                        string userId = requestData.userId;
+                        // In at least some circumstances, bloomlibrary.org may POST to this endpoint with
+                        // incomplete or unexpected JSON. Accessing missing properties on DynamicJson via
+                        // dynamic dispatch throws a RuntimeBinderException (see BL-14503).
+                        // We respond successfully and ignore such payloads.
+                        var requestData =
+                            DynamicJson.Parse(request.RequiredPostJson()) as DynamicJson;
+
+                        if (
+                            requestData == null
+                            || !requestData.TryGetValue("sessionToken", out string token)
+                            || !requestData.TryGetValue("email", out string email)
+                            || !requestData.TryGetValue("userId", out string userId)
+                            || string.IsNullOrEmpty(token)
+                            || string.IsNullOrEmpty(email)
+                            || string.IsNullOrEmpty(userId)
+                        )
+                        {
+                            request.PostSucceeded();
+                            return;
+                        }
                         //Debug.WriteLine("Got login data " + email + " with token " + token + " and id " + userId);
                         _bloomLibraryBookApiClient.SetLoginData(
                             email,
