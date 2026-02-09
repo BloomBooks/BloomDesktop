@@ -438,12 +438,11 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 >
                     {hasImage && (
                         <Fragment>
-                            {// Want an attention-grabbing version of set metadata if there is none.)
-                            missingMetadata && (
+                            {// Want an attention-grabbing version of set metadata if there is none and image exists.
+                            missingMetadata && !missingImage && (
                                 <ButtonWithTooltip
                                     tipL10nKey="EditTab.Image.EditMetadataOverlay"
                                     icon={MissingMetadataIcon}
-                                    disabled={missingImage}
                                     onClick={() => runMetadataDialog()}
                                 />
                             )}
@@ -1019,8 +1018,13 @@ function addImageMenuOptions(
             l10nId: "EditTab.Image.CopyImage",
             english: "Copy image",
             onClick: () => doImageCommand(img, "copy"),
+            disabled: missingImage,
             icon: <CopyIcon css={getMenuIconCss()} />
         },
+        // If the image doesn't exist, we still show the menu item for editing metadata,
+        // but disable it.  Menu items are often disabled instead of hidden when they
+        // don't make sense.  We did this with the Copy Image menu item above as well,
+        // and it happens with other menu items for possibly other reasons.
         {
             l10nId: "EditTab.Image.EditMetadataOverlay",
             english: "Set Image Information...",
