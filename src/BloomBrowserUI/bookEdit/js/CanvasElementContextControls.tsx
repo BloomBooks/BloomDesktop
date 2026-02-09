@@ -438,12 +438,11 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 >
                     {hasImage && (
                         <Fragment>
-                            {// Want an attention-grabbing version of set metadata if there is none.)
-                            missingMetadata && (
+                            {// Want an attention-grabbing version of set metadata if there is none and image exists.
+                            missingMetadata && !missingImage && (
                                 <ButtonWithTooltip
                                     tipL10nKey="EditTab.Image.EditMetadataOverlay"
                                     icon={MissingMetadataIcon}
-                                    disabled={missingImage}
                                     onClick={() => runMetadataDialog()}
                                 />
                             )}
@@ -1021,6 +1020,10 @@ function addImageMenuOptions(
             onClick: () => doImageCommand(img, "copy"),
             icon: <CopyIcon css={getMenuIconCss()} />
         },
+        // If the image doesn't exist, we still show the menu item for editing metadata as
+        // an attention-grabbing way to encourage the user to add metadata when they add an
+        // image.  We disable the menu item, since it doesn't make sense to edit metadata for
+        // an image that isn't there (and all that would happen would be an error dialog).
         {
             l10nId: "EditTab.Image.EditMetadataOverlay",
             english: "Set Image Information...",
