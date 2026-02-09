@@ -438,12 +438,11 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 >
                     {hasImage && (
                         <Fragment>
-                            {// Want an attention-grabbing version of set metadata if there is none.)
-                            missingMetadata && (
+                            {// Want an attention-grabbing version of set metadata if there is none and image exists.
+                            missingMetadata && !missingImage && (
                                 <ButtonWithTooltip
                                     tipL10nKey="EditTab.Image.EditMetadataOverlay"
                                     icon={MissingMetadataIcon}
-                                    disabled={missingImage}
                                     onClick={() => runMetadataDialog()}
                                 />
                             )}
