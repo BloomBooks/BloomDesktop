@@ -7450,7 +7450,8 @@ export class CanvasElementManager {
         // - increase the dimension that is too small for the aspect ratio until the aspect ratio is correct or it fills the container.
         // - if that didn't make things right, decrease the other dimension.
         // Conveniently this algorithm also achieves the goal of keeping any background image
-        // emultating content-fit (assuming it was before).
+        // emulating content-fit (assuming it was before). Though we have found it does not position the background image
+        // correctly in all cases, so we may need to reposition the background image again afterwards.
         // What fraction of the old padding was on the left?
         const widthPadding = oldWidth - childrenWidth;
         const heightPadding = oldHeight - childrenHeight;
@@ -7599,6 +7600,22 @@ export class CanvasElementManager {
                 }
             }
         });
+
+        // The above algorithm works for the background image most of the time, but we've at least found cases where the
+        // background is still a placeholder and we have other elements (e.g. in a paper comic with footer) that the
+        // above calculations end up messing up the size of the background image canvas element. (See comments in
+        // BL-15657.) So we readjust here to be sure.
+        const backgroundCanvasElement = bloomCanvas.getElementsByClassName(
+            kBackgroundImageClass,
+        )[0] as HTMLElement;
+        if (backgroundCanvasElement) {
+            this.adjustBackgroundImageSize(
+                bloomCanvas,
+                backgroundCanvasElement,
+                false,
+            );
+        }
+
         if (needComicalUpdate) {
             // Move the bubbles to be consistent with the updated specs and positions.
             Comical.update(bloomCanvas);
