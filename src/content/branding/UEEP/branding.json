@@ -23,12 +23,6 @@
             "lang": "*",
             "content": "<img src='Uzbekistan-MPSE-Color-Logo-Black-Text.png'/>",
             "condition": "always"
-        },
-        {
-            "data-book": "fullBleed",
-            "lang": "*",
-            "content": "true",
-            "condition": "always"
         }
     ]
 }
