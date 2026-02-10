@@ -5784,7 +5784,7 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Canvas" sil:dynamic="true">
-        <source xml:lang="en">A page with an empty canvas you can add to.</source>
+        <source xml:lang="en">A page with an empty canvas that you can add to.</source>
         <note>ID: TemplateBooks.PageDescription.Canvas</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Comprehension Quiz" sil:dynamic="true">
