@@ -1447,6 +1447,10 @@ export const pasteClipboard = (imageAvailable: boolean) => {
     pasteImpl(imageAvailable);
 };
 
+function scheduleMarkupUpdateAfterPaste() {
+    getToolboxBundleExports()?.scheduleMarkupUpdateAfterPaste();
+}
+
 function pasteHandler(e: Event) {
     const activeElement = document.activeElement;
     // If there's a possibility of pasting an image, we want to handle that the same
@@ -1547,6 +1551,7 @@ async function pasteImpl(imageAvailable: boolean) {
             // We need to update the canvas element height (BL-14004).
             canvasElementManager.updateAutoHeight();
         }
+        scheduleMarkupUpdateAfterPaste();
         // It shouldn't happen that we don't have an editor, but if we don't, we just don't paste.
         // Otherwise, the paste is likely to go somewhere unexpected, wherever a ckeditor last had
         // a selection.
@@ -1570,6 +1575,7 @@ async function pasteImpl(imageAvailable: boolean) {
         ) {
             canvasElementManager.updateAutoHeight();
         }
+        scheduleMarkupUpdateAfterPaste();
     } else if (
         !(document.activeElement instanceof HTMLInputElement) &&
         !(document.activeElement instanceof HTMLTextAreaElement)
@@ -1593,6 +1599,7 @@ async function pasteImpl(imageAvailable: boolean) {
             sel.removeAllRanges();
             sel.addRange(range);
         }
+        scheduleMarkupUpdateAfterPaste();
     }
 }
 
