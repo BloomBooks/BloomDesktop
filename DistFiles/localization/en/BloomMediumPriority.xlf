@@ -122,7 +122,7 @@
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerMore</note>
         <note>Obsolete as of 6.3</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2" translate="no">
+      <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2">
         <source xml:lang="en">This item comes with a “target” to which it must be dragged. If you want to have more items than targets, turn this off for some of them.</source>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2</note>
       </trans-unit>
@@ -451,57 +451,57 @@
         <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
       </trans-unit>
       <!-- Canvas (was Overlay) -->
-      <trans-unit id="EditTab.Toolbox.CanvasTool.BookGrid" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.BookGrid" sil:dynamic="true">
         <source xml:lang="en">A grid of buttons that jump you to books in your app</source>
         <note>ID: EditTab.Toolbox.CanvasTool.BookGrid</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.ClickToSetLinkDest" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ClickToSetLinkDest" sil:dynamic="true">
         <source xml:lang="en">Click to set where the link takes you</source>
         <note>ID: EditTab.Toolbox.CanvasTool.ClickToSetLinkDest</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.DragInstructions" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.DragInstructions" sil:dynamic="true">
         <source xml:lang="en">Drag any of these onto a canvas:</source>
         <note>ID: EditTab.Toolbox.CanvasTool.DragInstructions2</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit" sil:dynamic="true">
         <source xml:lang="en">Image Fit</source>
         <note>ID: EditTab.Toolbox.CanvasTool.ImageFit</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.Margin" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.Margin" sil:dynamic="true">
         <source xml:lang="en">Fit with Margin</source>
         <note>ID: EditTab.Toolbox.CanvasTool.ImageFit.Margin</note>
         <note>Leave a margin around the image within the button.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.FitToEdge" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.FitToEdge" sil:dynamic="true">
         <source xml:lang="en">Fit to Edge</source>
         <note>ID: EditTab.Toolbox.CanvasTool.ImageFit.FitToEdge</note>
         <note>Fill up the button with the image, leaving a margin on the sides as needed.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.Fill" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.Fill" sil:dynamic="true">
         <source xml:lang="en">Fill</source>
         <note>Fill up the button with the image, leaving no margin, cropping if necessary</note>
         <note>ID: EditTab.Toolbox.CanvasTool.ImageFit.Fill</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks" sil:dynamic="true"  translate="no">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks" sil:dynamic="true">
         <source xml:lang="en">Choose books...</source>
         <note>ID: EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks</note>
         <note>Button text for opening the dialog to choose books for a link grid</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.NavButtons" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.NavButtons" sil:dynamic="true">
         <source xml:lang="en">A button that jumps you to a page or book in your app</source>
         <note>ID: EditTab.Toolbox.OverlayTool.NavButtons</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.Navigation" sil:dynamic="true"  translate="no">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Navigation" sil:dynamic="true">
         <source xml:lang="en">Navigation</source>
         <note>ID: EditTab.Toolbox.CanvasTool.Navigation</note>
         <note>Label for an expandable section in the Canvas Tool that contains navigation-related objects (e.g. buttons and book grids) that can be dragged onto a page.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText" sil:dynamic="true">
         <source xml:lang="en">Go Somewhere</source>
         <note>ID: EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText</note>
         <note>Default text for a navigation button</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.SetDest" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.SetDest" sil:dynamic="true">
         <source xml:lang="en">Set Destination</source>
         <note>ID: EditTab.Toolbox.OverlayTool.SetDest</note>
       </trans-unit>
