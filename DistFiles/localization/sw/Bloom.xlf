@@ -4802,6 +4802,11 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="needs-translation">This is disabled because this book is not set up to be full bleed.</target>
         <note>ID: PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.ExcludePrintBleed">
+        <source xml:lang="en">Exclude print bleed around page edges</source>
+        <target xml:lang="sw" state="needs-translation">Exclude print bleed around page edges</target>
+        <note>ID: PublishTab.PdfMaker.ExcludePrintBleed</note>
+      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml" approved="yes">
         <source xml:lang="en">Making PDF from HTML</source>
         <target xml:lang="sw" state="final">Kutengeneza PDF kutoka kwa HTML</target>
