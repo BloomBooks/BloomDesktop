@@ -71,7 +71,6 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                         showSearch={true}
                         // showJson={true} // useful for debugging
                         initialValues={settings || {}}
-                        showAllGroups={true}
                         //themeOverrides={lightTheme}
                         themeOverrides={{
                             // enhance: we'd like to just be passing `lightTheme` but at the moment that seems to clobber everything
