@@ -3563,6 +3563,7 @@
       <trans-unit id="PublishTab.Comic">
         <source xml:lang="en">Comic</source>
         <note>ID: PublishTab.Comic</note>
+        <note>Obsolete as of Bloom 6.3</note>
       </trans-unit>
       <trans-unit id="PublishTab.Common.Publishing">
         <source xml:lang="en">Publishing</source>

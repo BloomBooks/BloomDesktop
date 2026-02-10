@@ -161,24 +161,6 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterBooleanEndpointHandler(
-                "publish/comicEnabled",
-                request => Model.Book.HasComicalElements,
-                null,
-                true
-            );
-            apiHandler.RegisterBooleanEndpointHandler(
-                "publish/comic",
-                request =>
-                    Model.Book.HasComicalElements
-                    && Model.Book.BookInfo.PublishSettings.BloomLibrary.Comic,
-                (request, val) =>
-                {
-                    Model.Book.BookInfo.PublishSettings.BloomLibrary.Comic = val;
-                    Model.Book.BookInfo.Save();
-                },
-                true
-            );
-            apiHandler.RegisterBooleanEndpointHandler(
                 "publish/visuallyImpairedEnabled",
                 request => Model.Book.OurHtmlDom.HasImageDescriptions,
                 null,

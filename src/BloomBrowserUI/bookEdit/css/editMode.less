@@ -177,7 +177,7 @@ body:has(#canvas-element-context-controls:hover) .bloom-page,
     // itself merges into the background. (On a white background, of course, the outline here
     // won't be visible. But then the  bluish one can be seen.)  See BL-14193.
     // A rule in base-page.less suppresses these (along with other borders) for canvas elements
-    // that are have natural borders to make them visible (i.e., comic style is not 'none')
+    // that have natural borders to make them visible (i.e., bubble style is not 'none')
     // The :not(.drag-activity-play *) prevents this from showing up when playing a game (BL-14678).
     .bloom-canvas-element:not([data-bloom-active="true"]):not(
             .drag-activity-play *
@@ -278,7 +278,7 @@ body:has(#canvas-element-context-controls:hover) .bloom-page,
     }
 }
 
-// The editing buttons are hidden when this class is added (currently by motion and comic tools)
+// The editing buttons are hidden when this class is added (currently by motion and canvas tools)
 // (An earlier version required them to be a direct child of the bloom-canvas, so as not to
 // disable them for canvas element images. But now these buttons only occur on background images, which
 // ARE child canvas elements. So we want the disabling there. We use important because the rule that makes
@@ -1242,7 +1242,7 @@ body {
                 }
 
                 img {
-                    // turns the cog purple to match other Comic affordances, without requiring
+                    // turns the cog purple to match other canvas element affordances, without requiring
                     // a different SVG. (Don't do this to the whole button, it messes with
                     // the background too when it's not transparent, e.g., when hovered.)
                     filter: @ComicAffordanceFilter;
