@@ -865,14 +865,19 @@
         <note>BookSettings.FullBleed</note>
       </trans-unit>
       <trans-unit id="BookSettings.FullBleed.Description" sil:dynamic="true">
-        <source xml:lang="en">Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on all page layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
-        <target xml:lang="tg" state="needs-translation">Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on all page layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</target>
+        <source xml:lang="en">Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
+        <target xml:lang="tg" state="needs-translation">Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</target>
         <note>BookSettings.FullBleed.Description</note>
       </trans-unit>
       <trans-unit id="BookSettings.ContentPagesGroupLabel" sil:dynamic="true">
         <source xml:lang="en">Content Pages</source>
         <target xml:lang="tg" state="needs-translation">Content Pages</target>
         <note>BookSettings.ContentPagesGroupLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PrintPublishingGroupLabel" sil:dynamic="true">
+        <source xml:lang="en">Print Publishing</source>
+        <target xml:lang="tg" state="needs-translation">Print Publishing</target>
+        <note>ID: BookSettings.PrintPublishingGroupLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.NormalTextBoxLangsLabel" sil:dynamic="true">
         <source xml:lang="en">Languages to show in normal text boxes</source>
