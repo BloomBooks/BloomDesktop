@@ -623,7 +623,7 @@ export class CanvasElementManager {
             });
         } else {
             // Focus something!
-            // BL-8073: if Comic Tool is open, this 'turnOnCanvasElementEditing()' method will get run.
+            // BL-8073: if Canvas Tool is open, this 'turnOnCanvasElementEditing()' method will get run.
             // If this particular page has no canvas elements, we can actually arrive here with the 'body'
             // as the document's activeElement. So we focus the first visible focusable element
             // we come to.
@@ -4645,7 +4645,7 @@ export class CanvasElementManager {
     // {offsetX}/{offsetY} is the offset in position from the parent to the child elements
     //    (i.e., offsetX = child.left - parent.left)
     //    (remember that positive values of Y are further to the bottom)
-    // This is what the comic tool calls when the user clicks ADD CHILD BUBBLE.
+    // This is what the canvas tool calls when the user clicks ADD CHILD BUBBLE.
     public addChildCanvasElementAndRefreshPage(
         parentElement: HTMLElement,
         offsetX: number,
