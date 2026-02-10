@@ -1559,12 +1559,12 @@
         <target xml:lang="fr" state="final">Image</target>
         <note>ID: EditTab.CustomPage.Picture</note>
       </trans-unit>
-      <trans-unit id="EditTab.CustomPage.Image" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.CustomPage.Image" sil:dynamic="true">
         <source xml:lang="en">Image</source>
         <target xml:lang="fr" state="needs-translation">Image</target>
         <note>ID: EditTab.CustomPage.Image</note>
       </trans-unit>
-      <trans-unit id="EditTab.CustomPage.Canvas" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.CustomPage.Canvas" sil:dynamic="true">
         <source xml:lang="en">Canvas</source>
         <target xml:lang="fr" state="needs-translation">Canvas</target>
         <note>ID: EditTab.CustomPage.Canvas</note>
@@ -6555,9 +6555,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="needs-translation">A page with one language above the image and another below it.</target>
         <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Canvas" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">A page with an empty canvas you can add to.</source>
-        <target xml:lang="fr" state="final">Une page avec une toile vide que vous pouvez exploiter.</target>
+      <trans-unit id="TemplateBooks.PageDescription.Canvas" sil:dynamic="true">
+        <source xml:lang="en">A page with an empty canvas that you can add to.</source>
+        <target xml:lang="fr" state="translated">Une page avec une toile vide que vous pouvez exploiter.</target>
         <note>ID: TemplateBooks.PageDescription.Canvas</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Comprehension Quiz" sil:dynamic="true" approved="yes">
