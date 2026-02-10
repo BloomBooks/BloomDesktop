@@ -4803,6 +4803,11 @@
         <target xml:lang="pt-PT" state="final">Esta opção está desabilitada porque este livro não está configurado para impressão sem margens.</target>
         <note>ID: PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.ExcludePrintBleed">
+        <source xml:lang="en">Exclude print bleed around page edges</source>
+        <target xml:lang="pt-PT" state="needs-translation">Exclude print bleed around page edges</target>
+        <note>ID: PublishTab.PdfMaker.ExcludePrintBleed</note>
+      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml" approved="yes">
         <source xml:lang="en">Making PDF from HTML</source>
         <target xml:lang="pt-PT" state="final">Convertendo arquivo de HTML para PDF</target>
