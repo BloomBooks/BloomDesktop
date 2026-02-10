@@ -4803,6 +4803,11 @@
         <target xml:lang="tl" state="needs-translation">This is disabled because this book is not set up to be full bleed.</target>
         <note>ID: PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.ExcludePrintBleed">
+        <source xml:lang="en">Exclude print bleed around page edges</source>
+        <target xml:lang="tl" state="needs-translation">Exclude print bleed around page edges</target>
+        <note>ID: PublishTab.PdfMaker.ExcludePrintBleed</note>
+      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml">
         <source xml:lang="en">Making PDF from HTML</source>
         <target xml:lang="tl" state="needs-translation">Making PDF from HTML</target>
