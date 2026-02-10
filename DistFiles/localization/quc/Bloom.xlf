@@ -4804,6 +4804,11 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="needs-translation">This is disabled because this book is not set up to be full bleed.</target>
         <note>ID: PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.ExcludePrintBleed">
+        <source xml:lang="en">Exclude print bleed around page edges</source>
+        <target xml:lang="quc" state="needs-translation">Exclude print bleed around page edges</target>
+        <note>ID: PublishTab.PdfMaker.ExcludePrintBleed</note>
+      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml" approved="yes">
         <source xml:lang="en">Making PDF from HTML</source>
         <target xml:lang="quc" state="final">Katajin uq'axexik HMTL pa PDF</target>
