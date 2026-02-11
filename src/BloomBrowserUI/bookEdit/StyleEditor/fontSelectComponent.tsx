@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ThemeProvider } from "@mui/material/styles";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import {
@@ -46,10 +46,15 @@ interface FontSelectProps {
 const FontSelectComponent: React.FunctionComponent<FontSelectProps> = (
     props,
 ) => {
-    const getFontDataFromName = (fontName: string) => {
-        if (!props.fontMetadata) return undefined;
-        return props.fontMetadata.find((f) => f.name === fontName);
-    };
+    const getFontDataFromName = useCallback(
+        (fontName: string) => {
+            if (!props.fontMetadata) return undefined;
+            return props.fontMetadata.find(
+                (f) => f.name.toLowerCase() === fontName.toLowerCase(),
+            );
+        },
+        [props.fontMetadata],
+    );
 
     const [fontChoice, setFontChoice] = useState<IFontMetaData | undefined>(
         undefined,
@@ -59,7 +64,7 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = (
     useEffect(() => {
         const fontData = getFontDataFromName(props.currentFontName);
         setFontChoice(fontData);
-    }, [props.fontMetadata]);
+    }, [getFontDataFromName, props.currentFontName]);
 
     // The references to "popover" from here down to 'isPopoverOpen' refer to the font information pane
     // that shows when hovering over the suitability icon near the end of the FontDisplayBar,
@@ -84,8 +89,13 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = (
     const isPopoverOpen = Boolean(popoverAnchorElement);
 
     const getMenuItemsFromFontMetaData = (): JSX.Element[] => {
-        if (!props.fontMetadata) return Array(<React.Fragment />);
-        return props.fontMetadata.map((font, index) => {
+        if (!props.fontMetadata) return [];
+
+        const selectedFontName = fontChoice
+            ? fontChoice.name
+            : props.currentFontName;
+
+        const items = props.fontMetadata.map((font, index) => {
             return (
                 <MenuItem
                     key={index}
@@ -98,13 +108,42 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = (
                 >
                     <FontDisplayBar
                         fontMetadata={font}
-                        inDropdownList={font !== fontChoice}
-                        isPopoverOpen
+                        inDropdownList={font.name !== selectedFontName}
+                        isPopoverOpen={isPopoverOpen}
                         onHover={handlePopoverOpen}
                     />
                 </MenuItem>
             );
         });
+
+        const currentFontMissing =
+            getFontDataFromName(props.currentFontName) === undefined;
+        if (currentFontMissing) {
+            const missingFont: IFontMetaData = {
+                name: props.currentFontName,
+                determinedSuitability: "unknown",
+            };
+            items.unshift(
+                <MenuItem
+                    key="missing-font"
+                    value={props.currentFontName}
+                    dense
+                    css={css`
+                        padding-top: 0 !important;
+                        padding-bottom: 0 !important;
+                    `}
+                >
+                    <FontDisplayBar
+                        fontMetadata={missingFont}
+                        inDropdownList={false}
+                        isPopoverOpen={false}
+                        isMissingFont
+                    />
+                </MenuItem>,
+            );
+        }
+
+        return items;
     };
 
     const handleFontChange = (event: SelectChangeEvent) => {
