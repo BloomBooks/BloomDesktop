@@ -162,28 +162,8 @@ export default class StyleEditor {
     private xmatterMode: boolean; // true if we are in xmatter (and shouldn't change fixed style names)
     private textColorTitle: string = "Text Color";
 
-    private fontMetadataPromise: Promise<IFontMetaData[]> | undefined;
-
-    private static readonly kMissingFontButtonId = "missingFontButton";
-    private static readonly kCharactersTabI18nKey =
-        "EditTab.FormatDialog.CharactersTab";
-
     constructor(supportFilesRoot: string) {
         this._supportFilesRoot = supportFilesRoot;
-    }
-
-    private getFontMetadataAsync(): Promise<IFontMetaData[]> {
-        if (!this.fontMetadataPromise) {
-            this.fontMetadataPromise = axios
-                .get("/bloom/api/fonts/metadata")
-                .then((result) => result.data as IFontMetaData[])
-                .catch((error) => {
-                    this.fontMetadataPromise = undefined;
-                    throw error;
-                });
-        }
-
-        return this.fontMetadataPromise;
     }
 
     public static GetStyleClassFromElement(target: HTMLElement): string | null {
@@ -967,66 +947,11 @@ export default class StyleEditor {
     }
 
     private getFontNameFromTextBox(textBox: JQuery): string {
-        const fontFamily = (textBox.css("font-family") || "").trim();
-        const firstFont = fontFamily.split(",")[0].trim();
-        if (!firstFont) {
-            return "";
+        let fontName = textBox.css("font-family");
+        if (fontName[0] === "'" || fontName[0] === '"') {
+            fontName = fontName.substring(1, fontName.length - 1); // strip off quotes
         }
-
-        if (
-            (firstFont.startsWith('"') && firstFont.endsWith('"')) ||
-            (firstFont.startsWith("'") && firstFont.endsWith("'"))
-        ) {
-            return firstFont.substring(1, firstFont.length - 1);
-        }
-
-        return firstFont;
-    }
-
-    private updateMissingFontButton(targetBox: HTMLElement): void {
-        const missingButton = document.getElementById(
-            StyleEditor.kMissingFontButtonId,
-        );
-        if (!missingButton) {
-            return;
-        }
-
-        // Hide until we know for sure.
-        missingButton.style.display = "none";
-
-        const fontName = this.getFontNameFromTextBox($(targetBox));
-        if (!fontName) {
-            return;
-        }
-
-        this.getFontMetadataAsync()
-            .then((metadata) => {
-                if (this._previousBox !== targetBox) {
-                    return;
-                }
-
-                const isMissing =
-                    metadata.find(
-                        (f) => f.name.toLowerCase() === fontName.toLowerCase(),
-                    ) === undefined;
-
-                if (!isMissing) {
-                    missingButton.style.display = "none";
-                    return;
-                }
-
-                const tooltip = theOneLocalizationManager.getText(
-                    "EditTab.FormatDialog.MissingFontIndicatorToolTip",
-                    'The font "{0}" is not available on this computer. Another font is being used instead.',
-                    fontName,
-                );
-                missingButton.setAttribute("title", tooltip);
-                missingButton.style.display = "block";
-            })
-            .catch((error) => {
-                // If we can't get metadata, we can't determine missing fonts.
-                console.error("Failed to get font metadata", error);
-            });
+        return fontName;
     }
 
     // Returns an object giving the current selection for each format control.
@@ -1170,7 +1095,6 @@ export default class StyleEditor {
             // This element is inside a text-over-picture element.
             fmtButton.style.top = bottom / scale + "px";
             fmtButton.style.left = -5 - this.fmtButtonWidth + "px";
-            fmtButton.style.right = "unset";
         } else {
             fmtButton.style.top = bottom / scale - this.fmtButtonHeight + "px";
             const tg = fmtButton.closest(".bloom-translationGroup");
@@ -1191,11 +1115,7 @@ export default class StyleEditor {
             }
 
             fmtButton.style.left = leftPx + "px";
-            fmtButton.style.right = "unset";
         }
-
-        // The missing-font indicator is a child of #formatButton and is positioned
-        // by CSS relative to it, so we don't need to compute a separate position here.
     }
 
     private updateFontControl(
@@ -1265,9 +1185,6 @@ export default class StyleEditor {
             return;
         }
         const oldCog = document.getElementById("formatButton");
-        const oldMissingFontButton = document.getElementById(
-            StyleEditor.kMissingFontButtonId,
-        );
         if (oldCog && this._previousBox == targetBox) {
             return;
         }
@@ -1276,9 +1193,6 @@ export default class StyleEditor {
         }
         if (oldCog) {
             oldCog.remove();
-        }
-        if (oldMissingFontButton) {
-            oldMissingFontButton.remove();
         }
 
         const styleName = StyleEditor.GetStyleNameForElement(targetBox);
@@ -1308,16 +1222,7 @@ export default class StyleEditor {
                 `/img/cogGrey.svg"></div>`,
         );
 
-        $("#formatButton").append(
-            '<div id="' +
-                StyleEditor.kMissingFontButtonId +
-                '" contenteditable="false" class="bloom-ui" style="display:none"><img contenteditable="false" height="20" width="20" src="' +
-                this._supportFilesRoot +
-                `/img/MissingFontWarning.svg" alt=""></div>`,
-        );
-
         this.AdjustFormatButton(targetBox);
-        this.updateMissingFontButton(targetBox);
         if (this._observer) {
             this._observer.disconnect();
         }
@@ -1347,15 +1252,6 @@ export default class StyleEditor {
         formatButton?.addEventListener("click", () =>
             this.runFormatDialog(targetBox),
         );
-
-        const missingFontButton = document.getElementById(
-            StyleEditor.kMissingFontButtonId,
-        );
-        missingFontButton?.addEventListener("click", (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            this.runFormatDialog(targetBox, StyleEditor.kCharactersTabI18nKey);
-        });
     }
     changePadding(padding: string) {
         if (this.ignoreControlChanges) {
@@ -1923,11 +1819,6 @@ export default class StyleEditor {
         if (rule != null) {
             rule.style.setProperty("font-family", fontname, "important");
             this.cleanupAfterStyleChange();
-            window.setTimeout(() => {
-                if (this.boxBeingEdited) {
-                    this.updateMissingFontButton(this.boxBeingEdited);
-                }
-            }, 0);
         }
     }
 
@@ -2402,20 +2293,7 @@ export default class StyleEditor {
         return formatDialog.length > 0;
     }
 
-    private selectFormatDialogTab(initialTabI18nKey: string | undefined): void {
-        if (!initialTabI18nKey) {
-            return;
-        }
-
-        window.setTimeout(() => {
-            const tabHeader = $(
-                `#format-toolbar h2.tab[data-i18n='${initialTabI18nKey}']`,
-            );
-            tabHeader.trigger("click");
-        }, 0);
-    }
-
-    public runFormatDialog(targetBox: HTMLElement, initialTabI18nKey?: string) {
+    public runFormatDialog(targetBox: HTMLElement) {
         // BL-2476: Readers made from BloomPacks should have the formatting dialog disabled
         const suppress = $(document).find('meta[name="lockFormatting"]');
         const noFormatChange =
@@ -2626,7 +2504,6 @@ export default class StyleEditor {
 
                         this.selectButtons(current);
                         new WebFXTabPane($("#tabRoot").get(0), false);
-                        this.selectFormatDialogTab(initialTabI18nKey);
                     }
                     // #formatButton doesn't always exist in text-on-picture
                     // divs, so we need a fallback that will exist in those cases.

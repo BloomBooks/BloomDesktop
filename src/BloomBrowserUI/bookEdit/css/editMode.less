@@ -224,35 +224,15 @@ body:has(#canvas-element-context-controls:hover) .bloom-page,
         height: 20px;
         width: 20px;
         z-index: @formatButtonZIndex;
-        overflow: visible;
-
-        > img {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 20px;
-            width: 20px;
-        }
-
-        &:hover {
-            color: black;
-        }
-    }
-
-    #formatButton #missingFontButton {
-        position: absolute;
-        bottom: 0;
-        left: 22px; // 20px icon + 2px gap
-        height: 20px;
-        width: 20px;
-        cursor: pointer;
 
         img {
             position: absolute;
             bottom: 0;
             left: 0;
-            height: 20px;
-            width: 20px;
+        }
+
+        &:hover {
+            color: black;
         }
     }
 
@@ -896,7 +876,7 @@ div.textWholePage ul {
 
 #formatButton {
     visibility: hidden;
-    overflow: visible;
+    overflow: hidden;
     position: absolute;
 }
 
@@ -1287,10 +1267,6 @@ body {
 .bloom-canvas-element {
     #formatButton {
         display: none; // Enhance: maybe don't create at all?
-    }
-
-    #missingFontButton {
-        display: none !important;
     }
 }
 
