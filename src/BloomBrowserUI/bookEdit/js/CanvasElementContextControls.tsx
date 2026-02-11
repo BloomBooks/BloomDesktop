@@ -534,15 +534,16 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     {hasImage && (
                         <Fragment>
                             {
-                                // Want an attention-grabbing version of set metadata if there is none.)
-                                missingMetadata && !isNavButton && (
-                                    <ButtonWithTooltip
-                                        tipL10nKey="EditTab.Image.EditMetadataOverlay"
-                                        icon={MissingMetadataIcon}
-                                        disabled={!hasRealImage(img)}
-                                        onClick={() => runMetadataDialog()}
-                                    />
-                                )
+                                // Want an attention-grabbing version of set metadata if there is none and image exists.
+                                missingMetadata &&
+                                    !isNavButton &&
+                                    hasRealImage(img) && (
+                                        <ButtonWithTooltip
+                                            tipL10nKey="EditTab.Image.EditMetadataOverlay"
+                                            icon={MissingMetadataIcon}
+                                            onClick={() => runMetadataDialog()}
+                                        />
+                                    )
                             }
                             {
                                 // Choose image is only a LIKELY choice if we don't yet have one.
@@ -1145,6 +1146,10 @@ function addImageMenuOptions(
             icon: <CopyIcon css={getMenuIconCss()} />,
             disabled: !realImagePresent,
         },
+        // If the image doesn't exist, we still show the menu item for editing metadata,
+        // but disable it.  Menu items are often disabled instead of hidden when they
+        // don't make sense.  We did this with the Copy Image menu item above as well,
+        // and it happens with other menu items for possibly other reasons.
         {
             l10nId: "EditTab.Image.EditMetadataOverlay",
             english: "Set Image Information...",
