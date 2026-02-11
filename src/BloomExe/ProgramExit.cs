@@ -21,6 +21,14 @@ static class ProgramExit
         Application.Exit();
     }
 
+    // Use this if we haven't properly started up, just need to do minimal cleanup and exit.
+    // This should not be used if there might be something that needs saving.
+    public static void ExitFromStartup()
+    {
+        EssentialCleanup();
+        Environment.Exit(1);
+    }
+
     private static void EnsureBloomReallyQuits()
     {
         if (_forceShutdownThread != null)
@@ -40,32 +48,7 @@ static class ProgramExit
             // since we're about to force a shut down. And I don't think there's
             // anything that will be left in a bad state that the user might need
             // to deal with.
-            try
-            {
-                Logger.WriteEvent("Forcing Bloom to close after normal shutdown timed out.");
-            }
-            catch (Exception)
-            {
-                // We might have already shut down the logger. If we can't log it, too bad.
-            }
-
-            // These things MUST be done so that Bloom can be started again without problems.
-            // They should be very fast.
-            try
-            {
-                BloomServer._theOneInstance?.CloseListener();
-            }
-            catch (Exception)
-            {
-                // Anything that goes wrong here shouldn't prevent either trying
-                // the next cleanup or exiting.
-            }
-
-            try
-            {
-                Program.ReleaseBloomToken();
-            }
-            catch (Exception) { }
+            EssentialCleanup();
 
             Environment.Exit(1);
             // If that doesn't prove drastic enough, an even more forceful option is
@@ -74,5 +57,35 @@ static class ProgramExit
         _forceShutdownThread.Priority = ThreadPriority.Highest;
         _forceShutdownThread.IsBackground = true; // so it won't block shutdown
         _forceShutdownThread.Start();
+    }
+
+    private static void EssentialCleanup()
+    {
+        try
+        {
+            Logger.WriteEvent("Forcing Bloom to close after normal shutdown timed out.");
+        }
+        catch (Exception)
+        {
+            // We might have already shut down the logger. If we can't log it, too bad.
+        }
+
+        // These things MUST be done so that Bloom can be started again without problems.
+        // They should be very fast.
+        try
+        {
+            BloomServer._theOneInstance?.CloseListener();
+        }
+        catch (Exception)
+        {
+            // Anything that goes wrong here shouldn't prevent either trying
+            // the next cleanup or exiting.
+        }
+
+        try
+        {
+            Program.ReleaseBloomToken();
+        }
+        catch (Exception) { }
     }
 }

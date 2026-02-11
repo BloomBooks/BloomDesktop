@@ -13,6 +13,7 @@ using Bloom.Utils;
 using Bloom.web;
 using L10NSharp;
 using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom.TeamCollection
 {
@@ -631,11 +632,22 @@ namespace Bloom.TeamCollection
             return string.Join(" ", localList);
         }
 
-        private static void CopyRepoCollectionFilesTo(string destFolder, string repoFolder)
+        // Returns true if it was able to do the copy. If false is returned, the user has been notified of the problem.
+        // Some callers may simply exit the program at that point.
+        private static bool CopyRepoCollectionFilesTo(string destFolder, string repoFolder)
         {
             var collectionZipPath = GetRepoProjectFilesZipPath(repoFolder);
             if (!RobustFile.Exists(collectionZipPath))
-                return;
+            {
+                // For now, TC messages are not being localized.
+                var msg = string.Format(
+                    "This Team Collection is missing \"{0}\". See https://docs.bloomlibrary.org/team-collections-problems/",
+                    collectionZipPath
+                );
+                ErrorReport.NotifyUserOfProblem(msg);
+                return false;
+            }
+
             try
             {
                 RobustZip.ExtractFolderFromZip(
@@ -654,7 +666,10 @@ namespace Bloom.TeamCollection
                     "Bloom could not unpack the collection files in your Team Collection",
                     exception: e
                 );
+                return false;
             }
+
+            return true;
         }
 
         private static void SyncColorPaletteFileWithRepo(
@@ -1395,7 +1410,8 @@ namespace Bloom.TeamCollection
         {
             Directory.CreateDirectory(localCollectionFolder);
             CreateTeamCollectionLinkFile(localCollectionFolder, repoFolder);
-            CopyRepoCollectionFilesTo(localCollectionFolder, repoFolder);
+            if (!CopyRepoCollectionFilesTo(localCollectionFolder, repoFolder))
+                ProgramExit.ExitFromStartup();
             return CollectionPath(localCollectionFolder);
         }
 
