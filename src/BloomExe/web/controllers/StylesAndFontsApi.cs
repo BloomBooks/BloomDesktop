@@ -385,7 +385,13 @@ namespace Bloom.web.controllers
                         continue; // no font-family specified in this rule
                     var styleAndFont = new StyleAndFont();
                     styleAndFont.style = match.Groups[1].Value;
-                    styleAndFont.languageTag = match.Groups[4]?.Value ?? "*";
+                    // Note: an earlier version of this code apparently attempted to set this to
+                    // asterisk if there was no match for Groups[4], but wrongly expected it to be
+                    // null when there was no match. In fact, it is an empty string when there is
+                    // no match, so I (JT) fixed it. However, it's remotely possible that something
+                    // somewhere depended on the previous mistake.
+                    var langTag = match.Groups[4].Value;
+                    styleAndFont.languageTag = string.IsNullOrEmpty(langTag) ? "*" : langTag;
                     styleAndFont.fontName = match
                         .Groups[7]
                         .Value.Replace("!important", "")
