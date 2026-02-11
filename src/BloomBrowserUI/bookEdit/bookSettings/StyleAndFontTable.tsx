@@ -8,7 +8,7 @@ import TableRow from "@mui/material/TableRow";
 import { Span } from "../../react_components/l10nComponents";
 import { postString, useApiObject } from "../../utils/bloomApi";
 import Link from "@mui/material/Link";
-import { lightTheme } from "../../bloomMaterialUITheme";
+import { kErrorColor, lightTheme } from "../../bloomMaterialUITheme";
 import { ThemeProvider } from "@mui/material/styles";
 import { default as Warning } from "@mui/icons-material/Warning";
 import { IFontMetaData } from "../StyleEditor/fontSelectComponent";
@@ -83,10 +83,6 @@ const StyleAndFontRow: React.FunctionComponent<{
     row: IStyleAndFont;
     closeDialogAndJumpToPage: (pageId: string) => void;
 }> = ({ key, row, closeDialogAndJumpToPage }) => {
-    const fontNotInstalledMessage = useL10n(
-        "Font is not installed on this computer",
-        "BookSettings.Fonts.FontNotInstalled",
-    );
     const fontMetaData: IFontMetaData | undefined = useFontMetaData(
         row.fontName,
     );
@@ -100,10 +96,7 @@ const StyleAndFontRow: React.FunctionComponent<{
                 {fontMetaData ? (
                     <FontInfoFromMetadata fontMetaData={fontMetaData} />
                 ) : (
-                    <FontInfo
-                        name={row.fontName}
-                        warningMessage={fontNotInstalledMessage}
-                    />
+                    <MissingFontInfo fontName={row.fontName} />
                 )}
             </TableCell>
             <TableCell sx={{ border: 1 }}>
@@ -124,8 +117,46 @@ export function useFontMetaData(fontName: string): IFontMetaData | undefined {
         "fonts/metadata",
         [],
     );
-    return fontMetaData.find((font) => font.name === fontName);
+    const fontNameLc = (fontName ?? "").toLowerCase();
+    return fontMetaData.find((font) => font.name.toLowerCase() === fontNameLc);
 }
+
+const MissingFontInfo: React.FunctionComponent<{
+    fontName: string;
+}> = (props) => {
+    const missingFontTooltip = useL10n(
+        'The font "{0}" is not available on this computer. Another font is being used instead.',
+        "EditTab.FormatDialog.MissingFontIndicatorToolTip",
+        undefined,
+        props.fontName,
+    );
+
+    return (
+        <div
+            title={missingFontTooltip}
+            css={css`
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 6px;
+            `}
+        >
+            <div
+                css={css`
+                    color: ${kErrorColor};
+                `}
+            >
+                {props.fontName}
+            </div>
+            <Warning
+                sx={{
+                    color: (theme) => theme.palette.error.main,
+                    fontSize: "1.1rem",
+                }}
+            />
+        </div>
+    );
+};
 
 // Displays font info based on font metadata.
 // Includes warnings and additional copyright/license info if needed.
