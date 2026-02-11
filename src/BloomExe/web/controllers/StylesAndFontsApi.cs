@@ -96,13 +96,21 @@ namespace Bloom.web.controllers
                         );
                         if (modifiedForLang != null)
                             styleAndFont.fontName = modifiedForLang.fontName;
-                        else if (
-                            modified.Length == 1
-                            && !string.IsNullOrEmpty(modified[0].fontName)
-                        )
-                            styleAndFont.fontName = modified[0].fontName;
                         else
-                            styleAndFont.fontName = langToFont[tag];
+                        {
+                            // I don't think we normally have user-modified styles that apply to all languages,
+                            // but if we do, it will apply to any language that doesn't have its own user-modified style.
+                            // This replaces earlier code that checked for only having one entry in modified,
+                            // but that could wrongly suggest that a font was in use when in fact we just had
+                            // one language-specific override, possibly for a language not even used in the book.
+                            var modifiedForAll = modified.FirstOrDefault(s =>
+                                s.languageTag == "*" && !string.IsNullOrEmpty(s.fontName)
+                            );
+                            if (modifiedForAll != null)
+                                styleAndFont.fontName = modifiedForAll.fontName;
+                            else
+                                styleAndFont.fontName = langToFont[tag];
+                        }
                         styleAndFont.pageId = stylesInBook[style].id;
                         styleAndFont.pageDescription = stylesInBook[style].description;
                         stylesAndFonts.Add(styleAndFont);
