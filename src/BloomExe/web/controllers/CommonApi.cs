@@ -284,6 +284,9 @@ namespace Bloom.web.controllers
         /// the program if the user changes the settings.  Starting the dialog after a very
         /// brief delay, and being sure in WorkSpaceView to Invoke it on the UI thread,
         /// allows the full functionality without any crashes or annoying yellow dialog boxes.
+        ///
+        /// It would seem simpler to use an Application.Idle handler here, but that just
+        /// doesn't work for some reason. The assigned handler is never called.
         /// </remarks>
         private void HandleShowSettingsDialog(ApiRequest request)
         {
