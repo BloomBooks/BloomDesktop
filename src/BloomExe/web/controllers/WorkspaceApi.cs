@@ -65,12 +65,22 @@ namespace Bloom.web.controllers
 
         private void HandleShowLegacySettingsDialog(ApiRequest request)
         {
-            WorkspaceView.OpenLegacySettingsDialog();
+            // We used to launch the dialog directly from here, but that caused problems because
+            // request was synchronous and wouldn't complete until the dialog was closed.  So now
+            // we return success immediately, and then launch the dialog when the application is idle.
+            // This avoids tying up a thread waiting for the dialog to close, and also avoids having
+            // that thread lock the API processing.  (BL-15858)
+            Application.Idle += ShowLegacySettingsDialog;
 
             // When the fully react dialog is ready, we'll do this instead:
             // _webSocketServer.LaunchDialog("CollectionSettingsDialog");
-
             request.PostSucceeded();
+        }
+
+        private void ShowLegacySettingsDialog(object sender, EventArgs e)
+        {
+            Application.Idle -= ShowLegacySettingsDialog;
+            WorkspaceView.OpenLegacySettingsDialog();
         }
 
         private void HandleGetUiLanguageLabel(ApiRequest request)
