@@ -907,7 +907,30 @@ namespace Bloom.Workspace
 
         private static void ApplyUiLanguageChange(string langTag)
         {
-            LocalizationManagerWinforms.SetUILanguage(langTag, true);
+            try
+            {
+                LocalizationManagerWinforms.SetUILanguage(langTag, true);
+            }
+            catch (Exception e)
+            {
+                // When reapplying localizations, L10NSharp can sometimes try to update controls that have
+                // already been disposed (e.g. controls from dialogs that have been closed).
+                // Changing the UI language should not crash Bloom; fall back to setting the language
+                // without reapplying localizations.
+                Logger.WriteError(
+                    "Ignoring Exception while reapplying localizations after changing UI language.",
+                    e
+                );
+                try
+                {
+                    LocalizationManagerWinforms.SetUILanguage(langTag, false);
+                }
+                catch (Exception e2)
+                {
+                    Logger.WriteError("Failed to set UI language after Exception.", e2);
+                    return; // Don't save since we didn't successfully change the language.
+                }
+            }
             // TODO-WV2: Can we set the browser language in WV2?  Do we need to?
             Settings.Default.UserInterfaceLanguage = langTag;
             Settings.Default.UserInterfaceLanguageSetExplicitly = true;
