@@ -1650,6 +1650,15 @@ namespace BloomTests.Book
                 Path.GetDirectoryName(storage.FolderPath),
                 "Should be in same collection folder"
             );
+
+            // Verify the duplicate folder name follows the pattern: "theBook - Copy-<8 hex chars>"
+            var duplicateFolderName = Path.GetFileName(folderForDuplicate);
+            Assert.That(
+                duplicateFolderName,
+                Does.Match("^theBook - Copy-[a-f0-9]{8}$"),
+                "Duplicate folder name should be 'theBook - Copy-' followed by 8 hex characters from instance ID"
+            );
+
             var metaPath = Path.Combine(folderForDuplicate, "meta.json");
             var meta = DynamicJson.Parse(File.ReadAllText(metaPath));
             Assert.AreNotEqual(
@@ -1660,6 +1669,47 @@ namespace BloomTests.Book
             Assert.AreEqual("thing", meta.some, "rest of meta.json should be preserved");
             Assert.AreEqual("stuff", meta.other, "rest of meta.json should be preserved");
             Guid.Parse(meta.bookInstanceId); // will throw if we didn't actually get a guid
+        }
+
+        [Test]
+        public void Duplicate_OfAPreviousDuplicate_RemovesOldCopySuffix()
+        {
+            var storage = GetInitialStorage();
+
+            // First duplication
+            var firstDuplicate = storage.Duplicate();
+            var firstDuplicateName = Path.GetFileName(firstDuplicate);
+
+            // Verify first duplicate has the expected name pattern
+            Assert.That(
+                firstDuplicateName,
+                Does.Match("^theBook - Copy-[a-f0-9]{8}$"),
+                "First duplicate should follow naming pattern"
+            );
+
+            // Now duplicate the duplicate
+            var duplicateStorage = new BookStorage(
+                firstDuplicate,
+                _fileLocator,
+                new BookRenamedEvent(),
+                new CollectionSettings()
+            );
+            var secondDuplicate = duplicateStorage.Duplicate();
+            var secondDuplicateName = Path.GetFileName(secondDuplicate);
+
+            // Verify second duplicate also uses base name "theBook", not "theBook - Copy-abc12345"
+            Assert.That(
+                secondDuplicateName,
+                Does.Match("^theBook - Copy-[a-f0-9]{8}$"),
+                "Second duplicate should also use base name 'theBook' with new unique suffix"
+            );
+
+            // And they should be different from each other
+            Assert.AreNotEqual(
+                firstDuplicateName,
+                secondDuplicateName,
+                "Each duplicate should have a unique suffix"
+            );
         }
 
         [Test]
