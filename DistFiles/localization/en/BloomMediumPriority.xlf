@@ -578,11 +578,13 @@
         <source xml:lang="en">This is disabled because this book does not have any canvas elements that qualify as “comic-like”, such as speech bubbles.</source>
         <note>ID: PublishTab.Feature.Comic.None</note>
         <note>This is a tooltip.</note>
+        <note>Obsolete as of Bloom 6.3</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.Possible">
         <source xml:lang="en">Select this if you want to list this book as a Comic Book. This only affects how the book is categorized, it does not affect the content of the book.</source>
         <note>ID: PublishTab.Feature.Comic.Possible</note>
         <note>This is a tooltip.</note>
+        <note>Obsolete as of Bloom 6.3</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Motion.None">
         <source xml:lang="en">This is disabled because this book does not have any pages with motion enabled.</source>

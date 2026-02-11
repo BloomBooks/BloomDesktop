@@ -5481,7 +5481,6 @@ namespace Bloom.Book
             UpdateSimpleDomChoiceFeature();
             UpdateDragGameFeature();
             UpdateMotionFeature();
-            UpdateComicFeature();
             UpdateWidgetFeature();
 
             BookInfo.Save();
@@ -5602,17 +5601,6 @@ namespace Bloom.Book
             BookInfo.MetaData.Feature_Widget = Storage
                 .GetActivityFolderNamesReferencedInBook()
                 .Any();
-        }
-
-        /// <summary>
-        /// Updates the feature in bookInfo.metadata to indicate whether the book contains comic pages.
-        /// These are now created with the Canvas Tool, but the feature retains the old name.
-        /// (But, we will only report it as a Comic book if the user didn't turn it off in the publish settings.)
-        /// </summary>
-        private void UpdateComicFeature()
-        {
-            BookInfo.MetaData.Feature_Comic =
-                HasComicalElements && BookInfo.PublishSettings.BloomLibrary.Comic;
         }
 
         /// <summary>

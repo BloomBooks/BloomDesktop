@@ -18,7 +18,6 @@ import { GameIcon } from "../../react_components/icons/GameIcon";
 import { TalkingBookIcon } from "../../react_components/icons/TalkingBookIcon";
 import { SignLanguageIcon } from "../../react_components/icons/SignLanguageIcon";
 import { MotionIcon } from "../../react_components/icons/MotionIcon";
-import { ComicIcon } from "../../react_components/icons/ComicIcon";
 import { VisuallyImpairedIcon } from "../../react_components/icons/VisuallyImpairedIcon";
 import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
@@ -53,8 +52,6 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
     const widgetFeatureMessage =
         useGetFeatureAvailabilityMessage(widgetFeatureStatus);
     const mayPublishWidgets = widgetFeatureStatus?.enabled ?? false;
-
-    const [comicEnabled] = useApiBoolean("publish/comicEnabled", false);
     const [visuallyImpairedEnabled] = useApiBoolean(
         "publish/visuallyImpairedEnabled",
         false,
@@ -205,16 +202,6 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
     else if (hasWidgets && !mayPublishWidgets)
         gamesTooltip = widgetFeatureMessage;
 
-    const noComicTooltip = useL10n(
-        "This is disabled because this book does not have any canvas elements that qualify as “comic-like”, such as speech bubbles.",
-        "PublishTab.Feature.Comic.None",
-    );
-    const hasComicTooltip = useL10n(
-        "Select this if you want to list this book as a Comic Book. This only affects how the book is categorized, it does not affect the content of the book.",
-        "PublishTab.Feature.Comic.Possible",
-    );
-    const comicTooltip = comicEnabled ? hasComicTooltip : noComicTooltip;
-
     const noMotionTooltip = useL10n(
         "This is disabled because this book does not have any pages with motion enabled.",
         "PublishTab.Feature.Motion.None",
@@ -302,27 +289,6 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                         checked={hasGamesUserMayPublish}
                         onCheckChanged={() => {}}
                         hideBox={true}
-                    />
-                </BloomTooltip>
-                <BloomTooltip key={"comic-tooltip"} tip={comicTooltip}>
-                    <ApiCheckbox
-                        css={css`
-                            .MuiCheckbox-Root {
-                                padding-top: 0;
-                            }
-                        `}
-                        label="Comic"
-                        l10nKey="PublishTab.Comic"
-                        apiEndpoint="publish/comic"
-                        icon={
-                            <ComicIcon
-                                css={css`
-                                    align-self: center;
-                                `}
-                                color={kBloomBlue}
-                            />
-                        }
-                        disabled={!comicEnabled}
                     />
                 </BloomTooltip>
                 <BloomTooltip key={"motion-tooltip"} tip={motionTooltip}>
