@@ -771,7 +771,14 @@ div.bloom-templateMode {
     // We need this three times to beat a rule that gives the focusd editable box a blue outline
     // And for buttons we need to beat the rule on .bloom-canvas-element[data-bloom-active="true"] div.bloom-editable
     .overflow.overflow.overflow {
-        color: @OverflowColor !important;
+        // Since bloom-editables are made up of paragraphs, this has much the same visible effect
+        // as putting the red border on the bloom-editable itself, but changing the color of the
+        // bloom-editable can get picked up by the style editor and cause a newly-defined style
+        // to unexpectedly be red.
+        p {
+            color: @OverflowColor !important;
+        }
+
         outline: solid thin @OverflowColor !important; //rather than border so it doesn't affect layout
 
         p:empty:after {
