@@ -69,7 +69,7 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler(
                 "common/showSettingsDialog",
                 HandleShowSettingsDialog,
-                false
+                true
             ); // Common
             apiHandler.RegisterEndpointHandler("common/logger/writeEvent", HandleLogEvent, false);
             apiHandler.RegisterEndpointHandler(
@@ -275,39 +275,32 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
+        /// The tab which should display first when the settings dialog opens.
+        /// </summary>
+        private string SettingsDialogTab;
+
+        /// <summary>
         /// Handle showing the settings dialog, opening it to the desired tab.
         /// </summary>
         /// <remarks>
         /// This is here instead of CollectionSettingsApi because we have easier access to
-        /// showing the dialog via the WorkspaceView object.  But it's a bit tricky getting
-        /// the dialog to display, and allowing the dialog to display help or to restart
-        /// the program if the user changes the settings.  Starting the dialog after a very
-        /// brief delay, and being sure in WorkSpaceView to Invoke it on the UI thread,
-        /// allows the full functionality without any crashes or annoying yellow dialog boxes.
+        /// showing the dialog via the WorkspaceView object.  Starting the dialog on the idle
+        /// loop allows the full functionality without locking up the API.  It does prevent
+        /// any other use of the idle loop until the dialog finishes, which is probably a
+        /// good thing.
         /// </remarks>
         private void HandleShowSettingsDialog(ApiRequest request)
         {
-            lock (request)
-            {
-                var tab = request.Parameters["tab"];
-                _timerForOpenSettingsDialog = new System.Threading.Timer(
-                    OpenSettingsDialog,
-                    tab,
-                    100,
-                    System.Threading.Timeout.Infinite
-                );
-                request.PostSucceeded();
-            }
+            SettingsDialogTab = request.Parameters["tab"];
+            Application.Idle += ShowSettingsDialogOnIdle;
+            request.PostSucceeded();
         }
 
-        System.Threading.Timer _timerForOpenSettingsDialog;
-
-        private void OpenSettingsDialog(Object state)
+        private void ShowSettingsDialogOnIdle(object sender, EventArgs e)
         {
-            _timerForOpenSettingsDialog.Dispose();
-            _timerForOpenSettingsDialog = null;
-            var tab = state as String;
-            WorkspaceView.OpenLegacySettingsDialog(tab);
+            Application.Idle -= ShowSettingsDialogOnIdle;
+            WorkspaceView.OpenLegacySettingsDialog(SettingsDialogTab);
+            SettingsDialogTab = null;
         }
 
         private void HandleLogEvent(ApiRequest request)
