@@ -1330,19 +1330,22 @@ namespace BloomTests.Book
         public void CreateBookOnDiskFromTemplate_CreationFailsForSomeReason_DoesNotLeaveIncompleteFolderAround()
         {
             var source = BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book");
-            var goodPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
-            SIL.IO.RobustIO.DeleteDirectoryAndContents(goodPath); //remove that good one. We just did it to get an idea of what the path is
+
+            // Get the count of folders before attempting the failed creation
+            var folderCountBeforeFailure = Directory.GetDirectories(_projectFolder.Path).Length;
 
             //now fail while making a book
-
             _starter.OnNextRunSimulateFailureMakingBook = true;
             Assert.Throws<ApplicationException>(() =>
                 _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path)
             );
 
-            Assert.IsFalse(
-                Directory.Exists(goodPath),
-                "Should not have left the folder there, after a failed book creation"
+            // Verify no new folders were created
+            var folderCountAfterFailure = Directory.GetDirectories(_projectFolder.Path).Length;
+            Assert.AreEqual(
+                folderCountBeforeFailure,
+                folderCountAfterFailure,
+                "Should not have left any folders after a failed book creation"
             );
         }
 

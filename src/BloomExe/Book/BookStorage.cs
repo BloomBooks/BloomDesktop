@@ -3448,9 +3448,10 @@ namespace Bloom.Book
             // get the book name of the current directory
             var baseName = Path.GetFileName(FolderPath);
 
-            // see if this already has a name like "foo - Copy-abc12345"
+            // see if this already has a name like "foo - Copy-abc12345" or "foo - Copy 3"
+            // (The second is obsolete, but might still be encountered.)
             // If it does, remove that suffix so we get back to the base name
-            var regexToRemoveCopySuffix = new Regex(@"^(.+)(\s-\sCopy)(-[0-9a-f]+)?$");
+            var regexToRemoveCopySuffix = new Regex(@"^(.+)(\s-\sCopy)(-[0-9a-f]+|\s[0-9]+)?$");
             var match = regexToRemoveCopySuffix.Match(baseName);
 
             if (match.Success)
@@ -3533,9 +3534,9 @@ namespace Bloom.Book
             // Use first 8 characters of the instance ID (without hyphens) as the unique suffix
             // This provides good uniqueness while keeping names readable
             var instanceSuffix = instanceId.Replace("-", "").Substring(0, 8).ToLowerInvariant();
-            
+
             var proposedName = baseName + separator + instanceSuffix;
-            
+
             // Respect the maximum filename length
             // Calculate how much space we need for separator + instanceSuffix
             var suffixLength = separator.Length + instanceSuffix.Length;
