@@ -100,7 +100,7 @@ Live tests:
 - [x] (B5) Extract selection UI + focus/control frame into `CanvasElementSelectionUi.ts` (Checkpoint 5)
 - [ ] (B6) Extract pointer interactions (drag/resize/crop) into `CanvasElementPointerInteractions.ts` (Checkpoint 6)
 - [x] (B6) Extract pointer interactions + handle drag (drag/select/context menu in `CanvasElementPointerInteractions.ts`; resize/crop/side-handle/move-crop in `CanvasElementHandleDragInteractions.ts`) (Checkpoint 6)
-- [ ] (B7) Extract alternates + game/draggable integration modules (Checkpoint 7)
+- [x] (B7) Extract alternates + game/draggable integration modules (expand `CanvasElementAlternates.ts`; add `CanvasElementDraggableIntegration.ts`) (Checkpoint 7)
 
 ### Phase C — Finish
 - [ ] (C1) Ensure [src/BloomBrowserUI/bookEdit/js/CanvasElementManager.ts](../CanvasElementManager.ts) ≤ 2000 lines
@@ -111,4 +111,4 @@ Live tests:
 ## Line counts
 - [x] Starting: CanvasElementManager.ts 7610 lines
 - [ ] Target: CanvasElementManager.ts ≤ 2000 lines
-- [x] Current: CanvasElementManager.ts 4331 lines
+- [x] Current: CanvasElementManager.ts 4120 lines

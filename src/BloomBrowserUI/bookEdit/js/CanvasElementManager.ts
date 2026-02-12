@@ -35,7 +35,6 @@ import {
     HandleImageError,
     isPlaceHolderImage,
 } from "./bloomImages";
-import { adjustTarget } from "../toolbox/games/GameTool";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
 import { renderCanvasElementContextControls } from "./CanvasElementContextControls";
@@ -54,11 +53,6 @@ import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
 import { needsToBeKeptSameSize } from "../toolbox/games/gameUtilities";
 import { CanvasElementType } from "../toolbox/canvas/canvasElementTypes";
-import {
-    getAllDraggables,
-    isDraggable,
-    kDraggableIdAttribute,
-} from "../toolbox/canvas/canvasElementDraggables";
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
@@ -81,7 +75,14 @@ import {
     getScrollAmount as getScrollAmountFromGeometry,
     extractNumber as extractNumberFromGeometry,
 } from "./canvasElementManager/CanvasElementGeometry";
-import { saveStateOfCanvasElementAsCurrentLangAlternate } from "./canvasElementManager/CanvasElementAlternates";
+import {
+    adjustCanvasElementsForCurrentLanguage as adjustCanvasElementsForCurrentLanguageFromAlternates,
+    adjustCanvasElementAlternates as adjustCanvasElementAlternatesFromAlternates,
+    adjustCenterOfTextBox as adjustCenterOfTextBoxFromAlternates,
+    getLabeledNumberInPx as getLabeledNumberInPxFromAlternates,
+    saveCurrentCanvasElementStateAsCurrentLangAlternate as saveCurrentCanvasElementStateAsCurrentLangAlternateFromAlternates,
+    saveStateOfCanvasElementAsCurrentLangAlternate,
+} from "./canvasElementManager/CanvasElementAlternates";
 import {
     getBloomCanvas as getBloomCanvasFromPositioning,
     getChildPositionFromParentCanvasElement as getChildPositionFromParentCanvasElementFromPositioning,
@@ -97,6 +98,7 @@ import { CanvasElementDuplication } from "./canvasElementManager/CanvasElementDu
 import { CanvasElementSelectionUi } from "./canvasElementManager/CanvasElementSelectionUi";
 import { CanvasElementPointerInteractions } from "./canvasElementManager/CanvasElementPointerInteractions";
 import { CanvasElementHandleDragInteractions } from "./canvasElementManager/CanvasElementHandleDragInteractions";
+import { CanvasElementDraggableIntegration } from "./canvasElementManager/CanvasElementDraggableIntegration";
 
 const kComicalGeneratedClass: string = "comical-generated";
 
@@ -140,6 +142,7 @@ export class CanvasElementManager {
     private selectionUi: CanvasElementSelectionUi;
     private pointerInteractions: CanvasElementPointerInteractions;
     private handleDragInteractions: CanvasElementHandleDragInteractions;
+    private draggableIntegration: CanvasElementDraggableIntegration;
 
     // Used by stopMoving() to clear cursor style after a drag.
     private lastMoveContainer: HTMLElement;
@@ -147,6 +150,10 @@ export class CanvasElementManager {
     public constructor() {
         this.snapProvider = new CanvasSnapProvider();
         this.guideProvider = new CanvasGuideProvider();
+        this.draggableIntegration = new CanvasElementDraggableIntegration({
+            getAllBloomCanvasesOnPage:
+                this.getAllBloomCanvasesOnPage.bind(this),
+        });
         this.factories = new CanvasElementFactories({
             snapProvider: this.snapProvider,
             getBloomCanvasFromMouse: this.getBloomCanvasFromMouse.bind(this),
@@ -865,72 +872,7 @@ export class CanvasElementManager {
     // which is continuing to use the term bubble, so I think it's appropriate to still use that
     // name here.)
     adjustCanvasElementsForCurrentLanguage(container: HTMLElement) {
-        const canvasElementLang = GetSettings().languageForNewTextBoxes;
-        Array.from(
-            container.getElementsByClassName(kCanvasElementClass),
-        ).forEach((canvasElement) => {
-            const editable = Array.from(
-                canvasElement.getElementsByClassName("bloom-editable"),
-            ).find((e) => e.getAttribute("lang") === canvasElementLang);
-            if (editable) {
-                const alternatesString = editable.getAttribute(
-                    "data-bubble-alternate",
-                );
-                if (alternatesString) {
-                    const alternate = JSON.parse(
-                        alternatesString.replace(/`/g, '"'),
-                    ) as IAlternate;
-                    canvasElement.setAttribute("style", alternate.style);
-                    const bubbleData =
-                        canvasElement.getAttribute("data-bubble");
-                    if (bubbleData) {
-                        const bubbleDataObj = JSON.parse(
-                            bubbleData.replace(/`/g, '"'),
-                        );
-                        bubbleDataObj.tails = alternate.tails;
-                        const newBubbleData = JSON.stringify(
-                            bubbleDataObj,
-                        ).replace(/"/g, "`");
-                        canvasElement.setAttribute(
-                            "data-bubble",
-                            newBubbleData,
-                        );
-                    }
-                }
-            }
-
-            // If we don't find a matching bloom-editable, or there is no alternate attribute
-            // there, that's fine; just let the current state of the data-bubble serve as a
-            // default for the new language.
-        });
-        // If we have an existing alternate SVG for this language, remove it.
-        // (It will effectively be replaced by the new active comical-generated svg
-        // made when we save the page.)
-        const altSvg = Array.from(
-            container.getElementsByClassName("comical-alternate"),
-        ).find((svg) => svg.getAttribute("data-lang") === canvasElementLang);
-        if (altSvg) {
-            container.removeChild(altSvg);
-        }
-
-        const currentSvg =
-            container.getElementsByClassName("comical-generated")[0];
-        if (currentSvg) {
-            const currentSvgLang = currentSvg.getAttribute("data-lang");
-            if (currentSvgLang && currentSvgLang !== canvasElementLang) {
-                // it was generated for some other language. Save it for possible use with
-                // that language in Bloom Player.
-                // We need to remove this class so Comical won't delete it.
-                currentSvg.classList.remove("comical-generated");
-                // and add this one to help bloom-player (and the code above) find it
-                currentSvg.classList.add("comical-alternate");
-                // Make sure nothing sees it unless it gets reactivated by bloom-player.
-                // We do this instead of having a CSS rule to hide comical-alternate so
-                // alternates will be hidden even in a book being shown by an old version
-                // of bloom-player.
-                (currentSvg as HTMLElement).style.display = "none";
-            }
-        }
+        adjustCanvasElementsForCurrentLanguageFromAlternates(container);
     }
 
     public static saveStateOfCanvasElementAsCurrentLangAlternate(
@@ -949,19 +891,9 @@ export class CanvasElementManager {
     saveCurrentCanvasElementStateAsCurrentLangAlternate(
         container: HTMLElement,
     ) {
-        const canvasElementLang = GetSettings().languageForNewTextBoxes;
-        Array.from(
-            container.getElementsByClassName(kCanvasElementClass),
-        ).forEach((top: HTMLElement) =>
-            CanvasElementManager.saveStateOfCanvasElementAsCurrentLangAlternate(
-                top,
-                canvasElementLang,
-            ),
+        saveCurrentCanvasElementStateAsCurrentLangAlternateFromAlternates(
+            container,
         );
-        // Record that the current comical-generated SVG is for this language.
-        const currentSvg =
-            container.getElementsByClassName("comical-generated")[0];
-        currentSvg?.setAttribute("data-lang", canvasElementLang);
     }
 
     // "container" refers to a .bloom-canvas-element div, which holds one (and only one) of the
@@ -2356,38 +2288,7 @@ export class CanvasElementManager {
     // since the former controls which one is treated as being clicked when there is overlap,
     // while the latter determines which is on top.
     public adjustCanvasElementOrdering = () => {
-        const bloomCanvases = this.getAllBloomCanvasesOnPage();
-        bloomCanvases.forEach((bloomCanvas) => {
-            const canvasElements = Array.from(
-                bloomCanvas.getElementsByClassName(kCanvasElementClass),
-            );
-            let maxLevel = Math.max(
-                ...canvasElements.map(
-                    (b) => Bubble.getBubbleSpec(b as HTMLElement).level ?? 0,
-                ),
-            );
-            const draggables = canvasElements.filter((b) => isDraggable(b));
-            if (
-                draggables.length === 0 ||
-                canvasElements.indexOf(draggables[0]) ===
-                    canvasElements.length - draggables.length
-            ) {
-                return; // already all at end (or none to move)
-            }
-            // Move them to the end, keeping them in order.
-            draggables.forEach((draggable) => {
-                draggable.parentElement?.appendChild(draggable);
-                const bubble = new Bubble(draggable as HTMLElement);
-                // This would need to get fancier if draggables came in groups with the same level.
-                // As it is, we just want their levels to be in the same order as their DOM order
-                // (relative to each other and the other canvas elements) so getBubbleHit() will return
-                // the one that appears on top when they are stacked.
-                bubble.getBubbleSpec().level = maxLevel + 1;
-                bubble.persistBubbleSpec();
-                maxLevel++;
-            });
-            Comical.update(bloomCanvas);
-        });
+        this.draggableIntegration.adjustCanvasElementOrdering();
     };
 
     // Adds a new canvas element as a child of the specified {parentElement}
@@ -2832,16 +2733,7 @@ export class CanvasElementManager {
     }
 
     private adjustTarget(draggable: HTMLElement | undefined) {
-        if (!draggable) {
-            // I think this is just to remove the arrow if any.
-            adjustTarget(document.firstElementChild as HTMLElement, undefined);
-            return;
-        }
-        const targetId = draggable.getAttribute(kDraggableIdAttribute);
-        const target = targetId
-            ? document.querySelector(`[data-target-of="${targetId}"]`)
-            : undefined;
-        adjustTarget(draggable, target as HTMLElement);
+        this.draggableIntegration.adjustTarget(draggable);
     }
 
     // This used to be called from a right-click context menu, but now it only gets called
@@ -3076,27 +2968,7 @@ export class CanvasElementManager {
     };
 
     public removeDetachedTargets() {
-        const detachedTargets = Array.from(
-            document.querySelectorAll("[data-target-of]"),
-        );
-        const canvasElements = getAllDraggables(document);
-        canvasElements.forEach((canvasElement) => {
-            const draggableId = canvasElement.getAttribute(
-                kDraggableIdAttribute,
-            );
-            if (draggableId) {
-                const index = detachedTargets.findIndex(
-                    (target: Element) =>
-                        target.getAttribute("data-target-of") === draggableId,
-                );
-                if (index > -1) {
-                    detachedTargets.splice(index, 1); // not detached if draggable points to it
-                }
-            }
-        });
-        detachedTargets.forEach((target) => {
-            target.remove();
-        });
+        this.draggableIntegration.removeDetachedTargets();
     }
 
     // on ANY mouse up, if comic editing was turned off by an origami click, turn it back on.
@@ -4177,83 +4049,15 @@ export class CanvasElementManager {
         newLeft: number,
         newTop: number,
     ) {
-        const canvasElementLang = GetSettings().languageForNewTextBoxes;
-        Array.from(
-            canvasElement.getElementsByClassName("bloom-editable"),
-        ).forEach((editable) => {
-            const lang = editable.getAttribute("lang");
-            if (lang === canvasElementLang) {
-                // We want to update this lang's alternate to the current data we already figured out.
-                const alternate = {
-                    style: canvasElement.getAttribute("style"),
-                    tails: Bubble.getBubbleSpec(canvasElement).tails,
-                };
-                editable.setAttribute(
-                    "data-bubble-alternate",
-                    JSON.stringify(alternate).replace(/"/g, "`"),
-                );
-            } else {
-                const alternatesString = editable.getAttribute(
-                    "data-bubble-alternate",
-                );
-                if (alternatesString) {
-                    const alternate = JSON.parse(
-                        alternatesString.replace(/`/g, '"'),
-                    ) as IAlternate;
-                    const style = alternate.style;
-                    const width = CanvasElementManager.getLabeledNumberInPx(
-                        "width",
-                        style,
-                    );
-                    const height = CanvasElementManager.getLabeledNumberInPx(
-                        "height",
-                        style,
-                    );
-                    let newStyle = CanvasElementManager.adjustCenterOfTextBox(
-                        "left",
-                        style,
-                        scale,
-                        oldLeft,
-                        newLeft,
-                        width,
-                    );
-                    newStyle = CanvasElementManager.adjustCenterOfTextBox(
-                        "top",
-                        newStyle,
-                        scale,
-                        oldTop,
-                        newTop,
-                        height,
-                    );
-
-                    const tails = alternate.tails;
-                    tails.forEach(
-                        (tail: {
-                            tipX: number;
-                            tipY: number;
-                            midpointX: number;
-                            midpointY: number;
-                        }) => {
-                            tail.tipX = newLeft + (tail.tipX - oldLeft) * scale;
-                            tail.tipY = newTop + (tail.tipY - oldTop) * scale;
-                            tail.midpointX =
-                                newLeft + (tail.midpointX - oldLeft) * scale;
-                            tail.midpointY =
-                                newTop + (tail.midpointY - oldTop) * scale;
-                        },
-                    );
-                    alternate.style = newStyle;
-                    alternate.tails = tails;
-                    editable.setAttribute(
-                        "data-bubble-alternate",
-                        JSON.stringify(alternate).replace(/"/g, "`"),
-                    );
-                }
-            }
-        });
+        adjustCanvasElementAlternatesFromAlternates(
+            canvasElement,
+            scale,
+            oldLeft,
+            oldTop,
+            newLeft,
+            newTop,
+        );
     }
-
-    private static numberPxRegex = ": ?(-?\\d+.?\\d*)px";
 
     // Find in 'style' the label followed by a number (e.g., left).
     // Let oldRange be the size of the object in that direction, e.g., width.
@@ -4269,26 +4073,20 @@ export class CanvasElementManager {
         newC: number,
         oldRange: number,
     ): string {
-        const old = CanvasElementManager.getLabeledNumberInPx(label, style);
-        const center = old + oldRange / 2;
-        const newCenter = newC + (center - oldC) * scale;
-        const newVal = newCenter - oldRange / 2;
-        return style.replace(
-            new RegExp(label + this.numberPxRegex),
-            label + ": " + newVal + "px",
+        return adjustCenterOfTextBoxFromAlternates(
+            label,
+            style,
+            scale,
+            oldC,
+            newC,
+            oldRange,
         );
     }
 
     // Typical source is something like "left: 224px; top: 79.6px; width: 66px; height: 30px;"
     // We want to pass "top" and get 79.6.
     public static getLabeledNumberInPx(label: string, source: string): number {
-        const match = source.match(
-            new RegExp(label + CanvasElementManager.numberPxRegex),
-        );
-        if (match) {
-            return parseFloat(match[1]);
-        }
-        return 9;
+        return getLabeledNumberInPxFromAlternates(label, source);
     }
 }
 
@@ -4300,13 +4098,6 @@ export let theOneCanvasElementManager: CanvasElementManager;
 export function initializeCanvasElementManager() {
     if (theOneCanvasElementManager) return;
     theOneCanvasElementManager = new CanvasElementManager();
-}
-
-// This is a definition of the object we store as JSON in data-bubble-alternate.
-// Tails has further structure but CanvasElementManager doesn't care about it.
-interface IAlternate {
-    style: string; // What to put in the style attr of the canvas element; determines size and position
-    tails: object[]; // The tails of the data-bubble; determines placing of tail.
 }
 
 export {
