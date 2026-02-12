@@ -1298,6 +1298,13 @@ namespace Bloom.Book
                 return; // shouldn't happen, but paranoia sometimes pays off, especially in running tests.
             var nodes = dataDiv
                 .SafeSelectNodes("(.//div|.//span)[@id and contains(@class,'audio-sentence')]")
+                // We expect the customCover to have copies of other stuff in the data div.
+                .Where(x =>
+                    !(
+                        x is SafeXmlElement e
+                        && e.ParentWithAttributeValue("data-book", "customCover") != null
+                    )
+                )
                 .ToList();
             var duplicateAudioIdsFixed = 0;
             foreach (var audioElement in nodes)
@@ -2484,6 +2491,10 @@ namespace Bloom.Book
             // Various things, especially publication, don't work with unknown page sizes.
             Layout layout = Layout.FromDomAndChoices(bookDOM, Layout.A5Portrait, fileLocator);
             var oldIds = new List<string>();
+            var frontCover =
+                RawDom.SelectSingleNode("/html/body/div[contains(@class, 'outsideFrontCover')]")
+                as SafeXmlElement;
+            var frontCoverWasCustom = frontCover?.HasClass("bloom-custom-cover") ?? false;
             XMatterHelper.RemoveExistingXMatter(bookDOM, oldIds);
             // this says, if you can't figure out the page size, use the one we got before we removed the xmatter...
             // still requiring it to be a valid layout.
@@ -2496,7 +2507,13 @@ namespace Bloom.Book
                 oldIds,
                 CoverIsImage
             );
-
+            frontCover =
+                RawDom.SelectSingleNode("/html/body/div[contains(@class, 'outsideFrontCover')]")
+                as SafeXmlElement;
+            if (frontCoverWasCustom)
+            {
+                frontCover?.AddClass("bloom-custom-cover");
+            }
             var dataBookLangs = bookDOM.GatherDataBookLanguages();
             TranslationGroupManager.PrepareDataBookTranslationGroups(bookDOM.RawDom, dataBookLangs);
 
@@ -4688,7 +4705,8 @@ namespace Bloom.Book
                 BookStorage.ShowAccessDeniedErrorReport(e);
                 return; // Probably not much point to saving if copying the image metadata didn't fully complete successfully
             }
-            Save();
+            // This function is always called on a publication we are creating
+            Save(true);
         }
 
         public Metadata GetLicenseMetadata()
@@ -4733,7 +4751,7 @@ namespace Bloom.Book
             }
         }
 
-        public void Save()
+        public void Save(bool forPublication = false)
         {
             // If you add something here, consider whether it is needed in SaveForPageChanged().
             // I believe all the things currently here before the actual Save are not needed
@@ -4757,10 +4775,18 @@ namespace Bloom.Book
 
             RemoveObsoleteSoundAttributes(OurHtmlDom);
             RemoveVideoWarnings();
-            // Note that at this point _bookData has already been updated with the edited page's data, if any.
-            // This will take priority over other data it finds in the book, even earlier in the book
-            // than the edited page.
-            _bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo); //will update the title if needed
+            if (!forPublication)
+            {
+                // Note that at this point _bookData has already been updated with the edited page's data, if any.
+                // This will take priority over other data it finds in the book, even earlier in the book
+                // than the edited page.
+                // We don't need to do this if we're saving a temporary DOM for making a publication,
+                // since we already did it once when first creating the temporary book, and doing it
+                // again might wipe out intentional changes (e.g., where the src of coverImage has been
+                // changed for cropping).
+                _bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo); //will update the title if needed
+            }
+
             if (OkToChangeFileAndFolderName)
             {
                 Storage.UpdateBookFileAndFolderName(CollectionSettings); //which will update the file name if needed
@@ -5172,19 +5198,63 @@ namespace Bloom.Book
             coverImgElt = null;
             if (Storage == null)
                 return null; // can happen in tests
-            // This first branch covers the currently obsolete approach to images using background-image.
-            // In that approach the data-book attribute is on the imageContainer.
-            // Note that we want the coverImage from a page, instead of the dataDiv because the former
-            // "doesn't have the data in the form that GetImageElementUrl can handle."
-            coverImgElt = Storage
-                .Dom.SafeSelectNodes("//div[not(@id='bloomDataDiv')]/div[@data-book='coverImage']")
+            var outsideFrontCover = Storage
+                .Dom.SafeSelectNodes(
+                    "//div[contains(concat(' ', normalize-space(@class), ' '), ' outsideFrontCover ')]"
+                )
                 .Cast<SafeXmlElement>()
                 .FirstOrDefault();
-            // If that fails, we look for an img with the relevant attribute. Happily this doesn't conflict with the data-div.
+
+            if (outsideFrontCover == null)
+                return null;
+
+            var isCustomCover = outsideFrontCover
+                .GetAttribute("class")
+                .Contains("bloom-custom-cover");
+
+            var coverSearchRoot = outsideFrontCover;
+            if (isCustomCover)
+            {
+                coverSearchRoot = outsideFrontCover
+                    .SafeSelectNodes(
+                        ".//div[contains(concat(' ', normalize-space(@class), ' '), ' bloom-customMarginBox ')]"
+                    )
+                    .Cast<SafeXmlElement>()
+                    .FirstOrDefault();
+
+                if (coverSearchRoot == null)
+                    coverSearchRoot = outsideFrontCover;
+            }
+
+            // Prefer an img in the outsideFrontCover. This is the current expected shape.
+            coverImgElt = coverSearchRoot
+                .SafeSelectNodes(".//img[@data-book='coverImage']")
+                .Cast<SafeXmlElement>()
+                .FirstOrDefault();
+
+            // Fall back to the obsolete background-image approach where data-book is on a div.
             if (coverImgElt == null)
             {
-                coverImgElt = Storage
-                    .Dom.SafeSelectNodes("//img[@data-book='coverImage']")
+                coverImgElt = coverSearchRoot
+                    .SafeSelectNodes(".//div[@data-book='coverImage']")
+                    .Cast<SafeXmlElement>()
+                    .FirstOrDefault();
+            }
+
+            if (coverImgElt == null && isCustomCover)
+            {
+                coverImgElt = coverSearchRoot
+                    .SafeSelectNodes(".//img")
+                    .Cast<SafeXmlElement>()
+                    .FirstOrDefault();
+            }
+
+            if (coverImgElt == null && isCustomCover)
+            {
+                coverImgElt = coverSearchRoot
+                    .SafeSelectNodes(
+                        ".//div[contains(translate(@style, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'background-image')]"
+                    )
                     .Cast<SafeXmlElement>()
                     .FirstOrDefault();
             }

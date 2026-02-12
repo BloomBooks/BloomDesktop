@@ -67,6 +67,7 @@ import { setupBookLinkGrids } from "./linkGrid";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
 import { handleUndo } from "../editViewFrame";
+import { setupCoverMenu } from "../toolbox/canvas/customCover";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -478,6 +479,45 @@ function hasOrigami(container: HTMLElement) {
     return container.getElementsByClassName("split-pane-component").length > 0;
 }
 
+function prepareSourceAndHintBubbles(container: HTMLElement): {
+    divsThatHaveSourceBubbles: HTMLElement[];
+    bubbleDivs: any[];
+} {
+    // Copy source texts out to their own div, where we can make a bubble with tabs out of them
+    // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too.
+    const divsThatHaveSourceBubbles: HTMLElement[] = [];
+    const bubbleDivs: any[] = [];
+    if ($(container).find(".bloom-preventSourceBubbles").length === 0) {
+        $(container)
+            .find("*.bloom-translationGroup")
+            .not(".bloom-readOnlyInTranslationMode")
+            .each(function () {
+                if ($(this).find("textarea, div").length > 1) {
+                    const bubble =
+                        BloomSourceBubbles.ProduceSourceBubbles(this);
+                    if (bubble.length !== 0) {
+                        divsThatHaveSourceBubbles.push(this);
+                        bubbleDivs.push(bubble);
+                    }
+                }
+            });
+    }
+
+    // NB: this should be after the ProduceSourceBubbles(), because hint-bubbles are lower priority
+    // and should not show if we already have a source bubble. (Eventually we may make the hint part
+    // of the source bubble when there is one...Bl-4295.) This would happen with the Book Title, which
+    // would have both when there are source languages to show.
+    BloomHintBubbles.addHintBubbles(
+        container,
+        divsThatHaveSourceBubbles,
+        bubbleDivs,
+    );
+
+    PlaceholderProvider.addPlaceholders(container);
+
+    return { divsThatHaveSourceBubbles, bubbleDivs };
+}
+
 // Originally, all this code was in document.load and the selectors were acting
 // on all elements (not bound by the container).  I added the container bound so we
 // can add new elements (such as during layout mode) and call this on only newly added elements.
@@ -727,38 +767,8 @@ export function SetupElements(
 
     setupBookLinkGrids(container);
 
-    // Copy source texts out to their own div, where we can make a bubble with tabs out of them
-    // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
-    const divsThatHaveSourceBubbles: HTMLElement[] = [];
-    const bubbleDivs: any[] = [];
-    if ($(container).find(".bloom-preventSourceBubbles").length === 0) {
-        $(container)
-            .find("*.bloom-translationGroup")
-            .not(".bloom-readOnlyInTranslationMode")
-            .each(function () {
-                if ($(this).find("textarea, div").length > 1) {
-                    const bubble =
-                        BloomSourceBubbles.ProduceSourceBubbles(this);
-                    if (bubble.length !== 0) {
-                        divsThatHaveSourceBubbles.push(this);
-                        bubbleDivs.push(bubble);
-                    }
-                }
-            });
-    }
-
-    //NB: this should be after the ProduceSourceBubbles(), because hint-bubbles are lower
-    // priority, and should not show if we already have a source bubble.
-    // (Eventually we may make the hint part of the source bubble when there is one...Bl-4295.)
-    // This would happen with the Book Title, which would have both
-    // when there are source languages to show
-    BloomHintBubbles.addHintBubbles(
-        container,
-        divsThatHaveSourceBubbles,
-        bubbleDivs,
-    );
-
-    PlaceholderProvider.addPlaceholders(container);
+    const { divsThatHaveSourceBubbles, bubbleDivs } =
+        prepareSourceAndHintBubbles(container);
 
     // We seem to need a delay to get a reliable result in BloomSourceBubbles.MakeSourceBubblesIntoQtips()
     // as it calls BloomSourceBubbles.CreateAndShowQtipBubbleFromDiv(), which ends by calling
@@ -766,12 +776,7 @@ export function SetupElements(
     // For getting focus set reliably, it seems best to do this whole loop inside one delay, rather than
     // have separate delays invoked each time through the loop.
     setTimeout(() => {
-        for (let i = 0; i < bubbleDivs.length; i++) {
-            BloomSourceBubbles.MakeSourceBubblesIntoQtips(
-                divsThatHaveSourceBubbles[i],
-                bubbleDivs[i],
-            );
-        }
+        makeSourceBubblesIntoQtips(bubbleDivs, divsThatHaveSourceBubbles);
         BloomSourceBubbles.setupSizeChangedHandling(divsThatHaveSourceBubbles);
         if (theOneCanvasElementManager.isCanvasElementEditingOn) {
             // If we saved the page with an indication that a particular element should be
@@ -935,6 +940,27 @@ export function SetupElements(
     ConstrainContentsOfPageLabel(container);
 }
 
+function makeSourceBubblesIntoQtips(
+    bubbleDivs: any[],
+    divsThatHaveSourceBubbles: HTMLElement[],
+) {
+    for (let i = 0; i < bubbleDivs.length; i++) {
+        BloomSourceBubbles.MakeSourceBubblesIntoQtips(
+            divsThatHaveSourceBubbles[i],
+            bubbleDivs[i],
+        );
+    }
+}
+
+export function recomputeSourceBubblesForPage(container: HTMLElement) {
+    const { divsThatHaveSourceBubbles, bubbleDivs } =
+        prepareSourceAndHintBubbles(container);
+    setTimeout(() => {
+        makeSourceBubblesIntoQtips(bubbleDivs, divsThatHaveSourceBubbles);
+        BloomSourceBubbles.setupSizeChangedHandling(divsThatHaveSourceBubbles);
+    }, 100);
+}
+
 // This function sets up a rule to display a prompt following the placeholder we insert for a missing
 // "originalTitle" element. It is displayed using CSS :after so we don't have to modify the DOM to
 // make it appear, which would risk having it show up in published books. We insert the CSS dynamically
@@ -1029,6 +1055,7 @@ function OneTimeSetup() {
     setupOrigami();
     hookupLinkHandler();
     setupDragActivityTabControl();
+    setupCoverMenu();
 }
 
 interface String {
@@ -1043,10 +1070,14 @@ function isTextSelected(): boolean {
 
 let reportedTextSelected = isTextSelected();
 
+let inactiveMarginBox: HTMLElement | undefined;
+
 // ---------------------------------------------------------------------------------
 // called inside document ready function
 // ---------------------------------------------------------------------------------
 export function bootstrap() {
+    hideInactiveMarginBox();
+
     bloomQtipUtils.setQtipZindex();
 
     $.fn.reverse = function (...args) {
@@ -1275,6 +1306,8 @@ function requestPageContentInternal() {
         // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports().
         getToolboxBundleExports()?.removeToolboxMarkup();
         removeEditingDebris(); // Enhance this makes a change when better it would only changed the
+        restoreInactiveMarginBox();
+
         const content = getBodyContentForSavePage();
         const userStylesheet = userStylesheetContent();
         postString(
@@ -1300,7 +1333,57 @@ function requestPageContentInternal() {
         );
     }
 }
+export function hideInactiveMarginBox() {
+    // If we have two margin boxes and are only showing one, it simplifies things to remove the inactive one.
+    // Things that search the whole document won't unintentionally find things there,
+    // nor modify them in unwanted ways because they aren't visible (and hence have zero size, etc).
+    // We will put the inactive one back unchanged when we save the page.
+    const customMarginBox = document.getElementsByClassName(
+        "bloom-customMarginBox",
+    )[0] as HTMLElement | undefined;
+    if (customMarginBox) {
+        const page = document.getElementsByClassName(
+            "bloom-page",
+        )[0] as HTMLElement;
+        if (page.classList.contains("bloom-custom-cover")) {
+            inactiveMarginBox = Array.from(
+                customMarginBox.parentElement!.getElementsByClassName(
+                    "marginBox",
+                ),
+            ).find(
+                (mb) => !mb.classList.contains("bloom-customMarginBox"),
+            ) as HTMLElement;
+        } else {
+            inactiveMarginBox = customMarginBox;
+        }
+        // There should always be an inactive margin box, and if there is it will
+        // certainly have a parent, but if somehow there isn't we don't need to crash.
+        inactiveMarginBox?.parentElement?.removeChild(inactiveMarginBox);
+    }
+}
 
+export function restoreInactiveMarginBox(): HTMLElement | undefined {
+    if (!inactiveMarginBox) return undefined;
+    const marginBox = document.getElementsByClassName(
+        "marginBox",
+    )[0] as HTMLElement;
+    // I'm not sure whether it matters to keep them in the expected order,
+    // but it doesn't cost much and removes one possible source of confusion.
+    if (marginBox.classList.contains("bloom-customMarginBox")) {
+        // put the inactive one back before it
+        marginBox.parentElement!.insertBefore(inactiveMarginBox, marginBox);
+    } else {
+        // put the inactive one back after it
+        marginBox.parentElement!.insertBefore(
+            inactiveMarginBox,
+            marginBox.nextSibling,
+        );
+    }
+    // Clear the variable so we don't accidentally put it back twice if something goes wrong and we call this again.
+    const result = inactiveMarginBox;
+    inactiveMarginBox = undefined;
+    return result;
+}
 // Caution: We don't want this to become an async method because we don't want
 // any other event handlers running between cleaning up the page and
 // getting the content to save. (Or think hard before changing that.)

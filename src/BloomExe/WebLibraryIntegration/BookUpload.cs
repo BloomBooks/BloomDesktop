@@ -884,6 +884,9 @@ namespace Bloom.WebLibraryIntegration
                 PublishHelper.RemoveUnpublishableContent(page);
             PublishHelper.RemoveUnpublishableBookData(copiedBook.RawDom);
             PublishHelper.RemoveUnpublishableBookInfo(copiedBook.BookInfo);
+            // Don't pass forPublication true. Technically this is a copy being
+            // made for publication, but we're publishing it in a form that can
+            // be used for continued editing, so don't want any shortcuts.
             copiedBook.Save();
             copiedBook.UpdateSupportFiles();
             book = copiedBook;
