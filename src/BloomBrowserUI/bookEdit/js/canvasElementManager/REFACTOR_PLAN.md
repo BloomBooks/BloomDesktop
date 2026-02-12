@@ -3,10 +3,10 @@
 Context: [src/BloomBrowserUI/bookEdit/js/CanvasElementManager.ts](../CanvasElementManager.ts) is ~7,600 lines and mixes multiple subsystems (creation, selection UI, pointer interactions, duplication, clipboard, alternates, game integration).
 
 ## Rules of engagement
-- [ ] Prefer cohesive subsystem extraction over “random helpers”.
-- [ ] Preserve existing behavior and public surface area.
-- [ ] Keep toolbox/page-iframe bundling boundaries safe (avoid accidentally importing page bundle into toolbox bundle).
-- [ ] Validate at each checkpoint with live UI tests using `bloom-canvas-tool-testing` skill guidance.
+- [x] Prefer cohesive subsystem extraction over “random helpers”.
+- [x] Preserve existing behavior and public surface area.
+- [x] Keep toolbox/page-iframe bundling boundaries safe (avoid accidentally importing page bundle into toolbox bundle).
+- [x] Validate at each checkpoint with live UI tests using `bloom-canvas-tool-testing` skill guidance.
 
 After each checkpoint, create a git commit with a description explaining what you did.
 
@@ -61,11 +61,11 @@ Live tests:
 - [ ] Switch between two elements; toolbox controls update.
 
 ### Checkpoint 5 — After extracting selection UI controller
-- [ ] Verify focus/tab/zoom-change hacks still prevent unwanted selection jumps
-- [ ] Verify context menu and dialogs do not cause accidental active-element changes
+- [x] Verify focus/tab/zoom-change hacks still prevent unwanted selection jumps
+- [x] Verify context menu and dialogs do not cause accidental active-element changes
 
 Live tests:
-- [ ] Select element, open context menu ("..."); open a dialog; close it; verify selection remains stable.
+- [x] Select element, open context menu ("..."); open a dialog; close it; verify selection remains stable.
 
 ### Checkpoint 6 — After extracting pointer interactions controller
 - [ ] Drag move with snapping and shift-axis lock
@@ -97,7 +97,7 @@ Live tests:
 - [x] (B2) Extract clipboard paste into `CanvasElementClipboard.ts` (Checkpoint 2)
 - [x] (B3) Extract duplication + cloning into `CanvasElementDuplication.ts` (+ `CanvasElementAudioDuplication.ts`) (Checkpoint 3)
 - [x] (B4) Toolbox bundling safety: switch toolbox imports to `import type` + move shared types into dependency-light module (Checkpoint 4)
-- [ ] (B5) Extract selection UI + focus/control frame into `CanvasElementSelectionUi.ts` (Checkpoint 5)
+- [x] (B5) Extract selection UI + focus/control frame into `CanvasElementSelectionUi.ts` (Checkpoint 5)
 - [ ] (B6) Extract pointer interactions (drag/resize/crop) into `CanvasElementPointerInteractions.ts` (Checkpoint 6)
 - [ ] (B7) Extract alternates + game/draggable integration modules (Checkpoint 7)
 
@@ -110,4 +110,4 @@ Live tests:
 ## Line counts
 - [ ] Starting: CanvasElementManager.ts 7610 lines
 - [ ] Target: CanvasElementManager.ts ≤ 2000 lines
-- [ ] Current: CanvasElementManager.ts 6466 lines
+- [ ] Current: CanvasElementManager.ts 6150 lines
