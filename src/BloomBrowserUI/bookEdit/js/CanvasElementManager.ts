@@ -22,15 +22,11 @@ import {
     IImageInfo,
     SetupElements,
     attachToCkEditor,
-    changeImageInfo,
-    kMakeNewCanvasElement,
     notifyToolOfChangedImage,
 } from "./bloomEditing";
-import { addSkeletonIfEmpty } from "./linkGrid";
 import {
     EnableAllImageEditing,
     getImageFromCanvasElement,
-    kImageContainerSelector,
     getImageFromContainer,
     kImageContainerClass,
     getBackgroundImageFromBloomCanvas,
@@ -39,14 +35,7 @@ import {
     HandleImageError,
     isPlaceHolderImage,
 } from "./bloomImages";
-import {
-    adjustTarget,
-    correctTabIndex,
-    getActiveGameTab,
-    playTabIndex,
-    startTabIndex,
-    wrongTabIndex,
-} from "../toolbox/games/GameTool";
+import { adjustTarget } from "../toolbox/games/GameTool";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
 import { renderCanvasElementContextControls } from "./CanvasElementContextControls";
@@ -66,7 +55,6 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 import { handlePlayClick } from "./bloomVideo";
 import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
 import { needsToBeKeptSameSize } from "../toolbox/games/gameUtilities";
-import { makeTargetAndMatchSize } from "../toolbox/canvas/CanvasElementItem";
 import { CanvasElementType } from "../toolbox/canvas/canvasElementTypes";
 import {
     getAllDraggables,
@@ -76,13 +64,9 @@ import {
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
-import { get, postData, postJson } from "../../utils/bloomApi";
-import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { getExactClientSize } from "../../utils/elementUtils";
-import { copyContentToTarget, getTarget } from "bloom-player";
-import { showRequiresSubscriptionDialogInEditView } from "../../react_components/requiresSubscription";
-import { FeatureStatus } from "../../react_components/featureStatus";
+import { copyContentToTarget } from "bloom-player";
 import $ from "jquery";
 import { kCanvasToolId } from "../toolbox/toolIds";
 import { showCanvasTool } from "./CanvasElementManagerPublicFunctions";
@@ -107,6 +91,9 @@ import {
     inPlayMode as inPlayModeFromPositioning,
     setCanvasElementPosition as setCanvasElementPositionFromPositioning,
 } from "./canvasElementManager/CanvasElementPositioning";
+import { CanvasElementFactories } from "./canvasElementManager/CanvasElementFactories";
+import { CanvasElementClipboard } from "./canvasElementManager/CanvasElementClipboard";
+import { CanvasElementDuplication } from "./canvasElementManager/CanvasElementDuplication";
 
 export interface ITextColorInfo {
     color: string;
@@ -158,9 +145,71 @@ export class CanvasElementManager {
     private guideProvider: CanvasGuideProvider;
     private keyboardProvider: CanvasElementKeyboardProvider;
     private snapProvider: CanvasSnapProvider;
+    private factories: CanvasElementFactories;
+    private clipboard: CanvasElementClipboard;
+    private duplication: CanvasElementDuplication;
 
     public constructor() {
         this.snapProvider = new CanvasSnapProvider();
+        this.factories = new CanvasElementFactories({
+            snapProvider: this.snapProvider,
+            getBloomCanvasFromMouse: this.getBloomCanvasFromMouse.bind(this),
+            getActiveElement: () => this.activeElement,
+            setActiveElementDirect: (canvasElement) => {
+                this.activeElement = canvasElement;
+            },
+            doNotifyChange: this.doNotifyChange.bind(this),
+            showCorrespondingTextBox: this.showCorrespondingTextBox.bind(this),
+            handleResizeAdjustments: this.handleResizeAdjustments.bind(this),
+            refreshCanvasElementEditing:
+                this.refreshCanvasElementEditing.bind(this),
+            setActiveElement: this.setActiveElement.bind(this),
+            getTextColorInformation: this.getTextColorInformation.bind(this),
+            setTextColorInternal: this.setTextColorInternal.bind(this),
+        });
+        this.clipboard = new CanvasElementClipboard({
+            snapProvider: this.snapProvider,
+            minWidth: this.minWidth,
+            minHeight: this.minHeight,
+            getActiveOrFirstBloomCanvasOnPage:
+                this.getActiveOrFirstBloomCanvasOnPage.bind(this),
+            getActiveElement: () => this.activeElement,
+            adjustBackgroundImageSize:
+                this.adjustBackgroundImageSize.bind(this),
+            adjustContainerAspectRatio:
+                this.adjustContainerAspectRatio.bind(this),
+            addPictureCanvasElement:
+                this.factories.addPictureCanvasElement.bind(this.factories),
+            setDoAfterNewImageAdjusted: (callback) => {
+                this.doAfterNewImageAdjusted = callback;
+            },
+        });
+        this.duplication = new CanvasElementDuplication({
+            getPatriarchBubbleOfActiveElement:
+                this.getPatriarchBubbleOfActiveElement.bind(this),
+            setActiveElement: this.setActiveElement.bind(this),
+            getSelectedItemBubbleSpec:
+                this.getSelectedItemBubbleSpec.bind(this),
+            updateSelectedItemBubbleSpec:
+                this.updateSelectedItemBubbleSpec.bind(this),
+            refreshCanvasElementEditing:
+                this.refreshCanvasElementEditing.bind(this),
+            removeJQueryResizableWidget:
+                this.removeJQueryResizableWidget.bind(this),
+            initializeCanvasElementEditing:
+                this.initializeCanvasElementEditing.bind(this),
+            addCanvasElementFromOriginal:
+                this.factories.addCanvasElementFromOriginal.bind(
+                    this.factories,
+                ),
+            findBestLocationForNewCanvasElement:
+                this.findBestLocationForNewCanvasElement.bind(this),
+            reorderRectangleCanvasElement:
+                this.reorderRectangleCanvasElement.bind(this),
+            addChildInternal: this.addChildInternal.bind(this),
+            adjustRelativePointToBloomCanvas:
+                this.adjustRelativePointToBloomCanvas.bind(this),
+        });
         this.guideProvider = new CanvasGuideProvider();
         this.keyboardProvider = new CanvasElementKeyboardProvider(
             {
@@ -4484,9 +4533,11 @@ export class CanvasElementManager {
         offsetX: number,
         offsetY: number,
     ): void {
-        // The only reason to keep a separate method here is that the 'internal' form returns
-        // the new child. We don't need it here, but we do in the duplicate canvas element function.
-        this.addChildInternal(parentElement, offsetX, offsetY);
+        this.factories.addChildCanvasElementAndRefreshPage(
+            parentElement,
+            offsetX,
+            offsetY,
+        );
     }
 
     // Make sure comical is up-to-date in the case where we know there is a selected/current element.
@@ -4511,46 +4562,11 @@ export class CanvasElementManager {
         offsetX: number,
         offsetY: number,
     ): HTMLElement | undefined {
-        // Make sure everything in parent is "saved".
-        this.updateComicalForSelectedElement(parentElement);
-
-        const newPoint = this.findBestLocationForNewCanvasElement(
+        return this.factories.addChildCanvasElement(
             parentElement,
             offsetX,
             offsetY,
         );
-        if (!newPoint) {
-            return undefined;
-        }
-
-        const childElement = this.addCanvasElement(
-            newPoint.getScaledX(),
-            newPoint.getScaledY(),
-            undefined,
-        );
-        if (!childElement) {
-            return undefined;
-        }
-
-        // Make sure that the child inherits any non-default text color from the parent canvas element
-        // (which must be the active element).
-        this.setActiveElement(parentElement);
-        const parentTextColor = this.getTextColorInformation();
-        if (!parentTextColor.isDefault) {
-            this.setTextColorInternal(parentTextColor.color, childElement);
-        }
-
-        Comical.initializeChild(childElement, parentElement);
-        // In this case, the 'addCanvasElement()' above will already have done the new canvas element's
-        // refresh. We still want to refresh, but not attach to ckeditor, etc., so we pass
-        // attachEventsToEditables as false.
-        this.refreshCanvasElementEditing(
-            CanvasElementManager.getBloomCanvas(parentElement)!,
-            new Bubble(childElement),
-            false,
-            true,
-        );
-        return childElement;
     }
 
     // The 'new canvas element' is either going to be a child of the 'parentElement', or a duplicate of it.
@@ -4559,55 +4575,10 @@ export class CanvasElementManager {
         proposedOffsetX: number,
         proposedOffsetY: number,
     ): Point | undefined {
-        const parentBoundingRect = parentElement.getBoundingClientRect();
-
-        // // Ensure newX and newY is within the bounds of the container.
-        const bloomCanvas = CanvasElementManager.getBloomCanvas(parentElement);
-        if (!bloomCanvas) {
-            //toastr.warning("Failed to create child or duplicate element.");
-            return undefined;
-        }
-        return this.adjustRectToBloomCanvas(
-            bloomCanvas,
-            parentBoundingRect.left + proposedOffsetX,
-            parentBoundingRect.top + proposedOffsetY,
-            parentElement.clientWidth,
-            parentElement.clientHeight,
-        );
-    }
-
-    private adjustRectToBloomCanvas(
-        bloomCanvas: Element,
-        x: number,
-        y: number,
-        width: number,
-        height: number,
-    ): Point {
-        const containerBoundingRect = bloomCanvas.getBoundingClientRect();
-        let newX = x;
-        let newY = y;
-
-        const bufferPixels = 15;
-        if (newX < containerBoundingRect.left) {
-            newX = containerBoundingRect.left + bufferPixels;
-        } else if (newX + width > containerBoundingRect.right) {
-            // ENHANCE: parentElement.clientWidth is just an estimate of the size of the new canvas element's width.
-            //          It would be better if we could actually plug in the real value of the new canvas element's width
-            newX = containerBoundingRect.right - width;
-        }
-
-        if (newY < containerBoundingRect.top) {
-            newY = containerBoundingRect.top + bufferPixels;
-        } else if (newY + height > containerBoundingRect.bottom) {
-            // ENHANCE: parentElement.clientHeight is just an estimate of the size of the new canvas element's height.
-            //          It would be better if we could actually plug in the real value of the new canvas element's height
-            newY = containerBoundingRect.bottom - height;
-        }
-        return new Point(
-            newX,
-            newY,
-            PointScaling.Scaled,
-            "Scaled viewport coordinates",
+        return this.factories.findBestLocationForNewCanvasElement(
+            parentElement,
+            proposedOffsetX,
+            proposedOffsetY,
         );
     }
 
@@ -4649,11 +4620,9 @@ export class CanvasElementManager {
         userDefinedStyleName?: string,
         rightTopOffset?: string,
     ): HTMLElement | undefined {
-        const clientX = screenX - window.screenX;
-        const clientY = screenY - window.screenY;
-        return this.addCanvasElement(
-            clientX,
-            clientY,
+        return this.factories.addCanvasElementWithScreenCoords(
+            screenX,
+            screenY,
             canvasElementType,
             userDefinedStyleName,
             rightTopOffset,
@@ -4666,43 +4635,10 @@ export class CanvasElementManager {
         originalElement: HTMLElement,
         style?: string,
     ): HTMLElement | undefined {
-        const bloomCanvas =
-            CanvasElementManager.getBloomCanvas(originalElement);
-        if (!bloomCanvas) {
-            return undefined;
-        }
-        const positionInViewport = new Point(
+        return this.factories.addCanvasElementFromOriginal(
             offsetX,
             offsetY,
-            PointScaling.Scaled,
-            "Scaled Viewport coordinates",
-        );
-        const positionInBloomCanvas = this.snapProvider.getSnappedPoint(
-            this.adjustRelativePointToBloomCanvas(
-                bloomCanvas,
-                positionInViewport,
-            ),
-            // There's no obvious event from which to deduce that ctrl is down, and I don't see any
-            // advantage in supporting the slightly different position that the duplicate would
-            // end up in if we knew that.
-            undefined,
-        );
-        // Detect if the original is a picture over picture or video over picture element.
-        if (this.isPictureCanvasElement(originalElement)) {
-            return this.addPictureCanvasElement(
-                positionInBloomCanvas,
-                $(bloomCanvas),
-            );
-        }
-        if (this.isVideoCanvasElement(originalElement)) {
-            return this.addVideoCanvasElement(
-                positionInBloomCanvas,
-                $(bloomCanvas),
-            );
-        }
-        return this.addCanvasElementCore(
-            positionInBloomCanvas,
-            $(bloomCanvas),
+            originalElement,
             style,
         );
     }
@@ -4757,129 +4693,13 @@ export class CanvasElementManager {
         userDefinedStyleName?: string,
         rightTopOffset?: string,
     ): HTMLElement | undefined {
-        const bloomCanvas = this.getBloomCanvasFromMouse(mouseX, mouseY);
-        if (!bloomCanvas || bloomCanvas.length === 0) {
-            // Don't add a canvas element if we can't find the containing bloom-canvas.
-            return undefined;
-        }
-        // initial mouseX, mouseY coordinates are relative to viewport
-        const positionInViewport = new Point(
+        return this.factories.addCanvasElement(
             mouseX,
             mouseY,
-            PointScaling.Scaled,
-            "Scaled Viewport coordinates",
-        );
-        const positionInBloomCanvas = this.adjustRelativePointToBloomCanvas(
-            bloomCanvas[0],
-            positionInViewport,
-        );
-        if (canvasElementType === "video") {
-            return this.addVideoCanvasElement(
-                positionInBloomCanvas,
-                bloomCanvas,
-                rightTopOffset,
-            );
-        }
-        if (canvasElementType === "image") {
-            return this.addPictureCanvasElement(
-                positionInBloomCanvas,
-                bloomCanvas,
-                rightTopOffset,
-            );
-        }
-        if (canvasElementType === "sound") {
-            return this.addSoundCanvasElement(
-                positionInBloomCanvas,
-                bloomCanvas,
-                rightTopOffset,
-            );
-        }
-        if (canvasElementType === "rectangle") {
-            return this.addRectangleCanvasElement(
-                positionInBloomCanvas,
-                bloomCanvas,
-                rightTopOffset,
-            );
-        }
-        if (canvasElementType === "book-link-grid") {
-            return this.addBookLinkGridCanvasElement(
-                positionInBloomCanvas,
-                bloomCanvas,
-                rightTopOffset,
-            );
-        }
-        if (canvasElementType === "navigation-image-button") {
-            return this.addNavigationImageButtonElement(
-                positionInBloomCanvas,
-                bloomCanvas,
-                rightTopOffset,
-            );
-        }
-        if (canvasElementType === "navigation-label-button") {
-            return this.addNavigationLabelButtonElement(
-                positionInBloomCanvas,
-                bloomCanvas,
-                rightTopOffset,
-            );
-        }
-        if (canvasElementType === "navigation-image-with-label-button") {
-            return this.addNavigationImageWithLabelButtonElement(
-                positionInBloomCanvas,
-                bloomCanvas,
-                rightTopOffset,
-            );
-        }
-        return this.addCanvasElementCore(
-            positionInBloomCanvas,
-            bloomCanvas,
             canvasElementType,
             userDefinedStyleName,
             rightTopOffset,
         );
-    }
-
-    private addCanvasElementCore(
-        location: Point,
-        bloomCanvasJQuery: JQuery,
-        style?: string,
-        userDefinedStyleName?: string,
-        rightTopOffset?: string,
-        limitToCanvasBounds: boolean = false,
-    ): HTMLElement {
-        const transGroupHtml = this.makeTranslationGroup(userDefinedStyleName);
-
-        return this.finishAddingCanvasElement(
-            bloomCanvasJQuery,
-            transGroupHtml,
-            location,
-            {
-                comicalBubbleStyle: style,
-                rightTopOffset,
-                limitToCanvasBounds,
-            },
-        );
-    }
-
-    private makeTranslationGroup(userDefinedStyleName: string | undefined) {
-        const defaultNewTextLanguage = GetSettings().languageForNewTextBoxes;
-        const userDefinedStyle = userDefinedStyleName ?? "Bubble";
-        // add a draggable text canvas element to the html dom of the current page
-        const editableDivClasses = `bloom-editable bloom-content1 bloom-visibility-code-on ${userDefinedStyle}-style`;
-        const editableDivHtml =
-            "<div class='" +
-            editableDivClasses +
-            "' lang='" +
-            defaultNewTextLanguage +
-            "'><p></p></div>";
-
-        const transGroupDivClasses = `bloom-translationGroup bloom-leadingElement`;
-        const transGroupHtml =
-            "<div class='" +
-            transGroupDivClasses +
-            "' data-default-languages='V'>" +
-            editableDivHtml +
-            "</div>";
-        return transGroupHtml;
     }
 
     private addVideoCanvasElement(
@@ -4887,20 +4707,10 @@ export class CanvasElementManager {
         bloomCanvasJQuery: JQuery,
         rightTopOffset?: string,
     ): HTMLElement {
-        const standardVideoClasses =
-            kVideoContainerClass +
-            " bloom-noVideoSelected bloom-leadingElement";
-        const videoContainerHtml =
-            "<div class='" + standardVideoClasses + "' tabindex='0'></div>";
-        return this.finishAddingCanvasElement(
-            bloomCanvasJQuery,
-            videoContainerHtml,
+        return this.factories.addVideoCanvasElement(
             location,
-            {
-                comicalBubbleStyle: "none",
-                setElementActive: true,
-                rightTopOffset,
-            },
+            bloomCanvasJQuery,
+            rightTopOffset,
         );
     }
 
@@ -4933,158 +4743,10 @@ export class CanvasElementManager {
     // Otherwise it's just a normal canvas overlay item (restricted to the appropriate state,
     // if we're in the Correct or Wrong state of a game).
     public pasteImageFromClipboard(): boolean {
-        const bloomCanvas = this.getActiveOrFirstBloomCanvasOnPage();
-        if (!bloomCanvas) {
-            return false; // No canvas to paste into.
-        }
-        const activeGameTab = getActiveGameTab();
-        if (activeGameTab === playTabIndex) {
-            // Can't paste an image into the play tab.
-            return false;
-        }
-        // The rest of the job happens after the C# code calls changeImage(), passing this fake ID along
-        // with the rest of the information about the new image. The special ID causes a call back to
-        // finishPastingImageFromClipboard() with the real image information.
-        postJson("editView/pasteImage", {
-            imageId: kMakeNewCanvasElement,
-            imageSrc: "",
-            imageIsGif: false,
-        });
-        return true;
+        return this.clipboard.pasteImageFromClipboard();
     }
     public finishPasteImageFromClipboard(imageInfo: IImageInfo): void {
-        const bloomCanvas = this.getActiveOrFirstBloomCanvasOnPage()!;
-        const canvasElements =
-            bloomCanvas.getElementsByClassName(kCanvasElementClass);
-        // If it's an empty canvas, make this its background image.
-        // A possible special case is the custom game page, where the only canvas element is the
-        // header. But that works out to our advantage, since we think a background is unlikely
-        // in games, and would prefer to interpret the pasted image as a game item.
-        if (
-            canvasElements.length === 1 &&
-            canvasElements[0].classList.contains(kBackgroundImageClass)
-        ) {
-            const bgimg = canvasElements[0].getElementsByTagName("img")[0];
-            if (isPlaceHolderImage(bgimg.getAttribute("src"))) {
-                changeImageInfo(bgimg, imageInfo);
-                this.adjustBackgroundImageSize(
-                    bloomCanvas,
-                    canvasElements[0] as HTMLElement,
-                    true,
-                );
-                notifyToolOfChangedImage(bgimg);
-                return;
-            }
-        }
-        // If there is an image canvas element (other than the background one) already selected
-        // and it is a placeholder, just set its image.
-        const activeElement = this.activeElement as HTMLElement | undefined;
-        if (
-            activeElement &&
-            !activeElement.classList.contains(kBackgroundImageClass)
-        ) {
-            const img = activeElement
-                .getElementsByClassName(kImageContainerClass)[0]
-                ?.getElementsByTagName("img")[0];
-            if (img && isPlaceHolderImage(img.getAttribute("src"))) {
-                changeImageInfo(img, imageInfo);
-                this.adjustContainerAspectRatio(
-                    activeElement as HTMLElement,
-                    true,
-                );
-                adjustTarget(activeElement, getTarget(activeElement));
-                notifyToolOfChangedImage(img);
-                return;
-            }
-        }
-        // otherwise we will add a new canvas element...but only if subscription allows it.
-        get("features/status?featureName=canvas&forPublishing=false", (c) => {
-            const features = c.data as FeatureStatus;
-            if (features.enabled) {
-                // If the feature is enabled, we can proceed with adding the canvas element.
-                const width = Math.max(
-                    this.snapProvider.getSnappedX(
-                        bloomCanvas.offsetWidth / 3,
-                        undefined,
-                    ),
-                    this.minWidth,
-                );
-                const height = Math.max(
-                    this.snapProvider.getSnappedY(
-                        bloomCanvas.offsetHeight / 3,
-                        undefined,
-                    ),
-                    this.minHeight,
-                );
-                if (
-                    width > bloomCanvas.offsetWidth ||
-                    height > bloomCanvas.offsetHeight
-                ) {
-                    // Can't paste image into such a tiny canvas
-                    return;
-                }
-                const activeGameTab = getActiveGameTab();
-                let positionX = (bloomCanvas.offsetWidth - width) / 2;
-                let positionY = (bloomCanvas.offsetHeight - height) / 2;
-                if (activeGameTab === startTabIndex) {
-                    // If we're in the start tab, we want to put it further towards the top left,
-                    // so there is room for the target.
-                    positionX = positionX / 2;
-                    positionY = positionY / 2;
-                }
-                const { x: adjustedX, y: adjustedY } =
-                    this.snapProvider.getPosition(
-                        undefined,
-                        positionX,
-                        positionY,
-                    );
-                const positionInBloomCanvas = new Point(
-                    adjustedX,
-                    adjustedY,
-                    PointScaling.Scaled,
-                    "pasteImageFromClipboard",
-                );
-                this.addPictureCanvasElement(
-                    positionInBloomCanvas,
-                    $(bloomCanvas),
-                    undefined,
-                    imageInfo,
-                    { width, height },
-                    (newCanvasElement) => {
-                        switch (activeGameTab) {
-                            case startTabIndex:
-                                // make it a draggable, with a target.
-                                // We want to do this after its shape and position are stable, so we arrange for a callback
-                                // after the aspect ratio is adjusted.
-                                // (It would be nice to do this using async and await, or by passing this action as a param
-                                // all the way down to adjustContainerAspectRatio, but there are eight layers of methods
-                                // and at least one settimeout in between, and if each has to await the others, yet other
-                                // callers of those methods have to become async. It would be a mess.)
-                                // We do this as an action passed to addPictureCanvasElement so that doAfterNewImageAdjusted
-                                // is set before the call to adjustContainerAspectRatio, which would be hard to guarantee
-                                // if we did it after the call to addPictureCanvasElement.
-                                this.doAfterNewImageAdjusted = () => {
-                                    makeTargetAndMatchSize(newCanvasElement);
-                                };
-                                break;
-                            case correctTabIndex:
-                                newCanvasElement.classList.add(
-                                    "drag-item-correct",
-                                );
-                                break;
-                            case wrongTabIndex:
-                                newCanvasElement.classList.add(
-                                    "drag-item-wrong",
-                                );
-                        }
-                    },
-                );
-                notifyToolOfChangedImage();
-            } else {
-                // If the feature is not enabled, we need to show the subscription dialog.
-                showRequiresSubscriptionDialogInEditView("canvas");
-            }
-        });
+        this.clipboard.finishPasteImageFromClipboard(imageInfo);
     }
 
     private addPictureCanvasElement(
@@ -5101,28 +4763,13 @@ export class CanvasElementManager {
         size?: { width: number; height: number },
         doAfterElementCreated?: (newElement: HTMLElement) => void,
     ): HTMLElement {
-        const standardImageClasses =
-            kImageContainerClass + " bloom-leadingElement";
-        const imagePlaceHolderHtml = "<img src='placeHolder.png' alt=''></img>";
-        const imageContainerHtml =
-            // The tabindex here is necessary to get focus to work on an image.
-            "<div tabindex='0' class='" +
-            standardImageClasses +
-            "'>" +
-            imagePlaceHolderHtml +
-            "</div>";
-        return this.finishAddingCanvasElement(
-            bloomCanvasJQuery,
-            imageContainerHtml,
+        return this.factories.addPictureCanvasElement(
             location,
-            {
-                comicalBubbleStyle: "none",
-                setElementActive: true,
-                rightTopOffset,
-                imageInfo,
-                size,
-                doAfterElementCreated,
-            },
+            bloomCanvasJQuery,
+            rightTopOffset,
+            imageInfo,
+            size,
+            doAfterElementCreated,
         );
     }
     private addNavigationImageButtonElement(
@@ -5138,33 +4785,13 @@ export class CanvasElementManager {
         },
         doAfterElementCreated?: (newElement: HTMLElement) => void,
     ): HTMLElement {
-        const imageContainerHtml = this.makeImageContainerHtml();
-        const result = this.finishAddingCanvasElement(
-            bloomCanvasJQuery,
-            imageContainerHtml,
+        return this.factories.addNavigationImageButtonElement(
             location,
-            {
-                comicalBubbleStyle: "none",
-                setElementActive: true,
-                rightTopOffset,
-                imageInfo,
-                size: { width: 120, height: 120 },
-                doAfterElementCreated,
-                limitToCanvasBounds: true,
-            },
+            bloomCanvasJQuery,
+            rightTopOffset,
+            imageInfo,
+            doAfterElementCreated,
         );
-        result.classList.add(kBloomButtonClass);
-        return result;
-    }
-
-    private makeImageContainerHtml() {
-        const standardImageClasses =
-            kImageContainerClass + " bloom-leadingElement";
-        const imagePlaceHolderHtml = "<img src='placeHolder.png' alt=''></img>";
-        const imageContainerHtml =
-            // The tabindex here is necessary to get focus to work on an image.
-            `<div tabindex='0' class = '${standardImageClasses}'> ${imagePlaceHolderHtml}</div>`;
-        return imageContainerHtml;
     }
 
     private addNavigationImageWithLabelButtonElement(
@@ -5179,24 +4806,12 @@ export class CanvasElementManager {
             license: string;
         },
     ): HTMLElement {
-        const imageContainerHtml = this.makeImageContainerHtml();
-        const transGroupHtml = this.makeTranslationGroup("Label");
-        const result = this.finishAddingCanvasElement(
-            bloomCanvasJQuery,
-            imageContainerHtml + transGroupHtml,
+        return this.factories.addNavigationImageWithLabelButtonElement(
             location,
-            {
-                comicalBubbleStyle: "none",
-                setElementActive: true,
-                rightTopOffset,
-                imageInfo,
-                size: { width: 120, height: 120 },
-                limitToCanvasBounds: true,
-            },
+            bloomCanvasJQuery,
+            rightTopOffset,
+            imageInfo,
         );
-        result.classList.add(kBloomButtonClass);
-        result.classList.add("bloom-noAutoHeight");
-        return result;
     }
 
     private addNavigationLabelButtonElement(
@@ -5204,22 +4819,11 @@ export class CanvasElementManager {
         bloomCanvasJQuery: JQuery,
         rightTopOffset?: string,
     ): HTMLElement {
-        const result = this.addCanvasElementCore(
+        return this.factories.addNavigationLabelButtonElement(
             location,
             bloomCanvasJQuery,
-            "none", // no comical bubble style
-            "navigation-label-button",
             rightTopOffset,
-            true,
         );
-        result.classList.add(kBloomButtonClass);
-        result.classList.add("bloom-noAutoHeight");
-        // The methods used in the other two get to set a size; here we just do it.
-        // We need to make it a bit higher than the default so it doesn't overflow
-        // with the additional padding that buttons get.
-        result.style.height = "50px";
-        // result.style.width = "120px";
-        return result;
     }
 
     private addSoundCanvasElement(
@@ -5227,42 +4831,10 @@ export class CanvasElementManager {
         bloomCanvasJQuery: JQuery,
         rightTopOffset?: string,
     ): HTMLElement {
-        const standardImageClasses =
-            kImageContainerClass + " bloom-leadingElement";
-        // This svg is basically the same as the one in AudioIcon.tsx.
-        // Likely, changes to one should be mirrored in the other.
-        //
-        // The data-icon-type is so we can, in the future, find these and migrate/update them.
-        const html = `<div tabindex='0' class='bloom-unmodifiable-image bloom-svg ${standardImageClasses}' data-icon-type='audio'>
-    <svg
-        viewBox="0 0 31 31"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-    >
-        <rect
-            width="31"
-            height="31"
-            rx="1.81232"
-            fill="var(--game-draggable-bg-color, black)"
-        />
-        <path
-            d="M23.0403 9.12744C24.8868 10.8177 25.9241 13.11 25.9241 15.5C25.9241 17.8901 24.8868 20.1823 23.0403 21.8726M19.5634 12.3092C20.4867 13.1544 21.0053 14.3005 21.0053 15.4955C21.0053 16.6906 20.4867 17.8367 19.5634 18.6818M15.0917 9.19054L10.1669 12.796H6.22705V18.2041H10.1669L15.0917 21.8095V9.19054Z"
-            stroke="var(--game-draggable-color, white)"
-            strokeWidth="1.15865"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        />
-    </svg>
-</div>`;
-        return this.finishAddingCanvasElement(
-            bloomCanvasJQuery,
-            html,
+        return this.factories.addSoundCanvasElement(
             location,
-            {
-                comicalBubbleStyle: "none",
-                setElementActive: true,
-                rightTopOffset,
-            },
+            bloomCanvasJQuery,
+            rightTopOffset,
         );
     }
 
@@ -5271,29 +4843,11 @@ export class CanvasElementManager {
         bloomCanvasJQuery: JQuery,
         rightTopOffset?: string,
     ): HTMLElement {
-        const html =
-            // The tabindex here is necessary to allow it to be focused.
-            "<div tabindex='0' class='bloom-link-grid'></div>";
-        const canvasElement = this.finishAddingCanvasElement(
-            bloomCanvasJQuery,
-            html,
+        return this.factories.addBookLinkGridCanvasElement(
             location,
-            {
-                comicalBubbleStyle: "none",
-                setElementActive: true,
-                rightTopOffset,
-                size: { width: 360, height: 360 },
-                limitToCanvasBounds: true,
-            },
+            bloomCanvasJQuery,
+            rightTopOffset,
         );
-        // Add skeleton to the newly created empty grid
-        const linkGrid = canvasElement.querySelector(
-            ".bloom-link-grid",
-        ) as HTMLElement;
-        if (linkGrid) {
-            addSkeletonIfEmpty(linkGrid);
-        }
-        return canvasElement;
     }
 
     private addRectangleCanvasElement(
@@ -5301,23 +4855,11 @@ export class CanvasElementManager {
         bloomCanvasJQuery: JQuery,
         rightTopOffset?: string,
     ): HTMLElement {
-        const html =
-            // The tabindex here is necessary to allow it to be focused.
-            "<div tabindex='0' class='bloom-rectangle'></div>";
-        const result = this.finishAddingCanvasElement(
-            bloomCanvasJQuery,
-            html,
+        return this.factories.addRectangleCanvasElement(
             location,
-            {
-                comicalBubbleStyle: "none",
-                setElementActive: true,
-                rightTopOffset,
-            },
+            bloomCanvasJQuery,
+            rightTopOffset,
         );
-        // reorder it after the element with class kBackgroundImageClass. This puts it in front of
-        // the background but but behind the other canvas elements it is meant to frame.
-        this.reorderRectangleCanvasElement(result, bloomCanvasJQuery.get(0));
-        return result;
     }
 
     // Put the rectangle in the right place in the DOM so it is behind the other canvas elements
@@ -5327,186 +4869,10 @@ export class CanvasElementManager {
         rectangle: HTMLElement,
         bloomCanvas: HTMLElement,
     ): void {
-        const backgroundImage = bloomCanvas.getElementsByClassName(
-            kBackgroundImageClass,
-        )[0] as HTMLElement;
-        if (backgroundImage) {
-            bloomCanvas.insertBefore(rectangle, backgroundImage.nextSibling);
-            // Being first in document order gives it the right z-order, but it also has to be
-            // in the right sequence by ComicalJs Bubble level for the hit test to work right.
-            CanvasElementManager.putBubbleBefore(
-                rectangle,
-                (
-                    Array.from(
-                        bloomCanvas.getElementsByClassName(kCanvasElementClass),
-                    ) as HTMLElement[]
-                ).filter((x) => x !== backgroundImage),
-                Bubble.getBubbleSpec(backgroundImage).level + 1,
-            );
-        }
+        this.factories.reorderRectangleCanvasElement(rectangle, bloomCanvas);
     }
-
-    // Note: This is distinct from ensureCanvasElementsIntersectParent(), which is intended to
-    // keep *existing* canvas elements at least partly visible (and also keeps tails inside).
-    // Here we try to keep a *newly created* element entirely within the canvas (if possible),
-    // without changing its size and without moving it above/left of the canvas.
-    private ensureCanvasElementInsideCanvasIfPossible(
-        canvasElement: HTMLElement,
-        bloomCanvas: HTMLElement,
-    ): void {
-        const canvasSize = getExactClientSize(bloomCanvas);
-        const canvasElementSize = getExactClientSize(canvasElement);
-        const currentCanvasElementLeft = CanvasElementManager.pxToNumber(
-            canvasElement.style.left,
-        );
-        const currentCanvasElementTop = CanvasElementManager.pxToNumber(
-            canvasElement.style.top,
-        );
-        const currentCanvasElementWidth = canvasElementSize.width;
-        const currentCanvasElementHeight = canvasElementSize.height;
-
-        const maxLeft = canvasSize.width - currentCanvasElementWidth;
-        const maxTop = canvasSize.height - currentCanvasElementHeight;
-        const clampedLeft = Math.max(
-            0,
-            Math.min(currentCanvasElementLeft, maxLeft),
-        );
-        const clampedTop = Math.max(
-            0,
-            Math.min(currentCanvasElementTop, maxTop),
-        );
-        if (
-            clampedLeft !== currentCanvasElementLeft ||
-            clampedTop !== currentCanvasElementTop
-        ) {
-            CanvasElementManager.setCanvasElementPosition(
-                canvasElement,
-                clampedLeft,
-                clampedTop,
-            );
-            this.adjustTarget(canvasElement);
-        }
-    }
-
-    private finishAddingCanvasElement(
-        bloomCanvasJQuery: JQuery,
-        internalHtml: string,
-        location: Point,
-        options?: {
-            comicalBubbleStyle?: string;
-            setElementActive?: boolean;
-            rightTopOffset?: string;
-            imageInfo?: {
-                imageId: string;
-                src: string; // must already appropriately URL-encoded.
-                copyright: string;
-                creator: string;
-                license: string;
-            };
-            size?: { width: number; height: number };
-            doAfterElementCreated?: (newElement: HTMLElement) => void;
-            limitToCanvasBounds?: boolean;
-        },
-    ): HTMLElement {
-        // add canvas element as last child of .bloom-canvas (BL-7883)
-        const lastChildOfBloomCanvas = bloomCanvasJQuery.children().last();
-        const canvasElementHtml =
-            "<div class='" +
-            kCanvasElementClass +
-            "'>" +
-            internalHtml +
-            "</div>";
-        // It's especially important that the new canvas element comes AFTER the main image,
-        // since that's all that keeps it on top of the image. We're deliberately not
-        // using z-index so that the bloom-canvas is not a stacking context so we
-        // can use z-index on the buttons inside it to put them above the comicaljs canvas.
-        const canvasElementJQuery = $(canvasElementHtml).insertAfter(
-            lastChildOfBloomCanvas,
-        );
-        const canvasElement = canvasElementJQuery.get(0);
-        if (options?.imageInfo) {
-            const img = canvasElement.getElementsByTagName("img")[0];
-            if (img) {
-                changeImageInfo(img, options.imageInfo);
-            }
-        }
-        if (options?.size) {
-            canvasElement.style.width = options.size.width + "px";
-            canvasElement.style.height = options.size.height + "px";
-        } else {
-            this.setDefaultHeightFromWidth(canvasElement);
-        }
-        this.placeElementAtPosition(
-            canvasElementJQuery,
-            bloomCanvasJQuery.get(0),
-            location,
-            options?.rightTopOffset,
-        );
-
-        if (options?.limitToCanvasBounds) {
-            const bloomCanvas = bloomCanvasJQuery.get(0) as HTMLElement;
-            this.ensureCanvasElementInsideCanvasIfPossible(
-                canvasElement,
-                bloomCanvas,
-            );
-        }
-
-        // The following code would not be needed for Picture and Video canvas elements if the focusin
-        // handler were reliably called after being attached by refreshBubbleEditing() below.
-        // However, calling the jquery.focus() method in bloomEditing.focusOnChildIfFound()
-        // causes the handler to fire ONLY for Text canvas elements.  This is a complete mystery to me.
-        // Therefore, for Picture and Video canvas elements, we set the content active and notify the
-        // canvas element tool. But we don't need/want the actions of setActiveElement() which overlap
-        // with refreshBubbleEditing(). This code actually prevents bloomEditing.focusOnChildIfFound()
-        // from being called, but that doesn't really matter since calling it does no good.
-        // See https://issues.bloomlibrary.org/youtrack/issue/BL-11620.
-        if (options?.setElementActive) {
-            this.activeElement = canvasElement;
-            this.doNotifyChange();
-            this.showCorrespondingTextBox(canvasElement);
-        }
-        const bubble = new Bubble(canvasElement);
-        const bubbleSpec: BubbleSpec = Bubble.getDefaultBubbleSpec(
-            canvasElement,
-            options?.comicalBubbleStyle || "speech",
-        );
-        bubble.setBubbleSpec(bubbleSpec);
-        const bloomCanvas = bloomCanvasJQuery.get(0);
-        if (options?.doAfterElementCreated) {
-            // It's not obvious when the best time to do this is. Obviously it has to be after
-            // the element is created. For the current purpose, the main thing is that it be
-            // before refreshBubbleEditing() is called, since (for picture elements) that is
-            // what gets the element selected and triggers a call to adjustContainerAspectRatio().
-            options.doAfterElementCreated(canvasElement);
-        }
-        // background image in parent bloom-canvas may need to become canvas element
-        // (before we refreshBubbleEditing, since we may change some canvas elements here.)
-        this.handleResizeAdjustments();
-        this.refreshCanvasElementEditing(bloomCanvas, bubble, true, true);
-        const editable = canvasElement.getElementsByClassName(
-            "bloom-editable bloom-visibility-code-on",
-        )[0] as HTMLElement;
-        editable?.focus();
-        return canvasElement;
-    }
-
-    // All of the text-based canvas elements' default heights are based on the min-height of 30px set
-    // in canvasTool.less for a .bloom-canvas-element. For other elements, we usually want something else.
     public setDefaultHeightFromWidth(canvasElement: HTMLElement) {
-        const width = parseInt(getComputedStyle(canvasElement).width, 10);
-
-        if (
-            canvasElement.querySelector(`.${kVideoContainerClass}`) !== null ||
-            canvasElement.querySelector(`.bloom-rectangle`) !== null
-        ) {
-            // Set the default video aspect to 4:3, the same as the sign language tool generates.
-            canvasElement.style.height = `${(width * 3) / 4}px`;
-        } else if (
-            canvasElement.querySelector(kImageContainerSelector) !== null
-        ) {
-            // Set the default image aspect to square.
-            canvasElement.style.height = `${width}px`;
-        }
+        this.factories.setDefaultHeightFromWidth(canvasElement);
     }
 
     // mouseX and mouseY are the location in the viewport of the mouse
@@ -5661,396 +5027,9 @@ export class CanvasElementManager {
         textElement: HTMLElement,
         sameLocation?: boolean,
     ): HTMLElement | undefined {
-        // simple guard
-        if (!textElement || !textElement.parentElement) {
-            return undefined;
-        }
-        const bloomCanvas = textElement.parentElement;
-        // Make sure comical is up-to-date before we clone things.
-        if (
-            bloomCanvas.getElementsByClassName(kComicalGeneratedClass).length >
-            0
-        ) {
-            Comical.update(bloomCanvas);
-        }
-        // Get the patriarch canvas element of this comical family. Can only be undefined if no active element.
-        const patriarchBubble = this.getPatriarchBubbleOfActiveElement();
-        if (patriarchBubble) {
-            if (textElement !== patriarchBubble.content) {
-                this.setActiveElement(patriarchBubble.content);
-            }
-            const bubbleSpecToDuplicate = this.getSelectedItemBubbleSpec();
-            if (!bubbleSpecToDuplicate) {
-                // Oddness! Bail!
-                // reset active element to what it was
-                this.setActiveElement(textElement as HTMLElement);
-                return;
-            }
-
-            const result = this.duplicateCanvasElementFamily(
-                patriarchBubble,
-                bubbleSpecToDuplicate,
-                sameLocation,
-            );
-            if (result) {
-                const isRectangle =
-                    result.getElementsByClassName("bloom-rectangle").length > 0;
-                if (isRectangle) {
-                    // adjust the new rectangle's z-order and comical level to match the original.
-                    this.reorderRectangleCanvasElement(result, bloomCanvas);
-                }
-            }
-            // The JQuery resizable event handler needs to be removed after the duplicate canvas element
-            // family is created, and then the over picture editing needs to be initialized again.
-            // See BL-13617.
-            this.removeJQueryResizableWidget();
-            this.initializeCanvasElementEditing();
-            return result;
-        }
-        return undefined;
-    }
-
-    // Should duplicate all canvas elements and their size and relative placement and color, etc.,
-    // and the actual text in the canvas elements.
-    // The 'patriarchSourceBubble' is the head of a family of canvas elements to duplicate,
-    // although this one canvas element may be all there is.
-    // The content of 'patriarchSourceBubble' is now the active element.
-    // The 'bubbleSpecToDuplicate' param is the bubbleSpec for the patriarch source canvas element.
-    // The function returns the patriarch canvas element of the new
-    // duplicated canvas element family.
-    // This method handles all needed refreshing of the duplicate canvas elements.
-    private duplicateCanvasElementFamily(
-        patriarchSourceBubble: Bubble,
-        bubbleSpecToDuplicate: BubbleSpec,
-        sameLocation: boolean = false,
-    ): HTMLElement | undefined {
-        const sourceElement = patriarchSourceBubble.content;
-        const proposedOffset = 15;
-        const newPoint = this.findBestLocationForNewCanvasElement(
-            sourceElement,
-            sameLocation ? 0 : proposedOffset + sourceElement.clientWidth, // try to not overlap too much
-            sameLocation ? 0 : proposedOffset,
-        );
-        if (!newPoint) {
-            return;
-        }
-        const patriarchDuplicateElement = this.addCanvasElementFromOriginal(
-            newPoint.getScaledX(),
-            newPoint.getScaledY(),
-            sourceElement,
-            bubbleSpecToDuplicate.style,
-        );
-        if (!patriarchDuplicateElement) {
-            return;
-        }
-        patriarchDuplicateElement.classList.remove(kBackgroundImageClass);
-        patriarchDuplicateElement.style.color = sourceElement.style.color; // preserve text color
-        patriarchDuplicateElement.innerHTML =
-            this.safelyCloneHtmlStructure(sourceElement);
-        // Preserve the Auto Height setting.  See BL-13931.
-        if (sourceElement.classList.contains("bloom-noAutoHeight"))
-            patriarchDuplicateElement.classList.add("bloom-noAutoHeight");
-        // Preserve the bloom-gif class, which is used to indicate that this is a GIF. (BL-15037)
-        if (sourceElement.classList.contains("bloom-gif"))
-            patriarchDuplicateElement.classList.add("bloom-gif");
-        if (sourceElement.classList.contains(kBloomButtonClass))
-            patriarchDuplicateElement.classList.add(kBloomButtonClass);
-
-        // copy any data-sound
-        const sourceDataSound = sourceElement.getAttribute("data-sound");
-        if (sourceDataSound) {
-            patriarchDuplicateElement.setAttribute(
-                "data-sound",
-                sourceDataSound,
-            );
-        }
-        // copy any sound files found in an editable div
-        this.copyAnySoundFileAndAttributesForEditable(
-            sourceElement,
-            patriarchDuplicateElement,
-        );
-
-        this.setActiveElement(patriarchDuplicateElement);
-        this.matchSizeOfSource(sourceElement, patriarchDuplicateElement);
-        const container = CanvasElementManager.getBloomCanvas(
-            patriarchDuplicateElement,
-        );
-        if (!container) {
-            return; // highly unlikely!
-        }
-        const adjustedTailSpec = this.getAdjustedTailSpec(
-            container,
-            bubbleSpecToDuplicate.tails,
-            sourceElement,
-            patriarchDuplicateElement,
-        );
-        // This is the bubbleSpec for the brand new (now active) copy of the patriarch canvas element.
-        // We will overwrite most of it, but keep its level and version properties. The level will be
-        // different so the copied canvas element(s) will be in a separate child chain from the original(s).
-        // The version will probably be the same, but if it differs, we want the new one.
-        // We will update this bubbleSpec with an adjusted version of the original tail and keep
-        // other original properties (like backgroundColor and border style/color and order).
-        const specOfCopiedElement = this.getSelectedItemBubbleSpec();
-        if (!specOfCopiedElement) {
-            return; // highly unlikely!
-        }
-        this.updateSelectedItemBubbleSpec({
-            ...bubbleSpecToDuplicate,
-            tails: adjustedTailSpec,
-            level: specOfCopiedElement.level,
-            version: specOfCopiedElement.version,
-        });
-        // OK, now we're done with our manipulation of the patriarch canvas element and we're about to go on
-        // and deal with the child canvas elements (if any). But we replaced the innerHTML after creating the
-        // initial duplicate canvas element and the editable divs may not have the appropriate events attached,
-        // so we'll refresh again with 'attachEventsToEditables' set to 'true'.
-        this.refreshCanvasElementEditing(
-            container,
-            new Bubble(patriarchDuplicateElement),
-            true,
-            true,
-        );
-        const childBubbles = Comical.findRelatives(patriarchSourceBubble);
-        childBubbles.forEach((childBubble) => {
-            const childOffsetFromPatriarch = this.getOffsetFrom(
-                sourceElement,
-                childBubble.content,
-            );
-            this.duplicateOneChildCanvasElement(
-                childOffsetFromPatriarch,
-                patriarchDuplicateElement,
-                childBubble,
-            );
-            // Make sure comical knows about each child as it's created, otherwise it gets the order wrong.
-            Comical.convertBubbleJsonToCanvas(container as HTMLElement);
-        });
-        return patriarchDuplicateElement;
-    }
-
-    private copyAnySoundFileAndAttributesForEditable(
-        sourceElement: HTMLElement,
-        copiedElement: HTMLElement,
-    ): void {
-        const sourceEditable = sourceElement.querySelector(".bloom-editable");
-        if (!sourceEditable) return;
-        const copiedEditable = copiedElement.querySelector(".bloom-editable");
-        if (!copiedEditable) return;
-        const sourceId = sourceEditable.getAttribute("id");
-        const mode = sourceEditable.getAttribute("data-audiorecordingmode");
-        if (sourceId && mode === "TextBox") {
-            this.copySoundFileAndAttributes(
-                sourceEditable,
-                sourceId,
-                copiedEditable,
-            );
-        } else if (mode === "Sentence") {
-            const sourceSpans = sourceEditable.querySelectorAll(
-                "span.audio-sentence[id][recordingmd5]",
-            );
-            const copiedSpans = copiedEditable.querySelectorAll(
-                "span.audio-sentence[recordingmd5]",
-            );
-            if (
-                sourceSpans.length === copiedSpans.length &&
-                sourceSpans.length > 0
-            ) {
-                sourceSpans.forEach((sourceSpan, index) => {
-                    const copiedSpan = copiedSpans[index];
-                    const sourceSpanId = sourceSpan.getAttribute("id");
-                    if (sourceSpanId) {
-                        this.copySoundFileAndAttributes(
-                            sourceSpan,
-                            sourceSpanId,
-                            copiedSpan,
-                        );
-                    }
-                });
-            }
-        }
-    }
-
-    private copySoundFileAndAttributes(
-        sourceElement: Element,
-        sourceId: string,
-        copiedElement: Element,
-    ) {
-        const newId = AudioRecording.createValidXhtmlUniqueId();
-        copiedElement.setAttribute("id", newId);
-        copyAudioFileAsync(sourceId, newId); // we don't need to wait for this to finish
-        const duration = sourceElement.getAttribute("data-duration");
-        if (duration) {
-            copiedElement.setAttribute("data-duration", duration);
-        }
-        const endTimes = sourceElement.getAttribute(
-            "data-audiorecordingendtimes",
-        );
-        if (endTimes) {
-            copiedElement.setAttribute("data-audiorecordingendtimes", endTimes);
-        }
-    }
-
-    private getAdjustedTailSpec(
-        bloomCanvas: Element,
-        originalTailSpecs: TailSpec[],
-        sourceElement: HTMLElement,
-        duplicateElement: HTMLElement,
-    ): TailSpec[] {
-        if (originalTailSpecs.length === 0) {
-            return originalTailSpecs;
-        }
-        const offSetFromSource = this.getOffsetFrom(
-            sourceElement,
-            duplicateElement,
-        );
-        return originalTailSpecs.map((spec) => {
-            const tipPoint = this.adjustRelativePointToBloomCanvas(
-                bloomCanvas,
-                new Point(
-                    spec.tipX + offSetFromSource.getUnscaledX(),
-                    spec.tipY + offSetFromSource.getUnscaledY(),
-                    PointScaling.Unscaled,
-                    "getAdjustedTailSpec.tip",
-                ),
-            );
-            const midPoint = this.adjustRelativePointToBloomCanvas(
-                bloomCanvas,
-                new Point(
-                    spec.midpointX + offSetFromSource.getUnscaledX(),
-                    spec.midpointY + offSetFromSource.getUnscaledY(),
-                    PointScaling.Unscaled,
-                    "getAdjustedTailSpec.mid",
-                ),
-            );
-            return {
-                ...spec,
-                tipX: tipPoint.getUnscaledX(),
-                tipY: tipPoint.getUnscaledY(),
-                midpointX: midPoint.getUnscaledX(),
-                midpointY: midPoint.getUnscaledY(),
-            };
-        });
-    }
-
-    private matchSizeOfSource(
-        sourceElement: HTMLElement,
-        destElement: HTMLElement,
-    ) {
-        destElement.style.width = sourceElement.clientWidth.toFixed(0) + "px";
-        // text elements adjust their height automatically based on width and content...
-        // picture over picture and video over picture don't.
-        destElement.style.height = sourceElement.clientHeight.toFixed(0) + "px";
-    }
-
-    private getOffsetFrom(
-        sourceElement: HTMLElement,
-        destElement: HTMLElement,
-    ): Point {
-        return new Point(
-            destElement.offsetLeft - sourceElement.offsetLeft,
-            destElement.offsetTop - sourceElement.offsetTop,
-            PointScaling.Scaled,
-            "Destination scaled offset from Source",
-        );
-    }
-
-    private duplicateOneChildCanvasElement(
-        offsetFromPatriarch: Point,
-        parentElement: HTMLElement,
-        childSourceBubble: Bubble,
-    ) {
-        const newChildElement = this.addChildInternal(
-            parentElement,
-            offsetFromPatriarch.getScaledX(),
-            offsetFromPatriarch.getScaledY(),
-        );
-        if (!newChildElement) {
-            return;
-        }
-        const sourceElement = childSourceBubble.content;
-        newChildElement.innerHTML =
-            this.safelyCloneHtmlStructure(sourceElement);
-        this.copyAnySoundFileAndAttributesForEditable(
-            sourceElement,
-            newChildElement,
-        );
-        // Preserve the Auto Height setting.  See BL-13931.
-        if (sourceElement.classList.contains("bloom-noAutoHeight"))
-            newChildElement.classList.add("bloom-noAutoHeight");
-        // Preserve the bloom-gif class, which is used to indicate that this is a GIF. (BL-15037)
-        if (sourceElement.classList.contains("bloom-gif"))
-            newChildElement.classList.add("bloom-gif");
-
-        this.matchSizeOfSource(sourceElement, newChildElement);
-        // We just replaced the bloom-editables from the 'addChildInternal' with a clone of the source
-        // canvas element's HTML. This will undo any event handlers that might have been attached by the
-        // refresh triggered by 'addChildInternal'. So we send the newly modified child through again,
-        // with 'attachEventsToEditables' set to 'true'.
-        this.refreshCanvasElementEditing(
-            CanvasElementManager.getBloomCanvas(parentElement)!,
-            new Bubble(newChildElement),
-            true,
-            true,
-        );
-    }
-
-    private safelyCloneHtmlStructure(elementToClone: HTMLElement): string {
-        // eliminate .bloom-ui and ?
-        const clonedElement = elementToClone.cloneNode(true) as HTMLElement;
-        this.cleanClonedNode(clonedElement);
-        return clonedElement.innerHTML;
-    }
-
-    private cleanClonedNode(element: Element) {
-        if (this.clonedNodeNeedsDeleting(element)) {
-            element.parentElement!.removeChild(element);
-            return;
-        }
-        if (element.nodeName === "#text") {
-            return;
-        }
-
-        // Cleanup this node
-        this.safelyRemoveAttribute(element, "id");
-        // Picture over picture elements need the tabindex (="0") in order to be focusable.
-        // But for text-based canvas elements we need to delete positive tabindex, so we don't do weird
-        // things to talking book playback order when we duplicate a family of canvas elements.
-        this.removePositiveTabindex(element);
-        this.safelyRemoveAttribute(element, "data-duration");
-        this.safelyRemoveAttribute(element, "data-audiorecordingendtimes");
-
-        // Clean children
-        const childArray = Array.from(element.childNodes);
-        childArray.forEach((element) => {
-            this.cleanClonedNode(element as Element);
-        });
-    }
-
-    private removePositiveTabindex(element: Element) {
-        if (!element.hasAttribute("tabindex")) {
-            return;
-        }
-        const indexStr = element.getAttribute("tabindex");
-        if (!indexStr) {
-            return;
-        }
-        const indexValue = parseInt(indexStr, 10);
-        if (indexValue > 0) {
-            element.attributes.removeNamedItem("tabindex");
-        }
-    }
-
-    private safelyRemoveAttribute(element: Element, attrName: string) {
-        if (element.hasAttribute(attrName)) {
-            element.attributes.removeNamedItem(attrName);
-        }
-    }
-
-    private clonedNodeNeedsDeleting(element: Element): boolean {
-        const htmlElement = element as HTMLElement;
-        return (
-            !htmlElement ||
-            (htmlElement.classList &&
-                htmlElement.classList.contains("bloom-ui"))
+        return this.duplication.duplicateCanvasElementBox(
+            textElement,
+            sameLocation,
         );
     }
 
@@ -7471,28 +6450,6 @@ export {
     canvasElementDescription,
     showCanvasTool,
 } from "./CanvasElementManagerPublicFunctions";
-
-async function copyAudioFileAsync(
-    sourceId: string,
-    newId: string,
-): Promise<void> {
-    const folderInfo = await postJson(
-        "fileIO/getSpecialLocation",
-        "CurrentBookAudioDirectory",
-    );
-    if (!folderInfo || !folderInfo.data) {
-        return; // huh??
-    }
-    const sourcePath = `${folderInfo.data}/${sourceId}.mp3`;
-    const targetPath = `${folderInfo.data}/${newId}.mp3`;
-    await postData("fileIO/copyFile", {
-        from: encodeURIComponent(sourcePath),
-        to: encodeURIComponent(targetPath),
-    });
-    // console.log(
-    //     `DEBUG copyAudioFileAsync: finished copying ${sourcePath} to ${targetPath}`
-    // );
-}
 
 function SetupClickToShowCanvasTool(canvas: Element) {
     // if the user clicks on a canvas element, bring up the canvas tool
