@@ -100,6 +100,7 @@ import { CanvasElementPointerInteractions } from "./canvasElementManager/CanvasE
 import { CanvasElementHandleDragInteractions } from "./canvasElementManager/CanvasElementHandleDragInteractions";
 import { CanvasElementDraggableIntegration } from "./canvasElementManager/CanvasElementDraggableIntegration";
 import { CanvasElementEditingSuspension } from "./canvasElementManager/CanvasElementEditingSuspension";
+import { CanvasElementCanvasResizeAdjustments } from "./canvasElementManager/CanvasElementCanvasResizeAdjustments";
 
 const kComicalGeneratedClass: string = "comical-generated";
 
@@ -145,6 +146,7 @@ export class CanvasElementManager {
     private handleDragInteractions: CanvasElementHandleDragInteractions;
     private draggableIntegration: CanvasElementDraggableIntegration;
     private editingSuspension: CanvasElementEditingSuspension;
+    private canvasResizeAdjustments: CanvasElementCanvasResizeAdjustments;
 
     // Used by stopMoving() to clear cursor style after a drag.
     private lastMoveContainer: HTMLElement;
@@ -170,6 +172,13 @@ export class CanvasElementManager {
                 this.turnOnCanvasElementEditing.bind(this),
             setupControlFrame: this.setupControlFrame.bind(this),
         });
+        this.canvasResizeAdjustments = new CanvasElementCanvasResizeAdjustments(
+            {
+                adjustBackgroundImageSize:
+                    this.adjustBackgroundImageSize.bind(this),
+                pxToNumber: CanvasElementManager.pxToNumber,
+            },
+        );
         this.factories = new CanvasElementFactories({
             snapProvider: this.snapProvider,
             getBloomCanvasFromMouse: this.getBloomCanvasFromMouse.bind(this),
@@ -3580,300 +3589,8 @@ export class CanvasElementManager {
         }
     }
 
-    // Store away the current size of the bloom-canvas. At any later time if we notice that
-    // this does not match the current size, we adjust everything according to how the size has changed.
-    private updateBloomCanvasSizeData(bloomCanvas: HTMLElement) {
-        bloomCanvas.setAttribute(
-            // originally data-imgSizeBasedOn, but that is technically invalid
-            // since data-* attributes must be lowercase. JS converts it to
-            // data-imgsizebasedon as we write, so that's what's in files.
-            // I'd prefer it to be data-img-size-based-on, but that would require data-migration.
-            "data-imgsizebasedon",
-            `${bloomCanvas.clientWidth},${bloomCanvas.clientHeight}`,
-        );
-    }
-
     public AdjustChildrenIfSizeChanged(bloomCanvas: HTMLElement): void {
-        const oldSizeData = bloomCanvas.getAttribute("data-imgsizebasedon");
-        if (!oldSizeData) {
-            // Can't make a useful adjustment now, with no previous size to work from.
-            // But if this is an image with canvas elements, we'll want to remember the size for next time.
-            if (
-                bloomCanvas.getElementsByClassName(kCanvasElementClass).length >
-                0
-            ) {
-                this.updateBloomCanvasSizeData(bloomCanvas);
-            }
-            return; // not using this system for sizing
-        }
-        // Get the width it was the last time the user was working on it
-        const oldSizeDataArray = oldSizeData.split(",");
-        let oldWidth = parseInt(oldSizeDataArray[0]);
-        let oldHeight = parseInt(oldSizeDataArray[1]);
-
-        const newWidth = bloomCanvas.clientWidth;
-        const newHeight = bloomCanvas.clientHeight;
-        if (oldWidth === newWidth && oldHeight === newHeight) return; // allow small discrepancy?
-        this.updateBloomCanvasSizeData(bloomCanvas); // remember the new size, whatever path we take adjusting things.
-        // Leave out of this calculation the canvas and any image descriptions or controls.
-        const children = (
-            Array.from(bloomCanvas.children) as HTMLElement[]
-        ).filter(
-            (c) =>
-                c.style.left !== "" &&
-                c.classList.contains("bloom-ui") === false &&
-                c.tagName.toLowerCase() !== "canvas",
-        );
-        if (children.length === 0) return;
-
-        // Figure out the rectangle that contains all the canvas elements. We'll adjust the size and position
-        // of this rectangle to fit the new container. (But if there's a background image, we'll instead
-        // adjust to keep it in the content-fit position.)
-        // Review: should we consider any data-bubble-alternate values on other language bloom-editables?
-        // In most cases it won't make much difference since the alternate is in nearly the same place.
-        // If an alternate is in a very different place, leaving it out here could mean it gets clipped
-        // in the new layout. OTOH, if we include it, the results for this language could be quite
-        // puzzling, and there might be no way to get things to stay where they are wanted without adjusting
-        // the alternate language version.
-        let top = Number.MAX_VALUE;
-        let bottom = -Number.MAX_VALUE;
-        let left = Number.MAX_VALUE;
-        let right = -Number.MAX_VALUE;
-        for (let i = 0; i < children.length; i++) {
-            const child = children[i];
-            const childTop = child.offsetTop;
-            const childLeft = child.offsetLeft;
-            if (child.classList.contains(kBackgroundImageClass)) {
-                const img = getImageFromCanvasElement(child);
-                if (
-                    !img ||
-                    isPlaceHolderImage(img.getAttribute("src")) ||
-                    children.length === 1
-                ) {
-                    // If there's no image or it's a placeholder, and there are other overlays, it won't be visible,
-                    // so we'll exclude it from the calculations, but still adjust it in case it becomes visible.
-                    // If it's the only child, we want to do the normal positioning of it.
-                    // In particular, this is important when switching "fill the front cover" on or off,
-                    // since  the code here does not properly allow for that mode.
-                    this.adjustBackgroundImageSize(bloomCanvas, child, false);
-                    if (children.length > 1) {
-                        // we'll process the others ignoring the invisible BG image
-                        continue;
-                    } else {
-                        // there are no others, and with zero iterations of this loop
-                        // something bad might happen.
-                        return;
-                    }
-                }
-            }
-            // Clip the rectangle to the old container. If the author previously placed
-            // something so that it was partly clipped, we don't need to 'correct' that.
-            // (We're not trying to ensure that it stays clipped by the same amount,
-            // just that we don't scale things down more than otherwise necessary to make
-            // more of it visible.)
-            if (childTop < top) top = Math.max(childTop, 0);
-            if (childLeft < left) left = Math.max(childLeft, 0);
-            if (childTop + child.clientHeight > bottom)
-                bottom = Math.min(childTop + child.clientHeight, oldHeight);
-            if (childLeft + child.clientWidth > right)
-                right = Math.min(childLeft + child.clientWidth, oldWidth);
-
-            // If found, it should be the first one; we'll make it the whole rectangle we try
-            // to fit to the new container size.
-            if (child.classList.contains(kBackgroundImageClass)) {
-                if (
-                    (child.clientLeft !== 0 && child.clientTop !== 0) ||
-                    (Math.abs(child.clientWidth - oldWidth) > 1 &&
-                        Math.abs(child.clientHeight - oldHeight) > 1)
-                ) {
-                    // The background image was not properly adjusted to fit the old container size.
-                    // We'll pretend the old container size properly matched the old BG image so everything else adjusts properly.
-                    // Move all the canvas elements so the BG image is in the top left.
-                    const deltaX = child.clientLeft;
-                    const deltaY = child.clientTop;
-                    for (let j = 0; j < children.length; j++) {
-                        const c = children[j];
-                        c.style.left =
-                            CanvasElementManager.pxToNumber(c.style.left) -
-                            deltaX +
-                            "px";
-                        c.style.top =
-                            CanvasElementManager.pxToNumber(c.style.top) -
-                            deltaY +
-                            "px";
-                    }
-                    // and pretend the old container size matched the old BG image size.
-                    oldWidth = child.clientWidth;
-                    oldHeight = child.clientHeight;
-                }
-                break;
-            }
-        }
-        const childrenHeight = bottom - top;
-        const childrenWidth = right - left;
-        const childrenAspectRatio = childrenWidth / childrenHeight;
-        // The goal is to figure out the new size and position of the rectangle
-        // defined by top, left, childrenWidth, childrenHeight, which are relative
-        // to oldWidth and oldHeight, in view of the newWidth and newHeight.
-        // Ideally the new height, width, top, and left would be the same percentages
-        // as before of the new container height and width. But we need to preserve
-        // aspect ratio. If the ideal adjustment breaks this, we will
-        // - increase the dimension that is too small for the aspect ratio until the aspect ratio is correct or it fills the container.
-        // - if that didn't make things right, decrease the other dimension.
-        // Conveniently this algorithm also achieves the goal of keeping any background image
-        // emultating content-fit (assuming it was before).
-        // What fraction of the old padding was on the left?
-        const widthPadding = oldWidth - childrenWidth;
-        const heightPadding = oldHeight - childrenHeight;
-        // if there was significant padding before, we'll try to keep the same ratio.
-        // if not, and we now need padding in that direction, we'll center things.
-        const oldLeftPaddingFraction =
-            widthPadding > 1 ? left / widthPadding : 0.5;
-        const oldTopPaddingFraction =
-            heightPadding > 1 ? top / heightPadding : 0.5;
-        const oldWidthFraction = childrenWidth / oldWidth;
-        const oldHeightFraction = childrenHeight / oldHeight;
-        let newChildrenWidth = oldWidthFraction * newWidth;
-        let newChildrenHeight = oldHeightFraction * newHeight;
-        if (newChildrenWidth / newChildrenHeight > childrenAspectRatio) {
-            // the initial calculation will distort things as if squeezed vertically.
-            // try increasing height
-            newChildrenHeight = newChildrenWidth / childrenAspectRatio;
-            if (newChildrenHeight > newHeight) {
-                // can't grow enough vertically, instead, reduce width
-                newChildrenHeight = newHeight;
-                newChildrenWidth = newChildrenHeight * childrenAspectRatio;
-            }
-        } else {
-            // the initial calculation will distort things as if squeezed horizontally.
-            // try increasing width
-            newChildrenWidth = newChildrenHeight * childrenAspectRatio;
-            if (newChildrenWidth > newWidth) {
-                // can't grow enough horizontally, instead, reduce height
-                newChildrenWidth = newWidth;
-                newChildrenHeight = newChildrenWidth / childrenAspectRatio;
-            }
-        }
-        // after the adjustments above, this is how we will scale things in both directions.
-        const scale = newChildrenWidth / childrenWidth;
-        // The new topLeft is calculated to distribute any whitespace in the same proportions as before.
-        const newWidthPadding = newWidth - newChildrenWidth;
-        const newHeightPadding = newHeight - newChildrenHeight;
-        const newLeft = oldLeftPaddingFraction * newWidthPadding;
-        const newTop = oldTopPaddingFraction * newHeightPadding;
-        let needComicalUpdate = false;
-        // OK, so the rectangle that represents the union of all the children (or the background image) is going to
-        // be scaled by 'scale' and moved to (newLeft, newTop).
-        // Now we need to adjust the position and possibly size of each child.
-        children.forEach((child: HTMLElement) => {
-            const childTop = child.offsetTop;
-            const childLeft = child.offsetLeft;
-            // a first approximation
-            let newChildTop = newTop + (childTop - top) * scale;
-            let newChildLeft = newLeft + (childLeft - left) * scale;
-            let newChildWidth = child.clientWidth;
-            let newChildHeight = child.clientHeight;
-            let reposition = true;
-            const bubbleSpec = Bubble.getBubbleSpec(child);
-            // This test is not as precise as the one in ComicalJs.Bubble.isTransparent,
-            // but it seems to work. My intuition is that text-only bubbles (no tails, spec=none)
-            // which have colored backgrounds might need a Comical update, but in practice
-            // they don't seem to. In fact, the only thing that wasn't working when
-            // I didn't force an update was that tails got left behind when moving a bubble
-            // as part of double-clicking a divider.)
-            needComicalUpdate =
-                needComicalUpdate ||
-                (!!bubbleSpec.tails && bubbleSpec.tails.length > 0) ||
-                bubbleSpec.spec !== "none";
-            if (
-                Array.from(child.children).some(
-                    (c: HTMLElement) =>
-                        c.classList.contains("bloom-imageContainer") ||
-                        c.classList.contains("bloom-videoContainer"),
-                )
-            ) {
-                // an image or video canvas element: the position is OK, we want to scale the size.
-                newChildWidth = child.clientWidth * scale;
-                newChildHeight = child.clientHeight * scale;
-                const img = child.getElementsByTagName("img")[0];
-                if (img && img.style.width) {
-                    // The image has been cropped. We want to keep the crop looking the same,
-                    // which means we need to scale its width, left, and top.
-                    const imgLeft = CanvasElementManager.pxToNumber(
-                        img.style.left,
-                    );
-                    const imgTop = CanvasElementManager.pxToNumber(
-                        img.style.top,
-                    );
-                    const imgWidth = CanvasElementManager.pxToNumber(
-                        img.style.width,
-                    );
-                    img.style.left = imgLeft * scale + "px";
-                    img.style.top = imgTop * scale + "px";
-                    img.style.width = imgWidth * scale + "px";
-                }
-            } else if (
-                child.classList.contains(kCanvasElementClass) ||
-                child.hasAttribute("data-target-of")
-            ) {
-                // text canvas element (or target): we want to leave the size alone and preserve the position of the center.
-                const oldCenterX = childLeft + child.clientWidth / 2;
-                const oldCenterY = childTop + child.clientHeight / 2;
-                const newCenterX = newLeft + (oldCenterX - left) * scale;
-                const newCenterY = newTop + (oldCenterY - top) * scale;
-                newChildTop = newCenterY - newChildHeight / 2;
-                newChildLeft = newCenterX - newChildWidth / 2;
-            } else {
-                // image description? UI artifact? leave it alone
-                reposition = false;
-            }
-            if (reposition) {
-                child.style.top = newChildTop + "px";
-                child.style.left = newChildLeft + "px";
-                child.style.width = newChildWidth + "px";
-                child.style.height = newChildHeight + "px";
-            }
-            if (child.classList.contains(kCanvasElementClass)) {
-                const tails: TailSpec[] = bubbleSpec.tails;
-                tails.forEach((tail) => {
-                    tail.tipX = newLeft + (tail.tipX - left) * scale;
-                    tail.tipY = newTop + (tail.tipY - top) * scale;
-                    tail.midpointX = newLeft + (tail.midpointX - left) * scale;
-                    tail.midpointY = newTop + (tail.midpointY - top) * scale;
-                });
-                const bubble = new Bubble(child);
-                bubble.mergeWithNewBubbleProps({ tails: tails });
-                if (
-                    !Array.from(child.children).some(
-                        (c: HTMLElement) =>
-                            c.classList.contains("bloom-imageContainer") ||
-                            c.classList.contains("bloom-videoContainer"),
-                    )
-                ) {
-                    // This must be done after we adjust the canvas element, since its new settings are
-                    // written into the alternate for the current language.
-                    // Review: adjusting the data-bubble-alternate means that the canvas elements in
-                    // other languages will look right if we go in and edit them. However,
-                    // to make things look right automatically in publications, we'd need to
-                    // switch each alternative to be the live one, fire up Comical, and adjust the SVG.
-                    // I think this would cause flicker, and certainly delay. If we decide we want
-                    // to make that fully automatic, I think it might be better to do it
-                    // as a publishing step when we know what languages will be published.
-                    CanvasElementManager.adjustCanvasElementAlternates(
-                        child,
-                        scale,
-                        left,
-                        top,
-                        newLeft,
-                        newTop,
-                    );
-                }
-            }
-        });
-        if (needComicalUpdate) {
-            // Move the bubbles to be consistent with the updated specs and positions.
-            Comical.update(bloomCanvas);
-        }
+        this.canvasResizeAdjustments.adjustChildrenIfSizeChanged(bloomCanvas);
     }
 
     public static adjustCanvasElementAlternates(
