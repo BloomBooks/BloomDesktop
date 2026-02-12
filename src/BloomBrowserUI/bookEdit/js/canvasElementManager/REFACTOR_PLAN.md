@@ -110,4 +110,4 @@ Live tests:
 ## Line counts
 - [ ] Starting: CanvasElementManager.ts 7610 lines
 - [ ] Target: CanvasElementManager.ts ≤ 2000 lines
-- [ ] Current: CanvasElementManager.ts 6150 lines
+- [ ] Current: CanvasElementManager.ts 5511 lines

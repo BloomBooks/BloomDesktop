@@ -51,7 +51,6 @@ import {
 } from "../toolbox/canvas/canvasElementConstants";
 import { updateCanvasElementClass } from "../toolbox/canvas/canvasElementDomUtils";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
-import { handlePlayClick } from "./bloomVideo";
 import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
 import { needsToBeKeptSameSize } from "../toolbox/games/gameUtilities";
 import { CanvasElementType } from "../toolbox/canvas/canvasElementTypes";
@@ -96,6 +95,7 @@ import { CanvasElementFactories } from "./canvasElementManager/CanvasElementFact
 import { CanvasElementClipboard } from "./canvasElementManager/CanvasElementClipboard";
 import { CanvasElementDuplication } from "./canvasElementManager/CanvasElementDuplication";
 import { CanvasElementSelectionUi } from "./canvasElementManager/CanvasElementSelectionUi";
+import { CanvasElementPointerInteractions } from "./canvasElementManager/CanvasElementPointerInteractions";
 
 const kComicalGeneratedClass: string = "comical-generated";
 
@@ -130,14 +130,6 @@ export class CanvasElementManager {
         handler: (x: Bubble | undefined) => void;
     }[] = [];
 
-    // These variables are used by the canvas element's onmouse* event handlers
-    private bubbleToDrag: Bubble | undefined; // Use Undefined to indicate that there is no active drag in progress
-    // unscaled offset from top left of canvas element being dragged to the point of the mouseDown where we started dragging it
-    private bubbleDragGrabOffset: { x: number; y: number } = {
-        x: 0,
-        y: 0,
-    };
-
     private guideProvider: CanvasGuideProvider;
     private keyboardProvider: CanvasElementKeyboardProvider;
     private snapProvider: CanvasSnapProvider;
@@ -145,6 +137,10 @@ export class CanvasElementManager {
     private clipboard: CanvasElementClipboard;
     private duplication: CanvasElementDuplication;
     private selectionUi: CanvasElementSelectionUi;
+    private pointerInteractions: CanvasElementPointerInteractions;
+
+    // Used by stopMoving() to clear cursor style after a drag.
+    private lastMoveContainer: HTMLElement;
 
     public constructor() {
         this.snapProvider = new CanvasSnapProvider();
@@ -219,6 +215,34 @@ export class CanvasElementManager {
                 this.adjustMoveCropHandleVisibility.bind(this),
         });
         this.guideProvider = new CanvasGuideProvider();
+
+        this.pointerInteractions = new CanvasElementPointerInteractions(
+            {
+                getActiveElement: () => this.activeElement,
+                setActiveElement: this.setActiveElement.bind(this),
+                getCanvasElementWeAreTextEditing: () =>
+                    this.theCanvasElementWeAreTextEditing,
+                setCanvasElementWeAreTextEditing: (element) => {
+                    this.theCanvasElementWeAreTextEditing = element;
+                },
+                isPictureCanvasElement: this.isPictureCanvasElement.bind(this),
+                duplicateCanvasElementBox:
+                    this.duplicateCanvasElementBox.bind(this),
+                adjustCanvasElementLocation:
+                    this.adjustCanvasElementLocation.bind(this),
+                startMoving: this.startMoving.bind(this),
+                stopMoving: this.stopMoving.bind(this),
+                setLastMoveContainer: (container) => {
+                    this.lastMoveContainer = container;
+                },
+                resetCropBasis: () => {
+                    this.lastCropControl = undefined;
+                },
+            },
+            this.snapProvider,
+            this.guideProvider,
+        );
+
         this.keyboardProvider = new CanvasElementKeyboardProvider(
             {
                 deleteCurrentCanvasElement:
@@ -744,7 +768,7 @@ export class CanvasElementManager {
                     }
                 });
                 this.setDragAndDropHandlers(bloomCanvas);
-                this.setMouseDragHandlers(bloomCanvas);
+                this.pointerInteractions.setMouseDragHandlers(bloomCanvas);
             },
         );
     }
@@ -3032,44 +3056,7 @@ export class CanvasElementManager {
 
     // Setup event handlers that allow the canvas element to be moved around or resized.
     private setMouseDragHandlers(bloomCanvas: HTMLElement): void {
-        // An earlier version of this code set onmousedown to this.onMouseDown, etc.
-        // We need to use addEventListener so we can capture.
-        // It's unlikely, but I can't rule it out, that a deliberate side effect
-        // was to remove some other onmousedown handler. Just in case, clear the fields.
-        // I don't think setting these has any effect on handlers done with addEventListener,
-        // but just in case, I'm doing this first.
-        bloomCanvas.onmousedown = null;
-        bloomCanvas.onmousemove = null;
-        bloomCanvas.onmouseup = null;
-
-        // We use mousemove effects instead of drag due to concerns that drag effects would make the entire bloom-canvas appear to drag.
-        // Instead, with mousemove, we can make only the specific canvas element move around
-        // Grabbing these (particularly the move event) in the capture phase allows us to suppress
-        // effects of ctrl and alt clicks on the text.
-        bloomCanvas.addEventListener("mousedown", this.onMouseDown, {
-            capture: true,
-        });
-
-        // I would prefer to add this to document in onMouseDown, but not yet satisfied that all
-        // the things it does while hovering are no longer needed.
-        bloomCanvas.addEventListener("mousemove", this.onMouseMove, {
-            capture: true,
-        });
-
-        // mouse up handler is added to document in onMouseDown
-
-        bloomCanvas.onkeypress = (event: Event) => {
-            // If the user is typing in a canvas element, make sure automatic shrinking is off.
-            // Automatic shrinking while typing might be useful when originally authoring a comic,
-            // but it's a nuisance when translating one, as the canvas element is initially empty
-            // and shrinks to one line, messing up the whole layout.
-            if (!event.target || !(event.target as Element).closest) return;
-            const topBox = (event.target as Element).closest(
-                kCanvasElementSelector,
-            ) as HTMLElement;
-            if (!topBox) return;
-            topBox.classList.remove("bloom-allowAutoShrink");
-        };
+        this.pointerInteractions.setMouseDragHandlers(bloomCanvas);
     }
 
     // Move all child canvas elements as necessary so they are at least partly inside their container
@@ -3221,268 +3208,6 @@ export class CanvasElementManager {
         this.alignControlFrameWithActiveElement();
     }
 
-    // Move the text insertion point to the specified location.
-    // This is what a click at that location would typically do, but we are intercepting
-    // those events to turn the click into a drag of the canvas element if there is mouse movement.
-    // This uses the browser's caretPositionFromPoint or caretRangeFromPoint, which are not
-    // supported by all browsers, but at least one of them works in WebView2, which is all we need.
-    private moveInsertionPointAndFocusTo = (x, y): Range | undefined => {
-        type DocumentWithCaret = Document & {
-            caretPositionFromPoint?: (
-                x: number,
-                y: number,
-            ) => CaretPosition | null;
-            caretRangeFromPoint?: (x: number, y: number) => Range | null;
-        };
-        const doc = document as DocumentWithCaret;
-        const rangeOrCaret = doc.caretPositionFromPoint
-            ? doc.caretPositionFromPoint(x, y)
-            : doc.caretRangeFromPoint
-              ? doc.caretRangeFromPoint(x, y)
-              : null;
-
-        if (!rangeOrCaret) {
-            return undefined;
-        }
-
-        // We really seem to need to handle both possibilities. I had it working with just the
-        // code for range, then restarted Bloom and started getting CaretPositions. Maybe a new
-        // version of WebView2 got auto-installed? Anyway, now it should handle both.
-        let range: Range;
-        if ("endContainer" in rangeOrCaret) {
-            range = rangeOrCaret;
-        } else {
-            // Probably a CaretPosition. We need a Range to use with addRange.
-            range = document.createRange();
-            range.setStart(rangeOrCaret.offsetNode, rangeOrCaret.offset);
-            range.setEnd(rangeOrCaret.offsetNode, rangeOrCaret.offset);
-        }
-
-        if (range && range.collapse && range?.endContainer?.parentElement) {
-            range.collapse(false); // probably not needed?
-            range.endContainer.parentElement.focus();
-            const setSelection = () => {
-                const selection = window.getSelection();
-                selection?.removeAllRanges();
-                selection?.addRange(range);
-            };
-            // I have _no_ idea why it is necessary to do this twice, but if we don't, the selection
-            // ends up at a more-or-less random position (often something that was recently selected).
-            setSelection();
-            setSelection();
-        }
-        return range as Range;
-    };
-
-    private activeElementAtMouseDown: HTMLElement | undefined;
-    // Keeps track of whether we think the mouse is down (that is, we've handled a mouseDown but not
-    // yet a mouseUp)). Does not get set if our mouseDown handler finds that isMouseEventAlreadyHandled
-    // returns true.
-    private mouseIsDown = false;
-    private clientXAtMouseDown: number;
-    private clientYAtMouseDown: number;
-    private mouseDownContainer: HTMLElement;
-
-    // MUST be defined this way, rather than as a member function, so that it can
-    // be passed directly to addEventListener and still get the correct 'this'.
-    private onMouseDown = (event: MouseEvent) => {
-        this.activeElementAtMouseDown = this.activeElement;
-        const bloomCanvas = event.currentTarget as HTMLElement;
-        // Let standard clicks on the bloom editable or other UI elements only be processed by that element
-        if (this.isMouseEventAlreadyHandled(event)) {
-            return;
-        }
-        this.gotAMoveWhileMouseDown = false;
-        this.mouseIsDown = true;
-        this.clientXAtMouseDown = event.clientX;
-        this.clientYAtMouseDown = event.clientY;
-        this.mouseDownContainer = bloomCanvas;
-        // Adding this to document rather than the container makes it much less likely that we'll miss
-        // the mouse up. Also, we only add it at all if the mouse down happened on an appropriate target.
-        // Mouse up also wants to be limited to appropriate targets, but when dragging (especially
-        // a jquery resize of a motion rectangle) it's easy for the mouse up to be outside the
-        // thing originally clicked on. Addding it here means that the test for whether it's a click
-        // this set of functions should handle is not needed in onMouseUp; only if we decide here that it's
-        // ours to handle will the mouse up handler even be added.
-        // (I'd like to do the same with mouse move but we still have some hover effects.)
-        document.addEventListener("mouseup", this.onMouseUp, {
-            capture: true,
-        });
-
-        // These coordinates need to be relative to the canvas (which is the same as relative to the bloomCanvas).
-        const coordinates = this.getPointRelativeToCanvas(event, bloomCanvas);
-
-        if (!coordinates) {
-            return;
-        }
-
-        const bubble = Comical.getBubbleHit(
-            bloomCanvas,
-            coordinates.getUnscaledX(),
-            coordinates.getUnscaledY(),
-            true, // only consider canvas elements with pointer events allowed.
-        );
-        if (bubble && event.button === 2) {
-            // Right mouse button
-            if (bubble.content !== this.activeElement) {
-                this.setActiveElement(bubble.content);
-            }
-            // Aimed at preventing the browser context menu from appearing, but did not succeed.
-            // But I don't think we want any other right-click behavior than the menu, so we may
-            // as well suppress it.
-            event.preventDefault();
-            event.stopPropagation();
-            // re-render the toolbox with its menu open at the desired location
-            renderCanvasElementContextControls(bubble.content, true, {
-                left: event.clientX,
-                top: event.clientY,
-            });
-            return;
-        }
-
-        if (
-            Comical.isDraggableNear(
-                bloomCanvas,
-                coordinates.getUnscaledX(),
-                coordinates.getUnscaledY(),
-            )
-        ) {
-            // If we're starting to drag something, typically a tail handle, in Comical,
-            // don't do any other mouse activity.
-            return;
-        }
-
-        const startDraggingBubble = (bubble: Bubble) => {
-            // Note: at this point we do NOT want to focus it. Only if we decide in mouse up that we want to text-edit it.
-            this.setActiveElement(bubble.content);
-
-            // Possible move action started
-            this.bubbleToDrag = bubble;
-            // in case this is somehow left from earlier, we want a fresh start for the new move.
-            this.animationFrame = 0;
-
-            this.guideProvider.startDrag(
-                "move",
-                Array.from(
-                    document.querySelectorAll(kCanvasElementSelector),
-                ) as HTMLElement[],
-            );
-
-            // Remember the offset between the top-left of the canvas element we're dragging and the initial
-            // location of the mouse pointer.
-            const pointRelativeToViewport = new Point(
-                event.clientX,
-                event.clientY,
-                PointScaling.Scaled,
-                "MouseEvent Client (Relative to viewport)",
-            );
-            const relativePoint =
-                CanvasElementManager.convertPointFromViewportToElementFrame(
-                    pointRelativeToViewport,
-                    bubble.content,
-                );
-            this.bubbleDragGrabOffset = {
-                x: relativePoint.getUnscaledX(),
-                y: relativePoint.getUnscaledY(),
-            };
-        };
-
-        if (bubble) {
-            if (
-                window.getComputedStyle(bubble.content).pointerEvents === "none"
-            ) {
-                // We're doing some fairly tricky stuff to handle an event on a parent element but
-                // use it to manipulate a child. If the child is not supposed to be responding to
-                // pointer events, we should not be manipulating it here either.
-                return;
-            }
-            if (event.altKey) {
-                event.preventDefault();
-                event.stopPropagation();
-                // using this trick for a canvas element that is part of a family doesn't work well.
-                // We can only drag one canvas element at once, so where should we put the other duplicate?
-                // Maybe we can come up with an answer, but for now, I'm just going to ignore the alt key.
-                if (Comical.findRelatives(bubble).length === 0) {
-                    // duplicate the canvas element and drag that.
-                    // currently duplicateCanvasElementBox actually dupliates the current active element,
-                    // not the one it is passed. So make sure the one we clicked is active, though it won't be for long.
-                    this.setActiveElement(bubble.content);
-                    const newCanvasElement = this.duplicateCanvasElementBox(
-                        bubble.content,
-                        true,
-                    );
-                    if (!newCanvasElement) return;
-                    startDraggingBubble(new Bubble(newCanvasElement));
-                    return;
-                }
-            }
-            // We clicked on a canvas element that's not disabled. If we clicked inside the canvas element we are
-            // text editing, and neither ctrl nor alt is down, we handle it normally. Otherwise, we
-            // need to suppress. If we're outside the editable but inside the canvas element, we don't need any default event processing,
-            // and if we're inside and ctrl or alt is down, we want to prevent the events being
-            // processed by the text. And if we're inside a canvas element not yet recognized as the one we're
-            // editing, we want to suppress the event because, unless it turns out to be a simple click
-            // with no movement, we're going to treat it as dragging the canvas element.
-            const clickOnCanvasElementWeAreEditing =
-                this.theCanvasElementWeAreTextEditing ===
-                    (event.target as HTMLElement)?.closest(
-                        kCanvasElementSelector,
-                    ) && this.theCanvasElementWeAreTextEditing;
-            if (
-                event.altKey ||
-                event.ctrlKey ||
-                !clickOnCanvasElementWeAreEditing
-            ) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            if (bubble.content.classList.contains(kBackgroundImageClass)) {
-                this.setActiveElement(bubble.content); // usually done by startDraggingBubble, but we're not going to drag it.
-                return; // these can't be dragged, they are locked to a computed position like content-fit.
-            }
-            startDraggingBubble(bubble);
-        }
-    };
-
-    // MUST be defined this way, rather than as a member function, so that it can
-    // be passed directly to addEventListener and still get the correct 'this'.
-    private onMouseMove = (event: MouseEvent) => {
-        if (
-            CanvasElementManager.inPlayMode(event.currentTarget as HTMLElement)
-        ) {
-            return; // no edit mode functionality is relevant
-        }
-        if (event.buttons === 0 && this.mouseIsDown) {
-            // we missed the mouse up...maybe because we're debugging? In any case, we don't want to go
-            // on doing drag-type things; best to simulate the mouse up we missed.
-            this.onMouseUp(event);
-            return;
-        }
-        // Capture the most recent data to use when our animation frame request is satisfied.
-        // or so keyboard events can reference the current mouse position.
-        this.lastMoveEvent = event;
-        const deltaX = event.clientX - this.clientXAtMouseDown;
-        const deltaY = event.clientY - this.clientYAtMouseDown;
-        if (
-            event.buttons === 1 &&
-            Math.sqrt(deltaX * deltaX + deltaY * deltaY) > 3
-        ) {
-            this.gotAMoveWhileMouseDown = true;
-            this.startMoving();
-        }
-        if (!this.gotAMoveWhileMouseDown) {
-            return; // don't actually move until the distance is enough to be sure it's not a click.
-        }
-
-        const container = event.currentTarget as HTMLElement;
-
-        if (!this.bubbleToDrag) {
-            this.handleMouseMoveHover(event, container);
-        } else if (this.bubbleToDrag) {
-            this.handleMouseMoveDragCanvasElement(event, container);
-        }
-    };
-
     // Add the classes that let various controls know that a move, resize, or drag is in progress.
     private startMoving() {
         const controlFrame = document.getElementById(
@@ -3493,162 +3218,6 @@ export class CanvasElementManager {
         document
             .getElementById("canvas-element-context-controls")
             ?.classList?.add("moving");
-    }
-
-    // Mouse hover - No move or resize is currently active, but check if there is a canvas element under the mouse that COULD be
-    // and add or remove the classes we use to indicate this
-    private handleMouseMoveHover(event: MouseEvent, container: HTMLElement) {
-        if (this.isMouseEventAlreadyHandled(event)) {
-            return;
-        }
-
-        let hoveredBubble = this.getBubbleUnderMouse(event, container);
-
-        // Now there are several options depending on various conditions. There's some
-        // overlap in the conditions and it is tempting to try to combine into a single compound
-        // "if" statement. But note, this first one may change hoveredBubble to null,
-        // which then changes which of the following options is chosen. Be careful!
-        if (hoveredBubble && hoveredBubble.content !== this.activeElement) {
-            // The hovered canvas element is not selected. If it's an image, the user might
-            // want to drag a tail tip there, which is hard to do with a grab cursor,
-            // so don't switch.
-            if (this.isPictureCanvasElement(hoveredBubble.content)) {
-                hoveredBubble = null;
-            }
-        }
-    }
-
-    /**
-     * Gets the canvas element under the mouse location, or null if no canvas element is
-     */
-    public getBubbleUnderMouse(
-        event: MouseEvent,
-        container: HTMLElement,
-    ): Bubble | null {
-        const coordinates = this.getPointRelativeToCanvas(event, container);
-        if (!coordinates) {
-            // Give up
-            return null;
-        }
-
-        return (
-            Comical.getBubbleHit(
-                container,
-                coordinates.getUnscaledX(),
-                coordinates.getUnscaledY(),
-            ) ?? null
-        );
-    }
-
-    private animationFrame: number;
-    private lastMoveEvent: MouseEvent;
-    private lastMoveContainer: HTMLElement;
-
-    // A canvas element is currently in drag mode, and the mouse is being moved.
-    // Move the canvas element accordingly.
-    private handleMouseMoveDragCanvasElement(
-        event: MouseEvent,
-        container: HTMLElement,
-    ) {
-        if (event.buttons === 0) {
-            // we missed the mouse up...maybe because we're debugging? In any case, we need to
-            // get out of that mode.
-            this.onMouseUp(event);
-            return;
-        }
-        if (this.activeElement) {
-            const r = this.activeElement.getBoundingClientRect();
-            const bloomCanvas =
-                this.activeElement.parentElement?.closest(kBloomCanvasSelector);
-            if (bloomCanvas) {
-                const canvas = this.getFirstCanvasForContainer(bloomCanvas);
-                if (canvas)
-                    canvas.classList.toggle(
-                        "moving",
-                        event.clientX > r.left &&
-                            event.clientX < r.right &&
-                            event.clientY > r.top &&
-                            event.clientY < r.bottom,
-                    );
-            }
-        }
-        // Capture the most recent data to use when our animation frame request is satisfied.
-        this.lastMoveContainer = container;
-        this.lastMoveContainer.style.cursor = "move";
-        // We don't want any other effects of mouse move, like selecting text in the box,
-        // to happen while we're dragging it around.
-        event.preventDefault();
-        event.stopPropagation();
-        if (this.animationFrame) {
-            // already working on an update, starting another before
-            // we complete it only slows rendering.
-            // The site where I got this idea suggested instead using cancelAnimationFrame at this
-            // point. One possible advantage is that the very last mousemove before mouse up is
-            // then certain to get processed. But it seemed to be significantly less effective
-            // at getting frames fully rendered often, and the difference in where the box ends up
-            // is unlikely to be significant...the user will keep dragging until satisfied.
-            // Note that we're capturing the mouse position from the most recent move event.
-            // The most we can lose is the movement between when we start the requestAnimationFrame
-            // callback and a subsequent mouseUp before the callback returns and clears
-            // this.animationFrame (which will allow the next mouse move to start a new request).
-            // That may not even be possible (the system would likely do another mouse move after
-            // the callback and before the mouseup, if the mouse had moved again?). But at worst,
-            // we can only lose the movement in the time it takes us to move the box once...about 1/30
-            // second on my system when throttled 6x.
-            return;
-        }
-        this.animationFrame = requestAnimationFrame(() => {
-            if (!this.bubbleToDrag) {
-                // This case could be reached when using the JQuery drag handle.
-                this.animationFrame = 0; // must clear, or move will forever be blocked.
-                return;
-            }
-
-            const pointRelativeToViewport = new Point(
-                event.clientX,
-                event.clientY,
-                PointScaling.Scaled,
-                "MouseEvent Client (Relative to viewport)",
-            );
-            const bloomCanvas =
-                this.bubbleToDrag.content.parentElement?.closest(
-                    kBloomCanvasSelector,
-                ) as HTMLElement;
-            const relativePoint =
-                CanvasElementManager.convertPointFromViewportToElementFrame(
-                    pointRelativeToViewport,
-                    bloomCanvas,
-                );
-
-            let newPosition = new Point(
-                relativePoint.getUnscaledX() - this.bubbleDragGrabOffset.x,
-                relativePoint.getUnscaledY() - this.bubbleDragGrabOffset.y,
-                PointScaling.Unscaled,
-                "Created by handleMouseMoveDragCanvasElement()",
-            );
-
-            const p = this.snapProvider.getPosition(
-                event,
-                newPosition.getUnscaledX(),
-                newPosition.getUnscaledY(),
-            );
-            newPosition = new Point(
-                p.x,
-                p.y,
-                PointScaling.Unscaled,
-                "Created by handleMouseMoveDragCanvasElement()",
-            );
-
-            this.adjustCanvasElementLocation(
-                this.bubbleToDrag.content,
-                this.lastMoveContainer,
-                newPosition,
-            );
-
-            this.guideProvider.duringDrag(this.bubbleToDrag.content);
-            this.lastCropControl = undefined; // move resets the basis for cropping
-            this.animationFrame = 0;
-        });
     }
 
     // The center handle, used to move the picture under the canvas element, does nothing
@@ -3700,219 +3269,10 @@ export class CanvasElementManager {
         this.alignControlFrameWithActiveElement();
     }
 
-    // MUST be defined this way, rather than as a member function, so that it can
-    // be passed directly to addEventListener and still get the correct 'this'.
-    private onMouseUp = (event: MouseEvent) => {
-        this.mouseIsDown = false;
-        this.snapProvider.endDrag();
-        this.guideProvider.endDrag();
-        document.removeEventListener("mouseup", this.onMouseUp, {
-            capture: true,
-        });
-        if (CanvasElementManager.inPlayMode(this.mouseDownContainer)) {
-            return;
-        }
-        this.stopMoving();
-        if (
-            !this.gotAMoveWhileMouseDown &&
-            (event.target as HTMLElement).closest(".bloom-videoPlayIcon")
-        ) {
-            handlePlayClick(event, true);
-            return;
-        }
-
-        if (this.bubbleToDrag) {
-            // if we're doing a resize or drag, we don't want ordinary mouseup activity
-            // on the text inside the canvas element.
-            event.preventDefault();
-            event.stopPropagation();
-        }
-
-        this.bubbleToDrag = undefined;
-        this.mouseDownContainer.classList.remove("grabbing");
-        const editable = (event.target as HTMLElement)?.closest(
-            ".bloom-editable",
-        );
-        if (
-            editable &&
-            editable.closest(kCanvasElementSelector) ===
-                this.theCanvasElementWeAreTextEditing
-        ) {
-            // We're text editing in this canvas element, let the mouse do its normal things.
-            // In particular, we don't want to do moveInsertionPointAndFocusTo here,
-            // because it will force the selection back to an IP when we might want a range
-            // (e.g., after a double-click).
-            // (But note, if we started out with the canvas element not active, a double click
-            // is properly interpreted as one click to select the canvas element, one to put it
-            // into edit mode...that is NOT a regular double-click that selects a word.
-            // At least, that seems to be what Canva does.)
-            return;
-        }
-        // a click without movement on a canvas element that is already the active one puts it in edit mode.
-        if (
-            !this.gotAMoveWhileMouseDown &&
-            editable &&
-            this.activeElementAtMouseDown === this.activeElement
-        ) {
-            // Going into edit mode on this canvas element.
-            this.theCanvasElementWeAreTextEditing = (
-                event.target as HTMLElement
-            )?.closest(kCanvasElementSelector) as HTMLElement;
-            this.theCanvasElementWeAreTextEditing?.classList.add(
-                "bloom-focusedCanvasElement",
-            );
-            // We want to position the IP as if the user clicked where they did.
-            // Since we already suppressed the mouseDown event, it's not enough to just
-            // NOT suppress the mouseUp event. We need to actually move the IP to the
-            // appropriate spot and give the canvas element focus.
-            this.moveInsertionPointAndFocusTo(event.clientX, event.clientY);
-        } else {
-            // prevent the click giving it focus (or any other default behavior). This mouse up
-            // is part of dragging a canvas element or resizing it or some similar special behavior that
-            // we are handling.
-            event.preventDefault();
-            event.stopPropagation();
-        }
-    };
-
     // If we get a click (without movement) on a text canvas element, we treat subsequent mouse events on
     // that canvas element as text editing events, rather than drag events, as long as it keeps focus.
     // This is the canvas element, if any, that is currently in that state.
     public theCanvasElementWeAreTextEditing: HTMLElement | undefined;
-    /**
-     * Returns true if a handler already exists to sufficiently process this mouse event
-     * without needing our custom onMouseDown/onMouseHover/etc event handlers to process it
-     */
-    private isMouseEventAlreadyHandled(ev: MouseEvent): boolean {
-        if (ev.detail === 2) {
-            // Let double-clicks be handled normally, e.g., to activate the chooser
-            // in a book list.
-            return true;
-        }
-        const targetElement = ev.target instanceof Element ? ev.target : null;
-        if (!targetElement) {
-            // As far as I can research, the target of a mouse event is always
-            // "the most deeply nested element." Apparently some very old browsers
-            // might answer a text node, but I think that stopped well before FF60.
-            // Therefore ev.target should be an element, not null or undefined or
-            // some other object, and it should have a classList, and calling contains
-            // on that classList should not throw.
-            // But: BL-11668 shows that it IS possible for classList to be undefined.
-            // Some testing revealed that somehow, most likely when dragging rapidly
-            // towards the edge of the document, we can get an event where target is
-            // the root document, which doesn't have a classList.
-            // Since we're looking for the click to be on some particular element,
-            // if somehow it's not connected to an element at all, I think we can safely
-            // return false.
-            return false;
-        }
-        if (CanvasElementManager.inPlayMode(targetElement)) {
-            // Game in play mode...no edit mode functionality is relevant
-            return true;
-        }
-        if (targetElement.classList.contains("changeImageButton")) {
-            // The change image button should handle the mouse event itself.  See BL-14614.
-            return true;
-        }
-        if (targetElement.classList.contains("bloom-dragHandle")) {
-            // The drag handle is outside the canvas element, so dragging it with the mouse
-            // events we handle doesn't work. Returning true lets its own event handler
-            // deal with things, and is a good thing even when ctrl or alt is down.
-            return true;
-        }
-        if (
-            targetElement.closest("#animationEnd") ||
-            targetElement.closest("#animationStart")
-        ) {
-            // These are used by the motion tool rectangles. Don't want canvas element code
-            // interfering.
-            return true;
-        }
-        if (targetElement.classList.contains("ui-resizable-handle")) {
-            // Ignore clicks on the JQuery resize handles.
-            return true;
-        }
-        if (targetElement.closest(".bloom-passive-element")) {
-            return true;
-        }
-        if (targetElement.closest("#canvas-element-control-frame")) {
-            // New drag controls
-            return true;
-        }
-        if (targetElement.closest("[data-target-of")) {
-            // Bloom game targets want to handle their own dragging.
-            return true;
-        }
-        if (
-            targetElement.closest(".bloom-videoReplayIcon") ||
-            targetElement.closest(".bloom-videoPauseIcon")
-        ) {
-            // The play button has special code in onMouseUp to handle a click on it.
-            // It does NOT have its own click handler (in canvas elements), because we want to allow the canvas element
-            // to be dragged normally if a mouseDown on it is followed by sufficient mouse
-            // movement to be considered a drag.
-            // But I decided not to do that for the other two buttons, which only appear
-            // when the video is playing after a click on the play button. They have normal
-            // click handlers, and we don't want our mouse down/move/up handlers to respond
-            // when they are clicked.
-            return true;
-        }
-        if (ev.ctrlKey || ev.altKey) {
-            return false;
-        }
-        const editable = targetElement.closest(".bloom-editable");
-        if (
-            editable &&
-            this.theCanvasElementWeAreTextEditing &&
-            this.theCanvasElementWeAreTextEditing.contains(editable) &&
-            ev.button !== 2
-        ) {
-            // an editable is allowed to handle its own events only if it's parent canvas element has
-            // been established as active for text editing and it's not a right-click.
-            // Otherwise, we handle it as a move (or context menu request, or...).
-            return true;
-        }
-        if (targetElement.closest(".MuiDialog-container")) {
-            // Dialog boxes (e.g., letter game prompt) get to handle their own events.
-            return true;
-        }
-        return false;
-    }
-
-    // Gets the coordinates of the specified event relative to the canvas element.
-    private getPointRelativeToCanvas(
-        event: MouseEvent,
-        container: Element,
-    ): Point | undefined {
-        const canvas = this.getFirstCanvasForContainer(container);
-        if (!canvas) {
-            return undefined;
-        }
-
-        const pointRelativeToViewport = new Point(
-            event.clientX,
-            event.clientY,
-            PointScaling.Scaled,
-            "MouseEvent Client (Relative to viewport)",
-        );
-
-        return CanvasElementManager.convertPointFromViewportToElementFrame(
-            pointRelativeToViewport,
-            canvas,
-        );
-    }
-
-    // Returns the first canvas in the container, or returns undefined if it does not exist.
-    private getFirstCanvasForContainer(
-        container: Element,
-    ): HTMLCanvasElement | undefined {
-        const collection = container.getElementsByTagName("canvas");
-        if (!collection || collection.length <= 0) {
-            return undefined;
-        }
-
-        return collection.item(0) as HTMLCanvasElement;
-    }
 
     // Gets the coordinates of the specified event relative to the specified element.
     private static convertPointFromViewportToElementFrame(
