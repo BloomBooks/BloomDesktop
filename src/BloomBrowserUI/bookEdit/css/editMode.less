@@ -142,6 +142,20 @@ body:has(.MuiPaper-root:hover) > .qtip {
     outline: none !important;
 }
 
+// Topic chooser hint bubbles are edit-only affordances; hide them unless the page affordances are visible.
+#page-scaling-container .qtip.topic-chooser-hint-bubble {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease-out;
+}
+#page-scaling-container:has(.bloom-page:hover) .qtip.topic-chooser-hint-bubble,
+body:has(#canvas-element-context-controls:hover)
+    #page-scaling-container
+    .qtip.topic-chooser-hint-bubble {
+    opacity: 1;
+    pointer-events: auto;
+}
+
 // Keep together here all the effects we want when hovering (previously: also when focus-within)
 // the bloom-page. All of them need to also apply when the canvas element context controls are hovered,
 // even though that is no longer a child of the bloom-page. (That's what the second rule is for.)
