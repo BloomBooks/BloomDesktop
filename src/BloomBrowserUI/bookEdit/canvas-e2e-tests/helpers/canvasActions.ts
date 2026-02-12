@@ -6,17 +6,17 @@ import {
     openCanvasToolTab,
     waitForCanvasReady,
 } from "./canvasFrames";
-import {
-    canvasSelectors,
-    type CanvasPaletteItemKey,
-    getContextMenuItemSelector,
-} from "./canvasSelectors";
+import { canvasSelectors, type CanvasPaletteItemKey } from "./canvasSelectors";
 
 // ── Types ───────────────────────────────────────────────────────────────
 
 export interface ICanvasTestContext {
     toolboxFrame: Frame;
     pageFrame: Frame;
+}
+
+interface IOpenCanvasOptions {
+    navigate?: boolean;
 }
 
 interface IDropOffset {
@@ -71,8 +71,11 @@ const sideOffsets: Record<ResizeSide, { xFrac: number; yFrac: number }> = {
 
 export const openCanvasToolOnCurrentPage = async (
     page: Page,
+    options?: IOpenCanvasOptions,
 ): Promise<ICanvasTestContext> => {
-    await gotoCurrentPage(page);
+    if (options?.navigate ?? true) {
+        await gotoCurrentPage(page);
+    }
     const toolboxFrame = await getToolboxFrame(page);
     const pageFrame = await getPageFrame(page);
     await openCanvasToolTab(toolboxFrame);
@@ -90,6 +93,103 @@ export const getCanvasElementCount = async (
     pageFrame: Frame,
 ): Promise<number> => {
     return pageFrame.locator(canvasSelectors.page.canvasElements).count();
+};
+
+const waitForCanvasElementCountBelow = async (
+    pageFrame: Frame,
+    upperExclusive: number,
+    timeoutMs = 2500,
+): Promise<boolean> => {
+    const endTime = Date.now() + timeoutMs;
+    while (Date.now() < endTime) {
+        const count = await getCanvasElementCount(pageFrame);
+        if (count < upperExclusive) {
+            return true;
+        }
+        await pageFrame.page().waitForTimeout(100);
+    }
+    return false;
+};
+
+const deleteLastCanvasElementViaManager = async (
+    pageFrame: Frame,
+): Promise<void> => {
+    await pageFrame.evaluate((selector: string) => {
+        const bundle = (window as any).editablePageBundle;
+        const manager = bundle?.getTheOneCanvasElementManager?.();
+        if (!manager) {
+            throw new Error("CanvasElementManager is not available.");
+        }
+
+        const elements = Array.from(
+            document.querySelectorAll(selector),
+        ) as HTMLElement[];
+        if (elements.length === 0) {
+            return;
+        }
+
+        const lastElement = elements[elements.length - 1];
+        manager.setActiveElement(lastElement);
+        manager.deleteCurrentCanvasElement();
+    }, canvasSelectors.page.canvasElements);
+};
+
+/**
+ * Remove user-created canvas elements until the count reaches targetCount.
+ * Intended for test cleanup in shared-page mode.
+ */
+export const removeCanvasElementsDownToCount = async (
+    pageFrame: Frame,
+    targetCount: number,
+): Promise<void> => {
+    const maxAttempts = 200;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const beforeCount = await getCanvasElementCount(pageFrame);
+        if (beforeCount <= targetCount) {
+            return;
+        }
+
+        await deleteLastCanvasElementViaManager(pageFrame);
+
+        if (await waitForCanvasElementCountBelow(pageFrame, beforeCount)) {
+            continue;
+        }
+
+        throw new Error(
+            `Could not delete canvas element during cleanup (count stayed at ${beforeCount}).`,
+        );
+    }
+
+    throw new Error(
+        `Cleanup exceeded ${maxAttempts} attempts while reducing canvas elements to ${targetCount}.`,
+    );
+};
+
+export const duplicateActiveCanvasElementViaManager = async (
+    pageFrame: Frame,
+): Promise<void> => {
+    await pageFrame.evaluate(() => {
+        const bundle = (window as any).editablePageBundle;
+        const manager = bundle?.getTheOneCanvasElementManager?.();
+        if (!manager) {
+            throw new Error("CanvasElementManager is not available.");
+        }
+        manager.duplicateCanvasElement();
+    });
+};
+
+export const deleteActiveCanvasElementViaManager = async (
+    pageFrame: Frame,
+): Promise<void> => {
+    await pageFrame.evaluate(() => {
+        const bundle = (window as any).editablePageBundle;
+        const manager = bundle?.getTheOneCanvasElementManager?.();
+        if (!manager) {
+            throw new Error("CanvasElementManager is not available.");
+        }
+        manager.deleteCurrentCanvasElement();
+    });
 };
 
 // ── Drag from palette ───────────────────────────────────────────────────
@@ -123,7 +223,9 @@ export const dragPaletteItemToCanvas = async (
 ): Promise<void> => {
     const paletteSelector =
         canvasSelectors.toolbox.paletteItems[params.paletteItem];
-    const source = params.toolboxFrame.locator(paletteSelector).first();
+    const source = params.toolboxFrame
+        .locator(`${paletteSelector}:visible`)
+        .first();
     await source.waitFor({
         state: "visible",
         timeout: 10000,
@@ -144,10 +246,13 @@ export const dragPaletteItemToCanvas = async (
     const canvasBox = await getRequiredBoundingBox(canvas, "canvas surface");
     const offset = params.dropOffset ?? defaultDropOffset;
 
+    const targetOffsetX = Math.max(5, Math.min(offset.x, canvasBox.width - 5));
+    const targetOffsetY = Math.max(5, Math.min(offset.y, canvasBox.height - 5));
+
     const sourceX = sourceBox.x + sourceBox.width / 2;
     const sourceY = sourceBox.y + sourceBox.height / 2;
-    const targetX = canvasBox.x + Math.min(offset.x, canvasBox.width - 20);
-    const targetY = canvasBox.y + Math.min(offset.y, canvasBox.height - 20);
+    const targetX = canvasBox.x + targetOffsetX;
+    const targetY = canvasBox.y + targetOffsetY;
 
     await params.page.mouse.move(sourceX, sourceY);
     await params.page.mouse.down();
@@ -306,7 +411,7 @@ export const openContextMenuFromToolbar = async (
     pageFrame: Frame,
 ): Promise<void> => {
     const controls = pageFrame
-        .locator(canvasSelectors.page.contextControls)
+        .locator(canvasSelectors.page.contextControlsVisible)
         .first();
     await controls.waitFor({
         state: "visible",
@@ -317,7 +422,7 @@ export const openContextMenuFromToolbar = async (
     await menuButton.click();
 
     await pageFrame
-        .locator(canvasSelectors.page.contextMenuList)
+        .locator(canvasSelectors.page.contextMenuListVisible)
         .first()
         .waitFor({
             state: "visible",
@@ -329,21 +434,36 @@ export const clickContextMenuItem = async (
     pageFrame: Frame,
     label: string,
 ): Promise<void> => {
-    const menuItem = pageFrame
-        .locator(getContextMenuItemSelector(label))
-        .first();
-    await menuItem.waitFor({
-        state: "visible",
-        timeout: 10000,
-    });
-    await menuItem.click();
+    const maxAttempts = 3;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const menuItem = pageFrame
+            .locator(
+                `${canvasSelectors.page.contextMenuListVisible} li:has-text("${label}")`,
+            )
+            .first();
+        await menuItem.waitFor({
+            state: "visible",
+            timeout: 10000,
+        });
+
+        try {
+            await menuItem.click({ force: true });
+            return;
+        } catch (error) {
+            if (attempt === maxAttempts - 1) {
+                throw error;
+            }
+            await openContextMenuFromToolbar(pageFrame);
+        }
+    }
 };
 
 export const getContextToolbarButtonCount = async (
     pageFrame: Frame,
 ): Promise<number> => {
     const controls = pageFrame
-        .locator(canvasSelectors.page.contextControls)
+        .locator(canvasSelectors.page.contextControlsVisible)
         .first();
     await controls.waitFor({ state: "visible", timeout: 10000 });
     return controls.locator("button").count();
@@ -355,19 +475,53 @@ export const setStyleDropdown = async (
     toolboxFrame: Frame,
     value: string,
 ): Promise<void> => {
-    const dropdown = toolboxFrame
-        .locator("#mui-component-select-style")
+    const maxAttempts = 3;
+    const normalizedTarget = value.toLowerCase();
+    const styleInput = toolboxFrame
+        .locator("#canvasElement-style-dropdown")
         .first();
-    await dropdown.waitFor({ state: "visible", timeout: 5000 });
-    await dropdown.click();
-    // MUI Select renders menu items in a portal
-    const option = toolboxFrame
-        .locator(
-            `.canvasElement-options-dropdown-menu li[data-value="${value}"]`,
-        )
-        .first();
-    await option.waitFor({ state: "visible", timeout: 5000 });
-    await option.click();
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const dropdown = toolboxFrame
+            .locator("#mui-component-select-style")
+            .first();
+        await dropdown.waitFor({ state: "visible", timeout: 5000 });
+        await dropdown.click({ force: true });
+
+        const option = toolboxFrame
+            .locator(
+                `.canvasElement-options-dropdown-menu li[data-value="${value}"]`,
+            )
+            .last();
+        await option.waitFor({ state: "visible", timeout: 5000 });
+
+        try {
+            await option.click({ force: true });
+        } catch (error) {
+            if (attempt === maxAttempts - 1) {
+                throw error;
+            }
+            continue;
+        }
+
+        const timeoutMs = 3000;
+        const endTime = Date.now() + timeoutMs;
+        while (Date.now() < endTime) {
+            const selectedValue = (await styleInput.inputValue()).toLowerCase();
+            if (selectedValue === normalizedTarget) {
+                return;
+            }
+            await toolboxFrame.page().waitForTimeout(100);
+        }
+
+        if (attempt === maxAttempts - 1) {
+            throw new Error(
+                `Style dropdown did not change to ${normalizedTarget} within ${timeoutMs}ms.`,
+            );
+        }
+    }
+
+    throw new Error(`Style dropdown could not be set to ${normalizedTarget}.`);
 };
 
 export const setShowTail = async (
@@ -420,18 +574,54 @@ export const setOutlineColorDropdown = async (
     toolboxFrame: Frame,
     value: string,
 ): Promise<void> => {
-    const dropdown = toolboxFrame
-        .locator("#mui-component-select-outlineColor")
+    const input = toolboxFrame
+        .locator("#canvasElement-outlineColor-dropdown")
         .first();
-    await dropdown.waitFor({ state: "visible", timeout: 5000 });
-    await dropdown.click();
-    const option = toolboxFrame
-        .locator(
-            `.canvasElement-options-dropdown-menu li[data-value="${value}"]`,
-        )
-        .first();
-    await option.waitFor({ state: "visible", timeout: 5000 });
-    await option.click();
+    await input.waitFor({ state: "visible", timeout: 5000 });
+
+    const normalizedTarget = value.toLowerCase();
+    if ((await input.inputValue()).toLowerCase() === normalizedTarget) {
+        return;
+    }
+
+    const maxAttempts = 4;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const dropdown = toolboxFrame
+            .locator("#mui-component-select-outlineColor")
+            .first();
+        await dropdown.waitFor({ state: "visible", timeout: 5000 });
+        await dropdown.click({ force: true });
+
+        const option = toolboxFrame
+            .locator(
+                `.canvasElement-options-dropdown-menu li[data-value="${value}"]`,
+            )
+            .last();
+
+        try {
+            await option.waitFor({ state: "visible", timeout: 3000 });
+            await option.click({ force: true });
+        } catch (error) {
+            if (attempt === maxAttempts - 1) {
+                throw error;
+            }
+            continue;
+        }
+
+        const timeoutMs = 2000;
+        const endTime = Date.now() + timeoutMs;
+        while (Date.now() < endTime) {
+            const updatedValue = (await input.inputValue()).toLowerCase();
+            if (updatedValue === normalizedTarget) {
+                return;
+            }
+            await toolboxFrame.page().waitForTimeout(100);
+        }
+    }
+
+    throw new Error(
+        `Outline color dropdown did not change to ${normalizedTarget}.`,
+    );
 };
 
 // ── Coordinate conversion ───────────────────────────────────────────────

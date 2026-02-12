@@ -83,5 +83,5 @@ A valid non-trivial proof test should:
 
 
 ## Pointers
-- Avoid time-based waiting; use DOM-based checks when possible. Feel free to add test-ids or other hooks in the app code if needed for reliable testing.
+- Avoid time-based waiting; use DOM-based checks when possible. Feel free to add data-test-ids attributes or other hooks in the app code if needed for reliable testing.
 

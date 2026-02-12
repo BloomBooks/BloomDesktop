@@ -7,7 +7,6 @@ import { test, expect } from "../fixtures/canvasTest";
 import {
     dragPaletteItemToCanvas,
     getCanvasElementCount,
-    getActiveCanvasElement,
     openContextMenuFromToolbar,
 } from "../helpers/canvasActions";
 import {
@@ -58,9 +57,12 @@ test("J2: speech element has internal bloom-editable (inferrable as speech)", as
     });
     await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
 
-    const active = getActiveCanvasElement(pageFrame);
+    const afterCount = await getCanvasElementCount(pageFrame);
+    const newest = pageFrame
+        .locator(canvasSelectors.page.canvasElements)
+        .nth(afterCount - 1);
     const hasEditable =
-        (await active.locator(canvasSelectors.page.bloomEditable).count()) > 0;
+        (await newest.locator(canvasSelectors.page.bloomEditable).count()) > 0;
     expect(hasEditable).toBe(true);
 });
 

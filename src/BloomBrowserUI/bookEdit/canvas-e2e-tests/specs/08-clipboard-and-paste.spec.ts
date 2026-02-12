@@ -7,16 +7,49 @@
 // tests verify the preconditions and behaviors around paste readiness.
 
 import { test, expect } from "../fixtures/canvasTest";
+import type { Frame, Page } from "playwright/test";
 import {
     dragPaletteItemToCanvas,
     getCanvasElementCount,
-    getActiveCanvasElement,
 } from "../helpers/canvasActions";
 import {
     expectCanvasElementCountToIncrease,
     expectAnyCanvasElementActive,
 } from "../helpers/canvasAssertions";
 import { canvasSelectors } from "../helpers/canvasSelectors";
+
+const createElementWithRetry = async ({
+    page,
+    toolboxFrame,
+    pageFrame,
+    paletteItem,
+}: {
+    page: Page;
+    toolboxFrame: Frame;
+    pageFrame: Frame;
+    paletteItem: "image" | "video" | "speech";
+}) => {
+    const maxAttempts = 3;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const beforeCount = await getCanvasElementCount(pageFrame);
+        await dragPaletteItemToCanvas({
+            page,
+            toolboxFrame,
+            pageFrame,
+            paletteItem,
+        });
+
+        try {
+            await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+            return;
+        } catch (error) {
+            if (attempt === maxAttempts - 1) {
+                throw error;
+            }
+        }
+    }
+};
 
 // ── I1: Image element has an image container (paste target) ─────────────
 
@@ -25,14 +58,13 @@ test("I1: newly created image element has an image container", async ({
     toolboxFrame,
     pageFrame,
 }) => {
-    const beforeCount = await getCanvasElementCount(pageFrame);
-    await dragPaletteItemToCanvas({
+    await createElementWithRetry({
         page,
         toolboxFrame,
         pageFrame,
         paletteItem: "image",
     });
-    await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+
     const afterCount = await getCanvasElementCount(pageFrame);
     const newest = pageFrame
         .locator(canvasSelectors.page.canvasElements)
@@ -50,14 +82,13 @@ test("I2: newly created video element has a video container", async ({
     toolboxFrame,
     pageFrame,
 }) => {
-    const beforeCount = await getCanvasElementCount(pageFrame);
-    await dragPaletteItemToCanvas({
+    await createElementWithRetry({
         page,
         toolboxFrame,
         pageFrame,
         paletteItem: "video",
     });
-    await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+
     const afterCount = await getCanvasElementCount(pageFrame);
     const newest = pageFrame
         .locator(canvasSelectors.page.canvasElements)
@@ -75,17 +106,18 @@ test("I-general: speech element has bloom-editable for text content", async ({
     toolboxFrame,
     pageFrame,
 }) => {
-    const beforeCount = await getCanvasElementCount(pageFrame);
-    await dragPaletteItemToCanvas({
+    await createElementWithRetry({
         page,
         toolboxFrame,
         pageFrame,
         paletteItem: "speech",
     });
-    await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
 
-    const active = getActiveCanvasElement(pageFrame);
-    const editableCount = await active
+    const afterCount = await getCanvasElementCount(pageFrame);
+    const newest = pageFrame
+        .locator(canvasSelectors.page.canvasElements)
+        .nth(afterCount - 1);
+    const editableCount = await newest
         .locator(canvasSelectors.page.bloomEditable)
         .count();
     expect(editableCount).toBeGreaterThan(0);

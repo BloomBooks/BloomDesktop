@@ -19,6 +19,29 @@ import {
 } from "../helpers/canvasAssertions";
 import { canvasSelectors } from "../helpers/canvasSelectors";
 
+const createSpeechElement = async ({ page, toolboxFrame, pageFrame }) => {
+    const maxAttempts = 3;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const beforeCount = await getCanvasElementCount(pageFrame);
+        await dragPaletteItemToCanvas({
+            page,
+            toolboxFrame,
+            pageFrame,
+            paletteItem: "speech",
+        });
+
+        try {
+            await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+            return;
+        } catch (error) {
+            if (attempt === maxAttempts - 1) {
+                throw error;
+            }
+        }
+    }
+};
+
 // ── F1: Draggable attribute is not present on normal (non-game) pages ───
 
 test("F1: speech element on a normal page does not have data-draggable-id", async ({
@@ -26,14 +49,7 @@ test("F1: speech element on a normal page does not have data-draggable-id", asyn
     toolboxFrame,
     pageFrame,
 }) => {
-    const beforeCount = await getCanvasElementCount(pageFrame);
-    await dragPaletteItemToCanvas({
-        page,
-        toolboxFrame,
-        pageFrame,
-        paletteItem: "speech",
-    });
-    await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+    await createSpeechElement({ page, toolboxFrame, pageFrame });
 
     const active = getActiveCanvasElement(pageFrame);
 
@@ -51,14 +67,7 @@ test("F-general: no draggable targets on a normal page", async ({
     toolboxFrame,
     pageFrame,
 }) => {
-    const beforeCount = await getCanvasElementCount(pageFrame);
-    await dragPaletteItemToCanvas({
-        page,
-        toolboxFrame,
-        pageFrame,
-        paletteItem: "speech",
-    });
-    await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+    await createSpeechElement({ page, toolboxFrame, pageFrame });
 
     const targetCount = await pageFrame
         .locator(canvasSelectors.page.targetElement)

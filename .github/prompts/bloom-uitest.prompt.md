@@ -21,6 +21,6 @@ Sometimes the top level component is not readily testable. In that case it might
 ## Guidelines for writing the tests
 * If you want to make a mock, stop and ask me.
 * Avoid using timed waits like page.waitForTimeout(1000). If there is no other way, you must discuss it with me first and then if I approve, document why it is necessary in a comment.
-* Feel free to add test-id attributes to elements in the component under test to make them easier to find. Avoid using css to finding things.
+* Feel free to add data-test-id attributes to elements in the component under test to make them easier to find. Avoid using css to finding things.
 * Keep the tests well factored with common code going to a test-helpers.ts file.
 

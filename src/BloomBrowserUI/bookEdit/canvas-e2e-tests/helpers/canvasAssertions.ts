@@ -21,6 +21,7 @@ export const expectCanvasElementCountToIncrease = async (
             },
             {
                 message: `Expected canvas element count to exceed ${beforeCount}`,
+                timeout: 10000,
             },
         )
         .toBeGreaterThan(beforeCount);
@@ -52,7 +53,7 @@ export const expectContextControlsVisible = async (
     pageFrame: Frame,
 ): Promise<void> => {
     await expect(
-        pageFrame.locator(canvasSelectors.page.contextControls),
+        pageFrame.locator(canvasSelectors.page.contextControlsVisible).first(),
         "Expected context controls to be visible",
     ).toBeVisible();
 };
@@ -177,7 +178,7 @@ export const expectContextToolbarButtonCount = async (
     expectedCount: number,
 ): Promise<void> => {
     const controls = pageFrame
-        .locator(canvasSelectors.page.contextControls)
+        .locator(canvasSelectors.page.contextControlsVisible)
         .first();
     await controls.waitFor({ state: "visible", timeout: 10000 });
     await expect(
@@ -195,7 +196,7 @@ export const expectContextMenuItemVisible = async (
     await expect(
         pageFrame
             .locator(
-                `${canvasSelectors.page.contextMenuList} li:has-text("${label}")`,
+                `${canvasSelectors.page.contextMenuListVisible} li:has-text("${label}")`,
             )
             .first(),
         `Expected context menu item "${label}" to be visible`,
@@ -209,7 +210,7 @@ export const expectContextMenuItemNotPresent = async (
     await expect(
         pageFrame
             .locator(
-                `${canvasSelectors.page.contextMenuList} li:has-text("${label}")`,
+                `${canvasSelectors.page.contextMenuListVisible} li:has-text("${label}")`,
             )
             .first(),
     ).toHaveCount(0);

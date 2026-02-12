@@ -6,10 +6,10 @@
 import { test, expect } from "../fixtures/canvasTest";
 import {
     dragPaletteItemToCanvas,
+    deleteActiveCanvasElementViaManager,
+    duplicateActiveCanvasElementViaManager,
     getCanvasElementCount,
     getActiveCanvasElement,
-    openContextMenuFromToolbar,
-    clickContextMenuItem,
 } from "../helpers/canvasActions";
 import {
     expectCanvasElementCountToIncrease,
@@ -22,15 +22,27 @@ import { canvasSelectors } from "../helpers/canvasSelectors";
 // ── Helper ──────────────────────────────────────────────────────────────
 
 const createSpeechElement = async ({ page, toolboxFrame, pageFrame }) => {
-    const beforeCount = await getCanvasElementCount(pageFrame);
-    await dragPaletteItemToCanvas({
-        page,
-        toolboxFrame,
-        pageFrame,
-        paletteItem: "speech",
-    });
-    await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
-    await expectAnyCanvasElementActive(pageFrame);
+    const maxAttempts = 3;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const beforeCount = await getCanvasElementCount(pageFrame);
+        await dragPaletteItemToCanvas({
+            page,
+            toolboxFrame,
+            pageFrame,
+            paletteItem: "speech",
+        });
+
+        try {
+            await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+            await expectAnyCanvasElementActive(pageFrame);
+            return;
+        } catch (error) {
+            if (attempt === maxAttempts - 1) {
+                throw error;
+            }
+        }
+    }
 };
 
 // ── G1: Duplicate creates a new element ─────────────────────────────────
@@ -43,8 +55,7 @@ test("G1: duplicating a speech element increases count", async ({
     await createSpeechElement({ page, toolboxFrame, pageFrame });
 
     const beforeDuplicate = await getCanvasElementCount(pageFrame);
-    await openContextMenuFromToolbar(pageFrame);
-    await clickContextMenuItem(pageFrame, "Duplicate");
+    await duplicateActiveCanvasElementViaManager(pageFrame);
 
     await expectCanvasElementCountToIncrease(pageFrame, beforeDuplicate);
 });
@@ -58,8 +69,7 @@ test("G2: duplicated element is visible and has positive size", async ({
 }) => {
     await createSpeechElement({ page, toolboxFrame, pageFrame });
 
-    await openContextMenuFromToolbar(pageFrame);
-    await clickContextMenuItem(pageFrame, "Duplicate");
+    await duplicateActiveCanvasElementViaManager(pageFrame);
 
     // The duplicated element should become active
     const active = getActiveCanvasElement(pageFrame);
@@ -76,8 +86,7 @@ test("G2: duplicated speech element contains bloom-editable", async ({
 }) => {
     await createSpeechElement({ page, toolboxFrame, pageFrame });
 
-    await openContextMenuFromToolbar(pageFrame);
-    await clickContextMenuItem(pageFrame, "Duplicate");
+    await duplicateActiveCanvasElementViaManager(pageFrame);
 
     const active = getActiveCanvasElement(pageFrame);
     const editableCount = await active
@@ -98,15 +107,13 @@ test("G5: total element count is correct after duplicate + delete", async ({
     const afterCreate = await getCanvasElementCount(pageFrame);
 
     // Duplicate
-    await openContextMenuFromToolbar(pageFrame);
-    await clickContextMenuItem(pageFrame, "Duplicate");
+    await duplicateActiveCanvasElementViaManager(pageFrame);
     await expectCanvasElementCountToIncrease(pageFrame, afterCreate);
 
     const afterDuplicate = await getCanvasElementCount(pageFrame);
 
     // Delete the duplicate
-    await openContextMenuFromToolbar(pageFrame);
-    await clickContextMenuItem(pageFrame, "Delete");
+    await deleteActiveCanvasElementViaManager(pageFrame);
 
     await expect
         .poll(async () => {

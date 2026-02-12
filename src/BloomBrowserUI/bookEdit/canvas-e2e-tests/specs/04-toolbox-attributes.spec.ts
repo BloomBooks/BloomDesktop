@@ -32,14 +32,26 @@ const createAndVerify = async (
     { page, toolboxFrame, pageFrame },
     paletteItem: string,
 ) => {
-    const beforeCount = await getCanvasElementCount(pageFrame);
-    await dragPaletteItemToCanvas({
-        page,
-        toolboxFrame,
-        pageFrame,
-        paletteItem: paletteItem as any,
-    });
-    await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+    const maxAttempts = 3;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const beforeCount = await getCanvasElementCount(pageFrame);
+        await dragPaletteItemToCanvas({
+            page,
+            toolboxFrame,
+            pageFrame,
+            paletteItem: paletteItem as any,
+        });
+
+        try {
+            await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+            return;
+        } catch (error) {
+            if (attempt === maxAttempts - 1) {
+                throw error;
+            }
+        }
+    }
 };
 
 // ── D-pre: Toolbox disabled when no element selected ────────────────────

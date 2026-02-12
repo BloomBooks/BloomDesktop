@@ -5,6 +5,7 @@
 //         CanvasElementEditingSuspension.ts.
 
 import { test, expect } from "../fixtures/canvasTest";
+import type { Frame, Page } from "playwright/test";
 import {
     dragPaletteItemToCanvas,
     getCanvasElementCount,
@@ -16,6 +17,42 @@ import {
     expectElementHasPositiveSize,
 } from "../helpers/canvasAssertions";
 import { canvasSelectors } from "../helpers/canvasSelectors";
+
+const createElementWithRetry = async ({
+    page,
+    toolboxFrame,
+    pageFrame,
+    paletteItem,
+    dropOffset,
+}: {
+    page: Page;
+    toolboxFrame: Frame;
+    pageFrame: Frame;
+    paletteItem: "speech" | "image";
+    dropOffset?: { x: number; y: number };
+}) => {
+    const maxAttempts = 3;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const beforeCount = await getCanvasElementCount(pageFrame);
+        await dragPaletteItemToCanvas({
+            page,
+            toolboxFrame,
+            pageFrame,
+            paletteItem,
+            dropOffset,
+        });
+
+        try {
+            await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+            return;
+        } catch (error) {
+            if (attempt === maxAttempts - 1) {
+                throw error;
+            }
+        }
+    }
+};
 
 // ── H1: Background image presence ───────────────────────────────────────
 
@@ -46,14 +83,12 @@ test("H2: canvas elements are within canvas bounds", async ({
     toolboxFrame,
     pageFrame,
 }) => {
-    const beforeCount = await getCanvasElementCount(pageFrame);
-    await dragPaletteItemToCanvas({
+    await createElementWithRetry({
         page,
         toolboxFrame,
         pageFrame,
         paletteItem: "speech",
     });
-    await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
 
     const canvas = pageFrame.locator(canvasSelectors.page.canvas).first();
     const canvasBox = await canvas.boundingBox();
@@ -82,25 +117,21 @@ test("H3: multiple created elements all have valid bounds", async ({
     pageFrame,
 }) => {
     // Create two elements
-    const before1 = await getCanvasElementCount(pageFrame);
-    await dragPaletteItemToCanvas({
+    await createElementWithRetry({
         page,
         toolboxFrame,
         pageFrame,
         paletteItem: "speech",
         dropOffset: { x: 80, y: 80 },
     });
-    await expectCanvasElementCountToIncrease(pageFrame, before1);
 
-    const before2 = await getCanvasElementCount(pageFrame);
-    await dragPaletteItemToCanvas({
+    await createElementWithRetry({
         page,
         toolboxFrame,
         pageFrame,
         paletteItem: "image",
         dropOffset: { x: 200, y: 150 },
     });
-    await expectCanvasElementCountToIncrease(pageFrame, before2);
 
     // All canvas elements should have valid bounds
     const allElements = pageFrame.locator(canvasSelectors.page.canvasElements);

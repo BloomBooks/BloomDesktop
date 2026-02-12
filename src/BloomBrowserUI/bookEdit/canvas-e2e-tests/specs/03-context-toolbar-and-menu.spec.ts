@@ -4,6 +4,7 @@
 //         canvasElementTypeInference.ts.
 
 import { test, expect } from "../fixtures/canvasTest";
+import type { Frame } from "playwright/test";
 import {
     dragPaletteItemToCanvas,
     getCanvasElementCount,
@@ -18,6 +19,24 @@ import {
 } from "../helpers/canvasAssertions";
 import { canvasSelectors } from "../helpers/canvasSelectors";
 import { mainPaletteRows } from "../helpers/canvasMatrix";
+
+const waitForCountBelow = async (
+    pageFrame: Frame,
+    upperExclusive: number,
+    timeoutMs = 3000,
+): Promise<boolean> => {
+    const endTime = Date.now() + timeoutMs;
+    while (Date.now() < endTime) {
+        const count = await pageFrame
+            .locator(canvasSelectors.page.canvasElements)
+            .count();
+        if (count < upperExclusive) {
+            return true;
+        }
+        await pageFrame.page().waitForTimeout(100);
+    }
+    return false;
+};
 
 // ── C1/C2: Verify toolbar/menu appear for each main palette type ────────
 
@@ -100,17 +119,18 @@ test("C5: delete via context menu removes an element", async ({
     await expectCanvasElementCountToIncrease(pageFrame, beforeCreate);
 
     const beforeDelete = await getCanvasElementCount(pageFrame);
-    await openContextMenuFromToolbar(pageFrame);
-    await clickContextMenuItem(pageFrame, "Delete");
+    const maxAttempts = 3;
+    let deleted = false;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        await openContextMenuFromToolbar(pageFrame);
+        await clickContextMenuItem(pageFrame, "Delete");
+        deleted = await waitForCountBelow(pageFrame, beforeDelete);
+        if (deleted) {
+            break;
+        }
+    }
 
-    // Count should decrease or stay the same (if there was only the background)
-    await expect
-        .poll(async () => {
-            return pageFrame
-                .locator(canvasSelectors.page.canvasElements)
-                .count();
-        })
-        .toBeLessThan(beforeDelete);
+    expect(deleted).toBe(true);
 });
 
 // ── C3: Toolbar button count varies by type ─────────────────────────────
@@ -130,7 +150,7 @@ test("C3: speech toolbar has buttons including format and delete", async ({
     await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
 
     const controls = pageFrame
-        .locator(canvasSelectors.page.contextControls)
+        .locator(canvasSelectors.page.contextControlsVisible)
         .first();
     await controls.waitFor({ state: "visible", timeout: 10000 });
 

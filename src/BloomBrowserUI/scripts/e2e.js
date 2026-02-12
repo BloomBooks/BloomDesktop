@@ -4,7 +4,40 @@ const { spawnSync } = require("child_process");
 const path = require("path");
 
 const suiteName = process.argv[2];
-const passthroughArgs = process.argv.slice(3);
+const rawPassthroughArgs = process.argv.slice(3);
+
+const parseCanvasModeArgs = (args) => {
+    let canvasMode;
+    const filteredArgs = [];
+
+    for (const arg of args) {
+        if (arg === "--isolated") {
+            canvasMode = "isolated";
+            continue;
+        }
+
+        if (arg === "--shared") {
+            canvasMode = "shared";
+            continue;
+        }
+
+        filteredArgs.push(arg);
+    }
+
+    return {
+        canvasMode,
+        filteredArgs,
+    };
+};
+
+const { canvasMode, filteredArgs: passthroughArgs } =
+    parseCanvasModeArgs(rawPassthroughArgs);
+
+const hasWorkersArg = (args) => {
+    return args.some(
+        (arg) => arg === "--workers" || arg.startsWith("--workers="),
+    );
+};
 
 const suiteCommands = {
     canvas: [
@@ -17,8 +50,13 @@ const suiteCommands = {
 
 const printUsage = () => {
     const suites = Object.keys(suiteCommands).join(", ");
-    console.error(`Usage: yarn e2e <suite> [playwright args]`);
+    console.error(
+        `Usage: yarn e2e <suite> [--isolated|--shared] [playwright args]`,
+    );
     console.error(`Available suites: ${suites}`);
+    console.error(
+        `Canvas mode defaults to shared. Use --isolated for per-test clean-slate page loads.`,
+    );
 };
 
 const assertCurrentPageAvailable = async () => {
@@ -62,11 +100,28 @@ const run = async () => {
         path.dirname(playwrightPackageJsonPath),
         "cli.js",
     );
+
+    const playwrightArgs = [...suiteCommands[suiteName], ...passthroughArgs];
+    if (
+        suiteName === "canvas" &&
+        (canvasMode ?? "shared") === "shared" &&
+        !hasWorkersArg(passthroughArgs)
+    ) {
+        playwrightArgs.push("--workers=1");
+    }
+
     const result = spawnSync(
         process.execPath,
-        [playwrightCliPath, ...suiteCommands[suiteName], ...passthroughArgs],
+        [playwrightCliPath, ...playwrightArgs],
         {
             stdio: "inherit",
+            env: {
+                ...process.env,
+                BLOOM_CANVAS_E2E_MODE:
+                    suiteName === "canvas"
+                        ? (canvasMode ?? "shared")
+                        : process.env.BLOOM_CANVAS_E2E_MODE,
+            },
         },
     );
 
