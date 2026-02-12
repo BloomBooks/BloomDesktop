@@ -91,14 +91,11 @@ import {
     inPlayMode as inPlayModeFromPositioning,
     setCanvasElementPosition as setCanvasElementPositionFromPositioning,
 } from "./canvasElementManager/CanvasElementPositioning";
+import type { ITextColorInfo } from "./canvasElementManager/CanvasElementSharedTypes";
+export type { ITextColorInfo } from "./canvasElementManager/CanvasElementSharedTypes";
 import { CanvasElementFactories } from "./canvasElementManager/CanvasElementFactories";
 import { CanvasElementClipboard } from "./canvasElementManager/CanvasElementClipboard";
 import { CanvasElementDuplication } from "./canvasElementManager/CanvasElementDuplication";
-
-export interface ITextColorInfo {
-    color: string;
-    isDefault: boolean;
-}
 
 const kComicalGeneratedClass: string = "comical-generated";
 

@@ -24,12 +24,8 @@ import { kVideoContainerClass } from "../videoUtils";
 import { adjustTarget as adjustTargetFromGameTool } from "../../toolbox/games/GameTool";
 import { putBubbleBefore } from "./CanvasElementBubbleLevelUtils";
 import { setCanvasElementPosition } from "./CanvasElementPositioning";
+import type { ITextColorInfo } from "./CanvasElementSharedTypes";
 import $ from "jquery";
-
-export interface ITextColorInfo {
-    color: string;
-    isDefault: boolean;
-}
 
 export interface IFinishAddingCanvasElementOptions {
     comicalBubbleStyle?: string;

@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import "./canvasTool.less";
 import { getEditTabBundleExports } from "../../js/bloomFrames";
-import {
+import type {
     CanvasElementManager,
     ITextColorInfo,
 } from "../../js/CanvasElementManager";

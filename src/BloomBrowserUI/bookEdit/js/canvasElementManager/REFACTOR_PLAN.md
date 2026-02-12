@@ -96,7 +96,7 @@ Live tests:
 - [x] (B1) Extract element creation + templates into `CanvasElementFactories.ts` (Checkpoint 1)
 - [x] (B2) Extract clipboard paste into `CanvasElementClipboard.ts` (Checkpoint 2)
 - [x] (B3) Extract duplication + cloning into `CanvasElementDuplication.ts` (+ `CanvasElementAudioDuplication.ts`) (Checkpoint 3)
-- [ ] (B4) Toolbox bundling safety: switch toolbox imports to `import type` + move shared types into dependency-light module (Checkpoint 4)
+- [x] (B4) Toolbox bundling safety: switch toolbox imports to `import type` + move shared types into dependency-light module (Checkpoint 4)
 - [ ] (B5) Extract selection UI + focus/control frame into `CanvasElementSelectionUi.ts` (Checkpoint 5)
 - [ ] (B6) Extract pointer interactions (drag/resize/crop) into `CanvasElementPointerInteractions.ts` (Checkpoint 6)
 - [ ] (B7) Extract alternates + game/draggable integration modules (Checkpoint 7)
@@ -110,4 +110,4 @@ Live tests:
 ## Line counts
 - [ ] Starting: CanvasElementManager.ts 7610 lines
 - [ ] Target: CanvasElementManager.ts ≤ 2000 lines
-- [ ] Current: CanvasElementManager.ts 6454 lines
+- [ ] Current: CanvasElementManager.ts 6466 lines
