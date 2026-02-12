@@ -615,6 +615,16 @@ namespace Bloom.TeamCollection
             IEnumerable<BookHistoryEvent> events;
             if (currentBookOnly == "true")
             {
+                if (!Directory.Exists(request.CurrentBook.BookInfo.FolderPath))
+                {
+                    // This happens when we are doing an import from spreadsheet that also triggers a rename,
+                    // we get an api request with the stale folderpath. It is promptly followed by an api request
+                    // with the new folder path. BL-15840
+                    request.ReplyWithJson(
+                        JsonConvert.SerializeObject(new List<BookHistoryEvent>())
+                    );
+                    return;
+                }
                 events = CollectionHistory.GetBookEvents(request.CurrentBook.BookInfo);
             }
             else

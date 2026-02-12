@@ -1357,11 +1357,11 @@
         <note>ID: EditTab.CustomPage.Picture</note>
         <note>Obsolete as of 6.3</note>
       </trans-unit>
-      <trans-unit id="EditTab.CustomPage.Image" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.CustomPage.Image" sil:dynamic="true">
         <source xml:lang="en">Image</source>
         <note>ID: EditTab.CustomPage.Image</note>
       </trans-unit>
-      <trans-unit id="EditTab.CustomPage.Canvas" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.CustomPage.Canvas" sil:dynamic="true">
         <source xml:lang="en">Canvas</source>
         <note>ID: EditTab.CustomPage.Canvas</note>
       </trans-unit>
@@ -3563,6 +3563,7 @@
       <trans-unit id="PublishTab.Comic">
         <source xml:lang="en">Comic</source>
         <note>ID: PublishTab.Comic</note>
+        <note>Obsolete as of Bloom 6.3</note>
       </trans-unit>
       <trans-unit id="PublishTab.Common.Publishing">
         <source xml:lang="en">Publishing</source>
@@ -4225,10 +4226,16 @@
         <source xml:lang="en">Full Bleed</source>
         <note>ID: PublishTab.PdfMaker.FullBleed</note>
         <note>displayed as an option in the PDF Options menu in Publish tab. Be careful, "full bleed" is a technical term in printing, meaning to print into an area outside the main page content that is ideally trimmed off; do not translate literally</note>
+        <note>Obsolete as of 6.3</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed">
         <source xml:lang="en">This is disabled because this book is not set up to be full bleed.</source>
         <note>ID: PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.ExcludePrintBleed">
+        <source xml:lang="en">Exclude print bleed around page edges</source>
+        <note>ID: PublishTab.PdfMaker.ExcludePrintBleed</note>
+        <note>displayed as an option in the PDF Options menu in Publish tab. Be careful, "print bleed" is a technical term in printing, meaning to print into an area outside the main page content that is ideally trimmed off; do not translate literally</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml">
         <source xml:lang="en">Making PDF from HTML</source>
@@ -5778,7 +5785,7 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Canvas" sil:dynamic="true">
-        <source xml:lang="en">A page with an empty canvas you can add to.</source>
+        <source xml:lang="en">A page with an empty canvas that you can add to.</source>
         <note>ID: TemplateBooks.PageDescription.Canvas</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Comprehension Quiz" sil:dynamic="true">
