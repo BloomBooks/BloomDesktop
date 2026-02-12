@@ -81,7 +81,10 @@ export function convertCoverPageToCustom(
     // source bubbles are connected to.
     BloomSourceBubbles.removeSourceBubbles(page);
 
-    const customMarginBox = restoreInactiveMarginBox();
+    restoreInactiveMarginBox();
+    const customMarginBox = page.getElementsByClassName(
+        "bloom-customMarginBox",
+    )[0] as HTMLElement;
     if (!customMarginBox) {
         return; // current xmatter doesn't support this
     }
@@ -452,3 +455,32 @@ function renderCoverMenu(page: HTMLElement, container: HTMLElement): void {
 function isUsingLegacyTheme(): boolean {
     return !!document.querySelector("link[href*='basePage-legacy-5-6.css']");
 }
+
+// Todo:
+// - Test how books that have this open in 6.3, and whether this damages
+// things in 6.4. May need some of the TranslationGroupManager changes
+// in 6.3, and to prevent earlier 6.3's from opening such books. Concern is
+// that the DataDiv element containing the custom cover may be found as the
+// first source of fields, causing bring-book-up-to-date to revert to the last
+// version of such fields saved by 6.4. Try changing xmatter and branding
+// using an older Bloom...I noted a suspicion that it could mess up font sizes
+// on the custom cover.
+// - Lots of testing. For example, any issues with deriving a book from one
+// with a custom cover?
+// - code that is looking for the main cover image (e.g., to make a thumbnail)
+// should find any image on the cover (maybe the largest?) if there isn't one
+// marked as the cover image.)
+// - Field should offer topic as well as language list.
+// - Field should offer to make an image "the cover image".
+// - cropping does not survive "become background image". Maybe this is to be expected,
+// given that it is likely to change shape?
+// - Do we want to do any auto-sizing of read-only fields (languages and topic)?
+// - Make sure the appropriate Canvas controls (and only those) are enabled for
+// read-only fields. For example, we should be able to change colors...not sure
+// about others.
+// - Think about CSS class and method names. John wants to be able to convert origami
+// pages (one-way, more-or-less) to "custom" pages with a single canvas and
+// child elements. I don't think this will involve keeping both versions around
+// like we're doing for the cover; more like a new page type, only for "change layout",
+// that results in converting all the page content to canvas elements.
+// - page thumbnail for front cover is not always showing custom layout
