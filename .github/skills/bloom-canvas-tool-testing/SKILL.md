@@ -1,6 +1,6 @@
 ---
-name: bloom-canvas-tool-testing
-description: reproduce and verify Canvas Element behaviors
+name: bloom-canvas-tool-manual-testing
+description: reproduce and verify Canvas Element behaviors manually via chrome-devtools-mcp, not in a playwright test.
 ---
 
 ## Scope

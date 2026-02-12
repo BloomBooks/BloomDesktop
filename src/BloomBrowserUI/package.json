@@ -15,6 +15,7 @@
         "test": "vitest run",
         "test:watch": "vitest",
         "test:ci": "vitest run",
+        "e2e": "node scripts/e2e.js",
         "check-that-node-modules-exists-in-content-dir": "cd ../content && node checkForNodeModules.js && cd ../BloomBrowserUI",
         "// 'build:ui': 'builds all the stuff handled directly by vite'": " ",
         "build:ui": "vite build",
