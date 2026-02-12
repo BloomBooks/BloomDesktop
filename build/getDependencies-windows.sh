@@ -83,7 +83,7 @@ cd -
 #     URL: https://build.palaso.org/buildConfiguration/bt396?mode=builds
 #     clean: false
 #     revision: latest.lastSuccessful
-#     paths: {"ghostscript-win32.zip!**"=>"DistFiles/ghostscript", "connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build", "MSBuild.Community.Tasks.Targets"=>"build", "Lame.zip!**"=>"lib/lame", "gm.zip!**"=>"lib", "meddle.exe"=>"lib/dotnet", "ffmpeg.zip!**"=>"lib"}
+#     paths: {"ghostscript-win32.zip!**"=>"DistFiles/ghostscript", "connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build", "MSBuild.Community.Tasks.Targets"=>"build", "Lame.zip!**"=>"lib/lame", "gm64.zip!**"=>"lib", "meddle.exe"=>"lib/dotnet", "ffmpeg.zip!**"=>"lib"}
 # [1] build: PortableDevices (from PodcastUtilities) (Bloom_PortableDevicesFromPodcastUtitlies)
 #     project: Bloom
 #     URL: https://build.palaso.org/buildConfiguration/Bloom_PortableDevicesFromPodcastUtitlies?mode=builds
@@ -91,9 +91,9 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"PodcastUtilities.PortableDevices.dll"=>"lib/dotnet", "PodcastUtilities.PortableDevices.pdb"=>"lib/dotnet", "Interop.PortableDeviceApiLib.dll"=>"lib/dotnet", "Interop.PortableDeviceTypesLib.dll"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/PodcastUtilities.git [refs/heads/master]
-# [2] build: Bloom Help 6.3 (Bloom_Help_BloomHelp63)
+# [2] build: Bloom Help 6.4 (Bloom_Help_BloomHelp64)
 #     project: Help
-#     URL: https://build.palaso.org/buildConfiguration/Bloom_Help_BloomHelp63?mode=builds
+#     URL: https://build.palaso.org/buildConfiguration/Bloom_Help_BloomHelp64?mode=builds
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.chm"=>"DistFiles"}
@@ -120,20 +120,20 @@ copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/latest.la
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/MSBuild.Community.Tasks.dll ../build/MSBuild.Community.Tasks.dll
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/MSBuild.Community.Tasks.Targets ../build/MSBuild.Community.Tasks.Targets
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/Lame.zip ../Downloads/Lame.zip
-copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/gm.zip ../Downloads/gm.zip
+copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/gm64.zip ../Downloads/gm64.zip
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/meddle.exe ../lib/dotnet/meddle.exe
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/ffmpeg.zip ../Downloads/ffmpeg.zip
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_PortableDevicesFromPodcastUtitlies/latest.lastSuccessful/PodcastUtilities.PortableDevices.dll ../lib/dotnet/PodcastUtilities.PortableDevices.dll
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_PortableDevicesFromPodcastUtitlies/latest.lastSuccessful/PodcastUtilities.PortableDevices.pdb ../lib/dotnet/PodcastUtilities.PortableDevices.pdb
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_PortableDevicesFromPodcastUtitlies/latest.lastSuccessful/Interop.PortableDeviceApiLib.dll ../lib/dotnet/Interop.PortableDeviceApiLib.dll
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_PortableDevicesFromPodcastUtitlies/latest.lastSuccessful/Interop.PortableDeviceTypesLib.dll ../lib/dotnet/Interop.PortableDeviceTypesLib.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp63/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
+copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp64/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto https://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/latest.lastSuccessful/HtmlXliff.exe ../lib/dotnet/HtmlXliff.exe
 copy_auto https://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/latest.lastSuccessful/HtmlXliff.pdb ../lib/dotnet/HtmlXliff.pdb
 copy_auto https://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/latest.lastSuccessful/HtmlAgilityPack.dll ../lib/dotnet/HtmlAgilityPack.dll
 # extract downloaded zip files
 unzip -uqo ../Downloads/ghostscript-win32.zip -d "../DistFiles/ghostscript"
 unzip -uqo ../Downloads/Lame.zip -d "../lib/lame"
-unzip -uqo ../Downloads/gm.zip -d "../lib"
+unzip -uqo ../Downloads/gm64.zip -d "../lib"
 unzip -uqo ../Downloads/ffmpeg.zip -d "../lib"
 # End of script
