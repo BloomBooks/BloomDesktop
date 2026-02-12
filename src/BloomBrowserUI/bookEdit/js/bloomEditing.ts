@@ -46,7 +46,6 @@ import { showInvisibles, hideInvisibles } from "./showInvisibles";
 //promise.Promise.polyfill();
 import axios from "axios";
 import {
-    get,
     postBoolean,
     postJson,
     postString,
@@ -67,6 +66,7 @@ import { setupBookLinkGrids } from "./linkGrid";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
 import { handleUndo } from "../editViewFrame";
+import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -478,6 +478,45 @@ function hasOrigami(container: HTMLElement) {
     return container.getElementsByClassName("split-pane-component").length > 0;
 }
 
+function prepareSourceAndHintBubbles(container: HTMLElement): {
+    divsThatHaveSourceBubbles: HTMLElement[];
+    bubbleDivs: Element[];
+} {
+    // Copy source texts out to their own div, where we can make a bubble with tabs out of them
+    // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too.
+    const divsThatHaveSourceBubbles: HTMLElement[] = [];
+    const bubbleDivs: Element[] = [];
+    if ($(container).find(".bloom-preventSourceBubbles").length === 0) {
+        $(container)
+            .find("*.bloom-translationGroup")
+            .not(".bloom-readOnlyInTranslationMode")
+            .each(function () {
+                if ($(this).find("textarea, div").length > 1) {
+                    const bubble =
+                        BloomSourceBubbles.ProduceSourceBubbles(this);
+                    if (bubble.length !== 0) {
+                        divsThatHaveSourceBubbles.push(this);
+                        bubbleDivs.push(bubble[0]);
+                    }
+                }
+            });
+    }
+
+    // NB: this should be after the ProduceSourceBubbles(), because hint-bubbles are lower priority
+    // and should not show if we already have a source bubble. (Eventually we may make the hint part
+    // of the source bubble when there is one...Bl-4295.) This would happen with the Book Title, which
+    // would have both when there are source languages to show.
+    BloomHintBubbles.addHintBubbles(
+        container,
+        divsThatHaveSourceBubbles,
+        bubbleDivs,
+    );
+
+    PlaceholderProvider.addPlaceholders(container);
+
+    return { divsThatHaveSourceBubbles, bubbleDivs };
+}
+
 // Originally, all this code was in document.load and the selectors were acting
 // on all elements (not bound by the container).  I added the container bound so we
 // can add new elements (such as during layout mode) and call this on only newly added elements.
@@ -620,7 +659,7 @@ export function SetupElements(
             if (!theEvent.clipboardData) return;
 
             const s = theEvent.clipboardData.getData("text/plain");
-            if (s == null || s === "") return;
+            if (s === null || s === "") return;
 
             if ($(this).parent().hasClass("bloom-userCannotModifyStyles")) {
                 e.preventDefault();
@@ -727,38 +766,8 @@ export function SetupElements(
 
     setupBookLinkGrids(container);
 
-    // Copy source texts out to their own div, where we can make a bubble with tabs out of them
-    // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
-    const divsThatHaveSourceBubbles: HTMLElement[] = [];
-    const bubbleDivs: any[] = [];
-    if ($(container).find(".bloom-preventSourceBubbles").length === 0) {
-        $(container)
-            .find("*.bloom-translationGroup")
-            .not(".bloom-readOnlyInTranslationMode")
-            .each(function () {
-                if ($(this).find("textarea, div").length > 1) {
-                    const bubble =
-                        BloomSourceBubbles.ProduceSourceBubbles(this);
-                    if (bubble.length !== 0) {
-                        divsThatHaveSourceBubbles.push(this);
-                        bubbleDivs.push(bubble);
-                    }
-                }
-            });
-    }
-
-    //NB: this should be after the ProduceSourceBubbles(), because hint-bubbles are lower
-    // priority, and should not show if we already have a source bubble.
-    // (Eventually we may make the hint part of the source bubble when there is one...Bl-4295.)
-    // This would happen with the Book Title, which would have both
-    // when there are source languages to show
-    BloomHintBubbles.addHintBubbles(
-        container,
-        divsThatHaveSourceBubbles,
-        bubbleDivs,
-    );
-
-    PlaceholderProvider.addPlaceholders(container);
+    const { divsThatHaveSourceBubbles, bubbleDivs } =
+        prepareSourceAndHintBubbles(container);
 
     // We seem to need a delay to get a reliable result in BloomSourceBubbles.MakeSourceBubblesIntoQtips()
     // as it calls BloomSourceBubbles.CreateAndShowQtipBubbleFromDiv(), which ends by calling
@@ -766,12 +775,7 @@ export function SetupElements(
     // For getting focus set reliably, it seems best to do this whole loop inside one delay, rather than
     // have separate delays invoked each time through the loop.
     setTimeout(() => {
-        for (let i = 0; i < bubbleDivs.length; i++) {
-            BloomSourceBubbles.MakeSourceBubblesIntoQtips(
-                divsThatHaveSourceBubbles[i],
-                bubbleDivs[i],
-            );
-        }
+        makeSourceBubblesIntoQtips(bubbleDivs, divsThatHaveSourceBubbles);
         BloomSourceBubbles.setupSizeChangedHandling(divsThatHaveSourceBubbles);
         if (theOneCanvasElementManager.isCanvasElementEditingOn) {
             // If we saved the page with an indication that a particular element should be
@@ -783,7 +787,12 @@ export function SetupElements(
                 const currentPageId = document
                     .getElementsByClassName("bloom-page")[0]
                     ?.getAttribute("id");
-                if (currentPageId === (window.top as any).lastPageId) {
+                const topWindow = window.top as
+                    | (Window & {
+                          lastPageId?: string;
+                      })
+                    | null;
+                if (currentPageId === topWindow?.lastPageId) {
                     elementToFocus = Array.from(
                         document.getElementsByClassName(kCanvasElementClass),
                     ).find((e) =>
@@ -791,7 +800,9 @@ export function SetupElements(
                     ) as HTMLElement;
                 } else {
                     // remember this page!
-                    (window.top as any).lastPageId = currentPageId;
+                    if (topWindow) {
+                        topWindow.lastPageId = currentPageId ?? undefined;
+                    }
                 }
             }
             // If we don't have some specific reason to focus on a particular canvas element, we
@@ -935,6 +946,27 @@ export function SetupElements(
     ConstrainContentsOfPageLabel(container);
 }
 
+function makeSourceBubblesIntoQtips(
+    bubbleDivs: Element[],
+    divsThatHaveSourceBubbles: HTMLElement[],
+) {
+    for (let i = 0; i < bubbleDivs.length; i++) {
+        BloomSourceBubbles.MakeSourceBubblesIntoQtips(
+            divsThatHaveSourceBubbles[i],
+            $(bubbleDivs[i]),
+        );
+    }
+}
+
+export function recomputeSourceBubblesForPage(container: HTMLElement) {
+    const { divsThatHaveSourceBubbles, bubbleDivs } =
+        prepareSourceAndHintBubbles(container);
+    setTimeout(() => {
+        makeSourceBubblesIntoQtips(bubbleDivs, divsThatHaveSourceBubbles);
+        BloomSourceBubbles.setupSizeChangedHandling(divsThatHaveSourceBubbles);
+    }, 100);
+}
+
 // This function sets up a rule to display a prompt following the placeholder we insert for a missing
 // "originalTitle" element. It is displayed using CSS :after so we don't have to modify the DOM to
 // make it appear, which would risk having it show up in published books. We insert the CSS dynamically
@@ -971,12 +1003,12 @@ function SetupCustomMissingTitleStylesheet() {
 
 const pageLabelL18nPrefix = "TemplateBooks.PageLabel.";
 
-function ConstrainContentsOfPageLabel(container) {
+function ConstrainContentsOfPageLabel(_container) {
     const pageLabel = <HTMLDivElement>(
         document.getElementsByClassName("pageLabel")[0]
     );
     if (!pageLabel) return;
-    $(pageLabel).blur((event) => {
+    $(pageLabel).blur((_event) => {
         // characters that cause problem in windows file names (linux is less picky, according to mono source)
         pageLabel.innerText = pageLabel.innerText
             .split(/[\/\\*:?"<>|]/)
@@ -986,7 +1018,7 @@ function ConstrainContentsOfPageLabel(container) {
         // update data-i18n attribute to prevent this change being forgotten on reload; BL-5855
         let localizationAttr = pageLabel.getAttribute("data-i18n");
         if (
-            localizationAttr != null &&
+            localizationAttr !== null &&
             localizationAttr.startsWith(pageLabelL18nPrefix)
         ) {
             localizationAttr = pageLabelL18nPrefix + pageLabel.innerText;
@@ -995,14 +1027,14 @@ function ConstrainContentsOfPageLabel(container) {
     });
 }
 
-function AddXMatterLabelAfterPageLabel(container) {
+function AddXMatterLabelAfterPageLabel(_container) {
     // All this rigamarole so we can localize...
     const pageLabel = <HTMLDivElement>(
         document.getElementsByClassName("pageLabel")[0]
     );
     if (!pageLabel) return;
     let xMatterLabel = window.getComputedStyle(pageLabel, ":before").content;
-    if (xMatterLabel == null) return;
+    if (xMatterLabel === null) return;
     xMatterLabel = xMatterLabel.replace(new RegExp('"', "g"), ""); //No idea why the quotes are still in there at this point.
     if (xMatterLabel === "" || xMatterLabel === "none") return;
     theOneLocalizationManager
@@ -1029,11 +1061,7 @@ function OneTimeSetup() {
     setupOrigami();
     hookupLinkHandler();
     setupDragActivityTabControl();
-}
-
-interface String {
-    endsWith(string): boolean;
-    startsWith(string): boolean;
+    setupPageLayoutMenu();
 }
 
 function isTextSelected(): boolean {
@@ -1042,7 +1070,6 @@ function isTextSelected(): boolean {
 }
 
 let reportedTextSelected = isTextSelected();
-
 // ---------------------------------------------------------------------------------
 // called inside document ready function
 // ---------------------------------------------------------------------------------
@@ -1055,7 +1082,7 @@ export function bootstrap() {
 
     document.addEventListener("selectionchange", () => {
         const textSelected = isTextSelected();
-        if (textSelected != reportedTextSelected) {
+        if (textSelected !== reportedTextSelected) {
             postBoolean("editView/isTextSelected", textSelected);
             reportedTextSelected = textSelected;
         }
@@ -1146,7 +1173,7 @@ function setupWheelZooming() {
         } else if (theEvent.deltaY > 0) {
             command = "edit/pageControls/zoomMinus";
         }
-        if (command != "") {
+        if (command !== "") {
             // Zooming re-loads the page (because of a text-over-picture issue)
             postThatMightNavigate(command);
         }
@@ -1275,6 +1302,7 @@ function requestPageContentInternal() {
         // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports().
         getToolboxBundleExports()?.removeToolboxMarkup();
         removeEditingDebris(); // Enhance this makes a change when better it would only changed the
+
         const content = getBodyContentForSavePage();
         const userStylesheet = userStylesheetContent();
         postString(
@@ -1433,11 +1461,16 @@ async function cutSelectionImpl() {
     // We do a Save before and after to make sure that the cut is distinct from
     // any other editing and that ckEditor actually has an item in its undo stack
     // so that the Undo gets activated.
-    (<any>CKEDITOR.currentInstance).undoManager.save(true);
+    const currentEditor = CKEDITOR.currentInstance as CKEDITOR.editor & {
+        undoManager: {
+            save: (update?: boolean) => void;
+        };
+    };
+    currentEditor.undoManager.save(true);
     const range = CKEDITOR.currentInstance.getSelection().getRanges()[0];
     range.deleteContents();
     range.select(); // Select emptied range to place the caret in its place.
-    (<any>CKEDITOR.currentInstance).undoManager.save(true);
+    currentEditor.undoManager.save(true);
     // This is a non-ckeditor way to perform the deletion, but doesn't integrate with Undo.
     //sel.deleteFromDocument();
 }
@@ -1536,7 +1569,17 @@ async function pasteImpl(imageAvailable: boolean) {
     ) {
         // We've issued a paste command on a canvas element that isn't active for editing.
         // Replace its entire content with what's on the clipboard.
-        const editor = (activeCanvasElementEditable as any).bloomCkEditor;
+        const editor = (
+            activeCanvasElementEditable as HTMLElement & {
+                bloomCkEditor?: CKEDITOR.editor & {
+                    undoManager: {
+                        save: (update?: boolean) => void;
+                        lock: (dontUpdate?: boolean, force?: boolean) => void;
+                        unlock: () => void;
+                    };
+                };
+            }
+        ).bloomCkEditor;
         if (editor) {
             const manager = editor.undoManager;
             editor.focus();
@@ -1569,9 +1612,14 @@ async function pasteImpl(imageAvailable: boolean) {
         // We do a Save before and after to make sure that the cut is distinct from
         // any other editing and that ckEditor actually has an item in its undo stack
         // so that the Undo gets activated.
-        (<any>ckEditorInstance).undoManager.save(true);
+        const editorWithUndo = ckEditorInstance as CKEDITOR.editor & {
+            undoManager: {
+                save: (update?: boolean) => void;
+            };
+        };
+        editorWithUndo.undoManager.save(true);
         ckEditorInstance.insertText(textToPaste);
-        (<any>ckEditorInstance).undoManager.save(true);
+        editorWithUndo.undoManager.save(true);
         // We need to update the canvas element height (BL-14004).
         if (
             activeCanvasElementEditable &&
@@ -1642,7 +1690,7 @@ export function IsPageXMatter($target: JQuery): boolean {
     );
 }
 
-function updateCkEditorButtonStatus(editor: CKEDITOR.editor) {
+function updateCkEditorButtonStatus(_editor: CKEDITOR.editor) {
     // At the moment nothing needs to enabled or disabled dynamically.
     // This method is a placeholder for future use.
 }
@@ -1768,7 +1816,7 @@ export function attachToCkEditor(element) {
                 .done((translation) => {
                     CKEDITOR.config.labelForDefaultColor = translation;
                 });
-        } catch (error) {
+        } catch {
             // swallow... it's not worth crashing over if something went bad in there.
         }
     }

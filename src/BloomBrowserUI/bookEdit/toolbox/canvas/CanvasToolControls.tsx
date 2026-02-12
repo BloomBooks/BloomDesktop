@@ -1,4 +1,5 @@
 import { css, ThemeProvider } from "@emotion/react";
+import tinycolor from "tinycolor2";
 
 import * as React from "react";
 import { useState, useEffect } from "react";
@@ -68,6 +69,18 @@ type ImageFillMode =
     | typeof kImageFitModeContainValue
     | typeof kImageFitModeCoverValue;
 
+const getBubbleTypeFromManager = (
+    mgr: CanvasElementManager | undefined,
+): "text" | "image" | "video" | undefined => {
+    if (!mgr) {
+        return undefined;
+    }
+    if (mgr.isActiveElementPictureCanvasElement()) {
+        return "image";
+    }
+    return mgr.isActiveElementVideoCanvasElement() ? "video" : "text";
+};
+
 const getImageFillModeForElement = (element: HTMLElement): ImageFillMode => {
     const currentFillMode = element.getAttribute(kImageFitModeAttribute);
     if (
@@ -96,7 +109,13 @@ const CanvasToolControls: React.FunctionComponent = () => {
     const [imageFillMode, setImageFillMode] = useState<ImageFillMode>(
         kImageFillModePaddedValue,
     );
-    const [isXmatter, setIsXmatter] = useState(true);
+    // This is generally true if the page is xmatter (tools are forbidden).
+    // There is a special case where it is false for custom front cover (tools are allowed).
+    // Currently it will be true for game pages, although in fact we
+    // don't currently allow it to be used; it is partly historical,
+    // and partly we want to show a special message if someone tries to use it there.
+    const [pageTypeForbidsCanvasTools, setPageTypeForbidsCanvasTools] =
+        useState(true);
     // This 'counter' increments on new page ready so we can re-check if the book is locked.
     const [pageRefreshIndicator, setPageRefreshIndicator] = useState(0);
 
@@ -174,7 +193,9 @@ const CanvasToolControls: React.FunctionComponent = () => {
     if (CanvasTool.theOneCanvasTool) {
         CanvasTool.theOneCanvasTool.callOnNewPageReady = () => {
             bubbleSpecInitialization();
-            setIsXmatter(ToolboxToolReactAdaptor.isXmatter());
+            setPageTypeForbidsCanvasTools(
+                ToolboxToolReactAdaptor.isXmatter(true),
+            );
             const count = pageRefreshIndicator;
             setPageRefreshIndicator(count + 1);
         };
@@ -205,7 +226,9 @@ const CanvasToolControls: React.FunctionComponent = () => {
             setBackgroundColorSwatch(newSwatch);
 
             const canvasElementManager = getCanvasElementManager();
-            setCanvasElementType(getBubbleType(canvasElementManager));
+            setCanvasElementType(
+                getBubbleTypeFromManager(canvasElementManager),
+            );
             setImageFillMode(getImageFillModeForElement(currentBubble.content));
             if (canvasElementManager) {
                 // Get the current canvas element's textColor and set it
@@ -224,18 +247,6 @@ const CanvasToolControls: React.FunctionComponent = () => {
             setImageFillMode(kImageFillModePaddedValue);
         }
     }, [currentBubble]);
-
-    const getBubbleType = (
-        mgr: CanvasElementManager | undefined,
-    ): CanvasElementType => {
-        if (!mgr) {
-            return undefined;
-        }
-        if (mgr.isActiveElementPictureCanvasElement()) {
-            return "image";
-        }
-        return mgr.isActiveElementVideoCanvasElement() ? "video" : "text";
-    };
 
     // Callback for style changed
     const handleStyleChanged = (event) => {
@@ -922,7 +933,11 @@ const CanvasToolControls: React.FunctionComponent = () => {
                             >
                                 <CanvasElementItemRegion
                                     theme="blueOnTan"
-                                    className={!isXmatter ? "" : "disabled"}
+                                    className={
+                                        pageTypeForbidsCanvasTools
+                                            ? "disabled"
+                                            : ""
+                                    }
                                 >
                                     <CanvasElementItemRow>
                                         <CanvasElementItem
@@ -1023,7 +1038,8 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                 <div
                                     id={"canvasToolControlOptionsRegion"}
                                     className={
-                                        canvasElementType && !isXmatter
+                                        canvasElementType &&
+                                        !pageTypeForbidsCanvasTools
                                             ? ""
                                             : "disabled"
                                     }
@@ -1051,7 +1067,7 @@ function setOpaque(color: string) {
 }
 function isBubble(item: BubbleSpec | undefined): boolean {
     // "none" is the style assigned to the plain text box.
-    return !!item && item.style != "none" && item.style != "caption";
+    return !!item && item.style !== "none" && item.style !== "caption";
 }
 
 export default CanvasToolControls;

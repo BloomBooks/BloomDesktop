@@ -5,10 +5,13 @@ import { useApiObject } from "../../utils/bloomApi";
 import { useL10n } from "../../react_components/l10nHooks";
 import { useMemo } from "react";
 
-interface ILanguageNameValues {
+export interface ILanguageNameValues {
     language1Name: string;
+    language1Tag: string;
     language2Name: string;
+    language2Tag: string;
     language3Name?: string;
+    language3Tag?: string;
 }
 
 // This is used in BookSettingsDialog to provide a group of Config-R booleans that control
@@ -40,7 +43,9 @@ export const FieldVisibilityGroup: React.FunctionComponent<{
     const languageNameValues: ILanguageNameValues =
         useApiObject<ILanguageNameValues>("settings/languageNames", {
             language1Name: "",
+            language1Tag: "",
             language2Name: "",
+            language2Tag: "",
         });
     const showWrittenLanguage1TitleLabel = useL10n(
         props.labelFrame,
