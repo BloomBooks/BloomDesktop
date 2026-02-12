@@ -1074,8 +1074,13 @@ function beginAddTool(
 let keydownEventCounter = 0;
 
 export function scheduleMarkupUpdateAfterPaste(): void {
-    // AI thinks we might need this to allow the DOM to settle even before we do the
+    // AI thinks we might need this to "allow the DOM to settle" even before we do the
     // little bit that handlePageEditing does before setting up its own delay.
+    // I could not understand its explanation and am not convinced we need this.
+    // However, I'm trying to fix a race condition that results in a problem
+    // that is hard to reproduce reliably. I'd rather have a timeout that we don't
+    // need than have the markup occasionally not update, let alone somehow have
+    // the markup update somehow mess up the paste. So I decided to leave it in.
     setTimeout(() => handlePageEditing(), 0);
 }
 
@@ -1111,6 +1116,13 @@ function handlePageEditing(): void {
     if (window?.top?.[isLongPressEvaluating]) {
         return;
     }
+    // If this was making DOM changes that we want to save, we would want to try to use
+    // addRequestPageContentDelay and removeRequestPageContentDelay or wrapWithRequestPageContentDelay
+    // to prevent the user from trying to save while we're in the middle of making changes.
+    // Care would be needed to keep the calls matched up: if there's a timer already running, that
+    // would mean we already have a page content delay in place and should not add another.
+    // However, the markup changes that we are making here are stripped out by Save anyway,
+    // so I don't believe we need to worry about suppressing saves while we're doing this.
     keypressTimer = setTimeout(async () => {
         // This happens 500ms after the user stops typing.
         const page: HTMLIFrameElement = <HTMLIFrameElement>(

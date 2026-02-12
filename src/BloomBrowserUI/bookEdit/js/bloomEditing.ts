@@ -1444,7 +1444,10 @@ async function cutSelectionImpl() {
 
 // See comment on copySelection
 export const pasteClipboard = (imageAvailable: boolean) => {
-    pasteImpl(imageAvailable);
+    wrapWithRequestPageContentDelay(
+        () => pasteImpl(imageAvailable),
+        "pasteImpl",
+    );
 };
 
 function scheduleMarkupUpdateAfterPaste() {
