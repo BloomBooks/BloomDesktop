@@ -99,6 +99,7 @@ Live tests:
 - [x] (B4) Toolbox bundling safety: switch toolbox imports to `import type` + move shared types into dependency-light module (Checkpoint 4)
 - [x] (B5) Extract selection UI + focus/control frame into `CanvasElementSelectionUi.ts` (Checkpoint 5)
 - [ ] (B6) Extract pointer interactions (drag/resize/crop) into `CanvasElementPointerInteractions.ts` (Checkpoint 6)
+- [x] (B6) Extract pointer interactions + handle drag (drag/select/context menu in `CanvasElementPointerInteractions.ts`; resize/crop/side-handle/move-crop in `CanvasElementHandleDragInteractions.ts`) (Checkpoint 6)
 - [ ] (B7) Extract alternates + game/draggable integration modules (Checkpoint 7)
 
 ### Phase C — Finish
@@ -108,6 +109,6 @@ Live tests:
 - [ ] (C4) Final live test sweep: drag/drop, selection, resize, duplicate, paste
 
 ## Line counts
-- [ ] Starting: CanvasElementManager.ts 7610 lines
+- [x] Starting: CanvasElementManager.ts 7610 lines
 - [ ] Target: CanvasElementManager.ts ≤ 2000 lines
-- [ ] Current: CanvasElementManager.ts 5511 lines
+- [x] Current: CanvasElementManager.ts 4331 lines
