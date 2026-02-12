@@ -4,9 +4,9 @@
 // This file exists to keep CanvasElementManager.ts smaller and to reduce coupling
 // between the page bundle and toolbox UI code.
 
-import { kCanvasToolId } from "../toolbox/toolIds";
-import { getToolboxBundleExports } from "./bloomFrames";
-import { kImageContainerClass } from "./bloomImages";
+import { kCanvasToolId } from "../../toolbox/toolIds";
+import { getToolboxBundleExports } from "../bloomFrames";
+import { kImageContainerClass } from "../bloomImages";
 
 // This is just for debugging. It produces a string that describes the canvas element, generally
 // well enough to identify it in console.log.

@@ -19,7 +19,7 @@ import { changeImageInfo } from "../bloomEditing";
 import { addSkeletonIfEmpty } from "../linkGrid";
 import { kImageContainerClass, kImageContainerSelector } from "../bloomImages";
 import { getExactClientSize } from "../../../utils/elementUtils";
-import { CanvasSnapProvider } from "../CanvasSnapProvider";
+import { CanvasSnapProvider } from "./CanvasSnapProvider";
 import { kVideoContainerClass } from "../videoUtils";
 import { adjustTarget as adjustTargetFromGameTool } from "../../toolbox/games/GameTool";
 import { putBubbleBefore } from "./CanvasElementBubbleLevelUtils";

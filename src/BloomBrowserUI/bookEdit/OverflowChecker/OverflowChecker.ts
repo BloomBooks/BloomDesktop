@@ -5,7 +5,7 @@
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import bloomQtipUtils from "../js/bloomQtipUtils";
 import { MeasureText } from "../../utils/measureText";
-import { theOneCanvasElementManager } from "../js/CanvasElementManager";
+import { theOneCanvasElementManager } from "../js/canvasElementManager/CanvasElementManager";
 import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { isInDragActivity } from "../toolbox/games/GameInfo";

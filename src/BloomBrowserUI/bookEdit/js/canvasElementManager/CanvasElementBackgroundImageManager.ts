@@ -1,5 +1,5 @@
 import { Bubble, Comical } from "comicaljs";
-import { renderCanvasElementContextControls } from "../CanvasElementContextControls";
+import { renderCanvasElementContextControls } from "./CanvasElementContextControls";
 import {
     getBackgroundImageFromBloomCanvas,
     getImageFromCanvasElement,

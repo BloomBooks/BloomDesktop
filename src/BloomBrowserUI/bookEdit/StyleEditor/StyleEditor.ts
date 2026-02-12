@@ -40,7 +40,7 @@ import { BloomPalette } from "../../react_components/color-picking/bloomPalette"
 import { kBloomYellow } from "../../bloomMaterialUITheme";
 import { RenderRoot } from "./AudioHilitePage";
 import { RenderCanvasElementRoot } from "./CanvasElementFormatPage";
-import { CanvasElementManager } from "../js/CanvasElementManager";
+import { CanvasElementManager } from "../js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 import { getPageIFrame } from "../../utils/shared";
 

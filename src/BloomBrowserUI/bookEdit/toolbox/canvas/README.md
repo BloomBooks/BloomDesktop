@@ -171,4 +171,4 @@ Related helpers (split out of the original large manager file) live under:
 
 Public entry points that other code can call without pulling in the whole manager live in:
 
-- `../../js/CanvasElementManagerPublicFunctions.ts`
+- `../../js/canvasElementManager/CanvasElementManagerPublicFunctions.ts`

@@ -2,12 +2,12 @@
 // elements were originally intended for use in making comic books, but could also be useful for many
 // other cases of where there is space for text or another image or a video within the bounds of
 // the picture.
-///<reference path="../../typings/jquery/jquery.d.ts"/>
+///<reference path="../../../typings/jquery/jquery.d.ts"/>
 // This collectionSettings reference defines the function GetSettings(): ICollectionSettings
 // The actual function is injected by C#.
-/// <reference path="./collectionSettings.d.ts"/>
+/// <reference path="../collectionSettings.d.ts"/>
 
-import { EditableDivUtils } from "./editableDivUtils";
+import { EditableDivUtils } from "../editableDivUtils";
 import {
     Bubble,
     BubbleSpec,
@@ -15,15 +15,15 @@ import {
     Comical,
     TailSpec,
 } from "comicaljs";
-import { Point, PointScaling } from "./point";
-import { isLinux } from "../../utils/isLinux";
-import { getRgbaColorStringFromColorAndOpacity } from "../../utils/colorUtils";
+import { Point, PointScaling } from "../point";
+import { isLinux } from "../../../utils/isLinux";
+import { getRgbaColorStringFromColorAndOpacity } from "../../../utils/colorUtils";
 import {
     IImageInfo,
     SetupElements,
     attachToCkEditor,
     notifyToolOfChangedImage,
-} from "./bloomEditing";
+} from "../bloomEditing";
 import {
     EnableAllImageEditing,
     getImageFromCanvasElement,
@@ -32,11 +32,11 @@ import {
     UpdateImageTooltipVisibility,
     HandleImageError,
     isPlaceHolderImage,
-} from "./bloomImages";
-import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
-import BloomHintBubbles from "./BloomHintBubbles";
+} from "../bloomImages";
+import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
+import BloomHintBubbles from "../BloomHintBubbles";
 import { renderCanvasElementContextControls } from "./CanvasElementContextControls";
-import { kBloomBlue } from "../../bloomMaterialUITheme";
+import { kBloomBlue } from "../../../bloomMaterialUITheme";
 import {
     kBackgroundImageClass,
     kBloomButtonClass,
@@ -44,19 +44,19 @@ import {
     kBloomCanvasSelector,
     kCanvasElementClass,
     kCanvasElementSelector,
-} from "../toolbox/canvas/canvasElementConstants";
-import { updateCanvasElementClass } from "../toolbox/canvas/canvasElementDomUtils";
-import OverflowChecker from "../OverflowChecker/OverflowChecker";
-import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
-import { needsToBeKeptSameSize } from "../toolbox/games/gameUtilities";
-import { CanvasElementType } from "../toolbox/canvas/canvasElementTypes";
+} from "../../toolbox/canvas/canvasElementConstants";
+import { updateCanvasElementClass } from "../../toolbox/canvas/canvasElementDomUtils";
+import OverflowChecker from "../../OverflowChecker/OverflowChecker";
+import { kVideoContainerClass, selectVideoContainer } from "../videoUtils";
+import { needsToBeKeptSameSize } from "../../toolbox/games/gameUtilities";
+import { CanvasElementType } from "../../toolbox/canvas/canvasElementTypes";
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
-import PlaceholderProvider from "./PlaceholderProvider";
+import PlaceholderProvider from "../PlaceholderProvider";
 import { copyContentToTarget } from "bloom-player";
 import $ from "jquery";
-import { kCanvasToolId } from "../toolbox/toolIds";
+import { kCanvasToolId } from "../../toolbox/toolIds";
 import { showCanvasTool } from "./CanvasElementManagerPublicFunctions";
 import {
     convertPointFromViewportToElementFrame as convertPointFromViewportToElementFrameFromGeometry,
@@ -70,7 +70,7 @@ import {
     getRightAndBottomPaddings as getRightAndBottomPaddingsFromGeometry,
     getScrollAmount as getScrollAmountFromGeometry,
     extractNumber as extractNumberFromGeometry,
-} from "./canvasElementManager/CanvasElementGeometry";
+} from "./CanvasElementGeometry";
 import {
     adjustCanvasElementsForCurrentLanguage as adjustCanvasElementsForCurrentLanguageFromAlternates,
     adjustCanvasElementAlternates as adjustCanvasElementAlternatesFromAlternates,
@@ -78,38 +78,38 @@ import {
     getLabeledNumberInPx as getLabeledNumberInPxFromAlternates,
     saveCurrentCanvasElementStateAsCurrentLangAlternate as saveCurrentCanvasElementStateAsCurrentLangAlternateFromAlternates,
     saveStateOfCanvasElementAsCurrentLangAlternate,
-} from "./canvasElementManager/CanvasElementAlternates";
+} from "./CanvasElementAlternates";
 import {
     getBloomCanvas as getBloomCanvasFromPositioning,
     getChildPositionFromParentCanvasElement as getChildPositionFromParentCanvasElementFromPositioning,
     getInteriorWidthHeight as getInteriorWidthHeightFromPositioning,
     inPlayMode as inPlayModeFromPositioning,
     setCanvasElementPosition as setCanvasElementPositionFromPositioning,
-} from "./canvasElementManager/CanvasElementPositioning";
-import type { ITextColorInfo } from "./canvasElementManager/CanvasElementSharedTypes";
-export type { ITextColorInfo } from "./canvasElementManager/CanvasElementSharedTypes";
-import { CanvasElementFactories } from "./canvasElementManager/CanvasElementFactories";
-import { CanvasElementClipboard } from "./canvasElementManager/CanvasElementClipboard";
-import { CanvasElementDuplication } from "./canvasElementManager/CanvasElementDuplication";
-import { CanvasElementSelectionUi } from "./canvasElementManager/CanvasElementSelectionUi";
-import { CanvasElementPointerInteractions } from "./canvasElementManager/CanvasElementPointerInteractions";
-import { CanvasElementHandleDragInteractions } from "./canvasElementManager/CanvasElementHandleDragInteractions";
-import { CanvasElementDraggableIntegration } from "./canvasElementManager/CanvasElementDraggableIntegration";
-import { CanvasElementEditingSuspension } from "./canvasElementManager/CanvasElementEditingSuspension";
-import { CanvasElementCanvasResizeAdjustments } from "./canvasElementManager/CanvasElementCanvasResizeAdjustments";
-import { CanvasElementBackgroundImageManager } from "./canvasElementManager/CanvasElementBackgroundImageManager";
+} from "./CanvasElementPositioning";
+import type { ITextColorInfo } from "./CanvasElementSharedTypes";
+export type { ITextColorInfo } from "./CanvasElementSharedTypes";
+import { CanvasElementFactories } from "./CanvasElementFactories";
+import { CanvasElementClipboard } from "./CanvasElementClipboard";
+import { CanvasElementDuplication } from "./CanvasElementDuplication";
+import { CanvasElementSelectionUi } from "./CanvasElementSelectionUi";
+import { CanvasElementPointerInteractions } from "./CanvasElementPointerInteractions";
+import { CanvasElementHandleDragInteractions } from "./CanvasElementHandleDragInteractions";
+import { CanvasElementDraggableIntegration } from "./CanvasElementDraggableIntegration";
+import { CanvasElementEditingSuspension } from "./CanvasElementEditingSuspension";
+import { CanvasElementCanvasResizeAdjustments } from "./CanvasElementCanvasResizeAdjustments";
+import { CanvasElementBackgroundImageManager } from "./CanvasElementBackgroundImageManager";
 
 const kComicalGeneratedClass: string = "comical-generated";
 
 const kTransformPropName = "bloom-zoomTransformForInitialFocus";
-export { kBackgroundImageClass } from "../toolbox/canvas/canvasElementConstants";
+export { kBackgroundImageClass } from "../../toolbox/canvas/canvasElementConstants";
 
 type ResizeDirection = "ne" | "nw" | "sw" | "se";
 export {
     getAllDraggables,
     isDraggable,
     kDraggableIdAttribute,
-} from "../toolbox/canvas/canvasElementDraggables";
+} from "../../toolbox/canvas/canvasElementDraggables";
 
 // Canvas elements are the movable items that can be placed over images (or empty image containers).
 // Some of them are associated with ComicalJs bubbles. Earlier in Bloom's history, they were variously

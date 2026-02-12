@@ -1,14 +1,14 @@
 import { Bubble, Comical } from "comicaljs";
 import { Point, PointScaling } from "../point";
-import { renderCanvasElementContextControls } from "../CanvasElementContextControls";
+import { renderCanvasElementContextControls } from "./CanvasElementContextControls";
 import { handlePlayClick } from "../bloomVideo";
 import {
     kBackgroundImageClass,
     kBloomCanvasSelector,
     kCanvasElementSelector,
 } from "../../toolbox/canvas/canvasElementConstants";
-import { CanvasGuideProvider } from "../CanvasGuideProvider";
-import { CanvasSnapProvider } from "../CanvasSnapProvider";
+import { CanvasGuideProvider } from "./CanvasGuideProvider";
+import { CanvasSnapProvider } from "./CanvasSnapProvider";
 import { convertPointFromViewportToElementFrame } from "./CanvasElementGeometry";
 import { inPlayMode } from "./CanvasElementPositioning";
 

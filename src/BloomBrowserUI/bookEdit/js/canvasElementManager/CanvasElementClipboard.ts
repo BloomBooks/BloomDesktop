@@ -28,7 +28,7 @@ import {
 import { makeTargetAndMatchSize } from "../../toolbox/canvas/CanvasElementItem";
 import { getTarget } from "bloom-player";
 import $ from "jquery";
-import { CanvasSnapProvider } from "../CanvasSnapProvider";
+import { CanvasSnapProvider } from "./CanvasSnapProvider";
 
 export interface ICanvasElementClipboardHost {
     snapProvider: CanvasSnapProvider;

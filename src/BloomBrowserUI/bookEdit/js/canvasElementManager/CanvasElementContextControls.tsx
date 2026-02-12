@@ -3,7 +3,7 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import { useState, useEffect, useRef } from "react";
 import * as ReactDOM from "react-dom";
-import { kBloomBlue, lightTheme } from "../../bloomMaterialUITheme";
+import { kBloomBlue, lightTheme } from "../../../bloomMaterialUITheme";
 import { SvgIconProps } from "@mui/material";
 import { default as CopyrightIcon } from "@mui/icons-material/Copyright";
 import { default as SearchIcon } from "@mui/icons-material/Search";
@@ -16,65 +16,65 @@ import { default as CircleIcon } from "@mui/icons-material/Circle";
 import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
 import { default as ArrowUpwardIcon } from "@mui/icons-material/ArrowUpward";
 import { default as ArrowDownwardIcon } from "@mui/icons-material/ArrowDownward";
-import { LinkIcon } from "./LinkIcon";
-import { showCopyrightAndLicenseDialog } from "../editViewFrame";
+import { LinkIcon } from "../LinkIcon";
+import { showCopyrightAndLicenseDialog } from "../../editViewFrame";
 import {
     doImageCommand,
     getImageUrlFromImageContainer,
     kImageContainerClass,
     isPlaceHolderImage,
-} from "./bloomImages";
+} from "../bloomImages";
 import {
     doVideoCommand,
     findNextVideoContainer,
     findPreviousVideoContainer,
-} from "./bloomVideo";
+} from "../bloomVideo";
 import {
     copyAndPlaySoundAsync,
     makeDuplicateOfDragBubble,
     makeTargetForDraggable,
     playSound,
     showDialogToChooseSoundFileAsync,
-} from "../toolbox/games/GameTool";
+} from "../../toolbox/games/GameTool";
 import { ThemeProvider } from "@mui/material/styles";
 import {
     divider,
     ILocalizableMenuItemProps,
     LocalizableMenuItem,
     LocalizableNestedMenuItem,
-} from "../../react_components/localizableMenuItem";
+} from "../../../react_components/localizableMenuItem";
 import Menu from "@mui/material/Menu";
 import { Divider } from "@mui/material";
-import { DuplicateIcon } from "./DuplicateIcon";
-import { getCanvasElementManager } from "../toolbox/canvas/canvasElementUtils";
+import { DuplicateIcon } from "../DuplicateIcon";
+import { getCanvasElementManager } from "../../toolbox/canvas/canvasElementUtils";
 import {
     kBackgroundImageClass,
     kBloomButtonClass,
-} from "../toolbox/canvas/canvasElementConstants";
+} from "../../toolbox/canvas/canvasElementConstants";
 import {
     isDraggable,
     kDraggableIdAttribute,
-} from "../toolbox/canvas/canvasElementDraggables";
-import { copySelection, GetEditor, pasteClipboard } from "./bloomEditing";
-import { BloomTooltip } from "../../react_components/BloomToolTip";
-import { useL10n } from "../../react_components/l10nHooks";
-import { CogIcon } from "./CogIcon";
-import { MissingMetadataIcon } from "./MissingMetadataIcon";
-import { FillSpaceIcon } from "./FillSpaceIcon";
-import { kBloomDisabledOpacity } from "../../utils/colorUtils";
-import AudioRecording from "../toolbox/talkingBook/audioRecording";
+} from "../../toolbox/canvas/canvasElementDraggables";
+import { copySelection, GetEditor, pasteClipboard } from "../bloomEditing";
+import { BloomTooltip } from "../../../react_components/BloomToolTip";
+import { useL10n } from "../../../react_components/l10nHooks";
+import { CogIcon } from "../CogIcon";
+import { MissingMetadataIcon } from "../MissingMetadataIcon";
+import { FillSpaceIcon } from "../FillSpaceIcon";
+import { kBloomDisabledOpacity } from "../../../utils/colorUtils";
+import AudioRecording from "../../toolbox/talkingBook/audioRecording";
 import { getAudioSentencesOfVisibleEditables } from "bloom-player";
-import { GameType, getGameType } from "../toolbox/games/GameInfo";
-import { setGeneratedDraggableId } from "../toolbox/canvas/CanvasElementItem";
-import { editLinkGrid } from "./linkGrid";
-import { showLinkTargetChooserDialog } from "../../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
-import { CanvasElementType } from "../toolbox/canvas/canvasElementTypes";
+import { GameType, getGameType } from "../../toolbox/games/GameInfo";
+import { setGeneratedDraggableId } from "../../toolbox/canvas/CanvasElementItem";
+import { editLinkGrid } from "../linkGrid";
+import { showLinkTargetChooserDialog } from "../../../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
+import { CanvasElementType } from "../../toolbox/canvas/canvasElementTypes";
 import {
     CanvasElementMenuSection,
     CanvasElementToolbarButton,
     canvasElementDefinitions,
-} from "../toolbox/canvas/canvasElementDefinitions";
-import { inferCanvasElementType } from "../toolbox/canvas/canvasElementTypeInference";
+} from "../../toolbox/canvas/canvasElementDefinitions";
+import { inferCanvasElementType } from "../../toolbox/canvas/canvasElementTypeInference";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];

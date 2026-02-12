@@ -8,9 +8,9 @@ import {
     kBloomCanvasSelector,
     kCanvasElementSelector,
 } from "../../toolbox/canvas/canvasElementConstants";
-import { renderCanvasElementContextControls } from "../CanvasElementContextControls";
-import { CanvasGuideProvider } from "../CanvasGuideProvider";
-import { CanvasSnapProvider } from "../CanvasSnapProvider";
+import { renderCanvasElementContextControls } from "./CanvasElementContextControls";
+import { CanvasGuideProvider } from "./CanvasGuideProvider";
+import { CanvasSnapProvider } from "./CanvasSnapProvider";
 
 export interface ICanvasElementHandleDragInteractionsHost {
     getActiveElement: () => HTMLElement | undefined;

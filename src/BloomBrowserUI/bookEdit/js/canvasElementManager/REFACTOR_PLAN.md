@@ -1,6 +1,6 @@
 # CanvasElementManager refactor plan (goal: keep CanvasElementManager.ts ≤ 2000 lines)
 
-Context: [src/BloomBrowserUI/bookEdit/js/CanvasElementManager.ts](../CanvasElementManager.ts) is ~7,600 lines and mixes multiple subsystems (creation, selection UI, pointer interactions, duplication, clipboard, alternates, game integration).
+Context: [src/BloomBrowserUI/bookEdit/js/canvasElementManager/CanvasElementManager.ts](./CanvasElementManager.ts) is ~7,600 lines and mixes multiple subsystems (creation, selection UI, pointer interactions, duplication, clipboard, alternates, game integration).
 
 ## Rules of engagement
 - [x] Prefer cohesive subsystem extraction over “random helpers”.
@@ -106,7 +106,7 @@ Live tests:
 - [x] (B10) Extract background-image conversion + fit pipeline into `CanvasElementBackgroundImageManager.ts`
 
 ### Phase C — Finish
-- [ ] (C1) Ensure [src/BloomBrowserUI/bookEdit/js/CanvasElementManager.ts](../CanvasElementManager.ts) ≤ 2000 lines
+- [ ] (C1) Ensure [src/BloomBrowserUI/bookEdit/js/canvasElementManager/CanvasElementManager.ts](./CanvasElementManager.ts) ≤ 2000 lines
 - [ ] (C2) Run `yarn lint` (no `yarn build`)
 - [ ] (C3) Run existing unit tests covering moved helpers (vitest suite that already exists for manager helpers)
 - [ ] (C4) Final live test sweep: drag/drop, selection, resize, duplicate, paste
@@ -117,3 +117,11 @@ Live tests:
 - [x] Current: CanvasElementManager.ts 4120 lines
 - [x] Current: CanvasElementManager.ts 3672 lines
 - [x] Current: CanvasElementManager.ts 3227 lines
+
+## End-of-day handoff (2026-02-11)
+- Latest checkpoint commit: `3b723a532` — extracted background-image conversion/fit pipeline into `CanvasElementBackgroundImageManager.ts` and delegated manager methods.
+- Effective reduction so far: `CanvasElementManager.ts` 7610 → ~3225 lines (post-commit formatting).
+- Reliable safety pattern: do **small, incremental patches** to `CanvasElementManager.ts`, run immediate error checks after each, and avoid large one-shot deletions (prior attempts caused major parse/type cascades).
+- Validation baseline at last checkpoint: `yarn lint` completed with warnings-only baseline (no errors); touched files were clean.
+- Next best extraction candidate already identified: focus/editable cluster around `getAllVisibleFocusableDivs`, `getAllVisibileEditableDivs`, `focusFirstVisibleFocusable`, `addEventsToFocusableElements`, and nearby editing-start wiring.
+- Keep using these constraints: `yarn` only (no npm), do not run `yarn build`, and preserve toolbox/page-iframe dependency boundaries.

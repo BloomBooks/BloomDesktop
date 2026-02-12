@@ -6,7 +6,7 @@
 // Prefer importing DOM selector constants from canvasElementConstants instead of this file.
 
 import { getEditablePageBundleExports } from "../../js/bloomFrames";
-import type { CanvasElementManager } from "../../js/CanvasElementManager";
+import type { CanvasElementManager } from "../../js/canvasElementManager/CanvasElementManager";
 import {
     kBloomButtonClass,
     kBloomCanvasClass,

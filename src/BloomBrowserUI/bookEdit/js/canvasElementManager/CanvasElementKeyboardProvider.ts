@@ -1,7 +1,7 @@
 // Originally this was wired into CanvasSnapProvider.ts, but we're going to do that PR separately and later.
 // And the way it was wired in, just using the grid size, may not be enough. We may need to ask the snap provider
 // to give us the snap location. We'll see.
-import { kBackgroundImageClass } from "../toolbox/canvas/canvasElementConstants";
+import { kBackgroundImageClass } from "../../toolbox/canvas/canvasElementConstants";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
 
 export interface ICanvasElementKeyboardActions {

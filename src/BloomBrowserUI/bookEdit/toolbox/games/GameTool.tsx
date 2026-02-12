@@ -70,8 +70,8 @@ import {
     isPlaceHolderImage,
 } from "../../js/bloomImages";
 import { doesContainingPageHaveSameSizeMode } from "./gameUtilities";
-import { CanvasSnapProvider } from "../../js/CanvasSnapProvider";
-import { CanvasGuideProvider } from "../../js/CanvasGuideProvider";
+import { CanvasSnapProvider } from "../../js/canvasElementManager/CanvasSnapProvider";
+import { CanvasGuideProvider } from "../../js/canvasElementManager/CanvasGuideProvider";
 import { kIdForDragActivityTabControl } from "./DragActivityTabControl";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
 import $ from "jquery";

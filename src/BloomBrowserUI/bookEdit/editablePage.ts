@@ -13,7 +13,7 @@ import "errorHandler";
 import {
     theOneCanvasElementManager,
     CanvasElementManager,
-} from "./js/CanvasElementManager";
+} from "./js/canvasElementManager/CanvasElementManager";
 import { renderDragActivityTabControl } from "./toolbox/games/DragActivityTabControl";
 
 function getPageId(): string {

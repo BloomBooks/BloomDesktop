@@ -5,7 +5,7 @@ import {
     isPlaceHolderImage,
     kImageContainerClass,
 } from "../bloomImages";
-import { renderCanvasElementContextControls } from "../CanvasElementContextControls";
+import { renderCanvasElementContextControls } from "./CanvasElementContextControls";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import {
     kBackgroundImageClass,

@@ -23,7 +23,7 @@ import {
     CanvasElementManager,
     initializeCanvasElementManager,
     theOneCanvasElementManager,
-} from "./CanvasElementManager";
+} from "./canvasElementManager/CanvasElementManager";
 import { getCanvasElementManager } from "../toolbox/canvas/canvasElementUtils";
 import {
     kCanvasElementClass,
