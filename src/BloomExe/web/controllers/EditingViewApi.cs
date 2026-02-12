@@ -14,6 +14,7 @@ using Bloom.SafeXml;
 using Bloom.Utils;
 using L10NSharp;
 using SIL.IO;
+using SIL.Progress;
 using SIL.Windows.Forms.Miscellaneous;
 
 namespace Bloom.web.controllers
@@ -114,6 +115,51 @@ namespace Bloom.web.controllers
                 "editView/showBookSettingsDialog",
                 HandleShowBookSettingsDialog,
                 true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/toggleCustomCover",
+                HandleToggleCustomCover,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/getDataBookValue",
+                HandleGetDataBookValue,
+                true
+            );
+        }
+
+        private void HandleGetDataBookValue(ApiRequest request)
+        {
+            var lang = request.RequiredParam("lang");
+            var dataBook = request.RequiredParam("dataBook");
+            var multiText = View.Model.CurrentBook.BookData.GetMultiTextVariableOrEmpty(dataBook);
+            var value = multiText.GetExactAlternative(lang) ?? "";
+            request.ReplyWithText(value);
+        }
+
+        /// <summary>
+        /// Save the current state of the page, then toggle the book cover custom flag, and finally reload the page.
+        /// </summary>
+        private void HandleToggleCustomCover(ApiRequest request)
+        {
+            var pageId = request.GetPostStringOrNull();
+            request.PostSucceeded();
+            View.Model.SaveThen(
+                () =>
+                {
+                    var book = View.Model.CurrentBook;
+                    var page = book.GetPage(pageId);
+                    var pageElt = page.GetDivNodeForThisPage();
+                    if (pageElt.HasClass("bloom-custom-cover"))
+                        pageElt.RemoveClass("bloom-custom-cover");
+                    else
+                        pageElt.AddClass("bloom-custom-cover");
+                    // Bring everything up to date consistent with the new
+                    // state. Might be enough just do the BookData update.
+                    book.EnsureUpToDateMemory(new NullProgress());
+                    return pageId;
+                },
+                () => { }
             );
         }
 
