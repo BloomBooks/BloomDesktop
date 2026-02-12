@@ -9,7 +9,7 @@ import { isPageBloomGame } from "./games/GameInfo";
 export default abstract class ToolboxToolReactAdaptor
     implements ITool, IReactTool
 {
-    imageUpdated(img: HTMLImageElement | undefined): void {
+    imageUpdated(_img: HTMLImageElement | undefined): void {
         // does nothing by default
     }
     public hasRestoredSettings: boolean;
@@ -20,7 +20,9 @@ export default abstract class ToolboxToolReactAdaptor
         return false;
     }
 
-    protected adaptReactElement(element: ReactElement<any>): HTMLDivElement {
+    protected adaptReactElement(
+        element: ReactElement<unknown>,
+    ): HTMLDivElement {
         // We need a wrapperDiv to hand back to our the toolbox because react wants some freedom to render asynchronously.
         // So we just create empty div now to hand back to the toolbox, and ask React to render into it eventually.
         const wrapperDiv = document.createElement("div");
@@ -35,7 +37,7 @@ export default abstract class ToolboxToolReactAdaptor
     }
     public featureName?: string;
 
-    public beginRestoreSettings(settings: string): JQueryPromise<void> {
+    public beginRestoreSettings(_settings: string): JQueryPromise<void> {
         // Nothing to do, so return an already-resolved promise.
         const result = $.Deferred<void>();
         result.resolve();
@@ -56,8 +58,8 @@ export default abstract class ToolboxToolReactAdaptor
     }
     public newPageReady() {}
     public detachFromPage() {}
-    public configureElements(container: HTMLElement) {}
-    public finishToolLocalization(pane: HTMLElement) {}
+    public configureElements(_container: HTMLElement) {}
+    public finishToolLocalization(_pane: HTMLElement) {}
     /* eslint-enable @typescript-eslint/no-empty-function */
 
     public static getPageFrame(): HTMLIFrameElement {
@@ -95,12 +97,19 @@ export default abstract class ToolboxToolReactAdaptor
         page.setAttribute(name, encodeURIComponent(unencodedValue));
     }
 
-    public static isXmatter(): boolean {
+    public static isXmatter(returnFalseForCustomCover = false): boolean {
         const pageClass = this.getBloomPageAttrDecoded("class");
-        return !pageClass
-            ? false // paranoia
-            : pageClass.indexOf("bloom-frontMatter") >= 0 ||
-                  pageClass.indexOf("bloom-backMatter") >= 0;
+        if (!pageClass) return false; // paranoia
+        if (
+            returnFalseForCustomCover &&
+            pageClass.indexOf("bloom-customLayout") >= 0
+        ) {
+            return false;
+        }
+        return (
+            pageClass.indexOf("bloom-frontMatter") >= 0 ||
+            pageClass.indexOf("bloom-backMatter") >= 0
+        );
     }
 
     public static isCurrentPageABloomGame(): boolean {

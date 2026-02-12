@@ -312,6 +312,20 @@
     }
 }
 
+// wants to be more specific than the appearance system rules
+.bloom-page.bloom-customLayout {
+    // everything is a canvas element, and we want to be able to put them anywhere
+    --cover-margin-top: 0px;
+    --cover-margin-bottom: 0px;
+    // these two don't seem to be used, at least in default theme?
+    --cover-margin-left: 0px;
+    --cover-margin-right: 0px;
+    --cover-margin-side: 0px;
+    .bloom-canvas {
+        margin: 0;
+    }
+}
+
 // We have some special rules that give image containers margin in various places
 // (e.g., traditional xmatter cover). But we don't want it inherited by canvas element
 // image containers, because we expect them to exactly match the canvas elements.
