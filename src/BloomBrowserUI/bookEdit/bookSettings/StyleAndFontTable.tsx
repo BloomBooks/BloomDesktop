@@ -13,6 +13,7 @@ import { ThemeProvider } from "@mui/material/styles";
 import { default as Warning } from "@mui/icons-material/Warning";
 import { IFontMetaData } from "../StyleEditor/fontSelectComponent";
 import { useL10n } from "../../react_components/l10nHooks";
+import { useMemo } from "react";
 
 // This interface must be kept in sync with the StyleAndFont class in BookSettingsApi.cs.
 export interface IStyleAndFont {
@@ -27,9 +28,17 @@ export interface IStyleAndFont {
 export const StyleAndFontTable: React.FunctionComponent<{
     closeDialog: () => void;
 }> = (props) => {
-    const rows: IStyleAndFont[] = useApiObject<IStyleAndFont[]>(
+    const rowsSource: IStyleAndFont[] = useApiObject<IStyleAndFont[]>(
         "stylesAndFonts/getDataRows",
         [],
+    );
+    // getDataRows tries to be very comprehensive about fonts used by anything in the document.
+    // However, we don't need to tell the user here about fonts that are menioned in style
+    // sheets but NOT otherwise used in the document. So if data using the font wasn't actually
+    // found on some page, leave it out.
+    const rows = useMemo(
+        () => rowsSource.filter((row) => row.pageId),
+        [rowsSource],
     );
 
     function closeDialogAndJumpToPage(pageId: string) {
