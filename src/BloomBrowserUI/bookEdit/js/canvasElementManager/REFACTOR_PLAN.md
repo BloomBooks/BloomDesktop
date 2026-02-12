@@ -103,6 +103,7 @@ Live tests:
 - [x] (B7) Extract alternates + game/draggable integration modules (expand `CanvasElementAlternates.ts`; add `CanvasElementDraggableIntegration.ts`) (Checkpoint 7)
 - [x] (B8) Extract editing suspension + origami splitter interactions into `CanvasElementEditingSuspension.ts`
 - [x] (B9) Extract bloom-canvas size-change child adjustment logic into `CanvasElementCanvasResizeAdjustments.ts`
+- [x] (B10) Extract background-image conversion + fit pipeline into `CanvasElementBackgroundImageManager.ts`
 
 ### Phase C — Finish
 - [ ] (C1) Ensure [src/BloomBrowserUI/bookEdit/js/CanvasElementManager.ts](../CanvasElementManager.ts) ≤ 2000 lines
@@ -115,3 +116,4 @@ Live tests:
 - [ ] Target: CanvasElementManager.ts ≤ 2000 lines
 - [x] Current: CanvasElementManager.ts 4120 lines
 - [x] Current: CanvasElementManager.ts 3672 lines
+- [x] Current: CanvasElementManager.ts 3227 lines
