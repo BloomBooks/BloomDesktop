@@ -171,11 +171,16 @@ mixin editable-cover-image(language)
 	.bloom-editable.ImageDescriptionEdit-style(lang=language, contenteditable="true", data-book="coverImageDescription")&attributes(attributes)
 
 
+//- This originally used the page-cover mixin, but the outside front cover needs a second marginBox,
+//- and it's less messy to duplicate a bit of knowledge about classes and attributes from that and
+//- other mixins than to make them all know how to make the second marginBox.
 mixin factoryStandard-outsideFrontCover
 	// FRONT COVER
-	+page-cover('Front Cover')(data-export='front-matter-cover', data-xmatter-page='frontCover')&attributes(attributes).frontCover.outsideFrontCover#74731b2d-18b0-420f-ac96-6de20f659810
-		+standard-cover-contents
-		block front-cover-footer
+	+pageWithJustPageSize.bloom-page.cover.coverColor.bloom-frontMatter.frontCover.outsideFrontCover#74731b2d-18b0-420f-ac96-6de20f659810(data-page='required singleton', data-export='front-matter-cover', data-xmatter-page='frontCover', data-custom-layout-id='customOutsideFrontCover')&attributes(attributes)
+		+page-label-english('Front Cover')
+		.marginBox()
+			+standard-cover-contents
+			block front-cover-footer
 
 mixin factoryStandard-creditsInsideFrontCover
 	// Inside Front Cover CREDITS PAGE
@@ -292,7 +297,7 @@ mixin back-cover-outer-contents
 
 mixin factoryStandard-outsideBackCover
 	// Outside Back Cover
-	+page-xmatter('Outside Back Cover').cover.coverColor.outsideBackCover.bloom-backMatter(data-export='back-matter-back-cover', data-xmatter-page='outsideBackCover')&attributes(attributes)#6AB1D898-9E35-498E-99D4-132B46FAFDA4
+	page-xmatter('Outside Back Cover').cover.coverColor.outsideBackCover.bloom-backMatter(data-export='back-matter-back-cover', data-xmatter-page='outsideBackCover', data-custom-layout-id='customOutsideBackCover')&attributes(attributes)#6AB1D898-9E35-498E-99D4-132B46FAFDA4
 		+back-cover-outer-contents
 
 mixin standard-ISOLanguageCode
@@ -316,5 +321,5 @@ mixin standard-endExtra2PageForDevice
 mixin standard-endExtra3PageForDevice
 	//- In paper books, this is the outside back cover
 	//- When making a .bloompub, Bloom will remove this if it is empty.
-	+page-xmatter("End Extra 3").cover.coverColor.outsideBackCover.bloom-backMatter(data-export='back-matter-back-cover', data-xmatter-page='outsideBackCover')&attributes(attributes)#6AB1D898-9E35-498E-99D4-132B46FAFDA4
+	+page-xmatter("End Extra 3").cover.coverColor.outsideBackCover.bloom-backMatter(data-export='back-matter-back-cover', data-xmatter-page='outsideBackCover', data-custom-layout-id='customOutsideBackCover')&attributes(attributes)#6AB1D898-9E35-498E-99D4-132B46FAFDA4
 		+back-cover-outer-contents

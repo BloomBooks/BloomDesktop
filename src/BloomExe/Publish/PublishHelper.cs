@@ -1056,7 +1056,13 @@ namespace Bloom.Publish
             // Must come after ReallyCropImages, because any cropping for background images is
             // destroyed by SimplifyBackgroundImages.
             SimplifyBackgroundImages(modifiedBook.RawDom);
-            modifiedBook.Save();
+            // We don't need a data-div in a publication; save some space.
+            var dataDiv = modifiedBook.RawDom.SelectSingleNode("//div[@id='bloomDataDiv']");
+            if (dataDiv != null)
+            {
+                dataDiv.ParentElement.RemoveChild(dataDiv);
+            }
+            modifiedBook.Save(true);
             modifiedBook.UpdateSupportFiles();
             return modifiedBook;
         }
@@ -1157,26 +1163,6 @@ namespace Bloom.Publish
                 )
                 {
                     bloomCanvas.RemoveClass("bloom-has-canvas-element");
-                }
-            }
-
-            // We need to clear out these attributes from the data-div, or a later call to update things will try to restore
-            // the background image representation of any cover image.
-            var dataDiv = dom.SelectSingleNode("//div[@id='bloomDataDiv']");
-            var bgImgDataAttrs = HtmlDom.BackgroundImgTupleNames;
-            if (dataDiv != null)
-            {
-                foreach (
-                    var elt in dataDiv
-                        .SafeSelectNodes($".//div[@{bgImgDataAttrs[0]}]")
-                        .Cast<SafeXmlElement>()
-                )
-                {
-                    foreach (var attr in bgImgDataAttrs)
-                    {
-                        if (elt.HasAttribute(attr))
-                            elt.RemoveAttribute(attr);
-                    }
                 }
             }
         }
