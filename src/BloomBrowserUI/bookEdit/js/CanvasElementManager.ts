@@ -99,6 +99,7 @@ import { CanvasElementSelectionUi } from "./canvasElementManager/CanvasElementSe
 import { CanvasElementPointerInteractions } from "./canvasElementManager/CanvasElementPointerInteractions";
 import { CanvasElementHandleDragInteractions } from "./canvasElementManager/CanvasElementHandleDragInteractions";
 import { CanvasElementDraggableIntegration } from "./canvasElementManager/CanvasElementDraggableIntegration";
+import { CanvasElementEditingSuspension } from "./canvasElementManager/CanvasElementEditingSuspension";
 
 const kComicalGeneratedClass: string = "comical-generated";
 
@@ -143,6 +144,7 @@ export class CanvasElementManager {
     private pointerInteractions: CanvasElementPointerInteractions;
     private handleDragInteractions: CanvasElementHandleDragInteractions;
     private draggableIntegration: CanvasElementDraggableIntegration;
+    private editingSuspension: CanvasElementEditingSuspension;
 
     // Used by stopMoving() to clear cursor style after a drag.
     private lastMoveContainer: HTMLElement;
@@ -153,6 +155,20 @@ export class CanvasElementManager {
         this.draggableIntegration = new CanvasElementDraggableIntegration({
             getAllBloomCanvasesOnPage:
                 this.getAllBloomCanvasesOnPage.bind(this),
+        });
+        this.editingSuspension = new CanvasElementEditingSuspension({
+            getIsCanvasElementEditingOn: () => this.isCanvasElementEditingOn,
+            getAllBloomCanvasesOnPage:
+                this.getAllBloomCanvasesOnPage.bind(this),
+            adjustBackgroundImageSize:
+                this.adjustBackgroundImageSize.bind(this),
+            adjustChildrenIfSizeChanged:
+                this.AdjustChildrenIfSizeChanged.bind(this),
+            turnOffCanvasElementEditing:
+                this.turnOffCanvasElementEditing.bind(this),
+            turnOnCanvasElementEditing:
+                this.turnOnCanvasElementEditing.bind(this),
+            setupControlFrame: this.setupControlFrame.bind(this),
         });
         this.factories = new CanvasElementFactories({
             snapProvider: this.snapProvider,
@@ -2793,114 +2809,18 @@ export class CanvasElementManager {
         );
     }
 
-    // Notes that comic editing either has not been suspended...isComicEditingOn might be true or false...
-    // or that it was suspended because of a drag in progress that might affect page layout
-    // (current example: mouse is down over an origami splitter), or because some longer running
-    // process that affects layout is happening (current example: origami layout tool is active),
-    // or because we're testing a bloom game.
-    // When in one of the latter states, it may be inferred that isComicEditingOn was true when
-    // suspendComicEditing was called, that it is now false, and that resumeComicEditing should
-    // turn it on again.
-    private comicEditingSuspendedState:
-        | "none"
-        | "forDrag"
-        | "forTool"
-        | "forJqueryResize"
-        | "forGamePlayMode" = "none";
-
-    private splitterResizeObservers: ResizeObserver[] = [];
     public startDraggingSplitter() {
-        this.getAllBloomCanvasesOnPage().forEach((bloomCanvas) => {
-            const backgroundCanvasElement = bloomCanvas.getElementsByClassName(
-                kBackgroundImageClass,
-            )[0] as HTMLElement;
-            if (backgroundCanvasElement) {
-                // These two attributes are what the resize observer will mess with to make
-                // the background resize as the splitter moves. We will restore them in
-                // endDraggingSplitter so the code that adjusts all the canvas elements has the
-                // correct starting size.
-                backgroundCanvasElement.setAttribute(
-                    "data-oldStyle",
-                    backgroundCanvasElement.getAttribute("style") ?? "",
-                );
-                const img = getImageFromCanvasElement(backgroundCanvasElement);
-                img?.setAttribute(
-                    "data-oldStyle",
-                    img.getAttribute("style") ?? "",
-                );
-                const resizeObserver = new ResizeObserver(() => {
-                    this.adjustBackgroundImageSize(
-                        bloomCanvas,
-                        backgroundCanvasElement,
-                        false,
-                    );
-                });
-                resizeObserver.observe(bloomCanvas);
-                this.splitterResizeObservers.push(resizeObserver);
-            }
-        });
+        this.editingSuspension.startDraggingSplitter();
     }
 
     public endDraggingSplitter() {
-        this.getAllBloomCanvasesOnPage().forEach((bloomCanvas) => {
-            const backgroundCanvasElement = bloomCanvas.getElementsByClassName(
-                kBackgroundImageClass,
-            )[0] as HTMLElement;
-            // We need to remove the results of the continuous adjustments so that we can make the change again,
-            // but this time adjust all the other canvas elements with it.
-            if (backgroundCanvasElement) {
-                backgroundCanvasElement.setAttribute(
-                    "style",
-                    backgroundCanvasElement.getAttribute("data-oldStyle") ?? "",
-                );
-                backgroundCanvasElement.removeAttribute("data-oldStyle");
-                const img = getImageFromCanvasElement(backgroundCanvasElement);
-                img?.setAttribute(
-                    "style",
-                    img.getAttribute("data-oldStyle") ?? "",
-                );
-                img?.removeAttribute("data-oldStyle");
-            }
-            while (this.splitterResizeObservers.length) {
-                this.splitterResizeObservers.pop()?.disconnect();
-            }
-        });
+        this.editingSuspension.endDraggingSplitter();
     }
 
     public suspendComicEditing(
         forWhat: "forDrag" | "forTool" | "forGamePlayMode" | "forJqueryResize",
     ) {
-        if (!this.isCanvasElementEditingOn) {
-            // Note that this prevents us from getting into one of the suspended states
-            // unless it was on to begin with. Therefore a subsequent resume won't turn
-            // it back on unless it was to start with.
-            return;
-        }
-        this.turnOffCanvasElementEditing();
-        if (forWhat === "forDrag" || forWhat === "forJqueryResize") {
-            this.startDraggingSplitter();
-        }
-
-        if (forWhat === "forGamePlayMode") {
-            const allCanvasElements = Array.from(
-                document.getElementsByClassName(kCanvasElementClass),
-            );
-            // We don't want the user to be able to edit the text in the canvas elements while playing a game.
-            // This doesn't need to be in the game prepareActivity because we remove contenteditable
-            // from all elements when publishing a book.
-            allCanvasElements.forEach((element) => {
-                const editables = Array.from(
-                    element.getElementsByClassName("bloom-editable"),
-                );
-                editables.forEach((editable) => {
-                    editable.removeAttribute("contenteditable");
-                });
-            });
-        }
-        // We don't want to switch to state 'forDrag' while it is suspended by a tool.
-        // But we don't need to prevent it because if it's suspended by a tool (e.g., origami layout),
-        // any mouse events will find that comic editing is off and won't get this far.
-        this.comicEditingSuspendedState = forWhat;
+        this.editingSuspension.suspendComicEditing(forWhat);
     }
 
     public checkActiveElementIsVisible() {
@@ -2908,38 +2828,7 @@ export class CanvasElementManager {
     }
 
     public resumeComicEditing() {
-        if (this.comicEditingSuspendedState === "none") {
-            // This guards against both mouse up events that are nothing to do with
-            // splitters and (if this is even possible) a resume that matches a suspend
-            // call when comic editing wasn't on to begin with.
-            return;
-        }
-        if (
-            this.comicEditingSuspendedState === "forDrag" ||
-            this.comicEditingSuspendedState === "forJqueryResize"
-        ) {
-            this.endDraggingSplitter();
-        }
-        if (this.comicEditingSuspendedState === "forTool") {
-            // after a forTool suspense, we might have new dividers to put handlers on.
-            this.setupSplitterEventHandling();
-        }
-        if (this.comicEditingSuspendedState === "forGamePlayMode") {
-            const allCanvasElements = Array.from(
-                document.getElementsByClassName(kCanvasElementClass),
-            );
-            allCanvasElements.forEach((element) => {
-                const editables = Array.from(
-                    element.getElementsByClassName("bloom-editable"),
-                );
-                editables.forEach((editable) => {
-                    editable.setAttribute("contenteditable", "true");
-                });
-            });
-            this.setupControlFrame();
-        }
-        this.comicEditingSuspendedState = "none";
-        this.turnOnCanvasElementEditing();
+        this.editingSuspension.resumeComicEditing();
     }
 
     public adjustAfterOrigamiDoubleClick() {
@@ -2950,56 +2839,9 @@ export class CanvasElementManager {
         theOneCanvasElementManager.handleResizeAdjustments();
     }
 
-    private draggingSplitter = false;
-
-    // mouse down in an origami slider: if comic editing is on, remember that, and turn it off.
-    private dividerMouseDown = (_ev: Event) => {
-        if (this.comicEditingSuspendedState === "forTool") {
-            // We're in change layout mode. We want to get the usual behavior of any
-            // existing images while dragging the splitter, but we don't need to turn
-            // off comic editing since it already is.
-            this.draggingSplitter = true;
-            this.startDraggingSplitter();
-        } else {
-            // Unless we're suspended for some other reason, this will call startDraggingSplitter
-            // after turning stuff off.
-            this.suspendComicEditing("forDrag");
-        }
-    };
-
     public removeDetachedTargets() {
         this.draggableIntegration.removeDetachedTargets();
     }
-
-    // on ANY mouse up, if comic editing was turned off by an origami click, turn it back on.
-    // (This is attached to the document because I don't want it missed if the mouseUp
-    // doesn't happen inside the origami slider.)
-    // We don't want it turned back on for a tool or in game play mode, because we'll
-    // still be in that state after the mouseup.
-    private documentMouseUp = (ev: Event) => {
-        if (this.comicEditingSuspendedState === "forDrag") {
-            // The mousedown was in an origami slider.
-            // Clean up and don't let the mouse up affect anything else.
-            // (Note: we're not stopping IMMEDATE propagation, so another mouseup handler
-            // on the document can remove the origami-drag class.)
-            ev.preventDefault();
-            ev.stopPropagation();
-            setTimeout(() => {
-                // in timeout to be sure that another mouseup handler will have removed
-                // the origami-drag class from the body, so we can get the right
-                // resize behavior when turning back on.
-                this.resumeComicEditing();
-            }, 0);
-        } else if (this.draggingSplitter) {
-            // dragging the splitter while in origami mode. We need to clean up
-            // in the way resume normally does
-            this.draggingSplitter = false;
-            this.endDraggingSplitter();
-            for (const bloomCanvas of this.getAllBloomCanvasesOnPage()) {
-                this.AdjustChildrenIfSizeChanged(bloomCanvas);
-            }
-        }
-    };
 
     public initializeCanvasElementEditing(): void {
         // This gets called in bloomEditable's SetupElements method. This is how it gets set up on page
@@ -3012,7 +2854,7 @@ export class CanvasElementManager {
         // suspended while that tool is active. For now I'm going with a more-or-less minimal change:
         // if comic editing is not only already initialized, but suspended, we won't turn it on again
         // here.
-        if (this.comicEditingSuspendedState !== "none") {
+        if (this.editingSuspension.isSuspended()) {
             return;
         }
         // Cleanup old .bloom-ui elements and old drag handles etc.
@@ -3044,14 +2886,7 @@ export class CanvasElementManager {
     // Because we're adding a fixed method, not a local function, adding multiple
     // times will not cause duplication.
     public setupSplitterEventHandling() {
-        Array.from(
-            document.getElementsByClassName("split-pane-divider"),
-        ).forEach((d) =>
-            d.addEventListener("mousedown", this.dividerMouseDown),
-        );
-        document.addEventListener("mouseup", this.documentMouseUp, {
-            capture: true,
-        });
+        this.editingSuspension.setupSplitterEventHandling();
     }
 
     public cleanupCanvasElements() {
