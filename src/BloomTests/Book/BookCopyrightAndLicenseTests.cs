@@ -4,6 +4,8 @@ using Bloom.Collection;
 using L10NSharp;
 using L10NSharp.Windows.Forms;
 using NUnit.Framework;
+using SIL.Core.ClearShare;
+using SIL.Core.Desktop.i18n;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.TestUtilities;
@@ -21,6 +23,9 @@ namespace BloomTests.Book
         [SetUp]
         public void Setup()
         {
+            // Normally set in Program.cs, but not for unit tests
+            SIL.Localizer.Default = new L10NSharpLocalizer();
+
             _collectionSettings = new CollectionSettings(
                 new NewCollectionSettings()
                 {

@@ -32,6 +32,7 @@ using CommandLine;
 using L10NSharp;
 using L10NSharp.Windows.Forms;
 using Sentry;
+using SIL.Core.Desktop.i18n;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.Miscellaneous;
@@ -1604,6 +1605,8 @@ namespace Bloom
                 var uiLanguage = LocalizationManager.UILanguageId; //just feeding this into subsequent creates prevents asking the user twice if the language of their os isn't one we have a tmx for
                 if (uiLanguage != desiredLanguage)
                     Settings.Default.UserInterfaceLanguageSetExplicitly = true;
+
+                SIL.Localizer.Default = new L10NSharpLocalizer();
 
                 LocalizationManagerWinforms.Create(
                     uiLanguage,
