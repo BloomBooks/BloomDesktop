@@ -30,7 +30,6 @@ using SIL.PlatformUtilities;
 using SIL.Reporting;
 using SIL.Unicode;
 using SIL.Windows.Forms.ReleaseNotes;
-using SIL.Windows.Forms.SettingProtection;
 using SIL.WritingSystems;
 
 namespace Bloom.Workspace
@@ -150,14 +149,6 @@ namespace Bloom.Workspace
             this.Scale(new SizeF(scaleFactor, scaleFactor));
 
             _checkForNewVersionMenuItem.Visible = Platform.IsWindows;
-
-            //we have a number of buttons which don't make sense for the remote (therefore vulnerable) low-end user
-            //_settingsLauncherHelper.CustomSettingsControl = _toolStrip;
-            //NB: these aren't really settings, but we're using that feature to simplify this menu down to what makes sense for the easily-confused user
-            _settingsLauncherHelper.ManageComponent(_requestAFeatureMenuItem);
-            _settingsLauncherHelper.ManageComponent(_webSiteMenuItem);
-            _settingsLauncherHelper.ManageComponent(_releaseNotesMenuItem);
-            _settingsLauncherHelper.ManageComponent(_divider2);
 
             editBookCommand.Subscribe(OnEditBook);
 
@@ -1101,47 +1092,43 @@ namespace Bloom.Workspace
 
         public void OpenCreateCollection()
         {
-            _settingsLauncherHelper.LaunchSettingsIfAppropriate(() =>
-            {
-                _selectedTabAboutToChangeEvent.Raise(
-                    new TabChangedDetails() { From = _previouslySelectedControl, To = null }
-                );
+            _selectedTabAboutToChangeEvent.Raise(
+                new TabChangedDetails() { From = _previouslySelectedControl, To = null }
+            );
 
-                _selectedTabChangedEvent.Raise(
-                    new TabChangedDetails() { From = _previouslySelectedControl, To = null }
-                );
+            _selectedTabChangedEvent.Raise(
+                new TabChangedDetails() { From = _previouslySelectedControl, To = null }
+            );
 
-                var oldSelectedControl = _previouslySelectedControl;
-                _previouslySelectedControl = null;
+            var oldSelectedControl = _previouslySelectedControl;
+            _previouslySelectedControl = null;
 
-                Invoke(
-                    (Action)(
-                        () =>
+            Invoke(
+                (Action)(
+                    () =>
+                    {
+                        var didOpen = Program.ChooseACollection(
+                            Shell.GetShellOrOtherOpenForm() as Shell
+                        );
+                        if (!didOpen)
                         {
-                            var didOpen = Program.ChooseACollection(
-                                Shell.GetShellOrOtherOpenForm() as Shell
+                            // We want to resume whatever tab we were in.
+                            // There is some overkill here...the old tab can only be the collection tab,
+                            // and currently it doesn't care about these events. The critical thing is to
+                            // restore _previouslySelectedControl, which is required so we can remove it
+                            // if we subsequently switch to another tab. But it seemed best to be consistent.
+                            // If we're not shutting down, we're switching the previously selected tab back on.
+                            _selectedTabAboutToChangeEvent.Raise(
+                                new TabChangedDetails() { From = null, To = oldSelectedControl }
                             );
-                            if (!didOpen)
-                            {
-                                // We want to resume whatever tab we were in.
-                                // There is some overkill here...the old tab can only be the collection tab,
-                                // and currently it doesn't care about these events. The critical thing is to
-                                // restore _previouslySelectedControl, which is required so we can remove it
-                                // if we subsequently switch to another tab. But it seemed best to be consistent.
-                                // If we're not shutting down, we're switching the previously selected tab back on.
-                                _selectedTabAboutToChangeEvent.Raise(
-                                    new TabChangedDetails() { From = null, To = oldSelectedControl }
-                                );
-                                _selectedTabChangedEvent.Raise(
-                                    new TabChangedDetails() { From = null, To = oldSelectedControl }
-                                );
-                                _previouslySelectedControl = oldSelectedControl;
-                            }
+                            _selectedTabChangedEvent.Raise(
+                                new TabChangedDetails() { From = null, To = oldSelectedControl }
+                            );
+                            _previouslySelectedControl = oldSelectedControl;
                         }
-                    )
-                );
-                return DialogResult.OK;
-            });
+                    }
+                )
+            );
         }
 
         private CollectionSettingsDialog _currentlyOpenSettingsDialog;
@@ -1158,7 +1145,7 @@ namespace Bloom.Workspace
                     this,
                     true,
                     false,
-                    (() => OpenLegacySettingsDialog(tab))
+                    () => OpenLegacySettingsDialog(tab, forFixingEnterpriseSubscription)
                 );
             }
             else
@@ -1169,25 +1156,24 @@ namespace Bloom.Workspace
                     return;
                 }
 
-                DialogResult result = _settingsLauncherHelper.LaunchSettingsIfAppropriate(() =>
+                DialogResult result = DialogResult.Cancel;
+                if (!_tcManager.OkToEditCollectionSettings)
                 {
-                    if (!_tcManager.OkToEditCollectionSettings)
-                    {
-                        BloomMessageBox.ShowInfo(MustBeAdminMessage(_collectionSettings));
-                        return DialogResult.Cancel;
-                    }
+                    BloomMessageBox.ShowInfo(MustBeAdminMessage(_collectionSettings));
+                }
+                else
+                {
                     _collectionSettingsApi.PrepareToShowDialog();
                     using (var dlg = _settingsDialogFactory())
                     {
                         dlg.FixingEnterpriseSubscriptionCode = forFixingEnterpriseSubscription;
                         _currentlyOpenSettingsDialog = dlg;
                         dlg.SetDesiredTab(tab);
-                        var temp = dlg.ShowDialog(this);
+                        result = dlg.ShowDialog(this);
                         _currentlyOpenSettingsDialog = null;
                         CollectionSettingsApi.DialogClosed();
-                        return temp;
                     }
-                });
+                }
                 if (result == DialogResult.Yes)
                 {
                     Invoke(ReopenCurrentProject);
@@ -1205,7 +1191,7 @@ namespace Bloom.Workspace
             StartupScreenManager.AddStartupAction(
                 () =>
                 {
-                    OpenLegacySettingsDialog("enterprise", forFixingEnterpriseSubscription: true);
+                    OpenLegacySettingsDialog("subscription", forFixingEnterpriseSubscription: true);
                 },
                 shouldHideSplashScreen: true,
                 lowPriority: true
