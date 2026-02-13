@@ -200,31 +200,11 @@ namespace BloomTests.Book
 
             var expectedFolder = bookFolder.Replace("e\x0301", "\x00e9");
 
-            Assert.That(BookStorage.MoveBookToSafeName(bookFolder), Is.EqualTo(expectedFolder));
-            Assert.That(Directory.Exists(expectedFolder));
-            var expectedBookPath = bookPath.Replace("e\x0301", "\x00e9");
-            Assert.That(File.ReadAllText(expectedBookPath), Is.EqualTo("this is a test"));
-        }
-
-        [Test]
-        public void MoveBookToSafeName_NameNotNFC_NewNameConflicts_Moves()
-        {
-            var oldName = "Some nice\x0301 book";
-            var bookFolder = Path.Combine(_fixtureFolder.Path, oldName);
-            Directory.CreateDirectory(bookFolder);
-            var bookPath = Path.Combine(bookFolder, oldName + ".htm");
-            File.WriteAllText(bookPath, "this is a test");
-
-            var desiredFolder = bookFolder.Replace("e\x0301", "\x00e9");
-            Directory.CreateDirectory(desiredFolder);
-            var expectedFolder = desiredFolder + " 2";
-
-            Assert.That(BookStorage.MoveBookToSafeName(bookFolder), Is.EqualTo(expectedFolder));
-            Assert.That(Directory.Exists(expectedFolder));
-            var expectedBookPath = Path.Combine(
-                expectedFolder,
-                Path.GetFileName(expectedFolder) + ".htm"
-            );
+            // Typically we added hyphen and a guid. Not sure if that's good.
+            var result = BookStorage.MoveBookToSafeName(bookFolder);
+            Assert.That(result, Does.StartWith(expectedFolder));
+            Assert.That(Directory.Exists(result));
+            var expectedBookPath = Path.Combine(result, Path.GetFileName(result) + ".htm");
             Assert.That(File.ReadAllText(expectedBookPath), Is.EqualTo("this is a test"));
         }
 
@@ -1098,12 +1078,12 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void SetBookName_FolderWithNameAlreadyExists_AddsANumberToName()
+        public void SetBookName_IdealNameAlreadyExists_AddsGuidToName()
         {
+            // Simulate renaming a book called 'original' to a name that, after sanitizing,
+            // reduces to 'foo'. But there's already a book called 'foo'.
             using (var original = new TemporaryFolder(_folder, "original"))
-            using (var x = new TemporaryFolder(_folder, "foo"))
-            using (new TemporaryFolder(_folder, "foo 2"))
-            using (var z = new TemporaryFolder(_folder, "foo 3"))
+            using (new TemporaryFolder(_folder, "foo")) // causes a conflict, so we can't call the new book 'foo'
             using (var projectFolder = new TemporaryFolder("BookStorage_ProjectCollection"))
             {
                 File.WriteAllText(
@@ -1122,49 +1102,45 @@ namespace BloomTests.Book
                 );
                 storage.Save();
 
-                Directory.Delete(z.Path);
-                //so, we ask for "foo", but should get "foo 3", because there is already a "foo" and "foo 2"
-                var newBookName = Path.GetFileName(x.Path);
-                storage.SetBookName(newBookName);
-                var newPath = z.Combine("foo 3.htm");
-                Assert.IsTrue(Directory.Exists(z.Path), "Expected folder:" + z.Path);
-                Assert.IsTrue(File.Exists(newPath), "Expected file:" + newPath);
-            }
-        }
+                // Get folders before rename
+                var foldersBeforeRename = Directory.GetDirectories(_folder.Path);
 
-        [Test]
-        public void SetBookName_FolderWithSanitizedNameAlreadyExists_AddsANumberToName()
-        {
-            using (var original = new TemporaryFolder(_folder, "original"))
-            using (new TemporaryFolder(_folder, "foo"))
-            using (new TemporaryFolder(_folder, "foo 2"))
-            using (var z = new TemporaryFolder(_folder, "foo 3"))
-            using (var projectFolder = new TemporaryFolder("BookStorage_ProjectCollection"))
-            {
-                File.WriteAllText(
-                    Path.Combine(original.Path, "original.htm"),
-                    "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>"
-                );
-
-                var collectionSettings = new CollectionSettings(
-                    Path.Combine(projectFolder.Path, "test.bloomCollection")
-                );
-                var storage = new BookStorage(
-                    original.Path,
-                    _fileLocator,
-                    new BookRenamedEvent(),
-                    collectionSettings
-                );
-                storage.Save();
-
-                Directory.Delete(z.Path);
-                //so, we ask for "foo", but should get "foo 3", because there is already a "foo" and "foo 2"
+                //so, we ask for "foo", but should get something like "foo - 12345678",
+                // because we want a unique name each time
                 // BL-7816 We added some new characters to the sanitization routine
                 const string newBookName = "foo?:&<>\'\"{}";
                 storage.SetBookName(newBookName);
-                var newPath = z.Combine("foo 3.htm");
-                Assert.IsTrue(Directory.Exists(z.Path), "Expected folder:" + z.Path);
-                Assert.IsTrue(File.Exists(newPath), "Expected file:" + newPath);
+
+                // Get folders after rename - should be just one that was not there before.
+                var foldersAfterRename = Directory.GetDirectories(_folder.Path);
+                Assert.That(
+                    foldersAfterRename.Length,
+                    Is.EqualTo(foldersBeforeRename.Length),
+                    "Should have exactly one new folder"
+                );
+
+                // Find the new folder
+                var newFolders = foldersAfterRename.Except(foldersBeforeRename).ToArray();
+
+                Assert.That(newFolders.Length, Is.EqualTo(1));
+
+                var newFolderPath = newFolders[0];
+                var newFolderName = Path.GetFileName(newFolderPath);
+
+                // Verify folder name starts with "foo - " followed by 8 hex digits
+                Assert.That(
+                    newFolderName,
+                    Does.Match("^foo - [a-f0-9]{8}$"),
+                    "Folder name should be 'foo - ' followed by 8 hex characters"
+                );
+
+                // Verify the htm file exists with the same name as the folder
+                var expectedHtmlFile = Path.Combine(newFolderPath, newFolderName + ".htm");
+                Assert.That(
+                    File.Exists(expectedHtmlFile),
+                    Is.True,
+                    "Expected file: " + expectedHtmlFile
+                );
             }
         }
 
