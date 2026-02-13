@@ -21,7 +21,7 @@
 - `CanvasGuideProvider.ts`
 - `CanvasSnapProvider.ts`
 
-### Extracted manager subsystems
+### manager subsystems
 - `CanvasElementFactories.ts`
 - `CanvasElementClipboard.ts`
 - `CanvasElementDuplication.ts`

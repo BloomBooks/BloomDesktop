@@ -1,4 +1,10 @@
-import { expect, test as base, type Frame, type Page } from "playwright/test";
+import {
+    expect,
+    test as base,
+    type Frame,
+    type Page,
+    type TestInfo,
+} from "playwright/test";
 import {
     getCanvasElementCount,
     openCanvasToolOnCurrentPage,
@@ -18,6 +24,7 @@ interface ICanvasFixtures {
     canvasContext: ICanvasTestContext;
     toolboxFrame: Frame;
     pageFrame: Frame;
+    _showTestNameBanner: void;
     _resetCanvasInSharedMode: void;
 }
 
@@ -27,9 +34,71 @@ const getCanvasMode = (): CanvasE2eMode => {
         : "shared";
 };
 
+const testNameBannerId = "__canvas-e2e-test-name-banner";
+
+const getDisplayTestName = (testInfo: TestInfo): string => {
+    const fileName = testInfo.file.split(/[\\/]/).pop();
+    if (!fileName) {
+        return testInfo.title;
+    }
+
+    return `${fileName} › ${testInfo.title}`;
+};
+
+const shouldShowTestNameBanner = (testInfo: TestInfo): boolean => {
+    if (process.env.BLOOM_CANVAS_E2E_SHOW_TEST_NAME === "true") {
+        return true;
+    }
+
+    return testInfo.project.use.headless === false;
+};
+
+const setTestNameBanner = async (
+    target: Page | Frame,
+    testName: string,
+): Promise<void> => {
+    await target.evaluate(
+        ({ bannerId, bannerText }) => {
+            let banner = document.getElementById(bannerId);
+            if (!banner) {
+                banner = document.createElement("div");
+                banner.id = bannerId;
+                banner.setAttribute(
+                    "data-testid",
+                    "canvas-e2e-test-name-banner",
+                );
+                document.body.appendChild(banner);
+            }
+
+            banner.textContent = bannerText;
+            Object.assign(banner.style, {
+                position: "fixed",
+                top: "8px",
+                left: "8px",
+                right: "8px",
+                zIndex: "2147483647",
+                padding: "8px 12px",
+                borderRadius: "6px",
+                background: "#202124",
+                color: "#ffffff",
+                fontFamily: "sans-serif",
+                fontSize: "18px",
+                fontWeight: "700",
+                textAlign: "center",
+                pointerEvents: "none",
+                opacity: "0.92",
+            });
+        },
+        {
+            bannerId: testNameBannerId,
+            bannerText: testName,
+        },
+    );
+};
+
 export const test = base.extend<ICanvasFixtures, ICanvasWorkerFixtures>({
     canvasMode: [
-        async ({}, applyFixture) => {
+        async ({ browserName: _browserName }, applyFixture) => {
             await applyFixture(getCanvasMode());
         },
         {
@@ -102,6 +171,21 @@ export const test = base.extend<ICanvasFixtures, ICanvasWorkerFixtures>({
     pageFrame: async ({ canvasContext }, applyFixture) => {
         await applyFixture(canvasContext.pageFrame);
     },
+    _showTestNameBanner: [
+        async ({ page }, applyFixture, testInfo) => {
+            if (!shouldShowTestNameBanner(testInfo)) {
+                await applyFixture(undefined);
+                return;
+            }
+
+            const testName = getDisplayTestName(testInfo);
+            await setTestNameBanner(page, testName);
+            await applyFixture(undefined);
+        },
+        {
+            auto: true,
+        },
+    ],
     _resetCanvasInSharedMode: [
         async (
             { canvasMode, page, sharedCanvasBaselineCount },

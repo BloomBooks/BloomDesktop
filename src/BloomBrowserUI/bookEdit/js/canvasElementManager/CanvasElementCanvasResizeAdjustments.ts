@@ -37,6 +37,8 @@ export class CanvasElementCanvasResizeAdjustments {
     }
 
     public adjustChildrenIfSizeChanged = (bloomCanvas: HTMLElement): void => {
+        // Phase 1: detect whether the bloom-canvas size changed from the last
+        // recorded baseline.
         const oldSizeData = bloomCanvas.getAttribute("data-imgsizebasedon");
         if (!oldSizeData) {
             if (
@@ -56,6 +58,7 @@ export class CanvasElementCanvasResizeAdjustments {
         if (oldWidth === newWidth && oldHeight === newHeight) return;
         this.updateBloomCanvasSizeData(bloomCanvas);
 
+        // Phase 2: collect children that participate in resize repositioning.
         const children = (
             Array.from(bloomCanvas.children) as HTMLElement[]
         ).filter(
@@ -70,6 +73,8 @@ export class CanvasElementCanvasResizeAdjustments {
         let bottom = -Number.MAX_VALUE;
         let left = Number.MAX_VALUE;
         let right = -Number.MAX_VALUE;
+        // Phase 3: compute old bounds of relevant children and reconcile any
+        // background-image offset quirks before scaling the rest.
         for (let i = 0; i < children.length; i++) {
             const child = children[i];
             const childTop = child.offsetTop;
@@ -121,6 +126,9 @@ export class CanvasElementCanvasResizeAdjustments {
                 break;
             }
         }
+
+        // Phase 4: compute the new content box in the resized canvas while
+        // preserving relative padding and aggregate aspect ratio.
         const childrenHeight = bottom - top;
         const childrenWidth = right - left;
         const childrenAspectRatio = childrenWidth / childrenHeight;
@@ -155,6 +163,8 @@ export class CanvasElementCanvasResizeAdjustments {
         const newTop = oldTopPaddingFraction * newHeightPadding;
         let needComicalUpdate = false;
 
+        // Phase 5: reposition/resize each child and adjust image crop offsets,
+        // tails, and alternates as needed.
         children.forEach((child: HTMLElement) => {
             const childTop = child.offsetTop;
             const childLeft = child.offsetLeft;
@@ -233,6 +243,8 @@ export class CanvasElementCanvasResizeAdjustments {
                 }
             }
         });
+
+        // Phase 6: redraw comical overlays once after batched updates.
         if (needComicalUpdate) {
             Comical.update(bloomCanvas);
         }

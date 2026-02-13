@@ -244,6 +244,12 @@ export class CanvasElementHandleDragInteractions {
     }
 
     private continueResizeDrag = (event: MouseEvent) => {
+        // Resize flow:
+        // 1) compute dragged corner target from current mouse delta,
+        // 2) snap that target in canvas coordinates,
+        // 3) clamp to min width/height and adjust anchored edges,
+        // 4) preserve media aspect ratio where required,
+        // 5) scale crop offsets (if present) and refresh guide/state UI.
         const activeElement = this.host.getActiveElement();
         if (event.buttons !== 1 || !activeElement) {
             this.resizeDragCorner = undefined;
@@ -557,6 +563,10 @@ export class CanvasElementHandleDragInteractions {
     }
 
     private continueSideDrag = (event: MouseEvent) => {
+        // Side-drag flow handles two cases:
+        // - text-box resize (n/e/s/w handles adjust canvas element bounds),
+        // - image crop resize (maintains crop offsets, with optional background
+        //   fill snapping when Ctrl is not pressed).
         const activeElement = this.host.getActiveElement();
         if (event.buttons !== 1 || !activeElement) {
             return;
@@ -729,6 +739,8 @@ export class CanvasElementHandleDragInteractions {
         backgroundSnapDelta: number,
         side: string,
     ): number {
+        // When the crop edge is near the exact "fill" position, snap and update
+        // handle title to "Fill". Otherwise keep free crop movement and label "Crop".
         if (!shouldSnap) return delta;
         const snapDelta = 30;
         const controlFrame = document.getElementById(

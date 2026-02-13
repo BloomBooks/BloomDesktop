@@ -196,7 +196,10 @@ export class CanvasElementManager {
             },
             doNotifyChange: this.doNotifyChange.bind(this),
             showCorrespondingTextBox: this.showCorrespondingTextBox.bind(this),
-            handleResizeAdjustments: this.handleResizeAdjustments.bind(this),
+            handleResizeAdjustments:
+                this.backgroundImageManager.handleResizeAdjustments.bind(
+                    this.backgroundImageManager,
+                ),
             refreshCanvasElementEditing:
                 this.refreshCanvasElementEditing.bind(this),
             setActiveElement: this.setActiveElement.bind(this),
@@ -697,7 +700,7 @@ export class CanvasElementManager {
             return; // Already on. No work needs to be done
         }
         this.isCanvasElementEditingOn = true;
-        this.handleResizeAdjustments();
+        this.backgroundImageManager.handleResizeAdjustments();
 
         const bloomCanvases: HTMLElement[] = this.getAllBloomCanvasesOnPage();
 
@@ -1684,7 +1687,7 @@ export class CanvasElementManager {
                 this.setTextColorInternal(hexOrRgbColor, bubble.content),
             );
         }
-        this.restoreFocus();
+        this.selectionUi.restoreFocus();
     }
 
     private setTextColorInternal(hexOrRgbColor: string, element: HTMLElement) {
@@ -1800,15 +1803,6 @@ export class CanvasElementManager {
         });
         // reset active element
         this.setActiveElement(originalActiveElement);
-        this.restoreFocus();
-    }
-
-    // Here we keep track of something (currently, typically, an input box in
-    // the color chooser) to which focus needs to be restored after we modify
-    // foreground or background color on the canvas element, since those processes
-    // involve focusing the canvas element and this is inconvenient when typing in the
-    // input boxes.
-    private restoreFocus(): void {
         this.selectionUi.restoreFocus();
     }
 
@@ -2853,7 +2847,7 @@ export class CanvasElementManager {
         theOneCanvasElementManager.resumeComicEditing();
         // this is automatic for changes that happen while we're dragging,
         // but dragging gets stopped by mouse up, so we need to do it here.
-        theOneCanvasElementManager.handleResizeAdjustments();
+        theOneCanvasElementManager.backgroundImageManager.handleResizeAdjustments();
     }
 
     public removeDetachedTargets() {
@@ -3122,14 +3116,6 @@ export class CanvasElementManager {
         );
     }
 
-    private revertBackgroundCanvasElements() {
-        this.backgroundImageManager.revertBackgroundCanvasElements();
-    }
-
-    private handleResizeAdjustments() {
-        this.backgroundImageManager.handleResizeAdjustments();
-    }
-
     private adjustBackgroundImageSize(
         bloomCanvas: HTMLElement,
         bgCanvasElement: HTMLElement,
@@ -3221,5 +3207,3 @@ function SetupClickToShowCanvasTool(canvas: Element) {
         showCanvasTool();
     });
 }
-
-// showCanvasTool moved to CanvasElementManagerPublicFunctions.ts

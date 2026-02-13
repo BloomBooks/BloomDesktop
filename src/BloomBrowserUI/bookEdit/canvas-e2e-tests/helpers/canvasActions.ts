@@ -288,8 +288,10 @@ export const dragActiveCanvasElementByOffset = async (
     pageFrame: Frame,
     dx: number,
     dy: number,
+    modifiers?: { shift?: boolean; element?: Locator },
 ): Promise<{ activeElement: Locator; beforeBounds: BoundingBox }> => {
-    const activeElement = getActiveCanvasElement(pageFrame);
+    const activeElement =
+        modifiers?.element ?? getActiveCanvasElement(pageFrame);
     await activeElement.waitFor({
         state: "visible",
         timeout: 10000,
@@ -299,16 +301,70 @@ export const dragActiveCanvasElementByOffset = async (
         activeElement,
         "active canvas element",
     );
-    const localStartX = Math.max(6, Math.min(20, beforeBounds.width / 4));
-    const localStartY = Math.max(6, Math.min(20, beforeBounds.height / 4));
 
-    const startX = beforeBounds.x + localStartX;
-    const startY = beforeBounds.y + localStartY;
+    let startX = beforeBounds.x + beforeBounds.width / 2;
+    let startY = beforeBounds.y + beforeBounds.height / 2;
+
+    const editableLocator = activeElement.locator(
+        `${canvasSelectors.page.bloomEditable}:visible`,
+    );
+    const editableBox =
+        (await editableLocator.count()) > 0
+            ? await editableLocator.first().boundingBox()
+            : null;
+    if (editableBox) {
+        const isInsideElementBounds = (x: number, y: number): boolean => {
+            return (
+                x >= beforeBounds.x + 1 &&
+                x <= beforeBounds.x + beforeBounds.width - 1 &&
+                y >= beforeBounds.y + 1 &&
+                y <= beforeBounds.y + beforeBounds.height - 1
+            );
+        };
+
+        const edgePadding = 2;
+        const aroundEditableCandidates = [
+            {
+                x: editableBox.x - edgePadding,
+                y: editableBox.y + editableBox.height / 2,
+            },
+            {
+                x: editableBox.x + editableBox.width + edgePadding,
+                y: editableBox.y + editableBox.height / 2,
+            },
+            {
+                x: editableBox.x + editableBox.width / 2,
+                y: editableBox.y - edgePadding,
+            },
+            {
+                x: editableBox.x + editableBox.width / 2,
+                y: editableBox.y + editableBox.height + edgePadding,
+            },
+        ];
+
+        const validCandidate = aroundEditableCandidates.find((point) =>
+            isInsideElementBounds(point.x, point.y),
+        );
+        if (validCandidate) {
+            startX = validCandidate.x;
+            startY = validCandidate.y;
+        }
+    }
 
     await page.mouse.move(startX, startY);
-    await page.mouse.down();
-    await page.mouse.move(startX + dx, startY + dy, { steps: 10 });
-    await page.mouse.up();
+    if (modifiers?.shift) {
+        await page.keyboard.down("Shift");
+    }
+
+    try {
+        await page.mouse.down();
+        await page.mouse.move(startX + dx, startY + dy, { steps: 10 });
+        await page.mouse.up();
+    } finally {
+        if (modifiers?.shift) {
+            await page.keyboard.up("Shift");
+        }
+    }
 
     return {
         activeElement,
@@ -622,6 +678,25 @@ export const setOutlineColorDropdown = async (
     throw new Error(
         `Outline color dropdown did not change to ${normalizedTarget}.`,
     );
+};
+
+// ── Toolbar button commands ─────────────────────────────────────────────
+
+/**
+ * Click a toolbar button in the context controls by its zero-based index
+ * (excluding the menu button which is always last).
+ */
+export const clickToolbarButtonByIndex = async (
+    pageFrame: Frame,
+    buttonIndex: number,
+): Promise<void> => {
+    const controls = pageFrame
+        .locator(canvasSelectors.page.contextControlsVisible)
+        .first();
+    await controls.waitFor({ state: "visible", timeout: 10000 });
+
+    const button = controls.locator("button").nth(buttonIndex);
+    await button.click();
 };
 
 // ── Coordinate conversion ───────────────────────────────────────────────

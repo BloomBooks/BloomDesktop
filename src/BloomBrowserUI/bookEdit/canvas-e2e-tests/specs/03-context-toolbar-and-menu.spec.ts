@@ -10,6 +10,7 @@ import {
     getCanvasElementCount,
     openContextMenuFromToolbar,
     clickContextMenuItem,
+    clickToolbarButtonByIndex,
 } from "../helpers/canvasActions";
 import {
     expectCanvasElementCountToIncrease,
@@ -158,4 +159,36 @@ test("C3: speech toolbar has buttons including format and delete", async ({
     // Speech has: format, spacer (not a button), duplicate, delete, + menu button
     // At minimum 2 real buttons
     expect(buttonCount).toBeGreaterThanOrEqual(2);
+});
+
+// ── C6: Smoke-invoke format command ──────────────────────────────────
+
+test("C6: format button is present and clickable for speech element", async ({
+    page,
+    toolboxFrame,
+    pageFrame,
+}) => {
+    const beforeCount = await getCanvasElementCount(pageFrame);
+    await dragPaletteItemToCanvas({
+        page,
+        toolboxFrame,
+        pageFrame,
+        paletteItem: "speech",
+    });
+    await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+
+    const controls = pageFrame
+        .locator(canvasSelectors.page.contextControlsVisible)
+        .first();
+    await controls.waitFor({ state: "visible", timeout: 10000 });
+
+    // The format button is the first button in the speech toolbar
+    const formatButton = controls.locator("button").first();
+    await expect(formatButton).toBeVisible();
+    await expect(formatButton).toBeEnabled();
+
+    // Click the format button (it opens a dialog handled by C#, so we just
+    // verify no crash and the element remains active)
+    await clickToolbarButtonByIndex(pageFrame, 0);
+    await expectAnyCanvasElementActive(pageFrame);
 });

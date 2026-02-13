@@ -163,33 +163,25 @@ export class CanvasElementSelectionUi {
                 kImageContainerClass,
             )?.[0];
         const hasImage = !!imageContainer;
-        if (hasImage) {
-            controlFrame.classList.add("has-image");
-        } else {
-            controlFrame.classList.remove("has-image");
-        }
-        if (eltToPutControlsOn?.classList.contains(kBloomButtonClass)) {
-            controlFrame.classList.add("is-button");
-        } else {
-            controlFrame.classList.remove("is-button");
-        }
-
         const hasSvg =
             eltToPutControlsOn?.getElementsByClassName("bloom-svg")?.length > 0;
-        if (hasSvg) {
-            controlFrame.classList.add("has-svg");
-        } else {
-            controlFrame.classList.remove("has-svg");
-        }
         const hasText =
             eltToPutControlsOn?.getElementsByClassName(
                 "bloom-editable bloom-visibility-code-on",
             ).length > 0;
-        if (hasText) {
-            controlFrame.classList.add("has-text");
-        } else {
-            controlFrame.classList.remove("has-text");
-        }
+        const controlFrameClassStates = [
+            { className: "has-image", enabled: hasImage },
+            {
+                className: "is-button",
+                enabled:
+                    eltToPutControlsOn?.classList.contains(kBloomButtonClass),
+            },
+            { className: "has-svg", enabled: hasSvg },
+            { className: "has-text", enabled: hasText },
+        ];
+        controlFrameClassStates.forEach((state) => {
+            controlFrame.classList.toggle(state.className, !!state.enabled);
+        });
         // to reduce flicker we don't show this when switching to a different canvas element until we determine
         // that it is wanted.
         controlFrame.classList.remove(

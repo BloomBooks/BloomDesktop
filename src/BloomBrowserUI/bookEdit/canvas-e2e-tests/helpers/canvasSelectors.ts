@@ -25,7 +25,7 @@ export const canvasSelectors = {
             "navigation-label-button":
                 '[draggable="true"] img[src*="labelButtonPaletteItem.svg"]',
             "book-link-grid":
-                '[draggable="true"] img[src*="bookGridPaletteItem.svg"]',
+                'img[draggable="true"][src*="bookGridPaletteItem.svg"]',
         },
         // Navigation section toggle (collapsed by default)
         navigationCollapseToggle: 'div:has-text("Navigation") >> button',

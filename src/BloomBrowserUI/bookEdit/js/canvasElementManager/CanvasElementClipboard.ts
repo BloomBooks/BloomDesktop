@@ -212,8 +212,11 @@ export class CanvasElementClipboard {
                     imageInfo,
                     { width, height },
                     (newCanvasElement) => {
-                        switch (activeGameTab) {
-                            case startTabIndex:
+                        const applyBehaviorByGameTab: Record<
+                            number,
+                            (element: HTMLElement) => void
+                        > = {
+                            [startTabIndex]: (element: HTMLElement) => {
                                 // make it a draggable, with a target.
                                 // We want to do this after its shape and position are stable, so we arrange for a callback
                                 // after the aspect ratio is adjusted.
@@ -225,19 +228,20 @@ export class CanvasElementClipboard {
                                 // is set before the call to adjustContainerAspectRatio, which would be hard to guarantee
                                 // if we did it after the call to addPictureCanvasElement.
                                 this.host.setDoAfterNewImageAdjusted(() => {
-                                    makeTargetAndMatchSize(newCanvasElement);
+                                    makeTargetAndMatchSize(element);
                                 });
-                                break;
-                            case correctTabIndex:
-                                newCanvasElement.classList.add(
-                                    "drag-item-correct",
-                                );
-                                break;
-                            case wrongTabIndex:
-                                newCanvasElement.classList.add(
-                                    "drag-item-wrong",
-                                );
-                                break;
+                            },
+                            [correctTabIndex]: (element: HTMLElement) => {
+                                element.classList.add("drag-item-correct");
+                            },
+                            [wrongTabIndex]: (element: HTMLElement) => {
+                                element.classList.add("drag-item-wrong");
+                            },
+                        };
+                        const applyBehavior =
+                            applyBehaviorByGameTab[activeGameTab];
+                        if (applyBehavior) {
+                            applyBehavior(newCanvasElement);
                         }
                     },
                 );

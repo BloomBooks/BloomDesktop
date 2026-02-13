@@ -9,6 +9,7 @@ import {
     expandNavigationSection,
     getCanvasElementCount,
     getActiveCanvasElement,
+    pageFrameToTopLevel,
 } from "../helpers/canvasActions";
 import {
     expectCanvasElementCountToIncrease,
@@ -16,6 +17,7 @@ import {
     expectCanvasHasElementClass,
     expectElementVisible,
     expectElementHasPositiveSize,
+    expectElementNearPoint,
 } from "../helpers/canvasAssertions";
 import { canvasSelectors } from "../helpers/canvasSelectors";
 import {
@@ -149,4 +151,44 @@ test("newly created element is active and has positive size", async ({
     const active = getActiveCanvasElement(pageFrame);
     await expectElementVisible(active);
     await expectElementHasPositiveSize(active);
+});
+
+// ── A3: Verify coordinate mapping – element lands near the drop point ──
+
+test("A3: element created near the specified drop offset", async ({
+    page,
+    toolboxFrame,
+    pageFrame,
+}) => {
+    const dropOffset = { x: 180, y: 150 };
+
+    const beforeCount = await getCanvasElementCount(pageFrame);
+    await dragPaletteItemToCanvas({
+        page,
+        toolboxFrame,
+        pageFrame,
+        paletteItem: "speech",
+        dropOffset,
+    });
+    await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+    await expectAnyCanvasElementActive(pageFrame);
+
+    // Compute the expected top-level coordinate by offsetting from the
+    // canvas bounding box within the page frame.
+    const canvasBox = await pageFrame
+        .locator(canvasSelectors.page.canvas)
+        .first()
+        .boundingBox();
+    expect(canvasBox).toBeTruthy();
+
+    const active = getActiveCanvasElement(pageFrame);
+    const activeBox = await active.boundingBox();
+    expect(activeBox).toBeTruthy();
+
+    // The element center should be roughly near the drop point within the
+    // canvas (tolerance accounts for element sizing/centering adjustments).
+    const expectedCenterX = canvasBox!.x + dropOffset.x;
+    const expectedCenterY = canvasBox!.y + dropOffset.y;
+
+    await expectElementNearPoint(active, expectedCenterX, expectedCenterY, 80);
 });

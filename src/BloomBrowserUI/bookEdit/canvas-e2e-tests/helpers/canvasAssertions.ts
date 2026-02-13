@@ -281,6 +281,74 @@ export const expectPositionGridSnapped = async (
         .toBe(true);
 };
 
+// ── Selected element type ──────────────────────────────────────────────
+
+/**
+ * Assert the active canvas element contains an expected internal structure
+ * indicating a particular inferred type.
+ */
+export const expectSelectedElementType = async (
+    pageFrame: Frame,
+    expectedType: "speech" | "image" | "video" | "text" | "caption",
+): Promise<void> => {
+    const active = pageFrame
+        .locator(canvasSelectors.page.activeCanvasElement)
+        .first();
+    await expect(active, "Expected an active canvas element").toBeVisible();
+
+    switch (expectedType) {
+        case "speech":
+        case "text":
+        case "caption":
+            await expect(
+                active.locator(canvasSelectors.page.bloomEditable).first(),
+                `Expected active element to contain bloom-editable for type "${expectedType}"`,
+            ).toBeVisible();
+            break;
+        case "image":
+            await expect(
+                active.locator(canvasSelectors.page.imageContainer).first(),
+                `Expected active element to contain imageContainer for type "image"`,
+            ).toBeVisible();
+            break;
+        case "video":
+            await expect(
+                active.locator(canvasSelectors.page.videoContainer).first(),
+                `Expected active element to contain videoContainer for type "video"`,
+            ).toBeVisible();
+            break;
+    }
+};
+
+// ── Command enabled/disabled ──────────────────────────────────────────
+
+/**
+ * Assert that a toolbar button at a given index is enabled or disabled.
+ */
+export const expectToolbarButtonEnabled = async (
+    pageFrame: Frame,
+    buttonIndex: number,
+    enabled: boolean,
+): Promise<void> => {
+    const controls = pageFrame
+        .locator(canvasSelectors.page.contextControlsVisible)
+        .first();
+    await controls.waitFor({ state: "visible", timeout: 10000 });
+
+    const button = controls.locator("button").nth(buttonIndex);
+    if (enabled) {
+        await expect(
+            button,
+            `Expected toolbar button at index ${buttonIndex} to be enabled`,
+        ).toBeEnabled();
+    } else {
+        await expect(
+            button,
+            `Expected toolbar button at index ${buttonIndex} to be disabled`,
+        ).toBeDisabled();
+    }
+};
+
 // ── Element visibility / validity ───────────────────────────────────────
 
 export const expectElementVisible = async (locator: Locator): Promise<void> => {

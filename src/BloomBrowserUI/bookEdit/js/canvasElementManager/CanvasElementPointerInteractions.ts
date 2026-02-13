@@ -174,7 +174,8 @@ export class CanvasElementPointerInteractions {
         this.clientYAtMouseDown = event.clientY;
         this.mouseDownContainer = bloomCanvas;
 
-        // See extensive comments in CanvasElementManager.ts for why we add this here.
+        // Listen on document (capture phase) so we still detect mouseup if the drag
+        // ends outside the bloom-canvas element.
         document.addEventListener("mouseup", this.onMouseUp, {
             capture: true,
         });

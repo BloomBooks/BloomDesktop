@@ -10,6 +10,7 @@ import {
     duplicateActiveCanvasElementViaManager,
     getCanvasElementCount,
     getActiveCanvasElement,
+    selectCanvasElementAtIndex,
 } from "../helpers/canvasActions";
 import {
     expectCanvasElementCountToIncrease,
@@ -122,4 +123,22 @@ test("G5: total element count is correct after duplicate + delete", async ({
                 .count();
         })
         .toBeLessThan(afterDuplicate);
+});
+
+// ── G3: Duplicate restrictions – creates exactly one copy ───────────
+
+test("G3: duplicate creates exactly one copy (not more)", async ({
+    page,
+    toolboxFrame,
+    pageFrame,
+}) => {
+    await createSpeechElement({ page, toolboxFrame, pageFrame });
+
+    const beforeDuplicate = await getCanvasElementCount(pageFrame);
+    await duplicateActiveCanvasElementViaManager(pageFrame);
+    await expectCanvasElementCountToIncrease(pageFrame, beforeDuplicate);
+
+    // Verify exactly one new element was created
+    const afterDuplicate = await getCanvasElementCount(pageFrame);
+    expect(afterDuplicate).toBe(beforeDuplicate + 1);
 });
