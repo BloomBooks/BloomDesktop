@@ -132,6 +132,7 @@ export class CanvasElementHandleDragInteractions {
     };
 
     private endMoveCrop = (_event: MouseEvent) => {
+        const activeElement = this.host.getActiveElement();
         document.removeEventListener("mousemove", this.continueMoveCrop, {
             capture: true,
         });
@@ -142,6 +143,11 @@ export class CanvasElementHandleDragInteractions {
         this.currentDragControl!.style.left = "";
         this.currentDragControl!.style.top = "";
         this.host.stopMoving();
+        if (activeElement?.classList.contains(kBackgroundImageClass)) {
+            // currently we only need to do this because the command to expand to fill
+            // the container might have become enabled.
+            renderCanvasElementContextControls(activeElement, false);
+        }
     };
 
     private continueMoveCrop = (event: MouseEvent) => {
@@ -218,6 +224,7 @@ export class CanvasElementHandleDragInteractions {
     };
 
     private endResizeDrag = (_event: MouseEvent) => {
+        const activeElement = this.host.getActiveElement();
         document.removeEventListener("mousemove", this.continueResizeDrag, {
             capture: true,
         });
@@ -227,6 +234,15 @@ export class CanvasElementHandleDragInteractions {
         this.currentDragControl?.classList.remove("active-control");
         this.guideProvider.endDrag();
         this.snapProvider.endDrag();
+        // If this is a button, notify the overflow checker to recheck overflow.
+        if (activeElement?.classList.contains(kBloomButtonClass)) {
+            activeElement.dispatchEvent(
+                new Event("buttonCanvasElementResized", {
+                    bubbles: true,
+                    cancelable: false,
+                }),
+            );
+        }
     };
 
     private getImageOrVideo(

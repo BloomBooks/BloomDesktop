@@ -275,7 +275,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const canExpandBackgroundImage =
         canvasElementManager?.canExpandToFillSpace();
 
-    const showMissingMetadataButton = hasImage && missingMetadata;
+    const showMissingMetadataButton = hasRealImage(img) && missingMetadata;
     const showChooseImageButton = hasImage;
     const showPasteImageButton = hasImage;
     const showFormatButton = !!editable;
@@ -1389,7 +1389,13 @@ function addTextMenuItems(
 }
 
 function hasRealImage(img) {
-    return img && !isPlaceHolderImage(img.getAttribute("src"));
+    return (
+        img &&
+        !isPlaceHolderImage(img.getAttribute("src")) &&
+        !img.classList.contains("bloom-imageLoadError") &&
+        img.parentElement &&
+        !img.parentElement.classList.contains("bloom-imageLoadError")
+    );
 }
 
 // applies the modification to all classes of element

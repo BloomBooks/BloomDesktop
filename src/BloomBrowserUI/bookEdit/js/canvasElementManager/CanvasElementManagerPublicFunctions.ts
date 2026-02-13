@@ -5,7 +5,10 @@
 // between the page bundle and toolbox UI code.
 
 import { kCanvasToolId } from "../../toolbox/toolIds";
-import { getToolboxBundleExports } from "../bloomFrames";
+import {
+    doWhenEditTabBundleLoaded,
+    getToolboxBundleExports,
+} from "../bloomFrames";
 import { kImageContainerClass } from "../bloomImages";
 
 // This is just for debugging. It produces a string that describes the canvas element, generally
@@ -37,7 +40,33 @@ export const canvasElementDescription = (
 };
 
 export const showCanvasTool = () => {
-    getToolboxBundleExports()
-        ?.getTheOneToolbox()
-        .activateToolFromId(kCanvasToolId);
+    const handleToolbox = (toolbox: {
+        toolboxIsShowing: () => boolean;
+        activateToolFromId: (toolId: string) => void;
+        ensureToolEnabled?: (toolId: string) => void;
+    }) => {
+        if (toolbox.toolboxIsShowing()) {
+            if (typeof toolbox.ensureToolEnabled === "function") {
+                toolbox.ensureToolEnabled(kCanvasToolId);
+            }
+            return;
+        }
+        toolbox.activateToolFromId(kCanvasToolId);
+    };
+
+    const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
+    if (toolbox) {
+        handleToolbox(toolbox);
+        return;
+    }
+
+    doWhenEditTabBundleLoaded((rootFrameExports) => {
+        rootFrameExports.doWhenToolboxLoaded((toolboxFrameExports) => {
+            const loadedToolbox = toolboxFrameExports.getTheOneToolbox();
+            if (!loadedToolbox) {
+                return;
+            }
+            handleToolbox(loadedToolbox);
+        });
+    });
 };

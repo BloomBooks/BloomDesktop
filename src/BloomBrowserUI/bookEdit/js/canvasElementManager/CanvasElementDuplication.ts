@@ -3,6 +3,7 @@ import { Point, PointScaling } from "../point";
 import {
     kBackgroundImageClass,
     kBloomButtonClass,
+    kImageFitModeAttribute,
 } from "../../toolbox/canvas/canvasElementConstants";
 import AudioRecording from "../../toolbox/talkingBook/audioRecording";
 import { postData, postJson } from "../../../utils/bloomApi";
@@ -166,6 +167,17 @@ export class CanvasElementDuplication {
             patriarchDuplicateElement.classList.add("bloom-gif");
         if (sourceElement.classList.contains(kBloomButtonClass))
             patriarchDuplicateElement.classList.add(kBloomButtonClass);
+        const imageFitMode = sourceElement.getAttribute(kImageFitModeAttribute);
+        // Could just copy it unconditionally, but we're using the absence of the
+        // attribute to represent the default state, so that would introduce a
+        // fourth state (empty string) that may complicate things. We don't need
+        // to remove it if absent because we created a fresh element.
+        if (imageFitMode) {
+            patriarchDuplicateElement.setAttribute(
+                kImageFitModeAttribute,
+                imageFitMode,
+            );
+        }
 
         // copy any data-sound
         const sourceDataSound = sourceElement.getAttribute("data-sound");

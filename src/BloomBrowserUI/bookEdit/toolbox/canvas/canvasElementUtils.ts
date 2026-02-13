@@ -14,6 +14,9 @@ import {
     kCanvasElementClass,
     kCanvasElementSelector,
     kHasCanvasElementClass,
+    kImageFitModeAttribute,
+    kImageFitModeContainValue,
+    kImageFitModeCoverValue,
 } from "./canvasElementConstants";
 
 // Re-export the dependency-light DOM constants for backwards compatibility.
@@ -25,6 +28,9 @@ export {
     kCanvasElementClass,
     kCanvasElementSelector,
     kHasCanvasElementClass,
+    kImageFitModeAttribute,
+    kImageFitModeContainValue,
+    kImageFitModeCoverValue,
 };
 
 export function getCanvasElementManager(): CanvasElementManager | undefined {

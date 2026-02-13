@@ -12,3 +12,7 @@ export const kHasCanvasElementClass = "bloom-has-canvas-element";
 // also declared in split-pane.js, which needs it but doesn't want to be a module.
 export const kBloomCanvasClass = "bloom-canvas";
 export const kBloomCanvasSelector = `.${kBloomCanvasClass}`;
+
+export const kImageFitModeAttribute = "data-image-fit";
+export const kImageFitModeContainValue = "contain";
+export const kImageFitModeCoverValue = "cover";

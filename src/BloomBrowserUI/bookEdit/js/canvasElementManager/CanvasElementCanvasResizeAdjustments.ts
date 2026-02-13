@@ -244,6 +244,20 @@ export class CanvasElementCanvasResizeAdjustments {
             }
         });
 
+        // The above algorithm works for the background image most of the time,
+        // but we've found cases where we still need a final readjustment.
+        // So we readjust here to be sure.
+        const backgroundCanvasElement = bloomCanvas.getElementsByClassName(
+            kBackgroundImageClass,
+        )[0] as HTMLElement;
+        if (backgroundCanvasElement) {
+            this.host.adjustBackgroundImageSize(
+                bloomCanvas,
+                backgroundCanvasElement,
+                false,
+            );
+        }
+
         // Phase 6: redraw comical overlays once after batched updates.
         if (needComicalUpdate) {
             Comical.update(bloomCanvas);
