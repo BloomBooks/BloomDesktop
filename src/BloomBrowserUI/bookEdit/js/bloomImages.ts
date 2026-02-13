@@ -57,14 +57,14 @@ export function SetupImagesInContainer(container) {
         .css("direction", "ltr");
 
     $(container)
-        .find(".bloom-imageContainer > img") // the ">" here prevents finding img's of ui affordances deep in comics
+        .find(".bloom-imageContainer > img") // the ">" here prevents finding img's of ui affordances deep in canvas elements
         .each(function () {
             SetupImage(this);
         });
     // I think this is redundant, but it might be important for a bloom-canvas
     // where the background img has not yet been converted to a background canvas element.
     $(container)
-        .find(".bloom-canvas > img") // the ">" here prevents finding img's of ui affordances deep in comics
+        .find(".bloom-canvas > img") // the ">" here prevents finding img's of ui affordances deep in canvas elements
         .each(function () {
             SetupImage(this);
         });

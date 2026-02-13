@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Bloom.Book;
 using NUnit.Framework;
 
-namespace BloomTests.Publish
+namespace BloomTests.Publish.Epub
 {
     // Tests stuff that is different when we export a fixed-layout epub
     public class ExportFixedLayoutEpubTests : ExportEpubTestsBaseClass

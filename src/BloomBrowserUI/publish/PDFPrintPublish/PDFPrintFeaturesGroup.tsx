@@ -159,10 +159,11 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                             }}
                         >
                             <ApiCheckbox
-                                label="Full Bleed"
-                                l10nKey="PublishTab.PdfMaker.FullBleed"
-                                apiEndpoint="publish/pdf/fullBleed"
+                                label="Exclude print bleed around page edges"
+                                l10nKey="PublishTab.PdfMaker.ExcludePrintBleed"
+                                apiEndpoint="publish/pdf/excludePrintBleed"
                                 disabled={!allowFullBleed}
+                                forceDisabledValue={false}
                                 onChange={() => {
                                     // Currently Full Bleed has no effect on Booklet modes.
                                     // There's also no need to immediately generate a PDF if we

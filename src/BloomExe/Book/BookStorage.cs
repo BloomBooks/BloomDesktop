@@ -1123,7 +1123,8 @@ namespace Bloom.Book
                 BloomDesktopMinVersion = "6.2",
                 BloomPlayerMinVersion = "2.0",
                 // This is used for all images so will nearly always succeed fast.
-                XPath = $"//div[contains(@class,'{HtmlDom.kBloomCanvasClass}') ]",
+                XPath =
+                    $"//div[contains(concat(' ', normalize-space(@class), ' '), ' {HtmlDom.kBloomCanvasClass} ') ]",
             },
         };
 
@@ -1783,7 +1784,7 @@ namespace Bloom.Book
                     ),
                     msg
                 );
-                // Application.Exit() is not drastic enough to terminate all the call paths here and all the code
+                // Application .Exit() is not drastic enough to terminate all the call paths here and all the code
                 // that tries to make sure we save on exit. Get lots of flashing windows during shutdown.
                 Environment.Exit(-1);
             }
@@ -1975,6 +1976,9 @@ namespace Bloom.Book
                     }
                     continue;
                 }
+                // Placeholder images are now CSS-based rather than actual files
+                if (ImageUtils.IsPlaceholderImageFilename(imageFileName))
+                    continue;
                 // Certain .svg files (cogGrey.svg, FontSizeLetter.svg) aren't really part of the book and are stored elsewhere.
                 // Also, at present the user can't insert them into a book. Don't report them.
                 // TODO: if we ever allow the user to add .svg files, we'll need to change this
@@ -3665,8 +3669,7 @@ namespace Bloom.Book
         /// will now be a simple scan for these svgs, we here remove legacy svgs whose bubble style
         /// was "none", implying transparency.
         /// In Bloom 5.0, we renamed the Comic Tool -> Overlay Tool (and to Canvas Tool in Bloom 6.3),
-        /// but "comical" refers to the comical.js npm project which creates the svgs. It and the
-        /// "Comic" feature have not been renamed for backward compatibility.
+        /// but "comical" refers to the comical.js npm project which creates the svgs.
         /// This does nothing if maintenanceLevel indicates it has already been done.
         /// </summary>
         public void MigrateToLevel2RemoveTransparentComicalSvgs()

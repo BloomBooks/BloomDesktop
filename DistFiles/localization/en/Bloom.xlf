@@ -1357,11 +1357,11 @@
         <note>ID: EditTab.CustomPage.Picture</note>
         <note>Obsolete as of 6.3</note>
       </trans-unit>
-      <trans-unit id="EditTab.CustomPage.Image" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.CustomPage.Image" sil:dynamic="true">
         <source xml:lang="en">Image</source>
         <note>ID: EditTab.CustomPage.Image</note>
       </trans-unit>
-      <trans-unit id="EditTab.CustomPage.Canvas" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.CustomPage.Canvas" sil:dynamic="true">
         <source xml:lang="en">Canvas</source>
         <note>ID: EditTab.CustomPage.Canvas</note>
       </trans-unit>
@@ -1594,6 +1594,16 @@
         <source xml:lang="en">Title On Title Page</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Title-On-Title-Page-style</note>
         <note>Used on the Title Page of most Front/Back Matter packs</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Navigation-Button-Label-style" sil:dynamic="true">
+        <source xml:lang="en">Navigation Button Label</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Navigation-Button-Label-style</note>
+        <note>Used for the text of a navigation button with only text.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Navigation-Button-With-Image-Label-style" sil:dynamic="true">
+        <source xml:lang="en">Navigation Button With Image Label</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Navigation-Button-With-Image-Label-style</note>
+        <note>Used for the text section of a navigation button with both image and text.</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DontSeeNeed" sil:dynamic="true">
         <source xml:lang="en">Don't see what you need?</source>
@@ -1831,6 +1841,7 @@
       <trans-unit id="EditTab.HowToUseHyperlink">
         <source xml:lang="en">To use this hyperlink, go to the page where you are making a Table of Contents. Next, select some text and then click on the image of chain link. This will turn the selected text into a hyperlink to this page.</source>
         <note>ID: EditTab.HowToUseHyperlink</note>
+        <note>Obsolete as of Bloom 6.3</note>
       </trans-unit>
       <trans-unit id="EditTab.HyperlinkPasteFailure">
         <source xml:lang="en">Bloom was not able to make a link. Try selecting only simple text.</source>
@@ -2864,6 +2875,7 @@
         <source xml:lang="en">Using a hyperlink</source>
         <note>ID: EditTab.UsingHyperlink</note>
         <note>Title for dialog box showing the message for EditTab.HowToUseHyperlink</note>
+        <note>Obsolete as of Bloom 6.3</note>
       </trans-unit>
       <trans-unit id="EditTab.Widget.ChooseWidget" sil:dynamic="true">
         <source xml:lang="en">Choose Widget</source>
@@ -2882,6 +2894,11 @@
       <trans-unit id="Errors.PathTooLong">
         <source xml:lang="en">Please give your collection a shorter name or move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by one of two things: 1) the collection has a very long name, or 2) the collection is too deeply nested inside many folders on your hard drive.</source>
         <note>ID: Errors.PathTooLong</note>
+        <note>obsolete as of 6.3, replaced by following</note>
+      </trans-unit>
+      <trans-unit id="Errors.PathTooLong2">
+        <source xml:lang="en">A file Bloom was working with had a path that was too long. You may need to give it a shorter name, or give your collection a shorter name, or move your collection closer to the root of your hard drive.</source>
+        <note>ID: Errors.PathTooLong2</note>
       </trans-unit>
       <trans-unit id="Errors.BookProblem">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
@@ -3546,6 +3563,7 @@
       <trans-unit id="PublishTab.Comic">
         <source xml:lang="en">Comic</source>
         <note>ID: PublishTab.Comic</note>
+        <note>Obsolete as of Bloom 6.3</note>
       </trans-unit>
       <trans-unit id="PublishTab.Common.Publishing">
         <source xml:lang="en">Publishing</source>
@@ -4208,10 +4226,16 @@
         <source xml:lang="en">Full Bleed</source>
         <note>ID: PublishTab.PdfMaker.FullBleed</note>
         <note>displayed as an option in the PDF Options menu in Publish tab. Be careful, "full bleed" is a technical term in printing, meaning to print into an area outside the main page content that is ideally trimmed off; do not translate literally</note>
+        <note>Obsolete as of 6.3</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed">
         <source xml:lang="en">This is disabled because this book is not set up to be full bleed.</source>
         <note>ID: PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.ExcludePrintBleed">
+        <source xml:lang="en">Exclude print bleed around page edges</source>
+        <note>ID: PublishTab.PdfMaker.ExcludePrintBleed</note>
+        <note>displayed as an option in the PDF Options menu in Publish tab. Be careful, "print bleed" is a technical term in printing, meaning to print into an area outside the main page content that is ideally trimmed off; do not translate literally</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml">
         <source xml:lang="en">Making PDF from HTML</source>
@@ -5451,16 +5475,16 @@ is mostly status, which shows on the Collection Tab -->
         <note>Leave the ** around the word(s) used to translate **Pro**</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingLocalCommunitySubscription">
-        <source xml:lang="en">Using **Local Community** subscription for **{0}**. Expires {1}</source>
+        <source xml:lang="en">Using **Local Community** subscription for {0}. Expires {1}</source>
         <note>ID: SubscriptionStatus.UsingLocalCommunitySubscription</note>
-        <note>**{0}** is the subscription descriptor, {1} is the formatted expiration date</note>
+        <note>{0} is the subscription descriptor, {1} is the formatted expiration date</note>
         <note>Leave the ** around the word(s) used to translate **Local Community**</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingEnterpriseSubscription">
-        <source xml:lang="en">Using **Enterprise** subscription for **{0}**. Expires **{1}**</source>
+        <source xml:lang="en">Using **Enterprise** subscription for {0}. Expires **{1}**</source>
         <note>ID: SubscriptionStatus.UsingEnterpriseSubscription</note>
-        <note>**{0}** is the subscription descriptor, {1} is the formatted expiration date</note>
-        <note>Leave the ** around the word(s) used to translate **Enterprise**</note>
+        <note>{0} is the subscription descriptor, {1} is the formatted expiration date</note>
+        <note>Leave the ** around the word(s) used to translate **Enterprise** and around the **{1}**</note>
       </trans-unit>
       <trans-unit id="TeamCollection.DuplicateIds">
         <source xml:lang="en">
@@ -5491,6 +5515,11 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <!--
 // Don't want these actually translated until things stabilize. Will need re-ordering.
+      <trans-unit id="TeamCollection.DropboxSettingsAcknowledgement" sil:dynamic="true">
+        <source xml:lang="en">I will ensure that all team members have properly configured [Critical Dropbox Settings](https://docs.bloomlibrary.org/critical-dropbox-settings/).</source>
+        <note>ID: TeamCollection.DropboxSettingsAcknowledgement</note>
+        <note>Checkbox acknowledgement shown when creating a Team Collection.</note>
+      </trans-unit>
       <trans-unit id="TeamCollection.AvailableDescription" sil:dynamic="true">
         <source xml:lang="en">When you check it out, no one on the team will be able to modify it or see your changes until you check it back in.</source>
         <note>ID: TeamCollection.AvailableDescription</note>
@@ -5756,7 +5785,7 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Canvas" sil:dynamic="true">
-        <source xml:lang="en">A page with an empty canvas you can add to.</source>
+        <source xml:lang="en">A page with an empty canvas that you can add to.</source>
         <note>ID: TemplateBooks.PageDescription.Canvas</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Comprehension Quiz" sil:dynamic="true">

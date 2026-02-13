@@ -15,5 +15,8 @@ export function shouldHideToolsOverImages(): boolean {
         return false;
     }
     const toolboxInstance = toolbox.getTheOneToolbox();
-    return toolboxInstance.getCurrentTool()?.id() === kMotionToolId;
+    return (
+        toolboxInstance.toolboxIsShowing() &&
+        toolboxInstance.getCurrentTool()?.id() === kMotionToolId
+    );
 }

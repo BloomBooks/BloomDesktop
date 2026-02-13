@@ -7,7 +7,7 @@ using Bloom.Publish.BloomPub;
 using Bloom.Publish.BloomPub.usb;
 using Bloom.web;
 
-namespace BloomTests.Publish
+namespace BloomTests.Publish.BloomPub.usb
 {
     public class MockUsbPublisher : UsbPublisher
     {

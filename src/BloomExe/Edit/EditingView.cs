@@ -22,6 +22,7 @@ using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.Workspace;
 using L10NSharp;
+using Microsoft.Win32;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
@@ -49,7 +50,7 @@ namespace Bloom.Edit
         private Color _disabledToolbarColor = Color.FromArgb(114, 74, 106);
         private bool _visible;
         private BloomWebSocketServer _webSocketServer;
-        private ZoomControl _zoomControl;
+        private ZoomModel _zoomModel;
         private PageListApi _pageListApi;
         private DateTime? _lastTopBarMenuClosedTime;
 
@@ -124,7 +125,8 @@ namespace Bloom.Edit
             controlKeyEvent.Subscribe(HandleControlKeyEvent);
 
             //we're giving it to the parent control through the TopBarControls property
-            Controls.Remove(_topBarPanel);
+            if (_topBarPanel.Parent != null)
+                _topBarPanel.Parent.Controls.Remove(_topBarPanel);
             bookRenamedEvent.Subscribe(
                 (oldToNewPath) =>
                 {
@@ -1828,10 +1830,7 @@ namespace Bloom.Edit
                     )
                     {
                         zoomInt = (int)Math.Round(zoomFloat * 10F) * 10;
-                        if (
-                            zoomInt < ZoomControl.kMinimumZoom
-                            || zoomInt > ZoomControl.kMaximumZoom
-                        )
+                        if (zoomInt < ZoomModel.kMinimumZoom || zoomInt > ZoomModel.kMaximumZoom)
                             return 100; // bad antique value - normalize to real size.
                         return zoomInt;
                     }
@@ -1851,10 +1850,10 @@ namespace Bloom.Edit
                 )
                 {
                     // we can't go below 30 (30%), so those must be old floating point values that rounded to an integer.
-                    if (zoomInt < ZoomControl.kMinimumZoom)
+                    if (zoomInt < ZoomModel.kMinimumZoom)
                         zoomInt = zoomInt * 100;
-                    if (zoomInt > ZoomControl.kMaximumZoom)
-                        return ZoomControl.kMaximumZoom;
+                    if (zoomInt > ZoomModel.kMaximumZoom)
+                        return ZoomModel.kMaximumZoom;
                     return zoomInt;
                 }
                 else
@@ -1882,20 +1881,20 @@ namespace Bloom.Edit
 
         public void AdjustPageZoom(int delta)
         {
-            var currentZoom = _zoomControl.Zoom;
+            var currentZoom = _zoomModel.Zoom;
             if (
-                delta < 0 && currentZoom <= Bloom.Workspace.ZoomControl.kMinimumZoom
-                || delta > 0 && currentZoom >= Bloom.Workspace.ZoomControl.kMaximumZoom
+                delta < 0 && currentZoom <= ZoomModel.kMinimumZoom
+                || delta > 0 && currentZoom >= ZoomModel.kMaximumZoom
             )
             {
                 return;
             }
-            _zoomControl.Zoom = currentZoom + delta;
+            _zoomModel.Zoom = currentZoom + delta;
         }
 
-        internal void SetZoomControl(ZoomControl zoomCtl)
+        internal void SetZoomModel(ZoomModel zoomModel)
         {
-            _zoomControl = zoomCtl;
+            _zoomModel = zoomModel;
         }
 
         // intended for use only by the EditingModel
@@ -1937,25 +1936,65 @@ namespace Bloom.Edit
                     using (var memoryStream = new MemoryStream(bytes))
                     using (var image = System.Drawing.Image.FromStream(memoryStream))
                     {
-                        // Determine file extension based on image format
-                        string extension = ".png"; // default
-                        if (ImageUtils.AppearsToBeJpeg(new PalasoImage(image)))
-                            extension = ".jpg";
-
-                        var fileName = desiredFileNameWithoutExtension + extension;
-                        var filePath = Path.Combine(_model.CurrentBook.FolderPath, fileName);
-
-                        // Save the image to the book's folder
-                        using (var fs = RobustFile.Create(filePath))
+                        string extension = ".png";
+                        // Don't be tempted to close this 'using' after we're done with the
+                        // palasoImage. Disposing it will also dispose the image, so keep
+                        // it until we're done with that.
+                        using (var palasoImage = new PalasoImage(image))
                         {
-                            memoryStream.Position = 0;
-                            await memoryStream.CopyToAsync(fs);
-                            // tell the caller that we have added the image
-                            BloomWebSocketServer.Instance.SendEvent(
+                            // Determine output format (keep original JPEG vs default to PNG)
+                            var isJpeg = ImageUtils.AppearsToBeJpeg(palasoImage);
+                            if (isJpeg)
+                                extension = ".jpg";
+
+                            var fileName = desiredFileNameWithoutExtension + extension;
+                            var filePath = Path.Combine(_model.CurrentBook.FolderPath, fileName);
+
+                            // Scale down large images.
+                            // - Prefer scaling so the largest dimension is at most 256px.
+                            // - But avoid making the smaller dimension too small; aim for it to be at least 128px.
+                            // We choose the scale factor that shrinks the least while satisfying both constraints,
+                            // and never upscale.
+                            const int kMaxDim = 256;
+                            const int kMinDim = 128;
+                            using var fs = RobustFile.Create(filePath);
+                            var format = isJpeg
+                                ? System.Drawing.Imaging.ImageFormat.Jpeg
+                                : System.Drawing.Imaging.ImageFormat.Png;
+
+                            using (
+                                var resized = ImageUtils.TryShrinkImageToApproxSize(
+                                    image,
+                                    kMaxDim,
+                                    kMinDim
+                                )
+                            )
+                            {
+                                if (resized != null)
+                                    resized.Save(fs, format);
+                                else
+                                    image.Save(fs, format);
+                            }
+
+                            // tell the caller that we have added the image.
+                            // Why is most of the file name both part of the client context and
+                            // sent as the message? For the context, we need something that
+                            // doesn't depend on whether we make a jpg or png, because we don't
+                            // find that out until the code just above here executes, and long
+                            // before that, JS code needs to set up the listener with a clientContext
+                            // based on which image we're expecting. OTOH, the code that receives
+                            // the message needs to know exactly what file was created.
+                            // We could just pass the extension, but it doesn't cost much to
+                            // include the whole filename, and one day we might use this for
+                            // something that would need to de-duplicate file names.
+                            dynamic eventBundle = new DynamicJson();
+                            eventBundle.message = fileName;
+                            _webSocketServer.SendBundle(
                                 "makeThumbnailFile-" + desiredFileNameWithoutExtension,
-                                "success"
+                                "success",
+                                eventBundle
                             );
-                            Debug.WriteLine("Added image for: " + desiredFileNameWithoutExtension);
+                            Debug.WriteLine("Added image for: " + fileName);
                         }
                     }
                 }

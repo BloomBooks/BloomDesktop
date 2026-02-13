@@ -16,7 +16,6 @@ using Bloom.web;
 using Bloom.Workspace;
 using L10NSharp;
 using SIL.Reporting;
-using SIL.Windows.Forms.SettingProtection;
 
 namespace Bloom.CollectionTab
 {

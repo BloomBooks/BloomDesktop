@@ -28,8 +28,10 @@ import {
     DialogResult,
 } from "../../react_components/color-picking/colorPickerDialog";
 import {
+    get,
     post,
     postJson,
+    useApiBoolean,
     useApiObject,
     useApiStringState,
 } from "../../utils/bloomApi";
@@ -120,6 +122,11 @@ export const BookSettingsDialog: React.FunctionComponent<{
             defaultOverrides,
         );
 
+    const [pageSizeSupportsFullBleed] = useApiBoolean(
+        "book/settings/pageSizeSupportsFullBleed",
+        true,
+    );
+
     const xmatterLockedBy = useL10n(
         "Locked by {0} Front/Back matter",
         "BookSettings.LockedByXMatter",
@@ -138,6 +145,10 @@ export const BookSettingsDialog: React.FunctionComponent<{
     const contentPagesLabel = useL10n(
         "Content Pages",
         "BookSettings.ContentPagesGroupLabel",
+    );
+    const printPublishingLabel = useL10n(
+        "Print Publishing",
+        "BookSettings.PrintPublishingGroupLabel",
     );
     const languagesToShowNormalSubgroupLabel = useL10n(
         "Languages to show in normal text boxes",
@@ -256,8 +267,17 @@ export const BookSettingsDialog: React.FunctionComponent<{
         "BookSettings.CoverIsImage",
     );
     const coverIsImageDescription = useL10n(
-        "Using this option turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.",
-        "BookSettings.CoverIsImage.Description",
+        "Replace the front cover content with a single full-bleed image. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.",
+        "BookSettings.CoverIsImage.Description.V2",
+    );
+
+    const fullBleedLabel = useL10n(
+        "Use full bleed page layout",
+        "BookSettings.FullBleed",
+    );
+    const fullBleedDescription = useL10n(
+        "Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.",
+        "BookSettings.FullBleed.Description",
     );
 
     // This is a helper function to make it easier to pass the override information
@@ -357,6 +377,8 @@ export const BookSettingsDialog: React.FunctionComponent<{
 
     const tierAllowsFullPageCoverImage =
         useGetFeatureStatus("fullPageCoverImage")?.enabled;
+
+    const tierAllowsFullBleed = useGetFeatureStatus("PrintshopReady")?.enabled;
 
     function saveSettingsAndCloseDialog() {
         if (settingsToReturnLater) {
@@ -751,6 +773,38 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         `page-gutter`,
                                     )}
                                 />
+                            </ConfigrSubgroup>
+                        </ConfigrGroup>
+                        <ConfigrGroup label={printPublishingLabel} level={1}>
+                            <ConfigrSubgroup label="" path={`appearance`}>
+                                <div>
+                                    <ConfigrBoolean
+                                        label={fullBleedLabel}
+                                        description={fullBleedDescription}
+                                        {...getAdditionalProps<boolean>(
+                                            `fullBleed`,
+                                        )}
+                                        disabled={
+                                            !tierAllowsFullBleed ||
+                                            !pageSizeSupportsFullBleed
+                                        }
+                                    />
+                                    <div
+                                        css={css`
+                                            display: flex;
+                                            padding-bottom: 5px;
+                                            font-size: 12px;
+                                            font-weight: bold;
+                                        `}
+                                    >
+                                        <BloomSubscriptionIndicatorIconAndText
+                                            feature="PrintshopReady"
+                                            css={css`
+                                                margin-left: auto;
+                                            `}
+                                        />
+                                    </div>
+                                </div>
                             </ConfigrSubgroup>
                         </ConfigrGroup>
                         <ConfigrGroup label={bloomPubLabel} level={1}>

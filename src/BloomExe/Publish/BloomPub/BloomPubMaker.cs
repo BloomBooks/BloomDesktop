@@ -155,7 +155,10 @@ namespace Bloom.Publish.BloomPub
 
             BookCompressor.MakeSizedThumbnail(modifiedBook, modifiedBook.FolderPath, 256);
 
-            MakeSha(BookStorage.FindBookHtmlInFolder(bookFolderPath), modifiedBook.FolderPath);
+            CreateVersionFileWithSha(
+                BookStorage.FindBookHtmlInFolder(bookFolderPath),
+                modifiedBook.FolderPath
+            );
             CompressImages(
                 modifiedBook.FolderPath,
                 settings.ImagePublishSettings,
@@ -168,11 +171,11 @@ namespace Bloom.Publish.BloomPub
                 modifiedBook.FolderPath
             );
             var newContent = XmlHtmlConverter.ConvertDomToHtml5(modifiedBook.RawDom);
-            RobustFile.WriteAllText(
-                BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath),
-                newContent,
-                Encoding.UTF8
-            );
+
+            var originalBookHtmlPath = BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath);
+            RobustFile.Delete(originalBookHtmlPath);
+            var indexHtmPath = Path.Combine(modifiedBook.FolderPath, "index.htm");
+            RobustFile.WriteAllText(indexHtmPath, newContent, Encoding.UTF8);
 
             BookCompressor.CompressBookDirectory(
                 outputPath,
@@ -364,14 +367,14 @@ namespace Bloom.Publish.BloomPub
             return System.Web.HttpUtility.UrlDecode(filename);
         }
 
-        private static void MakeSha(string pathToFileForSha, string folderForSha)
+        private static void CreateVersionFileWithSha(string bookFilePath, string outputDirectory)
         {
-            var sha = Book.Book.ComputeHashForAllBookRelatedFiles(pathToFileForSha);
+            var sha = Book.Book.ComputeHashForAllBookRelatedFiles(bookFilePath);
             var name = "version.txt"; // must match what BloomReader is looking for in NewBookListenerService.IsBookUpToDate()
             // We send the straight string without a BOM in our advertisement, so that needs to be what we write
             // in the file, otherwise, BR never recognizes that it already has the current version.
             RobustFile.WriteAllText(
-                Path.Combine(folderForSha, name),
+                Path.Combine(outputDirectory, name),
                 sha,
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)
             );
@@ -391,7 +394,6 @@ namespace Bloom.Publish.BloomPub
         )
         {
             // MakeDeviceXmatterTempBook needs to be able to copy customCollectionStyles.css etc into parent of bookFolderPath
-            // And bloom-player expects folder name to match html file name.
             var htmPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
             var tentativeBookFolderPath = Path.Combine(
                 temp.FolderPath,
@@ -928,6 +930,7 @@ namespace Bloom.Publish.BloomPub
             }
             // Create the fonts.css file, which tells the browser where to find the fonts for those families.
             var sb = new StringBuilder();
+            var normalFacesAdded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var font in fontsWanted.OrderBy(x => x.ToString()))
             {
                 if (badFonts.Contains(font.fontFamily))
@@ -935,7 +938,7 @@ namespace Bloom.Publish.BloomPub
                 var group = fontFileFinder.GetGroupForFont(font.fontFamily);
                 if (group != null)
                 {
-                    EpubMaker.AddFontFace(sb, font, group);
+                    EpubMaker.AddFontFace(sb, font, group, normalFacesAdded);
                 }
                 // We don't need (or want) a rule to use Andika instead.
                 // The reader typically WILL use Andika, because we have a rule making it the default font

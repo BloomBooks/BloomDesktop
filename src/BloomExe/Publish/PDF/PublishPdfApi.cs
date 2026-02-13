@@ -77,16 +77,18 @@ namespace Bloom.Publish.PDF
                 true
             );
             apiHandler.RegisterBooleanEndpointHandler(
-                kApiUrlPart + "fullBleed",
+                kApiUrlPart + "excludePrintBleed",
                 request =>
-                    (CurrentBook?.FullBleed ?? false)
-                    && (CurrentBook?.UserPrefs.FullBleed ?? false),
+                    !(
+                        (CurrentBook?.FullBleed ?? false)
+                        && (CurrentBook?.UserPrefs.FullBleed ?? false)
+                    ),
                 (
                     (writeRequest, value) =>
                     {
                         if (CurrentBook != null)
                         {
-                            CurrentBook.UserPrefs.FullBleed = value;
+                            CurrentBook.UserPrefs.FullBleed = !value;
                         }
                     }
                 ),

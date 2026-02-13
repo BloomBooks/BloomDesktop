@@ -16,7 +16,6 @@ namespace Bloom.Edit
         private readonly EditingModel _model;
         private bool _dontForwardSelectionEvent;
         private IPage _pageWeThinkShouldBeSelected;
-        private bool _hyperlinkMessageShown = false;
         private PageThumbnailList _thumbNailList;
 
         public PageListController(
@@ -66,36 +65,6 @@ namespace Bloom.Edit
                     Label = LocalizationManager.GetString("EditTab.CopyPage", "Copy Page"),
                     EnableFunction = (page) => page != null && _model.CanCopyPage,
                     ExecuteCommand = (page) => _model.CopyPage(page),
-                }
-            );
-            menuItems.Add(
-                new PageThumbnailList.MenuItemSpec()
-                {
-                    Label = LocalizationManager.GetString(
-                        "EditTab.CopyHyperlink",
-                        "Copy Hyperlink"
-                    ),
-                    EnableFunction = (page) => page != null && _model.CanCopyHyperlink,
-                    ExecuteCommand = (page) =>
-                    {
-                        _model.CopyHyperlink(page);
-                        if (!_hyperlinkMessageShown)
-                        {
-                            _hyperlinkMessageShown = true;
-                            var msg = LocalizationManager.GetString(
-                                "EditTab.HowToUseHyperlink",
-                                "To use this hyperlink, go to the page where you are making a Table of Contents. Next, select some text and then click on the image of chain link. This will turn the selected text into a hyperlink to this page."
-                            );
-                            var title = LocalizationManager.GetString(
-                                "EditTab.UsingHyperlink",
-                                "Using a hyperlink"
-                            );
-                            var dlg = new ProblemNotificationDialog(msg, title);
-                            dlg.Icon = SystemIcons.Information.ToBitmap();
-                            dlg.ReoccurrenceMessage = null;
-                            dlg.Show();
-                        }
-                    },
                 }
             );
             menuItems.Add(

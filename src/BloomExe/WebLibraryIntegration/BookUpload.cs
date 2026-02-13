@@ -204,6 +204,11 @@ namespace Bloom.WebLibraryIntegration
             return (result, _s3PrefixToUploadTo);
         }
 
+        // Gets incremented each time so staging folder is unique.
+        // May help with BL-15810, which we suspect was caused by re-uploading a book
+        // before the file system finished deleting a very large staged video.
+        private static int _stagingVariable = 0;
+
         private async Task<string> UploadBookAsync(
             string bookFolder,
             IProgress progress,
@@ -290,11 +295,13 @@ namespace Bloom.WebLibraryIntegration
                     if (progress.CancelRequested)
                         return "";
 
-                    // This currently (unfortunately) enforces a single upload at a time.
-                    // If we want to change that in the future, we would need different folder names,
-                    // perhaps appending an ID or even just a GUID.
+                    // I think just adding a number is enough for uniqueness. It's theoretically possible that
+                    // more than one instance is running and trying to upload the same book, but even then it's unlikely
+                    // that they get to the same index at near enough to the same time to matter.
                     using (
-                        var stagingDirectoryTempFolder = new TemporaryFolder("BloomUploadStaging")
+                        var stagingDirectoryTempFolder = new TemporaryFolder(
+                            "BloomUploadStaging" + _stagingVariable++
+                        )
                     )
                     {
                         var stagingDirectory = stagingDirectoryTempFolder.FolderPath;

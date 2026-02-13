@@ -325,9 +325,12 @@ namespace Bloom.web.controllers
                 diagnosticInfo = GetDiagnosticInfo(includeBook, userDesc, userEmail);
                 if (!string.IsNullOrWhiteSpace(userEmail))
                 {
-                    // remember their email
-                    Bloom.Registration.Registration.Default.Email = userEmail;
-                    Bloom.Registration.Registration.Default.Save();
+                    // remember their email if they don't already have one (BL-14809)
+                    if (string.IsNullOrEmpty(Registration.Registration.Default.Email))
+                    {
+                        Registration.Registration.Default.Email = userEmail;
+                        Registration.Registration.Default.Save();
+                    }
                 }
 
                 issueId = issueSubmission.SubmitToYouTrack(subject, diagnosticInfo);

@@ -5,10 +5,10 @@ using Bloom.Publish.BloomPub;
 using Bloom.SafeXml;
 using NUnit.Framework;
 
-namespace BloomTests.Publish
+namespace BloomTests.Publish.BloomPub
 {
     [TestFixture]
-    public class BloomReaderFileMakerTests
+    public class BloomPubMakerQuestionGroupTests
     {
         // Got this pasting from notepad and word with the extra line in between the Qs already, into Bloom 4.2.
         [TestCase("<p>first<br>one<br>*two<br><br>second<br>*aa<br>bb<br></p>")]

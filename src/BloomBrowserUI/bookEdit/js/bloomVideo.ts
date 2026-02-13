@@ -5,6 +5,7 @@ import { post, postThatMightNavigate } from "../../utils/bloomApi";
 // Currently the button actions are entirely in C#.
 
 import { getToolboxBundleExports } from "./bloomFrames";
+import { shouldHideToolsOverImages } from "./editablePageUtils";
 import {
     SignLanguageToolControls,
     SignLanguageTool,
@@ -150,7 +151,12 @@ function SetupClickToShowSignLanguageTool(videoContainerDiv: Element) {
             return;
         }
 
-        // In comic mode (canvas element tool), suppress the click handler of video-over-picture elements so it won't take us to the sign
+        // Don't activate video tool when motion tool is active
+        if (shouldHideToolsOverImages()) {
+            return;
+        }
+
+        // In canvas/game tools, suppress the click handler of video-over-picture elements so it won't take us to the sign
         // language tool, but everywhere else we want a click on a video element to take us to the SL tool
         const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
         const currentToolId = toolbox?.getCurrentTool()?.id();

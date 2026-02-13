@@ -6186,13 +6186,13 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: SubscriptionStatus.UsingProSubscription</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingLocalCommunitySubscription">
-        <source xml:lang="en">Using **Local Community** subscription for **{0}**. Expires {1}</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">Using **Local Community** subscription for **{0}**. Expires {1}</target>
+        <source xml:lang="en">Using **Local Community** subscription for {0}. Expires {1}</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Using **Local Community** subscription for {0}. Expires {1}</target>
         <note>ID: SubscriptionStatus.UsingLocalCommunitySubscription</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingEnterpriseSubscription">
-        <source xml:lang="en">Using **Enterprise** subscription for **{0}**. Expires **{1}**</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">Using **Enterprise** subscription for **{0}**. Expires **{1}**</target>
+        <source xml:lang="en">Using **Enterprise** subscription for {0}. Expires **{1}**</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Using **Enterprise** subscription for {0}. Expires **{1}**</target>
         <note>ID: SubscriptionStatus.UsingEnterpriseSubscription</note>
       </trans-unit>
       <trans-unit id="TeamCollection.DuplicateIds">

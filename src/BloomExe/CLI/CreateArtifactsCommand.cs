@@ -355,7 +355,7 @@ namespace Bloom.CLI
                             unzippedBloomDigitalOutputPath
                         );
 
-                        exitCode |= RenameBloomDigitalFiles(unzippedBloomDigitalOutputPath);
+                        exitCode |= ValidateBloomDigitalFiles(unzippedBloomDigitalOutputPath);
                     }
                 }
             }
@@ -363,24 +363,27 @@ namespace Bloom.CLI
             return exitCode;
         }
 
-        /// <summary>
-        /// Renames the {title}.htm HTM file to index.htm instead
-        /// </summary>
-        /// <param name="bookDirectory"></param>
-        private static CreateArtifactsExitCode RenameBloomDigitalFiles(string bookDirectory)
+        private static CreateArtifactsExitCode ValidateBloomDigitalFiles(string bookDirectory)
         {
-            string originalHtmFilePath = Bloom.Book.BookStorage.FindBookHtmlInFolder(bookDirectory);
+            string originalHtmFilePath = BookStorage.FindBookHtmlInFolder(bookDirectory);
 
-            Debug.Assert(
-                RobustFile.Exists(originalHtmFilePath),
-                "Book HTM not found: " + originalHtmFilePath
-            );
             if (!RobustFile.Exists(originalHtmFilePath))
+            {
+                Console.WriteLine("Book HTM not found: " + originalHtmFilePath);
                 return CreateArtifactsExitCode.BookHtmlNotFound;
+            }
 
-            string newHtmFilePath = Path.Combine(bookDirectory, $"index.htm");
-            RobustFile.Copy(originalHtmFilePath, newHtmFilePath);
-            RobustFile.Delete(originalHtmFilePath);
+            if (
+                !Path.GetFileName(originalHtmFilePath).Equals("index.htm", StringComparison.Ordinal)
+            )
+            {
+                Console.WriteLine(
+                    "Book HTM should be named index.htm but was: " + originalHtmFilePath
+                );
+                // In theory, we could introduce another exit code, but I don't see any point.
+                return CreateArtifactsExitCode.BookHtmlNotFound;
+            }
+
             return CreateArtifactsExitCode.Success;
         }
 

@@ -86,10 +86,17 @@ namespace Bloom.Book
         /// </summary>
         public bool WriteFontFaces = true;
 
-        //for moq'ing only; parameterless ctor required by Moq
+        // For moq'ing only; parameterless ctor required by Moq.
         public Book()
+            : this(false) { }
+
+        // Allow specific subclasses (like ErrorBook) to bypass the unit-test guard.
+        protected Book(bool allowNonTestCtor)
         {
-            Guard.Against(!Program.RunningUnitTests, "Only use this ctor for tests!");
+            if (!allowNonTestCtor)
+            {
+                Guard.Against(!Program.RunningUnitTests, "Only use this ctor for tests!");
+            }
         }
 
         public Book(BookInfo info = null, IBookStorage storage = null)
@@ -669,26 +676,7 @@ namespace Bloom.Book
             return result;
         }
 
-        public HtmlDom GetPreviewXmlDocumentForPage(IPage page)
-        {
-            if (HasFatalError)
-            {
-                return GetErrorDom();
-            }
-            var pageDom = GetHtmlDomWithJustOnePage(page);
-            pageDom.RemoveModeStyleSheets();
-            pageDom.EnsureStylesheetLinks(this.Storage.GetCssFilesToLinkForPreview());
-            // Note: it would be a fine enhancement here to first check for "branding-{flavor}.css",
-            // but we'll leave that until we need it.
-            AddPreviewJavascript(pageDom); //review: this is just for thumbnails... should we be having the javascript run?
-            return pageDom;
-        }
-
-        // Differs from GetPreviewXmlDocumentForPage() by not adding the three stylesheets
-        // adding them will full paths seems to be diastrous. I think cross-domain rules
-        // prevent them from being loaded, and so we lose the page size information, and the
-        // thumbs come out random sizes. Not sure why this isn't a problem in GetPreviewXmlDocumentForPage.
-        // Also, since this is used for thumbnails of template pages, we insert some arbitrary text
+        // Since this is used for thumbnails of template pages, we insert text placeholders (grey bars)
         // into empty editable divs to give a better idea of what a typical page will look like.
         internal HtmlDom GetThumbnailXmlDocumentForPage(IPage page)
         {
@@ -698,6 +686,7 @@ namespace Bloom.Book
             }
             var pageDom = GetHtmlDomWithJustOnePage(page);
             AddPreviewJavascript(pageDom);
+            pageDom.EnsureStylesheetLinks(this.Storage.GetCssFilesToLinkForPreview());
             pageDom.Body.AddClass("bloom-templateThumbnail");
             return pageDom;
         }
@@ -2186,7 +2175,10 @@ namespace Bloom.Book
                         if (idxQuote > 0)
                         {
                             var lang = line.Substring(kLangTag.Length, idxQuote - kLangTag.Length);
-                            copyCurrentRule = !languagesWeAlreadyHave.Contains(lang);
+                            // Don't let empty language tag creep in (or stay in). (BL-15784)
+                            copyCurrentRule =
+                                !String.IsNullOrEmpty(lang)
+                                && !languagesWeAlreadyHave.Contains(lang);
                             languagesWeAlreadyHave.Add(lang); // don't copy if another css block has crept in.
                         }
                     }
@@ -2473,22 +2465,12 @@ namespace Bloom.Book
                 BookInfo.UseDeviceXMatter
             );
 
-            // Before applying the xmatter, check to see if the previous was Kyrgystan2020, which through to this version, 5.2,
-            // unfortunately has a branding that pollutes the data-div with this fullBleed, which isn't wanted if the book
-            // is re-used in another project. See https://issues.bloomlibrary.org/youtrack/issue/BL-11290.
-            // The one scenario we know this would break would be a book from the Kyr project was re-purposed in another project,
-            // and that book used the "Paper Comic" which does have to have full bleed.
-            if (
-                !helper.GetStyleSheetFileName().Contains("Kyrgyzstan2020")
-                && // we're not going (or more likely staying) in Kyrgyzstan
-                _bookData.GetVariableOrNull("xmatter", "*").Xml == "Kyrgyzstan2020"
-            ) // but we are coming from it
-            {
-                Logger.WriteEvent(
-                    "Removing fullBleed because the previous xmatter was Kyrgystan2020."
-                );
-                _bookData.RemoveAllForms("fullBleed"); // this is fine if it doesn't find it.
-            }
+            // Previously, we had a couple brandings (Kyrgyz, Uzbek) which set this to indicate that books using the branding
+            // should be set up for full bleed. There was code here which removed the data-book setting if switching away from
+            // Kyrgyz (I think not having Uzbek was a bug...). But as of 6.3, the only way to set a book up for full bleed is to use
+            // the book settings. Even books previously set up using the data-book setting need to have the book setting turned on now.
+            // So we just remove this obsolete setting in all cases.
+            _bookData.RemoveAllForms("fullBleed"); // this is fine if it doesn't find it.
 
             // If it's not the real book DOM we won't copy branding images into the real book folder, for fear
             // of messing up the real book, if the temporary one is in a different orientation.
@@ -4071,15 +4053,9 @@ namespace Bloom.Book
                     this
                 )
                 .Enabled;
-
         public bool FullBleed =>
-            (
-                // Wants to be
-                // BookInfo.AppearanceSettings.FullBleed
-                // but we haven't put that in the book settings yet.
-                BookData.GetVariableOrNull("fullBleed", "*").Xml == "true"
-                || CoverIsImage
-            )
+            PageSizeSupportsFullBleed()
+            && BookInfo.AppearanceSettings.FullBleed
             && FeatureStatus
                 .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.PrintShopReady, this)
                 .Enabled;
@@ -4662,6 +4638,12 @@ namespace Bloom.Book
         public virtual Layout GetLayout()
         {
             return Layout.FromDom(OurHtmlDom, Layout.A5Portrait);
+        }
+
+        public bool PageSizeSupportsFullBleed()
+        {
+            var layout = GetLayout();
+            return layout?.SizeAndOrientation?.SupportsFullBleed() ?? false;
         }
 
         public IEnumerable<Layout> GetSizeAndOrientationChoices()
@@ -5499,7 +5481,6 @@ namespace Bloom.Book
             UpdateSimpleDomChoiceFeature();
             UpdateDragGameFeature();
             UpdateMotionFeature();
-            UpdateComicFeature();
             UpdateWidgetFeature();
 
             BookInfo.Save();
@@ -5620,17 +5601,6 @@ namespace Bloom.Book
             BookInfo.MetaData.Feature_Widget = Storage
                 .GetActivityFolderNamesReferencedInBook()
                 .Any();
-        }
-
-        /// <summary>
-        /// Updates the feature in bookInfo.metadata to indicate whether the book contains comic pages.
-        /// These are now created with the Canvas Tool, but the feature retains the old name.
-        /// (But, we will only report it as a Comic book if the user didn't turn it off in the publish settings.)
-        /// </summary>
-        private void UpdateComicFeature()
-        {
-            BookInfo.MetaData.Feature_Comic =
-                HasComicalElements && BookInfo.PublishSettings.BloomLibrary.Comic;
         }
 
         /// <summary>

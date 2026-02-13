@@ -74,10 +74,8 @@ namespace Bloom.Collection
 			this._restartReminder = new System.Windows.Forms.Label();
 			this._L10NSharpExtender = new L10NSharp.Windows.Forms.L10NSharpExtender(this.components);
 			this._cancelButton = new System.Windows.Forms.Button();
-			this.settingsProtectionLauncherButton1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionLauncherButton();
 			this._helpButton = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this._settingsProtectionButtonProxy = new System.Windows.Forms.LinkLabel();
             this._tab.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this._bookMakingTab.SuspendLayout();
@@ -685,18 +683,6 @@ namespace Bloom.Collection
 			this._cancelButton.UseVisualStyleBackColor = false;
 			this._cancelButton.Click += new System.EventHandler(this._cancelButton_Click);
 			//
-			// settingsProtectionLauncherButton1
-			//
-			this.settingsProtectionLauncherButton1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this._L10NSharpExtender.SetLocalizableToolTip(this.settingsProtectionLauncherButton1, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.settingsProtectionLauncherButton1, null);
-			this._L10NSharpExtender.SetLocalizingId(this.settingsProtectionLauncherButton1, "CollectionSettingsDialog.SettingsProtectionLauncherButton");
-			this.settingsProtectionLauncherButton1.Location = new System.Drawing.Point(13, 486);
-			this.settingsProtectionLauncherButton1.Margin = new System.Windows.Forms.Padding(0);
-			this.settingsProtectionLauncherButton1.Name = "settingsProtectionLauncherButton1";
-			this.settingsProtectionLauncherButton1.Size = new System.Drawing.Size(257, 37);
-			this.settingsProtectionLauncherButton1.TabIndex = 20;
-			//
 			// _helpButton
 			//
 			this._helpButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -710,22 +696,6 @@ namespace Bloom.Collection
 			this._helpButton.Text = "&Help";
             this._helpButton.UseVisualStyleBackColor = false;
             this._helpButton.Click += new System.EventHandler(this._helpButton_Click);
-            //
-            // _settingsProtectionButtonProxy
-            //
-            this._settingsProtectionButtonProxy.AutoSize = true;
-            this._L10NSharpExtender.SetLocalizableToolTip(this._settingsProtectionButtonProxy, null);
-            this._L10NSharpExtender.SetLocalizationComment(this._settingsProtectionButtonProxy, null);
-            this._L10NSharpExtender.SetLocalizingId(this._settingsProtectionButtonProxy, "SettingsProtection.LauncherButtonLabel");
-            this._settingsProtectionButtonProxy.LinkColor = Palette.BloomBlue;
-            this._settingsProtectionButtonProxy.Location = new System.Drawing.Point(13, 500);
-            this._settingsProtectionButtonProxy.Name = "_settingsProtectionButtonProxy";
-            this._settingsProtectionButtonProxy.Size = new System.Drawing.Size(75, 19);
-            this._settingsProtectionButtonProxy.TabIndex = 23;
-            this._settingsProtectionButtonProxy.TabStop = true;
-            this._settingsProtectionButtonProxy.Text = "Settings Protection...";
-            this._settingsProtectionButtonProxy.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._settingsProtectionButtonProxy_LinkClicked);
-            //
             // CollectionSettingsDialog
             //
             this.AcceptButton = this._okButton;
@@ -734,10 +704,8 @@ namespace Bloom.Collection
 			this.CancelButton = this._cancelButton;
 			this.ClientSize = new System.Drawing.Size(652, 572);
 			this.ControlBox = false;
-            this.Controls.Add(this._settingsProtectionButtonProxy);
 			this.Controls.Add(this._helpButton);
 			this.Controls.Add(this._cancelButton);
-			this.Controls.Add(this.settingsProtectionLauncherButton1);
 			this.Controls.Add(this._restartReminder);
 			this.Controls.Add(this._okButton);
 			this.Controls.Add(this._tab);
@@ -788,7 +756,6 @@ namespace Bloom.Collection
 		private System.Windows.Forms.Label _provinceLabel;
 		private System.Windows.Forms.LinkLabel _removeLanguage3Link;
 		private System.Windows.Forms.Label _restartReminder;
-		private SIL.Windows.Forms.SettingProtection.SettingsProtectionLauncherButton settingsProtectionLauncherButton1;
 		private L10NSharp.Windows.Forms.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.TabPage tabPage4;
 		private System.Windows.Forms.ToolTip toolTip1;
@@ -811,6 +778,5 @@ namespace Bloom.Collection
 		protected Label _signLanguageName;
 		protected Label _signLanguageLabel;
 		private Label _noRenameTeamCollectionLabel;
-		private LinkLabel _settingsProtectionButtonProxy;
 	}
 }

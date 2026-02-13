@@ -69,6 +69,15 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     public newPageReady() {
         this.makeRectsVisible();
     }
+
+    public showTool() {
+        // Make sure no canvas element is selected when the motion tool is activated
+        const canvasElementManager = getCanvasElementManager();
+        if (canvasElementManager) {
+            canvasElementManager.setActiveElement(undefined);
+        }
+    }
+
     private subscriptionAllowsMotion: boolean | undefined = undefined;
 
     private makeRectsVisible() {
