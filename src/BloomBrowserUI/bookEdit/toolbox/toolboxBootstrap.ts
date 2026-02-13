@@ -6,6 +6,7 @@ import {
     removeToolboxMarkup,
     showOrHideTool_click,
     handleClickOutsideToolbox,
+    scheduleMarkupUpdateAfterPaste,
 } from "./toolbox";
 import { getTheOneReaderToolsModel } from "./readers/readerToolsModel";
 import { ToolBox } from "./toolbox";
@@ -40,6 +41,8 @@ export interface IToolboxFrameExports {
 
     getTheOneToolbox(): ToolBox;
 
+    scheduleMarkupUpdateAfterPaste(): void;
+
     canUndo(): boolean;
     undo(): void;
 
@@ -67,6 +70,7 @@ export { activateLongPressFor } from "../js/bloomEditing";
 export { TalkingBookTool }; // one function is called by CSharp.
 
 export { getTheOneToolbox };
+export { scheduleMarkupUpdateAfterPaste };
 
 // Import the functions we're re-exporting so we can use them in the bundle
 import {
@@ -129,6 +133,7 @@ ToolBox.registerTool(new GameTool());
 // Legacy global exposure: mimic old webpack window["toolboxBundle"] contract
 interface ToolboxBundleApi {
     getTheOneToolbox: typeof getTheOneToolbox;
+    scheduleMarkupUpdateAfterPaste: typeof scheduleMarkupUpdateAfterPaste;
     applyToolboxStateToPage: typeof applyToolboxStateToPage;
     removeToolboxMarkup: typeof removeToolboxMarkup;
     showOrHideTool_click: typeof showOrHideTool_click;
@@ -157,6 +162,7 @@ declare global {
 
 window.toolboxBundle = {
     getTheOneToolbox,
+    scheduleMarkupUpdateAfterPaste,
     applyToolboxStateToPage,
     removeToolboxMarkup,
     showOrHideTool_click,
