@@ -1734,7 +1734,8 @@ namespace Bloom.Book
         private static string GetActualPathToSave(
             string idealFolderName,
             string currentFolderName,
-            string idealFolderPath
+            string idealFolderPath,
+            string instanceId = null
         )
         {
             // As of 16 Dec 2019 we changed our definition of "sanitized" to include some more characters that can
@@ -1767,7 +1768,7 @@ namespace Bloom.Book
                 return Path.Combine(Path.GetDirectoryName(idealFolderPath), currentFolderName);
             // 4. ideal name is in use, and currentFolderName is not a variant of it,
             // so find a new variant that is not in use.
-            return GetUniqueFolderPath(idealFolderPath);
+            return GetUniqueFolderPath(idealFolderPath, instanceId);
         }
 
         public void SetBookName(string name)
@@ -1794,7 +1795,12 @@ namespace Bloom.Book
             var currentFilePath = PathToExistingHtml;
             var currentFolderName = Path.GetFileNameWithoutExtension(currentFilePath);
             var idealFolderPath = Path.Combine(Directory.GetParent(FolderPath).FullName, name);
-            var actualSavePath = GetActualPathToSave(name, currentFolderName, idealFolderPath);
+            var actualSavePath = GetActualPathToSave(
+                name,
+                currentFolderName,
+                idealFolderPath,
+                _metaData?.Id
+            );
             if (actualSavePath == Path.GetDirectoryName(currentFilePath))
                 return; // for this path they must be exactly the same, even by case.
 
@@ -3307,12 +3313,13 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// if necessary, append a number to make the folder path unique
+        /// as necessary, shorten and/or append a guid to make a path to a new folder
+        /// with a name that does not exceed our limit.
         /// </summary>
-        private static string GetUniqueFolderPath(string folderPath)
+        private static string GetUniqueFolderPath(string folderPath, string instanceId = null)
         {
             var parent = Directory.GetParent(folderPath).FullName;
-            var name = GetUniqueFolderName(parent, Path.GetFileName(folderPath));
+            var name = GetAvailableDirectory(parent, Path.GetFileName(folderPath), instanceId);
             return Path.Combine(parent, name);
         }
 
@@ -3344,24 +3351,6 @@ namespace Bloom.Book
                 }
             }
             return Path.Combine(parentFolderPath, newName);
-        }
-
-        /// <summary>
-        /// if necessary, append a number to make the subfolder name unique within the given folder
-        /// </summary>
-        internal static string GetUniqueFolderName(string parentPath, string name)
-        {
-            // Don't be tempted to give this parentheses. That isn't compatible with
-            // SanitizeNameForFileSystem which removes parentheses. See BL-11663.
-
-            int i = 1; // First non-blank suffix should be " 2"
-            string suffix = "";
-            while (Directory.Exists(Path.Combine(parentPath, name + suffix)))
-            {
-                ++i;
-                suffix = " " + i.ToString(CultureInfo.InvariantCulture);
-            }
-            return name + suffix;
         }
 
         /// <summary>
@@ -3504,67 +3493,80 @@ namespace Bloom.Book
         /// </summary>
         /// <param name="collectionDir"></param>
         /// <param name="baseName"></param>
-        /// <param name="instanceId">The new instance ID to use for generating a unique suffix</param>
+        /// <param name="instanceId">The instance ID to use for generating a unique suffix. If null, a new GUID will be generated.</param>
         /// <returns></returns>
         private static string GetAvailableDirectory(
             string collectionDir,
             string baseName,
-            string instanceId
+            string instanceId = null
         )
         {
             return GetUniqueBookFolderName(collectionDir, baseName, instanceId, " - Copy-");
         }
 
         /// <summary>
-        /// Get a unique book folder name using part of the instance ID.
-        /// Shared by both book creation and duplication.
+        /// Get a unique book folder name using part of the instance ID or a new guid.
+        /// Observes our standard constraint on book folder name length.
         /// </summary>
         /// <param name="parentPath">Parent directory path</param>
         /// <param name="baseName">Base name for the book</param>
-        /// <param name="instanceId">The instance ID to use for generating a unique suffix</param>
+        /// <param name="instanceId">The instance ID to use for generating a unique suffix.
+        /// If null, a new GUID will be generated.
+        /// When making a new book (derivative, duplicate, etc) that already involves
+        /// making a new guid as the book's instanceId, we try to use that ID to make
+        /// a unique name. This is mainly helpful when the rest of the name is something
+        /// fixed like "Book"...it means the folder name has at least some relationship
+        /// to the book it contains. On the other hand, when it's an existing book,
+        /// part of the purpose of adding these guids rather than just a number is
+        /// that we want it to be unlikely that, in a Team Collection, someone elsewhere
+        /// will do a similar operation on the book (or another one) and come up with
+        /// the same name.
+        /// So, if the name is for a book that has a newly created instanceId,
+        /// it's good to pass it. If it's an instance Id that might already have been
+        /// shared somehow, don't pass it. (If it's just difficult for any reason
+        /// to get the instanceId, it's also harmless not to pass it.)
+        /// (There's about one chance in 4 billion that the name-plus-instanceId
+        /// produces the name of a folder that exists. In those very rare cases,
+        /// we will generate a new GUID even though one was passed.)</param>
         /// <param name="separator">Separator string before the ID suffix (e.g., " - Copy-" or "-")</param>
         /// <returns>A unique folder name</returns>
         internal static string GetUniqueBookFolderName(
             string parentPath,
             string baseName,
-            string instanceId,
+            string instanceId = null,
             string separator = "-"
         )
         {
-            // Use first 8 characters of the instance ID (without hyphens) as the unique suffix
-            // This provides good uniqueness while keeping names readable
-            var instanceSuffix = instanceId.Replace("-", "").Substring(0, 8).ToLowerInvariant();
+            // Generate an instanceId if not provided
+            if (string.IsNullOrEmpty(instanceId))
+            {
+                instanceId = Guid.NewGuid().ToString();
+            }
 
-            var proposedName = baseName + separator + instanceSuffix;
-
-            // Respect the maximum filename length
-            // Calculate how much space we need for separator + instanceSuffix
-            var suffixLength = separator.Length + instanceSuffix.Length;
+            // Calculate the maximum length for the base name
+            // We need room for: separator (variable length) + 8 characters from instanceId
+            var suffixLength = separator.Length + 8; // 8 hex chars from GUID
             var maxBaseNameLength = kMaxFilenameLength - suffixLength;
+
+            // Truncate and clean the base name if necessary
             if (baseName.Length > maxBaseNameLength)
             {
                 baseName = MiscUtils.TruncateSafely(baseName, maxBaseNameLength);
-                // Remove trailing whitespace and periods after truncation
                 baseName = Regex.Replace(baseName, "[\\s.]+$", "", RegexOptions.Compiled);
-                proposedName = baseName + separator + instanceSuffix;
             }
 
-            // In the extremely unlikely case of a collision, append a number
-            if (!Directory.Exists(Path.Combine(parentPath, proposedName)))
-            {
-                return proposedName;
-            }
-
-            // Collision detected - try with a number suffix
-            int collisionNum = 2;
-            string newName;
+            string proposedName;
             do
             {
-                newName = proposedName + "-" + collisionNum;
-                collisionNum++;
-            } while (Directory.Exists(Path.Combine(parentPath, newName)));
+                // Use first 8 characters of the instance ID (without hyphens) as the unique suffix
+                var instanceSuffix = instanceId.Replace("-", "").Substring(0, 8).ToLowerInvariant();
+                proposedName = baseName + separator + instanceSuffix;
 
-            return newName;
+                if (!Directory.Exists(Path.Combine(parentPath, proposedName)))
+                    return proposedName;
+                // If there's a collision, generate a new GUID and try again
+                instanceId = Guid.NewGuid().ToString();
+            } while (true);
         }
 
         public void EnsureOriginalTitle()
@@ -3834,6 +3836,11 @@ namespace Bloom.Book
         {
             if (desiredPath == null)
                 desiredPath = oldBookFolder;
+            // not passing an instanceId here. Although we usually like to use the book's
+            // own instanceId when necessary to make a unique folder name if possible, the
+            // uses of this method mostly involve moving an existing book. That makes it
+            // at least somewhat likely that someone somewhere might already be using that
+            // instanceId in a name. So a brand new one makes for more uniqueness.
             var newPathForExtraBook = BookStorage.GetUniqueFolderPath(desiredPath);
             SIL.IO.RobustIO.MoveDirectory(oldBookFolder, newPathForExtraBook);
             var extraBookPath = Path.Combine(
