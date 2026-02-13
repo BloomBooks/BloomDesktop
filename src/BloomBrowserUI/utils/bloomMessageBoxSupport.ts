@@ -7,6 +7,49 @@ import theOneLocalizationManager from "../lib/localizationManager/localizationMa
 // This class contains static methods that simplify using the BloomMessageBox component, especially from
 // a non-React environment.
 export default class BloomMessageBoxSupport {
+    private static showSimpleMessageBox(
+        localizedMessage: string,
+        helpButtonFileId?: string,
+    ) {
+        const container = getEditTabBundleExports().getModalDialogContainer();
+        if (!container) {
+            // Fallback to alert; unlikely to happen.
+            alert(localizedMessage);
+            return;
+        }
+        theOneLocalizationManager
+            .asyncGetText("Common.OK", "OK", "")
+            .done((okText) => {
+                ReactDOM.render(
+                    React.createElement(BloomMessageBox, {
+                        messageHtml: localizedMessage,
+                        icon: "warning",
+                        rightButtonDefinitions: [
+                            {
+                                text: okText,
+                                id: "OKButton",
+                                default: true,
+                            },
+                        ],
+                        helpButtonFileId,
+                        dialogEnvironment: {
+                            dialogFrameProvidedExternally: false,
+                            initiallyOpen: false,
+                        },
+                    }),
+                    container,
+                );
+                showBloomMessageBox();
+            });
+    }
+
+    public static CreateAndShowSimpleMessageBoxWithLocalizedText(
+        localizedMessage: string,
+        helpButtonFileId?: string,
+    ) {
+        this.showSimpleMessageBox(localizedMessage, helpButtonFileId);
+    }
+
     // This method assumes we just have a message (that needs localizing), an "OK" button,
     // and an optional Help link.
     // If defined, helpButtonFileId, creates a single "Learn More" button on the left side.
@@ -21,37 +64,7 @@ export default class BloomMessageBoxSupport {
         theOneLocalizationManager
             .asyncGetText(l10nKey, englishText, l10nComment)
             .done((localizedMessage) => {
-                const container =
-                    getEditTabBundleExports().getModalDialogContainer();
-                if (!container) {
-                    // Fallback to alert; unlikely to happen.
-                    alert(localizedMessage);
-                    return;
-                }
-                theOneLocalizationManager
-                    .asyncGetText("Common.OK", "OK", "")
-                    .done((okText) => {
-                        ReactDOM.render(
-                            React.createElement(BloomMessageBox, {
-                                messageHtml: localizedMessage,
-                                icon: "warning",
-                                rightButtonDefinitions: [
-                                    {
-                                        text: okText,
-                                        id: "OKButton",
-                                        default: true,
-                                    },
-                                ],
-                                helpButtonFileId,
-                                dialogEnvironment: {
-                                    dialogFrameProvidedExternally: false,
-                                    initiallyOpen: false,
-                                },
-                            }),
-                            container,
-                        );
-                        showBloomMessageBox();
-                    });
+                this.showSimpleMessageBox(localizedMessage, helpButtonFileId);
             });
     }
 }

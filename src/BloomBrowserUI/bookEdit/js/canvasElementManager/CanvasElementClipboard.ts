@@ -21,6 +21,7 @@ import {
 import { postJson, get } from "../../../utils/bloomApi";
 import { FeatureStatus } from "../../../react_components/featureStatus";
 import { showRequiresSubscriptionDialogInEditView } from "../../../react_components/requiresSubscription";
+import BloomMessageBoxSupport from "../../../utils/bloomMessageBoxSupport";
 import {
     kBackgroundImageClass,
     kCanvasElementClass,
@@ -28,6 +29,7 @@ import {
 import { makeTargetAndMatchSize } from "../../toolbox/canvas/CanvasElementItem";
 import { getTarget } from "bloom-player";
 import $ from "jquery";
+import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
 
 export interface ICanvasElementClipboardHost {
@@ -74,6 +76,77 @@ export class CanvasElementClipboard {
         this.host = host;
     }
 
+    private static getPasteImageApiErrorMessage(
+        responseOrError: unknown,
+    ): string | undefined {
+        const getMessageFromValue = (value: unknown): string | undefined => {
+            if (typeof value === "string" && value.trim().length > 0) {
+                return value;
+            }
+
+            if (!value || typeof value !== "object") {
+                return undefined;
+            }
+
+            const valueRecord = value as Record<string, unknown>;
+            const candidateKeys = [
+                "message",
+                "Message",
+                "error",
+                "Error",
+                "text",
+            ];
+            for (const key of candidateKeys) {
+                const keyValue = valueRecord[key];
+                if (
+                    typeof keyValue === "string" &&
+                    keyValue.trim().length > 0
+                ) {
+                    return keyValue;
+                }
+            }
+
+            return undefined;
+        };
+
+        const errorLike = responseOrError as {
+            data?: unknown;
+            response?: { data?: unknown };
+            request?: { responseText?: unknown };
+            responseText?: unknown;
+        };
+
+        const messageCandidates = [
+            errorLike.response?.data,
+            errorLike.data,
+            errorLike.request?.responseText,
+            errorLike.responseText,
+        ];
+
+        for (const candidate of messageCandidates) {
+            const message = getMessageFromValue(candidate);
+            if (message) {
+                return message;
+            }
+        }
+
+        return undefined;
+    }
+
+    private static handlePasteImageApiError(responseOrError: unknown): void {
+        const message =
+            CanvasElementClipboard.getPasteImageApiErrorMessage(
+                responseOrError,
+            ) ??
+            theOneLocalizationManager.getText(
+                "EditTab.NoImageFoundOnClipboard",
+                "Before you can paste an image, copy one onto your 'clipboard', from another program.",
+            );
+        BloomMessageBoxSupport.CreateAndShowSimpleMessageBoxWithLocalizedText(
+            message,
+        );
+    }
+
     // This is called when the user pastes an image from the clipboard.
     // If there is an active canvas element that is an image, and it is empty (placeholder),
     // set its image to the pasted image.
@@ -97,15 +170,26 @@ export class CanvasElementClipboard {
             // Can't paste an image into the play tab.
             return false;
         }
+
+        this.postPasteImageRequest();
+
+        return true;
+    }
+
+    private postPasteImageRequest(): void {
         // The rest of the job happens after the C# code calls changeImage(), passing this fake ID along
         // with the rest of the information about the new image. The special ID causes a call back to
         // finishPastingImageFromClipboard() with the real image information.
-        postJson("editView/pasteImage", {
-            imageId: kMakeNewCanvasElement,
-            imageSrc: "",
-            imageIsGif: false,
-        });
-        return true;
+        postJson(
+            "editView/pasteImage",
+            {
+                imageId: kMakeNewCanvasElement,
+                imageSrc: "",
+                imageIsGif: false,
+            },
+            undefined,
+            CanvasElementClipboard.handlePasteImageApiError,
+        );
     }
 
     public finishPasteImageFromClipboard(imageInfo: IImageInfo): void {

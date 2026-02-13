@@ -1,4 +1,4 @@
-import type { BoundingBox, Frame, Locator, Page } from "playwright/test";
+import { expect, type Frame, type Locator, type Page } from "playwright/test";
 import {
     getPageFrame,
     getToolboxFrame,
@@ -8,11 +8,22 @@ import {
 } from "./canvasFrames";
 import { canvasSelectors, type CanvasPaletteItemKey } from "./canvasSelectors";
 
+type BoundingBox = {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+};
+
 // ── Types ───────────────────────────────────────────────────────────────
 
 export interface ICanvasTestContext {
     toolboxFrame: Frame;
     pageFrame: Frame;
+}
+
+export interface ICanvasPageContext extends ICanvasTestContext {
+    page: Page;
 }
 
 interface IOpenCanvasOptions {
@@ -22,6 +33,18 @@ interface IOpenCanvasOptions {
 interface IDropOffset {
     x: number;
     y: number;
+}
+
+interface ICreateCanvasElementWithRetryParams {
+    canvasPage: ICanvasPageContext;
+    paletteItem: CanvasPaletteItemKey;
+    dropOffset?: IDropOffset;
+    maxAttempts?: number;
+}
+
+export interface ICreatedCanvasElement {
+    index: number;
+    element: Locator;
 }
 
 interface IDragPaletteItemParams {
@@ -93,6 +116,55 @@ export const getCanvasElementCount = async (
     pageFrame: Frame,
 ): Promise<number> => {
     return pageFrame.locator(canvasSelectors.page.canvasElements).count();
+};
+
+export const createCanvasElementWithRetry = async (
+    params: ICreateCanvasElementWithRetryParams,
+): Promise<ICreatedCanvasElement> => {
+    const maxAttempts = params.maxAttempts ?? 3;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const beforeCount = await getCanvasElementCount(
+            params.canvasPage.pageFrame,
+        );
+
+        await dragPaletteItemToCanvas({
+            page: params.canvasPage.page,
+            toolboxFrame: params.canvasPage.toolboxFrame,
+            pageFrame: params.canvasPage.pageFrame,
+            paletteItem: params.paletteItem,
+            dropOffset: params.dropOffset,
+        });
+
+        try {
+            await expect
+                .poll(
+                    async () => {
+                        return getCanvasElementCount(
+                            params.canvasPage.pageFrame,
+                        );
+                    },
+                    {
+                        message: `Expected canvas element count to exceed ${beforeCount}`,
+                        timeout: 10000,
+                    },
+                )
+                .toBeGreaterThan(beforeCount);
+
+            return {
+                index: beforeCount,
+                element: params.canvasPage.pageFrame
+                    .locator(canvasSelectors.page.canvasElements)
+                    .nth(beforeCount),
+            };
+        } catch (error) {
+            if (attempt === maxAttempts - 1) {
+                throw error;
+            }
+        }
+    }
+
+    throw new Error("Could not create canvas element after bounded retries.");
 };
 
 const waitForCanvasElementCountBelow = async (

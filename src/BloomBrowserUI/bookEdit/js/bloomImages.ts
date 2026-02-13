@@ -22,6 +22,7 @@ import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { kPlaybackOrderContainerClass } from "../toolbox/talkingBook/audioRecording";
 import { showCopyrightAndLicenseDialog } from "../editViewFrame";
 import { getCanvasElementManager } from "../toolbox/canvas/canvasElementUtils";
+import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import $ from "jquery";
 
 // This appears to be constant even on higher dpi screens.
@@ -171,6 +172,66 @@ export function HandleImageError(event: Event) {
     // console.error("Image failed to load:", target.src);
 }
 
+function getPasteImageApiErrorMessage(
+    responseOrError: unknown,
+): string | undefined {
+    const getMessageFromValue = (value: unknown): string | undefined => {
+        if (typeof value === "string" && value.trim().length > 0) {
+            return value;
+        }
+
+        if (!value || typeof value !== "object") {
+            return undefined;
+        }
+
+        const valueRecord = value as Record<string, unknown>;
+        const candidateKeys = ["message", "Message", "error", "Error", "text"];
+        for (const key of candidateKeys) {
+            const keyValue = valueRecord[key];
+            if (typeof keyValue === "string" && keyValue.trim().length > 0) {
+                return keyValue;
+            }
+        }
+
+        return undefined;
+    };
+
+    const errorLike = responseOrError as {
+        data?: unknown;
+        response?: { data?: unknown };
+        request?: { responseText?: unknown };
+        responseText?: unknown;
+    };
+
+    const messageCandidates = [
+        errorLike.response?.data,
+        errorLike.data,
+        errorLike.request?.responseText,
+        errorLike.responseText,
+    ];
+
+    for (const candidate of messageCandidates) {
+        const message = getMessageFromValue(candidate);
+        if (message) {
+            return message;
+        }
+    }
+
+    return undefined;
+}
+
+function handlePasteImageApiError(responseOrError: unknown): void {
+    const message =
+        getPasteImageApiErrorMessage(responseOrError) ??
+        theOneLocalizationManager.getText(
+            "EditTab.NoImageFoundOnClipboard",
+            "Before you can paste an image, copy one onto your 'clipboard', from another program.",
+        );
+    BloomMessageBoxSupport.CreateAndShowSimpleMessageBoxWithLocalizedText(
+        message,
+    );
+}
+
 export function doImageCommand(
     img: HTMLElement | undefined,
     command: "copy" | "paste" | "change",
@@ -204,11 +265,19 @@ export function doImageCommand(
     // paths, we don't support metadata, they can't be cropped,...)
     const imageIsGif = topDiv?.classList.contains("bloom-gif") ?? false;
 
-    postJson("editView/" + command + "Image", {
+    const endpoint = "editView/" + command + "Image";
+    const payload = {
         imageId,
         imageSrc,
         imageIsGif,
-    });
+    };
+
+    if (command === "paste") {
+        postJson(endpoint, payload, undefined, handlePasteImageApiError);
+        return;
+    }
+
+    postJson(endpoint, payload);
 }
 
 export function handleMouseEnterBloomCanvas(bloomCanvas: HTMLElement): void {

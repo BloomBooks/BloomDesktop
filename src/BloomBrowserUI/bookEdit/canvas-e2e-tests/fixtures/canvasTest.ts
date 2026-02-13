@@ -9,6 +9,7 @@ import {
     getCanvasElementCount,
     openCanvasToolOnCurrentPage,
     removeCanvasElementsDownToCount,
+    type ICanvasPageContext,
     type ICanvasTestContext,
 } from "../helpers/canvasActions";
 
@@ -22,6 +23,7 @@ interface ICanvasWorkerFixtures {
 
 interface ICanvasFixtures {
     canvasContext: ICanvasTestContext;
+    canvasPage: ICanvasPageContext;
     toolboxFrame: Frame;
     pageFrame: Frame;
     _showTestNameBanner: void;
@@ -164,6 +166,13 @@ export const test = base.extend<ICanvasFixtures, ICanvasWorkerFixtures>({
             navigate: canvasMode === "isolated",
         });
         await applyFixture(canvasContext);
+    },
+    canvasPage: async ({ page, canvasContext }, applyFixture) => {
+        await applyFixture({
+            page,
+            toolboxFrame: canvasContext.toolboxFrame,
+            pageFrame: canvasContext.pageFrame,
+        });
     },
     toolboxFrame: async ({ canvasContext }, applyFixture) => {
         await applyFixture(canvasContext.toolboxFrame);
