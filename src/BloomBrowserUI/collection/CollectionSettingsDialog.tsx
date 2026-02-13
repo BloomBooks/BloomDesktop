@@ -1,6 +1,11 @@
 import { css } from "@emotion/react";
 import * as React from "react";
-import { ConfigrGroup, ConfigrPane } from "@sillsdev/config-r";
+import {
+    ConfigrGroup,
+    ConfigrPage,
+    ConfigrPane,
+    ConfigrStatic,
+} from "@sillsdev/config-r";
 import {
     BloomDialog,
     DialogBottomButtons,
@@ -27,6 +32,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     );
 
     const [settingsString, setSettingsString] = React.useState<string>("{}");
+    // Fetch collection settings when the dialog opens so we sync with host state.
     React.useEffect(() => {
         if (propsForBloomDialog.open)
             get("collection/settings", (result) => {
@@ -36,6 +42,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
 
     const [settingsToReturnLater, setSettingsToReturnLater] =
         React.useState("");
+    // Parse the settings JSON for Configr's initial values once it arrives.
     React.useEffect(() => {
         if (settingsString === "{}") {
             return; // leave settings as undefined
@@ -66,26 +73,64 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                         height: 100%;
                     `}
                 >
-                    <ConfigrPane
-                        label={"Collection Settings"}
-                        showSearch={true}
-                        // showJson={true} // useful for debugging
-                        initialValues={settings || {}}
-                        showAllGroups={true}
-                        //themeOverrides={lightTheme}
-                        themeOverrides={{
-                            // enhance: we'd like to just be passing `lightTheme` but at the moment that seems to clobber everything
-                            palette: {
-                                primary: { main: kBloomBlue },
-                            },
-                        }}
-                        onChange={(s) => {
-                            setSettingsToReturnLater(s);
-                        }}
-                    >
-                        <ConfigrGroup label={"Languages"}></ConfigrGroup>
-                        <ConfigrGroup label={"Appearance"}></ConfigrGroup>
-                    </ConfigrPane>
+                    {settings && (
+                        <ConfigrPane
+                            label={"Collection Settings"}
+                            showAppBar={false}
+                            showSearch={true}
+                            // showJson={true} // useful for debugging
+                            initialValues={settings}
+                            //themeOverrides={lightTheme}
+                            themeOverrides={{
+                                // enhance: we'd like to just be passing `lightTheme` but at the moment that seems to clobber everything
+                                palette: {
+                                    primary: { main: kBloomBlue },
+                                },
+                            }}
+                            onChange={(s) => {
+                                setSettingsToReturnLater(s);
+                            }}
+                        >
+                            <ConfigrPage
+                                label={"Languages"}
+                                pageKey="languages"
+                                topLevel={true}
+                            >
+                                <ConfigrGroup label={"Languages"}>
+                                    <ConfigrStatic>
+                                        <div
+                                            css={css`
+                                                font-size: 0.9em;
+                                                color: #555;
+                                            `}
+                                        >
+                                            Settings for this section are not
+                                            available yet.
+                                        </div>
+                                    </ConfigrStatic>
+                                </ConfigrGroup>
+                            </ConfigrPage>
+                            <ConfigrPage
+                                label={"Appearance"}
+                                pageKey="appearance"
+                                topLevel={true}
+                            >
+                                <ConfigrGroup label={"Appearance"}>
+                                    <ConfigrStatic>
+                                        <div
+                                            css={css`
+                                                font-size: 0.9em;
+                                                color: #555;
+                                            `}
+                                        >
+                                            Settings for this section are not
+                                            available yet.
+                                        </div>
+                                    </ConfigrStatic>
+                                </ConfigrGroup>
+                            </ConfigrPage>
+                        </ConfigrPane>
+                    )}
                 </div>
             </DialogMiddle>
             <DialogBottomButtons>
