@@ -176,6 +176,27 @@ namespace Bloom
                 //};
                 _webview.CoreWebView2.ContextMenuRequested += ContextMenuRequested;
 
+                // BL-15383: Prevent Ctrl+P from opening the WebView2 print dialog.
+                // Bloom has its own printing workflows; the embedded browser print UI is confusing.
+                _webview.CoreWebView2Controller.AcceleratorKeyPressed += (o, e) =>
+                {
+                    if (
+                        e.KeyEventKind == CoreWebView2KeyEventKind.KeyDown
+                        || e.KeyEventKind == CoreWebView2KeyEventKind.SystemKeyDown
+                    )
+                    {
+                        if (
+                            e.VirtualKey == (int)Keys.P
+                            && (e.KeyModifiers & CoreWebView2KeyModifiers.Control) != 0
+                            && (e.KeyModifiers & CoreWebView2KeyModifiers.Shift) == 0
+                            && (e.KeyModifiers & CoreWebView2KeyModifiers.Alt) == 0
+                        )
+                        {
+                            e.Handled = true;
+                        }
+                    }
+                };
+
                 // This is only really needed for the print tab. But it is harmless elsewhere.
                 // It removes some unwanted controls from the toolbar that WebView2 inserts when
                 // previewing a PDF file.
