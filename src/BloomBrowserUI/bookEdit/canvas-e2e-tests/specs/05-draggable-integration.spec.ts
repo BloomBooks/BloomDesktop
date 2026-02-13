@@ -19,20 +19,21 @@ import {
 } from "../helpers/canvasAssertions";
 import { canvasSelectors } from "../helpers/canvasSelectors";
 
-const createSpeechElement = async ({ page, toolboxFrame, pageFrame }) => {
+const createSpeechElement = async (canvasTestContext) => {
     const maxAttempts = 3;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const beforeCount = await getCanvasElementCount(pageFrame);
+        const beforeCount = await getCanvasElementCount(canvasTestContext);
         await dragPaletteItemToCanvas({
-            page,
-            toolboxFrame,
-            pageFrame,
+            canvasContext: canvasTestContext,
             paletteItem: "speech",
         });
 
         try {
-            await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+            await expectCanvasElementCountToIncrease(
+                canvasTestContext,
+                beforeCount,
+            );
             return;
         } catch (error) {
             if (attempt === maxAttempts - 1) {
@@ -45,13 +46,11 @@ const createSpeechElement = async ({ page, toolboxFrame, pageFrame }) => {
 // ── F1: Draggable attribute is not present on normal (non-game) pages ───
 
 test("F1: speech element on a normal page does not have data-draggable-id", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    await createSpeechElement({ page, toolboxFrame, pageFrame });
+    await createSpeechElement(canvasTestContext);
 
-    const active = getActiveCanvasElement(pageFrame);
+    const active = getActiveCanvasElement(canvasTestContext);
 
     // On a normal (non-game) page, elements should NOT have draggable id
     const hasDraggableId = await active.evaluate((el) =>
@@ -63,13 +62,11 @@ test("F1: speech element on a normal page does not have data-draggable-id", asyn
 // ── F-general: No targets exist on a non-game page ─────────────────────
 
 test("F-general: no draggable targets on a normal page", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    await createSpeechElement({ page, toolboxFrame, pageFrame });
+    await createSpeechElement(canvasTestContext);
 
-    const targetCount = await pageFrame
+    const targetCount = await canvasTestContext.pageFrame
         .locator(canvasSelectors.page.targetElement)
         .count();
     expect(targetCount).toBe(0);

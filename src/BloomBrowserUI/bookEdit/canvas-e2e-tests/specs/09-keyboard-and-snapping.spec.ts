@@ -22,81 +22,73 @@ import { canvasSelectors } from "../helpers/canvasSelectors";
 
 // ── Helper ──────────────────────────────────────────────────────────────
 
-const createSpeechElement = async ({ page, toolboxFrame, pageFrame }) => {
-    const beforeCount = await getCanvasElementCount(pageFrame);
+const createSpeechElement = async (canvasTestContext) => {
+    const beforeCount = await getCanvasElementCount(canvasTestContext);
     await dragPaletteItemToCanvas({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasContext: canvasTestContext,
         paletteItem: "speech",
     });
-    await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+    await expectCanvasElementCountToIncrease(canvasTestContext, beforeCount);
 
-    const createdElement = pageFrame
+    const createdElement = canvasTestContext.pageFrame
         .locator(canvasSelectors.page.canvasElements)
         .nth(beforeCount);
     await createdElement.waitFor({ state: "visible", timeout: 10000 });
 
-    await expectAnyCanvasElementActive(pageFrame);
+    await expectAnyCanvasElementActive(canvasTestContext);
     return createdElement;
 };
 
-const createImageElement = async ({ page, toolboxFrame, pageFrame }) => {
-    const beforeCount = await getCanvasElementCount(pageFrame);
+const createImageElement = async (canvasTestContext) => {
+    const beforeCount = await getCanvasElementCount(canvasTestContext);
     await dragPaletteItemToCanvas({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasContext: canvasTestContext,
         paletteItem: "image",
     });
-    await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+    await expectCanvasElementCountToIncrease(canvasTestContext, beforeCount);
 
-    const createdElement = pageFrame
+    const createdElement = canvasTestContext.pageFrame
         .locator(canvasSelectors.page.canvasElements)
         .nth(beforeCount);
     await createdElement.waitFor({ state: "visible", timeout: 10000 });
 
-    await expectAnyCanvasElementActive(pageFrame);
+    await expectAnyCanvasElementActive(canvasTestContext);
     return createdElement;
 };
 
 // ── E1: Arrow key moves element by grid step ────────────────────────────
 
 test("E1: arrow-right moves the active element", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    await createSpeechElement({ page, toolboxFrame, pageFrame });
+    await createSpeechElement(canvasTestContext);
 
-    const active = getActiveCanvasElement(pageFrame);
+    const active = getActiveCanvasElement(canvasTestContext);
     await active.click();
 
     // Press arrow right multiple times to accumulate visible movement
     for (let i = 0; i < 3; i++) {
-        await keyboardNudge(page, "ArrowRight");
+        await keyboardNudge(canvasTestContext, "ArrowRight");
     }
 
-    await expectAnyCanvasElementActive(pageFrame);
+    await expectAnyCanvasElementActive(canvasTestContext);
     await expectElementVisible(active);
     await expectElementHasPositiveSize(active);
 });
 
 test("E1: arrow-down moves the active element", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    await createSpeechElement({ page, toolboxFrame, pageFrame });
+    await createSpeechElement(canvasTestContext);
 
-    const active = getActiveCanvasElement(pageFrame);
+    const active = getActiveCanvasElement(canvasTestContext);
     await active.click();
 
     for (let i = 0; i < 3; i++) {
-        await keyboardNudge(page, "ArrowDown");
+        await keyboardNudge(canvasTestContext, "ArrowDown");
     }
 
-    await expectAnyCanvasElementActive(pageFrame);
+    await expectAnyCanvasElementActive(canvasTestContext);
     await expectElementVisible(active);
     await expectElementHasPositiveSize(active);
 });
@@ -104,21 +96,21 @@ test("E1: arrow-down moves the active element", async ({
 // ── E2: Ctrl+arrow for precise 1px movement ────────────────────────────
 
 test("E2: Ctrl+arrow-right moves by small increment", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    await createSpeechElement({ page, toolboxFrame, pageFrame });
+    await createSpeechElement(canvasTestContext);
 
-    const active = getActiveCanvasElement(pageFrame);
+    const active = getActiveCanvasElement(canvasTestContext);
     await active.click();
 
     // Ctrl+arrow should move by 1px
     for (let i = 0; i < 5; i++) {
-        await keyboardNudge(page, "ArrowRight", { ctrl: true });
+        await keyboardNudge(canvasTestContext, "ArrowRight", {
+            ctrl: true,
+        });
     }
 
-    await expectAnyCanvasElementActive(pageFrame);
+    await expectAnyCanvasElementActive(canvasTestContext);
     await expectElementVisible(active);
     await expectElementHasPositiveSize(active);
 });
@@ -126,17 +118,15 @@ test("E2: Ctrl+arrow-right moves by small increment", async ({
 // ── E4: Position is grid-snapped after arrow key movement ───────────────
 
 test("E4: position is grid-snapped after arrow key movement", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    await createSpeechElement({ page, toolboxFrame, pageFrame });
+    await createSpeechElement(canvasTestContext);
 
-    const active = getActiveCanvasElement(pageFrame);
+    const active = getActiveCanvasElement(canvasTestContext);
 
     // Arrow keys use grid=10 by default
-    await keyboardNudge(page, "ArrowRight");
-    await keyboardNudge(page, "ArrowDown");
+    await keyboardNudge(canvasTestContext, "ArrowRight");
+    await keyboardNudge(canvasTestContext, "ArrowDown");
 
     await expectPositionGridSnapped(active, 10);
 });
@@ -144,17 +134,11 @@ test("E4: position is grid-snapped after arrow key movement", async ({
 // ── E3: Shift constrains drag axis ──────────────────────────────────
 
 test("E3: Shift+drag constrains movement to primary axis", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    const createdElement = await createImageElement({
-        page,
-        toolboxFrame,
-        pageFrame,
-    });
+    const createdElement = await createImageElement(canvasTestContext);
 
-    await page.keyboard.press("Escape");
+    await canvasTestContext.page.keyboard.press("Escape");
 
     const maxAttempts = 3;
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -165,7 +149,7 @@ test("E3: Shift+drag constrains movement to primary axis", async ({
             );
         }
 
-        await dragActiveCanvasElementByOffset(page, pageFrame, 60, 10, {
+        await dragActiveCanvasElementByOffset(canvasTestContext, 60, 10, {
             shift: true,
             element: createdElement,
         });
@@ -186,7 +170,7 @@ test("E3: Shift+drag constrains movement to primary axis", async ({
             return;
         }
 
-        await page.keyboard.press("Escape");
+        await canvasTestContext.page.keyboard.press("Escape");
     }
 
     throw new Error(

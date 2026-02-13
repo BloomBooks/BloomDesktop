@@ -15,6 +15,20 @@ type BoundingBox = {
     height: number;
 };
 
+type ICanvasElementManagerForEval = {
+    setActiveElement: (element: HTMLElement | undefined) => void;
+    deleteCurrentCanvasElement: () => void;
+    duplicateCanvasElement: () => void;
+};
+
+type IEditablePageBundleWindow = Window & {
+    editablePageBundle?: {
+        getTheOneCanvasElementManager?: () =>
+            | ICanvasElementManagerForEval
+            | undefined;
+    };
+};
+
 // ── Types ───────────────────────────────────────────────────────────────
 
 export interface ICanvasTestContext {
@@ -26,33 +40,14 @@ export interface ICanvasPageContext extends ICanvasTestContext {
     page: Page;
 }
 
-interface IOpenCanvasOptions {
-    navigate?: boolean;
-}
-
 interface IDropOffset {
     x: number;
     y: number;
 }
 
-interface ICreateCanvasElementWithRetryParams {
-    canvasPage: ICanvasPageContext;
-    paletteItem: CanvasPaletteItemKey;
-    dropOffset?: IDropOffset;
-    maxAttempts?: number;
-}
-
 export interface ICreatedCanvasElement {
     index: number;
     element: Locator;
-}
-
-interface IDragPaletteItemParams {
-    page: Page;
-    toolboxFrame: Frame;
-    pageFrame: Frame;
-    paletteItem: CanvasPaletteItemKey;
-    dropOffset?: IDropOffset;
 }
 
 type ResizeCorner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
@@ -94,8 +89,8 @@ const sideOffsets: Record<ResizeSide, { xFrac: number; yFrac: number }> = {
 
 export const openCanvasToolOnCurrentPage = async (
     page: Page,
-    options?: IOpenCanvasOptions,
-): Promise<ICanvasTestContext> => {
+    options?: { navigate?: boolean },
+): Promise<ICanvasPageContext> => {
     if (options?.navigate ?? true) {
         await gotoCurrentPage(page);
     }
@@ -105,6 +100,7 @@ export const openCanvasToolOnCurrentPage = async (
     await waitForCanvasReady(pageFrame);
 
     return {
+        page,
         toolboxFrame,
         pageFrame,
     };
@@ -113,25 +109,26 @@ export const openCanvasToolOnCurrentPage = async (
 // ── Element count ───────────────────────────────────────────────────────
 
 export const getCanvasElementCount = async (
-    pageFrame: Frame,
+    canvasContext: ICanvasTestContext,
 ): Promise<number> => {
-    return pageFrame.locator(canvasSelectors.page.canvasElements).count();
+    return canvasContext.pageFrame
+        .locator(canvasSelectors.page.canvasElements)
+        .count();
 };
 
-export const createCanvasElementWithRetry = async (
-    params: ICreateCanvasElementWithRetryParams,
-): Promise<ICreatedCanvasElement> => {
+export const createCanvasElementWithRetry = async (params: {
+    canvasContext: ICanvasPageContext;
+    paletteItem: CanvasPaletteItemKey;
+    dropOffset?: IDropOffset;
+    maxAttempts?: number;
+}): Promise<ICreatedCanvasElement> => {
     const maxAttempts = params.maxAttempts ?? 3;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const beforeCount = await getCanvasElementCount(
-            params.canvasPage.pageFrame,
-        );
+        const beforeCount = await getCanvasElementCount(params.canvasContext);
 
         await dragPaletteItemToCanvas({
-            page: params.canvasPage.page,
-            toolboxFrame: params.canvasPage.toolboxFrame,
-            pageFrame: params.canvasPage.pageFrame,
+            canvasContext: params.canvasContext,
             paletteItem: params.paletteItem,
             dropOffset: params.dropOffset,
         });
@@ -140,9 +137,7 @@ export const createCanvasElementWithRetry = async (
             await expect
                 .poll(
                     async () => {
-                        return getCanvasElementCount(
-                            params.canvasPage.pageFrame,
-                        );
+                        return getCanvasElementCount(params.canvasContext);
                     },
                     {
                         message: `Expected canvas element count to exceed ${beforeCount}`,
@@ -153,7 +148,7 @@ export const createCanvasElementWithRetry = async (
 
             return {
                 index: beforeCount,
-                element: params.canvasPage.pageFrame
+                element: params.canvasContext.pageFrame
                     .locator(canvasSelectors.page.canvasElements)
                     .nth(beforeCount),
             };
@@ -168,26 +163,26 @@ export const createCanvasElementWithRetry = async (
 };
 
 const waitForCanvasElementCountBelow = async (
-    pageFrame: Frame,
+    canvasContext: ICanvasTestContext,
     upperExclusive: number,
     timeoutMs = 2500,
 ): Promise<boolean> => {
     const endTime = Date.now() + timeoutMs;
     while (Date.now() < endTime) {
-        const count = await getCanvasElementCount(pageFrame);
+        const count = await getCanvasElementCount(canvasContext);
         if (count < upperExclusive) {
             return true;
         }
-        await pageFrame.page().waitForTimeout(100);
+        await canvasContext.pageFrame.page().waitForTimeout(100);
     }
     return false;
 };
 
 const deleteLastCanvasElementViaManager = async (
-    pageFrame: Frame,
+    canvasContext: ICanvasTestContext,
 ): Promise<void> => {
-    await pageFrame.evaluate((selector: string) => {
-        const bundle = (window as any).editablePageBundle;
+    await canvasContext.pageFrame.evaluate((selector: string) => {
+        const bundle = (window as IEditablePageBundleWindow).editablePageBundle;
         const manager = bundle?.getTheOneCanvasElementManager?.();
         if (!manager) {
             throw new Error("CanvasElementManager is not available.");
@@ -211,20 +206,20 @@ const deleteLastCanvasElementViaManager = async (
  * Intended for test cleanup in shared-page mode.
  */
 export const removeCanvasElementsDownToCount = async (
-    pageFrame: Frame,
+    canvasContext: ICanvasTestContext,
     targetCount: number,
 ): Promise<void> => {
     const maxAttempts = 200;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const beforeCount = await getCanvasElementCount(pageFrame);
+        const beforeCount = await getCanvasElementCount(canvasContext);
         if (beforeCount <= targetCount) {
             return;
         }
 
-        await deleteLastCanvasElementViaManager(pageFrame);
+        await deleteLastCanvasElementViaManager(canvasContext);
 
-        if (await waitForCanvasElementCountBelow(pageFrame, beforeCount)) {
+        if (await waitForCanvasElementCountBelow(canvasContext, beforeCount)) {
             continue;
         }
 
@@ -239,10 +234,10 @@ export const removeCanvasElementsDownToCount = async (
 };
 
 export const duplicateActiveCanvasElementViaManager = async (
-    pageFrame: Frame,
+    canvasContext: ICanvasTestContext,
 ): Promise<void> => {
-    await pageFrame.evaluate(() => {
-        const bundle = (window as any).editablePageBundle;
+    await canvasContext.pageFrame.evaluate(() => {
+        const bundle = (window as IEditablePageBundleWindow).editablePageBundle;
         const manager = bundle?.getTheOneCanvasElementManager?.();
         if (!manager) {
             throw new Error("CanvasElementManager is not available.");
@@ -252,15 +247,28 @@ export const duplicateActiveCanvasElementViaManager = async (
 };
 
 export const deleteActiveCanvasElementViaManager = async (
-    pageFrame: Frame,
+    canvasContext: ICanvasTestContext,
 ): Promise<void> => {
-    await pageFrame.evaluate(() => {
-        const bundle = (window as any).editablePageBundle;
+    await canvasContext.pageFrame.evaluate(() => {
+        const bundle = (window as IEditablePageBundleWindow).editablePageBundle;
         const manager = bundle?.getTheOneCanvasElementManager?.();
         if (!manager) {
             throw new Error("CanvasElementManager is not available.");
         }
         manager.deleteCurrentCanvasElement();
+    });
+};
+
+export const clearActiveCanvasElementViaManager = async (
+    canvasContext: ICanvasTestContext,
+): Promise<void> => {
+    await canvasContext.pageFrame.evaluate(() => {
+        const bundle = (window as IEditablePageBundleWindow).editablePageBundle;
+        const manager = bundle?.getTheOneCanvasElementManager?.();
+        if (!manager) {
+            throw new Error("CanvasElementManager is not available.");
+        }
+        manager.setActiveElement(undefined);
     });
 };
 
@@ -271,10 +279,10 @@ export const deleteActiveCanvasElementViaManager = async (
  * palette items become visible. Idempotent if already expanded.
  */
 export const expandNavigationSection = async (
-    toolboxFrame: Frame,
+    canvasContext: ICanvasTestContext,
 ): Promise<void> => {
     // Check if a navigation-only palette item is already visible
-    const navItem = toolboxFrame
+    const navItem = canvasContext.toolboxFrame
         .locator(
             canvasSelectors.toolbox.paletteItems["navigation-image-button"],
         )
@@ -283,19 +291,21 @@ export const expandNavigationSection = async (
         return;
     }
     // Click the triangle collapse toggle
-    const toggle = toolboxFrame
+    const toggle = canvasContext.toolboxFrame
         .locator(canvasSelectors.toolbox.navigationCollapseToggle)
         .first();
     await toggle.click();
     await navItem.waitFor({ state: "visible", timeout: 5000 });
 };
 
-export const dragPaletteItemToCanvas = async (
-    params: IDragPaletteItemParams,
-): Promise<void> => {
+export const dragPaletteItemToCanvas = async (params: {
+    canvasContext: ICanvasPageContext;
+    paletteItem: CanvasPaletteItemKey;
+    dropOffset?: IDropOffset;
+}): Promise<void> => {
     const paletteSelector =
         canvasSelectors.toolbox.paletteItems[params.paletteItem];
-    const source = params.toolboxFrame
+    const source = params.canvasContext.toolboxFrame
         .locator(`${paletteSelector}:visible`)
         .first();
     await source.waitFor({
@@ -303,7 +313,7 @@ export const dragPaletteItemToCanvas = async (
         timeout: 10000,
     });
 
-    const canvas = params.pageFrame
+    const canvas = params.canvasContext.pageFrame
         .locator(canvasSelectors.page.canvas)
         .first();
     await canvas.waitFor({
@@ -326,19 +336,21 @@ export const dragPaletteItemToCanvas = async (
     const targetX = canvasBox.x + targetOffsetX;
     const targetY = canvasBox.y + targetOffsetY;
 
-    await params.page.mouse.move(sourceX, sourceY);
-    await params.page.mouse.down();
-    await params.page.mouse.move(targetX, targetY, { steps: 16 });
-    await params.page.mouse.up();
+    await params.canvasContext.page.mouse.move(sourceX, sourceY);
+    await params.canvasContext.page.mouse.down();
+    await params.canvasContext.page.mouse.move(targetX, targetY, {
+        steps: 16,
+    });
+    await params.canvasContext.page.mouse.up();
 };
 
 // ── Selection ───────────────────────────────────────────────────────────
 
 export const selectCanvasElementAtIndex = async (
-    pageFrame: Frame,
+    canvasContext: ICanvasTestContext,
     index: number,
 ): Promise<Locator> => {
-    const element = pageFrame
+    const element = canvasContext.pageFrame
         .locator(canvasSelectors.page.canvasElements)
         .nth(index);
     await element.waitFor({
@@ -349,21 +361,24 @@ export const selectCanvasElementAtIndex = async (
     return element;
 };
 
-export const getActiveCanvasElement = (pageFrame: Frame): Locator => {
-    return pageFrame.locator(canvasSelectors.page.activeCanvasElement).first();
+export const getActiveCanvasElement = (
+    canvasContext: ICanvasTestContext,
+): Locator => {
+    return canvasContext.pageFrame
+        .locator(canvasSelectors.page.activeCanvasElement)
+        .first();
 };
 
 // ── Move by mouse drag ──────────────────────────────────────────────────
 
 export const dragActiveCanvasElementByOffset = async (
-    page: Page,
-    pageFrame: Frame,
+    canvasContext: ICanvasPageContext,
     dx: number,
     dy: number,
     modifiers?: { shift?: boolean; element?: Locator },
 ): Promise<{ activeElement: Locator; beforeBounds: BoundingBox }> => {
     const activeElement =
-        modifiers?.element ?? getActiveCanvasElement(pageFrame);
+        modifiers?.element ?? getActiveCanvasElement(canvasContext);
     await activeElement.waitFor({
         state: "visible",
         timeout: 10000,
@@ -423,18 +438,20 @@ export const dragActiveCanvasElementByOffset = async (
         }
     }
 
-    await page.mouse.move(startX, startY);
+    await canvasContext.page.mouse.move(startX, startY);
     if (modifiers?.shift) {
-        await page.keyboard.down("Shift");
+        await canvasContext.page.keyboard.down("Shift");
     }
 
     try {
-        await page.mouse.down();
-        await page.mouse.move(startX + dx, startY + dy, { steps: 10 });
-        await page.mouse.up();
+        await canvasContext.page.mouse.down();
+        await canvasContext.page.mouse.move(startX + dx, startY + dy, {
+            steps: 10,
+        });
+        await canvasContext.page.mouse.up();
     } finally {
         if (modifiers?.shift) {
-            await page.keyboard.up("Shift");
+            await canvasContext.page.keyboard.up("Shift");
         }
     }
 
@@ -447,14 +464,13 @@ export const dragActiveCanvasElementByOffset = async (
 // ── Resize from corner ──────────────────────────────────────────────────
 
 export const resizeActiveElementFromCorner = async (
-    page: Page,
-    pageFrame: Frame,
+    canvasContext: ICanvasPageContext,
     corner: ResizeCorner,
     dx: number,
     dy: number,
     modifiers?: { shift?: boolean },
 ): Promise<{ activeElement: Locator; beforeBounds: BoundingBox }> => {
-    const activeElement = getActiveCanvasElement(pageFrame);
+    const activeElement = getActiveCanvasElement(canvasContext);
     await activeElement.waitFor({ state: "visible", timeout: 10000 });
 
     const beforeBounds = await getRequiredBoundingBox(
@@ -466,15 +482,17 @@ export const resizeActiveElementFromCorner = async (
     const handleX = beforeBounds.x + beforeBounds.width * xFrac;
     const handleY = beforeBounds.y + beforeBounds.height * yFrac;
 
-    await page.mouse.move(handleX, handleY);
+    await canvasContext.page.mouse.move(handleX, handleY);
     if (modifiers?.shift) {
-        await page.keyboard.down("Shift");
+        await canvasContext.page.keyboard.down("Shift");
     }
-    await page.mouse.down();
-    await page.mouse.move(handleX + dx, handleY + dy, { steps: 10 });
-    await page.mouse.up();
+    await canvasContext.page.mouse.down();
+    await canvasContext.page.mouse.move(handleX + dx, handleY + dy, {
+        steps: 10,
+    });
+    await canvasContext.page.mouse.up();
     if (modifiers?.shift) {
-        await page.keyboard.up("Shift");
+        await canvasContext.page.keyboard.up("Shift");
     }
 
     return { activeElement, beforeBounds };
@@ -483,8 +501,7 @@ export const resizeActiveElementFromCorner = async (
 // ── Resize from side ────────────────────────────────────────────────────
 
 export const resizeActiveElementFromSide = async (
-    page: Page,
-    pageFrame: Frame,
+    canvasContext: ICanvasPageContext,
     side: ResizeSide,
     delta: number,
     modifiers?: { shift?: boolean },
@@ -492,7 +509,7 @@ export const resizeActiveElementFromSide = async (
     const dx = side === "left" || side === "right" ? delta : 0;
     const dy = side === "top" || side === "bottom" ? delta : 0;
 
-    const activeElement = getActiveCanvasElement(pageFrame);
+    const activeElement = getActiveCanvasElement(canvasContext);
     await activeElement.waitFor({ state: "visible", timeout: 10000 });
 
     const beforeBounds = await getRequiredBoundingBox(
@@ -504,15 +521,17 @@ export const resizeActiveElementFromSide = async (
     const handleX = beforeBounds.x + beforeBounds.width * xFrac;
     const handleY = beforeBounds.y + beforeBounds.height * yFrac;
 
-    await page.mouse.move(handleX, handleY);
+    await canvasContext.page.mouse.move(handleX, handleY);
     if (modifiers?.shift) {
-        await page.keyboard.down("Shift");
+        await canvasContext.page.keyboard.down("Shift");
     }
-    await page.mouse.down();
-    await page.mouse.move(handleX + dx, handleY + dy, { steps: 10 });
-    await page.mouse.up();
+    await canvasContext.page.mouse.down();
+    await canvasContext.page.mouse.move(handleX + dx, handleY + dy, {
+        steps: 10,
+    });
+    await canvasContext.page.mouse.up();
     if (modifiers?.shift) {
-        await page.keyboard.up("Shift");
+        await canvasContext.page.keyboard.up("Shift");
     }
 
     return { activeElement, beforeBounds };
@@ -521,7 +540,7 @@ export const resizeActiveElementFromSide = async (
 // ── Keyboard nudge ──────────────────────────────────────────────────────
 
 export const keyboardNudge = async (
-    page: Page,
+    canvasContext: ICanvasPageContext,
     key: "ArrowUp" | "ArrowDown" | "ArrowLeft" | "ArrowRight",
     modifiers?: { ctrl?: boolean; shift?: boolean },
 ): Promise<void> => {
@@ -530,15 +549,15 @@ export const keyboardNudge = async (
     if (modifiers?.shift) mods.push("Shift");
 
     const combo = mods.length > 0 ? `${mods.join("+")}+${key}` : key;
-    await page.keyboard.press(combo);
+    await canvasContext.page.keyboard.press(combo);
 };
 
 // ── Context menu / toolbar ──────────────────────────────────────────────
 
 export const openContextMenuFromToolbar = async (
-    pageFrame: Frame,
+    canvasContext: ICanvasTestContext,
 ): Promise<void> => {
-    const controls = pageFrame
+    const controls = canvasContext.pageFrame
         .locator(canvasSelectors.page.contextControlsVisible)
         .first();
     await controls.waitFor({
@@ -549,7 +568,7 @@ export const openContextMenuFromToolbar = async (
     const menuButton = controls.locator("button").last();
     await menuButton.click();
 
-    await pageFrame
+    await canvasContext.pageFrame
         .locator(canvasSelectors.page.contextMenuListVisible)
         .first()
         .waitFor({
@@ -559,13 +578,13 @@ export const openContextMenuFromToolbar = async (
 };
 
 export const clickContextMenuItem = async (
-    pageFrame: Frame,
+    canvasContext: ICanvasTestContext,
     label: string,
 ): Promise<void> => {
     const maxAttempts = 3;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const menuItem = pageFrame
+        const menuItem = canvasContext.pageFrame
             .locator(
                 `${canvasSelectors.page.contextMenuListVisible} li:has-text("${label}")`,
             )
@@ -582,15 +601,54 @@ export const clickContextMenuItem = async (
             if (attempt === maxAttempts - 1) {
                 throw error;
             }
-            await openContextMenuFromToolbar(pageFrame);
+            await openContextMenuFromToolbar(canvasContext);
         }
     }
 };
 
+export const dismissCanvasDialogsIfPresent = async (
+    canvasContext: ICanvasPageContext,
+): Promise<void> => {
+    const tryDismissInScope = async (root: Page | Frame): Promise<boolean> => {
+        const dialog = root.locator(".MuiDialog-root:visible").first();
+        if (!(await dialog.isVisible().catch(() => false))) {
+            return false;
+        }
+
+        const closeButton = dialog
+            .locator(
+                'button:has-text("OK"), button:has-text("Close"), button:has-text("Cancel")',
+            )
+            .first();
+
+        if (await closeButton.isVisible().catch(() => false)) {
+            await closeButton.click({ force: true }).catch(async () => {
+                await canvasContext.page.keyboard.press("Escape");
+            });
+        } else {
+            await canvasContext.page.keyboard.press("Escape");
+        }
+
+        await dialog
+            .waitFor({ state: "hidden", timeout: 2000 })
+            .catch(() => undefined);
+        return true;
+    };
+
+    for (let attempt = 0; attempt < 6; attempt++) {
+        const dismissedTop = await tryDismissInScope(canvasContext.page);
+        const dismissedFrame = await tryDismissInScope(canvasContext.pageFrame);
+        if (!dismissedTop && !dismissedFrame) {
+            return;
+        }
+        await canvasContext.page.waitForTimeout(100);
+    }
+};
+
 export const getContextToolbarButtonCount = async (
-    pageFrame: Frame,
+    canvasContext: ICanvasTestContext,
 ): Promise<number> => {
-    const controls = pageFrame
+    const controls = canvasContext.pageFrame
         .locator(canvasSelectors.page.contextControlsVisible)
         .first();
     await controls.waitFor({ state: "visible", timeout: 10000 });
@@ -600,23 +658,23 @@ export const getContextToolbarButtonCount = async (
 // ── Toolbox attribute controls ──────────────────────────────────────────
 
 export const setStyleDropdown = async (
-    toolboxFrame: Frame,
+    canvasContext: ICanvasTestContext,
     value: string,
 ): Promise<void> => {
     const maxAttempts = 3;
     const normalizedTarget = value.toLowerCase();
-    const styleInput = toolboxFrame
+    const styleInput = canvasContext.toolboxFrame
         .locator("#canvasElement-style-dropdown")
         .first();
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const dropdown = toolboxFrame
+        const dropdown = canvasContext.toolboxFrame
             .locator("#mui-component-select-style")
             .first();
         await dropdown.waitFor({ state: "visible", timeout: 5000 });
         await dropdown.click({ force: true });
 
-        const option = toolboxFrame
+        const option = canvasContext.toolboxFrame
             .locator(
                 `.canvasElement-options-dropdown-menu li[data-value="${value}"]`,
             )
@@ -639,7 +697,7 @@ export const setStyleDropdown = async (
             if (selectedValue === normalizedTarget) {
                 return;
             }
-            await toolboxFrame.page().waitForTimeout(100);
+            await canvasContext.toolboxFrame.page().waitForTimeout(100);
         }
 
         if (attempt === maxAttempts - 1) {
@@ -653,10 +711,10 @@ export const setStyleDropdown = async (
 };
 
 export const setShowTail = async (
-    toolboxFrame: Frame,
+    canvasContext: ICanvasTestContext,
     enabled: boolean,
 ): Promise<void> => {
-    const checkbox = toolboxFrame
+    const checkbox = canvasContext.toolboxFrame
         .locator(canvasSelectors.toolbox.showTailCheckbox)
         .first();
     await checkbox.waitFor({ state: "visible", timeout: 5000 });
@@ -667,10 +725,10 @@ export const setShowTail = async (
 };
 
 export const setRoundedCorners = async (
-    toolboxFrame: Frame,
+    canvasContext: ICanvasTestContext,
     enabled: boolean,
 ): Promise<void> => {
-    const checkbox = toolboxFrame
+    const checkbox = canvasContext.toolboxFrame
         .locator(canvasSelectors.toolbox.roundedCornersCheckbox)
         .first();
     await checkbox.waitFor({ state: "visible", timeout: 5000 });
@@ -680,8 +738,10 @@ export const setRoundedCorners = async (
     }
 };
 
-export const clickTextColorBar = async (toolboxFrame: Frame): Promise<void> => {
-    const bar = toolboxFrame
+export const clickTextColorBar = async (
+    canvasContext: ICanvasTestContext,
+): Promise<void> => {
+    const bar = canvasContext.toolboxFrame
         .locator(canvasSelectors.toolbox.textColorBar)
         .first();
     await bar.waitFor({ state: "visible", timeout: 5000 });
@@ -689,9 +749,9 @@ export const clickTextColorBar = async (toolboxFrame: Frame): Promise<void> => {
 };
 
 export const clickBackgroundColorBar = async (
-    toolboxFrame: Frame,
+    canvasContext: ICanvasTestContext,
 ): Promise<void> => {
-    const bar = toolboxFrame
+    const bar = canvasContext.toolboxFrame
         .locator(canvasSelectors.toolbox.backgroundColorBar)
         .first();
     await bar.waitFor({ state: "visible", timeout: 5000 });
@@ -699,10 +759,10 @@ export const clickBackgroundColorBar = async (
 };
 
 export const setOutlineColorDropdown = async (
-    toolboxFrame: Frame,
+    canvasContext: ICanvasTestContext,
     value: string,
 ): Promise<void> => {
-    const input = toolboxFrame
+    const input = canvasContext.toolboxFrame
         .locator("#canvasElement-outlineColor-dropdown")
         .first();
     await input.waitFor({ state: "visible", timeout: 5000 });
@@ -714,13 +774,13 @@ export const setOutlineColorDropdown = async (
 
     const maxAttempts = 4;
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const dropdown = toolboxFrame
+        const dropdown = canvasContext.toolboxFrame
             .locator("#mui-component-select-outlineColor")
             .first();
         await dropdown.waitFor({ state: "visible", timeout: 5000 });
         await dropdown.click({ force: true });
 
-        const option = toolboxFrame
+        const option = canvasContext.toolboxFrame
             .locator(
                 `.canvasElement-options-dropdown-menu li[data-value="${value}"]`,
             )
@@ -743,7 +803,7 @@ export const setOutlineColorDropdown = async (
             if (updatedValue === normalizedTarget) {
                 return;
             }
-            await toolboxFrame.page().waitForTimeout(100);
+            await canvasContext.toolboxFrame.page().waitForTimeout(100);
         }
     }
 
@@ -759,10 +819,10 @@ export const setOutlineColorDropdown = async (
  * (excluding the menu button which is always last).
  */
 export const clickToolbarButtonByIndex = async (
-    pageFrame: Frame,
+    canvasContext: ICanvasTestContext,
     buttonIndex: number,
 ): Promise<void> => {
-    const controls = pageFrame
+    const controls = canvasContext.pageFrame
         .locator(canvasSelectors.page.contextControlsVisible)
         .first();
     await controls.waitFor({ state: "visible", timeout: 10000 });
@@ -780,12 +840,11 @@ export const clickToolbarButtonByIndex = async (
  * coordinate space.
  */
 export const pageFrameToTopLevel = async (
-    page: Page,
-    pageFrame: Frame,
+    canvasContext: ICanvasPageContext,
     x: number,
     y: number,
 ): Promise<{ x: number; y: number }> => {
-    const frameElement = await pageFrame.frameElement();
+    const frameElement = await canvasContext.pageFrame.frameElement();
     const frameBox = await frameElement.boundingBox();
     if (!frameBox) {
         throw new Error("Could not get page iframe bounding box.");

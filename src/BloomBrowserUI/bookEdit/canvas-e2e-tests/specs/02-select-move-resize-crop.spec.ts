@@ -22,30 +22,26 @@ import {
 
 // ── Helper: create a speech element and ensure it's active ──────────────
 
-const createSpeechElement = async ({ page, toolboxFrame, pageFrame }) => {
-    const beforeCount = await getCanvasElementCount(pageFrame);
+const createSpeechElement = async (canvasTestContext) => {
+    const beforeCount = await getCanvasElementCount(canvasTestContext);
     await dragPaletteItemToCanvas({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasContext: canvasTestContext,
         paletteItem: "speech",
     });
-    await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
-    await expectAnyCanvasElementActive(pageFrame);
+    await expectCanvasElementCountToIncrease(canvasTestContext, beforeCount);
+    await expectAnyCanvasElementActive(canvasTestContext);
 };
 
 // ── B1: Select and move element with mouse drag ────────────────────────
 
 test("B1: move a canvas element by mouse drag", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    await createSpeechElement({ page, toolboxFrame, pageFrame });
+    await createSpeechElement(canvasTestContext);
 
-    await dragActiveCanvasElementByOffset(page, pageFrame, 60, 40);
+    await dragActiveCanvasElementByOffset(canvasTestContext, 60, 40);
 
-    const active = getActiveCanvasElement(pageFrame);
+    const active = getActiveCanvasElement(canvasTestContext);
     await expectElementVisible(active);
     await expectElementHasPositiveSize(active);
 });
@@ -60,16 +56,11 @@ const corners = [
 ] as const;
 
 for (const corner of corners) {
-    test(`B2: resize from ${corner} corner`, async ({
-        page,
-        toolboxFrame,
-        pageFrame,
-    }) => {
-        await createSpeechElement({ page, toolboxFrame, pageFrame });
+    test(`B2: resize from ${corner} corner`, async ({ canvasTestContext }) => {
+        await createSpeechElement(canvasTestContext);
 
         const { activeElement } = await resizeActiveElementFromCorner(
-            page,
-            pageFrame,
+            canvasTestContext,
             corner,
             30,
             20,
@@ -82,16 +73,11 @@ for (const corner of corners) {
 
 // ── B3: Resize from side handles ────────────────────────────────────────
 
-test("B3: resize from right side handle", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
-}) => {
-    await createSpeechElement({ page, toolboxFrame, pageFrame });
+test("B3: resize from right side handle", async ({ canvasTestContext }) => {
+    await createSpeechElement(canvasTestContext);
 
     const { activeElement } = await resizeActiveElementFromSide(
-        page,
-        pageFrame,
+        canvasTestContext,
         "right",
         40,
     );
@@ -100,16 +86,11 @@ test("B3: resize from right side handle", async ({
     await expectElementHasPositiveSize(activeElement);
 });
 
-test("B3: resize from bottom side handle", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
-}) => {
-    await createSpeechElement({ page, toolboxFrame, pageFrame });
+test("B3: resize from bottom side handle", async ({ canvasTestContext }) => {
+    await createSpeechElement(canvasTestContext);
 
     const { activeElement } = await resizeActiveElementFromSide(
-        page,
-        pageFrame,
+        canvasTestContext,
         "bottom",
         30,
     );
@@ -121,47 +102,40 @@ test("B3: resize from bottom side handle", async ({
 // ── B5: Selection frame follows active element ──────────────────────────
 
 test("B5: context controls are visible for selected element", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    await createSpeechElement({ page, toolboxFrame, pageFrame });
+    await createSpeechElement(canvasTestContext);
 
-    await expectContextControlsVisible(pageFrame);
+    await expectContextControlsVisible(canvasTestContext);
 });
 
 // ── B6: Manipulated element remains visible and valid ───────────────────
 
 test("B6: element remains visible and valid after move", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    await createSpeechElement({ page, toolboxFrame, pageFrame });
+    await createSpeechElement(canvasTestContext);
 
-    await dragActiveCanvasElementByOffset(page, pageFrame, 50, 30);
+    await dragActiveCanvasElementByOffset(canvasTestContext, 50, 30);
 
-    const active = getActiveCanvasElement(pageFrame);
+    const active = getActiveCanvasElement(canvasTestContext);
     await expectElementVisible(active);
     await expectElementHasPositiveSize(active);
 });
 
 test("B6: element remains visible and valid after resize", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    await createSpeechElement({ page, toolboxFrame, pageFrame });
+    await createSpeechElement(canvasTestContext);
 
     await resizeActiveElementFromCorner(
-        page,
-        pageFrame,
+        canvasTestContext,
         "bottom-right",
         40,
         30,
     );
 
-    const active = getActiveCanvasElement(pageFrame);
+    const active = getActiveCanvasElement(canvasTestContext);
     await expectElementVisible(active);
     await expectElementHasPositiveSize(active);
 });

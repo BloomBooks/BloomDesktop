@@ -6,11 +6,12 @@ import {
     type TestInfo,
 } from "playwright/test";
 import {
+    clearActiveCanvasElementViaManager,
+    dismissCanvasDialogsIfPresent,
     getCanvasElementCount,
     openCanvasToolOnCurrentPage,
     removeCanvasElementsDownToCount,
     type ICanvasPageContext,
-    type ICanvasTestContext,
 } from "../helpers/canvasActions";
 
 type CanvasE2eMode = "shared" | "isolated";
@@ -22,10 +23,7 @@ interface ICanvasWorkerFixtures {
 }
 
 interface ICanvasFixtures {
-    canvasContext: ICanvasTestContext;
-    canvasPage: ICanvasPageContext;
-    toolboxFrame: Frame;
-    pageFrame: Frame;
+    canvasTestContext: ICanvasPageContext;
     _showTestNameBanner: void;
     _resetCanvasInSharedMode: void;
 }
@@ -141,9 +139,7 @@ export const test = base.extend<ICanvasFixtures, ICanvasWorkerFixtures>({
                     navigate: false,
                 },
             );
-            const baselineCount = await getCanvasElementCount(
-                canvasContext.pageFrame,
-            );
+            const baselineCount = await getCanvasElementCount(canvasContext);
             await applyFixture(baselineCount);
         },
         {
@@ -161,24 +157,11 @@ export const test = base.extend<ICanvasFixtures, ICanvasWorkerFixtures>({
         await applyFixture(page);
         await context.close();
     },
-    canvasContext: async ({ page, canvasMode }, applyFixture) => {
+    canvasTestContext: async ({ page, canvasMode }, applyFixture) => {
         const canvasContext = await openCanvasToolOnCurrentPage(page, {
             navigate: canvasMode === "isolated",
         });
         await applyFixture(canvasContext);
-    },
-    canvasPage: async ({ page, canvasContext }, applyFixture) => {
-        await applyFixture({
-            page,
-            toolboxFrame: canvasContext.toolboxFrame,
-            pageFrame: canvasContext.pageFrame,
-        });
-    },
-    toolboxFrame: async ({ canvasContext }, applyFixture) => {
-        await applyFixture(canvasContext.toolboxFrame);
-    },
-    pageFrame: async ({ canvasContext }, applyFixture) => {
-        await applyFixture(canvasContext.pageFrame);
     },
     _showTestNameBanner: [
         async ({ page }, applyFixture, testInfo) => {
@@ -210,9 +193,11 @@ export const test = base.extend<ICanvasFixtures, ICanvasWorkerFixtures>({
                 navigate: false,
             });
             await removeCanvasElementsDownToCount(
-                canvasContext.pageFrame,
+                canvasContext,
                 sharedCanvasBaselineCount,
             );
+            await clearActiveCanvasElementViaManager(canvasContext);
+            await dismissCanvasDialogsIfPresent(canvasContext);
         },
         {
             auto: true,

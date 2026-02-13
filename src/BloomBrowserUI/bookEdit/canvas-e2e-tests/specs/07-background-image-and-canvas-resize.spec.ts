@@ -5,7 +5,7 @@
 //         CanvasElementEditingSuspension.ts.
 
 import { test, expect } from "../fixtures/canvasTest";
-import type { Frame, Page } from "playwright/test";
+import type { ICanvasPageContext } from "../helpers/canvasActions";
 import {
     dragPaletteItemToCanvas,
     getCanvasElementCount,
@@ -19,32 +19,29 @@ import {
 import { canvasSelectors } from "../helpers/canvasSelectors";
 
 const createElementWithRetry = async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
     paletteItem,
     dropOffset,
 }: {
-    page: Page;
-    toolboxFrame: Frame;
-    pageFrame: Frame;
+    canvasTestContext: ICanvasPageContext;
     paletteItem: "speech" | "image";
     dropOffset?: { x: number; y: number };
 }) => {
     const maxAttempts = 3;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const beforeCount = await getCanvasElementCount(pageFrame);
+        const beforeCount = await getCanvasElementCount(canvasTestContext);
         await dragPaletteItemToCanvas({
-            page,
-            toolboxFrame,
-            pageFrame,
+            canvasContext: canvasTestContext,
             paletteItem,
             dropOffset,
         });
 
         try {
-            await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+            await expectCanvasElementCountToIncrease(
+                canvasTestContext,
+                beforeCount,
+            );
             return;
         } catch (error) {
             if (attempt === maxAttempts - 1) {
@@ -57,16 +54,16 @@ const createElementWithRetry = async ({
 // ── H1: Background image presence ───────────────────────────────────────
 
 test("H1: page may have a background image canvas element", async ({
-    pageFrame,
+    canvasTestContext,
 }) => {
     // Some pages have a background image as a canvas element. Verify
     // that if one exists, it's visible and has positive size.
-    const bgCount = await pageFrame
+    const bgCount = await canvasTestContext.pageFrame
         .locator(canvasSelectors.page.backgroundImage)
         .count();
 
     if (bgCount > 0) {
-        const bg = pageFrame
+        const bg = canvasTestContext.pageFrame
             .locator(canvasSelectors.page.backgroundImage)
             .first();
         await expectElementVisible(bg);
@@ -79,22 +76,20 @@ test("H1: page may have a background image canvas element", async ({
 // ── H2: Canvas elements are within canvas bounds ────────────────────────
 
 test("H2: canvas elements are within canvas bounds", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
     await createElementWithRetry({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasTestContext,
         paletteItem: "speech",
     });
 
-    const canvas = pageFrame.locator(canvasSelectors.page.canvas).first();
+    const canvas = canvasTestContext.pageFrame
+        .locator(canvasSelectors.page.canvas)
+        .first();
     const canvasBox = await canvas.boundingBox();
     expect(canvasBox).toBeTruthy();
 
-    const active = getActiveCanvasElement(pageFrame);
+    const active = getActiveCanvasElement(canvasTestContext);
     const elementBox = await active.boundingBox();
     expect(elementBox).toBeTruthy();
 
@@ -112,29 +107,25 @@ test("H2: canvas elements are within canvas bounds", async ({
 // ── H3: Multiple elements maintain valid positions ──────────────────────
 
 test("H3: multiple created elements all have valid bounds", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
     // Create two elements
     await createElementWithRetry({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasTestContext,
         paletteItem: "speech",
         dropOffset: { x: 80, y: 80 },
     });
 
     await createElementWithRetry({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasTestContext,
         paletteItem: "image",
         dropOffset: { x: 200, y: 150 },
     });
 
     // All canvas elements should have valid bounds
-    const allElements = pageFrame.locator(canvasSelectors.page.canvasElements);
+    const allElements = canvasTestContext.pageFrame.locator(
+        canvasSelectors.page.canvasElements,
+    );
     const count = await allElements.count();
 
     for (let i = 0; i < count; i++) {

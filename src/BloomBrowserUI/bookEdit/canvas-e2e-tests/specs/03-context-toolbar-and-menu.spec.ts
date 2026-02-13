@@ -4,7 +4,7 @@
 //         canvasElementTypeInference.ts.
 
 import { test, expect } from "../fixtures/canvasTest";
-import type { Frame } from "playwright/test";
+import type { ICanvasTestContext } from "../helpers/canvasActions";
 import {
     dragPaletteItemToCanvas,
     getCanvasElementCount,
@@ -22,10 +22,11 @@ import { canvasSelectors } from "../helpers/canvasSelectors";
 import { mainPaletteRows } from "../helpers/canvasMatrix";
 
 const waitForCountBelow = async (
-    pageFrame: Frame,
+    canvasTestContext: ICanvasTestContext,
     upperExclusive: number,
     timeoutMs = 3000,
 ): Promise<boolean> => {
+    const pageFrame = canvasTestContext.pageFrame;
     const endTime = Date.now() + timeoutMs;
     while (Date.now() < endTime) {
         const count = await pageFrame
@@ -43,89 +44,79 @@ const waitForCountBelow = async (
 
 for (const row of mainPaletteRows) {
     test(`C1: context controls visible after creating "${row.paletteItem}"`, async ({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasTestContext,
     }) => {
-        const beforeCount = await getCanvasElementCount(pageFrame);
+        const beforeCount = await getCanvasElementCount(canvasTestContext);
         await dragPaletteItemToCanvas({
-            page,
-            toolboxFrame,
-            pageFrame,
+            canvasContext: canvasTestContext,
             paletteItem: row.paletteItem,
         });
-        await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
-        await expectContextControlsVisible(pageFrame);
+        await expectCanvasElementCountToIncrease(
+            canvasTestContext,
+            beforeCount,
+        );
+        await expectContextControlsVisible(canvasTestContext);
     });
 }
 
 // ── C2: Menu items match expected labels ────────────────────────────────
 
 test("C2: speech context menu contains Duplicate and Delete", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    const beforeCount = await getCanvasElementCount(pageFrame);
+    const beforeCount = await getCanvasElementCount(canvasTestContext);
     await dragPaletteItemToCanvas({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasContext: canvasTestContext,
         paletteItem: "speech",
     });
-    await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+    await expectCanvasElementCountToIncrease(canvasTestContext, beforeCount);
 
-    await openContextMenuFromToolbar(pageFrame);
+    await openContextMenuFromToolbar(canvasTestContext);
 
-    await expectContextMenuItemVisible(pageFrame, "Duplicate");
-    await expectContextMenuItemVisible(pageFrame, "Delete");
+    await expectContextMenuItemVisible(canvasTestContext, "Duplicate");
+    await expectContextMenuItemVisible(canvasTestContext, "Delete");
 });
 
 // ── C4: Smoke-invoke duplicate ──────────────────────────────────────────
 
 test("C4: duplicate via context menu increases element count", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    const beforeCreate = await getCanvasElementCount(pageFrame);
+    const beforeCreate = await getCanvasElementCount(canvasTestContext);
     await dragPaletteItemToCanvas({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasContext: canvasTestContext,
         paletteItem: "speech",
     });
-    await expectCanvasElementCountToIncrease(pageFrame, beforeCreate);
+    await expectCanvasElementCountToIncrease(canvasTestContext, beforeCreate);
 
-    const beforeDuplicate = await getCanvasElementCount(pageFrame);
-    await openContextMenuFromToolbar(pageFrame);
-    await clickContextMenuItem(pageFrame, "Duplicate");
-    await expectCanvasElementCountToIncrease(pageFrame, beforeDuplicate);
+    const beforeDuplicate = await getCanvasElementCount(canvasTestContext);
+    await openContextMenuFromToolbar(canvasTestContext);
+    await clickContextMenuItem(canvasTestContext, "Duplicate");
+    await expectCanvasElementCountToIncrease(
+        canvasTestContext,
+        beforeDuplicate,
+    );
 });
 
 // ── C5: Smoke-invoke delete ─────────────────────────────────────────────
 
 test("C5: delete via context menu removes an element", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    const beforeCreate = await getCanvasElementCount(pageFrame);
+    const beforeCreate = await getCanvasElementCount(canvasTestContext);
     await dragPaletteItemToCanvas({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasContext: canvasTestContext,
         paletteItem: "speech",
     });
-    await expectCanvasElementCountToIncrease(pageFrame, beforeCreate);
+    await expectCanvasElementCountToIncrease(canvasTestContext, beforeCreate);
 
-    const beforeDelete = await getCanvasElementCount(pageFrame);
+    const beforeDelete = await getCanvasElementCount(canvasTestContext);
     const maxAttempts = 3;
     let deleted = false;
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        await openContextMenuFromToolbar(pageFrame);
-        await clickContextMenuItem(pageFrame, "Delete");
-        deleted = await waitForCountBelow(pageFrame, beforeDelete);
+        await openContextMenuFromToolbar(canvasTestContext);
+        await clickContextMenuItem(canvasTestContext, "Delete");
+        deleted = await waitForCountBelow(canvasTestContext, beforeDelete);
         if (deleted) {
             break;
         }
@@ -137,20 +128,16 @@ test("C5: delete via context menu removes an element", async ({
 // ── C3: Toolbar button count varies by type ─────────────────────────────
 
 test("C3: speech toolbar has buttons including format and delete", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    const beforeCount = await getCanvasElementCount(pageFrame);
+    const beforeCount = await getCanvasElementCount(canvasTestContext);
     await dragPaletteItemToCanvas({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasContext: canvasTestContext,
         paletteItem: "speech",
     });
-    await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+    await expectCanvasElementCountToIncrease(canvasTestContext, beforeCount);
 
-    const controls = pageFrame
+    const controls = canvasTestContext.pageFrame
         .locator(canvasSelectors.page.contextControlsVisible)
         .first();
     await controls.waitFor({ state: "visible", timeout: 10000 });
@@ -164,20 +151,16 @@ test("C3: speech toolbar has buttons including format and delete", async ({
 // ── C6: Smoke-invoke format command ──────────────────────────────────
 
 test("C6: format button is present and clickable for speech element", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    const beforeCount = await getCanvasElementCount(pageFrame);
+    const beforeCount = await getCanvasElementCount(canvasTestContext);
     await dragPaletteItemToCanvas({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasContext: canvasTestContext,
         paletteItem: "speech",
     });
-    await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+    await expectCanvasElementCountToIncrease(canvasTestContext, beforeCount);
 
-    const controls = pageFrame
+    const controls = canvasTestContext.pageFrame
         .locator(canvasSelectors.page.contextControlsVisible)
         .first();
     await controls.waitFor({ state: "visible", timeout: 10000 });
@@ -189,6 +172,6 @@ test("C6: format button is present and clickable for speech element", async ({
 
     // Click the format button (it opens a dialog handled by C#, so we just
     // verify no crash and the element remains active)
-    await clickToolbarButtonByIndex(pageFrame, 0);
-    await expectAnyCanvasElementActive(pageFrame);
+    await clickToolbarButtonByIndex(canvasTestContext, 0);
+    await expectAnyCanvasElementActive(canvasTestContext);
 });

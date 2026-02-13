@@ -22,43 +22,38 @@ import { mainPaletteRows } from "../helpers/canvasMatrix";
 
 for (const row of mainPaletteRows) {
     test(`J1: "${row.paletteItem}" element gets context controls without error`, async ({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasTestContext,
     }) => {
-        const beforeCount = await getCanvasElementCount(pageFrame);
+        const beforeCount = await getCanvasElementCount(canvasTestContext);
         await dragPaletteItemToCanvas({
-            page,
-            toolboxFrame,
-            pageFrame,
+            canvasContext: canvasTestContext,
             paletteItem: row.paletteItem,
         });
-        await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
-        await expectAnyCanvasElementActive(pageFrame);
+        await expectCanvasElementCountToIncrease(
+            canvasTestContext,
+            beforeCount,
+        );
+        await expectAnyCanvasElementActive(canvasTestContext);
 
         // The context controls should render without JS errors
-        await expectContextControlsVisible(pageFrame);
+        await expectContextControlsVisible(canvasTestContext);
     });
 }
 
 // ── J2: Speech element has bloom-editable (type inference requirement) ──
 
 test("J2: speech element has internal bloom-editable (inferrable as speech)", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    const beforeCount = await getCanvasElementCount(pageFrame);
+    const beforeCount = await getCanvasElementCount(canvasTestContext);
     await dragPaletteItemToCanvas({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasContext: canvasTestContext,
         paletteItem: "speech",
     });
-    await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+    await expectCanvasElementCountToIncrease(canvasTestContext, beforeCount);
 
-    const afterCount = await getCanvasElementCount(pageFrame);
-    const newest = pageFrame
+    const afterCount = await getCanvasElementCount(canvasTestContext);
+    const newest = canvasTestContext.pageFrame
         .locator(canvasSelectors.page.canvasElements)
         .nth(afterCount - 1);
     const hasEditable =
@@ -69,20 +64,16 @@ test("J2: speech element has internal bloom-editable (inferrable as speech)", as
 // ── J2: Image element has bloom-imageContainer ──────────────────────────
 
 test("J2: image element has internal imageContainer (inferrable as image)", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    const beforeCount = await getCanvasElementCount(pageFrame);
+    const beforeCount = await getCanvasElementCount(canvasTestContext);
     await dragPaletteItemToCanvas({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasContext: canvasTestContext,
         paletteItem: "image",
     });
-    await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
-    const afterCount = await getCanvasElementCount(pageFrame);
-    const newest = pageFrame
+    await expectCanvasElementCountToIncrease(canvasTestContext, beforeCount);
+    const afterCount = await getCanvasElementCount(canvasTestContext);
+    const newest = canvasTestContext.pageFrame
         .locator(canvasSelectors.page.canvasElements)
         .nth(afterCount - 1);
     const hasImageContainer =
@@ -93,20 +84,16 @@ test("J2: image element has internal imageContainer (inferrable as image)", asyn
 // ── J2: Video element has bloom-videoContainer ──────────────────────────
 
 test("J2: video element has internal videoContainer (inferrable as video)", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    const beforeCount = await getCanvasElementCount(pageFrame);
+    const beforeCount = await getCanvasElementCount(canvasTestContext);
     await dragPaletteItemToCanvas({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasContext: canvasTestContext,
         paletteItem: "video",
     });
-    await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
-    const afterCount = await getCanvasElementCount(pageFrame);
-    const newest = pageFrame
+    await expectCanvasElementCountToIncrease(canvasTestContext, beforeCount);
+    const afterCount = await getCanvasElementCount(canvasTestContext);
+    const newest = canvasTestContext.pageFrame
         .locator(canvasSelectors.page.canvasElements)
         .nth(afterCount - 1);
     const hasVideoContainer =
@@ -117,23 +104,19 @@ test("J2: video element has internal videoContainer (inferrable as video)", asyn
 // ── J3: Context menu renders stable content for speech ──────────────────
 
 test("J3: context menu for speech renders stable items", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    const beforeCount = await getCanvasElementCount(pageFrame);
+    const beforeCount = await getCanvasElementCount(canvasTestContext);
     await dragPaletteItemToCanvas({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasContext: canvasTestContext,
         paletteItem: "speech",
     });
-    await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+    await expectCanvasElementCountToIncrease(canvasTestContext, beforeCount);
 
-    await openContextMenuFromToolbar(pageFrame);
+    await openContextMenuFromToolbar(canvasTestContext);
 
     // The menu should have at least some items and render without crash
-    const menuItems = pageFrame
+    const menuItems = canvasTestContext.pageFrame
         .locator(canvasSelectors.page.contextMenuList)
         .first()
         .locator("li");

@@ -22,21 +22,22 @@ import { canvasSelectors } from "../helpers/canvasSelectors";
 
 // ── Helper ──────────────────────────────────────────────────────────────
 
-const createSpeechElement = async ({ page, toolboxFrame, pageFrame }) => {
+const createSpeechElement = async (canvasTestContext) => {
     const maxAttempts = 3;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const beforeCount = await getCanvasElementCount(pageFrame);
+        const beforeCount = await getCanvasElementCount(canvasTestContext);
         await dragPaletteItemToCanvas({
-            page,
-            toolboxFrame,
-            pageFrame,
+            canvasContext: canvasTestContext,
             paletteItem: "speech",
         });
 
         try {
-            await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
-            await expectAnyCanvasElementActive(pageFrame);
+            await expectCanvasElementCountToIncrease(
+                canvasTestContext,
+                beforeCount,
+            );
+            await expectAnyCanvasElementActive(canvasTestContext);
             return;
         } catch (error) {
             if (attempt === maxAttempts - 1) {
@@ -49,31 +50,30 @@ const createSpeechElement = async ({ page, toolboxFrame, pageFrame }) => {
 // ── G1: Duplicate creates a new element ─────────────────────────────────
 
 test("G1: duplicating a speech element increases count", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    await createSpeechElement({ page, toolboxFrame, pageFrame });
+    await createSpeechElement(canvasTestContext);
 
-    const beforeDuplicate = await getCanvasElementCount(pageFrame);
-    await duplicateActiveCanvasElementViaManager(pageFrame);
+    const beforeDuplicate = await getCanvasElementCount(canvasTestContext);
+    await duplicateActiveCanvasElementViaManager(canvasTestContext);
 
-    await expectCanvasElementCountToIncrease(pageFrame, beforeDuplicate);
+    await expectCanvasElementCountToIncrease(
+        canvasTestContext,
+        beforeDuplicate,
+    );
 });
 
 // ── G2: Duplicate preserves element type ────────────────────────────────
 
 test("G2: duplicated element is visible and has positive size", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    await createSpeechElement({ page, toolboxFrame, pageFrame });
+    await createSpeechElement(canvasTestContext);
 
-    await duplicateActiveCanvasElementViaManager(pageFrame);
+    await duplicateActiveCanvasElementViaManager(canvasTestContext);
 
     // The duplicated element should become active
-    const active = getActiveCanvasElement(pageFrame);
+    const active = getActiveCanvasElement(canvasTestContext);
     await expectElementVisible(active);
     await expectElementHasPositiveSize(active);
 });
@@ -81,15 +81,13 @@ test("G2: duplicated element is visible and has positive size", async ({
 // ── G2: Duplicate preserves text content ────────────────────────────────
 
 test("G2: duplicated speech element contains bloom-editable", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    await createSpeechElement({ page, toolboxFrame, pageFrame });
+    await createSpeechElement(canvasTestContext);
 
-    await duplicateActiveCanvasElementViaManager(pageFrame);
+    await duplicateActiveCanvasElementViaManager(canvasTestContext);
 
-    const active = getActiveCanvasElement(pageFrame);
+    const active = getActiveCanvasElement(canvasTestContext);
     const editableCount = await active
         .locator(canvasSelectors.page.bloomEditable)
         .count();
@@ -99,26 +97,24 @@ test("G2: duplicated speech element contains bloom-editable", async ({
 // ── G5: Element order sanity after duplication ──────────────────────────
 
 test("G5: total element count is correct after duplicate + delete", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    await createSpeechElement({ page, toolboxFrame, pageFrame });
+    await createSpeechElement(canvasTestContext);
 
-    const afterCreate = await getCanvasElementCount(pageFrame);
+    const afterCreate = await getCanvasElementCount(canvasTestContext);
 
     // Duplicate
-    await duplicateActiveCanvasElementViaManager(pageFrame);
-    await expectCanvasElementCountToIncrease(pageFrame, afterCreate);
+    await duplicateActiveCanvasElementViaManager(canvasTestContext);
+    await expectCanvasElementCountToIncrease(canvasTestContext, afterCreate);
 
-    const afterDuplicate = await getCanvasElementCount(pageFrame);
+    const afterDuplicate = await getCanvasElementCount(canvasTestContext);
 
     // Delete the duplicate
-    await deleteActiveCanvasElementViaManager(pageFrame);
+    await deleteActiveCanvasElementViaManager(canvasTestContext);
 
     await expect
         .poll(async () => {
-            return pageFrame
+            return canvasTestContext.pageFrame
                 .locator(canvasSelectors.page.canvasElements)
                 .count();
         })
@@ -128,17 +124,18 @@ test("G5: total element count is correct after duplicate + delete", async ({
 // ── G3: Duplicate restrictions – creates exactly one copy ───────────
 
 test("G3: duplicate creates exactly one copy (not more)", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    await createSpeechElement({ page, toolboxFrame, pageFrame });
+    await createSpeechElement(canvasTestContext);
 
-    const beforeDuplicate = await getCanvasElementCount(pageFrame);
-    await duplicateActiveCanvasElementViaManager(pageFrame);
-    await expectCanvasElementCountToIncrease(pageFrame, beforeDuplicate);
+    const beforeDuplicate = await getCanvasElementCount(canvasTestContext);
+    await duplicateActiveCanvasElementViaManager(canvasTestContext);
+    await expectCanvasElementCountToIncrease(
+        canvasTestContext,
+        beforeDuplicate,
+    );
 
     // Verify exactly one new element was created
-    const afterDuplicate = await getCanvasElementCount(pageFrame);
+    const afterDuplicate = await getCanvasElementCount(canvasTestContext);
     expect(afterDuplicate).toBe(beforeDuplicate + 1);
 });

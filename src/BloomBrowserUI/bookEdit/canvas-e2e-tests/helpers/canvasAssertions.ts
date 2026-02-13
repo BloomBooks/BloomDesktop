@@ -1,21 +1,17 @@
-import {
-    expect,
-    type BoundingBox,
-    type Frame,
-    type Locator,
-} from "playwright/test";
+import { expect, type BoundingBox, type Locator } from "playwright/test";
+import type { ICanvasTestContext } from "./canvasActions";
 import { canvasSelectors, toolboxControlSelectorMap } from "./canvasSelectors";
 
 // ── Element count ───────────────────────────────────────────────────────
 
 export const expectCanvasElementCountToIncrease = async (
-    pageFrame: Frame,
+    canvasContext: ICanvasTestContext,
     beforeCount: number,
 ): Promise<void> => {
     await expect
         .poll(
             async () => {
-                return pageFrame
+                return canvasContext.pageFrame
                     .locator(canvasSelectors.page.canvasElements)
                     .count();
             },
@@ -28,21 +24,23 @@ export const expectCanvasElementCountToIncrease = async (
 };
 
 export const expectCanvasElementCountToBe = async (
-    pageFrame: Frame,
+    canvasContext: ICanvasTestContext,
     expectedCount: number,
 ): Promise<void> => {
     await expect(
-        pageFrame.locator(canvasSelectors.page.canvasElements),
+        canvasContext.pageFrame.locator(canvasSelectors.page.canvasElements),
     ).toHaveCount(expectedCount);
 };
 
 // ── Active element ──────────────────────────────────────────────────────
 
 export const expectAnyCanvasElementActive = async (
-    pageFrame: Frame,
+    canvasContext: ICanvasTestContext,
 ): Promise<void> => {
     await expect(
-        pageFrame.locator(canvasSelectors.page.activeCanvasElement),
+        canvasContext.pageFrame.locator(
+            canvasSelectors.page.activeCanvasElement,
+        ),
         "Expected exactly one active canvas element",
     ).toHaveCount(1);
 };
@@ -50,10 +48,12 @@ export const expectAnyCanvasElementActive = async (
 // ── Context controls ────────────────────────────────────────────────────
 
 export const expectContextControlsVisible = async (
-    pageFrame: Frame,
+    canvasContext: ICanvasTestContext,
 ): Promise<void> => {
     await expect(
-        pageFrame.locator(canvasSelectors.page.contextControlsVisible).first(),
+        canvasContext.pageFrame
+            .locator(canvasSelectors.page.contextControlsVisible)
+            .first(),
         "Expected context controls to be visible",
     ).toBeVisible();
 };
@@ -130,19 +130,23 @@ export const expectElementNearPoint = async (
 // ── Toolbox options region ──────────────────────────────────────────────
 
 export const expectToolboxOptionsDisabled = async (
-    toolboxFrame: Frame,
+    canvasContext: ICanvasTestContext,
 ): Promise<void> => {
     await expect(
-        toolboxFrame.locator(canvasSelectors.toolbox.optionsRegion).first(),
+        canvasContext.toolboxFrame
+            .locator(canvasSelectors.toolbox.optionsRegion)
+            .first(),
         "Expected toolbox options region to have 'disabled' class",
     ).toHaveClass(/disabled/);
 };
 
 export const expectToolboxOptionsEnabled = async (
-    toolboxFrame: Frame,
+    canvasContext: ICanvasTestContext,
 ): Promise<void> => {
     await expect(
-        toolboxFrame.locator(canvasSelectors.toolbox.optionsRegion).first(),
+        canvasContext.toolboxFrame
+            .locator(canvasSelectors.toolbox.optionsRegion)
+            .first(),
         "Expected toolbox options region to NOT have 'disabled' class",
     ).not.toHaveClass(/disabled/);
 };
@@ -150,23 +154,25 @@ export const expectToolboxOptionsEnabled = async (
 // ── Toolbox attribute controls visibility ───────────────────────────────
 
 export const expectToolboxControlsVisible = async (
-    toolboxFrame: Frame,
+    canvasContext: ICanvasTestContext,
     controlKeys: ReadonlyArray<keyof typeof toolboxControlSelectorMap>,
 ): Promise<void> => {
     for (const controlKey of controlKeys) {
         const selector = toolboxControlSelectorMap[controlKey];
         await expect(
-            toolboxFrame.locator(selector).first(),
+            canvasContext.toolboxFrame.locator(selector).first(),
             `Expected toolbox control "${controlKey}" to be visible`,
         ).toBeVisible();
     }
 };
 
 export const expectToolboxShowsNoOptions = async (
-    toolboxFrame: Frame,
+    canvasContext: ICanvasTestContext,
 ): Promise<void> => {
     await expect(
-        toolboxFrame.locator(canvasSelectors.toolbox.noOptionsSection).first(),
+        canvasContext.toolboxFrame
+            .locator(canvasSelectors.toolbox.noOptionsSection)
+            .first(),
         "Expected 'no options' section to be visible",
     ).toBeVisible();
 };
@@ -174,10 +180,10 @@ export const expectToolboxShowsNoOptions = async (
 // ── Context toolbar button count ────────────────────────────────────────
 
 export const expectContextToolbarButtonCount = async (
-    pageFrame: Frame,
+    canvasContext: ICanvasTestContext,
     expectedCount: number,
 ): Promise<void> => {
-    const controls = pageFrame
+    const controls = canvasContext.pageFrame
         .locator(canvasSelectors.page.contextControlsVisible)
         .first();
     await controls.waitFor({ state: "visible", timeout: 10000 });
@@ -190,11 +196,11 @@ export const expectContextToolbarButtonCount = async (
 // ── Context menu items ──────────────────────────────────────────────────
 
 export const expectContextMenuItemVisible = async (
-    pageFrame: Frame,
+    canvasContext: ICanvasTestContext,
     label: string,
 ): Promise<void> => {
     await expect(
-        pageFrame
+        canvasContext.pageFrame
             .locator(
                 `${canvasSelectors.page.contextMenuListVisible} li:has-text("${label}")`,
             )
@@ -204,11 +210,11 @@ export const expectContextMenuItemVisible = async (
 };
 
 export const expectContextMenuItemNotPresent = async (
-    pageFrame: Frame,
+    canvasContext: ICanvasTestContext,
     label: string,
 ): Promise<void> => {
     await expect(
-        pageFrame
+        canvasContext.pageFrame
             .locator(
                 `${canvasSelectors.page.contextMenuListVisible} li:has-text("${label}")`,
             )
@@ -219,10 +225,12 @@ export const expectContextMenuItemNotPresent = async (
 // ── Canvas class state ──────────────────────────────────────────────────
 
 export const expectCanvasHasElementClass = async (
-    pageFrame: Frame,
+    canvasContext: ICanvasTestContext,
     expected: boolean,
 ): Promise<void> => {
-    const canvas = pageFrame.locator(canvasSelectors.page.canvas).first();
+    const canvas = canvasContext.pageFrame
+        .locator(canvasSelectors.page.canvas)
+        .first();
     if (expected) {
         await expect(
             canvas,
@@ -248,11 +256,11 @@ export const expectDraggableIdPresent = async (
 };
 
 export const expectTargetExistsForDraggable = async (
-    pageFrame: Frame,
+    canvasContext: ICanvasTestContext,
     draggableId: string,
 ): Promise<void> => {
     await expect(
-        pageFrame.locator(`[data-target-of="${draggableId}"]`),
+        canvasContext.pageFrame.locator(`[data-target-of="${draggableId}"]`),
         `Expected a target element for draggable "${draggableId}"`,
     ).toHaveCount(1);
 };
@@ -288,10 +296,10 @@ export const expectPositionGridSnapped = async (
  * indicating a particular inferred type.
  */
 export const expectSelectedElementType = async (
-    pageFrame: Frame,
+    canvasContext: ICanvasTestContext,
     expectedType: "speech" | "image" | "video" | "text" | "caption",
 ): Promise<void> => {
-    const active = pageFrame
+    const active = canvasContext.pageFrame
         .locator(canvasSelectors.page.activeCanvasElement)
         .first();
     await expect(active, "Expected an active canvas element").toBeVisible();
@@ -326,11 +334,11 @@ export const expectSelectedElementType = async (
  * Assert that a toolbar button at a given index is enabled or disabled.
  */
 export const expectToolbarButtonEnabled = async (
-    pageFrame: Frame,
+    canvasContext: ICanvasTestContext,
     buttonIndex: number,
     enabled: boolean,
 ): Promise<void> => {
-    const controls = pageFrame
+    const controls = canvasContext.pageFrame
         .locator(canvasSelectors.page.contextControlsVisible)
         .first();
     await controls.waitFor({ state: "visible", timeout: 10000 });

@@ -11,31 +11,30 @@ let baselineCountForCleanupSmoke: number | undefined;
 
 test.describe.serial("shared-mode cleanup", () => {
     test("K1: creating an element changes the count", async ({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasTestContext,
     }) => {
         test.skip(
             !isSharedMode,
             "This regression smoke test is only relevant in shared mode.",
         );
 
-        baselineCountForCleanupSmoke = await getCanvasElementCount(pageFrame);
+        baselineCountForCleanupSmoke =
+            await getCanvasElementCount(canvasTestContext);
 
         await dragPaletteItemToCanvas({
-            page,
-            toolboxFrame,
-            pageFrame,
+            canvasContext: canvasTestContext,
             paletteItem: "speech",
         });
 
         await expectCanvasElementCountToIncrease(
-            pageFrame,
+            canvasTestContext,
             baselineCountForCleanupSmoke,
         );
     });
 
-    test("K2: next test starts at baseline count", async ({ pageFrame }) => {
+    test("K2: next test starts at baseline count", async ({
+        canvasTestContext,
+    }) => {
         test.skip(
             !isSharedMode,
             "This regression smoke test is only relevant in shared mode.",
@@ -43,7 +42,7 @@ test.describe.serial("shared-mode cleanup", () => {
 
         expect(baselineCountForCleanupSmoke).toBeDefined();
 
-        const countAtStart = await getCanvasElementCount(pageFrame);
+        const countAtStart = await getCanvasElementCount(canvasTestContext);
         expect(countAtStart).toBe(baselineCountForCleanupSmoke);
     });
 });

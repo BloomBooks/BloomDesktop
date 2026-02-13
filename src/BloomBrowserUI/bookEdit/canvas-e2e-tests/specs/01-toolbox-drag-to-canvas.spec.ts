@@ -29,20 +29,19 @@ import {
 
 for (const row of mainPaletteRows) {
     test(`A1: drag "${row.paletteItem}" onto canvas creates an element`, async ({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasTestContext,
     }) => {
-        const beforeCount = await getCanvasElementCount(pageFrame);
+        const beforeCount = await getCanvasElementCount(canvasTestContext);
 
         await dragPaletteItemToCanvas({
-            page,
-            toolboxFrame,
-            pageFrame,
+            canvasContext: canvasTestContext,
             paletteItem: row.paletteItem,
         });
 
-        await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+        await expectCanvasElementCountToIncrease(
+            canvasTestContext,
+            beforeCount,
+        );
     });
 }
 
@@ -57,26 +56,27 @@ for (const row of navigationPaletteRows) {
     const testFn = skip ? test.skip : test;
     testFn(
         `A1-nav: drag "${row.paletteItem}" onto canvas creates an element`,
-        async ({ page, toolboxFrame, pageFrame }) => {
+        async ({ canvasTestContext }) => {
             test.info().annotations.push({
                 type: "retry",
                 description: "cross-iframe drag can be flaky",
             });
-            await expandNavigationSection(toolboxFrame);
+            await expandNavigationSection(canvasTestContext);
 
             // Short settle after expanding the section
-            await page.waitForTimeout(300);
+            await canvasTestContext.page.waitForTimeout(300);
 
-            const beforeCount = await getCanvasElementCount(pageFrame);
+            const beforeCount = await getCanvasElementCount(canvasTestContext);
 
             await dragPaletteItemToCanvas({
-                page,
-                toolboxFrame,
-                pageFrame,
+                canvasContext: canvasTestContext,
                 paletteItem: row.paletteItem,
             });
 
-            await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+            await expectCanvasElementCountToIncrease(
+                canvasTestContext,
+                beforeCount,
+            );
         },
     );
 }
@@ -84,71 +84,60 @@ for (const row of navigationPaletteRows) {
 // ── A2: Drop at different points and verify multiple creation ────────────
 
 test("A2: dropping two speech items creates distinct elements", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
-    const beforeCount = await getCanvasElementCount(pageFrame);
+    const beforeCount = await getCanvasElementCount(canvasTestContext);
 
     await dragPaletteItemToCanvas({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasContext: canvasTestContext,
         paletteItem: "speech",
         dropOffset: { x: 60, y: 60 },
     });
 
-    await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
+    await expectCanvasElementCountToIncrease(canvasTestContext, beforeCount);
 
-    const afterFirstCount = await getCanvasElementCount(pageFrame);
+    const afterFirstCount = await getCanvasElementCount(canvasTestContext);
 
     await dragPaletteItemToCanvas({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasContext: canvasTestContext,
         paletteItem: "speech",
         dropOffset: { x: 250, y: 200 },
     });
 
-    await expectCanvasElementCountToIncrease(pageFrame, afterFirstCount);
+    await expectCanvasElementCountToIncrease(
+        canvasTestContext,
+        afterFirstCount,
+    );
 });
 
 // ── A5: Verify canvas class state reflects element presence ─────────────
 
 test("A5: canvas gets bloom-has-canvas-element class after dropping an element", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
     await dragPaletteItemToCanvas({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasContext: canvasTestContext,
         paletteItem: "speech",
     });
 
-    await expectCanvasElementCountToIncrease(pageFrame, 0);
-    await expectCanvasHasElementClass(pageFrame, true);
+    await expectCanvasElementCountToIncrease(canvasTestContext, 0);
+    await expectCanvasHasElementClass(canvasTestContext, true);
 });
 
 // ── A-general: Newly created element is selected and visible ────────────
 
 test("newly created element is active and has positive size", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
     await dragPaletteItemToCanvas({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasContext: canvasTestContext,
         paletteItem: "speech",
     });
 
-    await expectCanvasElementCountToIncrease(pageFrame, 0);
-    await expectAnyCanvasElementActive(pageFrame);
+    await expectCanvasElementCountToIncrease(canvasTestContext, 0);
+    await expectAnyCanvasElementActive(canvasTestContext);
 
-    const active = getActiveCanvasElement(pageFrame);
+    const active = getActiveCanvasElement(canvasTestContext);
     await expectElementVisible(active);
     await expectElementHasPositiveSize(active);
 });
@@ -156,32 +145,28 @@ test("newly created element is active and has positive size", async ({
 // ── A3: Verify coordinate mapping – element lands near the drop point ──
 
 test("A3: element created near the specified drop offset", async ({
-    page,
-    toolboxFrame,
-    pageFrame,
+    canvasTestContext,
 }) => {
     const dropOffset = { x: 180, y: 150 };
 
-    const beforeCount = await getCanvasElementCount(pageFrame);
+    const beforeCount = await getCanvasElementCount(canvasTestContext);
     await dragPaletteItemToCanvas({
-        page,
-        toolboxFrame,
-        pageFrame,
+        canvasContext: canvasTestContext,
         paletteItem: "speech",
         dropOffset,
     });
-    await expectCanvasElementCountToIncrease(pageFrame, beforeCount);
-    await expectAnyCanvasElementActive(pageFrame);
+    await expectCanvasElementCountToIncrease(canvasTestContext, beforeCount);
+    await expectAnyCanvasElementActive(canvasTestContext);
 
     // Compute the expected top-level coordinate by offsetting from the
     // canvas bounding box within the page frame.
-    const canvasBox = await pageFrame
+    const canvasBox = await canvasTestContext.pageFrame
         .locator(canvasSelectors.page.canvas)
         .first()
         .boundingBox();
     expect(canvasBox).toBeTruthy();
 
-    const active = getActiveCanvasElement(pageFrame);
+    const active = getActiveCanvasElement(canvasTestContext);
     const activeBox = await active.boundingBox();
     expect(activeBox).toBeTruthy();
 
