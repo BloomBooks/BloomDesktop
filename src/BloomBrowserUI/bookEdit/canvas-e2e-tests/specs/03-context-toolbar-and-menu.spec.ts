@@ -11,7 +11,6 @@ import {
     getCanvasElementCount,
     openContextMenuFromToolbar,
     clickContextMenuItem,
-    clickToolbarButtonByIndex,
 } from "../helpers/canvasActions";
 import {
     expectCanvasElementCountToIncrease,
@@ -201,7 +200,7 @@ test("C3: speech toolbar has buttons including format and delete", async ({
 
 // ── C6: Smoke-invoke format command ──────────────────────────────────
 
-test("C6: format button is present and clickable for speech element", async ({
+test("C6: format button is present for speech element", async ({
     canvasTestContext,
 }) => {
     await createAndExpectCountIncrease(canvasTestContext, "speech");
@@ -215,9 +214,4 @@ test("C6: format button is present and clickable for speech element", async ({
     const formatButton = controls.locator("button").first();
     await expect(formatButton).toBeVisible();
     await expect(formatButton).toBeEnabled();
-
-    // Click the format button (it opens a dialog handled by C#, so we just
-    // verify no crash and the element remains active)
-    await clickToolbarButtonByIndex(canvasTestContext, 0);
-    await expectAnyCanvasElementActive(canvasTestContext);
 });

@@ -31,7 +31,24 @@ import {
 
 type IEditablePageBundleWindow = Window & {
     editablePageBundle?: {
-        getTheOneCanvasElementManager?: () => any;
+        getTheOneCanvasElementManager?: () =>
+            | {
+                  getPatriarchBubbleOfActiveElement?: () => {
+                      content?: HTMLElement;
+                  };
+                  setActiveElement: (element: HTMLElement | undefined) => void;
+                  setBackgroundColor?: (
+                      colors: string[],
+                      opacity: number,
+                  ) => void;
+                  getTextColorInformation?: () => { color?: string };
+                  getSelectedItemBubbleSpec?: () => {
+                      outerBorderColor?: string;
+                      backgroundColors?: string[];
+                  };
+                  resetCropping?: () => void;
+              }
+            | undefined;
     };
 };
 
@@ -39,35 +56,7 @@ const setActiveCanvasElementByIndexViaManager = async (
     canvasContext: ICanvasPageContext,
     index: number,
 ): Promise<void> => {
-    const selectedViaManager = await canvasContext.pageFrame.evaluate(
-        ({ selector, elementIndex }) => {
-            const bundle = (window as IEditablePageBundleWindow)
-                .editablePageBundle;
-            const manager = bundle?.getTheOneCanvasElementManager?.();
-            if (!manager) {
-                return false;
-            }
-
-            const elements = Array.from(
-                document.querySelectorAll(selector),
-            ) as HTMLElement[];
-            const element = elements[elementIndex];
-            if (!element) {
-                return false;
-            }
-
-            manager.setActiveElement(element);
-            return true;
-        },
-        {
-            selector: canvasSelectors.page.canvasElements,
-            elementIndex: index,
-        },
-    );
-
-    if (!selectedViaManager) {
-        await selectCanvasElementAtIndex(canvasContext, index);
-    }
+    await selectCanvasElementAtIndex(canvasContext, index);
 };
 
 const setActivePatriarchBubbleViaManager = async (
@@ -227,8 +216,7 @@ const setTextForActiveElement = async (
         .locator(`${canvasSelectors.page.activeCanvasElement} .bloom-editable`)
         .first();
     await editable.waitFor({ state: "visible", timeout: 10000 });
-    await canvasContext.page.keyboard.press("Escape").catch(() => undefined);
-    await editable.click({ force: true });
+    await editable.click();
     await canvasContext.page.keyboard.press("Control+A");
     await canvasContext.page.keyboard.type(value);
 };
@@ -259,7 +247,6 @@ const createElementAndReturnIndex = async (
         canvasContext,
         paletteItem,
         dropOffset,
-        maxAttempts: 5,
     });
     await expect(created.element).toBeVisible();
     return created.index;
@@ -292,7 +279,7 @@ const contextMenuItemLocator = (pageFrame: Frame, label: string): Locator => {
         .first();
 };
 
-const nativeDialogMenuCommands = new Set([
+const externalWindowMenuCommands = new Set([
     "Choose image from your computer...",
     "Change image",
     "Set Image Information...",
@@ -301,10 +288,10 @@ const nativeDialogMenuCommands = new Set([
     "Record yourself...",
 ]);
 
-const assertNativeDialogCommandNotInvoked = (label: string): void => {
-    if (nativeDialogMenuCommands.has(label)) {
+const assertExternalWindowCommandNotInvoked = (label: string): void => {
+    if (externalWindowMenuCommands.has(label)) {
         throw new Error(
-            `Refusing to invoke context-menu command \"${label}\" because it opens a native dialog and can hang the canvas e2e host. Assert visibility/enabled state only.`,
+            `Refusing to invoke context-menu command "${label}" because it can open an external window that Playwright cannot control. Assert visibility/enabled state only.`,
         );
     }
 };
@@ -313,7 +300,7 @@ const clickContextMenuItemIfEnabled = async (
     canvasContext: ICanvasPageContext,
     label: string,
 ): Promise<boolean> => {
-    assertNativeDialogCommandNotInvoked(label);
+    assertExternalWindowCommandNotInvoked(label);
 
     const maxAttempts = 3;
 
@@ -709,7 +696,12 @@ test("Workflow 02: add-child bubble lifecycle survives middle-child delete and p
     expect(middleDeleted).toBe(true);
     await expect
         .poll(async () => getCanvasElementCount(canvasTestContext))
-        .toBeLessThan(beforeMiddleDelete);
+        .toBe(beforeMiddleDelete - 1);
+    await expect
+        .poll(async () =>
+            getCanvasElementIndexByToken(canvasTestContext, "wf02-child-2"),
+        )
+        .toBe(-1);
 
     const survivingChildCandidates = ["wf02-child-1", "wf02-child-3"];
     for (const childToken of survivingChildCandidates) {
@@ -743,9 +735,9 @@ test("Workflow 02: add-child bubble lifecycle survives middle-child delete and p
         "Delete",
     );
     expect(parentDeleted).toBe(true);
-    await canvasTestContext.page.waitForTimeout(150);
-    const afterParentDelete = await getCanvasElementCount(canvasTestContext);
-    expect(afterParentDelete).toBeLessThanOrEqual(beforeParentDelete);
+    await expect
+        .poll(async () => getCanvasElementCount(canvasTestContext))
+        .toBeLessThan(beforeParentDelete);
     expect(
         await getCanvasElementCount(canvasTestContext),
     ).toBeGreaterThanOrEqual(baselineCount);
@@ -762,17 +754,7 @@ test("Workflow 03: auto-height grows for multiline content and shrinks after con
     );
     expect(toggleOff).toBe(true);
 
-    // TODO: Replace this with a pure UI pre-sizing gesture when a stable
-    // text-capable resize interaction is available for this path.
-    await canvasTestContext.pageFrame.evaluate(() => {
-        const active = document.querySelector(
-            '.bloom-canvas-element[data-bloom-active="true"]',
-        ) as HTMLElement | null;
-        if (!active) {
-            throw new Error("No active canvas element.");
-        }
-        active.style.height = "40px";
-    });
+    await resizeActiveElementFromSide(canvasTestContext, "bottom", -40);
 
     await setTextForActiveElement(
         canvasTestContext,
@@ -786,24 +768,12 @@ test("Workflow 03: auto-height grows for multiline content and shrinks after con
     );
     expect(toggleOn).toBe(true);
 
-    const grew = await expect
+    await expect
         .poll(
             async () =>
                 (await getActiveElementBoundingBox(canvasTestContext)).height,
         )
-        .toBeGreaterThan(beforeGrow.height)
-        .then(
-            () => true,
-            () => false,
-        );
-    if (!grew) {
-        test.info().annotations.push({
-            type: "note",
-            description:
-                "Auto Height did not increase height in this run; skipping shrink-back assertion.",
-        });
-        return;
-    }
+        .toBeGreaterThan(beforeGrow.height);
     const grown = await getActiveElementBoundingBox(canvasTestContext);
 
     await setTextForActiveElement(canvasTestContext, "short");
@@ -821,38 +791,18 @@ test("Workflow 03: auto-height grows for multiline content and shrinks after con
 test("Workflow 04: copy/paste text transfers payload only without changing target placement or style", async ({
     canvasTestContext,
 }) => {
-    let sourceIndex = -1;
-    try {
-        sourceIndex = await createElementAndReturnIndex(
-            canvasTestContext,
-            "speech",
-            { x: 90, y: 90 },
-        );
-    } catch {
-        test.info().annotations.push({
-            type: "note",
-            description:
-                "Could not create source speech element in this run; skipping workflow to avoid false negatives.",
-        });
-        return;
-    }
+    const sourceIndex = await createElementAndReturnIndex(
+        canvasTestContext,
+        "speech",
+        { x: 90, y: 90 },
+    );
     await setTextForActiveElement(canvasTestContext, "Source Payload Text");
 
-    let targetIndex = -1;
-    try {
-        targetIndex = await createElementAndReturnIndex(
-            canvasTestContext,
-            "text",
-            { x: 280, y: 170 },
-        );
-    } catch {
-        test.info().annotations.push({
-            type: "note",
-            description:
-                "Could not create target text element in this run; skipping workflow to avoid false negatives.",
-        });
-        return;
-    }
+    const targetIndex = await createElementAndReturnIndex(
+        canvasTestContext,
+        "text",
+        { x: 280, y: 170 },
+    );
     await setTextForActiveElement(canvasTestContext, "Target Original Text");
 
     const targetBefore = await getCanvasElementSnapshotByIndex(
@@ -979,7 +929,7 @@ test("Workflow 05: image paste/copy/reset command chain updates image state and 
     }
 
     await clickContextMenuItemIfEnabled(canvasTestContext, "Paste image");
-    let pasted = await getActiveImageState(canvasTestContext);
+    const pasted = await getActiveImageState(canvasTestContext);
     const pasteChanged = !!pasted.src && pasted.src !== initial.src;
     if (!pasteChanged && clipboardResult.ok) {
         expect(pasted.src).not.toBe(initial.src);
@@ -1285,10 +1235,31 @@ test("Workflow 10: duplicate creates independent copies for each type that suppo
                 await getTextForActiveElement(canvasTestContext);
             expect(originalText).not.toContain(duplicateMarkerText);
         } else {
-            test.info().annotations.push({
-                type: "note",
-                description: `Skipped non-text duplicate mutation check for ${row.paletteItem}; no stable UI-only mutation path for this element type yet.`,
-            });
+            await setActiveCanvasElementByIndexViaManager(
+                canvasTestContext,
+                createdIndex,
+            );
+            const originalBefore =
+                await getActiveElementBoundingBox(canvasTestContext);
+
+            await setActiveCanvasElementByIndexViaManager(
+                canvasTestContext,
+                duplicateIndex,
+            );
+            await keyboardNudge(canvasTestContext, "ArrowRight");
+
+            await setActiveCanvasElementByIndexViaManager(
+                canvasTestContext,
+                createdIndex,
+            );
+            const originalAfter =
+                await getActiveElementBoundingBox(canvasTestContext);
+            expect(Math.round(originalAfter.x)).toBe(
+                Math.round(originalBefore.x),
+            );
+            expect(Math.round(originalAfter.y)).toBe(
+                Math.round(originalBefore.y),
+            );
         }
     }
 });
@@ -1376,17 +1347,7 @@ test("Workflow 12: speech/caption style matrix toggles style values and control 
         .first();
 
     for (const value of allStyleValues) {
-        const styleApplied = await setStyleDropdown(canvasTestContext, value)
-            .then(() => true)
-            .catch(() => false);
-        if (!styleApplied) {
-            test.info().annotations.push({
-                type: "note",
-                description: `Style value "${value}" was unavailable in this run; skipping this matrix step.`,
-            });
-            continue;
-        }
-
+        await setStyleDropdown(canvasTestContext, value);
         const styleInput = canvasTestContext.toolboxFrame
             .locator("#canvasElement-style-dropdown")
             .first();
@@ -1413,13 +1374,7 @@ test("Workflow 13: style transition preserves intended rounded/outline/text/back
 
     await setStyleDropdown(canvasTestContext, "caption");
     await setRoundedCorners(canvasTestContext, true);
-    await setOutlineColorDropdown(canvasTestContext, "yellow").catch(() => {
-        test.info().annotations.push({
-            type: "note",
-            description:
-                "Outline color option was not available for this style in this run; continuing with text/background persistence assertions.",
-        });
-    });
+    await setOutlineColorDropdown(canvasTestContext, "yellow");
     await clickTextColorBar(canvasTestContext);
     await chooseColorSwatchInDialog(canvasTestContext.page, 3);
     await clickBackgroundColorBar(canvasTestContext);
@@ -1427,20 +1382,8 @@ test("Workflow 13: style transition preserves intended rounded/outline/text/back
 
     const before = await getActiveElementStyleSummary(canvasTestContext);
 
-    const transitioned = await setStyleDropdown(canvasTestContext, "speech")
-        .then(() => setStyleDropdown(canvasTestContext, "caption"))
-        .then(
-            () => true,
-            () => false,
-        );
-    if (!transitioned) {
-        test.info().annotations.push({
-            type: "note",
-            description:
-                "Style dropdown transition was unavailable in this run; skipping transition-persistence assertions.",
-        });
-        return;
-    }
+    await setStyleDropdown(canvasTestContext, "speech");
+    await setStyleDropdown(canvasTestContext, "caption");
 
     const after = await getActiveElementStyleSummary(canvasTestContext);
     const roundedCheckbox = canvasTestContext.toolboxFrame
@@ -1544,6 +1487,7 @@ test("Workflow 16: navigation label button shows only text/background controls a
     ).toHaveCount(0);
     await canvasTestContext.page.keyboard.press("Escape");
 
+    await setTextForActiveElement(canvasTestContext, "Updated Label");
     await clickTextColorBar(canvasTestContext);
     await chooseColorSwatchInDialog(canvasTestContext.page, 4);
     await clickBackgroundColorBar(canvasTestContext);
@@ -1564,10 +1508,9 @@ test("Workflow 16: navigation label button shows only text/background controls a
         };
     });
 
+    expect(rendered.text).toContain("Updated Label");
     expect(rendered.textColor).not.toBe("");
-    expect(
-        rendered.backgroundColor || rendered.background || rendered.textColor,
-    ).not.toBe("");
+    expect(rendered.backgroundColor || rendered.background).not.toBe("");
 });
 
 test("Workflow 17: book-link-grid choose-books command remains available and repeated drop keeps grid lifecycle stable", async ({
@@ -1718,19 +1661,12 @@ test("Workflow 18: mixed workflow across speech/image/video/navigation remains s
         videoIndex,
     );
     await openContextMenuFromToolbar(canvasTestContext);
-    const chooseVideoVisible = await contextMenuItemLocator(
-        canvasTestContext.pageFrame,
-        "Choose Video from your Computer...",
-    )
-        .isVisible()
-        .catch(() => false);
-    if (!chooseVideoVisible) {
-        test.info().annotations.push({
-            type: "note",
-            description:
-                "Choose Video command was not visible in this run; continuing mixed-workflow stability checks.",
-        });
-    }
+    await expect(
+        contextMenuItemLocator(
+            canvasTestContext.pageFrame,
+            "Choose Video from your Computer...",
+        ),
+    ).toBeVisible();
     await canvasTestContext.page.keyboard.press("Escape");
 
     await setActiveCanvasElementByIndexViaManager(canvasTestContext, navIndex);
