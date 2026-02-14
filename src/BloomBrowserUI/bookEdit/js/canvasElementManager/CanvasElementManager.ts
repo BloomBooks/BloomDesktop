@@ -45,6 +45,7 @@ import {
     kCanvasElementClass,
     kCanvasElementSelector,
 } from "../../toolbox/canvas/canvasElementConstants";
+import { pxToNumber as pxToNumberFromCssUtils } from "../../toolbox/canvas/canvasElementCssUtils";
 import { updateCanvasElementClass } from "../../toolbox/canvas/canvasElementDomUtils";
 import OverflowChecker from "../../OverflowChecker/OverflowChecker";
 import { kVideoContainerClass, selectVideoContainer } from "../videoUtils";
@@ -628,12 +629,11 @@ export class CanvasElementManager {
     }
 
     // Convert string ending in pixels to a number
-    public static pxToNumber(px: string, fallback: number = NaN): number {
-        if (!px) return 0;
-        if (px.endsWith("px")) {
-            return parseFloat(px.replace("px", ""));
-        }
-        return fallback;
+    public static pxToNumber(
+        px: string | undefined | null,
+        fallback: number = NaN,
+    ): number {
+        return pxToNumberFromCssUtils(px, fallback);
     }
 
     // A visible, editable div is generally focusable, but sometimes (e.g. in Bloom games),

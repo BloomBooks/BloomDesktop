@@ -40,6 +40,21 @@ export interface ICanvasPageContext extends ICanvasTestContext {
     page: Page;
 }
 
+const nativeDialogMenuCommands = new Set([
+    "Choose image from your computer...",
+    "Change image",
+    "Choose Video from your Computer...",
+    "Record yourself...",
+]);
+
+const assertNativeDialogCommandNotInvoked = (label: string): void => {
+    if (nativeDialogMenuCommands.has(label)) {
+        throw new Error(
+            `Refusing to invoke context-menu command \"${label}\" because it opens a native dialog and can hang the canvas e2e host. Assert visibility/enabled state only.`,
+        );
+    }
+};
+
 interface IDropOffset {
     x: number;
     y: number;
@@ -181,6 +196,8 @@ const waitForCanvasElementCountBelow = async (
 const deleteLastCanvasElementViaManager = async (
     canvasContext: ICanvasTestContext,
 ): Promise<void> => {
+    // TODO: Replace manager-based teardown deletion with pure UI deletion once
+    // overlay-canvas pointer interception is resolved for shared-mode cleanup.
     await canvasContext.pageFrame.evaluate((selector: string) => {
         const bundle = (window as IEditablePageBundleWindow).editablePageBundle;
         const manager = bundle?.getTheOneCanvasElementManager?.();
@@ -236,6 +253,8 @@ export const removeCanvasElementsDownToCount = async (
 export const duplicateActiveCanvasElementViaManager = async (
     canvasContext: ICanvasTestContext,
 ): Promise<void> => {
+    // TODO: Replace this manager shortcut with a pure UI duplicate path once
+    // shared-mode selection/click interception is fully stabilized.
     await canvasContext.pageFrame.evaluate(() => {
         const bundle = (window as IEditablePageBundleWindow).editablePageBundle;
         const manager = bundle?.getTheOneCanvasElementManager?.();
@@ -249,6 +268,8 @@ export const duplicateActiveCanvasElementViaManager = async (
 export const deleteActiveCanvasElementViaManager = async (
     canvasContext: ICanvasTestContext,
 ): Promise<void> => {
+    // TODO: Replace this manager shortcut with a pure UI delete path once
+    // shared-mode selection/click interception is fully stabilized.
     await canvasContext.pageFrame.evaluate(() => {
         const bundle = (window as IEditablePageBundleWindow).editablePageBundle;
         const manager = bundle?.getTheOneCanvasElementManager?.();
@@ -262,6 +283,8 @@ export const deleteActiveCanvasElementViaManager = async (
 export const clearActiveCanvasElementViaManager = async (
     canvasContext: ICanvasTestContext,
 ): Promise<void> => {
+    // TODO: Replace manager-based deselection with a UI path once we have a
+    // stable click-target for clearing selection in shared mode.
     await canvasContext.pageFrame.evaluate(() => {
         const bundle = (window as IEditablePageBundleWindow).editablePageBundle;
         const manager = bundle?.getTheOneCanvasElementManager?.();
@@ -350,15 +373,34 @@ export const selectCanvasElementAtIndex = async (
     canvasContext: ICanvasTestContext,
     index: number,
 ): Promise<Locator> => {
-    const element = canvasContext.pageFrame
-        .locator(canvasSelectors.page.canvasElements)
-        .nth(index);
-    await element.waitFor({
-        state: "visible",
-        timeout: 10000,
-    });
-    await element.click();
-    return element;
+    const maxAttempts = 4;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const element = canvasContext.pageFrame
+            .locator(canvasSelectors.page.canvasElements)
+            .nth(index);
+        await element.waitFor({
+            state: "visible",
+            timeout: 10000,
+        });
+
+        await canvasContext.pageFrame
+            .page()
+            .keyboard.press("Escape")
+            .catch(() => undefined);
+
+        try {
+            await element.click({ force: true });
+            return element;
+        } catch (error) {
+            if (attempt === maxAttempts - 1) {
+                throw error;
+            }
+            await canvasContext.pageFrame.page().waitForTimeout(100);
+        }
+    }
+
+    throw new Error(`Could not select canvas element at index ${index}.`);
 };
 
 export const getActiveCanvasElement = (
@@ -557,16 +599,50 @@ export const keyboardNudge = async (
 export const openContextMenuFromToolbar = async (
     canvasContext: ICanvasTestContext,
 ): Promise<void> => {
+    const visibleMenu = canvasContext.pageFrame
+        .locator(canvasSelectors.page.contextMenuListVisible)
+        .first();
+    if (await visibleMenu.isVisible().catch(() => false)) {
+        return;
+    }
+
     const controls = canvasContext.pageFrame
         .locator(canvasSelectors.page.contextControlsVisible)
         .first();
+
+    if (!(await controls.isVisible().catch(() => false))) {
+        const active = canvasContext.pageFrame
+            .locator(canvasSelectors.page.activeCanvasElement)
+            .first();
+        if (await active.isVisible().catch(() => false)) {
+            await active.click({ force: true }).catch(() => undefined);
+        } else {
+            const firstCanvasElement = canvasContext.pageFrame
+                .locator(canvasSelectors.page.canvasElements)
+                .first();
+            if (await firstCanvasElement.isVisible().catch(() => false)) {
+                await firstCanvasElement
+                    .click({ force: true })
+                    .catch(() => undefined);
+            }
+        }
+    }
+
     await controls.waitFor({
         state: "visible",
         timeout: 10000,
     });
 
     const menuButton = controls.locator("button").last();
-    await menuButton.click();
+    try {
+        await menuButton.click();
+    } catch {
+        await canvasContext.pageFrame
+            .page()
+            .keyboard.press("Escape")
+            .catch(() => undefined);
+        await menuButton.click({ force: true });
+    }
 
     await canvasContext.pageFrame
         .locator(canvasSelectors.page.contextMenuListVisible)
@@ -581,6 +657,8 @@ export const clickContextMenuItem = async (
     canvasContext: ICanvasTestContext,
     label: string,
 ): Promise<void> => {
+    assertNativeDialogCommandNotInvoked(label);
+
     const maxAttempts = 3;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {

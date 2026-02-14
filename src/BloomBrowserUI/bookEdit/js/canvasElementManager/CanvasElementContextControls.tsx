@@ -485,8 +485,8 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     l10nId: "EditTab.Toolbox.ComicTool.Options.ChooseVideo",
                     english: "Choose Video from your Computer...",
                     onClick: () => {
-                        doVideoCommand(videoContainer, "choose");
                         setMenuOpen(false, true);
+                        doVideoCommand(videoContainer, "choose");
                     },
                     icon: <SearchIcon css={getMenuIconCss()} />,
                 });
@@ -857,7 +857,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
     }
     if (canToggleDraggability) {
         addMenuItemForTogglingDraggability(
-            textMenuItems,
+            wholeElementCommandsMenuItems,
             props.canvasElement,
             currentDraggableTarget,
             setCurrentDraggableTarget,
@@ -865,7 +865,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
     }
     if (currentDraggableTargetId) {
         addMenuItemsForDraggable(
-            textMenuItems,
+            wholeElementCommandsMenuItems,
             props.canvasElement,
             currentDraggableTargetId,
             currentDraggableTarget,

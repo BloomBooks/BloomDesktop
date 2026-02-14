@@ -52,11 +52,15 @@ for (const row of mainPaletteRows) {
 // The cross-iframe drag for navigation items can be flaky so we
 // allow 1 retry.
 for (const row of navigationPaletteRows) {
+    // TODO: Replace this skip with a deterministic lifecycle test once we have
+    // a stable way to reset/recreate book-link-grid across shared-mode runs.
     const skip = row.paletteItem === "book-link-grid";
     const testFn = skip ? test.skip : test;
     testFn(
         `A1-nav: drag "${row.paletteItem}" onto canvas creates an element`,
         async ({ canvasTestContext }) => {
+            // TODO: Remove this retry annotation once cross-iframe navigation
+            // palette dragging is consistently reliable in CI and headed runs.
             test.info().annotations.push({
                 type: "retry",
                 description: "cross-iframe drag can be flaky",

@@ -12,6 +12,9 @@ import {
     clickTextColorBar,
     clickBackgroundColorBar,
     setOutlineColorDropdown,
+    clickContextMenuItem,
+    openContextMenuFromToolbar,
+    selectCanvasElementAtIndex,
 } from "../helpers/canvasActions";
 import {
     expectCanvasElementCountToIncrease,
@@ -21,27 +24,27 @@ import {
     expectToolboxShowsNoOptions,
 } from "../helpers/canvasAssertions";
 import {
-    canvasMatrix,
     mainPaletteRows,
     navigationPaletteRows,
     getMatrixRow,
 } from "../helpers/canvasMatrix";
 import { canvasSelectors } from "../helpers/canvasSelectors";
-import {
-    expandNavigationSection,
-    selectCanvasElementAtIndex,
-} from "../helpers/canvasActions";
+import { expandNavigationSection } from "../helpers/canvasActions";
+import type { CanvasPaletteItemKey } from "../helpers/canvasSelectors";
 
 // ── Helper ──────────────────────────────────────────────────────────────
 
-const createAndVerify = async (canvasTestContext, paletteItem: string) => {
+const createAndVerify = async (
+    canvasTestContext,
+    paletteItem: CanvasPaletteItemKey,
+) => {
     const maxAttempts = 3;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
         const beforeCount = await getCanvasElementCount(canvasTestContext);
         await dragPaletteItemToCanvas({
             canvasContext: canvasTestContext,
-            paletteItem: paletteItem as any,
+            paletteItem,
         });
 
         try {
@@ -56,6 +59,13 @@ const createAndVerify = async (canvasTestContext, paletteItem: string) => {
             }
         }
     }
+};
+
+const duplicateActiveCanvasElementViaUi = async (
+    canvasTestContext,
+): Promise<void> => {
+    await openContextMenuFromToolbar(canvasTestContext);
+    await clickContextMenuItem(canvasTestContext, "Duplicate");
 };
 
 // ── D-pre: Toolbox disabled when no element selected ────────────────────
@@ -142,6 +152,41 @@ test("D5: outline color dropdown can change to yellow", async ({
         "#canvasElement-outlineColor-dropdown",
     );
     await expect(dropdown).toHaveValue("yellow");
+});
+
+test("D5: outline dropdown matrix stays stable after duplicate + re-selection", async ({
+    canvasTestContext,
+}) => {
+    await createAndVerify(canvasTestContext, "speech");
+    await expectToolboxOptionsEnabled(canvasTestContext);
+    await setStyleDropdown(canvasTestContext, "speech");
+
+    const outlineDropdown = canvasTestContext.toolboxFrame
+        .locator("#canvasElement-outlineColor-dropdown")
+        .first();
+
+    const originalIndex = (await getCanvasElementCount(canvasTestContext)) - 1;
+    const outlineValues = ["none", "yellow", "crimson"];
+
+    for (const value of outlineValues) {
+        await setOutlineColorDropdown(canvasTestContext, value);
+        await expect(outlineDropdown).toHaveValue(value);
+
+        const beforeDuplicateCount =
+            await getCanvasElementCount(canvasTestContext);
+        await duplicateActiveCanvasElementViaUi(canvasTestContext);
+        await expectCanvasElementCountToIncrease(
+            canvasTestContext,
+            beforeDuplicateCount,
+        );
+
+        const duplicateIndex = beforeDuplicateCount;
+        await selectCanvasElementAtIndex(canvasTestContext, duplicateIndex);
+        await expect(outlineDropdown).toHaveValue(value);
+
+        await selectCanvasElementAtIndex(canvasTestContext, originalIndex);
+        await expect(outlineDropdown).toHaveValue(value);
+    }
 });
 
 // ── D6: Rounded corners toggle ──────────────────────────────────────────
@@ -237,6 +282,48 @@ for (const row of navigationPaletteRows.filter(
     });
 }
 
+test("D8: navigation-image-button shows only background color across duplicate/select cycles", async ({
+    canvasTestContext,
+}) => {
+    await expandNavigationSection(canvasTestContext);
+    await createAndVerify(canvasTestContext, "navigation-image-button");
+
+    const assertControlState = async () => {
+        await expectToolboxOptionsEnabled(canvasTestContext);
+        await expectToolboxControlsVisible(canvasTestContext, [
+            "backgroundColorBar",
+        ]);
+        await expect(
+            canvasTestContext.toolboxFrame.locator(
+                canvasSelectors.toolbox.textColorBar,
+            ),
+            "Expected text color control to be hidden for navigation-image-button",
+        ).toHaveCount(0);
+        await expect(
+            canvasTestContext.toolboxFrame.locator(
+                canvasSelectors.toolbox.styleDropdown,
+            ),
+            "Expected style dropdown to be hidden for navigation-image-button",
+        ).toHaveCount(0);
+    };
+
+    await assertControlState();
+
+    const beforeDuplicateCount = await getCanvasElementCount(canvasTestContext);
+    await duplicateActiveCanvasElementViaUi(canvasTestContext);
+    await expectCanvasElementCountToIncrease(
+        canvasTestContext,
+        beforeDuplicateCount,
+    );
+
+    const duplicateIndex = beforeDuplicateCount;
+    await selectCanvasElementAtIndex(canvasTestContext, duplicateIndex);
+    await assertControlState();
+
+    await selectCanvasElementAtIndex(canvasTestContext, duplicateIndex - 1);
+    await assertControlState();
+});
+
 // ── D9: Link-grid type has expected controls ────────────────────────
 // book-link-grid is limited to one per page. In shared mode, one may
 // already exist from an earlier test (A1-nav). We select the existing
@@ -245,33 +332,17 @@ for (const row of navigationPaletteRows.filter(
 test("D9: book-link-grid shows expected toolbox controls", async ({
     canvasTestContext,
 }) => {
-    // Try to find and select an existing book-link-grid element via
-    // the canvas element manager + type inference.
-    const selected = await canvasTestContext.pageFrame.evaluate(
-        (canvasElSelector: string) => {
-            const bundle = (window as any).editablePageBundle;
-            const manager = bundle?.getTheOneCanvasElementManager?.();
-            if (!manager) return false;
-
-            const elements = Array.from(
-                document.querySelectorAll(canvasElSelector),
-            ) as HTMLElement[];
-
-            for (const el of elements) {
-                if (el.getElementsByClassName("bloom-link-grid").length > 0) {
-                    manager.setActiveElement(el);
-                    return true;
-                }
-            }
-            return false;
-        },
-        canvasSelectors.page.canvasElements,
-    );
+    const existingBookGrid = canvasTestContext.pageFrame
+        .locator(`${canvasSelectors.page.canvasElements}:has(.bloom-link-grid)`)
+        .first();
+    const selected = await existingBookGrid.isVisible().catch(() => false);
 
     if (!selected) {
         // No book-link-grid exists yet – expand nav section and create one.
         await expandNavigationSection(canvasTestContext);
         await createAndVerify(canvasTestContext, "book-link-grid");
+    } else {
+        await existingBookGrid.click();
     }
 
     const row = getMatrixRow("book-link-grid");

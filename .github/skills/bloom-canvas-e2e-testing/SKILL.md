@@ -67,6 +67,18 @@ Before clicking the canvas tool header, first check whether `#canvasToolControls
   - element count increase (`.bloom-canvas-element`)
   - position/rect checks where relevant
 
+## Critical safety rule (Image Toolbox)
+- Do **not** run any action that opens the native Image Toolbox window.
+- In Canvas context menus/toolbars, never invoke commands that route to `doImageCommand(..., "change")`.
+- In practice, do not click:
+  - `Choose image from your computer...`
+  - `Change image`
+- Do **not** invoke native video capture/file-picker commands either.
+- In practice, do not click:
+  - `Choose Video from your Computer...`
+  - `Record yourself...`
+- If coverage needs those commands, verify command presence/enabled state only (do not invoke).
+
 ## Minimal proof recipe
 A valid non-trivial proof test should:
 1. Open `CURRENTPAGE`

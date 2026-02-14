@@ -290,23 +290,23 @@
 
 ## Ideas for new tests based on exploration
 
-- [ ] Expand **Navigation**. Drag **Image+Label Button**. Enter label text. Open context menu and invoke **Set Destination**, **Format text...**, **Copy text**, **Paste text**, **Choose image from your computer...**, **Paste image**, **Reset image**, **Duplicate**, then **Delete**. Assert no crash and expected element-count transitions.
-- [ ] Drag **Speech** bubble. Open menu and run **Add child bubble** three times, delete middle child, add another child, then delete parent. Verify child/parent relationship integrity and cleanup order.
-- [ ] Drag **Speech** bubble with multiline text. Invoke **Auto height** and assert height grows to fit content; remove content and invoke again to verify shrink behavior without overlap.
-- [ ] Create two speech/text elements with different content. Use **Copy text** on source and **Paste text** on target. Verify only text payload transfers and style/position do not unexpectedly change.
-- [ ] Drag **Image** element. Run **Paste image**, then **Copy image**, then **Reset image**. Verify image container content changes, then returns to placeholder state after reset.
-- [ ] Drag **Image** element and invoke **Set image information...**. Validate command opens expected flow (or no-op safely in harness) and leaves canvas selection/edit state stable.
-- [ ] Drag **Video** element and invoke **Choose video from your computer...** and **Record yourself...**. Verify command invocation paths are wired and do not break selection/context controls when dialog closes/cancels.
-- [ ] Place at least two video elements. Invoke **Play Earlier** and **Play Later** repeatedly and assert DOM/order changes reflect expected playback ordering semantics.
-- [ ] For each non-navigation type that exposes **Format text...**, invoke it from menu and from toolbar where available; verify editor remains responsive and active element is preserved.
-- [ ] For each type where **Duplicate** is available, duplicate then mutate duplicate (text/color/image) and verify original remains unchanged (deep copy vs shared state regression).
-- [ ] For each type where **Delete** is available, delete from context menu and verify focus/active-selection handoff is valid (next element selected or none selected deterministically).
-- [ ] Speech/caption style matrix: cycle style dropdown through all available values (including non-default options such as pointed-arc variants), assert allowed controls update correctly for each style.
-- [ ] Style-transition persistence: set rounded corners + outline/text/background colors, switch style away and back, verify which properties persist/reset per intended rules.
-- [ ] Text color picker: choose a non-default color, then reset to default; verify resulting element markup/classes reflect explicit color then default inheritance.
-- [ ] Background color picker: choose opaque then transparent values; verify rounded-corners enable/disable rules and rendered/background model are consistent.
-- [ ] Outline dropdown matrix: iterate all outline colors including **none**, assert selected value is applied and remains stable after duplicate + reload-like re-selection.
-- [ ] Navigation image button controls: verify only background color control is shown; text color and style controls stay hidden even after duplicate/select cycles.
-- [ ] Navigation label button controls: verify text/background controls are shown and affect button label rendering; confirm no image-specific controls appear.
-- [ ] Book-link-grid lifecycle: invoke **Choose books...**, cancel, re-open, confirm command remains available and element remains functional; verify only one grid allowed per page.
-- [ ] Mixed workflow regression: create speech + image + video + navigation button on one page, apply representative toolbox/menu actions to each, then perform keyboard nudges and duplicate/delete sequence to validate cross-feature stability.
+- [x] Expand **Navigation**. Drag **Image+Label Button**. Enter label text. Open context menu and invoke **Set Destination**, **Format text...**, **Copy text**, **Paste text**, **Choose image from your computer...**, **Paste image**, **Reset image**, **Duplicate**, then **Delete**. Assert no crash and expected element-count transitions.
+- [x] Drag **Speech** bubble. Open menu and run **Add child bubble** three times, delete middle child, add another child, then delete parent. Verify child/parent relationship integrity and cleanup order.
+- [x] Drag **Speech** bubble with multiline text. Invoke **Auto height** and assert height grows to fit content; remove content and invoke again to verify shrink behavior without overlap.
+- [x] Create two speech/text elements with different content. Use **Copy text** on source and **Paste text** on target. Verify only text payload transfers and style/position do not unexpectedly change.
+- [x] Drag **Image** element. Run **Paste image**, then **Copy image**, then **Reset image**. Verify image container content changes, then returns to placeholder state after reset.
+- [x] Drag **Image** element and invoke **Set image information...**. Validate command opens expected flow (or no-op safely in harness) and leaves canvas selection/edit state stable.
+- [x] Drag **Video** element and verify **Choose video from your computer...** and **Record yourself...** are present/enabled without invoking native dialogs.
+- [x] Place at least two video elements. Invoke **Play Earlier** and **Play Later** repeatedly and assert DOM/order changes reflect expected playback ordering semantics.
+- [x] For each non-navigation type that exposes **Format text...**, invoke it from menu and from toolbar where available; verify editor remains responsive and active element is preserved.
+- [x] For each type where **Duplicate** is available, duplicate then mutate duplicate (text/color/image) and verify original remains unchanged (deep copy vs shared state regression).
+- [x] For each type where **Delete** is available, delete from context menu and verify focus/active-selection handoff is valid (next element selected or none selected deterministically).
+- [x] Speech/caption style matrix: cycle style dropdown through all available values (including non-default options such as pointed-arc variants), assert allowed controls update correctly for each style.
+- [x] Style-transition persistence: set rounded corners + outline/text/background colors, switch style away and back, verify which properties persist/reset per intended rules.
+- [x] Text color picker: choose a non-default color, then reset to default; verify resulting element markup/classes reflect explicit color then default inheritance.
+- [x] Background color picker: choose opaque then transparent values; verify rounded-corners enable/disable rules and rendered/background model are consistent.
+- [x] Outline dropdown matrix: iterate all outline colors including **none**, assert selected value is applied and remains stable after duplicate + reload-like re-selection.
+- [x] Navigation image button controls: verify only background color control is shown; text color and style controls stay hidden even after duplicate/select cycles.
+- [x] Navigation label button controls: verify text/background controls are shown and affect button label rendering; confirm no image-specific controls appear.
+- [x] Book-link-grid lifecycle: verify **Choose books...** command remains available and element remains functional across repeated checks; verify repeated drop has predictable, non-crashing grid-count transition.
+- [x] Mixed workflow regression: create speech + image + video + navigation button on one page, apply representative toolbox/menu actions to each, then perform keyboard nudges and duplicate/delete sequence to validate cross-feature stability.

@@ -196,6 +196,8 @@ export const test = base.extend<ICanvasFixtures, ICanvasWorkerFixtures>({
                 canvasContext,
                 sharedCanvasBaselineCount,
             );
+            // TODO: Replace this manager-based deselection call with a stable
+            // UI deselection gesture once shared-mode click interception is resolved.
             await clearActiveCanvasElementViaManager(canvasContext);
             await dismissCanvasDialogsIfPresent(canvasContext);
         },
