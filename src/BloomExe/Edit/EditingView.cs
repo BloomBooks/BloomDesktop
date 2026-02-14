@@ -544,6 +544,16 @@ namespace Bloom.Edit
                 return _originalImageMetadataFromImageToolbox;
             }
 
+            if (fileName.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    LocalizationManager.GetString(
+                        "EditTab.ImageMetadata.CannotEditEmbeddedImage",
+                        "Bloom can't edit image information for this image because it is embedded data, not a file image."
+                    )
+                );
+            }
+
             // keep a reference to the fileName rather the image to avoid dispose issues
             _fileNameOfImageBeingModified = fileName;
 
