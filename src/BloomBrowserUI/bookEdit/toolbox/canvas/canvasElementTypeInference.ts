@@ -8,7 +8,9 @@ const getBubbleStyle = (canvasElement: HTMLElement): string | undefined => {
     const bubbleSpecJson = canvasElement.getAttribute("data-bubble");
     if (bubbleSpecJson) {
         try {
-            const bubbleSpec = JSON.parse(bubbleSpecJson) as {
+            const bubbleSpec = JSON.parse(
+                bubbleSpecJson.replace(/`/g, '"'),
+            ) as {
                 style?: unknown;
             };
             if (typeof bubbleSpec.style === "string") {

@@ -229,7 +229,7 @@ namespace Bloom.web.controllers
                     throw new InvalidOperationException("imageId is required.");
                 }
 
-                if (string.IsNullOrWhiteSpace(imageSrc))
+                if (imageSrc == null)
                 {
                     throw new InvalidOperationException("imageSrc is required.");
                 }
