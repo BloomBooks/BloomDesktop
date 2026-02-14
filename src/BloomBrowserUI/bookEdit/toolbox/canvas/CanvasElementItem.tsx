@@ -24,20 +24,10 @@ import {
 import {
     getAllDraggables,
     kDraggableIdAttribute,
-} from "../../js/CanvasElementManager";
+} from "./canvasElementDraggables";
+import { CanvasElementType } from "./canvasElementTypes";
 
-export type CanvasElementType =
-    | "image"
-    | "video"
-    | "sound"
-    | "rectangle"
-    | "speech"
-    | "caption"
-    | "book-link-grid"
-    | "navigation-image-button"
-    | "navigation-image-with-label-button"
-    | "navigation-label-button"
-    | "none";
+export type { CanvasElementType } from "./canvasElementTypes";
 
 const ondragstart = (
     ev: React.DragEvent<HTMLElement> | React.DragEvent<SVGSVGElement>,

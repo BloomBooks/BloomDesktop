@@ -5,10 +5,10 @@ import { useState, useEffect } from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import "./canvasTool.less";
 import { getEditTabBundleExports } from "../../js/bloomFrames";
-import {
+import type {
     CanvasElementManager,
     ITextColorInfo,
-} from "../../js/CanvasElementManager";
+} from "../../js/canvasElementManager/CanvasElementManager";
 import { Bubble, BubbleSpec, TailSpec } from "comicaljs";
 import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
 import FormControl from "@mui/material/FormControl";

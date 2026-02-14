@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -14,7 +15,6 @@ using Bloom.SafeXml;
 using Bloom.Utils;
 using L10NSharp;
 using SIL.IO;
-using SIL.Windows.Forms.Miscellaneous;
 
 namespace Bloom.web.controllers
 {
@@ -218,12 +218,33 @@ namespace Bloom.web.controllers
         private void HandlePasteImage(ApiRequest request)
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
-            View.OnPasteImage(
-                data.imageId,
-                UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
-                data.imageIsGif
-            );
-            request.PostSucceeded();
+            try
+            {
+                string imageId = data.imageId;
+                string imageSrc = data.imageSrc;
+                bool imageIsGif = data.imageIsGif;
+
+                if (string.IsNullOrWhiteSpace(imageId))
+                {
+                    throw new InvalidOperationException("imageId is required.");
+                }
+
+                if (imageSrc == null)
+                {
+                    throw new InvalidOperationException("imageSrc is required.");
+                }
+
+                View.OnPasteImage(
+                    imageId,
+                    UrlPathString.CreateFromUrlEncodedString(imageSrc),
+                    imageIsGif
+                );
+                request.PostSucceeded();
+            }
+            catch (Exception e)
+            {
+                request.Failed(HttpStatusCode.BadRequest, e.Message);
+            }
         }
 
         // Ctrl-V seems to be only possible to intercept in Javascript.

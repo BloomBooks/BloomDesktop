@@ -739,9 +739,14 @@ export default class BloomSourceBubbles {
                 //     "DEBUG BloomSourceBubbles.SetupTooltips/on blur - element=" +
                 //         (ev.target as Element).outerHTML
                 // );
-                const tipId = (ev.target.parentNode as Element).getAttribute(
-                    "aria-describedby",
-                );
+                const parentElement = (ev.target as Element)?.parentElement;
+                if (!parentElement) {
+                    return;
+                }
+                const tipId = parentElement.getAttribute("aria-describedby");
+                if (!tipId) {
+                    return;
+                }
                 const $tip = $("body").find("#" + tipId);
                 if ($tip.hasClass("qtip-focus")) {
                     // If it's the tooltip that has gotten focus, don't reset it.
@@ -765,10 +770,18 @@ export default class BloomSourceBubbles {
             if (maxHeight) $thisTip.css("max-height", parseInt(maxHeight));
         });
         // show the full tip, if needed
-        const tipId = (element.parentNode as Element).getAttribute(
-            "aria-describedby",
-        );
+        const parentElement = element.parentElement;
+        if (!parentElement) {
+            return;
+        }
+        const tipId = parentElement.getAttribute("aria-describedby");
+        if (!tipId) {
+            return;
+        }
         const $tip = $body.find("#" + tipId);
+        if ($tip.length === 0) {
+            return;
+        }
         $tip.removeClass("passive-bubble");
         const maxHeight = $tip.attr("data-max-height");
         if (maxHeight) {
