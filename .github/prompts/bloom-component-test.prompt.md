@@ -1,5 +1,4 @@
 ---
-mode: agent
 description: setup ui tests
 ---
 We have a test system explained at src/BloomBrowserUI/react_components/component-tester/README.md.
