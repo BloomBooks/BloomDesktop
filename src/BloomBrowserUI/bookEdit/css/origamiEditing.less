@@ -163,9 +163,10 @@
     top: @ToggleVerticalOffset;
     width: 100%;
     display: flex;
-    justify-content: end;
+    justify-content: space-between;
     box-sizing: border-box;
 }
+
 .origami-toggle {
     cursor: pointer;
     margin-right: 19px;
@@ -176,6 +177,28 @@
     }
     > :first-of-type {
         display: inline;
+    }
+}
+.page-settings-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    margin-right: 8px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    color: @bloom-purple;
+
+    &:hover {
+        opacity: 0.8;
+    }
+
+    svg {
+        width: 20px;
+        height: 20px;
     }
 }
 
