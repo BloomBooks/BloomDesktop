@@ -10,31 +10,14 @@ import type {
     CanvasPaletteItemKey,
     CanvasToolboxControlKey,
 } from "./canvasSelectors";
+import {
+    canvasElementDefinitions,
+    type CanvasElementMenuSection,
+    type CanvasElementToolbarButton,
+} from "../../toolbox/canvas/canvasElementDefinitions";
+import type { CanvasElementType } from "../../toolbox/canvas/canvasElementTypes";
 
 // ── Types ───────────────────────────────────────────────────────────────
-
-export type CanvasElementMenuSection =
-    | "url"
-    | "video"
-    | "image"
-    | "audio"
-    | "bubble"
-    | "text"
-    | "wholeElementCommands";
-
-export type CanvasElementToolbarButton =
-    | "spacer"
-    | "setDestination"
-    | "chooseVideo"
-    | "recordVideo"
-    | "chooseImage"
-    | "pasteImage"
-    | "missingMetadata"
-    | "expandToFillSpace"
-    | "format"
-    | "duplicate"
-    | "delete"
-    | "linkGridChooseBooks";
 
 export interface ICanvasMatrixRow {
     /** Key that matches a `canvasSelectors.toolbox.paletteItems` entry. */
@@ -55,15 +38,34 @@ export interface ICanvasMatrixRow {
     menuCommandLabels: string[];
 }
 
+const makeMatrixRow = (props: {
+    paletteItem: CanvasPaletteItemKey;
+    expectedType: CanvasElementType;
+    expectedToolboxControls: CanvasToolboxControlKey[];
+    supportsDraggableToggle: boolean;
+    requiresNavigationExpand: boolean;
+    menuCommandLabels: string[];
+}): ICanvasMatrixRow => {
+    const definition = canvasElementDefinitions[props.expectedType];
+    return {
+        paletteItem: props.paletteItem,
+        expectedType: props.expectedType,
+        menuSections: [...definition.menuSections],
+        toolbarButtons: [...definition.toolbarButtons],
+        expectedToolboxControls: props.expectedToolboxControls,
+        supportsDraggableToggle: props.supportsDraggableToggle,
+        requiresNavigationExpand: props.requiresNavigationExpand,
+        menuCommandLabels: props.menuCommandLabels,
+    };
+};
+
 // ── Matrix rows ─────────────────────────────────────────────────────────
 
 export const canvasMatrix: ICanvasMatrixRow[] = [
     // ─── Row 1 palette items ───
-    {
+    makeMatrixRow({
         paletteItem: "speech",
         expectedType: "speech",
-        menuSections: ["audio", "bubble", "text", "wholeElementCommands"],
-        toolbarButtons: ["format", "spacer", "duplicate", "delete"],
         expectedToolboxControls: [
             "styleDropdown",
             "showTailCheckbox",
@@ -75,48 +77,28 @@ export const canvasMatrix: ICanvasMatrixRow[] = [
         supportsDraggableToggle: false,
         requiresNavigationExpand: false,
         menuCommandLabels: ["Duplicate", "Delete"],
-    },
-    {
+    }),
+    makeMatrixRow({
         paletteItem: "image",
         expectedType: "image",
-        menuSections: ["image", "audio", "wholeElementCommands"],
-        toolbarButtons: [
-            "missingMetadata",
-            "chooseImage",
-            "pasteImage",
-            "expandToFillSpace",
-            "spacer",
-            "duplicate",
-            "delete",
-        ],
         expectedToolboxControls: [],
         supportsDraggableToggle: false,
         requiresNavigationExpand: false,
         menuCommandLabels: ["Duplicate", "Delete"],
-    },
-    {
+    }),
+    makeMatrixRow({
         paletteItem: "video",
         expectedType: "video",
-        menuSections: ["video", "wholeElementCommands"],
-        toolbarButtons: [
-            "chooseVideo",
-            "recordVideo",
-            "spacer",
-            "duplicate",
-            "delete",
-        ],
         expectedToolboxControls: [],
         supportsDraggableToggle: false,
         requiresNavigationExpand: false,
         menuCommandLabels: ["Duplicate", "Delete"],
-    },
+    }),
 
     // ─── Row 2 palette items ───
-    {
+    makeMatrixRow({
         paletteItem: "text",
         expectedType: "speech",
-        menuSections: ["audio", "bubble", "text", "wholeElementCommands"],
-        toolbarButtons: ["format", "spacer", "duplicate", "delete"],
         expectedToolboxControls: [
             "styleDropdown",
             "showTailCheckbox",
@@ -128,12 +110,10 @@ export const canvasMatrix: ICanvasMatrixRow[] = [
         supportsDraggableToggle: false,
         requiresNavigationExpand: false,
         menuCommandLabels: ["Duplicate", "Delete"],
-    },
-    {
+    }),
+    makeMatrixRow({
         paletteItem: "caption",
         expectedType: "caption",
-        menuSections: ["audio", "bubble", "text", "wholeElementCommands"],
-        toolbarButtons: ["format", "spacer", "duplicate", "delete"],
         expectedToolboxControls: [
             "styleDropdown",
             "showTailCheckbox",
@@ -145,63 +125,41 @@ export const canvasMatrix: ICanvasMatrixRow[] = [
         supportsDraggableToggle: false,
         requiresNavigationExpand: false,
         menuCommandLabels: ["Duplicate", "Delete"],
-    },
+    }),
 
     // ─── Navigation palette items (require expanding TriangleCollapse) ───
-    {
+    makeMatrixRow({
         paletteItem: "navigation-image-with-label-button",
         expectedType: "navigation-image-with-label-button",
-        menuSections: ["url", "image", "text", "wholeElementCommands"],
-        toolbarButtons: [
-            "setDestination",
-            "chooseImage",
-            "pasteImage",
-            "spacer",
-            "duplicate",
-            "delete",
-        ],
         expectedToolboxControls: ["textColorBar", "backgroundColorBar"],
         supportsDraggableToggle: false,
         requiresNavigationExpand: true,
-        menuCommandLabels: ["Duplicate", "Delete"],
-    },
-    {
+        menuCommandLabels: ["Set Destination", "Duplicate", "Delete"],
+    }),
+    makeMatrixRow({
         paletteItem: "navigation-image-button",
         expectedType: "navigation-image-button",
-        menuSections: ["url", "image", "wholeElementCommands"],
-        toolbarButtons: [
-            "setDestination",
-            "chooseImage",
-            "pasteImage",
-            "spacer",
-            "duplicate",
-            "delete",
-        ],
         expectedToolboxControls: ["backgroundColorBar"],
         supportsDraggableToggle: false,
         requiresNavigationExpand: true,
-        menuCommandLabels: ["Duplicate", "Delete"],
-    },
-    {
+        menuCommandLabels: ["Set Destination", "Duplicate", "Delete"],
+    }),
+    makeMatrixRow({
         paletteItem: "navigation-label-button",
         expectedType: "navigation-label-button",
-        menuSections: ["url", "text", "wholeElementCommands"],
-        toolbarButtons: ["setDestination", "spacer", "duplicate", "delete"],
         expectedToolboxControls: ["textColorBar", "backgroundColorBar"],
         supportsDraggableToggle: false,
         requiresNavigationExpand: true,
-        menuCommandLabels: ["Duplicate", "Delete"],
-    },
-    {
+        menuCommandLabels: ["Set Destination", "Duplicate", "Delete"],
+    }),
+    makeMatrixRow({
         paletteItem: "book-link-grid",
         expectedType: "book-link-grid",
-        menuSections: ["text"],
-        toolbarButtons: ["linkGridChooseBooks"],
         expectedToolboxControls: ["backgroundColorBar"],
         supportsDraggableToggle: false,
         requiresNavigationExpand: true,
-        menuCommandLabels: [],
-    },
+        menuCommandLabels: ["Choose books..."],
+    }),
 ];
 
 // ── Convenience accessors ───────────────────────────────────────────────
