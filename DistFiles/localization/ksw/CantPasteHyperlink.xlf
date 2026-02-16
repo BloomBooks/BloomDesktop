@@ -2,10 +2,10 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="CantPasteHyperlink-en.htm" datatype="html" source-language="en" target-language="ksw">
     <body>
-      <trans-unit id="hyperlink.title">
-        <source xml:lang="en">Can't Paste Hyperlink</source>
-        <target xml:lang="ksw" state="needs-translation">Can't Paste Hyperlink</target>
-        <note>ID: hyperlink.title</note>
+      <trans-unit id="hyperlink.heading">
+        <source xml:lang="en">Can't Set Up Hyperlink</source>
+        <target xml:lang="ksw" state="needs-translation">Can't Set Up Hyperlink</target>
+        <note>ID: hyperlink.heading</note>
       </trans-unit>
       <trans-unit id="EditTab.HyperlinkPasteFailure">
         <source xml:lang="en">Bloom was not able to make a link. Try selecting only simple text.</source>
@@ -16,6 +16,12 @@
         <source xml:lang="en">In this context, "simple" text means text that is selected from within a single paragraph and is not associated with multiple audio recordings or split audio segments. Also certain selections involving formatted text can be a problem if the whole word is not selected.</source>
         <target xml:lang="ksw" state="needs-translation">In this context, "simple" text means text that is selected from within a single paragraph and is not associated with multiple audio recordings or split audio segments. Also certain selections involving formatted text can be a problem if the whole word is not selected.</target>
         <note>ID: hyperlink.2</note>
+      </trans-unit>
+      <trans-unit id="hyperlink.title">
+        <source xml:lang="en">Can't Paste Hyperlink</source>
+        <target xml:lang="ksw" state="needs-translation">Can't Paste Hyperlink</target>
+        <note>ID: hyperlink.title</note>
+        <note>obsolete as of Bloom 6.3</note>
       </trans-unit>
     </body>
   </file>
