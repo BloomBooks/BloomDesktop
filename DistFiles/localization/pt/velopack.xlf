@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-  <file original="velopack.exe" source-language="en" target-language="pt" datatype="plaintext">
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="velopack.exe" source-language="en" target-language="pt-PT" datatype="plaintext">
     <body>
       <trans-unit id="templates.setup_title">
         <source xml:lang="en">{app_title} Setup {app_version}</source>
