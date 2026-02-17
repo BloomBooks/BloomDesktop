@@ -179,9 +179,12 @@ namespace Bloom.Workspace
             // Temporary: while Help/UI language menus are WinForms menus and tabs run in separate browsers,
             // listen for browser clicks from each main browser so those WinForms menus can close.
             // Remove once menus are in the single browser UI.
-            _editingView.Browser.OnBrowserClick += HandleAnyBrowserClick;
-            _collectionTabView.BrowserClick += HandleAnyBrowserClick;
-            _publishView.BrowserClick += HandleAnyBrowserClick;
+            if (_editingView.Browser != null)
+                _editingView.Browser.OnBrowserClick += HandleAnyBrowserClick;
+            if (_collectionTabView != null)
+                _collectionTabView.BrowserClick += HandleAnyBrowserClick;
+            if (_publishView != null)
+                _publishView.BrowserClick += HandleAnyBrowserClick;
 
             SelectTab(_collectionTabView);
 
