@@ -40,8 +40,21 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             });
     }, [propsForBloomDialog.open]);
 
-    const [settingsToReturnLater, setSettingsToReturnLater] =
-        React.useState("");
+    const [settingsToReturnLater, setSettingsToReturnLater] = React.useState<
+        string | object | undefined
+    >(undefined);
+
+    const normalizeConfigrSettings = (
+        settingsValue: string | object | undefined,
+    ): object | undefined => {
+        if (!settingsValue) {
+            return undefined;
+        }
+        if (typeof settingsValue === "string") {
+            return JSON.parse(settingsValue) as object;
+        }
+        return settingsValue;
+    };
     // Parse the settings JSON for Configr's initial values once it arrives.
     React.useEffect(() => {
         if (settingsString === "{}") {
@@ -137,11 +150,11 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                 <DialogOkButton
                     default={true}
                     onClick={() => {
-                        if (settingsToReturnLater) {
-                            postJson(
-                                "collection/settings",
-                                settingsToReturnLater,
-                            );
+                        const settingsToPost = normalizeConfigrSettings(
+                            settingsToReturnLater,
+                        );
+                        if (settingsToPost) {
+                            postJson("collection/settings", settingsToPost);
                         }
                         closeDialog();
                     }}

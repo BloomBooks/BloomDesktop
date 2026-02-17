@@ -93,11 +93,10 @@ enum PageNumberPosition {
 export const BookSettingsDialog: React.FunctionComponent<{
     initiallySelectedGroupIndex?: number;
 }> = (props) => {
-    const { closeDialog, propsForBloomDialog } =
-        useSetupBloomDialog({
-            initiallyOpen: true,
-            dialogFrameProvidedExternally: false,
-        });
+    const { closeDialog, propsForBloomDialog } = useSetupBloomDialog({
+        initiallyOpen: true,
+        dialogFrameProvidedExternally: false,
+    });
 
     const appearanceUIOptions: IAppearanceUIOptions =
         useApiObject<IAppearanceUIOptions>(
@@ -319,8 +318,21 @@ export const BookSettingsDialog: React.FunctionComponent<{
         undefined,
     );
 
-    const [settingsToReturnLater, setSettingsToReturnLater] =
-        React.useState("");
+    const [settingsToReturnLater, setSettingsToReturnLater] = React.useState<
+        string | IBookSettings | undefined
+    >(undefined);
+
+    const normalizeConfigrSettings = (
+        settingsValue: string | IBookSettings | undefined,
+    ): IBookSettings | undefined => {
+        if (!settingsValue) {
+            return undefined;
+        }
+        if (typeof settingsValue === "string") {
+            return JSON.parse(settingsValue) as IBookSettings;
+        }
+        return settingsValue;
+    };
 
     const [appearanceDisabled, setAppearanceDisabled] = React.useState(false);
 
@@ -358,9 +370,8 @@ export const BookSettingsDialog: React.FunctionComponent<{
     const bookSettingsTitle = useL10n("Book Settings", "BookSettings.Title");
     React.useEffect(() => {
         if (settings?.appearance) {
-            const liveSettings = settingsToReturnLater
-                ? (JSON.parse(settingsToReturnLater) as IBookSettings)
-                : settings;
+            const liveSettings =
+                normalizeConfigrSettings(settingsToReturnLater) ?? settings;
             // when we're in legacy, we're just going to disable all the appearance controls
             setAppearanceDisabled(
                 liveSettings?.appearance?.cssThemeName === "legacy-5-6",
@@ -383,9 +394,10 @@ export const BookSettingsDialog: React.FunctionComponent<{
     const tierAllowsFullBleed = useGetFeatureStatus("PrintshopReady")?.enabled;
 
     function saveSettingsAndCloseDialog() {
-        if (settingsToReturnLater) {
+        const settingsToPost = normalizeConfigrSettings(settingsToReturnLater);
+        if (settingsToPost) {
             // If nothing changed, we don't get any...and don't need to make this call.
-            postJson("book/settings", settingsToReturnLater);
+            postJson("book/settings", settingsToPost);
         }
         isOpenAlready = false;
         closeDialog();
