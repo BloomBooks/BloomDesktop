@@ -96,13 +96,21 @@ namespace Bloom.web.controllers
                         );
                         if (modifiedForLang != null)
                             styleAndFont.fontName = modifiedForLang.fontName;
-                        else if (
-                            modified.Length == 1
-                            && !string.IsNullOrEmpty(modified[0].fontName)
-                        )
-                            styleAndFont.fontName = modified[0].fontName;
                         else
-                            styleAndFont.fontName = langToFont[tag];
+                        {
+                            // I don't think we normally have user-modified styles that apply to all languages,
+                            // but if we do, it will apply to any language that doesn't have its own user-modified style.
+                            // This replaces earlier code that checked for only having one entry in modified,
+                            // but that could wrongly suggest that a font was in use when in fact we just had
+                            // one language-specific override, possibly for a language not even used in the book.
+                            var modifiedForAll = modified.FirstOrDefault(s =>
+                                s.languageTag == "*" && !string.IsNullOrEmpty(s.fontName)
+                            );
+                            if (modifiedForAll != null)
+                                styleAndFont.fontName = modifiedForAll.fontName;
+                            else
+                                styleAndFont.fontName = langToFont[tag];
+                        }
                         styleAndFont.pageId = stylesInBook[style].id;
                         styleAndFont.pageDescription = stylesInBook[style].description;
                         stylesAndFonts.Add(styleAndFont);
@@ -377,7 +385,13 @@ namespace Bloom.web.controllers
                         continue; // no font-family specified in this rule
                     var styleAndFont = new StyleAndFont();
                     styleAndFont.style = match.Groups[1].Value;
-                    styleAndFont.languageTag = match.Groups[4]?.Value ?? "*";
+                    // Note: an earlier version of this code apparently attempted to set this to
+                    // asterisk if there was no match for Groups[4], but wrongly expected it to be
+                    // null when there was no match. In fact, it is an empty string when there is
+                    // no match, so I (JT) fixed it. However, it's remotely possible that something
+                    // somewhere depended on the previous mistake.
+                    var langTag = match.Groups[4].Value;
+                    styleAndFont.languageTag = string.IsNullOrEmpty(langTag) ? "*" : langTag;
                     styleAndFont.fontName = match
                         .Groups[7]
                         .Value.Replace("!important", "")
