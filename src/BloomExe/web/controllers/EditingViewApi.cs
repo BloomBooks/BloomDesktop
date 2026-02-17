@@ -115,6 +115,11 @@ namespace Bloom.web.controllers
                 HandleShowBookSettingsDialog,
                 true
             );
+            apiHandler.RegisterEndpointHandler(
+                "editView/showPageSettingsDialog",
+                HandleShowPageSettingsDialog,
+                true
+            );
         }
 
         private void HandleJumpToPage(ApiRequest request)
@@ -128,6 +133,12 @@ namespace Bloom.web.controllers
         {
             request.PostSucceeded();
             View.SaveAndOpenBookSettingsDialog();
+        }
+
+        private void HandleShowPageSettingsDialog(ApiRequest request)
+        {
+            request.PostSucceeded();
+            View.SaveAndOpenPageSettingsDialog();
         }
 
         /// <summary>

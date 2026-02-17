@@ -17,8 +17,8 @@ Note that hiding the page numbers is done by a setting in appearance.json, not h
     --page-horizontalSplit-height: 0mm;
 }
 
-/* The section below controls the page number and the white circle around it.  */
-.Device16x9Landscape.numberedPage {
+.numberedPage {
+    --pageNumber-background-color: #ffffff; /* I'm not clear why this is white, but all I did in this change is to move it so that it can be overridden by page settings */
     --pageNumber-extra-height: 0mm !important; /* we put the page number on top of the image so we don't need a margin boost */
 }
 .Device16x9Portrait.numberedPage {
@@ -41,7 +41,7 @@ Note that hiding the page numbers is done by a setting in appearance.json, not h
     --pageNumber-font-size: 11pt;
 
     border-radius: 50%;
-    --pageNumber-background-color: #ffffff;
+
     --pageNumber-background-width: 33px;
     --pageNumber-always-left-margin: var(--page-margin-left);
     --pageNumber-right-margin: deliberately-invalid; /* prevents right being set at all. unset does not work. Prevent centering for this layout */
