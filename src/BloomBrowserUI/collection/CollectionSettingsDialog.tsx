@@ -137,7 +137,12 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                 <DialogOkButton
                     default={true}
                     onClick={() => {
-                        postJson("collection/settings", settingsToReturnLater);
+                        if (settingsToReturnLater) {
+                            postJson(
+                                "collection/settings",
+                                settingsToReturnLater,
+                            );
+                        }
                         closeDialog();
                     }}
                 />
