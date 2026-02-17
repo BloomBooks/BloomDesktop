@@ -49,38 +49,10 @@ namespace Bloom.CollectionTab
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
-			this._topBarControl = new System.Windows.Forms.Panel();
-			this._topBarReactControl = new ReactControl();
 			this._reactControl = new ReactControl();
             this._L10NSharpExtender = new L10NSharp.Windows.Forms.L10NSharpExtender(this.components);
-			this._topBarControl.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             this.SuspendLayout();
-            //
-            // _topBarControl
-            //
-            this._topBarControl.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this._topBarControl.AutoSize = true;
-			this._topBarControl.BackColor = System.Drawing.Color.Cyan;
-			this._topBarControl.Controls.Add(this._topBarReactControl);
-			this._topBarControl.Location = new System.Drawing.Point(3, 159);
-            this._topBarControl.Name = "_topBarControl";
-            this._topBarControl.Size = new System.Drawing.Size(767, 69);
-            this._topBarControl.TabIndex = 15;
-            //
-			// _topBarReactControl
-			//
-			this._topBarReactControl.BackColor = System.Drawing.Color.FromArgb(29, 148, 164);
-			this._topBarReactControl.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._topBarReactControl.JavascriptBundleName = "collectionTopBarControlsBundle";
-			this._L10NSharpExtender.SetLocalizableToolTip(this._topBarReactControl, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._topBarReactControl, null);
-			this._L10NSharpExtender.SetLocalizingId(this._topBarReactControl, "CollectionTopBarReact");
-			this._topBarReactControl.Location = new System.Drawing.Point(0, 0);
-			this._topBarReactControl.Name = "_topBarReactControl";
-			this._topBarReactControl.HideVerticalOverflow = true;
-			this._topBarReactControl.Size = new System.Drawing.Size(767, 69);
-			this._topBarReactControl.TabIndex = 34;
             //
             // _L10NSharpExtender
 			//
@@ -104,13 +76,11 @@ namespace Bloom.CollectionTab
 			//
 			this.BackColor = System.Drawing.SystemColors.Control;
 			this.Controls.Add(this._reactControl);
-			this.Controls.Add(this._topBarControl);
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "CollectionTab.LibraryView");
 			this.Name = "CollectionTabView";
 			this.Size = new System.Drawing.Size(773, 518);
-			this._topBarControl.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -118,9 +88,7 @@ namespace Bloom.CollectionTab
 		}
 
 		#endregion
-		public System.Windows.Forms.Panel _topBarControl;
 		private L10NSharp.Windows.Forms.L10NSharpExtender _L10NSharpExtender;
 		private web.ReactControl _reactControl;
-		private web.ReactControl _topBarReactControl;
 	}
 }
