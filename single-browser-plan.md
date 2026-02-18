@@ -129,6 +129,8 @@ Those are post-milestone phases and should be planned separately.
 - Diagnostics endpoint now also reports shell WebView zoom factor for Ctrl+scroll investigation.
 - Diagnostics now include shell WebView zoom-factor change counters and last observed value.
 - Diagnostics now include Phase 2 parity counters for key Edit commands and image operations.
+- Added diagnostics reset endpoint for repeatable parity runs: `POST workspace/singleBrowserDiagnostics/reset`.
+- Undo/cut/copy/paste parity counters now flow through diagnostics (`editParity.cutCommandCount`, `copyCommandCount`, `pasteCommandCount`, `undoCommandCount`).
 
 ### Next focus (Phase 2)
 - Start functional parity tracking for key Edit workflows while keeping legacy internal iframes.
