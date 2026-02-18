@@ -24,6 +24,7 @@ using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Code;
+using SIL.Core.ClearShare;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
@@ -1857,7 +1858,7 @@ namespace Bloom.Edit
         }
 #endif
 
-        public void CopyImageMetadataToWholeBook(Metadata metadata)
+        public void CopyImageMetadataToWholeBook(MetadataCore metadata)
         {
             using (var dlg = new ProgressDialogForeground()) //REVIEW: this foreground dialog has known problems in other contexts... it was used here because of its ability to handle exceptions well. TODO: make the background one handle exceptions well
             {
@@ -1910,7 +1911,7 @@ namespace Bloom.Edit
             _view.ShowChangeLayoutDialog();
         }
 
-        public void ChangeBookLicenseMetaData(Metadata metadata)
+        public void ChangeBookLicenseMetaData(MetadataCore metadata)
         {
             // This is awkward.
             // Originally, one could only open the CopyrightAndLicenseDialog from the Edit tab. Now, one can open it from the Publish tab.

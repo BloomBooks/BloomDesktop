@@ -4672,7 +4672,7 @@ namespace Bloom.Book
         /// <summary>
         /// This is used when the user elects to apply the same image metadata to all images.
         /// </summary>
-        public void CopyImageMetadataToWholeBookAndSave(Metadata metadata, IProgress progress)
+        public void CopyImageMetadataToWholeBookAndSave(MetadataCore metadata, IProgress progress)
         {
             try
             {
@@ -4691,7 +4691,7 @@ namespace Bloom.Book
             Save();
         }
 
-        public Metadata GetLicenseMetadata()
+        public MetadataCore GetLicenseMetadata()
         {
             //BookCopyrightAndLicense.LogMetdata(OurHtmlDom);
             var result = BookCopyrightAndLicense.GetMetadata(OurHtmlDom, _bookData);
@@ -4701,7 +4701,7 @@ namespace Bloom.Book
             return result;
         }
 
-        public void SetMetadata(Metadata metadata)
+        public void SetMetadata(MetadataCore metadata)
         {
             BookCopyrightAndLicense.SetMetadata(
                 metadata,

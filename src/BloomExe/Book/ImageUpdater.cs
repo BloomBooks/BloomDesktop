@@ -7,6 +7,7 @@ using Bloom.ErrorReporter;
 using Bloom.SafeXml;
 using Bloom.Utils;
 using L10NSharp;
+using SIL.Core.ClearShare;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
@@ -21,7 +22,7 @@ namespace Bloom.Book
         public static void CopyImageMetadataToWholeBook(
             string folderPath,
             HtmlDom dom,
-            Metadata metadata,
+            MetadataCore metadata,
             IProgress progress
         )
         {
@@ -190,7 +191,7 @@ namespace Bloom.Book
         /// </summary>
         /// <param name="metadata"></param>
         /// <returns></returns>
-        internal static bool ImageIsFromOfficialCollection(Metadata metadata)
+        internal static bool ImageIsFromOfficialCollection(MetadataCore metadata)
         {
             return !String.IsNullOrEmpty(metadata.CollectionUri);
         }
@@ -213,7 +214,7 @@ namespace Bloom.Book
             string folderPath,
             SafeXmlElement imgElement,
             IProgress progress,
-            Metadata metadata
+            MetadataCore metadata
         )
         {
             //see also PageEditingModel.UpdateMetadataAttributesOnImage(), which does the same thing but on the browser dom
@@ -354,7 +355,7 @@ namespace Bloom.Book
             },
         };
 
-        public static bool ImageIsStockGameImage(string filename, Metadata metadata)
+        public static bool ImageIsStockGameImage(string filename, MetadataCore metadata)
         {
             foreach (var imageInfo in _stockGameImages)
             {
