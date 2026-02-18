@@ -52,6 +52,11 @@ namespace Bloom.Edit
         private ZoomModel _zoomModel;
         private PageListApi _pageListApi;
         private DateTime? _lastTopBarMenuClosedTime;
+        private int _showAddPageDialogCommandCount;
+        private int _showChangeLayoutDialogCommandCount;
+        private int _showRegistrationDialogCommandCount;
+        private int _showAboutDialogCommandCount;
+        private int _setZoomCommandCount;
 
         public delegate EditingView Factory(); //autofac uses this
 
@@ -1773,6 +1778,7 @@ namespace Bloom.Edit
 
         public void ShowAddPageDialog()
         {
+            _showAddPageDialogCommandCount++;
             PageTemplatesApi.ForPageLayout = false;
             //if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
             RunJavascriptAsync("editTabBundle.showPageChooserDialog(false);");
@@ -1780,6 +1786,7 @@ namespace Bloom.Edit
 
         internal void ShowChangeLayoutDialog()
         {
+            _showChangeLayoutDialogCommandCount++;
             PageTemplatesApi.ForPageLayout = true;
             //if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
             RunJavascriptAsync("editTabBundle.showPageChooserDialog(true);");
@@ -1787,12 +1794,14 @@ namespace Bloom.Edit
 
         internal void ShowRegistrationDialog()
         {
+            _showRegistrationDialogCommandCount++;
             var command = $"editTabBundle.showRegistrationDialogInEditTab();";
             RunJavascriptAsync(command);
         }
 
         internal void ShowAboutDialog()
         {
+            _showAboutDialogCommandCount++;
             RunJavascriptAsync($"editTabBundle.showAboutDialogInEditTab();");
         }
 
@@ -1863,6 +1872,7 @@ namespace Bloom.Edit
 
         public void SetZoom(int zoom)
         {
+            _setZoomCommandCount++;
             // If we just put zoom/100.0 in the setZoom call, the implicit toString()
             // uses the regional settings and can produce e.g. 1,3 when we need 1.3
             var zoomFactor = (zoom / 100.0).ToString(CultureInfo.InvariantCulture);
@@ -1929,6 +1939,19 @@ namespace Bloom.Edit
                 setAsCurrentPageForDebugging: true,
                 source: InMemoryHtmlFileSource.Frame
             );
+        }
+
+        internal dynamic GetParityDiagnostics()
+        {
+            return new
+            {
+                showAddPageDialogCommandCount = _showAddPageDialogCommandCount,
+                showChangeLayoutDialogCommandCount = _showChangeLayoutDialogCommandCount,
+                showRegistrationDialogCommandCount = _showRegistrationDialogCommandCount,
+                showAboutDialogCommandCount = _showAboutDialogCommandCount,
+                setZoomCommandCount = _setZoomCommandCount,
+                model = _model.GetParityDiagnostics(),
+            };
         }
 
         public void SaveAndOpenBookSettingsDialog()

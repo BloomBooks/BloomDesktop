@@ -77,6 +77,8 @@ namespace Bloom.Edit
         private FileSystemWatcher _developerFileWatcher;
         private DateTime _lastTimeWeReloadedBecauseOfDeveloperChange;
         private bool _skipNextSaveBecauseDeveloperIsTweakingSupportingFiles;
+        private int _changePictureCommandCount;
+        private int _updateImageInBrowserCommandCount;
 
         //public event EventHandler UpdatePageList;
 
@@ -1687,6 +1689,7 @@ namespace Bloom.Edit
             PalasoImage imageInfo
         )
         {
+            _changePictureCommandCount++;
             try
             {
                 Logger.WriteMinorEvent("Starting ChangePicture {0}...", (object)imageInfo.FileName);
@@ -1713,6 +1716,7 @@ namespace Bloom.Edit
 
         public void UpdateImageInBrowser(PageEditingModel.ImageInfoForJavascript args)
         {
+            _updateImageInBrowserCommandCount++;
             // We generally don't need to wait. Even if we decide to save, its call to RunJavascriptAsync() will come in after ours.
             // But be careful about depending on that (or any subsequent running Javascript) on pages that might have canvas elements:
             // updating the image on a canvas page can involve async code that adjusts things after the image is loaded
@@ -1797,6 +1801,15 @@ namespace Bloom.Edit
         internal Browser GetEditingBrowser()
         {
             return _view.Browser;
+        }
+
+        internal dynamic GetParityDiagnostics()
+        {
+            return new
+            {
+                changePictureCommandCount = _changePictureCommandCount,
+                updateImageInBrowserCommandCount = _updateImageInBrowserCommandCount,
+            };
         }
 
         public IPage DeterminePageWhichWouldPrecedeNextInsertion()

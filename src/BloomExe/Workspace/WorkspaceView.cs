@@ -576,6 +576,7 @@ namespace Bloom.Workspace
                 _workspaceShellReactControl?.GetWebViewZoomFactor();
             diagnostics.workspaceShellWebViewZoom =
                 _workspaceShellReactControl?.GetWebViewZoomDiagnostics();
+            diagnostics.editParity = _editingView?.GetParityDiagnostics();
             return diagnostics;
         }
 
