@@ -631,7 +631,7 @@ namespace Bloom.Edit
                         page as Page,
                         e.NumberToAdd
                     );
-                    _view.Browser.RunJavascriptAsync(
+                    _ = _view.RunJavascriptAsync(
                         "document.getElementById('pageList').contentWindow.location.reload(true);"
                     );
                     //_view.UpdatePageList(false);  InsertPageAfter calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
@@ -1588,7 +1588,7 @@ namespace Bloom.Edit
             _webSocketServer.SendString("pageThumbnailList", "saving", "");
             // review do we really need to be checking to see if things are loaded? If they are not, then there is nothing to save, and this doesn't thow.
             var script = $"editTabBundle.getEditablePageBundleExports().requestPageContent()";
-            _view.Browser.RunJavascriptAsync(script);
+            _ = _view.RunJavascriptAsync(script);
         }
 
         /// <summary>
@@ -1717,10 +1717,9 @@ namespace Bloom.Edit
             // But be careful about depending on that (or any subsequent running Javascript) on pages that might have canvas elements:
             // updating the image on a canvas page can involve async code that adjusts things after the image is loaded
             // enough to get its dimensions, and that adjustment might not complete before the next Javascript is run from C#
-            GetEditingBrowser()
-                .RunJavascriptFireAndForget(
-                    $"editTabBundle.getEditablePageBundleExports().changeImage({JsonConvert.SerializeObject(args)})"
-                );
+            _ = _view.RunJavascriptAsync(
+                $"editTabBundle.getEditablePageBundleExports().changeImage({JsonConvert.SerializeObject(args)})"
+            );
 
             /* We're Saving to the DOM here only if it's a cover page, because that lets us make the image transparent if it should be:
              *        Cause: Until we have Saved the page, the in-memory DOM doesn't have this as the cover image,

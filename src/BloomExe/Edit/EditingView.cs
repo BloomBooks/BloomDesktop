@@ -1396,11 +1396,9 @@ namespace Bloom.Edit
 
         public void RemoveUnneededImageId(string imageId)
         {
-            Model
-                .GetEditingBrowser()
-                .RunJavascriptFireAndForget(
-                    $"editTabBundle.getEditablePageBundleExports().removeImageId('{imageId}')"
-                );
+            _ = RunJavascriptAsync(
+                $"editTabBundle.getEditablePageBundleExports().removeImageId('{imageId}')"
+            );
         }
 
         private bool ShouldBailOutBecauseUserAgreedNotToUseJpeg(PalasoImage imageInfo)
