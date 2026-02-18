@@ -113,9 +113,7 @@ namespace BloomTests.Book
             Assert.IsFalse(creativeCommonsLicense.CommercialUseAllowed);
             Assert.IsTrue(
                 creativeCommonsLicense.DerivativeRule
-                    == CreativeCommonsLicenseInfo
-                        .DerivativeRules
-                        .DerivativesWithShareAndShareAlike
+                    == CreativeCommonsLicenseInfo.DerivativeRules.DerivativesWithShareAndShareAlike
             );
         }
 

@@ -4231,10 +4231,7 @@ namespace BloomTests.Book
             );
 
             // Custom License
-            licenseData.License = new CustomLicenseInfo
-            {
-                RightsStatement = "Use it if you dare",
-            };
+            licenseData.License = new CustomLicenseInfo { RightsStatement = "Use it if you dare" };
 
             book.SetMetadata(licenseData);
 
