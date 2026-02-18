@@ -123,7 +123,10 @@ namespace Bloom.web
 
             if (DisableBrowserZoomControl)
             {
-                var settings = (_browser as WebView2Browser)?.InternalBrowser?.CoreWebView2?.Settings;
+                var settings = (_browser as WebView2Browser)
+                    ?.InternalBrowser
+                    ?.CoreWebView2
+                    ?.Settings;
                 if (settings != null)
                     settings.IsZoomControlEnabled = false;
             }
