@@ -113,6 +113,8 @@ Those are post-milestone phases and should be planned separately.
 - Completed: Fallback diagnostic logging when host dispatch falls back to legacy Edit browser.
 - Completed: Removed obsolete synchronous host bridge path to keep one verified async dispatch pipeline.
 - Completed: Fixed thumbnail-switch crash when toolbox exports were temporarily unavailable (`applyToolboxStateToPage` now runs through `doWhenToolboxLoaded`).
+- Completed: Fixed Edit zoom plus/minus no-op (corrected `setZoom` CSS transform in `editViewFrame.ts`).
+- Completed: Disabled browser-level Ctrl+wheel/Ctrl+plus zoom on the single-browser shell host (`ReactControl.DisableBrowserZoomControl`).
 
 ### Next Phase 1 slice
 - Verify and route any remaining high-impact Edit JS commands that bypass `EditingView.RunJavascriptAsync`.
