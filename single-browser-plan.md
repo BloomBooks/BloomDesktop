@@ -149,6 +149,26 @@ Those are post-milestone phases and should be planned separately.
 2. Add a repeatable quick parity regression checklist run template (date/build/result).
 3. Continue workflow-by-workflow verification for image operations and undo/cut/copy/paste.
 
+### Phase 2 quick parity run template
+Use this to record each dogfooding pass concisely:
+
+- Date:
+- Build/commit:
+- Environment:
+- Workflows checked:
+   - Enter Edit + render:
+   - Thumbnail navigation:
+   - Add Page / Change Layout:
+   - Registration/About dialogs:
+   - Zoom buttons:
+   - Ctrl+scroll behavior:
+   - Tab switching:
+   - Image operations:
+   - Undo/Cut/Copy/Paste:
+- New issues found:
+- Regressions from previous run:
+- Next actions:
+
 ---
 
 ## Smoke checklist for Milestone 3 readiness
