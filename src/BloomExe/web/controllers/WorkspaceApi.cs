@@ -50,6 +50,11 @@ namespace Bloom.web.controllers
 
             apiHandler.RegisterEndpointHandler("workspace/selectTab", HandleSelectTab, true);
             apiHandler.RegisterEndpointHandler("workspace/tabs", HandleTabs, true);
+            apiHandler.RegisterEndpointHandler(
+                "workspace/editFrameUrl",
+                HandleGetEditFrameUrl,
+                true
+            );
         }
 
         private void HandleOpenOrCreateCollection(ApiRequest request)
@@ -145,6 +150,14 @@ namespace Bloom.web.controllers
                 throw new ArgumentException("workspace/tabs only supports GET");
 
             request.ReplyWithJson(WorkspaceView.GetTabInfoForClient());
+        }
+
+        private void HandleGetEditFrameUrl(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Get)
+                throw new ArgumentException("workspace/editFrameUrl only supports GET");
+
+            request.ReplyWithText(WorkspaceView.GetEditFrameUrlForReactHost());
         }
     }
 }

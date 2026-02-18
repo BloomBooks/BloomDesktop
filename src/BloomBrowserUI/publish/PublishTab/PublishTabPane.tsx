@@ -355,5 +355,3 @@ export const PublishTabPane: React.FunctionComponent = () => {
         </StyledEngineProvider>
     );
 };
-
-WireUpForWinforms(PublishTabPane, kBloomUnselectedTabBackground);

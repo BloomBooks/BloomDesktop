@@ -691,6 +691,8 @@ function getRemovableCollectionHeaderDiv(
                     display: block;
                     cursor: pointer;
                 }
+                width: 100%;
+                height: 100%;
             `}
         >
             <h2>{collectionName}</h2>
@@ -751,4 +753,4 @@ function processTemplatesCollection(
 
     return [simpleTemplates, specializedTemplates];
 }
-WireUpForWinforms(CollectionsTabPane, kPanelBackground);
+// WireUpForWinforms(CollectionsTabPane, kPanelBackground);

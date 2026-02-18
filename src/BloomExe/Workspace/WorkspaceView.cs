@@ -63,6 +63,8 @@ namespace Bloom.Workspace
         private CollectionSettingsApi _collectionSettingsApi;
 
         private NewCollectionWizardApi _newCollectionWizardApi;
+        private readonly bool _useSingleBrowserWorkspaceShell;
+        private ReactControl _workspaceShellReactControl;
 
         internal ReactControl TopBarReactControl => _topBarReactControl;
 
@@ -134,6 +136,8 @@ namespace Bloom.Workspace
 
             InitializeComponent();
 
+            _useSingleBrowserWorkspaceShell = ShouldUseSingleBrowserWorkspaceShell();
+
             // Counter the scaling that WinForms does under .Net 8 based on default font size.
             // We've retained the old default font and size to avoid changing the dialog sizes
             // inappropriately, but need this scaling to keep the top pane of the workspace
@@ -187,6 +191,10 @@ namespace Bloom.Workspace
 
             SetupZoomModel();
             SetupTopBarReactControl();
+            if (_useSingleBrowserWorkspaceShell)
+            {
+                ActivateSingleBrowserWorkspaceShell();
+            }
             SendZoomInfo();
             CommonApi.WorkspaceView = this;
 
@@ -502,6 +510,32 @@ namespace Bloom.Workspace
             _topBarReactControl.OnBrowserClick += HandleAnyBrowserClick;
         }
 
+        private bool ShouldUseSingleBrowserWorkspaceShell()
+        {
+            if (!ApplicationUpdateSupport.IsDev)
+                return false;
+
+            return true;
+        }
+
+        private void ActivateSingleBrowserWorkspaceShell()
+        {
+            _topBarReactControl.Visible = false;
+            _containerPanel.Visible = false;
+
+            _workspaceShellReactControl = new ReactControl
+            {
+                JavascriptBundleName = "appBundle",
+                BackColor = Palette.GeneralBackground,
+                Dock = DockStyle.Fill,
+            };
+            _workspaceShellReactControl.SetLocalizationChangedEvent(_localizationChangedEvent);
+            _workspaceShellReactControl.OnBrowserClick += HandleAnyBrowserClick;
+
+            Controls.Add(_workspaceShellReactControl);
+            _workspaceShellReactControl.BringToFront();
+        }
+
         // Temporary helper used to close WinForms menus from browser click notifications.
         // Remove once menus are rendered in the single browser UI.
         private void HandleAnyBrowserClick(object sender, EventArgs e)
@@ -523,6 +557,19 @@ namespace Bloom.Workspace
             tabInfo.tabStates.edit = GetTabStateForUi("edit", activeTabId);
             tabInfo.tabStates.publish = GetTabStateForUi("publish", activeTabId);
             return tabInfo;
+        }
+
+        public string GetEditFrameUrlForReactHost()
+        {
+            if (InvokeRequired)
+            {
+                return (string)Invoke(new Func<string>(() => GetEditFrameUrlForReactHost()));
+            }
+
+            if (_editingView == null)
+                return string.Empty;
+
+            return _editingView.GetEditFrameUrlForReactHost();
         }
 
         private string GetTabStateForUi(string tabId, string activeTabId)
@@ -1227,6 +1274,12 @@ namespace Bloom.Workspace
                 case WorkspaceTab.publish:
                     SelectTab(_publishView);
                     break;
+            }
+
+            if (_useSingleBrowserWorkspaceShell)
+            {
+                SendZoomInfo();
+                SendTopBarState();
             }
         }
 

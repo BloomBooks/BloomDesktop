@@ -1879,6 +1879,39 @@ namespace Bloom.Edit
         // intended for use only by the EditingModel
         internal Browser Browser => _browser1;
 
+        internal string GetEditFrameUrlForReactHost()
+        {
+            if (InvokeRequired)
+            {
+                return (string)Invoke(new Func<string>(() => GetEditFrameUrlForReactHost()));
+            }
+
+            if (_browser1 == null)
+                return string.Empty;
+
+            if (!_model.HaveCurrentEditableBook)
+                return string.Empty;
+
+            if (!_model.Visible)
+                _model.Visible = true;
+
+            if (_model.CurrentPage == null)
+            {
+                _model.OnBecomeVisible();
+            }
+
+            if (_model.CurrentPage == null)
+                return string.Empty;
+
+            _model.SetupServerWithCurrentBookToolboxContents();
+            var dom = _model.GetXmlDocumentForEditScreenWebPage();
+            return _browser1.CreateSimulatedFile(
+                dom,
+                setAsCurrentPageForDebugging: true,
+                source: InMemoryHtmlFileSource.Frame
+            );
+        }
+
         public void SaveAndOpenBookSettingsDialog()
         {
             _model.SaveThen(

@@ -230,6 +230,7 @@ namespace Bloom.web
                     "accessibilityCheckBundle",
                     "/publish/accessibilityCheck/accessibilityCheckScreen.entry.tsx"
                 },
+                { "appBundle", "/app/App.entry.tsx" },
                 { "topBarBundle", "/react_components/TopBar/TopBar.entry.tsx" },
             };
             string viteModulePath = null;
