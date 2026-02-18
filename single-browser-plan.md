@@ -118,9 +118,9 @@ Those are post-milestone phases and should be planned separately.
 - Completed: Hardened `setZoom` to update all relevant page-scaling-container contexts in wrapped Edit mode.
 - Completed: Re-applied browser zoom disabling after navigation (`DocumentCompleted`) to prevent shell zoom regressions.
 
-### Next Phase 1 slice
-- Verify and route any remaining high-impact Edit JS commands that bypass `EditingView.RunJavascriptAsync`.
-- Use the smoke checklist during dogfooding and monitor fallback diagnostics frequency.
+### Phase 1 closeout notes
+- High-impact routing has been moved to host-first path for the main Edit command flows.
+- Remaining issue intentionally deferred during milestone push: Ctrl+scroll host zoom side effect.
 
 ### Smoke run status
 - Smoke checklist completed through item #8 by manual dogfooding.
@@ -130,6 +130,24 @@ Those are post-milestone phases and should be planned separately.
 ### Next focus (Phase 2)
 - Start functional parity tracking for key Edit workflows while keeping legacy internal iframes.
 - Log and prioritize remaining non-blocking issues found during dogfooding.
+
+### Phase 2 parity tracker (current)
+| Workflow | Status | Notes |
+| --- | --- | --- |
+| Enter Edit tab and render page | pass | Working in single-browser shell mode |
+| Thumbnail page navigation | pass | Prior toolbox race crash fixed |
+| Add Page dialog and insert | pass | Smoke-tested |
+| Change Layout dialog | pass | Smoke-tested |
+| Registration/About dialogs from Edit | pass | Smoke-tested |
+| Zoom plus/minus behavior | pass | Control updates page zoom in latest smoke run |
+| Ctrl+scroll zoom behavior | partial | Deferred: sometimes affects host-level zoom too |
+| Tab switching (Collection/Edit/Publish) | pass | Smoke-tested |
+| Host dispatch telemetry visibility | pass | `GET workspace/singleBrowserDiagnostics` available |
+
+### Phase 2 next implementation targets
+1. Investigate and isolate Ctrl+scroll host zoom leakage path.
+2. Add a repeatable quick parity regression checklist run template (date/build/result).
+3. Continue workflow-by-workflow verification for image operations and undo/cut/copy/paste.
 
 ---
 
