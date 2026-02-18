@@ -104,11 +104,13 @@ Those are post-milestone phases and should be planned separately.
 - Completed: Host-first routing for page switching via `EditingView.RunJavascriptAsync`.
 - Completed: Host-first routing for Edit dialogs and top-level Edit commands that already use `EditingView.RunJavascriptAsync`.
 - Completed: Async host dispatch verification in `WorkspaceView` (only report success when visible Edit host executes).
+- Completed: Async host dispatch now retries briefly before fallback to reduce transient "host not ready" misses.
 - Completed: Additional host-first routing in `EditingModel` for:
    - `requestPageContent()` save trigger
    - page list reload after page insert
    - `changeImage(...)` editable-page command
 - Completed: Fallback diagnostic logging when host dispatch falls back to legacy Edit browser.
+- Completed: Removed obsolete synchronous host bridge path to keep one verified async dispatch pipeline.
 
 ### Next Phase 1 slice
 - Verify and route any remaining high-impact Edit JS commands that bypass `EditingView.RunJavascriptAsync`.
