@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Utils;
 using Newtonsoft.Json;
@@ -164,6 +165,22 @@ namespace Bloom.web
                 return;
             var tempFile = MakeTempFile();
             _browser.NavigateToTempFileThenRemoveIt(tempFile.Path);
+        }
+
+        internal async Task RunJavascriptAsync(string script)
+        {
+            if (_browser == null)
+                return;
+
+            await _browser.RunJavascriptAsync(script);
+        }
+
+        internal void RunJavascriptFireAndForget(string script)
+        {
+            if (_browser == null)
+                return;
+
+            _browser.RunJavascriptFireAndForget(script);
         }
 
         private TempFile MakeTempFile()

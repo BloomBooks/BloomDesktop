@@ -409,9 +409,11 @@ namespace Bloom.Edit
                 Logger.WriteEvent(
                     $"changing page via editTabBundle.switchContentPage('{urlFile}')"
                 );
-                _browser1.RunJavascriptFireAndForget(
-                    "editTabBundle.switchContentPage('" + pageUrl + "');"
-                );
+                var script = "editTabBundle.switchContentPage('" + pageUrl + "');";
+                if (!(CommonApi.WorkspaceView?.TryRunJavascriptInVisibleEditHost(script) ?? false))
+                {
+                    _browser1.RunJavascriptFireAndForget(script);
+                }
             }
             else
             {
@@ -501,6 +503,9 @@ namespace Bloom.Edit
 
         internal async Task RunJavascriptAsync(string script)
         {
+            if (CommonApi.WorkspaceView?.TryRunJavascriptInVisibleEditHost(script) ?? false)
+                return;
+
             await _browser1.RunJavascriptAsync(script);
             return;
         }

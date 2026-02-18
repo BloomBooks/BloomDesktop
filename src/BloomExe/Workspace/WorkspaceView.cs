@@ -572,6 +572,41 @@ namespace Bloom.Workspace
             return _editingView.GetEditFrameUrlForReactHost();
         }
 
+        public bool TryRunJavascriptInVisibleEditHost(string script)
+        {
+            if (InvokeRequired)
+            {
+                return (bool)Invoke(
+                    new Func<string, bool>(TryRunJavascriptInVisibleEditHost),
+                    script
+                );
+            }
+
+            if (
+                !_useSingleBrowserWorkspaceShell
+                || _workspaceShellReactControl == null
+                || string.IsNullOrEmpty(script)
+            )
+                return false;
+
+            var scriptJson = JsonConvert.SerializeObject(script);
+            var hostScript =
+                $@"(function() {{
+                        var host = document.querySelector('iframe[title=""EditTabHost""]');
+                        if (!host || !host.contentWindow) return false;
+                        try {{
+                            host.contentWindow.eval({scriptJson});
+                            return true;
+                        }} catch (e) {{
+                            console.error('Failed to run script in EditTabHost', e);
+                            return false;
+                        }}
+                    }})();";
+
+            _workspaceShellReactControl.RunJavascriptFireAndForget(hostScript);
+            return true;
+        }
+
         private string GetTabStateForUi(string tabId, string activeTabId)
         {
             // Even if !_tabsEnabled, we want the current tab to look active.
