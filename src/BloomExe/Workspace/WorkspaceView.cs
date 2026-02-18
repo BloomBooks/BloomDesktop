@@ -531,6 +531,7 @@ namespace Bloom.Workspace
                 JavascriptBundleName = "appBundle",
                 BackColor = Palette.GeneralBackground,
                 Dock = DockStyle.Fill,
+                DisableBrowserZoomControl = true,
             };
             _workspaceShellReactControl.SetLocalizationChangedEvent(_localizationChangedEvent);
             _workspaceShellReactControl.OnBrowserClick += HandleAnyBrowserClick;

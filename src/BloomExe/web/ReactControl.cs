@@ -51,6 +51,7 @@ namespace Bloom.web
 
         public bool UseEditContextMenu;
         public bool HideVerticalOverflow;
+        public bool DisableBrowserZoomControl;
         public event EventHandler OnBrowserClick;
 
         public Action ReplaceContextMenu { get; set; }
@@ -119,6 +120,13 @@ namespace Bloom.web
                 };
 
             _browser.EnsureHandleCreated();
+
+            if (DisableBrowserZoomControl)
+            {
+                var settings = (_browser as WebView2Browser)?.InternalBrowser?.CoreWebView2?.Settings;
+                if (settings != null)
+                    settings.IsZoomControlEnabled = false;
+            }
 
             _browser.OnBrowserClick += (s, args) =>
             {
