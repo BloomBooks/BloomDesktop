@@ -19,7 +19,6 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Text;
-using SIL.Windows.Forms.ClearShare;
 
 namespace Bloom.Book
 {
@@ -265,8 +264,8 @@ namespace Bloom.Book
             set { MetaData.BookLineage = value; }
         }
 
-        // This indicates the kind of license in use. For Creative Commons licenses, it is the Abbreviation of the CreativeCommonsLicense
-        // object, the second-last (before version number) element of the licenseUrl. Other known values are 'ask' (no license granted,
+        // This indicates the kind of license in use. For Creative Commons licenses, it is the abbreviation token
+        // derived from the licenseUrl (the second-last element before the version number). Other known values are 'ask' (no license granted,
         // ask the copyright holder for permission to use) 'custom' (rights presumably specified in licenseNotes)
         // Review: would it help with filtering if this field contained some indication of whether licenseNotes contains anything
         // (e.g., so we can search for CC licenses with no non-standard encumbrance)?
@@ -1282,8 +1281,8 @@ namespace Bloom.Book
         [JsonProperty("bookLineage")]
         public string BookLineage { get; set; }
 
-        // This indicates the kind of license in use. For Creative Commons licenses, it is the Abbreviation of the CreativeCommonsLicense
-        // object, the second-last (before version number) element of the licenseUrl. Other known values are 'ask' (no license granted,
+        // This indicates the kind of license in use. For Creative Commons licenses, it is the abbreviation token
+        // derived from the licenseUrl (the second-last element before the version number). Other known values are 'ask' (no license granted,
         // ask the copyright holder for permission to use) 'custom' (rights presumably specified in licenseNotes)
         // Review: would it help with filtering if this field contained some indication of whether licenseNotes contains anything
         // (e.g., so we can search for CC licenses with no non-standard encumbrance)?

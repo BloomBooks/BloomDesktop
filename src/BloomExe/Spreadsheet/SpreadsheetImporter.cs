@@ -1131,7 +1131,7 @@ namespace Bloom.Spreadsheet
                 // copyright and license information, so we won't mess with what's in the target doc.
                 // But if it has copyright, we expect it to have license information as well.
                 // If it doesn't, that typically means the source book didn't either,
-                // which has a specific significance (NullLicense or CustomLicense).
+                // which has a specific significance (NullLicense or CustomLicenseInfo).
                 // So make the destination book match, if we didn't find those.
                 if (!_foundLicenseUrl)
                     RemoveDataDivField("licenseUrl");

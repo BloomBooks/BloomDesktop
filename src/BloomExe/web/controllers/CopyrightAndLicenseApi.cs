@@ -328,7 +328,7 @@ namespace Bloom.web.controllers
             }
             else
             {
-                metadata.License = new CustomLicense();
+                metadata.License = new CustomLicenseInfo();
             }
 
             metadata.License.RightsStatement = settings.licenseInfo.rightsStatement;

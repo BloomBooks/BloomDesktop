@@ -58,7 +58,7 @@ namespace Bloom.Book
             BookData bookData
         )
         {
-            var metadata = new Metadata();
+            var metadata = new MetadataCore();
             if (!copyright.Empty)
             {
                 metadata.CopyrightNotice = GetBestMultiTextBaseValue(copyright, bookData);
@@ -70,7 +70,7 @@ namespace Bloom.Book
                 //custom licenses live in this field, so if we have notes (and no URL) it is a custom one.
                 if (!licenseNotes.Empty)
                 {
-                    metadata.License = new CustomLicense
+                    metadata.License = new CustomLicenseInfo
                     {
                         RightsStatement = GetBestMultiTextBaseValue(licenseNotes, bookData),
                     };
@@ -150,7 +150,7 @@ namespace Bloom.Book
 
         private static MetadataCore GetMetadataWithDefaultCopyrightAndLicense()
         {
-            var metadata = new Metadata();
+            var metadata = new MetadataCore();
             Logger.WriteEvent(
                 "For BL-3166 Investigation: GetMetadata() setting to default license"
             );
@@ -203,10 +203,10 @@ namespace Bloom.Book
             // We have removed this check because we now throw in L10nSharp itself if it is used
             // before being initialized. I'm leaving the code in case we need to return to it. See BL-13266.
             //
-            // CustomLicense returns "und" for the description language unless the description is empty.
+            // CustomLicenseInfo returns "und" for the description language unless the description is empty.
             // For an empty description, it returns the localized form of the boilerplate text
             // "For permission to reuse, contact the copyright holder." with the appropriate language tag.
-            //if (!(languageUsedForDescription == "und" && metadata.License is CustomLicense))
+            //if (!(languageUsedForDescription == "und" && metadata.License is CustomLicenseInfo))
             //{
             //    LocalizationHelper.CheckForMissingLocalization(
             //        langPriorities.ToList(),
@@ -522,7 +522,7 @@ namespace Bloom.Book
         }
 
         // This will USUALLY return something like "Licensed under {some license}.", but corner cases include empty string and
-        // whatever the user puts in as CustomLicense text.
+        // whatever the user puts in as CustomLicenseInfo text.
         // The out var is for use in the full format string only (FullOriginalCopyrightLicenseSentence).
         public static string GetOriginalLicenseSentence(
             IEnumerable<string> languagePriorityIds,

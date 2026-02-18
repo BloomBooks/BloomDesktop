@@ -11,7 +11,6 @@ using SIL.Core.ClearShare;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
-using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
 using TagLib;
 
