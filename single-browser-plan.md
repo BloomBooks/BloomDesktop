@@ -100,6 +100,20 @@ Those are post-milestone phases and should be planned separately.
 - Edit host wrapper exists.
 - Routing reliability work is in progress (Phase 1).
 
+### Phase 1 progress log
+- Completed: Host-first routing for page switching via `EditingView.RunJavascriptAsync`.
+- Completed: Host-first routing for Edit dialogs and top-level Edit commands that already use `EditingView.RunJavascriptAsync`.
+- Completed: Async host dispatch verification in `WorkspaceView` (only report success when visible Edit host executes).
+- Completed: Additional host-first routing in `EditingModel` for:
+   - `requestPageContent()` save trigger
+   - page list reload after page insert
+   - `changeImage(...)` editable-page command
+- Completed: Fallback diagnostic logging when host dispatch falls back to legacy Edit browser.
+
+### Next Phase 1 slice
+- Verify and route any remaining high-impact Edit JS commands that bypass `EditingView.RunJavascriptAsync`.
+- Use the smoke checklist during dogfooding and monitor fallback diagnostics frequency.
+
 ---
 
 ## Smoke checklist for Milestone 3 readiness
