@@ -568,8 +568,7 @@ namespace Bloom.Workspace
             dynamic diagnostics = new DynamicJson();
             diagnostics.useSingleBrowserWorkspaceShell = _useSingleBrowserWorkspaceShell;
             diagnostics.activeTab = TabToId(_tabSelection.ActiveTab);
-            diagnostics.visibleEditHostDispatchSuccessCount =
-                _visibleEditHostDispatchSuccessCount;
+            diagnostics.visibleEditHostDispatchSuccessCount = _visibleEditHostDispatchSuccessCount;
             diagnostics.visibleEditHostDispatchFallbackCount =
                 _visibleEditHostDispatchFallbackCount;
             diagnostics.zoom = GetZoomInfo();

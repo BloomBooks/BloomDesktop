@@ -168,9 +168,7 @@ namespace Bloom.web.controllers
         private void HandleSingleBrowserDiagnostics(ApiRequest request)
         {
             if (request.HttpMethod != HttpMethods.Get)
-                throw new ArgumentException(
-                    "workspace/singleBrowserDiagnostics only supports GET"
-                );
+                throw new ArgumentException("workspace/singleBrowserDiagnostics only supports GET");
 
             request.ReplyWithJson(WorkspaceView.GetSingleBrowserDiagnostics());
         }
