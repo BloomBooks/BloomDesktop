@@ -118,7 +118,7 @@ namespace Bloom.web.controllers
                     request.ReplyWithJson(intellectualPropertyData);
                     break;
                 case HttpMethods.Post:
-                    metadata = GetMetadataFromJson(request, forBook: false);
+                    metadata = (Metadata)GetMetadataFromJson(request, forBook: false);
                     View.Model.SaveThen(
                         () =>
                         { // Saved DOM must be up to date with possibly new imageUrl
@@ -280,7 +280,7 @@ namespace Bloom.web.controllers
             return "contact";
         }
 
-        private Metadata GetMetadataFromJson(ApiRequest request, bool forBook)
+        private MetadataCore GetMetadataFromJson(ApiRequest request, bool forBook)
         {
             var json = request.RequiredPostJson();
             var settings = DynamicJson.Parse(json);
