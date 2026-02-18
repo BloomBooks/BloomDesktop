@@ -66,6 +66,8 @@ namespace Bloom.Workspace
         private NewCollectionWizardApi _newCollectionWizardApi;
         private readonly bool _useSingleBrowserWorkspaceShell;
         private ReactControl _workspaceShellReactControl;
+        private int _visibleEditHostDispatchSuccessCount;
+        private int _visibleEditHostDispatchFallbackCount;
 
         internal ReactControl TopBarReactControl => _topBarReactControl;
 
@@ -589,7 +591,10 @@ namespace Bloom.Workspace
 
             for (var attempt = 0; attempt < 4; attempt++)
             {
-                if (_workspaceShellReactControl == null || _tabSelection.ActiveTab != WorkspaceTab.edit)
+                if (
+                    _workspaceShellReactControl == null
+                    || _tabSelection.ActiveTab != WorkspaceTab.edit
+                )
                     return false;
 
                 var scriptJson = JsonConvert.SerializeObject(script);
@@ -606,12 +611,27 @@ namespace Bloom.Workspace
                             }}
                         }})();";
 
-                var result = await _workspaceShellReactControl.GetStringFromJavascriptAsync(hostScript);
+                var result = await _workspaceShellReactControl.GetStringFromJavascriptAsync(
+                    hostScript
+                );
                 if (string.Equals(result, "true", StringComparison.OrdinalIgnoreCase))
+                {
+                    _visibleEditHostDispatchSuccessCount++;
                     return true;
+                }
 
                 if (attempt < 3)
                     await Task.Delay(75);
+            }
+
+            _visibleEditHostDispatchFallbackCount++;
+            if ((_visibleEditHostDispatchFallbackCount % 25) == 0)
+            {
+                Logger.WriteMinorEvent(
+                    "[SingleBrowser] Visible Edit host dispatch fallback count: {0} (successes: {1})",
+                    _visibleEditHostDispatchFallbackCount,
+                    _visibleEditHostDispatchSuccessCount
+                );
             }
 
             return false;
