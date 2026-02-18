@@ -949,15 +949,27 @@ namespace Bloom.TeamCollection
 
                     var book = _collectionModel.GetBookFromBookInfo(bookInfo);
                     var message = BookHistory.GetPendingCheckinMessage(book);
-                    _tcManager.CurrentCollection.PutBook(
-                        bookInfo.FolderPath,
-                        true,
-                        false,
-                        reportProgressFraction
-                    );
-                    // After we actually do the checkin, so if checkin throws, we don't record a checkin that didn't happen.
                     BookHistory.AddEvent(book, BookHistoryEventType.CheckIn, message);
                     BookHistory.SetPendingCheckinMessage(book, "");
+                    try
+                    {
+                        _tcManager.CurrentCollection.PutBook(
+                            bookInfo.FolderPath,
+                            true,
+                            false,
+                            reportProgressFraction
+                        );
+                    }
+                    catch (Exception)
+                    {
+                        BookHistory.RemoveMostRecentEvent(
+                            book,
+                            BookHistoryEventType.CheckIn,
+                            message
+                        );
+                        BookHistory.SetPendingCheckinMessage(book, message);
+                        throw;
+                    }
                     progress?.MessageWithoutLocalizing($"Completed check-in of '{bookInfo.Title}'");
 
                     reportProgressFraction(0); // hides the progress bar (important if a different book has been selected that is still checked out)
