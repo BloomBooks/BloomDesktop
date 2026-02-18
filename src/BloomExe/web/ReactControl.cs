@@ -58,6 +58,16 @@ namespace Bloom.web
 
         private Browser _browser;
 
+        private void ApplyBrowserZoomControlSetting()
+        {
+            if (!DisableBrowserZoomControl)
+                return;
+
+            var settings = (_browser as WebView2Browser)?.InternalBrowser?.CoreWebView2?.Settings;
+            if (settings != null)
+                settings.IsZoomControlEnabled = false;
+        }
+
         protected override void OnBackColorChanged(EventArgs e)
         {
             base.OnBackColorChanged(e);
@@ -120,16 +130,7 @@ namespace Bloom.web
                 };
 
             _browser.EnsureHandleCreated();
-
-            if (DisableBrowserZoomControl)
-            {
-                var settings = (_browser as WebView2Browser)
-                    ?.InternalBrowser
-                    ?.CoreWebView2
-                    ?.Settings;
-                if (settings != null)
-                    settings.IsZoomControlEnabled = false;
-            }
+            ApplyBrowserZoomControlSetting();
 
             _browser.OnBrowserClick += (s, args) =>
             {
@@ -145,6 +146,7 @@ namespace Bloom.web
             {
                 if (IsDisposed)
                     return;
+                ApplyBrowserZoomControlSetting();
                 Controls.Add(_browser);
 
                 // This allows us to bring up a react control/dialog with focus already set to a specific element.

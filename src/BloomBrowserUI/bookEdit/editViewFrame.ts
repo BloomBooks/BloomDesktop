@@ -281,19 +281,47 @@ export function showRegistrationDialogInEditTab() {
 // Called directly from C# code, in EditingView.SetZoom().
 // Argument is a raw number (e.g., 0.5 for 50% zoom, 1.0 for 100% zoom).
 export function setZoom(zoom: number): void {
-    const container = getPageIframeBody()?.ownerDocument.getElementById(
-        "page-scaling-container",
+    const zoomString = zoom.toString();
+    const newWidth = `calc((100% - 5px) / ${zoomString})`;
+    const containers: HTMLElement[] = [];
+
+    const addContainer = (container?: HTMLElement | null) => {
+        if (container && containers.indexOf(container) < 0) {
+            containers.push(container);
+        }
+    };
+
+    addContainer(
+        document.getElementById("page-scaling-container") as HTMLElement,
     );
-    if (container) {
-        container.style.transform = `scale(${zoom.toString()})`;
-        // This produces something like calc((100% - 5px) / 0.8)
-        const newWidth = `calc((100% - 5px) / ${zoom.toString()})`;
-        // But if you read it back it will be something like calc(125% - 6.25px)
-        // (which is actually equivalent).
-        container.style.width = newWidth;
-    } else {
-        console.warn("setZoom called before page loaded");
+
+    const pageBody = getPageIframeBody();
+    addContainer(
+        pageBody?.ownerDocument.getElementById(
+            "page-scaling-container",
+        ) as HTMLElement,
+    );
+
+    const pageFrame = document.getElementById(
+        "page",
+    ) as HTMLIFrameElement | null;
+    addContainer(
+        pageFrame?.contentDocument?.getElementById(
+            "page-scaling-container",
+        ) as HTMLElement,
+    );
+
+    if (containers.length === 0) {
+        console.warn(
+            "setZoom called before page-scaling-container is available",
+        );
+        return;
     }
+
+    containers.forEach((container) => {
+        container.style.transform = `scale(${zoomString})`;
+        container.style.width = newWidth;
+    });
 }
 
 // --- Global exposure (legacy compatibility) --------------------------------------
