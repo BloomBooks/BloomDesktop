@@ -112,6 +112,7 @@ Those are post-milestone phases and should be planned separately.
    - `changeImage(...)` editable-page command
 - Completed: Fallback diagnostic logging when host dispatch falls back to legacy Edit browser.
 - Completed: Removed obsolete synchronous host bridge path to keep one verified async dispatch pipeline.
+- Completed: Fixed thumbnail-switch crash when toolbox exports were temporarily unavailable (`applyToolboxStateToPage` now runs through `doWhenToolboxLoaded`).
 
 ### Next Phase 1 slice
 - Verify and route any remaining high-impact Edit JS commands that bypass `EditingView.RunJavascriptAsync`.
