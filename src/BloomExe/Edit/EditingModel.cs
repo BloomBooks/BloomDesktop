@@ -1812,6 +1812,12 @@ namespace Bloom.Edit
             };
         }
 
+        internal void ResetParityDiagnostics()
+        {
+            _changePictureCommandCount = 0;
+            _updateImageInBrowserCommandCount = 0;
+        }
+
         public IPage DeterminePageWhichWouldPrecedeNextInsertion()
         {
             if (_view != null)

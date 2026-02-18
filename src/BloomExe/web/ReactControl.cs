@@ -249,6 +249,12 @@ namespace Bloom.web
             };
         }
 
+        internal void ResetWebViewZoomDiagnostics()
+        {
+            _webViewZoomFactorChangeCount = 0;
+            _lastObservedWebViewZoomFactor = GetWebViewZoomFactor();
+        }
+
         private TempFile MakeTempFile()
         {
             var tempFile = TempFile.WithExtension("htm");

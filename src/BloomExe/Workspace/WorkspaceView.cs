@@ -580,6 +580,14 @@ namespace Bloom.Workspace
             return diagnostics;
         }
 
+        public void ResetSingleBrowserDiagnostics()
+        {
+            _visibleEditHostDispatchSuccessCount = 0;
+            _visibleEditHostDispatchFallbackCount = 0;
+            _workspaceShellReactControl?.ResetWebViewZoomDiagnostics();
+            _editingView?.ResetParityDiagnostics();
+        }
+
         public string GetEditFrameUrlForReactHost()
         {
             if (InvokeRequired)

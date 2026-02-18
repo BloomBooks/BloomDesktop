@@ -60,6 +60,11 @@ namespace Bloom.web.controllers
                 HandleSingleBrowserDiagnostics,
                 true
             );
+            apiHandler.RegisterEndpointHandler(
+                "workspace/singleBrowserDiagnostics/reset",
+                HandleResetSingleBrowserDiagnostics,
+                true
+            );
         }
 
         private void HandleOpenOrCreateCollection(ApiRequest request)
@@ -171,6 +176,17 @@ namespace Bloom.web.controllers
                 throw new ArgumentException("workspace/singleBrowserDiagnostics only supports GET");
 
             request.ReplyWithJson(WorkspaceView.GetSingleBrowserDiagnostics());
+        }
+
+        private void HandleResetSingleBrowserDiagnostics(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Post)
+                throw new ArgumentException(
+                    "workspace/singleBrowserDiagnostics/reset only supports POST"
+                );
+
+            WorkspaceView.ResetSingleBrowserDiagnostics();
+            request.PostSucceeded();
         }
     }
 }

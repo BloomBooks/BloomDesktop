@@ -1954,6 +1954,16 @@ namespace Bloom.Edit
             };
         }
 
+        internal void ResetParityDiagnostics()
+        {
+            _showAddPageDialogCommandCount = 0;
+            _showChangeLayoutDialogCommandCount = 0;
+            _showRegistrationDialogCommandCount = 0;
+            _showAboutDialogCommandCount = 0;
+            _setZoomCommandCount = 0;
+            _model.ResetParityDiagnostics();
+        }
+
         public void SaveAndOpenBookSettingsDialog()
         {
             _model.SaveThen(
