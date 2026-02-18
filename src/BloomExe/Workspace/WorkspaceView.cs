@@ -574,6 +574,8 @@ namespace Bloom.Workspace
             diagnostics.zoom = GetZoomInfo();
             diagnostics.workspaceShellWebViewZoomFactor =
                 _workspaceShellReactControl?.GetWebViewZoomFactor();
+            diagnostics.workspaceShellWebViewZoom =
+                _workspaceShellReactControl?.GetWebViewZoomDiagnostics();
             return diagnostics;
         }
 

@@ -57,9 +57,47 @@ namespace Bloom.web
         public Action ReplaceContextMenu { get; set; }
 
         private Browser _browser;
+        private bool _isListeningForZoomFactorChanges;
+        private int _webViewZoomFactorChangeCount;
+        private double? _lastObservedWebViewZoomFactor;
+
+        private void EnsureWebViewZoomDiagnosticsHooked()
+        {
+            if (_isListeningForZoomFactorChanges)
+                return;
+
+            var coreWebView2 = (_browser as WebView2Browser)?.InternalBrowser?.CoreWebView2;
+            if (coreWebView2 == null)
+                return;
+
+            _isListeningForZoomFactorChanges = true;
+            coreWebView2.ZoomFactorChanged += (sender, args) =>
+            {
+                var browser = (_browser as WebView2Browser)?.InternalBrowser;
+                if (browser == null)
+                    return;
+
+                _webViewZoomFactorChangeCount++;
+                _lastObservedWebViewZoomFactor = browser.ZoomFactor;
+
+                if (
+                    DisableBrowserZoomControl
+                    && Math.Abs(browser.ZoomFactor - 1.0) > 0.0001
+                    && (_webViewZoomFactorChangeCount % 10) == 0
+                )
+                {
+                    Logger.WriteMinorEvent(
+                        "[SingleBrowser] Shell WebView zoom changed while zoom control disabled. zoomFactor={0}",
+                        browser.ZoomFactor
+                    );
+                }
+            };
+        }
 
         private void ApplyBrowserZoomControlSetting()
         {
+            EnsureWebViewZoomDiagnosticsHooked();
+
             if (!DisableBrowserZoomControl)
                 return;
 
@@ -211,6 +249,15 @@ namespace Bloom.web
                 return null;
 
             return browser.ZoomFactor;
+        }
+
+        internal dynamic GetWebViewZoomDiagnostics()
+        {
+            dynamic diagnostics = new DynamicJson();
+            diagnostics.zoomFactor = GetWebViewZoomFactor();
+            diagnostics.zoomFactorChangeCount = _webViewZoomFactorChangeCount;
+            diagnostics.lastObservedZoomFactor = _lastObservedWebViewZoomFactor;
+            return diagnostics;
         }
 
         private TempFile MakeTempFile()
