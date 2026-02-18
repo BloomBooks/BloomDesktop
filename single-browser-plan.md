@@ -128,6 +128,7 @@ Those are post-milestone phases and should be planned separately.
 - Added diagnostics endpoint for follow-up investigation: `GET workspace/singleBrowserDiagnostics`.
 - Diagnostics endpoint now also reports shell WebView zoom factor for Ctrl+scroll investigation.
 - Diagnostics now include shell WebView zoom-factor change counters and last observed value.
+- Diagnostics now include Phase 2 parity counters for key Edit commands and image operations.
 
 ### Next focus (Phase 2)
 - Start functional parity tracking for key Edit workflows while keeping legacy internal iframes.
@@ -145,6 +146,8 @@ Those are post-milestone phases and should be planned separately.
 | Ctrl+scroll zoom behavior | partial | Deferred: sometimes affects host-level zoom too |
 | Tab switching (Collection/Edit/Publish) | pass | Smoke-tested |
 | Host dispatch telemetry visibility | pass | `GET workspace/singleBrowserDiagnostics` available |
+| Image operation instrumentation | pass | Counts surfaced in diagnostics (`editParity.model.*`) |
+| Edit command instrumentation | pass | Counts surfaced in diagnostics (`editParity.*`) |
 
 ### Phase 2 next implementation targets
 1. Investigate and isolate Ctrl+scroll host zoom leakage path.
