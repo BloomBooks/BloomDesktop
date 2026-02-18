@@ -122,6 +122,15 @@ Those are post-milestone phases and should be planned separately.
 - Verify and route any remaining high-impact Edit JS commands that bypass `EditingView.RunJavascriptAsync`.
 - Use the smoke checklist during dogfooding and monitor fallback diagnostics frequency.
 
+### Smoke run status
+- Smoke checklist completed through item #8 by manual dogfooding.
+- Known issue (deferred for now): Ctrl+scroll can still affect host-level zoom behavior in some runs.
+- Added diagnostics endpoint for follow-up investigation: `GET workspace/singleBrowserDiagnostics`.
+
+### Next focus (Phase 2)
+- Start functional parity tracking for key Edit workflows while keeping legacy internal iframes.
+- Log and prioritize remaining non-blocking issues found during dogfooding.
+
 ---
 
 ## Smoke checklist for Milestone 3 readiness
