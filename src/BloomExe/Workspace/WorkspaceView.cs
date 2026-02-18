@@ -572,6 +572,8 @@ namespace Bloom.Workspace
             diagnostics.visibleEditHostDispatchFallbackCount =
                 _visibleEditHostDispatchFallbackCount;
             diagnostics.zoom = GetZoomInfo();
+            diagnostics.workspaceShellWebViewZoomFactor =
+                _workspaceShellReactControl?.GetWebViewZoomFactor();
             return diagnostics;
         }
 

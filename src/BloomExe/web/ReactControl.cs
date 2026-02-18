@@ -204,6 +204,15 @@ namespace Bloom.web
             _browser.RunJavascriptFireAndForget(script);
         }
 
+        internal double? GetWebViewZoomFactor()
+        {
+            var browser = (_browser as WebView2Browser)?.InternalBrowser;
+            if (browser == null)
+                return null;
+
+            return browser.ZoomFactor;
+        }
+
         private TempFile MakeTempFile()
         {
             var tempFile = TempFile.WithExtension("htm");
