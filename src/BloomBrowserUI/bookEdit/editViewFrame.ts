@@ -126,7 +126,11 @@ export function switchContentPage(newSource: string) {
     const handler = () => {
         handlerCalled = true;
         iframe.removeEventListener("load", handler);
-        getToolboxBundleExports()!.applyToolboxStateToPage();
+        doWhenToolboxLoaded((toolboxFrameExports) => {
+            if (toolboxFrameExports.applyToolboxStateToPage) {
+                toolboxFrameExports.applyToolboxStateToPage();
+            }
+        });
     };
     iframe.removeEventListener("load", handler);
     iframe.addEventListener("load", handler);
