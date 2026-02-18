@@ -225,7 +225,7 @@ namespace BloomTests.Book
 <div lang='yyy' data-book='copyright'>My yyy copyright</div>
 <div lang='*' data-book='copyright'>My * copyright</div>";
 
-            Metadata metadata = GetMetadata(dataDivContent, collectionSettings);
+            MetadataCore metadata = GetMetadata(dataDivContent, collectionSettings);
             Assert.AreEqual("My yyy license notes", metadata.License.RightsStatement);
             Assert.AreEqual("My yyy copyright", metadata.CopyrightNotice);
         }
@@ -349,7 +349,7 @@ namespace BloomTests.Book
         }
 
         private HtmlDom TestSetLicenseMetdataEffectOnDataDiv(
-            Metadata metadata = null,
+            MetadataCore metadata = null,
             string startingDataDivContent = "",
             string startingPageContent = "",
             string xpath = "",
@@ -371,7 +371,7 @@ namespace BloomTests.Book
             return dom;
         }
 
-        private Metadata GetMetadata(
+        private MetadataCore GetMetadata(
             string dataDivContent,
             CollectionSettings collectionSettings = null
         )
