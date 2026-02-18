@@ -169,7 +169,7 @@ namespace Bloom.Book
         /// 3) updates the license image on disk
         /// </summary>
         public static void SetMetadata(
-            Metadata metadata,
+            MetadataCore metadata,
             HtmlDom dom,
             string bookFolderPath,
             BookData bookData,
@@ -375,7 +375,7 @@ namespace Bloom.Book
         /// <summary>
         /// Get the license from the metadata and save it.
         /// </summary>
-        private static void UpdateBookLicenseIcon(Metadata metadata, string bookFolderPath)
+        private static void UpdateBookLicenseIcon(MetadataCore metadata, string bookFolderPath)
         {
             var licenseImage = (metadata.License as ILicenseWithImage)?.GetImage();
             var imagePath = bookFolderPath.CombineForPath("license.png");
@@ -416,7 +416,7 @@ namespace Bloom.Book
             Logger.WriteEvent("");
         }
 
-        public static bool IsDerivative(Metadata originalMetadata)
+        public static bool IsDerivative(MetadataCore originalMetadata)
         {
             // Checking for a license which is not a NullLicense is not sufficient because that indicates the user has selected
             // "Contact the copyright holder..." for the license. But in order to do so, he must have entered a copyright.

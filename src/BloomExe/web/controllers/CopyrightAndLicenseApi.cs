@@ -156,7 +156,7 @@ namespace Bloom.web.controllers
             }
         }
 
-        public object GetJsonFromMetadata(Metadata metadata, bool forBook)
+        public object GetJsonFromMetadata(MetadataCore metadata, bool forBook)
         {
             dynamic derivativeInfo = null;
             if (forBook)
@@ -197,7 +197,7 @@ namespace Bloom.web.controllers
             return intellectualPropertyData;
         }
 
-        private dynamic GetLicense(Metadata metadata)
+        private dynamic GetLicense(MetadataCore metadata)
         {
             dynamic creativeCommonsInfoJson = GetDefaultCreativeCommonsInfo();
             if (metadata.License is CreativeCommonsLicenseInfo)
@@ -255,7 +255,9 @@ namespace Bloom.web.controllers
             switch (jsonValue)
             {
                 case "sharealike":
-                    return CreativeCommonsLicenseInfo.DerivativeRules.DerivativesWithShareAndShareAlike;
+                    return CreativeCommonsLicenseInfo
+                        .DerivativeRules
+                        .DerivativesWithShareAndShareAlike;
                 case "yes":
                     return CreativeCommonsLicenseInfo.DerivativeRules.Derivatives;
                 case "no":
