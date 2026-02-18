@@ -88,8 +88,7 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
 
         // This function will be hooked up (after we set localizedNotification properly)
         // to be called when C# sends messages through the web socket.
-        // We need a named function because it looks cleaner and we use it to remove the
-        // listener when we shut down.
+        // We need a named function because it looks cleaner.
         webSocketListenerFunction = (event) => {
             switch (event.id) {
                 case "saving": {
@@ -132,9 +131,6 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
                     // that dragged positions are not too easily lost. See the trick
                     // below that uses resetValue for something we don't care about.
                     setResetValue((oldResetValue) => oldResetValue + 1);
-                    break;
-                case "stopListening":
-                    WebSocketManager.closeSocket(kWebsocketContext);
                     break;
             }
         };

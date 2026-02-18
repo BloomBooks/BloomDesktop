@@ -138,14 +138,6 @@ namespace Bloom.Edit
             _pages = UpdateItems(pages);
         }
 
-        private void OnPaneContentsChanging(bool hasPages)
-        {
-            // We try to prevent some spurious javascript errors by shutting down the websocket listener before
-            // navigating to the new root page. This may not be entirely reliable as there is a race
-            // condition between the navigation request and the reception of the stopListening message.
-            WebSocketServer.SendString("pageThumbnailList", "stopListening", "");
-        }
-
         public void UpdateAllThumbnails()
         {
             UpdateItems(_pages);
@@ -169,7 +161,6 @@ namespace Bloom.Edit
                 WebSocketServer.SendString("pageThumbnailList", "pageListNeedsRefresh", "");
                 return result;
             }
-            OnPaneContentsChanging(result.Any());
 
             if (result.FirstOrDefault(p => p.Book != null) == null)
             {
