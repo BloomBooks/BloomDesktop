@@ -34,7 +34,6 @@ using SIL.Linq;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Text;
-using SIL.Windows.Forms.ClearShare;
 
 namespace Bloom.Book
 {

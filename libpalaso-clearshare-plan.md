@@ -13,6 +13,18 @@ This plan is library-first: Bloom should avoid custom workaround logic where a c
 - Replaced most concrete-license checks (`CreativeCommonsLicense`, `CustomLicense`) with core type checks (`CreativeCommonsLicenseInfo`, `CustomLicenseInfo`) in domain logic.
 - Widened several non-UI method signatures from `Metadata` to `MetadataCore`.
 - Updated tests/build to compile with the widened signatures.
+- Removed additional stale `SIL.Windows.Forms.ClearShare` imports from non-UI/domain files now using core types:
+   - `src/BloomExe/Book/Book.cs`
+   - `src/BloomExe/Book/BookInfo.cs`
+   - `src/BloomExe/Book/ImageUpdater.cs`
+   - `src/BloomExe/Edit/EditingModel.cs`
+- Switched internal metadata construction in `BookCopyrightAndLicense` to instantiate `MetadataCore` where methods already return `MetadataCore`.
+- Updated remaining Bloom-side legacy `CustomLicense` and concrete CC type assumptions in affected tests and API paths.
+
+### Current blocker inventory (as of 2026-02-18)
+- Remaining `using SIL.Windows.Forms.ClearShare;` in `BloomExe`: **7 files**.
+- Remaining `ILicenseWithImage` / `GetImage()` license-image dependencies: `BookCopyrightAndLicense` and `CopyrightAndLicenseApi`.
+- Remaining WinForms-dependent image metadata entrypoint: `RobustFileIO.MetadataFromFile()` and downstream image-edit/credit flows.
 
 ### Commits on branch
 - `8ac9cc809f` — core license info checks in Bloom domain logic
@@ -144,11 +156,7 @@ This section lists what still needs Bloom changes after/beside library updates.
 - `src/BloomExe/RobustFileIO.cs`
 - `src/BloomExe/ImageProcessing/ImageUtils.cs`
 - `src/BloomExe/Edit/BloomMetadataEditorDialog.cs`
-- `src/BloomExe/Edit/EditingModel.cs`
 - `src/BloomExe/Book/BookCopyrightAndLicense.cs`
-- `src/BloomExe/Book/ImageUpdater.cs`
-- `src/BloomExe/Book/BookInfo.cs`
-- `src/BloomExe/Book/Book.cs`
 
 ### Planned change
 - As each blocker resolves, remove imports from files that no longer need WinForms ClearShare types.

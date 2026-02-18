@@ -79,7 +79,7 @@ namespace BloomTests.Book
         public void GetLicenseMetadata_HasNoCopyrightOrLicense_ReturnCcByForDefault()
         {
             string dataDivContent = @"";
-            Assert.True(GetMetadata(dataDivContent).License is CreativeCommonsLicense);
+            Assert.True(GetMetadata(dataDivContent).License is CreativeCommonsLicenseInfo);
         }
 
         [Test]
@@ -97,7 +97,7 @@ namespace BloomTests.Book
             string dataDivContent =
                 @"<div lang='en' data-book='licenseNotes'>my custom</div>
 					<div data-book='copyright' lang='*' class='bloom-content1'>Copyright © 2012, test</div>";
-            Assert.IsTrue(GetMetadata(dataDivContent).License is CustomLicense);
+            Assert.IsTrue(GetMetadata(dataDivContent).License is CustomLicenseInfo);
         }
 
         [Test]
@@ -106,14 +106,16 @@ namespace BloomTests.Book
             //nb: the real testing is done on the palaso class that does the reading, this is just a quick sanity check
             string dataDivContent =
                 @"<div lang='en' data-book='licenseUrl'>http://creativecommons.org/licenses/by-nc-sa/3.0/</div>";
-            var creativeCommonsLicense = (CreativeCommonsLicense)(
+            var creativeCommonsLicense = (CreativeCommonsLicenseInfo)(
                 GetMetadata(dataDivContent).License
             );
             Assert.IsTrue(creativeCommonsLicense.AttributionRequired);
             Assert.IsFalse(creativeCommonsLicense.CommercialUseAllowed);
             Assert.IsTrue(
                 creativeCommonsLicense.DerivativeRule
-                    == CreativeCommonsLicense.DerivativeRules.DerivativesWithShareAndShareAlike
+                    == CreativeCommonsLicenseInfo
+                        .DerivativeRules
+                        .DerivativesWithShareAndShareAlike
             );
         }
 
@@ -123,7 +125,7 @@ namespace BloomTests.Book
             //nb: the real testing is done on the palaso class that does the reading, this is just a quick sanity check
             string dataDivContent =
                 @"<div lang='en' data-book='licenseUrl'>http://creativecommons.org/licenses/by/3.0/igo</div>";
-            var creativeCommonsLicense = (CreativeCommonsLicense)(
+            var creativeCommonsLicense = (CreativeCommonsLicenseInfo)(
                 GetMetadata(dataDivContent).License
             );
             Assert.IsTrue(creativeCommonsLicense.AttributionRequired);
@@ -238,11 +240,11 @@ namespace BloomTests.Book
             var dom = MakeDom(dataDivContent);
             var collectionSettings = new CollectionSettings();
             var bookData = new BookData(dom, collectionSettings, null);
-            var creativeCommonsLicense = (CreativeCommonsLicense)(
+            var creativeCommonsLicense = (CreativeCommonsLicenseInfo)(
                 BookCopyrightAndLicense.GetMetadata(dom, bookData).License
             );
             Assert.IsTrue(creativeCommonsLicense.AttributionRequired); // yes, we got a CC license from the 'en' licenseUrl
-            var newLicense = new CustomLicense();
+            var newLicense = new CustomLicenseInfo();
             var newMetaData = new Metadata();
             newMetaData.License = newLicense;
             BookCopyrightAndLicense.SetMetadata(newMetaData, dom, null, bookData, false);
@@ -294,7 +296,7 @@ namespace BloomTests.Book
         public void SetLicenseMetadata_CustomLicense_LicenseImageRemovedFromDataDiv()
         {
             TestSetLicenseMetdataEffectOnDataDiv(
-                new Metadata() { CopyrightNotice = "foo", License = new CustomLicense() },
+                new Metadata() { CopyrightNotice = "foo", License = new CustomLicenseInfo() },
                 startingDataDivContent: "<div data-book='licenseImage' lang='*'>license.png</div>",
                 xpath: "//*[@data-book='licenseImage']",
                 expectedCount: 0
@@ -322,7 +324,7 @@ namespace BloomTests.Book
                 new Metadata()
                 {
                     CopyrightNotice = "foo",
-                    License = new CustomLicense() { RightsStatement = "custom rights" },
+                    License = new CustomLicenseInfo() { RightsStatement = "custom rights" },
                 },
                 startingDataDivContent: "<div data-book='licenseDescription' lang='fr'>Some old French</div>",
                 xpath: "//*[@data-book='licenseDescription']",
@@ -341,7 +343,7 @@ namespace BloomTests.Book
         public void SetMetadata_CustomLicense_LicenseImageSrcAndAltAreEmpty()
         {
             TestSetLicenseMetdataEffectOnDataDiv(
-                new Metadata() { CopyrightNotice = "foo", License = new CustomLicense() },
+                new Metadata() { CopyrightNotice = "foo", License = new CustomLicenseInfo() },
                 startingPageContent: "<img data-derived='licenseImage' lang='*' alt='This picture, license.png, is missing or was loading too slowly.'>license.png</img>",
                 xpath: "//img[@data-derived='licenseImage' and (not(@alt) or @alt='') and @src='']",
                 expectedCount: 1
