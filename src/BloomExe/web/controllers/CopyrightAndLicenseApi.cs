@@ -200,9 +200,9 @@ namespace Bloom.web.controllers
         private dynamic GetLicense(Metadata metadata)
         {
             dynamic creativeCommonsInfoJson = GetDefaultCreativeCommonsInfo();
-            if (metadata.License is CreativeCommonsLicense)
+            if (metadata.License is CreativeCommonsLicenseInfo)
                 creativeCommonsInfoJson = GetCreativeCommonsInfo(
-                    (CreativeCommonsLicense)metadata.License
+                    (CreativeCommonsLicenseInfo)metadata.License
                 );
             return new
             {
@@ -222,7 +222,7 @@ namespace Bloom.web.controllers
             };
         }
 
-        private dynamic GetCreativeCommonsInfo(CreativeCommonsLicense ccLicense)
+        private dynamic GetCreativeCommonsInfo(CreativeCommonsLicenseInfo ccLicense)
         {
             return new
             {
@@ -234,32 +234,32 @@ namespace Bloom.web.controllers
         }
 
         private static string GetCcDerivativeRulesAsString(
-            CreativeCommonsLicense.DerivativeRules rules
+            CreativeCommonsLicenseInfo.DerivativeRules rules
         )
         {
             switch (rules)
             {
-                case CreativeCommonsLicense.DerivativeRules.DerivativesWithShareAndShareAlike:
+                case CreativeCommonsLicenseInfo.DerivativeRules.DerivativesWithShareAndShareAlike:
                     return "sharealike";
-                case CreativeCommonsLicense.DerivativeRules.Derivatives:
+                case CreativeCommonsLicenseInfo.DerivativeRules.Derivatives:
                     return "yes";
-                case CreativeCommonsLicense.DerivativeRules.NoDerivatives:
+                case CreativeCommonsLicenseInfo.DerivativeRules.NoDerivatives:
                     return "no";
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        private CreativeCommonsLicense.DerivativeRules GetCcDerivativeRule(string jsonValue)
+        private CreativeCommonsLicenseInfo.DerivativeRules GetCcDerivativeRule(string jsonValue)
         {
             switch (jsonValue)
             {
                 case "sharealike":
-                    return CreativeCommonsLicense.DerivativeRules.DerivativesWithShareAndShareAlike;
+                    return CreativeCommonsLicenseInfo.DerivativeRules.DerivativesWithShareAndShareAlike;
                 case "yes":
-                    return CreativeCommonsLicense.DerivativeRules.Derivatives;
+                    return CreativeCommonsLicenseInfo.DerivativeRules.Derivatives;
                 case "no":
-                    return CreativeCommonsLicense.DerivativeRules.NoDerivatives;
+                    return CreativeCommonsLicenseInfo.DerivativeRules.NoDerivatives;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -267,13 +267,13 @@ namespace Bloom.web.controllers
 
         private string GetLicenseType(LicenseInfo licenseInfo)
         {
-            if (licenseInfo is CreativeCommonsLicense)
+            if (licenseInfo is CreativeCommonsLicenseInfo)
             {
-                if (licenseInfo.Url == CreativeCommonsLicense.CC0Url)
+                if (licenseInfo.Url == CreativeCommonsLicenseInfo.CC0Url)
                     return "publicDomain";
                 return "creativeCommons";
             }
-            if (licenseInfo is CustomLicense)
+            if (licenseInfo is CustomLicenseInfo)
                 return "custom";
             return "contact";
         }

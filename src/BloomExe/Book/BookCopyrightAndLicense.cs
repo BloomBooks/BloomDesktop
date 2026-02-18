@@ -93,7 +93,7 @@ namespace Bloom.Book
                     // Simply set it to the default version.
                     if (!licenseUrl.EndsWith("/"))
                         licenseUrl += "/";
-                    licenseUrl += CreativeCommonsLicense.kDefaultVersion;
+                    licenseUrl += CreativeCommonsLicenseInfo.kDefaultVersion;
                     metadata.License = CreativeCommonsLicense.FromLicenseUrl(licenseUrl);
                 }
                 catch (Exception e)
@@ -157,7 +157,7 @@ namespace Bloom.Book
             metadata.License = new CreativeCommonsLicense(
                 true,
                 true,
-                CreativeCommonsLicense.DerivativeRules.Derivatives
+                CreativeCommonsLicenseInfo.DerivativeRules.Derivatives
             );
             return metadata;
         }
@@ -231,7 +231,7 @@ namespace Bloom.Book
             );
 
             // we could do away with licenseImage in the bloomDataDiv, since the name is always the same, but we keep it for backward compatibility
-            if (metadata.License is CreativeCommonsLicense)
+            if (metadata.License is CreativeCommonsLicenseInfo)
             {
                 dom.SetBookSetting("licenseImage", "*", "license.png");
             }
@@ -327,7 +327,7 @@ namespace Bloom.Book
             {
                 // For CC0, we store the "copyright", but don't display it in the text of the book.
                 var licenseUrl = dom.GetBookSetting("licenseUrl").GetExactAlternative("*");
-                if (licenseUrl == CreativeCommonsLicense.CC0Url)
+                if (licenseUrl == CreativeCommonsLicenseInfo.CC0Url)
                     source = new MultiTextBase();
             }
 
@@ -531,7 +531,7 @@ namespace Bloom.Book
         )
         {
             licenseOnly = licenseInfo.GetMinimalFormForCredits(languagePriorityIds, out _);
-            if (licenseInfo is CustomLicense)
+            if (licenseInfo is CustomLicenseInfo)
             {
                 // I can imagine being more fancy... something like "Licensed under custom license:", and get localizations
                 // for that... but sheesh, these are even now very rare in Bloom-land and should become more rare.
