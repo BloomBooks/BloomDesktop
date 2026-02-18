@@ -127,6 +127,7 @@ Those are post-milestone phases and should be planned separately.
 - Known issue (deferred for now): Ctrl+scroll can still affect host-level zoom behavior in some runs.
 - Added diagnostics endpoint for follow-up investigation: `GET workspace/singleBrowserDiagnostics`.
 - Diagnostics endpoint now also reports shell WebView zoom factor for Ctrl+scroll investigation.
+- Diagnostics now include shell WebView zoom-factor change counters and last observed value.
 
 ### Next focus (Phase 2)
 - Start functional parity tracking for key Edit workflows while keeping legacy internal iframes.
