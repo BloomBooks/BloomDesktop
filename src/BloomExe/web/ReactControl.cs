@@ -66,31 +66,19 @@ namespace Bloom.web
             if (_isListeningForZoomFactorChanges)
                 return;
 
-            var coreWebView2 = (_browser as WebView2Browser)?.InternalBrowser?.CoreWebView2;
-            if (coreWebView2 == null)
+            var browser = (_browser as WebView2Browser)?.InternalBrowser;
+            if (browser == null)
                 return;
 
             _isListeningForZoomFactorChanges = true;
-            coreWebView2.ZoomFactorChanged += (sender, args) =>
+            browser.ZoomFactorChanged += (sender, args) =>
             {
-                var browser = (_browser as WebView2Browser)?.InternalBrowser;
-                if (browser == null)
+                var currentBrowser = (_browser as WebView2Browser)?.InternalBrowser;
+                if (currentBrowser == null)
                     return;
 
                 _webViewZoomFactorChangeCount++;
-                _lastObservedWebViewZoomFactor = browser.ZoomFactor;
-
-                if (
-                    DisableBrowserZoomControl
-                    && Math.Abs(browser.ZoomFactor - 1.0) > 0.0001
-                    && (_webViewZoomFactorChangeCount % 10) == 0
-                )
-                {
-                    Logger.WriteMinorEvent(
-                        "[SingleBrowser] Shell WebView zoom changed while zoom control disabled. zoomFactor={0}",
-                        browser.ZoomFactor
-                    );
-                }
+                _lastObservedWebViewZoomFactor = currentBrowser.ZoomFactor;
             };
         }
 
@@ -253,11 +241,12 @@ namespace Bloom.web
 
         internal dynamic GetWebViewZoomDiagnostics()
         {
-            dynamic diagnostics = new DynamicJson();
-            diagnostics.zoomFactor = GetWebViewZoomFactor();
-            diagnostics.zoomFactorChangeCount = _webViewZoomFactorChangeCount;
-            diagnostics.lastObservedZoomFactor = _lastObservedWebViewZoomFactor;
-            return diagnostics;
+            return new
+            {
+                zoomFactor = GetWebViewZoomFactor(),
+                zoomFactorChangeCount = _webViewZoomFactorChangeCount,
+                lastObservedZoomFactor = _lastObservedWebViewZoomFactor,
+            };
         }
 
         private TempFile MakeTempFile()
