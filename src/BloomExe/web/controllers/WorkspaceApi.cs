@@ -55,6 +55,11 @@ namespace Bloom.web.controllers
                 HandleGetEditFrameUrl,
                 true
             );
+            apiHandler.RegisterEndpointHandler(
+                "workspace/singleBrowserDiagnostics",
+                HandleSingleBrowserDiagnostics,
+                true
+            );
         }
 
         private void HandleOpenOrCreateCollection(ApiRequest request)
@@ -158,6 +163,16 @@ namespace Bloom.web.controllers
                 throw new ArgumentException("workspace/editFrameUrl only supports GET");
 
             request.ReplyWithText(WorkspaceView.GetEditFrameUrlForReactHost());
+        }
+
+        private void HandleSingleBrowserDiagnostics(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Get)
+                throw new ArgumentException(
+                    "workspace/singleBrowserDiagnostics only supports GET"
+                );
+
+            request.ReplyWithJson(WorkspaceView.GetSingleBrowserDiagnostics());
         }
     }
 }

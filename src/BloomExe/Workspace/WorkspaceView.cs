@@ -563,6 +563,19 @@ namespace Bloom.Workspace
             return tabInfo;
         }
 
+        public dynamic GetSingleBrowserDiagnostics()
+        {
+            dynamic diagnostics = new DynamicJson();
+            diagnostics.useSingleBrowserWorkspaceShell = _useSingleBrowserWorkspaceShell;
+            diagnostics.activeTab = TabToId(_tabSelection.ActiveTab);
+            diagnostics.visibleEditHostDispatchSuccessCount =
+                _visibleEditHostDispatchSuccessCount;
+            diagnostics.visibleEditHostDispatchFallbackCount =
+                _visibleEditHostDispatchFallbackCount;
+            diagnostics.zoom = GetZoomInfo();
+            return diagnostics;
+        }
+
         public string GetEditFrameUrlForReactHost()
         {
             if (InvokeRequired)
