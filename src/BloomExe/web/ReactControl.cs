@@ -175,6 +175,14 @@ namespace Bloom.web
             await _browser.RunJavascriptAsync(script);
         }
 
+        internal async Task<string> GetStringFromJavascriptAsync(string script)
+        {
+            if (_browser == null)
+                return null;
+
+            return await _browser.GetStringFromJavascriptAsync(script);
+        }
+
         internal void RunJavascriptFireAndForget(string script)
         {
             if (_browser == null)

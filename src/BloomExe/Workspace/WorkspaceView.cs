@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -605,6 +606,43 @@ namespace Bloom.Workspace
 
             _workspaceShellReactControl.RunJavascriptFireAndForget(hostScript);
             return true;
+        }
+
+        public async Task<bool> TryRunJavascriptInVisibleEditHostAsync(string script)
+        {
+            if (InvokeRequired)
+            {
+                return await (Task<bool>)
+                    Invoke(
+                        new Func<string, Task<bool>>(TryRunJavascriptInVisibleEditHostAsync),
+                        script
+                    );
+            }
+
+            if (
+                !_useSingleBrowserWorkspaceShell
+                || _workspaceShellReactControl == null
+                || string.IsNullOrEmpty(script)
+                || _tabSelection.ActiveTab != WorkspaceTab.edit
+            )
+                return false;
+
+            var scriptJson = JsonConvert.SerializeObject(script);
+            var hostScript =
+                $@"(function() {{
+                        var host = document.querySelector('iframe[title=""EditTabHost""]');
+                        if (!host || !host.contentWindow) return 'false';
+                        try {{
+                            host.contentWindow.eval({scriptJson});
+                            return 'true';
+                        }} catch (e) {{
+                            console.error('Failed to run script in EditTabHost', e);
+                            return 'false';
+                        }}
+                    }})();";
+
+            var result = await _workspaceShellReactControl.GetStringFromJavascriptAsync(hostScript);
+            return string.Equals(result, "true", StringComparison.OrdinalIgnoreCase);
         }
 
         private string GetTabStateForUi(string tabId, string activeTabId)
