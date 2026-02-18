@@ -237,6 +237,7 @@ namespace Bloom.web.controllers
         private void HandleTopBarButtonClick(ApiRequest request)
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
+            View.RecordEditCommandInvocation((string)data.command);
             // If we don't force the focus to the main editing browser, our browser with the buttons will steal it and cut/copy, etc. won't work.
             View.Browser.Focus();
 

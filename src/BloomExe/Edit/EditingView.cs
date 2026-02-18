@@ -57,6 +57,10 @@ namespace Bloom.Edit
         private int _showRegistrationDialogCommandCount;
         private int _showAboutDialogCommandCount;
         private int _setZoomCommandCount;
+        private int _cutCommandCount;
+        private int _copyCommandCount;
+        private int _pasteCommandCount;
+        private int _undoCommandCount;
 
         public delegate EditingView Factory(); //autofac uses this
 
@@ -1436,7 +1440,24 @@ namespace Bloom.Edit
 
         public void OnPaste(object sender, EventArgs e)
         {
+            _pasteCommandCount++;
             ExecuteCommandSafely(_pasteCommand);
+        }
+
+        internal void RecordEditCommandInvocation(string command)
+        {
+            switch (command)
+            {
+                case "cut":
+                    _cutCommandCount++;
+                    break;
+                case "copy":
+                    _copyCommandCount++;
+                    break;
+                case "undo":
+                    _undoCommandCount++;
+                    break;
+            }
         }
 
         /// <summary>
@@ -1950,6 +1971,10 @@ namespace Bloom.Edit
                 showRegistrationDialogCommandCount = _showRegistrationDialogCommandCount,
                 showAboutDialogCommandCount = _showAboutDialogCommandCount,
                 setZoomCommandCount = _setZoomCommandCount,
+                cutCommandCount = _cutCommandCount,
+                copyCommandCount = _copyCommandCount,
+                pasteCommandCount = _pasteCommandCount,
+                undoCommandCount = _undoCommandCount,
                 model = _model.GetParityDiagnostics(),
             };
         }
@@ -1961,6 +1986,10 @@ namespace Bloom.Edit
             _showRegistrationDialogCommandCount = 0;
             _showAboutDialogCommandCount = 0;
             _setZoomCommandCount = 0;
+            _cutCommandCount = 0;
+            _copyCommandCount = 0;
+            _pasteCommandCount = 0;
+            _undoCommandCount = 0;
             _model.ResetParityDiagnostics();
         }
 
