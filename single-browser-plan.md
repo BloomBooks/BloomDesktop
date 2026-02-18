@@ -99,3 +99,19 @@ Those are post-milestone phases and should be planned separately.
 - Single-browser shell exists.
 - Edit host wrapper exists.
 - Routing reliability work is in progress (Phase 1).
+
+---
+
+## Smoke checklist for Milestone 3 readiness
+Run this checklist in single-browser mode, with Edit still using legacy internal iframes:
+
+1. Open collection, switch to Edit, confirm page renders.
+2. Click several page thumbnails and confirm visible page switches correctly.
+3. Use **Add Page** and confirm chooser dialog appears and page can be inserted.
+4. Use **Change Layout** and confirm chooser dialog appears.
+5. Open registration/about dialogs from Edit context and confirm they appear.
+6. Change zoom from Edit UI and confirm page zoom updates.
+7. Switch tabs (Collection/Edit/Publish) repeatedly and confirm Edit resumes correctly.
+8. Watch logs for repeated fallback diagnostics; investigate if frequent during normal flow.
+
+Passing this checklist repeatedly is the practical bar for declaring Milestone 3 complete.

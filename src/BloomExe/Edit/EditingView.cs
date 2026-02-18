@@ -506,6 +506,17 @@ namespace Bloom.Edit
                     await CommonApi.WorkspaceView.TryRunJavascriptInVisibleEditHostAsync(script);
                 if (didRunInVisibleHost)
                     return;
+
+                if (CommonApi.WorkspaceView.InEditMode)
+                {
+                    var diagnosticScript = script;
+                    if (!string.IsNullOrEmpty(diagnosticScript) && diagnosticScript.Length > 140)
+                        diagnosticScript = diagnosticScript.Substring(0, 140) + "…";
+                    Logger.WriteMinorEvent(
+                        "[SingleBrowser] Falling back to legacy Edit browser for script: {0}",
+                        diagnosticScript
+                    );
+                }
             }
 
             if (_browser1 == null)
