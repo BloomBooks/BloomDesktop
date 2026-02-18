@@ -27,7 +27,7 @@ namespace Bloom.Book
         /// <summary>
         /// Create a Clearshare.Metadata object by reading values out of the dom's bloomDataDiv
         /// </summary>
-        public static Metadata GetMetadata(HtmlDom dom, BookData bookData)
+        public static MetadataCore GetMetadata(HtmlDom dom, BookData bookData)
         {
             if (ShouldSetToDefaultCopyrightAndLicense(dom))
             {
@@ -41,7 +41,7 @@ namespace Bloom.Book
             );
         }
 
-        public static Metadata GetOriginalMetadata(HtmlDom dom, BookData bookData)
+        public static MetadataCore GetOriginalMetadata(HtmlDom dom, BookData bookData)
         {
             return CreateMetadata(
                 dom.GetBookSetting("originalCopyright"),
@@ -51,7 +51,7 @@ namespace Bloom.Book
             );
         }
 
-        public static Metadata CreateMetadata(
+        public static MetadataCore CreateMetadata(
             MultiTextBase copyright,
             string licenseUrl,
             MultiTextBase licenseNotes,
@@ -148,7 +148,7 @@ namespace Bloom.Book
             return dom.GetBookSetting("licenseUrl").GetBestAlternativeString(new[] { "*", "en" });
         }
 
-        private static Metadata GetMetadataWithDefaultCopyrightAndLicense()
+        private static MetadataCore GetMetadataWithDefaultCopyrightAndLicense()
         {
             var metadata = new Metadata();
             Logger.WriteEvent(

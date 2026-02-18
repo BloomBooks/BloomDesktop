@@ -14,6 +14,7 @@ using Bloom.Utils;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Code;
+using SIL.Core.ClearShare;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
@@ -618,7 +619,7 @@ namespace Bloom.Book
             }
         }
 
-        public void SetLicenseAndCopyrightMetadata(Metadata metadata)
+        public void SetLicenseAndCopyrightMetadata(MetadataCore metadata)
         {
             License = metadata.License.Token;
             Copyright = metadata.CopyrightNotice;
