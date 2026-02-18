@@ -584,30 +584,37 @@ namespace Bloom.Workspace
                     );
             }
 
-            if (
-                !_useSingleBrowserWorkspaceShell
-                || _workspaceShellReactControl == null
-                || string.IsNullOrEmpty(script)
-                || _tabSelection.ActiveTab != WorkspaceTab.edit
-            )
+            if (!_useSingleBrowserWorkspaceShell || string.IsNullOrEmpty(script))
                 return false;
 
-            var scriptJson = JsonConvert.SerializeObject(script);
-            var hostScript =
-                $@"(function() {{
-                        var host = document.querySelector('iframe[title=""EditTabHost""]');
-                        if (!host || !host.contentWindow) return 'false';
-                        try {{
-                            host.contentWindow.eval({scriptJson});
-                            return 'true';
-                        }} catch (e) {{
-                            console.error('Failed to run script in EditTabHost', e);
-                            return 'false';
-                        }}
-                    }})();";
+            for (var attempt = 0; attempt < 4; attempt++)
+            {
+                if (_workspaceShellReactControl == null || _tabSelection.ActiveTab != WorkspaceTab.edit)
+                    return false;
 
-            var result = await _workspaceShellReactControl.GetStringFromJavascriptAsync(hostScript);
-            return string.Equals(result, "true", StringComparison.OrdinalIgnoreCase);
+                var scriptJson = JsonConvert.SerializeObject(script);
+                var hostScript =
+                    $@"(function() {{
+                            var host = document.querySelector('iframe[title=""EditTabHost""]');
+                            if (!host || !host.contentWindow) return 'false';
+                            try {{
+                                host.contentWindow.eval({scriptJson});
+                                return 'true';
+                            }} catch (e) {{
+                                console.error('Failed to run script in EditTabHost', e);
+                                return 'false';
+                            }}
+                        }})();";
+
+                var result = await _workspaceShellReactControl.GetStringFromJavascriptAsync(hostScript);
+                if (string.Equals(result, "true", StringComparison.OrdinalIgnoreCase))
+                    return true;
+
+                if (attempt < 3)
+                    await Task.Delay(75);
+            }
+
+            return false;
         }
 
         private string GetTabStateForUi(string tabId, string activeTabId)
