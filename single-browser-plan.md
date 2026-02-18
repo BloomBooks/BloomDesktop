@@ -115,6 +115,8 @@ Those are post-milestone phases and should be planned separately.
 - Completed: Fixed thumbnail-switch crash when toolbox exports were temporarily unavailable (`applyToolboxStateToPage` now runs through `doWhenToolboxLoaded`).
 - Completed: Fixed Edit zoom plus/minus no-op (corrected `setZoom` CSS transform in `editViewFrame.ts`).
 - Completed: Disabled browser-level Ctrl+wheel/Ctrl+plus zoom on the single-browser shell host (`ReactControl.DisableBrowserZoomControl`).
+- Completed: Hardened `setZoom` to update all relevant page-scaling-container contexts in wrapped Edit mode.
+- Completed: Re-applied browser zoom disabling after navigation (`DocumentCompleted`) to prevent shell zoom regressions.
 
 ### Next Phase 1 slice
 - Verify and route any remaining high-impact Edit JS commands that bypass `EditingView.RunJavascriptAsync`.
