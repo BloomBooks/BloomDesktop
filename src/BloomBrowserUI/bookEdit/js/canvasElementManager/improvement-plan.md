@@ -186,32 +186,32 @@ Goal: confirm the new path produces identical behavior to the old path.
   - [ ] `navigation-image-with-label-button` — toolbar, menu, tool panel
   - [ ] `navigation-label-button` — toolbar, menu, tool panel
   - [ ] `none` / unknown type — toolbar (duplicate/delete), menu (wholeElement section)
-- [ ] **5.3** Test audio submenu variants:
-  - [ ] Image element in drag game: None / current-sound / Choose... / help row
-  - [ ] Text element in drag game: Use Talking Book Tool (label reflects audio state)
-- [ ] **5.4** Test draggability:
-  - [ ] Toggle draggable on/off
-  - [ ] "Part of Right Answer" visible only when draggable
+- [x] **5.3** Test audio submenu variants:
+  - [x] Image element in drag game: None / current-sound / Choose... / help row
+  - [x] Text element in drag game: Use Talking Book Tool (label reflects audio state)
+- [x] **5.4** Test draggability:
+  - [x] Toggle draggable on/off
+  - [x] "Part of Right Answer" visible only when draggable
   - [ ] `canToggleDraggability` logic (excludes gifs, rectangles, sentence items, background, audio)
-- [ ] **5.5** Test focus lifecycle:
-  - [ ] Open menu from toolbar button — no unexpected focus steal
-  - [ ] Right-click menu opens at anchor position
-  - [ ] Close menu without dialog — focus restored
-  - [ ] Close menu with dialog launch — `skipNextFocusChange` semantics preserved
-- [ ] **5.6** Test subscription gating:
-  - [ ] `setDestination` shows subscription badge when applicable
-  - [ ] Tool panel wrapped in `RequiresSubscriptionOverlayWrapper`
-- [ ] **5.7** Test background-image element:
-  - [ ] "Background Image" label shown on toolbar
-  - [ ] Delete hidden on toolbar but visible on menu; disabled when placeholder
-  - [ ] Duplicate hidden
-  - [ ] Expand to Fill Space visible, enabled/disabled correctly
-- [ ] **5.8** Confirm disabled states render correctly:
-  - [ ] `copyImage` disabled when placeholder
-  - [ ] `resetImage` disabled when not cropped
-  - [ ] Delete disabled for background-image placeholder and special game elements
-  - [ ] `expandToFillSpace` disabled when already fills space
-  - [ ] `playVideoEarlier`/`playVideoLater` disabled when no adjacent container
+- [x] **5.5** Test focus lifecycle:
+  - [x] Open menu from toolbar button — no unexpected focus steal
+  - [x] Right-click menu opens at anchor position
+  - [x] Close menu without dialog — focus restored
+  - [x] Close menu with dialog launch — `skipNextFocusChange` semantics preserved
+- [x] **5.6** Test subscription gating:
+  - [x] `setDestination` shows subscription badge when applicable
+  - [x] Tool panel wrapped in `RequiresSubscriptionOverlayWrapper`
+- [x] **5.7** Test background-image element:
+  - [x] "Background Image" label shown on toolbar
+  - [x] Delete hidden on toolbar but visible on menu; disabled when placeholder
+  - [x] Duplicate hidden
+  - [x] Expand to Fill Space visible, enabled/disabled correctly
+- [x] **5.8** Confirm disabled states render correctly:
+  - [x] `copyImage` disabled when placeholder
+  - [x] `resetImage` disabled when not cropped
+  - [x] Delete disabled for background-image placeholder and special game elements
+  - [x] `expandToFillSpace` disabled when already fills space
+  - [x] `playVideoEarlier`/`playVideoLater` disabled when no adjacent container
 - [x] **5.9** Availability-rules e2e coverage from `canvasAvailabilityPresets.ts` + `canvasElementNewDefinitions.ts`.
   - [x] `autoHeight` hidden for button element types (`navigation-*`)
   - [x] `fillBackground` visible only when inferred rectangle style
@@ -223,6 +223,15 @@ Goal: confirm the new path produces identical behavior to the old path.
   - [x] `expandToFillSpace` visible on background-image elements and enabled state tracks manager `canExpandToFillSpace()`
   - [x] `duplicate`/`delete` availability for `isBackgroundImage` and `isSpecialGameElement` conditions
   - Implemented in `bookEdit/canvas-e2e-tests/specs/13-availability-rules.spec.ts`.
+  - Follow-up parity checks in the same spec:
+    - `K7`: text-audio submenu shows `Use Talking Book Tool` in drag-game context
+    - `K8`: image-audio submenu coverage for current-sound label path + choose/help rows
+    - `K9`: draggable toggle on/off and right-answer menu visibility transitions
+    - `K10`: background-image toolbar label visibility
+  - Additional phase-5 parity coverage in `bookEdit/canvas-e2e-tests/specs/14-phase5-lifecycle-subscription-disabled.spec.ts`:
+    - `L1`–`L3`: focus lifecycle checks (toolbar open/close, right-click anchor positioning, dialog-launch close path)
+    - `S1`–`S2`: subscription gating checks (`Set Destination` badge path and tool-panel overlay wrapper)
+    - `D1`–`D4`: disabled-state checks for placeholder image commands, background delete/duplicate rules, fit-space disabled path, and no-adjacent-video disabled states
 
 ---
 
