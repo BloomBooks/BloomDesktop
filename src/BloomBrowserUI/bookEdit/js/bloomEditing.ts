@@ -1503,7 +1503,9 @@ document.addEventListener("paste", pasteHandler);
 // once because of our handler here and once because the other handler
 // is not looking for exactly this event and still gets called.
 document.addEventListener("keydown", (e: KeyboardEvent) => {
-    if (e.ctrlKey && e.key === "v") {
+    const key = e.key?.toLowerCase();
+    const isCtrlV = e.ctrlKey && (key === "v" || e.code === "KeyV");
+    if (isCtrlV) {
         pasteHandler(e);
     }
 });
