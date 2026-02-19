@@ -40,9 +40,6 @@ const resolvePackageBin = (packageRoot, packageName, binName) => {
 };
 
 const viteBin = resolvePackageBin(browserUIRoot, "vite", "vite");
-const tsNodeBin = resolvePackageBin(contentRoot, "ts-node", "ts-node");
-const cpxBin = resolvePackageBin(contentRoot, "cpx", "cpx");
-const rimrafBin = resolvePackageBin(contentRoot, "rimraf", "rimraf");
 
 const runCommand = (command, commandArgs, options = {}) =>
     new Promise((resolve, reject) => {
@@ -110,6 +107,11 @@ const run = async () => {
 
     console.log("Building content assets...");
     await runCommand("node", ["checkForNodeModules.js"], { cwd: contentRoot });
+
+    const tsNodeBin = resolvePackageBin(contentRoot, "ts-node", "ts-node");
+    const cpxBin = resolvePackageBin(contentRoot, "cpx", "cpx");
+    const rimrafBin = resolvePackageBin(contentRoot, "rimraf", "rimraf");
+
     await runCommand("node", [tsNodeBin, "pageSizes.ts"], {
         cwd: contentRoot,
     });
