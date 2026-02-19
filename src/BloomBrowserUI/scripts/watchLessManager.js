@@ -452,7 +452,13 @@ class LessWatchManager {
         const pending = this.pendingBuilds.get(entryId) ?? Promise.resolve();
         const next = pending
             .catch(() => {})
-            .then(() => this.compileEntry(this.entries.get(entryId), reason));
+            .then(() => {
+                const entry = this.entries.get(entryId);
+                if (!entry) {
+                    return;
+                }
+                return this.compileEntry(entry, reason);
+            });
 
         this.pendingBuilds.set(
             entryId,
