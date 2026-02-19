@@ -138,6 +138,11 @@
         <target xml:lang="mam" state="needs-translation">Untick this item if it is not part of the right answer</target>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerMore</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2" translate="no">
+        <source xml:lang="en">This item comes with a “target” to which it must be dragged. If you want to have more items than targets, turn this off for some of them.</source>
+        <target xml:lang="mam" state="needs-translation">This item comes with a “target” to which it must be dragged. If you want to have more items than targets, turn this off for some of them.</target>
+        <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2</note>
+      </trans-unit>
       <!--trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled">
         <source xml:lang="en">Nothing that can be part of the right answer is selected</source>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled</note>
@@ -513,7 +518,67 @@
         <target xml:lang="mam" state="needs-translation">Show image descriptions</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ShowImageDescriptions</note>
       </trans-unit>
-      <!-- Overlay -->
+      <!-- Canvas (was Overlay) -->
+      <trans-unit id="EditTab.Toolbox.CanvasTool.BookGrid" sil:dynamic="true" translate="no">
+        <source xml:lang="en">A grid of buttons that jump you to books in your app</source>
+        <target xml:lang="mam" state="needs-translation">A grid of buttons that jump you to books in your app</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.BookGrid</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ClickToSetLinkDest" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Click to set where the link takes you</source>
+        <target xml:lang="mam" state="needs-translation">Click to set where the link takes you</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.ClickToSetLinkDest</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.DragInstructions" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Drag any of these onto a canvas:</source>
+        <target xml:lang="mam" state="needs-translation">Drag any of these onto a canvas:</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.DragInstructions2</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Image Fit</source>
+        <target xml:lang="mam" state="needs-translation">Image Fit</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.ImageFit</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.Margin" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Fit with Margin</source>
+        <target xml:lang="mam" state="needs-translation">Fit with Margin</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.ImageFit.Margin</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.FitToEdge" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Fit to Edge</source>
+        <target xml:lang="mam" state="needs-translation">Fit to Edge</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.ImageFit.FitToEdge</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.Fill" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Fill</source>
+        <target xml:lang="mam" state="needs-translation">Fill</target>
+        <note>Fill up the button with the image, leaving no margin, cropping if necessary</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Choose books...</source>
+        <target xml:lang="mam" state="needs-translation">Choose books...</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.NavButtons" sil:dynamic="true" translate="no">
+        <source xml:lang="en">A button that jumps you to a page or book in your app</source>
+        <target xml:lang="mam" state="needs-translation">A button that jumps you to a page or book in your app</target>
+        <note>ID: EditTab.Toolbox.OverlayTool.NavButtons</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Navigation" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Navigation</source>
+        <target xml:lang="mam" state="needs-translation">Navigation</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.Navigation</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Go Somewhere</source>
+        <target xml:lang="mam" state="needs-translation">Go Somewhere</target>
+        <note>ID: EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.SetDest" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Set Destination</source>
+        <target xml:lang="mam" state="needs-translation">Set Destination</target>
+        <note>ID: EditTab.Toolbox.OverlayTool.SetDest</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.OverlayTool.KeyHints.Drag" sil:dynamic="true">
         <source xml:lang="en">drag</source>
         <target xml:lang="mam" state="needs-translation">drag</target>
@@ -580,8 +645,8 @@
         <note>ID: PublishTab.Feature.Games.Present</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.None">
-        <source xml:lang="en">This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.</source>
-        <target xml:lang="mam" state="needs-translation">This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.</target>
+        <source xml:lang="en">This is disabled because this book does not have any canvas elements that qualify as “comic-like”, such as speech bubbles.</source>
+        <target xml:lang="mam" state="needs-translation">This is disabled because this book does not have any canvas elements that qualify as “comic-like”, such as speech bubbles.</target>
         <note>ID: PublishTab.Feature.Comic.None</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.Possible">
@@ -789,10 +854,30 @@
         <target xml:lang="mam" state="needs-translation">Using this option turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</target>
         <note>BookSettings.CoverIsImage.Description</note>
       </trans-unit>
+      <trans-unit id="BookSettings.CoverIsImage.Description.V2" sil:dynamic="true">
+        <source xml:lang="en">Replace the front cover content with a single full-bleed image. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</source>
+        <target xml:lang="mam" state="needs-translation">Replace the front cover content with a single full-bleed image. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</target>
+        <note>BookSettings.CoverIsImage.Description.V2</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.FullBleed" sil:dynamic="true">
+        <source xml:lang="en">Use full bleed page layout</source>
+        <target xml:lang="mam" state="needs-translation">Use full bleed page layout</target>
+        <note>BookSettings.FullBleed</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.FullBleed.Description" sil:dynamic="true">
+        <source xml:lang="en">Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
+        <target xml:lang="mam" state="needs-translation">Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</target>
+        <note>BookSettings.FullBleed.Description</note>
+      </trans-unit>
       <trans-unit id="BookSettings.ContentPagesGroupLabel" sil:dynamic="true">
         <source xml:lang="en">Content Pages</source>
         <target xml:lang="mam" state="needs-translation">Content Pages</target>
         <note>BookSettings.ContentPagesGroupLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PrintPublishingGroupLabel" sil:dynamic="true">
+        <source xml:lang="en">Print Publishing</source>
+        <target xml:lang="mam" state="needs-translation">Print Publishing</target>
+        <note>ID: BookSettings.PrintPublishingGroupLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.NormalTextBoxLangsLabel" sil:dynamic="true">
         <source xml:lang="en">Languages to show in normal text boxes</source>
@@ -839,6 +924,11 @@
         <target xml:lang="mam" state="needs-translation">Show Topic</target>
         <note>BookSettings.ShowTopic</note>
       </trans-unit>
+      <trans-unit id="BookSettings.ShowCredits" sil:dynamic="true">
+        <source xml:lang="en">Show Credits</source>
+        <target xml:lang="mam" state="needs-translation">Show Credits</target>
+        <note>BookSettings.ShowCredits</note>
+      </trans-unit>
       <trans-unit id="BookSettings.PageNumbers" sil:dynamic="true">
         <source xml:lang="en">Page Numbers</source>
         <target xml:lang="mam" state="needs-translation">Page Numbers</target>
@@ -848,6 +938,36 @@
         <source xml:lang="en">Show Page Numbers</source>
         <target xml:lang="mam" state="needs-translation">Show Page Numbers</target>
         <note>BookSettings.ShowPageNumbers</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageNumbers.Automatic" sil:dynamic="true">
+        <source xml:lang="en">(Automatic)</source>
+        <target xml:lang="mam" state="needs-translation">(Automatic)</target>
+        <note>BookSettings.PageNumbers.Automatic</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageNumbers.Left" sil:dynamic="true">
+        <source xml:lang="en">Left</source>
+        <target xml:lang="mam" state="needs-translation">Left</target>
+        <note>BookSettings.PageNumbers.TopLeft</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageNumbers.Center" sil:dynamic="true">
+        <source xml:lang="en">Center</source>
+        <target xml:lang="mam" state="needs-translation">Center</target>
+        <note>BookSettings.PageNumbers.Center</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageNumbers.Right" sil:dynamic="true">
+        <source xml:lang="en">Right</source>
+        <target xml:lang="mam" state="needs-translation">Right</target>
+        <note>BookSettings.PageNumbers.Right</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageNumbers.Hidden" sil:dynamic="true">
+        <source xml:lang="en">Hidden</source>
+        <target xml:lang="mam" state="needs-translation">Hidden</target>
+        <note>BookSettings.PageNumbers.Hidden</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.PageNumberLocationNote" sil:dynamic="true">
+        <source xml:lang="en">Note: some Page Themes may not know how to change the location of the Page Number.</source>
+        <target xml:lang="mam" state="needs-translation">Note: some Page Themes may not know how to change the location of the Page Number.</target>
+        <note>BookSettings.PageNumberLocationNote</note>
       </trans-unit>
       <trans-unit id="BookSettings.FrontAndBackMatter" sil:dynamic="true">
         <source xml:lang="en">Front &amp; Back Matter</source>
@@ -1006,6 +1126,11 @@
         <source xml:lang="en">Paste Hyperlink</source>
         <target xml:lang="mam" state="needs-translation">Paste Hyperlink</target>
         <note>ID: EditTab.PasteHyperlink</note>
+      </trans-unit>
+      <trans-unit id="EditTab.SetupHyperlink">
+        <source xml:lang="en">Set Up Hyperlink</source>
+        <target xml:lang="mam" state="needs-translation">Set Up Hyperlink</target>
+        <note>ID: EditTab.SetupHyperlink</note>
       </trans-unit>
       <trans-unit id="UseTalkingBookTool">
         <source xml:lang="en">Use Talking Book Tool</source>

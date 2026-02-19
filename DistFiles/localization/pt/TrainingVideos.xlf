@@ -49,12 +49,12 @@
         <source xml:lang="en">
           <g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Using Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="pt-PT" state="final"><g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Usando Modelos de Leitores Decodificáveis e Nivelados (vários vídeos)</g></target>
+        <target xml:lang="pt-PT" state="final"><g id="genid-5" ctype="x-html-a" html:href="http://tiny.cc/usingBloomReaderTemplates">Usando Modelos de Livros Descodificáveis e Nivelados (vários vídeos)</g></target>
         <note>ID: training.videos.readers</note>
       </trans-unit>
       <trans-unit id="training.videos.advanced" approved="yes">
         <source xml:lang="en">Advanced Topics</source>
-        <target xml:lang="pt-PT" state="final">Tópicos Avançados</target>
+        <target xml:lang="pt-PT" state="final">Temas avançados</target>
         <note>ID: training.videos.advanced</note>
       </trans-unit>
       <trans-unit id="training.videos.formatting" approved="yes">
@@ -82,7 +82,7 @@
         <source xml:lang="en">
           <g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Making a set of Decodable and Leveled Reader Templates (several videos)</g>
         </source>
-        <target xml:lang="pt-PT" state="final"><g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Criar um conjunto de modelos de leitores decodificáveis e nivelados (vários vídeos)</g></target>
+        <target xml:lang="pt-PT" state="final"><g id="genid-9" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">Criar um conjunto de modelos de livros descodificáveis e nivelados (vários vídeos)</g></target>
         <note>ID: training.videos.readertemplates</note>
       </trans-unit>
       <trans-unit id="training.videos.offline" approved="yes">
