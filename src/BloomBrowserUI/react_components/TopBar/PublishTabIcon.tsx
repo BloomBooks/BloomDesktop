@@ -9,6 +9,7 @@ export const PublishTabIcon: React.FunctionComponent<SvgIconProps> = (
         height="27"
         viewBox="0 0 34 27"
         fill="none"
+        style={{ width: "34px", height: "35px" }}
         xmlns="http://www.w3.org/2000/svg"
         {...props}
     >

@@ -159,7 +159,7 @@ const Tab: React.FunctionComponent<{
                     text-align: center;
                     padding: 14px 16px;
                     text-decoration: none;
-                    //height: 55px;
+                    height: 69px;
 
                     cursor: pointer;
 
@@ -179,7 +179,7 @@ const Tab: React.FunctionComponent<{
                     display: flex;
                     flex-direction: column;
                     justify-content: space-between;
-                    gap: 9px;
+                    gap: 5px;
                     justify-content: center;
                     align-items: center;
                     font-size: 12px;
