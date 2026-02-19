@@ -685,7 +685,9 @@ namespace Bloom.Workspace
                 if (string.Equals(result, "true", StringComparison.OrdinalIgnoreCase))
                 {
                     _visibleEditHostDispatchSuccessCount++;
-                    _lastVisibleEditHostDispatchSuccessScript = SummarizeScriptForDiagnostics(script);
+                    _lastVisibleEditHostDispatchSuccessScript = SummarizeScriptForDiagnostics(
+                        script
+                    );
                     _lastVisibleEditHostDispatchSuccessUtc = DateTime.UtcNow;
                     return true;
                 }
