@@ -108,17 +108,18 @@ const run = async () => {
         cwd: browserUIRoot,
     });
 
+    console.log("Building content assets...");
+    await runCommand("node", ["checkForNodeModules.js"], { cwd: contentRoot });
+    await runCommand("node", [tsNodeBin, "pageSizes.ts"], {
+        cwd: contentRoot,
+    });
+
     console.log("Vite build...");
     await runCommand("node", [viteBin, "build", "--logLevel", "warn"], {
         cwd: browserUIRoot,
         showOutput: true,
     });
 
-    console.log("Building content assets...");
-    await runCommand("node", ["checkForNodeModules.js"], { cwd: contentRoot });
-    await runCommand("node", [tsNodeBin, "pageSizes.ts"], {
-        cwd: contentRoot,
-    });
     console.log("Copying branding assets...");
     await runCommand(
         "node",
