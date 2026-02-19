@@ -2184,32 +2184,32 @@
     "@eslint/core" "^0.12.0"
     levn "^0.4.1"
 
-"@ethnolib/find-language@0.1.11":
-  version "0.1.11"
-  resolved "https://registry.yarnpkg.com/@ethnolib/find-language/-/find-language-0.1.11.tgz#8f80febb67c514c1f92592ceec42d94576defc02"
-  integrity sha512-O4hk+L4Q9qhrRGIq7clfxqmEIEiJUXGneML10uZZo1L+z+qmYDi4rlXlv//31JmdCIJDNYb58qqAZ+eTrvqY5Q==
+"@ethnolib/find-language@0.1.18":
+  version "0.1.18"
+  resolved "https://registry.yarnpkg.com/@ethnolib/find-language/-/find-language-0.1.18.tgz#332ea703b74e7e8fca198b9dd599e94899961d3a"
+  integrity sha512-f+vOwKleXc2YCxfMZC5egfRZFqFg3YSBSEoYXl5wEqkfed7wfgUjtu3GP/49PzRBaimT3knsnsWONZPoVXYsYw==
   dependencies:
     fuse.js "^7.0.0"
     iso-15924 "^3.2.0"
     iso-3166 "^4.3.0"
 
-"@ethnolib/language-chooser-react-hook@0.1.12":
-  version "0.1.12"
-  resolved "https://registry.yarnpkg.com/@ethnolib/language-chooser-react-hook/-/language-chooser-react-hook-0.1.12.tgz#05a37ef62023d82d8e1b5eb01041caea5aced25c"
-  integrity sha512-8Zmmitze4aCetnAzzYdIuSEUmeMYBmwlzdFHnWUfgz8SyciOoGVxBc/XNJz/U2H7Er1DKAzxCXte+oJIrtsBxA==
+"@ethnolib/language-chooser-react-hook@0.1.19":
+  version "0.1.19"
+  resolved "https://registry.yarnpkg.com/@ethnolib/language-chooser-react-hook/-/language-chooser-react-hook-0.1.19.tgz#d15ec5640cc9ff4af729d6e2de839a043bcffbbd"
+  integrity sha512-FkkSHDbPq2WWzXFO+9bUXiKKlNq2tGXRZGzZzqlO8J965tMQImoJtFRURUxRVVdNGw8JhXM5A0LxfPZNZJUi2Q==
   dependencies:
-    "@ethnolib/find-language" "0.1.11"
+    "@ethnolib/find-language" "0.1.18"
     fuse.js "^7.0.0"
     iso-15924 "^3.2.0"
     iso-3166 "^4.3.0"
 
-"@ethnolib/language-chooser-react-mui@^0.1.14":
-  version "0.1.14"
-  resolved "https://registry.yarnpkg.com/@ethnolib/language-chooser-react-mui/-/language-chooser-react-mui-0.1.14.tgz#87f3b0e5f97643da9c3acc58e23b307fd0cad06c"
-  integrity sha512-gtbzhTcfV3xMHJDoBlNeq5yJp9lF70gm50Jm01x+RtJFIHkmSz60V4d40/DodMQvCyIBAvD/rkNgO6+RXY85qw==
+"@ethnolib/language-chooser-react-mui@^0.1.21":
+  version "0.1.21"
+  resolved "https://registry.yarnpkg.com/@ethnolib/language-chooser-react-mui/-/language-chooser-react-mui-0.1.21.tgz#e87e640549e739ef3fe3c2fc08c58a3cd17bfbd0"
+  integrity sha512-zw8OV8uk/dDr7OlmP+3pYAZl5fZD+cDwnO4D6vKiAC8tRFIIWgA+y/hC4YG0Rfc2aNzRVNmGXRcA2xoO3bIqHQ==
   dependencies:
-    "@ethnolib/find-language" "0.1.11"
-    "@ethnolib/language-chooser-react-hook" "0.1.12"
+    "@ethnolib/find-language" "0.1.18"
+    "@ethnolib/language-chooser-react-hook" "0.1.19"
     "@mui/icons-material" "^5.15.19"
     lodash "^4.17.21"
     react-lazyload "^3.2.1"

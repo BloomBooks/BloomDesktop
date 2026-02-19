@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="playground.template.title">
         <source xml:lang="en">Playground</source>
-        <target xml:lang="pt-PT" state="needs-translation">Playground</target>
+        <target xml:lang="pt-PT" state="translated">Parquinho</target>
         <note>ID: playground.template.title</note>
       </trans-unit>
       <trans-unit id="playground.template.use">
         <source xml:lang="en">Use this source book to explore all the features Bloom offers with a subscription. It's a great way to try out advanced tools and layout options before upgrading.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Use this source book to explore all the features Bloom offers with a subscription. It's a great way to try out advanced tools and layout options before upgrading.</target>
+        <target xml:lang="pt-PT" state="translated">Use este livro de fonte para explorar todos os recursos que Bloom oferece com uma assinatura. É uma ótima maneira de testar ferramentas e opções de layout avançadas antes de subir de nível de assinatura (fazer upgrade).</target>
         <note>ID: playground.template.use</note>
       </trans-unit>
       <trans-unit id="playground.template.warning">
         <source xml:lang="en">Books created with this template will include a watermark and cannot be printed, published or distributed.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Books created with this template will include a watermark and cannot be printed, published or distributed.</target>
+        <target xml:lang="pt-PT" state="translated">Livros criados a partir deste modelo incluirão uma marca d'água e não poderão ser impressos, publicados ou distribuídos.</target>
         <note>ID: playground.template.warning</note>
       </trans-unit>
     </body>

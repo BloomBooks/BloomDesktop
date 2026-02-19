@@ -2,29 +2,29 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="pt-PT">
     <body>
-      <trans-unit id="sign.language.template.title">
+      <trans-unit id="sign.language.template.title" approved="yes">
         <source xml:lang="en">About the Sign Language Template</source>
-        <target xml:lang="pt-PT" state="needs-translation">About the Sign Language Template</target>
+        <target xml:lang="pt-PT" state="final">Sobre o modelo para língua de sinais</target>
         <note>ID: sign.language.template.title</note>
       </trans-unit>
       <trans-unit id="sign.language.template.provides">
         <source xml:lang="en">This template provides a collection of pages that can hold a video in addition to text and pictures.</source>
-        <target xml:lang="pt-PT" state="needs-translation">This template provides a collection of pages that can hold a video in addition to text and pictures.</target>
+        <target xml:lang="pt-PT" state="translated">Este modelo fornece uma coleção de páginas que podem incluir um vídeo além de texto e imagens.</target>
         <note>ID: sign.language.template.provides</note>
       </trans-unit>
       <trans-unit id="sign.language.template.tool">
         <source xml:lang="en">Using the Sign Language Tool, you can record a video of a person signing the message to be communicated for each page using the sign language of your choice, or you can import a pre-recorded sign language video.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Using the Sign Language Tool, you can record a video of a person signing the message to be communicated for each page using the sign language of your choice, or you can import a pre-recorded sign language video.</target>
+        <target xml:lang="pt-PT" state="translated">Usando a Ferramenta de Línguas de Sinais, para cada página pode gravar um vídeo de uma pessoa comunicando a mensagem que quiser usando a língua de sinais de sua escolha, ou pode importar um vídeo pré-gravado.</target>
         <note>ID: sign.language.template.tool</note>
       </trans-unit>
       <trans-unit id="sign.language.template.bloom.library">
         <source xml:lang="en">A growing number of sign language communities from across the globe are choosing to publish their sign language books on Bloom Library. To view these books, check out <g id="genid-1" ctype="x-html-a" html:href="https://bloomlibrary.org/sign-language">this page</g>.</source>
-        <target xml:lang="pt-PT" state="needs-translation">A growing number of sign language communities from across the globe are choosing to publish their sign language books on Bloom Library. To view these books, check out <g id="genid-1" ctype="x-html-a" html:href="https://bloomlibrary.org/sign-language">this page</g>.</target>
+        <target xml:lang="pt-PT" state="translated">Mais e mais comunidades surdas ao redor do mundo estão optando por publicar os seus livros de línguas de sinais na Biblioteca de Bloom. Para ver estes livros, confira <g id="genid-1" ctype="x-html-a" html:href="https://bloomlibrary.org/sign-language">esta página</g>.</target>
         <note>ID: sign.language.template.bloom.library</note>
       </trans-unit>
       <trans-unit id="sign.language.template.docs">
         <source xml:lang="en">To learn more about making sign language books, please consult <g id="genid-2" ctype="x-html-a" html:href="https://docs.bloomlibrary.org/sign-language-books">Bloom Docs</g>.</source>
-        <target xml:lang="pt-PT" state="needs-translation">To learn more about making sign language books, please consult <g id="genid-2" ctype="x-html-a" html:href="https://docs.bloomlibrary.org/sign-language-books">Bloom Docs</g>.</target>
+        <target xml:lang="pt-PT" state="translated">Para saber mais sobre a criação de livros com línguas de sinais, consulte <g id="genid-2" ctype="x-html-a" html:href="https://docs.bloomlibrary.org/sign-language-books">Documentação Bloom</g>.</target>
         <note>ID: sign.language.template.docs</note>
       </trans-unit>
     </body>
