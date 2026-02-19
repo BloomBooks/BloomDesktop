@@ -99,12 +99,26 @@ export const captionCanvasElementDefinition: ICanvasElementDefinition = {
 
 export const bookLinkGridDefinition: ICanvasElementDefinition = {
     type: "book-link-grid",
-    menuSections: ["linkGrid"],
-    toolbar: ["linkGridChooseBooks"],
+    menuSections: ["linkGrid", "wholeElement"],
+    toolbar: ["linkGridChooseBooks", "spacer", "duplicate", "delete"],
     toolPanel: ["text"],
     availabilityRules: {
         linkGridChooseBooks: {
             visible: (ctx) => ctx.isLinkGrid,
+        },
+        duplicate: {
+            visible: (ctx) => ctx.isLinkGrid,
+        },
+        delete: {
+            surfacePolicy: {
+                toolbar: {
+                    visible: (ctx) => ctx.isLinkGrid,
+                },
+                menu: {
+                    visible: (ctx) => ctx.isLinkGrid,
+                },
+            },
+            enabled: (ctx) => ctx.isLinkGrid,
         },
         textColor: "exclude",
         backgroundColor: {
