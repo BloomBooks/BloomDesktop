@@ -75,6 +75,18 @@ import {
     canvasElementDefinitions,
 } from "../../toolbox/canvas/canvasElementDefinitions";
 import { inferCanvasElementType } from "../../toolbox/canvas/canvasElementTypeInference";
+import { getUseNewCanvasControls } from "../../toolbox/canvas/newCanvasControlsFlag";
+import { buildControlContext } from "../../toolbox/canvas/buildControlContext";
+import { canvasElementDefinitionsNew } from "../../toolbox/canvas/canvasElementNewDefinitions";
+import {
+    IControlContext,
+    IControlMenuRow,
+    IControlRuntime,
+} from "../../toolbox/canvas/canvasControlTypes";
+import {
+    getMenuSections,
+    getToolbarItems,
+} from "../../toolbox/canvas/canvasControlHelpers";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -104,6 +116,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
     menuAnchorPosition?: { left: number; top: number };
 }> = (props) => {
     const canvasElementManager = getCanvasElementManager();
+    const useNewCanvasControls = getUseNewCanvasControls();
 
     const imgContainer =
         props.canvasElement.getElementsByClassName(kImageContainerClass)[0];
@@ -904,7 +917,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
         ["text", textMenuItems],
         ["wholeElementCommands", wholeElementCommandsMenuItems],
     ];
-    const menuOptions = joinMenuSectionsWithSingleDividers(
+    let menuOptions = joinMenuSectionsWithSingleDividers(
         orderedMenuSections
             .filter(([section, items]) => {
                 if (items.length === 0) {
@@ -954,11 +967,191 @@ const CanvasElementContextControls: React.FunctionComponent<{
         return command.getToolbarItem();
     };
 
-    const toolbarItems = normalizeToolbarItems(
+    let toolbarItems = normalizeToolbarItems(
         canvasElementDefinitions[canvasElementType].toolbarButtons
             .map((button, index) => getToolbarItemForButton(button, index))
             .filter((item): item is IToolbarItem => !!item),
     );
+
+    const convertControlMenuRows = (
+        rows: IControlMenuRow[],
+        controlContext: IControlContext,
+        controlRuntime: IControlRuntime,
+    ): IMenuItemWithSubmenu[] => {
+        const convertedRows: IMenuItemWithSubmenu[] = [];
+
+        rows.forEach((row) => {
+            if (row.separatorAbove && convertedRows.length > 0) {
+                convertedRows.push(divider as IMenuItemWithSubmenu);
+            }
+
+            if (row.kind === "help") {
+                convertedRows.push({
+                    l10nId: null,
+                    english: "",
+                    subLabelL10nId: row.helpRowL10nId,
+                    subLabel: row.helpRowEnglish,
+                    onClick: () => {},
+                    disabled: true,
+                    dontGiveAffordanceForCheckbox: true,
+                });
+                return;
+            }
+
+            const convertedSubMenu = row.subMenuItems
+                ? convertControlMenuRows(
+                      row.subMenuItems,
+                      controlContext,
+                      controlRuntime,
+                  )
+                : undefined;
+
+            const convertedRow: IMenuItemWithSubmenu = {
+                l10nId: row.l10nId ?? null,
+                english: row.englishLabel ?? "",
+                subLabelL10nId: row.subLabelL10nId,
+                generatedSubLabel: row.subLabel,
+                icon: row.icon,
+                disabled: row.disabled,
+                featureName: row.featureName,
+                subscriptionTooltipOverride: row.subscriptionTooltipOverride,
+                onClick: () => {
+                    if (!convertedSubMenu) {
+                        controlRuntime.closeMenu();
+                    }
+                    void row.onSelect(controlContext, controlRuntime);
+                },
+            };
+
+            if (convertedSubMenu) {
+                convertedRow.subMenu = convertedSubMenu;
+            }
+
+            convertedRows.push(convertedRow);
+        });
+
+        return convertedRows;
+    };
+
+    const getToolbarItemForResolvedControl = (
+        item: ReturnType<typeof getToolbarItems>[number],
+        index: number,
+        controlContext: IControlContext,
+    ): IToolbarItem | undefined => {
+        if ("id" in item && item.id === "spacer") {
+            return getSpacerToolbarItem(index);
+        }
+
+        if (item.control.kind !== "command") {
+            return undefined;
+        }
+
+        if (item.control.toolbar?.render) {
+            return {
+                key: `${item.control.id}-${index}`,
+                node: item.control.toolbar.render(controlContext, {
+                    closeMenu: () => {},
+                }),
+            };
+        }
+
+        const icon = item.control.toolbar?.icon ?? item.control.icon;
+        const onClick = () => {
+            void item.control.action(controlContext, {
+                closeMenu: () => {},
+            });
+        };
+
+        if (typeof icon === "function") {
+            return makeToolbarButton({
+                key: `${item.control.id}-${index}`,
+                tipL10nKey: item.control.tooltipL10nId ?? item.control.l10nId,
+                icon,
+                onClick,
+                relativeSize: item.control.toolbar?.relativeSize,
+                disabled: !item.enabled,
+            });
+        }
+
+        if (!icon) {
+            return undefined;
+        }
+
+        const renderedIcon = React.isValidElement(icon)
+            ? icon
+            : typeof icon === "object" && "$$typeof" in (icon as object)
+              ? React.createElement(icon as React.ElementType, null)
+              : icon;
+
+        return {
+            key: `${item.control.id}-${index}`,
+            node: (
+                <BloomTooltip
+                    placement="top"
+                    tip={{
+                        l10nKey:
+                            item.control.tooltipL10nId ?? item.control.l10nId,
+                    }}
+                >
+                    <button
+                        onClick={onClick}
+                        css={getIconCss(
+                            item.control.toolbar?.relativeSize,
+                            !item.enabled
+                                ? `opacity: ${kBloomDisabledOpacity};`
+                                : "",
+                        )}
+                        disabled={!item.enabled}
+                    >
+                        {renderedIcon}
+                    </button>
+                </BloomTooltip>
+            ),
+        };
+    };
+
+    if (useNewCanvasControls) {
+        const controlRuntime: IControlRuntime = {
+            closeMenu: (launchingDialog?: boolean) => {
+                setMenuOpen(false, launchingDialog);
+            },
+        };
+
+        const controlContext: IControlContext = {
+            ...buildControlContext(props.canvasElement),
+            textHasAudio,
+            hasDraggableTarget: !!currentDraggableTarget,
+        };
+
+        const definition =
+            canvasElementDefinitionsNew[controlContext.elementType] ??
+            canvasElementDefinitionsNew.none;
+
+        menuOptions = joinMenuSectionsWithSingleDividers(
+            getMenuSections(definition, controlContext, controlRuntime).map(
+                (section) =>
+                    convertControlMenuRows(
+                        section
+                            .map((item) => item.menuRow)
+                            .filter((row): row is IControlMenuRow => !!row),
+                        controlContext,
+                        controlRuntime,
+                    ),
+            ),
+        );
+
+        toolbarItems = normalizeToolbarItems(
+            getToolbarItems(definition, controlContext, controlRuntime)
+                .map((item, index) =>
+                    getToolbarItemForResolvedControl(
+                        item,
+                        index,
+                        controlContext,
+                    ),
+                )
+                .filter((item): item is IToolbarItem => !!item),
+        );
+    }
 
     return (
         <ThemeProvider theme={lightTheme}>
@@ -1091,6 +1284,12 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                                     <LocalizableMenuItem
                                                         key={subOption.l10nId}
                                                         {...subOption}
+                                                        onClick={(e) => {
+                                                            setMenuOpen(false);
+                                                            subOption.onClick(
+                                                                e,
+                                                            );
+                                                        }}
                                                         css={css`
                                                             max-width: ${maxMenuWidth}px;
                                                             white-space: wrap;

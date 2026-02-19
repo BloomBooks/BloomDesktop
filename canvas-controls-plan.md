@@ -101,8 +101,11 @@ export interface IControlContext {
   hasImage: boolean;
   hasRealImage: boolean;
   hasVideo: boolean;
+  hasPreviousVideoContainer: boolean;
+  hasNextVideoContainer: boolean;
   hasText: boolean;
   isRectangle: boolean;
+  isCropped: boolean;
   rectangleHasBackground: boolean;
   isLinkGrid: boolean;
   isNavigationButton: boolean;
@@ -116,9 +119,12 @@ export interface IControlContext {
   isInDraggableGame: boolean;
   canChooseAudioForElement: boolean;
   hasCurrentImageSound: boolean;
+  currentImageSoundLabel: string | undefined;
   canToggleDraggability: boolean;
   hasDraggableId: boolean;
   hasDraggableTarget: boolean;
+  // Keep current parity: initialize true before async text-audio check resolves,
+  // so text-audio label starts as "A Recording".
   textHasAudio: boolean | undefined;
 }
 
@@ -222,11 +228,15 @@ export interface ICommandControlDefinition extends IBaseControlDefinition {
   // Placement is controlled entirely by the element definition.
   toolbar?: {
     relativeSize?: number;
+    // Optional toolbar-specific icon override when toolbar and menu icons differ.
+    icon?: IControlIcon;
     // Optional full renderer override for composite toolbar content
     // (for example icon + text actions such as link-grid choose-books).
     render?: (ctx: IControlContext, runtime: IControlRuntime) => React.ReactNode;
   };
   menu?: {
+    // Optional menu-specific icon override when toolbar and menu icons differ.
+    icon?: React.ReactNode;
     subLabelL10nId?: string;
     // Optional shortcut shown on the menu row when this control renders as
     // a single menu item (non-submenu path).
@@ -261,6 +271,7 @@ export type IControlDefinition =
 > **`icon` note:** `icon` is optional — some controls (e.g. text-only menu items) have no icon.
 > When `icon` is a `React.FunctionComponent<SvgIconProps>`, each surface instantiates it with its own size props.
 > When `icon` is a prebuilt `React.ReactNode`, renderers use it as-is (intended for exceptional asset-backed icons).
+> If a command defines `toolbar.icon` or `menu.icon`, that surface-specific icon overrides base `icon`.
 
 ### Subscription requirements (`featureName`)
 
@@ -336,6 +347,8 @@ export interface ICanvasToolsPanelState {
 }
 ```
 
+`currentBubble` intentionally preserves coupling to Comical (`Bubble` / `BubbleSpec`) so existing panel controls keep their current behavior.
+
 ---
 
 ### Section
@@ -360,6 +373,8 @@ export interface IControlSection {
   controlsBySurface: Partial<Record<"menu" | "toolPanel", ControlId[]>>;
 }
 ```
+
+`"wholeElement"` is the new section id replacing legacy `"wholeElementCommands"`; migration should include a temporary adapter/rename pass so no behavior changes during cutover.
 
 ### The Prototype Registry
 
@@ -446,6 +461,9 @@ export const controlRegistry: Record<ControlId, IControlDefinition> = {
     l10nId: "EditTab.Image.MissingInfo",
     englishLabel: "Missing image information",
     icon: MissingMetadataIcon,
+    menu: {
+      icon: <CopyrightIcon />,
+    },
     action: async (ctx, runtime) => {
       runtime.closeMenu(true);
       showCopyrightAndLicenseDialog(/*...*/);
@@ -458,6 +476,9 @@ export const controlRegistry: Record<ControlId, IControlDefinition> = {
     l10nId: "EditTab.Toolbox.ComicTool.Options.ExpandToFillSpace",
     englishLabel: "Expand to Fill Space",
     icon: FillSpaceIcon,
+    menu: {
+      icon: <img src="/bloom/images/fill image black.svg" alt="" />,
+    },
     action: async (ctx, _runtime) => {
       getCanvasElementManager()?.expandImageToFillSpace();
     },
@@ -498,7 +519,7 @@ export const controlRegistry: Record<ControlId, IControlDefinition> = {
         return {
           id: "chooseAudio",
           l10nId: "EditTab.Toolbox.DragActivity.ChooseSound",
-          englishLabel: "Choose...",
+          englishLabel: ctx.currentImageSoundLabel ?? "Choose...",
           subLabelL10nId: "EditTab.Image.PlayWhenTouched",
           featureName: "canvas",
           onSelect: async () => {},
@@ -618,7 +639,7 @@ export const imageAvailabilityRules: AvailabilityRulesMap = {
   chooseImage:       { visible: (ctx) => ctx.hasImage, enabled: (ctx) => ctx.canModifyImage },
   pasteImage:        { visible: (ctx) => ctx.hasImage, enabled: (ctx) => ctx.canModifyImage },
   copyImage:         { visible: (ctx) => ctx.hasImage, enabled: (ctx) => ctx.hasRealImage },
-  resetImage:        { visible: (ctx) => ctx.hasImage },
+  resetImage:        { visible: (ctx) => ctx.hasImage, enabled: (ctx) => ctx.isCropped },
   // Parity note:
   // - toolbar: only show when metadata is missing
   // - menu: always show for modifiable image element, but disable for placeholder/no real image
@@ -633,7 +654,10 @@ export const imageAvailabilityRules: AvailabilityRulesMap = {
       } as SurfaceRule,
     },
   },
-  expandToFillSpace: { visible: (ctx) => ctx.isBackgroundImage },
+  expandToFillSpace: {
+    visible: (ctx) => ctx.isBackgroundImage,
+    enabled: (ctx) => ctx.canExpandBackgroundImage,
+  },
 };
 
 // --- Whole-element commands (duplicate / delete) ---
@@ -658,6 +682,8 @@ export const wholeElementAvailabilityRules: AvailabilityRulesMap = {
     },
   },
   toggleDraggable: { visible: (ctx) => ctx.canToggleDraggability },
+  // Visibility matches current command behavior (has draggable id).
+  // Checkmark/icon state remains driven by hasDraggableTarget.
   togglePartOfRightAnswer: { visible: (ctx) => ctx.hasDraggableId },
 };
 
@@ -665,8 +691,14 @@ export const wholeElementAvailabilityRules: AvailabilityRulesMap = {
 export const videoAvailabilityRules: AvailabilityRulesMap = {
   chooseVideo: { visible: (ctx) => ctx.hasVideo },
   recordVideo: { visible: (ctx) => ctx.hasVideo },
-  playVideoEarlier: { visible: (ctx) => ctx.hasVideo },
-  playVideoLater: { visible: (ctx) => ctx.hasVideo },
+  playVideoEarlier: {
+    visible: (ctx) => ctx.hasVideo,
+    enabled: (ctx) => ctx.hasPreviousVideoContainer,
+  },
+  playVideoLater: {
+    visible: (ctx) => ctx.hasVideo,
+    enabled: (ctx) => ctx.hasNextVideoContainer,
+  },
 };
 
 // --- Audio commands (only in draggable games) ---
@@ -843,7 +875,7 @@ missingMetadata?  chooseImage  pasteImage  expandToFillSpace?  ── spacer ─
 ── image section ──
   chooseImage / pasteImage / copyImage / missingMetadata / resetImage / expandToFillSpace?
 ── audio section ──
-  chooseAudio (submenu rows include remove/current-sound/use-talking-book as applicable)
+  chooseAudio (image variant submenu: remove/current-sound/choose/help)
 ── wholeElement section ──
   duplicate? / delete / toggleDraggable? / togglePartOfRightAnswer?
 ```
@@ -869,7 +901,7 @@ export const speechCanvasElementDefinition: ICanvasElementDefinition = {
 };
 ```
 
-The side panel for `speech` gets the bubble controls (style, tail, rounded corners, outline color) and text controls (text color, background color) from `getToolPanelControls`. The old `switch (canvasElementType)` is gone.
+The side panel for `speech` gets the bubble controls (style, tail, rounded corners, outline color) and text controls (text color, background color) from `getToolPanelControls`. The old broad `switch (canvasElementType)` is replaced with definition lookup plus explicit handling for the deselected (`undefined`) tool-panel state; there is no real `"text"` `CanvasElementType`.
 
 ---
 
@@ -934,6 +966,107 @@ export const bookLinkGridDefinition: ICanvasElementDefinition = {
 ```
 
 This keeps link-grid command mapping explicit and avoids relying on incidental text-section wiring.
+
+Migration note: current code pushes `linkGridChooseBooks` into `textMenuItems` with `menuSections: ["text"]`. The new dedicated `"linkGrid"` section is an intentional rename/re-grouping for clarity. It preserves behavior for `book-link-grid` because this element currently has no other text items.
+
+---
+
+## Complete Element-Type Coverage (Required)
+
+The registry must include concrete definitions for all currently supported element types, not only examples.
+
+```ts
+export const videoCanvasElementDefinition: ICanvasElementDefinition = {
+  type: "video",
+  menuSections: ["video", "wholeElement"],
+  toolbar: ["chooseVideo", "recordVideo", "spacer", "duplicate", "delete"],
+  toolPanel: [],
+  availabilityRules: {
+    ...videoAvailabilityRules,
+    ...wholeElementAvailabilityRules,
+  },
+};
+
+export const soundCanvasElementDefinition: ICanvasElementDefinition = {
+  type: "sound",
+  menuSections: ["audio", "wholeElement"],
+  toolbar: ["chooseAudio", "spacer", "duplicate", "delete"],
+  toolPanel: [],
+  availabilityRules: {
+    ...audioAvailabilityRules,
+    ...wholeElementAvailabilityRules,
+  },
+};
+
+export const rectangleCanvasElementDefinition: ICanvasElementDefinition = {
+  type: "rectangle",
+  menuSections: ["text", "wholeElement"],
+  toolbar: ["format", "spacer", "duplicate", "delete"],
+  toolPanel: ["text"],
+  availabilityRules: {
+    ...textAvailabilityRules,
+    ...wholeElementAvailabilityRules,
+  },
+};
+
+export const captionCanvasElementDefinition: ICanvasElementDefinition = {
+  type: "caption",
+  menuSections: ["audio", "text", "wholeElement"],
+  toolbar: ["format", "spacer", "duplicate", "delete"],
+  toolPanel: ["text"],
+  availabilityRules: {
+    ...audioAvailabilityRules,
+    ...textAvailabilityRules,
+    ...wholeElementAvailabilityRules,
+    addChildBubble: "exclude",
+  },
+};
+
+export const navigationImageWithLabelButtonDefinition: ICanvasElementDefinition = {
+  type: "navigation-image-with-label-button",
+  menuSections: ["url", "image", "text", "wholeElement"],
+  toolbar: [
+    "setDestination",
+    "chooseImage",
+    "pasteImage",
+    "spacer",
+    "duplicate",
+    "delete",
+  ],
+  toolPanel: ["text", "imagePanel"],
+  availabilityRules: {
+    ...imageAvailabilityRules,
+    ...textAvailabilityRules,
+    ...wholeElementAvailabilityRules,
+    setDestination: { visible: () => true },
+    imageFillMode: { visible: (ctx) => ctx.hasImage },
+  },
+};
+
+export const navigationLabelButtonDefinition: ICanvasElementDefinition = {
+  type: "navigation-label-button",
+  menuSections: ["url", "text", "wholeElement"],
+  toolbar: ["setDestination", "format", "spacer", "duplicate", "delete"],
+  toolPanel: ["text"],
+  availabilityRules: {
+    ...textAvailabilityRules,
+    ...wholeElementAvailabilityRules,
+    setDestination: { visible: () => true },
+  },
+};
+
+export const noneCanvasElementDefinition: ICanvasElementDefinition = {
+  type: "none",
+  menuSections: ["wholeElement"],
+  toolbar: ["duplicate", "delete"],
+  toolPanel: [],
+  availabilityRules: {
+    ...wholeElementAvailabilityRules,
+  },
+};
+```
+
+For `canvasElementType === undefined` (deselected state), preserve current tool-panel parity by resolving a dedicated panel profile equivalent to the old `case undefined / case "text"` fallback (bubble/text controls). Do not introduce a real `"text"` canvas element type.
 
 ---
 
@@ -1006,7 +1139,7 @@ return (
 );
 ```
 
-The `switch` on `canvasElementType` is gone. The side-panel controls for style, tail, rounded corners, color pickers, and image fill mode are each backed by a control definition with a `canvasToolsControl` renderer. Element types opt in by listing the relevant section in `toolPanel`.
+The old broad `switch` on `canvasElementType` is replaced by section-driven definition lookup plus an explicit deselected-state panel resolver. The side-panel controls for style, tail, rounded corners, color pickers, and image fill mode are each backed by a control definition with a `canvasToolsControl` renderer. Element types opt in by listing the relevant section in `toolPanel`.
 
 Two parity constraints are explicit in this design:
 
@@ -1071,10 +1204,10 @@ Use this escape hatch sparingly; prefer standard icon-button controls where poss
 
 ## Unknown/Unregistered Type Fallback
 
-Keep the current graceful behavior:
+Keep the current graceful behavior while distinguishing it from deselected-state tool-panel behavior:
 
-1. If inference returns `undefined`, warn and fall back to `"none"`.
-2. If inference returns a value missing from the definitions registry, warn and fall back to `"none"`.
+1. If there is no selected element (`canvasElementType === undefined`), use the explicit deselected tool-panel profile (bubble/text parity behavior).
+2. If inference returns an unexpected value or an unregistered type, warn and fall back to `"none"`.
 3. Keep a `none` definition in `canvasElementDefinitions` with conservative controls (`wholeElement` section + duplicate/delete rules).
 
 This preserves compatibility with books produced by newer Bloom versions.
@@ -1088,9 +1221,11 @@ Migrate in phases to preserve behavior and reduce regressions:
 1. **Parity inventory phase**
   - Lock a checklist of all current controls/conditions (menu, toolbar, tool panel).
   - Add/update e2e assertions for high-risk behaviors (audio nested menu, draggability toggles, nav button panel controls).
+  - Track section-id/menu-group renames explicitly: `wholeElementCommands -> wholeElement`, `book-link-grid text -> linkGrid`.
 2. **Dual-path implementation phase**
   - Introduce new registry/helper modules while keeping existing rendering path in place.
   - Add a temporary adapter that can render from either path in dev/test builds.
+  - Include alias handling for legacy section ids during the transition.
 3. **Cutover phase**
   - Switch `CanvasElementContextControls` and `CanvasToolControls` to new helpers.
   - Remove old command-construction code only after parity tests pass.
@@ -1114,12 +1249,14 @@ Before removing legacy control-building code, confirm the new system maps all of
 
 - **Video menu**: `playVideoEarlier` / `playVideoLater` enablement tied to previous/next video containers.
 - **Image menu**: `copyImage` and `resetImage` with current disabled rules.
+- **Image toolbar/menu**: `expandToFillSpace` visible only for background image and disabled when `!canExpandBackgroundImage`.
 - **Rectangle text menu**: `fillBackground` toggles `bloom-theme-background`.
 - **Bubble section**: `addChildBubble` hidden in draggable games.
 - **Text menu**: `copyText`, `pasteText`, and `autoHeight` (`autoHeight` hidden for button elements).
 - **Whole-element menu**: `toggleDraggable` and `togglePartOfRightAnswer` with current game-specific constraints.
-- **Audio menu**: nested submenu behavior for image/text variants, including `useTalkingBookTool` and dynamic current-sound row.
+- **Audio menu**: nested submenu behavior for image/text variants, including `useTalkingBookTool`, dynamic current-sound row, and image parent label showing sound filename (minus `.mp3`) when present.
 - **Link-grid mapping**: `linkGridChooseBooks` appears in toolbar/menu for book-link-grid and nowhere else.
+- **Icon parity**: keep per-surface icon differences (e.g., `missingMetadata` toolbar vs menu icons; `expandToFillSpace` toolbar component vs menu asset icon).
 - **Menu lifecycle**: keep close-menu + focus behavior for dialog-launching commands.
 - **Parity row — menu focus lifecycle**: verify open/close preserves current focus semantics, including launching-dialog behavior.
 - **Parity row — audio help row**: verify localized help row renders in audio submenu, is non-clickable, and respects `separatorAbove`.
@@ -1183,6 +1320,14 @@ The rule is: **if a fact drives visibility or enabled state, it belongs in `ICon
 
 New flags may be added to `IControlContext` as needed, but only if they are actually referenced by a `visible` or `enabled` callback. All DOM querying for context construction is isolated in one `buildCommandContext` function, so the coupling is contained.
 
+`buildCommandContext` parity specifics:
+
+- `isRectangle` uses `canvasElement.getElementsByClassName("bloom-rectangle").length > 0`.
+- `isCropped` mirrors current reset-image logic (`!!img?.style?.width`).
+- `hasPreviousVideoContainer` / `hasNextVideoContainer` mirror `findPreviousVideoContainer` / `findNextVideoContainer` checks.
+- `currentImageSoundLabel` is derived from current sound filename with `.mp3` removed.
+- `textHasAudio` keeps current initialization behavior (`true` before async resolution) so text-audio label parity is preserved.
+
 ---
 
 ## Finalized Interaction Rules
@@ -1193,7 +1338,7 @@ New flags may be added to `IControlContext` as needed, but only if they are actu
 - Menu rows may include optional keyboard `shortcut` metadata; shortcut dispatch executes the same path as clicking the row.
 - Menu-close/dialog-launch behavior stays in command handlers via `runtime.closeMenu(launchingDialog?)`.
 - Command `action` and menu-row `onSelect` are async (`Promise<void>`), while `menu.buildMenuItem` remains synchronous.
-- Async-derived context facts use `boolean | undefined` (`undefined` while loading), including `textHasAudio`.
+- Async-derived context facts use `boolean | undefined` (`undefined` while loading), including `textHasAudio`; for parity, text-audio flow initializes `textHasAudio` to `true` before async resolution.
 - Anchor/focus lifecycle ownership remains in renderer/adapter code; command runtime stays minimal.
 - Control definitions use discriminated union kinds: `kind: "command"` and `kind: "panel"`.
 
