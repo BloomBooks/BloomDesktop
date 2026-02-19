@@ -92,6 +92,12 @@ export function handleUndo(): void {
     // See also Browser.Undo; if all else fails we ask the C# browser object to Undo.
 }
 
+// We need this update to maintain relative paths to images for the thumbnails. (BL-15906)
+export function switchThumbnailPage(newSource: string) {
+    const iframe = <HTMLIFrameElement>document.getElementById("pageList");
+    iframe.src = newSource;
+}
+
 export function switchContentPage(newSource: string) {
     try {
         if (
@@ -305,6 +311,7 @@ export function setZoom(zoom: number): void {
 interface EditTabBundleApi {
     SayHello: typeof SayHello;
     handleUndo: typeof handleUndo;
+    switchThumbnailPage: typeof switchThumbnailPage;
     switchContentPage: typeof switchContentPage;
     showDialog: typeof showDialog;
     closeDialog: typeof closeDialog;
@@ -342,6 +349,7 @@ window.editTabBundle = {
     // simple exports
     SayHello,
     handleUndo,
+    switchThumbnailPage,
     switchContentPage,
     showDialog,
     closeDialog,
