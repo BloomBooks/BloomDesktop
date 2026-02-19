@@ -276,10 +276,17 @@ class LessWatchManager {
         }
 
         for (const entryId of Array.from(this.entryDependencies.keys())) {
-            if (!this.entries.has(entryId)) {
-                this.clearDependencyMappings(entryId);
-                this.entryDependencies.delete(entryId);
+            if (this.entries.has(entryId)) {
+                continue;
             }
+
+            const entryPath = repoRelativeToAbsolute(this.repoRoot, entryId);
+            if (!this.isInsideKnownTarget(entryPath)) {
+                continue;
+            }
+
+            this.clearDependencyMappings(entryId);
+            this.entryDependencies.delete(entryId);
         }
     }
 

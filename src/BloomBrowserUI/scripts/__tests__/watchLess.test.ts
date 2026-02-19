@@ -239,4 +239,50 @@ describe("LessWatchManager", () => {
         expect(uiAfter).toBeGreaterThan(uiBaseline);
         expect(editModeAfter).toBeGreaterThan(editModeBaseline);
     });
+
+    it("preserves metadata entries from other scopes", async () => {
+        const uiRoot = path.join(tempDir, "ui");
+        const contentRoot = path.join(tempDir, "content");
+        makeDir(uiRoot);
+        makeDir(contentRoot);
+
+        const uiEntryPath = path.join(uiRoot, "ui.less");
+        const contentEntryPath = path.join(contentRoot, "content.less");
+        writeFile(uiEntryPath, "body { color: blue; }\n");
+        writeFile(contentEntryPath, "body { color: green; }\n");
+
+        const uiTarget: LessWatchTarget = {
+            name: "ui",
+            root: uiRoot,
+            outputBase: path.join(outputRoot, "ui"),
+        };
+        const contentTarget: LessWatchTarget = {
+            name: "content",
+            root: contentRoot,
+            outputBase: path.join(outputRoot, "content"),
+        };
+
+        const allTargetsManager = makeManager({
+            targets: [uiTarget, contentTarget],
+        });
+        await allTargetsManager.initialize();
+
+        const uiEntryId = getEntryId(allTargetsManager, uiEntryPath);
+        const contentEntryId = getEntryId(allTargetsManager, contentEntryPath);
+
+        const stateAfterAllTargets = JSON.parse(
+            fs.readFileSync(metadataPath, "utf8"),
+        );
+        expect(stateAfterAllTargets.entries[uiEntryId]).toBeDefined();
+        expect(stateAfterAllTargets.entries[contentEntryId]).toBeDefined();
+
+        const contentOnlyManager = makeManager({ targets: [contentTarget] });
+        await contentOnlyManager.initialize();
+
+        const stateAfterContentOnly = JSON.parse(
+            fs.readFileSync(metadataPath, "utf8"),
+        );
+        expect(stateAfterContentOnly.entries[uiEntryId]).toBeDefined();
+        expect(stateAfterContentOnly.entries[contentEntryId]).toBeDefined();
+    });
 });
