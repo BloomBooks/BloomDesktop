@@ -1072,6 +1072,8 @@ function beginAddTool(
 }
 
 let keydownEventCounter = 0;
+const retryDelayForPasteMarkupUpdateInMilliseconds = 100;
+const maxPasteMarkupUpdateRetries = 3;
 
 export function scheduleMarkupUpdateAfterPaste(): void {
     // AI thinks we might need this to "allow the DOM to settle" even before we do the
@@ -1081,7 +1083,7 @@ export function scheduleMarkupUpdateAfterPaste(): void {
     // that is hard to reproduce reliably. I'd rather have a timeout that we don't
     // need than have the markup occasionally not update, let alone somehow have
     // the markup update somehow mess up the paste. So I decided to leave it in.
-    setTimeout(() => handlePageEditing(), 0);
+    setTimeout(() => handlePageEditing(maxPasteMarkupUpdateRetries), 0);
 }
 
 // Handle edits to the page: mainly triggered by key up, but also by paste.
@@ -1089,7 +1091,9 @@ export function scheduleMarkupUpdateAfterPaste(): void {
 // delay should prevent us from doing the markup more than once per paste.
 // Similarly, since updating the markup is fairly costly, it's good not to do it on every keystroke
 // while the user is typing rapidly.
-function handlePageEditing(): void {
+function handlePageEditing(
+    remainingRetriesForInvalidSelectionState: number = 0,
+): void {
     // BL-599: "Unresponsive script" while typing in text.
     // The function setTimeout() returns an integer, not a timer object, and therefore it does not have a member
     // function called "clearTimeout." Because of this, the jQuery method $.isFunction(keypressTimer.clearTimeout)
@@ -1135,13 +1139,23 @@ function handlePageEditing(): void {
         const active = anchor
             ? <HTMLDivElement>$(anchor).closest("div").get(0)
             : null;
-        if (
+        const selectionStateIsInvalidForMarkup =
             !active ||
             (selection &&
                 (selection.rangeCount > 1 ||
                     (selection.rangeCount === 1 &&
-                        !selection.getRangeAt(0).collapsed)))
-        ) {
+                        !selection.getRangeAt(0).collapsed)));
+
+        if (selectionStateIsInvalidForMarkup) {
+            if (remainingRetriesForInvalidSelectionState > 0) {
+                setTimeout(
+                    () =>
+                        handlePageEditing(
+                            remainingRetriesForInvalidSelectionState - 1,
+                        ),
+                    retryDelayForPasteMarkupUpdateInMilliseconds,
+                );
+            }
             return; // don't even try to adjust markup while there is some complex selection
         }
 
