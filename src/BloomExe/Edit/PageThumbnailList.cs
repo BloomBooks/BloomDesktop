@@ -50,11 +50,29 @@ namespace Bloom.Edit
 
         internal BloomWebSocketServer WebSocketServer { get; set; }
 
+        /// <summary>
+        /// Store the information about the context menu item that is needed on the server side (C#).
+        /// </summary>
         internal class MenuItemSpec
         {
+            public string Id;
             public string Label;
             public Func<IPage, bool> EnableFunction; // called to determine whether the item should be enabled.
             public Action<IPage> ExecuteCommand; // called when the item is chosen to perform the action.
+        }
+
+        /// <summary>
+        /// Store the information about the context menu item is needed on the client side (javascript).
+        /// </summary>
+        /// <remarks>
+        /// This must match IPageMenuItem in pageThumbnailList.tsx.  It is used only for sending data to JS.
+        /// </remarks>
+        internal class MenuItemStatus
+        {
+            // lowercase names map better onto json, and this is used only for sending data to JS.
+            public string id;
+            public string label;
+            public bool enabled;
         }
 
         // A list of menu items that should be in both the web browser'movedPageIdAndNewIndex right-click menu and
@@ -207,39 +225,37 @@ namespace Bloom.Edit
                 InvokePageSelectedChanged(page);
         }
 
-        internal void MenuClicked(IPage page)
+        internal List<MenuItemStatus> GetContextMenuItems(IPage page)
         {
-            if (!Enabled || page == null)
-                return;
-            var menu = new ContextMenuStrip();
-            foreach (var item in ContextMenuItems)
-            {
-                var useItem = item; // for use in Click action (reference to loop variable has unpredictable results)
-                var menuItem = new ToolStripMenuItem(item.Label);
-                menuItem.Click += (sender, args) => useItem.ExecuteCommand(page);
-                menuItem.Enabled = item.EnableFunction(page);
-                menu.Items.Add(menuItem);
-            }
+            if (!Enabled || page == null || ContextMenuItems == null)
+                return new List<MenuItemStatus>();
 
-            Model.GetEditingBrowser().OnBrowserClick += Browser_Click;
-            _popupPageMenu = menu;
-
-            menu.Show(Control.MousePosition);
+            var items = ContextMenuItems
+                .Select(item => new MenuItemStatus()
+                {
+                    id = item.Id,
+                    label = item.Label,
+                    enabled = item.EnableFunction(page),
+                })
+                .ToList();
+            return items;
         }
 
-        ContextMenuStrip _popupPageMenu;
+        internal void ExecuteContextMenuCommand(IPage page, string commandId)
+        {
+            if (!Enabled || page == null || ContextMenuItems == null)
+                return;
+
+            var matchingItem = ContextMenuItems.FirstOrDefault(item => item.Id == commandId);
+            if (matchingItem == null)
+                return;
+
+            if (matchingItem.EnableFunction(page))
+                matchingItem.ExecuteCommand(page);
+        }
+
         private PageListApi _pageListApi;
         internal bool Enabled = true;
-
-        private void Browser_Click(object sender, EventArgs e)
-        {
-            if (_popupPageMenu != null)
-            {
-                _popupPageMenu.Close(ToolStripDropDownCloseReason.CloseCalled);
-                _popupPageMenu = null;
-                Model.GetEditingBrowser().OnBrowserClick -= Browser_Click;
-            }
-        }
 
         // This gets invoked by Javascript (via the PageListApi) when it determines that a particular page has been moved.
         // newIndex is the (zero-based) index that the page is moving to
