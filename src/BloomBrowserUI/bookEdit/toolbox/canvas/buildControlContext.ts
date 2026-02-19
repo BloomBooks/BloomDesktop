@@ -156,7 +156,7 @@ export const buildControlContext = (
         canChooseAudioForElement: isInDraggableGame && (hasImage || hasText),
         hasCurrentImageSound,
         currentImageSoundLabel: hasCurrentImageSound
-            ? dataSound.replace(/.mp3$/, "")
+            ? dataSound.replace(/\.mp3$/, "")
             : undefined,
         canToggleDraggability,
         hasDraggableId,

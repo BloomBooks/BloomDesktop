@@ -215,7 +215,7 @@ const makeChooseAudioMenuItemForImage = (
     const currentSoundId =
         ctx.canvasElement.getAttribute("data-sound") ?? "none";
     const imageSoundLabel =
-        ctx.currentImageSoundLabel ?? currentSoundId.replace(/.mp3$/, "");
+        ctx.currentImageSoundLabel ?? currentSoundId.replace(/\.mp3$/, "");
 
     return {
         id: "chooseAudio",
