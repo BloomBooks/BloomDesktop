@@ -74,6 +74,7 @@ namespace Bloom.Workspace
         private int _changeTabToEditCount;
         private int _changeTabToPublishCount;
         private DateTime? _lastTabChangeUtc;
+        private DateTime _singleBrowserDiagnosticsLastResetUtc = DateTime.UtcNow;
 
         internal ReactControl TopBarReactControl => _topBarReactControl;
 
@@ -577,6 +578,9 @@ namespace Bloom.Workspace
             diagnostics.visibleEditHostDispatchSuccessCount = _visibleEditHostDispatchSuccessCount;
             diagnostics.visibleEditHostDispatchFallbackCount =
                 _visibleEditHostDispatchFallbackCount;
+            diagnostics.diagnosticsLastResetUtc = _singleBrowserDiagnosticsLastResetUtc;
+            diagnostics.diagnosticsSecondsSinceReset =
+                (DateTime.UtcNow - _singleBrowserDiagnosticsLastResetUtc).TotalSeconds;
             diagnostics.zoom = GetZoomInfo();
             diagnostics.workspaceShellWebViewZoomFactor =
                 _workspaceShellReactControl?.GetWebViewZoomFactor();
@@ -605,6 +609,7 @@ namespace Bloom.Workspace
             _changeTabToEditCount = 0;
             _changeTabToPublishCount = 0;
             _lastTabChangeUtc = null;
+            _singleBrowserDiagnosticsLastResetUtc = DateTime.UtcNow;
             _workspaceShellReactControl?.ResetWebViewZoomDiagnostics();
             _editingView?.ResetParityDiagnostics();
         }

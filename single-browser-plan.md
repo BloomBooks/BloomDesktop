@@ -133,6 +133,7 @@ Those are post-milestone phases and should be planned separately.
 - Undo/cut/copy/paste parity counters now flow through diagnostics (`editParity.cutCommandCount`, `copyCommandCount`, `pasteCommandCount`, `undoCommandCount`).
 - Added tab lifecycle parity diagnostics in `workspace/singleBrowserDiagnostics.tabRouting`.
 - Added Edit visibility-transition parity diagnostics in `editParity.model` (`visibleTransition*`).
+- Added diagnostics reset metadata (`diagnosticsLastResetUtc`, `diagnosticsSecondsSinceReset`) for repeatable run tracking.
 
 ### Next focus (Phase 2)
 - Start functional parity tracking for key Edit workflows while keeping legacy internal iframes.
