@@ -876,17 +876,11 @@ const CanvasToolControls: React.FunctionComponent = () => {
     const getControlOptionsRegion = (): JSX.Element => {
         if (!activeElement) {
             return (
-                <form autoComplete="off">
+                <form autoComplete="off" className="canvasToolControlStack">
                     {bubbleStyleControl}
                     {showTailControl}
                     {roundedCornersControl}
-                    <div
-                        css={css`
-                            margin-top: 10px;
-                        `}
-                    >
-                        {textColorControl}
-                    </div>
+                    {textColorControl}
                     {backgroundColorControl}
                     {outlineColorControl}
                 </form>
@@ -924,26 +918,11 @@ const CanvasToolControls: React.FunctionComponent = () => {
             return <></>;
         }
 
-        const hasRoundedCornersControl = renderedControls.some(
-            (panelControl) => panelControl.controlId === "roundedCorners",
-        );
-
         return (
-            <form autoComplete="off">
+            <form autoComplete="off" className="canvasToolControlStack">
                 {renderedControls.map((panelControl) => (
                     <React.Fragment key={panelControl.id}>
-                        {panelControl.controlId === "textColor" &&
-                        hasRoundedCornersControl ? (
-                            <div
-                                css={css`
-                                    margin-top: 10px;
-                                `}
-                            >
-                                {panelControl.node}
-                            </div>
-                        ) : (
-                            panelControl.node
-                        )}
+                        {panelControl.node}
                     </React.Fragment>
                 ))}
             </form>
