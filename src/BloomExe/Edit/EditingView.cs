@@ -64,6 +64,8 @@ namespace Bloom.Edit
         private int _onVisibleChangedCallCount;
         private int _onVisibleChangedToVisibleCount;
         private int _onVisibleChangedToHiddenCount;
+        private int _unknownEditCommandCount;
+        private string _lastEditCommand;
 
         public delegate EditingView Factory(); //autofac uses this
 
@@ -1455,6 +1457,7 @@ namespace Bloom.Edit
 
         internal void RecordEditCommandInvocation(string command)
         {
+            _lastEditCommand = command;
             switch (command)
             {
                 case "cut":
@@ -1465,6 +1468,9 @@ namespace Bloom.Edit
                     break;
                 case "undo":
                     _undoCommandCount++;
+                    break;
+                default:
+                    _unknownEditCommandCount++;
                     break;
             }
         }
@@ -1987,6 +1993,8 @@ namespace Bloom.Edit
                 onVisibleChangedCallCount = _onVisibleChangedCallCount,
                 onVisibleChangedToVisibleCount = _onVisibleChangedToVisibleCount,
                 onVisibleChangedToHiddenCount = _onVisibleChangedToHiddenCount,
+                unknownEditCommandCount = _unknownEditCommandCount,
+                lastEditCommand = _lastEditCommand,
                 model = _model.GetParityDiagnostics(),
             };
         }
@@ -2005,6 +2013,8 @@ namespace Bloom.Edit
             _onVisibleChangedCallCount = 0;
             _onVisibleChangedToVisibleCount = 0;
             _onVisibleChangedToHiddenCount = 0;
+            _unknownEditCommandCount = 0;
+            _lastEditCommand = null;
             _model.ResetParityDiagnostics();
         }
 
