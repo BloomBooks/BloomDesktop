@@ -144,6 +144,13 @@ namespace Bloom.Edit
                         Settings.Default.CurrentBookPath = oldToNewPath.Value;
                     }
                     UpdatePageList(true);
+                    if (_model.CurrentBook != null)
+                    {
+                        var url = _model.GetUrlForPageListFile();
+                        _browser1.RunJavascriptFireAndForget(
+                            $"editTabBundle.switchThumbnailPage('{url}');"
+                        );
+                    }
                 }
             );
 #if __MonoCS__
