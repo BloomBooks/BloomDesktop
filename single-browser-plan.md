@@ -131,6 +131,8 @@ Those are post-milestone phases and should be planned separately.
 - Diagnostics now include Phase 2 parity counters for key Edit commands and image operations.
 - Added diagnostics reset endpoint for repeatable parity runs: `POST workspace/singleBrowserDiagnostics/reset`.
 - Undo/cut/copy/paste parity counters now flow through diagnostics (`editParity.cutCommandCount`, `copyCommandCount`, `pasteCommandCount`, `undoCommandCount`).
+- Added tab lifecycle parity diagnostics in `workspace/singleBrowserDiagnostics.tabRouting`.
+- Added Edit visibility-transition parity diagnostics in `editParity.model` (`visibleTransition*`).
 
 ### Next focus (Phase 2)
 - Start functional parity tracking for key Edit workflows while keeping legacy internal iframes.

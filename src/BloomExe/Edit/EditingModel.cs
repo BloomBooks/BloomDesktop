@@ -79,6 +79,11 @@ namespace Bloom.Edit
         private bool _skipNextSaveBecauseDeveloperIsTweakingSupportingFiles;
         private int _changePictureCommandCount;
         private int _updateImageInBrowserCommandCount;
+        private int _visibleTransitionCount;
+        private int _visibleTransitionToVisibleCount;
+        private int _visibleTransitionToHiddenCount;
+        private int _visibleTransitionNoOpCount;
+        private bool? _lastRequestedVisibleState;
 
         //public event EventHandler UpdatePageList;
 
@@ -429,7 +434,7 @@ namespace Bloom.Edit
         {
             _previouslySelectedPage = null;
             Visible = details.To == _view;
-            _view.OnVisibleChanged(Visible);
+            NotifyViewVisibilityChanged(Visible);
         }
 
         private void OnBookSelectionChanged(
@@ -790,10 +795,10 @@ namespace Bloom.Edit
                         CurrentBook.BringBookUpToDate(new NullProgress());
                         // That wrecks everything. In particular guids stored in Page objects are obsolete.
                         // Simulate switching to collection mode, force discarding everything problematic, and reinitialize.
-                        _view.OnVisibleChanged(false);
+                        NotifyViewVisibilityChanged(false);
                         _currentlyDisplayedBook = null;
                         _previouslySelectedPage = null;
-                        _view.OnVisibleChanged(true);
+                        NotifyViewVisibilityChanged(true);
                         // If the Add Page dialog is open, we can still change layout.  The OnVisibleChanged calls close the dialog,
                         // but can leave the PageListView disabled.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6554.
                         _view.SetModalState(false);
@@ -1809,6 +1814,11 @@ namespace Bloom.Edit
             {
                 changePictureCommandCount = _changePictureCommandCount,
                 updateImageInBrowserCommandCount = _updateImageInBrowserCommandCount,
+                visibleTransitionCount = _visibleTransitionCount,
+                visibleTransitionToVisibleCount = _visibleTransitionToVisibleCount,
+                visibleTransitionToHiddenCount = _visibleTransitionToHiddenCount,
+                visibleTransitionNoOpCount = _visibleTransitionNoOpCount,
+                lastRequestedVisibleState = _lastRequestedVisibleState,
             };
         }
 
@@ -1816,6 +1826,26 @@ namespace Bloom.Edit
         {
             _changePictureCommandCount = 0;
             _updateImageInBrowserCommandCount = 0;
+            _visibleTransitionCount = 0;
+            _visibleTransitionToVisibleCount = 0;
+            _visibleTransitionToHiddenCount = 0;
+            _visibleTransitionNoOpCount = 0;
+            _lastRequestedVisibleState = null;
+        }
+
+        private void NotifyViewVisibilityChanged(bool visible)
+        {
+            _visibleTransitionCount++;
+            if (_lastRequestedVisibleState.HasValue && _lastRequestedVisibleState.Value == visible)
+                _visibleTransitionNoOpCount++;
+
+            if (visible)
+                _visibleTransitionToVisibleCount++;
+            else
+                _visibleTransitionToHiddenCount++;
+
+            _lastRequestedVisibleState = visible;
+            _view.OnVisibleChanged(visible);
         }
 
         public IPage DeterminePageWhichWouldPrecedeNextInsertion()
