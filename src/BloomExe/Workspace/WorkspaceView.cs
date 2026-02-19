@@ -68,6 +68,12 @@ namespace Bloom.Workspace
         private ReactControl _workspaceShellReactControl;
         private int _visibleEditHostDispatchSuccessCount;
         private int _visibleEditHostDispatchFallbackCount;
+        private int _changeTabRequestCount;
+        private int _changeTabNoOpCount;
+        private int _changeTabToCollectionCount;
+        private int _changeTabToEditCount;
+        private int _changeTabToPublishCount;
+        private DateTime? _lastTabChangeUtc;
 
         internal ReactControl TopBarReactControl => _topBarReactControl;
 
@@ -576,6 +582,15 @@ namespace Bloom.Workspace
                 _workspaceShellReactControl?.GetWebViewZoomFactor();
             diagnostics.workspaceShellWebViewZoom =
                 _workspaceShellReactControl?.GetWebViewZoomDiagnostics();
+            diagnostics.tabRouting = new
+            {
+                changeTabRequestCount = _changeTabRequestCount,
+                changeTabNoOpCount = _changeTabNoOpCount,
+                changeTabToCollectionCount = _changeTabToCollectionCount,
+                changeTabToEditCount = _changeTabToEditCount,
+                changeTabToPublishCount = _changeTabToPublishCount,
+                lastTabChangeUtc = _lastTabChangeUtc,
+            };
             diagnostics.editParity = _editingView?.GetParityDiagnostics();
             return diagnostics;
         }
@@ -584,6 +599,12 @@ namespace Bloom.Workspace
         {
             _visibleEditHostDispatchSuccessCount = 0;
             _visibleEditHostDispatchFallbackCount = 0;
+            _changeTabRequestCount = 0;
+            _changeTabNoOpCount = 0;
+            _changeTabToCollectionCount = 0;
+            _changeTabToEditCount = 0;
+            _changeTabToPublishCount = 0;
+            _lastTabChangeUtc = null;
             _workspaceShellReactControl?.ResetWebViewZoomDiagnostics();
             _editingView?.ResetParityDiagnostics();
         }
@@ -1337,6 +1358,25 @@ namespace Bloom.Workspace
 
         public void ChangeTab(WorkspaceTab newTab)
         {
+            var previousTab = _tabSelection.ActiveTab;
+            _changeTabRequestCount++;
+            if (previousTab == newTab)
+                _changeTabNoOpCount++;
+            _lastTabChangeUtc = DateTime.UtcNow;
+
+            switch (newTab)
+            {
+                case WorkspaceTab.collection:
+                    _changeTabToCollectionCount++;
+                    break;
+                case WorkspaceTab.edit:
+                    _changeTabToEditCount++;
+                    break;
+                case WorkspaceTab.publish:
+                    _changeTabToPublishCount++;
+                    break;
+            }
+
             _tabSelection.ActiveTab = newTab;
             switch (newTab)
             {

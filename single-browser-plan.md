@@ -120,11 +120,11 @@ Those are post-milestone phases and should be planned separately.
 
 ### Phase 1 closeout notes
 - High-impact routing has been moved to host-first path for the main Edit command flows.
-- Remaining issue intentionally deferred during milestone push: Ctrl+scroll host zoom side effect.
+- Remaining zoom issue intentionally postponed until after architecture stabilization and core workflow parity are complete.
 
 ### Smoke run status
 - Smoke checklist completed through item #8 by manual dogfooding.
-- Known issue (deferred for now): Ctrl+scroll can still affect host-level zoom behavior in some runs.
+- Known issue (postponed): Ctrl+scroll can still affect host-level zoom behavior in some runs; do not work this during current architecture/parity push.
 - Added diagnostics endpoint for follow-up investigation: `GET workspace/singleBrowserDiagnostics`.
 - Diagnostics endpoint now also reports shell WebView zoom factor for Ctrl+scroll investigation.
 - Diagnostics now include shell WebView zoom-factor change counters and last observed value.
@@ -145,16 +145,16 @@ Those are post-milestone phases and should be planned separately.
 | Change Layout dialog | pass | Smoke-tested |
 | Registration/About dialogs from Edit | pass | Smoke-tested |
 | Zoom plus/minus behavior | pass | Control updates page zoom in latest smoke run |
-| Ctrl+scroll zoom behavior | partial | Deferred: sometimes affects host-level zoom too |
+| Ctrl+scroll zoom behavior | postponed | Defer until post-architecture stabilization |
 | Tab switching (Collection/Edit/Publish) | pass | Smoke-tested |
 | Host dispatch telemetry visibility | pass | `GET workspace/singleBrowserDiagnostics` available |
 | Image operation instrumentation | pass | Counts surfaced in diagnostics (`editParity.model.*`) |
 | Edit command instrumentation | pass | Counts surfaced in diagnostics (`editParity.*`) |
 
 ### Phase 2 next implementation targets
-1. Investigate and isolate Ctrl+scroll host zoom leakage path.
-2. Add a repeatable quick parity regression checklist run template (date/build/result).
-3. Continue workflow-by-workflow verification for image operations and undo/cut/copy/paste.
+1. Continue workflow-by-workflow verification for image operations and undo/cut/copy/paste.
+2. Add/expand diagnostics that help verify tab/focus/lifecycle parity.
+3. Keep zoom-leak issue parked until post-architecture stabilization.
 
 ### Phase 2 quick parity run template
 Use this to record each dogfooding pass concisely:
