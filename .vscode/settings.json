@@ -34,7 +34,6 @@
     "cSpell.words": [
         "affordance",
         "Andika",
-        "Autofac",
         "bloomdraggable",
         "bloomlibrary",
         "bloompub",
@@ -44,7 +43,6 @@
         "configr",
         "contenteditable",
         "contentful",
-        "datadiv",
         "defn",
         "deshroud",
         "distractors",
@@ -52,17 +50,13 @@
         "draggables",
         "editables",
         "elevenlabs",
-        "Expando",
         "invisibles",
         "jquery",
         "localizable",
         "Longpress",
-        "Newtonsoft",
         "nicescroll",
-        "Palaso",
         "pixabay",
         "portafino",
-        "Prefs",
         "printshop",
         "qtip",
         "shellbook",
@@ -70,18 +64,17 @@
         "snappable",
         "thema",
         "tinycolor",
-        "Velopack",
         "Winform",
         "Winforms",
         "xmatter"
     ],
     "chat.useNestedAgentsMdFiles": true,
     "workbench.colorCustomizations": {
-        "statusBar.background": "#96668f",
-        "statusBar.foreground": "#e7e7e7",
-        "statusBarItem.hoverBackground": "#ab84a5",
-        "statusBarItem.remoteBackground": "#96668f",
-        "statusBarItem.remoteForeground": "#e7e7e7"
+        "statusBar.background": "#f9e64f",
+        "statusBar.foreground": "#15202b",
+        "statusBarItem.hoverBackground": "#f7df1e",
+        "statusBarItem.remoteBackground": "#f9e64f",
+        "statusBarItem.remoteForeground": "#15202b"
     },
-    "peacock.color": "#96668f"
+    "peacock.color": "#f9e64f"
 }

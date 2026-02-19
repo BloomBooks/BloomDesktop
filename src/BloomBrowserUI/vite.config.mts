@@ -442,6 +442,12 @@ ${injectedCss.map((call) => `(function() { ${call} })();`).join("\n")}
 // config, Node can still load ESM-only plugins (like @vitejs/plugin-react) via
 // native dynamic import instead of require().
 export default defineConfig(async ({ command }) => {
+    const parsedPort = Number.parseInt(process.env.PORT ?? "", 10);
+    const devServerPort =
+        Number.isInteger(parsedPort) && parsedPort > 0 && parsedPort <= 65535
+            ? parsedPort
+            : 5173;
+
     // ENTRY POINTS CONFIGURATION
     // Define all JavaScript/TypeScript entry points - these are the "root" files that
     // Vite will build into separate bundles. Each entry becomes a standalone .js file
@@ -502,7 +508,7 @@ export default defineConfig(async ({ command }) => {
         plugins: [
             // React plugin: Enables JSX, Fast Refresh, and React-specific optimizations
             react({
-                reactRefreshHost: `http://localhost:${process.env.PORT || 5173}`,
+                reactRefreshHost: `http://localhost:${devServerPort}`,
                 babel: {
                     parserOpts: {
                         // This enables decorators like @mobxReact.observer.
@@ -571,12 +577,13 @@ export default defineConfig(async ({ command }) => {
         // DEV SERVER CONFIGURATION
         // Controls the local development server behavior
         server: {
-            port: 5173, // Default Vite port
+            port: devServerPort,
             strictPort: true, // Fail if port is already in use (don't try other ports)
             hmr: {
                 protocol: "ws",
                 host: "localhost", // The host where your Vite server is running
-                port: 5173, // The port where your Vite server is running
+                port: devServerPort,
+                clientPort: devServerPort,
                 overlay: true,
             },
         },
