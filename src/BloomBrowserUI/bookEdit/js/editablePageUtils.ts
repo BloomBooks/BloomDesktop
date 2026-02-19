@@ -1,7 +1,7 @@
 import { getToolboxBundleExports } from "./bloomFrames";
 import { kMotionToolId } from "../toolbox/toolIds";
 
-// Utility functions likely to be useful in multiple places in the editable page context
+// Utility functions likely to be useful in multiple places in the editable page context.
 // Similar purpose to editableDivUtils.ts, but for more modern code I don't want the
 // clutter of a class with static methods.
 

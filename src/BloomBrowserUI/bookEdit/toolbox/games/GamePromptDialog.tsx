@@ -19,13 +19,10 @@ import { setGeneratedDraggableId } from "../canvas/CanvasElementItem";
 import { adjustTarget, makeTargetForDraggable } from "../games/GameTool";
 import * as ReactDOM from "react-dom";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
-import {
-    CanvasElementManager,
-    getAllDraggables,
-    theOneCanvasElementManager,
-} from "../../js/CanvasElementManager";
+import { saveStateOfCanvasElementAsCurrentLangAlternate } from "../../js/canvasElementManager/CanvasElementAlternates";
+import { getAllDraggables } from "../canvas/canvasElementDraggables";
 import { Bubble } from "comicaljs";
-import { getToolboxBundleExports } from "../../editViewFrame";
+import { getToolboxBundleExports } from "../../js/bloomFrames";
 import {
     BloomDialog,
     DialogBottomButtons,
@@ -37,7 +34,8 @@ import {
     DialogOkButton,
 } from "../../../react_components/BloomDialog/commonDialogComponents";
 import { splitIntoGraphemes } from "../../../utils/textUtils";
-import { kBloomCanvasSelector } from "../canvas/canvasElementUtils";
+import { getCanvasElementManager } from "../canvas/canvasElementUtils";
+import { kBloomCanvasSelector } from "../canvas/canvasElementConstants";
 
 export const GamePromptDialog: React.FunctionComponent<
     IGamePromptDialogProps
@@ -46,10 +44,12 @@ export const GamePromptDialog: React.FunctionComponent<
     const caption = useL10n("", promptL10nId);
     // The translation group that React creates in the dialog, kept in sync with the one in the prompt
     // element in the page.
-    const localTg = useRef<HTMLElement | null>();
+    const localTg = useRef<HTMLElement | null>(null);
     const [haveLocalTg, setHaveLocalTg] = React.useState(false);
     const closeDialog = () => {
-        BloomSourceBubbles.removeSourceBubbles(localTg.current!);
+        if (localTg.current) {
+            BloomSourceBubbles.removeSourceBubbles(localTg.current);
+        }
         props.setOpen(false);
     };
     React.useEffect(() => {
@@ -282,9 +282,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         );
         first.style.left = minx + "px";
         // remember it to make sure we never take this branch again for this language
-        CanvasElementManager.saveStateOfCanvasElementAsCurrentLangAlternate(
-            first,
-        );
+        saveStateOfCanvasElementAsCurrentLangAlternate(first);
     }
     // Adjust which targets are visible based on the current language.
     // Must be after the adjustment of the first draggable, since it may affect which ones are unused.
@@ -428,12 +426,15 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         // what it was when we started adding the ckeditor. So changes we make after that
         // get lost.
         newBubbles.forEach((newDraggable: HTMLElement) => {
-            theOneCanvasElementManager!.refreshCanvasElementEditing(
-                newDraggable.closest(kBloomCanvasSelector) as HTMLElement,
-                new Bubble(newDraggable),
-                true, // attach events
-                false, // don't make it active.
-            );
+            const canvasElementManager = getCanvasElementManager();
+            if (canvasElementManager) {
+                canvasElementManager.refreshCanvasElementEditing(
+                    newDraggable.closest(kBloomCanvasSelector) as HTMLElement,
+                    new Bubble(newDraggable),
+                    true, // attach events
+                    false, // don't make it active.
+                );
+            }
         });
         // This seems to at least somewhat reduce the likelihood of losing focus
         // after a keystroke, especially with Keyman multi-character inserts (BL-14098).

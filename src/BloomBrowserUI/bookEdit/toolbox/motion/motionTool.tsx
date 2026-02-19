@@ -22,10 +22,8 @@ import { kMotionToolId } from "../toolIds";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
 import { getFeatureStatusAsync } from "../../../react_components/featureStatus";
 import { TransformBasedAnimator } from "bloom-player";
-import {
-    kBloomCanvasClass,
-    getCanvasElementManager,
-} from "../canvas/canvasElementUtils";
+import { getCanvasElementManager } from "../canvas/canvasElementUtils";
+import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
 import { animateStyleName } from "../../../utils/shared";
 import { ThemeProvider } from "@mui/material/styles";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";

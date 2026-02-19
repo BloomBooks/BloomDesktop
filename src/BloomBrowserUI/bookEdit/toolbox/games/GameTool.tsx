@@ -44,24 +44,22 @@ import {
 import {
     getEditablePageBundleExports,
     getToolboxBundleExports,
-} from "../../editViewFrame";
+} from "../../js/bloomFrames";
 import { MenuItem, Select } from "@mui/material";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { BubbleSpec } from "comicaljs";
 import { setPlayerUrlPrefixFromWindowLocationHref } from "bloom-player";
 import { renderGamePromptDialog } from "./GamePromptDialog";
+import { kBackgroundImageClass } from "../canvas/canvasElementConstants";
+import { pxToNumber } from "../canvas/canvasElementCssUtils";
 import {
-    CanvasElementManager,
     getAllDraggables,
     isDraggable,
-    kBackgroundImageClass,
     kDraggableIdAttribute,
-} from "../../js/CanvasElementManager";
-import {
-    getCanvasElementManager,
-    kCanvasElementSelector,
-} from "../canvas/canvasElementUtils";
+} from "../canvas/canvasElementDraggables";
+import { getCanvasElementManager } from "../canvas/canvasElementUtils";
+import { kCanvasElementSelector } from "../canvas/canvasElementConstants";
 import { ThemeChooser } from "./ThemeChooser";
 import { SoundSelect } from "./SoundSelect";
 import GameIntroText, { Instructions } from "./GameIntroText";
@@ -72,8 +70,8 @@ import {
     isPlaceHolderImage,
 } from "../../js/bloomImages";
 import { doesContainingPageHaveSameSizeMode } from "./gameUtilities";
-import { CanvasSnapProvider } from "../../js/CanvasSnapProvider";
-import { CanvasGuideProvider } from "../../js/CanvasGuideProvider";
+import { CanvasSnapProvider } from "../../js/canvasElementManager/CanvasSnapProvider";
+import { CanvasGuideProvider } from "../../js/canvasElementManager/CanvasGuideProvider";
 import { kIdForDragActivityTabControl } from "./DragActivityTabControl";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
 import $ from "jquery";
@@ -203,10 +201,10 @@ export const adjustTarget = (
     // get height and width of things this way, because sometimes some are not visible
     // (e.g., when creating letters in the drag-letter-to-target game)
     const getHeight = (elt: HTMLElement) => {
-        return CanvasElementManager.pxToNumber(elt.style.height);
+        return pxToNumber(elt.style.height);
     };
     const getWidth = (elt: HTMLElement) => {
-        return CanvasElementManager.pxToNumber(elt.style.width);
+        return pxToNumber(elt.style.width);
     };
     // if the target is not the same size, presumably the draggable size changed, in which case
     // we need to adjust the target, and possibly all other targets and draggables on the page.
@@ -471,7 +469,10 @@ let snappedToExisting = false;
 // but in the Start tab they can be moved). Saves some initial state so we can do snapping,
 // and sets up the mousemove and mouseup handlers that do the actual dragging and snapping.
 const startDraggingTarget = (e: MouseEvent) => {
-    const canvasElementManager = getCanvasElementManager()!;
+    const canvasElementManager = getCanvasElementManager();
+    if (!canvasElementManager) {
+        return;
+    }
     // get the mouse cursor position at startup:
     const target = e.currentTarget as HTMLElement;
     targetBeingDragged = target;
@@ -840,7 +841,7 @@ const DragActivityControls: React.FunctionComponent<{
         "",
     );
 
-    const canvasElementManager = getCanvasElementManager()!;
+    const canvasElementManager = getCanvasElementManager();
     let currentCanvasElement = canvasElementManager?.getActiveElement();
     // Currently we mainly use this to decide whether to show the delete and duplicate buttons.
     // Maybe those are obsolete now we have the new toolbox?
@@ -1093,7 +1094,8 @@ const DragActivityControls: React.FunctionComponent<{
         const page = getPage();
         page.setAttribute("data-same-size", newAllSameSize ? "true" : "false");
         if (newAllSameSize) {
-            let someDraggable = getCanvasElementManager()!.getActiveElement(); // prefer the selected one
+            const canvasElementManager = getCanvasElementManager();
+            let someDraggable = canvasElementManager?.getActiveElement(); // prefer the selected one
             if (!someDraggable || !isDraggable(someDraggable)) {
                 // find something
                 someDraggable = page.querySelector(
@@ -1779,7 +1781,11 @@ export class GameTool extends ToolboxToolReactAdaptor {
         } else {
             this.lastPageId = pageId;
             // useful during development, MAY not need in production.
-            const canvasElementManager = getCanvasElementManager()!;
+            const canvasElementManager = getCanvasElementManager();
+            if (!canvasElementManager) {
+                window.setTimeout(() => this.newPageReady(), 100);
+                return;
+            }
             canvasElementManager.removeDetachedTargets();
             canvasElementManager.adjustCanvasElementOrdering();
 
@@ -2015,14 +2021,6 @@ export function setupDragActivityTabControl() {
     getToolboxBundleExports()?.setActiveDragActivityTab(
         getActiveDragActivityTab(),
     );
-}
-
-// dimension is assumed to end with "px" (as we use for positioning and dimensioning canvas elements).
-// Technically it would get a result for other two-character units, but the result might not be
-// what we want, since we use the resulting number assuming it means px.
-function pxToNumber(dimension: string): number {
-    const num = dimension.substring(0, dimension.length - 2); // strip off "px"
-    return parseFloat(num);
 }
 
 export const makeTargetForDraggable = (

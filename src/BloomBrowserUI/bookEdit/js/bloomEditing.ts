@@ -23,12 +23,12 @@ import {
     CanvasElementManager,
     initializeCanvasElementManager,
     theOneCanvasElementManager,
-} from "./CanvasElementManager";
+} from "./canvasElementManager/CanvasElementManager";
+import { getCanvasElementManager } from "../toolbox/canvas/canvasElementUtils";
 import {
-    getCanvasElementManager,
     kCanvasElementClass,
     kCanvasElementSelector,
-} from "../toolbox/canvas/canvasElementUtils";
+} from "../toolbox/canvas/canvasElementConstants";
 import { showTopicChooserDialog } from "../TopicChooser/TopicChooserDialog";
 import "../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "./jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
@@ -1198,7 +1198,7 @@ function removeEditingDebris() {
 // Delay notification management for requestPageContent
 const activeDelays: string[] = [];
 const kMaxWaitTimeMs = 2000;
-let requestPageContentTimeout;
+let requestPageContentTimeout: number | null = null;
 
 // Add a delay notification that will prevent requestPageContent from running immediately.
 // The caller must provide a string ID and pass it to removeRequestPageContentDelay when done.
@@ -1208,7 +1208,7 @@ export function addRequestPageContentDelay(id: string): void {
 }
 
 // Remove a delay notification, allowing requestPageContent to proceed if no other delays are active.
-// If this was the last delay, proceed with requesting page content
+// If this was the last delay, proceed with requesting page content.
 export function removeRequestPageContentDelay(id: string): void {
     const index = activeDelays.indexOf(id);
     if (index === -1) {
@@ -1221,7 +1221,7 @@ export function removeRequestPageContentDelay(id: string): void {
     }
     activeDelays.splice(index, 1);
 
-    // If there are no more delays, go on and request page content
+    // If there are no more delays, go on and request page content.
     if (activeDelays.length === 0 && requestPageContentTimeout) {
         requestPageContentInternal();
     }
@@ -1252,14 +1252,16 @@ export async function wrapWithRequestPageContentDelay<T>(
 // When other javascript code is doing something that will change the page DOM asynchronously and will also cause the
 // document to be saved, race conditions are possible. In such cases the delay functions above
 // (preferably wrapWithRequestPageContentDelay) should be used to wrap the asynchronous DOM changes to ensure that this
-//  function does not return the page content for saving until after the changes have been completed.
+// function does not return the page content for saving until after the changes have been completed.
 // The current delay mechanism is not designed to handle multiple concurrent requests.
 export function requestPageContent() {
-    // Check if there are active delay requests
+    // Check if there are active delay requests.
     if (activeDelays.length > 0) {
-        requestPageContentTimeout = setTimeout(() => {
+        requestPageContentTimeout = window.setTimeout(() => {
             console.warn(
-                `requestPageContent: Maximum wait time (${kMaxWaitTimeMs}ms) exceeded with active delay(s): [${activeDelays.join(", ")}]. Proceeding anyway.`,
+                `requestPageContent: Maximum wait time (${kMaxWaitTimeMs}ms) exceeded with active delay(s): [${activeDelays.join(
+                    ", ",
+                )}]. Proceeding anyway.`,
             );
             requestPageContentInternal();
         }, kMaxWaitTimeMs);
@@ -1269,7 +1271,9 @@ export function requestPageContent() {
 }
 
 function requestPageContentInternal() {
-    clearTimeout(requestPageContentTimeout);
+    if (requestPageContentTimeout !== null) {
+        clearTimeout(requestPageContentTimeout);
+    }
     requestPageContentTimeout = null;
     try {
         // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports().

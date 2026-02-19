@@ -524,6 +524,16 @@ namespace Bloom.Edit
                 return _originalImageMetadataFromImageToolbox;
             }
 
+            if (fileName.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    LocalizationManager.GetString(
+                        "EditTab.ImageMetadata.CannotEditEmbeddedImage",
+                        "Bloom can't edit image information for this image because it is embedded data, not a file image."
+                    )
+                );
+            }
+
             // keep a reference to the fileName rather the image to avoid dispose issues
             _fileNameOfImageBeingModified = fileName;
 
@@ -681,13 +691,12 @@ namespace Bloom.Edit
                             || Path.GetExtension(path).ToLowerInvariant() != ".gif"
                         )
                         {
-                            MessageBox.Show(
+                            throw new InvalidOperationException(
                                 LocalizationManager.GetString(
                                     "EditTab.NoGifOnClipboard",
                                     "To paste a Gif, copy a path to a Gif file, or copy from another Bloom GIF element"
                                 )
                             );
-                            return;
                         }
                         SetGifImage(imageId, priorImageSrc, path);
                         return;
@@ -698,25 +707,23 @@ namespace Bloom.Edit
                     }
                     catch (Exception ex)
                     {
-                        Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
-                        MessageBox.Show(
+                        throw new InvalidOperationException(
                             LocalizationManager.GetString(
                                 "EditTab.NoValidImageFoundOnClipboard",
                                 "Bloom failed to interpret the clipboard contents as an image. Possibly it was a damaged file, or too large. Try copying something else."
-                            )
+                            ),
+                            ex
                         );
-                        return;
                     }
 
                     if (clipboardImage == null)
                     {
-                        MessageBox.Show(
+                        throw new InvalidOperationException(
                             LocalizationManager.GetString(
                                 "EditTab.NoImageFoundOnClipboard",
                                 "Before you can paste an image, copy one onto your 'clipboard', from another program."
                             )
                         );
-                        return;
                     }
 
                     Cursor = Cursors.WaitCursor;
@@ -790,6 +797,10 @@ namespace Bloom.Edit
                             }
                         }
                     }
+                }
+                catch (InvalidOperationException)
+                {
+                    throw;
                 }
                 catch (Exception error)
                 {

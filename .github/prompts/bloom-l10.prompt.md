@@ -1,5 +1,4 @@
 ---
-mode: agent
 description: make a string localizable
 ---
 

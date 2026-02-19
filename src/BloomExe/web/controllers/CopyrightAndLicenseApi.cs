@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Net;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
@@ -107,7 +108,15 @@ namespace Bloom.web.controllers
             {
                 case HttpMethods.Get:
                     var imageUrl = request.Parameters["imageUrl"]; // might be null
-                    metadata = View.PrepareToEditImageMetadata(imageUrl);
+                    try
+                    {
+                        metadata = View.PrepareToEditImageMetadata(imageUrl);
+                    }
+                    catch (InvalidOperationException e)
+                    {
+                        request.Failed(HttpStatusCode.BadRequest, e.Message);
+                        return;
+                    }
                     if (metadata == null)
                     {
                         request.ReplyWithJson(String.Empty);
