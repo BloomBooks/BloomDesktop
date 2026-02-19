@@ -179,7 +179,7 @@ const Tab: React.FunctionComponent<{
                     display: flex;
                     flex-direction: column;
                     justify-content: space-between;
-                    gap: 9px;
+                    gap: 5px;
                     justify-content: center;
                     align-items: center;
                     font-size: 12px;
