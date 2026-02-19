@@ -178,13 +178,12 @@ const Tab: React.FunctionComponent<{
                     }
                     display: flex;
                     flex-direction: column;
-                    justify-content: space-between;
-                    gap: 9px;
+                    gap: 5px;
                     justify-content: center;
                     align-items: center;
                     font-size: 12px;
                     font-family: "segoe ui";
-                    padding: 10px 21px;
+                    padding: 5px 21px;
 
                     &[aria-disabled="true"] {
                         pointer-events: none;
