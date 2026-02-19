@@ -405,20 +405,18 @@
     <!-- Sign x64 executables -->
     <Exec Command='sign "$(RootDir)\output\$(Configuration)\x64\Bloom.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
     <Exec Command='sign "$(RootDir)\output\$(Configuration)\x64\BloomPdfMaker.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
-    <Exec Command='sign "$(RootDir)\output\$(Configuration)\x64\PdfDroplet.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
-    <!-- restore to Sign ARM64 executables 
+    <!-- restore to Sign ARM64 executables
     <Exec Command='sign "$(RootDir)\output\$(Configuration)\arm64\Bloom.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
     <Exec Command='sign "$(RootDir)\output\$(Configuration)\arm64\BloomPdfMaker.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
-    <Exec Command='sign "$(RootDir)\output\$(Configuration)\arm64\PdfDroplet.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
     -->
   </Target>
   <!-- This target is designed to be an target on TeamCity (but using Upload is more likely) that includes target Installer. Review: Velopack itself
 	can sign things if passed the right command line arguments. Is that a better thing to do? -->
   <Target Name="SignInstaller" DependsOnTargets="VersionNumbers; Installer">
     <Exec Command='sign "$(InstallerOutputFolder)\$(InstallerFileNameX64)"'></Exec>
-    <Exec Command='sign "$(InstallerOutputFolder)\$(InstallerFileNameArm64)"'></Exec>
+    <!-- <Exec Command='sign "$(InstallerOutputFolder)\$(InstallerFileNameArm64)"'></Exec> -->
     <Message Text="Signed x64 Velopack installer at $(InstallerOutputFolder)\$(InstallerFileNameX64)" Importance="high"/>
-    <Message Text="Signed ARM64 Velopack installer at $(InstallerOutputFolder)\$(InstallerFileNameArm64)" Importance="high"/>
+    <!-- <Message Text="Signed ARM64 Velopack installer at $(InstallerOutputFolder)\$(InstallerFileNameArm64)" Importance="high"/> -->
   </Target>
   <Target Name="Upload" DependsOnTargets="VersionNumbers; SignInstaller" >
     <CallTarget Targets="UploadCore"/>
@@ -470,7 +468,7 @@
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
 		IsPublicRead="true" />
-    <!-- Restore to Upload ARM64 packages 
+    <!-- Restore to Upload ARM64 packages
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
 		SourceFiles="$(InstallerOutputFolder)/arm64/$(VelopackDeltaPkgArm64)"

@@ -213,12 +213,30 @@ export class ToolBox {
                         //console.log("skipping markup on arrow key");
                         return;
                     }
-                    handleKeyboardInput();
+                    handlePageEditing();
                 })
                 .on("compositionend", (argument) => {
                     // Keyman (and other IME's?) don't send keydown events, but do send compositionend events
                     // See https://silbloom.myjetbrains.com/youtrack/issue/BL-5440.
-                    handleKeyboardInput();
+                    handlePageEditing();
+                })
+                // These next two were added to try to catch paste events that are not caught by the keyup
+                // on Ctrl+V. They don't catch paste caused by the toolbar button, which is caught elsewhere.
+                // I'm not sure how a paste can be triggered in current Bloom without causing a keyup,
+                // but just possibly the paste might take longer than the standard keyup delay to finish
+                // modifying the DOM? AI suggested adding these and I decided it was safest to keep them.
+                .on("input", (event) => {
+                    const inputEvent = event.originalEvent as InputEvent;
+                    if (
+                        inputEvent?.inputType &&
+                        inputEvent.inputType.startsWith("insertFromPaste")
+                    ) {
+                        handlePageEditing();
+                    }
+                })
+                .on("paste", () => {
+                    // Wait a tick so the DOM reflects the pasted content.
+                    setTimeout(() => handlePageEditing(), 0);
                 });
         }
     }
@@ -1055,7 +1073,23 @@ function beginAddTool(
 
 let keydownEventCounter = 0;
 
-function handleKeyboardInput(): void {
+export function scheduleMarkupUpdateAfterPaste(): void {
+    // AI thinks we might need this to "allow the DOM to settle" even before we do the
+    // little bit that handlePageEditing does before setting up its own delay.
+    // I could not understand its explanation and am not convinced we need this.
+    // However, I'm trying to fix a race condition that results in a problem
+    // that is hard to reproduce reliably. I'd rather have a timeout that we don't
+    // need than have the markup occasionally not update, let alone somehow have
+    // the markup update somehow mess up the paste. So I decided to leave it in.
+    setTimeout(() => handlePageEditing(), 0);
+}
+
+// Handle edits to the page: mainly triggered by key up, but also by paste.
+// For various reasons a single paste may cause this to get called several times, but the 500ms
+// delay should prevent us from doing the markup more than once per paste.
+// Similarly, since updating the markup is fairly costly, it's good not to do it on every keystroke
+// while the user is typing rapidly.
+function handlePageEditing(): void {
     // BL-599: "Unresponsive script" while typing in text.
     // The function setTimeout() returns an integer, not a timer object, and therefore it does not have a member
     // function called "clearTimeout." Because of this, the jQuery method $.isFunction(keypressTimer.clearTimeout)
@@ -1082,6 +1116,13 @@ function handleKeyboardInput(): void {
     if (window?.top?.[isLongPressEvaluating]) {
         return;
     }
+    // If this was making DOM changes that we want to save, we would want to try to use
+    // addRequestPageContentDelay and removeRequestPageContentDelay or wrapWithRequestPageContentDelay
+    // to prevent the user from trying to save while we're in the middle of making changes.
+    // Care would be needed to keep the calls matched up: if there's a timer already running, that
+    // would mean we already have a page content delay in place and should not add another.
+    // However, the markup changes that we are making here are stripped out by Save anyway,
+    // so I don't believe we need to worry about suppressing saves while we're doing this.
     keypressTimer = setTimeout(async () => {
         // This happens 500ms after the user stops typing.
         const page: HTMLIFrameElement = <HTMLIFrameElement>(
