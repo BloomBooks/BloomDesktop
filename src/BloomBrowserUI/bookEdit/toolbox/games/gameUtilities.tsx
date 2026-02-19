@@ -4,14 +4,14 @@
 import { getAllDraggables, isDraggable } from "../../js/CanvasElementManager";
 
 export function doesContainingPageHaveSameSizeMode(
-    refElt: HTMLElement
+    refElt: HTMLElement,
 ): boolean {
     const page = refElt.closest(".bloom-page") as HTMLElement;
     return doesPageHaveSameSizeMode(page);
 }
 
 function doesPageHaveSameSizeMode(
-    page: HTMLElement | null | undefined
+    page: HTMLElement | null | undefined,
 ): boolean {
     if (!page) {
         return false;

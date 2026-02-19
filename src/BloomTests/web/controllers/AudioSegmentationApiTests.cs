@@ -1,10 +1,10 @@
-﻿using Bloom.web.controllers;
-using NUnit.Framework;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Bloom.web.controllers;
+using NUnit.Framework;
 using Assert = NUnit.Framework.Assert;
 
 namespace BloomTests.web.controllers
@@ -173,12 +173,12 @@ namespace BloomTests.web.controllers
             var input = new List<string>
             {
                 "f0001 1.000 4.980 \"I have a dog\"",
-                "f0002 5.000 8.000 \"I have a cat\""
+                "f0002 5.000 8.000 \"I have a cat\"",
             };
             var expectedOutput = new List<Tuple<string, string, string>>
             {
                 Tuple.Create("1.000", "4.980", "I have a dog"),
-                Tuple.Create("5.000", "8.000", "I have a cat")
+                Tuple.Create("5.000", "8.000", "I have a cat"),
             };
 
             // Act
@@ -195,12 +195,12 @@ namespace BloomTests.web.controllers
             var input = new List<string>
             {
                 "f0001 1.000 4.999",
-                "f0002 5.000 8.000 \"I have a cat\""
+                "f0002 5.000 8.000 \"I have a cat\"",
             };
             var expectedOutput = new List<Tuple<string, string, string>>
             {
                 Tuple.Create("0.000", "0.000", "Err:[f0001 1.000 4.999]"),
-                Tuple.Create("5.000", "8.000", "I have a cat")
+                Tuple.Create("5.000", "8.000", "I have a cat"),
             };
 
             // Act
@@ -217,12 +217,12 @@ namespace BloomTests.web.controllers
             var input = new List<string>
             {
                 "f0001 1.000 \"I have a dog\"",
-                "f0002 5.000 6.000 \"I have a cat\""
+                "f0002 5.000 6.000 \"I have a cat\"",
             };
             var expectedOutput = new List<Tuple<string, string, string>>
             {
                 Tuple.Create("0.000", "0.000", "Err:[f0001 1.000 \"I have a dog\"]"),
-                Tuple.Create("5.000", "6.000", "I have a cat")
+                Tuple.Create("5.000", "6.000", "I have a cat"),
             };
 
             // Act
@@ -240,13 +240,13 @@ namespace BloomTests.web.controllers
             {
                 "f0001 0.000 1.000 \"I have a dog.\"",
                 "f0002 \"I have a cat\"",
-                "f003 6.123 7.123 \"named Leroy.\""
+                "f003 6.123 7.123 \"named Leroy.\"",
             };
             var expectedOutput = new List<Tuple<string, string, string>>
             {
                 Tuple.Create("0.000", "1.000", "I have a dog."),
                 Tuple.Create("1.000", "1.000", "Err:[f0002 \"I have a cat\"]"),
-                Tuple.Create("6.123", "7.123", "named Leroy.")
+                Tuple.Create("6.123", "7.123", "named Leroy."),
             };
 
             // Act

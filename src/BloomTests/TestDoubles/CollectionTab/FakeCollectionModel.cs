@@ -3,9 +3,8 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.TeamCollection;
-using SIL.TestUtilities;
-
 using BloomTests.TestDoubles.Book;
+using SIL.TestUtilities;
 
 namespace BloomTests.TestDoubles.CollectionTab
 {

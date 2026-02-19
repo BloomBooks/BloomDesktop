@@ -77,6 +77,22 @@ namespace BloomTests.web
             Assert.AreEqual(expectedResult, requestInfo.LocalPathWithoutQuery);
         }
 
+        [Test]
+        public void GetPostJson_PreservesPlusSigns()
+        {
+            // https://issues.bloomlibrary.org/youtrack/issue/BL-15384
+            const string body = "{\"email\":\"joe+extra@example.com\"}";
+            var context = new TestHttpListenerContext();
+            var request = new TestHttpListenerRequest();
+            request.SetRawUrl("/registration/userInfo");
+            request.SetJsonBody(body);
+            context.SetRequest(request);
+
+            var requestInfo = new RequestInfo(context);
+
+            Assert.AreEqual(body, requestInfo.GetPostJson());
+        }
+
         private TempFile MakeTempFile(byte[] contents)
         {
             var file = TempFile.WithExtension(".tmp");
@@ -109,6 +125,15 @@ namespace BloomTests.web
             public void SetRawUrl(string rawUrl)
             {
                 RawUrl = rawUrl;
+            }
+
+            public void SetJsonBody(string json)
+            {
+                ContentEncoding = Encoding.UTF8;
+                ContentType = "application/json";
+                HasEntityBody = true;
+                HttpMethod = "POST";
+                InputStream = new MemoryStream(Encoding.UTF8.GetBytes(json));
             }
         }
     }

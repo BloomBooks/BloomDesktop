@@ -5,13 +5,13 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import {
     LocalizableMenuItem,
     LocalizableCheckboxMenuItem,
-    LocalizableNestedMenuItem
+    LocalizableNestedMenuItem,
 } from "../localizableMenuItem";
 
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react-vite";
 
 const meta: Meta = {
-    title: "Localizable Widgets/Localizable Menu"
+    title: "Localizable Widgets/Localizable Menu",
 };
 
 export default meta;
@@ -19,7 +19,7 @@ type Story = StoryObj;
 
 const useMenuBox = (menuItems: JSX.Element[]) => {
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | undefined>(
-        undefined
+        undefined,
     );
     return (
         <div
@@ -35,7 +35,7 @@ const useMenuBox = (menuItems: JSX.Element[]) => {
         >
             <Button
                 color="primary"
-                onClick={event =>
+                onClick={(event) =>
                     setAnchorEl(event.target as HTMLButtonElement)
                 }
                 css={css`
@@ -111,7 +111,7 @@ const nestedMenu = (
             normalMenuItem,
             checkboxMenuItem,
             normalMenuItemWithEllipsisAndEnterprise,
-            requiresEnterpriseSubscriptionWithIcon
+            requiresEnterpriseSubscriptionWithIcon,
         ]}
     </LocalizableNestedMenuItem>
 );
@@ -124,10 +124,10 @@ const testMenu = [
     requiresEnterpriseSubscriptionWithIcon,
     checkboxMenuItem,
     divider,
-    nestedMenu
+    nestedMenu,
 ];
 
 export const TestMenuStory: Story = {
     name: "test menu",
-    render: () => useMenuBox(testMenu)
+    render: () => useMenuBox(testMenu),
 };

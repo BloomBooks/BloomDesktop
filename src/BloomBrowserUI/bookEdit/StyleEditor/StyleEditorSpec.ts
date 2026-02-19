@@ -1,9 +1,11 @@
+import { describe, it, expect, beforeEach } from "vitest";
 /// <reference path="./StyleEditor.ts" />
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 
 /*/// <reference path="../../lib/jquery-1.9.1.js"/>*/
 
 import StyleEditor from "./StyleEditor";
+import $ from "jquery";
 
 //this was getting html, but just setting the rules actually doesn't touch the html
 //function GetStylesAfterMakeBigger(): string {
@@ -31,7 +33,7 @@ function MakeBigger2(target: string, shouldSetDefaultRule = true) {
 function GetFontSize(target: string): number {
     const jQueryTarget = $(document).find(target);
     const editor = new StyleEditor(
-        "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit"
+        "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
     );
     return editor.GetCalculatedFontSizeInPoints(<HTMLElement>jQueryTarget[0]);
 }
@@ -39,11 +41,11 @@ function GetFontSize(target: string): number {
 function ChangeSizeAbsolute(
     target: string,
     newSize: number,
-    shouldSetDefaultRule = true
+    shouldSetDefaultRule = true,
 ) {
     const jQueryTarget = $(document).find(target);
     const editor = new StyleEditor(
-        "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit"
+        "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
     );
     editor.boxBeingEdited = jQueryTarget.get(0);
     editor.changeSizeInternal(newSize + "pt", shouldSetDefaultRule);
@@ -120,7 +122,7 @@ function GetRuleForCoverTitleStyle(): CSSRule | null {
 function GetCalculatedFontSize(target: string): number {
     const jQueryTarget = $(document).find(target);
     const editor = new StyleEditor(
-        "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit"
+        "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
     );
     return editor.GetCalculatedFontSizeInPoints(<HTMLElement>jQueryTarget[0]);
 }
@@ -161,7 +163,7 @@ function countFooStyleRules(): number {
 }
 
 describe("StyleEditor", () => {
-    // most perplexingly, jasmine doesn't reset the dom between tests
+    // most perplexingly, jasmine doesn't reset the dom between tests. (Not sure about vitest)
     beforeEach(() => {
         $('style[title="userModifiedStyles"]').remove();
         $("body").html("");
@@ -187,7 +189,7 @@ describe("StyleEditor", () => {
 
     it("MakeBigger creates a style for the correct class if it is missing", () => {
         $("body").append(
-            "<div id='testTarget' class='ignore foo-style ignoreMeToo '></div>"
+            "<div id='testTarget' class='ignore foo-style ignoreMeToo '></div>",
         );
         MakeBigger();
         expect(GetRuleForFooStyle()).not.toBeNull();
@@ -208,7 +210,7 @@ describe("StyleEditor", () => {
     //I have to have an explict x-style in the @class, except in the special case of known legacy pages, which all started with the same bit of guid
     it("MakeBigger does nothing if no x-style classes, and ancestor is not a known old-format basic-book page", () => {
         $("body").append(
-            "<div class='bloom-page' data-pagelineage='123-blah-blah'><div id='testTarget'>i don't want to get bigger</div></div>"
+            "<div class='bloom-page' data-pagelineage='123-blah-blah'><div id='testTarget'>i don't want to get bigger</div></div>",
         );
         MakeBigger();
         expect(GetRuleForNormalStyle()).toBeNull();
@@ -217,7 +219,7 @@ describe("StyleEditor", () => {
     // Handle books created with the original (0.9) version of "Basic Book", which lacked "x-style" but had all pages starting with an id of 5dcd48df (so we can detect them)
     it("MakeBigger adds normal-style if there are no x-style classes, but ancestor is a known old-format basic-book page", () => {
         $("body").append(
-            "<div  class='bloom-page'  data-pagelineage='5dcd48df-blah-blah'><div id='testTarget'>i want to get bigger</div></div>"
+            "<div  class='bloom-page'  data-pagelineage='5dcd48df-blah-blah'><div id='testTarget'>i want to get bigger</div></div>",
         );
         MakeBigger();
         expect(GetRuleForNormalStyle()).not.toBeNull();
@@ -225,7 +227,7 @@ describe("StyleEditor", () => {
 
     it("MakeBigger can add a new rule without removing other rules", () => {
         $("body").append(
-            "<div id='testTarget' class='blah-style'></div><div id='testTarget2' class='normal-style'></div>"
+            "<div id='testTarget' class='blah-style'></div><div id='testTarget2' class='normal-style'></div>",
         );
         MakeBigger2("#testTarget2");
         MakeBigger();
@@ -234,7 +236,7 @@ describe("StyleEditor", () => {
 
     it("MakeBigger doesn't make duplicate styles if there are already two there (default and lang-specific)", () => {
         $("body").append(
-            "<div id='testTarget' class='ignore foo-style ignoreMeToo '></div>"
+            "<div id='testTarget' class='ignore foo-style ignoreMeToo '></div>",
         );
         MakeBigger();
         expect(countFooStyleRules()).toBe(2); // default rule, language-specific rule
@@ -246,7 +248,7 @@ describe("StyleEditor", () => {
 
     it("MakeBigger doesn't make a duplicate style for a language if there is already one there", () => {
         $("body").append(
-            "<div id='testTarget' class='ignore foo-style ignoreMeToo '></div>"
+            "<div id='testTarget' class='ignore foo-style ignoreMeToo '></div>",
         );
         MakeBigger(false);
         MakeBigger(false);
@@ -257,7 +259,7 @@ describe("StyleEditor", () => {
 
     it("When not editing an L1 block, MakeBigger adds rules that only affect the given language", () => {
         $("body").append(
-            "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>"
+            "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>",
         );
         MakeBigger2("#testTarget", false);
         const x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
@@ -273,21 +275,25 @@ describe("StyleEditor", () => {
 
     it("When the element does not have @lang, MakeBigger adds rules that apply only when there is no @lang", () => {
         $("body").append(
-            "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>"
+            "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>",
         );
         MakeBigger2("#testTarget2");
 
         expect(HasRuleMatchingThisSelector("normal-style:not([lang])")).toBe(
-            true
+            true,
         );
     });
 
-    it("When the element has an @lang, and already has a rule, MakeBigger replaces the existing rule", () => {
+    // Skipped because currently we're running in jsdom. Making use of the existing rule depends on
+    // getComputedStyle, which jsdom does not support. ChatGpt thinks it also depends on actual
+    // dom element sizes, which jsdom also does not support. Attempts to polyfill proved difficult.
+    // We may at some point try again to run this test using a real browser.
+    it.skip("When the element has an @lang, and already has a rule, MakeBigger replaces the existing rule", () => {
         $("head").append(
-            "<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 8pt ! important; }</style>"
+            "<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 8pt !important; }</style>",
         );
         $("body").append(
-            "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>"
+            "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>",
         );
         MakeBigger2("#testTarget");
         const x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
@@ -304,7 +310,7 @@ describe("StyleEditor", () => {
 
     it("When the element does not have @lang, ChangeSizeAbsolute adds rules that apply only when there is no @lang", () => {
         $("body").append(
-            "<div id='testTarget' class='foo-style'></div><div id='testTarget2' class='normal-style' lang='xyz'></div>"
+            "<div id='testTarget' class='foo-style'></div><div id='testTarget2' class='normal-style' lang='xyz'></div>",
         );
         ChangeSizeAbsolute("#testTarget", 20);
 
@@ -314,12 +320,16 @@ describe("StyleEditor", () => {
         if (rule != null) expect(ParseRuleForFontSize(rule.cssText)).toBe(20);
     });
 
-    it("When the element has an @lang, and already has a rule, ChangeSizeAbsolute replaces the existing rule", () => {
+    // Skipped because currently we're running in jsdom. Making use of the existing rule depends on
+    // getComputedStyle, which jsdom does not support. ChatGpt thinks it also depends on actual
+    // dom element sizes, which jsdom also does not support. Attempts to polyfill proved difficult.
+    // We may at some point try again to run this test using a real browser.
+    it.skip("When the element has an @lang, and already has a rule, ChangeSizeAbsolute replaces the existing rule", () => {
         $("head").append(
-            "<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 8pt ! important; }</style>"
+            "<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 8pt ! important; }</style>",
         );
         $("body").append(
-            "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>"
+            "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>",
         );
         ChangeSizeAbsolute("#testTarget", 20);
         const x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
@@ -336,7 +346,7 @@ describe("StyleEditor", () => {
 
     it("When the element has an @lang, but no existing rule, ChangeSizeAbsolute adds rules that only affect the given language", () => {
         $("body").append(
-            "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>"
+            "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>",
         );
         ChangeSizeAbsolute("#testTarget", 20);
         const x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
@@ -353,7 +363,7 @@ describe("StyleEditor", () => {
 
     it("If a 'default-style' slips through, make it 'normal-style'", () => {
         $("body").append(
-            "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='default-style'></div>"
+            "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='default-style'></div>",
         );
         MakeBigger2("#testTarget2");
 
@@ -362,7 +372,7 @@ describe("StyleEditor", () => {
 
     it("If a 'coverTitle' slips through, make it 'Title-On-Cover-style'", () => {
         $("body").append(
-            "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='coverTitle'></div>"
+            "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='coverTitle'></div>",
         );
         MakeBigger2("#testTarget2");
 

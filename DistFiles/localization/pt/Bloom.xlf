@@ -6221,13 +6221,13 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: SubscriptionStatus.UsingProSubscription</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingLocalCommunitySubscription" approved="yes">
-        <source xml:lang="en">Using **Local Community** subscription for **{0}**. Expires {1}</source>
-        <target xml:lang="pt-PT" state="final">Usando a assinatura da **Comunidade Local** por **{0}**. Expira {1}</target>
+        <source xml:lang="en">Using **Local Community** subscription for {0}. Expires {1}</source>
+        <target xml:lang="pt-PT" state="final">Usando a assinatura da **Comunidade Local** por {0}. Expira {1}</target>
         <note>ID: SubscriptionStatus.UsingLocalCommunitySubscription</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingEnterpriseSubscription" approved="yes">
-        <source xml:lang="en">Using **Enterprise** subscription for **{0}**. Expires **{1}**</source>
-        <target xml:lang="pt-PT" state="final">Usando a assinatura de **Enterprise** para **{0}**. Expira **{1}**</target>
+        <source xml:lang="en">Using **Enterprise** subscription for {0}. Expires **{1}**</source>
+        <target xml:lang="pt-PT" state="final">Usando a assinatura de **Enterprise** para {0}. Expira **{1}**</target>
         <note>ID: SubscriptionStatus.UsingEnterpriseSubscription</note>
       </trans-unit>
       <trans-unit id="TeamCollection.DuplicateIds" approved="yes">

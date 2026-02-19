@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Bloom.SafeXml;
+using Newtonsoft.Json;
 
 namespace Bloom.Book
 {
@@ -53,8 +54,7 @@ namespace Bloom.Book
                 }
             }
 
-            var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
-            return serializer.Serialize(translationGroups);
+            return JsonConvert.SerializeObject(translationGroups);
         }
     }
 }

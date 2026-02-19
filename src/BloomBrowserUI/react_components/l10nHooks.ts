@@ -19,12 +19,12 @@ export function useL10n(
     l10nComment?: string,
     l10nParam0?: string,
     l10nParam1?: string,
-    temporarilyDisableI18nWarning?: boolean
+    temporarilyDisableI18nWarning?: boolean,
 ): string {
     // Create an array of parameters, filtering out undefined values
     const l10nParams: string[] = React.useMemo(() => {
         return [l10nParam0, l10nParam1].filter(
-            (param): param is string => param !== undefined
+            (param): param is string => param !== undefined,
         );
     }, [l10nParam0, l10nParam1]);
 
@@ -34,7 +34,7 @@ export function useL10n(
         key: l10nKey,
         comment: l10nComment,
         params: l10nParams,
-        temporarilyDisableI18nWarning
+        temporarilyDisableI18nWarning,
     });
 }
 
@@ -60,7 +60,7 @@ export function useL10n2(options: {
         key: l10nKey,
         comment: l10nComment,
         params: l10nParams,
-        temporarilyDisableI18nWarning
+        temporarilyDisableI18nWarning,
     } = options;
     const stringifiedParams = JSON.stringify(l10nParams);
     const [localizedText, setLocalizedText] = React.useState(english);
@@ -86,7 +86,7 @@ export function useL10n2(options: {
                             // get param insertion, which makes things broken even in English
                             setLocalizedText(t);
                         }
-                    }
+                    },
                 });
             }
         },
@@ -98,8 +98,8 @@ export function useL10n2(options: {
             english,
             l10nComment,
             stringifiedParams,
-            temporarilyDisableI18nWarning
-        ]
+            temporarilyDisableI18nWarning,
+        ],
     ); // often the params are coming in later, via an api call. So we need to re-do the localization when that happens.
     return localizedText || "";
 }

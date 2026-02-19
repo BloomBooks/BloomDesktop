@@ -13,7 +13,7 @@ namespace Bloom.web.controllers
         {
             Unknown,
             Sentence,
-            TextBox
+            TextBox,
         }
 
         private readonly CollectionSettings _collectionSettings;

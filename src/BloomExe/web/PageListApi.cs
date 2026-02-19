@@ -4,13 +4,12 @@ using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
 using System.Windows.Forms;
-using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.SafeXml;
 using Bloom.Utils;
-using SIL.Xml;
 
 namespace Bloom.web
 {
@@ -20,6 +19,7 @@ namespace Bloom.web
     public class PageListApi
     {
         private readonly BookSelection _bookSelection;
+        private readonly CollectionModel _collectionModel;
 
         internal WebThumbNailList PageList { get; set; }
 
@@ -27,9 +27,10 @@ namespace Bloom.web
         internal IPage SelectedPage { get; set; }
 
         // Called by autofac, which creates the one instance and registers it with the server.
-        public PageListApi(BookSelection _bookSelection)
+        public PageListApi(BookSelection _bookSelection, CollectionModel collectionModel)
         {
             this._bookSelection = _bookSelection;
+            _collectionModel = collectionModel;
         }
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -58,13 +59,26 @@ namespace Bloom.web
                 "pageList/bookAttributesThatMayAffectDisplay",
                 (request) =>
                 {
-                    var attrs =
-                        _bookSelection.CurrentSelection.OurHtmlDom.GetBodyAttributesThatMayAffectDisplay();
+                    var requestedBook = _collectionModel.GetRequestedBookOrDefaultOrNull(
+                        request.GetParamOrNull("book-id")
+                    );
+                    if (requestedBook == null)
+                    {
+                        request.ReplyWithJson("{}");
+                        return;
+                    }
+
+                    var attrs = requestedBook.OurHtmlDom.GetBodyAttributesThatMayAffectDisplay();
+                    if (attrs == null)
+                    {
+                        request.ReplyWithJson("{}");
+                        return;
+                    }
                     // Surely there's a way to do this more safely with JSON.net but I haven't found it yet
                     var props = string.Join(
                         ",",
-                        attrs.Select(
-                            a => ("\"" + a.Name + "\": \"" + a.Value.Replace("\"", "\\\"") + "\"")
+                        attrs.Select(a =>
+                            ("\"" + a.Name + "\": \"" + a.Value.Replace("\"", "\\\"") + "\"")
                         )
                     );
                     request.ReplyWithJson("{" + props + "}");
@@ -145,6 +159,10 @@ namespace Bloom.web
             // without slowing down other behavior.
             result.content = "";
             result.key = page.Id;
+            // isXMatter indicates whether this page is part of the front matter or back matter
+            // (xmatter) rather than the main content. The UI uses this to distinguish template
+            // pages from user-editable content pages.
+            result.isXMatter = page.IsXMatter;
             return result;
         }
 
@@ -179,57 +197,92 @@ namespace Bloom.web
         /// without actual page content are returned for performance reasons, and later,
         /// the React code requests individual page contents.
         /// </summary>
-        /// <param name="request"></param>
+        ///  request parameters:
+        ///   book-id - optional book id. If not given, uses the collections "current" book.
         public void HandlePagesRequest(ApiRequest request)
         {
             //var watch = new Stopwatch();
             //watch.Start();
-            var book = _bookSelection.CurrentSelection;
+
+            var book = _collectionModel.GetRequestedBookOrDefaultOrNull(
+                request.GetParamOrNull("book-id")
+            );
+
+            if (book == null)
+            {
+                request.Failed(System.Net.HttpStatusCode.NotFound, "Could not find book");
+                return;
+            }
+
             IPage[] pages = book == null ? new IPage[0] : book.GetPages().ToArray();
             int pageNumber = 0;
             dynamic answer = new ExpandoObject();
             answer.pages = pages.Select(p => GetPageObject(p, ref pageNumber)).ToArray();
-            answer.selectedPageId = SelectedPage == null ? "" : SelectedPage.Id;
+            var isCurrentBook =
+                book != null && ReferenceEquals(book, _bookSelection.CurrentSelection);
+            // this is bit gross, semantically, but originally this api call was only
+            // called while editing a book and the selected page is part of the .net model.
+            // In other (newer) contexts, we may be asking about another book and there is semantically no selected page so this will be null.
+            answer.selectedPageId = isCurrentBook && SelectedPage != null ? SelectedPage.Id : "";
+            answer.pageLayout = book?.GetLayout()?.SizeAndOrientation?.ClassName ?? "A5Portrait";
             request.ReplyWithJson(answer);
             //watch.Stop();
             //Debug.WriteLine($"Generating JSON for thumbnails took {watch.ElapsedMilliseconds}ms");
         }
 
         // Requests the content that should be displayed in a single page thumbnail.
+        // Parameters:
+        //    page-id - the page ID
+        //    book-id - the book ID (optional)
         public void HandlePageContentRequest(ApiRequest request)
         {
             var watch = new Stopwatch();
             watch.Start();
-            var id = request.RequiredParam("id");
-            var page = PageFromId(id);
-            dynamic answer = new ExpandoObject();
-            if (page == null)
+            var id = request.RequiredParam("page-id");
+            var book = _collectionModel.GetRequestedBookOrDefaultOrNull(
+                request.GetParamOrNull("book-id")
+            );
+            if (book == null)
             {
-                answer.content = "";
-            }
-            else
-            {
-                var pageElement = page.GetDivNodeForThisPage().CloneNode(true) as SafeXmlElement;
-                var videos = pageElement
-                    .SafeSelectNodes(".//video")
-                    .Cast<SafeXmlElement>()
-                    .ToArray();
-                foreach (var video in videos)
-                    video.ParentNode.RemoveChild(video); // minimize memory use, thumb just shows placeholder
-                MarkImageNodesForThumbnail(pageElement);
-                // For WebView2, this prevents any interaction with elements in the page thumbnail.
-                // We put an overlay over it to try to prevent such interaction, but this is more
-                // reliable. Nothing in the page will ever get focus, be tabbed to, be read by
-                // screen readers, etc. In particular, we finally concluded that BL-11528 was caused
-                // by the browser temporarily focusing, and then scrolling into view, something
-                // on the first page; this prevents that.
-                pageElement.SetAttribute("inert", "true");
-                answer.content = XmlHtmlConverter.ConvertElementToHtml5(pageElement);
+                request.Failed(System.Net.HttpStatusCode.NotFound, "Could not find book");
+                return;
             }
 
+            var page = book.GetPages().FirstOrDefault(p => p.Id == id);
+            if (page == null)
+            {
+                request.Failed(System.Net.HttpStatusCode.NotFound, "Could not find page");
+                return;
+            }
+            dynamic answer = new ExpandoObject();
+            answer.content = GetPageContentForThumbnail(page);
             request.ReplyWithJson(answer);
             watch.Stop();
-            Debug.WriteLine($"Generating JSON for one page took {watch.ElapsedMilliseconds}ms");
+        }
+
+        private static string GetPageContentForThumbnail(IPage page)
+        {
+            if (page == null)
+            {
+                return string.Empty;
+            }
+
+            var pageElement = page.GetDivNodeForThisPage().CloneNode(true) as SafeXmlElement;
+            var videos = pageElement.SafeSelectNodes(".//video").Cast<SafeXmlElement>().ToArray();
+            foreach (var video in videos)
+            {
+                video.ParentNode.RemoveChild(video);
+            }
+
+            MarkImageNodesForThumbnail(pageElement);
+            // For WebView2, this prevents any interaction with elements in the page thumbnail.
+            // We put an overlay over it to try to prevent such interaction, but this is more
+            // reliable. Nothing in the page will ever get focus, be tabbed to, be read by
+            // screen readers, etc. In particular, we finally concluded that BL-11528 was caused
+            // by the browser temporarily focusing, and then scrolling into view, something
+            // on the first page; this prevents that.
+            pageElement.SetAttribute("inert", "true");
+            return XmlHtmlConverter.ConvertElementToHtml5(pageElement);
         }
 
         // As a further form of optimization, mark img elements as being thumbnails. The server

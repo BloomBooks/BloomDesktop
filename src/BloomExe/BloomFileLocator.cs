@@ -10,6 +10,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using L10NSharp;
 using SIL.Code;
+using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
 
@@ -285,9 +286,11 @@ namespace Bloom
         /// </summary>
         public static string GetCodeBaseFolder()
         {
-            var file = Assembly.GetExecutingAssembly().CodeBase.Replace("file://", string.Empty);
+            var file = Assembly.GetExecutingAssembly().Location.Replace("\\", "/");
             if (SIL.PlatformUtilities.Platform.IsWindows)
                 file = file.TrimStart('/');
+            if (Program.RunningUnitTests)
+                file = file.Replace("/Tests/", "/");
             return Path.GetDirectoryName(file);
         }
 
@@ -305,8 +308,12 @@ namespace Bloom
         {
             var folder = GetCodeBaseFolder();
             var slash = Path.DirectorySeparatorChar;
-            if (folder.EndsWith($"{slash}output{slash}Debug"))
-                folder = folder.Replace($"{slash}Debug", string.Empty); // files now copied to output/browser for access
+            // In the case of a debug build, the executable files are not at the root of the whole install,
+            // but typically in output\Debug\x64. The "browser" folder, however, is not there but
+            // directly in output. So we need to back up two levels to find the folder to test in Debug builds.
+            var pathLessOne = Path.GetDirectoryName(folder);
+            if (pathLessOne.EndsWith($"{slash}output{slash}Debug"))
+                folder = Path.GetDirectoryName(pathLessOne);
 
             return filepath.Contains(folder);
         }
@@ -527,6 +534,23 @@ namespace Bloom
                 );
             }
             return path;
+        }
+
+        /// <summary>
+        /// Tracks down a file that comes from DistFiles. In production it should end up
+        /// in the indicated location relative to the root directory. In a debug build
+        /// we need to insert DistFiles into the path.
+        /// </summary>
+        public static string GetFileFromDistFiles(params string[] pathFromDistfiles)
+        {
+            var baseFolder = FileLocationUtilities.DirectoryOfApplicationOrSolution;
+            // In normal operation the files from DistFiles are put in the main application folder
+            var combinedPathFromDistFiles = Path.Combine(pathFromDistfiles);
+            var path = Path.Combine(baseFolder, combinedPathFromDistFiles);
+            if (RobustFile.Exists(path))
+                return path;
+            // In debug, they are in the DistFiles directory.
+            return path.CombineForPath(baseFolder, "DistFiles", combinedPathFromDistFiles);
         }
     }
 }

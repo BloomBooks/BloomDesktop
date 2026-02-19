@@ -1,24 +1,22 @@
-/**
- * @jsx jsx
- * @jsxFrag React.Fragment
- **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { Label } from "../react_components/l10nComponents";
-import { Link } from "../react_components/link";
 import { get, post, postJson, useApiStringState } from "../utils/bloomApi";
-import { FontAwesomeIcon } from "../bloomIcons";
+import CheckIcon from "@mui/icons-material/Check";
+import QuestionMarkIcon from "@mui/icons-material/QuestionMark";
+import ErrorIcon from "@mui/icons-material/Error";
 import Button from "@mui/material/Button";
-import { Stack } from "@mui/material";
+import { Stack, TextField } from "@mui/material";
 import ContentCopy from "@mui/icons-material/ContentCopy";
 import ContentPaste from "@mui/icons-material/ContentPaste";
 import { useState } from "react";
 import {
     SubscriptionCodeIntegrity,
     useLocalizedTier,
-    useSubscriptionInfo
+    useSubscriptionInfo,
 } from "./useSubscriptionInfo";
 import { NoteBox, WarningBox } from "../react_components/boxes";
+import { kBloomBlue, kErrorColor } from "../bloomMaterialUITheme";
 
 type Status =
     | "None"
@@ -61,7 +59,7 @@ export const SubscriptionControls: React.FC = () => {
         subscriptionSummary,
         missingBrandingFiles,
         editingBlorgBook,
-        haveData
+        haveData,
     } = useSubscriptionInfo();
 
     const [status, setStatus] = useState<Status>("None");
@@ -73,15 +71,15 @@ export const SubscriptionControls: React.FC = () => {
                 subscriptionCodeIntegrity,
                 expiryDateStringAsYYYYMMDD,
                 editingBlorgBook,
-                missingBrandingFiles
-            )
+                missingBrandingFiles,
+            ),
         );
     }, [
         code,
         expiryDateStringAsYYYYMMDD,
         editingBlorgBook,
         subscriptionCodeIntegrity,
-        missingBrandingFiles
+        missingBrandingFiles,
     ]);
 
     if (!haveData) {
@@ -122,7 +120,7 @@ const StatusText: React.FC<{
     tier: string;
     status: Status;
     expiryDateStringAsYYYYMMDD: string;
-}> = props => {
+}> = (props) => {
     const localizedTier = useLocalizedTier(props.tier);
     return (
         <div>
@@ -161,8 +159,8 @@ const StatusText: React.FC<{
                                     color: "black",
                                     borderColor: "black",
                                     "&:hover": {
-                                        borderColor: "black"
-                                    }
+                                        borderColor: "black",
+                                    },
                                 }}
                             >
                                 <Label l10nKey="Settings.Subscription.CheckUpdates">
@@ -217,7 +215,7 @@ export function getSafeLocalizedDate(dateAsYYYYMMDD: string | null) {
         ? new Date(
               Number(dateParts[0]),
               Number(dateParts[1]) - 1,
-              Number(dateParts[2])
+              Number(dateParts[2]),
           ).toLocaleDateString()
         : "";
 }
@@ -228,13 +226,13 @@ function getStatus(
     subscriptionCodeIntegrity: SubscriptionCodeIntegrity,
     expiryDateStringAsYYYYMMDD: string,
     editingBlorgBook: boolean,
-    missingBrandingFiles: boolean
+    missingBrandingFiles: boolean,
 ): Status {
     let status = getStatusSansEditingBlorgBook(
         subscriptionCode,
         subscriptionCodeIntegrity,
         expiryDateStringAsYYYYMMDD,
-        missingBrandingFiles
+        missingBrandingFiles,
     );
     // I'm not 100% sure this is the best way to handle EditingBlorgBook,
     // but I'm following 6.0 which treats a full, normal subscription as normal
@@ -252,7 +250,7 @@ function getStatusSansEditingBlorgBook(
     subscriptionCode: string,
     subscriptionCodeIntegrity: SubscriptionCodeIntegrity,
     expiryDateStringAsYYYYMMDD: string,
-    missingBrandingFiles: boolean
+    missingBrandingFiles: boolean,
 ): Status {
     const todayAsYYYYMMDD = new Date().toISOString().slice(0, 10);
     if (subscriptionCode === "" || subscriptionCodeIntegrity === "none") {
@@ -275,7 +273,7 @@ function getStatusSansEditingBlorgBook(
     return "SubscriptionGood";
 }
 
-export const BrandingSummary: React.FC<{ summaryHtml: string }> = props => {
+export const BrandingSummary: React.FC<{ summaryHtml: string }> = (props) => {
     return (
         <div
             className="summary"
@@ -285,7 +283,7 @@ export const BrandingSummary: React.FC<{ summaryHtml: string }> = props => {
                 height: 106px;
             `}
             dangerouslySetInnerHTML={{
-                __html: props.summaryHtml
+                __html: props.summaryHtml,
             }}
         />
     );
@@ -294,18 +292,18 @@ export const BrandingSummary: React.FC<{ summaryHtml: string }> = props => {
 const Editor: React.FC<{ status: Status }> = ({ status }) => {
     const [subscriptionCode, setSubscriptionCode] = useApiStringState(
         "settings/subscriptionCode",
-        ""
+        "",
     );
 
     // Handle copy/paste operations
     const handleCopy = () => {
         postJson("common/clipboardText", {
-            text: subscriptionCode
+            text: subscriptionCode,
         });
     };
 
     const handlePaste = () => {
-        get("common/clipboardText", result => {
+        get("common/clipboardText", (result) => {
             // We don't want trailing newlines (or other whitespace).
             // See BL-15309 for the havoc they can cause.
             let resultText = result.data as string;
@@ -321,7 +319,7 @@ const Editor: React.FC<{ status: Status }> = ({ status }) => {
         return [
             "SubscriptionIncorrect",
             "SubscriptionExpired",
-            "SubscriptionLegacy"
+            "SubscriptionLegacy",
         ].includes(status);
     };
     const shouldShowGreenCheck = () => {
@@ -333,23 +331,26 @@ const Editor: React.FC<{ status: Status }> = ({ status }) => {
     React.useEffect(() => {
         try {
             const codeElt = document.getElementById(
-                "subscriptionCodeInput"
+                "subscriptionCodeInput",
             ) as HTMLInputElement;
             if (codeElt !== null && selectionPosition !== null) {
-                codeElt.selectionStart = codeElt.selectionEnd = selectionPosition;
+                codeElt.selectionStart = codeElt.selectionEnd =
+                    selectionPosition;
             }
         } catch (e) {
             console.error("Error restoring cursor position:", e);
         }
     }, [selectionPosition]);
     const userTypedOrPastedCode = (
-        event: React.ChangeEvent<HTMLInputElement>
+        event: React.ChangeEvent<HTMLInputElement>,
     ) => {
         // Store the selection position before React updates
         setSelectionPosition(
-            (document.getElementById(
-                "subscriptionCodeInput"
-            ) as HTMLInputElement)?.selectionStart
+            (
+                document.getElementById(
+                    "subscriptionCodeInput",
+                ) as HTMLInputElement
+            )?.selectionStart,
         );
 
         setSubscriptionCode(event.target.value);
@@ -379,45 +380,50 @@ const Editor: React.FC<{ status: Status }> = ({ status }) => {
                     Subscription Code:
                 </Label>
 
-                <input
+                <TextField
+                    size="small"
                     id="subscriptionCodeInput"
                     //className="subscriptionCodeInput"
                     type="text"
                     value={
                         status === "EditingBlorgBook"
                             ? getSubscriptionCodeToDisplayForEditingBlorgBook(
-                                  subscriptionCode
+                                  subscriptionCode,
                               )
                             : subscriptionCode
                     }
                     onChange={userTypedOrPastedCode}
                     css={css`
+                        background-color: white;
                         width: 260px;
                         margin-left: 5px;
-                        padding-right: 20px; // clear of icon
                         flex-grow: 1;
-                        font-family: Consolas, monospace; // show zeros distinctly
-                        padding: 5px;
                     `}
+                    InputProps={{
+                        style: {
+                            fontFamily: "Consolas, monospace", // show zeros distinctly
+                        },
+                        endAdornment: shouldShowGreenCheck() ? (
+                            <CheckIcon
+                                css={css`
+                                    color: lime;
+                                `}
+                            />
+                        ) : status === "SubscriptionIncomplete" ? (
+                            <QuestionMarkIcon
+                                css={css`
+                                    color: ${kBloomBlue};
+                                `}
+                            />
+                        ) : shouldShowRedExclamation() ? (
+                            <ErrorIcon
+                                css={css`
+                                    color: ${kErrorColor};
+                                `}
+                            />
+                        ) : undefined,
+                    }}
                 />
-                {shouldShowGreenCheck() && (
-                    <span className={"evaluationCode"}>
-                        <FontAwesomeIcon icon="check" />
-                    </span>
-                )}
-                {status === "SubscriptionIncomplete" && (
-                    <span className={"evaluationCode"}>
-                        <FontAwesomeIcon icon="question" />
-                    </span>
-                )}
-                {shouldShowRedExclamation() && (
-                    <span className={"evaluationCode"}>
-                        <FontAwesomeIcon
-                            icon="exclamation-circle"
-                            css={{ color: "red" }}
-                        />
-                    </span>
-                )}
             </div>
             <Button variant="text" onClick={handleCopy} size="small">
                 <Stack direction="column" alignItems="center">
@@ -446,7 +452,7 @@ const Editor: React.FC<{ status: Status }> = ({ status }) => {
 };
 
 function getSubscriptionCodeToDisplayForEditingBlorgBook(
-    subscriptionCode: string
+    subscriptionCode: string,
 ): string {
     let result = subscriptionCode;
     result = result.replace("-***-***", "");

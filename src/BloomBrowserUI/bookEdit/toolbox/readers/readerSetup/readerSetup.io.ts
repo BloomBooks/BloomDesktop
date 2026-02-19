@@ -7,11 +7,12 @@ import {
     selectLevel,
     forcePlainTextPaste,
     selectStage,
-    setLevelValue
+    setLevelValue,
 } from "./readerSetup.ui";
 import { ReaderStage, ReaderLevel, ReaderSettings } from "../ReaderSettings";
-import "../../../../lib/jquery.onSafe.js";
+import "../../../../lib/jquery.onSafe";
 import * as _ from "underscore";
+import $ from "jquery";
 
 interface ILevelSetting {
     // in the right hand panel, the span for editing the value has this ID prefixed with "max-",
@@ -29,61 +30,61 @@ interface ILevelSetting {
 export const levelSettings: ILevelSetting[] = [
     {
         cellClass: "glyphs-per-word",
-        getter: level => level.maxGlyphsPerWord,
+        getter: (level) => level.maxGlyphsPerWord,
         setter: (level: ReaderLevel, v: number) => (level.maxGlyphsPerWord = v),
         subcell: {
             cellClass: "average-glyphs-per-word",
-            getter: level => level.maxAverageGlyphsPerWord,
+            getter: (level) => level.maxAverageGlyphsPerWord,
             setter: (level: ReaderLevel, v: number) =>
-                (level.maxAverageGlyphsPerWord = v)
-        }
+                (level.maxAverageGlyphsPerWord = v),
+        },
     },
     {
         cellClass: "words-per-sentence",
-        getter: level => level.maxWordsPerSentence,
+        getter: (level) => level.maxWordsPerSentence,
         setter: (level: ReaderLevel, v: number) =>
             (level.maxWordsPerSentence = v),
         subcell: {
             cellClass: "average-words-per-sentence",
-            getter: level => level.maxAverageWordsPerSentence,
+            getter: (level) => level.maxAverageWordsPerSentence,
             setter: (level: ReaderLevel, v: number) =>
-                (level.maxAverageWordsPerSentence = v)
-        }
+                (level.maxAverageWordsPerSentence = v),
+        },
     },
     {
         cellClass: "words-per-page",
-        getter: level => level.maxWordsPerPage,
+        getter: (level) => level.maxWordsPerPage,
         setter: (level: ReaderLevel, v: number) => (level.maxWordsPerPage = v),
         subcell: {
             cellClass: "average-words-per-page",
-            getter: level => level.maxAverageWordsPerPage,
+            getter: (level) => level.maxAverageWordsPerPage,
             setter: (level: ReaderLevel, v: number) =>
-                (level.maxAverageWordsPerPage = v)
-        }
+                (level.maxAverageWordsPerPage = v),
+        },
     },
     {
         cellClass: "words-per-book",
-        getter: level => level.maxWordsPerBook,
+        getter: (level) => level.maxWordsPerBook,
         setter: (level: ReaderLevel, v: number) => (level.maxWordsPerBook = v),
         subcell: {
             cellClass: "unique-words-per-book",
-            getter: level => level.maxUniqueWordsPerBook,
+            getter: (level) => level.maxUniqueWordsPerBook,
             setter: (level: ReaderLevel, v: number) =>
-                (level.maxUniqueWordsPerBook = v)
-        }
+                (level.maxUniqueWordsPerBook = v),
+        },
     },
     {
         cellClass: "sentences-per-page",
-        getter: level => level.maxSentencesPerPage,
+        getter: (level) => level.maxSentencesPerPage,
         setter: (level: ReaderLevel, v: number) =>
             (level.maxSentencesPerPage = v),
         subcell: {
             cellClass: "average-sentences-per-page",
-            getter: level => level.maxAverageSentencesPerPage,
+            getter: (level) => level.maxAverageSentencesPerPage,
             setter: (level: ReaderLevel, v: number) =>
-                (level.maxAverageSentencesPerPage = v)
-        }
-    }
+                (level.maxAverageSentencesPerPage = v),
+        },
+    },
 ];
 
 let previousMoreWords: string;
@@ -96,9 +97,8 @@ export interface ToolboxWindow extends Window {
 }
 export function toolboxWindow(): ToolboxWindow | undefined {
     if (window.parent) {
-        const toolboxFrameElement = window.parent.document.getElementById(
-            "toolbox"
-        );
+        const toolboxFrameElement =
+            window.parent.document.getElementById("toolbox");
         if (toolboxFrameElement) {
             const window = (<HTMLIFrameElement>toolboxFrameElement)
                 .contentWindow;
@@ -138,7 +138,7 @@ export function getPreviousMoreWords(): string {
 function spanForLevelSetting(
     level: ReaderLevel,
     s: ILevelSetting,
-    subcell: boolean
+    subcell: boolean,
 ): string {
     return spanForSettingWithText(s, setLevelValue(s.getter(level)), subcell);
 }
@@ -150,7 +150,7 @@ function spanForLevelSetting(
 export function spanForSettingWithText(
     s: ILevelSetting,
     content: string,
-    subcell: boolean
+    subcell: boolean,
 ): string {
     // In subcells we don't display the "-" if the value is not set.
     const adjustedContent = subcell && content === "-" ? "" : content;
@@ -183,17 +183,15 @@ function loadReaderSetupData(jsonData: string): void {
 
     // language tab
     previousLetters = data.letters;
-    (<HTMLInputElement>(
-        document.getElementById("dls_letters")
-    )).value = previousLetters;
+    (<HTMLInputElement>document.getElementById("dls_letters")).value =
+        previousLetters;
     (<HTMLInputElement>document.getElementById("dls_sentence_punct")).value =
         data.sentencePunct;
     setPreviousMoreWords(data.moreWords.replace(/ /g, "\n"));
-    (<HTMLInputElement>(
-        document.getElementById("dls_more_words")
-    )).value = previousMoreWords;
+    (<HTMLInputElement>document.getElementById("dls_more_words")).value =
+        previousMoreWords;
     $(
-        'input[name="words-or-letters"][value="' + data.useAllowedWords + '"]'
+        'input[name="words-or-letters"][value="' + data.useAllowedWords + '"]',
     ).prop("checked", true);
     enableSampleWords();
 
@@ -216,12 +214,12 @@ function loadReaderSetupData(jsonData: string): void {
                 stages[i].sightWords +
                 '</td><td class="book-font lang1InATool">' +
                 stages[i].allowedWordsFile +
-                "</td></tr>"
+                "</td></tr>",
         );
     }
 
     // click event for stage rows
-    tbody.find("tr").onSafe("click", function() {
+    tbody.find("tr").onSafe("click", function () {
         selectStage(this);
         displayLetters();
         selectLetters(this);
@@ -238,25 +236,25 @@ function loadReaderSetupData(jsonData: string): void {
                 (j + 1) +
                 "</td>" +
                 levelSettings
-                    .map(s => {
+                    .map((s) => {
                         const subcell = s.subcell
                             ? `${spanForLevelSetting(level, s.subcell, true)}`
                             : "";
                         return `<td>${spanForLevelSetting(
                             level,
                             s,
-                            false
+                            false,
                         )}${subcell}</td>`;
                     })
                     .join("") +
                 '<td style="display: none">' +
                 level.thingsToRemember.join("\n") +
-                "</td></tr>"
+                "</td></tr>",
         );
     }
 
     // click event for level rows
-    tbodyLevels.find("tr").onSafe("click", function() {
+    tbodyLevels.find("tr").onSafe("click", function () {
         selectLevel(this);
     });
 
@@ -289,7 +287,7 @@ export function beginSaveChangedSettings(): JQueryPromise<void> {
         return win.toolboxBundle.beginSaveChangedSettings(
             settings,
             previousMoreWords,
-            previousLetters
+            previousLetters,
         );
     }
     // paranoia section
@@ -300,7 +298,7 @@ export function beginSaveChangedSettings(): JQueryPromise<void> {
 function getChangedSettings(): ReaderSettings {
     const settings: ReaderSettings = new ReaderSettings();
     settings.letters = cleanSpaceDelimitedList(
-        (<HTMLInputElement>document.getElementById("dls_letters")).value
+        (<HTMLInputElement>document.getElementById("dls_letters")).value,
     );
     settings.sentencePunct = (<HTMLInputElement>(
         document.getElementById("dls_sentence_punct")
@@ -310,7 +308,7 @@ function getChangedSettings(): ReaderSettings {
     let moreWords: string[] = _.uniq(
         (<HTMLInputElement>(
             document.getElementById("dls_more_words")
-        )).value.split("\n")
+        )).value.split("\n"),
     );
 
     // remove empty lines from the more words list
@@ -320,7 +318,7 @@ function getChangedSettings(): ReaderSettings {
     settings.moreWords = moreWords.join(" ");
 
     settings.useAllowedWords = parseInt(
-        $('input[name="words-or-letters"]:checked').val()
+        $('input[name="words-or-letters"]:checked').val(),
     );
 
     // stages
@@ -331,7 +329,7 @@ function getChangedSettings(): ReaderSettings {
         const row: HTMLTableRowElement = <HTMLTableRowElement>stages[iRow];
         stage.letters = (<HTMLTableCellElement>row.cells[1]).innerHTML;
         stage.sightWords = cleanSpaceDelimitedList(
-            (<HTMLTableCellElement>row.cells[2]).innerHTML
+            (<HTMLTableCellElement>row.cells[2]).innerHTML,
         );
         stage.allowedWordsFile = (<HTMLTableCellElement>row.cells[3]).innerHTML;
 
@@ -368,7 +366,7 @@ function getChangedSettings(): ReaderSettings {
 function extractSettingValue(
     row: HTMLTableRowElement,
     levelSetting: ILevelSetting,
-    level: ReaderLevel
+    level: ReaderLevel,
 ) {
     const val = row.getElementsByClassName(levelSetting.cellClass)[0];
     levelSetting.setter(level, getLevelValue(val.innerHTML));

@@ -1,8 +1,7 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { Checkboard } from "react-color/lib/components/common";
-import * as tinycolor from "tinycolor2";
+import tinycolor from "tinycolor2";
 
 // External definition of a color swatch
 export interface IColorInfo {
@@ -21,16 +20,15 @@ export interface IClickableColorSwatch extends IColorInfo {
 }
 
 export const ColorSwatch: React.FunctionComponent<IClickableColorSwatch> = (
-    props: IClickableColorSwatch
+    props: IClickableColorSwatch,
 ) => {
     const swatchWidth = props.width ? props.width : 20;
     const swatchHeight = props.height ? props.height : 20;
 
     const handleSwatchClick = (e: React.MouseEvent<HTMLDivElement>): void => {
         // This cast handles the change in types, but we don't use the event in any case.
-        const castEvent = (e as unknown) as React.MouseEvent<
-            IClickableColorSwatch
-        >;
+        const castEvent =
+            e as unknown as React.MouseEvent<IClickableColorSwatch>;
         if (props.onClick) props.onClick(castEvent);
     };
 
@@ -61,7 +59,7 @@ export const ColorSwatch: React.FunctionComponent<IClickableColorSwatch> = (
 };
 
 export const getBackgroundColorCssFromColorInfo = (
-    colorInfo: IColorInfo
+    colorInfo: IColorInfo,
 ): string => {
     const baseColor = colorInfo.colors; // An array of strings representing colors
 
@@ -98,12 +96,12 @@ export const getColorInfoFromString = (colorSpec: string): IColorInfo => {
     if (opacity === 0.0) {
         return {
             colors: ["transparent"],
-            opacity: opacity
+            opacity: opacity,
         };
     }
     return {
         colors: [`#${colorStruct.toHex()}`],
-        opacity: opacity
+        opacity: opacity,
     };
 };
 

@@ -40,14 +40,14 @@ export default class BookMetadataTable extends React.Component<IProps> {
                     )}
                     showPagination={false}
                     minRows={1} //don't add extra blank rows
-                    data={Object.keys(this.props.metadata).map(key => {
+                    data={Object.keys(this.props.metadata).map((key) => {
                         return {
                             key,
                             value: this.props.metadata[key].value,
                             type: this.props.metadata[key].type,
-                            translatedLabel: this.props.metadata[key]
-                                .translatedLabel,
-                            helpurl: this.props.metadata[key].helpurl
+                            translatedLabel:
+                                this.props.metadata[key].translatedLabel,
+                            helpurl: this.props.metadata[key].helpurl,
                         };
                     })}
                     columns={[
@@ -82,7 +82,7 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                         )}
                                     </>
                                 );
-                            }
+                            },
                         },
                         {
                             className: "value",
@@ -111,9 +111,7 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                                     f.type == "bigEditableText"
                                                 }
                                                 onBlur={(
-                                                    event: React.FocusEvent<
-                                                        HTMLTextAreaElement
-                                                    >
+                                                    event: React.FocusEvent<HTMLTextAreaElement>,
                                                 ) => {
                                                     this.props.metadata[
                                                         f.key
@@ -147,8 +145,8 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                     default:
                                         return "??" + f.type;
                                 }
-                            }
-                        }
+                            },
+                        },
                     ]}
                 />
             </div>
@@ -167,7 +165,7 @@ export default class BookMetadataTable extends React.Component<IProps> {
                         {/* from https://www.w3.org/wiki/WebSchemas/Accessibility*/}
                         {/* "Sound Hazard" is too hard to explain (BL-6947) */}
                         {["flashingHazard", "motionSimulationHazard"].map(
-                            hazardName => {
+                            (hazardName) => {
                                 return (
                                     <StringListCheckbox
                                         key={hazardName}
@@ -179,8 +177,9 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                             "no" +
                                             this.capitalizeFirstChar(hazardName)
                                         }
-                                        onChange={list =>
-                                            (this.props.metadata.hazards.value = list)
+                                        onChange={(list) =>
+                                            (this.props.metadata.hazards.value =
+                                                list)
                                         }
                                         label={
                                             this.props.translatedControlStrings[
@@ -189,7 +188,7 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                         }
                                     />
                                 );
-                            }
+                            },
                         )}
                     </div>
                 )}
@@ -212,7 +211,7 @@ export default class BookMetadataTable extends React.Component<IProps> {
                     <div className="checkbox-list">
                         {/* from https://www.w3.org/wiki/WebSchemas/Accessibility*/}
                         {["alternativeText", "signLanguage"].map(
-                            featureName => {
+                            (featureName) => {
                                 return (
                                     <StringListCheckbox
                                         key={featureName}
@@ -223,8 +222,9 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                                 .value
                                         }
                                         itemName={featureName}
-                                        onChange={list =>
-                                            (this.props.metadata.a11yFeatures.value = list)
+                                        onChange={(list) =>
+                                            (this.props.metadata.a11yFeatures.value =
+                                                list)
                                         }
                                         label={
                                             this.props.translatedControlStrings[
@@ -233,7 +233,7 @@ export default class BookMetadataTable extends React.Component<IProps> {
                                         }
                                     />
                                 );
-                            }
+                            },
                         )}
                     </div>
                 )}

@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { Link } from "@mui/material";
 import { DialogControlGroup } from "./BloomDialog/commonDialogComponents";
@@ -22,7 +21,9 @@ interface IBookInfoCardProps {
     canUpload?: boolean;
 }
 
-export const BookInfoCard: React.FunctionComponent<IBookInfoCardProps> = props => {
+export const BookInfoCard: React.FunctionComponent<IBookInfoCardProps> = (
+    props,
+) => {
     // room for 4 lines; show up to 4 unless we have more, then show 3 and a "more" message
     const langsToShow = props.languages.length > 4 ? 3 : 4;
     const languageList = props.languages
@@ -34,7 +35,7 @@ export const BookInfoCard: React.FunctionComponent<IBookInfoCardProps> = props =
         "{0} more",
         "PublishTab.UploadCollisionDialog.MoreLanguages",
         "{0} is the number of additional languages the book has that we don't have room to show",
-        (props.languages.length - langsToShow).toString()
+        (props.languages.length - langsToShow).toString(),
     );
     const moreToolTip = (
         <div
@@ -66,7 +67,7 @@ export const BookInfoCard: React.FunctionComponent<IBookInfoCardProps> = props =
         "Uploaded by {0}",
         "PublishTab.UploadCollisionDialog.UploadedBy",
         "{0} is the email of the person who uploaded the book",
-        uploaderToShow
+        uploaderToShow,
     );
 
     const titleWithOptionalLink = (): JSX.Element => (

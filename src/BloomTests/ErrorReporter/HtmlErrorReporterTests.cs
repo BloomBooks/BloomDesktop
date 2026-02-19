@@ -84,18 +84,16 @@ namespace BloomTests.ErrorReporter
                 "<b>Tags should not be encoded</b>"
             );
 
-            mockFactory.Verify(
-                x =>
-                    x.CreateReactDialog(
-                        It.Is<string>(b => b == "problemReportBundle"),
-                        It.Is<object>(
-                            props =>
-                                (string)props.GetType().GetProperty("level").GetValue(props)
-                                    == ProblemLevel.kNotify
-                                && (string)props.GetType().GetProperty("message").GetValue(props)
-                                    == "<b>Tags should not be encoded</b>"
-                        )
+            mockFactory.Verify(x =>
+                x.CreateReactDialog(
+                    It.Is<string>(b => b == "problemReportBundle"),
+                    It.Is<object>(props =>
+                        (string)props.GetType().GetProperty("level").GetValue(props)
+                            == ProblemLevel.kNotify
+                        && (string)props.GetType().GetProperty("message").GetValue(props)
+                            == "<b>Tags should not be encoded</b>"
                     )
+                )
             );
         }
 
@@ -119,18 +117,16 @@ namespace BloomTests.ErrorReporter
             reporter.NotifyUserOfProblem(new ShowAlwaysPolicy(), null, messageText);
 
             // Verification
-            mockFactory.Verify(
-                x =>
-                    x.CreateReactDialog(
-                        It.Is<string>(b => b == "problemReportBundle"),
-                        It.Is<object>(
-                            props =>
-                                (string)props.GetType().GetProperty("level").GetValue(props)
-                                    == ProblemLevel.kNotify
-                                && (string)props.GetType().GetProperty("message").GetValue(props)
-                                    == messageText
-                        )
+            mockFactory.Verify(x =>
+                x.CreateReactDialog(
+                    It.Is<string>(b => b == "problemReportBundle"),
+                    It.Is<object>(props =>
+                        (string)props.GetType().GetProperty("level").GetValue(props)
+                            == ProblemLevel.kNotify
+                        && (string)props.GetType().GetProperty("message").GetValue(props)
+                            == messageText
                     )
+                )
             );
         }
 
@@ -154,19 +150,16 @@ namespace BloomTests.ErrorReporter
                 "message"
             );
 
-            mockFactory.Verify(
-                x =>
-                    x.CreateReactDialog(
-                        It.Is<string>(b => b == "problemReportBundle"),
-                        It.Is<object>(
-                            props =>
-                                (string)props.GetType().GetProperty("level").GetValue(props)
-                                    == ProblemLevel.kNotify
-                                && (string)
-                                    props.GetType().GetProperty("reportLabel").GetValue(props)
-                                    == "Report"
-                        )
+            mockFactory.Verify(x =>
+                x.CreateReactDialog(
+                    It.Is<string>(b => b == "problemReportBundle"),
+                    It.Is<object>(props =>
+                        (string)props.GetType().GetProperty("level").GetValue(props)
+                            == ProblemLevel.kNotify
+                        && (string)props.GetType().GetProperty("reportLabel").GetValue(props)
+                            == "Report"
                     )
+                )
             );
         }
 
@@ -186,20 +179,17 @@ namespace BloomTests.ErrorReporter
             // System Under Test
             reporter.NotifyUserOfProblem(new ShowAlwaysPolicy(), null, "message");
 
-            mockFactory.Verify(
-                x =>
-                    x.CreateReactDialog(
-                        It.Is<string>(b => b == "problemReportBundle"),
-                        It.Is<object>(
-                            props =>
-                                (string)props.GetType().GetProperty("level").GetValue(props)
-                                    == ProblemLevel.kNotify
-                                && String.IsNullOrEmpty(
-                                    (string)
-                                        props.GetType().GetProperty("reportLabel").GetValue(props)
-                                )
+            mockFactory.Verify(x =>
+                x.CreateReactDialog(
+                    It.Is<string>(b => b == "problemReportBundle"),
+                    It.Is<object>(props =>
+                        (string)props.GetType().GetProperty("level").GetValue(props)
+                            == ProblemLevel.kNotify
+                        && String.IsNullOrEmpty(
+                            (string)props.GetType().GetProperty("reportLabel").GetValue(props)
                         )
                     )
+                )
             );
         }
         #endregion
@@ -226,19 +216,16 @@ namespace BloomTests.ErrorReporter
                 "message"
             );
 
-            mockFactory.Verify(
-                x =>
-                    x.CreateReactDialog(
-                        It.Is<string>(b => b == "problemReportBundle"),
-                        It.Is<object>(
-                            props =>
-                                (string)props.GetType().GetProperty("level").GetValue(props)
-                                    == ProblemLevel.kNotify
-                                && (string)
-                                    props.GetType().GetProperty("reportLabel").GetValue(props)
-                                    == "Report"
-                        )
+            mockFactory.Verify(x =>
+                x.CreateReactDialog(
+                    It.Is<string>(b => b == "problemReportBundle"),
+                    It.Is<object>(props =>
+                        (string)props.GetType().GetProperty("level").GetValue(props)
+                            == ProblemLevel.kNotify
+                        && (string)props.GetType().GetProperty("reportLabel").GetValue(props)
+                            == "Report"
                     )
+                )
             );
         }
         #endregion
@@ -263,19 +250,16 @@ namespace BloomTests.ErrorReporter
             );
 
             // Verification
-            mockFactory.Verify(
-                x =>
-                    x.CreateReactDialog(
-                        It.Is<string>(b => b == "problemReportBundle"),
-                        It.Is<object>(
-                            props =>
-                                (string)props.GetType().GetProperty("level").GetValue(props)
-                                    == ProblemLevel.kNotify
-                                && (string)
-                                    props.GetType().GetProperty("reportLabel").GetValue(props)
-                                    == "Report"
-                        )
+            mockFactory.Verify(x =>
+                x.CreateReactDialog(
+                    It.Is<string>(b => b == "problemReportBundle"),
+                    It.Is<object>(props =>
+                        (string)props.GetType().GetProperty("level").GetValue(props)
+                            == ProblemLevel.kNotify
+                        && (string)props.GetType().GetProperty("reportLabel").GetValue(props)
+                            == "Report"
                     )
+                )
             );
         }
 
@@ -296,18 +280,15 @@ namespace BloomTests.ErrorReporter
             );
 
             // Verification
-            mockFactory.Verify(
-                x =>
-                    x.CreateReactDialog(
-                        It.Is<string>(b => b == "problemReportBundle"),
-                        It.Is<object>(
-                            props =>
-                                (string)props.GetType().GetProperty("level").GetValue(props)
-                                    == ProblemLevel.kNotify
-                                && (string)
-                                    props.GetType().GetProperty("reportLabel").GetValue(props) == ""
-                        )
+            mockFactory.Verify(x =>
+                x.CreateReactDialog(
+                    It.Is<string>(b => b == "problemReportBundle"),
+                    It.Is<object>(props =>
+                        (string)props.GetType().GetProperty("level").GetValue(props)
+                            == ProblemLevel.kNotify
+                        && (string)props.GetType().GetProperty("reportLabel").GetValue(props) == ""
                     )
+                )
             );
         }
 
@@ -335,19 +316,16 @@ namespace BloomTests.ErrorReporter
             );
 
             // Verification
-            mockFactory.Verify(
-                x =>
-                    x.CreateReactDialog(
-                        It.Is<string>(b => b == "problemReportBundle"),
-                        It.Is<object>(
-                            props =>
-                                (string)props.GetType().GetProperty("level").GetValue(props)
-                                    == ProblemLevel.kNotify
-                                && (string)
-                                    props.GetType().GetProperty("reportLabel").GetValue(props)
-                                    == "Report"
-                        )
+            mockFactory.Verify(x =>
+                x.CreateReactDialog(
+                    It.Is<string>(b => b == "problemReportBundle"),
+                    It.Is<object>(props =>
+                        (string)props.GetType().GetProperty("level").GetValue(props)
+                            == ProblemLevel.kNotify
+                        && (string)props.GetType().GetProperty("reportLabel").GetValue(props)
+                            == "Report"
                     )
+                )
             );
         }
 
@@ -375,18 +353,15 @@ namespace BloomTests.ErrorReporter
             );
 
             // Verification
-            mockFactory.Verify(
-                x =>
-                    x.CreateReactDialog(
-                        It.Is<string>(b => b == "problemReportBundle"),
-                        It.Is<object>(
-                            props =>
-                                (string)props.GetType().GetProperty("level").GetValue(props)
-                                    == ProblemLevel.kNotify
-                                && (string)
-                                    props.GetType().GetProperty("reportLabel").GetValue(props) == ""
-                        )
+            mockFactory.Verify(x =>
+                x.CreateReactDialog(
+                    It.Is<string>(b => b == "problemReportBundle"),
+                    It.Is<object>(props =>
+                        (string)props.GetType().GetProperty("level").GetValue(props)
+                            == ProblemLevel.kNotify
+                        && (string)props.GetType().GetProperty("reportLabel").GetValue(props) == ""
                     )
+                )
             );
         }
 
@@ -410,19 +385,16 @@ namespace BloomTests.ErrorReporter
             );
 
             // Verification
-            mockFactory.Verify(
-                x =>
-                    x.CreateReactDialog(
-                        It.Is<string>(b => b == "problemReportBundle"),
-                        It.Is<object>(
-                            props =>
-                                (string)props.GetType().GetProperty("level").GetValue(props)
-                                    == ProblemLevel.kNotify
-                                && (string)
-                                    props.GetType().GetProperty("secondaryLabel").GetValue(props)
-                                    == "Retry"
-                        )
+            mockFactory.Verify(x =>
+                x.CreateReactDialog(
+                    It.Is<string>(b => b == "problemReportBundle"),
+                    It.Is<object>(props =>
+                        (string)props.GetType().GetProperty("level").GetValue(props)
+                            == ProblemLevel.kNotify
+                        && (string)props.GetType().GetProperty("secondaryLabel").GetValue(props)
+                            == "Retry"
                     )
+                )
             );
         }
 
@@ -500,27 +472,20 @@ namespace BloomTests.ErrorReporter
                 );
 
                 // Verification
-                mockFactory.Verify(
-                    x =>
-                        x.CreateReactDialog(
-                            It.Is<string>(b => b == "problemReportBundle"),
-                            It.Is<object>(
-                                props =>
-                                    (string)props.GetType().GetProperty("level").GetValue(props)
-                                        == ProblemLevel.kNotify
-                                    && (string)
-                                        props.GetType().GetProperty("reportLabel").GetValue(props)
-                                        == "Report"
-                                    && (string)
-                                        props
-                                            .GetType()
-                                            .GetProperty("secondaryLabel")
-                                            .GetValue(props) == "Retry"
-                                    && (string)
-                                        props.GetType().GetProperty("message").GetValue(props)
-                                        == "message"
-                            )
+                mockFactory.Verify(x =>
+                    x.CreateReactDialog(
+                        It.Is<string>(b => b == "problemReportBundle"),
+                        It.Is<object>(props =>
+                            (string)props.GetType().GetProperty("level").GetValue(props)
+                                == ProblemLevel.kNotify
+                            && (string)props.GetType().GetProperty("reportLabel").GetValue(props)
+                                == "Report"
+                            && (string)props.GetType().GetProperty("secondaryLabel").GetValue(props)
+                                == "Retry"
+                            && (string)props.GetType().GetProperty("message").GetValue(props)
+                                == "message"
                         )
+                    )
                 );
             }
             finally

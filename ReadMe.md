@@ -14,7 +14,7 @@ Internally, Bloom is a hybrid. It started as a C#/WinForms app with an embedded 
 ./build/getDependencies-windows.sh
 ```
 
-2. Install [volta](https://docs.volta.sh/guide/getting-started) globally on your computer. This will provide you with the correct node and yarn. You may need to restart your computer for the installation to take effect.   
+2. Install [volta](https://docs.volta.sh/guide/getting-started) globally on your computer. This will provide you with the correct node and yarn. You may need to restart your computer for the installation to take effect.
 
 3. Install browser code dependencies:
 
@@ -31,6 +31,12 @@ yarn
 
 #### Build the .NET part
 
+##### In VS Code:
+
+Make sure you have the C# Devkit extensions installed. Run and Debug through the gui or F5.
+
+##### In Visual Studio:
+
 1. Open Bloom.sln in Visual Studio
 2. Build the "WebView2PdfMaker" project
 3. Run the "BloomExe" project
@@ -46,18 +52,34 @@ We don't want developer and tester runs (and crashes) polluting our statistics. 
 In a terminal, run `dotnet tool restore`. This will install any tools we have put in .config/dotnet-tools.json along with the correct versions.
 In Visual Studio, under Extensions, install "CSharpier". The extension's version will not be the same as the CSharpier installed by 'dotnet tool restore', but that's not a problem.
 In Tools/Options, under CSharpier:General, set `Reformat with CSharpier on Save` to `true`. Note that you should set it for this solution, not globally.
-You should also install the CSharpier extension in vscode.
+You should also install the CSharpier extension in VSCode.
 CSharpier should be using the version specified in `.config/dotnet-tools.json`.
-When testing a new version of CSharpier, to format everything, run `dotnet csharpier src/BloomExe`
-To hide reformatting-only commits from git blame, add the sha of the commit to `.git-blame-ignore-revs`
+When upgrading to a new version of CSharpier, to format everything, run `dotnet csharpier format src/BloomExe src/BloomTests src/WebView2PdfMaker`.
+To hide reformatting-only commits from git blame, add the sha of the commit to `.git-blame-ignore-revs`.
 
-For Typescript formatting, we use the Prettier extension in VCode.
+For Typescript formatting, we use the Prettier extension in VSCode.
 
 ### Updating as you edit files
 
-To rebuild on typescript changes, use `yarn watchCode`.
+To rebuild on typescript, less, and md changes in BloomBrowserUI, use `yarn watch`.
 
 To rebuild less and other "content" on changes, see the various scripts in `src/content`'s package.json.
+
+For fast hot-reloading, first do one yarn build, to get all the (so-far) static assets. Then run yarn dev. Currently only some parts of the Bloom UI benefit from this (the ones implemented using ReactControl, including ReactDialog). You may need to run yarn watch in another terminal.
+
+It may be helpful before submitting a PR to turn off yarn dev and run yarn build, then do a quick smoke test of your work. Yarn build creates the transpiled files that will be used by Bloom in production.
+
+### Windows Defender exclusions
+
+For performance reasons, you probably want to exclude at least the following in the Windows Defender settings:
+- node.exe (process)
+- Bloom source code folder (e.g. `C:/dev/BloomDesktop`)
+
+### Typescript unit tests
+
+These are now being run using Vitest in the BloomBrowserUI folder (where all our Typescript currently lives). You can run 'yarn test' in a terminal there, and it will automatically re-run affected tests on every Save. There is also a vitest extension you can install in VsCode, which supports a new panel showing all the tests and allowing them to be run and debugged; it also puts icons in the test files that support running and debugging tests. Breakpoints can be set in VSCode itself. It takes a few seconds for a debug session to start.
+
+For now, all tests are being run using Node and JsDom. This approach has limitations; JsDom's emulation of the browser DOM is imperfect. In particular, you can't do much with a Canvas, and you can't get layout measurements. The file vitest.setup.ts contains various mocks to make jsdom work a little better. Eventually, we hope to be able to run a subset of tests using a real browser.
 
 # Other Info
 

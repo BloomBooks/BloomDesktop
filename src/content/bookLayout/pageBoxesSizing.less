@@ -5,60 +5,23 @@
     .bloom-page {
         transform-origin: top left;
         transition: 0.5s ease-in-out;
+        // Gets a non-zero value when publishingWithoutFullBleed.
+        // MUST have a dimension! Used in calc() expressions, and a plain zero will mess
+        // up the whole calculation.
+        --hide-bleed-adjustment: 0px; // DO NOT change this to 0 without units!
+        // NB: transform order is rightmost first
+        transform: translate(
+                calc(
+                    -1 * var(--full-bleed-excess-width) / 2 -
+                        var(--hide-bleed-adjustment)
+                ),
+                calc(
+                    -1 * var(--full-bleed-excess-height) / 2 -
+                        var(--hide-bleed-adjustment)
+                )
+            )
+            scale(var(--full-bleed-scale));
 
-        &.A5Portrait {
-            // NB: transform order is rightmost first
-            transform: translate(0, -@A5Portrait-Height-Excess / 2)
-                scale(@RA5-Scale);
-        }
-
-        &.A5Landscape {
-            // NB: transform order is rightmost first
-            transform: translate(-@A5Portrait-Height-Excess / 2, 0)
-                scale(@RA5-Scale);
-        }
-
-        &.A4Portrait {
-            // NB: transform order is rightmost first
-            transform: translate(0, -@A4Portrait-Height-Excess / 2)
-                scale(@RA4-Scale);
-        }
-
-        &.A4Landscape {
-            // NB: transform order is rightmost first
-            transform: translate(-@A4Portrait-Height-Excess / 2, 0)
-                scale(@RA4-Scale);
-        }
-
-        &.A3Portrait {
-            // NB: transform order is rightmost first
-            transform: translate(0, -@A3Portrait-Height-Excess / 2)
-                scale(@RA3-Scale);
-        }
-
-        &.A3Landscape {
-            // NB: transform order is rightmost first
-            transform: translate(-@A3Portrait-Height-Excess / 2, 0)
-                scale(@RA3-Scale);
-        }
-
-        &.USComicPortrait {
-            // NB: transform order is rightmost first
-            transform: translate(0, -@USComicPortrait-Height-Excess / 2)
-                scale(@RUSComic-Scale);
-        }
-
-        &.Size6x9Portrait {
-            // NB: transform order is rightmost first
-            transform: translate(0, -@Size6x9Portrait-Height-Excess / 2)
-                scale(@RSize6x9-Scale);
-        }
-
-        &.Size6x9Landscape {
-            // NB: transform order is rightmost first
-            transform: translate(-@Size6x9Portrait-Height-Excess / 2, 0)
-                scale(@RSize6x9-Scale);
-        }
         &.numberedPage {
             // Page numbers need to adjust for full-bleed if they're showing.
             // This assumes that page numbers are at the bottom of the page,
@@ -78,105 +41,33 @@
     // (practically?) impossible to adjust page sizes as exactly.
     page-break-after: always;
     overflow: hidden; // when the page is scaled, stuff in the longer dimension will actually exceed the bleed area. We want to clip that.
-    // This is not perfect. The box ends up being the size it would want to be if the content were not scaled.
-    // The page-size specific rules below do better. A real solution for all page sizes is in 6.3.
-    // But this looks better than what 6.2 produecs without it for unsupported page sizes.
-    width: fit-content;
-
-    &.A5Portrait {
-        width: @RA5Portrait-Width;
-        height: @RA5Portrait-Height;
-    }
-
-    &.A5Landscape {
-        width: @RA5Portrait-Height;
-        height: @RA5Portrait-Width;
-    }
-
-    &.A4Portrait {
-        width: @RA4Portrait-Width;
-        height: @RA4Portrait-Height;
-    }
-
-    &.A4Landscape {
-        width: @RA4Portrait-Height;
-        height: @RA4Portrait-Width;
-    }
-
-    &.A3Portrait {
-        width: @RA3Portrait-Width;
-        height: @RA3Portrait-Height;
-    }
-
-    &.A3Landscape {
-        width: @RA3Portrait-Height;
-        height: @RA3Portrait-Width;
-    }
-
-    // review: we don't actually need full-bleed on devices... how does that play out?
-    &.Device16x9Portrait {
-        width: @Device16x9Portrait-Width;
-        height: @Device16x9Portrait-Height;
-    }
-
-    &.Device16x9Landscape {
-        width: @Device16x9Portrait-Height;
-        height: @Device16x9Portrait-Width;
-    }
-
-    &.USComicPortrait {
-        width: @RUSComicPortrait-Width;
-        height: @RUSComicPortrait-Height;
-    }
-
-    &.Size6x9Portrait {
-        width: @RSize6x9Portrait-Width;
-        height: @RSize6x9Portrait-Height;
-    }
-
-    &.Size6x9Landscape {
-        width: @RSize6x9Portrait-Height;
-        height: @RSize6x9Portrait-Width;
-    }
-
-    // Todo: this needs rules for every page size we support in full bleed (try to use a macro)
+    width: calc(var(--page-width) + 2 * @bleed);
+    height: calc(var(--page-height) + 2 * @bleed);
 }
 
 // In full bleed mode, this will be @bleed larger than the desired page size. The "media" here is the phsyical paper that
 // a printshow would have to work with. E.g. RA4, RA5.
-// If bloom-fullBleed mode is off, this div, in the DOM, doesn't exist.
+// If bloom-fullBleed mode is off, bloom-mediaBox, in the DOM, doesn't exist, so this rule won't do anything.
 // See editMode.less for more things that we do with this (it allows us to draw the bleed and safety areas).
+// (Either publishingWithFullBleed orpublishingWithoutFullBleed is set in PublishModel.AddStylesheetClasses,
+// depending on whether or not we have a full bleed book and are printing it that way. So these rules
+// end up being about stuff we need to properly print a full bleed book without bleed).
 body.publishingWithoutFullBleed {
     .bloom-mediaBox {
         overflow: hidden; // when the page is scaled and not printing bleed, stuff in the both dimensions
-
         // will actually exceed the bleed area. We want to clip that.
-        &.A5Portrait {
-            width: @A5Portrait-Width;
-            height: @A5Portrait-Height;
+        width: var(--page-width);
+        height: var(--page-height);
+    }
+    &.bloom-fullBleed {
+        //background-color: green;
+        .bloom-page {
+            // This adjusts the usual page full-bleed transform, moving it -3mm in each direction.
+            // This moves the page enough so that the mediaBox clips the top and left bleed area
+            // (along with the right and bottom bleed area, since it is smaller)
+            // so that what we see when not printing bleed is the content of the trim box.
+            --hide-bleed-adjustment: 3mm;
         }
-
-        &.A5Landscape {
-            width: @A5Portrait-Height;
-            height: @A5Portrait-Width;
-        }
-
-        &.USComicPortrait {
-            width: @USComicPortrait-Width;
-            height: @USComicPortrait-Height;
-        }
-
-        &.Size6x9Portrait {
-            width: @Size6x9Portrait-Width;
-            height: @Size6x9Portrait-Height;
-        }
-
-        &.Size6x9Landscape {
-            width: @Size6x9Portrait-Height;
-            height: @Size6x9Portrait-Width;
-        }
-
-        // Todo: this needs rules for every page size we support in full bleed (try to use a macro)
     }
 }
 
@@ -282,152 +173,171 @@ body.publishingWithoutFullBleed {
                 25.4;
             max-width: (floor((@Device16x9Landscape-Width / 25.4) * 96) / 96) *
                 25.4;
-            min-height: (floor((@Device16x9Landscape-Height / 25.4) * 96) / 96) *
+            min-height: (
+                    floor((@Device16x9Landscape-Height / 25.4) * 96) / 96
+                ) *
                 25.4;
-            max-height: (floor((@Device16x9Landscape-Height / 25.4) * 96) / 96) *
+            max-height: (
+                    floor((@Device16x9Landscape-Height / 25.4) * 96) / 96
+                ) *
                 25.4;
         }
     }
 }
 
 .SetPageDimensions(@PageWidth, @PageHeight) {
-    min-width: @PageWidth;
-    max-width: @PageWidth;
-    min-height: @PageHeight;
-    max-height: @PageHeight;
-    height: @PageHeight;
-    // review: why wasn't a width: needed?
+    --page-width: @PageWidth;
+    --page-height: @PageHeight;
+    // These multipliers allow calculations like
+    // calc(2px * var(--portrait-multiplier) + 5px * var(--landscape-multiplier))
+    // to produce 2px in portrait mode (including square) and 5px in landscape mode.
+    // --portrait-multiplier is 1 if @PageWidth is less than @PageHeight, otherwise it is 0
+    // (and also if they are equal, which is the case for square pages).
+    --portrait-multiplier: if(@PageWidth <= @PageHeight, 1, 0);
+    // --landscape-multiplier is 1 if @PageWidth is greater than @PageHeight, otherwise it is 0
+    --landscape-multiplier: if(@PageWidth > @PageHeight, 1, 0);
+    // --full-bleed-scale is the scale factor to apply to the page to make it full bleed.
+    // The smallest dimension is scaled up to the full bleed size in that dimension.
+    // Scaling the page like this makes it fill the bleed area in that dimension, and fill it plus a bit
+    // in the other dimension.
+    --full-bleed-scale: if(
+        @PageWidth <= @PageHeight,
+        unit((@PageWidth + 2 * @bleed) / @PageWidth),
+        unit((@PageHeight + 2 * @bleed) / @PageHeight)
+    );
+    // How much the scaled-up page will be taller than the full-bleed size. In landscape this works out to zero.
+    --full-bleed-excess-height: calc(
+        @PageHeight * var(--full-bleed-scale) - @PageHeight - 2 * @bleed
+    );
+    // How much the scaled-up page will be wider than the full-bleed size. In portrait this works out to zero.
+    --full-bleed-excess-width: calc(
+        @PageWidth * var(--full-bleed-scale) - @PageWidth - 2 * @bleed
+    );
 }
 
 .bloom-page {
-    &.A5Portrait {
-        .SetPageDimensions(@A5Portrait-Width, @A5Portrait-Height);
-    }
+    min-width: var(--page-width);
+    max-width: var(--page-width);
+    min-height: var(--page-height);
+    max-height: var(--page-height);
+    // not sure why we need this (but not width?) when we have set max and min heights and widths to the same value for each.
+    // Possibly it's important for height to be explicitly set when computing things like percentage heights inside it?
+    height: var(--page-height);
+}
+// These classes mostly occur on .bloom-page. However, we copy them to the containing .bloom-mediaBox
+// when it is present, so its rules can also use the variables set by the mixin.
+.A5Portrait {
+    .SetPageDimensions(@A5Portrait-Width, @A5Portrait-Height);
+}
 
-    &.A5Landscape {
-        .SetPageDimensions(@A5Landscape-Width, @A5Landscape-Height);
-    }
+.A5Landscape {
+    .SetPageDimensions(@A5Landscape-Width, @A5Landscape-Height);
+}
 
-    &.B5Portrait {
-        .SetPageDimensions(@B5Portrait-Width, @B5Portrait-Height);
-    }
+.B5Portrait {
+    .SetPageDimensions(@B5Portrait-Width, @B5Portrait-Height);
+}
 
-    &.A4Landscape {
-        .SetPageDimensions(@A4Landscape-Width, @A4Landscape-Height);
-    }
+.A4Landscape {
+    .SetPageDimensions(@A4Landscape-Width, @A4Landscape-Height);
+}
 
-    &.A4Portrait {
-        .SetPageDimensions(@A4Portrait-Width, @A4Portrait-Height);
-    }
+.A4Portrait {
+    .SetPageDimensions(@A4Portrait-Width, @A4Portrait-Height);
+}
 
-    &.A3Landscape {
-        .SetPageDimensions(@A3Landscape-Width, @A3Landscape-Height);
-    }
+.A3Landscape {
+    .SetPageDimensions(@A3Landscape-Width, @A3Landscape-Height);
+}
 
-    &.A3Portrait {
-        .SetPageDimensions(@A3Portrait-Width, @A3Portrait-Height);
-    }
+.A3Portrait {
+    .SetPageDimensions(@A3Portrait-Width, @A3Portrait-Height);
+}
 
-    &.A6Portrait {
-        .SetPageDimensions(@A6Portrait-Width, @A6Portrait-Height);
-    }
+.A6Portrait {
+    .SetPageDimensions(@A6Portrait-Width, @A6Portrait-Height);
+}
 
-    &.A6Landscape {
-        .SetPageDimensions(@A6Landscape-Width, @A6Landscape-Height);
-    }
+.A6Landscape {
+    .SetPageDimensions(@A6Landscape-Width, @A6Landscape-Height);
+}
 
-    &.QuarterLetterPortrait {
-        .SetPageDimensions(
-            @QuarterLetterPortrait-Width,
-            @QuarterLetterPortrait-Height
-        );
-    }
+.QuarterLetterPortrait {
+    .SetPageDimensions(
+        @QuarterLetterPortrait-Width,
+        @QuarterLetterPortrait-Height
+    );
+}
 
-    &.QuarterLetterLandscape {
-        .SetPageDimensions(
-            @QuarterLetterLandscape-Width,
-            @QuarterLetterLandscape-Height
-        );
-    }
+.QuarterLetterLandscape {
+    .SetPageDimensions(
+        @QuarterLetterLandscape-Width,
+        @QuarterLetterLandscape-Height
+    );
+}
 
-    &.HalfLetterPortrait {
-        .SetPageDimensions(
-            @HalfLetterPortrait-Width,
-            @HalfLetterPortrait-Height
-        );
-    }
+.HalfLetterPortrait {
+    .SetPageDimensions(@HalfLetterPortrait-Width, @HalfLetterPortrait-Height);
+}
 
-    &.HalfLetterLandscape {
-        .SetPageDimensions(
-            @HalfLetterLandscape-Width,
-            @HalfLetterLandscape-Height
-        );
-    }
+.HalfLetterLandscape {
+    .SetPageDimensions(@HalfLetterLandscape-Width, @HalfLetterLandscape-Height);
+}
 
-    &.LetterPortrait {
-        .SetPageDimensions(@LetterPortrait-Width, @LetterPortrait-Height);
-    }
+.LetterPortrait {
+    .SetPageDimensions(@LetterPortrait-Width, @LetterPortrait-Height);
+}
 
-    &.LetterLandscape {
-        .SetPageDimensions(@LetterLandscape-Width, @LetterLandscape-Height);
-    }
+.LetterLandscape {
+    .SetPageDimensions(@LetterLandscape-Width, @LetterLandscape-Height);
+}
 
-    &.HalfLegalPortrait {
-        .SetPageDimensions(@HalfLegalPortrait-Width, @HalfLegalPortrait-Height);
-    }
-    &.HalfFolioPortrait {
-        .SetPageDimensions(@HalfFolioPortrait-Width, @HalfFolioPortrait-Height);
-    }
+.HalfLegalPortrait {
+    .SetPageDimensions(@HalfLegalPortrait-Width, @HalfLegalPortrait-Height);
+}
+.HalfFolioPortrait {
+    .SetPageDimensions(@HalfFolioPortrait-Width, @HalfFolioPortrait-Height);
+}
 
-    &.HalfLegalLandscape {
-        .SetPageDimensions(
-            @HalfLegalLandscape-Width,
-            @HalfLegalLandscape-Height
-        );
-    }
+.HalfLegalLandscape {
+    .SetPageDimensions(@HalfLegalLandscape-Width, @HalfLegalLandscape-Height);
+}
 
-    &.LegalPortrait {
-        .SetPageDimensions(@LegalPortrait-Width, @LegalPortrait-Height);
-    }
+.LegalPortrait {
+    .SetPageDimensions(@LegalPortrait-Width, @LegalPortrait-Height);
+}
 
-    &.LegalLandscape {
-        .SetPageDimensions(@LegalLandscape-Width, @LegalLandscape-Height);
-    }
+.LegalLandscape {
+    .SetPageDimensions(@LegalLandscape-Width, @LegalLandscape-Height);
+}
 
-    &.Cm13Landscape {
-        .SetPageDimensions(@Cm13Square-Side, @Cm13Square-Side);
-    }
+.Cm13Landscape {
+    .SetPageDimensions(@Cm13Square-Side, @Cm13Square-Side);
+}
 
-    &.USComicPortrait {
-        .SetPageDimensions(@USComicPortrait-Width, @USComicPortrait-Height);
-    }
+.USComicPortrait {
+    .SetPageDimensions(@USComicPortrait-Width, @USComicPortrait-Height);
+}
 
-    &.Size6x9Portrait {
-        .SetPageDimensions(@Size6x9Portrait-Width, @Size6x9Portrait-Height);
-    }
+.Size6x9Portrait {
+    .SetPageDimensions(@Size6x9Portrait-Width, @Size6x9Portrait-Height);
+}
 
-    &.Size6x9Landscape {
-        .SetPageDimensions(@Size6x9Landscape-Width, @Size6x9Landscape-Height);
-    }
+.Size6x9Landscape {
+    .SetPageDimensions(@Size6x9Landscape-Width, @Size6x9Landscape-Height);
+}
 
-    &.Device16x9Portrait {
-        .SetPageDimensions(
-            @Device16x9Portrait-Width,
-            @Device16x9Portrait-Height
-        );
-    }
+.Device16x9Portrait {
+    .SetPageDimensions(@Device16x9Portrait-Width, @Device16x9Portrait-Height);
+}
 
-    &.Device16x9Landscape {
-        .SetPageDimensions(
-            @Device16x9Landscape-Width,
-            @Device16x9Landscape-Height
-        );
-    }
+.Device16x9Landscape {
+    .SetPageDimensions(@Device16x9Landscape-Width, @Device16x9Landscape-Height);
+}
 
-    &.PictureStoryLandscape {
-        .SetPageDimensions(
-            @PictureStoryLandscape-Width,
-            @PictureStoryLandscape-Height
-        );
-    }
+.PictureStoryLandscape {
+    .SetPageDimensions(
+        @PictureStoryLandscape-Width,
+        @PictureStoryLandscape-Height
+    );
 }

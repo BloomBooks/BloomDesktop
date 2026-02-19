@@ -1,10 +1,10 @@
-﻿using Moq;
-using Assert = NUnit.Framework.Assert;
-using NUnit.Framework;
-using Bloom.Utils;
-using System;
+﻿using System;
 using System.IO;
+using Bloom.Utils;
 using BloomTemp;
+using Moq;
+using NUnit.Framework;
+using Assert = NUnit.Framework.Assert;
 
 namespace BloomTests.Utils
 {

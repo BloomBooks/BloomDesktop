@@ -13,7 +13,7 @@
     Dual licensed under the MIT or GPL Version 2 licenses.
     See mit-license.txt and gpl2-license.txt in the project root for details.
 ------------------------------------------------------*/
-
+import jQuery from "jquery";
 (function ($, window, undefined) {
 
 var

@@ -53,6 +53,10 @@
 @toolboxZIndex: 18000; // Just over help bubbles, but under topic dialog
 @toolboxPopupZIndex: @toolboxZIndex + 1; // Must be above it to be seen at all.
 
+@toolboxContentPadding: 15px; // cf kToolboxContentPadding in bloomMaterialUITheme.ts
+@toolboxContentHeight: calc(100% - 2 * @toolboxContentPadding);
+@toolboxContentPaddingThin: 5px;
+
 // Bloom's web palette
 @bloom-blue: #1d94a4; // used in decodable reader and various text backgrounds and Paste Image button
 @bloom-lightblue: #b0dee4; // used in a few highlight and hover situations
@@ -197,4 +201,12 @@ textarea,
     100% {
         margin-left: 0;
     }
+}
+
+body.bloom-hidden-for-animation > *:not(div.bloom-animationPreview) {
+    visibility: hidden;
+}
+
+body.bloom-hidden-for-animation {
+    overflow: hidden; //hide the scrollbar during an animation preview.
 }

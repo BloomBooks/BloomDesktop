@@ -361,7 +361,7 @@ namespace Bloom.web.controllers
                         FileName = "wmctrl",
                         Arguments = "-a \"" + folderName + "\"",
                         UseShellExecute = false,
-                        ErrorDialog = false // do not show a message if not successful
+                        ErrorDialog = false, // do not show a message if not successful
                     }
                 );
             }

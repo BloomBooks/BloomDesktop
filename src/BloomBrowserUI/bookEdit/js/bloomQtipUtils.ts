@@ -1,6 +1,7 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
 import * as JQuery from "jquery";
+import $ from "jquery";
 
 export interface qtipInterface extends JQuery {
     qtip(options: any): JQuery;
@@ -9,15 +10,15 @@ export interface qtipInterface extends JQuery {
 export default class bloomQtipUtils {
     public static cleanupBubbles(): void {
         // remove the div's which qtip makes for the tips themselves
-        $("div.qtip").each(function() {
+        $("div.qtip").each(function () {
             $(this).remove();
         });
 
         // remove the attributes qtips adds to the things being annotated
-        $("*[aria-describedby]").each(function() {
+        $("*[aria-describedby]").each(function () {
             $(this).removeAttr("aria-describedby");
         });
-        $("*[ariasecondary-describedby]").each(function() {
+        $("*[ariasecondary-describedby]").each(function () {
             $(this).removeAttr("ariasecondary-describedby");
         });
     }
@@ -40,14 +41,12 @@ export default class bloomQtipUtils {
     // setTimeout(..., bloomQtipUtils.horizontalOverlappingBubblesDelay).
     // (I tried using $(document).ready()...doesn't work. Better ideas welcome!)
     public static mightCauseHorizontallyOverlappingBubbles(
-        element: JQuery
+        element: JQuery,
     ): boolean {
         if ($(element).hasClass("bloom-alwaysShowBubble")) {
             return false;
         }
-        const availableWidth = $(element)
-            .closest(".marginBox")
-            .width();
+        const availableWidth = $(element).closest(".marginBox").width();
         const kTolerancePixels = 10; //if the box is just a tiny bit smaller, there's not going to be anything to overlap
         // NOT $element.width() because that doesn't include padding.
         return (

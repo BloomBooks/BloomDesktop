@@ -76,7 +76,22 @@ namespace Bloom.Api
         public void ExternalLinkSucceeded()
         {
             _actualContext.Response.StatusCode = 200; //Completed
-            HaveOutput = true;
+            HaveFullyProcessedRequest = true;
+        }
+
+        public void WriteNoContent()
+        {
+            try
+            {
+                _actualContext.Response.StatusCode = 204; // No Content
+                _actualContext.Response.ContentLength64 = 0;
+                _actualContext.Response.Close();
+            }
+            catch (HttpListenerException e)
+            {
+                ReportHttpListenerProblem(e);
+            }
+            HaveFullyProcessedRequest = true;
         }
 
         public string DoNotCacheFolder { get; set; }
@@ -105,7 +120,7 @@ namespace Bloom.Api
             {
                 ReportHttpListenerProblem(e);
             }
-            HaveOutput = true;
+            HaveFullyProcessedRequest = true;
         }
 
         private static void ReportHttpListenerProblem(HttpListenerException e)
@@ -119,7 +134,7 @@ namespace Bloom.Api
             Debug.WriteLine(e.Message);
         }
 
-        public bool HaveOutput { get; private set; }
+        public bool HaveFullyProcessedRequest { get; private set; }
 
         public void ReplyWithFileContent(string path, string originalPath = null)
         {
@@ -129,7 +144,7 @@ namespace Bloom.Api
             {
                 // Earlier there was concern that we were coming here to look for .wav file existence, but that task
                 // is now handled in the "/bloom/api/audio" endpoint. So if we get here, we're looking for a different file.
-                // Besides, if we don't set HaveOutput to true (w/WriteError), we'll have other problems.
+                // Besides, if we don't set HaveFullyProcessedRequest to true (w/WriteError), we'll have other problems.
                 Logger.WriteError("Server could not find" + path, new FileNotFoundException());
                 WriteError(404, "Server could not find " + path);
                 return;
@@ -146,7 +161,7 @@ namespace Bloom.Api
                 // BL-12237 actually had a FileNotFoundException here, in a Team Collection setting, which should
                 // have been caught by the RobustFile.Exists() above. So we'll just log it and continue.
                 // The important thing for avoiding a big ugly EndpointHandler error (in the case of BL-12237) is to
-                // set HaveOutput to true, which WriteError() does.
+                // set HaveFullyProcessedRequest to true, which WriteError() does.
                 Logger.WriteError("Server could not read " + path, error);
                 WriteError(500, "Server could not read " + path + ": " + error.Message);
                 return;
@@ -268,21 +283,26 @@ namespace Bloom.Api
                     fs.Dispose();
             }
 
-            HaveOutput = true;
+            HaveFullyProcessedRequest = true;
         }
 
         public void ReplyWithStreamContent(Stream input, string responseType)
         {
+            // Use the overload with the default buffer size of 2MB,
+            // hopefully plenty big enough for any resource we want to return this way...
+            // if possible, use the other overload with a length, which is much more
+            // efficient for small items.
+            ReplyWithStreamContent(input, responseType, 2 * 1024 * 1024);
+        }
+
+        public void ReplyWithStreamContent(Stream input, string responseType, int length)
+        {
             ResponseContentType = responseType;
-            var buffer = new byte[2 * 1024 * 1024]; // hopefully plenty big enough for any resource we want to return this way
-            var length = input.Read(buffer, 0, buffer.Length);
+            var buffer = new byte[length];
+            var actualLength = input.Read(buffer, 0, buffer.Length);
 
-            _actualContext.Response.ContentLength64 = length;
+            _actualContext.Response.ContentLength64 = actualLength;
             _actualContext.Response.AppendHeader("Access-Control-Allow-Origin", "*");
-
-            // Any reason to cache?
-            //_actualContext.Response.AppendHeader("Cache-Control",
-            //	"max-age=600000"); // about a week...if someone spends longer editing one book, well, files will get loaded one more time...
 
             // A HEAD request (rather than a GET or POST request) is a request for just headers, and nothing can be written
             // to the OutputStream. It is normally used to check if the contents of the file have changed without taking the
@@ -304,7 +324,7 @@ namespace Bloom.Api
                 _actualContext.Response.Close(buffer, false);
             }
 
-            HaveOutput = true;
+            HaveFullyProcessedRequest = true;
         }
 
         readonly HashSet<string> _cacheableExtensions = new HashSet<string>(
@@ -386,7 +406,7 @@ namespace Bloom.Api
             if (LocalPathWithoutQuery.ToLowerInvariant().EndsWith(".json"))
                 _actualContext.Response.ContentType = "application/json";
             _actualContext.Response.Close();
-            HaveOutput = true;
+            HaveFullyProcessedRequest = true;
         }
 
         private string SanitizeForAscii(string errorDescription)
@@ -436,7 +456,7 @@ namespace Bloom.Api
                 _actualContext.Request.ContentType.ToLowerInvariant().Contains("application/json"),
                 "The backend expected this post to have content-type application/json. With Axios.Post, this happens if you just give an object as the data. Or you can add the parameter {header: {'Content-Type': 'application/json'}} to the post call."
             );
-            return GetPostStringInner();
+            return GetPostStringInner(unescape: false); // RFC 8259 says that we should preserve the exact JSON payload (no URI-style decoding)
         }
 
         public string GetPostString(bool unescape = true)
@@ -593,11 +613,13 @@ namespace Bloom.Api
         public void WriteRedirect(string url, bool permanent)
         {
             _actualContext.Response.StatusCode = permanent ? 301 : 302;
-            var encodedUrl = Uri.EscapeUriString(url); // handle, e.g. http://localhost:8089/bloom/C:/foo/bar/ปก2.jpg
+            // handle, e.g. http://localhost:8089/bloom/C:/foo/bar/ปก2.jpg
+            var encodedUrl = UrlPathString.CreateFromUnencodedString(url).UrlEncodedForHttpPath;
             _actualContext.Response.Headers.Add("Location", encodedUrl);
             // This supports Bloom Player Storybook's "Live from Bloom Editor" feature, preventing CORS errors on the redirect.
             _actualContext.Response.AppendHeader("Access-Control-Allow-Origin", "*");
             _actualContext.Response.Close();
+            HaveFullyProcessedRequest = true;
         }
     }
 }

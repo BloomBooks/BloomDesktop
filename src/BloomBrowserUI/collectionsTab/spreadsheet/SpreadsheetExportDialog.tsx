@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -11,11 +10,11 @@ import {
     DialogBottomButtons,
     DialogBottomLeftButtons,
     DialogTitle,
-    IBloomDialogProps
+    IBloomDialogProps,
 } from "../../react_components/BloomDialog/BloomDialog";
 import {
     DialogCancelButton,
-    DialogFolderChooser
+    DialogFolderChooser,
 } from "../../react_components/BloomDialog/commonDialogComponents";
 
 import { kVerticalSpacingBetweenDialogSections } from "../../bloomMaterialUITheme";
@@ -24,11 +23,8 @@ import { useEventLaunchedBloomDialog } from "../../react_components/BloomDialog/
 import { WarningBox } from "../../react_components/boxes";
 
 export const SpreadsheetExportDialogLauncher: React.FunctionComponent = () => {
-    const {
-        openingEvent,
-        closeDialog,
-        propsForBloomDialog
-    } = useEventLaunchedBloomDialog("SpreadsheetExportDialog");
+    const { openingEvent, closeDialog, propsForBloomDialog } =
+        useEventLaunchedBloomDialog("SpreadsheetExportDialog");
 
     // We extract the core here so that we can avoid running most of the hook code when this dialog is not visible.
     return propsForBloomDialog.open ? (
@@ -44,14 +40,14 @@ const SpreadsheetExportDialog: React.FunctionComponent<{
     closeDialog: () => void;
     propsForBloomDialog: IBloomDialogProps;
     folderPath: string;
-}> = props => {
+}> = (props) => {
     const title = useL10n(
         "Export to Spreadsheet...",
-        "CollectionTab.BookMenu.ExportToSpreadsheet" // same as the menu
+        "CollectionTab.BookMenu.ExportToSpreadsheet", // same as the menu
     );
     const chooseFolderDescription = useL10n(
         "Target folder for the spreadsheet and images:",
-        "Spreadsheet.ExportDialog.folderLabel"
+        "Spreadsheet.ExportDialog.folderLabel",
     );
     const [folderPath, setFolderPath] = React.useState(props.folderPath);
 
@@ -108,7 +104,7 @@ const SpreadsheetExportDialog: React.FunctionComponent<{
                     size="medium"
                     onClick={() => {
                         postData("spreadsheet/export", {
-                            parentFolderPath: folderPath
+                            parentFolderPath: folderPath,
                         });
                         props.closeDialog();
                     }}

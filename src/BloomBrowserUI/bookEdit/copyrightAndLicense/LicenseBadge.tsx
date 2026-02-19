@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { MenuItem, Select } from "@mui/material";
@@ -7,7 +6,7 @@ import WarningIcon from "@mui/icons-material/Warning";
 
 import {
     kBorderRadiusForSpecialBlocks,
-    kMutedTextGray
+    kMutedTextGray,
 } from "../../bloomMaterialUITheme";
 import { getBloomApiPrefix } from "../../utils/bloomApi";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -20,9 +19,9 @@ export const LicenseBadge: React.FunctionComponent<{
     licenseInfo: ILicenseInfo;
     onChange: (ILicenseInfo) => void;
     disabled?: boolean;
-}> = props => {
+}> = (props) => {
     const licenseInfo: ILicenseInfo = JSON.parse(
-        JSON.stringify(props.licenseInfo)
+        JSON.stringify(props.licenseInfo),
     ); //clone
 
     const licenseShorthand: string = useGetLicenseShorthand(licenseInfo);
@@ -102,7 +101,7 @@ export const LicenseBadge: React.FunctionComponent<{
                                     ? "igo3.0"
                                     : "4.0"
                             }
-                            onChange={e => {
+                            onChange={(e) => {
                                 licenseInfo.creativeCommonsInfo.intergovernmentalVersion =
                                     e.target.value === "igo3.0";
                                 props.onChange(licenseInfo);
@@ -120,7 +119,8 @@ export const LicenseBadge: React.FunctionComponent<{
                 <Link
                     href={getCcUrl(
                         token,
-                        licenseInfo.creativeCommonsInfo.intergovernmentalVersion
+                        licenseInfo.creativeCommonsInfo
+                            .intergovernmentalVersion,
                     )}
                     l10nKey="License.About"
                     l10nComment='%0 is a shorthand version of the Creative Commons license, such as "CC-BY"'
@@ -172,7 +172,7 @@ export function useGetLicenseShorthand(licenseInfo?: ILicenseInfo): string {
     // Hooks rules require we get these up front
     const allRightsReserved = useL10n(
         "All Rights Reserved",
-        "License.AllRightsReserved"
+        "License.AllRightsReserved",
     );
     const custom = useL10n("Custom", "License.Custom");
 

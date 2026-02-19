@@ -1,15 +1,15 @@
 using System;
-using System.Reflection;
-using Autofac;
-using Bloom.CollectionChoosing;
-using Bloom.Properties;
 using System.Linq;
-using L10NSharp;
+using System.Reflection;
 using System.Windows.Forms;
-using Bloom.web.controllers;
+using Autofac;
 using Bloom.Api;
-using Bloom.ImageProcessing;
 using Bloom.Book;
+using Bloom.CollectionChoosing;
+using Bloom.ImageProcessing;
+using Bloom.Properties;
+using Bloom.web.controllers;
+using L10NSharp;
 
 namespace Bloom
 {
@@ -54,13 +54,10 @@ namespace Bloom
             builder.Register(c => bookRenameEvent).AsSelf().InstancePerLifetimeScope();
             builder.Register<BookSelection>(c => new BookSelection()).SingleInstance();
             builder
-                .Register<BloomServer>(
-                    c =>
-                        new BloomServer(
-                            new RuntimeImageProcessor(bookRenameEvent),
-                            c.Resolve<BookSelection>()
-                        )
-                )
+                .Register<BloomServer>(c => new BloomServer(
+                    new RuntimeImageProcessor(bookRenameEvent),
+                    c.Resolve<BookSelection>()
+                ))
                 .SingleInstance();
 
             //Other classes which are also singletons for the whole application
@@ -72,8 +69,8 @@ namespace Bloom
                 // one). Singleton seems to be a much stronger constraint that forces a single one for this and all child
                 // containers, which is what we want for all the application singletons.
                 .SingleInstance()
-                .Where(
-                    t => new[] { typeof(CommonApi), typeof(NewCollectionWizardApi), }.Contains(t)
+                .Where(t =>
+                    new[] { typeof(CommonApi), typeof(NewCollectionWizardApi) }.Contains(t)
                 );
 
             _container = builder.Build();

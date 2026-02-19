@@ -7,19 +7,19 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.CollectionTab;
 using Bloom.ImageProcessing;
 using Bloom.Publish;
-using Bloom.Publish.BloomPub;
 using Bloom.Publish.BloomLibrary;
+using Bloom.Publish.BloomPub;
+using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
+using Bloom.WebLibraryIntegration;
+using Bloom.Workspace;
 using BloomTemp;
 using Newtonsoft.Json;
 using SIL.IO;
-using Bloom.WebLibraryIntegration;
-using Bloom.Workspace;
 using SIL.Reporting;
-using Bloom.CollectionTab;
-using Bloom.SafeXml;
-using Bloom.SubscriptionAndFeatures;
 
 namespace Bloom.web.controllers
 {
@@ -161,24 +161,6 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterBooleanEndpointHandler(
-                "publish/comicEnabled",
-                request => Model.Book.HasComicalOverlays,
-                null,
-                true
-            );
-            apiHandler.RegisterBooleanEndpointHandler(
-                "publish/comic",
-                request =>
-                    Model.Book.HasComicalOverlays
-                    && Model.Book.BookInfo.PublishSettings.BloomLibrary.Comic,
-                (request, val) =>
-                {
-                    Model.Book.BookInfo.PublishSettings.BloomLibrary.Comic = val;
-                    Model.Book.BookInfo.Save();
-                },
-                true
-            );
-            apiHandler.RegisterBooleanEndpointHandler(
                 "publish/visuallyImpairedEnabled",
                 request => Model.Book.OurHtmlDom.HasImageDescriptions,
                 null,
@@ -273,7 +255,7 @@ namespace Bloom.web.controllers
                                         includeText = includeText,
                                         containsAnyAudio = _languagesWithAudio.Contains(langCode),
                                         includeAudio = includeAudio,
-                                        required = required
+                                        required = required,
                                     };
                                     var json = JsonConvert.SerializeObject(value);
                                     return json;
@@ -314,7 +296,7 @@ namespace Bloom.web.controllers
                         var croppedImagePath = "";
                         try
                         {
-                            croppedImagePath = PublishHelper.MakeCroppedImage(
+                            croppedImagePath = ImageUtils.MakeCroppedImage(
                                 coverImgElt,
                                 request.CurrentBook.StoragePageFolder,
                                 Path.GetTempPath()
@@ -470,7 +452,7 @@ namespace Bloom.web.controllers
                     .BookSelection
                     .CurrentSelection
                     .TitleBestForUserDisplay,
-                featurePreventingPublishing = featureStatusForSerialization
+                featurePreventingPublishing = featureStatusForSerialization,
             };
 
             var result = JsonConvert.SerializeObject(resultObject);

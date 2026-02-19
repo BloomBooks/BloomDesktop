@@ -2,6 +2,16 @@
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns:html="http://www.w3.org/TR/html" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="Bloom.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="fr">
     <body>
+      <trans-unit id="AboutDialog.AboutBloom" approved="yes">
+        <source xml:lang="en">About {0}</source>
+        <target xml:lang="fr" state="final">À propos de {0}</target>
+        <note>ID: AboutDialog.WindowTitle</note>
+      </trans-unit>
+      <trans-unit id="AboutDialog.BuiltOnDate" approved="yes">
+        <source xml:lang="en">Built on {0}</source>
+        <target xml:lang="fr" state="final">Construit le {0}</target>
+        <note>ID: AboutDialog.BuiltOnDate</note>
+      </trans-unit>
       <trans-unit id="AccessibilityCheck.AccessibilityChecker" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Accessibility Checker</source>
         <target xml:lang="fr" state="final">Vérification d'accessibilité</target>
@@ -6211,13 +6221,13 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: SubscriptionStatus.UsingProSubscription</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingLocalCommunitySubscription">
-        <source xml:lang="en">Using **Local Community** subscription for **{0}**. Expires {1}</source>
-        <target xml:lang="fr" state="needs-translation">Using **Local Community** subscription for **{0}**. Expires {1}</target>
+        <source xml:lang="en">Using **Local Community** subscription for {0}. Expires {1}</source>
+        <target xml:lang="fr" state="needs-translation">Using **Local Community** subscription for {0}. Expires {1}</target>
         <note>ID: SubscriptionStatus.UsingLocalCommunitySubscription</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingEnterpriseSubscription">
-        <source xml:lang="en">Using **Enterprise** subscription for **{0}**. Expires **{1}**</source>
-        <target xml:lang="fr" state="needs-translation">Using **Enterprise** subscription for **{0}**. Expires **{1}**</target>
+        <source xml:lang="en">Using **Enterprise** subscription for {0}. Expires **{1}**</source>
+        <target xml:lang="fr" state="needs-translation">Using **Enterprise** subscription for {0}. Expires **{1}**</target>
         <note>ID: SubscriptionStatus.UsingEnterpriseSubscription</note>
       </trans-unit>
       <trans-unit id="TeamCollection.DuplicateIds" approved="yes">

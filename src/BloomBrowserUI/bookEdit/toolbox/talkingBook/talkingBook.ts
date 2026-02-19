@@ -1,5 +1,5 @@
-import { kBloomCanvasClass } from "../../js/bloomImages";
 import { hideImageDescriptions } from "../imageDescription/imageDescriptionUtils";
+import { kBloomCanvasClass } from "../canvas/canvasElementUtils";
 import { beginLoadSynphonySettings } from "../readers/readerTools";
 import { getTheOneToolbox, ITool } from "../toolbox";
 import { ToolBox } from "../toolbox";
@@ -7,7 +7,9 @@ import { getAudioRecorder } from "./audioRecording";
 import * as AudioRecorder from "./audioRecording";
 
 export default class TalkingBookTool implements ITool {
-    imageUpdated(img: HTMLImageElement | undefined): void {}
+    imageUpdated(img: HTMLImageElement | undefined): void {
+        // No action needed for this tool
+    }
     public makeRootElement(): HTMLDivElement {
         throw new Error("Method not implemented.");
     }
@@ -56,7 +58,7 @@ export default class TalkingBookTool implements ITool {
     public async newPageReady(): Promise<void> {
         this.showImageDescriptionsIfAny();
         const pageReadyPromise = getAudioRecorder().handleNewPageReady(
-            TalkingBookTool.deshroudPhraseDelimiters
+            TalkingBookTool.deshroudPhraseDelimiters,
         );
         return pageReadyPromise;
     }
@@ -67,12 +69,12 @@ export default class TalkingBookTool implements ITool {
     public static deshroudPhraseDelimiters(page: HTMLElement | null) {
         if (!page) return;
         const delimitingSpans = page.getElementsByClassName(
-            "bloom-audio-split-marker"
+            "bloom-audio-split-marker",
         );
         // delimitingSpans is a live collection that changes as we remove spans.
         // So we stick all the values into a real array to ensure we process all of them.
         const spansToReplace = Array.from(delimitingSpans);
-        spansToReplace.forEach(span => {
+        spansToReplace.forEach((span) => {
             span.replaceWith(page.ownerDocument.createTextNode("|"));
         });
     }
@@ -96,17 +98,17 @@ export default class TalkingBookTool implements ITool {
                     {
                         const originalText = node.textContent;
                         if (originalText?.includes("|")) {
-                            const matches = originalText.match(
-                                /(([^\|]+)|(\|))/g
-                            );
+                            const matches =
+                                originalText.match(/(([^\|]+)|(\|))/g);
                             if (matches && matches.length > 0) {
-                                const newNodes = matches.map(val => {
+                                const newNodes = matches.map((val) => {
                                     if (val === "|") {
-                                        const newSpan = page.ownerDocument.createElement(
-                                            "span"
-                                        );
+                                        const newSpan =
+                                            page.ownerDocument.createElement(
+                                                "span",
+                                            );
                                         newSpan.classList.add(
-                                            "bloom-audio-split-marker"
+                                            "bloom-audio-split-marker",
                                         );
                                         return newSpan as Node;
                                     } else {
@@ -176,7 +178,7 @@ export default class TalkingBookTool implements ITool {
         for (let i = 0; i < bloomCanvases.length; i++) {
             const bloomCanvas = bloomCanvases[i];
             const imageDescriptions = bloomCanvas.getElementsByClassName(
-                "bloom-imageDescription"
+                "bloom-imageDescription",
             );
             for (let j = 0; j < imageDescriptions.length; j++) {
                 const text = imageDescriptions[j].textContent;

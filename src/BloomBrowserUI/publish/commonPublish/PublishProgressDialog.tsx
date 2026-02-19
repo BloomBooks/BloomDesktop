@@ -2,12 +2,12 @@ import * as React from "react";
 import { useState } from "react";
 import {
     ProgressDialogInner,
-    ProgressState
+    ProgressState,
 } from "./PublishProgressDialogInner";
 import { postData } from "../../utils/bloomApi";
 import WebSocketManager, {
     IBloomWebSocketProgressEvent,
-    useSubscribeToWebSocketForEvent
+    useSubscribeToWebSocketForEvent,
 } from "../../utils/WebSocketManager";
 
 export const PublishProgressDialog: React.FunctionComponent<{
@@ -26,17 +26,19 @@ export const PublishProgressDialog: React.FunctionComponent<{
     progressState: ProgressState;
     setProgressState: React.Dispatch<React.SetStateAction<ProgressState>>; // the type of the setter from React.useState<ProgressState>
     generation?: number; // bump this to force restarting.
-}> = props => {
+}> = (props) => {
     const [instructionMessage, setInstructionMessage] = useState<
         string | undefined
     >(undefined);
     const [accumulatedMessages, setAccumulatedMessages] = useState("");
 
     const [errorEncountered, setErrorEncountered] = useState(false);
+    const [interestingMessageEncountered, setInterestingMessageEncountered] =
+        useState(false);
 
     const {
         setProgressState: setProgressStateProp,
-        setClosePending: setClosePendingProp
+        setClosePending: setClosePendingProp,
     } = props;
     const closeAndResetDialog = React.useCallback(() => {
         // close it
@@ -47,6 +49,7 @@ export const PublishProgressDialog: React.FunctionComponent<{
         setAccumulatedMessages("");
         setInstructionMessage(undefined);
         setErrorEncountered(false);
+        setInterestingMessageEncountered(false);
     }, [setProgressStateProp, setClosePendingProp]);
 
     //Note, originally this was just a function, closeIfNoError().
@@ -55,10 +58,8 @@ export const PublishProgressDialog: React.FunctionComponent<{
     // update we notice that and see about closing.
     React.useEffect(() => {
         if (props.closePending) {
-            if (errorEncountered) {
-                setProgressStateProp(() =>
-                    errorEncountered ? ProgressState.Done : ProgressState.Closed
-                );
+            if (errorEncountered || interestingMessageEncountered) {
+                setProgressStateProp(ProgressState.Done);
                 // Although we may be in state 'Done' and thus not actually closed yet,
                 // we're no longer in the state that closePending is meant to handle,
                 // where we've finished but don't yet have enough information to know
@@ -73,11 +74,15 @@ export const PublishProgressDialog: React.FunctionComponent<{
         }
     }, [
         props.closePending,
+        errorEncountered,
         setProgressStateProp,
         setClosePendingProp,
-        closeAndResetDialog
+        closeAndResetDialog,
+        interestingMessageEncountered,
     ]);
 
+    // Kick off the server-side task only after the websocket is ready,
+    // so we don't miss early progress messages.
     React.useEffect(() => {
         props.setProgressState(ProgressState.Working);
         // we need to be ready to listen to progress messages from the server,
@@ -85,23 +90,33 @@ export const PublishProgressDialog: React.FunctionComponent<{
         WebSocketManager.notifyReady(props.webSocketClientContext, () => {
             // Handle an optional API request that fires immediately upon mounting,
             // and handle changing the state of the dialog when the postData's promise is satisfied.
-            postData(props.apiForStartingTask, {}, props.onTaskComplete, r => {
-                // Error handler if server encountered a really bad error and wasn't able to return a message to us.
-                setErrorEncountered(true);
-                setAccumulatedMessages(
-                    oldMessages =>
-                        oldMessages +
-                        `<span class='Error'>Failed to prepare the book for publish. Request '${props.apiForStartingTask}' returned: ${r}.</span>`
-                );
-                props.setProgressState(ProgressState.Done);
-            });
+            postData(
+                props.apiForStartingTask,
+                {},
+                props.onTaskComplete,
+                (r) => {
+                    // Error handler if server encountered a really bad error and wasn't able to return a message to us.
+                    setErrorEncountered(true);
+                    setAccumulatedMessages(
+                        (oldMessages) =>
+                            oldMessages +
+                            `<span class='Error'>Failed to prepare the book for publish. Request '${props.apiForStartingTask}' returned: ${r}.</span>`,
+                    );
+                    props.setProgressState(ProgressState.Done);
+                },
+            );
         });
-    }, [props.apiForStartingTask, props.generation]); // Every time the start API endpoint changes, we basically restart the component
+    }, [
+        props.apiForStartingTask,
+        props.generation,
+        props.setProgressState,
+        props.webSocketClientContext,
+    ]); // Every time the start API endpoint changes, we basically restart the component
 
     useSubscribeToWebSocketForEvent(
         props.webSocketClientContext,
         "message",
-        e => {
+        (e) => {
             const progressEvent = e as IBloomWebSocketProgressEvent;
 
             // // the epub maker
@@ -115,19 +130,19 @@ export const PublishProgressDialog: React.FunctionComponent<{
                     case "Warning":
                         setErrorEncountered(true);
                     // deliberately fall through
-                    case "Progress":
-
-                    // eslint-disable-next-line no-fallthrough
                     case "Note":
+                        setInterestingMessageEncountered(true);
+                    // deliberately fall through
+                    case "Progress":
                         setAccumulatedMessages(
-                            oldMessages => oldMessages + html
+                            (oldMessages) => oldMessages + html,
                         );
                         break;
                     case "Instruction":
                         setInstructionMessage(e.message);
                 }
             }
-        }
+        },
     );
 
     return (

@@ -8,12 +8,13 @@
 /// <reference path="./collectionSettings.d.ts"/>
 
 import { EditableDivUtils } from "./editableDivUtils";
+import { shouldHideToolsOverImages } from "./editablePageUtils";
 import {
     Bubble,
     BubbleSpec,
     BubbleSpecPattern,
     Comical,
-    TailSpec
+    TailSpec,
 } from "comicaljs";
 import { Point, PointScaling } from "./point";
 import { isLinux } from "../../utils/isLinux";
@@ -25,8 +26,10 @@ import {
     attachToCkEditor,
     changeImageInfo,
     kMakeNewCanvasElement,
-    notifyToolOfChangedImage
+    notifyToolOfChangedImage,
+    wrapWithRequestPageContentDelay,
 } from "./bloomEditing";
+import { addSkeletonIfEmpty } from "./linkGrid";
 import {
     EnableAllImageEditing,
     getImageFromCanvasElement,
@@ -37,18 +40,15 @@ import {
     SetupMetadataButton,
     UpdateImageTooltipVisibility,
     HandleImageError,
-    kBloomCanvasSelector,
-    kBloomCanvasClass,
-    doImageCommand
+    isPlaceHolderImage,
 } from "./bloomImages";
-import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import {
     adjustTarget,
     correctTabIndex,
     getActiveGameTab,
     playTabIndex,
     startTabIndex,
-    wrongTabIndex
+    wrongTabIndex,
 } from "../toolbox/games/GameTool";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
@@ -57,8 +57,14 @@ import { kBloomBlue } from "../../bloomMaterialUITheme";
 import {
     kCanvasElementClass,
     kCanvasElementSelector,
-    kHasCanvasElementClass
-} from "../toolbox/overlay/canvasElementUtils";
+    kHasCanvasElementClass,
+    kBloomCanvasClass,
+    kBloomCanvasSelector,
+    kBloomButtonClass,
+    kImageFitModeAttribute,
+    kImageFitModeContainValue,
+    kImageFitModeCoverValue,
+} from "../toolbox/canvas/canvasElementUtils";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { handlePlayClick } from "./bloomVideo";
@@ -66,19 +72,24 @@ import { kVideoContainerClass, selectVideoContainer } from "./videoUtils";
 import { needsToBeKeptSameSize } from "../toolbox/games/gameUtilities";
 import {
     CanvasElementType,
-    makeTargetAndMatchSize
-} from "../toolbox/overlay/CanvasElementItem";
+    makeTargetAndMatchSize,
+} from "../toolbox/canvas/CanvasElementItem";
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
 import { get, postData, postJson } from "../../utils/bloomApi";
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import PlaceholderProvider from "./PlaceholderProvider";
-import { isInDragActivity } from "../toolbox/games/GameInfo";
 import { getExactClientSize } from "../../utils/elementUtils";
 import { copyContentToTarget, getTarget } from "bloom-player";
 import { showRequiresSubscriptionDialogInEditView } from "../../react_components/requiresSubscription";
 import { FeatureStatus } from "../../react_components/featureStatus";
+import $ from "jquery";
+import { kCanvasToolId } from "../toolbox/toolIds";
+import {
+    doWhenEditTabBundleLoaded,
+    getToolboxBundleExports,
+} from "./bloomFrames";
 
 export interface ITextColorInfo {
     color: string;
@@ -86,7 +97,7 @@ export interface ITextColorInfo {
 }
 
 const kComicalGeneratedClass: string = "comical-generated";
-// In the process of moving these two definitions to overlayUtils.ts, but duplicating here for now.
+
 const kTransformPropName = "bloom-zoomTransformForInitialFocus";
 export const kBackgroundImageClass = "bloom-backgroundImage"; // split-pane.js and editMode.less know about this too
 
@@ -109,7 +120,7 @@ export function getAllDraggables(page: HTMLElement | Document) {
 // Some may have been missed. (It's even conceivable that some references to the other things were
 // accidentally renamed to "canvas element".)
 export class CanvasElementManager {
-    // The min width/height needs to be kept in sync with the corresponding values in overlayTool.less
+    // The min width/height needs to be kept in sync with the corresponding values in canvasTool.less
     public minTextBoxWidthPx = 30;
     public minTextBoxHeightPx = 30;
 
@@ -119,7 +130,7 @@ export class CanvasElementManager {
         // identifies the source that requested the notification; allows us to remove the
         // right one when no longer needed, and prevent multiple notifiers to the same client.
         id: string;
-        handler: (x: BubbleSpec | undefined) => void;
+        handler: (x: Bubble | undefined) => void;
     }[] = [];
 
     // These variables are used by the canvas element's onmouse* event handlers
@@ -127,7 +138,7 @@ export class CanvasElementManager {
     // unscaled offset from top left of canvas element being dragged to the point of the mouseDown where we started dragging it
     private bubbleDragGrabOffset: { x: number; y: number } = {
         x: 0,
-        y: 0
+        y: 0,
     };
 
     private guideProvider: CanvasGuideProvider;
@@ -139,18 +150,16 @@ export class CanvasElementManager {
         this.guideProvider = new CanvasGuideProvider();
         this.keyboardProvider = new CanvasElementKeyboardProvider(
             {
-                deleteCurrentCanvasElement: this.deleteCurrentCanvasElement.bind(
-                    this
-                ),
-                moveActiveCanvasElement: this.moveActiveCanvasElement.bind(
-                    this
-                ),
-                getActiveCanvasElement: this.getActiveElement.bind(this)
+                deleteCurrentCanvasElement:
+                    this.deleteCurrentCanvasElement.bind(this),
+                moveActiveCanvasElement:
+                    this.moveActiveCanvasElement.bind(this),
+                getActiveCanvasElement: this.getActiveElement.bind(this),
             },
-            this.snapProvider
+            this.snapProvider,
         );
         Comical.setSelectorForBubblesWhichTailMidpointMayOverlap(
-            ".bloom-backgroundImage"
+            ".bloom-backgroundImage",
         );
         const page = document.getElementsByClassName("bloom-page")[0];
         page?.addEventListener("splitterDoubleClick", () => {
@@ -161,7 +170,7 @@ export class CanvasElementManager {
     public moveActiveCanvasElement(
         dx: number,
         dy: number,
-        event: KeyboardEvent
+        event: KeyboardEvent,
     ): void {
         if (!this.activeElement) return;
 
@@ -170,10 +179,10 @@ export class CanvasElementManager {
         //this.placeElementAtPosition(jQuery(this.activeElement), dx, dy, event);
         // // Get current position and calculate new position
         const currentLeft = CanvasElementManager.pxToNumber(
-            this.activeElement.style.left
+            this.activeElement.style.left,
         );
         const currentTop = CanvasElementManager.pxToNumber(
-            this.activeElement.style.top
+            this.activeElement.style.top,
         );
 
         // Start a snap drag operation
@@ -205,12 +214,12 @@ export class CanvasElementManager {
             snappedX,
             snappedY,
             PointScaling.Unscaled,
-            "moveActiveCanvasElement"
+            "moveActiveCanvasElement",
         );
         this.adjustCanvasElementLocation(
             this.activeElement,
             this.activeElement.parentElement!,
-            where
+            where,
         );
     }
 
@@ -235,7 +244,7 @@ export class CanvasElementManager {
         editable: HTMLElement,
         overflowY: number,
         doNotShrink?: boolean,
-        growAsMuchAsPossible?: boolean
+        growAsMuchAsPossible?: boolean,
     ): number {
         if (editable instanceof HTMLTextAreaElement) {
             // Calendars still use textareas, but we don't do anything with them here.
@@ -244,11 +253,11 @@ export class CanvasElementManager {
 
         console.assert(
             editable.classList.contains("bloom-editable"),
-            "editable is not a bloom-editable"
+            "editable is not a bloom-editable",
         );
 
         const canvasElement = editable.closest(
-            kCanvasElementSelector
+            kCanvasElementSelector,
         ) as HTMLElement;
         if (
             !canvasElement ||
@@ -276,7 +285,7 @@ export class CanvasElementManager {
 
         newHeight = Math.max(
             newHeight,
-            this.getMaxVisibleSiblingHeight(editable) ?? 0
+            this.getMaxVisibleSiblingHeight(editable) ?? 0,
         );
 
         if (
@@ -317,9 +326,8 @@ export class CanvasElementManager {
         bloomCanvas.scrollTop = 0;
 
         if (growAsMuchAsPossible === undefined) {
-            growAsMuchAsPossible = !canvasElement.classList.contains(
-                "bloom-noAutoHeight"
-            );
+            growAsMuchAsPossible =
+                !canvasElement.classList.contains("bloom-noAutoHeight");
         }
         // Check if required height exceeds available height
         if (newHeight + canvasElement.offsetTop > bloomCanvas.clientHeight) {
@@ -340,7 +348,7 @@ export class CanvasElementManager {
         // used % values to position canvas elements before we realized that was a bad idea.
         CanvasElementManager.convertCanvasElementPositionToAbsolute(
             canvasElement,
-            bloomCanvas
+            bloomCanvas,
         );
         this.adjustTarget(canvasElement);
         this.alignControlFrameWithActiveElement();
@@ -348,13 +356,13 @@ export class CanvasElementManager {
     }
 
     private getMaxVisibleSiblingHeight(
-        editable: HTMLElement
+        editable: HTMLElement,
     ): number | undefined {
         // Get any siblings of our editable that are also visible. (Typically siblings are the
         // other bloom-editables in the same bloom-translationGroup, and are all display:none.)
         const visibleSiblings = Array.from(
-            editable.parentElement!.children
-        ).filter(child => {
+            editable.parentElement!.children,
+        ).filter((child) => {
             if (child === editable) return false; // skip the element itself
             const computedStyle = window.getComputedStyle(child);
             return (
@@ -372,8 +380,8 @@ export class CanvasElementManager {
             // in canvas elements.
             return Math.max(
                 ...visibleSiblings.map(
-                    child => child.clientTop + child.clientHeight
-                )
+                    (child) => child.clientTop + child.clientHeight,
+                ),
             );
         }
         return undefined;
@@ -385,7 +393,7 @@ export class CanvasElementManager {
             !this.activeElement.classList.contains("bloom-noAutoHeight")
         ) {
             const editable = this.activeElement.getElementsByClassName(
-                "bloom-editable bloom-visibility-code-on"
+                "bloom-editable bloom-visibility-code-on",
             )[0] as HTMLElement;
 
             this.adjustCanvasElementHeightToContentOrMarkOverflow(editable);
@@ -393,49 +401,12 @@ export class CanvasElementManager {
         this.alignControlFrameWithActiveElement();
     }
 
-    // May 2025, just before trying to release 6.2a, JT and I decided we would be better off
-    // either being able to get rid of this function completely and just call AdjustSizeOrMarkOverflow,
-    // or have AdjustSizeOrMarkOverflow call this function.
-    // It would be better to have this logic live in one place as evidenced by the fact that we had a bug
-    // in this version which wasn't in AdjustSizeOrMarkOverflow. See BL-14771.
-    // Note that when we experimented with just calling AdjustSizeOrMarkOverflow, we ran into issues with
-    // nicescroll being turned on and off while the canvas element was being resized. This caused
-    // flickering of the text extending beyond the canvas element.
-    // The code here now (June 2025) fixes niceScroll on a timeout.
     public adjustCanvasElementHeightToContentOrMarkOverflow(
-        editable: HTMLElement
+        editable: HTMLElement,
     ): void {
         if (!this.activeElement) return;
-        const overflowAmounts = OverflowChecker.getSelfOverflowAmounts(
-            editable
-        );
-        let overflowY = overflowAmounts[1];
-
-        // This mimics the relevant part of OverflowChecker.AdjustSizeOrMarkOverflow
-        overflowY = theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
-            editable,
-            overflowY
-        );
-
-        // We decided that overflow was just causing too many problems as we tried to wrap
-        // up drag activities. So for now, we are just turning off overflow reporting completely
-        // in drag activities. See BL-14783.
-        if (!isInDragActivity(editable)) {
-            editable.classList.toggle("overflow", overflowY > 0);
-        }
-        if (this.fixNiceScrollTimeout) {
-            clearTimeout(this.fixNiceScrollTimeout);
-        }
-        // We want to clean up niceScroll so the scroll bars are not left behind, but we get
-        // flicker if we do it continuously. This is hopefully a long enough delay so it
-        // just happens after the user stops dragging.
-        this.fixNiceScrollTimeout = window.setTimeout(() => {
-            cleanupNiceScroll();
-            addScrollbarsToPage(editable.closest(".bloom-page") as HTMLElement);
-        }, 200);
+        OverflowChecker.AdjustSizeOrMarkOverflow(editable);
     }
-
-    private fixNiceScrollTimeout = 0;
 
     // When the format dialog changes the amount of padding for canvas elements, adjust their sizes
     // and positions (keeping the text in the same place).
@@ -446,22 +417,22 @@ export class CanvasElementManager {
         container: HTMLElement,
         style: string,
         oldPaddingStr: string, // number+px
-        newPaddingStr: string // number+px
+        newPaddingStr: string, // number+px
     ) {
         const wrapperBoxes = Array.from(
-            container.getElementsByClassName(kCanvasElementClass)
+            container.getElementsByClassName(kCanvasElementClass),
         ) as HTMLElement[];
         const oldPadding = CanvasElementManager.pxToNumber(oldPaddingStr);
         const newPadding = CanvasElementManager.pxToNumber(newPaddingStr);
         const delta = newPadding - oldPadding;
         const canvasElementLang = GetSettings().languageForNewTextBoxes;
-        wrapperBoxes.forEach(wrapperBox => {
+        wrapperBoxes.forEach((wrapperBox) => {
             // The language check is a belt-and-braces thing. At the time I did this PR, we had a bug where
             // the bloom-editables in a TG did not necessarily all have the same style.
             // We could possibly enconuter books where this is still true.
             if (
                 Array.from(wrapperBox.getElementsByClassName(style)).filter(
-                    x => x.getAttribute("lang") === canvasElementLang
+                    (x) => x.getAttribute("lang") === canvasElementLang,
                 ).length > 0
             ) {
                 if (!wrapperBox.style.height.endsWith("px")) {
@@ -472,7 +443,7 @@ export class CanvasElementManager {
                     this.setCanvasElementPosition(
                         wrapperBox,
                         wrapperBox.offsetLeft - container.offsetLeft,
-                        wrapperBox.offsetTop - container.offsetTop
+                        wrapperBox.offsetTop - container.offsetTop,
                     );
                 }
                 const oldHeight = this.pxToNumber(wrapperBox.style.height);
@@ -500,8 +471,8 @@ export class CanvasElementManager {
     // we may disable it by turning off pointer events. So we filter those ones out.
     private getAllVisibleFocusableDivs(bloomCanvas: HTMLElement): Element[] {
         return this.getAllVisibileEditableDivs(bloomCanvas).filter(
-            focusElement =>
-                window.getComputedStyle(focusElement).pointerEvents !== "none"
+            (focusElement) =>
+                window.getComputedStyle(focusElement).pointerEvents !== "none",
         );
     }
 
@@ -513,30 +484,30 @@ export class CanvasElementManager {
         // matter which order we look for them.
         const editables = Array.from(
             bloomCanvas.getElementsByClassName(
-                "bloom-editable bloom-visibility-code-on"
-            )
+                "bloom-editable bloom-visibility-code-on",
+            ),
         );
         let focusableDivs = editables
             // At least in Bloom games, some elements with visibility code on are nevertheless hidden
-            .filter(e => !EditableDivUtils.isInHiddenLanguageBlock(e));
+            .filter((e) => !EditableDivUtils.isInHiddenLanguageBlock(e));
         focusableDivs = focusableDivs.filter(
-            el =>
+            (el) =>
                 !(
                     el.parentElement!.classList.contains("box-header-off") ||
                     el.parentElement!.classList.contains(
-                        "bloom-imageDescription"
+                        "bloom-imageDescription",
                     )
-                )
+                ),
         );
         if (focusableDivs.length === 0) {
             focusableDivs = Array.from(
-                bloomCanvas.getElementsByClassName(kVideoContainerClass)
-            ).filter(x => !EditableDivUtils.isInHiddenLanguageBlock(x));
+                bloomCanvas.getElementsByClassName(kVideoContainerClass),
+            ).filter((x) => !EditableDivUtils.isInHiddenLanguageBlock(x));
         }
         if (focusableDivs.length === 0) {
             focusableDivs = Array.from(
-                bloomCanvas.getElementsByClassName(kImageContainerClass)
-            ).filter(x => !EditableDivUtils.isInHiddenLanguageBlock(x));
+                bloomCanvas.getElementsByClassName(kImageContainerClass),
+            ).filter((x) => !EditableDivUtils.isInHiddenLanguageBlock(x));
         }
         return focusableDivs;
     }
@@ -549,7 +520,7 @@ export class CanvasElementManager {
     private focusFirstVisibleFocusable(activeElement: HTMLElement): boolean {
         const focusElements = this.getAllVisibleFocusableDivs(activeElement);
         if (focusElements.length > 0) {
-            var focusElement = focusElements[0] as HTMLElement;
+            const focusElement = focusElements[0] as HTMLElement;
             focusElement.focus();
             return true;
         }
@@ -565,7 +536,7 @@ export class CanvasElementManager {
 
         const bloomCanvases: HTMLElement[] = this.getAllBloomCanvasesOnPage();
 
-        bloomCanvases.forEach(bloomCanvas => {
+        bloomCanvases.forEach((bloomCanvas) => {
             this.adjustCanvasElementsForCurrentLanguage(bloomCanvas);
             this.ensureCanvasElementsIntersectParent(bloomCanvas);
             // image containers are already set by CSS to overflow:hidden, so they
@@ -588,6 +559,9 @@ export class CanvasElementManager {
                 bloomCanvas.scrollLeft = 0;
                 bloomCanvas.scrollTop = 0;
             });
+            if (bloomCanvas.getAttribute("data-tool-id") === kCanvasToolId) {
+                SetupClickToShowCanvasTool(bloomCanvas);
+            }
         });
 
         // todo: select the right one...in particular, currently we just select the last one.
@@ -599,9 +573,9 @@ export class CanvasElementManager {
         // todo: make sure comical is turned on for the right parent, in case there's more than one
         // bloom-canvas on the page?
         const canvasElements = Array.from(
-            document.getElementsByClassName(kCanvasElementClass)
+            document.getElementsByClassName(kCanvasElementClass),
         ).filter(
-            x => !EditableDivUtils.isInHiddenLanguageBlock(x)
+            (x) => !EditableDivUtils.isInHiddenLanguageBlock(x),
         ) as HTMLElement[];
         if (canvasElements.length > 0) {
             // If we have an activeElement and it's not in the list, clear it. (Left over from another page? Deleted?)
@@ -625,19 +599,19 @@ export class CanvasElementManager {
             Comical.startEditing(bloomCanvases);
             this.migrateOldCanvasElements(canvasElements);
             Comical.activateElement(this.activeElement);
-            canvasElements.forEach(container => {
+            canvasElements.forEach((container) => {
                 this.addEventsToFocusableElements(container, false);
             });
             document.addEventListener(
                 "click",
-                CanvasElementManager.onDocClickClearActiveElement
+                CanvasElementManager.onDocClickClearActiveElement,
             );
             // If we have sign language video over picture elements that are so far only placeholders,
             // they are not focusable by default and so won't get the blue border that elements
             // are supposed to have when selected. So we add tabindex="0" so they become focusable.
-            canvasElements.forEach(element => {
+            canvasElements.forEach((element) => {
                 const videoContainers = Array.from(
-                    element.getElementsByClassName(kVideoContainerClass)
+                    element.getElementsByClassName(kVideoContainerClass),
                 );
                 if (videoContainers.length === 1) {
                     const container = videoContainers[0] as HTMLElement;
@@ -649,7 +623,7 @@ export class CanvasElementManager {
             });
         } else {
             // Focus something!
-            // BL-8073: if Comic Tool is open, this 'turnOnCanvasElementEditing()' method will get run.
+            // BL-8073: if Canvas Tool is open, this 'turnOnCanvasElementEditing()' method will get run.
             // If this particular page has no canvas elements, we can actually arrive here with the 'body'
             // as the document's activeElement. So we focus the first visible focusable element
             // we come to.
@@ -662,7 +636,7 @@ export class CanvasElementManager {
         // turn on various behaviors for each image
         Array.from(this.getAllBloomCanvasesOnPage()).forEach(
             (bloomCanvas: HTMLElement) => {
-                bloomCanvas.addEventListener("click", event => {
+                bloomCanvas.addEventListener("click", (event) => {
                     // The goal here is that if the user clicks outside any comical canvas element,
                     // we want none of the canvas elements selected, so that
                     // (after moving the mouse away to get rid of hover effects)
@@ -680,7 +654,7 @@ export class CanvasElementManager {
                     // on it.
                     if (
                         (event.target as HTMLElement).classList.contains(
-                            "comical-editing"
+                            "comical-editing",
                         )
                     ) {
                         // OK, we clicked on the canvas, but we may still have clicked on
@@ -698,10 +672,9 @@ export class CanvasElementManager {
                         }
                     }
                 });
-
                 this.setDragAndDropHandlers(bloomCanvas);
                 this.setMouseDragHandlers(bloomCanvas);
-            }
+            },
         );
     }
     removeFocus() {
@@ -710,7 +683,7 @@ export class CanvasElementManager {
         }
     }
     // declare this strange way so it has the right 'this' when added as event listener.
-    private canvasElementLosingFocus = event => {
+    private canvasElementLosingFocus = (event) => {
         if (CanvasElementManager.ignoreFocusChanges) return;
         // removing focus from a text canvas element means the next click on it could drag it.
         // However, it's possible the active canvas element already moved; don't clear theCanvasElementWeAreTextEditing if so
@@ -732,9 +705,8 @@ export class CanvasElementManager {
 
     // This is invoked when the toolbox adds a canvas element that wants source and/or hint bubbles.
     public addSourceAndHintBubbles(translationGroup: HTMLElement) {
-        const bubble = BloomSourceBubbles.ProduceSourceBubbles(
-            translationGroup
-        );
+        const bubble =
+            BloomSourceBubbles.ProduceSourceBubbles(translationGroup);
         const divsThatHaveSourceBubbles: HTMLElement[] = [];
         const bubbleDivs: any[] = [];
         if (bubble.length !== 0) {
@@ -744,7 +716,7 @@ export class CanvasElementManager {
         BloomHintBubbles.addHintBubbles(
             translationGroup.parentElement!,
             divsThatHaveSourceBubbles,
-            bubbleDivs
+            bubbleDivs,
         );
 
         // at the moment (6.2) we aren't using this for any draggable things, but we could.
@@ -753,10 +725,10 @@ export class CanvasElementManager {
         if (divsThatHaveSourceBubbles.length > 0) {
             BloomSourceBubbles.MakeSourceBubblesIntoQtips(
                 divsThatHaveSourceBubbles[0],
-                bubbleDivs[0]
+                bubbleDivs[0],
             );
             BloomSourceBubbles.setupSizeChangedHandling(
-                divsThatHaveSourceBubbles
+                divsThatHaveSourceBubbles,
             );
         }
     }
@@ -768,34 +740,33 @@ export class CanvasElementManager {
     adjustCanvasElementsForCurrentLanguage(container: HTMLElement) {
         const canvasElementLang = GetSettings().languageForNewTextBoxes;
         Array.from(
-            container.getElementsByClassName(kCanvasElementClass)
-        ).forEach(canvasElement => {
+            container.getElementsByClassName(kCanvasElementClass),
+        ).forEach((canvasElement) => {
             const editable = Array.from(
-                canvasElement.getElementsByClassName("bloom-editable")
-            ).find(e => e.getAttribute("lang") === canvasElementLang);
+                canvasElement.getElementsByClassName("bloom-editable"),
+            ).find((e) => e.getAttribute("lang") === canvasElementLang);
             if (editable) {
                 const alternatesString = editable.getAttribute(
-                    "data-bubble-alternate"
+                    "data-bubble-alternate",
                 );
                 if (alternatesString) {
                     const alternate = JSON.parse(
-                        alternatesString.replace(/`/g, '"')
+                        alternatesString.replace(/`/g, '"'),
                     ) as IAlternate;
                     canvasElement.setAttribute("style", alternate.style);
-                    const bubbleData = canvasElement.getAttribute(
-                        "data-bubble"
-                    );
+                    const bubbleData =
+                        canvasElement.getAttribute("data-bubble");
                     if (bubbleData) {
                         const bubbleDataObj = JSON.parse(
-                            bubbleData.replace(/`/g, '"')
+                            bubbleData.replace(/`/g, '"'),
                         );
                         bubbleDataObj.tails = alternate.tails;
                         const newBubbleData = JSON.stringify(
-                            bubbleDataObj
+                            bubbleDataObj,
                         ).replace(/"/g, "`");
                         canvasElement.setAttribute(
                             "data-bubble",
-                            newBubbleData
+                            newBubbleData,
                         );
                     }
                 }
@@ -809,15 +780,14 @@ export class CanvasElementManager {
         // (It will effectively be replaced by the new active comical-generated svg
         // made when we save the page.)
         const altSvg = Array.from(
-            container.getElementsByClassName("comical-alternate")
-        ).find(svg => svg.getAttribute("data-lang") === canvasElementLang);
+            container.getElementsByClassName("comical-alternate"),
+        ).find((svg) => svg.getAttribute("data-lang") === canvasElementLang);
         if (altSvg) {
             container.removeChild(altSvg);
         }
 
-        const currentSvg = container.getElementsByClassName(
-            "comical-generated"
-        )[0];
+        const currentSvg =
+            container.getElementsByClassName("comical-generated")[0];
         if (currentSvg) {
             const currentSvgLang = currentSvg.getAttribute("data-lang");
             if (currentSvgLang && currentSvgLang !== canvasElementLang) {
@@ -838,25 +808,25 @@ export class CanvasElementManager {
 
     public static saveStateOfCanvasElementAsCurrentLangAlternate(
         canvasElement: HTMLElement,
-        canvasElementLangIn?: string
+        canvasElementLangIn?: string,
     ) {
         const canvasElementLang =
             canvasElementLangIn ?? GetSettings().languageForNewTextBoxes;
 
         const editable = Array.from(
-            canvasElement.getElementsByClassName("bloom-editable")
-        ).find(e => e.getAttribute("lang") === canvasElementLang);
+            canvasElement.getElementsByClassName("bloom-editable"),
+        ).find((e) => e.getAttribute("lang") === canvasElementLang);
         if (editable) {
             const bubbleData = canvasElement.getAttribute("data-bubble") ?? "";
             const bubbleDataObj = JSON.parse(bubbleData.replace(/`/g, '"'));
             const alternate = {
                 lang: canvasElementLang,
                 style: canvasElement.getAttribute("style") ?? "",
-                tails: bubbleDataObj.tails as object[]
+                tails: bubbleDataObj.tails as object[],
             };
             editable.setAttribute(
                 "data-bubble-alternate",
-                JSON.stringify(alternate).replace(/"/g, "`")
+                JSON.stringify(alternate).replace(/"/g, "`"),
             );
         }
     }
@@ -865,21 +835,20 @@ export class CanvasElementManager {
     // correctly for this language, even if in the meantime we change canvas element
     // positions for other languages.
     saveCurrentCanvasElementStateAsCurrentLangAlternate(
-        container: HTMLElement
+        container: HTMLElement,
     ) {
         const canvasElementLang = GetSettings().languageForNewTextBoxes;
         Array.from(
-            container.getElementsByClassName(kCanvasElementClass)
+            container.getElementsByClassName(kCanvasElementClass),
         ).forEach((top: HTMLElement) =>
             CanvasElementManager.saveStateOfCanvasElementAsCurrentLangAlternate(
                 top,
-                canvasElementLang
-            )
+                canvasElementLang,
+            ),
         );
         // Record that the current comical-generated SVG is for this language.
-        const currentSvg = container.getElementsByClassName(
-            "comical-generated"
-        )[0];
+        const currentSvg =
+            container.getElementsByClassName("comical-generated")[0];
         currentSvg?.setAttribute("data-lang", canvasElementLang);
     }
 
@@ -888,13 +857,13 @@ export class CanvasElementManager {
     // This method will attach the focusin event to each of these.
     private addEventsToFocusableElements(
         container: HTMLElement,
-        includeCkEditor: boolean
+        includeCkEditor: boolean,
     ) {
         // Arguably, we only need to do this to ones that can be focused. But the sort of disabling
         // that causes editables not to be focusable comes and goes, so rather than have to keep
         // calling this, we'll just set them all up with focus handlers and CkEditor.
         const editables = this.getAllVisibileEditableDivs(container);
-        editables.forEach(element => {
+        editables.forEach((element) => {
             // Don't use an arrow function as an event handler here.
             //These can never be identified as duplicate event listeners, so we'll end up with tons
             // of duplicates.
@@ -907,7 +876,7 @@ export class CanvasElementManager {
             }
         });
         Array.from(
-            document.getElementsByClassName(kCanvasElementClass)
+            document.getElementsByClassName(kCanvasElementClass),
         ).forEach((element: HTMLElement) => {
             element.addEventListener("focusout", this.canvasElementLosingFocus);
         });
@@ -919,7 +888,7 @@ export class CanvasElementManager {
 
     public getAllBloomCanvasesOnPage() {
         return Array.from(
-            document.getElementsByClassName(kBloomCanvasClass)
+            document.getElementsByClassName(kBloomCanvasClass),
         ) as Array<HTMLElement>;
     }
 
@@ -930,7 +899,7 @@ export class CanvasElementManager {
         bloomCanvas: HTMLElement,
         bubble: Bubble | undefined,
         attachEventsToEditables: boolean,
-        activateCanvasElement: boolean
+        activateCanvasElement: boolean,
     ): void {
         Comical.startEditing([bloomCanvas]);
         // necessary if we added the very first canvas element, and Comical was not previously initialized
@@ -956,12 +925,12 @@ export class CanvasElementManager {
             if (attachEventsToEditables) {
                 this.addEventsToFocusableElements(
                     newCanvasElement,
-                    attachEventsToEditables
+                    attachEventsToEditables,
                 );
             }
             SetupElements(
                 bloomCanvas,
-                activateCanvasElement ? bubble.content : "none"
+                activateCanvasElement ? bubble.content : "none",
             );
 
             // Since we may have just added an element, check if the container has at least one
@@ -981,7 +950,7 @@ export class CanvasElementManager {
     }
 
     private migrateOldCanvasElements(canvasElements: HTMLElement[]): void {
-        canvasElements.forEach(top => {
+        canvasElements.forEach((top) => {
             if (!top.getAttribute("data-bubble")) {
                 const bubbleSpec = Bubble.getDefaultBubbleSpec(top, "none");
                 new Bubble(top).setBubbleSpec(bubbleSpec);
@@ -997,7 +966,7 @@ export class CanvasElementManager {
     // This is used by a hack in onFocusSetActiveElement.
     public static recordInitialZoom(container: HTMLElement) {
         const zoomTransform = container.ownerDocument.getElementById(
-            "page-scaling-container"
+            "page-scaling-container",
         )?.style.transform;
         const topWindowZoomTransfrom = window.top?.[kTransformPropName];
         if (window.top && zoomTransform && !topWindowZoomTransfrom) {
@@ -1030,7 +999,7 @@ export class CanvasElementManager {
         // We have mechanisms to focus what we do want, so we use this trick to ignore
         // focus events immediately after a zoom change.
         const zoomTransform = focusedElement.ownerDocument.getElementById(
-            "page-scaling-container"
+            "page-scaling-container",
         )?.style.transform;
         const topWindowZoomTransfrom = window.top?.[kTransformPropName];
         if (window.top && zoomTransform !== topWindowZoomTransfrom) {
@@ -1061,7 +1030,7 @@ export class CanvasElementManager {
         const canvasElement = focusedElement.closest(kCanvasElementSelector);
         if (canvasElement) {
             theOneCanvasElementManager.setActiveElement(
-                canvasElement as HTMLElement
+                canvasElement as HTMLElement,
             );
             // When a canvas element is first clicked, we try hard not to let it get focus.
             // Another click will focus it. Unfortunately, various other things do as well,
@@ -1072,7 +1041,7 @@ export class CanvasElementManager {
             theOneCanvasElementManager.theCanvasElementWeAreTextEditing =
                 theOneCanvasElementManager.activeElement;
             theOneCanvasElementManager.theCanvasElementWeAreTextEditing?.classList.add(
-                "bloom-focusedCanvasElement"
+                "bloom-focusedCanvasElement",
             );
         } else {
             theOneCanvasElementManager.setActiveElement(undefined);
@@ -1166,8 +1135,8 @@ export class CanvasElementManager {
 
     public removeFocusClass() {
         Array.from(
-            document.getElementsByClassName("bloom-focusedCanvasElement")
-        ).forEach(element => {
+            document.getElementsByClassName("bloom-focusedCanvasElement"),
+        ).forEach((element) => {
             element.classList.remove("bloom-focusedCanvasElement");
         });
     }
@@ -1182,16 +1151,22 @@ export class CanvasElementManager {
     public setActiveElementToClosest(element: HTMLElement) {
         this.setActiveElement(
             (element.closest(kCanvasElementSelector) as HTMLElement) ??
-                undefined
+                undefined,
         );
     }
 
     public setActiveElement(element: HTMLElement | undefined) {
+        // Don't allow activating canvas elements when the motion tool is active
+        // (However, we'll allow deactivating, in case one was already active when
+        // the motion tool was activated.)
+        if (element && shouldHideToolsOverImages()) {
+            return;
+        }
         // Seems it should be sufficient to remove this from the old active element if any.
         // But there's at least one case where code that adds a new canvas element sets it as
         // this.activeElement before calling this method. It's safest to make sure this
         // attribute is not set on any other element.
-        document.querySelectorAll("[data-bloom-active]").forEach(e => {
+        document.querySelectorAll("[data-bloom-active]").forEach((e) => {
             if (e !== element) {
                 e.removeAttribute("data-bloom-active");
             }
@@ -1235,9 +1210,9 @@ export class CanvasElementManager {
             // Indeed, we might have been called from the code that makes that so.
             selectVideoContainer(
                 this.activeElement.getElementsByClassName(
-                    "bloom-videoContainer"
+                    "bloom-videoContainer",
                 )[0] as HTMLElement,
-                false
+                false,
             );
             // if the active element isn't a text one, we don't want anything to have focus.
             // One reason is that the thing that has focus may display a source bubble that
@@ -1246,14 +1221,14 @@ export class CanvasElementManager {
             // non-text elements to have focus so that keyboard commands can be applied to them.)
             if (
                 this.activeElement.getElementsByClassName(
-                    "bloom-visibility-code-on"
+                    "bloom-visibility-code-on",
                 ).length === 0
             ) {
                 this.removeFocus();
             }
         }
         UpdateImageTooltipVisibility(
-            this.activeElement?.closest(kBloomCanvasSelector)
+            this.activeElement?.closest(kBloomCanvasSelector),
         );
     }
 
@@ -1283,7 +1258,7 @@ export class CanvasElementManager {
         // this.activeElement is still set and works for hiding the menu.
         const eltWithControlOnIt = this.activeElement;
         const controlFrame = document.getElementById(
-            "canvas-element-control-frame"
+            "canvas-element-control-frame",
         );
         if (controlFrame) {
             if (eltWithControlOnIt) {
@@ -1309,7 +1284,7 @@ export class CanvasElementManager {
         this.checkActiveElementIsVisible();
         const eltToPutControlsOn = this.activeElement;
         let controlFrame = document.getElementById(
-            "canvas-element-control-frame"
+            "canvas-element-control-frame",
         );
         if (!eltToPutControlsOn) {
             this.removeControlFrame();
@@ -1317,86 +1292,84 @@ export class CanvasElementManager {
         }
 
         if (!controlFrame) {
-            controlFrame = eltToPutControlsOn.ownerDocument.createElement(
-                "div"
-            );
+            controlFrame =
+                eltToPutControlsOn.ownerDocument.createElement("div");
             controlFrame.setAttribute("id", "canvas-element-control-frame");
             controlFrame.classList.add("bloom-ui"); // makes sure it gets cleaned up.
             eltToPutControlsOn.parentElement?.appendChild(controlFrame);
             const corners = ["ne", "nw", "se", "sw"];
-            corners.forEach(corner => {
-                const control = eltToPutControlsOn.ownerDocument.createElement(
-                    "div"
-                );
+            corners.forEach((corner) => {
+                const control =
+                    eltToPutControlsOn.ownerDocument.createElement("div");
                 control.classList.add("bloom-ui-canvas-element-resize-handle");
                 control.classList.add(
-                    "bloom-ui-canvas-element-resize-handle-" + corner
+                    "bloom-ui-canvas-element-resize-handle-" + corner,
                 );
                 controlFrame?.appendChild(control);
-                control.addEventListener("mousedown", event => {
+                control.addEventListener("mousedown", (event) => {
                     this.startResizeDrag(
                         event,
-                        corner as "ne" | "nw" | "se" | "sw"
+                        corner as "ne" | "nw" | "se" | "sw",
                     );
                 });
             });
             // "sides means not just left and right, but all four sides of the control frame"
             const sides = ["n", "s", "e", "w"];
-            sides.forEach(side => {
-                const sideControl = eltToPutControlsOn.ownerDocument.createElement(
-                    "div"
+            sides.forEach((side) => {
+                const sideControl =
+                    eltToPutControlsOn.ownerDocument.createElement("div");
+                sideControl.classList.add(
+                    "bloom-ui-canvas-element-side-handle",
                 );
                 sideControl.classList.add(
-                    "bloom-ui-canvas-element-side-handle"
-                );
-                sideControl.classList.add(
-                    "bloom-ui-canvas-element-side-handle-" + side
+                    "bloom-ui-canvas-element-side-handle-" + side,
                 );
                 controlFrame?.appendChild(sideControl);
-                sideControl.addEventListener("mousedown", event => {
+                sideControl.addEventListener("mousedown", (event) => {
                     if (event.buttons !== 1 || !this.activeElement) {
                         return;
                     }
                     const target = event.currentTarget as HTMLElement;
-                    if (
-                        target.closest(
-                            `.${kBackgroundImageClass}-control-frame-no-image`
-                        )
-                    ) {
-                        return; // don't crop empty background image container
+                    if (target.closest(`.bloom-image-control-frame-no-image`)) {
+                        return; // don't crop empty image container
                     }
                     this.startSideControlDrag(event, side);
                 });
             });
-            const sideHandle = eltToPutControlsOn.ownerDocument.createElement(
-                "div"
-            );
+            const sideHandle =
+                eltToPutControlsOn.ownerDocument.createElement("div");
             sideHandle.classList.add(
-                "bloom-ui-canvas-element-move-crop-handle"
+                "bloom-ui-canvas-element-move-crop-handle",
             );
             controlFrame?.appendChild(sideHandle);
-            sideHandle.addEventListener("mousedown", event => {
+            sideHandle.addEventListener("mousedown", (event) => {
                 if (event.buttons !== 1 || !this.activeElement) {
                     return;
                 }
                 this.startMoveCrop(event);
             });
-            const toolboxRoot = eltToPutControlsOn.ownerDocument.createElement(
-                "div"
-            );
+            const toolboxRoot =
+                eltToPutControlsOn.ownerDocument.createElement("div");
             toolboxRoot.setAttribute("id", "canvas-element-context-controls");
             // We don't have to worry about removing this before saving because it is above the level
             // of the bloom-page.
             document.body.appendChild(toolboxRoot);
         }
-        const hasImage =
-            eltToPutControlsOn?.getElementsByClassName("bloom-imageContainer")
-                ?.length > 0;
+        const imageContainer = eltToPutControlsOn?.getElementsByClassName(
+            "bloom-imageContainer",
+        )?.[0];
+        const hasImage = !!imageContainer;
         if (hasImage) {
             controlFrame.classList.add("has-image");
         } else {
             controlFrame.classList.remove("has-image");
         }
+        if (eltToPutControlsOn?.classList.contains(kBloomButtonClass)) {
+            controlFrame.classList.add("is-button");
+        } else {
+            controlFrame.classList.remove("is-button");
+        }
+
         const hasSvg =
             eltToPutControlsOn?.getElementsByClassName("bloom-svg")?.length > 0;
         if (hasSvg) {
@@ -1406,7 +1379,7 @@ export class CanvasElementManager {
         }
         const hasText =
             eltToPutControlsOn?.getElementsByClassName(
-                "bloom-editable bloom-visibility-code-on"
+                "bloom-editable bloom-visibility-code-on",
             ).length > 0;
         if (hasText) {
             controlFrame.classList.add("has-text");
@@ -1416,7 +1389,7 @@ export class CanvasElementManager {
         // to reduce flicker we don't show this when switching to a different canvas element until we determine
         // that it is wanted.
         controlFrame.classList.remove(
-            "bloom-ui-canvas-element-show-move-crop-handle"
+            "bloom-ui-canvas-element-show-move-crop-handle",
         );
         // If the canvas element is not the right shape for a contained image, fix it now.
         // This also aligns the canvas element controls with the image (possibly after waiting
@@ -1429,6 +1402,9 @@ export class CanvasElementManager {
     private startMoveCropY: number;
     private startMoveCropControlX: number;
     private startMoveCropControlY: number;
+    // Start a drag that changes the cropping on an image by moving it (but not resizing
+    // anything) within its container. This is triggered by the center handle that appears
+    // in an image canvas element when it is cropped and active.)
     startMoveCrop = (event: MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
@@ -1437,9 +1413,8 @@ export class CanvasElementManager {
         this.currentDragControl.classList.add("active");
         this.startMoveCropX = event.clientX;
         this.startMoveCropY = event.clientY;
-        const imgC = this.activeElement.getElementsByClassName(
-            kImageContainerClass
-        )[0];
+        const imgC =
+            this.activeElement.getElementsByClassName(kImageContainerClass)[0];
         const img = imgC?.getElementsByTagName("img")[0];
         if (!img) return;
         this.oldImageTop = img.offsetTop;
@@ -1449,25 +1424,32 @@ export class CanvasElementManager {
         this.startMoveCropControlY = this.currentDragControl.offsetTop;
 
         document.addEventListener("mousemove", this.continueMoveCrop, {
-            capture: true
+            capture: true,
         });
         // capture:true makes sure we can't miss it.
         document.addEventListener("mouseup", this.endMoveCrop, {
-            capture: true
+            capture: true,
         });
         this.startMoving();
     };
+
+    // Ends the drag stared by startMoveCrop when the center control of an image canvas element is dragged.
     private endMoveCrop = (event: MouseEvent) => {
         document.removeEventListener("mousemove", this.continueMoveCrop, {
-            capture: true
+            capture: true,
         });
         document.removeEventListener("mouseup", this.endMoveCrop, {
-            capture: true
+            capture: true,
         });
         this.currentDragControl?.classList.remove("active");
         this.currentDragControl!.style.left = "";
         this.currentDragControl!.style.top = "";
         this.stopMoving();
+        if (this.activeElement?.classList.contains(kBackgroundImageClass)) {
+            // currently we only need to do this because the command to expand to fill
+            // the container might have become enabled.
+            renderCanvasElementContextControls(this.activeElement, false);
+        }
     };
 
     private continueMoveCrop = (event: MouseEvent) => {
@@ -1476,9 +1458,8 @@ export class CanvasElementManager {
         }
         const deltaX = event.clientX - this.startMoveCropX;
         const deltaY = event.clientY - this.startMoveCropY;
-        const imgC = this.activeElement.getElementsByClassName(
-            kImageContainerClass
-        )[0];
+        const imgC =
+            this.activeElement.getElementsByClassName(kImageContainerClass)[0];
         const img = imgC?.getElementsByTagName("img")[0];
         if (!img) return;
         event.preventDefault();
@@ -1491,13 +1472,13 @@ export class CanvasElementManager {
             Math.min(this.oldImageLeft + deltaX, 0),
             this.activeElement.clientLeft +
                 this.activeElement.clientWidth -
-                img.clientWidth
+                img.clientWidth,
         );
         const newTop = Math.max(
             Math.min(this.oldImageTop + deltaY, 0),
             this.activeElement.clientTop +
                 this.activeElement.clientHeight -
-                img.clientHeight
+                img.clientHeight,
         );
         imgStyle.left = newLeft + "px";
         imgStyle.top = newTop + "px";
@@ -1515,7 +1496,7 @@ export class CanvasElementManager {
 
     private startResizeDrag(
         event: MouseEvent,
-        corner: "ne" | "nw" | "se" | "sw"
+        corner: "ne" | "nw" | "se" | "sw",
     ) {
         event.preventDefault();
         event.stopPropagation();
@@ -1539,42 +1520,50 @@ export class CanvasElementManager {
         this.guideProvider.startDrag(
             "resize",
             Array.from(
-                document.querySelectorAll(kCanvasElementSelector)
-            ) as HTMLElement[]
+                document.querySelectorAll(kCanvasElementSelector),
+            ) as HTMLElement[],
         );
         document.addEventListener("mousemove", this.continueResizeDrag, {
-            capture: true
+            capture: true,
         });
         // capture:true makes sure we can't miss it.
         document.addEventListener("mouseup", this.endResizeDrag, {
-            capture: true
+            capture: true,
         });
     }
     private endResizeDrag = (_event: MouseEvent) => {
         document.removeEventListener("mousemove", this.continueResizeDrag, {
-            capture: true
+            capture: true,
         });
         document.removeEventListener("mouseup", this.endResizeDrag, {
-            capture: true
+            capture: true,
         });
         this.currentDragControl?.classList.remove("active-control");
         this.guideProvider.endDrag();
         this.snapProvider.endDrag();
+        // If this is a button, notify the overflow checker to recheck overflow
+        if (this.activeElement?.classList.contains(kBloomButtonClass)) {
+            this.activeElement.dispatchEvent(
+                new Event("buttonCanvasElementResized", {
+                    bubbles: true,
+                    cancelable: false,
+                }),
+            );
+        }
     };
 
-    private minWidth = 30; // @MinTextBoxWidth in overlayTool.less
-    private minHeight = 30; // @MinTextBoxHeight in overlayTool.less
+    private minWidth = 30; // @MinTextBoxWidth in canvasTool.less
+    private minHeight = 30; // @MinTextBoxHeight in canvasTool.less
 
     private getImageOrVideo(): HTMLElement | undefined {
         // It will have one or the other or neither, but not both, so it doesn't much matter
         // which we search for first. But images are probably more common.
-        const imgC = this.activeElement?.getElementsByClassName(
-            kImageContainerClass
-        )[0];
+        const imgC =
+            this.activeElement?.getElementsByClassName(kImageContainerClass)[0];
         const img = imgC?.getElementsByTagName("img")[0];
         if (img) return img;
         const videoC = this.activeElement?.getElementsByClassName(
-            "bloom-videoContainer"
+            "bloom-videoContainer",
         )[0];
         const video = videoC?.getElementsByTagName("video")[0];
         return video;
@@ -1661,7 +1650,7 @@ export class CanvasElementManager {
         let { x: snappedX, y: snappedY } = this.snapProvider.getPosition(
             event,
             targetX - this.oldLeft,
-            targetY - this.oldTop
+            targetY - this.oldTop,
         );
         snappedX += this.oldLeft;
         snappedY += this.oldTop;
@@ -1709,7 +1698,11 @@ export class CanvasElementManager {
             newTop = this.oldTop + this.oldHeight - newHeight;
         }
 
-        if (slope) {
+        // We don't apply the aspect ratio constraint to buttons.
+        if (
+            slope &&
+            !this.activeElement.classList.contains(kBloomButtonClass)
+        ) {
             // We want to keep the aspect ratio of the image. So the possible places to move
             // the moving corner must be on a line through the opposite corner
             // (which isn't moving) with a slope that would make it pass through the
@@ -1819,7 +1812,7 @@ export class CanvasElementManager {
             this.activeElement,
             imgOrVideo?.tagName === "IMG"
                 ? (imgOrVideo as HTMLImageElement)
-                : undefined
+                : undefined,
         );
 
         this.guideProvider.duringDrag(this.activeElement);
@@ -1864,7 +1857,7 @@ export class CanvasElementManager {
     private startSideControlDrag(event: MouseEvent, side: string) {
         const img = this.activeElement?.getElementsByTagName("img")[0];
         const textBox = this.activeElement?.getElementsByClassName(
-            "bloom-editable bloom-visibility-code-on"
+            "bloom-editable bloom-visibility-code-on",
         )[0];
         if ((!img && !textBox) || !this.activeElement) {
             return;
@@ -1887,10 +1880,13 @@ export class CanvasElementManager {
                 this.initialCropImageHeight = img.offsetHeight;
                 this.initialCropImageLeft = img.offsetLeft;
                 this.initialCropImageTop = img.offsetTop;
-                this.initialCropCanvasElementWidth = this.activeElement.offsetWidth;
-                this.initialCropCanvasElementHeight = this.activeElement.offsetHeight;
+                this.initialCropCanvasElementWidth =
+                    this.activeElement.offsetWidth;
+                this.initialCropCanvasElementHeight =
+                    this.activeElement.offsetHeight;
                 this.initialCropCanvasElementTop = this.activeElement.offsetTop;
-                this.initialCropCanvasElementLeft = this.activeElement.offsetLeft;
+                this.initialCropCanvasElementLeft =
+                    this.activeElement.offsetLeft;
                 this.lastCropControl = event.currentTarget as HTMLElement;
             }
             // Determine whether the drag is starting in the "no cropping" position
@@ -1938,19 +1934,19 @@ export class CanvasElementManager {
         this.guideProvider.startDrag(
             "resize",
             Array.from(
-                document.querySelectorAll(kCanvasElementSelector)
-            ) as HTMLElement[]
+                document.querySelectorAll(kCanvasElementSelector),
+            ) as HTMLElement[],
         );
         // move/up listeners are on the document so we can continue the drag even if it moves
         // outside the control clicked. I think something similar can be achieved
         // with mouse capture, but less portably.
         document.addEventListener("mousemove", this.continueSideDrag, {
-            capture: true
+            capture: true,
         });
         // putting this in capture phase to make sure we can't miss it. Had some trouble with
         // mouseup not firing, possibly because something does stopPropagation.
         document.addEventListener("mouseup", this.stopSideDrag, {
-            capture: true
+            capture: true,
         });
         this.startMoving();
     }
@@ -1958,17 +1954,17 @@ export class CanvasElementManager {
         this.guideProvider.endDrag();
         this.snapProvider.endDrag();
         document.removeEventListener("mousemove", this.continueSideDrag, {
-            capture: true
+            capture: true,
         });
         document.removeEventListener("mouseup", this.stopSideDrag, {
-            capture: true
+            capture: true,
         });
         this.currentDragControl?.classList.remove("active-control");
         if (this.activeElement?.classList.contains(kBackgroundImageClass)) {
             this.adjustBackgroundImageSize(
                 this.activeElement.closest(kBloomCanvasSelector)!,
                 this.activeElement,
-                false
+                false,
             );
             // an additional move makes continuing the last crop invalid.
             this.lastCropControl = undefined;
@@ -1983,7 +1979,7 @@ export class CanvasElementManager {
         // doesn't know this unless we force a render.
         renderCanvasElementContextControls(
             this.activeElement as HTMLElement,
-            false
+            false,
         );
     };
     private continueTextBoxResize(event: MouseEvent, editable: HTMLElement) {
@@ -1995,16 +1991,16 @@ export class CanvasElementManager {
         console.assert(
             this.currentDragSide === "e" ||
                 this.currentDragSide === "w" ||
-                this.currentDragSide === "s"
+                this.currentDragSide === "s",
         );
         switch (this.currentDragSide) {
             case "e":
                 newCanvasElementWidth = Math.max(
                     this.snapProvider.getSnappedX(
                         this.oldWidth + deltaX,
-                        event
+                        event,
                     ),
-                    this.minWidth
+                    this.minWidth,
                 );
                 deltaX = newCanvasElementWidth - this.oldWidth;
                 this.activeElement.style.width = `${newCanvasElementWidth}px`;
@@ -2013,9 +2009,9 @@ export class CanvasElementManager {
                 newCanvasElementWidth = Math.max(
                     this.snapProvider.getSnappedX(
                         this.oldWidth - deltaX,
-                        event
+                        event,
                     ),
-                    this.minWidth
+                    this.minWidth,
                 );
                 deltaX = this.oldWidth - newCanvasElementWidth;
                 this.activeElement.style.width = `${newCanvasElementWidth}px`;
@@ -2025,9 +2021,9 @@ export class CanvasElementManager {
                 newCanvasElementHeight = Math.max(
                     this.snapProvider.getSnappedY(
                         this.oldHeight + deltaY,
-                        event
+                        event,
                     ),
-                    this.minHeight
+                    this.minHeight,
                 );
                 deltaY = newCanvasElementHeight - this.oldHeight;
                 this.activeElement.style.height = `${newCanvasElementHeight}px`;
@@ -2035,7 +2031,7 @@ export class CanvasElementManager {
         // This won't adjust the height of the editable, but it will mark overflow appropriately.
         // See BL-13902.
         theOneCanvasElementManager.adjustCanvasElementHeightToContentOrMarkOverflow(
-            editable
+            editable,
         );
         this.adjustTarget(this.activeElement);
         this.alignControlFrameWithActiveElement();
@@ -2046,14 +2042,14 @@ export class CanvasElementManager {
     private updateCurrentlyCropped() {
         const sideHandles = Array.from(
             document.getElementsByClassName(
-                "bloom-ui-canvas-element-side-handle"
-            )
+                "bloom-ui-canvas-element-side-handle",
+            ),
         );
         if (sideHandles.length === 0 || !this.activeElement) return;
         const img = getImageFromCanvasElement(this.activeElement);
         if (!img) {
             // only images do cropping. Remove them all.
-            sideHandles.forEach(handle => {
+            sideHandles.forEach((handle) => {
                 handle.classList.remove("bloom-currently-cropped");
             });
             return;
@@ -2065,16 +2061,16 @@ export class CanvasElementManager {
             n: imgRect.top + slop < canvasElementRect.top,
             e: imgRect.right > canvasElementRect.right + slop,
             s: imgRect.bottom > canvasElementRect.bottom + slop,
-            w: imgRect.left + slop < canvasElementRect.left
+            w: imgRect.left + slop < canvasElementRect.left,
         };
-        sideHandles.forEach(handle => {
+        sideHandles.forEach((handle) => {
             //const side = handle.classList[1].split("-")[4];
-            const longClass = Array.from(handle.classList).find(c =>
-                c.startsWith("bloom-ui-canvas-element-side-handle-")
+            const longClass = Array.from(handle.classList).find((c) =>
+                c.startsWith("bloom-ui-canvas-element-side-handle-"),
             );
             if (!longClass) return;
             const side = longClass.substring(
-                "bloom-ui-canvas-element-side-handle-".length
+                "bloom-ui-canvas-element-side-handle-".length,
             );
             if (cropped[side]) {
                 handle.classList.add("bloom-currently-cropped");
@@ -2089,7 +2085,7 @@ export class CanvasElementManager {
             return;
         }
         const textBox = this.activeElement.getElementsByClassName(
-            "bloom-editable bloom-visibility-code-on"
+            "bloom-editable bloom-visibility-code-on",
         )[0];
         if (textBox) {
             event.preventDefault();
@@ -2122,7 +2118,7 @@ export class CanvasElementManager {
             !event.ctrlKey
         ) {
             const bloomCanvas = this.activeElement.closest(
-                kBloomCanvasSelector
+                kBloomCanvasSelector,
             ) as HTMLElement;
             const containerAspectRatio =
                 bloomCanvas.clientWidth / bloomCanvas.clientHeight;
@@ -2312,7 +2308,7 @@ export class CanvasElementManager {
                     shouldSnapForBackground === "y",
                     deltaY,
                     backgroundSnapDelta,
-                    "n"
+                    "n",
                 );
                 // correct if we moved the top too far up, which would leave a gap at the top
                 if (this.oldImageTop - deltaY > 0) {
@@ -2321,7 +2317,7 @@ export class CanvasElementManager {
                 // correct if we moved too far down, violating the minimum image height constraint.
                 newCanvasElementHeight = Math.max(
                     this.oldHeight - deltaY,
-                    this.minHeight
+                    this.minHeight,
                 );
                 // Everything subsequent behaves as if it only moved as far as permitted.
                 deltaY = this.oldHeight - newCanvasElementHeight;
@@ -2338,7 +2334,7 @@ export class CanvasElementManager {
                     shouldSnapForBackground === "y",
                     deltaY,
                     backgroundSnapDelta,
-                    "s"
+                    "s",
                 );
                 // correct if we moved too far down, which would leave a gap at the bottom
                 // These variables would make the next line more comprehensible, but they only apply
@@ -2358,7 +2354,7 @@ export class CanvasElementManager {
                 // correct if we moved too far up, violating the minimum image height constraint.
                 newCanvasElementHeight = Math.max(
                     this.oldHeight + deltaY,
-                    this.minHeight
+                    this.minHeight,
                 );
                 deltaY = newCanvasElementHeight - this.oldHeight;
                 this.activeElement.style.height = `${newCanvasElementHeight}px`;
@@ -2368,7 +2364,7 @@ export class CanvasElementManager {
                     shouldSnapForBackground === "x",
                     deltaX,
                     backgroundSnapDelta,
-                    "e"
+                    "e",
                 );
                 // correct if we moved too far right, which would leave a gap at the right
                 if (
@@ -2383,7 +2379,7 @@ export class CanvasElementManager {
                 // correct if we moved too far left, violating the minimum image width constraint.
                 newCanvasElementWidth = Math.max(
                     this.oldWidth + deltaX,
-                    this.minWidth
+                    this.minWidth,
                 );
                 deltaX = newCanvasElementWidth - this.oldWidth;
                 this.activeElement.style.width = `${newCanvasElementWidth}px`;
@@ -2393,7 +2389,7 @@ export class CanvasElementManager {
                     shouldSnapForBackground === "x",
                     deltaX,
                     backgroundSnapDelta,
-                    "w"
+                    "w",
                 );
                 // correct if we moved too far left, which would leave a gap at the left
                 if (this.oldImageLeft > deltaX) {
@@ -2402,7 +2398,7 @@ export class CanvasElementManager {
                 // correct if we moved too far right, violating the minimum image width constraint.
                 newCanvasElementWidth = Math.max(
                     this.oldWidth - deltaX,
-                    this.minWidth
+                    this.minWidth,
                 );
                 deltaX = this.oldWidth - newCanvasElementWidth;
                 this.activeElement.style.width = `${newCanvasElementWidth}px`;
@@ -2564,7 +2560,7 @@ export class CanvasElementManager {
 
     private adjustStuffRelatedToImage(
         activeElement: HTMLElement,
-        img: HTMLImageElement | undefined
+        img: HTMLImageElement | undefined,
     ) {
         this.alignControlFrameWithActiveElement();
         this.adjustTarget(this.activeElement);
@@ -2575,12 +2571,12 @@ export class CanvasElementManager {
         shouldSnap: boolean,
         delta: number,
         backgroundSnapDelta: number,
-        side: string
+        side: string,
     ): number {
         if (!shouldSnap) return delta;
         const snapDelta = 30;
         const controlFrame = document.getElementById(
-            "canvas-element-control-frame"
+            "canvas-element-control-frame",
         ) as HTMLElement;
         if (Math.abs(backgroundSnapDelta - delta) < snapDelta) {
             this.getHandleTitlesAsync(
@@ -2588,7 +2584,7 @@ export class CanvasElementManager {
                 "bloom-ui-canvas-element-side-handle-" + side,
                 "Fill",
                 true,
-                "data-title"
+                "data-title",
             );
             return backgroundSnapDelta;
         }
@@ -2598,7 +2594,7 @@ export class CanvasElementManager {
             "bloom-ui-canvas-element-side-handle-" + side,
             "Crop",
             true,
-            "data-title"
+            "data-title",
         );
         return delta;
     }
@@ -2616,52 +2612,64 @@ export class CanvasElementManager {
         }
     }
 
-    // If the background canvas element doesn't fill the container, we can expand the image to make it so.
-    public canExpandToFillSpace(): boolean {
+    // Calculates the new dimensions and position for expanding the image to fill the container.
+    // Returns an object with the new width and top/left values if changes are needed, or null otherwise.
+    private getExpandedImageDimensions(): {
+        imgWidth: number;
+        imgTop?: number;
+        imgLeft?: number;
+    } | null {
         if (
             !this.activeElement ||
             !this.activeElement.classList.contains(kBackgroundImageClass)
         )
-            return false;
-        const bloomCanvas = this.activeElement.closest(
-            kBloomCanvasSelector
-        ) as HTMLElement;
-        if (!bloomCanvas) return false;
-        return (
-            bloomCanvas.clientWidth !== this.activeElement.clientWidth ||
-            bloomCanvas.clientHeight !== this.activeElement.clientHeight
-        );
-    }
-
-    public expandImageToFillSpace() {
-        if (
-            !this.activeElement ||
-            !this.activeElement.classList.contains(kBackgroundImageClass)
-        )
-            return;
+            return null;
         const img = getImageFromCanvasElement(this.activeElement);
-        if (!img) return;
+        if (!img) return null;
         const bloomCanvas = this.activeElement.closest(
-            kBloomCanvasSelector
+            kBloomCanvasSelector,
         ) as HTMLElement;
-        if (!bloomCanvas) return;
-        // Remove any existing cropping
-        this.resetCropping(false);
+        if (!bloomCanvas) return null;
+
         const imgAspectRatio = img.naturalWidth / img.naturalHeight;
         const containerAspectRatio =
             bloomCanvas.clientWidth / bloomCanvas.clientHeight;
-        this.activeElement.style.width = `${bloomCanvas.clientWidth}px`;
-        this.activeElement.style.height = `${bloomCanvas.clientHeight}px`;
+        const imgStyleWidth = img.style.width;
+        const currentImgWidth = imgStyleWidth
+            ? CanvasElementManager.pxToNumber(imgStyleWidth)
+            : img.clientWidth;
+        // using <= here because client  values are whole pixels and rounding easily
+        // produces a spurious 1px difference.
+        const canvasElementFillsCanvas =
+            Math.abs(
+                bloomCanvas.clientHeight - this.activeElement!.clientHeight,
+            ) <= 1 &&
+            Math.abs(
+                bloomCanvas.clientWidth - this.activeElement!.clientWidth,
+            ) <= 1;
+
         if (imgAspectRatio < containerAspectRatio) {
             // When the image fills the width of the container, it will be too tall,
             // and will need cropping top and bottom.
             const imgHeightForFullWidth =
                 bloomCanvas.clientWidth / imgAspectRatio;
             const delta = imgHeightForFullWidth - bloomCanvas.clientHeight;
-            if (delta >= 1) {
-                // let's not switch into cropped mode if it's this close already
-                img.style.width = `${bloomCanvas.clientWidth}px`;
-                img.style.top = `${-delta / 2}px`;
+            const currentImgTop = CanvasElementManager.pxToNumber(
+                img.style.top,
+            );
+            const newImgTop = -delta / 2;
+
+            if (
+                Math.abs(bloomCanvas.clientWidth - currentImgWidth) >= 1 ||
+                Math.abs(currentImgTop - newImgTop) >= 1 ||
+                !canvasElementFillsCanvas
+            ) {
+                // let's not switch into cropped mode if it would make almost no difference.
+                // (or we've already done it)
+                return {
+                    imgWidth: bloomCanvas.clientWidth,
+                    imgTop: -delta / 2,
+                };
             }
         } else {
             // When the image fills the height of the container, it will be too wide,
@@ -2669,17 +2677,59 @@ export class CanvasElementManager {
             const imgWidthForFullHeight =
                 bloomCanvas.clientHeight * imgAspectRatio;
             const delta = imgWidthForFullHeight - bloomCanvas.clientWidth;
-            if (delta >= 1) {
-                img.style.width = `${imgWidthForFullHeight}px`;
-                img.style.left = `${-delta / 2}px`;
+            const currentImgLeft = CanvasElementManager.pxToNumber(
+                img.style.left,
+            );
+            const newImgLeft = -delta / 2;
+            if (
+                Math.abs(imgWidthForFullHeight - currentImgWidth) >= 1 ||
+                Math.abs(currentImgLeft - newImgLeft) >= 1 ||
+                !canvasElementFillsCanvas
+            ) {
+                return {
+                    imgWidth: imgWidthForFullHeight,
+                    imgLeft: -delta / 2,
+                };
             }
         }
+        return null;
+    }
+
+    // If the background canvas element doesn't fill the container, we can expand the image to make it so.
+    public canExpandToFillSpace(): boolean {
+        return this.getExpandedImageDimensions() !== null;
+    }
+
+    public expandImageToFillSpace() {
+        const dimensions = this.getExpandedImageDimensions();
+        if (!dimensions) return;
+
+        const img = getImageFromCanvasElement(this.activeElement!);
+        if (!img) return;
+        const bloomCanvas = this.activeElement!.closest(
+            kBloomCanvasSelector,
+        ) as HTMLElement;
+        if (!bloomCanvas) return;
+
+        // Remove any existing cropping
+        this.resetCropping(false);
+        this.activeElement!.style.width = `${bloomCanvas.clientWidth}px`;
+        this.activeElement!.style.height = `${bloomCanvas.clientHeight}px`;
+
+        img.style.width = `${dimensions.imgWidth}px`;
+        if (dimensions.imgTop !== undefined) {
+            img.style.top = `${dimensions.imgTop}px`;
+        }
+        if (dimensions.imgLeft !== undefined) {
+            img.style.left = `${dimensions.imgLeft}px`;
+        }
+
         // I think this is redundant, but it may (now or one day) do something that needs doing
         // when the background image changes size.
-        this.adjustBackgroundImageSize(bloomCanvas, this.activeElement, false);
+        this.adjustBackgroundImageSize(bloomCanvas, this.activeElement!, false);
         // We will have changed the state of the fill space button, but the React code
         // doesn't know this unless we force a render.
-        renderCanvasElementContextControls(this.activeElement, false);
+        renderCanvasElementContextControls(this.activeElement!, false);
     }
 
     // If this canvas element contains an image, and it has not already been adjusted so that the canvas element
@@ -2695,7 +2745,7 @@ export class CanvasElementManager {
         // and don't get an onload in a reasonable time. If we DO get the onload before we
         // timeout, we use this handle to clear it.
         // This is set when we arrange an onload callback and receive it
-        timeoutHandler: number = 0
+        timeoutHandler: number = 0,
     ): void {
         if (timeoutHandler) {
             clearTimeout(timeoutHandler);
@@ -2704,8 +2754,15 @@ export class CanvasElementManager {
             this.adjustBackgroundImageSize(
                 canvasElement.closest(kBloomCanvasSelector)!,
                 canvasElement,
-                useSizeOfNewImage
+                useSizeOfNewImage,
             );
+            return;
+        }
+        if (canvasElement.classList.contains(kBloomButtonClass)) {
+            // Let image buttons keep their manually set size (BL-15738)
+            // Enhance: refactor the whole method so we don't have to remember to call alignControlFrameWithActiveElement
+            // separately on every return path
+            this.alignControlFrameWithActiveElement();
             return;
         }
         const imgOrVideo = this.getImageOrVideo();
@@ -2723,39 +2780,41 @@ export class CanvasElementManager {
             imgWidth = imgOrVideo.naturalWidth;
             imgHeight = imgOrVideo.naturalHeight;
             if (
-                imgOrVideo.naturalHeight === 0 && // not loaded successfully (yet)
-                !useSizeOfNewImage && // not waiting for new dimensions
-                imgOrVideo.classList.contains("bloom-imageLoadError") // error occurred while trying to load
+                isPlaceHolderImage(imgOrVideo.getAttribute("src")) ||
+                (imgOrVideo.naturalHeight === 0 && // not loaded successfully (yet)
+                    !useSizeOfNewImage && // not waiting for new dimensions
+                    imgOrVideo.classList.contains("bloom-imageLoadError")) // error occurred while trying to load
             ) {
-                // Image is in an error state; we probably won't ever get useful dimensions. Just leave
+                // Image is in an error state or is just a placeholder; we probably won't ever get useful dimensions. Just leave
                 // the canvas element the shape it is.
+                this.alignControlFrameWithActiveElement();
                 return;
             }
             if (imgHeight === 0 || useSizeOfNewImage) {
                 // image not ready yet, try again later.
-                const handle = (setTimeout(
+                const handle = setTimeout(
                     () =>
                         this.adjustContainerAspectRatio(
                             canvasElement,
                             false, // if we've got dimensions just use them
-                            0
+                            0,
                         ), // if we get this call we don't have a timeout to cancel
                     // I think this is long enough that we won't be seeing obsolete data (from a previous src).
                     // OTOH it's not hopelessly long for the user to wait when we don't get an onload.
                     // If by any chance this happens when the image really isn't loaded enough to
                     // have naturalHeight/Width, the zero checks above will force another iteration.
-                    100
+                    100,
                     // somehow Typescript is confused and thinks this is a NodeJS version of setTimeout.
-                ) as unknown) as number;
+                ) as unknown as number;
                 imgOrVideo.addEventListener(
                     "load",
                     () =>
                         this.adjustContainerAspectRatio(
                             canvasElement,
                             false, // it's loaded, we don't want to wait again
-                            handle
+                            handle,
                         ), // if we get this call we can cancel the timeout above.
-                    { once: true }
+                    { once: true },
                 );
                 return; // control frame will be aligned when the image is loaded
             }
@@ -2770,7 +2829,7 @@ export class CanvasElementManager {
                 video.addEventListener(
                     "loadedmetadata",
                     () => this.adjustContainerAspectRatio(canvasElement),
-                    { once: true }
+                    { once: true },
                 );
                 return;
             }
@@ -2820,14 +2879,14 @@ export class CanvasElementManager {
         const adjustedOld = this.snapProvider.getPosition(
             undefined,
             oldLeft,
-            oldTop
+            oldTop,
         );
         if (adjustedOld.x === oldLeft && adjustedOld.y === oldTop) {
             // it was on the grid, so we want to keep it there.
             const adjustedNew = this.snapProvider.getPosition(
                 undefined,
                 newLeft,
-                newTop
+                newTop,
             );
             newLeft = adjustedNew.x;
             newTop = adjustedNew.y;
@@ -2847,7 +2906,7 @@ export class CanvasElementManager {
     // we remove cropping, adjust the aspect ratio, and move the control frame.
     updateCanvasElementForChangedImage(imgOrImageContainer: HTMLElement) {
         const canvasElement = imgOrImageContainer.closest(
-            kCanvasElementSelector
+            kCanvasElementSelector,
         ) as HTMLElement;
         if (!canvasElement) return;
         const img =
@@ -2865,8 +2924,9 @@ export class CanvasElementManager {
             this.adjustBackgroundImageSize(
                 canvasElement.closest(kBloomCanvasSelector)!,
                 canvasElement,
-                true
+                true,
             );
+            SetupMetadataButton(canvasElement);
         } else {
             this.adjustContainerAspectRatio(canvasElement, true);
         }
@@ -2879,10 +2939,10 @@ export class CanvasElementManager {
         className: string,
         l10nId: string,
         force: boolean = false,
-        attribute: string = "title"
+        attribute: string = "title",
     ) {
         const handles = Array.from(
-            controlFrame.getElementsByClassName(className)
+            controlFrame.getElementsByClassName(className),
         ) as HTMLElement[];
         // We could cache these somewhere, especially the crop/change shape pair, but I think
         // it would be premature optimization. We only have four title, and
@@ -2891,9 +2951,9 @@ export class CanvasElementManager {
             const title = await theOneLocalizationManager.asyncGetText(
                 "EditTab.Toolbox.ComicTool.Handle." + l10nId,
                 "",
-                ""
+                "",
             );
-            handles.forEach(handle => {
+            handles.forEach((handle) => {
                 handle.setAttribute(attribute, title);
             });
         }
@@ -2902,7 +2962,7 @@ export class CanvasElementManager {
     // Align the control frame with the active canvas element.
     private alignControlFrameWithActiveElement = () => {
         const controlFrame = document.getElementById(
-            "canvas-element-control-frame"
+            "canvas-element-control-frame",
         );
         let controlsAbove = false;
         if (!controlFrame || !this.activeElement) return;
@@ -2912,7 +2972,7 @@ export class CanvasElementManager {
         }
         controlFrame.classList.toggle(
             "bloom-noAutoHeight",
-            this.activeElement.classList.contains("bloom-noAutoHeight")
+            this.activeElement.classList.contains("bloom-noAutoHeight"),
         );
         // We want some special CSS rules for control frames on background images (e.g., no resize handles).
         // But we give the class a different name so the control frame won't accidentally be affected
@@ -2921,20 +2981,18 @@ export class CanvasElementManager {
         // to have this different class to trigger control frame background-specific CSS rules.
         controlFrame.classList.toggle(
             kBackgroundImageClass + "-control-frame",
-            this.activeElement.classList.contains(kBackgroundImageClass)
+            this.activeElement.classList.contains(kBackgroundImageClass),
         );
-        let backgroundImageExists = true;
-        if (this.activeElement.classList.contains(kBackgroundImageClass)) {
-            const img = getImageFromCanvasElement(this.activeElement);
-            if (img && img.getAttribute("src") === "placeHolder.png") {
-                backgroundImageExists = false;
-            }
+
+        // mark empty image control frames with a special class
+        let imageIsPlaceHolder = false;
+        const img = getImageFromCanvasElement(this.activeElement);
+        if (img && isPlaceHolderImage(img.getAttribute("src"))) {
+            imageIsPlaceHolder = true;
         }
-        // mark empty background images in games with a special class (BL-14703)
         controlFrame.classList.toggle(
-            kBackgroundImageClass + "-control-frame-no-image",
-            !backgroundImageExists &&
-                !!this.activeElement.closest(".bloom-page[data-tool-id='game']")
+            "bloom-image-control-frame-no-image",
+            imageIsPlaceHolder,
         );
 
         const hasText = controlFrame.classList.contains("has-text");
@@ -2943,7 +3001,7 @@ export class CanvasElementManager {
         this.getHandleTitlesAsync(
             controlFrame,
             "bloom-ui-canvas-element-resize-handle",
-            "Resize"
+            "Resize",
         );
         this.getHandleTitlesAsync(
             controlFrame,
@@ -2953,12 +3011,12 @@ export class CanvasElementManager {
             // between text and image. And there's another state we want
             // when cropping a background image and snapped.
             !controlFrame.classList.contains("moving"),
-            "data-title"
+            "data-title",
         );
         this.getHandleTitlesAsync(
             controlFrame,
             "bloom-ui-canvas-element-move-crop-handle",
-            "Shift"
+            "Shift",
         );
         // Text boxes get a little extra padding, making the control frame bigger than
         // the canvas element itself. The extra needed corresponds roughly to the (.less) @sideHandleRadius,
@@ -2977,7 +3035,7 @@ export class CanvasElementManager {
         controlFrame.style.width =
             CanvasElementManager.pxToNumber(
                 this.activeElement.style.width,
-                this.activeElement.offsetWidth
+                this.activeElement.offsetWidth,
             ) +
             2 * extraPadding +
             "px";
@@ -3000,10 +3058,10 @@ export class CanvasElementManager {
 
     adjustContextControlPosition(
         controlFrame: HTMLElement | null,
-        controlsAbove: boolean
+        controlsAbove: boolean,
     ) {
         const contextControl = document.getElementById(
-            "canvas-element-context-controls"
+            "canvas-element-context-controls",
         );
         if (!contextControl) return;
         if (!controlFrame) {
@@ -3011,7 +3069,7 @@ export class CanvasElementManager {
             return;
         }
         const scalingContainer = document.getElementById(
-            "page-scaling-container"
+            "page-scaling-container",
         );
         // The context controls look as if they're on the page, so they should have the same scaling.
         // But they aren't actually in the scaling container, so we have to give them their
@@ -3047,7 +3105,7 @@ export class CanvasElementManager {
                 setTimeout(() => {
                     this.adjustContextControlPosition(
                         controlFrame,
-                        controlsAbove
+                        controlsAbove,
                     );
                 }, 0);
             }
@@ -3057,9 +3115,10 @@ export class CanvasElementManager {
             // exception: if the control frame extends beyond the bottom of the image-container,
             // we want to use the image-container's bottom as our reference point.
             // This can happen with a background image set to bloom-imageObjectFitCover.
-            const bloomCanvasRect = this.activeElement!.closest(
-                kBloomCanvasSelector
-            )!.getBoundingClientRect();
+            const bloomCanvasRect =
+                this.activeElement!.closest(
+                    kBloomCanvasSelector,
+                )!.getBoundingClientRect();
             if (controlFrameRect.bottom > bloomCanvasRect.bottom) {
                 top = bloomCanvasRect.bottom + 11;
             }
@@ -3083,8 +3142,10 @@ export class CanvasElementManager {
     }
 
     public doNotifyChange() {
-        const spec = this.getSelectedFamilySpec();
-        this.thingsToNotifyOfCanvasElementChange.forEach(f => f.handler(spec));
+        const bubble = this.getPatriarchBubbleOfActiveElement();
+        this.thingsToNotifyOfCanvasElementChange.forEach((f) =>
+            f.handler(bubble),
+        );
     }
 
     // Set the color of the text in all of the active canvas element family's canvas elements.
@@ -3097,8 +3158,8 @@ export class CanvasElementManager {
             const bubble = new Bubble(activeEl);
             const relatives = Comical.findRelatives(bubble);
             relatives.push(bubble);
-            relatives.forEach(bubble =>
-                this.setTextColorInternal(hexOrRgbColor, bubble.content)
+            relatives.forEach((bubble) =>
+                this.setTextColorInternal(hexOrRgbColor, bubble.content),
             );
         }
         this.restoreFocus();
@@ -3109,7 +3170,7 @@ export class CanvasElementManager {
         // bloom-editables. So we clear any color on the canvas element div and set it on all of the
         // inner bloom-editables.
         const topBox = element.closest(
-            kCanvasElementSelector
+            kCanvasElementSelector,
         ) as HTMLDivElement;
         topBox.style.color = "";
         const editables = topBox.getElementsByClassName("bloom-editable");
@@ -3125,7 +3186,7 @@ export class CanvasElementManager {
         let isDefaultStyleColor = false;
         if (activeEl) {
             const topBox = activeEl.closest(
-                kCanvasElementSelector
+                kCanvasElementSelector,
             ) as HTMLDivElement;
             // const allUserStyles = StyleEditor.GetFormattingStyleRules(
             //     topBox.ownerDocument
@@ -3136,9 +3197,8 @@ export class CanvasElementManager {
             // bloom-editables. So if the canvas element div didn't have a color, check the inner
             // bloom-editables.
             if (textColor === "") {
-                const editables = topBox.getElementsByClassName(
-                    "bloom-editable"
-                );
+                const editables =
+                    topBox.getElementsByClassName("bloom-editable");
                 if (editables.length === 0) {
                     // Image on Image case comes here.
                     isDefaultStyleColor = true;
@@ -3149,9 +3209,8 @@ export class CanvasElementManager {
                     if (colorStyle) {
                         textColor = colorStyle;
                     } else {
-                        textColor = this.getDefaultStyleTextColor(
-                            firstEditable
-                        );
+                        textColor =
+                            this.getDefaultStyleTextColor(firstEditable);
                         isDefaultStyleColor = true;
                     }
                 }
@@ -3192,11 +3251,30 @@ export class CanvasElementManager {
         if (opacity && opacity < 1) {
             newBackgroundColors[0] = getRgbaColorStringFromColorAndOpacity(
                 colors[0],
-                opacity
+                opacity,
             );
         }
+        if (this.activeElement.classList.contains(kBloomButtonClass)) {
+            // Possibly we should do this in more cases, but I don't want to mess with
+            // existing element types. When we're really making a bubble shape, we
+            // need to let Comical.js handle the background color, so it is the right
+            // shape to match the bubble. For text without a bubble shape, it would
+            // probably be simpler to just set it like we do here, but it
+            // doesn't matter much. For text buttons, we definitely want to do it using
+            // the style, so the background color obeys the border radius of the button
+            // and the shadow appears in the right place...makes everything simpler.
+            if (newBackgroundColors.length === 1) {
+                this.activeElement.style.background = "";
+                this.activeElement.style.backgroundColor =
+                    newBackgroundColors[0];
+            } else {
+                this.activeElement.style.backgroundColor = "";
+                this.activeElement.style.background = `linear-gradient(${newBackgroundColors.join(", ")})`;
+            }
+            return;
+        }
         this.updateSelectedItemBubbleSpec({
-            backgroundColors: newBackgroundColors
+            backgroundColors: newBackgroundColors,
         });
         // reset active element
         this.setActiveElement(originalActiveElement);
@@ -3240,7 +3318,7 @@ export class CanvasElementManager {
         if (isLinux()) return; // these events never fire on Linux: see BL-7958.
         // This suppresses the default behavior, which is to forbid dragging things to
         // an element, but only if the source of the drag is a bloom canvas element.
-        container.ondragover = ev => {
+        container.ondragover = (ev) => {
             if (
                 ev.dataTransfer &&
                 // don't be tempted to return to ev.dataTransfer.getData("text/x-bloom-canvas-element")
@@ -3259,7 +3337,7 @@ export class CanvasElementManager {
         // Controls what happens when a bloom canvas element is dropped. We get the style
         // set in ComicToolControls.ondragstart() and make a canvas element with that style
         // at the drop position.
-        container.ondrop = ev => {
+        container.ondrop = (ev) => {
             // test this so we don't interfere with dragging for text edit,
             // nor add canvas elements when something else is dragged
             if (
@@ -3277,7 +3355,7 @@ export class CanvasElementManager {
                 this.addCanvasElement(
                     ev.clientX,
                     ev.clientY,
-                    style as CanvasElementType
+                    style as CanvasElementType,
                 );
             }
         };
@@ -3300,13 +3378,13 @@ export class CanvasElementManager {
         // Grabbing these (particularly the move event) in the capture phase allows us to suppress
         // effects of ctrl and alt clicks on the text.
         bloomCanvas.addEventListener("mousedown", this.onMouseDown, {
-            capture: true
+            capture: true,
         });
 
         // I would prefer to add this to document in onMouseDown, but not yet satisfied that all
         // the things it does while hovering are no longer needed.
         bloomCanvas.addEventListener("mousemove", this.onMouseMove, {
-            capture: true
+            capture: true,
         });
 
         // mouse up handler is added to document in onMouseDown
@@ -3318,7 +3396,7 @@ export class CanvasElementManager {
             // and shrinks to one line, messing up the whole layout.
             if (!event.target || !(event.target as Element).closest) return;
             const topBox = (event.target as Element).closest(
-                kCanvasElementSelector
+                kCanvasElementSelector,
             ) as HTMLElement;
             if (!topBox) return;
             topBox.classList.remove("bloom-allowAutoShrink");
@@ -3329,10 +3407,10 @@ export class CanvasElementManager {
     // (by as much as we require when dragging them).
     public ensureCanvasElementsIntersectParent(parentContainer: HTMLElement) {
         const canvasElements = Array.from(
-            parentContainer.getElementsByClassName(kCanvasElementClass)
+            parentContainer.getElementsByClassName(kCanvasElementClass),
         ) as HTMLElement[];
         let changed = false;
-        canvasElements.forEach(canvasElement => {
+        canvasElements.forEach((canvasElement) => {
             // If the canvas element is not visible, its width will be 0. Don't try to adjust it.
             if (canvasElement.clientWidth === 0) return;
             // If we're in image description mode, the algorithm won't work right,
@@ -3350,13 +3428,13 @@ export class CanvasElementManager {
                     canvasElementRect.left - parentRect.left,
                     canvasElementRect.top - parentRect.top,
                     PointScaling.Scaled,
-                    "ensureCanvasElementsIntersectParent"
-                )
+                    "ensureCanvasElementsIntersectParent",
+                ),
             );
             changed = this.ensureTailsInsideParent(
                 parentContainer,
                 canvasElement,
-                changed
+                changed,
             );
         });
         if (changed) {
@@ -3369,18 +3447,18 @@ export class CanvasElementManager {
     private ensureTailsInsideParent(
         bloomCanvas: HTMLElement,
         canvasElement: HTMLElement,
-        changed: boolean
+        changed: boolean,
     ) {
         const originalTailSpecs = Bubble.getBubbleSpec(canvasElement).tails;
-        const newTails = originalTailSpecs.map(spec => {
+        const newTails = originalTailSpecs.map((spec) => {
             const tipPoint = this.adjustRelativePointToBloomCanvas(
                 bloomCanvas,
                 new Point(
                     spec.tipX,
                     spec.tipY,
                     PointScaling.Unscaled,
-                    "ensureTailsInsideParent.tip"
-                )
+                    "ensureTailsInsideParent.tip",
+                ),
             );
             const midPoint = this.adjustRelativePointToBloomCanvas(
                 bloomCanvas,
@@ -3388,8 +3466,8 @@ export class CanvasElementManager {
                     spec.midpointX,
                     spec.midpointY,
                     PointScaling.Unscaled,
-                    "ensureTailsInsideParent.tip"
-                )
+                    "ensureTailsInsideParent.tip",
+                ),
             );
             changed =
                 changed || // using changed ||= works but defeats prettier
@@ -3402,7 +3480,7 @@ export class CanvasElementManager {
                 tipX: tipPoint.getUnscaledX(),
                 tipY: tipPoint.getUnscaledY(),
                 midpointX: midPoint.getUnscaledX(),
-                midpointY: midPoint.getUnscaledY()
+                midpointY: midPoint.getUnscaledY(),
             };
         });
         const bubble = new Bubble(canvasElement);
@@ -3431,7 +3509,7 @@ export class CanvasElementManager {
     private adjustCanvasElementLocation(
         canvasElement: HTMLElement,
         container: HTMLElement,
-        positionInBloomCanvas: Point
+        positionInBloomCanvas: Point,
     ) {
         const parentWidth = container.clientWidth;
         const parentHeight = container.clientHeight;
@@ -3467,7 +3545,7 @@ export class CanvasElementManager {
                 x,
                 y,
                 PointScaling.Unscaled,
-                "AdjustCanvasElementLocation"
+                "AdjustCanvasElementLocation",
             );
             this.placeElementAtPosition($(canvasElement), container, moveTo);
         }
@@ -3484,8 +3562,8 @@ export class CanvasElementManager {
         const rangeOrCaret = doc.caretPositionFromPoint
             ? doc.caretPositionFromPoint(x, y)
             : doc.caretRangeFromPoint
-            ? doc.caretRangeFromPoint(x, y)
-            : null;
+              ? doc.caretRangeFromPoint(x, y)
+              : null;
         let range = rangeOrCaret;
         if (!range) {
             return undefined;
@@ -3548,7 +3626,7 @@ export class CanvasElementManager {
         // ours to handle will the mouse up handler even be added.
         // (I'd like to do the same with mouse move but we still have some hover effects.)
         document.addEventListener("mouseup", this.onMouseUp, {
-            capture: true
+            capture: true,
         });
 
         // These coordinates need to be relative to the canvas (which is the same as relative to the bloomCanvas).
@@ -3562,7 +3640,7 @@ export class CanvasElementManager {
             bloomCanvas,
             coordinates.getUnscaledX(),
             coordinates.getUnscaledY(),
-            true // only consider canvas elements with pointer events allowed.
+            true, // only consider canvas elements with pointer events allowed.
         );
         if (bubble && event.button === 2) {
             // Right mouse button
@@ -3577,7 +3655,7 @@ export class CanvasElementManager {
             // re-render the toolbox with its menu open at the desired location
             renderCanvasElementContextControls(bubble.content, true, {
                 left: event.clientX,
-                top: event.clientY
+                top: event.clientY,
             });
             return;
         }
@@ -3586,7 +3664,7 @@ export class CanvasElementManager {
             Comical.isDraggableNear(
                 bloomCanvas,
                 coordinates.getUnscaledX(),
-                coordinates.getUnscaledY()
+                coordinates.getUnscaledY(),
             )
         ) {
             // If we're starting to drag something, typically a tail handle, in Comical,
@@ -3606,8 +3684,8 @@ export class CanvasElementManager {
             this.guideProvider.startDrag(
                 "move",
                 Array.from(
-                    document.querySelectorAll(kCanvasElementSelector)
-                ) as HTMLElement[]
+                    document.querySelectorAll(kCanvasElementSelector),
+                ) as HTMLElement[],
             );
 
             // Remember the offset between the top-left of the canvas element we're dragging and the initial
@@ -3616,15 +3694,16 @@ export class CanvasElementManager {
                 event.clientX,
                 event.clientY,
                 PointScaling.Scaled,
-                "MouseEvent Client (Relative to viewport)"
+                "MouseEvent Client (Relative to viewport)",
             );
-            const relativePoint = CanvasElementManager.convertPointFromViewportToElementFrame(
-                pointRelativeToViewport,
-                bubble.content
-            );
+            const relativePoint =
+                CanvasElementManager.convertPointFromViewportToElementFrame(
+                    pointRelativeToViewport,
+                    bubble.content,
+                );
             this.bubbleDragGrabOffset = {
                 x: relativePoint.getUnscaledX(),
-                y: relativePoint.getUnscaledY()
+                y: relativePoint.getUnscaledY(),
             };
         };
 
@@ -3650,7 +3729,7 @@ export class CanvasElementManager {
                     this.setActiveElement(bubble.content);
                     const newCanvasElement = this.duplicateCanvasElementBox(
                         bubble.content,
-                        true
+                        true,
                     );
                     if (!newCanvasElement) return;
                     startDraggingBubble(new Bubble(newCanvasElement));
@@ -3667,7 +3746,7 @@ export class CanvasElementManager {
             const clickOnCanvasElementWeAreEditing =
                 this.theCanvasElementWeAreTextEditing ===
                     (event.target as HTMLElement)?.closest(
-                        kCanvasElementSelector
+                        kCanvasElementSelector,
                     ) && this.theCanvasElementWeAreTextEditing;
             if (
                 event.altKey ||
@@ -3727,7 +3806,7 @@ export class CanvasElementManager {
     // Add the classes that let various controls know that a move, resize, or drag is in progress.
     private startMoving() {
         const controlFrame = document.getElementById(
-            "canvas-element-control-frame"
+            "canvas-element-control-frame",
         );
         controlFrame?.classList?.add("moving");
         this.activeElement?.classList?.add("moving");
@@ -3764,7 +3843,7 @@ export class CanvasElementManager {
      */
     public getBubbleUnderMouse(
         event: MouseEvent,
-        container: HTMLElement
+        container: HTMLElement,
     ): Bubble | null {
         const coordinates = this.getPointRelativeToCanvas(event, container);
         if (!coordinates) {
@@ -3776,7 +3855,7 @@ export class CanvasElementManager {
             Comical.getBubbleHit(
                 container,
                 coordinates.getUnscaledX(),
-                coordinates.getUnscaledY()
+                coordinates.getUnscaledY(),
             ) ?? null
         );
     }
@@ -3789,7 +3868,7 @@ export class CanvasElementManager {
     // Move the canvas element accordingly.
     private handleMouseMoveDragCanvasElement(
         event: MouseEvent,
-        container: HTMLElement
+        container: HTMLElement,
     ) {
         if (event.buttons === 0) {
             // we missed the mouse up...maybe because we're debugging? In any case, we need to
@@ -3799,9 +3878,8 @@ export class CanvasElementManager {
         }
         if (this.activeElement) {
             const r = this.activeElement.getBoundingClientRect();
-            const bloomCanvas = this.activeElement.parentElement?.closest(
-                kBloomCanvasSelector
-            );
+            const bloomCanvas =
+                this.activeElement.parentElement?.closest(kBloomCanvasSelector);
             if (bloomCanvas) {
                 const canvas = this.getFirstCanvasForContainer(bloomCanvas);
                 if (canvas)
@@ -3810,7 +3888,7 @@ export class CanvasElementManager {
                         event.clientX > r.left &&
                             event.clientX < r.right &&
                             event.clientY > r.top &&
-                            event.clientY < r.bottom
+                            event.clientY < r.bottom,
                     );
             }
         }
@@ -3850,39 +3928,41 @@ export class CanvasElementManager {
                 event.clientX,
                 event.clientY,
                 PointScaling.Scaled,
-                "MouseEvent Client (Relative to viewport)"
+                "MouseEvent Client (Relative to viewport)",
             );
-            const bloomCanvas = this.bubbleToDrag.content.parentElement?.closest(
-                kBloomCanvasSelector
-            ) as HTMLElement;
-            const relativePoint = CanvasElementManager.convertPointFromViewportToElementFrame(
-                pointRelativeToViewport,
-                bloomCanvas
-            );
+            const bloomCanvas =
+                this.bubbleToDrag.content.parentElement?.closest(
+                    kBloomCanvasSelector,
+                ) as HTMLElement;
+            const relativePoint =
+                CanvasElementManager.convertPointFromViewportToElementFrame(
+                    pointRelativeToViewport,
+                    bloomCanvas,
+                );
 
             let newPosition = new Point(
                 relativePoint.getUnscaledX() - this.bubbleDragGrabOffset.x,
                 relativePoint.getUnscaledY() - this.bubbleDragGrabOffset.y,
                 PointScaling.Unscaled,
-                "Created by handleMouseMoveDragCanvasElement()"
+                "Created by handleMouseMoveDragCanvasElement()",
             );
 
             const p = this.snapProvider.getPosition(
                 event,
                 newPosition.getUnscaledX(),
-                newPosition.getUnscaledY()
+                newPosition.getUnscaledY(),
             );
             newPosition = new Point(
                 p.x,
                 p.y,
                 PointScaling.Unscaled,
-                "Created by handleMouseMoveDragCanvasElement()"
+                "Created by handleMouseMoveDragCanvasElement()",
             );
 
             this.adjustCanvasElementLocation(
                 this.bubbleToDrag.content,
                 this.lastMoveContainer,
-                newPosition
+                newPosition,
             );
 
             this.guideProvider.duringDrag(this.bubbleToDrag.content);
@@ -3897,12 +3977,11 @@ export class CanvasElementManager {
     // confused by a control that does nothing.
     private adjustMoveCropHandleVisibility(removeCropAttrsIfNotNeeded = false) {
         const controlFrame = document.getElementById(
-            "canvas-element-control-frame"
+            "canvas-element-control-frame",
         );
         if (!controlFrame || !this.activeElement) return;
-        const imgC = this.activeElement.getElementsByClassName(
-            kImageContainerClass
-        )[0];
+        const imgC =
+            this.activeElement.getElementsByClassName(kImageContainerClass)[0];
         const img = imgC?.getElementsByTagName("img")[0];
         let wantMoveCropHandle = false;
         if (img) {
@@ -3923,7 +4002,7 @@ export class CanvasElementManager {
         }
         controlFrame.classList.toggle(
             "bloom-ui-canvas-element-show-move-crop-handle",
-            wantMoveCropHandle
+            wantMoveCropHandle,
         );
         this.updateCurrentlyCropped();
     }
@@ -3933,9 +4012,9 @@ export class CanvasElementManager {
         // We want to get rid of it at least from the control frame and the active canvas element,
         // but may as well make sure it doesn't get left anywhere.
         Array.from(document.getElementsByClassName("moving")).forEach(
-            element => {
+            (element) => {
                 element.classList.remove("moving");
-            }
+            },
         );
         this.adjustMoveCropHandleVisibility();
         this.alignControlFrameWithActiveElement();
@@ -3948,7 +4027,7 @@ export class CanvasElementManager {
         this.snapProvider.endDrag();
         this.guideProvider.endDrag();
         document.removeEventListener("mouseup", this.onMouseUp, {
-            capture: true
+            capture: true,
         });
         if (CanvasElementManager.inPlayMode(this.mouseDownContainer)) {
             return;
@@ -3971,9 +4050,8 @@ export class CanvasElementManager {
 
         this.bubbleToDrag = undefined;
         this.mouseDownContainer.classList.remove("grabbing");
-        this.turnOffResizing(this.mouseDownContainer);
         const editable = (event.target as HTMLElement)?.closest(
-            ".bloom-editable"
+            ".bloom-editable",
         );
         if (
             editable &&
@@ -3997,11 +4075,11 @@ export class CanvasElementManager {
             this.activeElementAtMouseDown === this.activeElement
         ) {
             // Going into edit mode on this canvas element.
-            this.theCanvasElementWeAreTextEditing = (event.target as HTMLElement)?.closest(
-                kCanvasElementSelector
-            ) as HTMLElement;
+            this.theCanvasElementWeAreTextEditing = (
+                event.target as HTMLElement
+            )?.closest(kCanvasElementSelector) as HTMLElement;
             this.theCanvasElementWeAreTextEditing?.classList.add(
-                "bloom-focusedCanvasElement"
+                "bloom-focusedCanvasElement",
             );
             // We want to position the IP as if the user clicked where they did.
             // Since we already suppressed the mouseDown event, it's not enough to just
@@ -4017,8 +4095,6 @@ export class CanvasElementManager {
         }
     };
 
-    public turnOffResizing(container: Element) {}
-
     // If we get a click (without movement) on a text canvas element, we treat subsequent mouse events on
     // that canvas element as text editing events, rather than drag events, as long as it keeps focus.
     // This is the canvas element, if any, that is currently in that state.
@@ -4028,6 +4104,11 @@ export class CanvasElementManager {
      * without needing our custom onMouseDown/onMouseHover/etc event handlers to process it
      */
     private isMouseEventAlreadyHandled(ev: MouseEvent): boolean {
+        if (ev.detail === 2) {
+            // Let double-clicks be handled normally, e.g., to activate the chooser
+            // in a book list.
+            return true;
+        }
         const targetElement = ev.target instanceof Element ? ev.target : null;
         if (!targetElement) {
             // As far as I can research, the target of a mouse event is always
@@ -4121,7 +4202,7 @@ export class CanvasElementManager {
     // Gets the coordinates of the specified event relative to the canvas element.
     private getPointRelativeToCanvas(
         event: MouseEvent,
-        container: Element
+        container: Element,
     ): Point | undefined {
         const canvas = this.getFirstCanvasForContainer(container);
         if (!canvas) {
@@ -4132,18 +4213,18 @@ export class CanvasElementManager {
             event.clientX,
             event.clientY,
             PointScaling.Scaled,
-            "MouseEvent Client (Relative to viewport)"
+            "MouseEvent Client (Relative to viewport)",
         );
 
         return CanvasElementManager.convertPointFromViewportToElementFrame(
             pointRelativeToViewport,
-            canvas
+            canvas,
         );
     }
 
     // Returns the first canvas in the container, or returns undefined if it does not exist.
     private getFirstCanvasForContainer(
-        container: Element
+        container: Element,
     ): HTMLCanvasElement | undefined {
         const collection = container.getElementsByTagName("canvas");
         if (!collection || collection.length <= 0) {
@@ -4156,14 +4237,14 @@ export class CanvasElementManager {
     // Gets the coordinates of the specified event relative to the specified element.
     private static convertPointFromViewportToElementFrame(
         pointRelativeToViewport: Point, // The current point, relative to the top-left of the viewport
-        element: Element // The element to reference for the new origin
+        element: Element, // The element to reference for the new origin
     ): Point {
         const referenceBounds = element.getBoundingClientRect();
         const origin = new Point(
             referenceBounds.left,
             referenceBounds.top,
             PointScaling.Scaled,
-            "BoundingClientRect (Relative to viewport)"
+            "BoundingClientRect (Relative to viewport)",
         );
 
         // Origin gives the location of the outside edge of the border. But we want values relative to the inside edge of the padding.
@@ -4179,7 +4260,7 @@ export class CanvasElementManager {
         const scroll = CanvasElementManager.getScrollAmount(element);
         if (scroll.length() > 0.001) {
             const error = new Error(
-                `Assert failed. container.scroll expected to be (0, 0), but it was: (${scroll.getScaledX()}, ${scroll.getScaledY()})`
+                `Assert failed. container.scroll expected to be (0, 0), but it was: (${scroll.getScaledX()}, ${scroll.getScaledY()})`,
             );
             // Reports a non-fatal passive if on Alpha
             reportError(error.message, error.stack || "");
@@ -4199,7 +4280,7 @@ export class CanvasElementManager {
             element.clientLeft,
             element.clientTop,
             PointScaling.Unscaled,
-            "Element ClientLeft/Top (Unscaled)"
+            "Element ClientLeft/Top (Unscaled)",
         );
     }
 
@@ -4208,7 +4289,7 @@ export class CanvasElementManager {
     //   The y coordinate of the point represents the bottom border height
     private static getRightAndBottomBorderWidths(
         element: Element,
-        styleInfo?: CSSStyleDeclaration
+        styleInfo?: CSSStyleDeclaration,
     ): Point {
         // There is no such field as element.clientRight, so we have to get it from the CSS style info instead.
         if (!styleInfo) {
@@ -4216,17 +4297,17 @@ export class CanvasElementManager {
         }
 
         const borderRight: number = CanvasElementManager.extractNumber(
-            styleInfo.getPropertyValue("border-right-width")
+            styleInfo.getPropertyValue("border-right-width"),
         );
         const borderBottom: number = CanvasElementManager.extractNumber(
-            styleInfo.getPropertyValue("border-bottom-width")
+            styleInfo.getPropertyValue("border-bottom-width"),
         );
 
         return new Point(
             borderRight,
             borderBottom,
             PointScaling.Unscaled,
-            "Element ClientRight/Bottom (Unscaled)"
+            "Element ClientRight/Bottom (Unscaled)",
         );
     }
 
@@ -4235,21 +4316,21 @@ export class CanvasElementManager {
     //   The y coordinate of the point represents the sum of the top and bottom border width
     private static getCombinedBorderWidths(
         element: Element,
-        styleInfo?: CSSStyleDeclaration
+        styleInfo?: CSSStyleDeclaration,
     ): Point {
         if (!styleInfo) {
             styleInfo = window.getComputedStyle(element);
         }
 
         return this.getLeftAndTopBorderWidths(element).add(
-            this.getRightAndBottomBorderWidths(element, styleInfo)
+            this.getRightAndBottomBorderWidths(element, styleInfo),
         );
     }
 
     // Given a CSSStyleDeclearation, retrieves the requested padding and converts it to a number
     private static getPadding(
         side: string,
-        styleInfo: CSSStyleDeclaration
+        styleInfo: CSSStyleDeclaration,
     ): number {
         const propertyKey = `padding-${side}`;
         const paddingString = styleInfo.getPropertyValue(propertyKey);
@@ -4262,7 +4343,7 @@ export class CanvasElementManager {
     //   The y coordinate of the point represents the bottom padding
     private static getLeftAndTopPaddings(
         element: Element, // The element to check
-        styleInfo?: CSSStyleDeclaration // Optional. If you have it handy, you can pass in the computed style of the element. Otherwise, it will be determined for you
+        styleInfo?: CSSStyleDeclaration, // Optional. If you have it handy, you can pass in the computed style of the element. Otherwise, it will be determined for you
     ): Point {
         if (!styleInfo) {
             styleInfo = window.getComputedStyle(element);
@@ -4272,7 +4353,7 @@ export class CanvasElementManager {
             this.getPadding("left", styleInfo),
             this.getPadding("top", styleInfo),
             PointScaling.Unscaled,
-            "CSSStyleDeclaration padding"
+            "CSSStyleDeclaration padding",
         );
     }
 
@@ -4281,7 +4362,7 @@ export class CanvasElementManager {
     //   The y coordinate of the point represents the bottom padding
     private static getRightAndBottomPaddings(
         element: Element, // The element to check
-        styleInfo?: CSSStyleDeclaration // Optional. If you have it handy, you can pass in the computed style of the element. Otherwise, it will be determined for you
+        styleInfo?: CSSStyleDeclaration, // Optional. If you have it handy, you can pass in the computed style of the element. Otherwise, it will be determined for you
     ): Point {
         if (!styleInfo) {
             styleInfo = window.getComputedStyle(element);
@@ -4291,7 +4372,7 @@ export class CanvasElementManager {
             this.getPadding("right", styleInfo),
             this.getPadding("bottom", styleInfo),
             PointScaling.Unscaled,
-            "Padding"
+            "Padding",
         );
     }
 
@@ -4300,14 +4381,14 @@ export class CanvasElementManager {
     // The y coordinate of the point represents the sum of the top and bottom padding
     private static getCombinedPaddings(
         element: Element,
-        styleInfo?: CSSStyleDeclaration
+        styleInfo?: CSSStyleDeclaration,
     ): Point {
         if (!styleInfo) {
             styleInfo = window.getComputedStyle(element);
         }
 
         return this.getLeftAndTopPaddings(element, styleInfo).add(
-            this.getRightAndBottomPaddings(element, styleInfo)
+            this.getRightAndBottomPaddings(element, styleInfo),
         );
     }
 
@@ -4328,7 +4409,7 @@ export class CanvasElementManager {
             element.scrollLeft,
             element.scrollTop,
             PointScaling.Unscaled,
-            "Element ScrollLeft/Top (Unscaled)"
+            "Element ScrollLeft/Top (Unscaled)",
         );
     }
 
@@ -4363,14 +4444,14 @@ export class CanvasElementManager {
     // e.g. "ne" = Northeast, "nw" = Northwest", "sw" = Southwest, "se" = Southeast"
     private getResizeMode(
         element: HTMLElement,
-        event: MouseEvent
+        event: MouseEvent,
     ): ResizeDirection {
         // Convert into a coordinate system where the origin is the center of the element (rather than the top-left of the page)
         const center = this.getCenterPosition(element);
         const clickCoordinates = { x: event.pageX, y: event.pageY };
         const relativeCoordinates = {
             x: clickCoordinates.x - center.x,
-            y: clickCoordinates.y - center.y
+            y: clickCoordinates.y - center.y,
         };
 
         let resizeMode: ResizeDirection;
@@ -4410,32 +4491,32 @@ export class CanvasElementManager {
 
         Comical.setActiveBubbleListener(undefined);
         Comical.stopEditing();
-        this.getAllBloomCanvasesOnPage().forEach(bloomCanvas =>
+        this.getAllBloomCanvasesOnPage().forEach((bloomCanvas) =>
             this.saveCurrentCanvasElementStateAsCurrentLangAlternate(
-                bloomCanvas as HTMLElement
-            )
+                bloomCanvas as HTMLElement,
+            ),
         );
 
         EnableAllImageEditing();
 
         // Clean up event listeners that we no longer need
         Array.from(
-            document.getElementsByClassName(kCanvasElementClass)
-        ).forEach(container => {
+            document.getElementsByClassName(kCanvasElementClass),
+        ).forEach((container) => {
             const editables = this.getAllVisibileEditableDivs(
-                container as HTMLElement
+                container as HTMLElement,
             );
-            editables.forEach(element => {
+            editables.forEach((element) => {
                 // Don't use an arrow function as an event handler here. These can never be identified as duplicate event listeners, so we'll end up with tons of duplicates
                 element.removeEventListener(
                     "focusin",
-                    CanvasElementManager.onFocusSetActiveElement
+                    CanvasElementManager.onFocusSetActiveElement,
                 );
             });
         });
         document.removeEventListener(
             "click",
-            CanvasElementManager.onDocClickClearActiveElement
+            CanvasElementManager.onDocClickClearActiveElement,
         );
     }
 
@@ -4459,18 +4540,18 @@ export class CanvasElementManager {
 
     public requestCanvasElementChangeNotification(
         id: string,
-        notifier: (bubble: BubbleSpec | undefined) => void
+        notifier: (bubble: Bubble | undefined) => void,
     ): void {
         this.detachCanvasElementChangeNotification(id);
         this.thingsToNotifyOfCanvasElementChange.push({
             id,
-            handler: notifier
+            handler: notifier,
         });
     }
 
     public detachCanvasElementChangeNotification(id: string): void {
         const index = this.thingsToNotifyOfCanvasElementChange.findIndex(
-            x => x.id === id
+            (x) => x.id === id,
         );
         if (index >= 0) {
             this.thingsToNotifyOfCanvasElementChange.splice(index, 1);
@@ -4478,7 +4559,7 @@ export class CanvasElementManager {
     }
 
     public updateSelectedItemBubbleSpec(
-        newBubbleProps: BubbleSpecPattern
+        newBubbleProps: BubbleSpecPattern,
     ): BubbleSpec | undefined {
         if (!this.activeElement) {
             return undefined;
@@ -4491,14 +4572,17 @@ export class CanvasElementManager {
         return this.updateBubbleWithPropsHelper(activeBubble, newBubbleProps);
     }
 
-    public updateSelectedFamilyBubbleSpec(newBubbleProps: BubbleSpecPattern) {
+    public updateSelectedFamilyBubbleSpec(
+        newBubbleProps: BubbleSpecPattern,
+    ): Bubble {
         const parentBubble = this.getPatriarchBubbleOfActiveElement();
-        return this.updateBubbleWithPropsHelper(parentBubble, newBubbleProps);
+        this.updateBubbleWithPropsHelper(parentBubble, newBubbleProps);
+        return parentBubble!;
     }
 
     private updateBubbleWithPropsHelper(
         bubble: Bubble | undefined,
-        newBubbleProps: BubbleSpecPattern
+        newBubbleProps: BubbleSpecPattern,
     ): BubbleSpec | undefined {
         if (!this.activeElement || !bubble) {
             return undefined;
@@ -4523,16 +4607,16 @@ export class CanvasElementManager {
     // while the latter determines which is on top.
     public adjustCanvasElementOrdering = () => {
         const bloomCanvases = this.getAllBloomCanvasesOnPage();
-        bloomCanvases.forEach(bloomCanvas => {
+        bloomCanvases.forEach((bloomCanvas) => {
             const canvasElements = Array.from(
-                bloomCanvas.getElementsByClassName(kCanvasElementClass)
+                bloomCanvas.getElementsByClassName(kCanvasElementClass),
             );
             let maxLevel = Math.max(
                 ...canvasElements.map(
-                    b => Bubble.getBubbleSpec(b as HTMLElement).level ?? 0
-                )
+                    (b) => Bubble.getBubbleSpec(b as HTMLElement).level ?? 0,
+                ),
             );
-            const draggables = canvasElements.filter(b => isDraggable(b));
+            const draggables = canvasElements.filter((b) => isDraggable(b));
             if (
                 draggables.length === 0 ||
                 canvasElements.indexOf(draggables[0]) ===
@@ -4541,7 +4625,7 @@ export class CanvasElementManager {
                 return; // already all at end (or none to move)
             }
             // Move them to the end, keeping them in order.
-            draggables.forEach(draggable => {
+            draggables.forEach((draggable) => {
                 draggable.parentElement?.appendChild(draggable);
                 const bubble = new Bubble(draggable as HTMLElement);
                 // This would need to get fancier if draggables came in groups with the same level.
@@ -4561,11 +4645,11 @@ export class CanvasElementManager {
     // {offsetX}/{offsetY} is the offset in position from the parent to the child elements
     //    (i.e., offsetX = child.left - parent.left)
     //    (remember that positive values of Y are further to the bottom)
-    // This is what the comic tool calls when the user clicks ADD CHILD BUBBLE.
+    // This is what the canvas tool calls when the user clicks ADD CHILD BUBBLE.
     public addChildCanvasElementAndRefreshPage(
         parentElement: HTMLElement,
         offsetX: number,
-        offsetY: number
+        offsetY: number,
     ): void {
         // The only reason to keep a separate method here is that the 'internal' form returns
         // the new child. We don't need it here, but we do in the duplicate canvas element function.
@@ -4582,7 +4666,7 @@ export class CanvasElementManager {
             return; // shouldn't happen...
         }
         const comicalGenerated = bloomCanvas.getElementsByClassName(
-            kComicalGeneratedClass
+            kComicalGeneratedClass,
         );
         if (comicalGenerated.length > 0) {
             Comical.update(bloomCanvas);
@@ -4592,7 +4676,7 @@ export class CanvasElementManager {
     private addChildInternal(
         parentElement: HTMLElement,
         offsetX: number,
-        offsetY: number
+        offsetY: number,
     ): HTMLElement | undefined {
         // Make sure everything in parent is "saved".
         this.updateComicalForSelectedElement(parentElement);
@@ -4600,7 +4684,7 @@ export class CanvasElementManager {
         const newPoint = this.findBestLocationForNewCanvasElement(
             parentElement,
             offsetX,
-            offsetY
+            offsetY,
         );
         if (!newPoint) {
             return undefined;
@@ -4609,7 +4693,7 @@ export class CanvasElementManager {
         const childElement = this.addCanvasElement(
             newPoint.getScaledX(),
             newPoint.getScaledY(),
-            undefined
+            undefined,
         );
         if (!childElement) {
             return undefined;
@@ -4631,7 +4715,7 @@ export class CanvasElementManager {
             CanvasElementManager.getBloomCanvas(parentElement)!,
             new Bubble(childElement),
             false,
-            true
+            true,
         );
         return childElement;
     }
@@ -4640,7 +4724,7 @@ export class CanvasElementManager {
     private findBestLocationForNewCanvasElement(
         parentElement: HTMLElement,
         proposedOffsetX: number,
-        proposedOffsetY: number
+        proposedOffsetY: number,
     ): Point | undefined {
         const parentBoundingRect = parentElement.getBoundingClientRect();
 
@@ -4655,7 +4739,7 @@ export class CanvasElementManager {
             parentBoundingRect.left + proposedOffsetX,
             parentBoundingRect.top + proposedOffsetY,
             parentElement.clientWidth,
-            parentElement.clientHeight
+            parentElement.clientHeight,
         );
     }
 
@@ -4664,7 +4748,7 @@ export class CanvasElementManager {
         x: number,
         y: number,
         width: number,
-        height: number
+        height: number,
     ): Point {
         const containerBoundingRect = bloomCanvas.getBoundingClientRect();
         let newX = x;
@@ -4690,7 +4774,7 @@ export class CanvasElementManager {
             newX,
             newY,
             PointScaling.Scaled,
-            "Scaled viewport coordinates"
+            "Scaled viewport coordinates",
         );
     }
 
@@ -4698,7 +4782,7 @@ export class CanvasElementManager {
     // here are already relative to the bloom-canvas's coordinates, which introduces some differences.
     private adjustRelativePointToBloomCanvas(
         bloomCanvas: Element,
-        point: Point
+        point: Point,
     ): Point {
         const maxWidth = (bloomCanvas as HTMLElement).offsetWidth;
         const maxHeight = (bloomCanvas as HTMLElement).offsetHeight;
@@ -4721,7 +4805,7 @@ export class CanvasElementManager {
             newX,
             newY,
             PointScaling.Unscaled,
-            "Scaled viewport coordinates"
+            "Scaled viewport coordinates",
         );
     }
 
@@ -4730,7 +4814,7 @@ export class CanvasElementManager {
         screenY: number,
         canvasElementType: CanvasElementType,
         userDefinedStyleName?: string,
-        rightTopOffset?: string
+        rightTopOffset?: string,
     ): HTMLElement | undefined {
         const clientX = screenX - window.screenX;
         const clientY = screenY - window.screenY;
@@ -4739,7 +4823,7 @@ export class CanvasElementManager {
             clientY,
             canvasElementType,
             userDefinedStyleName,
-            rightTopOffset
+            rightTopOffset,
         );
     }
 
@@ -4747,11 +4831,10 @@ export class CanvasElementManager {
         offsetX: number,
         offsetY: number,
         originalElement: HTMLElement,
-        style?: string
+        style?: string,
     ): HTMLElement | undefined {
-        const bloomCanvas = CanvasElementManager.getBloomCanvas(
-            originalElement
-        );
+        const bloomCanvas =
+            CanvasElementManager.getBloomCanvas(originalElement);
         if (!bloomCanvas) {
             return undefined;
         }
@@ -4759,41 +4842,41 @@ export class CanvasElementManager {
             offsetX,
             offsetY,
             PointScaling.Scaled,
-            "Scaled Viewport coordinates"
+            "Scaled Viewport coordinates",
         );
         const positionInBloomCanvas = this.snapProvider.getSnappedPoint(
             this.adjustRelativePointToBloomCanvas(
                 bloomCanvas,
-                positionInViewport
+                positionInViewport,
             ),
             // There's no obvious event from which to deduce that ctrl is down, and I don't see any
             // advantage in supporting the slightly different position that the duplicate would
             // end up in if we knew that.
-            undefined
+            undefined,
         );
         // Detect if the original is a picture over picture or video over picture element.
         if (this.isPictureCanvasElement(originalElement)) {
             return this.addPictureCanvasElement(
                 positionInBloomCanvas,
-                $(bloomCanvas)
+                $(bloomCanvas),
             );
         }
         if (this.isVideoCanvasElement(originalElement)) {
             return this.addVideoCanvasElement(
                 positionInBloomCanvas,
-                $(bloomCanvas)
+                $(bloomCanvas),
             );
         }
         return this.addCanvasElementCore(
             positionInBloomCanvas,
             $(bloomCanvas),
-            style
+            style,
         );
     }
 
     private isCanvasElementWithClass(
         canvasElement: HTMLElement,
-        className: string
+        className: string,
     ): boolean {
         for (let i = 0; i < canvasElement.childElementCount; i++) {
             const child = canvasElement.children[i] as HTMLElement;
@@ -4814,14 +4897,14 @@ export class CanvasElementManager {
     private isPictureCanvasElement(canvasElement: HTMLElement): boolean {
         return this.isCanvasElementWithClass(
             canvasElement,
-            kImageContainerClass
+            kImageContainerClass,
         );
     }
 
     private isVideoCanvasElement(canvasElement: HTMLElement): boolean {
         return this.isCanvasElementWithClass(
             canvasElement,
-            kVideoContainerClass
+            kVideoContainerClass,
         );
     }
 
@@ -4839,7 +4922,7 @@ export class CanvasElementManager {
         mouseY: number,
         canvasElementType?: CanvasElementType,
         userDefinedStyleName?: string,
-        rightTopOffset?: string
+        rightTopOffset?: string,
     ): HTMLElement | undefined {
         const bloomCanvas = this.getBloomCanvasFromMouse(mouseX, mouseY);
         if (!bloomCanvas || bloomCanvas.length === 0) {
@@ -4851,38 +4934,66 @@ export class CanvasElementManager {
             mouseX,
             mouseY,
             PointScaling.Scaled,
-            "Scaled Viewport coordinates"
+            "Scaled Viewport coordinates",
         );
         const positionInBloomCanvas = this.adjustRelativePointToBloomCanvas(
             bloomCanvas[0],
-            positionInViewport
+            positionInViewport,
         );
         if (canvasElementType === "video") {
             return this.addVideoCanvasElement(
                 positionInBloomCanvas,
                 bloomCanvas,
-                rightTopOffset
+                rightTopOffset,
             );
         }
         if (canvasElementType === "image") {
             return this.addPictureCanvasElement(
                 positionInBloomCanvas,
                 bloomCanvas,
-                rightTopOffset
+                rightTopOffset,
             );
         }
         if (canvasElementType === "sound") {
             return this.addSoundCanvasElement(
                 positionInBloomCanvas,
                 bloomCanvas,
-                rightTopOffset
+                rightTopOffset,
             );
         }
         if (canvasElementType === "rectangle") {
             return this.addRectangleCanvasElement(
                 positionInBloomCanvas,
                 bloomCanvas,
-                rightTopOffset
+                rightTopOffset,
+            );
+        }
+        if (canvasElementType === "book-link-grid") {
+            return this.addBookLinkGridCanvasElement(
+                positionInBloomCanvas,
+                bloomCanvas,
+                rightTopOffset,
+            );
+        }
+        if (canvasElementType === "navigation-image-button") {
+            return this.addNavigationImageButtonElement(
+                positionInBloomCanvas,
+                bloomCanvas,
+                rightTopOffset,
+            );
+        }
+        if (canvasElementType === "navigation-label-button") {
+            return this.addNavigationLabelButtonElement(
+                positionInBloomCanvas,
+                bloomCanvas,
+                rightTopOffset,
+            );
+        }
+        if (canvasElementType === "navigation-image-with-label-button") {
+            return this.addNavigationImageWithLabelButtonElement(
+                positionInBloomCanvas,
+                bloomCanvas,
+                rightTopOffset,
             );
         }
         return this.addCanvasElementCore(
@@ -4890,7 +5001,7 @@ export class CanvasElementManager {
             bloomCanvas,
             canvasElementType,
             userDefinedStyleName,
-            rightTopOffset
+            rightTopOffset,
         );
     }
 
@@ -4899,8 +5010,24 @@ export class CanvasElementManager {
         bloomCanvasJQuery: JQuery,
         style?: string,
         userDefinedStyleName?: string,
-        rightTopOffset?: string
+        rightTopOffset?: string,
+        limitToCanvasBounds: boolean = false,
     ): HTMLElement {
+        const transGroupHtml = this.makeTranslationGroup(userDefinedStyleName);
+
+        return this.finishAddingCanvasElement(
+            bloomCanvasJQuery,
+            transGroupHtml,
+            location,
+            {
+                comicalBubbleStyle: style,
+                rightTopOffset,
+                limitToCanvasBounds,
+            },
+        );
+    }
+
+    private makeTranslationGroup(userDefinedStyleName: string | undefined) {
         const defaultNewTextLanguage = GetSettings().languageForNewTextBoxes;
         const userDefinedStyle = userDefinedStyleName ?? "Bubble";
         // add a draggable text canvas element to the html dom of the current page
@@ -4919,21 +5046,13 @@ export class CanvasElementManager {
             "' data-default-languages='V'>" +
             editableDivHtml +
             "</div>";
-
-        return this.finishAddingCanvasElement(
-            bloomCanvasJQuery,
-            transGroupHtml,
-            location,
-            style,
-            false,
-            rightTopOffset
-        );
+        return transGroupHtml;
     }
 
     private addVideoCanvasElement(
         location: Point,
         bloomCanvasJQuery: JQuery,
-        rightTopOffset?: string
+        rightTopOffset?: string,
     ): HTMLElement {
         const standardVideoClasses =
             kVideoContainerClass +
@@ -4944,9 +5063,11 @@ export class CanvasElementManager {
             bloomCanvasJQuery,
             videoContainerHtml,
             location,
-            "none",
-            true,
-            rightTopOffset
+            {
+                comicalBubbleStyle: "none",
+                setElementActive: true,
+                rightTopOffset,
+            },
         );
     }
 
@@ -4955,7 +5076,7 @@ export class CanvasElementManager {
         // Otherwise, return the first bloom canvas on the page.
         if (this.activeElement) {
             const bloomCanvas = CanvasElementManager.getBloomCanvas(
-                this.activeElement
+                this.activeElement,
             );
             if (bloomCanvas) {
                 return bloomCanvas;
@@ -4972,12 +5093,12 @@ export class CanvasElementManager {
     // or the first one if none has an active element.
     // (If there is no canvas, it returns false.)
     // If the canvas is empty (including the background), set the background to the image.
-    // Else if overlay is allowed by the subscription tier, add the image as an overlay/game item.
+    // Else if canvas is allowed by the subscription tier, add the image as a canvas/game item.
     // Make it up to 1/3 width and 1/3 height of the canvas, roughly centered on the canvas.
     // Is it a draggable item? Yes, if we are in the "Start" mode of a game.
     // In that case, we put it a bit higher and further left, so there is room for the target.
-    // Otherwise it's just a normal overlay item (restricted to the appropriate state, if we're
-    // in the Correct or Wrong state of a game).
+    // Otherwise it's just a normal canvas overlay item (restricted to the appropriate state,
+    // if we're in the Correct or Wrong state of a game).
     public pasteImageFromClipboard(): boolean {
         const bloomCanvas = this.getActiveOrFirstBloomCanvasOnPage();
         if (!bloomCanvas) {
@@ -4994,15 +5115,14 @@ export class CanvasElementManager {
         postJson("editView/pasteImage", {
             imageId: kMakeNewCanvasElement,
             imageSrc: "",
-            imageIsGif: false
+            imageIsGif: false,
         });
         return true;
     }
     public finishPasteImageFromClipboard(imageInfo: IImageInfo): void {
         const bloomCanvas = this.getActiveOrFirstBloomCanvasOnPage()!;
-        const canvasElements = bloomCanvas.getElementsByClassName(
-            kCanvasElementClass
-        );
+        const canvasElements =
+            bloomCanvas.getElementsByClassName(kCanvasElementClass);
         // If it's an empty canvas, make this its background image.
         // A possible special case is the custom game page, where the only canvas element is the
         // header. But that works out to our advantage, since we think a background is unlikely
@@ -5012,12 +5132,12 @@ export class CanvasElementManager {
             canvasElements[0].classList.contains(kBackgroundImageClass)
         ) {
             const bgimg = canvasElements[0].getElementsByTagName("img")[0];
-            if (bgimg.getAttribute("src")?.startsWith("placeHolder.png")) {
+            if (isPlaceHolderImage(bgimg.getAttribute("src"))) {
                 changeImageInfo(bgimg, imageInfo);
                 this.adjustBackgroundImageSize(
                     bloomCanvas,
                     canvasElements[0] as HTMLElement,
-                    true
+                    true,
                 );
                 notifyToolOfChangedImage(bgimg);
                 return;
@@ -5033,11 +5153,11 @@ export class CanvasElementManager {
             const img = activeElement
                 .getElementsByClassName(kImageContainerClass)[0]
                 ?.getElementsByTagName("img")[0];
-            if (img && img.getAttribute("src")?.startsWith("placeHolder.png")) {
+            if (img && isPlaceHolderImage(img.getAttribute("src"))) {
                 changeImageInfo(img, imageInfo);
                 this.adjustContainerAspectRatio(
                     activeElement as HTMLElement,
-                    true
+                    true,
                 );
                 adjustTarget(activeElement, getTarget(activeElement));
                 notifyToolOfChangedImage(img);
@@ -5045,23 +5165,23 @@ export class CanvasElementManager {
             }
         }
         // otherwise we will add a new canvas element...but only if subscription allows it.
-        get("features/status?featureName=overlay&forPublishing=false", c => {
+        get("features/status?featureName=canvas&forPublishing=false", (c) => {
             const features = c.data as FeatureStatus;
             if (features.enabled) {
                 // If the feature is enabled, we can proceed with adding the canvas element.
                 const width = Math.max(
                     this.snapProvider.getSnappedX(
                         bloomCanvas.offsetWidth / 3,
-                        undefined
+                        undefined,
                     ),
-                    this.minWidth
+                    this.minWidth,
                 );
                 const height = Math.max(
                     this.snapProvider.getSnappedY(
                         bloomCanvas.offsetHeight / 3,
-                        undefined
+                        undefined,
                     ),
-                    this.minHeight
+                    this.minHeight,
                 );
                 if (
                     width > bloomCanvas.offsetWidth ||
@@ -5079,19 +5199,17 @@ export class CanvasElementManager {
                     positionX = positionX / 2;
                     positionY = positionY / 2;
                 }
-                const {
-                    x: adjustedX,
-                    y: adjustedY
-                } = this.snapProvider.getPosition(
-                    undefined,
-                    positionX,
-                    positionY
-                );
+                const { x: adjustedX, y: adjustedY } =
+                    this.snapProvider.getPosition(
+                        undefined,
+                        positionX,
+                        positionY,
+                    );
                 const positionInBloomCanvas = new Point(
                     adjustedX,
                     adjustedY,
                     PointScaling.Scaled,
-                    "pasteImageFromClipboard"
+                    "pasteImageFromClipboard",
                 );
                 this.addPictureCanvasElement(
                     positionInBloomCanvas,
@@ -5099,7 +5217,7 @@ export class CanvasElementManager {
                     undefined,
                     imageInfo,
                     { width, height },
-                    newCanvasElement => {
+                    (newCanvasElement) => {
                         switch (activeGameTab) {
                             case startTabIndex:
                                 // make it a draggable, with a target.
@@ -5118,20 +5236,20 @@ export class CanvasElementManager {
                                 break;
                             case correctTabIndex:
                                 newCanvasElement.classList.add(
-                                    "drag-item-correct"
+                                    "drag-item-correct",
                                 );
                                 break;
                             case wrongTabIndex:
                                 newCanvasElement.classList.add(
-                                    "drag-item-wrong"
+                                    "drag-item-wrong",
                                 );
                         }
-                    }
+                    },
                 );
                 notifyToolOfChangedImage();
             } else {
                 // If the feature is not enabled, we need to show the subscription dialog.
-                showRequiresSubscriptionDialogInEditView("overlay");
+                showRequiresSubscriptionDialogInEditView("canvas");
             }
         });
     }
@@ -5148,7 +5266,7 @@ export class CanvasElementManager {
             license: string;
         },
         size?: { width: number; height: number },
-        doAfterElementCreated?: (newElement: HTMLElement) => void
+        doAfterElementCreated?: (newElement: HTMLElement) => void,
     ): HTMLElement {
         const standardImageClasses =
             kImageContainerClass + " bloom-leadingElement";
@@ -5164,19 +5282,119 @@ export class CanvasElementManager {
             bloomCanvasJQuery,
             imageContainerHtml,
             location,
-            "none",
-            true,
-            rightTopOffset,
-            imageInfo,
-            size,
-            doAfterElementCreated
+            {
+                comicalBubbleStyle: "none",
+                setElementActive: true,
+                rightTopOffset,
+                imageInfo,
+                size,
+                doAfterElementCreated,
+            },
         );
+    }
+    private addNavigationImageButtonElement(
+        location: Point,
+        bloomCanvasJQuery: JQuery,
+        rightTopOffset?: string,
+        imageInfo?: {
+            imageId: string;
+            src: string; // must already appropriately URL-encoded.
+            copyright: string;
+            creator: string;
+            license: string;
+        },
+        doAfterElementCreated?: (newElement: HTMLElement) => void,
+    ): HTMLElement {
+        const imageContainerHtml = this.makeImageContainerHtml();
+        const result = this.finishAddingCanvasElement(
+            bloomCanvasJQuery,
+            imageContainerHtml,
+            location,
+            {
+                comicalBubbleStyle: "none",
+                setElementActive: true,
+                rightTopOffset,
+                imageInfo,
+                size: { width: 120, height: 120 },
+                doAfterElementCreated,
+                limitToCanvasBounds: true,
+            },
+        );
+        result.classList.add(kBloomButtonClass);
+        return result;
+    }
+
+    private makeImageContainerHtml() {
+        const standardImageClasses =
+            kImageContainerClass + " bloom-leadingElement";
+        const imagePlaceHolderHtml = "<img src='placeHolder.png' alt=''></img>";
+        const imageContainerHtml =
+            // The tabindex here is necessary to get focus to work on an image.
+            `<div tabindex='0' class = '${standardImageClasses}'> ${imagePlaceHolderHtml}</div>`;
+        return imageContainerHtml;
+    }
+
+    private addNavigationImageWithLabelButtonElement(
+        location: Point,
+        bloomCanvasJQuery: JQuery,
+        rightTopOffset?: string,
+        imageInfo?: {
+            imageId: string;
+            src: string; // must already appropriately URL-encoded.
+            copyright: string;
+            creator: string;
+            license: string;
+        },
+    ): HTMLElement {
+        const imageContainerHtml = this.makeImageContainerHtml();
+        const transGroupHtml = this.makeTranslationGroup(
+            "Navigation-Button-With-Image-Label",
+        );
+        const result = this.finishAddingCanvasElement(
+            bloomCanvasJQuery,
+            imageContainerHtml + transGroupHtml,
+            location,
+            {
+                comicalBubbleStyle: "none",
+                setElementActive: true,
+                rightTopOffset,
+                imageInfo,
+                size: { width: 120, height: 120 },
+                limitToCanvasBounds: true,
+            },
+        );
+        result.classList.add(kBloomButtonClass);
+        result.classList.add("bloom-noAutoHeight");
+        return result;
+    }
+
+    private addNavigationLabelButtonElement(
+        location: Point,
+        bloomCanvasJQuery: JQuery,
+        rightTopOffset?: string,
+    ): HTMLElement {
+        const result = this.addCanvasElementCore(
+            location,
+            bloomCanvasJQuery,
+            "none", // no comical bubble style
+            "Navigation-Button-Label",
+            rightTopOffset,
+            true,
+        );
+        result.classList.add(kBloomButtonClass);
+        result.classList.add("bloom-noAutoHeight");
+        // The methods used in the other two get to set a size; here we just do it.
+        // We need to make it a bit higher than the default so it doesn't overflow
+        // with the additional padding that buttons get.
+        result.style.height = "50px";
+        // result.style.width = "120px";
+        return result;
     }
 
     private addSoundCanvasElement(
         location: Point,
         bloomCanvasJQuery: JQuery,
-        rightTopOffset?: string
+        rightTopOffset?: string,
     ): HTMLElement {
         const standardImageClasses =
             kImageContainerClass + " bloom-leadingElement";
@@ -5209,16 +5427,48 @@ export class CanvasElementManager {
             bloomCanvasJQuery,
             html,
             location,
-            "none",
-            true,
-            rightTopOffset
+            {
+                comicalBubbleStyle: "none",
+                setElementActive: true,
+                rightTopOffset,
+            },
         );
+    }
+
+    private addBookLinkGridCanvasElement(
+        location: Point,
+        bloomCanvasJQuery: JQuery,
+        rightTopOffset?: string,
+    ): HTMLElement {
+        const html =
+            // The tabindex here is necessary to allow it to be focused.
+            "<div tabindex='0' class='bloom-link-grid'></div>";
+        const canvasElement = this.finishAddingCanvasElement(
+            bloomCanvasJQuery,
+            html,
+            location,
+            {
+                comicalBubbleStyle: "none",
+                setElementActive: true,
+                rightTopOffset,
+                size: { width: 360, height: 360 },
+                limitToCanvasBounds: true,
+            },
+        );
+        // Add skeleton to the newly created empty grid
+        const linkGrid = canvasElement.querySelector(
+            ".bloom-link-grid",
+        ) as HTMLElement;
+        if (linkGrid) {
+            addSkeletonIfEmpty(linkGrid);
+        }
+        return canvasElement;
     }
 
     private addRectangleCanvasElement(
         location: Point,
         bloomCanvasJQuery: JQuery,
-        rightTopOffset?: string
+        rightTopOffset?: string,
     ): HTMLElement {
         const html =
             // The tabindex here is necessary to allow it to be focused.
@@ -5227,9 +5477,11 @@ export class CanvasElementManager {
             bloomCanvasJQuery,
             html,
             location,
-            "none",
-            true,
-            rightTopOffset
+            {
+                comicalBubbleStyle: "none",
+                setElementActive: true,
+                rightTopOffset,
+            },
         );
         // reorder it after the element with class kBackgroundImageClass. This puts it in front of
         // the background but but behind the other canvas elements it is meant to frame.
@@ -5242,10 +5494,10 @@ export class CanvasElementManager {
     // front of the the background image.
     private reorderRectangleCanvasElement(
         rectangle: HTMLElement,
-        bloomCanvas: HTMLElement
+        bloomCanvas: HTMLElement,
     ): void {
         const backgroundImage = bloomCanvas.getElementsByClassName(
-            kBackgroundImageClass
+            kBackgroundImageClass,
         )[0] as HTMLElement;
         if (backgroundImage) {
             bloomCanvas.insertBefore(rectangle, backgroundImage.nextSibling);
@@ -5253,11 +5505,55 @@ export class CanvasElementManager {
             // in the right sequence by ComicalJs Bubble level for the hit test to work right.
             CanvasElementManager.putBubbleBefore(
                 rectangle,
-                (Array.from(
-                    bloomCanvas.getElementsByClassName(kCanvasElementClass)
-                ) as HTMLElement[]).filter(x => x !== backgroundImage),
-                Bubble.getBubbleSpec(backgroundImage).level + 1
+                (
+                    Array.from(
+                        bloomCanvas.getElementsByClassName(kCanvasElementClass),
+                    ) as HTMLElement[]
+                ).filter((x) => x !== backgroundImage),
+                Bubble.getBubbleSpec(backgroundImage).level + 1,
             );
+        }
+    }
+
+    // Note: This is distinct from ensureCanvasElementsIntersectParent(), which is intended to
+    // keep *existing* canvas elements at least partly visible (and also keeps tails inside).
+    // Here we try to keep a *newly created* element entirely within the canvas (if possible),
+    // without changing its size and without moving it above/left of the canvas.
+    private ensureCanvasElementInsideCanvasIfPossible(
+        canvasElement: HTMLElement,
+        bloomCanvas: HTMLElement,
+    ): void {
+        const canvasSize = getExactClientSize(bloomCanvas);
+        const canvasElementSize = getExactClientSize(canvasElement);
+        const currentCanvasElementLeft = CanvasElementManager.pxToNumber(
+            canvasElement.style.left,
+        );
+        const currentCanvasElementTop = CanvasElementManager.pxToNumber(
+            canvasElement.style.top,
+        );
+        const currentCanvasElementWidth = canvasElementSize.width;
+        const currentCanvasElementHeight = canvasElementSize.height;
+
+        const maxLeft = canvasSize.width - currentCanvasElementWidth;
+        const maxTop = canvasSize.height - currentCanvasElementHeight;
+        const clampedLeft = Math.max(
+            0,
+            Math.min(currentCanvasElementLeft, maxLeft),
+        );
+        const clampedTop = Math.max(
+            0,
+            Math.min(currentCanvasElementTop, maxTop),
+        );
+        if (
+            clampedLeft !== currentCanvasElementLeft ||
+            clampedTop !== currentCanvasElementTop
+        ) {
+            CanvasElementManager.setCanvasElementPosition(
+                canvasElement,
+                clampedLeft,
+                clampedTop,
+            );
+            this.adjustTarget(canvasElement);
         }
     }
 
@@ -5265,18 +5561,21 @@ export class CanvasElementManager {
         bloomCanvasJQuery: JQuery,
         internalHtml: string,
         location: Point,
-        comicalBubbleStyle?: string,
-        setElementActive?: boolean,
-        rightTopOffset?: string,
-        imageInfo?: {
-            imageId: string;
-            src: string; // must already appropriately URL-encoded.
-            copyright: string;
-            creator: string;
-            license: string;
+        options?: {
+            comicalBubbleStyle?: string;
+            setElementActive?: boolean;
+            rightTopOffset?: string;
+            imageInfo?: {
+                imageId: string;
+                src: string; // must already appropriately URL-encoded.
+                copyright: string;
+                creator: string;
+                license: string;
+            };
+            size?: { width: number; height: number };
+            doAfterElementCreated?: (newElement: HTMLElement) => void;
+            limitToCanvasBounds?: boolean;
         },
-        size?: { width: number; height: number },
-        doAfterElementCreated?: (newElement: HTMLElement) => void
     ): HTMLElement {
         // add canvas element as last child of .bloom-canvas (BL-7883)
         const lastChildOfBloomCanvas = bloomCanvasJQuery.children().last();
@@ -5291,18 +5590,18 @@ export class CanvasElementManager {
         // using z-index so that the bloom-canvas is not a stacking context so we
         // can use z-index on the buttons inside it to put them above the comicaljs canvas.
         const canvasElementJQuery = $(canvasElementHtml).insertAfter(
-            lastChildOfBloomCanvas
+            lastChildOfBloomCanvas,
         );
         const canvasElement = canvasElementJQuery.get(0);
-        if (imageInfo) {
+        if (options?.imageInfo) {
             const img = canvasElement.getElementsByTagName("img")[0];
             if (img) {
-                changeImageInfo(img, imageInfo);
+                changeImageInfo(img, options.imageInfo);
             }
         }
-        if (size) {
-            canvasElement.style.width = size.width + "px";
-            canvasElement.style.height = size.height + "px";
+        if (options?.size) {
+            canvasElement.style.width = options.size.width + "px";
+            canvasElement.style.height = options.size.height + "px";
         } else {
             this.setDefaultHeightFromWidth(canvasElement);
         }
@@ -5310,8 +5609,16 @@ export class CanvasElementManager {
             canvasElementJQuery,
             bloomCanvasJQuery.get(0),
             location,
-            rightTopOffset
+            options?.rightTopOffset,
         );
+
+        if (options?.limitToCanvasBounds) {
+            const bloomCanvas = bloomCanvasJQuery.get(0) as HTMLElement;
+            this.ensureCanvasElementInsideCanvasIfPossible(
+                canvasElement,
+                bloomCanvas,
+            );
+        }
 
         // The following code would not be needed for Picture and Video canvas elements if the focusin
         // handler were reliably called after being attached by refreshBubbleEditing() below.
@@ -5322,7 +5629,7 @@ export class CanvasElementManager {
         // with refreshBubbleEditing(). This code actually prevents bloomEditing.focusOnChildIfFound()
         // from being called, but that doesn't really matter since calling it does no good.
         // See https://issues.bloomlibrary.org/youtrack/issue/BL-11620.
-        if (setElementActive) {
+        if (options?.setElementActive) {
             this.activeElement = canvasElement;
             this.doNotifyChange();
             this.showCorrespondingTextBox(canvasElement);
@@ -5330,30 +5637,30 @@ export class CanvasElementManager {
         const bubble = new Bubble(canvasElement);
         const bubbleSpec: BubbleSpec = Bubble.getDefaultBubbleSpec(
             canvasElement,
-            comicalBubbleStyle || "speech"
+            options?.comicalBubbleStyle || "speech",
         );
         bubble.setBubbleSpec(bubbleSpec);
         const bloomCanvas = bloomCanvasJQuery.get(0);
-        if (doAfterElementCreated) {
+        if (options?.doAfterElementCreated) {
             // It's not obvious when the best time to do this is. Obviously it has to be after
             // the element is created. For the current purpose, the main thing is that it be
             // before refreshBubbleEditing() is called, since (for picture elements) that is
             // what gets the element selected and triggers a call to adjustContainerAspectRatio().
-            doAfterElementCreated(canvasElement);
+            options.doAfterElementCreated(canvasElement);
         }
         // background image in parent bloom-canvas may need to become canvas element
         // (before we refreshBubbleEditing, since we may change some canvas elements here.)
         this.handleResizeAdjustments();
         this.refreshCanvasElementEditing(bloomCanvas, bubble, true, true);
         const editable = canvasElement.getElementsByClassName(
-            "bloom-editable bloom-visibility-code-on"
+            "bloom-editable bloom-visibility-code-on",
         )[0] as HTMLElement;
         editable?.focus();
         return canvasElement;
     }
 
     // All of the text-based canvas elements' default heights are based on the min-height of 30px set
-    // in overlayTool.less for a .bloom-canvas-element. For other elements, we usually want something else.
+    // in canvasTool.less for a .bloom-canvas-element. For other elements, we usually want something else.
     public setDefaultHeightFromWidth(canvasElement: HTMLElement) {
         const width = parseInt(getComputedStyle(canvasElement).width, 10);
 
@@ -5401,7 +5708,7 @@ export class CanvasElementManager {
         wrapperBox: JQuery,
         container: Element,
         positionInBloomCanvas: Point,
-        rightTopOffset?: string
+        rightTopOffset?: string,
     ) {
         let xOffset = positionInBloomCanvas.getUnscaledX();
         let yOffset = positionInBloomCanvas.getUnscaledY();
@@ -5437,7 +5744,7 @@ export class CanvasElementManager {
             const { x, y } = this.snapProvider.getPosition(
                 undefined,
                 xOffset,
-                yOffset
+                yOffset,
             );
             xOffset = x;
             yOffset = y;
@@ -5453,7 +5760,7 @@ export class CanvasElementManager {
         CanvasElementManager.setCanvasElementPosition(
             wrapperBox.get(0) as HTMLElement,
             xOffset,
-            yOffset
+            yOffset,
         );
 
         this.adjustTarget(wrapperBox.get(0));
@@ -5508,7 +5815,7 @@ export class CanvasElementManager {
             containerElement,
             undefined,
             false,
-            false
+            false,
         );
         // We no longer have an active element, but the old active element may be
         // needed by the removeControlFrame method called by refreshCanvasElementEditing
@@ -5521,7 +5828,7 @@ export class CanvasElementManager {
     // We verify that 'textElement' is the active element before calling this method.
     public duplicateCanvasElementBox(
         textElement: HTMLElement,
-        sameLocation?: boolean
+        sameLocation?: boolean,
     ): HTMLElement | undefined {
         // simple guard
         if (!textElement || !textElement.parentElement) {
@@ -5552,7 +5859,7 @@ export class CanvasElementManager {
             const result = this.duplicateCanvasElementFamily(
                 patriarchBubble,
                 bubbleSpecToDuplicate,
-                sameLocation
+                sameLocation,
             );
             if (result) {
                 const isRectangle =
@@ -5584,14 +5891,14 @@ export class CanvasElementManager {
     private duplicateCanvasElementFamily(
         patriarchSourceBubble: Bubble,
         bubbleSpecToDuplicate: BubbleSpec,
-        sameLocation: boolean = false
+        sameLocation: boolean = false,
     ): HTMLElement | undefined {
         const sourceElement = patriarchSourceBubble.content;
         const proposedOffset = 15;
         const newPoint = this.findBestLocationForNewCanvasElement(
             sourceElement,
             sameLocation ? 0 : proposedOffset + sourceElement.clientWidth, // try to not overlap too much
-            sameLocation ? 0 : proposedOffset
+            sameLocation ? 0 : proposedOffset,
         );
         if (!newPoint) {
             return;
@@ -5600,41 +5907,53 @@ export class CanvasElementManager {
             newPoint.getScaledX(),
             newPoint.getScaledY(),
             sourceElement,
-            bubbleSpecToDuplicate.style
+            bubbleSpecToDuplicate.style,
         );
         if (!patriarchDuplicateElement) {
             return;
         }
         patriarchDuplicateElement.classList.remove(kBackgroundImageClass);
         patriarchDuplicateElement.style.color = sourceElement.style.color; // preserve text color
-        patriarchDuplicateElement.innerHTML = this.safelyCloneHtmlStructure(
-            sourceElement
-        );
+        patriarchDuplicateElement.innerHTML =
+            this.safelyCloneHtmlStructure(sourceElement);
         // Preserve the Auto Height setting.  See BL-13931.
         if (sourceElement.classList.contains("bloom-noAutoHeight"))
             patriarchDuplicateElement.classList.add("bloom-noAutoHeight");
         // Preserve the bloom-gif class, which is used to indicate that this is a GIF. (BL-15037)
         if (sourceElement.classList.contains("bloom-gif"))
             patriarchDuplicateElement.classList.add("bloom-gif");
+        if (sourceElement.classList.contains(kBloomButtonClass))
+            patriarchDuplicateElement.classList.add(kBloomButtonClass);
+        const imageFitMode = sourceElement.getAttribute(kImageFitModeAttribute);
+        // Could just copy it unconditionally, but we're using the absence of the
+        // attribute to represent the default state, so that would introduce a
+        // fourth state (empty string) that may complicate things. We don't need
+        // to remove it if absent because we created a fresh element.
+        if (imageFitMode) {
+            patriarchDuplicateElement.setAttribute(
+                kImageFitModeAttribute,
+                imageFitMode,
+            );
+        }
 
         // copy any data-sound
         const sourceDataSound = sourceElement.getAttribute("data-sound");
         if (sourceDataSound) {
             patriarchDuplicateElement.setAttribute(
                 "data-sound",
-                sourceDataSound
+                sourceDataSound,
             );
         }
         // copy any sound files found in an editable div
         this.copyAnySoundFileAndAttributesForEditable(
             sourceElement,
-            patriarchDuplicateElement
+            patriarchDuplicateElement,
         );
 
         this.setActiveElement(patriarchDuplicateElement);
         this.matchSizeOfSource(sourceElement, patriarchDuplicateElement);
         const container = CanvasElementManager.getBloomCanvas(
-            patriarchDuplicateElement
+            patriarchDuplicateElement,
         );
         if (!container) {
             return; // highly unlikely!
@@ -5643,7 +5962,7 @@ export class CanvasElementManager {
             container,
             bubbleSpecToDuplicate.tails,
             sourceElement,
-            patriarchDuplicateElement
+            patriarchDuplicateElement,
         );
         // This is the bubbleSpec for the brand new (now active) copy of the patriarch canvas element.
         // We will overwrite most of it, but keep its level and version properties. The level will be
@@ -5659,7 +5978,7 @@ export class CanvasElementManager {
             ...bubbleSpecToDuplicate,
             tails: adjustedTailSpec,
             level: specOfCopiedElement.level,
-            version: specOfCopiedElement.version
+            version: specOfCopiedElement.version,
         });
         // OK, now we're done with our manipulation of the patriarch canvas element and we're about to go on
         // and deal with the child canvas elements (if any). But we replaced the innerHTML after creating the
@@ -5669,18 +5988,18 @@ export class CanvasElementManager {
             container,
             new Bubble(patriarchDuplicateElement),
             true,
-            true
+            true,
         );
         const childBubbles = Comical.findRelatives(patriarchSourceBubble);
-        childBubbles.forEach(childBubble => {
+        childBubbles.forEach((childBubble) => {
             const childOffsetFromPatriarch = this.getOffsetFrom(
                 sourceElement,
-                childBubble.content
+                childBubble.content,
             );
             this.duplicateOneChildCanvasElement(
                 childOffsetFromPatriarch,
                 patriarchDuplicateElement,
-                childBubble
+                childBubble,
             );
             // Make sure comical knows about each child as it's created, otherwise it gets the order wrong.
             Comical.convertBubbleJsonToCanvas(container as HTMLElement);
@@ -5690,29 +6009,63 @@ export class CanvasElementManager {
 
     private copyAnySoundFileAndAttributesForEditable(
         sourceElement: HTMLElement,
-        copiedElement: HTMLElement
+        copiedElement: HTMLElement,
     ): void {
         const sourceEditable = sourceElement.querySelector(".bloom-editable");
         if (!sourceEditable) return;
-        const sourceId = sourceEditable.getAttribute("id");
-        if (!sourceId) return;
         const copiedEditable = copiedElement.querySelector(".bloom-editable");
         if (!copiedEditable) return;
-        const newId = AudioRecording.createValidXhtmlUniqueId();
-        copiedEditable.setAttribute("id", newId);
-        copyAudioFileAsync(sourceId, newId); // we don't need to wait for this to finish
-        const duration = sourceEditable.getAttribute("data-duration");
-        if (duration) {
-            copiedEditable.setAttribute("data-duration", duration);
+        const sourceId = sourceEditable.getAttribute("id");
+        const mode = sourceEditable.getAttribute("data-audiorecordingmode");
+        if (sourceId && mode === "TextBox") {
+            this.copySoundFileAndAttributes(
+                sourceEditable,
+                sourceId,
+                copiedEditable,
+            );
+        } else if (mode === "Sentence") {
+            const sourceSpans = sourceEditable.querySelectorAll(
+                "span.audio-sentence[id][recordingmd5]",
+            );
+            const copiedSpans = copiedEditable.querySelectorAll(
+                "span.audio-sentence[recordingmd5]",
+            );
+            if (
+                sourceSpans.length === copiedSpans.length &&
+                sourceSpans.length > 0
+            ) {
+                sourceSpans.forEach((sourceSpan, index) => {
+                    const copiedSpan = copiedSpans[index];
+                    const sourceSpanId = sourceSpan.getAttribute("id");
+                    if (sourceSpanId) {
+                        this.copySoundFileAndAttributes(
+                            sourceSpan,
+                            sourceSpanId,
+                            copiedSpan,
+                        );
+                    }
+                });
+            }
         }
-        const endTimes = sourceEditable.getAttribute(
-            "data-audiorecordingendtimes"
+    }
+
+    private copySoundFileAndAttributes(
+        sourceElement: Element,
+        sourceId: string,
+        copiedElement: Element,
+    ) {
+        const newId = AudioRecording.createValidXhtmlUniqueId();
+        copiedElement.setAttribute("id", newId);
+        copyAudioFileAsync(sourceId, newId); // we don't need to wait for this to finish
+        const duration = sourceElement.getAttribute("data-duration");
+        if (duration) {
+            copiedElement.setAttribute("data-duration", duration);
+        }
+        const endTimes = sourceElement.getAttribute(
+            "data-audiorecordingendtimes",
         );
         if (endTimes) {
-            copiedEditable.setAttribute(
-                "data-audiorecordingendtimes",
-                endTimes
-            );
+            copiedElement.setAttribute("data-audiorecordingendtimes", endTimes);
         }
     }
 
@@ -5720,24 +6073,24 @@ export class CanvasElementManager {
         bloomCanvas: Element,
         originalTailSpecs: TailSpec[],
         sourceElement: HTMLElement,
-        duplicateElement: HTMLElement
+        duplicateElement: HTMLElement,
     ): TailSpec[] {
         if (originalTailSpecs.length === 0) {
             return originalTailSpecs;
         }
         const offSetFromSource = this.getOffsetFrom(
             sourceElement,
-            duplicateElement
+            duplicateElement,
         );
-        return originalTailSpecs.map(spec => {
+        return originalTailSpecs.map((spec) => {
             const tipPoint = this.adjustRelativePointToBloomCanvas(
                 bloomCanvas,
                 new Point(
                     spec.tipX + offSetFromSource.getUnscaledX(),
                     spec.tipY + offSetFromSource.getUnscaledY(),
                     PointScaling.Unscaled,
-                    "getAdjustedTailSpec.tip"
-                )
+                    "getAdjustedTailSpec.tip",
+                ),
             );
             const midPoint = this.adjustRelativePointToBloomCanvas(
                 bloomCanvas,
@@ -5745,22 +6098,22 @@ export class CanvasElementManager {
                     spec.midpointX + offSetFromSource.getUnscaledX(),
                     spec.midpointY + offSetFromSource.getUnscaledY(),
                     PointScaling.Unscaled,
-                    "getAdjustedTailSpec.mid"
-                )
+                    "getAdjustedTailSpec.mid",
+                ),
             );
             return {
                 ...spec,
                 tipX: tipPoint.getUnscaledX(),
                 tipY: tipPoint.getUnscaledY(),
                 midpointX: midPoint.getUnscaledX(),
-                midpointY: midPoint.getUnscaledY()
+                midpointY: midPoint.getUnscaledY(),
             };
         });
     }
 
     private matchSizeOfSource(
         sourceElement: HTMLElement,
-        destElement: HTMLElement
+        destElement: HTMLElement,
     ) {
         destElement.style.width = sourceElement.clientWidth.toFixed(0) + "px";
         // text elements adjust their height automatically based on width and content...
@@ -5770,36 +6123,35 @@ export class CanvasElementManager {
 
     private getOffsetFrom(
         sourceElement: HTMLElement,
-        destElement: HTMLElement
+        destElement: HTMLElement,
     ): Point {
         return new Point(
             destElement.offsetLeft - sourceElement.offsetLeft,
             destElement.offsetTop - sourceElement.offsetTop,
             PointScaling.Scaled,
-            "Destination scaled offset from Source"
+            "Destination scaled offset from Source",
         );
     }
 
     private duplicateOneChildCanvasElement(
         offsetFromPatriarch: Point,
         parentElement: HTMLElement,
-        childSourceBubble: Bubble
+        childSourceBubble: Bubble,
     ) {
         const newChildElement = this.addChildInternal(
             parentElement,
             offsetFromPatriarch.getScaledX(),
-            offsetFromPatriarch.getScaledY()
+            offsetFromPatriarch.getScaledY(),
         );
         if (!newChildElement) {
             return;
         }
         const sourceElement = childSourceBubble.content;
-        newChildElement.innerHTML = this.safelyCloneHtmlStructure(
-            sourceElement
-        );
+        newChildElement.innerHTML =
+            this.safelyCloneHtmlStructure(sourceElement);
         this.copyAnySoundFileAndAttributesForEditable(
             sourceElement,
-            newChildElement
+            newChildElement,
         );
         // Preserve the Auto Height setting.  See BL-13931.
         if (sourceElement.classList.contains("bloom-noAutoHeight"))
@@ -5817,7 +6169,7 @@ export class CanvasElementManager {
             CanvasElementManager.getBloomCanvas(parentElement)!,
             new Bubble(newChildElement),
             true,
-            true
+            true,
         );
     }
 
@@ -5848,7 +6200,7 @@ export class CanvasElementManager {
 
         // Clean children
         const childArray = Array.from(element.childNodes);
-        childArray.forEach(element => {
+        childArray.forEach((element) => {
             this.cleanClonedNode(element as Element);
         });
     }
@@ -5878,7 +6230,9 @@ export class CanvasElementManager {
         return (
             !htmlElement ||
             (htmlElement.classList &&
-                htmlElement.classList.contains("bloom-ui"))
+                (htmlElement.classList.contains("bloom-ui") ||
+                    htmlElement.classList.contains("nicescroll-rails") ||
+                    htmlElement.classList.contains("nicescroll-cursors")))
         );
     }
 
@@ -5899,9 +6253,9 @@ export class CanvasElementManager {
 
     private splitterResizeObservers: ResizeObserver[] = [];
     public startDraggingSplitter() {
-        this.getAllBloomCanvasesOnPage().forEach(bloomCanvas => {
+        this.getAllBloomCanvasesOnPage().forEach((bloomCanvas) => {
             const backgroundCanvasElement = bloomCanvas.getElementsByClassName(
-                kBackgroundImageClass
+                kBackgroundImageClass,
             )[0] as HTMLElement;
             if (backgroundCanvasElement) {
                 // These two attributes are what the resize observer will mess with to make
@@ -5910,18 +6264,18 @@ export class CanvasElementManager {
                 // correct starting size.
                 backgroundCanvasElement.setAttribute(
                     "data-oldStyle",
-                    backgroundCanvasElement.getAttribute("style") ?? ""
+                    backgroundCanvasElement.getAttribute("style") ?? "",
                 );
                 const img = getImageFromCanvasElement(backgroundCanvasElement);
                 img?.setAttribute(
                     "data-oldStyle",
-                    img.getAttribute("style") ?? ""
+                    img.getAttribute("style") ?? "",
                 );
                 const resizeObserver = new ResizeObserver(() => {
                     this.adjustBackgroundImageSize(
                         bloomCanvas,
                         backgroundCanvasElement,
-                        false
+                        false,
                     );
                 });
                 resizeObserver.observe(bloomCanvas);
@@ -5931,22 +6285,22 @@ export class CanvasElementManager {
     }
 
     public endDraggingSplitter() {
-        this.getAllBloomCanvasesOnPage().forEach(bloomCanvas => {
+        this.getAllBloomCanvasesOnPage().forEach((bloomCanvas) => {
             const backgroundCanvasElement = bloomCanvas.getElementsByClassName(
-                kBackgroundImageClass
+                kBackgroundImageClass,
             )[0] as HTMLElement;
             // We need to remove the results of the continuous adjustments so that we can make the change again,
             // but this time adjust all the other canvas elements with it.
             if (backgroundCanvasElement) {
                 backgroundCanvasElement.setAttribute(
                     "style",
-                    backgroundCanvasElement.getAttribute("data-oldStyle") ?? ""
+                    backgroundCanvasElement.getAttribute("data-oldStyle") ?? "",
                 );
                 backgroundCanvasElement.removeAttribute("data-oldStyle");
                 const img = getImageFromCanvasElement(backgroundCanvasElement);
                 img?.setAttribute(
                     "style",
-                    img.getAttribute("data-oldStyle") ?? ""
+                    img.getAttribute("data-oldStyle") ?? "",
                 );
                 img?.removeAttribute("data-oldStyle");
             }
@@ -5957,7 +6311,7 @@ export class CanvasElementManager {
     }
 
     public suspendComicEditing(
-        forWhat: "forDrag" | "forTool" | "forGamePlayMode" | "forJqueryResize"
+        forWhat: "forDrag" | "forTool" | "forGamePlayMode" | "forJqueryResize",
     ) {
         if (!this.isCanvasElementEditingOn) {
             // Note that this prevents us from getting into one of the suspended states
@@ -5972,16 +6326,16 @@ export class CanvasElementManager {
 
         if (forWhat === "forGamePlayMode") {
             const allCanvasElements = Array.from(
-                document.getElementsByClassName(kCanvasElementClass)
+                document.getElementsByClassName(kCanvasElementClass),
             );
             // We don't want the user to be able to edit the text in the canvas elements while playing a game.
             // This doesn't need to be in the game prepareActivity because we remove contenteditable
             // from all elements when publishing a book.
-            allCanvasElements.forEach(element => {
+            allCanvasElements.forEach((element) => {
                 const editables = Array.from(
-                    element.getElementsByClassName("bloom-editable")
+                    element.getElementsByClassName("bloom-editable"),
                 );
-                editables.forEach(editable => {
+                editables.forEach((editable) => {
                     editable.removeAttribute("contenteditable");
                 });
             });
@@ -6020,13 +6374,13 @@ export class CanvasElementManager {
         }
         if (this.comicEditingSuspendedState === "forGamePlayMode") {
             const allCanvasElements = Array.from(
-                document.getElementsByClassName(kCanvasElementClass)
+                document.getElementsByClassName(kCanvasElementClass),
             );
-            allCanvasElements.forEach(element => {
+            allCanvasElements.forEach((element) => {
                 const editables = Array.from(
-                    element.getElementsByClassName("bloom-editable")
+                    element.getElementsByClassName("bloom-editable"),
                 );
-                editables.forEach(editable => {
+                editables.forEach((editable) => {
                     editable.setAttribute("contenteditable", "true");
                 });
             });
@@ -6063,24 +6417,24 @@ export class CanvasElementManager {
 
     public removeDetachedTargets() {
         const detachedTargets = Array.from(
-            document.querySelectorAll("[data-target-of]")
+            document.querySelectorAll("[data-target-of]"),
         );
         const canvasElements = getAllDraggables(document);
-        canvasElements.forEach(canvasElement => {
+        canvasElements.forEach((canvasElement) => {
             const draggableId = canvasElement.getAttribute(
-                kDraggableIdAttribute
+                kDraggableIdAttribute,
             );
             if (draggableId) {
                 const index = detachedTargets.findIndex(
                     (target: Element) =>
-                        target.getAttribute("data-target-of") === draggableId
+                        target.getAttribute("data-target-of") === draggableId,
                 );
                 if (index > -1) {
                     detachedTargets.splice(index, 1); // not detached if draggable points to it
                 }
             }
         });
-        detachedTargets.forEach(target => {
+        detachedTargets.forEach((target) => {
             target.remove();
         });
     }
@@ -6159,10 +6513,12 @@ export class CanvasElementManager {
     // times will not cause duplication.
     public setupSplitterEventHandling() {
         Array.from(
-            document.getElementsByClassName("split-pane-divider")
-        ).forEach(d => d.addEventListener("mousedown", this.dividerMouseDown));
+            document.getElementsByClassName("split-pane-divider"),
+        ).forEach((d) =>
+            d.addEventListener("mousedown", this.dividerMouseDown),
+        );
         document.addEventListener("mouseup", this.documentMouseUp, {
-            capture: true
+            capture: true,
         });
     }
 
@@ -6179,7 +6535,7 @@ export class CanvasElementManager {
                 .find(".bloom-ui")
                 .filter(
                     (_, x) =>
-                        !x.classList.contains("bloom-videoControlContainer")
+                        !x.classList.contains("bloom-videoControlContainer"),
                 )
                 .remove();
             thisCanvasElement.find(".bloom-dragHandleTOP").remove(); // BL-7903 remove any left over drag handles (this was the class used in 4.7 alpha)
@@ -6202,7 +6558,7 @@ export class CanvasElementManager {
     // bloomCanvas: Optional. The bloom-canvas the canvas element is in. If this parameter is not defined, the function will automatically determine it.
     private static convertCanvasElementPositionToAbsolute(
         canvasElement: HTMLElement,
-        bloomCanvas?: Element | null | undefined
+        bloomCanvas?: Element | null | undefined,
     ): void {
         let unscaledRelativeLeft: number;
         let unscaledRelativeTop: number;
@@ -6232,18 +6588,18 @@ export class CanvasElementManager {
                 positionInfo.left,
                 positionInfo.top,
                 PointScaling.Scaled,
-                "convertTextboxPositionToAbsolute()"
+                "convertTextboxPositionToAbsolute()",
             );
             const reframedPoint = this.convertPointFromViewportToElementFrame(
                 wrapperBoxPos,
-                bloomCanvas
+                bloomCanvas,
             );
             unscaledRelativeLeft = reframedPoint.getUnscaledX();
             unscaledRelativeTop = reframedPoint.getUnscaledY();
         } else {
             console.assert(
                 false,
-                "convertTextboxPositionToAbsolute(): container was null or undefined."
+                "convertTextboxPositionToAbsolute(): container was null or undefined.",
             );
 
             // If can't find the container for some reason, fallback to the old, deprecated calculation.
@@ -6257,7 +6613,7 @@ export class CanvasElementManager {
         this.setCanvasElementPosition(
             canvasElement,
             unscaledRelativeLeft,
-            unscaledRelativeTop
+            unscaledRelativeTop,
         );
     }
 
@@ -6278,7 +6634,7 @@ export class CanvasElementManager {
     private static setCanvasElementPosition(
         canvasElement: HTMLElement,
         unscaledRelativeLeft: number,
-        unscaledRelativeTop: number
+        unscaledRelativeTop: number,
     ) {
         if (canvasElement.classList.contains("bloom-passive-element")) {
             // Don't set possition for passive elements. They are not supposed to be moved. (BL-14685)
@@ -6302,7 +6658,7 @@ export class CanvasElementManager {
             console.assert(
                 clientWidth === canvasElement.clientWidth &&
                     clientHeight === canvasElement.clientHeight,
-                "CanvasElementManager.setCanvasElementPosition(): clientWidth/Height mismatch!"
+                "CanvasElementManager.setCanvasElementPosition(): clientWidth/Height mismatch!",
             );
         }
     }
@@ -6319,7 +6675,7 @@ export class CanvasElementManager {
             boundingRect.width,
             boundingRect.height,
             PointScaling.Scaled,
-            "getBoundingClientRect() result (Relative to viewport)"
+            "getBoundingClientRect() result (Relative to viewport)",
         );
 
         // Exterior gives the location of the outside edge of the border. But we want values relative to the inside edge of the padding.
@@ -6399,17 +6755,15 @@ export class CanvasElementManager {
 
         // Retrieve the latest bubbleSpec
         const bubbleSpec = this.getSelectedItemBubbleSpec();
-        const [
-            offsetX,
-            offsetY
-        ] = CanvasElementManager.GetChildPositionFromParentCanvasElement(
-            parentElement,
-            bubbleSpec
-        );
+        const [offsetX, offsetY] =
+            CanvasElementManager.GetChildPositionFromParentCanvasElement(
+                parentElement,
+                bubbleSpec,
+            );
         this.addChildCanvasElementAndRefreshPage(
             parentElement,
             offsetX,
-            offsetY
+            offsetY,
         );
     }
 
@@ -6417,7 +6771,7 @@ export class CanvasElementManager {
     //   (i.e., offsetX = child.left - parent.left)
     public static GetChildPositionFromParentCanvasElement(
         parentElement: HTMLElement,
-        parentBubbleSpec: BubbleSpec | undefined
+        parentBubbleSpec: BubbleSpec | undefined,
     ): number[] {
         let offsetX = parentElement.clientWidth;
         let offsetY = parentElement.clientHeight;
@@ -6463,11 +6817,11 @@ export class CanvasElementManager {
     // at publish time to set the image containers back to the original, more simple state.
     private revertBackgroundCanvasElements() {
         for (const bgo of Array.from(
-            document.getElementsByClassName(kBackgroundImageClass)
+            document.getElementsByClassName(kBackgroundImageClass),
         )) {
             const bgImage = getImageFromCanvasElement(bgo as HTMLElement);
             const mainImage = getImageFromContainer(
-                bgo.parentElement as HTMLElement
+                bgo.parentElement as HTMLElement,
             );
             if (bgImage && mainImage) {
                 // Note that we must use get/setAttribute here rather than e.g. mainImage.src (a property
@@ -6475,7 +6829,7 @@ export class CanvasElementManager {
                 // what is actually stored in the src attribute, the path relative to the book file.
                 mainImage.setAttribute(
                     "src",
-                    bgImage.getAttribute("src") || ""
+                    bgImage.getAttribute("src") || "",
                 );
                 // maintain the intellectual properties of the image (BL-14511)
                 const copyright = bgImage.getAttribute("data-copyright");
@@ -6503,7 +6857,7 @@ export class CanvasElementManager {
 
     private handleResizeAdjustments() {
         const bloomCanvases = this.getAllBloomCanvasesOnPage();
-        bloomCanvases.forEach(bloomCanvas => {
+        bloomCanvases.forEach((bloomCanvas) => {
             this.switchBackgroundToCanvasElementIfNeeded(bloomCanvas);
             this.AdjustChildrenIfSizeChanged(bloomCanvas);
         });
@@ -6519,7 +6873,7 @@ export class CanvasElementManager {
     // if we put position and size attributes on the background image directly.
     private switchBackgroundToCanvasElementIfNeeded(bloomCanvas: HTMLElement) {
         const bgCanvasElement = bloomCanvas.getElementsByClassName(
-            kBackgroundImageClass
+            kBackgroundImageClass,
         )[0] as HTMLElement;
         if (bgCanvasElement) {
             // I think this is redundant, but it got added by mistake at one point,
@@ -6533,7 +6887,7 @@ export class CanvasElementManager {
     private switchBackgroundToCanvasElement(bloomCanvas: HTMLElement) {
         const oldBgImage = getImageFromContainer(bloomCanvas);
         let bgCanvasElement = bloomCanvas.getElementsByClassName(
-            kBackgroundImageClass
+            kBackgroundImageClass,
         )[0] as HTMLElement;
         if (!bgCanvasElement) {
             // various legacy behavior, such as hiding the old-style background placeholder.
@@ -6566,12 +6920,12 @@ export class CanvasElementManager {
 
             // Set level so Comical will consider the new canvas element to be under the existing ones.
             const canvasElementElements = Array.from(
-                bloomCanvas.getElementsByClassName(kCanvasElementClass)
+                bloomCanvas.getElementsByClassName(kCanvasElementClass),
             ) as HTMLElement[];
             CanvasElementManager.putBubbleBefore(
                 bgCanvasElement,
                 canvasElementElements,
-                1
+                1,
             );
             bgCanvasElement.style.visibility = "none"; // hide it until we adjust its shape and position
             // consistent with level, we want it in front of the (new, placeholder) background image
@@ -6579,16 +6933,16 @@ export class CanvasElementManager {
             if (oldBgImage) {
                 bloomCanvas.insertBefore(
                     bgCanvasElement,
-                    oldBgImage.nextSibling
+                    oldBgImage.nextSibling,
                 );
             } else {
                 const canvas = bloomCanvas.getElementsByTagName(
-                    "canvas"
+                    "canvas",
                 )[0] as HTMLElement;
                 if (canvas) {
                     bloomCanvas.insertBefore(
                         bgCanvasElement,
-                        canvas.nextSibling
+                        canvas.nextSibling,
                     );
                 } else {
                     // Some old books can be in this state.  See BL-15298.
@@ -6599,14 +6953,14 @@ export class CanvasElementManager {
             }
         }
         const bgImage = getBackgroundImageFromBloomCanvas(
-            bloomCanvas
+            bloomCanvas,
         ) as HTMLElement; // must exist by now
         // Whether it's a new bgImage or not, copy its src from the old-style img
         bgImage.classList.remove("bloom-imageLoadError");
         bgImage.onerror = HandleImageError;
         bgImage.setAttribute(
             "src",
-            oldBgImage?.getAttribute("src") ?? "placeHolder.png"
+            oldBgImage?.getAttribute("src") ?? "placeHolder.png",
         );
         this.adjustBackgroundImageSize(bloomCanvas, bgCanvasElement, true);
         bgCanvasElement.style.visibility = ""; // now we can show it, if it was new and hidden
@@ -6622,19 +6976,19 @@ export class CanvasElementManager {
     private static putBubbleBefore(
         canvasElement: HTMLElement,
         canvasElementElements: HTMLElement[],
-        requiredLevel: number
+        requiredLevel: number,
     ) {
         let minLevel = Math.min(
             ...canvasElementElements.map(
-                b => Bubble.getBubbleSpec(b as HTMLElement).level ?? 0
-            )
+                (b) => Bubble.getBubbleSpec(b as HTMLElement).level ?? 0,
+            ),
         );
         if (minLevel <= requiredLevel) {
             // bump all the others up so we can insert one at level 1 below them all
             // We don't want to use zero as a level...some Comical code complains that
             // the canvas element doesn't have a level at all. And I'm nervous about using
             // negative numbers...something that wants a level one higher might get zero.
-            canvasElementElements.forEach(b => {
+            canvasElementElements.forEach((b) => {
                 const bubble = new Bubble(b as HTMLElement);
                 const spec = bubble.getBubbleSpec();
                 // the one previously at minLevel will now be at requiredLevel+1, others higher in same sequence.
@@ -6649,17 +7003,35 @@ export class CanvasElementManager {
         Comical.update(canvasElement.parentElement as HTMLElement);
     }
 
+    private pageContentDelayRequestId = "adjustBackgroundImageSize";
     private adjustBackgroundImageSize(
         bloomCanvas: HTMLElement,
         bgCanvasElement: HTMLElement,
-        useSizeOfNewImage: boolean
+        useSizeOfNewImage: boolean,
     ) {
-        return this.adjustBackgroundImageSizeToFit(
-            bloomCanvas,
-            bgCanvasElement,
-            useSizeOfNewImage,
-            0
+        // adjustBackgroundImageSizeInternal may wait for the image to load and make modifications after, and we want to make
+        // sure those modifications are included in any save that occurs in the meanwhile.
+        // wrapWithRequestPageContentDelay will add the delay before calling the function and remove it when the promise settles.
+        wrapWithRequestPageContentDelay(
+            () =>
+                this.adjustBackgroundImageSizeInternal(
+                    bloomCanvas,
+                    bgCanvasElement,
+                    useSizeOfNewImage,
+                ),
+            this.pageContentDelayRequestId,
         );
+    }
+
+    // Track background image load listener to prevent duplicates
+    // Even if we adjustBackgroundImageSize is somehow running simultaneously on different images and they race on
+    // these, currently nothing bad can happen (worst case we leave around an event listener that does nothing when triggered)
+    private bgImageLoadListener: ((event: Event) => void) | undefined;
+    private clearImageLoadListener(img) {
+        if (this.bgImageLoadListener) {
+            img.removeEventListener("load", this.bgImageLoadListener);
+            this.bgImageLoadListener = undefined;
+        }
     }
 
     // Given a bg canvas element, which is a canvas element having the bloom-backgroundImage
@@ -6677,7 +7049,11 @@ export class CanvasElementManager {
     // A further complication is that the image may fail to load, so we never get natural
     // dimensions. In this case, we expand the bgCanvasElement to the full size of the container so
     // all the space is available to display the error icon and message.
-    private adjustBackgroundImageSizeToFit(
+    //
+    // This method returns a Promise that resolves when the background image size has been adjusted.
+    // If the image needs to load, the promise will resolve after the image loads (or after a timeout).
+    // The caller should use wrapWithRequestPageContentDelay to ensure page content requests wait for this to complete.
+    private adjustBackgroundImageSizeInternal(
         bloomCanvas: HTMLElement,
         // The canvas element div that contains the background image.
         // (Since this is the background that we overlay things on, it is itself a
@@ -6690,27 +7066,16 @@ export class CanvasElementManager {
         // We'll always have to wait for it to load in this case, otherwise, we may get
         // the dimensions of a previous image.
         useSizeOfNewImage: boolean,
-        // Sometimes we think we need to wait for onload, but the data arrives before we set up
-        // the watcher. We make a timeout so we will go ahead and adjust if we have dimensions
-        // and don't get an onload in a reasonable time. If we DO get the onload before we
-        // timeout, we use this handle to clear it.
-        // This is set when we arrange an onload callback and receive it
-        timeoutHandler: number
-    ) {
-        if (timeoutHandler) {
-            clearTimeout(timeoutHandler);
-        }
-        const {
-            width: bloomCanvasWidth,
-            height: bloomCanvasHeight
-        } = getExactClientSize(bloomCanvas);
+    ): Promise<void> {
+        const { width: bloomCanvasWidth, height: bloomCanvasHeight } =
+            getExactClientSize(bloomCanvas);
         let imgAspectRatio =
             bgCanvasElement.clientWidth / bgCanvasElement.clientHeight;
         const img = getImageFromCanvasElement(bgCanvasElement);
         let failedImage = false;
         // We don't ever expect there not to be an img. If it happens, we'll just do nothing.
         if (!img) {
-            return;
+            return Promise.resolve();
         }
         // The image may not have loaded yet or may have failed to load.  If either of these
         // cases is true, then the naturalHeight and naturalWidth will be zero.  If the image
@@ -6722,9 +7087,12 @@ export class CanvasElementManager {
         // image has the special class indicating that it failed to load.  (The class is supposed
         // to be removed when we change the src attribute, which leads to a new load attempt.)
         failedImage =
-            img.naturalHeight === 0 && // not loaded successfully (yet)
-            !useSizeOfNewImage && // not waiting for new dimensions
-            img.classList.contains("bloom-imageLoadError"); // error occurred while trying to load
+            // As of BL-15441, we use css instead of real placeHolder.png files but still set src="placeHolder.png"
+            // to indicate placeholders. Treat this case as a failed image for dimensions purposes
+            isPlaceHolderImage(img.getAttribute("src")) ||
+            (img.naturalHeight === 0 && // not loaded successfully (yet)
+                !useSizeOfNewImage && // not waiting for new dimensions
+                img.classList.contains("bloom-imageLoadError")); // error occurred while trying to load
         if (failedImage) {
             // If the image failed to load, just use the container aspect ratio to fill up
             // the container with the error message (alt attribute string).
@@ -6736,36 +7104,45 @@ export class CanvasElementManager {
         ) {
             // if we don't have a height and width, or we know the image src changed
             // and have not yet waited for new dimensions, go ahead and wait.
-            // We set up this timeout
-            const handle = (setTimeout(
-                () =>
-                    this.adjustBackgroundImageSizeToFit(
-                        bloomCanvas,
-                        bgCanvasElement,
-                        // after the timeout we don't consider that we MUST wait if we have dimensions
-                        false,
-                        0 // when we get this call, we're responding to the timeout, so don't need to cancel.
-                    ),
-                // I think this is long enough that we won't be seeing obsolete data (from a previous src).
-                // OTOH it's not hopelessly long for the user to wait when we don't get an onload.
-                // If by any chance this happens when the image really isn't loaded enough to
-                // have naturalHeight/Width, the zero checks above will force another iteration.
-                100
-                // somehow Typescript is confused and thinks this is a NodeJS version of setTimeout.
-            ) as unknown) as number;
-            // preferably we update when we are loaded.
-            img.addEventListener(
-                "load",
-                () =>
-                    this.adjustBackgroundImageSizeToFit(
+            // Return a promise that resolves when the image loads or after a timeout.
+            return new Promise<void>((resolve) => {
+                const handle = setTimeout(
+                    () => {
+                        this.adjustBackgroundImageSizeInternal(
+                            bloomCanvas,
+                            bgCanvasElement,
+                            // after the timeout we don't consider that we MUST wait if we have dimensions
+                            false,
+                        ).then(resolve);
+                    },
+                    // I think this is long enough that we won't be seeing obsolete data (from a previous src).
+                    // OTOH it's not hopelessly long for the user to wait when we don't get an onload.
+                    // If by any chance this happens when the image really isn't loaded enough to
+                    // have naturalHeight/Width, the zero checks above will force another iteration.
+                    100,
+                    // somehow Typescript is confused and thinks this is a NodeJS version of setTimeout.
+                ) as unknown as number;
+                // preferably we update when we are loaded.
+                // Remove any existing listener to prevent duplicates
+                this.clearImageLoadListener(img);
+                // Store the listener so the timer can remove it if its no longer needed
+                // If we get this method running simultaneously on 2 different images (which we think is very unlikely),
+                // it's possible that they will race here and one of the load listeners won't get removed. But it seems
+                // like the worst this could cause is the promise gets resolved twice on the next adjustment, which
+                // would just get ignored. So we don't think this is worth addressing.
+                this.bgImageLoadListener = () => {
+                    clearTimeout(handle);
+                    this.adjustBackgroundImageSizeInternal(
                         bloomCanvas,
                         bgCanvasElement,
                         false, // when this call happens we have the new dimensions.
-                        handle // if this callback happens we can cancel the timeout.
-                    ),
-                { once: true }
-            );
-            return; // try again once we have valid image data
+                    ).then(resolve);
+                    this.bgImageLoadListener = undefined;
+                };
+                img.addEventListener("load", this.bgImageLoadListener, {
+                    once: true,
+                });
+            });
         } else if (img.style.width) {
             // there is established cropping. Use the cropped size to determine the
             // aspect ratio.
@@ -6779,18 +7156,23 @@ export class CanvasElementManager {
 
         const oldCeWidth = CanvasElementManager.pxToNumber(
             bgCanvasElement.style.width,
-            bgCanvasElement.clientWidth
+            bgCanvasElement.clientWidth,
         );
         const oldCeHeight = CanvasElementManager.pxToNumber(
             bgCanvasElement.style.height,
-            bgCanvasElement.clientHeight
+            bgCanvasElement.clientHeight,
         );
         const containerAspectRatio = bloomCanvasWidth / bloomCanvasHeight;
         const fitCoverMode = img?.classList.contains(
-            "bloom-imageObjectFit-cover"
+            "bloom-imageObjectFit-cover",
         );
         let matchWidthOfContainer = imgAspectRatio > containerAspectRatio;
         if (fitCoverMode) {
+            // In case it is NOT already cropped, its size will be 100%, so we must capture
+            // this before we change the parent.
+            const oldImgWidth =
+                CanvasElementManager.pxToNumber(img.style.width) ||
+                img.clientWidth;
             // make the canvas element fill the container
             bgCanvasElement.style.width = bloomCanvasWidth + "px";
             bgCanvasElement.style.height = bloomCanvasHeight + "px";
@@ -6798,9 +7180,6 @@ export class CanvasElementManager {
             bgCanvasElement.style.top = "0px";
             //
             matchWidthOfContainer = !matchWidthOfContainer;
-            const oldImgWidth =
-                CanvasElementManager.pxToNumber(img.style.width) ||
-                img.clientWidth;
             // This is the height it would be if not cropped.
             const oldImgHeight =
                 (oldImgWidth * img.naturalHeight) / img.naturalWidth;
@@ -6881,7 +7260,7 @@ export class CanvasElementManager {
                 // for greater accuracy in scaling. (BL-15464)
                 const newCeWidth = CanvasElementManager.pxToNumber(
                     bgCanvasElement.style.width,
-                    bgCanvasElement.clientWidth
+                    bgCanvasElement.clientWidth,
                 );
                 const scale = newCeWidth / oldCeWidth;
                 img.style.width =
@@ -6904,14 +7283,15 @@ export class CanvasElementManager {
                 // The failed image was cropped. Remove the cropping to facilitate displaying the error state.
                 img.setAttribute(
                     "data-style",
-                    `left:${img.style.left}; width:${img.style.width}; top:${img.style.top};`
+                    `left:${img.style.left}; width:${img.style.width}; top:${img.style.top};`,
                 );
                 const imgWidth = CanvasElementManager.pxToNumber(
-                    img.style.width
+                    img.style.width,
                 );
                 console.warn(
-                    `Missing image: resetting left from ${imgLeft} to 0, top from ${imgTop} to 0, and width from ${imgWidth} to ${imgWidth +
-                        imgLeft}`
+                    `Missing image: resetting left from ${imgLeft} to 0, top from ${imgTop} to 0, and width from ${imgWidth} to ${
+                        imgWidth + imgLeft
+                    }`,
                 );
                 img.style.left = "0px";
                 img.style.top = "0px";
@@ -6925,6 +7305,8 @@ export class CanvasElementManager {
             // in that case, we must not try to render the controls as if they belonged to it.)
             renderCanvasElementContextControls(bgCanvasElement, false);
         }
+        this.clearImageLoadListener(img);
+        return Promise.resolve();
     }
 
     // Store away the current size of the bloom-canvas. At any later time if we notice that
@@ -6936,7 +7318,7 @@ export class CanvasElementManager {
             // data-imgsizebasedon as we write, so that's what's in files.
             // I'd prefer it to be data-img-size-based-on, but that would require data-migration.
             "data-imgsizebasedon",
-            `${bloomCanvas.clientWidth},${bloomCanvas.clientHeight}`
+            `${bloomCanvas.clientWidth},${bloomCanvas.clientHeight}`,
         );
     }
 
@@ -6963,13 +7345,13 @@ export class CanvasElementManager {
         if (oldWidth === newWidth && oldHeight === newHeight) return; // allow small discrepancy?
         this.updateBloomCanvasSizeData(bloomCanvas); // remember the new size, whatever path we take adjusting things.
         // Leave out of this calculation the canvas and any image descriptions or controls.
-        const children = (Array.from(
-            bloomCanvas.children
-        ) as HTMLElement[]).filter(
-            c =>
+        const children = (
+            Array.from(bloomCanvas.children) as HTMLElement[]
+        ).filter(
+            (c) =>
                 c.style.left !== "" &&
                 c.classList.contains("bloom-ui") === false &&
-                c.tagName.toLowerCase() !== "canvas"
+                c.tagName.toLowerCase() !== "canvas",
         );
         if (children.length === 0) return;
 
@@ -6994,7 +7376,7 @@ export class CanvasElementManager {
                 const img = getImageFromCanvasElement(child);
                 if (
                     !img ||
-                    img.getAttribute("src") === "placeHolder.png" ||
+                    isPlaceHolderImage(img.getAttribute("src")) ||
                     children.length === 1
                 ) {
                     // If there's no image or it's a placeholder, and there are other overlays, it won't be visible,
@@ -7137,7 +7519,7 @@ export class CanvasElementManager {
                 Array.from(child.children).some(
                     (c: HTMLElement) =>
                         c.classList.contains("bloom-imageContainer") ||
-                        c.classList.contains("bloom-videoContainer")
+                        c.classList.contains("bloom-videoContainer"),
                 )
             ) {
                 // an image or video canvas element: the position is OK, we want to scale the size.
@@ -7148,13 +7530,13 @@ export class CanvasElementManager {
                     // The image has been cropped. We want to keep the crop looking the same,
                     // which means we need to scale its width, left, and top.
                     const imgLeft = CanvasElementManager.pxToNumber(
-                        img.style.left
+                        img.style.left,
                     );
                     const imgTop = CanvasElementManager.pxToNumber(
-                        img.style.top
+                        img.style.top,
                     );
                     const imgWidth = CanvasElementManager.pxToNumber(
-                        img.style.width
+                        img.style.width,
                     );
                     img.style.left = imgLeft * scale + "px";
                     img.style.top = imgTop * scale + "px";
@@ -7183,7 +7565,7 @@ export class CanvasElementManager {
             }
             if (child.classList.contains(kCanvasElementClass)) {
                 const tails: TailSpec[] = bubbleSpec.tails;
-                tails.forEach(tail => {
+                tails.forEach((tail) => {
                     tail.tipX = newLeft + (tail.tipX - left) * scale;
                     tail.tipY = newTop + (tail.tipY - top) * scale;
                     tail.midpointX = newLeft + (tail.midpointX - left) * scale;
@@ -7195,7 +7577,7 @@ export class CanvasElementManager {
                     !Array.from(child.children).some(
                         (c: HTMLElement) =>
                             c.classList.contains("bloom-imageContainer") ||
-                            c.classList.contains("bloom-videoContainer")
+                            c.classList.contains("bloom-videoContainer"),
                     )
                 ) {
                     // This must be done after we adjust the canvas element, since its new settings are
@@ -7213,7 +7595,7 @@ export class CanvasElementManager {
                         left,
                         top,
                         newLeft,
-                        newTop
+                        newTop,
                     );
                 }
             }
@@ -7246,39 +7628,39 @@ export class CanvasElementManager {
         oldLeft: number,
         oldTop: number,
         newLeft: number,
-        newTop: number
+        newTop: number,
     ) {
         const canvasElementLang = GetSettings().languageForNewTextBoxes;
         Array.from(
-            canvasElement.getElementsByClassName("bloom-editable")
-        ).forEach(editable => {
+            canvasElement.getElementsByClassName("bloom-editable"),
+        ).forEach((editable) => {
             const lang = editable.getAttribute("lang");
             if (lang === canvasElementLang) {
                 // We want to update this lang's alternate to the current data we already figured out.
                 const alternate = {
                     style: canvasElement.getAttribute("style"),
-                    tails: Bubble.getBubbleSpec(canvasElement).tails
+                    tails: Bubble.getBubbleSpec(canvasElement).tails,
                 };
                 editable.setAttribute(
                     "data-bubble-alternate",
-                    JSON.stringify(alternate).replace(/"/g, "`")
+                    JSON.stringify(alternate).replace(/"/g, "`"),
                 );
             } else {
                 const alternatesString = editable.getAttribute(
-                    "data-bubble-alternate"
+                    "data-bubble-alternate",
                 );
                 if (alternatesString) {
                     const alternate = JSON.parse(
-                        alternatesString.replace(/`/g, '"')
+                        alternatesString.replace(/`/g, '"'),
                     ) as IAlternate;
                     const style = alternate.style;
                     const width = CanvasElementManager.getLabeledNumberInPx(
                         "width",
-                        style
+                        style,
                     );
                     const height = CanvasElementManager.getLabeledNumberInPx(
                         "height",
-                        style
+                        style,
                     );
                     let newStyle = CanvasElementManager.adjustCenterOfTextBox(
                         "left",
@@ -7286,7 +7668,7 @@ export class CanvasElementManager {
                         scale,
                         oldLeft,
                         newLeft,
-                        width
+                        width,
                     );
                     newStyle = CanvasElementManager.adjustCenterOfTextBox(
                         "top",
@@ -7294,7 +7676,7 @@ export class CanvasElementManager {
                         scale,
                         oldTop,
                         newTop,
-                        height
+                        height,
                     );
 
                     const tails = alternate.tails;
@@ -7311,13 +7693,13 @@ export class CanvasElementManager {
                                 newLeft + (tail.midpointX - oldLeft) * scale;
                             tail.midpointY =
                                 newTop + (tail.midpointY - oldTop) * scale;
-                        }
+                        },
                     );
                     alternate.style = newStyle;
                     alternate.tails = tails;
                     editable.setAttribute(
                         "data-bubble-alternate",
-                        JSON.stringify(alternate).replace(/"/g, "`")
+                        JSON.stringify(alternate).replace(/"/g, "`"),
                     );
                 }
             }
@@ -7338,7 +7720,7 @@ export class CanvasElementManager {
         scale: number,
         oldC: number,
         newC: number,
-        oldRange: number
+        oldRange: number,
     ): string {
         const old = CanvasElementManager.getLabeledNumberInPx(label, style);
         const center = old + oldRange / 2;
@@ -7346,7 +7728,7 @@ export class CanvasElementManager {
         const newVal = newCenter - oldRange / 2;
         return style.replace(
             new RegExp(label + this.numberPxRegex),
-            label + ": " + newVal + "px"
+            label + ": " + newVal + "px",
         );
     }
 
@@ -7354,7 +7736,7 @@ export class CanvasElementManager {
     // We want to pass "top" and get 79.6.
     public static getLabeledNumberInPx(label: string, source: string): number {
         const match = source.match(
-            new RegExp(label + CanvasElementManager.numberPxRegex)
+            new RegExp(label + CanvasElementManager.numberPxRegex),
         );
         if (match) {
             return parseFloat(match[1]);
@@ -7392,7 +7774,7 @@ interface IAlternate {
 // This is just for debugging. It produces a string that describes the canvas element, generally
 // well enough to identify it in console.log.
 export function canvasElementDescription(
-    e: Element | null | undefined
+    e: Element | null | undefined,
 ): string {
     const elt = e as HTMLElement;
     if (!elt) {
@@ -7420,11 +7802,11 @@ export function canvasElementDescription(
 
 async function copyAudioFileAsync(
     sourceId: string,
-    newId: string
+    newId: string,
 ): Promise<void> {
     const folderInfo = await postJson(
         "fileIO/getSpecialLocation",
-        "CurrentBookAudioDirectory"
+        "CurrentBookAudioDirectory",
     );
     if (!folderInfo || !folderInfo.data) {
         return; // huh??
@@ -7433,9 +7815,59 @@ async function copyAudioFileAsync(
     const targetPath = `${folderInfo.data}/${newId}.mp3`;
     await postData("fileIO/copyFile", {
         from: encodeURIComponent(sourcePath),
-        to: encodeURIComponent(targetPath)
+        to: encodeURIComponent(targetPath),
     });
     // console.log(
     //     `DEBUG copyAudioFileAsync: finished copying ${sourcePath} to ${targetPath}`
     // );
+}
+
+function SetupClickToShowCanvasTool(canvas: Element) {
+    // When the user clicks the canvas background, we want to ensure the Canvas tool is available.
+    // (If they click on an existing canvas element/text box, we let the normal editing behavior
+    // proceed without changing toolbox state.)
+    $(canvas).click((ev) => {
+        // don't interfere with editing or recording of an image description of this canvas
+        if (canvas.getElementsByClassName("bloom-describedImage").length > 0) {
+            return;
+        }
+        const targetElement =
+            ev.target instanceof Element
+                ? ev.target
+                : (ev.target as Node | null)?.parentElement;
+        if (targetElement?.closest(kCanvasElementSelector)) {
+            return;
+        }
+        showCanvasTool();
+    });
+}
+
+export function showCanvasTool() {
+    const handleToolbox = (toolbox) => {
+        // We choose behavior based on whether the toolbox is showing.
+        // This matters because we may have to delay the actual work until the toolbox bundle is loaded.
+        // - If the toolbox is already open, don't switch tools; just ensure Canvas is available.
+        // - If the toolbox is closed, activate Canvas (which also opens the toolbox).
+        if (toolbox.toolboxIsShowing()) {
+            toolbox.ensureToolEnabled(kCanvasToolId);
+        } else {
+            toolbox.activateToolFromId(kCanvasToolId);
+        }
+    };
+
+    const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
+    if (toolbox) {
+        handleToolbox(toolbox);
+        return;
+    }
+
+    doWhenEditTabBundleLoaded((rootFrameExports) => {
+        rootFrameExports.doWhenToolboxLoaded((toolboxFrameExports) => {
+            const loadedToolbox = toolboxFrameExports.getTheOneToolbox();
+            if (!loadedToolbox) {
+                return;
+            }
+            handleToolbox(loadedToolbox);
+        });
+    });
 }

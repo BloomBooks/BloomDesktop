@@ -28,3 +28,6 @@ export function getPageIframeBody(): HTMLElement | null {
     if (!page || !page.contentWindow) return null;
     return page.contentWindow.document.body;
 }
+
+//if this is ever changed, be sure to also change it in bloomUI.less
+export const animateStyleName: string = "bloom-animationPreview";

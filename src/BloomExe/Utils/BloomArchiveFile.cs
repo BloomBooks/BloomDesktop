@@ -1,9 +1,9 @@
-﻿using ICSharpCode.SharpZipLib.Zip;
-using SIL.Reporting;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using ICSharpCode.SharpZipLib.Zip;
+using SIL.Reporting;
 
 namespace Bloom.Utils
 {

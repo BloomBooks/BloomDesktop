@@ -12,6 +12,8 @@
     "editor.detectIndentation": true,
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
+    "prettier.endOfLine": "auto",
+    "files.eol": "auto",
     "typescript.tsdk": "./node_modules/typescript/lib",
     "workbench.colorCustomizations": {
         "statusBar.background": "#75416E",
@@ -51,5 +53,22 @@
         "Winform",
         "Winforms",
         "xmatter"
+    ],
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    // Vitest extension settings for debugging from test panel
+    "vitest.enable": true,
+    "vitest.commandLine": "yarn vitest",
+    "vitest.debugExclude": ["**/node_modules/**", "**/dist/**"],
+    "vitest.include": ["./**/*{test,spec,Spec}.{js,ts,jsx,tsx}"],
+    "vitest.exclude": [
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/cypress/**",
+        "**/.{idea,git,cache,output,temp}/**",
+        "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
+        "**/react_components/component-tester/**",
+        "**/*.uitest.{ts,tsx}"
     ]
 }

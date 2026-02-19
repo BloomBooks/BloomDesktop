@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 // Storybook stories for Team Collection components
 import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
@@ -14,16 +13,16 @@ const wrapperStyles: React.CSSProperties = {
     height: "300px",
     width: "560px", // imitate A5 page width
     border: "1px solid green",
-    backgroundColor: "lightgreen"
+    backgroundColor: "lightgreen",
 };
 const pageStyles: React.CSSProperties = {
     height: "100%",
     flexDirection: "column",
     display: "flex",
-    width: "100%" // imitate the whole Bloom Edit window
+    width: "100%", // imitate the whole Bloom Edit window
 };
 const menuStyles: React.CSSProperties = {
-    border: "1px solid red"
+    border: "1px solid red",
 };
 
 const testPage = (statusPanel: JSX.Element) => (
@@ -39,13 +38,13 @@ const checkinButton = getBloomButton(
     "Check in book",
     "TeamCollection.Checkin",
     "checkin-button",
-    "Check In.svg"
+    "Check In.svg",
 );
 
 const reloadButton = getBloomButton(
     "Reload",
     "TeamCollection.Reload",
-    "reload-button"
+    "reload-button",
 );
 
 const avatar = (lockedByMe: boolean) => (
@@ -59,10 +58,10 @@ const avatar = (lockedByMe: boolean) => (
 // JT: previously was just left uninitialized, but more recent typescript complains.
 // I think the test that uses it may be delibereately testing what the method does with
 // an undefined input.
-let emptyAvatarForProblemState: JSX.Element = (undefined as any) as JSX.Element;
+const emptyAvatarForProblemState: JSX.Element = undefined as any as JSX.Element;
 
 export default {
-    title: "Team Collection components/StatusPanelCommon"
+    title: "Team Collection components/StatusPanelCommon",
 };
 
 export const Available = () =>
@@ -75,41 +74,44 @@ export const Available = () =>
                 "Check out book",
                 "TeamCollection.Checkout",
                 "someOtherClass",
-                "Check Out.svg"
+                "Check Out.svg",
             )}
-        />
+        />,
     );
 
 export const CheckedOutByMe = () => {
-    const messageLogStub = ( // copied from TCBookStatusPanel.tsx
-        <div
-            css={css`
-                width: 320px;
-            `}
-        >
+    const messageLogStub = // copied from TCBookStatusPanel.tsx
+        (
             <div
                 css={css`
-                    font-size: 11px;
+                    width: 320px;
                 `}
             >
-                {"What changes did you make?"}
+                <div
+                    css={css`
+                        font-size: 11px;
+                    `}
+                >
+                    {"What changes did you make?"}
+                </div>
+                <input
+                    css={css`
+                        background-color: transparent;
+                        color: ${kBloomYellow};
+                        width: 100%;
+                        border: 1px solid #ffffffcc;
+                        border-radius: 4px;
+                        height: 36px;
+                    `}
+                    type="text"
+                    value={
+                        "test checkin message that's actually quite longish."
+                    }
+                    autoFocus={true}
+                    key="message"
+                />
             </div>
-            <input
-                css={css`
-                    background-color: transparent;
-                    color: ${kBloomYellow};
-                    width: 100%;
-                    border: 1px solid #ffffffcc;
-                    border-radius: 4px;
-                    height: 36px;
-                `}
-                type="text"
-                value={"test checkin message that's actually quite longish."}
-                autoFocus={true}
-                key="message"
-            />
-        </div>
-    );
+        );
 
     return testPage(
         <StatusPanelCommon
@@ -121,12 +123,12 @@ export const CheckedOutByMe = () => {
             menu={<div style={menuStyles}>Menu</div>}
         >
             {messageLogStub}
-        </StatusPanelCommon>
+        </StatusPanelCommon>,
     );
 };
 
 CheckedOutByMe.story = {
-    name: "Checked out by me"
+    name: "Checked out by me",
 };
 
 export const CheckedOutByFred = () =>
@@ -137,13 +139,13 @@ export const CheckedOutByFred = () =>
             icon={avatar(false)}
         >
             {getLockedInfoChild(
-                "Fred checked out this book on 10 February 2021."
+                "Fred checked out this book on 10 February 2021.",
             )}
-        </StatusPanelCommon>
+        </StatusPanelCommon>,
     );
 
 CheckedOutByFred.story = {
-    name: "Checked out by (Fred)"
+    name: "Checked out by (Fred)",
 };
 
 export const ConflictingChangeState = () =>
@@ -155,11 +157,11 @@ export const ConflictingChangeState = () =>
             button={reloadButton}
         >
             {getLockedInfoChild("")}
-        </StatusPanelCommon>
+        </StatusPanelCommon>,
     );
 
 ConflictingChangeState.story = {
-    name: "Conflicting Change state"
+    name: "Conflicting Change state",
 };
 
 export const CheckedOutByMeOnMyTablet = () =>
@@ -170,11 +172,11 @@ export const CheckedOutByMeOnMyTablet = () =>
             icon={avatar(false)}
         >
             {getLockedInfoChild(
-                "You checked out this book on 14 February 2021."
+                "You checked out this book on 14 February 2021.",
             )}
-        </StatusPanelCommon>
+        </StatusPanelCommon>,
     );
 
 CheckedOutByMeOnMyTablet.story = {
-    name: "Checked out by me on MyTablet"
+    name: "Checked out by me on MyTablet",
 };

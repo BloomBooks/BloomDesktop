@@ -14,6 +14,7 @@ using Bloom;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.FontProcessing;
+using Bloom.ImageProcessing;
 using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
 using Bloom.ToPalaso;
@@ -22,14 +23,14 @@ using Bloom.web;
 using Bloom.web.controllers;
 using BloomTemp;
 using L10NSharp;
-#if __MonoCS__
-using SIL.CommandLineProcessing;
-#endif
 using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Reporting;
 using SIL.Text;
 using SIL.Xml;
+#if __MonoCS__
+using SIL.CommandLineProcessing;
+#endif
 
 namespace Bloom.Publish.Epub
 {
@@ -442,9 +443,9 @@ namespace Bloom.Publish.Epub
                 {
                     progress.Message("Common.Error", "Error", ProgressKind.Error, false);
                     progress.MessageWithParams(
-                        "PublishTab.Epub.NoOverlaySupport",
-                        "Error shown if book contains overlays.",
-                        "Sorry, Bloom cannot produce ePUBs if there are any overlays. The first overlay is on page {0}.",
+                        "PublishTab.Epub.NoCanvasSupport",
+                        "Error shown if book contains canvas elements.",
+                        "Sorry, Bloom cannot produce ePUBs if there are any canvas pages. The first canvas is on page {0}.",
                         ProgressKind.Error,
                         pageLabelEnglish
                     );
@@ -492,7 +493,8 @@ namespace Bloom.Publish.Epub
             // If we don't have an epub thumbnail, create a nice large thumbnail of the cover image
             // with the desired name.  This is a temporary file stored only in the staged book folder
             // before being added to the epub.
-            if (!RobustFile.Exists(epubThumbnailImagePath))
+            var thumbnailFileExists = RobustFile.Exists(epubThumbnailImagePath);
+            if (!thumbnailFileExists)
             {
                 string coverPageImageFile = "thumbnail-256.png"; // name created by _thumbNailer
                 ApplicationException thumbNailException = null;
@@ -511,7 +513,7 @@ namespace Bloom.Publish.Epub
                     return; // especially to avoid reporting problems making thumbnail, e.g., because aborted.
 
                 var coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
-                if (thumbNailException != null || !RobustFile.Exists(coverPageImagePath))
+                if (thumbNailException != null)
                 {
                     NonFatalProblem.Report(
                         ModalIf.All,
@@ -520,25 +522,23 @@ namespace Bloom.Publish.Epub
                         "We will try to make the book anyway, but you may want to try again.",
                         thumbNailException
                     );
-
-                    coverPageImageFile = "thumbnail.png"; // Try a low-res image, which should always exist
-                    coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
-                    if (!RobustFile.Exists(coverPageImagePath))
-                    {
-                        // I don't think we can make an epub without a cover page so at this point we've had it.
-                        // I suppose we could recover without actually crashing but it doesn't seem worth it unless this
-                        // actually happens to real users.
-                        throw new FileNotFoundException(
-                            "Could not find or create thumbnail for cover page (BL-3209)",
-                            coverPageImageFile
-                        );
-                    }
                 }
-                RobustFile.Move(coverPageImagePath, epubThumbnailImagePath);
+                if (thumbNailException != null || !RobustFile.Exists(coverPageImagePath))
+                {
+                    coverPageImageFile = "thumbnail.png"; // Try a low-res image
+                    coverPageImagePath = Path.Combine(Book.FolderPath, coverPageImageFile);
+                }
+                if (RobustFile.Exists(coverPageImagePath))
+                {
+                    RobustFile.Move(coverPageImagePath, epubThumbnailImagePath);
+                    thumbnailFileExists = true;
+                }
             }
-
-            CopyFileToEpub(epubThumbnailImagePath, true, true, kImagesFolder, imageSettings);
-
+            // Cover image file and therefore thumbnail file may be non-existent simply because no cover image was chosen/it was still the placeHolder, not a problem
+            if (thumbnailFileExists)
+            {
+                CopyFileToEpub(epubThumbnailImagePath, true, true, kImagesFolder, imageSettings);
+            }
             var warnings = EmbedFonts(progress); // must call after copying stylesheets
             if (warnings.Any())
                 PublishHelper.SendBatchedWarningMessagesToProgress(warnings, progress);
@@ -566,7 +566,11 @@ namespace Bloom.Publish.Epub
 					</container>"
             );
 
-            MakeManifest(kImagesFolder + "/" + Path.GetFileName(epubThumbnailImagePath));
+            MakeManifest(
+                thumbnailFileExists
+                    ? kImagesFolder + "/" + Path.GetFileName(epubThumbnailImagePath)
+                    : null
+            );
 
             foreach (
                 var filename in Directory.EnumerateFiles(
@@ -1234,12 +1238,9 @@ namespace Bloom.Publish.Epub
                 .Cast<SafeXmlElement>();
 
             // Now check if the audio recordings actually exist for them
-            var audioSentenceElementsWithRecordedAudio = audioSentenceElements.Where(
-                x =>
-                    AudioProcessor.GetOrCreateCompressedAudio(
-                        Storage.FolderPath,
-                        x.GetAttribute("id")
-                    ) != null
+            var audioSentenceElementsWithRecordedAudio = audioSentenceElements.Where(x =>
+                AudioProcessor.GetOrCreateCompressedAudio(Storage.FolderPath, x.GetAttribute("id"))
+                != null
             );
             if (!audioSentenceElementsWithRecordedAudio.Any())
                 return;
@@ -1486,12 +1487,11 @@ namespace Bloom.Publish.Epub
         )
         {
             var mergeFiles = elementArray
-                .Select(
-                    s =>
-                        AudioProcessor.GetOrCreateCompressedAudio(
-                            Storage.FolderPath,
-                            s.GetAttribute("id")
-                        )
+                .Select(s =>
+                    AudioProcessor.GetOrCreateCompressedAudio(
+                        Storage.FolderPath,
+                        s.GetAttribute("id")
+                    )
                 )
                 .Where(s => !string.IsNullOrEmpty(s));
             Directory.CreateDirectory(Path.Combine(_contentFolder, kAudioFolder));
@@ -1919,13 +1919,15 @@ namespace Bloom.Publish.Epub
             // Find the special styles element which contains the user-defined styles.
             // These are the only elements I can find that set explicit font sizes.
             // A few of our css rules apply percentage sizes, but that should be OK.
-            var userStyles = pageDom.Head.ChildNodes
-                .Where(x => x is SafeXmlElement && x.GetAttribute("title") == "userModifiedStyles")
+            var userStyles = pageDom
+                .Head.ChildNodes.Where(x =>
+                    x is SafeXmlElement && x.GetAttribute("title") == "userModifiedStyles"
+                )
                 .FirstOrDefault();
             if (userStyles != null)
             {
-                var userStylesCData = userStyles.ChildNodes
-                    .Where(x => x is SafeXmlCDataSection)
+                var userStylesCData = userStyles
+                    .ChildNodes.Where(x => x is SafeXmlCDataSection)
                     .FirstOrDefault();
                 if (userStylesCData != null)
                 {
@@ -2149,7 +2151,7 @@ namespace Bloom.Publish.Epub
             {
                 bool isBrandingFile; // not used here, but part of method signature
                 var path = FindRealImageFileIfPossible(img, out isBrandingFile);
-                if (!String.IsNullOrEmpty(path) && Path.GetFileName(path) != "placeHolder.png") // consider blank if only placeholder image
+                if (!String.IsNullOrEmpty(path) && !ImageUtils.IsPlaceholderImageFilename(path)) // consider blank if only placeholder image
                     return false;
             }
             foreach (
@@ -2197,7 +2199,9 @@ namespace Bloom.Publish.Epub
                 else
                 {
                     var isCoverImage =
-                        img.SafeSelectNodes("ancestor::div[contains(concat(' ',@class,' '),' coverColor ')]")
+                        img.SafeSelectNodes(
+                                "ancestor::div[contains(concat(' ',@class,' '),' coverColor ')]"
+                            )
                             .Cast<SafeXmlElement>()
                             .Count() != 0;
                     var dstPath = CopyFileToEpub(
@@ -2317,7 +2321,7 @@ namespace Bloom.Publish.Epub
             Tuple.Create("insideFrontCover", "Inside Front Cover", "pgInsideFrontCover"),
             Tuple.Create("outsideBackCover", "Outside Back Cover", "pgOutsideBackCover"),
             Tuple.Create("theEndPage", "The End", "pgTheEnd"),
-            Tuple.Create("titlePage", "Title Page", "pgTitlePage")
+            Tuple.Create("titlePage", "Title Page", "pgTitlePage"),
         };
 
         private void AddPageBreakSpan(HtmlDom pageDom, string pageDocName)
@@ -2787,6 +2791,7 @@ namespace Bloom.Publish.Epub
                 }
             }
             var sb = new StringBuilder();
+            var normalFacesAdded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var font in _fontsUsedInBook.OrderBy(x => x.ToString()))
             {
                 if (badFonts.Contains(font.fontFamily))
@@ -2812,17 +2817,23 @@ namespace Bloom.Publish.Epub
                     // The fonts.css file is stored in a subfolder as are the font files.  They are in different
                     // subfolders, and the reference to the font file has to take the relative path to fonts.css
                     // into account.
-                    AddFontFace(sb, font, group, "../" + kFontsFolder + "/", true);
+                    AddFontFace(
+                        sb,
+                        font,
+                        group,
+                        normalFacesAdded,
+                        "../" + kFontsFolder + "/",
+                        true
+                    );
                 }
             }
             if (
                 badFonts.Any()
                 && !_fontsUsedInBook
-                    .Where(
-                        x =>
-                            x.fontFamily == PublishHelper.DefaultFont
-                            && x.fontStyle == "normal"
-                            && x.fontWeight != "700"
+                    .Where(x =>
+                        x.fontFamily == PublishHelper.DefaultFont
+                        && x.fontStyle == "normal"
+                        && x.fontWeight != "700"
                     )
                     .Any()
             )
@@ -2886,26 +2897,127 @@ namespace Bloom.Publish.Epub
             StringBuilder sb,
             PublishHelper.FontInfo font,
             FontGroup group,
+            HashSet<string> normalFacesAdded,
             string relativePathFromCss = "",
             bool sanitizeFileName = false
         )
         {
-            var weight = font.fontWeight == "700" ? "bold" : "normal";
-            string path = null;
-            if (font.fontStyle == "italic" && font.fontWeight == "700")
-                path = group.BoldItalic;
-            if (string.IsNullOrEmpty(path) && font.fontStyle == "italic")
-                path = group.Italic;
-            if (string.IsNullOrEmpty(path) && font.fontWeight == "700")
-                path = group.Bold;
-            if (string.IsNullOrEmpty(path))
-                path = group.Normal;
+            // What we are doing here (See BL-15558)
+            // On the one hand, we have the fonts that the html/css call for.
+            // On the other hand, we have the actual fonts (not typefaces, actual "fonts")
+            // that are available on this machine. When we "add a font face" here, we are
+            // creating a css rule that points to an actual font file that will be embedded.
+            // If the font face we want isn't available, the browser can synthesize one.
+            // So for example if you want italic, but we only have normal, that's fine we
+            // have no italic font face to add, so we just add the normal one and the browser will
+            // do its best. This is what is needed for WYSIWYG, because that is what is happening
+            // in the Editor view. But if you *do* have a font file matching the requested face,
+            // then we want to emit a font-face rule for it which points to the font file.
+
+            var wantsItalic = font.fontStyle == "italic";
+            var wantsBold = font.fontWeight == "700";
+            string chosenPath = null;
+            string declaredWeight = null;
+            string declaredStyle = null;
+
+            // Step 1: Find the best available face for the requested style/weight.
+            // For bold-italic requests, we prefer: BoldItalic > Italic > Bold > Normal
+            // This cascade means the browser only synthesizes what's missing (e.g., if we have
+            // Italic but not BoldItalic, the browser just synthesizes bold on top of real italic).
+            // For non-combined requests (just bold or just italic), we require an exact match
+            // or fall back to Normal in Step 3.
+            if (wantsItalic && wantsBold)
+            {
+                // For combined requests, emit the most specific real face we have and let the
+                // browser synthesize the missing axis.
+                if (!string.IsNullOrEmpty(group.BoldItalic))
+                {
+                    chosenPath = group.BoldItalic;
+                    declaredWeight = "bold";
+                    declaredStyle = "italic";
+                }
+                // the order of italic vs bold here is intentional,
+                // the thinking being that bold is easier to synthesize than italic,
+                // so if we have to pick just one, we prefer to provide the italic face
+                // and let the browser fake the bold.
+                else if (!string.IsNullOrEmpty(group.Italic))
+                {
+                    chosenPath = group.Italic;
+                    declaredWeight = "normal";
+                    declaredStyle = "italic";
+                }
+                else if (!string.IsNullOrEmpty(group.Bold))
+                {
+                    chosenPath = group.Bold;
+                    declaredWeight = "bold";
+                    declaredStyle = "normal";
+                }
+                else if (!string.IsNullOrEmpty(group.Normal))
+                {
+                    chosenPath = group.Normal;
+                    declaredWeight = "normal";
+                    declaredStyle = "normal";
+                }
+            }
+            else if (wantsItalic && !wantsBold && !string.IsNullOrEmpty(group.Italic))
+            {
+                chosenPath = group.Italic;
+                declaredWeight = "normal";
+                declaredStyle = "italic";
+            }
+            else if (wantsBold && !wantsItalic && !string.IsNullOrEmpty(group.Bold))
+            {
+                chosenPath = group.Bold;
+                declaredWeight = "bold";
+                declaredStyle = "normal";
+            }
+            else if (!wantsItalic && !wantsBold && !string.IsNullOrEmpty(group.Normal))
+            {
+                chosenPath = group.Normal;
+                declaredWeight = "normal";
+                declaredStyle = "normal";
+            }
+
+            if (!string.IsNullOrEmpty(chosenPath))
+            {
+                // Step 2: only emit one normal/normal rule per family to keep output deterministic.
+                // Note: we could still duplicate non-normal faces if a bold-italic request falls back
+                // to italic/bold that is also directly requested. This is rare and harmless, so we
+                // do not add broader dedupe logic.
+                if (declaredStyle == "normal" && declaredWeight == "normal")
+                {
+                    if (normalFacesAdded.Contains(font.fontFamily))
+                        return;
+                    normalFacesAdded.Add(font.fontFamily);
+                }
+                AddFontFace(
+                    sb,
+                    font.fontFamily,
+                    declaredWeight,
+                    declaredStyle ?? font.fontStyle,
+                    chosenPath,
+                    relativePathFromCss,
+                    sanitizeFileName
+                );
+                return;
+            }
+
+            // Step 3: no exact face. Don't fake a bold/italic face by pointing at some other file.
+            // Instead, declare just a normal/normal face so the reading browser can synthesize
+            // missing styles, matching what happens in Bloom's editor (See BL-15558).
+            if (string.IsNullOrEmpty(group.Normal))
+                // If there's no Normal slot for this family, we avoid substituting bold/italic
+                // here; that would misrepresent the file and still not satisfy a normal request.
+                return;
+            if (normalFacesAdded.Contains(font.fontFamily))
+                return;
+            normalFacesAdded.Add(font.fontFamily);
             AddFontFace(
                 sb,
                 font.fontFamily,
-                weight,
-                font.fontStyle,
-                path,
+                "normal",
+                "normal",
+                group.Normal,
                 relativePathFromCss,
                 sanitizeFileName
             );
@@ -3201,8 +3313,8 @@ namespace Bloom.Publish.Epub
         private void RemoveRegularStylesheets(HtmlDom pageDom)
         {
             foreach (
-                SafeXmlElement link in pageDom.RawDom
-                    .SafeSelectNodes("//head/link")
+                SafeXmlElement link in pageDom
+                    .RawDom.SafeSelectNodes("//head/link")
                     .Cast<SafeXmlElement>()
                     .ToArray()
             )
@@ -3211,7 +3323,8 @@ namespace Bloom.Publish.Epub
                 if (!string.IsNullOrEmpty(href) && Path.GetFileName(href).StartsWith("custom"))
                     continue;
                 if (
-                    !string.IsNullOrEmpty(href) && Path.GetFileName(href) == "defaultLangStyles.css"
+                    !string.IsNullOrEmpty(href)
+                    && Path.GetFileName(href) == "defaultLangStyles.css"
                 )
                     continue;
                 // BL-9844, BL-10080 We need some special style rules for Kyrgyzstan2020
@@ -3471,8 +3584,8 @@ namespace Bloom.Publish.Epub
         private void RemoveScripts(HtmlDom pageDom)
         {
             foreach (
-                var elt in pageDom.RawDom
-                    .SafeSelectNodes("//script")
+                var elt in pageDom
+                    .RawDom.SafeSelectNodes("//script")
                     .Cast<SafeXmlElement>()
                     .ToArray()
             )
@@ -3486,8 +3599,8 @@ namespace Bloom.Publish.Epub
             // We need to preserve the tabIndex on the bloom-translationGroup as the audio ordering
             // for the inner div with audio. (BL-9016)
             foreach (
-                var elt in pageDom.RawDom
-                    .SafeSelectNodes("//*[@tabindex]")
+                var elt in pageDom
+                    .RawDom.SafeSelectNodes("//*[@tabindex]")
                     .Cast<SafeXmlElement>()
                     .ToArray()
             )
@@ -3539,8 +3652,8 @@ namespace Bloom.Publish.Epub
         private void RemoveBloomUiElements(HtmlDom pageDom)
         {
             foreach (
-                var elt in pageDom.RawDom
-                    .SafeSelectNodes("//*[contains(concat(' ',@class,' '),' bloom-ui ')]")
+                var elt in pageDom
+                    .RawDom.SafeSelectNodes("//*[contains(concat(' ',@class,' '),' bloom-ui ')]")
                     .Cast<SafeXmlElement>()
                     .ToList()
             )

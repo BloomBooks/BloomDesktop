@@ -1,8 +1,13 @@
 {
     "editor.formatOnSave": true,
+    "prettier.endOfLine": "auto",
+    "files.eol": "auto",
     "[csharp]": {
         // Note: the csharpier should also be installed in Visual Studio, if that is used,
-        // so that we get the same formatting. But there is no way to automate instaling it.
+        // so that we get the same formatting. But there is no way to automate installing it.
+        "editor.defaultFormatter": "csharpier.csharpier-vscode"
+    },
+    "[xml]": {
         "editor.defaultFormatter": "csharpier.csharpier-vscode"
     },
     "[typescriptreact]": {
@@ -26,5 +31,52 @@
     "[less]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
-    "cSpell.words": ["draggables"]
+    "cSpell.words": [
+        "affordance",
+        "Andika",
+        "bloomdraggable",
+        "bloomlibrary",
+        "bloompub",
+        "blorg",
+        "brandings",
+        "comicaljs",
+        "configr",
+        "contenteditable",
+        "contentful",
+        "defn",
+        "deshroud",
+        "distractors",
+        "divs",
+        "draggables",
+        "editables",
+        "elevenlabs",
+        "Expando",
+        "invisibles",
+        "jquery",
+        "localizable",
+        "Longpress",
+        "nicescroll",
+        "pixabay",
+        "portafino",
+        "Prefs",
+        "printshop",
+        "qtip",
+        "shellbook",
+        "sillsdev",
+        "snappable",
+        "thema",
+        "tinycolor",
+        "Winform",
+        "Winforms",
+        "xmatter"
+    ],
+    "chat.useNestedAgentsMdFiles": true,
+    "workbench.colorCustomizations": {
+        "statusBar.background": "#96668f",
+        "statusBar.foreground": "#e7e7e7",
+        "statusBarItem.hoverBackground": "#ab84a5",
+        "statusBarItem.remoteBackground": "#96668f",
+        "statusBarItem.remoteForeground": "#e7e7e7"
+    },
+    "peacock.color": "#96668f"
 }

@@ -1,14 +1,24 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Import Directory.Build.props to get shared properties like VelopackVersion -->
+  <Import Project="$(MSBuildProjectDirectory)\..\Directory.Build.props" />
+
   <!-- This makes defaults for various properties unless they are set from the command line or TeamCity parameter settings.
 	Typically command line includes /p:BUILD_NUMBER=3.1.22.0 (all 4 digits required).
-	May include something like /p:channel=Alpha.-->
+	May include something like /p:channel=Alpha.
+  To build locally, you need a Developer shell (currently start menu, Developer Command Prompt for Visual Studio 2022).
+  CD to this build directory. You will probably need to run MsBuild /t:RestoreBuildTasks. Then use a command like
+  MSbuild /p:InstallerOutputFolder=C:\github\BloomDesktop\output\installer\result;BUILD_NUMBER=6.3.1001.0;channel=LocalBuilt /t:Installer
+  To test updating, modify ApplicationUpdateSupport.GetUpdateUrl to return an absolute path to the directory
+  where the output is placed (InstallerOutputFolder in the command line above).
+  -->
   <PropertyGroup>
     <isOnTeamCity Condition="'$(teamcity_version)' == ''">false</isOnTeamCity>
     <isOnTeamCity Condition="'$(teamcity_version)' != ''">true</isOnTeamCity>
     <RootDir Condition="$(isOnTeamCity) == false Or '$(OS)'!='Windows_NT'">$(MSBuildProjectDirectory)\..</RootDir>
     <RootDir Condition="$(isOnTeamCity) == true And '$(OS)'=='Windows_NT'">$(teamcity_build_checkoutDir)</RootDir>
     <Solution>Bloom.sln</Solution>
-    <!-- This controls the following things; the some of them pretty much have to match for Squirrel:
+    <!-- This controls the following things; some of them pretty much have to match for Velopack:
 			- the nupkg ID (Bloom<channel>)
 			- the name that occurs in the (Uninstall) Programs and Features control panel (Bloom <version> <channel>)
 			- the folder in appdata/local in which Bloom (and subsequent versions in the same channel) will be installed (Bloom<channel>)
@@ -20,7 +30,10 @@
 			- It controls which DownloadPointers.htm we generate and upload (DownloadPointers<channel>.htm)
 			It is an empty string for plain Bloom, which is intended to be the stable release.
 			(The line below leaves it empty, and thus does nothing except to let an editor know this is
-			a valid, known property group.)-->
+			a valid, known property group.)
+      Note that we do NOT use channel as the value of the 'channel' command line arg to Vpk. We get output file names more consistent
+      with previous (Squirrel) history by making it part of the product ID. It's also possible that having distinct product IDs
+      better supports parallel installation. -->
     <channel Condition="'$(channel)'==''"></channel>
     <!-- channelRelease is 'Release' if channel is empty, otherwise same as channel-->
     <channelRelease>$(channel)</channelRelease>
@@ -31,16 +44,11 @@
     <ApplicationName>Bloom$(channel)</ApplicationName>
     <Configuration>Release</Configuration>
     <BUILD_NUMBER Condition="'$(BUILD_NUMBER)'==''">1.2.3.4</BUILD_NUMBER>
-    <useNUnit-x86 Condition="'$(OS)'=='Windows_NT'">true</useNUnit-x86>
-    <useNUnit-x86 Condition="'$(OS)'!='Windows_NT'">false</useNUnit-x86>
-    <TestProcessType Condition="'$(useNUnit-x86)'=='true'">Separate</TestProcessType>
-    <TestProcessType Condition="'$(useNUnit-x86)'!='true'">Single</TestProcessType>
     <MSBuildCommunityTasksPath>$(RootDir)/build</MSBuildCommunityTasksPath>
     <teamcity_agent_home_dir Condition="'$(teamcity_agent_home_dir)'=='' And '$(OS)'!='Windows_NT'">/var/lib/TeamCity/agent</teamcity_agent_home_dir>
     <BuildTasksDll>$(RootDir)/packages/SIL.BuildTasks/tools/SIL.BuildTasks.dll</BuildTasksDll>
     <BuildTasksAwsDll>$(RootDir)/packages/SIL.BuildTasks.AWS/tools/SIL.BuildTasks.AWS.dll</BuildTasksAwsDll>
     <SharedBuildDir>Z:</SharedBuildDir>
-    <SquirrelLogPath>$(RootDir)\lib\dotnet\Squirrel-Releasify.log</SquirrelLogPath>
     <NuGetPackageDir Condition="'$(OS)'=='Windows_NT'">$(UserProfile)/.nuget/packages</NuGetPackageDir>
     <NuGetPackageDir Condition="'$(OS)'!='Windows_NT'">$(Home)/.nuget/packages</NuGetPackageDir>
     <RestartBuild Condition="!Exists('$(BuildTasksDll)') Or !Exists('$(BuildTasksAwsDll)')">true</RestartBuild>
@@ -60,15 +68,20 @@
     <!-- Which bucket to target; May override with /p:Bucket=; used by all targets. User identified by access key must have write permission.-->
     <Bucket>bloomlibrary.org</Bucket>
   </PropertyGroup>
+  <!-- Default path to xliff/xlf localization files to pass to Velopack fork. Can be overridden via /p:LocalizationFilesDir=... -->
+  <PropertyGroup>
+    <LocalizationFilesDir Condition="'$(LocalizationFilesDir)'==''">$(RootDir)\DistFiles\localization</LocalizationFilesDir>
+  </PropertyGroup>
   <Import Project="../.nuget/NuGet.targets" />
   <Target Name="RestoreBuildTasks" DependsOnTargets="CheckPrerequisites">
     <Message Text="RestartBuild=$(RestartBuild)"/>
-    <Exec Command='$(NuGetCommand) install SIL.BuildTasks -excludeVersion -version 2.5.0 -source "$(PackageSources)" -solutionDirectory "$(SolutionDir)."' />
-    <Exec Command='$(NuGetCommand) install SIL.BuildTasks.AWS -excludeVersion -version 2.5.0 -source "$(PackageSources)" -solutionDirectory "$(SolutionDir)."' />
+    <Exec Command='$(NuGetCommand) install SIL.BuildTasks -excludeVersion -source "$(PackageSources)" -solutionDirectory "$(SolutionDir)."' />
+    <Exec Command='$(NuGetCommand) install SIL.BuildTasks.AWS -excludeVersion -source "$(PackageSources)" -solutionDirectory "$(SolutionDir)."' />
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="BuildInternal"
 			Properties="Configuration=$(Configuration)" Condition="$(RestartBuild)" />
   </Target>
   <Target Name="VersionNumbers">
+    <!-- The arm64 properties are kept in case we want to try again, but not currently used.-->
     <Message Text="BUILD_NUMBER: $(BUILD_NUMBER)" Importance="high"/>
     <Split Input="$(BUILD_NUMBER)" Delimiter="." OutputSubString="2">
       <Output TaskParameter="ReturnValue" PropertyName="BuildCounter" />
@@ -80,28 +93,45 @@
     <Message Text="BuildHash: $(BuildHash)" Importance="high"/>
     <!-- Note, after some thought, we've decided this is the best place to keep the version number
 			(not on TeamCity, not in the projects). -->
-    <CreateProperty Value="6.2.$(BuildCounter)">
+    <CreateProperty Value="6.3.$(BuildCounter)">
       <Output PropertyName="Version" TaskParameter="Value"/>
     </CreateProperty>
     <CreateProperty Value="$(Version).$(BuildHash)">
       <Output PropertyName="FullVersion" TaskParameter="Value"/>
     </CreateProperty>
-    <CreateProperty Value="BloomInstaller.$(Version)$(dotChannel).msi">
+    <CreateProperty Value="BloomInstaller.$(Version)$(dotChannel).x64.exe">
+      <Output PropertyName="InstallerFileNameX64" TaskParameter="Value"/>
+    </CreateProperty>
+    <CreateProperty Value="BloomInstaller.$(Version)$(dotChannel).arm64.exe">
+      <Output PropertyName="InstallerFileNameArm64" TaskParameter="Value"/>
+    </CreateProperty>
+    <!-- Keep the original property for backward compatibility, defaulting to x64 -->
+    <CreateProperty Value="$(InstallerFileNameX64)">
       <Output PropertyName="InstallerFileName" TaskParameter="Value"/>
     </CreateProperty>
-    <CreateProperty Value="BloomInstaller.$(Version)$(dotChannel).exe">
-      <Output PropertyName="SquirrelInstallerFileName" TaskParameter="Value"/>
-    </CreateProperty>
     <CreateProperty Value="Bloom$(channel)-$(Version)-full.nupkg">
-      <Output PropertyName="SquirrelFullPkg" TaskParameter="Value"/>
+      <Output PropertyName="VelopackFullPkgX64" TaskParameter="Value"/>
     </CreateProperty>
     <CreateProperty Value="Bloom$(channel)-$(Version)-delta.nupkg">
-      <Output PropertyName="SquirrelDeltaPkg" TaskParameter="Value"/>
+      <Output PropertyName="VelopackDeltaPkgX64" TaskParameter="Value"/>
+    </CreateProperty>
+    <CreateProperty Value="Bloom$(channel)-arm64-$(Version)-full.nupkg">
+      <Output PropertyName="VelopackFullPkgArm64" TaskParameter="Value"/>
+    </CreateProperty>
+    <CreateProperty Value="Bloom$(channel)-arm64-$(Version)-delta.nupkg">
+      <Output PropertyName="VelopackDeltaPkgArm64" TaskParameter="Value"/>
+    </CreateProperty>
+    <!-- Keep the original properties for backward compatibility, defaulting to x64 -->
+    <CreateProperty Value="$(VelopackFullPkgX64)">
+      <Output PropertyName="VelopackFullPkg" TaskParameter="Value"/>
+    </CreateProperty>
+    <CreateProperty Value="$(VelopackDeltaPkgX64)">
+      <Output PropertyName="VelopackDeltaPkg" TaskParameter="Value"/>
     </CreateProperty>
     <!-- Z drive is set up for data shared by all build agents on TeamCity. If running on a dev machine,
-		you should set your preferred release folder from the command line, usually /p:SquirrelReleaseFolder=<root>/output/installer-->
-    <CreateProperty Value="$(SharedBuildDir)\Bloom$(channel)" Condition="$(SquirrelReleaseFolder)==''">
-      <Output PropertyName="SquirrelReleaseFolder" TaskParameter="Value"/>
+		you should set your preferred release folder from the command line, usually /p:InstallerOutputFolder=<root>/output/installer/result-->
+    <CreateProperty Value="$(SharedBuildDir)\Bloom$(channel)" Condition="$(InstallerOutputFolder)==''">
+      <Output PropertyName="InstallerOutputFolder" TaskParameter="Value"/>
     </CreateProperty>
     <Message Text="Version: $(Version)" Importance="high"/>
     <Message Text="FullVersion: $(FullVersion)" Importance="high"/>
@@ -134,45 +164,50 @@
   </Target>
   <Target Name="BuildInternal" DependsOnTargets="SetAssemblyVersion">
     <Error Text="Set Channel to empty string for Release build" Condition="'$(channel)'=='Release'"/>
-    <MSBuild Projects="$(RootDir)/$(Solution)"
-			 Targets="Rebuild"
-			 Properties="Configuration=$(Configuration)" />
+
+    <!-- Build x64 version for each project with proper OutDir and SolutionDir overrides. (We can't just build the solution,
+    because solution builds don't support the runtime parameter.) I don't think we need the output arg for x64,
+    but it feels safer to be explicit about both architectures. However, beware of breaking tests if the x64
+    build here does NOT go to the same directory as the VS build. -->
+    <Exec Command='dotnet build "$(RootDir)\src\BloomExe\BloomExe.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
+    <Exec Command='dotnet build "$(RootDir)\src\WebView2PdfMaker\WebView2PdfMaker.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
+  <!--If the number of directories between output and OutDir changes, we need a corresponding
+    change in BloomFileLocatorTests.kRelativePathToBrowserFolder and XMatterHelperTests.OneTimeSetup-->
+    <Exec Command='dotnet build "$(RootDir)\src\BloomTests\BloomTests.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\Tests\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\Tests\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
+
+    <!-- Restore to Build ARM64 version for each project with proper OutDir and SolutionDir overrides
+    Note! change -x- back to double hyphen (not allowed in xml comment)
+    <Exec Command='dotnet build "$(RootDir)\src\BloomExe\BloomExe.csproj" -x-configuration $(Configuration) -x-runtime win-arm64 -x-output "$(RootDir)\output\$(Configuration)\arm64" "/p:OutDir=$(RootDir)\output\$(Configuration)\arm64\\" "/p:SolutionDir=$(RootDir)\"' />
+    <Exec Command='dotnet build "$(RootDir)\src\WebView2PdfMaker\WebView2PdfMaker.csproj" -x-configuration $(Configuration) -x-runtime win-arm64 -x-output "$(RootDir)\output\$(Configuration)\arm64" "/p:OutDir=$(RootDir)\output\$(Configuration)\arm64\\" "/p:SolutionDir=$(RootDir)\"' />
+    <Exec Command='dotnet build "$(RootDir)\src\BloomTests\BloomTests.csproj" -x-configuration $(Configuration) -x-runtime win-arm64 -x-output "$(RootDir)\output\Tests\$(Configuration)\arm64" "/p:OutDir=$(RootDir)\output\Tests\$(Configuration)\arm64\\" "/p:SolutionDir=$(RootDir)\"' />
+     -->
   </Target>
   <ItemGroup>
-    <TestAssemblies Include="$(RootDir)/output/$(Configuration)/BloomTests.dll"/>
+    <TestAssembliesX64 Include="$(RootDir)/output/Tests/$(Configuration)/x64/BloomTests.dll"/>
+    <!--currently unused-->
+    <TestAssembliesArm64 Include="$(RootDir)/output/Tests/$(Configuration)/arm64/BloomTests.dll"/>
+    <!-- For backward compatibility, include x64 as the default -->
+    <TestAssemblies Include="@(TestAssembliesX64)"/>
   </ItemGroup>
   <Target Name="Test" DependsOnTargets="Build">
     <CallTarget Targets="TestOnly"/>
   </Target>
   <Target Name="TestOnly" DependsOnTargets="RunNUnit"/>
   <Target Name="RunNUnit">
+    <PropertyGroup>
+      <TestResultsXmlFile Condition="$(isOnTeamCity) == false">$(RootDir)/output/Tests/$(Configuration)/x64/TestResults.xml</TestResultsXmlFile>
+      <ExtraExcludeCategories Condition="'$(teamcity_version)' != ''">SkipOnTeamCity,$(ExtraExcludeCategories)</ExtraExcludeCategories>
+    </PropertyGroup>
     <NUnit3
-			Condition="$(isOnTeamCity) == false"
 			Assemblies="@(TestAssemblies)"
-			ToolPath="$(NuGetPackageDir)/nunit.consolerunner/3.16.2/tools"
-			ExcludeCategory="$(excludedCategories)"
-			WorkingDirectory="$(RootDir)/output/$(Configuration)"
-			Force32Bit="$(useNUnit-x86)"
-			Process="$(TestProcessType)"
-			Agents="1"
+			ToolPath="$(NuGetPackageDir)/nunit.consolerunner/3.20.1/tools"
+			ExcludeCategory="$(ExtraExcludeCategories)$(excludedCategories)"
+			WorkingDirectory="$(RootDir)/output/Tests/$(Configuration)/x64"
 			Trace="Debug"
-			Workers="1"
 			Verbose="true"
-			OutputXmlFile="$(RootDir)/output/$(Configuration)/TestResults.xml"
-			TeamCity="false"/>
-    <NUnit3
-			Condition="$(isOnTeamCity) == true"
-			Assemblies="@(TestAssemblies)"
-			ToolPath="$(NuGetPackageDir)/nunit.consolerunner/3.16.2/tools"
-			ExcludeCategory="SkipOnTeamCity,$(excludedCategories)"
-			WorkingDirectory="$(RootDir)/output/$(Configuration)"
-			Force32Bit="$(useNUnit-x86)"
-			Process="$(TestProcessType)"
-			Agents="1"
-			Trace="Debug"
-			Workers="1"
-			Verbose="true"
-			TeamCity="true"/>
+			OutputXmlFile="$(TestResultsXmlFile)"
+			UseNUnit3Xml="true"
+			TeamCity="$(isOnTeamCity)"/>
   </Target>
   <Target Name="MakeDownloadPointers" DependsOnTargets="VersionNumbers"
 		Condition="'$(OS)'=='Windows_NT'">
@@ -180,19 +215,21 @@
     <!-- we customize and upload a version of DownloadPointers, named after our channel (RELEASE or BETA), and upload it.
 			That file is then iframe'd in to a download page somewhere.	-->
     <!-- copy it so we aren't modifying the original, which then is a pain on dev machines -->
-    <Copy SourceFiles ="$(RootDir)\src\SquirrelInstaller\DownloadPointers.htm"
+    <Copy SourceFiles ="$(RootDir)\src\Installer\DownloadPointers.htm"
 				 DestinationFolder ="$(RootDir)\output\installer"/>
     <!-- replace some parts of the file with the version number & date & channel info -->
     <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
-					 DatePlaceholder='RELEASE_DATE'
 					Regex='INSTALLERS_FOLDER'
 					 ReplacementText ="installers$(channel)" />
+    <!-- restore for arm64. Note that the input DownloadPointers.htm must be changed also; see its history
     <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
-					 DatePlaceholder='RELEASE_DATE'
+					Regex='INSTALLERS_ARM64_FOLDER'
+					 ReplacementText ="installers$(channel)-arm64" />
+    -->
+    <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
 					Regex='VERSION_DOT_CHANNEL'
 					 ReplacementText ="$(Version)$(dotChannel)" />
     <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
-					 DatePlaceholder='RELEASE_DATE'
 					Regex='CHANNEL_LABEL'
 					 ReplacementText ="$(channelRelease)" />
     <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
@@ -214,74 +251,174 @@
 			DestinationFolder="channels"
 			IsPublicRead="true" />
   </Target>
-  <Target Name="Installer" DependsOnTargets="VersionNumbers; Build ">
-    <!-- set the version number in the script that configures squirrel.  Perhaps there's a way to just send in the variables rather than this brute-force
-		changing of the script, but I haven't figured that out. -->
-    <FileUpdate File="$(RootDir)\src\SquirrelInstaller\Bloom.nuspec" Regex="&lt;version&gt;[^&lt;]*&lt;"
-					ReplacementText ="&lt;version&gt;$(Version)&lt;" />
-    <!-- insert the version number in the description also (for Windows uninstaller UI, ultimately)-->
-    <FileUpdate File="$(RootDir)\src\SquirrelInstaller\Bloom.nuspec" Regex="&lt;description&gt;[^&lt;]*&lt;"
-					ReplacementText ="&lt;description&gt;Bloom $(Version) $(channel)&lt;" />
-    <!-- insert the Label into the product ID, which also controls the folder where Squirrel installs.-->
-    <FileUpdate File="$(RootDir)\src\SquirrelInstaller\Bloom.nuspec" Regex="&lt;id&gt;[^&lt;]*&lt;"
-					ReplacementText ="&lt;id&gt;Bloom$(channel)&lt;" />
+
+  <!-- Ensure the correct BloomBooks.Velopack.Cli tool is installed (install if missing, update if mismatched) -->
+  <Target Name="EnsureVelopackCli">
+    <PropertyGroup>
+      <VelopackCliNeedsInstall>true</VelopackCliNeedsInstall>
+      <VelopackCliNeedsUpdate>false</VelopackCliNeedsUpdate>
+    </PropertyGroup>
+
+    <Message Text="Ensuring BloomBooks.Velopack.Cli version $(VelopackVersion) is installed..." Importance="high" />
+
+    <!-- Detect if the exact desired version is already installed globally -->
+    <Exec Command="dotnet tool list -g" ConsoleToMSBuild="true" IgnoreExitCode="true">
+      <Output TaskParameter="ConsoleOutput" ItemName="DotNetToolList" />
+    </Exec>
+    <CreateProperty Value="@(DotNetToolList, ' ')">
+      <Output PropertyName="DotNetToolListText" TaskParameter="Value"/>
+    </CreateProperty>
+    <PropertyGroup>
+      <VelopackCliLower>$([System.String]::Copy('BloomBooks.Velopack.Cli').ToLowerInvariant())</VelopackCliLower>
+      <VelopackVerLower>$([System.String]::Copy('$(VelopackVersion)').ToLowerInvariant())</VelopackVerLower>
+      <ToolListLower>$([System.String]::Copy('$(DotNetToolListText)').ToLowerInvariant())</ToolListLower>
+      <VelopackCliPresent Condition="$([System.String]::Copy('$(ToolListLower)').Contains('$(VelopackCliLower)'))">true</VelopackCliPresent>
+      <VelopackCliPresent Condition="'$(VelopackCliPresent)'==''">false</VelopackCliPresent>
+      <VelopackVersionMatch Condition="'$(VelopackCliPresent)'=='true' and $([System.String]::Copy('$(ToolListLower)').Contains('$(VelopackVerLower)'))">true</VelopackVersionMatch>
+      <VelopackVersionMatch Condition="'$(VelopackVersionMatch)'==''">false</VelopackVersionMatch>
+      <VelopackCliNeedsInstall Condition="'$(VelopackVersionMatch)'=='true'">false</VelopackCliNeedsInstall>
+      <VelopackCliNeedsUpdate Condition="'$(VelopackCliPresent)'=='true' and '$(VelopackVersionMatch)'=='false'">true</VelopackCliNeedsUpdate>
+    </PropertyGroup>
+
+    <Message Text="BloomBooks.Velopack.Cli $(VelopackVersion) already installed. Skipping reinstall." Importance="high" Condition="'$(VelopackCliNeedsInstall)'=='false' and '$(VelopackCliNeedsUpdate)'=='false'" />
+
+    <!-- Update to the exact version if tool present but version differs -->
+    <Message Text="Updating BloomBooks.Velopack.Cli to version $(VelopackVersion)..." Importance="high" Condition="'$(VelopackCliNeedsUpdate)'=='true'" />
+    <Exec Command="dotnet tool update --global BloomBooks.Velopack.Cli --version $(VelopackVersion)" Condition="'$(VelopackCliNeedsUpdate)'=='true'" />
+
+    <!-- Install fresh copy when needed (not an update) -->
+    <CallTarget Targets="InstallVelopackCli" Condition="'$(VelopackCliNeedsInstall)'=='true' and '$(VelopackCliNeedsUpdate)'=='false'" />
+
+    <!-- Verify the existence of the CLI -->
+    <Exec Command="vpk --version" IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="VpkVersionExitCode" />
+    </Exec>
+    <Message Text="BloomBooks.Velopack.Cli is ready (version $(VelopackVersion))." Importance="high" Condition="'$(VpkVersionExitCode)'=='0'" />
+    <Error Text="Velopack CLI ('vpk') is not available after install/update. Ensure dotnet tool can access the required feed and that BloomBooks.Velopack.Cli $(VelopackVersion) is published." Condition="'$(VpkVersionExitCode)'!='0'" />
+  </Target>
+
+  <Target Name="InstallVelopackCli">
+    <!-- Since the upstream vpk package uses the same command (vpk) as our BloomBooks.Velopack.Cli package,
+         we have to make sure it is not installed. Otherwise, our installation will fail. -->
+    <Message Text="Ensuring (original upstream) vpk package is not installed" Importance="high"/>
+    <Exec Command="dotnet tool uninstall --global vpk" />
+
+    <!-- Install the specific version we need if not present. -->
+    <Message Text="Installing BloomBooks.Velopack.Cli version $(VelopackVersion)..." Importance="high" />
+    <Exec Command="dotnet tool install --global BloomBooks.Velopack.Cli --version $(VelopackVersion)" />
+  </Target>
+
+  <Target Name="Installer" DependsOnTargets="VersionNumbers; Build; EnsureVelopackCli">
     <CallTarget Targets="SignExesIfPossible"/>
     <!-- the name of the exe must also match the application product name. Use move rather than rename in case the destination
-		already exists from a previous build. -->
-    <Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.exe $(RootDir)\output\$(Configuration)\Bloom$(channel).exe"/>
-    <Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.exe.config $(RootDir)\output\$(Configuration)\Bloom$(channel).exe.config"/>
-    <Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.pdb $(RootDir)\output\$(Configuration)\Bloom.pdb"/>
-    <Message Text="Making Nuget package: $(Version)" Importance="high"  />
-    <!-- Bloom expects an icon with a name corresponding to the EXE, which gets used for the desktop shortcut.
-		If we one day make distinct icons for the channels, we'll need to revise this to get the right channel-specific icon.-->
-    <Copy SourceFiles="$(RootDir)\src\SquirrelInstaller\Bloom.ico"  DestinationFiles="$(RootDir)\output\Release\Bloom$(channelRelease).ico"/>
-    <!-- The same is true for an initial splash image.  Right now, all channels use the same splash image for the instant splash. -->
-    <Copy SourceFiles="$(RootDir)\src\BloomSplash.png"  DestinationFiles="$(RootDir)\output\$(Configuration)\Bloom$(channel)Splash.png"/>
-    <Exec Command="$(RootDir)\.nuget\NuGet pack $(RootDir)\src\SquirrelInstaller\Bloom.nuspec"/>
-    <!-- This is the command that actually runs Squirrel. Usually the exe invoked here is called Squirrel. However, we're building our own
-			version, and it's easiest to go with the exe name that the Squirrel build process actually produces.
+		already exists from a previous build. Review: we could do this in installer\content after the following copies.-->
+    <Exec Command="move /y $(RootDir)\output\$(Configuration)\x64\Bloom.exe $(RootDir)\output\$(Configuration)\x64\Bloom$(channel).exe"/>
+    <!--restore for Arm64
+    <Exec Command="move /y $(RootDir)\output\$(Configuration)\arm64\Bloom.exe $(RootDir)\output\$(Configuration)\arm64\Bloom$(channel).exe"/>
+    -->
+
+    <!-- Copy everything we want installed on the user's computer into ../installer/content. (First we remove the directory,
+    so as not to include anything obsolete from an earlier build).-->
+    <ItemGroup>
+      <X64ReleaseFiles
+        Include="..\output\release\x64\**\*.*"
+        Exclude="**\*.xml;Bloom.vshost.exe;**\*.pdb;**\runtimes\**"  />
+      <Arm64ReleaseFiles
+        Include="..\output\release\arm64\**\*.*"
+        Exclude="**\*.xml;Bloom.vshost.exe;**\*.pdb;**\runtimes\**"  />
+      <X64Files
+        Include="..\output\release\x64\runtimes\win-x64\**"/>
+      <Arm64Files
+        Include="..\output\release\arm64\runtimes\win-arm64\**"/>
+      <X64PdbFiles
+        Include="..\output\release\x64\Bloom*.pdb"
+        Exclude="**\*Tests.*" />
+      <Arm64PdbFiles
+        Include="..\output\release\arm64\Bloom*.pdb"
+        Exclude="**\*Tests.*" />
+      <BrowserFiles
+        Include="..\output\browser\**\*"
+        Exclude="**\*.ts;**\*.tsx;**\*.map;**\*.pug;**\*.jade;**\*.less;**\*Spec.js;**\*.jsx" />
+      <DistFiles
+        Include="..\DistFiles\**\*"/>
+    </ItemGroup>
+
+    <RemoveDir Directories="..\output\installer\content" />
+    <!-- Copy x64 files to x64 subdirectory -->
+    <Copy SourceFiles="@(X64ReleaseFiles)" DestinationFolder="..\output\installer\content\x64\%(RecursiveDir)" />
+    <Copy SourceFiles="@(X64Files)" DestinationFolder="..\output\installer\content\x64\runtimes\win-x64\%(RecursiveDir)" />
+    <Copy SourceFiles="@(X64PdbFiles)" DestinationFolder="..\output\installer\content\x64\%(RecursiveDir)" />
+    <!-- restore to Copy ARM64 files to arm64 subdirectory
+    <Copy SourceFiles="@(Arm64ReleaseFiles)" DestinationFolder="..\output\installer\content\arm64\%(RecursiveDir)" />
+    <Copy SourceFiles="@(Arm64Files)" DestinationFolder="..\output\installer\content\arm64\runtimes\win-arm64\%(RecursiveDir)" />
+    <Copy SourceFiles="@(Arm64PdbFiles)" DestinationFolder="..\output\installer\content\arm64\%(RecursiveDir)" />
+    -->
+    <!-- Copy shared files to both locations -->
+    <Copy SourceFiles="@(DistFiles)" DestinationFolder="..\output\installer\content\x64\%(RecursiveDir)" />
+    <Copy SourceFiles="@(BrowserFiles)" DestinationFolder="..\output\installer\content\x64\browser\%(RecursiveDir)" />
+    <!-- restore for arm64
+    <Copy SourceFiles="@(DistFiles)" DestinationFolder="..\output\installer\content\arm64\%(RecursiveDir)" />
+    <Copy SourceFiles="@(BrowserFiles)" DestinationFolder="..\output\installer\content\arm64\browser\%(RecursiveDir)" />
+    -->
+
+    <Message Text="Running Vpk: $(Version)" Importance="high"  />
+    <Message Text="Using localization from: $(LocalizationFilesDir)" Importance="high" />
+    <!-- This is the command that actually runs Velopack. It generates a complete installer as well as full and delta nupkg packages,
+      a json file which Velopack uses to figure out what deltas to download, and a RELEASES file which tells old Squirrel-based
+      installers how to update.
 			The releaseDir here is a shared drive for all the build agents (though for now we only use one, because only it has the signing data).
-			We continue on error so we can output the log contents. -->
+			The vpk command doesn't appear to create a log file; any output it produces, which may contain error messages, goes to the console.
+      If there's a problem it returns a non-zero exit code, which ends the build.
+      There's a long list of possible dependencies that the installer can be told to check for using the framework argument
+      at https://docs.velopack.io/packaging/bootstrapping#:~:text=By%20default%2C%20Velopack%20will%20accept,dotnet.
+      It will help the user try to fix things if they are not.-->
+    <!-- Create x64 installer -->
+    <!-- Output to $(InstallerOutputFolder) directly to keep continuity with previous builds (before x64 vs arm64). -->
+    <!-- Note that packId determines the installation directory under %localappdata%. -->
+    <!-- For x64, keep it the same as pre-x64-vs-arm64 for continuity. -->
+    <!-- Note, the default for exclude is ".*\.pdb", so we must set it to "" to include .pdb files. -->
     <Exec
-			ContinueOnError="true"
-			Command="$(RootDir)\lib\dotnet\Update --releasify $(RootDir)\build\Bloom$(channel).$(Version).nupkg --releaseDir=$(SquirrelReleaseFolder) --no-msi -i $(RootDir)\src\SquirrelInstaller\BloomSetup.ico -g $(RootDir)\src\SquirrelInstaller\installing.gif -l 'Desktop,StartMenu'">
-      <Output TaskParameter="ExitCode" PropertyName="SquirrelReleasifyExitCode"/>
-    </Exec>
-    <CallTarget Targets="HandleSquirrelReleasifyError" Condition="$(SquirrelReleasifyExitCode)!=0" />
-    <Copy SourceFiles="$(SquirrelReleaseFolder)\Setup.exe"
-				DestinationFiles="$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"
-			/>
-    <Message Text="Copied installer to $(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)" Importance="high"/>
-  </Target>
-  <Target Name="HandleSquirrelReleasifyError">
-    <CallTarget Condition="Exists($(SquirrelLogPath))" Targets="SquirrelLogExists" />
-    <CallTarget Condition="!Exists($(SquirrelLogPath))" Targets="SquirrelLogDoesNotExist" />
-    <Error Text="Squirrel releasify failed. See log contents above." />
-  </Target>
-  <Target Name="SquirrelLogExists">
-    <Message Text="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" Importance="high"	/>
-    <Message Text="Contents of $(SquirrelLogPath):" Importance="high"	/>
-    <Exec Command="type $(SquirrelLogPath)" />
-    <Message Text="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" Importance="high"	/>
-  </Target>
-  <Target Name="SquirrelLogDoesNotExist">
-    <Message Text="Squirrel log does not exist at expected location ($(SquirrelLogPath))." Importance="high" />
+      Command="vpk pack --packId Bloom$(channel) --runtime win11-x64 --packVersion $(Version) --packDir ..\output\installer\content\x64 --exclude &quot;&quot; --mainExe Bloom$(channel).exe --outputDir $(InstallerOutputFolder) --icon $(RootDir)\src\Installer\BloomSetup.ico --splashImage $(RootDir)\src\Installer\installing.gif --framework net8-x64-desktop,webview2 --progressColor &quot;#d65649&quot; --localization &quot;$(LocalizationFilesDir)&quot; --packAuthors &quot;SIL Global&quot; " />
+    <!-- Restore to Create ARM64 installer with dedicated output directory
+    Note! restore -x- to double hyphen
+    <Exec
+      Command="vpk pack -x-packId Bloom$(channel)-arm64 -x-runtime win11-arm64 -x-packVersion $(Version) -x-packDir ..\output\installer\content\arm64 -x-exclude &quot;&quot; -x-mainExe Bloom$(channel).exe -x-outputDir $(InstallerOutputFolder)\arm64 -x-icon $(RootDir)\src\Installer\BloomSetup.ico -x-splashImage $(RootDir)\src\Installer\installing.gif -x-framework net8-arm64-desktop,webview2 -x-progressColor &quot;#d65649&quot; -x-localization &quot;$(LocalizationFilesDir)&quot; -x-packAuthors &quot;SIL Global&quot; " />
+      -->
+    <!-- Copy installers with appropriate names to main output folder -->
+    <Copy SourceFiles="$(InstallerOutputFolder)\Bloom$(channel)-win-Setup.exe"
+          DestinationFiles="$(InstallerOutputFolder)\BloomInstaller.$(Version)$(dotChannel).x64.exe"
+    />
+    <Message Text="Copied x64 installer to $(InstallerOutputFolder)\BloomInstaller.$(Version)$(dotChannel).x64.exe" Importance="high"/>
+    <!--restore for Arm64
+    <Copy SourceFiles="$(InstallerOutputFolder)\arm64\Bloom$(channel)-arm64-win-Setup.exe"
+          DestinationFiles="$(InstallerOutputFolder)\BloomInstaller.$(Version)$(dotChannel).arm64.exe"
+    />
+    <Message Text="Copied ARM64 installer to $(InstallerOutputFolder)\BloomInstaller.$(Version)$(dotChannel).arm64.exe" Importance="high"/>
+    -->
+
   </Target>
   <Target Name="SignExesIfPossible">
     <PropertyGroup>
       <ContinueOnExeSignError Condition="$(isOnTeamCity) == true AND $(OkIfSigningFails) == false">false</ContinueOnExeSignError>
       <ContinueOnExeSignError Condition="$(isOnTeamCity) == false OR $(OkIfSigningFails) == true">true</ContinueOnExeSignError>
     </PropertyGroup>
-    <Exec Command='sign "$(RootDir)\output\$(Configuration)\Bloom.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
-    <!-- These are generated in other TC projects but I think it's OK to sign them here since we control those projects too.-->
-    <Exec Command='sign "$(RootDir)\output\$(Configuration)\BloomPdfMaker.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
-    <Exec Command='sign "$(RootDir)\output\$(Configuration)\PdfDroplet.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
+    <!-- Sign x64 executables -->
+    <Exec Command='sign "$(RootDir)\output\$(Configuration)\x64\Bloom.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
+    <Exec Command='sign "$(RootDir)\output\$(Configuration)\x64\BloomPdfMaker.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
+    <Exec Command='sign "$(RootDir)\output\$(Configuration)\x64\PdfDroplet.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
+    <!-- restore to Sign ARM64 executables 
+    <Exec Command='sign "$(RootDir)\output\$(Configuration)\arm64\Bloom.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
+    <Exec Command='sign "$(RootDir)\output\$(Configuration)\arm64\BloomPdfMaker.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
+    <Exec Command='sign "$(RootDir)\output\$(Configuration)\arm64\PdfDroplet.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
+    -->
   </Target>
-  <!-- This target is designed to be an target on TeamCity (but using Upload is more likely) that includes target Installer. Review: squirrel itself
+  <!-- This target is designed to be an target on TeamCity (but using Upload is more likely) that includes target Installer. Review: Velopack itself
 	can sign things if passed the right command line arguments. Is that a better thing to do? -->
   <Target Name="SignInstaller" DependsOnTargets="VersionNumbers; Installer">
-    <Exec Command='sign "$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"'></Exec>
-    <Message Text="Signed squirrel installer at $(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)" Importance="high"/>
+    <Exec Command='sign "$(InstallerOutputFolder)\$(InstallerFileNameX64)"'></Exec>
+    <Exec Command='sign "$(InstallerOutputFolder)\$(InstallerFileNameArm64)"'></Exec>
+    <Message Text="Signed x64 Velopack installer at $(InstallerOutputFolder)\$(InstallerFileNameX64)" Importance="high"/>
+    <Message Text="Signed ARM64 Velopack installer at $(InstallerOutputFolder)\$(InstallerFileNameArm64)" Importance="high"/>
   </Target>
   <Target Name="Upload" DependsOnTargets="VersionNumbers; SignInstaller" >
     <CallTarget Targets="UploadCore"/>
@@ -292,52 +429,100 @@
     <CallTarget Targets="UploadCore"/>
   </Target>
   <Target Name="UploadCore">
-    <Message Text="Attempting rsync of $(SquirrelInstallerFileName)" Importance="high"/>
+    <Message Text="Attempting rsync of x64 installer" Importance="high"/>
     <!-- The way the web site generates the list of old installers requires that they be the only files in the
-		destination folder. For now I'm keeping them out of the actual installers folder that the web site uses.
-		When we're ready to go live with squirrel we can change this target folder or the web site.-->
+		destination folder. For now I'm keeping them out of the actual installers folder that the web site uses.-->
     <!--Note: S3BuildPublisher needs AWSSDK.dll it its own folder, so TeamCity should do that. Do it youself if you want to build locally-->
+    <!-- Upload x64 installer. It would be more consistent for the destinationFolder to add -x64, but we need to keep using
+    the same location as before we had multiple architectures, so that older x64 (and even x86) builds can find the delta info.-->
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
-		SourceFiles="$(SquirrelReleaseFolder)/$(SquirrelInstallerFileName)"
+		SourceFiles="$(InstallerOutputFolder)/$(InstallerFileNameX64)"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="installers$(channel)"
 		IsPublicRead="true" />
-    <!-- The delta, full, and RELEASES files must all be in the same directory, the one indicated by Program.SquirrelUpdateUrl.
-		This MUST NOT CHANGE once we start shipping squirrel installers, because it's where all the old versions will look for
-		newer ones.-->
+    <!-- Restore to Upload ARM64 installer
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
-		SourceFiles="$(SquirrelReleaseFolder)/$(SquirrelDeltaPkg)"
+		SourceFiles="$(InstallerOutputFolder)/$(InstallerFileNameArm64)"
+		DestinationBucket="$(Bucket)"
+		DestinationFolder="installers$(channel)-arm64"
+		IsPublicRead="true" />
+    -->
+    <!-- The delta, full, releases.win.json, and RELEASES files must all be in the same directory,
+    the one InstallerSupport.LookupUrlOfVelopackUpdate finds.
+		This MUST NOT CHANGE, because it's where all the old versions will look for newer ones, unless we also change the S3 file
+    that tells bloom where to find it.
+    The RELEASES file is used by the old Squirrel-based update managers to find out what the latest version is and how to upgrade to it.
+    We could omit it for any new channels.
+    The releases.win.json file is used by the new Velopack-based update managers to find out what the latest version is and how to upgrade to it.
+    -->
+    <!-- Upload x64 packages (again, to the pre-multi-installer location) -->
+    <S3BuildPublisher
+		CredentialStoreProfileName ="$(ProfileName)"
+		SourceFiles="$(InstallerOutputFolder)/$(VelopackDeltaPkgX64)"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
 		IsPublicRead="true" />
     <S3BuildPublisher
 		CredentialStoreProfileName ="$(ProfileName)"
-		SourceFiles="$(SquirrelReleaseFolder)/$(SquirrelFullPkg)"
+		SourceFiles="$(InstallerOutputFolder)/$(VelopackFullPkgX64)"
+		DestinationBucket="$(Bucket)"
+		DestinationFolder="deltas$(channel)"
+		IsPublicRead="true" />
+    <!-- Restore to Upload ARM64 packages 
+    <S3BuildPublisher
+		CredentialStoreProfileName ="$(ProfileName)"
+		SourceFiles="$(InstallerOutputFolder)/arm64/$(VelopackDeltaPkgArm64)"
+		DestinationBucket="$(Bucket)"
+		DestinationFolder="deltas$(channel)-arm64"
+		IsPublicRead="true" />
+    <S3BuildPublisher
+		CredentialStoreProfileName ="$(ProfileName)"
+		SourceFiles="$(InstallerOutputFolder)/arm64/$(VelopackFullPkgArm64)"
+		DestinationBucket="$(Bucket)"
+		DestinationFolder="deltas$(channel)-arm64"
+		IsPublicRead="true" />
+    -->
+    <!-- Upload x64 RELEASES and releases.win.json to current location (unchanged) -->
+    <S3BuildPublisher
+		CredentialStoreProfileName ="$(ProfileName)"
+		SourceFiles="$(InstallerOutputFolder)/RELEASES"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="deltas$(channel)"
 		IsPublicRead="true" />
     <S3BuildPublisher
-		CredentialStoreProfileName ="$(ProfileName)"
-		SourceFiles="$(SquirrelReleaseFolder)/RELEASES"
-		DestinationBucket="$(Bucket)"
-		DestinationFolder="deltas$(channel)"
-		IsPublicRead="true" />
+      CredentialStoreProfileName ="$(ProfileName)"
+      SourceFiles="$(InstallerOutputFolder)/releases.win.json"
+      DestinationBucket="$(Bucket)"
+      DestinationFolder="deltas$(channel)"
+      IsPublicRead="true" />
+    <!-- Restore to Upload ARM64-specific releases.win.json files to ARM64 folder. We don't need RELEASES since
+    there was never an ARM64 Squirrel installer.
+    <S3BuildPublisher
+      CredentialStoreProfileName ="$(ProfileName)"
+      SourceFiles="$(InstallerOutputFolder)/arm64/releases.win.json"
+      DestinationBucket="$(Bucket)"
+      DestinationFolder="deltas$(channel)-arm64"
+      IsPublicRead="true" />
+      -->
     <CallTarget Targets ='MakeDownloadPointers'/>
     <CallTarget Targets="CleanUpObsoleteInstallerFiles"/>
   </Target>
-  <!-- Now that we've uploaded for this run, we can delete any obsolete files still in our Squirrel Release Folder. -->
+  <!-- Now that we've uploaded for this run, we can delete any obsolete files still in our Velopack Release Folder. (I think it's harmless to keep including the arm64 folder) -->
   <!-- We don't need any installers (BloomInstaller.*.exe) or any full nuget packages (*.-full.nupkg) besides the one for this run. -->
   <!-- We keep the full nuget package for this run so the next one can create a delta. -->
   <Target Name="CleanUpObsoleteInstallerFiles" DependsOnTargets="VersionNumbers">
     <ItemGroup>
-      <FilesToDelete Include="$(SquirrelReleaseFolder)\BloomInstaller.*.exe;$(SquirrelReleaseFolder)\*-full.nupkg" Exclude="$(SquirrelReleaseFolder)/$(SquirrelFullPkg)" />
+      <FilesToDelete Include="$(InstallerOutputFolder)\BloomInstaller.*.exe;$(InstallerOutputFolder)\*-full.nupkg;$(InstallerOutputFolder)\arm64\*-full.nupkg" Exclude="$(InstallerOutputFolder)/$(VelopackFullPkgX64);$(InstallerOutputFolder)/arm64/$(VelopackFullPkgArm64)" />
     </ItemGroup>
     <Delete Files="@(FilesToDelete)" />
   </Target>
   <Target Name="SignIfPossible" DependsOnTargets="VersionNumbers; Installer">
-    <Exec Command='sign "$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"' ContinueOnError="true"></Exec>
+    <Exec Command='sign "$(InstallerOutputFolder)\$(InstallerFileNameX64)"' ContinueOnError="true"></Exec>
+    <!-- Restore for Arm64
+    <Exec Command='sign "$(InstallerOutputFolder)\$(InstallerFileNameArm64)"' ContinueOnError="true"></Exec>
+    -->
   </Target>
   <Target Name="DownloadDistFiles">
     <Message Text="Downloading Bloom.chm help file" Importance="high"  />

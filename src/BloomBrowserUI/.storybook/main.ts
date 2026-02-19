@@ -1,39 +1,26 @@
-import { StorybookConfig } from "@storybook/react-webpack5";
+import { StorybookConfig } from "@storybook/react-vite";
+import { mergeConfig } from "vite";
 
 const config: StorybookConfig = {
-    stories: ["../**/stories.tsx", "../**/*.stories.tsx"],
-
-    addons: [
-        "@storybook/addon-controls",
-        "@storybook/addon-a11y",
-        "@storybook/addon-webpack5-compiler-swc",
-        "@chromatic-com/storybook"
-    ],
+    stories: ["../**/*.stories.tsx"],
+    addons: ["@storybook/addon-a11y", "@chromatic-com/storybook"],
 
     framework: {
-        name: "@storybook/react-webpack5",
-        options: {
-            fastRefresh: true,
-            builder: {
-                useSWC: true
-            }
-        }
+        name: "@storybook/react-vite",
+        options: {},
     },
 
     typescript: {
-        reactDocgen: false
+        reactDocgen: false,
     },
 
-    docs: {
-        autodocs: false
-    },
+    staticDirs: ["../../../output/browser"],
 
-    staticDirs: [
-        "../../../output/browser",
-        ".",
-        "../react_components",
-        "../teamCollection"
-    ]
+    async viteFinal(config) {
+        return mergeConfig(config, {
+            assetsInclude: [], // Don't treat .tsx as assets
+        });
+    },
 };
 
 export default config;

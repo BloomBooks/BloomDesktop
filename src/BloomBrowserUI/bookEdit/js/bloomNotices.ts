@@ -8,16 +8,17 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 //import '../../lib/jquery.qtip.js'
 //import '../../lib/jquery.qtipSecondary.js'
 import bloomQtipUtils from "./bloomQtipUtils";
+import $ from "jquery";
 
 export default class BloomNotices {
     public static addExperimentalNotice(container: HTMLElement): void {
         const experimental = theOneLocalizationManager.getText(
             "EditTab.ExperimentalNotice",
-            "This page is an experimental prototype which may have many problems, for which we apologize."
+            "This page is an experimental prototype which may have many problems, for which we apologize.",
         );
         $(container)
             .find(".pictureDictionaryPage")
-            .each(function() {
+            .each(function () {
                 $(this).qtipSecondary({
                     content:
                         "<div id='experimentNotice'><img src='/bloom/images/experiment.png'/>" +
@@ -28,12 +29,12 @@ export default class BloomNotices {
                     position: {
                         at: "right top",
                         my: "left top",
-                        container: bloomQtipUtils.qtipZoomContainer()
+                        container: bloomQtipUtils.qtipZoomContainer(),
                     },
                     style: {
                         classes: "ui-tooltip-red",
-                        tip: { corner: false }
-                    }
+                        tip: { corner: false },
+                    },
                 });
             });
     }

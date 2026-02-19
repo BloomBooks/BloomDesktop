@@ -10,8 +10,6 @@ using Bloom.Utils;
 using Bloom.web;
 using Bloom.Workspace;
 using DesktopAnalytics;
-using L10NSharp;
-using SIL.IO;
 using SIL.Reporting;
 
 namespace Bloom.Publish.Epub
@@ -313,7 +311,7 @@ namespace Bloom.Publish.Epub
                 new Dictionary<string, string>()
                 {
                     { "BookId", _bookSelection.CurrentSelection.ID },
-                    { "Country", _collectionSettings.Country }
+                    { "Country", _collectionSettings.Country },
                 }
             );
         }

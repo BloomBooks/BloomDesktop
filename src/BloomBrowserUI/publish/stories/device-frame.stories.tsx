@@ -1,9 +1,9 @@
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react-vite";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
 
 const meta: Meta<typeof DeviceAndControls> = {
     title: "Publish/DeviceFrame",
-    component: DeviceAndControls
+    component: DeviceAndControls,
 };
 
 export default meta;
@@ -15,7 +15,7 @@ export const DeviceFrameDefaultPortraitRotateAble: Story = {
         <DeviceAndControls defaultLandscape={false} canRotate={true} url="">
             Portrait
         </DeviceAndControls>
-    )
+    ),
 };
 
 export const DeviceFrameLandscapeOnlyWithRefreshButton: Story = {
@@ -29,7 +29,7 @@ export const DeviceFrameLandscapeOnlyWithRefreshButton: Story = {
         >
             Landscape
         </DeviceAndControls>
-    )
+    ),
 };
 
 export const DeviceFrameLandscapeOnlyWithHighlightedRefreshButton: Story = {
@@ -44,7 +44,7 @@ export const DeviceFrameLandscapeOnlyWithHighlightedRefreshButton: Story = {
         >
             Landscape
         </DeviceAndControls>
-    )
+    ),
 };
 
 export const DeviceFrameLandscapeRotateAble: Story = {
@@ -53,5 +53,5 @@ export const DeviceFrameLandscapeRotateAble: Story = {
         <DeviceAndControls defaultLandscape={true} canRotate={true} url="">
             Landscape
         </DeviceAndControls>
-    )
+    ),
 };

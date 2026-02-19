@@ -12,9 +12,11 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Book;
+using Bloom.Collection;
 using Microsoft.Win32;
 using Mono.Unix;
 using NAudio.Wave;
+using SIL.Extensions;
 using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.WritingSystems;
@@ -536,7 +538,7 @@ namespace Bloom.Utils
             var downloadFolder = Path.Combine(userProfileFolder, "Downloads"); // why isn't this in the enumeration?
             if (folder == personalFolder || folder == userProfileFolder || folder == downloadFolder)
                 return false; // There should be no need to go further.
-            if (Directory.EnumerateFiles(folder, "*.bloomCollection").Any())
+            if (CollectionSettings.TryGetSettingsFilePath(folder, out var _))
             {
                 collectionFolder = folder;
                 return true;
@@ -563,8 +565,8 @@ namespace Bloom.Utils
                 {
                     Default = true,
                     Text = L10NSharp.LocalizationManager.GetString("Common.OK", "OK"),
-                    Id = "ok"
-                }
+                    Id = "ok",
+                },
             };
             MiscUI.BloomMessageBox.Show(
                 Form.ActiveForm,
@@ -805,7 +807,10 @@ namespace Bloom.Utils
                 StringBuilder bldr = new StringBuilder();
 
                 // language is set if TryGetParts() succeeds, so we can assert it is not null or empty.
-                Debug.Assert(!string.IsNullOrEmpty(language), "language code should never be null or empty after IetfLanguageTag.TryGetParts() succeeds");
+                Debug.Assert(
+                    !string.IsNullOrEmpty(language),
+                    "language code should never be null or empty after IetfLanguageTag.TryGetParts() succeeds"
+                );
                 // Language codes are always all lowercase.
                 language = language.ToLowerInvariant();
                 bldr.Append(language);
@@ -832,10 +837,83 @@ namespace Bloom.Utils
                     bldr.Append(variant);
                 }
                 var newTag = bldr.ToString();
-                Debug.Assert(tag.ToLowerInvariant() == newTag.ToLowerInvariant(), $"Fixing capitalization in a language tag shouldn't greatly change it: {tag} => {newTag}");
+                Debug.Assert(
+                    tag.ToLowerInvariant() == newTag.ToLowerInvariant(),
+                    $"Fixing capitalization in a language tag shouldn't greatly change it: {tag} => {newTag}"
+                );
                 return newTag;
             }
             return tag; // failed to parse: return the original
+        }
+
+        /// <summary>
+        /// Unwraps an exception until it finds an "interesting" exception.  An interesting
+        /// exception is either the innermost exception or one that was not thrown by Autofac.
+        /// </summary>
+        /// <remarks>
+        /// See https://issues.bloomlibrary.org/youtrack/issue/BL-13484/Revamp-Book-Log.
+        /// </remarks>
+        public static Exception UnwrapUntilInterestingException(Exception exception)
+        {
+            if (exception == null)
+                return null;
+
+            // If we unwrap the exception, we want to keep track of information from the outermost exception.
+            string outerExceptionType = null;
+            string outerSource = null;
+            var outerStackTrace = new StringBuilder();
+            while (
+                exception.InnerException != null
+                && exception.StackTrace != null
+                && Regex.IsMatch(exception.StackTrace, "^\\s*at Autofac\\.")
+            )
+            {
+                if (outerExceptionType == null)
+                    outerExceptionType = exception.GetType().FullName;
+                if (outerSource == null)
+                    outerSource = exception.Source;
+                outerStackTrace.Append(PruneStackTraceOfAutofac(exception));
+                exception = exception.InnerException;
+            }
+            if (!string.IsNullOrEmpty(outerExceptionType))
+                exception.Data["OuterExceptionType"] = outerExceptionType;
+            if (!string.IsNullOrEmpty(outerSource))
+                exception.Data["OuterSource"] = outerSource;
+            if (outerStackTrace.Length > 0)
+                exception.Data["OuterStackTrace"] = outerStackTrace.ToString();
+
+            return exception;
+        }
+
+        /// <summary>
+        /// If the stack trace starts with contiguous Autofac lines, this removes all but the last one.
+        /// If it consists solely of Autofac lines, it returns a message indicating how many lines were omitted.
+        /// </summary>
+        private static string PruneStackTraceOfAutofac(Exception ex)
+        {
+            var stacklines = ex.StackTrace.SplitLines();
+            var index = stacklines.Length;
+            for (int i = 0; i < stacklines.Length; i++)
+            {
+                if (!stacklines[i].Contains(" at Autofac."))
+                {
+                    index = i;
+                    break;
+                }
+            }
+            if (index == 0)
+                return ex.StackTrace;
+            var sb = new StringBuilder();
+            if (index == stacklines.Length)
+            {
+                sb.AppendLineFormat("   ... ({0} lines omitted)", index);
+                return sb.ToString();
+            }
+            if (index > 1)
+                sb.AppendLineFormat("   ... ({0} lines omitted)", index - 1);
+            for (int i = index - 1; i < stacklines.Length; i++)
+                sb.AppendLine(stacklines[i]);
+            return sb.ToString();
         }
     }
 }

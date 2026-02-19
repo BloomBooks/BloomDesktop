@@ -6,7 +6,7 @@ import {
     DialogContent,
     DialogContentText,
     DialogTitle,
-    Typography
+    Typography,
 } from "@mui/material";
 import { post, postString } from "../utils/bloomApi";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
@@ -28,11 +28,13 @@ export interface INotifyDialogProps {
     themeOverride?: ProblemKind | null; // If present, will be used in place of the dialog theme defined for this level in themes.ts
 }
 
-export const NotifyDialog: React.FC<INotifyDialogProps> = props => {
+export const NotifyDialog: React.FC<INotifyDialogProps> = (props) => {
     const theme = makeTheme(props.themeOverride || ProblemKind.NonFatal);
 
-    const englishTitle = props.titleOverride ?? kindParams[ProblemKind.NonFatal].title;
-    const titleKey = props.titleL10nKeyOverride ?? kindParams[ProblemKind.NonFatal].l10nKey;
+    const englishTitle =
+        props.titleOverride ?? kindParams[ProblemKind.NonFatal].title;
+    const titleKey =
+        props.titleL10nKeyOverride ?? kindParams[ProblemKind.NonFatal].l10nKey;
     const localizedDlgTitle = useL10n(englishTitle, titleKey);
 
     React.useEffect(() => hookupLinkHandler(), []);
@@ -48,9 +50,10 @@ export const NotifyDialog: React.FC<INotifyDialogProps> = props => {
                 fullScreen={true}
                 onClose={() => post("common/closeReactDialog")}
                 css={css`
-                a {
-                    color: ${kBloomBlue};
-                }`}
+                    a {
+                        color: ${kBloomBlue};
+                    }
+                `}
             >
                 <DialogTitle className={"dialog-title allowSelect"}>
                     <Typography variant="h6">{localizedDlgTitle}</Typography>
@@ -60,20 +63,20 @@ export const NotifyDialog: React.FC<INotifyDialogProps> = props => {
                         onClick={() => post("common/closeReactDialog")}
                     /> */}
                 </DialogTitle>
-                    <DialogContent className={"dialog-content"}>
-                        {/* InnerHTML is used so that we can insert markup like <br> into the message. */}
+                <DialogContent className={"dialog-content"}>
+                    {/* InnerHTML is used so that we can insert markup like <br> into the message. */}
+                    <DialogContentText
+                        className="allowSelect"
+                        css={css`
+                            color: rgba(0, 0, 0, 0.87);
+                        `}
+                        dangerouslySetInnerHTML={{
+                            __html: props.message || "",
+                        }}
+                    />
+                    {props.detailsBoxText && (
                         <DialogContentText
-                            className="allowSelect"
                             css={css`
-                                color: rgba(0, 0, 0, 0.87);
-                            `}
-                            dangerouslySetInnerHTML={{
-                                __html: props.message || ""
-                            }}
-                        />
-                        {props.detailsBoxText && 
-                            <DialogContentText
-                                css={css`
                                     background-color: ${kFormBackground}; 
                                     color: rgba(0, 0, 0, 0.87);
                                     padding: 10px; 
@@ -81,13 +84,13 @@ export const NotifyDialog: React.FC<INotifyDialogProps> = props => {
                                     margin-bottom: 20px; 
                                     font-family: courier;
                                 }`}
-                                dangerouslySetInnerHTML={{
-                                    __html: props.detailsBoxText || ""
-                                }}
-                            />
-                        }
-                    </DialogContent>
-                    {getDialogActionButtons()} 
+                            dangerouslySetInnerHTML={{
+                                __html: props.detailsBoxText || "",
+                            }}
+                        />
+                    )}
+                </DialogContent>
+                {getDialogActionButtons()}
             </Dialog>
         );
     };
@@ -110,7 +113,7 @@ export const NotifyDialog: React.FC<INotifyDialogProps> = props => {
                             onClick={() => {
                                 postString(
                                     "common/closeReactDialog",
-                                    "closedByAlternateButton" // The close source; informs HtmlErrorReporter what to do
+                                    "closedByAlternateButton", // The close source; informs HtmlErrorReporter what to do
                                 );
                             }}
                         >
@@ -131,7 +134,7 @@ export const NotifyDialog: React.FC<INotifyDialogProps> = props => {
                             onClick={() => {
                                 postString(
                                     "common/closeReactDialog",
-                                    "closedByReportButton" // The close source; informs HtmlErrorReporter what to do
+                                    "closedByReportButton", // The close source; informs HtmlErrorReporter what to do
                                 );
                             }}
                         >
@@ -144,11 +147,12 @@ export const NotifyDialog: React.FC<INotifyDialogProps> = props => {
     };
 
     const getCloseButton = (): JSX.Element | null => {
-        const buttonLabel = props.themeOverride === ProblemKind.Fatal ? "Quit" : "Close";
+        const buttonLabel =
+            props.themeOverride === ProblemKind.Fatal ? "Quit" : "Close";
         const l10nKey =
-                props.themeOverride === ProblemKind.Fatal
-                    ? "ReportProblemDialog.Quit" 
-                    : "Common.Close";
+            props.themeOverride === ProblemKind.Fatal
+                ? "ReportProblemDialog.Quit"
+                : "Common.Close";
         return (
             <BloomButton
                 enabled={true}

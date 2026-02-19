@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { kBloomBuff } from "../bloomMaterialUITheme";
@@ -9,7 +8,9 @@ interface IPageThumbnailProps {
     isLandscape: boolean;
 }
 
-export const PageThumbnail: React.FunctionComponent<IPageThumbnailProps> = props => {
+export const PageThumbnail: React.FunctionComponent<IPageThumbnailProps> = (
+    props,
+) => {
     const thumbFrameStyles = `margin: 0 10px 10px 11px;
         width: 104px;
         display: inline-block;

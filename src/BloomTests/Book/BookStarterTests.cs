@@ -35,7 +35,7 @@ namespace BloomTests.Book
                 Language1Tag = "xyz",
                 Language2Tag = "fr",
                 Language3Tag = "es",
-                XMatterPackName = "Factory"
+                XMatterPackName = "Factory",
             };
             ErrorReport.IsOkToInteractWithUser = false;
             _projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
@@ -75,7 +75,7 @@ namespace BloomTests.Book
                     ),
                     Language1Tag = "xyz",
                     Language2Tag = "en",
-                    Language3Tag = "fr"
+                    Language3Tag = "fr",
                 }
             );
         }
@@ -216,7 +216,7 @@ namespace BloomTests.Book
                         _projectFolder.Path,
                         "test"
                     ),
-                    Language1Tag = "xyz"
+                    Language1Tag = "xyz",
                 }
             );
             var server = new BookServer(
@@ -840,7 +840,6 @@ namespace BloomTests.Book
         //            AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@testid='pageWithJustTokPisin']/p/textarea[@lang='tpi' and contains(@class,'hideMe')]", 1);
         //        }
 
-
         [Test]
         public void CreateBookOnDiskFromTemplate_NoTranslationGroupClass_LeavesUntouched()
         {
@@ -1319,8 +1318,8 @@ namespace BloomTests.Book
             //now fail while making a book
 
             _starter.OnNextRunSimulateFailureMakingBook = true;
-            Assert.Throws<ApplicationException>(
-                () => _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path)
+            Assert.Throws<ApplicationException>(() =>
+                _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path)
             );
 
             Assert.IsFalse(
@@ -1423,8 +1422,7 @@ namespace BloomTests.Book
                 bookIdMeta = @"<meta name='bloomBookId' content='thisNewGuy' />";
 
             var content = String.Format(
-                @"<?xml version='1.0' encoding='utf-8' ?>
-				<!DOCTYPE html>
+                @"<!DOCTYPE html>
 				<html>
 				<head>
 					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
@@ -1496,7 +1494,6 @@ namespace BloomTests.Book
         //				Assert.That(File.Exists(dest.Combine("inner", "more inner", "two.txt")));
         //			}
         //		}
-
 
         [Test]
         public void SetupPage_LanguageSettingsHaveChanged_LangAttributesUpdated()
@@ -1608,7 +1605,7 @@ namespace BloomTests.Book
             assertThatHtmlInBook.HasNoMatchForXpath("//div[@data-book='copyright']");
             // Book typically has some empty versionAcknowledgements inserted as xmatter.
             assertThatHtmlInBook.HasNoMatchForXpath(
-                "//div[@data-book='versionAcknowledgments' and text()]"
+                "//div[@data-book='versionAcknowledgments' and normalize-space(string(.)) != '']"
             );
             metadata = BookMetaData.FromFolder(Path.GetDirectoryName(path));
             Assert.That(metadata.Copyright, Is.Null);

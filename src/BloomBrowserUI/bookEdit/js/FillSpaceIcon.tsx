@@ -1,7 +1,7 @@
 import * as React from "react";
 import { SvgIcon, SvgIconProps } from "@mui/material";
 
-export const FillSpaceIcon: React.FunctionComponent<SvgIconProps> = props => (
+export const FillSpaceIcon: React.FunctionComponent<SvgIconProps> = (props) => (
     <SvgIcon width="26" height="22" viewBox="0 0 26 22" fill="none" {...props}>
         <path
             d="M19.1891 16.3899C9.08526 9.31671 19.7001 9.6701 8.12491 13.7919C1.89712 16.0095 8.97084 25.7962 10.8471 19.3582C14.3344 7.39252 17.2844 17.7764 9.8558 7.84588C5.85901 2.50298 -1.1003 12.3742 5.49548 12.2009C17.7546 11.8789 8.96292 17.943 15.947 7.68387C19.7046 2.16413 8.32982 -1.52174 10.53 4.80908C14.6192 16.5758 6.23568 9.93979 17.9807 13.5298C24.2998 15.4613 24.2291 3.31204 18.9931 7.39799C9.26124 14.9923 12.8716 4.82684 13.1464 17.3047C13.2942 24.0182 24.6253 20.1954 19.1891 16.3899Z"

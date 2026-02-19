@@ -59,11 +59,6 @@ namespace Bloom.web.controllers
             );
             apiHandler.RegisterEndpointHandler("editView/getBookLangs", HandleGetBookLangs, false);
             apiHandler.RegisterEndpointHandler(
-                "editView/isClipboardBookHyperlink",
-                HandleIsClipboardBookHyperlink,
-                false
-            );
-            apiHandler.RegisterEndpointHandler(
                 "editView/requestTranslationGroupContent",
                 RequestDefaultTranslationGroupContent,
                 true
@@ -75,10 +70,24 @@ namespace Bloom.web.controllers
             );
             apiHandler.RegisterEndpointHandler("editView/topics", HandleTopics, false);
             apiHandler.RegisterEndpointHandler("editView/changeImage", HandleChangeImage, true);
-            apiHandler.RegisterEndpointHandler("editView/cutImage", HandleCutImage, true);
             apiHandler.RegisterEndpointHandler("editView/copyImage", HandleCopyImage, true);
             apiHandler.RegisterEndpointHandler("editView/pasteImage", HandlePasteImage, true);
             apiHandler.RegisterEndpointHandler("editView/paste", HandlePaste, true);
+            apiHandler.RegisterEndpointHandler(
+                "editView/topBarButtonClick",
+                HandleTopBarButtonClick,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/updateTopBarDropdownDisplay",
+                HandleUpdateTopBarDropdownDisplay,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/topBarDropdownClicked",
+                HandleTopBarDropdownClicked,
+                true
+            );
             apiHandler.RegisterEndpointHandler(
                 "editView/sourceTextTab",
                 HandleSourceTextTab,
@@ -95,6 +104,11 @@ namespace Bloom.web.controllers
                 "editView/addImageFromUrl",
                 HandleAddImageFromUrl,
                 true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/currentBookId",
+                HandleGetCurrentBookId,
+                false
             );
         }
 
@@ -209,21 +223,53 @@ namespace Bloom.web.controllers
             request.PostSucceeded();
         }
 
-        private void HandleCopyImage(ApiRequest request)
+        private void HandleTopBarButtonClick(ApiRequest request)
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
-            View.OnCopyImage(
-                UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
-                data.imageIsGif
+            // If we don't force the focus to the main editing browser, our browser with the buttons will steal it and cut/copy, etc. won't work.
+            View.Browser.Focus();
+
+            // Paste is tricky. We need C# to tell us if there is an image on the clipboard or not.
+            // We don't want to go to the browser from here or we'll just end up coming back to C# and
+            // back to the browser. So shortcut it and call the C# stuff directly.
+            if (data.command == "paste")
+            {
+                HandlePaste(request);
+                return;
+            }
+
+            View.Browser.RunJavascriptAsync(
+                $"editTabBundle?.getEditablePageBundleExports()?.topBarButtonClick({data})"
             );
             request.PostSucceeded();
         }
 
-        private void HandleCutImage(ApiRequest request)
+        private void HandleUpdateTopBarDropdownDisplay(ApiRequest request)
+        {
+            View.UpdateDropdownButtons();
+            request.PostSucceeded();
+        }
+
+        private void HandleTopBarDropdownClicked(ApiRequest request)
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
-            View.OnCutImage(
-                data.imageId,
+            View.Browser.Focus();
+            switch (data.command)
+            {
+                case "contentLanguages":
+                    View.ContentLanguagesDropdownClicked();
+                    break;
+                case "layoutChoices":
+                    View.LayoutChoicesDropdownClicked();
+                    break;
+            }
+            request.PostSucceeded();
+        }
+
+        private void HandleCopyImage(ApiRequest request)
+        {
+            dynamic data = DynamicJson.Parse(request.RequiredPostJson());
+            View.OnCopyImage(
                 UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
                 data.imageIsGif
             );
@@ -243,75 +289,6 @@ namespace Bloom.web.controllers
                 );
             });
             request.PostSucceeded();
-        }
-
-        // Answer true if the current clipboard contents are something that makes sense to paste into the href
-        // of a hyperlink in a Bloom Book. Currently we allow all http(s) and mailto links, plus internal links
-        // (starting with #) provided they are to a non-xmatter page that is present in the book.
-        private void HandleIsClipboardBookHyperlink(ApiRequest request)
-        {
-            string clipContent = ""; // initial value is not used, delegate will set it.
-            Program.MainContext.Send(
-                o =>
-                {
-                    try
-                    {
-                        clipContent = PortableClipboard.GetText();
-                    }
-                    catch (Exception e)
-                    {
-                        // Need to make sure to handle exceptions.
-                        // If the worker thread dies with an unhandled exception,
-                        // it causes the whole program to immediately crash without opportunity for error reporting
-                        Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
-
-                        // Causes the final result to be false
-                        // Don't just ReplyWithBoolean here, that could result in trying to send two replies, which will fail.
-                        clipContent = "";
-                    }
-                },
-                null
-            );
-
-            request.ReplyWithBoolean(IsBloomHyperlink(clipContent, request.CurrentBook));
-        }
-
-        static Regex _bloomHyperlinkRegex = new Regex(
-            @"^(/book/([-A-Fa-f0-9]+))?(#(cover|[-A-Fa-f0-9]+))?",
-            RegexOptions.Compiled
-        );
-
-        private bool IsBloomHyperlink(string text, Book.Book book)
-        {
-            if (string.IsNullOrEmpty(text) || book == null)
-                return false;
-            // This is simplistic but enough to prevent most nonsensical URLs being put in links.
-            if (
-                text.StartsWith("http://")
-                || text.StartsWith("https://")
-                || text.StartsWith("mailto:")
-            )
-                return true;
-            var match = _bloomHyperlinkRegex.Match(text);
-            if (match.Success)
-            {
-                var bookId = match.Groups[2].Value;
-                var pageId = match.Groups[4].Value;
-                // It is no good linking to xmatter pages by id because their IDs change.
-                // We maintain a link to the outside front cover using the id "cover" to get
-                // around this problem.
-                if (bookId == book.ID)
-                {
-                    return pageId == "cover"
-                        || book.GetPages().Any(page => page.Id == pageId && !page.IsXMatter);
-                }
-                else
-                {
-                    return Guid.TryParse(bookId, out var bookGuid)
-                        && (pageId == "cover" || Guid.TryParse(pageId, out var pageGuid));
-                }
-            }
-            return false;
         }
 
         private void RequestDefaultTranslationGroupContent(ApiRequest request)
@@ -370,7 +347,7 @@ namespace Bloom.web.controllers
                 }
 
                 var fullWidgetPath = dlg.FileName;
-                var ext = Path.GetExtension(fullWidgetPath);
+                var ext = Path.GetExtension(fullWidgetPath).ToLowerInvariant();
                 if (ext.EndsWith("htm") || ext.EndsWith("html"))
                 {
                     fullWidgetPath = WidgetHelper.CreateWidgetFromHtmlFolder(fullWidgetPath);
@@ -459,7 +436,7 @@ namespace Bloom.web.controllers
                 select $"{{\"englishKey\":\"{key}\",\"translated\":\"{keyToLocalizedTopicDictionary[key]}\"}}";
             var data = new List<string>
             {
-                $"{{\"englishKey\":\"No Topic\",\"translated\":\"{localizedNoTopic}\"}}"
+                $"{{\"englishKey\":\"No Topic\",\"translated\":\"{localizedNoTopic}\"}}",
             };
             data.AddRange(arrayOfKeyValuePairs);
             dynamic answer = new ExpandoObject();
@@ -472,8 +449,8 @@ namespace Bloom.web.controllers
             else
             {
                 var currentBook = View.Model.CurrentBook;
-                var currentTopicKey = currentBook.BookData
-                    .GetVariableOrNull("topic", "en")
+                var currentTopicKey = currentBook
+                    .BookData.GetVariableOrNull("topic", "en")
                     .Unencoded;
                 if (string.IsNullOrEmpty(currentTopicKey))
                     currentTopicKey = "No Topic";
@@ -500,6 +477,18 @@ namespace Bloom.web.controllers
             {
                 request.Failed("Error adding image: " + ex.Message);
             }
+        }
+
+        private void HandleGetCurrentBookId(ApiRequest request)
+        {
+            if (request.CurrentBook == null)
+            {
+                // it's not obvious what to do here. but HandleGetColorsUsedInBookCanvasElements()
+                // has this kind of logic.
+                request.ReplyWithText("");
+                return;
+            }
+            request.ReplyWithText(request.CurrentBook.ID);
         }
     }
 }

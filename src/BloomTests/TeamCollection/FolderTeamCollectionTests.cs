@@ -48,7 +48,10 @@ namespace BloomTests.TeamCollection
             var bookFolderPath = Path.Combine(_collectionFolder.FolderPath, "My book");
             Directory.CreateDirectory(bookFolderPath);
             var bookPath = Path.Combine(bookFolderPath, "My book.htm");
-            RobustFile.WriteAllText(bookPath, "This is just a dummy");
+            RobustFile.WriteAllText(
+                bookPath,
+                XmlHtmlConverter.CreateHtmlString("This is just a dummy")
+            );
             var cssPath = Path.Combine(bookFolderPath, "BasicLayout.css");
             RobustFile.WriteAllText(cssPath, "This is another dummy");
             var audioDirectory = Path.Combine(bookFolderPath, "audio");
@@ -59,7 +62,10 @@ namespace BloomTests.TeamCollection
             var secondBookFolderPath = Path.Combine(_collectionFolder.FolderPath, kAnotherBook);
             Directory.CreateDirectory(secondBookFolderPath);
             var anotherBookPath = Path.Combine(secondBookFolderPath, kAnotherBook + ".htm");
-            RobustFile.WriteAllText(anotherBookPath, "This is just a dummy for another book");
+            RobustFile.WriteAllText(
+                anotherBookPath,
+                XmlHtmlConverter.CreateHtmlString("This is just a dummy for another book")
+            );
 
             _myBookStatus = _collection.PutBook(bookFolderPath);
             _anotherBookStatus = _collection.PutBook(secondBookFolderPath);
@@ -126,7 +132,7 @@ namespace BloomTests.TeamCollection
                 var destBookPath = Path.Combine(destBookFolder, "My book.htm");
                 Assert.That(
                     RobustFile.ReadAllText(destBookPath),
-                    Is.EqualTo("This is just a dummy")
+                    Is.EqualTo(XmlHtmlConverter.CreateHtmlString("This is just a dummy"))
                 );
                 var destCssPath = Path.Combine(destBookFolder, "BasicLayout.css");
                 Assert.That(
@@ -144,7 +150,9 @@ namespace BloomTests.TeamCollection
                 );
                 Assert.That(
                     RobustFile.ReadAllText(anotherDestBookPath),
-                    Is.EqualTo("This is just a dummy for another book")
+                    Is.EqualTo(
+                        XmlHtmlConverter.CreateHtmlString("This is just a dummy for another book")
+                    )
                 );
 
                 Assert.That(
@@ -175,7 +183,7 @@ namespace BloomTests.TeamCollection
             Directory.CreateDirectory(folderPath);
             RobustFile.WriteAllText(
                 bookPath,
-                "<html><body>This is our newly put book</body></html>"
+                XmlHtmlConverter.CreateHtmlString("This is our newly put book")
             );
             // Wait one second to ensure that any notifications of other books put during other tests
             // have been processed. Otherwise, this test fails randomly.
@@ -262,7 +270,10 @@ namespace BloomTests.TeamCollection
             _collection.BookRepoChange += monitorFunction;
 
             // sut (at least, triggers it and waits for it)
-            RobustFile.WriteAllText(bloomBookPath, @"This is changed"); // no, not a zip at all
+            RobustFile.WriteAllText(
+                bloomBookPath,
+                XmlHtmlConverter.CreateHtmlString(@"This is changed")
+            ); // no, not a zip at all
 
             var waitSucceeded = bookChangedRaised.WaitOne(1000);
 
@@ -285,7 +296,10 @@ namespace BloomTests.TeamCollection
             );
             // Don't use PutBook here...changing the file immediately after putting it won't work,
             // because of the code that tries to prevent notifications of our own checkins.
-            RobustFile.WriteAllText(bloomBookPath, @"This is original"); // no, not a zip at all
+            RobustFile.WriteAllText(
+                bloomBookPath,
+                XmlHtmlConverter.CreateHtmlString(@"This is original")
+            ); // no, not a zip at all
 
             var deletedBookName = "";
 
@@ -319,7 +333,7 @@ namespace BloomTests.TeamCollection
             Directory.CreateDirectory(folderPath);
             RobustFile.WriteAllText(
                 bookPath,
-                "<html><body>This is our newly put book</body></html>"
+                XmlHtmlConverter.CreateHtmlString("This is our newly put book")
             );
             _collection.PutBook(folderPath); // create test situation without monitoring
 
@@ -521,7 +535,7 @@ namespace BloomTests.TeamCollection
                 "ReaderToolsSettings-en.json",
                 "ReaderToolsWords-tok.json",
                 "ReaderToolsSettings-tok.json",
-                "configuration.txt"
+                "configuration.txt",
             };
             foreach (var name in otherFileNames)
             {

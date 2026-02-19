@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { get, postString } from "../utils/bloomApi";
@@ -17,38 +16,38 @@ const useStyles = makeStyles(() => ({
     root: {
         width: "100%",
         height: 140,
-        maxWidth: 320
-    }
+        maxWidth: 320,
+    },
 }));
 
 const XmatterChooserControl: React.FunctionComponent = () => {
     const [selectedXmatter, setSelectedXmatter] = useState<string | undefined>(
-        undefined
+        undefined,
     );
     const [xmatterData, setXmatterData] = useState<IXmatterInfo[] | undefined>(
-        undefined
+        undefined,
     );
 
-    const handleListItemClick = event => {
+    const handleListItemClick = (event) => {
         const typographyElement = event.target;
         const newXmatterDisplay = typographyElement.innerText as string;
         const newXmatter = findByDisplayName(newXmatterDisplay);
         setSelectedXmatter(newXmatter?.internalName);
         postString(
             "settings/xmatter",
-            newXmatter ? newXmatter.internalName : ""
+            newXmatter ? newXmatter.internalName : "",
         );
     };
 
     const findByDisplayName = (
-        displayName: string
+        displayName: string,
     ): IXmatterInfo | undefined => {
         if (!xmatterData) return undefined;
-        return xmatterData!.find(xm => xm.displayName === displayName);
+        return xmatterData!.find((xm) => xm.displayName === displayName);
     };
 
     useEffect(() => {
-        get("settings/xmatter", result => {
+        get("settings/xmatter", (result) => {
             setSelectedXmatter(result.data.currentXmatter as string);
             setXmatterData(result.data.xmatterOfferings as IXmatterInfo[]);
         });
@@ -56,7 +55,7 @@ const XmatterChooserControl: React.FunctionComponent = () => {
 
     const xMatterPackLabel = useL10n(
         "Front/Back Matter Pack",
-        "CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack"
+        "CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack",
     );
 
     const makeXmatterList = (): JSX.Element[] => {
@@ -67,7 +66,7 @@ const XmatterChooserControl: React.FunctionComponent = () => {
                 button
                 selected={selectedXmatter === item.internalName}
                 autoFocus={selectedXmatter === item.internalName}
-                onClick={event => handleListItemClick(event)}
+                onClick={(event) => handleListItemClick(event)}
                 css={css`
                     div {
                         margin-top: 0;
@@ -85,7 +84,7 @@ const XmatterChooserControl: React.FunctionComponent = () => {
 
     const getSelectedIndex = (): number => {
         return xmatterData!.findIndex(
-            xmatter => xmatter.internalName === selectedXmatter
+            (xmatter) => xmatter.internalName === selectedXmatter,
         );
     };
 

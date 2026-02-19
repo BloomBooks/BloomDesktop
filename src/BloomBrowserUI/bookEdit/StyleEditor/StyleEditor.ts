@@ -11,13 +11,19 @@
 /// <reference path="../js/collectionSettings.d.ts"/>
 /// <reference path="../OverflowChecker/OverflowChecker.ts"/>
 
-import "../../node_modules/select2/dist/js/select2.js";
+import $ from "jquery";
+import select2Factory from "select2/dist/js/select2.js";
+
+// Select2's UMD build exports a factory; invoking it attaches $.fn.select2
+if (typeof window !== "undefined") {
+    select2Factory(window, $);
+}
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import {
     IsPageXMatter,
-    SetupThingsSensitiveToStyleChanges
+    SetupThingsSensitiveToStyleChanges,
 } from "../js/bloomEditing";
 import "../../lib/jquery.alphanum";
 import axios from "axios";
@@ -28,14 +34,14 @@ import FontSelectComponent, { IFontMetaData } from "./fontSelectComponent";
 import * as React from "react";
 import {
     ISimpleColorPickerDialogProps,
-    showSimpleColorPickerDialog
+    showSimpleColorPickerDialog,
 } from "../../react_components/color-picking/colorPickerDialog";
 import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
 import { kBloomYellow } from "../../bloomMaterialUITheme";
 import { RenderRoot } from "./AudioHilitePage";
 import { RenderCanvasElementRoot } from "./CanvasElementFormatPage";
 import { CanvasElementManager } from "../js/CanvasElementManager";
-import { kCanvasElementSelector } from "../toolbox/overlay/canvasElementUtils";
+import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementUtils";
 import { getPageIFrame } from "../../utils/shared";
 
 // Controls the CSS text-align value
@@ -81,7 +87,7 @@ export interface StyleDefnProps {
 export function createStyleDefnIfUndefined(
     styleNamePlain: string,
     styles: StyleDefnProps,
-    supportFilesRoot: string = ""
+    supportFilesRoot: string = "",
 ): CSSStyleRule | null {
     const styleName = styleNamePlain + "-style";
     const styleEditor = new StyleEditor(supportFilesRoot);
@@ -90,7 +96,7 @@ export function createStyleDefnIfUndefined(
         styleName,
         "",
         false, // don't create it if it doesn't exist
-        documentToUse
+        documentToUse,
     );
     if (rule) {
         return null; // already exists, nothing to do
@@ -99,7 +105,7 @@ export function createStyleDefnIfUndefined(
         styleName,
         "",
         true, // create it if it doesn't exist
-        documentToUse
+        documentToUse,
     );
     applyStyleDefnToRule(newRule, styles);
 
@@ -110,7 +116,7 @@ export function createStyleDefnIfUndefined(
 
 function applyStyleDefnToRule(
     rule: CSSStyleRule | null,
-    styles: StyleDefnProps
+    styles: StyleDefnProps,
 ): void {
     if (!rule) return;
 
@@ -177,7 +183,7 @@ export default class StyleEditor {
         // In case this is one of those books, we'll replace it with 'Title-On-Cover-style'
         let coverTitleClass: string | null = StyleEditor.updateCoverStyleName(
             target,
-            "coverTitle"
+            "coverTitle",
         );
 
         // For awhile in v2 we used 'coverTitle-style' in Factory-XMatter
@@ -185,7 +191,7 @@ export default class StyleEditor {
         if (!coverTitleClass) {
             coverTitleClass = StyleEditor.updateCoverStyleName(
                 target,
-                "coverTitle-style"
+                "coverTitle-style",
             );
         }
 
@@ -194,13 +200,11 @@ export default class StyleEditor {
 
     private static updateCoverStyleName(
         target: HTMLElement,
-        oldCoverTitleClass: string
+        oldCoverTitleClass: string,
     ): string | null {
         if ($(target).hasClass(oldCoverTitleClass)) {
             const newStyleName: string = "Title-On-Cover-style";
-            $(target)
-                .removeClass(oldCoverTitleClass)
-                .addClass(newStyleName);
+            $(target).removeClass(oldCoverTitleClass).addClass(newStyleName);
             return newStyleName;
         }
 
@@ -252,7 +256,7 @@ export default class StyleEditor {
     }
 
     private static GetBaseStyleNameForElement(
-        target: HTMLElement
+        target: HTMLElement,
     ): string | null {
         const styleName = StyleEditor.GetStyleNameForElement(target); // with '-style'
         if (styleName == null) return null;
@@ -267,7 +271,7 @@ export default class StyleEditor {
     // and if it's in a translation group, for all the siblings that are bloom-editable.
     private static SetStyleNameForElement(
         target: HTMLElement,
-        newStyle: string
+        newStyle: string,
     ) {
         this.SetStyleNameForLeaf(target, newStyle);
         // If this is a translation group, we need to set the style on all the siblings
@@ -277,10 +281,10 @@ export default class StyleEditor {
         // This will typically include the target itself, but it's not very costly to do
         // it twice to that one element.
         const siblings = Array.from(
-            group.getElementsByClassName("bloom-editable")
+            group.getElementsByClassName("bloom-editable"),
         );
-        siblings.forEach(sibling =>
-            this.SetStyleNameForLeaf(sibling as HTMLElement, newStyle)
+        siblings.forEach((sibling) =>
+            this.SetStyleNameForLeaf(sibling as HTMLElement, newStyle),
         );
     }
 
@@ -337,9 +341,11 @@ export default class StyleEditor {
                         const styleId = label.substring(index3 + 1, index2);
                         // Get the English display name if one is defined for this style
                         const displayName = this.getDisplayName(styleId);
-                        if (styles.every(style => !style.hasStyleId(styleId))) {
+                        if (
+                            styles.every((style) => !style.hasStyleId(styleId))
+                        ) {
                             styles.push(
-                                new FormattingStyle(styleId, displayName)
+                                new FormattingStyle(styleId, displayName),
                             );
                         }
                     }
@@ -349,7 +355,7 @@ export default class StyleEditor {
         // 'normal' is the standard initial style for at least origami pages.
         // But our default template doesn't define it; by default it just has default properties.
         // Make sure it's available to choose again.
-        if (styles.every(style => !style.hasStyleId("normal"))) {
+        if (styles.every((style) => !style.hasStyleId("normal"))) {
             styles.push(new FormattingStyle("normal", "Normal"));
         }
         return styles;
@@ -463,7 +469,7 @@ export default class StyleEditor {
         const isExpectedForm = lowercaseHref.endsWith(expectedLowercaseEnding);
         console.assert(
             isExpectedForm,
-            `document.location.href expected to end with "currentPage-memsim-Normal.html", but actually was "${document.location.href}"`
+            `document.location.href expected to end with "currentPage-memsim-Normal.html", but actually was "${document.location.href}"`,
         );
 
         if (!isExpectedForm) {
@@ -477,24 +483,24 @@ export default class StyleEditor {
         // but now we want to resume with the properly-cased version.
         const urlToBookDirectory = document.location.href.substring(
             0,
-            endingStartIndex
+            endingStartIndex,
         );
 
         // Note: Several style elements can have href=null. This indicates inline style elements that are directly added to head.
         // (This includes both inline style elements directly from the book's HTM file, as well as other style elements added to head later)
         const filteredArray = styleSheets.filter(
-            sheet =>
-                sheet.href != null && sheet.href.startsWith(urlToBookDirectory)
+            (sheet) =>
+                sheet.href != null && sheet.href.startsWith(urlToBookDirectory),
         );
         console.assert(
             filteredArray.length > 0,
-            "Error? Array length is 0! (No stylesheets left after calling getBookStyleSheets). Please investigate if this is expected"
+            "Error? Array length is 0! (No stylesheets left after calling getBookStyleSheets). Please investigate if this is expected",
         );
         return filteredArray;
     }
 
     private FindExistingUserModifiedStyleSheet(
-        documentToUse: Document = document
+        documentToUse: Document = document,
     ): CSSStyleSheet | null {
         for (let i = 0; i < documentToUse.styleSheets.length; i++) {
             if (
@@ -512,7 +518,7 @@ export default class StyleEditor {
 
     //note, this currently just makes an element in the document, not a separate file
     public GetOrCreateUserModifiedStyleSheet(
-        documentToUse: Document = document
+        documentToUse: Document = document,
     ): CSSStyleSheet | null {
         let styleSheet = this.FindExistingUserModifiedStyleSheet(documentToUse);
         if (styleSheet == null) {
@@ -540,7 +546,7 @@ export default class StyleEditor {
         styleName: string,
         langAttrValue: string | null,
         ignoreLanguage: boolean,
-        forChildParas?: boolean
+        forChildParas?: boolean,
     ): CSSStyleRule | null {
         let addToSelector = "";
         // if we are authoring a book, style changes should apply to all translations of it
@@ -569,11 +575,10 @@ export default class StyleEditor {
         addToSelector: string,
         // If there is not already such a rule, should we create it, or return null?
         create: boolean,
-        documentToUse: Document = document
+        documentToUse: Document = document,
     ): CSSStyleRule | null {
-        const styleSheet = this.GetOrCreateUserModifiedStyleSheet(
-            documentToUse
-        );
+        const styleSheet =
+            this.GetOrCreateUserModifiedStyleSheet(documentToUse);
         if (styleSheet == null) {
             return null;
         }
@@ -627,38 +632,38 @@ export default class StyleEditor {
     public putAudioHiliteRulesInDom(
         styleName: string,
         hiliteTextColor: string | undefined,
-        hiliteBgColor: string
+        hiliteBgColor: string,
     ) {
         const sentenceRule = this.GetRuleForStyle(
             styleName,
             this.sentenceHiliteRuleSelector,
-            true
+            true,
         );
         this.updateHiliteStyleRuleBody(
             sentenceRule,
             hiliteTextColor,
-            hiliteBgColor
+            hiliteBgColor,
         );
         const paddedSentenceRule = this.GetRuleForStyle(
             styleName,
             this.paddedSentenceHiliteRuleSelector,
-            true
+            true,
         );
         this.updateHiliteStyleRuleBody(
             paddedSentenceRule,
             hiliteTextColor,
-            hiliteBgColor
+            hiliteBgColor,
         );
 
         const paraRule = this.GetRuleForStyle(
             styleName,
             this.paraHiliteRuleSelector,
-            true
+            true,
         );
         this.updateHiliteStyleRuleBody(
             paraRule,
             hiliteTextColor,
-            hiliteBgColor
+            hiliteBgColor,
         );
         this.cleanupAfterStyleChange();
     }
@@ -666,7 +671,7 @@ export default class StyleEditor {
     private updateHiliteStyleRuleBody(
         rule: CSSStyleRule | null,
         hiliteTextColor: string | undefined,
-        hiliteBgColor: string
+        hiliteBgColor: string,
     ) {
         if (!rule) {
             return; // paranoia
@@ -679,14 +684,15 @@ export default class StyleEditor {
         }
     }
 
-    public getAudioHiliteProps(
-        styleName: string
-    ): { hiliteTextColor: string | undefined; hiliteBgColor: string } {
+    public getAudioHiliteProps(styleName: string): {
+        hiliteTextColor: string | undefined;
+        hiliteBgColor: string;
+    } {
         const sentenceRule = this.GetRuleForStyle(
             styleName,
             // The two should have the same content, so for reading, we only need one.
             this.sentenceHiliteRuleSelector,
-            false
+            false,
         );
         const hiliteTextColor = sentenceRule?.style?.color;
         let hiliteBgColor = sentenceRule?.style?.backgroundColor;
@@ -695,7 +701,7 @@ export default class StyleEditor {
         }
         return {
             hiliteTextColor,
-            hiliteBgColor
+            hiliteBgColor,
         };
     }
 
@@ -703,7 +709,7 @@ export default class StyleEditor {
     public ReplaceExistingStyle(
         sheet: CSSStyleSheet,
         index: number,
-        newStyle: string
+        newStyle: string,
     ): void {
         sheet.deleteRule(index);
         sheet.insertRule(newStyle, index);
@@ -746,7 +752,7 @@ export default class StyleEditor {
             tipText,
             styleName,
             lang,
-            ptSize
+            ptSize,
         );
     }
 
@@ -759,7 +765,7 @@ export default class StyleEditor {
     public AddQtipToElement(
         element: JQuery,
         toolTip: string,
-        delay: number = 3000
+        delay: number = 3000,
     ) {
         if (element.length === 0) return;
         // When the element is a span or similar this produces the tooltip
@@ -778,7 +784,7 @@ export default class StyleEditor {
             select2target.attr("title", toolTip);
             // And unfortunately select2 updates the tooltip every time it changes, so we have
             // to arrange to reinstate it
-            element.change(x => select2target.attr("title", toolTip));
+            element.change((x) => select2target.attr("title", toolTip));
             return;
         }
 
@@ -788,7 +794,7 @@ export default class StyleEditor {
 
     public static GetClosestValueInList(
         listOfOptions: Array<string>,
-        valueToMatch: number
+        valueToMatch: number,
     ) {
         let lineHeight;
         for (let i = 0; i < listOfOptions.length; i++) {
@@ -848,7 +854,7 @@ export default class StyleEditor {
             "70",
             "80",
             "90",
-            "100"
+            "100",
         ];
 
         // Same options as Word 2010, plus 13 since used in heading2
@@ -869,7 +875,7 @@ export default class StyleEditor {
             "1.8",
             "2.0",
             "2.5",
-            "3.0"
+            "3.0",
         ];
     }
 
@@ -877,16 +883,16 @@ export default class StyleEditor {
         return [
             theOneLocalizationManager.getText(
                 "EditTab.FormatDialog.WordSpacingNormal",
-                "Normal"
+                "Normal",
             ),
             theOneLocalizationManager.getText(
                 "EditTab.FormatDialog.WordSpacingWide",
-                "Wide"
+                "Wide",
             ),
             theOneLocalizationManager.getText(
                 "EditTab.FormatDialog.WordSpacingExtraWide",
-                "Extra Wide"
-            )
+                "Extra Wide",
+            ),
         ];
     }
 
@@ -902,7 +908,7 @@ export default class StyleEditor {
             deferred.resolve(results);
         } else {
             promises.forEach((promise: JQueryPromise<string>, i) => {
-                promise.then(value => {
+                promise.then((value) => {
                     results[i] = value ? value : "";
                     fulfilled++;
                     if (fulfilled === length) {
@@ -916,11 +922,11 @@ export default class StyleEditor {
 
     // Collects all the style name promises to use in an async version of populateSelect()
     public getStylePromises(
-        styles: FormattingStyle[]
+        styles: FormattingStyle[],
     ): JQueryPromise<string>[] {
         const promises: JQueryPromise<string>[] = [];
 
-        styles.forEach(formattingStyle => {
+        styles.forEach((formattingStyle) => {
             const completeStyleName =
                 "EditTab.FormatDialog.DefaultStyles." +
                 formattingStyle.styleId +
@@ -929,8 +935,8 @@ export default class StyleEditor {
                 theOneLocalizationManager.asyncGetText(
                     completeStyleName,
                     formattingStyle.englishDisplayName,
-                    ""
-                ) as JQueryPromise<string>
+                    "",
+                ) as JQueryPromise<string>,
             );
         });
         return promises;
@@ -963,7 +969,7 @@ export default class StyleEditor {
         const lineSpaceOptions = this.getLineSpaceOptions();
         const lineHeight = StyleEditor.GetClosestValueInList(
             lineSpaceOptions,
-            lineHeightNumber
+            lineHeightNumber,
         );
 
         const wordSpaceOptions = this.getWordSpaceOptions();
@@ -1001,7 +1007,7 @@ export default class StyleEditor {
         const paraSpaceOptions = this.getParagraphSpaceOptions();
         const paraSpacing = StyleEditor.GetClosestValueInList(
             paraSpaceOptions,
-            paraSpaceEm
+            paraSpaceEm,
         );
 
         const indentString = paraBox.css("text-indent");
@@ -1017,10 +1023,10 @@ export default class StyleEditor {
         if (!textColor) textColor = "rgba(0,0,0,1.0)";
 
         const styleName = StyleEditor.GetStyleNameForElement(
-            this.boxBeingEdited
+            this.boxBeingEdited,
         );
         const { hiliteTextColor, hiliteBgColor } = this.getAudioHiliteProps(
-            styleName ?? ""
+            styleName ?? "",
         );
 
         return {
@@ -1037,7 +1043,7 @@ export default class StyleEditor {
             color: textColor,
             hiliteTextColor,
             hiliteBgColor,
-            padding: box.css("padding-left")
+            padding: box.css("padding-left"),
         };
     }
 
@@ -1096,10 +1102,10 @@ export default class StyleEditor {
             if (tg) {
                 // account for any left padding the translation group may have
                 const editables = Array.from(
-                    tg.getElementsByClassName("bloom-editable")
+                    tg.getElementsByClassName("bloom-editable"),
                 );
                 const editable = editables.find(
-                    x => (x as HTMLElement).offsetHeight > 0 // need to find a visible one for a meaningful offsetLeft
+                    (x) => (x as HTMLElement).offsetHeight > 0, // need to find a visible one for a meaningful offsetLeft
                 );
                 if (editable) leftPx = (editable as HTMLElement).offsetLeft;
             } else {
@@ -1114,14 +1120,14 @@ export default class StyleEditor {
 
     private updateFontControl(
         fontMetadata: IFontMetaData[],
-        fontName: string
+        fontName: string,
     ): void {
         ReactDOM.render(
             React.createElement(FontSelectComponent, {
                 fontMetadata: fontMetadata,
                 currentFontName: fontName,
                 languageNumber: 0,
-                onChangeFont: name => this.changeFont(name),
+                onChangeFont: (name) => this.changeFont(name),
                 // Needed to make sure the font menu that pops up is above the BloomDialog.
                 // This is ugly...I'd much rather we didn't need this prop on either
                 // FontSelectComponent or WinFormsStyleSelect. It would be preferable to
@@ -1137,9 +1143,9 @@ export default class StyleEditor {
                 // and let the wrapper mess with the lightTheme in the way that WinFormsStyleSelect
                 // currently does. Feels more complicated, and it's also ugly to mess with a theme
                 // to patch a child component. I'm not sure which is worse.
-                popoverZindex: "60001"
+                popoverZindex: "60001",
             }),
-            document.getElementById("fontSelectComponent")
+            document.getElementById("fontSelectComponent"),
         );
     }
 
@@ -1164,15 +1170,17 @@ export default class StyleEditor {
             const instance = editorInstances[property];
             gotOne = true;
             if (!instance.instanceReady) {
-                instance.on("instanceReady", e => this.AttachToBox(targetBox));
+                instance.on("instanceReady", (e) =>
+                    this.AttachToBox(targetBox),
+                );
                 return;
             }
         }
         if (!gotOne) {
             // If any editable divs exist, call us again once the page gets set up with ckeditor.
             // no instance at all...if one is later created, get us invoked.
-            (<any>window).CKEDITOR.on("instanceReady", e =>
-                this.AttachToBox(targetBox)
+            (<any>window).CKEDITOR.on("instanceReady", (e) =>
+                this.AttachToBox(targetBox),
             );
             return;
         }
@@ -1211,7 +1219,7 @@ export default class StyleEditor {
         $(targetBox).after(
             '<div id="formatButton" contenteditable="false" class="bloom-ui"><img contenteditable="false" src="' +
                 this._supportFilesRoot +
-                `/img/cogGrey.svg"></div>`
+                `/img/cogGrey.svg"></div>`,
         );
 
         this.AdjustFormatButton(targetBox);
@@ -1219,7 +1227,7 @@ export default class StyleEditor {
             this._observer.disconnect();
         }
         this._observer = new ResizeObserver(() =>
-            this.AdjustFormatButton(targetBox)
+            this.AdjustFormatButton(targetBox),
         );
         this._observer.observe(targetBox);
 
@@ -1242,20 +1250,21 @@ export default class StyleEditor {
         //}
 
         formatButton?.addEventListener("click", () =>
-            this.runFormatDialog(targetBox)
+            this.runFormatDialog(targetBox),
         );
     }
     changePadding(padding: string) {
         if (this.ignoreControlChanges) {
             return;
         }
-        const oldPaddingStr = window.getComputedStyle(this.boxBeingEdited)
-            .paddingLeft;
+        const oldPaddingStr = window.getComputedStyle(
+            this.boxBeingEdited,
+        ).paddingLeft;
         CanvasElementManager.adjustCanvasElementsForPaddingChange(
             this.boxBeingEdited.ownerDocument.body,
             StyleEditor.GetStyleNameForElement(this.boxBeingEdited) ?? "",
             oldPaddingStr,
-            padding
+            padding,
         );
         const rule = this.getStyleRule(true, false);
         if (rule !== null) {
@@ -1276,10 +1285,10 @@ export default class StyleEditor {
     // is MuiDialog-root.
     private popoverIsUp(): boolean {
         const popoovers = Array.from(
-            document.getElementsByClassName("MuiPopover-root")
+            document.getElementsByClassName("MuiPopover-root"),
         )
             .concat(
-                Array.from(document.getElementsByClassName("MuiDialog-root"))
+                Array.from(document.getElementsByClassName("MuiDialog-root")),
             )
             // when the format dialog is launched from the context control on a canvas element,
             // typically the menu for the context controls is present in the DOM, but not visible.
@@ -1291,7 +1300,7 @@ export default class StyleEditor {
     public closeDialog(
         event: JQueryEventObject,
         toolbar: JQuery,
-        sourceDiv: HTMLElement
+        sourceDiv: HTMLElement,
     ) {
         // Prevent a click from closing the base format dialog when any popover is "up"
         // or when a child dialog is open.
@@ -1327,35 +1336,35 @@ export default class StyleEditor {
             "size-select",
             true,
             true,
-            99
+            99,
         );
         this.populateSelect(
             this.getLineSpaceOptions(),
             current.lineHeight,
             "line-height-select",
             true,
-            true
+            true,
         );
         this.populateSelect(
             this.getWordSpaceOptions(),
             current.wordSpacing,
             "word-space-select",
             false,
-            false
+            false,
         );
         this.asyncPopulateSelect(
             "styleSelect",
             this.styles,
             this.getStylePromises(this.styles),
             styleName,
-            "normal"
+            "normal",
         );
         this.populateSelect(
             this.getParagraphSpaceOptions(),
             current.paraSpacing,
             "para-spacing-select",
             true,
-            true
+            true,
         );
     }
 
@@ -1370,7 +1379,7 @@ export default class StyleEditor {
             "position-justify",
             "indent-none",
             "indent-indented",
-            "indent-hanging"
+            "indent-hanging",
         ];
     }
 
@@ -1383,13 +1392,13 @@ export default class StyleEditor {
         this.selectButton(
             "position-left",
             (current.alignment === "start" && !isRightToLeft) ||
-                (current.alignment === "end" && isRightToLeft)
+                (current.alignment === "end" && isRightToLeft),
         );
         this.selectButton("position-center", current.alignment === "center");
         this.selectButton(
             "position-right",
             (current.alignment === "end" && !isRightToLeft) ||
-                (current.alignment === "start" && isRightToLeft)
+                (current.alignment === "start" && isRightToLeft),
         );
         this.selectButton("position-justify", current.alignment === "justify");
         this.selectButton("indent-" + current.paraIndent, true);
@@ -1443,7 +1452,7 @@ export default class StyleEditor {
         if (index >= 0) {
             button.addClass("selectedIcon");
             const group = id.substring(0, index);
-            $(".propButton").each(function() {
+            $(".propButton").each(function () {
                 const item = $(this);
                 if (
                     this !== button.get(0) &&
@@ -1483,7 +1492,7 @@ export default class StyleEditor {
     // The Char tab description is language-dependent when localizing, not when authoring.
     public updateLabelsWithStyleName() {
         const styleName = StyleEditor.GetBaseStyleNameForElement(
-            this.boxBeingEdited
+            this.boxBeingEdited,
         );
         // BL-2386 This one should NOT be language-dependent; only style dependent
         // BL-5616 This also applies if the textbox's default language is '*',
@@ -1495,9 +1504,9 @@ export default class StyleEditor {
                     "BookEditor.DefaultForText",
                     "This formatting is the default for all text boxes with '{0}' style.",
                     "",
-                    styleName
+                    styleName,
                 )
-                .done(translation => {
+                .done((translation) => {
                     $("#formatCharDesc").html(translation);
                 });
             return;
@@ -1513,17 +1522,34 @@ export default class StyleEditor {
                 "This formatting is for all {0} text boxes with '{1}' style.",
                 "",
                 lang,
-                styleName
+                styleName,
             )
-            .done(translation => {
+            .done((translation) => {
                 $("#formatCharDesc").html(translation);
             });
+    }
+
+    // this is an unfortunate ui hack because we can't yet put the language code as a tooltip on the language
+    // tag itself because it is a psuedo-element (BL-15212).
+    private updateTitleBarLanguageCode() {
+        const target = $("#format-toolbar-lang-code");
+        if (target.length === 0) {
+            return;
+        }
+        const langCode = ($(this.boxBeingEdited).attr("lang") || "").trim();
+        if (langCode) {
+            target.text(langCode);
+            target.removeAttr("aria-hidden");
+        } else {
+            target.text("");
+            target.attr("aria-hidden", "true");
+        }
     }
 
     // The More tab settings are never language-dependent
     public getParagraphTabDescription() {
         const styleName = StyleEditor.GetBaseStyleNameForElement(
-            this.boxBeingEdited
+            this.boxBeingEdited,
         );
         // BL-2386 This one should NOT be language-dependent; only style dependent
         theOneLocalizationManager
@@ -1531,9 +1557,9 @@ export default class StyleEditor {
                 "BookEditor.ForText",
                 "This formatting is for all text boxes with '{0}' style.",
                 "",
-                styleName
+                styleName,
             )
-            .done(translation => {
+            .done((translation) => {
                 $("#formatParaDesc").html(translation);
             });
     }
@@ -1541,7 +1567,7 @@ export default class StyleEditor {
     // did the user type the name of an existing style?
     public inputStyleExists(): boolean {
         const typedStyle = $("#style-select-input").val();
-        return this.styles.some(style => style.hasStyleId(typedStyle));
+        return this.styles.some((style) => style.hasStyleId(typedStyle));
     }
 
     // Make a new style. Initialize to all current values. Caller should ensure it is a valid new style.
@@ -1549,16 +1575,14 @@ export default class StyleEditor {
         const typedStyle = $("#style-select-input").val();
         StyleEditor.SetStyleNameForElement(
             this.boxBeingEdited,
-            typedStyle + "-style"
+            typedStyle + "-style",
         );
         this.updateStyle();
 
         // Recommended way to insert an item into a select2 control and select it (one of the trues makes it selected)
         // See http://codepen.io/alexweissman/pen/zremOV
         const newState = new Option(typedStyle, typedStyle, true, true);
-        $("#styleSelect")
-            .append(newState)
-            .trigger("change");
+        $("#styleSelect").append(newState).trigger("change");
         // Ensure we know this style in the future.  See http://issues.bloomlibrary.org/youtrack/issue/BL-4438.
         this.styles.push(new FormattingStyle(typedStyle, typedStyle));
 
@@ -1589,7 +1613,7 @@ export default class StyleEditor {
         styles: FormattingStyle[],
         localizedNamePromises: JQueryPromise<string>[],
         current: string,
-        defaultChoice: string
+        defaultChoice: string,
     ) {
         // So if the element doesn't exist, exit quickly.
         if (!$("#" + selectId)) {
@@ -1623,7 +1647,7 @@ export default class StyleEditor {
                         "</option>";
                 }
                 $("#" + selectId).html(options);
-            }
+            },
         );
     }
 
@@ -1657,7 +1681,7 @@ export default class StyleEditor {
         id: string,
         doSort: boolean,
         useNumericSort: boolean,
-        maxlength?: number
+        maxlength?: number,
     ) {
         // Rather than selectively call this method for only those select elements which need
         // to be initialized, we call it for all of them. That makes the calling code a little simpler.
@@ -1724,7 +1748,7 @@ export default class StyleEditor {
             rule.style.setProperty(
                 "font-weight",
                 val ? "bold" : "normal",
-                "important"
+                "important",
             );
         }
         if (this.shouldSetDefaultRule()) {
@@ -1733,7 +1757,7 @@ export default class StyleEditor {
                 rule.style.setProperty(
                     "font-weight",
                     val ? "bold" : "normal",
-                    "important"
+                    "important",
                 );
         }
         this.cleanupAfterStyleChange();
@@ -1749,7 +1773,7 @@ export default class StyleEditor {
             rule.style.setProperty(
                 "font-style",
                 val ? "italic" : "normal",
-                "important"
+                "important",
             );
         if (this.shouldSetDefaultRule()) {
             rule = this.getStyleRule(true);
@@ -1757,7 +1781,7 @@ export default class StyleEditor {
                 rule.style.setProperty(
                     "font-style",
                     val ? "italic" : "normal",
-                    "important"
+                    "important",
                 );
         }
         this.cleanupAfterStyleChange();
@@ -1773,7 +1797,7 @@ export default class StyleEditor {
             rule.style.setProperty(
                 "text-decoration",
                 val ? "underline" : "none",
-                "important"
+                "important",
             );
         if (this.shouldSetDefaultRule()) {
             rule = this.getStyleRule(true);
@@ -1781,7 +1805,7 @@ export default class StyleEditor {
                 rule.style.setProperty(
                     "text-decoration",
                     val ? "underline" : "none",
-                    "important"
+                    "important",
                 );
         }
         this.cleanupAfterStyleChange();
@@ -1816,16 +1840,16 @@ export default class StyleEditor {
     public changeHiliteProps(
         hiliteTextColor: string | undefined, // text color when hilited (null or empty to not specify)
         hiliteBgColor: string, // bg color when hilited
-        color?: string // ordinary text color
+        color?: string, // ordinary text color
     ) {
         if (!color) {
             color = this.getFormatValues().color;
         }
         const styleName = StyleEditor.GetStyleNameForElement(
-            this.boxBeingEdited
+            this.boxBeingEdited,
         );
         const uiStyleName = StyleEditor.GetBaseStyleNameForElement(
-            this.boxBeingEdited
+            this.boxBeingEdited,
         );
         // The only way I know to get the new hilight color in there is to re-render
         // completely.
@@ -1834,7 +1858,7 @@ export default class StyleEditor {
             color,
             hiliteTextColor,
             hiliteBgColor,
-            (textColor, bgColor) => this.changeHiliteProps(textColor, bgColor)
+            (textColor, bgColor) => this.changeHiliteProps(textColor, bgColor),
         );
         if (this.ignoreControlChanges) {
             return;
@@ -1844,7 +1868,7 @@ export default class StyleEditor {
             this.putAudioHiliteRulesInDom(
                 styleName,
                 hiliteTextColor,
-                hiliteBgColor
+                hiliteBgColor,
             );
         }
     }
@@ -1904,14 +1928,14 @@ export default class StyleEditor {
         }
         this.changeSizeInternal(
             sizeString + units,
-            this.shouldSetDefaultRule()
+            this.shouldSetDefaultRule(),
         );
         this.cleanupAfterStyleChange();
     }
 
     public changeSizeInternal(
         newSize: string,
-        shouldSetDefaultRule: boolean
+        shouldSetDefaultRule: boolean,
     ): void {
         // Always set the value in the language-specific rule
         let rule = this.getStyleRule(false);
@@ -2032,9 +2056,8 @@ export default class StyleEditor {
             return "center";
         }
 
-        const positionJustifyButton = document.getElementById(
-            "position-justify"
-        );
+        const positionJustifyButton =
+            document.getElementById("position-justify");
         if (
             positionJustifyButton &&
             positionJustifyButton.classList.contains("selectedIcon")
@@ -2093,7 +2116,7 @@ export default class StyleEditor {
         $("#style-select-input").val(""); // we've chosen a style from the list, so we aren't creating a new one.
         StyleEditor.SetStyleNameForElement(
             this.boxBeingEdited,
-            style + "-style"
+            style + "-style",
         );
         const predefined = this.getMissingPredefinedStyle(style + "-style");
         if (predefined) {
@@ -2123,7 +2146,7 @@ export default class StyleEditor {
                         languageSpecificRule.style.setProperty(
                             selector,
                             val,
-                            "important"
+                            "important",
                         );
                 } else {
                     // review: may be desirable to do something if val is not one of the values
@@ -2143,7 +2166,7 @@ export default class StyleEditor {
 
         // IF the new style changed fonts, we need to reset the font control
         if (oldFontName !== current.fontName) {
-            get("fonts/metadata", result => {
+            get("fonts/metadata", (result) => {
                 const fontMetadata: IFontMetaData[] = result.data;
                 this.updateFontControl(fontMetadata, current.fontName);
             });
@@ -2151,15 +2174,15 @@ export default class StyleEditor {
         this.setValueAndUpdateSelect2Control("size-select", current.ptSize);
         this.setValueAndUpdateSelect2Control(
             "line-height-select",
-            current.lineHeight
+            current.lineHeight,
         );
         this.setValueAndUpdateSelect2Control(
             "word-space-select",
-            current.wordSpacing
+            current.wordSpacing,
         );
         this.setValueAndUpdateSelect2Control(
             "para-spacing-select",
-            current.paraSpacing
+            current.paraSpacing,
         );
         const buttonIds = this.getButtonIds();
         for (let i = 0; i < buttonIds.length; i++) {
@@ -2187,7 +2210,7 @@ export default class StyleEditor {
 
     public getStyleRule(
         ignoreLanguage: boolean,
-        forChildPara?: boolean
+        forChildPara?: boolean,
     ): CSSStyleRule | null {
         const target = this.boxBeingEdited;
         const styleName = StyleEditor.GetStyleNameForElement(target);
@@ -2199,7 +2222,7 @@ export default class StyleEditor {
             styleName,
             langAttrValue,
             ignoreLanguage,
-            forChildPara
+            forChildPara,
         );
     }
 
@@ -2214,14 +2237,14 @@ export default class StyleEditor {
         this.getParagraphTabDescription();
 
         SetupThingsSensitiveToStyleChanges(
-            $(this.boxBeingEdited).closest(".bloom-page")[0]
+            $(this.boxBeingEdited).closest(".bloom-page")[0],
         );
     }
 
     // Remove any additions we made to the element for the purpose of UI alone
     public static CleanupElement(element) {
         const $el = $(element);
-        $el.find(".bloom-ui").each(function() {
+        $el.find(".bloom-ui").each(function () {
             $(this).remove();
         });
 
@@ -2230,15 +2253,15 @@ export default class StyleEditor {
     }
 
     public launchColorPicker(buttonColor: string) {
-        StyleEditor.showColorPicker(buttonColor, this.textColorTitle, color =>
-            this.changeColor(color)
+        StyleEditor.showColorPicker(buttonColor, this.textColorTitle, (color) =>
+            this.changeColor(color),
         );
     }
 
     public static showColorPicker(
         initialColor: string,
         title: string,
-        onChange: (s: string) => void
+        onChange: (s: string) => void,
     ) {
         const colorPickerDialogProps: ISimpleColorPickerDialogProps = {
             transparency: false,
@@ -2246,8 +2269,7 @@ export default class StyleEditor {
             initialColor: initialColor,
             palette: BloomPalette.Text,
             onChange: onChange,
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            onInputFocus: () => {}
+            onInputFocus: () => {},
         };
         showSimpleColorPickerDialog(colorPickerDialogProps);
     }
@@ -2266,7 +2288,7 @@ export default class StyleEditor {
             return formatDialog.length > 0;
         }
         const formatDialog = $("body", contentWindow.document).find(
-            "#format-toolbar"
+            "#format-toolbar",
         );
         return formatDialog.length > 0;
     }
@@ -2285,36 +2307,36 @@ export default class StyleEditor {
                     axios.get("/bloom/bookEdit/StyleEditor/StyleEditor.html"),
                     theOneLocalizationManager.getTextInUiLanguageAsync(
                         "EditTab.Toolbox.ComicTool.Options.TextColor",
-                        "Text Color"
-                    )
+                        "Text Color",
+                    ),
                 ])
-                .then(results => {
+                .then((results) => {
                     const fontMetadata: IFontMetaData[] = results[0].data;
                     const html = results[1].data;
                     this.textColorTitle = results[2].data.text;
 
                     this.boxBeingEdited = targetBox;
-                    const styleName = StyleEditor.GetBaseStyleNameForElement(
-                        targetBox
-                    );
+                    const styleName =
+                        StyleEditor.GetBaseStyleNameForElement(targetBox);
                     const current = this.getFormatValues();
                     this.styles = this.getFormattingStyles();
                     if (
                         styleName != null &&
                         this.styles.every(
-                            style => !style.hasStyleId(styleName as string)
+                            (style) => !style.hasStyleId(styleName as string),
                         )
                     ) {
                         this.styles.push(
                             new FormattingStyle(
                                 styleName,
-                                this.getDisplayName(styleName)
-                            )
+                                this.getDisplayName(styleName),
+                            ),
                         );
                     }
 
                     $("#format-toolbar").remove(); // in case there's still one somewhere else
                     $("body").append(html);
+                    this.updateTitleBarLanguageCode();
 
                     if (noFormatChange) {
                         $("#format-toolbar").addClass("formattingDisabled");
@@ -2325,34 +2347,32 @@ export default class StyleEditor {
                         if (this.xmatterMode) {
                             $("#style-page").remove();
                         }
-                        // Show the canvas element tab only if the box being edited is in a canvas element
+                        // Show the overlay tab only if the box being edited is in a canvas element
                         if (
                             !this.boxBeingEdited.closest(kCanvasElementSelector)
                         ) {
-                            document.getElementById("overlay-page")?.remove();
+                            document.getElementById("canvas-page")?.remove();
                         }
 
                         const visibleTabs = $(".tab-page:visible");
                         if (visibleTabs.length === 1) {
                             // When there is only one tab, we want to hide the tab itself.
-                            $(visibleTabs[0])
-                                .find("h2.tab")
-                                .remove();
+                            $(visibleTabs[0]).find("h2.tab").remove();
                         }
 
                         this.setupSelectControls(
                             current,
-                            styleName ? styleName : ""
+                            styleName ? styleName : "",
                         );
                     }
 
                     //make some select boxes permit custom values
                     $(".allowCustom").select2({
-                        tags: true //this is weird, we're not really doing tags, but this is how you get to enable typing
+                        tags: true, //this is weird, we're not really doing tags, but this is how you get to enable typing
                     });
                     $("select:not(.allowCustom)").select2({
                         tags: false,
-                        minimumResultsForSearch: -1 // result is that no search box is shown
+                        minimumResultsForSearch: -1, // result is that no search box is shown
                     });
 
                     const toolbar = $("#format-toolbar");
@@ -2360,7 +2380,7 @@ export default class StyleEditor {
                     toolbar.draggable({
                         distance: 10,
                         scroll: false,
-                        containment: $("html")
+                        containment: $("html"),
                     });
                     toolbar.draggable("disable"); // until after we make sure it's in the Viewport
                     toolbar.css("opacity", 1.0);
@@ -2370,14 +2390,14 @@ export default class StyleEditor {
                         current.hiliteTextColor,
                         current.hiliteBgColor,
                         (textColor, bgColor) =>
-                            this.changeHiliteProps(textColor, bgColor)
+                            this.changeHiliteProps(textColor, bgColor),
                     );
 
                     RenderCanvasElementRoot(
                         current.padding,
                         (newPadding: string) => {
                             this.changePadding(newPadding);
-                        }
+                        },
                     );
 
                     if (!noFormatChange) {
@@ -2388,9 +2408,9 @@ export default class StyleEditor {
                             $("#fontSelectComponent"),
                             theOneLocalizationManager.getText(
                                 "EditTab.FormatDialog.FontFaceToolTip",
-                                "Change the font face"
+                                "Change the font face",
                             ),
-                            1500
+                            1500,
                         );
                         $("#size-select").change(() => {
                             this.changeSize();
@@ -2399,9 +2419,9 @@ export default class StyleEditor {
                             $("#size-select"),
                             theOneLocalizationManager.getText(
                                 "EditTab.FormatDialog.FontSizeToolTip",
-                                "Change the font size"
+                                "Change the font size",
                             ),
-                            1500
+                            1500,
                         );
                         $("#line-height-select").change(() => {
                             this.changeLineheight();
@@ -2410,9 +2430,9 @@ export default class StyleEditor {
                             $("#line-height-select").parent(),
                             theOneLocalizationManager.getText(
                                 "EditTab.FormatDialog.LineSpacingToolTip",
-                                "Change the spacing between lines of text"
+                                "Change the spacing between lines of text",
                             ),
-                            1500
+                            1500,
                         );
                         $("#word-space-select").change(() => {
                             this.changeWordSpace();
@@ -2421,9 +2441,9 @@ export default class StyleEditor {
                             $("#word-space-select").parent(),
                             theOneLocalizationManager.getText(
                                 "EditTab.FormatDialog.WordSpacingToolTip",
-                                "Change the spacing between words"
+                                "Change the spacing between words",
                             ),
-                            1500
+                            1500,
                         );
                         this.getParagraphTabDescription();
                         if (!this.xmatterMode) {
@@ -2434,7 +2454,7 @@ export default class StyleEditor {
                                 $("#style-select-input")
                             )).alphanum({
                                 allowSpace: false,
-                                preventLeadingNumeric: true
+                                preventLeadingNumeric: true,
                             });
                             // don't use .change() here, as it only fires on loss of focus
                             $("#style-select-input").on("input", () => {
@@ -2447,7 +2467,7 @@ export default class StyleEditor {
                             )).trimNotification = () => {
                                 this.styleStateChange("invalid-characters");
                             };
-                            $("#show-createStyle").click(event => {
+                            $("#show-createStyle").click((event) => {
                                 event.preventDefault();
                                 this.showCreateStyle();
                                 return false;
@@ -2472,7 +2492,7 @@ export default class StyleEditor {
                         });
                         this.setColorButtonColor(
                             "colorSelectButton",
-                            current.color
+                            current.color,
                         );
                         // (The hiliting color buttons are updated by re-rendering the control above.)
                         const colorButton = $("#colorSelectButton");
@@ -2495,19 +2515,19 @@ export default class StyleEditor {
                     }
                     EditableDivUtils.positionDialogAndSetDraggable(
                         toolbar,
-                        orientOnButton
+                        orientOnButton,
                     );
                     toolbar.draggable("enable");
 
                     $("html").off("click.toolbar");
-                    $("html").on("click.toolbar", event =>
-                        this.closeDialog(event, toolbar, targetBox)
+                    $("html").on("click.toolbar", (event) =>
+                        this.closeDialog(event, toolbar, targetBox),
                     );
-                    toolbar.on("click.toolbar", event => {
+                    toolbar.on("click.toolbar", (event) => {
                         // this stops an event inside the dialog from propagating to the html element, which would close the dialog
                         event.stopPropagation();
                     });
-                })
+                }),
         );
     }
 }

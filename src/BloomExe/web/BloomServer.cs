@@ -674,6 +674,18 @@ namespace Bloom.Api
             return path.Replace("\\", "/").StartsWith(CurrentBook.FolderPath.Replace("\\", "/"));
         }
 
+        private bool TryHandlePlaceholderImageRequest(IRequestInfo info, string imageFile)
+        {
+            if (!ImageUtils.IsPlaceholderImageFilename(imageFile))
+                return false;
+
+            // We now use css to put in the placeholder images, but still use "placeHolder.png" to mark them.
+            // So we actually don't want to provide an image file for this placeholder marker.
+            // Return 204 No Content to avoid browser showing broken image icon.
+            info.WriteNoContent();
+            return true;
+        }
+
         // Handle requests for image files, that is, URLs that end in one of our image extensions.
         // Returns true if this is, in fact, a request for an image, in which case it will have
         // been handled; any reporting of problems will have been done, and a response generated.
@@ -685,6 +697,9 @@ namespace Bloom.Api
             var isSvg = imageFile.EndsWith(".svg", StringComparison.OrdinalIgnoreCase);
             if (!IsImageTypeThatCanBeDegraded(imageFile) && !isSvg)
                 return false;
+
+            if (TryHandlePlaceholderImageRequest(info, imageFile))
+                return true;
 
             // This can't be right. At some point it may have had something to do with
             // images in page thumbnails, but that is now handled by a param.
@@ -735,6 +750,9 @@ namespace Bloom.Api
                 }
 
                 imageFile = Path.Combine(sourceDir, imageFile);
+
+                if (TryHandlePlaceholderImageRequest(info, imageFile))
+                    return true;
 
                 if (!RobustFileExistsWithCaseCheck(imageFile))
                 {
@@ -899,8 +917,14 @@ namespace Bloom.Api
             return ProcessAnyFileContent(info, localPath);
         }
 
-        // This is becoming refactor-soup, hence the not so useful name.
-        private string ProcessPath(string localPath, string modPath)
+        /// <summary>
+        /// Try to find the full path to the requested file based on the input arguments.
+        /// If the file is not found, return null.
+        /// </summary>
+        /// <remarks>
+        /// This is becoming refactor-soup, hence the not so useful name.
+        /// </remarks>
+        private string LookForAFullPathToFile(string localPath, string modPath)
         {
             if (localPath.Contains("favicon.ico")) // browsers ask for this
                 return BloomFileLocator.GetBrowserFile(false, "images", "favicon.ico");
@@ -929,6 +953,7 @@ namespace Bloom.Api
                 // can return contents of any file that exists if the URL gives its full path...even ones that
                 // are generated temp files most certainly NOT distributed with the application.
                 return FileLocationUtilities.GetFileDistributedWithApplication(
+                    true,
                     BloomFileLocator.BrowserRoot,
                     modPath
                 );
@@ -945,23 +970,13 @@ namespace Bloom.Api
             var tempPath = urlPath.PathOnly.NotEncoded;
             if (RobustFileExistsWithCaseCheck(tempPath))
                 modPath = tempPath;
-            try
+            path = LookForAFullPathToFile(localPath, modPath);
+            if (String.IsNullOrEmpty(path))
             {
-                path = ProcessPath(localPath, modPath);
-            }
-            catch (ApplicationException e)
-            {
-                // Might be from GetFileDistributedWithApplication above, but we could be checking templates that
-                // are NOT distributed with the application.
-                // Otherwise ignore. Assume this means that this class/method cannot serve that request,
-                // but something else may.
-                if (e.Message.StartsWith("Could not locate the required file"))
-                {
-                    // LocateFile includes userInstalledSearchPaths (e.g. a shortcut to a collection in a non-standard location)
-                    path = BloomFileLocator.sTheMostRecentBloomFileLocator?.LocateFile(localPath);
-                    if (String.IsNullOrEmpty(path))
-                        path = localPath;
-                }
+                // LocateFile includes userInstalledSearchPaths (e.g. a shortcut to a collection in a non-standard location)
+                path = BloomFileLocator.sTheMostRecentBloomFileLocator?.LocateFile(localPath);
+                if (String.IsNullOrEmpty(path))
+                    path = localPath;
             }
 
             //There's probably a eventual way to make this problem go away,
@@ -1118,21 +1133,6 @@ namespace Bloom.Api
                 path = info.LocalPathWithoutQuery.Substring(kBloomPrefix.Length);
             }
 
-            // TODO BL-14565: this is clearly out of date but also something of mystery so I'm not sure how to clean it up
-            // We no longer copy this file to the book folder.  For Bloom Desktop, we get it from browser/templates/...
-            // For Bloom Reader, bloom-player has its own copy.
-            if (
-                !RobustFileExistsWithCaseCheck(path)
-                && Path.GetFileName(path) == PublishHelper.kSimpleComprehensionQuizJs
-            )
-            {
-                // TODO: this is probably out of date; any such file should be part of Bloom Player shared code.
-                path = Path.Combine(
-                    BloomFileLocator.FactoryTemplateBookDirectory,
-                    "Activity",
-                    PublishHelper.kSimpleComprehensionQuizJs
-                );
-            }
             if (!RobustFileExistsWithCaseCheck(path))
             {
                 if (ShouldReportFailedRequest(info, CurrentBook?.FolderPath))
@@ -1345,7 +1345,7 @@ namespace Bloom.Api
                 ErrorReport.NotifyUserOfProblem(GetServerStartFailureMessage());
                 Logger.WriteEvent("Error: Could not start up internal HTTP Server");
                 Analytics.ReportException(new ApplicationException("Could not start server."));
-                Application.Exit();
+                ProgramExit.Exit();
             }
 
             Logger.WriteEvent("Server will use " + ServerUrlEndingInSlash);
@@ -1373,7 +1373,7 @@ namespace Bloom.Api
                 );
                 _listener = new HttpListener
                 {
-                    AuthenticationSchemes = AuthenticationSchemes.Anonymous
+                    AuthenticationSchemes = AuthenticationSchemes.Anonymous,
                 };
                 _listener.Prefixes.Add(ServerUrlEndingInSlash);
                 _listener.Start();
@@ -1398,18 +1398,9 @@ namespace Bloom.Api
 
         private bool HandleExceptionOpeningPort(Exception error)
         {
-            if (!Program.RunningUnitTests && !Program.RunningSecondInstance)
-                NonFatalProblem.Report(
-                    ModalIf.None,
-                    PassiveIf.Alpha,
-                    "Could not open " + ServerUrlEndingInSlash,
-                    "Could not start server on that port",
-                    error
-                );
-            else
-                Console.WriteLine(
-                    $"Cannot open {ServerUrlEndingInSlash}: {error.Message} ({error.GetType().Name})"
-                );
+            Console.WriteLine(
+                $"Cannot open {ServerUrlEndingInSlash}: {error.Message} ({error.GetType().Name})"
+            );
             try
             {
                 if (_listener != null)
@@ -1448,7 +1439,7 @@ namespace Bloom.Api
             catch (Exception error)
             {
                 ErrorReport.NotifyUserOfProblem(error, GetServerStartFailureMessage());
-                Application.Exit();
+                ProgramExit.Exit();
             }
 
             ServerIsListening = true;
@@ -1479,11 +1470,9 @@ namespace Bloom.Api
                     {
                         zoneAlarm = Process
                             .GetProcesses()
-                            .Any(
-                                p =>
-                                    p.Modules
-                                        .Cast<ProcessModule>()
-                                        .Any(m => m.ModuleName.Contains("ZoneAlarm"))
+                            .Any(p =>
+                                p.Modules.Cast<ProcessModule>()
+                                    .Any(m => m.ModuleName.Contains("ZoneAlarm"))
                             );
                     }
                     catch (Exception error)
@@ -1840,6 +1829,11 @@ namespace Bloom.Api
             if (hasOptionalQueryParam)
                 return false;
 
+            // If we are requesting another book, and that book is not there,
+            // we don't need both bloom-player and Bloom reporting it.
+            if (info.LocalPathWithoutQuery.StartsWith("/book/"))
+                return false;
+
             var localPath = GetLocalPathWithoutQuery(info);
             var localFolderTestPath = localPath;
             // We don't need even a toast for missing files in the book folder. That's the user's problem
@@ -1880,6 +1874,23 @@ namespace Bloom.Api
                 return false;
             }
 
+            // If we don't have a book or collection established, we are probably in a
+            // state where not everything is set up yet.  So don't complain about missing
+            // either translation data or items for a problem report.  (BL-15676)
+            if (currentBookFolderPath == null && collectionPath == null)
+            {
+                if (
+                    localPath.ToLowerInvariant().Contains("/problemreport/")
+                    || localPath.ToLowerInvariant().Contains("/i18n/translate")
+                )
+                {
+                    Logger.WriteEvent(
+                        $"BloomServer: neither CurrentBookFolder nor CurrentCollection is set. Cannot find {localPath}"
+                    );
+                    return false;
+                }
+            }
+
             var stuffToIgnore = new[]
             {
                 // browser/debugger stuff
@@ -1904,9 +1915,11 @@ namespace Bloom.Api
                 // of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
                 EpubMaker.kEPUBExportFolder.ToLowerInvariant(),
                 BloomPubMaker.BRExportFolder.ToLowerInvariant(),
+                // old quiz pages ask for this script, but it's now bundled with rest of edit code
+                "simplecomprehensionquiz.js",
                 // bloom-player always asks for questions.json for every book.
                 // Being only for quiz pages, not every book has it, so we don't want spurious error reports.
-                BloomPubMaker.kQuestionFileName.ToLowerInvariant()
+                BloomPubMaker.kQuestionFileName.ToLowerInvariant(),
             };
             return !stuffToIgnore.Any(s => localPath.ToLowerInvariant().Contains(s));
         }
@@ -2076,8 +2089,7 @@ namespace Bloom.Api
 				<html>
 				<head>
 					<meta charset = 'UTF-8' />
-					<script src = '/commonBundle.js' ></script>
-					<script src = '/appBundle.js'></script>
+					<script src = '/appBundle.js' type='module'></script>
 					<script>
 						window.onload = () => {{
 							const rootDiv = document.getElementById('reactRoot');
@@ -2115,7 +2127,7 @@ namespace Bloom.Api
             var fullPath = Path.GetFullPath(localPath);
             var exactPathName = GetExactPathName(fullPath);
 
-            if (!EqualsIgnoringCaseAndDirectorySeps(exactPathName, fullPath))
+            if (!EqualsWithCaseAndNormalizedDirectorySeps(exactPathName, fullPath))
             {
                 var msg = $"*** Case error occurred. {fullPath} does not match {exactPathName} ***";
                 if (Program.RunningUnitTests)
@@ -2151,17 +2163,16 @@ namespace Bloom.Api
             }
         }
 
-        private static string RemoveAllDirectorySeparators(string path)
+        private static string NormalizeDirectorySeparators(string path)
         {
-            return path.Replace(Path.DirectorySeparatorChar.ToString(), string.Empty)
-                .Replace(Path.AltDirectorySeparatorChar.ToString(), string.Empty);
+            return path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
         }
 
-        private static bool EqualsIgnoringCaseAndDirectorySeps(string path1, string path2)
+        private static bool EqualsWithCaseAndNormalizedDirectorySeps(string path1, string path2)
         {
-            var stripped1 = RemoveAllDirectorySeparators(path1);
-            var stripped2 = RemoveAllDirectorySeparators(path2);
-            return String.Equals(stripped1, stripped2, StringComparison.InvariantCulture);
+            var normPath1 = NormalizeDirectorySeparators(path1);
+            var normPath2 = NormalizeDirectorySeparators(path2);
+            return String.Equals(normPath1, normPath2, StringComparison.Ordinal);
         }
 
         #region Disposable stuff
@@ -2212,11 +2223,10 @@ namespace Bloom.Api
 
                         // wait for each worker thread to stop
                         foreach (
-                            var kvp in _workers.Where(
-                                kvp =>
-                                    (kvp.Value != null)
-                                    && kvp.Value.IsAlive
-                                    && (kvp.Value.ThreadState != ThreadState.Unstarted)
+                            var kvp in _workers.Where(kvp =>
+                                (kvp.Value != null)
+                                && kvp.Value.IsAlive
+                                && (kvp.Value.ThreadState != ThreadState.Unstarted)
                             )
                         )
                         {
@@ -2230,19 +2240,7 @@ namespace Bloom.Api
                             }
                         }
 
-                        // stop listening for incoming http requests
-                        Debug.Assert(_listener.IsListening);
-                        if (_listener.IsListening)
-                        {
-                            //In BL-3290, a user quitely failed here each time he exited Bloom, with a Cannot access a disposed object.
-                            //according to http://stackoverflow.com/questions/11164919/why-httplistener-start-method-dispose-stuff-on-exception,
-                            //it's actually just responding to being closed, not disposed.
-                            //I don't know *why* for that user the listener was already stopped.
-                            _listener.Stop();
-                        }
-                        //if we keep getting that exception, we could move the Close() into the previous block
-                        _listener.Close();
-                        _listener = null;
+                        CloseListener();
                     }
                     if (_cache != null)
                     {
@@ -2264,6 +2262,29 @@ namespace Bloom.Api
                 }
             }
             IsDisposed = true;
+        }
+
+        /// <summary>
+        /// Close the listener and free up the port. Normally called only by Dispose.
+        /// Also used when normal shutdown times out.
+        /// </summary>
+        public void CloseListener()
+        {
+            if (_listener == null)
+                return; // probably called from shutdown timer, and normal shutdown got this far
+            // stop listening for incoming http requests
+            Debug.Assert(_listener.IsListening);
+            if (_listener.IsListening)
+            {
+                //In BL-3290, a user quitely failed here each time he exited Bloom, with a Cannot access a disposed object.
+                //according to http://stackoverflow.com/questions/11164919/why-httplistener-start-method-dispose-stuff-on-exception,
+                //it's actually just responding to being closed, not disposed.
+                //I don't know *why* for that user the listener was already stopped.
+                _listener.Stop();
+            }
+            //if we keep getting that exception, we could move the Close() into the previous block
+            _listener.Close();
+            _listener = null;
         }
 
         #endregion

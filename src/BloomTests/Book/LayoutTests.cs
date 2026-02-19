@@ -17,7 +17,7 @@ namespace BloomTests.Book
             );
             var layout = new Layout()
             {
-                ElementDistribution = Layout.ElementDistributionChoices.CombinedPages
+                ElementDistribution = Layout.ElementDistributionChoices.CombinedPages,
             };
             layout.UpdatePageSplitMode(dom);
 
@@ -53,7 +53,7 @@ namespace BloomTests.Book
             );
             var layout = new Layout()
             {
-                ElementDistribution = Layout.ElementDistributionChoices.SplitAcrossPages
+                ElementDistribution = Layout.ElementDistributionChoices.SplitAcrossPages,
             };
             layout.UpdatePageSplitMode(dom);
 
@@ -89,7 +89,7 @@ namespace BloomTests.Book
             );
             var layout = new Layout()
             {
-                ElementDistribution = Layout.ElementDistributionChoices.SplitAcrossPages
+                ElementDistribution = Layout.ElementDistributionChoices.SplitAcrossPages,
             };
             layout.UpdatePageSplitMode(dom);
 
@@ -114,7 +114,7 @@ namespace BloomTests.Book
             );
             var layout = new Layout()
             {
-                ElementDistribution = Layout.ElementDistributionChoices.SplitAcrossPages
+                ElementDistribution = Layout.ElementDistributionChoices.SplitAcrossPages,
             };
             layout.UpdatePageSplitMode(dom);
 

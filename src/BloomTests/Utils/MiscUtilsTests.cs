@@ -1,4 +1,5 @@
-﻿using Bloom.Utils;
+﻿using Bloom.Collection;
+using Bloom.Utils;
 using NUnit.Framework;
 using SIL.WritingSystems;
 
@@ -25,8 +26,7 @@ namespace BloomTests.Utils
         [Test]
         public void NormalizeLanguageTagCapitalization_Works()
         {
-            if (!Sldr.IsInitialized)
-                Sldr.Initialize();
+            WritingSystem.EnsureSldrInitialized();
             // Check that valid (normalized) language tags stay the same.
             var result = MiscUtils.NormalizeLanguageTagCapitalization("en");
             Assert.That(result, Is.EqualTo("en"));

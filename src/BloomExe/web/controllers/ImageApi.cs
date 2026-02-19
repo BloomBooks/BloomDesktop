@@ -9,14 +9,14 @@ using System.Text;
 using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.SafeXml;
+using L10NSharp;
 using SIL.Code;
 using SIL.Extensions;
+using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
-using L10NSharp;
-using SIL.IO;
 using SIL.Xml;
-using Bloom.SafeXml;
 
 namespace Bloom.web.controllers
 {

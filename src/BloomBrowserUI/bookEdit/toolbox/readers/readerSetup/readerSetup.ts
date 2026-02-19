@@ -1,5 +1,5 @@
 import * as _ from "underscore";
-import * as $ from "jquery";
+import $ from "jquery";
 import "../../../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 import "errorHandler";
 import "jquery.i18n.custom.ts"; //localize()
@@ -12,7 +12,7 @@ import "../libSynphony/jquery.text-markup";
 import { ReaderStage, ReaderLevel, ReaderSettings } from "../ReaderSettings";
 import {
     theOneLanguageDataInstance,
-    theOneLibSynphony
+    theOneLibSynphony,
 } from "../libSynphony/synphony_lib";
 
 import { DataWord, TextFragment } from "../libSynphony/bloomSynphonyExtensions";

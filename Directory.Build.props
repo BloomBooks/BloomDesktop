@@ -1,0 +1,7 @@
+<Project>
+    <PropertyGroup>
+        <!-- Single source of truth for Velopack versions used in BloomExe.csproj and build/Bloom.proj.
+                 We always use the same version for BloomBooks.Velopack and BloomBooks.Velopack.Cli. -->
+        <VelopackVersion>0.0.1350-l10n-0020</VelopackVersion>
+    </PropertyGroup>
+</Project>

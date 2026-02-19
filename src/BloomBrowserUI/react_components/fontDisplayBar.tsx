@@ -1,12 +1,11 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { IFontMetaData } from "../bookEdit/StyleEditor/fontSelectComponent";
 import {
     kBloomBlue,
     kBloomGold,
     kErrorColor,
-    kDisabledControlGray
+    kDisabledControlGray,
 } from "../bloomMaterialUITheme";
 import { Typography } from "@mui/material";
 import OkIcon from "@mui/icons-material/CheckCircle";
@@ -21,7 +20,9 @@ interface FontDisplayBarProps {
     onHover?: (hoverTarget: HTMLElement, metadata: IFontMetaData) => void;
 }
 
-const FontDisplayBar: React.FunctionComponent<FontDisplayBarProps> = props => {
+const FontDisplayBar: React.FunctionComponent<FontDisplayBarProps> = (
+    props,
+) => {
     const suitability = props.fontMetadata.determinedSuitability;
     const ariaOwns = props.isPopoverOpen ? "mouse-over-popover" : undefined;
 
@@ -44,7 +45,7 @@ const FontDisplayBar: React.FunctionComponent<FontDisplayBarProps> = props => {
         "aria-owns": ariaOwns,
         "aria-haspopup": true,
         onMouseEnter: handleMouseEnter,
-        onMouseLeave: handleMouseLeave
+        onMouseLeave: handleMouseLeave,
     };
 
     const getIconForFont = (): JSX.Element => (

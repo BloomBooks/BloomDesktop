@@ -3,6 +3,7 @@
 
 @import (less) "../../node_modules/toastr/toastr.less";
 @import "../../bloomUI.less";
+@import (reference) "../../placeHolderImages.less";
 
 @highlightColor: @bloom-yellow;
 @gridWidth: 80px;
@@ -40,8 +41,7 @@ body {
     .pageContainer {
         // BL-7074 Keep SL books from eating up memory by not displaying videos in page thumb images.
         .bloom-videoContainer {
-            background: center no-repeat
-                url("../../templates/template books/Sign Language/video-placeholder.svg");
+            background: center no-repeat @video-placeholder;
             video {
                 display: none;
             }
@@ -235,22 +235,24 @@ body {
     border: 2px solid @highlightColor;
 }
 
-.gridItem {
-    width: @gridWidth;
-    height: @gridHeight;
-    opacity: 1;
-    //overflow:hidden;
-    &:nth-child(even) {
-        .thumbnailCaption {
-            text-align: left;
+.page-thumbnail-list {
+    .gridItem {
+        width: @gridWidth;
+        height: @gridHeight;
+        opacity: 1;
+        //overflow:hidden;
+        &:nth-child(even) {
+            .thumbnailCaption {
+                text-align: left;
+            }
         }
-    }
-    &:nth-child(odd) {
-        .pageContainer {
-            float: right;
-        }
-        .thumbnailCaption {
-            right: 4px; // position is absolute, so float:right won't work
+        &:nth-child(odd) {
+            .pageContainer {
+                float: right;
+            }
+            .thumbnailCaption {
+                right: 4px; // position is absolute, so float:right won't work
+            }
         }
     }
 }

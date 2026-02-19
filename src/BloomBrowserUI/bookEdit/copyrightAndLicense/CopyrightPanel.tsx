@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useEffect, useState } from "react";
@@ -26,25 +25,23 @@ export const CopyrightPanel: React.FunctionComponent<{
     onChange: (
         copyrightInfo: ICopyrightInfo,
         useOriginalCopyrightAndLicense: boolean,
-        isValid: boolean
+        isValid: boolean,
     ) => void;
-}> = props => {
+}> = (props) => {
     const copyrightInfo = JSON.parse(JSON.stringify(props.copyrightInfo)); //clone
 
     const [isYearValid, setIsYearValid] = useState(false);
     const [isHolderValid, setIsHolderValid] = useState(false);
 
     const [imageCreator, setImageCreator] = useState(
-        copyrightInfo.imageCreator || ""
+        copyrightInfo.imageCreator || "",
     );
     const [year, setYear] = useState(
-        copyrightInfo.copyrightYear || new Date().getFullYear().toString()
+        copyrightInfo.copyrightYear || new Date().getFullYear().toString(),
     );
     const [holder, setHolder] = useState(copyrightInfo.copyrightHolder || "");
-    const [
-        useOriginalCopyrightAndLicense,
-        setUseOriginalCopyrightAndLicense
-    ] = useState(props.derivativeInfo?.useOriginalCopyright === true);
+    const [useOriginalCopyrightAndLicense, setUseOriginalCopyrightAndLicense] =
+        useState(props.derivativeInfo?.useOriginalCopyright === true);
 
     const [isSil, setIsSil] = useState(false);
 
@@ -85,12 +82,12 @@ export const CopyrightPanel: React.FunctionComponent<{
         const copyrightInfoToSave: ICopyrightInfo = {
             imageCreator: imageCreator?.trim(),
             copyrightYear: year.trim(),
-            copyrightHolder: holder.trim()
+            copyrightHolder: holder.trim(),
         };
         props.onChange(
             copyrightInfoToSave,
             useOriginalCopyrightAndLicense,
-            isYearValid && isHolderValid
+            isYearValid && isHolderValid,
         );
     }, [
         imageCreator,
@@ -98,7 +95,7 @@ export const CopyrightPanel: React.FunctionComponent<{
         holder,
         isYearValid,
         isHolderValid,
-        useOriginalCopyrightAndLicense
+        useOriginalCopyrightAndLicense,
     ]);
 
     function handleUseOriginalCopyrightAndLicenseChanged(checked: boolean) {
@@ -128,7 +125,7 @@ export const CopyrightPanel: React.FunctionComponent<{
                         label={"Illustrator/Photographer"}
                         l10nKey={"Copyright.IllustratorOrPhotographer"}
                         value={imageCreator}
-                        onChange={event => {
+                        onChange={(event) => {
                             setImageCreator(event.target.value);
                         }}
                         required={false}
@@ -143,7 +140,7 @@ export const CopyrightPanel: React.FunctionComponent<{
                 l10nKey={"Copyright.CopyrightYear"}
                 type="number"
                 value={year}
-                onChange={event => {
+                onChange={(event) => {
                     setYear(event.target.value);
                 }}
                 disabled={useOriginalCopyrightAndLicense}
@@ -163,7 +160,7 @@ export const CopyrightPanel: React.FunctionComponent<{
                 label="Copyright Holder"
                 l10nKey={"Copyright.CopyrightHolder"}
                 value={holder}
-                onChange={event => {
+                onChange={(event) => {
                     setHolder(event.target.value);
                 }}
                 disabled={useOriginalCopyrightAndLicense}
@@ -215,9 +212,9 @@ export const CopyrightPanel: React.FunctionComponent<{
                         label="Not a translation or new version"
                         checked={useOriginalCopyrightAndLicense}
                         l10nKey="Copyright.NotATranslation"
-                        onCheckChanged={checked =>
+                        onCheckChanged={(checked) =>
                             handleUseOriginalCopyrightAndLicenseChanged(
-                                checked as boolean
+                                checked as boolean,
                             )
                         }
                     />

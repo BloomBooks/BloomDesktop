@@ -66,6 +66,7 @@ namespace Bloom
             bool justEnoughForHtmlDialog = false
         )
         {
+            Logger.WriteMinorEvent("starting to construct the project context");
             SettingsPath = projectSettingsPath;
 
             _collectionLock = new CollectionLock(SettingsPath);
@@ -101,12 +102,10 @@ namespace Bloom
         {
             var commandTypes = new[]
             {
-                typeof(DuplicatePageCommand),
-                typeof(DeletePageCommand),
                 typeof(CutCommand),
                 typeof(CopyCommand),
                 typeof(PasteCommand),
-                typeof(UndoCommand)
+                typeof(UndoCommand),
             };
 
             var editableCollectionDirectory = Path.GetDirectoryName(projectSettingsPath);
@@ -125,78 +124,78 @@ namespace Bloom
                     builder
                         .RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
                         .InstancePerLifetimeScope()
-                        .Where(
-                            t =>
-                                new[]
-                                {
-                                    typeof(TemplateInsertionCommand),
-                                    typeof(EditBookCommand),
-                                    typeof(SelectedTabAboutToChangeEvent),
-                                    typeof(SelectedTabChangedEvent),
-                                    typeof(CollectionClosing),
-                                    typeof(PageListChangedEvent), // REMOVE+++++++++++++++++++++++++++
-                                    typeof(BookRefreshEvent),
-                                    typeof(BookSavedEvent),
-                                    typeof(PageRefreshEvent),
-                                    typeof(BookDownloadStartingEvent),
-                                    typeof(CurrentEditableCollectionSelection),
-                                    typeof(RelocatePageEvent),
-                                    typeof(QueueRenameOfCollection),
-                                    typeof(PageSelection),
-                                    typeof(LocalizationChangedEvent),
-                                    typeof(ControlKeyEvent),
-                                    typeof(BookStatusChangeEvent),
-                                    typeof(EditingModel),
-                                    typeof(EditingView),
-                                    typeof(PublishModel),
-                                    typeof(AudioRecording),
-                                    typeof(BookSettingsApi),
-                                    typeof(StylesAndFontsApi),
-                                    typeof(SpreadsheetApi),
-                                    typeof(BookMetadataApi),
-                                    typeof(IndicatorInfoApi),
-                                    typeof(PublishToBloomPubApi),
-                                    typeof(PublishPdfApi),
-                                    typeof(PublishAudioVideoAPI),
-                                    typeof(PublishEpubApi),
-                                    typeof(AccessibilityCheckApi),
-                                    typeof(CollectionSettingsApi),
-                                    typeof(SubscriptionSettingsEditorApi),
-                                    typeof(FeatureStatusApi),
-                                    typeof(CollectionApi),
-                                    typeof(PageControlsApi),
-                                    typeof(ReadersApi),
-                                    typeof(PageTemplatesApi),
-                                    typeof(AddOrChangePageApi),
-                                    typeof(BloomWebSocketServer),
-                                    typeof(PerformanceMeasurement),
-                                    typeof(KeyboardingConfigApi),
-                                    typeof(ImageApi),
-                                    typeof(MusicApi),
-                                    typeof(PageListApi),
-                                    typeof(TalkingBookApi),
-                                    typeof(ToolboxApi),
-                                    typeof(TeamCollectionApi),
-                                    typeof(BrandingSettings),
-                                    typeof(AppApi),
-                                    typeof(I18NApi),
-                                    typeof(SignLanguageApi),
-                                    typeof(AudioSegmentationApi),
-                                    typeof(FileIOApi),
-                                    typeof(ProgressDialogApi),
-                                    typeof(EditingViewApi),
-                                    typeof(ProblemReportApi),
-                                    typeof(FontsApi),
-                                    typeof(BulkBloomPubCreator),
-                                    typeof(PublishApi),
-                                    typeof(LibraryPublishApi),
-                                    typeof(WorkspaceApi),
-                                    typeof(BookCollectionHolder),
-                                    typeof(WorkspaceTabSelection),
-                                    typeof(CopyrightAndLicenseApi),
-                                    typeof(ExternalApi),
-                                    typeof(PublishView)
-                                }.Contains(t)
+                        .Where(t =>
+                            new[]
+                            {
+                                typeof(TemplateInsertionCommand),
+                                typeof(EditBookCommand),
+                                typeof(SelectedTabAboutToChangeEvent),
+                                typeof(SelectedTabChangedEvent),
+                                typeof(CollectionClosing),
+                                typeof(PageListChangedEvent), // REMOVE+++++++++++++++++++++++++++
+                                typeof(BookRefreshEvent),
+                                typeof(BookSavedEvent),
+                                typeof(PageRefreshEvent),
+                                typeof(BookDownloadStartingEvent),
+                                typeof(CurrentEditableCollectionSelection),
+                                typeof(RelocatePageEvent),
+                                typeof(QueueRenameOfCollection),
+                                typeof(PageSelection),
+                                typeof(LocalizationChangedEvent),
+                                typeof(ControlKeyEvent),
+                                typeof(BookStatusChangeEvent),
+                                typeof(EditingModel),
+                                typeof(EditingView),
+                                typeof(PublishModel),
+                                typeof(AudioRecording),
+                                typeof(BookSettingsApi),
+                                typeof(StylesAndFontsApi),
+                                typeof(SpreadsheetApi),
+                                typeof(BookMetadataApi),
+                                typeof(IndicatorInfoApi),
+                                typeof(PublishToBloomPubApi),
+                                typeof(PublishPdfApi),
+                                typeof(PublishAudioVideoAPI),
+                                typeof(PublishEpubApi),
+                                typeof(AccessibilityCheckApi),
+                                typeof(CollectionSettingsApi),
+                                typeof(SubscriptionSettingsEditorApi),
+                                typeof(FeatureStatusApi),
+                                typeof(CollectionApi),
+                                typeof(RegistrationApi),
+                                typeof(PageControlsApi),
+                                typeof(ReadersApi),
+                                typeof(PageTemplatesApi),
+                                typeof(AddOrChangePageApi),
+                                typeof(BloomWebSocketServer),
+                                typeof(PerformanceMeasurement),
+                                typeof(KeyboardingConfigApi),
+                                typeof(ImageApi),
+                                typeof(MusicApi),
+                                typeof(PageListApi),
+                                typeof(TalkingBookApi),
+                                typeof(ToolboxApi),
+                                typeof(TeamCollectionApi),
+                                typeof(BrandingSettings),
+                                typeof(AppApi),
+                                typeof(I18NApi),
+                                typeof(SignLanguageApi),
+                                typeof(AudioSegmentationApi),
+                                typeof(FileIOApi),
+                                typeof(ProgressDialogApi),
+                                typeof(EditingViewApi),
+                                typeof(ProblemReportApi),
+                                typeof(FontsApi),
+                                typeof(BulkBloomPubCreator),
+                                typeof(PublishApi),
+                                typeof(LibraryPublishApi),
+                                typeof(WorkspaceApi),
+                                typeof(BookCollectionHolder),
+                                typeof(WorkspaceTabSelection),
+                                typeof(CopyrightAndLicenseApi),
+                                typeof(ExternalApi),
+                                typeof(PublishView),
+                            }.Contains(t)
                         );
 
                     builder
@@ -216,23 +215,20 @@ namespace Bloom
                         // It's important to create the TC manager before we create CollectionSettings, as its constructor makes sure
                         // we have a current version of the file that CollectionSettings is built from.
                         builder
-                            .Register<TeamCollectionManager>(
-                                c =>
-                                    new TeamCollectionManager(
-                                        projectSettingsPath,
-                                        c.Resolve<BloomWebSocketServer>(),
-                                        c.Resolve<BookStatusChangeEvent>(),
-                                        c.Resolve<BookSelection>(),
-                                        c.Resolve<CollectionClosing>(),
-                                        c.Resolve<BookCollectionHolder>(),
-                                        _collectionLock,
-                                        c.Resolve<BookRenamedEvent>()
-                                    )
-                            )
+                            .Register<TeamCollectionManager>(c => new TeamCollectionManager(
+                                projectSettingsPath,
+                                c.Resolve<BloomWebSocketServer>(),
+                                c.Resolve<BookStatusChangeEvent>(),
+                                c.Resolve<BookSelection>(),
+                                c.Resolve<CollectionClosing>(),
+                                c.Resolve<BookCollectionHolder>(),
+                                _collectionLock,
+                                c.Resolve<BookRenamedEvent>()
+                            ))
                             .InstancePerLifetimeScope();
                         builder
-                            .Register<ITeamCollectionManager>(
-                                c => c.Resolve<TeamCollectionManager>()
+                            .Register<ITeamCollectionManager>(c =>
+                                c.Resolve<TeamCollectionManager>()
                             )
                             .InstancePerLifetimeScope();
                         builder
@@ -249,39 +245,33 @@ namespace Bloom
                     }
 
                     builder
-                        .Register<CollectionModel>(
-                            c =>
-                                new CollectionModel(
-                                    editableCollectionDirectory,
-                                    c.Resolve<CollectionSettings>(),
-                                    c.Resolve<BookSelection>(),
-                                    c.Resolve<SourceCollectionsList>(),
-                                    c.Resolve<BookCollection.Factory>(),
-                                    c.Resolve<EditBookCommand>(),
-                                    c.Resolve<CreateFromSourceBookCommand>(),
-                                    c.Resolve<BookServer>(),
-                                    c.Resolve<CurrentEditableCollectionSelection>(),
-                                    c.Resolve<BookThumbNailer>(),
-                                    c.Resolve<TeamCollectionManager>(),
-                                    c.Resolve<BloomWebSocketServer>(),
-                                    c.Resolve<BookCollectionHolder>(),
-                                    c.Resolve<LocalizationChangedEvent>()
-                                )
-                        )
+                        .Register<CollectionModel>(c => new CollectionModel(
+                            editableCollectionDirectory,
+                            c.Resolve<CollectionSettings>(),
+                            c.Resolve<BookSelection>(),
+                            c.Resolve<SourceCollectionsList>(),
+                            c.Resolve<BookCollection.Factory>(),
+                            c.Resolve<EditBookCommand>(),
+                            c.Resolve<CreateFromSourceBookCommand>(),
+                            c.Resolve<BookServer>(),
+                            c.Resolve<CurrentEditableCollectionSelection>(),
+                            c.Resolve<BookThumbNailer>(),
+                            c.Resolve<TeamCollectionManager>(),
+                            c.Resolve<BloomWebSocketServer>(),
+                            c.Resolve<BookCollectionHolder>(),
+                            c.Resolve<LocalizationChangedEvent>()
+                        ))
                         .InstancePerLifetimeScope();
 
                     // Keep in sync with OptimizedFileLocator: it wants to return the object created here.
                     builder
-                        .Register<IChangeableFileLocator>(
-                            c =>
-                                new BloomFileLocator(
-                                    c.Resolve<CollectionSettings>(),
-                                    c.Resolve<XMatterPackFinder>(),
-                                    GetFactoryFileLocations(),
-                                    GetFoundFileLocations(),
-                                    GetAfterXMatterFileLocations()
-                                )
-                        )
+                        .Register<IChangeableFileLocator>(c => new BloomFileLocator(
+                            c.Resolve<CollectionSettings>(),
+                            c.Resolve<XMatterPackFinder>(),
+                            GetFactoryFileLocations(),
+                            GetFoundFileLocations(),
+                            GetAfterXMatterFileLocations()
+                        ))
                         .InstancePerLifetimeScope();
 
                     builder.Register<LanguageSettings>(c =>
@@ -343,25 +333,24 @@ namespace Bloom
                         .InstancePerLifetimeScope();
 
                     builder.RegisterType<CreateFromSourceBookCommand>().InstancePerLifetimeScope();
-                    builder.Register<Func<WorkspaceView>>(
-                        c =>
-                            () =>
-                            {
-                                var factory = c.Resolve<WorkspaceView.Factory>();
+                    builder.Register<Func<WorkspaceView>>(c =>
+                        () =>
+                        {
+                            var factory = c.Resolve<WorkspaceView.Factory>();
 
-                                // Removing this check because finding "web" anywhere in the path is problematic.
-                                // This was discovered by a user whose username included "web" (https://jira.sil.org/browse/BL-688)
-                                // It appears this code block was for some experimental development but no longer works anyway.
-                                //					if (projectSettingsPath.ToLower().Contains("web"))
-                                //					{
-                                //						return factory(c.Resolve<WebLibraryView>());
-                                //					}
-                                //					else
-                                //					{
-                                WorkspaceView wsv = factory();
-                                return wsv;
-                                //					}
-                            }
+                            // Removing this check because finding "web" anywhere in the path is problematic.
+                            // This was discovered by a user whose username included "web" (https://jira.sil.org/browse/BL-688)
+                            // It appears this code block was for some experimental development but no longer works anyway.
+                            //					if (projectSettingsPath.ToLower().Contains("web"))
+                            //					{
+                            //						return factory(c.Resolve<WebLibraryView>());
+                            //					}
+                            //					else
+                            //					{
+                            WorkspaceView wsv = factory();
+                            return wsv;
+                            //					}
+                        }
                     );
 
                     builder.RegisterType<AccessibilityCheckWindow>();
@@ -372,6 +361,7 @@ namespace Bloom
                 var allCommands = from c in commandTypes select _scope.Resolve(c) as ICommand;
                 _commandAvailabilityPublisher = new CommandAvailabilityPublisher(allCommands);
                 */
+                Logger.WriteMinorEvent("completed initializing project context");
             }
             catch (FileNotFoundException error)
             {
@@ -384,17 +374,13 @@ namespace Bloom
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
-                Application.Exit();
+                ProgramExit.Exit();
             }
 
             var server = parentContainer.Resolve<BloomServer>();
             server.SetCollectionSettingsDuringInitialization(_scope.Resolve<CollectionSettings>());
             server.EnsureListening();
 
-            // The Api Handler is now at the application level and has a longer lifetime than
-            // the project context. We need to clear out any project-level handlers that may have
-            // been added by an earlier project context.
-            server.ApiHandler.ClearProjectLevelHandlers();
             // A few APIs are now registered in the constructor of ApplicationContainer
             _scope.Resolve<AudioRecording>().RegisterWithApiHandler(server.ApiHandler);
 
@@ -418,6 +404,7 @@ namespace Bloom
                 .RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<FeatureStatusApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<CollectionApi>().RegisterWithApiHandler(server.ApiHandler);
+            _scope.Resolve<RegistrationApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<BookCommandsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<SpreadsheetApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<PageControlsApi>().RegisterWithApiHandler(server.ApiHandler);
@@ -447,6 +434,7 @@ namespace Bloom
             _scope.Resolve<FontsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<WorkspaceApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ExternalApi>().RegisterWithApiHandler(server.ApiHandler);
+            _scope.Resolve<LoggerApi>().RegisterWithApiHandler(server.ApiHandler);
         }
 
         public static string[] SourceRootFolders()
@@ -454,7 +442,7 @@ namespace Bloom
             return new string[]
             {
                 BloomFileLocator.FactoryCollectionsDirectory,
-                GetInstalledCollectionsDirectory()
+                GetInstalledCollectionsDirectory(),
             };
         }
 
@@ -465,13 +453,15 @@ namespace Bloom
             if (!RobustFile.Exists(projectSettingsPath))
             {
                 // TCManager constructor may have deleted it in the process of syncing TC settings
-                var collections = Directory
-                    .EnumerateFiles(Path.GetDirectoryName(projectSettingsPath), "*.bloomCollection")
-                    .ToList();
-                if (collections.Count >= 1)
+                if (
+                    CollectionSettings.TryGetSettingsFilePath(
+                        projectSettingsPath,
+                        out var settingsFilePath
+                    )
+                )
                 {
                     // Hopefully this repairs things.
-                    projectSettingsPath = collections[0];
+                    projectSettingsPath = settingsFilePath;
                 }
             }
 
@@ -743,7 +733,7 @@ namespace Bloom
                     )
                 )
                 {
-                    var collectionDirectory = ResolveShortcut.Resolve(shortcut);
+                    var collectionDirectory = Shortcut.Resolve(shortcut);
                     if (Directory.Exists(collectionDirectory))
                     {
                         foreach (var templateDirectory in SafeGetDirectories(collectionDirectory))
@@ -856,8 +846,29 @@ namespace Bloom
             // Disposing ProjectContext disables api functionality and disposes WorkspaceModel/View, BloomServer, et al.,
             // so we need to resort to our fallback error handler.
             ResetToFallbackHandler();
-            _scope.Dispose();
-            _scope = null;
+
+            // We now keep BloomApiHandler alive for the application lifetime, but many endpoints are project-scoped.
+            // Disposing the ProjectContext should fully shut down the project (including webviews) before we clear
+            // those project-scoped endpoints.
+            var server = _scope.Resolve<BloomServer>();
+            try
+            {
+                // The order of these is tricky. The problem is that browsers could still be
+                // running and trying to call APIs while we are shutting down.
+                // Disposing the scope disposes the browsers, after which they shouldn't be able
+                // to make requests. But some requests might still be queued up in the server.
+                // If we clear the project level handlers first, then those requests could fail
+                // because no handler is registered. If we dispose the scope first, then those
+                // requests will find the handlers, but they may rely on objects that have been
+                // disposed. On the whole, I think it's best to clear the handlers first; that way,
+                // at least we avoid mysterious errors in the API handlers due to disposed objects.
+                server.ApiHandler.ClearProjectLevelHandlers();
+                _scope.Dispose();
+            }
+            finally
+            {
+                _scope = null;
+            }
 
             //REVIEW: by debugging, I see that _httpServer is already (and properly) disposed of by the
             //_scope.Dispose() above.

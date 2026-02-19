@@ -1,10 +1,12 @@
 import { getTheOneReaderToolsModel } from "./readerToolsModel";
 import {
     theOneLanguageDataInstance,
-    ResetLanguageDataInstance
+    ResetLanguageDataInstance,
 } from "./libSynphony/synphony_lib";
 import * as _ from "underscore";
 import ReadersSynphonyWrapper from "./ReadersSynphonyWrapper";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import $ from "jquery";
 
 describe("readerTools-libSynphony tests", () => {
     function generateTestData() {
@@ -22,11 +24,11 @@ describe("readerTools-libSynphony tests", () => {
 
         settings.stages.push({
             letters: "a c m r t",
-            sightWords: "canine feline"
+            sightWords: "canine feline",
         });
         settings.stages.push({
             letters: "d g o e s",
-            sightWords: "carnivore omnivore"
+            sightWords: "carnivore omnivore",
         });
         settings.stages.push({ letters: "i l n th", sightWords: "rodent" });
 
@@ -98,7 +100,7 @@ describe("readerTools-libSynphony tests", () => {
             sat: 2,
             on: 2,
             mat: 1,
-            rat: 1
+            rat: 1,
         });
     });
 
@@ -114,7 +116,7 @@ describe("readerTools-libSynphony tests", () => {
             four: 1,
             five: 1,
             six: 1,
-            seven: 1
+            seven: 1,
         });
     });
 
@@ -170,7 +172,7 @@ describe("readerTools-libSynphony tests", () => {
             "w",
             "x",
             "y",
-            "z"
+            "z",
         ];
         const text1 = $("#text_entry1");
 
@@ -185,7 +187,7 @@ describe("readerTools-libSynphony tests", () => {
             .html("Cat dog.<br>")
             .checkDecodableReader({ knownGraphemes: knownGraphemes });
         expect(text1.html()).toEqual(
-            '<span class="possible-word" data-segment="word">Cat</span> <span class="possible-word" data-segment="word">dog</span>.<br>'
+            '<span class="possible-word" data-segment="word">Cat</span> <span class="possible-word" data-segment="word">dog</span>.<br>',
         );
 
         // test <br> in middle of text
@@ -193,14 +195,14 @@ describe("readerTools-libSynphony tests", () => {
             .html("Cat.<br>Dog.")
             .checkDecodableReader({ knownGraphemes: knownGraphemes });
         expect(text1.html()).toEqual(
-            '<span class="possible-word" data-segment="word">Cat</span>.<br><span class="possible-word" data-segment="word">Dog</span>.'
+            '<span class="possible-word" data-segment="word">Cat</span>.<br><span class="possible-word" data-segment="word">Dog</span>.',
         );
 
         text1
             .html("Cat<br>Dog.")
             .checkDecodableReader({ knownGraphemes: knownGraphemes });
         expect(text1.html()).toEqual(
-            '<span class="possible-word" data-segment="word">Cat</span><br><span class="possible-word" data-segment="word">Dog</span>.'
+            '<span class="possible-word" data-segment="word">Cat</span><br><span class="possible-word" data-segment="word">Dog</span>.',
         );
     });
 
@@ -221,7 +223,7 @@ describe("readerTools-libSynphony tests", () => {
             .html("Cat dog.")
             .checkDecodableReader({ sightWords: ["canine", "feline"] });
         expect(text1.html()).toEqual(
-            '<span class="word-not-found" data-segment="word">Cat</span> <span class="word-not-found" data-segment="word">dog</span>.'
+            '<span class="word-not-found" data-segment="word">Cat</span> <span class="word-not-found" data-segment="word">dog</span>.',
         );
 
         // test one sight word
@@ -229,14 +231,14 @@ describe("readerTools-libSynphony tests", () => {
             .html("Canine Dog.")
             .checkDecodableReader({ sightWords: ["canine", "feline"] });
         expect(text1.html()).toEqual(
-            '<span class="sight-word" data-segment="word">Canine</span> <span class="word-not-found" data-segment="word">Dog</span>.'
+            '<span class="sight-word" data-segment="word">Canine</span> <span class="word-not-found" data-segment="word">Dog</span>.',
         );
 
         text1
             .html("Canine feline")
             .checkDecodableReader({ sightWords: ["canine", "feline"] });
         expect(text1.html()).toEqual(
-            '<span class="sight-word" data-segment="word">Canine</span> <span class="sight-word" data-segment="word">feline</span>'
+            '<span class="sight-word" data-segment="word">Canine</span> <span class="sight-word" data-segment="word">feline</span>',
         );
     });
 });

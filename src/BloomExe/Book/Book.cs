@@ -16,6 +16,7 @@ using Bloom.Api;
 using Bloom.Collection;
 using Bloom.FontProcessing;
 using Bloom.History;
+using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
@@ -43,7 +44,7 @@ namespace Bloom.Book
             "#E48C84", // light red
             "#B0DEE4", // light blue
             "#98D0B9", // light green
-            "#C2A6BF" // light purple
+            "#C2A6BF", // light purple
         };
 
         //We only randomize the initial value for each run. Without it, we were making a lot
@@ -86,9 +87,7 @@ namespace Bloom.Book
 
         // For moq'ing only; parameterless ctor required by Moq.
         public Book()
-            : this(false)
-        {
-        }
+            : this(false) { }
 
         // Allow specific subclasses (like ErrorBook) to bypass the unit-test guard.
         protected Book(bool allowNonTestCtor)
@@ -356,8 +355,8 @@ namespace Bloom.Book
                 //English names.
                 var englishTitle = title.GetExactAlternative("en").ToLowerInvariant();
                 var SHRPMatches = new[] { "p1", "p2", "p3", "p4", "SHRP" };
-                var couldBeOldStyleUgandaSHRPBook = SHRPMatches.Any(
-                    m => englishTitle.Contains(m.ToLowerInvariant())
+                var couldBeOldStyleUgandaSHRPBook = SHRPMatches.Any(m =>
+                    englishTitle.Contains(m.ToLowerInvariant())
                 );
 
                 //if this book is one of the ones we're editing in our collection, it really
@@ -409,7 +408,7 @@ namespace Bloom.Book
         {
             ToNewline, // Environment.Newline
             ToSpace, // " "
-            ToSimpleNewline // "\n", used for export to meta.json
+            ToSimpleNewline, // "\n", used for export to meta.json
         }
 
         // what can be in here is *XHTML*, e.g. bold, italics, etc.
@@ -557,27 +556,25 @@ namespace Bloom.Book
             //code in question says it is for when jquery-ui is not found. I "solved" this by loading jquery, jquery-ui,
             //and finally qtip into the global space here
             dom.AddJavascriptFile("jquery.min.js".ToLocalhost());
-            dom.AddJavascriptFile(
-                "modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js".ToLocalhost()
-            );
+            // JohnT Vite: this file is imported by various bundles. It can't also be loaded directly:
+            // import requires it to import jquery, and a script tag that doesn't declare it to be
+            // a module won't allow it to contain imports, and one that does lacks the smarts to find
+            // the jquery it is supposed to import. Just import it where needed.
+            //dom.AddJavascriptFile(
+            //    "modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js".ToLocalhost()
+            //);
             //			dom.AddJavascriptFile("lib/jquery.qtip.js".ToLocalhost());
             //			dom.AddJavascriptFile("lib/jquery.qtipSecondary.js".ToLocalhost());
 
             // first tried this as import 'jquery.hotkeys' in bloomEditing, but that didn't work
             //dom.AddJavascriptFile("jquery.hotkeys.js".ToLocalhost());
 
-            dom.AddJavascriptFile("commonBundle.js".ToLocalhost());
             dom.AddJavascriptFile("editablePageBundle.js".ToLocalhost());
-            // Add this last because currently its document ready function has to execute AFTER the bootstrap call in bloomEditing.ts,
-            // which is compiled into editablePageIFrame.js. The bootstrap function sets CKEDITOR.disableAutoInline = true,
-            // which suppresses a document ready function in CKEditor iself from calling inline() on all content editable
-            // elements, which we don't want (a) because some content editable elements shouldn't have CKEditor functions, and
-            // (b) because it causes crashes when we intentionally do our own inline() calls on the elements where we DO
-            // want CKEditor.
-            // ReviewSlog: It would be much more robust not to depend on the order in which document ready functions
-            // execute, especially if the only control over that is the order of loading files. But I don't know
-            // where we can put the CKEDITOR.disableAutoInline = true so that it will reliably execute AFTER CKEDITOR is
-            // defined and BEFORE its document ready function.
+            // At one point we made a point of adding this last so that other code
+            // could get in and set disableAutoInline to prevent ckeditor from attaching itself
+            // to things we don't want it to. Could not get this to work after we switched our
+            // bundles to be modules (hence deferred loading). Instead, I patched our
+            // modified ckeditor so it NEVER auto-attaches.
             dom.AddJavascriptFile("lib/ckeditor/ckeditor.js".ToLocalhost());
         }
 
@@ -655,26 +652,7 @@ namespace Bloom.Book
             return result;
         }
 
-        public HtmlDom GetPreviewXmlDocumentForPage(IPage page)
-        {
-            if (HasFatalError)
-            {
-                return GetErrorDom();
-            }
-            var pageDom = GetHtmlDomWithJustOnePage(page);
-            pageDom.RemoveModeStyleSheets();
-            pageDom.EnsureStylesheetLinks(this.Storage.GetCssFilesToLinkForPreview());
-            // Note: it would be a fine enhancement here to first check for "branding-{flavor}.css",
-            // but we'll leave that until we need it.
-            AddPreviewJavascript(pageDom); //review: this is just for thumbnails... should we be having the javascript run?
-            return pageDom;
-        }
-
-        // Differs from GetPreviewXmlDocumentForPage() by not adding the three stylesheets
-        // adding them will full paths seems to be diastrous. I think cross-domain rules
-        // prevent them from being loaded, and so we lose the page size information, and the
-        // thumbs come out random sizes. Not sure why this isn't a problem in GetPreviewXmlDocumentForPage.
-        // Also, since this is used for thumbnails of template pages, we insert some arbitrary text
+        // Since this is used for thumbnails of template pages, we insert text placeholders (grey bars)
         // into empty editable divs to give a better idea of what a typical page will look like.
         internal HtmlDom GetThumbnailXmlDocumentForPage(IPage page)
         {
@@ -684,6 +662,7 @@ namespace Bloom.Book
             }
             var pageDom = GetHtmlDomWithJustOnePage(page);
             AddPreviewJavascript(pageDom);
+            pageDom.EnsureStylesheetLinks(this.Storage.GetCssFilesToLinkForPreview());
             pageDom.Body.AddClass("bloom-templateThumbnail");
             return pageDom;
         }
@@ -792,7 +771,8 @@ namespace Bloom.Book
             // Often GetBrokenBookRecommendation and FatalErrorDescription both come from _storage.ErrorMessagesHtml.
             // Try not to say the same thing twice.
             if (
-                FatalErrorDescription != null && !builder.ToString().Contains(FatalErrorDescription)
+                FatalErrorDescription != null
+                && !builder.ToString().Contains(FatalErrorDescription)
             )
                 builder.Append(FatalErrorDescription);
 
@@ -1493,105 +1473,105 @@ namespace Bloom.Book
                     _pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398382"] = new GuidAndPath()
                     {
                         Guid = BasicTextAndImageGuid,
-                        Path = "Basic Book/Basic Book.html"
+                        Path = "Basic Book/Basic Book.html",
                     };
                     _pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398383"] = new GuidAndPath()
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398383",
-                        Path = "Basic Book/Basic Book.html"
+                        Path = "Basic Book/Basic Book.html",
                     }; // Picture in Middle
                     _pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398384"] = new GuidAndPath()
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398384",
-                        Path = "Basic Book/Basic Book.html"
+                        Path = "Basic Book/Basic Book.html",
                     }; // Picture on Bottom
                     _pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398385"] = new GuidAndPath()
                     {
                         Guid = JustPictureGuid,
-                        Path = "Basic Book/Basic Book.html"
+                        Path = "Basic Book/Basic Book.html",
                     };
                     _pageMigrations["d31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"] = new GuidAndPath()
                     {
                         Guid = JustTextGuid,
-                        Path = "Basic Book/Basic Book.html"
+                        Path = "Basic Book/Basic Book.html",
                     };
                     _pageMigrations["FD115DFF-0415-4444-8E76-3D2A18DBBD27"] = new GuidAndPath()
                     {
                         Guid = "aD115DFF-0415-4444-8E76-3D2A18DBBD27",
-                        Path = "Basic Book/Basic Book.html"
+                        Path = "Basic Book/Basic Book.html",
                     }; // Picture & Word
                     // Big book [see commit 7bfefd0dbc9faf8930c4926b0156e44d3447e11b]
                     _pageMigrations["AF708725-E961-44AA-9149-ADF66084A04F"] = new GuidAndPath()
                     {
                         Guid = JustPictureGuid,
-                        Path = "Big Book/Big Book.html"
+                        Path = "Big Book/Big Book.html",
                     };
                     _pageMigrations["D9A55EB6-43A8-4C6A-8891-2C1CDD95772C"] = new GuidAndPath()
                     {
                         Guid = JustTextGuid,
-                        Path = "Big Book/Big Book.html"
+                        Path = "Big Book/Big Book.html",
                     };
                     // Decodable reader [see commit 7bfefd0dbc9faf8930c4926b0156e44d3447e11b]
                     _pageMigrations["f95c0314-ce47-4b47-a638-06325ad1a963"] = new GuidAndPath()
                     {
                         Guid = BasicTextAndImageGuid,
-                        Path = "Decodable Reader/Decodable Reader.html"
+                        Path = "Decodable Reader/Decodable Reader.html",
                     };
                     _pageMigrations["c0847f89-b58a-488a-bbee-760ce4a13567"] = new GuidAndPath()
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398383",
-                        Path = "Decodable Reader/Decodable Reader.html"
+                        Path = "Decodable Reader/Decodable Reader.html",
                     }; // Picture in Middle
                     _pageMigrations["f99b252a-26b1-40c8-b543-dbe0b05f08a5"] = new GuidAndPath()
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398384",
-                        Path = "Decodable Reader/Decodable Reader.html"
+                        Path = "Decodable Reader/Decodable Reader.html",
                     }; // Picture on Bottom
                     _pageMigrations["c506f278-cb9f-4053-9e29-f7a9bdf64445"] = new GuidAndPath()
                     {
                         Guid = JustPictureGuid,
-                        Path = "Decodable Reader/Decodable Reader.html"
+                        Path = "Decodable Reader/Decodable Reader.html",
                     };
                     _pageMigrations["e4ff6195-b0b6-4909-8025-4424ee9188ea"] = new GuidAndPath()
                     {
                         Guid = JustTextGuid,
-                        Path = "Decodable Reader/Decodable Reader.html"
+                        Path = "Decodable Reader/Decodable Reader.html",
                     };
                     _pageMigrations["bd85f898-0a45-45b3-8e34-faaac8945a0c"] = new GuidAndPath()
                     {
                         Guid = "aD115DFF-0415-4444-8E76-3D2A18DBBD27",
-                        Path = "Decodable Reader/Decodable Reader.html"
+                        Path = "Decodable Reader/Decodable Reader.html",
                     }; // Picture & Word
                     // Leveled reader [see commit 7bfefd0dbc9faf8930c4926b0156e44d3447e11b]
                     _pageMigrations["e9f2142b-f135-4bcd-9123-5a2623f5302f"] = new GuidAndPath()
                     {
                         Guid = BasicTextAndImageGuid,
-                        Path = "Leveled Reader/Leveled Reader.html"
+                        Path = "Leveled Reader/Leveled Reader.html",
                     };
                     _pageMigrations["c5aae471-f801-4c5d-87b7-1614d56b0c53"] = new GuidAndPath()
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398383",
-                        Path = "Leveled Reader/Leveled Reader.html"
+                        Path = "Leveled Reader/Leveled Reader.html",
                     }; // Picture in Middle
                     _pageMigrations["a1f437fe-c002-4548-af02-fe84d048b8fc"] = new GuidAndPath()
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398384",
-                        Path = "Leveled Reader/Leveled Reader.html"
+                        Path = "Leveled Reader/Leveled Reader.html",
                     }; // Picture on Bottom
                     _pageMigrations["d7599aa7-f35c-4029-8aa2-9afda870bcfa"] = new GuidAndPath()
                     {
                         Guid = JustPictureGuid,
-                        Path = "Leveled Reader/Leveled Reader.html"
+                        Path = "Leveled Reader/Leveled Reader.html",
                     };
                     _pageMigrations["d93a28c6-9ff8-4f61-a820-49093e3e275b"] = new GuidAndPath()
                     {
                         Guid = JustTextGuid,
-                        Path = "Leveled Reader/Leveled Reader.html"
+                        Path = "Leveled Reader/Leveled Reader.html",
                     };
                     _pageMigrations["a903467a-dad2-4767-8be9-54336cae7731"] = new GuidAndPath()
                     {
                         Guid = "aD115DFF-0415-4444-8E76-3D2A18DBBD27",
-                        Path = "Leveled Reader/Leveled Reader.html"
+                        Path = "Leveled Reader/Leveled Reader.html",
                     }; // Picture & Word
                 }
                 return _pageMigrations;
@@ -1630,7 +1610,7 @@ namespace Bloom.Book
                 "imageInMiddle",
                 "imageOnBottom",
                 "textWholePage",
-                "pictureAndWordPage"
+                "pictureAndWordPage",
             };
             HtmlDom.MergeClassesIntoNewPage(page, newPage, classesToDrop);
             SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPage, layoutOfThisBook);
@@ -1796,11 +1776,10 @@ namespace Bloom.Book
             Storage.MigrateToLevel7BloomCanvas();
             Storage.MigrateToLevel8RemoveEnterpriseOnly();
             Storage.MigrateToLevel9TruncateWidgetPaths();
-
-            // In 6.3, this is a proper migration with level (and is called MigrateToLevel13SplitPaneMarginBoxes).
-            // But here in 6.2, we can't do the level number bump because 6.3 already added levels before we got this
-            // fix into 6.2. So for 6.2, we just run it every time. In 6.3, it will properly run only once.
-            Storage.FixProblematicSplitPaneMarginBoxes();
+            Storage.MigrateToLevel10GameHeader();
+            // Migration 11 does not exist.
+            Storage.MigrateToLevel12PageNumberPosition();
+            Storage.MigrateToLevel13SplitPaneMarginBoxes();
 
             Storage.DoBackMigrations();
 
@@ -2154,7 +2133,7 @@ namespace Bloom.Book
                 var languagesWeAlreadyHave = new HashSet<string>
                 {
                     CollectionSettings.Language1Tag,
-                    CollectionSettings.Language2Tag
+                    CollectionSettings.Language2Tag,
                 };
                 if (!String.IsNullOrEmpty(CollectionSettings.Language3Tag))
                     languagesWeAlreadyHave.Add(CollectionSettings.Language3Tag);
@@ -2173,7 +2152,9 @@ namespace Bloom.Book
                         {
                             var lang = line.Substring(kLangTag.Length, idxQuote - kLangTag.Length);
                             // Don't let empty language tag creep in (or stay in). (BL-15784)
-                            copyCurrentRule = !String.IsNullOrEmpty(lang) && !languagesWeAlreadyHave.Contains(lang);
+                            copyCurrentRule =
+                                !String.IsNullOrEmpty(lang)
+                                && !languagesWeAlreadyHave.Contains(lang);
                             languagesWeAlreadyHave.Add(lang); // don't copy if another css block has crept in.
                         }
                     }
@@ -2372,8 +2353,12 @@ namespace Bloom.Book
                 }
                 var imgNode = imgNodes[0];
                 var src = imgNode.GetAttribute("src");
-                coverImageElement.InnerText =
-                    (string.IsNullOrEmpty(src)) ? string.Empty : HttpUtility.UrlDecode(src);
+                // If malformed markup omits a src, treat it as the legacy placeholder marker
+                // so downstream code sees an intentional placeholder rather than a missing value.
+                // This preserves expectations in BringBookUpToDate_EmbeddedEmptyImgTagRemoved.
+                if (string.IsNullOrWhiteSpace(src))
+                    src = "placeHolder.png";
+                coverImageElement.InnerText = HttpUtility.UrlDecode(src);
             }
         }
 
@@ -2456,22 +2441,12 @@ namespace Bloom.Book
                 BookInfo.UseDeviceXMatter
             );
 
-            // Before applying the xmatter, check to see if the previous was Kyrgystan2020, which through to this version, 5.2,
-            // unfortunately has a branding that pollutes the data-div with this fullBleed, which isn't wanted if the book
-            // is re-used in another project. See https://issues.bloomlibrary.org/youtrack/issue/BL-11290.
-            // The one scenario we know this would break would be a book from the Kyr project was re-purposed in another project,
-            // and that book used the "Paper Comic" which does have to have full bleed.
-            if (
-                !helper.GetStyleSheetFileName().Contains("Kyrgyzstan2020")
-                && // we're not going (or more likely staying) in Kyrgyzstan
-                _bookData.GetVariableOrNull("xmatter", "*").Xml == "Kyrgyzstan2020"
-            ) // but we are coming from it
-            {
-                Logger.WriteEvent(
-                    "Removing fullBleed because the previous xmatter was Kyrgystan2020."
-                );
-                _bookData.RemoveAllForms("fullBleed"); // this is fine if it doesn't find it.
-            }
+            // Previously, we had a couple brandings (Kyrgyz, Uzbek) which set this to indicate that books using the branding
+            // should be set up for full bleed. There was code here which removed the data-book setting if switching away from
+            // Kyrgyz (I think not having Uzbek was a bug...). But as of 6.3, the only way to set a book up for full bleed is to use
+            // the book settings. Even books previously set up using the data-book setting need to have the book setting turned on now.
+            // So we just remove this obsolete setting in all cases.
+            _bookData.RemoveAllForms("fullBleed"); // this is fine if it doesn't find it.
 
             // If it's not the real book DOM we won't copy branding images into the real book folder, for fear
             // of messing up the real book, if the temporary one is in a different orientation.
@@ -2942,7 +2917,7 @@ namespace Bloom.Book
             {
                 Language1Tag,
                 BookData.MetadataLanguage1Tag,
-                BookData.MetadataLanguage2Tag
+                BookData.MetadataLanguage2Tag,
             };
             foreach (var lang in xmatterOnlyLangs)
             {
@@ -3080,8 +3055,8 @@ namespace Bloom.Book
                 }
             }
             foreach (
-                var div in RawDom.DocumentElement
-                    .SafeSelectNodes("//div[@data-audiorecordingmode]")
+                var div in RawDom
+                    .DocumentElement.SafeSelectNodes("//div[@data-audiorecordingmode]")
                     .Cast<SafeXmlElement>()
                     .ToList()
             )
@@ -3197,7 +3172,7 @@ namespace Bloom.Book
             var file = imageUrl.PathOnly.NotEncoded;
             if (string.IsNullOrEmpty(file))
                 return false;
-            if (file == "placeHolder.png" && !image.HasAttribute("data-license"))
+            if (ImageUtils.IsPlaceholderImageFilename(file) && !image.HasAttribute("data-license"))
                 return false;
             return RobustFile.Exists(Path.Combine(Storage.FolderPath, file));
         }
@@ -3395,7 +3370,6 @@ namespace Bloom.Book
         /// <param name="dom"></param>
         internal void AddPreviewJavascript(HtmlDom dom)
         {
-            dom.AddJavascriptFile("commonBundle.js".ToLocalhost());
             dom.AddJavascriptFile("bookPreviewBundle.js".ToLocalhost());
         }
 
@@ -3440,7 +3414,11 @@ namespace Bloom.Book
                 {
                     var src = img.GetAttribute("src");
                     var alt = img.GetAttribute("alt");
-                    if (!String.IsNullOrEmpty(src) && String.IsNullOrEmpty(alt))
+                    if (
+                        !String.IsNullOrEmpty(src)
+                        && String.IsNullOrEmpty(alt)
+                        && !ImageUtils.IsPlaceholderImageFilename(src)
+                    )
                     {
                         var localizedFormatString = LocalizationManager.GetString(
                             "EditTab.Image.AltMsg",
@@ -3661,16 +3639,7 @@ namespace Bloom.Book
             foreach (SafeXmlElement scriptElt in newPageDiv.SafeSelectNodes(".//script[@src]"))
             {
                 var fileName = scriptElt.GetAttribute("src");
-
-                // TODO BL-14565: this is probably out of date; any such file should be part of Bloom Player shared code.
-
-                // Bloom Desktop accesses simpleComprehensionQuiz.js from the output/browser folder.
-                // Bloom Reader uses the copy of that file which comes with bloom-player.
-                // See https://issues.bloomlibrary.org/youtrack/issue/BL-8480.
-                if (
-                    string.IsNullOrEmpty(fileName)
-                    || fileName == PublishHelper.kSimpleComprehensionQuizJs
-                )
+                if (string.IsNullOrEmpty(fileName))
                     continue;
                 var destinationPath = Path.Combine(FolderPath, fileName);
                 // In other similar operations above we don't overwrite an existing file (e.g., images, css).
@@ -4060,16 +4029,9 @@ namespace Bloom.Book
                     this
                 )
                 .Enabled;
-
         public bool FullBleed =>
-            !GetLayout().IsDeviceLayout
-            && (
-                // Wants to be
-                // BookInfo.AppearanceSettings.FullBleed
-                // but we haven't put that in the book settings yet.
-                BookData.GetVariableOrNull("fullBleed", "*").Xml == "true"
-                || CoverIsImage
-            )
+            PageSizeSupportsFullBleed()
+            && BookInfo.AppearanceSettings.FullBleed
             && FeatureStatus
                 .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.PrintShopReady, this)
                 .Enabled;
@@ -4429,7 +4391,10 @@ namespace Bloom.Book
                     throw new ArgumentOutOfRangeException("bookletPortion");
             }
             // Do this after we remove unwanted pages; otherwise, the page removal code must also remove the media boxes.
-            if (FullBleed && UserPrefs.FullBleed) // only if print is set for full bleed as well (BL-14863)
+            // We need this markup if the book is set up for Full Bleed even if we're not printing the bleed area,
+            // because it triggers the transformation that makes the page as large as the Bleed area. (We then extract
+            // the center part of that, if we're not printing bleed areas.)
+            if (FullBleed)
             {
                 InsertFullBleedMarkup(printingDom.Body);
             }
@@ -4651,6 +4616,12 @@ namespace Bloom.Book
             return Layout.FromDom(OurHtmlDom, Layout.A5Portrait);
         }
 
+        public bool PageSizeSupportsFullBleed()
+        {
+            var layout = GetLayout();
+            return layout?.SizeAndOrientation?.SupportsFullBleed() ?? false;
+        }
+
         public IEnumerable<Layout> GetSizeAndOrientationChoices()
         {
             try
@@ -4860,8 +4831,8 @@ namespace Bloom.Book
         private void RemoveObsoleteSoundAttributes(HtmlDom htmlDom)
         {
             foreach (
-                var span in htmlDom.RawDom
-                    .SafeSelectNodes("//span[@data-duration and @id]")
+                var span in htmlDom
+                    .RawDom.SafeSelectNodes("//span[@data-duration and @id]")
                     .Cast<SafeXmlElement>()
             )
             {
@@ -4885,7 +4856,8 @@ namespace Bloom.Book
         private void RemoveObsoleteImageAttributes(HtmlDom htmlDom)
         {
             foreach (
-                var img in htmlDom.RawDom
+                var img in htmlDom
+                    .RawDom
                     // a normal fully up-to-date book shouldn't have imgs directly in bloom-canvas,
                     // but books we're migrating might.
                     .SafeSelectNodes(
@@ -4895,8 +4867,7 @@ namespace Bloom.Book
             )
             {
                 if (
-                    img.ParentNode
-                        .GetOptionalStringAttribute("class", "")
+                    img.ParentNode.GetOptionalStringAttribute("class", "")
                         .Contains("bloom-scale-with-code")
                     // Compare JS function SetupImage in bloomImages.ts. We stopped using explicit image
                     // sizes in 2018 and added image canvas elements in 2022, so it should be very safe to
@@ -5054,7 +5025,7 @@ namespace Bloom.Book
                         IncludeFilesForContinuedEditing = true,
                         NarrationLanguages = null, // include every narration language
                         WantVideo = true,
-                        WantMusic = true
+                        WantMusic = true,
                     };
                     // Ignore 'meta.json' since this stores currentTool and toolboxIsOpen, which are irrelevant to whether
                     // the book has changed. OTOH, we need to do something about Draft status and Features which are not irrelevant.
@@ -5100,7 +5071,10 @@ namespace Bloom.Book
                         var name = Path.GetFileName(path);
                         if (
                             name == "customCollectionStyles.css"
-                            || name.EndsWith(".bloomCollection", StringComparison.Ordinal)
+                            || name.EndsWith(
+                                CollectionSettings.kFileExtension,
+                                StringComparison.Ordinal
+                            )
                         )
                         {
                             //AppendDebugInfo(debugBldr, path);
@@ -5177,15 +5151,15 @@ namespace Bloom.Book
             // In that approach the data-book attribute is on the imageContainer.
             // Note that we want the coverImage from a page, instead of the dataDiv because the former
             // "doesn't have the data in the form that GetImageElementUrl can handle."
-            coverImgElt = Storage.Dom
-                .SafeSelectNodes("//div[not(@id='bloomDataDiv')]/div[@data-book='coverImage']")
+            coverImgElt = Storage
+                .Dom.SafeSelectNodes("//div[not(@id='bloomDataDiv')]/div[@data-book='coverImage']")
                 .Cast<SafeXmlElement>()
                 .FirstOrDefault();
             // If that fails, we look for an img with the relevant attribute. Happily this doesn't conflict with the data-div.
             if (coverImgElt == null)
             {
-                coverImgElt = Storage.Dom
-                    .SafeSelectNodes("//img[@data-book='coverImage']")
+                coverImgElt = Storage
+                    .Dom.SafeSelectNodes("//img[@data-book='coverImage']")
                     .Cast<SafeXmlElement>()
                     .FirstOrDefault();
             }
@@ -5200,6 +5174,12 @@ namespace Bloom.Book
                 StoragePageFolder,
                 ref coverImageFileName
             );
+            // We no longer put placeHolder.png files in books (BL-15441) but we still need to detect when the placeholder
+            // is called for, so return coverImagePath unchanged when it is a placeholder. Callers of this method should handle this special-case value.
+            if (ImageUtils.IsPlaceholderImageFilename(coverImagePath))
+            {
+                return coverImagePath;
+            }
             if (!RobustFile.Exists(coverImagePath))
             {
                 // And the filename might be multiply-HTML encoded.
@@ -5349,7 +5329,7 @@ namespace Bloom.Book
         {
             foreach (var img in page.SafeSelectNodes(".//img"))
             {
-                if (img.GetAttribute("src") != "placeHolder.png")
+                if (!ImageUtils.IsPlaceholderImageFilename(img.GetAttribute("src")))
                     return true;
             }
             foreach (
@@ -5360,7 +5340,7 @@ namespace Bloom.Book
             {
                 var imgUrl = HtmlDom.GetImageElementUrl(div).PathOnly.NotEncoded;
                 // Actually getting a background img url is a good indication that it's one we want.
-                if (!string.IsNullOrEmpty(imgUrl) && imgUrl != "placeHolder.png")
+                if (!string.IsNullOrEmpty(imgUrl) && !ImageUtils.IsPlaceholderImageFilename(imgUrl))
                     return true;
             }
             return false;
@@ -5430,7 +5410,7 @@ namespace Bloom.Book
         public bool HasNonWidgetGames => OurHtmlDom.HasNonWidgetGamePages();
         public bool HasWidgets => OurHtmlDom.HasWidgetPages();
 
-        public bool HasComicalOverlays => OurHtmlDom.HasComicalCanvasElements();
+        public bool HasComicalElements => OurHtmlDom.HasComicalCanvasElements();
 
         public bool HasOnlyPictureOnlyPages()
         {
@@ -5477,7 +5457,6 @@ namespace Bloom.Book
             UpdateSimpleDomChoiceFeature();
             UpdateDragGameFeature();
             UpdateMotionFeature();
-            UpdateComicFeature();
             UpdateWidgetFeature();
 
             BookInfo.Save();
@@ -5547,7 +5526,7 @@ namespace Bloom.Book
                 // FYI: this might be "", but that's OK. Pass it through anyway
                 BookInfo.MetaData.Feature_SignLanguage_LangCodes = new string[]
                 {
-                    this.CollectionSettings.SignLanguageTag
+                    this.CollectionSettings.SignLanguageTag,
                 };
             else
                 BookInfo.MetaData.Feature_SignLanguage_LangCodes =
@@ -5598,17 +5577,6 @@ namespace Bloom.Book
             BookInfo.MetaData.Feature_Widget = Storage
                 .GetActivityFolderNamesReferencedInBook()
                 .Any();
-        }
-
-        /// <summary>
-        /// Updates the feature in bookInfo.metadata to indicate whether the book contains comic pages.
-        /// These are now created with the Overlay Tool, but the feature retains the old name.
-        /// (But, we will only report it as a Comic book if the user didn't turn it off in the publish settings.)
-        /// </summary>
-        private void UpdateComicFeature()
-        {
-            BookInfo.MetaData.Feature_Comic =
-                HasComicalOverlays && BookInfo.PublishSettings.BloomLibrary.Comic;
         }
 
         /// <summary>
@@ -5712,10 +5680,10 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Used by the publish tab to tell the user they can't publish a book with Overlay elements w/o Enterprise.
+        /// Used by the publish tab to tell the user they can't publish a book with Canvas elements w/o Enterprise.
         /// </summary>
         /// <returns></returns>
-        public string GetNumberOfFirstPageWithOverlay()
+        public string GetNumberOfFirstPageWithCanvasElement()
         {
             var pageNodes = RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]");
             if (pageNodes.Length == 0) // Unexpected!
@@ -5732,7 +5700,7 @@ namespace Bloom.Book
                 {
                     return pageNumberAttribute;
                 }
-                // If at some point we allow overlay elements on xmatter,
+                // If at some point we allow canvas elements on xmatter,
                 // we will need to find and return the 'data-xmatter-page' attribute.
             }
             return ""; // Also unexpected!
@@ -5883,8 +5851,8 @@ namespace Bloom.Book
 
         private IEnumerable<string> GetRequiredLanguages()
         {
-            return new[] { BookData.Language1.Tag, Language2Tag, Language3Tag }.Where(
-                l => !string.IsNullOrEmpty(l)
+            return new[] { BookData.Language1.Tag, Language2Tag, Language3Tag }.Where(l =>
+                !string.IsNullOrEmpty(l)
             );
         }
 

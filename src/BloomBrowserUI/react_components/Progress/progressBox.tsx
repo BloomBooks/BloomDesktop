@@ -1,15 +1,14 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import WebSocketManager, {
-    IBloomWebSocketProgressEvent
+    IBloomWebSocketProgressEvent,
 } from "../../utils/WebSocketManager";
 import {
     kBloomGold,
     kErrorColor,
     kLogBackgroundColor,
-    kDialogPadding
+    kDialogPadding,
 } from "../../bloomMaterialUITheme";
 import { StringWithOptionalLink } from "../stringWithOptionalLink";
 
@@ -79,7 +78,7 @@ export const ProgressBox = React.forwardRef<
         setMessages = props.setMessages;
     } else if (props.messages || props.setMessages) {
         console.error(
-            "messages and setMessages must both be provided for controlled use of ProgressBox"
+            "messages and setMessages must both be provided for controlled use of ProgressBox",
         );
     }
 
@@ -89,22 +88,22 @@ export const ProgressBox = React.forwardRef<
     React.useEffect(() => {
         if (props.preloadedProgressEvents) {
             // Don't overwrite existing messages.  See https://issues.bloomlibrary.org/youtrack/issue/BL-11696.
-            props.preloadedProgressEvents.forEach(e => processEvent(e));
+            props.preloadedProgressEvents.forEach((e) => processEvent(e));
         }
     }, [props.preloadedProgressEvents]);
 
     React.useEffect(() => {
-        const listener = e => processEvent(e);
+        const listener = (e) => processEvent(e);
         if (props.webSocketContext) {
             WebSocketManager.addListener<IBloomWebSocketProgressEvent>(
                 props.webSocketContext,
-                listener
+                listener,
             );
         }
         if (props.onReadyToReceive && props.webSocketContext) {
             WebSocketManager.notifyReady(
                 props.webSocketContext,
-                props.onReadyToReceive
+                props.onReadyToReceive,
             );
         }
         // clean up when we are unmounted or this useEffect runs again (i.e. if the props.webSocketContext were to change)
@@ -112,7 +111,7 @@ export const ProgressBox = React.forwardRef<
             if (props.webSocketContext)
                 WebSocketManager.removeListener(
                     props.webSocketContext,
-                    listener
+                    listener,
                 );
         };
     }, [props.webSocketContext]);
@@ -121,7 +120,7 @@ export const ProgressBox = React.forwardRef<
         if (bottomRef && bottomRef.current)
             bottomRef!.current!.scrollIntoView({
                 behavior: "smooth",
-                block: "start"
+                block: "start",
             });
     }, [messages]);
 
@@ -129,7 +128,7 @@ export const ProgressBox = React.forwardRef<
     React.useImperativeHandle(ref, () => ({
         clear() {
             setMessages([]);
-        }
+        },
     }));
 
     function writeLine(message: string, color: string, style?: string) {
@@ -144,7 +143,7 @@ export const ProgressBox = React.forwardRef<
                 <StringWithOptionalLink message={message} />
             </p>
         );
-        setMessages(old => [...old, line]);
+        setMessages((old) => [...old, line]);
     }
 
     function processEvent(e: IBloomWebSocketProgressEvent) {
@@ -200,3 +199,5 @@ export const ProgressBox = React.forwardRef<
         </div>
     );
 });
+
+ProgressBox.displayName = "ProgressBox";

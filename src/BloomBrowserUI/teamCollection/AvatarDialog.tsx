@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useL10n } from "../react_components/l10nHooks";
@@ -7,14 +6,14 @@ import { Div } from "../react_components/l10nComponents";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import { TextWithEmbeddedLink } from "../react_components/link";
 import BloomButton from "../react_components/bloomButton";
-import { post } from "../utils/bloomApi";
 import {
     BloomDialog,
     DialogMiddle,
     DialogBottomButtons,
     DialogBottomLeftButtons,
-    DialogTitle
+    DialogTitle,
 } from "../react_components/BloomDialog/BloomDialog";
+import { showRegistrationDialog } from "../react_components/registration/registrationDialog";
 
 // Dialog shown (when props.open is true) in response to the "About my Avatar..." menu item
 // in the TeamCollectionBookStatusPanel.
@@ -23,14 +22,14 @@ export const AvatarDialog: React.FunctionComponent<{
     close: () => void;
     currentUser: string;
     currentUserName: string;
-}> = props => {
+}> = (props) => {
     const title = useL10n(
         "Your Team Collection Avatar & Name",
         "TeamCollection.AvatarAndName",
         undefined,
         undefined,
         undefined,
-        true
+        true,
     );
     const avatar = (
         <BloomAvatar email={props.currentUser} name={props.currentUserName} />
@@ -88,7 +87,7 @@ export const AvatarDialog: React.FunctionComponent<{
                         temporarilyDisableI18nWarning={true}
                         onClick={() => {
                             props.close();
-                            post("teamCollection/showRegistrationDialog");
+                            showRegistrationDialog({});
                         }}
                         hasText={true}
                     >

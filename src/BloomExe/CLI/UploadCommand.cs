@@ -18,7 +18,7 @@ namespace Bloom.CLI
     {
         public static bool IsUploading;
 
-        public static Task<int> Handle(UploadParameters options)
+        public static async Task<int> Handle(UploadParameters options)
         {
             try
             {
@@ -44,7 +44,7 @@ namespace Bloom.CLI
                     Console.WriteLine(
                         $"Error: Upload destination (-d) must be one of {UploadDestination.Development} or {UploadDestination.Production}"
                     );
-                    return Task.FromResult(1);
+                    return 1;
             }
             BookUpload.Destination = options.Dest; // must be set before calling SetupErrorHandling() (or BloomLibraryBookApiClient constructor)
             BookUpload.IsDryRun = options.DryRun; // must be set before calling SetupErrorHandling() (or BloomLibraryBookApiClient constructor)
@@ -56,10 +56,7 @@ namespace Bloom.CLI
             {
                 using (var applicationContainer = new ApplicationContainer())
                 {
-                    LocalizationManager.SetUILanguage(
-                        Settings.Default.UserInterfaceLanguage,
-                        false
-                    );
+                    LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage);
                     var singleBookUploader = new BookUpload(
                         new BloomLibraryBookApiClient(),
                         ProjectContext.CreateBloomS3Client(),
@@ -86,15 +83,15 @@ namespace Bloom.CLI
                             break;
                     }
                     Console.WriteLine("\nStarting upload...");
-                    uploader.BulkUpload(applicationContainer, options);
+                    await uploader.BulkUpload(applicationContainer, options);
                     Console.WriteLine(("\nBulk upload complete.\n"));
                 }
-                return Task.FromResult(0);
+                return 0;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
-                return Task.FromResult(1);
+                return 1;
             }
         }
     }

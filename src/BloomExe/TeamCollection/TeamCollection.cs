@@ -1,8 +1,3 @@
-using Bloom.Api;
-using Bloom.MiscUI;
-using Bloom.web;
-using L10NSharp;
-using SIL.IO;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -13,16 +8,20 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.History;
-using Bloom.Registration;
+using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Bloom.Utils;
+using Bloom.web;
 using Bloom.web.controllers;
-using SIL.Reporting;
 using DesktopAnalytics;
+using L10NSharp;
 using SIL.Code;
+using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom.TeamCollection
 {
@@ -33,7 +32,7 @@ namespace Bloom.TeamCollection
     /// The idea is to leave open the possibility of other implementations, for example, based on
     /// a DVCS.
     /// </summary>
-    public abstract class TeamCollection : IDisposable, ISaveContext
+    public abstract partial class TeamCollection : IDisposable, ISaveContext
     {
         // special value for BookStatus.lockedBy when the book is newly created and not in the repo at all.
         public const string FakeUserIndicatingNewBook = "this user";
@@ -649,12 +648,12 @@ namespace Bloom.TeamCollection
         }
 
         // Lock the book, making it available for the specified user to edit. Return true if successful.
+        // We must ensure that the user has registered a valid email address before making the call to the API endpoint which calls this.
         public bool AttemptLock(string bookName, string email = null)
         {
-            if (!PromptForSufficientRegistrationIfNeeded())
-                return false;
-
             var whoBy = email ?? TeamCollectionManager.CurrentUser;
+            Debug.Assert(!string.IsNullOrWhiteSpace(whoBy));
+
             var status = GetStatus(bookName);
             if (String.IsNullOrEmpty(status.lockedBy) && !IsDisconnected)
             {
@@ -916,7 +915,7 @@ namespace Bloom.TeamCollection
         {
             None,
             ColorPalette,
-            Other
+            Other,
         }
 
         /// <summary>
@@ -1028,23 +1027,22 @@ namespace Bloom.TeamCollection
         /// Gets the path to the bloomCollection file, given the folder.
         /// If the folder name ends in " - TC" we will strip that off.
         /// </summary>
-        /// <param name="parentFolder"></param>
-        /// <returns></returns>
         public static string CollectionPath(string parentFolder)
         {
+            // Note that collectionName is the name of the collection, not the folder.
+            // So our normal simple approach of using the folder name may fail here.
             var collectionName = GetLocalCollectionNameFromTcName(Path.GetFileName(parentFolder));
-            // Avoiding use of ChangeExtension as it's just possible the collectionName could have period.
-            var collectionPath = Path.Combine(parentFolder, collectionName + ".bloomCollection");
+            var collectionPath = Path.Combine(
+                parentFolder,
+                CollectionSettings.GetFileName(collectionName)
+            );
             if (RobustFile.Exists(collectionPath))
                 return collectionPath;
             // occasionally, mainly when making a temp folder during joining, the bloomCollection file may not
             // have the expected name
-            var result = Directory
-                .EnumerateFiles(parentFolder, "*.bloomCollection")
-                .FirstOrDefault();
-            if (result == null)
-                return collectionPath; // sometimes we use this method to get the expected path where there is no .bloomCollection
-            return result;
+            if (CollectionSettings.TryGetSettingsFilePath(parentFolder, out var realPath))
+                return realPath;
+            return collectionPath; // sometimes we use this method to get the expected path where there is no .bloomCollection
         }
 
         public static List<string> RootLevelCollectionFilesIn(string folder)
@@ -1861,177 +1859,6 @@ namespace Bloom.TeamCollection
             return !string.IsNullOrEmpty(BookStorage.FindBookHtmlInFolder(folderPath));
         }
 
-        // During Startup, we want messages to go to both the current progress dialog and the permanent
-        // change log. This method handles sending to both.
-        // Note that errors logged here will not result in the TC dialog showing the Reload Collection
-        // button, because we are here doing a reload, so all errors are logged as ErrorNoReload.
-        void ReportProgressAndLog(
-            IWebSocketProgress progress,
-            ProgressKind kind,
-            string l10nIdSuffix,
-            string message,
-            string param0 = null,
-            string param1 = null
-        )
-        {
-            var fullL10nId = string.IsNullOrEmpty(l10nIdSuffix)
-                ? ""
-                : "TeamCollection." + l10nIdSuffix;
-            var msg = string.IsNullOrEmpty(l10nIdSuffix)
-                ? message
-                : string.Format(LocalizationManager.GetString(fullL10nId, message), param0, param1);
-            progress.MessageWithoutLocalizing(msg, kind);
-            _tcLog.WriteMessage(
-                (kind == ProgressKind.Progress)
-                    ? MessageAndMilestoneType.History
-                    : MessageAndMilestoneType.ErrorNoReload,
-                fullL10nId,
-                message,
-                param0,
-                param1
-            );
-        }
-
-        /// <summary>
-        /// This overload reports the problem to the progress box, log, and Analytics. It should not be
-        /// called directly; it is the common part of the two versions of ReportProblemSyncingBook which also
-        /// save the report either in the book or collection history.
-        /// </summary>
-        void CoreReportProblemSyncingBook(
-            IWebSocketProgress progress,
-            ProgressKind kind,
-            string l10nIdSuffix,
-            string message,
-            string param0 = null,
-            string param1 = null
-        )
-        {
-            ReportProgressAndLog(progress, kind, l10nIdSuffix, message, param0, param1);
-            var msg = string.Format(message, param0, param1);
-            Analytics.Track(
-                "TeamCollectionError",
-                new Dictionary<string, string> { { "message", msg } }
-            );
-        }
-
-        /// <summary>
-        /// This overload reports the problem to the progress box, log, and Analytics, and also makes an entry in
-        /// the book's history.
-        /// </summary>
-        void ReportProblemSyncingBook(
-            string folderPath,
-            string bookId,
-            IWebSocketProgress progress,
-            ProgressKind kind,
-            string l10nIdSuffix,
-            string message,
-            string param0 = null,
-            string param1 = null,
-            bool alsoMakeYouTrackIssue = false
-        )
-        {
-            CoreReportProblemSyncingBook(progress, kind, l10nIdSuffix, message, param0, param1);
-            var msg = string.Format(message, param0, param1);
-            // The second argument is not the ideal name for the book, but unless it has no previous history,
-            // the bookName will not be used. I don't think this is the place to be trying to instantiate
-            // a Book object to get the ideal name for it. So I decided to live with using the file name.
-            BookHistory.AddEvent(
-                folderPath,
-                Path.GetFileNameWithoutExtension(folderPath),
-                bookId,
-                BookHistoryEventType.SyncProblem,
-                msg
-            );
-            if (alsoMakeYouTrackIssue)
-            {
-                MakeYouTrackIssue(progress, msg, folderPath);
-            }
-        }
-
-        /// <summary>
-        /// This overload reports the problem to the progress box, log, and Analytics, and also makes an entry in
-        /// the collection's book history. Use it when the problem will result in the book going away, so
-        /// it can't be recorded in the book's own history.
-        /// </summary>
-        void ReportProblemSyncingBook(
-            string collectionPath,
-            string bookName,
-            string bookId,
-            IWebSocketProgress progress,
-            ProgressKind kind,
-            string l10nIdSuffix,
-            string message,
-            string param0 = null,
-            string param1 = null,
-            bool alsoMakeYouTrackIssue = false
-        )
-        {
-            CoreReportProblemSyncingBook(progress, kind, l10nIdSuffix, message, param0, param1);
-            var msg = string.Format(message, param0, param1);
-            CollectionHistory.AddBookEvent(
-                collectionPath,
-                bookName,
-                bookId,
-                BookHistoryEventType.SyncProblem,
-                msg
-            );
-            if (alsoMakeYouTrackIssue)
-                MakeYouTrackIssue(progress, msg, Path.Combine(collectionPath, bookName));
-        }
-
-        /// <summary>
-        /// Make a YouTrack issue (unless we're running unit tests, or the user is unregistered,
-        /// in which case don't bother, since the main point of creating the issue is so we
-        /// can get in touch and offer help).
-        /// </summary>
-        private void MakeYouTrackIssue(IWebSocketProgress progress, string msg, string folderPath)
-        {
-            if (
-                !Program.RunningUnitTests
-                && !string.IsNullOrWhiteSpace(Bloom.Registration.Registration.Default.Email)
-            )
-            {
-                var issue = new YouTrackIssueSubmitter(ProblemReportApi.YouTrackProjectKey);
-                try
-                {
-                    var email = Bloom.Registration.Registration.Default.Email;
-                    var standardUserInfo = ProblemReportApi.GetStandardUserInfo(
-                        email,
-                        Bloom.Registration.Registration.Default.FirstName,
-                        Bloom.Registration.Registration.Default.Surname
-                    );
-                    var lostAndFoundUrl =
-                        "https://docs.bloomlibrary.org/team-collections-advanced-topics/#2488e17a8a6140bebcef068046cc57b7";
-                    var admins = string.Join(
-                        ", ",
-                        (_tcManager?.Settings?.Administrators ?? new string[0]).Select(
-                            e => ProblemReportApi.GetObfuscatedEmail(e)
-                        )
-                    );
-                    var extraInfo =
-                        $"This is a {GetBackendType()} Repo at {RepoDescription}\n{ProblemReportApi.GetBookHistoryAsString(folderPath)}";
-                    // Note: there is deliberately no period after {msg} since msg usually ends with one already.
-                    var fullMsg =
-                        $"{standardUserInfo} \n(Admins: {admins}):\n\nThere was a book synchronization problem that required putting a version in Lost and Found:\n{msg}\n\nSee {lostAndFoundUrl}.\n\n{extraInfo}";
-                    var issueId = issue.SubmitToYouTrack("Book synchronization failed", fullMsg);
-                    var issueLink = "https://issues.bloomlibrary.org/youtrack/issue/" + issueId;
-                    ReportProgressAndLog(
-                        progress,
-                        ProgressKind.Note,
-                        "ProblemReported",
-                        "Bloom reported this problem to the developers."
-                    );
-                    // Originally added " You can see the report at {0}. Also see {1}", issueLink, lostAndFoundUrl); but JohnH says not to (BL-11867)
-                }
-                catch (Exception e)
-                {
-                    Debug.Fail(
-                        "Submitting problem report to YouTrack failed with '" + e.Message + "'."
-                    );
-                }
-            }
-        }
-
         /// <summary>
         /// A list of strings known to occur in filenames Dropbox generates when it resolves conflicting changes.
         /// Not a completely reliable way to identify them, especially with an incomplete list of localizations,
@@ -2044,7 +1871,7 @@ namespace Bloom.TeamCollection
             "Cópia em conflito", // Spanish
             "конфликтующая копия", // Russian
             "冲突副本", // zh-cn, mainland chinese
-            "衝突複本" // zh-tx, taiwan
+            "衝突複本", // zh-tx, taiwan
             // Probably many others
         };
 
@@ -2191,7 +2018,7 @@ namespace Bloom.TeamCollection
                                     id,
                                     progress,
                                     ProgressKind.Error,
-                                    "TeamCollection.ConflictingIdMove",
+                                    "ConflictingIdMove",
                                     "The book \"{0}\" was moved to Lost and Found, since it has the same ID as the book \"{1}\" in the team collection.",
                                     bookFolderName,
                                     repoState.Item1
@@ -2726,36 +2553,18 @@ namespace Bloom.TeamCollection
                             titleIcon = "/bloom/teamCollection/Team Collection.svg",
                             titleColor = "white",
                             titleBackgroundColor = Palette.kBloomBlueHex,
-                            showReportButton = "never"
+                            showReportButton = "never",
                         },
                         "Sync Team Collection"
                     )
                     // winforms dialog properties
                     {
                         Width = 620,
-                        Height = 550
+                        Height = 550,
                     },
                 doWhat,
                 doWhenMainActionFalse
             );
-        }
-
-        public void AddHelpMessageIfProblems(IWebSocketProgress progress)
-        {
-            if (progress.HaveProblemsBeenReported)
-            {
-                var message = LocalizationManager.GetString(
-                    "TeamCollection.GetHelp",
-                    "For help with Team Collection problems, click {here}."
-                );
-                message = message
-                    .Replace(
-                        "{",
-                        "<a href='https://docs.bloomlibrary.org/team-collections-problems'>"
-                    )
-                    .Replace("}", "</a>");
-                progress.MessageWithoutLocalizing(message);
-            }
         }
 
         /// <summary>
@@ -2772,7 +2581,7 @@ namespace Bloom.TeamCollection
                     { "CollectionId", CollectionId },
                     { "CollectionName", _tcManager?.Settings?.CollectionName },
                     { "Backend", GetBackendType() },
-                    { "User", TeamCollectionManager.CurrentUser }
+                    { "User", TeamCollectionManager.CurrentUser },
                 }
             );
 
@@ -3004,16 +2813,6 @@ namespace Bloom.TeamCollection
             // ENHANCE: Right now, if the book selection is checked in or checked out by another user,
             // we will update the icon in LibraryListView, but not the one in the book preview pane.
             // It'd be nice to update the book preview pane data too.
-        }
-
-        /// <summary>
-        /// Returns true if registration is sufficient (after prompting the user if needed); false otherwise
-        /// </summary>
-        public static bool PromptForSufficientRegistrationIfNeeded()
-        {
-            return RegistrationDialog.RequireRegistrationEmail(
-                "You will need to register this copy of Bloom with an email address before participating in a Team Collection"
-            );
         }
 
         public virtual bool CannotDeleteBecauseDisconnected(string bookFolderPath)

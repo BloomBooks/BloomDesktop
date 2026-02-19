@@ -33,7 +33,7 @@ namespace Bloom.Book
             /// When we're making a book to be held up in class, we often want to take the picture and make it fill
             /// up the left page, and the text and make it large on the facing page.
             /// </summary>
-            SplitAcrossPages = 1
+            SplitAcrossPages = 1,
         };
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Bloom.Book
             {
                 return new Layout()
                 {
-                    SizeAndOrientation = SizeAndOrientation.FromString("A5Portrait")
+                    SizeAndOrientation = SizeAndOrientation.FromString("A5Portrait"),
                 };
             }
         }
@@ -177,7 +177,7 @@ namespace Bloom.Book
             var layout = new Layout
             {
                 SizeAndOrientation = defaultIfMissing.SizeAndOrientation,
-                Style = defaultIfMissing.Style
+                Style = defaultIfMissing.Style,
             };
 
             return FromPage(firstPage, layout);
@@ -227,8 +227,8 @@ namespace Bloom.Book
         {
             var layoutChoices = SizeAndOrientation.GetSizeAndOrientationChoices(dom, fileLocator);
             if (
-                layoutChoices.Any(
-                    l => l.SizeAndOrientation.ClassName == layout.SizeAndOrientation.ClassName
+                layoutChoices.Any(l =>
+                    l.SizeAndOrientation.ClassName == layout.SizeAndOrientation.ClassName
                 )
             )
                 return layout;
@@ -260,7 +260,7 @@ namespace Bloom.Book
                             {
                                 SizeAndOrientation = SizeAndOrientation.FromString(
                                     ((SafeXmlText)sizeAndOrientation).InnerText
-                                )
+                                ),
                             }
                         );
                     }

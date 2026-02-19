@@ -26,7 +26,8 @@ html
 			//- with other settings.
 			| .ButtonText-style { font-size: 31pt !important; text-align: center !important; line-height: 1.3 !important; }
 			| .TextToMatch-style { font-size: 40pt !important; text-align: center !important; line-height: 1.1 !important; font-weight: bold !important;}
-			| .Prompt-style { font-size: 18pt !important; line-height: 1.5 !important; word-spacing: normal !important; font-weight: font-style: normal !important; text-decoration: none !important; text-align: center !important; }
+			| .GameHeader-style { font-size: 16pt !important; line-height: 1.5 !important; word-spacing: normal !important; font-weight: normal !important; font-style: normal !important; text-decoration: none !important; text-align: center !important; }
+			| .GameHeader-style > p {text-indent: 0px !important; margin-left: 0px !important;margin-bottom: 0em !important;}
 	body
 		+dataDiv
 			//- This book's title is deliberately not the same as the file name.
@@ -47,7 +48,7 @@ html
 		+choosePictureFromWord
 
 		//- This will eventually be reinstated in the Games template, but temporarily we will reinstate it here and convert pug to HTML.
-		//-Slider: +page("Word Picture Slider Activity", "An interactive page where the user chooses pictures to match words.").customPage.bloom-ignoreForReaderStats.bloom-interactive-page.no-margin-page.numberedPage#3325A8B6-EA15-4FB7-9F8D-271D7B3C8D58(data-page='extra' data-analyticscategories="drag-activity" data-activity="drag-word-chooser-slider" data-tool-id="game" data-feature="game")
+		//-Slider: +page("Word Picture Slider Activity", "An interactive page where the user chooses pictures to match words.").customPage.bloom-ignoreForReaderStats.bloom-interactive-page.no-margin-page.numberedPage#3325A8B6-EA15-4FB7-9F8D-271D7B3C8D58(data-page='extra' data-analyticscategories="drag-game" data-activity="drag-word-chooser-slider" data-tool-id="game" data-feature="game")
 		//- 	.split-pane-component-inner
 		//- 		//- there's a background image that fills the page. Todo: find a good one that doesn't take much space for a demo
 		//- 		+image
@@ -59,7 +60,7 @@ html
 		//- 			div.bloom-canvas-element.ui-resizable.ui-draggable(data-img-txt="1" data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`]}" style="left: 60px; top: 80px; width: 100px; height: 100px; position: absolute;")
 		//- 				//- tabindex 0 is necessary for canvas element image containers so they can properly be set as the active canvas element.
 		//- 				.bloom-imageContainer(tabindex="0")
-		//- 					img(src="placeHolder.png", width="100px", alt='This picture, placeHolder.png, is missing or was loading too slowly.')
+		//- 					img(src="placeHolder.png", width="100px")
 		//- 			//- a corresponding text box
 		//- 			div.bloom-canvas-element.ui-resizable.ui-draggable.bloom-allowAutoShrink.bloom-wordChoice.bloom-activeTextBox(data-txt-img="1" data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`]}" style="left: 60px; top: 20px; width: 91px; height: 31px; position: absolute;")
 		//- 				.bloom-translationGroup(data-default-languages='auto')

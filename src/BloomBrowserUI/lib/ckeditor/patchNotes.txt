@@ -1,0 +1,11 @@
+This file is to note changes we made to the generated ckeditor.js file which we think was generated
+by the online configuration tool for CkEditor 4.5.1.
+
+There may have been changes before the ones noted here.
+
+October 2025: Removed the call to autoInline, which (unless an option disableAutoInline was set) automatically
+attached CkEditor to every editable div on the page. I did this as part of the switch to vite, because
+I could not find any way to set that option before the autoInlining got done. This is because CkEditor
+is loaded as text/javascript, while our own code is loaded as a module, so any immediate execute code
+of ours (but not of CkEditors) is delayed until the DOM is loaded. This version of CkEditor simply never
+autoInlines.

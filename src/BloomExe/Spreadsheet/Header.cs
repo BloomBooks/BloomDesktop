@@ -22,7 +22,7 @@ namespace Bloom.Spreadsheet
             HeaderRows = new List<HeaderRow>()
             {
                 new HeaderRow(Spreadsheet),
-                new HeaderRow(Spreadsheet)
+                new HeaderRow(Spreadsheet),
             };
             ColumnIdRow.Hidden = true;
         }

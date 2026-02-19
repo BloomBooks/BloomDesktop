@@ -1,6 +1,6 @@
-﻿using Bloom.Collection;
-using System.Linq;
+﻿using System.Linq;
 using System.Xml.Linq;
+using Bloom.Collection;
 
 namespace Bloom.Publish.BloomPub
 {

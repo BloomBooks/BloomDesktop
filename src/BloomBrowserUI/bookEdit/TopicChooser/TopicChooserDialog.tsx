@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useState } from "react";
@@ -11,12 +10,12 @@ import {
     BloomDialog,
     DialogBottomButtons,
     DialogTitle,
-    DialogMiddle
+    DialogMiddle,
 } from "../../react_components/BloomDialog/BloomDialog";
 import {
     IBloomDialogEnvironmentParams,
     Mode,
-    useSetupBloomDialog
+    useSetupBloomDialog,
 } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import { DialogCloseButton } from "../../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -25,7 +24,7 @@ import {
     FormControlLabel,
     Radio,
     RadioGroup,
-    Typography
+    Typography,
 } from "@mui/material";
 
 interface ITopicChoice {
@@ -39,19 +38,18 @@ interface ITopicChooserDialogProps {
     availableTopics?: ITopicChoice[];
 }
 
-export const TopicChooserDialog: React.FunctionComponent<ITopicChooserDialogProps> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+export const TopicChooserDialog: React.FunctionComponent<
+    ITopicChooserDialogProps
+> = (props) => {
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
 
     // Configure the local function (`show`) for showing the dialog to be the one derived from useSetupBloomDialog (`showDialog`)
     // which allows js launchers of the dialog to make it visible (by calling showCopyrightAndLicenseInfoOrDialog)
     show = showDialog;
 
     const [currentTopic, setCurrentTopic] = useState<string | undefined>(
-        props.currentTopic
+        props.currentTopic,
     );
 
     const dialogTitle = useL10n("Choose Topic", "TopicChooser.Title");
@@ -108,7 +106,7 @@ export const TopicChooserDialog: React.FunctionComponent<ITopicChooserDialogProp
                             fontWeight: fontWeightForChoice(choice),
                             fontSize: 16,
                             marginLeft: 6,
-                            marginBlockEnd: 0
+                            marginBlockEnd: 0,
                         }}
                     >
                         {choice.translated
@@ -130,7 +128,7 @@ export const TopicChooserDialog: React.FunctionComponent<ITopicChooserDialogProp
                         size="medium"
                         color="primary"
                         checked={isTopicChecked(choice)}
-                        onChange={event =>
+                        onChange={(event) =>
                             onRadioSelectionChanged(event.target.value)
                         }
                     />
@@ -187,10 +185,10 @@ let show: () => void = () => {
 
 export function showTopicChooserDialog(mode: Mode = Mode.Edit) {
     try {
-        get("editView/topics", result => {
+        get("editView/topics", (result) => {
             const topicsAndCurrent = result.data;
-            const topics = (topicsAndCurrent.Topics as string[]).map(t =>
-                JSON.parse(t)
+            const topics = (topicsAndCurrent.Topics as string[]).map((t) =>
+                JSON.parse(t),
             );
             const currentTopic =
                 topicsAndCurrent.Current === "No Topic"
@@ -207,10 +205,10 @@ export function showTopicChooserDialog(mode: Mode = Mode.Edit) {
                         dialogEnvironment={{
                             dialogFrameProvidedExternally: false,
                             initiallyOpen: false,
-                            mode
+                            mode,
                         }}
                     />,
-                    getModalContainer()
+                    getModalContainer(),
                 );
                 show();
             }
@@ -226,7 +224,7 @@ export function showTopicChooserDialog(mode: Mode = Mode.Edit) {
 // So we just always use our own, new, unique container.
 function getModalContainer(): HTMLElement {
     let modalDialogContainer = document.getElementById(
-        "TopicChooserDialogContainer"
+        "TopicChooserDialogContainer",
     );
     if (modalDialogContainer) {
         modalDialogContainer.remove();

@@ -4,7 +4,7 @@ import * as React from "react";
 import {
     kBloomBlue,
     kDarkestBackground,
-    toolboxTheme
+    toolboxTheme,
 } from "../../../bloomMaterialUITheme";
 import * as ReactDOM from "react-dom";
 import { getToolboxBundleExports } from "../../js/bloomFrames";
@@ -12,7 +12,7 @@ import { useL10n } from "../../../react_components/l10nHooks";
 import { default as PencilIcon } from "@mui/icons-material/Edit";
 import { showGamePromptDialog } from "../games/GameTool";
 import BloomButton from "../../../react_components/bloomButton";
-import { getCanvasElementManager } from "../overlay/canvasElementUtils";
+import { getCanvasElementManager } from "../canvas/canvasElementUtils";
 
 // This component is responsible for the Game Setup mode tabs in the Game tool.
 // Although the code seems to belong in this folder with the other Game code, it is actually
@@ -22,25 +22,25 @@ import { getCanvasElementManager } from "../overlay/canvasElementUtils";
 // that the editable page iframe exports and to call it through getEditablePageBundleExports().
 export const DragActivityTabControl: React.FunctionComponent<{
     activeTab: number;
-}> = props => {
+}> = (props) => {
     const changeHandler = (tab: number) => {
         getToolboxBundleExports()?.setActiveDragActivityTab(tab);
         getCanvasElementManager()?.setActiveElement(undefined);
     };
     const setupMode = useL10n(
         "Game Setup mode:",
-        "EditTab.Toolbox.DragActivity.SetupMode"
+        "EditTab.Toolbox.DragActivity.SetupMode",
     );
     const startLabel = useL10n("Start", "EditTab.Toolbox.DragActivity.Start");
     const correctLabel = useL10n(
         "Correct",
-        "EditTab.Toolbox.DragActivity.Correct"
+        "EditTab.Toolbox.DragActivity.Correct",
     );
     const wrongLabel = useL10n("Wrong", "EditTab.Toolbox.DragActivity.Wrong");
     const playLabel = useL10n("Play", "EditTab.Toolbox.DragActivity.Play");
 
     const prompt = document.getElementsByClassName(
-        "bloom-game-prompt"
+        "bloom-game-prompt",
     )[0] as HTMLElement;
     const promptL10nId =
         prompt?.getAttribute("data-prompt-button-l10nid") ?? null;
@@ -72,7 +72,7 @@ export const DragActivityTabControl: React.FunctionComponent<{
                             enabled={true}
                             l10nKey={
                                 prompt?.getAttribute(
-                                    "data-prompt-button-l10nid"
+                                    "data-prompt-button-l10nid",
                                 ) || ""
                             }
                             iconBeforeText={<PencilIcon />}
@@ -145,7 +145,7 @@ export const Tabs: React.FunctionComponent<{
     onChange: (newValue: number) => void;
     labels: string[];
     className?: string;
-}> = props => {
+}> = (props) => {
     const changeHandler = (index: number) => {
         props.onChange(index);
     };
@@ -171,7 +171,7 @@ export const Tabs: React.FunctionComponent<{
                                     ? kBloomBlue
                                     : kDarkestBackground};
                                 margin-left: 4px;
-                            `
+                            `,
                         ]}
                         enabled={true}
                         l10nKey=""

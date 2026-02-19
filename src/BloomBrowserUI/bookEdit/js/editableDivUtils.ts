@@ -1,5 +1,6 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 import { get } from "../../utils/bloomApi";
+import $ from "jquery";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -16,9 +17,7 @@ export class EditableDivUtils {
 
         const selection = page.contentWindow.getSelection();
         if (!selection || !selection.anchorNode) return -1;
-        const active = $(selection.anchorNode)
-            .closest("div")
-            .get(0);
+        const active = $(selection.anchorNode).closest("div").get(0);
         if (active != editableDiv) return -1; // the selection is not in editableDiv at all
         if (!active || selection.rangeCount == 0) {
             return -1;
@@ -56,7 +55,7 @@ export class EditableDivUtils {
         node: Node,
         offset: number,
         divBrCount: number,
-        atStart: boolean
+        atStart: boolean,
     ): boolean {
         if (node.nodeType === 3) {
             // drilled down to a text node. Make the selection.
@@ -104,7 +103,7 @@ export class EditableDivUtils {
                         childNode,
                         offset,
                         -1,
-                        atStart
+                        atStart,
                     )
                 ) {
                     return true;
@@ -133,7 +132,7 @@ export class EditableDivUtils {
     // @param dialogBox
     public static positionDialogAndSetDraggable(
         dialogBox: JQuery,
-        gearIcon: JQuery
+        gearIcon: JQuery,
     ): void {
         // A zoom on the body affects offset but not outerHeight, which messes things up if we don't account for it.
         const scale =
@@ -150,7 +149,7 @@ export class EditableDivUtils {
             my: myOptionValue,
             at: "right top",
             of: gearIcon,
-            collision: "fit"
+            collision: "fit",
         });
 
         // unless we're debugging, the dialog html should be initially created with visibility set to 'hidden'
@@ -159,7 +158,7 @@ export class EditableDivUtils {
         if (dialogBox.is(".ui-draggable")) {
             EditableDivUtils.adjustDraggableOptionsForScaleBug(
                 dialogBox,
-                scale
+                scale,
             );
         }
     }
@@ -172,12 +171,12 @@ export class EditableDivUtils {
             : // The string "10000000-1000-4000-8000-100000000000" is a template for the UUID.
               // The 4 is never changed, but the 1, 0, and 8 are replaced with random hex digits,
               // with 1 and 8 having special meaning and effects due to the XOR and shift operations.
-              "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
+              "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) =>
                   (
                       +c ^
                       (crypto.getRandomValues(new Uint8Array(1))[0] &
                           (15 >> (+c / 4)))
-                  ).toString(16)
+                  ).toString(16),
               );
     }
 
@@ -237,31 +236,31 @@ export class EditableDivUtils {
 
     public static adjustDraggableOptionsForScaleBug(
         dialogBox: JQuery,
-        scale: number
+        scale: number,
     ) {
         dialogBox.draggable({
             // BL-4293 the 'start' and 'drag' functions here work around a known bug in jqueryui.
             // fix adapted from majcherek2048's about 2/3 down this page https://bugs.jqueryui.com/ticket/3740.
             // If we upgrade our jqueryui to a version that doesn't have this bug (1.10.3 or later?),
             // we'll need to back out this change.
-            start: function(event, ui) {
+            start: function (event, ui) {
                 $(this).data("startingScrollTop", $("html").scrollTop());
                 $(this).data("startingScrollLeft", $("html").scrollLeft());
             },
-            drag: function(event, ui) {
+            drag: function (event, ui) {
                 ui.position.top =
                     (ui.position.top - $(this).data("startingScrollTop")) /
                     scale;
                 ui.position.left =
                     (ui.position.left - $(this).data("startingScrollLeft")) /
                     scale;
-            }
+            },
         });
     }
 
     public static pasteImageCredits() {
         const activeElement = document.activeElement;
-        get("image/imageCreditsForWholeBook", result => {
+        get("image/imageCreditsForWholeBook", (result) => {
             const data = result.data;
             if (!data) return; // nothing to insert: no images apparently...
 
@@ -324,7 +323,7 @@ export class EditableDivUtils {
     // Changes to this logic may need to be reflected in audioRecording.ts' cleanUpCkEditorHtml.
     public static doCkEditorCleanup(
         editableDivs: HTMLDivElement[],
-        createBookMarks: boolean
+        createBookMarks: boolean,
     ): object[] {
         const bookmarksForEachEditable: object[] = [];
         editableDivs.forEach((div, index) => {
@@ -337,9 +336,8 @@ export class EditableDivUtils {
                             // console.log("doCkEditorCleanup, before createBookmarks: ");
                             // EditableDivUtils.logElementsInnerHtml([div]);
 
-                            bookmarksForEachEditable[
-                                index
-                            ] = ckeditorSelection.createBookmarks(true);
+                            bookmarksForEachEditable[index] =
+                                ckeditorSelection.createBookmarks(true);
                         } catch (e) {
                             console.error("createBookmarks failed");
                             console.error(e);
@@ -352,7 +350,7 @@ export class EditableDivUtils {
                 if (ckEditorData !== div.innerHTML) {
                     this.safelyReplaceContentWithCkEditorData(
                         div,
-                        ckEditorData
+                        ckEditorData,
                     );
                 }
             }
@@ -367,7 +365,7 @@ export class EditableDivUtils {
     // public for unit testing
     public static safelyReplaceContentWithCkEditorData(
         div: HTMLDivElement,
-        ckEditorData: string
+        ckEditorData: string,
     ) {
         let needToRemoveInitialParagraph = false;
         let divChildNodes = Array.from(div.childNodes);
@@ -425,14 +423,14 @@ export class EditableDivUtils {
     // with extra spaces (which can also cause other toolbox markup issues).
     // Note, this method works to clean up paragraphs which have only a ckeditor bookmark in them, too.
     public static fixUpEmptyishParagraphs(element: HTMLElement) {
-        element.querySelectorAll("p").forEach(p => {
+        element.querySelectorAll("p").forEach((p) => {
             const pChildNodes = Array.from(p.childNodes);
             if (pChildNodes.length < 1 || pChildNodes.length > 2) {
                 return; // (continue)
             }
 
             const childTextNodes = pChildNodes.filter(
-                n => n.nodeName === "#text"
+                (n) => n.nodeName === "#text",
             );
 
             if (
@@ -443,7 +441,7 @@ export class EditableDivUtils {
             }
 
             const childSpanNodes = pChildNodes.filter(
-                n => n.nodeName === "SPAN"
+                (n) => n.nodeName === "SPAN",
             );
 
             if (
@@ -458,7 +456,7 @@ export class EditableDivUtils {
 
     public static restoreSelectionFromCkEditorBookmarks(
         editableDivs: HTMLDivElement[],
-        ckEditorBookmarks: object[]
+        ckEditorBookmarks: object[],
     ) {
         if (ckEditorBookmarks.length) {
             editableDivs.forEach((div, index) => {
@@ -478,9 +476,9 @@ export class EditableDivUtils {
                         // safe and remove any which are there.
                         // (That's what a successful call to selectBookmarks does.)
                         div.querySelectorAll("span[id^='cke_bm_']").forEach(
-                            span => {
+                            (span) => {
                                 span.remove();
-                            }
+                            },
                         );
                     }
                 }
@@ -492,7 +490,7 @@ export class EditableDivUtils {
     public static logElementsInnerHtml(elements: HTMLElement[]) {
         elements.forEach((div, index) => {
             console.log(
-                `   [${index}]: ${div.innerHTML.replace(/\u200b/g, "ZWSP")}`
+                `   [${index}]: ${div.innerHTML.replace(/\u200b/g, "ZWSP")}`,
             );
         });
     }
@@ -509,7 +507,7 @@ export class EditableDivUtils {
             console.assert(
                 !!parentEditable,
                 "isVisible(): Unexpected span that is not inside a bloom-editable. span = " +
-                    elem
+                    elem,
             );
             elemToCheck = parentEditable || elem;
         }

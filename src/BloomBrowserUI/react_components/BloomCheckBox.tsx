@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useState } from "react";
@@ -22,13 +21,14 @@ export const BloomCheckbox: React.FunctionComponent<{
     alreadyLocalized?: boolean;
     icon?: React.ReactNode;
     iconScale?: number;
+    size?: "small" | "medium" | "large";
     temporarilyDisableI18nWarning?: boolean;
     onCheckChanged: (v: boolean | undefined) => void;
     l10nParam0?: string;
     l10nParam1?: string;
     tooltipContents?: React.ReactNode;
     hideBox?: boolean; // used for when a control is *never* user-operable, but we're just showing a check mark or not
-}> = props => {
+}> = (props) => {
     const theme = useTheme();
     const [previousTriState, setPreviousTriState] = useState<
         boolean | undefined
@@ -52,7 +52,7 @@ export const BloomCheckbox: React.FunctionComponent<{
             : labelL10nKey,
         props.l10nComment,
         props.l10nParam0,
-        props.l10nParam1
+        props.l10nParam1,
     );
 
     const disabled =
@@ -107,6 +107,7 @@ export const BloomCheckbox: React.FunctionComponent<{
                         }
                     }}
                     color="primary"
+                    size={props.size}
                 />
             )}
             {props.hideBox && (
@@ -142,10 +143,10 @@ export const BloomCheckbox: React.FunctionComponent<{
                     />
                 )}
                 <div
-                    className="bloom-checkbox-label" // this classname is to help overlay toolbox hack a fix
+                    className="bloom-checkbox-label" // this classname is to help canvas toolbox hack a fix
                     css={css`
                         ${disabled && `opacity: ${kBloomDisabledOpacity}`};
-                        // this rule is about helping this to keep working even when font is small, as in the Overlay Tool
+                        // this rule is about helping this to keep working even when font is small, as in the Canvas Tool
                         min-height: 15px;
                         //border: solid red 0.1px;
                     `}
@@ -166,6 +167,7 @@ export const BloomCheckbox: React.FunctionComponent<{
 
     return (
         <FormControlLabel
+            className="bloom-checkbox-form-control-label"
             css={css`
                 padding-top: 10px; // maintain the default behavior for spacing
                 margin-left: 0; // I don't understand why this is needed, but the default has 11px
@@ -181,7 +183,7 @@ const UniformInlineIcon: React.FunctionComponent<{
     icon?: React.ReactNode;
     iconScale?: number;
     disabled?: boolean;
-}> = props => {
+}> = (props) => {
     const theme = useTheme();
     return (
         <div
@@ -198,12 +200,12 @@ const UniformInlineIcon: React.FunctionComponent<{
                 justify-content: center;
                 margin-right: 4px;
                 svg {
-                    fill: ${
-                        props.disabled ? "black" : theme.palette.primary.main
-                    };
+                    fill: ${props.disabled
+                        ? "black"
+                        : theme.palette.primary.main};
                     height: 100% !important;
                     ${props.iconScale !== undefined &&
-                        `transform: scale(${props.iconScale});`} /* border: solid 0.1px purple; */
+                    `transform: scale(${props.iconScale});`} /* border: solid 0.1px purple; */
                     ${props.disabled && `opacity: ${kBloomDisabledOpacity}`}
                 }
             `}

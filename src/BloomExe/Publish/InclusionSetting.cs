@@ -23,7 +23,7 @@ namespace Bloom.Publish
         Include,
         Exclude,
         IncludeByDefault,
-        ExcludeByDefault
+        ExcludeByDefault,
     }
 
     public static class InclusionSettingExtensions

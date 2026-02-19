@@ -3,7 +3,7 @@
 // (Subjects from Thema are organized as a hierarchical tree but their JSON file is a flat list).
 // Qualifier subjects were removed (all those with codes starting with a number)
 // The Children related subjects were moved to the top of the list.
-import * as themaData from "./ThemaData.json";
+import themaData from "./ThemaData.json";
 export const themaSubjectData: SubjectTreeNode[] = <SubjectTreeNode[]>(
     (<unknown>themaData)
 );
@@ -18,7 +18,7 @@ export class SubjectTreeNode {
         public label: string,
         public notes?: string,
         public checked?: boolean,
-        public children?: SubjectTreeNode[]
+        public children?: SubjectTreeNode[],
     ) {}
 
     // Mark only the specifically selected nodes of the tree (forest?) as checked.
@@ -27,16 +27,16 @@ export class SubjectTreeNode {
     // of a leaf node.
     public static markSelectedSubjectNodes(
         list: SubjectTreeNode[] | undefined,
-        currentSubjects: SubjectTreeNode[]
+        currentSubjects: SubjectTreeNode[],
     ) {
         if (!list) {
             return;
         }
-        list.map(element => {
+        list.map((element) => {
             if (
                 SubjectTreeNode.matchCurrentSubject(
                     element.value,
-                    currentSubjects
+                    currentSubjects,
                 )
             ) {
                 element.checked = true;
@@ -50,12 +50,12 @@ export class SubjectTreeNode {
     // Check whether given code is in the current set of subject codes.
     private static matchCurrentSubject(
         codeValue: string,
-        currentSubjects: SubjectTreeNode[]
+        currentSubjects: SubjectTreeNode[],
     ): boolean {
         if (!currentSubjects) {
             return false;
         }
-        return currentSubjects.some(subject => {
+        return currentSubjects.some((subject) => {
             return subject.value === codeValue;
         });
     }
@@ -69,7 +69,7 @@ export class SubjectTreeNode {
     public static getCodeList(currentSubjects: SubjectTreeNode[]): string {
         if (currentSubjects == null) return "";
         return currentSubjects
-            .map(subject => {
+            .map((subject) => {
                 return subject.value;
             })
             .join(" ");

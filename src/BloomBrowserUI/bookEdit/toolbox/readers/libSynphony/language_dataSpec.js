@@ -6,19 +6,20 @@
  * Created Jun 4, 2014 by Hopper
  *
  */
+import { describe, it, expect, beforeEach, afterEach, beforeAll } from "vitest";
 import { theOneLibSynphony, LanguageData } from "./synphony_lib.js";
-import "./bloomSynphonyExtensions.js"; //add several functions to LanguageData
+import "./bloomSynphonyExtensions"; //add several functions to LanguageData
 
-describe("LanguageData", function() {
-    beforeEach(function() {
+describe("LanguageData", function () {
+    beforeEach(function () {
         //
     });
 
-    afterEach(function() {
+    afterEach(function () {
         //
     });
 
-    it("createNewLanguageData", function() {
+    it("createNewLanguageData", function () {
         var langData = new LanguageData();
 
         // check numbers
@@ -27,7 +28,7 @@ describe("LanguageData", function() {
         expect(langData.Numbers[9]).toBe(9);
     });
 
-    it("addGraphemes", function() {
+    it("addGraphemes", function () {
         var langData = new LanguageData();
         langData.addGrapheme("a");
         langData.addGrapheme("z");
@@ -38,7 +39,7 @@ describe("LanguageData", function() {
         expect(langData.GPCS[1].GPC).toBe("z");
     });
 
-    it("addWords", function() {
+    it("addWords", function () {
         var langData = new LanguageData();
         langData.addWord("and");
         langData.addWord("or");
@@ -49,7 +50,7 @@ describe("LanguageData", function() {
         expect(langData.group1[1].Name).toBe("or");
     });
 
-    it("addWordsWithGpcForm", function() {
+    it("addWordsWithGpcForm", function () {
         var langData = new LanguageData();
         langData.addGrapheme([
             "a",
@@ -79,7 +80,7 @@ describe("LanguageData", function() {
             "y",
             "z",
             "st",
-            "ph"
+            "ph",
         ]);
         langData.addWord("and");
         langData.addWord("or");
@@ -93,7 +94,7 @@ describe("LanguageData", function() {
         expect(langData.group1[2].GPCForm).toEqual(["st", "a", "ph"]);
     });
 
-    it("addWordWithGpcFormAndGraphemeNotInList", function() {
+    it("addWordWithGpcFormAndGraphemeNotInList", function () {
         var langData = new LanguageData();
         langData.addGrapheme(["a", "b", "c"]);
         langData.addWord("bat");
@@ -104,7 +105,7 @@ describe("LanguageData", function() {
         expect(langData.group1[0].GPCForm).toEqual(["b", "a", "t"]);
     });
 
-    it("addWordWithGpcFormAndCharWithLargeUnicodeValue", function() {
+    it("addWordWithGpcFormAndCharWithLargeUnicodeValue", function () {
         var langData = new LanguageData();
         // \x100026
         langData.addGrapheme(["a", "b", "􀀦"]);
@@ -116,7 +117,7 @@ describe("LanguageData", function() {
         expect(langData.group1[0].GPCForm).toEqual(["a", "􀀦", "b"]);
     });
 
-    it("addWordWithGpcFormAndCharWithLargeUnicodeValueNotInList", function() {
+    it("addWordWithGpcFormAndCharWithLargeUnicodeValueNotInList", function () {
         var langData = new LanguageData();
         langData.addGrapheme(["a", "b", "c"]);
         // \x100026
@@ -128,7 +129,7 @@ describe("LanguageData", function() {
         expect(langData.group1[0].GPCForm).toEqual(["a", "􀀦", "b"]);
     });
 
-    it("parseLangDataString", function() {
+    it("parseLangDataString", function () {
         var langStr =
             "setLangData({" +
             '"LangName": "Tok Pisin",' +
@@ -208,7 +209,7 @@ describe("LanguageData", function() {
             "j",
             "y",
             "v",
-            "-"
+            "-",
         ]);
         expect(langData.GPCS.length).toEqual(26);
         expect(langData.group1.length).toEqual(10);

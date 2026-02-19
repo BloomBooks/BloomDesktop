@@ -21,7 +21,7 @@ namespace Bloom.WebLibraryIntegration
             var host = UrlLookup.LookupUrl(UrlType.LibrarySite, null, BookUpload.UseSandbox);
 
             // Uncomment for local or alpha testing
-            //host = "http://localhost:3000";
+            //host = "http://localhost:5174";
             //host = BookUpload.UseSandbox ? "https://dev-alpha.bloomlibrary.org" : "https://alpha.bloomlibrary.org";
 
             return $"{host}/login-for-editor?port={BloomServer.portForHttp}";

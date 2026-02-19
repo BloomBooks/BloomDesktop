@@ -1,7 +1,7 @@
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
-using System.Diagnostics;
 
 namespace Bloom.MiscUI
 {
@@ -41,6 +41,10 @@ namespace Bloom.MiscUI
         public ToastNotifier()
         {
             InitializeComponent();
+            // Make the call-to-action link use Bloom red, not the default blue.
+            _callToAction.LinkColor = Palette.BloomRed;
+            _callToAction.ActiveLinkColor = Palette.BloomRed;
+            _callToAction.VisitedLinkColor = Palette.BloomRed;
             // We do NOT want our window to be the top most; that disables the effect of ShowWithoutActivation
             // and means that the toast steals focus from our main window. Once brought up in front of our
             // window (but not activated) it seems to stay there pretty nicely even while we interact with

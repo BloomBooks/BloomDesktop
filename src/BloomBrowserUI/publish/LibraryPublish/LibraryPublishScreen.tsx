@@ -1,11 +1,10 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import { Typography } from "@mui/material";
 import { Link } from "../../react_components/link";
 import {
     PublishPanel,
     HelpGroup,
-    SettingsPanel
+    SettingsPanel,
 } from "../commonPublish/PublishScreenBaseComponents";
 
 import { LibraryPublishSteps } from "./LibraryPublishSteps";
@@ -33,7 +32,7 @@ export const LibraryPublishScreen = () => {
             <PublishLanguagesGroup
                 onChange={() => {
                     // Forces features group to re-evaluate whether this will be a talking book.
-                    setGeneration(old => old + 1);
+                    setGeneration((old) => old + 1);
                 }}
             />
             <PublishFeaturesGroup generation={generation} />

@@ -7,7 +7,7 @@ import { InfoTooltip } from "./icons/InfoTooltip";
 // the user needs to check out the book to use (some typically nearby disabled) control.
 export const RequiresCheckoutInfo: React.FunctionComponent<{
     className?: string;
-}> = props => {
+}> = (props) => {
     const canModifyCurrentBook = useCanModifyCurrentBook();
     return (
         <React.Fragment>

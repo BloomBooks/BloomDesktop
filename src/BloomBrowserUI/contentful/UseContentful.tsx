@@ -16,16 +16,19 @@ const defaultContentfulLocale = "en-US";
 // {loading:false, result:[], error:true}.
 // Note: BloomLibrary2 has a version of this code that caches the results.
 // BloomEditor doesn't need that yet.
-export function useContentful(
-    query: any
-): { loading: boolean; result: any[]; error: boolean } {
+export function useContentful(query: any): {
+    loading: boolean;
+    result: any[];
+    error: boolean;
+} {
     const [results, setResults] = useState<{
         queryString: string;
         result: any[] | undefined;
         error: boolean;
     }>({ queryString: "", result: [], error: false });
 
-    const locale = /* useGetContentfulBestLocale() || */ defaultContentfulLocale;
+    const locale =
+        /* useGetContentfulBestLocale() || */ defaultContentfulLocale;
 
     const queryString = JSON.stringify(query);
     useEffect(() => {
@@ -42,13 +45,13 @@ export function useContentful(
                 ...query,
                 // The max is 1000, the default is 100.
                 // (as of 1/2021, we have 95 collections, but that will continue to grow...)
-                limit: 1000
+                limit: 1000,
             })
             .then((entries: EntryCollection<unknown>) => {
                 setResults({
                     queryString,
                     result: entries.items,
-                    error: false
+                    error: false,
                 });
             })
             .catch((err: Error) => {
@@ -82,7 +85,7 @@ interface IBookshelf {
 
 // currently unused, untested: started writing while trying to factor the querying logic out of the DefaultBookshelfControl
 export function useContentfulBookShelvesForSubscription(
-    subscriptionId: string
+    subscriptionId: string,
 ): { loading: boolean; bookshelves: IBookshelf[]; error: boolean } {
     const { loading, result, error } = useContentful(
         subscriptionId
@@ -90,9 +93,9 @@ export function useContentfulBookShelvesForSubscription(
                   content_type: "enterpriseSubscription",
                   select: "fields.collections",
                   include: 2, // depth: we want the bookshelf collection objects as part of this query
-                  "fields.id": `${subscriptionId}`
+                  "fields.id": `${subscriptionId}`,
               }
-            : undefined // no project means we don't want useContentful to do a query
+            : undefined, // no project means we don't want useContentful to do a query
     );
 
     if (!subscriptionId) {
@@ -106,8 +109,8 @@ export function useContentfulBookShelvesForSubscription(
         error,
         bookshelves: result.map((c: any) => ({
             urlKey: c.fields.urlKey,
-            label: c.fields.label as string
-        }))
+            label: c.fields.label as string,
+        })),
     };
 }
 
@@ -115,17 +118,17 @@ export function useContentfulBookShelvesForSubscription(
 // If it's undefined, return the provided default value.
 export function useGetLabelForCollection(
     urlKey: string,
-    defaultResult: string
+    defaultResult: string,
 ): string {
-    const { loading, result, error } = useContentful(
+    const { result } = useContentful(
         urlKey
             ? {
                   content_type: "collection",
                   select: "fields.label",
                   include: 2, // depth: we want the bookshelf collection objects as part of this query
-                  "fields.urlKey": `${urlKey}`
+                  "fields.urlKey": `${urlKey}`,
               }
-            : undefined
+            : undefined,
     );
     return result && result.length > 0 ? result[0].fields.label : defaultResult;
 }

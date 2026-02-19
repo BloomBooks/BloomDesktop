@@ -15,7 +15,7 @@ export class ErrorBoundary extends React.Component<unknown, IErrorState> {
         // Catch errors in any components below and re-render with error message
         this.setState({
             error: error,
-            errorInfo: errorInfo
+            errorInfo: errorInfo,
         });
         // You can also log error messages to an error reporting service here
     }

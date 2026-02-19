@@ -34,10 +34,7 @@ namespace Bloom.CLI
             {
                 using (var applicationContainer = new ApplicationContainer())
                 {
-                    LocalizationManager.SetUILanguage(
-                        Settings.Default.UserInterfaceLanguage,
-                        false
-                    );
+                    LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage);
                     ChangeLayoutForAllContentPagesInAllBooks(
                         options.CollectionPath,
                         options.BookPath,

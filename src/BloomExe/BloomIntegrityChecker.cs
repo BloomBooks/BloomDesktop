@@ -23,7 +23,13 @@ namespace Bloom.MiscUI
         public static bool CheckIntegrity()
         {
             var errors = new StringBuilder();
-            var files = new[] { "Bloom.chm", "PdfDroplet.exe", "BloomPdfMaker.exe" };
+            var files = new[]
+            {
+                "Bloom.chm",
+                "ffmpeg.exe",
+                "sillsdev.dotImpose.dll",
+                "BloomPdfMaker.exe",
+            };
 
             string[] dirs;
             if (Platform.IsWindows)

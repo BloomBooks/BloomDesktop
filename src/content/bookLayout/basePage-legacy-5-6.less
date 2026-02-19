@@ -26,7 +26,8 @@
 
 body {
     line-height: 1.5;
-    font-family: Andika, "Andika New Basic", "Andika Basic", "Gentium Basic",
+    font-family:
+        Andika, "Andika New Basic", "Andika Basic", "Gentium Basic",
         "Gentium Book Basic", "Doulos SIL", Sans-Serif;
 }
 span.ui-audioCurrent,
@@ -307,7 +308,9 @@ span.bloom-linebreak {
 .bloom-canvas .bloom-canvas-element div:focus,
 .bloom-canvas .bloom-canvas-element video:focus {
     border: 1px solid #1d94a4;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px #1d94a4;
+    box-shadow:
+        inset 0 1px 3px rgba(0, 0, 0, 0.1),
+        0 0 8px #1d94a4;
 }
 .bloom-canvas .bloom-canvas-element .bloom-translationGroup {
     background: transparent;
@@ -323,13 +326,17 @@ span.bloom-linebreak {
 .bloom-canvas
     .bloom-canvas-element
     .bloom-translationGroup
-    .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
+    .bloom-editable[contentEditable="true"][data-languageTipContent]:not(
+        [data-languageTipContent=""]
+    ):after {
     display: none;
 }
 .bloom-canvas
     .bloom-canvas-element
     .bloom-translationGroup
-    .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):focus:after {
+    .bloom-editable[contentEditable="true"][data-languageTipContent]:not(
+        [data-languageTipContent=""]
+    ):focus:after {
     display: block;
     left: unset;
     text-align: right;
@@ -342,7 +349,9 @@ span.bloom-linebreak {
 .bloom-canvas
     .bloom-canvas-element
     .bloom-translationGroup
-    .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):focus:after:hover {
+    .bloom-editable[contentEditable="true"][data-languageTipContent]:not(
+        [data-languageTipContent=""]
+    ):focus:after:hover {
     background-color: white;
 }
 .bloom-canvas
@@ -361,7 +370,9 @@ span.bloom-linebreak {
     .bloom-translationGroup
     .bloom-editable:focus {
     border: 1px solid #1d94a4;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px #1d94a4;
+    box-shadow:
+        inset 0 1px 3px rgba(0, 0, 0, 0.1),
+        0 0 8px #1d94a4;
 }
 .bloom-fullBleed
     .bloom-canvas
@@ -370,17 +381,25 @@ span.bloom-linebreak {
     flex-direction: column;
 }
 .bloom-canvas
-    .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"]):not(:has(.overflow)),
+    .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"]):not(
+        :has(.overflow)
+    ),
 .bloom-canvas
-    .bloom-canvas-element[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]):not(:has(.overflow)) {
+    .bloom-canvas-element[data-bubble*="backgroundColors"]:not(
+        [data-bubble*="`backgroundColors`:[`transparent`]"]
+    ):not(:has(.overflow)) {
     display: flex;
     align-items: center;
 }
 .bloom-canvas
-    .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"]):not(:has(.overflow))
+    .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"]):not(
+        :has(.overflow)
+    )
     .bloom-editable.bloom-visibility-code-on,
 .bloom-canvas
-    .bloom-canvas-element[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]):not(:has(.overflow))
+    .bloom-canvas-element[data-bubble*="backgroundColors"]:not(
+        [data-bubble*="`backgroundColors`:[`transparent`]"]
+    ):not(:has(.overflow))
     .bloom-editable.bloom-visibility-code-on {
     display: flex;
     flex-direction: row;
@@ -393,40 +412,54 @@ span.bloom-linebreak {
     .bloom-editable.bloom-visibility-code-on
     p,
 .bloom-canvas
-    .bloom-canvas-element[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"])
+    .bloom-canvas-element[data-bubble*="backgroundColors"]:not(
+        [data-bubble*="`backgroundColors`:[`transparent`]"]
+    )
     .bloom-editable.bloom-visibility-code-on
     p {
     flex-basis: 100%;
     flex-grow: 0;
 }
 .bloom-canvas
-    .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"]):not(:has(.overflow))
+    .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"]):not(
+        :has(.overflow)
+    )
     .bloom-vertical-align-top
     .bloom-editable,
 .bloom-canvas
-    .bloom-canvas-element[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]):not(:has(.overflow))
+    .bloom-canvas-element[data-bubble*="backgroundColors"]:not(
+        [data-bubble*="`backgroundColors`:[`transparent`]"]
+    ):not(:has(.overflow))
     .bloom-vertical-align-top
     .bloom-editable {
     align-items: flex-start;
     align-content: flex-start;
 }
 .bloom-canvas
-    .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"]):not(:has(.overflow))
+    .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"]):not(
+        :has(.overflow)
+    )
     .bloom-vertical-align-center
     .bloom-editable,
 .bloom-canvas
-    .bloom-canvas-element[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]):not(:has(.overflow))
+    .bloom-canvas-element[data-bubble*="backgroundColors"]:not(
+        [data-bubble*="`backgroundColors`:[`transparent`]"]
+    ):not(:has(.overflow))
     .bloom-vertical-align-center
     .bloom-editable {
     align-items: center;
     align-content: center;
 }
 .bloom-canvas
-    .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"]):not(:has(.overflow))
+    .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"]):not(
+        :has(.overflow)
+    )
     .bloom-vertical-align-bottom
     .bloom-editable,
 .bloom-canvas
-    .bloom-canvas-element[data-bubble*="backgroundColors"]:not([data-bubble*="`backgroundColors`:[`transparent`]"]):not(:has(.overflow))
+    .bloom-canvas-element[data-bubble*="backgroundColors"]:not(
+        [data-bubble*="`backgroundColors`:[`transparent`]"]
+    ):not(:has(.overflow))
     .bloom-vertical-align-bottom
     .bloom-editable {
     align-items: flex-end;
@@ -603,37 +636,74 @@ div#bloomDataDiv {
 .bloom-fullBleed .bloom-page {
     transform-origin: top left;
     transition: 0.5s ease-in-out;
+    --hide-bleed-adjustment: 0px; // Gets set when publishingWithoutFullBleed.
 }
 .bloom-fullBleed .bloom-page.A5Portrait {
-    transform: translate(0, -1.25675676mm) scale(1.04054054);
+    transform: translate(
+            var(--hide-bleed-adjustment),
+            var(--hide-bleed-adjustment)
+        )
+        translate(0, -1.25675676mm) scale(1.04054054);
 }
 .bloom-fullBleed .bloom-page.A5Landscape {
-    transform: translate(-1.25675676mm, 0) scale(1.04054054);
+    transform: translate(
+            var(--hide-bleed-adjustment),
+            var(--hide-bleed-adjustment)
+        )
+        translate(-1.25675676mm, 0) scale(1.04054054);
 }
 .bloom-fullBleed .bloom-page.A4Portrait {
     transform: translate(0, -1.24285714mm) scale(1.02857143);
 }
 .bloom-fullBleed .bloom-page.A4Landscape {
-    transform: translate(-1.24285714mm, 0) scale(1.02857143);
+    transform: translate(
+            var(--hide-bleed-adjustment),
+            var(--hide-bleed-adjustment)
+        )
+        translate(-1.24285714mm, 0) scale(1.02857143);
 }
 .bloom-fullBleed .bloom-page.A3Portrait {
-    transform: translate(0, -1.24242424mm) scale(1.02020202);
+    transform: translate(
+            var(--hide-bleed-adjustment),
+            var(--hide-bleed-adjustment)
+        )
+        translate(0, -1.24242424mm) scale(1.02020202);
 }
 .bloom-fullBleed .bloom-page.A3Landscape {
-    transform: translate(-1.24242424mm, 0) scale(1.02020202);
+    transform: translate(
+            var(--hide-bleed-adjustment),
+            var(--hide-bleed-adjustment)
+        )
+        translate(-1.24242424mm, 0) scale(1.02020202);
 }
 .bloom-fullBleed .bloom-page.USComicPortrait {
-    transform: translate(0, -0.06462636in) scale(1.03565592);
+    transform: translate(
+            var(--hide-bleed-adjustment),
+            var(--hide-bleed-adjustment)
+        )
+        translate(0, -0.06462636in) scale(1.03565592);
 }
 .bloom-fullBleed .bloom-page.Size6x9Portrait {
-    transform: translate(0, -0.05905512in) scale(1.03937008);
+    transform: translate(
+            var(--hide-bleed-adjustment),
+            var(--hide-bleed-adjustment)
+        )
+        translate(0, -0.05905512in) scale(1.03937008);
 }
 .bloom-fullBleed .bloom-page.Size6x9Landscape {
-    transform: translate(-0.05905512in, 0) scale(1.03937008);
+    transform: translate(
+            var(--hide-bleed-adjustment),
+            var(--hide-bleed-adjustment)
+        )
+        translate(-0.05905512in, 0) scale(1.03937008);
 }
 .bloom-mediaBox {
     page-break-after: always;
     overflow: hidden;
+    // This doesn't actually produce a perfect size; it's a kludge to get things
+    // to look roughly right until we actually implement the page sizes that
+    // don't override this.
+    width: fit-content;
 }
 .bloom-mediaBox.A5Portrait {
     width: 154mm;
@@ -681,6 +751,9 @@ div#bloomDataDiv {
 }
 body.publishingWithoutFullBleed .bloom-mediaBox {
     overflow: hidden;
+    .bloom-page {
+        --hide-bleed-adjustment: -3mm;
+    }
 }
 body.publishingWithoutFullBleed .bloom-mediaBox.A5Portrait {
     width: 148mm;
@@ -1099,14 +1172,18 @@ h2 {
 .bloom-vertical-align-center:not(:has(.overflow)) {
     justify-content: center;
 }
-.bloom-vertical-align-center:not(:has(.overflow)):not(.bloom-bilingual):not(.bloom-trilingual)
+.bloom-vertical-align-center:not(:has(.overflow)):not(.bloom-bilingual):not(
+        .bloom-trilingual
+    )
     .bloom-editable {
     justify-content: center;
 }
 .bloom-vertical-align-bottom:not(:has(.overflow)) {
     justify-content: flex-end;
 }
-.bloom-vertical-align-bottom:not(:has(.overflow)):not(.bloom-bilingual):not(.bloom-trilingual)
+.bloom-vertical-align-bottom:not(:has(.overflow)):not(.bloom-bilingual):not(
+        .bloom-trilingual
+    )
     .bloom-editable {
     justify-content: flex-end;
 }

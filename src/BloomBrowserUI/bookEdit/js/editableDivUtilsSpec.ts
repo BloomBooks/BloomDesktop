@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { EditableDivUtils } from "./editableDivUtils";
 
 describe("EditableDivUtils Tests", () => {
@@ -6,7 +7,7 @@ describe("EditableDivUtils Tests", () => {
             "<p>A</p>",
             "<p>A&nbsp;</p>",
             "<p>&nbsp;A</p>",
-            "<p>&nbsp;<span>A</span></p>"
+            "<p>&nbsp;<span>A</span></p>",
         ];
 
         for (const testCase of testCases) {
@@ -26,12 +27,12 @@ describe("EditableDivUtils Tests", () => {
             ["<p>&nbsp;</p><p>&nbsp;</p>", "<p><br></p><p><br></p>"],
             [
                 '<p>&nbsp;<span id="cke_bm_49C" style="display: none;">&nbsp;</span></p>',
-                '<p><br><span id="cke_bm_49C" style="display: none;">&nbsp;</span></p>'
+                '<p><br><span id="cke_bm_49C" style="display: none;">&nbsp;</span></p>',
             ],
             [
                 '<p><span id="cke_bm_49C" style="display: none;">&nbsp;</span>&nbsp;</p>',
-                '<p><span id="cke_bm_49C" style="display: none;">&nbsp;</span><br></p>'
-            ]
+                '<p><span id="cke_bm_49C" style="display: none;">&nbsp;</span><br></p>',
+            ],
         ];
 
         for (const testCase of testCases) {
@@ -71,26 +72,26 @@ describe("EditableDivUtils Tests", () => {
             [
                 '<span id="cke_bm_49C" style="display: none;">&nbsp;</span><p>A</p>',
                 '<p><span id="cke_bm_49C" style="display: none;">&nbsp;</span>&nbsp;</p><p>A</p>',
-                '<span id="cke_bm_49C" style="display: none;">&nbsp;</span><p>A</p>'
+                '<span id="cke_bm_49C" style="display: none;">&nbsp;</span><p>A</p>',
             ],
             // Ensures we leave well enough alone
             [
                 '<span id="cke_bm_49C" style="display: none;">&nbsp;</span><p>A</p>',
                 '<span id="cke_bm_49C" style="display: none;">&nbsp;</span><p>A</p>',
-                '<span id="cke_bm_49C" style="display: none;">&nbsp;</span><p>A</p>'
+                '<span id="cke_bm_49C" style="display: none;">&nbsp;</span><p>A</p>',
             ],
             // If ckeditor wants to wrap a non bookmark for some reason, leave it alone
             [
                 "<span>&nbsp;</span><p>A</p>",
                 "<p><span>&nbsp;</span></p><p>A</p>",
-                "<p><span>&nbsp;</span></p><p>A</p>"
+                "<p><span>&nbsp;</span></p><p>A</p>",
             ],
             // Not sure this can really happen, but prove we leave paragraph wrapping alone if there is content besides just nbsp
             [
                 '<span id="cke_bm_49C" style="display: none;">&nbsp;</span>Z<p>A</p>',
                 '<p><span id="cke_bm_49C" style="display: none;">&nbsp;</span>Z</p><p>A</p>',
-                '<p><span id="cke_bm_49C" style="display: none;">&nbsp;</span>Z</p><p>A</p>'
-            ]
+                '<p><span id="cke_bm_49C" style="display: none;">&nbsp;</span>Z</p><p>A</p>',
+            ],
         ];
 
         for (const testCase of testCases) {
@@ -99,7 +100,7 @@ describe("EditableDivUtils Tests", () => {
 
             EditableDivUtils.safelyReplaceContentWithCkEditorData(
                 div,
-                testCase[1]
+                testCase[1],
             );
 
             expect(div.innerHTML).toEqual(testCase[2]);

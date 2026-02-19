@@ -17,12 +17,12 @@ export function allPromiseSettled(promises) {
 
     // Wrapping our iteration with Promise object
     // So that we can resolve and return the results on done.
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
         // Iterate the inputs
         promises.forEach((promise, index) => {
             // Wait for each promise to resolve
             return Promise.resolve(promise)
-                .then(result => {
+                .then((result) => {
                     counter++; // Increment counter
 
                     // Store status and result in same order
@@ -33,7 +33,7 @@ export function allPromiseSettled(promises) {
                         resolve(results);
                     }
                 })
-                .catch(err => {
+                .catch((err) => {
                     counter++; // Increment counter
 
                     // Store status and reason for rejection in same order
@@ -88,7 +88,7 @@ export function setTimeoutPromise(
                 }
             },
             delayInMs,
-            args
+            args,
         );
     });
 }

@@ -1,20 +1,21 @@
 import {
     IConfirmDialogProps,
-    showConfirmDialogFromOutsideReact
+    showConfirmDialogFromOutsideReact,
 } from "../react_components/confirmDialog";
 import {
     IColorPickerDialogProps,
     showColorPickerDialog as doShowColorPickerDialog,
-    hideColorPickerDialog as doHideColorPickerDialog
+    hideColorPickerDialog as doHideColorPickerDialog,
 } from "../react_components/color-picking/colorPickerDialog";
 import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
+import $ from "jquery";
 
 export interface IEditViewFrameExports {
     showDialog(dialogContents: string | JQuery, options: any): JQuery;
     closeDialog(id: string): void;
     toolboxIsShowing(): boolean;
     doWhenToolboxLoaded(
-        task: (toolboxFrameExports: IToolboxFrameExports) => any
+        task: (toolboxFrameExports: IToolboxFrameExports) => any,
     );
     getModalDialogContainer(): HTMLElement | null;
     showConfirmDialog(props: IConfirmDialogProps): void;
@@ -28,11 +29,15 @@ export interface IEditViewFrameExports {
         split: (timingFilePath: string) => Promise<string | undefined>,
         editTimingsFile: (timingsFilePath?: string) => Promise<void>,
         applyTimingsFile: (
-            timingsFilePath?: string
+            timingsFilePath?: string,
         ) => Promise<string | undefined>,
-        closing: (canceled: boolean) => void
+        closing: (canceled: boolean) => void,
     );
     showRequiresSubscriptionDialog(featureName: string): void;
+    showRegistrationDialogInEditTab(
+        mayChangeEmail?: boolean,
+        emailRequiredForTeamCollection?: boolean,
+    ): void;
 }
 
 export function SayHello() {
@@ -51,6 +56,10 @@ export { showPageChooserDialog };
 import "../lib/errorHandler";
 import { showBookSettingsDialog } from "./bookSettings/BookSettingsDialog";
 export { showBookSettingsDialog };
+import { showRegistrationDialogForEditTab } from "../react_components/registration/registrationDialog";
+export { showRegistrationDialogForEditTab as showRegistrationDialog };
+import { showAboutDialog } from "../react_components/aboutDialog";
+export { showAboutDialog };
 import { reportError } from "../lib/errorHandler";
 import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
@@ -62,6 +71,8 @@ import { showAdjustTimingsDialog } from "./toolbox/talkingBook/AdjustTimingsDial
 import { getPageIframeBody } from "../utils/shared";
 import { showRequiresSubscriptionDialogInEditView } from "../react_components/requiresSubscription";
 export { showAdjustTimingsDialog as showAdjustTimingsDialogFromEditViewFrame };
+// Local alias so we have an in-scope identifier for legacy global exposure typing.
+const showAdjustTimingsDialogFromEditViewFrame = showAdjustTimingsDialog;
 
 //Called by c# using editTabBundle.handleUndo()
 export function handleUndo(): void {
@@ -138,7 +149,7 @@ export function switchContentPage(newSource: string) {
 // if the jquery wrapper for the element is created in a different frame than the parent of the dialog element.
 export function showDialog(
     dialogContents: string | JQuery,
-    options: any
+    options: any,
 ): JQuery {
     const dialogElement = $(dialogContents).appendTo($("body"));
     dialogElement.dialog(options);
@@ -152,16 +163,15 @@ export function closeDialog(id: string) {
 }
 
 export function toolboxIsShowing() {
-    return (<HTMLInputElement>$(document)
-        .find("#pure-toggle-right")
-        .get(0)).checked;
+    return (<HTMLInputElement>$(document).find("#pure-toggle-right").get(0))
+        .checked;
 }
 
 // Do this task when the toolbox is loaded. If it isn't already, we set a timeout and do it when we can.
 // (The value passed to the task function will be the value from getToolboxBundleExports(). Unfortunately we
 // haven't yet managed to declare a type for that, so I can't easily specify it here.)
 export function doWhenToolboxLoaded(
-    task: (toolboxFrameExports: IToolboxFrameExports) => any
+    task: (toolboxFrameExports: IToolboxFrameExports) => any,
 ) {
     const toolboxWindow = getToolboxBundleExports();
     if (toolboxWindow) {
@@ -208,7 +218,7 @@ export function ShowEditViewDialog(dialog: FunctionComponentElement<any>) {
     // this function directly from the toolbox.
     if (doc !== document && doc.defaultView?.top?.document !== document) {
         alert(
-            "ShowEditViewDialog called from wrong iframe. Can't render React function in a different document."
+            "ShowEditViewDialog called from wrong iframe. Can't render React function in a different document.",
         );
         return;
     }
@@ -246,13 +256,21 @@ export function showEditViewTopicChooserDialog() {
     showTopicChooserDialog();
 }
 export function showEditViewBookSettingsDialog(
-    initiallySelectedGroupIndex?: number
+    initiallySelectedGroupIndex?: number,
 ) {
     showBookSettingsDialog(initiallySelectedGroupIndex);
 }
 
+export function showAboutDialogInEditTab() {
+    showAboutDialog();
+}
+
 export function showRequiresSubscriptionDialog(featureName: string): void {
     showRequiresSubscriptionDialogInEditView(featureName);
+}
+
+export function showRegistrationDialogInEditTab() {
+    showRegistrationDialogForEditTab();
 }
 
 // Adjusts the zoom scaling element created in C# SetupPageZoom; keep in sync with that code.
@@ -260,7 +278,7 @@ export function showRequiresSubscriptionDialog(featureName: string): void {
 // Argument is a raw number (e.g., 0.5 for 50% zoom, 1.0 for 100% zoom).
 export function setZoom(zoom: number): void {
     const container = getPageIframeBody()?.ownerDocument.getElementById(
-        "page-scaling-container"
+        "page-scaling-container",
     );
     if (container) {
         container.style.transform = `scale(${zoom.toString()}`;
@@ -273,3 +291,82 @@ export function setZoom(zoom: number): void {
         console.warn("setZoom called before page loaded");
     }
 }
+
+// --- Global exposure (legacy compatibility) --------------------------------------
+// The old webpack build exposed these APIs via window["editTabBundle"].
+// Maintain that contract so existing C# and cross-frame code keeps working.
+// Keep this at the end so all exported bindings are defined.
+// Note: We purposely build the object explicitly (rather than spreading 'exports')
+// to avoid accidentally leaking unrelated internal symbols.
+// If you add a new function that C# or other frames need, add it here too.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore - allow indexing window
+// Minimal augmentation: declare a type for the bundle to help future maintenance.
+interface EditTabBundleApi {
+    SayHello: typeof SayHello;
+    handleUndo: typeof handleUndo;
+    switchContentPage: typeof switchContentPage;
+    showDialog: typeof showDialog;
+    closeDialog: typeof closeDialog;
+    toolboxIsShowing: typeof toolboxIsShowing;
+    doWhenToolboxLoaded: typeof doWhenToolboxLoaded;
+    canUndo: typeof canUndo;
+    getModalDialogContainer: typeof getModalDialogContainer;
+    ShowEditViewDialog: typeof ShowEditViewDialog;
+    showConfirmDialog: typeof showConfirmDialog;
+    showColorPickerDialog: typeof showColorPickerDialog;
+    hideColorPickerDialog: typeof hideColorPickerDialog;
+    showCopyrightAndLicenseDialog: typeof showCopyrightAndLicenseDialog;
+    showEditViewTopicChooserDialog: typeof showEditViewTopicChooserDialog;
+    showEditViewBookSettingsDialog: typeof showEditViewBookSettingsDialog;
+    showAboutDialogInEditTab: typeof showAboutDialogInEditTab;
+    showRequiresSubscriptionDialog: typeof showRequiresSubscriptionDialog;
+    showRegistrationDialogInEditTab: typeof showRegistrationDialogInEditTab;
+    showAdjustTimingsDialogFromEditViewFrame: typeof showAdjustTimingsDialogFromEditViewFrame;
+    setZoom: typeof setZoom;
+    getToolboxBundleExports: typeof getToolboxBundleExports;
+    getEditablePageBundleExports: typeof getEditablePageBundleExports;
+    showPageChooserDialog: typeof showPageChooserDialog;
+    showBookSettingsDialog: typeof showBookSettingsDialog;
+    showRegistrationDialog: typeof showRegistrationDialogForEditTab;
+    showAboutDialog: typeof showAboutDialog;
+}
+
+declare global {
+    interface Window {
+        editTabBundle: EditTabBundleApi;
+    }
+}
+
+window.editTabBundle = {
+    // simple exports
+    SayHello,
+    handleUndo,
+    switchContentPage,
+    showDialog,
+    closeDialog,
+    toolboxIsShowing,
+    doWhenToolboxLoaded,
+    canUndo,
+    getModalDialogContainer,
+    ShowEditViewDialog,
+    showConfirmDialog,
+    showColorPickerDialog,
+    hideColorPickerDialog,
+    showCopyrightAndLicenseDialog,
+    showEditViewTopicChooserDialog,
+    showEditViewBookSettingsDialog,
+    showAboutDialogInEditTab,
+    showRequiresSubscriptionDialog,
+    showRegistrationDialogInEditTab,
+    showAdjustTimingsDialogFromEditViewFrame:
+        showAdjustTimingsDialogFromEditViewFrame,
+    setZoom,
+    // re-exported cross-frame helpers
+    getToolboxBundleExports,
+    getEditablePageBundleExports,
+    showPageChooserDialog,
+    showBookSettingsDialog,
+    showRegistrationDialog: showRegistrationDialogForEditTab,
+    showAboutDialog,
+};

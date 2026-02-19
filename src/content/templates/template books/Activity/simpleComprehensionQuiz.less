@@ -1,11 +1,13 @@
 @import (reference) "../../../../BloomBrowserUI/bloomUI.less";
 @vertical-space: 10px;
 
-// This rule does nothing for books that have never been in 6.3, since in 6.2, the only pages that
-// have the GameHeader-style class are the new games pages, which use the equivalent rule in games.less.
-// However, 6.3 migrates comprehension quiz pages and simple dom choice pages to use this class
-// instead of QuizHeader-style and Prompt-style, so this rule helps such migrated pages use the
-// right header colors when re-opened in 6.2.
+// This is also defined in games.less, but that isn't automatically included for quiz pages.
+// Putting it here makes it no stronger than a color set in the style dialog.
+// This also works for simple dom choice activities, since it gets included into the same CSS file.
+// Likewise, the text-align is weaker than the !important rule which 6.3 defines in pug for
+// GameHeader-style, so alternatives from the style dialog can override it. But a Game migrated
+// from 6.2 will not have the default pug definition of text-align, so this provides a default
+// that will have most migrated books looking as expected.
 .GameHeader-style {
     color: var(--game-header-color);
     background-color: var(--game-header-bg-color);
@@ -28,19 +30,12 @@
         margin-bottom: @vertical-space;
         flex-grow: 1;
     }
-    .QuizHeader-style {
-        font-size: 20pt;
-        text-align: center;
-        color: var(--game-header-color);
-        background-color: var(--game-header-bg-color);
-        // Hide a problem where if there are multiple lines, the browser thinks there is overflow.
-        // https://issues.bloomlibrary.org/youtrack/issue/BL-9021
-        // We can make the scroll bar go away in at least 3 ways:
-        // overflow-y: visible !important;
-        // padding-bottom: 2px;
-        // line-height: 1.6em;
 
-        padding-bottom: 2px; // I like this one because it's so minimal
+    // makes the quiz header look like those in other games (which are no-margin-page)
+    .quiz .bloom-translationGroup:first-child {
+        margin-top: calc(var(--page-margin-top) * -1);
+        margin-left: calc(var(--page-margin-left) * -1);
+        margin-right: calc(var(--page-margin-right) * -1);
     }
     .checkbox-and-textbox-choice {
         display: flex; // horizontal;
@@ -179,23 +174,39 @@
         input:active ~ .placeToPutVariableCircle {
             opacity: 0.5;
             transform: scale(1);
-            transition: opacity 0.3s, transform 0.2s; //opacity 0.3s, transform 0.2s;
+            transition:
+                opacity 0.3s,
+                transform 0.2s; //opacity 0.3s, transform 0.2s;
         }
     }
 }
 
 // overrides a rule in EditMode.less to push the language label over and make room for cog on right.
-.bloom-editable.QuizHeader-style[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after,
-.bloom-editable.QuizAnswer-style[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after,
-.bloom-editable.QuizQuestion-style[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
+.bloom-editable.QuizHeader-style[contentEditable="true"][data-languageTipContent]:not(
+        [data-languageTipContent=""]
+    ):after,
+.bloom-editable.QuizAnswer-style[contentEditable="true"][data-languageTipContent]:not(
+        [data-languageTipContent=""]
+    ):after,
+.bloom-editable.QuizQuestion-style[contentEditable="true"][data-languageTipContent]:not(
+        [data-languageTipContent=""]
+    ):after {
     margin-right: 24px;
 }
 // Also hide the label except in the focused item (but only in editMode, where we have this label and other rules about it.
 // In PDF, we don't want an :after at all...will mess up page layout. (BL-10019).
 .editMode
-    .bloom-editable.QuizAnswer-style:not(.cke_focus)[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after,
+    .bloom-editable.QuizAnswer-style:not(
+        .cke_focus
+    )[contentEditable="true"][data-languageTipContent]:not(
+        [data-languageTipContent=""]
+    ):after,
 .editMode
-    .bloom-editable.QuizQuestion-style:not(.cke_focus)[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
+    .bloom-editable.QuizQuestion-style:not(
+        .cke_focus
+    )[contentEditable="true"][data-languageTipContent]:not(
+        [data-languageTipContent=""]
+    ):after {
     content: none;
 }
 

@@ -29,7 +29,9 @@
 .Device16x9Landscape.numberedPage.side-left::after {
     left: calc(100% / 2 - 86mm);
 }
-:not(.bloom-interactive-page).Device16x9Landscape.numberedPage.side-right::after {
+:not(
+        .bloom-interactive-page
+    ).Device16x9Landscape.numberedPage.side-right::after {
     left: calc(100% / 2 - 167mm);
 }
 .bloom-interactive-page::after {

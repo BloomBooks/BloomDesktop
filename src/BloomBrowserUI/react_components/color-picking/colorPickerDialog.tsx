@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { useEffect, useRef, useState } from "react";
@@ -8,24 +7,24 @@ import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import { get, postJson } from "../../utils/bloomApi";
 import ColorPicker from "./colorPicker";
-import * as tinycolor from "tinycolor2";
+import tinycolor from "tinycolor2";
 import { IColorInfo, normalizeColorInfoColorsAsHex } from "./colorSwatch";
 import { getRgbaColorStringFromColorAndOpacity } from "../../utils/colorUtils";
 import {
     BloomPalette,
     getColorInfoFromSpecialNameOrColorString,
     getDefaultColorsFromPalette,
-    getSpecialColorName
+    getSpecialColorName,
 } from "./bloomPalette";
 import {
     BloomDialog,
     DialogBottomButtons,
     DialogMiddle,
-    DialogTitle
+    DialogTitle,
 } from "../BloomDialog/BloomDialog";
 import {
     DialogCancelButton,
-    DialogOkButton
+    DialogOkButton,
 } from "../BloomDialog/commonDialogComponents";
 
 export interface IColorPickerDialogProps {
@@ -46,22 +45,22 @@ export interface IColorPickerDialogProps {
 
 let externalSetOpen: React.Dispatch<React.SetStateAction<boolean>>;
 
-const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
+const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
     const MAX_SWATCHES = 21;
     const [open, setOpen] = useState(
-        props.open === undefined ? true : props.open
+        props.open === undefined ? true : props.open,
     );
     const [currentColor, setCurrentColor] = useState(props.initialColor);
 
     const [swatchColorArray, setSwatchColorArray] = useState(
-        getDefaultColorsFromPalette(props.palette)
+        getDefaultColorsFromPalette(props.palette),
     );
 
     externalSetOpen = setOpen;
     const dlgRef = useRef<HTMLDivElement>(null);
 
     function addCustomColors(endpoint: string): void {
-        get(endpoint, result => {
+        get(endpoint, (result) => {
             const jsonArray = result.data;
             if (!jsonArray.map) {
                 return; // this means the conversion string -> JSON didn't work. Bad JSON?
@@ -75,7 +74,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
         if (props.open || open) {
             setSwatchColorArray(getDefaultColorsFromPalette(props.palette));
             addCustomColors(
-                `settings/getCustomPaletteColors?palette=${props.palette}`
+                `settings/getCustomPaletteColors?palette=${props.palette}`,
             );
             // Before we introduced the concept of a custom palette (BL-11433),
             // the canvas element tool color pickers would display all colors currently in
@@ -105,7 +104,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
         // focused, we pass that information to our client, which uses it to refocus
         // the appropriate control once things stabilize in the canvas element.
         const inputs = Array.from(parent.getElementsByTagName("input"));
-        inputs.forEach(input => input.addEventListener("focus", focusFunc));
+        inputs.forEach((input) => input.addEventListener("focus", focusFunc));
 
         // In addition to this cleanup, I feel as if we should be doing something like
         // calling props.onInputFocus(null) when the input is no longer focused.
@@ -125,14 +124,14 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
         // open I'm pretty sure the system won't set focus to one of its controls.
         return () => {
             const inputs = Array.from(parent!.getElementsByTagName("input"));
-            inputs.forEach(input =>
-                input.removeEventListener("focus", focusFunc)
+            inputs.forEach((input) =>
+                input.removeEventListener("focus", focusFunc),
             );
         };
     }, [dlgRef.current]);
 
     const convertJsonColorArrayToColorInfos = (
-        jsonArray: IColorInfo[]
+        jsonArray: IColorInfo[],
     ): IColorInfo[] => {
         return jsonArray.map((colorInfo: IColorInfo) => {
             const colorArray = colorInfo.colors;
@@ -146,7 +145,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                     // But later code assumes that colors with opacity are in rgba format.
                     colorKey = getRgbaColorStringFromColorAndOpacity(
                         colorKey,
-                        colorInfo.opacity
+                        colorInfo.opacity,
                     );
                 }
             }
@@ -164,7 +163,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                 normalizeColorInfoColorsAsHex(currentColor);
                 postJson(
                     `settings/addCustomPaletteColor?palette=${props.palette}`,
-                    currentColor
+                    currentColor,
                 );
                 addNewColorsToArrayIfNecessary([currentColor]);
             }
@@ -183,15 +182,15 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
         // Every time we reference the current swatchColorArray inside
         // this setter, we must use previousSwatchColorArray.
         // Otherwise, we add to a stale array.
-        setSwatchColorArray(previousSwatchColorArray => {
+        setSwatchColorArray((previousSwatchColorArray) => {
             const newColorsAdded: IColorInfo[] = [];
             const lengthBefore = previousSwatchColorArray.length;
             let numberToDelete = 0;
             // CustomColorPicker is going to filter these colors out anyway.
-            let numberToSkip = previousSwatchColorArray.filter(color =>
-                willSwatchColorBeFilteredOut(color)
+            let numberToSkip = previousSwatchColorArray.filter((color) =>
+                willSwatchColorBeFilteredOut(color),
             ).length;
-            newColors.forEach(newColor => {
+            newColors.forEach((newColor) => {
                 if (isColorInThisArray(newColor, previousSwatchColorArray)) {
                     return; // This one is already in our array of swatch colors
                 }
@@ -214,8 +213,9 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
             const newSwatchColorArray = swatchColorArray.slice(); // Get a new array copy of the old (a different reference)
             if (numberToDelete > 0) {
                 // Remove 'numberToDelete' swatches from oldest custom swatches
-                const defaultNumber = getDefaultColorsFromPalette(props.palette)
-                    .length;
+                const defaultNumber = getDefaultColorsFromPalette(
+                    props.palette,
+                ).length;
                 const indexToRemove =
                     swatchColorArray.length - defaultNumber - numberToDelete;
                 if (indexToRemove >= 0) {
@@ -225,7 +225,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                     newSwatchColorArray.splice(0, numberToDelete - excess);
                     newColorsAdded.splice(
                         newColorsAdded.length - excess,
-                        excess
+                        excess,
                     );
                 }
             }
@@ -251,32 +251,32 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
     // Use a compare function to see if the color in question matches on already in this list or not.
     const isColorInThisArray = (
         color: IColorInfo,
-        arrayOfColors: IColorInfo[]
+        arrayOfColors: IColorInfo[],
     ): boolean => !!arrayOfColors.find(colorCompareFunc(color));
 
     // Function for comparing a color with an array of colors to see if the color is already
     // in the array. We pass this function to .find().
-    const colorCompareFunc = (colorA: IColorInfo) => (
-        colorB: IColorInfo
-    ): boolean => {
-        if (colorB.colors.length !== colorA.colors.length) {
-            return false; // One is a gradient and the other is not.
-        }
-        if (colorA.colors.length > 1) {
-            // In the case of both being gradients, check the second color first.
-            const gradientAColor2 = tinycolor(colorA.colors[1]);
-            const gradientBColor2 = tinycolor(colorB.colors[1]);
-            if (gradientAColor2.toHex() !== gradientBColor2.toHex()) {
-                return false;
+    const colorCompareFunc =
+        (colorA: IColorInfo) =>
+        (colorB: IColorInfo): boolean => {
+            if (colorB.colors.length !== colorA.colors.length) {
+                return false; // One is a gradient and the other is not.
             }
-        }
-        const gradientAColor1 = tinycolor(colorA.colors[0]);
-        const gradientBColor1 = tinycolor(colorB.colors[0]);
-        return (
-            gradientAColor1.toHex() === gradientBColor1.toHex() &&
-            colorA.opacity === colorB.opacity
-        );
-    };
+            if (colorA.colors.length > 1) {
+                // In the case of both being gradients, check the second color first.
+                const gradientAColor2 = tinycolor(colorA.colors[1]);
+                const gradientBColor2 = tinycolor(colorB.colors[1]);
+                if (gradientAColor2.toHex() !== gradientBColor2.toHex()) {
+                    return false;
+                }
+            }
+            const gradientAColor1 = tinycolor(colorA.colors[0]);
+            const gradientBColor1 = tinycolor(colorB.colors[0]);
+            return (
+                gradientAColor1.toHex() === gradientBColor1.toHex() &&
+                colorA.opacity === colorB.opacity
+            );
+        };
 
     const handleOnChange = (color: IColorInfo) => {
         setCurrentColor(color);
@@ -306,7 +306,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                     ref={dlgRef}
                     onClose={(
                         _event,
-                        reason: "backdropClick" | "escapeKeyDown"
+                        reason: "backdropClick" | "escapeKeyDown",
                     ) => {
                         if (reason === "backdropClick")
                             onClose(DialogResult.OK);
@@ -354,12 +354,12 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
 
 export enum DialogResult {
     OK,
-    Cancel
+    Cancel,
 }
 
 export const showColorPickerDialog = (
     props: IColorPickerDialogProps,
-    container?: Element | null
+    container?: Element | null,
 ) => {
     doRender(props, container);
     externalSetOpen(true);
@@ -377,7 +377,7 @@ export const hideColorPickerDialog = () => {
 
 const doRender = (
     props: IColorPickerDialogProps,
-    container?: Element | null
+    container?: Element | null,
 ) => {
     let modalContainer;
     if (container) modalContainer = container;
@@ -402,18 +402,18 @@ export interface ISimpleColorPickerDialogProps {
 }
 
 export const showSimpleColorPickerDialog = (
-    props: ISimpleColorPickerDialogProps
+    props: ISimpleColorPickerDialogProps,
 ) => {
     const fullProps: IColorPickerDialogProps = {
         localizedTitle: props.localizedTitle,
         transparency: props.transparency,
         noGradientSwatches: true,
         initialColor: getColorInfoFromSpecialNameOrColorString(
-            props.initialColor
+            props.initialColor,
         ),
         palette: props.palette,
         onChange: (color: IColorInfo) => props.onChange(color.colors[0]),
-        onInputFocus: props.onInputFocus
+        onInputFocus: props.onInputFocus,
     };
     showColorPickerDialog(fullProps, props.container);
 };
@@ -432,10 +432,12 @@ export interface IColorDisplayButtonProps {
     palette: BloomPalette;
 }
 
-export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = props => {
+export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = (
+    props,
+) => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [currentButtonColor, setCurrentButtonColor] = useState(
-        props.initialColor
+        props.initialColor,
     );
     const widthString = props.width ? `width: ${props.width}px;` : "";
 
@@ -482,14 +484,14 @@ export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = props => {
                         result,
                         result === DialogResult.OK
                             ? currentButtonColor
-                            : props.initialColor
+                            : props.initialColor,
                     );
                 }}
                 localizedTitle={props.localizedTitle}
                 transparency={props.transparency}
                 palette={props.palette}
                 initialColor={getColorInfoFromSpecialNameOrColorString(
-                    props.initialColor
+                    props.initialColor,
                 )}
                 onInputFocus={() => {}}
                 onChange={(color: IColorInfo) =>

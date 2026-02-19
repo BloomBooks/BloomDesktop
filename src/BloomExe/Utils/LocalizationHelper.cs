@@ -1,10 +1,10 @@
-﻿using Bloom.SafeXml;
-using SIL.Extensions;
-using SIL.IO;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
+using Bloom.SafeXml;
+using SIL.Extensions;
+using SIL.IO;
 
 namespace Bloom.Utils
 {

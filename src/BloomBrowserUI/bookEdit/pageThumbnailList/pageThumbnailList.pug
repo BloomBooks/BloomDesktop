@@ -12,8 +12,7 @@ html
 			#pageGridWrapper
 				#pageGrid
 			#PageControls
-		+script('/bloom/commonBundle.js')
-		+script('/bloom/pageControlsBundle.js')
+		script(src='/bloom/pageControlsBundle.js' type='module')
 		//- Must be loaded AFTER pageControlsBundle.js. We are violating our usual practice
 		//- here of only having one root bundle per page. Anything pageControlsBundle.js
 		//- exports will NOT be accessible through editTabBundle, as usual, because
@@ -21,5 +20,5 @@ html
 		//- pageControlsBundle.js is built from pageControls.tsx which doesn't export anything.
 		//- If it ever does export anything we need to access from C# or some other Iframe,
 		//- we should reorganize this page to have a single bundle.
-		+script('/bloom/pageThumbnailListBundle.js')
+		script(src='/bloom/pageThumbnailListBundle.js' type='module')
 

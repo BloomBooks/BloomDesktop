@@ -1,6 +1,9 @@
-﻿using System;
+using System;
+using System.IO;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.CollectionTab;
+using Bloom.ImageProcessing;
 using L10NSharp;
 
 namespace Bloom.web.controllers
@@ -11,10 +14,12 @@ namespace Bloom.web.controllers
     public class BookMetadataApi
     {
         private readonly BookSelection _bookSelection;
+        private readonly CollectionModel _collectionModel;
 
-        public BookMetadataApi(BookSelection bookSelection)
+        public BookMetadataApi(BookSelection bookSelection, CollectionModel collectionModel)
         {
             _bookSelection = bookSelection;
+            _collectionModel = collectionModel;
         }
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -33,52 +38,61 @@ namespace Bloom.web.controllers
             switch (request.HttpMethod)
             {
                 case HttpMethods.Get:
+                    var book = _collectionModel.GetRequestedBookOrDefaultOrNull(
+                        request.GetParamOrNull("book-id")
+                    );
+                    if (book == null)
+                    {
+                        request.Failed("Book not found");
+                        return;
+                    }
+                    var bookInfo = book.BookInfo;
+
                     // The spec is here: https://docs.google.com/document/d/e/2PACX-1vREQ7fUXgSE7lGMl9OJkneddkWffO4sDnMG5Vn-IleK35fJSFqnC-6ulK1Ss3eoETCHeLn0wPvcxJOf/pub
                     // See also https://www.w3.org/Submission/2017/SUBM-epub-a11y-20170125/#sec-conf-reporting.
-                    var licenseUrl = _bookSelection.CurrentSelection
-                        .GetLicenseMetadata()
-                        .License.Url;
+                    var licenseUrl = book.GetLicenseMetadata().License.Url;
                     if (string.IsNullOrEmpty(licenseUrl))
                         licenseUrl = null; // allows us to use ?? below.
+                    string coverImagePath = book.GetCoverImagePath();
                     var metadata = new
                     {
                         metapicture = new
                         {
                             type = "image",
-                            value = "/bloom/" + _bookSelection.CurrentSelection.GetCoverImagePath(),
+                            value = ImageUtils.IsPlaceholderImageFilename(coverImagePath)
+                                ? ""
+                                : "/bloom/" + coverImagePath,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.metapicture",
                                 "Picture"
-                            )
+                            ),
                         },
                         name = new
                         {
                             type = "readOnlyText",
-                            value = _bookSelection.CurrentSelection.NameBestForUserDisplay,
+                            value = book.NameBestForUserDisplay,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.name",
                                 "Name"
-                            )
+                            ),
                         },
                         numberOfPages = new
                         {
                             type = "readOnlyText",
-                            value = _bookSelection.CurrentSelection
-                                .GetLastNumberedPageNumber()
-                                .ToString(),
+                            value = book.GetLastNumberedPageNumber().ToString(),
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.numberOfPages",
                                 "Number of pages"
-                            )
+                            ),
                         },
                         inLanguage = new
                         {
                             type = "readOnlyText",
-                            value = _bookSelection.CurrentSelection.BookData.Language1.Tag,
+                            value = book.BookData.Language1.Tag,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.inLanguage",
                                 "Language"
-                            )
+                            ),
                         },
                         // "All rights reserved" is purposely not localized, so it remains an accurate representation of
                         // the English information that will be put in the file in place of a License URL.
@@ -89,101 +103,92 @@ namespace Bloom.web.controllers
                             translatedLabel = LocalizationManager.GetString(
                                 "Common.License",
                                 "License"
-                            )
+                            ),
                         },
                         author = new
                         {
                             type = "editableText",
-                            value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Author,
+                            value = "" + book.BookInfo.MetaData.Author,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.author",
                                 "Author"
-                            )
+                            ),
                         },
                         summary = new
                         {
                             type = "bigEditableText",
-                            value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Summary,
+                            value = "" + book.BookInfo.MetaData.Summary,
                             translatedLabel = LocalizationManager.GetString(
                                 "PublishTab.Upload.Summary",
                                 "Summary"
-                            )
+                            ),
                         },
                         typicalAgeRange = new
                         {
                             type = "editableText",
-                            value = ""
-                                + _bookSelection.CurrentSelection.BookInfo.MetaData.TypicalAgeRange,
+                            value = "" + book.BookInfo.MetaData.TypicalAgeRange,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.typicalAgeRange",
                                 "Typical age range"
-                            )
+                            ),
                         },
                         level = new
                         {
                             type = "editableText",
-                            value = ""
-                                + _bookSelection
-                                    .CurrentSelection
-                                    .BookInfo
-                                    .MetaData
-                                    .ReadingLevelDescription,
+                            value = "" + book.BookInfo.MetaData.ReadingLevelDescription,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.level",
                                 "Reading level"
-                            )
+                            ),
                         },
                         subjects = new
                         {
                             type = "subjects",
-                            value = _bookSelection.CurrentSelection.BookInfo.MetaData.Subjects,
+                            value = book.BookInfo.MetaData.Subjects,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.subjects",
                                 "Subjects"
-                            )
+                            ),
                         },
                         a11yLevel = new
                         {
                             type = "a11yLevel",
-                            value = ""
-                                + _bookSelection.CurrentSelection.BookInfo.MetaData.A11yLevel,
+                            value = "" + book.BookInfo.MetaData.A11yLevel,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.a11yLevel",
                                 "Accessibility level"
                             ),
-                            helpurl = "http://www.idpf.org/epub/a11y/accessibility.html#sec-acc-pub-wcag"
+                            helpurl = "http://www.idpf.org/epub/a11y/accessibility.html#sec-acc-pub-wcag",
                         },
                         a11yCertifier = new
                         {
                             type = "editableText",
-                            value = ""
-                                + _bookSelection.CurrentSelection.BookInfo.MetaData.A11yCertifier,
+                            value = "" + book.BookInfo.MetaData.A11yCertifier,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.a11yCertifier",
                                 "Level certified by"
-                            )
+                            ),
                         },
                         hazards = new
                         {
                             type = "hazards",
-                            value = "" + _bookSelection.CurrentSelection.BookInfo.MetaData.Hazards,
+                            value = "" + book.BookInfo.MetaData.Hazards,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.hazards",
                                 "Hazards"
                             ),
-                            helpurl = "http://www.idpf.org/epub/a11y/techniques/techniques.html#meta-004"
+                            helpurl = "http://www.idpf.org/epub/a11y/techniques/techniques.html#meta-004",
                         },
                         a11yFeatures = new
                         {
                             type = "a11yFeatures",
-                            value = ""
-                                + _bookSelection.CurrentSelection.BookInfo.MetaData.A11yFeatures,
+                            value = "" + book.BookInfo.MetaData.A11yFeatures,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.a11yFeatures",
                                 "Accessibility features"
                             ),
-                            helpurl = "http://www.idpf.org/epub/a11y/techniques/techniques.html#meta-003"
-                        }
+                            helpurl = "http://www.idpf.org/epub/a11y/techniques/techniques.html#meta-003",
+                        },
                     };
                     var translatedStringPairs = new
                     {
@@ -204,21 +209,26 @@ namespace Bloom.web.controllers
                             "Sign Language"
                         ),
                     };
-                    var blob = new { metadata, translatedStringPairs, };
+
+                    var blob = new
+                    {
+                        metadata,
+                        translatedStringPairs,
+                        book = new { id = bookInfo.Id, folderName = bookInfo.FolderName },
+                    };
                     request.ReplyWithJson(blob);
                     break;
                 case HttpMethods.Post:
                     var json = request.RequiredPostJson();
                     var settings = DynamicJson.Parse(json);
-                    _bookSelection.CurrentSelection.BookInfo.MetaData.Author = settings[
-                        "author"
-                    ].value.Trim();
-                    _bookSelection.CurrentSelection.BookInfo.MetaData.Summary = settings[
-                        "summary"
-                    ].value.Trim();
+                    _bookSelection.CurrentSelection.BookInfo.MetaData.Author = settings["author"]
+                        .value.Trim();
+                    _bookSelection.CurrentSelection.BookInfo.MetaData.Summary = settings["summary"]
+                        .value.Trim();
                     _bookSelection.CurrentSelection.BookInfo.MetaData.TypicalAgeRange = settings[
                         "typicalAgeRange"
-                    ].value.Trim();
+                    ]
+                        .value.Trim();
                     _bookSelection.CurrentSelection.BookInfo.MetaData.ReadingLevelDescription =
                         settings["level"].value.Trim();
                     _bookSelection.CurrentSelection.BookInfo.MetaData.Subjects = settings[
@@ -226,16 +236,18 @@ namespace Bloom.web.controllers
                     ].value;
                     _bookSelection.CurrentSelection.BookInfo.MetaData.A11yLevel = settings[
                         "a11yLevel"
-                    ].value.Trim();
+                    ]
+                        .value.Trim();
                     _bookSelection.CurrentSelection.BookInfo.MetaData.A11yCertifier = settings[
                         "a11yCertifier"
-                    ].value.Trim();
-                    _bookSelection.CurrentSelection.BookInfo.MetaData.Hazards = settings[
-                        "hazards"
-                    ].value.Trim();
+                    ]
+                        .value.Trim();
+                    _bookSelection.CurrentSelection.BookInfo.MetaData.Hazards = settings["hazards"]
+                        .value.Trim();
                     _bookSelection.CurrentSelection.BookInfo.MetaData.A11yFeatures = settings[
                         "a11yFeatures"
-                    ].value.Trim();
+                    ]
+                        .value.Trim();
                     _bookSelection.CurrentSelection.Save();
                     request.PostSucceeded();
                     break;

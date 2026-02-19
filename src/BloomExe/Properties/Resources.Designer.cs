@@ -153,36 +153,6 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Copy16x16 {
-            get {
-                object obj = ResourceManager.GetObject("Copy16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap copyDisable16x16 {
-            get {
-                object obj = ResourceManager.GetObject("copyDisable16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap copyDisable16x161 {
-            get {
-                object obj = ResourceManager.GetObject("copyDisable16x161", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap coverOnly {
             get {
                 object obj = ResourceManager.GetObject("coverOnly", resourceCulture);
@@ -210,26 +180,6 @@ namespace Bloom.Properties {
         internal static string CurrentServiceUrls {
             get {
                 return ResourceManager.GetString("CurrentServiceUrls", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap Cut16x16 {
-            get {
-                object obj = ResourceManager.GetObject("Cut16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap cutDisable16x16 {
-            get {
-                object obj = ResourceManager.GetObject("cutDisable16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
@@ -496,26 +446,6 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap paste32x32 {
-            get {
-                object obj = ResourceManager.GetObject("paste32x32", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap pasteDisabled32x32 {
-            get {
-                object obj = ResourceManager.GetObject("pasteDisabled32x32", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap pdf16x16 {
             get {
                 object obj = ResourceManager.GetObject("pdf16x16", resourceCulture);
@@ -616,16 +546,6 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap SIL_Logo_80pxTall {
-            get {
-                object obj = ResourceManager.GetObject("SIL_Logo_80pxTall", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap simplePages {
             get {
                 object obj = ResourceManager.GetObject("simplePages", resourceCulture);
@@ -679,26 +599,6 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap Undo16x16 {
             get {
                 object obj = ResourceManager.GetObject("Undo16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap undo32x32 {
-            get {
-                object obj = ResourceManager.GetObject("undo32x32", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap undoDisabled32x32 {
-            get {
-                object obj = ResourceManager.GetObject("undoDisabled32x32", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

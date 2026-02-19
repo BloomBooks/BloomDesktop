@@ -8,7 +8,7 @@ import WebSocketManager from "../utils/WebSocketManager";
 import {
     BloomDialog,
     DialogTitle,
-    DialogMiddle
+    DialogMiddle,
 } from "../react_components/BloomDialog/BloomDialog";
 import { useL10n } from "../react_components/l10nHooks";
 import { getBloomApiPrefix } from "../utils/bloomApi";
@@ -17,11 +17,11 @@ import SelectedTemplatePageControls from "./selectedTemplatePageControls";
 import TemplateBookPages from "./TemplateBookPages";
 import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
 import axios from "axios";
+import { getFeatureStatusAsync } from "../react_components/featureStatus";
 import {
     kBloomCanvasClass,
-    kBloomCanvasSelector
-} from "../bookEdit/js/bloomImages";
-import { getFeatureStatusAsync } from "../react_components/featureStatus";
+    kBloomCanvasSelector,
+} from "../bookEdit/toolbox/canvas/canvasElementUtils";
 
 interface IPageChooserDialogProps {
     forChooseLayout: boolean;
@@ -57,7 +57,7 @@ export const getPageLabel = (templatePageDiv: HTMLDivElement): string => {
 export const getTemplatePageImageSource = (
     templateBookFolderUrl: string,
     pageLabel: string,
-    orientation: string
+    orientation: string,
 ): string => {
     const label = pageLabel.replace("&", "+"); //ampersands confuse the url system (if you don't handle them), so the template files were originally named with "+" instead of "&"
     // The result may actually be a png file or an svg, and there may be some delay while the png is generated.
@@ -89,7 +89,9 @@ export const getTemplatePageImageSource = (
 //   \"groups\":[{\"templateBookFolderUrl\":\"/bloom/localhost/C$/BloomDesktop/DistFiles/factoryGroups/Templates/Basic Book\",
 //                     \"templateBookUrl\":\"/bloom/localhost/C$/BloomDesktop/DistFiles/factoryGroups/Templates/Basic Book/Basic Book.htm\"}]}"
 
-export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps> = props => {
+export const PageChooserDialog: React.FunctionComponent<
+    IPageChooserDialogProps
+> = (props) => {
     const [open, setOpen] = useState(true);
 
     const closeDialog = () => {
@@ -115,7 +117,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         string | undefined
     >(undefined);
     const [defaultPageId, setDefaultPageId] = useState<string | undefined>(
-        undefined
+        undefined,
     );
     const [orientation, setOrientation] = useState("portrait");
     const [templateBooks, setTemplateBooks] = useState<ITemplateBookInfo[]>([]);
@@ -140,7 +142,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
     //      particular page, the thumbnailer will attempt to generate one.
     //   2) When the thumbnailer returns from its task, this allows us to display the newly created
     //      thumbnail.
-    const thumbnailUpdatedListener = useCallback(e => {
+    const thumbnailUpdatedListener = useCallback((e) => {
         if (e.id !== "thumbnail-updated") {
             return;
         }
@@ -168,7 +170,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
 
     useEffect(() => {
         WebSocketManager.addListener("page-chooser", thumbnailUpdatedListener);
-        get("pageTemplates", result => {
+        get("pageTemplates", (result) => {
             const results = result.data;
             setDefaultPageId(results["defaultPageToSelect"]);
             setOrientation(results["orientation"]);
@@ -177,14 +179,14 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                     (book: ITemplateBookInfo) =>
                         !props.forChooseLayout ||
                         (!book.templateBookPath.includes("Games") &&
-                            !book.templateBookPath.includes("Activity"))
-                )
+                            !book.templateBookPath.includes("Activity")),
+                ),
             );
         });
         return () => {
             WebSocketManager.removeListener(
                 "page-chooser",
-                thumbnailUpdatedListener
+                thumbnailUpdatedListener,
             );
         };
     }, [thumbnailUpdatedListener]);
@@ -213,11 +215,11 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                 try {
                     const result = await axios.get(
                         getBloomApiPrefix(false) +
-                            encodeURIComponent(bookInfo.templateBookPath)
+                            encodeURIComponent(bookInfo.templateBookPath),
                     );
                     const fullDom = new DOMParser().parseFromString(
                         result.data,
-                        "text/html"
+                        "text/html",
                     );
                     dom = fullDom.body;
                     title =
@@ -226,13 +228,13 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                             ?.textContent?.trim() ?? "";
                     pages = Array.from(dom.querySelectorAll(".bloom-page"));
                     pages = pages.filter(
-                        page =>
+                        (page) =>
                             !page.getAttribute(
-                                "data-initial-page-orientation"
+                                "data-initial-page-orientation",
                             ) ||
                             page.getAttribute(
-                                "data-initial-page-orientation"
-                            ) === orientation
+                                "data-initial-page-orientation",
+                            ) === orientation,
                     );
                     id =
                         fullDom.head
@@ -250,14 +252,14 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                     // during development, so I'm not worried that we can only handle one error book.
                     errorPath = bookInfo.templateBookPath;
                 }
-                const bookGroup = bookData.find(b => b.title === title);
+                const bookGroup = bookData.find((b) => b.title === title);
                 const book = {
                     path: bookInfo.templateBookPath,
                     url: bookInfo.templateBookFolderUrl,
                     dom,
                     pages,
                     id,
-                    pageToolId
+                    pageToolId,
                 };
                 if (bookGroup) {
                     bookGroup.books.push(book);
@@ -265,7 +267,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                     bookData.push({
                         title,
                         books: [book],
-                        errorPath
+                        errorPath,
                     });
                 }
             }
@@ -281,8 +283,8 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
 
             if (
                 bookData[0].books[0].pages.filter(
-                    elem =>
-                        elem.id && elem.getAttribute("data-page") === "extra"
+                    (elem) =>
+                        elem.id && elem.getAttribute("data-page") === "extra",
                 ).length === 0
             ) {
                 // The first book (often the template the book was made from) has no pages
@@ -290,8 +292,9 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                 // the basic pages book to be first. First, find that book.
                 const basicBookIndex = booksToSort.findIndex(
                     // Basic book should always be the first (and only) book in its group
-                    x =>
-                        x.books[0].id === "056B6F11-4A6C-4942-B2BC-8861E62B03B3"
+                    (x) =>
+                        x.books[0].id ===
+                        "056B6F11-4A6C-4942-B2BC-8861E62B03B3",
                 );
                 if (basicBookIndex >= 0) {
                     // paranoia
@@ -307,7 +310,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                     // the clone directly from the DOM here, so it's good to put it in.
                     const pageToolId = bookData[0].books[0].pageToolId;
                     if (pageToolId)
-                        basicBook.books[0].pages.forEach(page => {
+                        basicBook.books[0].pages.forEach((page) => {
                             page.setAttribute("data-tool-id", pageToolId);
                         });
                     setBookData([basicBook, ...booksToSort]);
@@ -330,7 +333,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
     // to make sure that empty string is handled.
     const getTextOfFirstElementByClassNameSafely = (
         element: Element,
-        className: string
+        className: string,
     ): string => {
         if (!element) {
             return "";
@@ -358,13 +361,13 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
     const getPageDescription = (templatePageDiv: HTMLElement): string => {
         return getTextOfFirstElementByClassNameSafely(
             templatePageDiv,
-            "pageDescription"
+            "pageDescription",
         );
     };
 
     const templatePageClickHandler = (
         selectedPageDiv: HTMLDivElement,
-        selectedTemplateBookUrl: string
+        selectedTemplateBookUrl: string,
     ): void => {
         setSelectedTemplatePageDiv(selectedPageDiv);
         setSelectedTemplateBookPath(selectedTemplateBookUrl);
@@ -372,14 +375,14 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
 
     // Double-click handler should select a template page and then do the default action, if possible.
     const templatePageDoubleClickHandler = (
-        selectedPageDiv: HTMLDivElement
+        selectedPageDiv: HTMLDivElement,
     ): void => {
         executeDoubleClickActionAsync(selectedPageDiv);
     };
 
     // N.B. The double click handler in the inner component does the single-click actions first.
     async function executeDoubleClickActionAsync(
-        selectedPageDiv: HTMLDivElement
+        selectedPageDiv: HTMLDivElement,
     ) {
         // If the page has a feature, ensure the user has permission to use it.
         const featureName =
@@ -390,10 +393,10 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         }
 
         const convertAnywayCheckbox = document.getElementById(
-            "convertAnywayCheckbox"
+            "convertAnywayCheckbox",
         ) as HTMLInputElement;
         const convertWholeBookCheckbox = document.getElementById(
-            "convertWholeBookCheckbox"
+            "convertWholeBookCheckbox",
         ) as HTMLInputElement;
         const bookPath = selectedTemplateBookPath
             ? selectedTemplateBookPath
@@ -407,7 +410,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
             convertWholeBookCheckbox ? convertWholeBookCheckbox.checked : false,
             props.forChooseLayout ? -1 : 1,
             selectedPageDiv.getAttribute("data-tool-id") ?? "",
-            getToolId(selectedPageDiv)
+            getToolId(selectedPageDiv),
         );
     }
 
@@ -457,7 +460,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         // all of the axios calls to get the pages of the various templates have returned BEFORE we try to scroll.
         if (bookData.length === 0) return;
         const selectedNode = document.getElementsByClassName(
-            "selectedTemplatePage"
+            "selectedTemplatePage",
         )[0];
         // If the original initializationObject defined the optional 'defaultPageToSelect', then it will be
         // loaded into 'defaultPageId' and that page selected on rendering it. Here we scroll to show it.
@@ -465,7 +468,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         if (selectedNode && defaultPageId === selectedTemplatePageDiv?.id) {
             selectedNode.scrollIntoView({
                 behavior: "smooth",
-                block: "nearest"
+                block: "nearest",
             });
         }
         // We were having trouble with the scrolling to the last page added being triggered before some of
@@ -477,29 +480,27 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
 
     // Return true if choosing the current layout will cause loss of data
     const willLoseData = (
-        templatePageDiv: HTMLDivElement | undefined
+        templatePageDiv: HTMLDivElement | undefined,
     ): boolean => {
         if (templatePageDiv === undefined) {
             return true;
         }
-        const selectedTemplateTranslationGroupCount = countTranslationGroupsForChangeLayout(
-            templatePageDiv
-        );
+        const selectedTemplateTranslationGroupCount =
+            countTranslationGroupsForChangeLayout(templatePageDiv);
         // Bloom canvases are never nested!
-        const selectedTemplateBloomCanvasCount = templatePageDiv.getElementsByClassName(
-            kBloomCanvasClass
-        ).length;
+        const selectedTemplateBloomCanvasCount =
+            templatePageDiv.getElementsByClassName(kBloomCanvasClass).length;
         const selectedTemplateVideoCount = countEltsOfClassNotInBloomCanvas(
             templatePageDiv,
-            "bloom-videoContainer"
+            "bloom-videoContainer",
         );
         const selectedTemplateWidgetCount = countEltsOfClassNotInBloomCanvas(
             templatePageDiv,
-            "bloom-widgetContainer"
+            "bloom-widgetContainer",
         );
 
         const page = window.parent.document.getElementById(
-            "page"
+            "page",
         ) as HTMLIFrameElement;
         const current =
             page && page.contentWindow
@@ -508,12 +509,10 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         if (!current) {
             return true;
         }
-        const currentTranslationGroupCount = countTranslationGroupsForChangeLayout(
-            current
-        );
-        const currentBloomCanvasCount = current.getElementsByClassName(
-            kBloomCanvasClass
-        ).length;
+        const currentTranslationGroupCount =
+            countTranslationGroupsForChangeLayout(current);
+        const currentBloomCanvasCount =
+            current.getElementsByClassName(kBloomCanvasClass).length;
         // ".bloom-videoContainer:not(.bloom-noVideoSelected)" is not working reliably as a selector.
         // It's also insufficient if we allow the user to change multiple pages at once to look at
         // only the current page for content.  Not checking for actual video content matches what is
@@ -521,11 +520,11 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         // pages with the same layout.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6921.
         const currentVideoCount = countEltsOfClassNotInBloomCanvas(
             current,
-            "bloom-videoContainer"
+            "bloom-videoContainer",
         );
         const currentWidgetCount = countEltsOfClassNotInBloomCanvas(
             current,
-            "bloom-widgetContainer"
+            "bloom-widgetContainer",
         );
 
         return (
@@ -549,7 +548,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         convertWholeBookChecked: boolean,
         numberToAdd: number,
         dataToolId: string,
-        requiredTool?: string
+        requiredTool?: string,
     ): void => {
         if (forChangeLayout) {
             if (willLoseData && !convertAnywayChecked) {
@@ -561,7 +560,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                 convertWholeBook: convertWholeBookChecked,
                 numberToAdd: 1, // meaningless here, but prevents throwing an exception in C#
                 allowDataLoss: convertAnywayChecked,
-                dataToolId
+                dataToolId,
             });
         } else {
             postData("addPage", {
@@ -570,7 +569,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                 convertWholeBook: false, // meaningless here, but keeps C# happy
                 numberToAdd: numberToAdd,
                 allowDataLoss: convertAnywayChecked, // meaningless here, but keeps C# happy
-                dataToolId
+                dataToolId,
             });
         }
         if (requiredTool) {
@@ -589,7 +588,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
             return ""; // paranoia; won't happen
         }
         return templateBooks.filter(
-            group => group.templateBookPath === selectedTemplateBookPath
+            (group) => group.templateBookPath === selectedTemplateBookPath,
         )[0].templateBookFolderUrl;
     };
 
@@ -601,7 +600,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
         return getTemplatePageImageSource(
             templateBookFolder,
             getPageLabel(selectedTemplatePageDiv),
-            orientation
+            orientation,
         );
     };
 
@@ -675,22 +674,22 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                         <SelectedTemplatePageControls
                             caption={getPageLabel(selectedTemplatePageDiv)}
                             pageDescription={getPageDescription(
-                                selectedTemplatePageDiv
+                                selectedTemplatePageDiv,
                             )}
                             pageId={selectedTemplatePageDiv.id}
                             imageSource={getPreviewImageSource()}
                             featureName={
                                 selectedTemplatePageDiv.getAttribute(
-                                    "data-feature"
+                                    "data-feature",
                                 ) ?? undefined
                             }
                             pageIsMarkedBilingual={
                                 selectedTemplatePageDiv.getAttribute(
-                                    "data-ui-mark-bilingual"
+                                    "data-ui-mark-bilingual",
                                 ) === "true"
                             }
                             pageIsDigitalOnly={isDigitalOnly(
-                                selectedTemplatePageDiv
+                                selectedTemplatePageDiv,
                             )}
                             templateBookPath={
                                 selectedTemplateBookPath
@@ -709,7 +708,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserDialogProps>
                             onSubmit={handleAddPageOrChooseLayoutButtonClick}
                             dataToolId={
                                 selectedTemplatePageDiv.getAttribute(
-                                    "data-tool-id"
+                                    "data-tool-id",
                                 ) ?? ""
                             }
                         />
@@ -730,7 +729,7 @@ export function showPageChooserDialog(forChooseLayout: boolean) {
 // that empty string is handled.
 export function getAttributeStringSafely(
     element: Element | null,
-    attributeName: string
+    attributeName: string,
 ): string {
     if (!element || !element.hasAttribute(attributeName)) {
         return "";
@@ -745,28 +744,30 @@ export function getAttributeStringSafely(
 // also ensure that translationGroups inside of bloom canvases get migrated correctly. If this algorithm changes,
 // consider also changin 'GetEltsWithClassNotInBloomCanvasInternal()' in HtmlDom.cs.
 export function countTranslationGroupsForChangeLayout(
-    pageDiv: HTMLElement
+    pageDiv: HTMLElement,
 ): number {
     const allTranslationGroups = pageDiv.querySelectorAll(
-        ".bloom-translationGroup:not(.box-header-off)"
+        ".bloom-translationGroup:not(.box-header-off)",
     );
     return Array.from(allTranslationGroups).filter(
-        translationGroup =>
-            translationGroup.closest(kBloomCanvasSelector) === null
+        (translationGroup) =>
+            translationGroup.closest(kBloomCanvasSelector) === null,
     ).length;
 }
 
 export function countEltsOfClassNotInBloomCanvas(
     currentPageDiv: HTMLElement,
-    className: string
+    className: string,
 ): number {
     return (
-        (Array.from(
-            currentPageDiv.getElementsByClassName(className)
-        ) as HTMLElement[])
+        (
+            Array.from(
+                currentPageDiv.getElementsByClassName(className),
+            ) as HTMLElement[]
+        )
             // filter out the ones inside a bloom-canvas
             .filter(
-                e => e.parentElement?.closest(kBloomCanvasSelector) === null
+                (e) => e.parentElement?.closest(kBloomCanvasSelector) === null,
             ).length
     );
 }

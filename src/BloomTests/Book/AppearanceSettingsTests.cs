@@ -80,15 +80,14 @@ namespace BloomTests.Book
                 StringSplitOptions.RemoveEmptyEntries
             );
             var xmatterCss = parts[1];
-            parts = parts[0].Split(
-                new[] { "/* From branding.json */" },
-                StringSplitOptions.RemoveEmptyEntries
-            );
+            parts = parts[0]
+                .Split(new[] { "/* From branding.json */" }, StringSplitOptions.RemoveEmptyEntries);
             var brandingCss = parts[1];
-            parts = parts[0].Split(
-                new[] { "/* From this book's appearance settings */" },
-                StringSplitOptions.RemoveEmptyEntries
-            );
+            parts = parts[0]
+                .Split(
+                    new[] { "/* From this book's appearance settings */" },
+                    StringSplitOptions.RemoveEmptyEntries
+                );
             ;
             var ownCss = parts[1];
 
@@ -180,7 +179,6 @@ namespace BloomTests.Book
             // such a property, and at will not be emitted at all. This may not be sufficient for our needs, but until that is clear, this case just isn't handled.
         }
         */
-
 
         static bool MayBeIncompatible(string css)
         {
@@ -291,35 +289,119 @@ namespace BloomTests.Book
             Assert.That(fromSettings, Does.Contain("--cover-languageName-show: none;"));
         }
 
-        [Test]
-        public void ToCss_EmitsSpecialPageMargin_property()
+        [TestCase(@"""pageNumber-position"": ""automatic""", true)]
+        [TestCase(@"""pageNumber-position"": ""left""", true)]
+        [TestCase(@"""pageNumber-position"": ""center""", true)]
+        [TestCase(@"""pageNumber-position"": ""right""", true)]
+        [TestCase(@"""pageNumber-position"": ""hidden""", false)]
+        public void ToCss_EmitsSpecialPageMargin_property_andHasCorrectPageNumberShow(
+            string settingsFragment,
+            bool multiplicand1Expected
+        )
         {
             var settings = new AppearanceSettings();
             settings.UpdateFromJson(
                 @"
 {
   ""cssThemeName"": ""default"",
-  ""pageNumber-show"": false
+  "
+                    + settingsFragment
+                    + @"
 }"
             );
             var css = settings.ToCss();
-            Assert.That(css, Does.Contain("--pageNumber-show-multiplicand: 0;"));
-            settings.UpdateFromJson("{\"pageNumber-show\": true}");
-            css = settings.ToCss();
-            Assert.That(css, Does.Contain("--pageNumber-show-multiplicand: 1;"));
+            if (multiplicand1Expected)
+            {
+                Assert.That(css, Does.Not.Contain("--pageNumber-show: none;"));
+                Assert.That(css, Does.Contain("--pageNumber-show-multiplicand: 1;"));
+            }
+            else
+            {
+                Assert.That(css, Does.Contain("--pageNumber-show: none;"));
+                // settings already has --pageNumber-show-multiplicand: 0; by default. Check that it's not being overridden
+                Assert.That(css, Does.Not.Contain("--pageNumber-show-multiplicand: 1;"));
+            }
+        }
+
+        [TestCase(@"""pageNumber-position"": ""automatic""", "unset", "unset")]
+        [TestCase(
+            @"""pageNumber-position"": ""left""",
+            "calc(var(--page-margin-left) + var(--pageNumber-full-bleed-extra-margin, 0px))",
+            "deliberately-invalid"
+        )]
+        [TestCase(@"""pageNumber-position"": ""center""", "50%", "50%")]
+        [TestCase(
+            @"""pageNumber-position"": ""right""",
+            "deliberately-invalid",
+            "calc(var(--page-margin-right) + var(--pageNumber-full-bleed-extra-margin, 0px))"
+        )]
+        [TestCase(@"""pageNumber-position"": ""hidden""", "unset", "unset")]
+        // [TestCase(null, null, null)]
+        public void ToCss_SetsRelevantPageNumberPositionOverrides(
+            string settingsFragment,
+            string expectedLeftMargin,
+            string expectedRightMargin
+        )
+        {
+            var settings = new AppearanceSettings();
+            var jsonContent = @"{""cssThemeName"": ""default""";
+
+            if (settingsFragment != null)
+            {
+                jsonContent += @", " + settingsFragment;
+            }
+
+            jsonContent += @"}";
+
+            settings.UpdateFromJson(jsonContent);
+            var css = settings.ToCss();
+
+            if (expectedLeftMargin != null)
+            {
+                Assert.That(
+                    css,
+                    Does.Contain($"--pageNumber-left-margin-override: {expectedLeftMargin};"),
+                    $"Expected left margin override to be '{expectedLeftMargin}'"
+                );
+            }
+            else
+            {
+                Assert.That(
+                    css,
+                    Does.Not.Contain("--pageNumber-left-margin-override:"),
+                    "Expected no left margin override to be set"
+                );
+            }
+
+            if (expectedRightMargin != null)
+            {
+                Assert.That(
+                    css,
+                    Does.Contain($"--pageNumber-right-margin-override: {expectedRightMargin};"),
+                    $"Expected right margin override to be '{expectedRightMargin}'"
+                );
+            }
+            else
+            {
+                Assert.That(
+                    css,
+                    Does.Not.Contain("--pageNumber-right-margin-override:"),
+                    "Expected no right margin override to be set"
+                );
+            }
         }
 
         [TestCase(true)]
         [TestCase(false)]
-        public void GetThemeAndSubstituteCss_BookHasOverlays_UsesLegacy(bool hasOverlays)
+        public void GetThemeAndSubstituteCss_BookHasCanvasElement_UsesLegacy(bool hasCanvasElement)
         {
             var settings = new AppearanceSettingsTest();
             var cssFilesToCheck = new[]
             {
                 Tuple.Create("customBookStyles.css", ""),
-                Tuple.Create("customCollectionStyles.css", "")
+                Tuple.Create("customCollectionStyles.css", ""),
             };
-            var dom = hasOverlays
+            var dom = hasCanvasElement
                 ? new HtmlDom(
                     @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head>
 			<body><div class='bloom-page'>
@@ -334,7 +416,10 @@ namespace BloomTests.Book
             var pathToCustomCss = settings.GetThemeAndSubstituteCss(cssFilesToCheck, dom);
 
             Assert.That(pathToCustomCss, Is.Null);
-            Assert.That(settings.CssThemeName, Is.EqualTo(hasOverlays ? "legacy-5-6" : "default"));
+            Assert.That(
+                settings.CssThemeName,
+                Is.EqualTo(hasCanvasElement ? "legacy-5-6" : "default")
+            );
         }
 
         public static HtmlDom GetTrivialBookDom()
@@ -381,7 +466,7 @@ namespace BloomTests.Book
                 Tuple.Create(
                     "customCollectionStyles.css",
                     AppearanceMigratorTests.cssThatTriggersEbookZeroMarginTheme
-                )
+                ),
             };
             _pathToCustomCss = _settings.GetThemeAndSubstituteCss(
                 cssFilesToCheck,
@@ -398,7 +483,7 @@ namespace BloomTests.Book
                 {
                     cssFilesToCheck[0],
                     cssFilesToCheck[1],
-                    Tuple.Create("customBookStyles2.css", RobustFile.ReadAllText(_pathToCustomCss))
+                    Tuple.Create("customBookStyles2.css", RobustFile.ReadAllText(_pathToCustomCss)),
                 },
                 true
             );
@@ -410,7 +495,7 @@ namespace BloomTests.Book
                 new[]
                 {
                     "from the current appearance theme, 'zero-margin-ebook'",
-                    "/* From this book's appearance settings */"
+                    "/* From this book's appearance settings */",
                 },
                 StringSplitOptions.None
             );
@@ -620,7 +705,7 @@ public class AppearanceSettingsTest : AppearanceSettings
     {
         var testDef1 = new CssDisplayVariableDef("boolean-test-L2-show", "coverFields", true);
         var testDef2 = new CssDisplayVariableDef("boolean-test-L3-show", "coverFields", false);
-        propertyDefinitions = propertyDefinitions.Concat(new[] { testDef1, testDef2, }).ToArray();
+        propertyDefinitions = propertyDefinitions.Concat(new[] { testDef1, testDef2 }).ToArray();
         testDef1.SetDefault(_properties);
         testDef2.SetDefault(_properties);
     }

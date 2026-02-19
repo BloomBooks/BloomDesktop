@@ -12,6 +12,7 @@ using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.BloomPub;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using DesktopAnalytics;
@@ -22,7 +23,6 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.WritingSystems;
-using Bloom.SubscriptionAndFeatures;
 
 namespace Bloom.Collection
 {
@@ -61,6 +61,11 @@ namespace Bloom.Collection
         public string InvalidBranding { get; private set; }
 
         public string DefaultBookshelf = "";
+
+        /// <summary>
+        /// The bookshelf the user wants, but the subscription has expired.
+        /// </summary>
+        public string ExpiredBookshelf = "";
 
         public static readonly Dictionary<string, string> CssNumberStylesToCultureOrDigits =
             new Dictionary<string, string>()
@@ -108,6 +113,66 @@ namespace Bloom.Collection
                 { "Thai", "๐๑๒๓๔๕๖๗๘๙" }, // from th-TH
                 { "Tibetan", "༠༡༢༣༤༥༦༧༨༩" }, // from bo-CN
             };
+
+        public const string kFileExtension = ".bloomCollection";
+        public const string kWildSearchPattern = $"*{kFileExtension}"; // used in directory searches
+
+        /// <summary>
+        /// Generate the file name for the collection settings file given the collection folder name.
+        /// </summary>
+        /// <remarks>
+        /// collectionFolderName is usually the name of the folder.  It can also be the full path to the folder.
+        /// </remarks>
+        public static string GetFileName(string collectionFolderName)
+        {
+            // Avoiding use of Path.ChangeExtension as it's just possible the collectionName could have a period.
+            return $"{Path.GetFileName(collectionFolderName)}{kFileExtension}";
+        }
+
+        /// <summary>
+        /// Generate the path to the collection settings file given the collection folder.
+        /// </summary>
+        public static string GetSettingsFilePath(string collectionFolder)
+        {
+            return Path.Combine(collectionFolder, CollectionSettings.GetFileName(collectionFolder));
+        }
+
+        public static string GetFileDialogFilterString()
+        {
+            return LocalizationManager.GetString(
+                    "OpenCreateNewCollectionsDialog.Bloom Collections",
+                    "Bloom Collections",
+                    "This shows in the file-open dialog that you use to open a different bloom collection"
+                ) + $"|{kWildSearchPattern}";
+        }
+
+        /// <summary>
+        /// Get the path to the collection settings file, if it exists.
+        /// </summary>
+        /// <returns>
+        /// true if the file exists, false otherwise.
+        /// </returns>
+        public static bool TryGetSettingsFilePath(
+            string collectionFolder,
+            out string settingsFilePath
+        )
+        {
+            // Return the path to the standard collection settings file if it exists.
+            // Otherwise, return the path to the first file that matches the wild search pattern or null
+            // if no files match.
+            settingsFilePath = GetSettingsFilePath(collectionFolder);
+            if (!RobustFile.Exists(settingsFilePath))
+            {
+                // If the collection folder is not the same as the settings file, we may have a problem.
+                // But we can try to find it by searching for the file with the wild search pattern.
+                // This is used, for example, when joining a Team Collection, where the settings file is
+                // in a different place.
+                settingsFilePath = Directory
+                    .EnumerateFiles(collectionFolder, CollectionSettings.kWildSearchPattern)
+                    .FirstOrDefault();
+            }
+            return settingsFilePath != null;
+        }
 
         public CollectionSettings()
         {
@@ -405,27 +470,8 @@ namespace Bloom.Collection
         {
             try
             {
-                var settingsFilePath = Path.Combine(
-                    collectionFolder,
-                    Path.ChangeExtension(Path.GetFileName(collectionFolder), "bloomCollection")
-                );
-                if (!RobustFile.Exists(settingsFilePath))
-                {
-                    // When we're joining a TC, we extract settings in to a temp folder whose name does not
-                    // match the settings file.
-                    var collections = Directory
-                        .EnumerateFiles(collectionFolder, "*.bloomCollection")
-                        .ToList();
-                    if (collections.Count >= 1)
-                    {
-                        // Hopefully this repairs things.
-                        settingsFilePath = collections[0];
-                    }
-                    else
-                    {
-                        return "";
-                    }
-                }
+                if (!TryGetSettingsFilePath(collectionFolder, out var settingsFilePath))
+                    return "";
 
                 var settingsContent = RobustFile.ReadAllText(settingsFilePath, Encoding.UTF8);
                 var xml = XElement.Parse(settingsContent);
@@ -459,7 +505,7 @@ namespace Bloom.Collection
                     new[] { "National1Iso639Code", "Language2Iso639Code" },
                     new[] { "National2Iso639Code", "Language3Iso639Code" },
                     new[] { "IsShellMakingProject", "IsSourceCollection" },
-                    new[] { "Local Community", "Local-Community" } // migrate for 4.4
+                    new[] { "Local Community", "Local-Community" }, // migrate for 4.4
                 };
 
                 foreach (var fromTo in nameMigrations)
@@ -520,13 +566,11 @@ namespace Bloom.Collection
                 // user logins that are marked as editors of the collection. We want to allow them to re-upload it with fixes
                 // even if the subscription has expired.
                 // 2) this is a developer looking into a Bloom Problem Report.
-                var downloadInfoPath = RobustFile.Exists(
-                    pathToFileAboutABlorgBookWeHaveDownloadedForEditing
-                )
-                    ? pathToFileAboutABlorgBookWeHaveDownloadedForEditing
-                    : RobustFile.Exists(bloomProblemBookJsonPath)
-                        ? bloomProblemBookJsonPath
-                        : null;
+                var downloadInfoPath =
+                    RobustFile.Exists(pathToFileAboutABlorgBookWeHaveDownloadedForEditing)
+                        ? pathToFileAboutABlorgBookWeHaveDownloadedForEditing
+                    : RobustFile.Exists(bloomProblemBookJsonPath) ? bloomProblemBookJsonPath
+                    : null;
                 if (downloadInfoPath != null)
                 {
                     IgnoreExpiration = true;
@@ -575,6 +619,10 @@ namespace Bloom.Collection
                         defaultBookshelfTag != null
                         && Subscription.Tier == SubscriptionTier.Enterprise
                     )
+                        ? defaultBookshelfTag.Substring("bookshelf:".Length)
+                        : "";
+                ExpiredBookshelf =
+                    (defaultBookshelfTag != null && Subscription.IsExpired())
                         ? defaultBookshelfTag.Substring("bookshelf:".Length)
                         : "";
 
@@ -892,7 +940,7 @@ namespace Bloom.Collection
                 makeBookshelfFile = true,
                 bookshelfColor = Palette.kBloomLightBlueHex,
                 makeBloomBundle = true,
-                distributionTag = ""
+                distributionTag = "",
             };
 
         public bool AllowDeleteBooks
@@ -907,7 +955,7 @@ namespace Bloom.Collection
         {
             return parentFolderPath.CombineForPath(
                 newCollectionName,
-                newCollectionName + ".bloomCollection"
+                CollectionSettings.GetFileName(newCollectionName)
             );
         }
 
@@ -947,10 +995,7 @@ namespace Bloom.Collection
             try
             {
                 //we now make a default name based on the name of the directory
-                string destinationPath = Path.Combine(
-                    toDirectory,
-                    Path.GetFileName(toDirectory) + ".bloomCollection"
-                );
+                string destinationPath = CollectionSettings.GetSettingsFilePath(toDirectory);
                 if (!RobustFile.Exists(destinationPath))
                     RobustFile.Move(collectionSettingsPath, destinationPath);
 
@@ -973,11 +1018,11 @@ namespace Bloom.Collection
 
         public static string FindSettingsFileInFolder(string folderPath)
         {
-            try
+            if (TryGetSettingsFilePath(folderPath, out string settingsFilePath))
             {
-                return Directory.GetFiles(folderPath, "*.bloomCollection").First();
+                return settingsFilePath;
             }
-            catch (Exception)
+            else
             {
                 throw new ApplicationException(
                     string.Format(

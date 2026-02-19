@@ -1,11 +1,3 @@
-using Bloom.Api;
-using Bloom.Book;
-using Bloom.Collection;
-using Bloom.MiscUI;
-using Bloom.SafeXml;
-using Bloom.web;
-using L10NSharp;
-using SIL.IO;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,7 +8,17 @@ using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Bloom.Api;
+using Bloom.Book;
+using Bloom.Collection;
+using Bloom.ImageProcessing;
+using Bloom.MiscUI;
 using Bloom.Publish;
+using Bloom.SafeXml;
+using Bloom.web;
+using L10NSharp;
+using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom.Spreadsheet
 {
@@ -75,7 +77,7 @@ namespace Bloom.Spreadsheet
         //have a src attribute nor actually contain an img element
         public static List<string> DataDivImagesWithNoSrcAttributes = new List<string>()
         {
-            "licenseImage"
+            "licenseImage",
         };
 
         public async Task ExportToFolderWithProgressAsync(
@@ -119,7 +121,7 @@ namespace Bloom.Spreadsheet
         {
             if (_outputImageFolder != null)
             {
-                PublishHelper.ReallyCropImages(dom.RawDom, bookFolderPath, _outputImageFolder);
+                ImageUtils.ReallyCropImages(dom.RawDom, bookFolderPath, _outputImageFolder);
             }
 
             _progress = progress ?? new NullWebSocketProgress();
@@ -142,8 +144,9 @@ namespace Bloom.Spreadsheet
                 // Simple comprehension quizzes and simple dom choice games appear to export/import okay.
                 // Widgets have a workaround in the importer to at least not lose pages.
                 var dataActivity = page.GetAttribute("data-activity") ?? "";
-                if (// "drag-word-chooser-slider" "drag-image-to-target" "drag-sort-sentence" "drag-letter-to-target"
-                    dataActivity.StartsWith("drag-"))
+                if ( // "drag-word-chooser-slider" "drag-image-to-target" "drag-sort-sentence" "drag-letter-to-target"
+                    dataActivity.StartsWith("drag-")
+                )
                 {
                     ++dragAndDropGamePageCount;
                     continue;
@@ -158,11 +161,14 @@ namespace Bloom.Spreadsheet
             if (dragAndDropGamePageCount > 0)
             {
                 throw new Exception(
-                    string.Format(LocalizationManager.GetString(
-                        "Spreadsheet.CannotExportDragAndDropGamePages",
-                        "Bloom cannot export because {0} pages contain drag-and-drop games.",
-                        "The {0} will be replaced by the number of pages with drag-and-drop games."
-                    ), dragAndDropGamePageCount)
+                    string.Format(
+                        LocalizationManager.GetString(
+                            "Spreadsheet.CannotExportDragAndDropGamePages",
+                            "Bloom cannot export because {0} pages contain drag-and-drop games.",
+                            "The {0} will be replaced by the number of pages with drag-and-drop games."
+                        ),
+                        dragAndDropGamePageCount
+                    )
                 );
             }
             _spreadsheet.SortHiddenContentRowsToTheBottom();
@@ -233,7 +239,7 @@ namespace Bloom.Spreadsheet
                     );
                     var fileName = Path.GetFileName(imagePath);
                     var outputPath = Path.Combine("images", fileName);
-                    if (fileName == "placeHolder.png")
+                    if (ImageUtils.IsPlaceholderImageFilename(fileName))
                         outputPath = InternalSpreadsheet.BlankContentIndicator;
                     row.SetCell(InternalSpreadsheet.ImageSourceColumnLabel, outputPath);
                     CopyImageFileToSpreadsheetFolder(imagePath);
@@ -287,9 +293,15 @@ namespace Bloom.Spreadsheet
                     widgetContainer
                         .GetElementsByTagName("iframe")
                         .FirstOrDefault()
-                        ?.GetAttribute("src") ?? ""
+                        ?.GetAttribute("src")
+                    ?? ""
                 )
                 .NotEncoded;
+
+            if (source == "")
+                // User hasn't set up the activity
+                return;
+
             var index = _spreadsheet.AddColumnForTag(
                 InternalSpreadsheet.WidgetSourceColumnLabel,
                 "Widgets"
@@ -342,7 +354,8 @@ namespace Bloom.Spreadsheet
                         .GetElementsByTagName("source")
                         .Cast<SafeXmlElement>()
                         .FirstOrDefault()
-                        ?.GetAttribute("src") ?? ""
+                        ?.GetAttribute("src")
+                    ?? ""
                 )
                 .NotEncoded;
             var index = _spreadsheet.AddColumnForTag(
@@ -599,12 +612,9 @@ namespace Bloom.Spreadsheet
         {
             return SafeXmlElement
                 .GetAllDivsWithClass(elementOrDom, HtmlDom.kBloomCanvasClass)
-                .Where(
-                    bloomCanvas =>
-                        !HtmlDom.HasBackgroundImage(bloomCanvas)
-                        && bloomCanvas.ChildNodes.Any(
-                            c => c is SafeXmlElement ce && ce.Name == "img"
-                        )
+                .Where(bloomCanvas =>
+                    !HtmlDom.HasBackgroundImage(bloomCanvas)
+                    && bloomCanvas.ChildNodes.Any(c => c is SafeXmlElement ce && ce.Name == "img")
                 )
                 .Concat(SafeXmlElement.GetAllDivsWithClass(elementOrDom, "bloom-imageContainer"))
                 .ToList();
@@ -758,14 +768,13 @@ namespace Bloom.Spreadsheet
                             // Don't think we ever have data-book elements with more than one image. But if we encounter one,
                             // I think it's worth warning the user that we don't handle it.
                             if (
-                                dataBookElement.ChildNodes
-                                    .Cast<SafeXmlNode>()
-                                    .Count(
-                                        n =>
-                                            n.Name == "img"
-                                            && string.IsNullOrEmpty(
-                                                ((SafeXmlElement)n).GetAttribute("src")
-                                            )
+                                dataBookElement
+                                    .ChildNodes.Cast<SafeXmlNode>()
+                                    .Count(n =>
+                                        n.Name == "img"
+                                        && string.IsNullOrEmpty(
+                                            ((SafeXmlElement)n).GetAttribute("src")
+                                        )
                                     ) > 1
                             )
                             {
@@ -821,7 +830,7 @@ namespace Bloom.Spreadsheet
         {
             if (_outputImageFolder != null)
             {
-                if (Path.GetFileName(imageSourcePath) == "placeHolder.png")
+                if (ImageUtils.IsPlaceholderImageFilename(imageSourcePath))
                     return; // don't need to copy this around.
                 if (!RobustFile.Exists(imageSourcePath))
                 {
@@ -923,8 +932,8 @@ namespace Bloom.Spreadsheet
                         {
                             Text = "Cancel",
                             Id = "cancel",
-                            Default = true
-                        }
+                            Default = true,
+                        },
                     };
                     if (appearsToBeBloomBookFolder)
                     {
@@ -949,8 +958,8 @@ namespace Bloom.Spreadsheet
 
                     if (overwrite == OverwriteOptions.Ask)
                     {
-                        var formToInvokeOn = Application.OpenForms
-                            .Cast<Form>()
+                        var formToInvokeOn = Application
+                            .OpenForms.Cast<Form>()
                             .FirstOrDefault(f => f is Shell);
                         string result = null;
                         formToInvokeOn.Invoke(
@@ -1020,6 +1029,7 @@ namespace Bloom.Spreadsheet
             {
                 Console.WriteLine("Export failed: ");
                 Console.WriteLine(e);
+                Logger.WriteError(e);
                 progress.MessageWithParams(
                     "Spreadsheet.ExportFailed",
                     "{0} is a placeholder for the exception message",
@@ -1038,7 +1048,7 @@ namespace Bloom.Spreadsheet
     {
         Overwrite,
         Quit,
-        Ask
+        Ask,
     }
 
     /// <summary>

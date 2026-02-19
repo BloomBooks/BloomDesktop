@@ -1,8 +1,6 @@
-import { css, SerializedStyles } from "@emotion/react";
+import $ from "jquery";
 import * as React from "react";
-import { Button, Dialog } from "@mui/material";
 import { useL10n } from "../../../react_components/l10nHooks";
-import { lightTheme } from "../../../bloomMaterialUITheme";
 
 interface IGamePromptDialogProps {
     prompt: HTMLElement;
@@ -15,20 +13,16 @@ import {
     copyContentToTarget,
     getTarget,
     shuffle,
-    isTheTextInDraggablesTheSame
+    isTheTextInDraggablesTheSame,
 } from "bloom-player";
-import { setGeneratedDraggableId } from "../overlay/CanvasElementItem";
-import {
-    adjustTarget,
-    GameTool,
-    makeTargetForDraggable
-} from "../games/GameTool";
+import { setGeneratedDraggableId } from "../canvas/CanvasElementItem";
+import { adjustTarget, makeTargetForDraggable } from "../games/GameTool";
 import * as ReactDOM from "react-dom";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import {
     CanvasElementManager,
     getAllDraggables,
-    theOneCanvasElementManager
+    theOneCanvasElementManager,
 } from "../../js/CanvasElementManager";
 import { Bubble } from "comicaljs";
 import { getToolboxBundleExports } from "../../editViewFrame";
@@ -36,17 +30,18 @@ import {
     BloomDialog,
     DialogBottomButtons,
     DialogMiddle,
-    DialogTitle
+    DialogTitle,
 } from "../../../react_components/BloomDialog/BloomDialog";
 import {
     DialogCancelButton,
-    DialogOkButton
+    DialogOkButton,
 } from "../../../react_components/BloomDialog/commonDialogComponents";
 import { splitIntoGraphemes } from "../../../utils/textUtils";
-import { kCanvasElementClass } from "../overlay/canvasElementUtils";
-import { kBloomCanvasSelector } from "../../js/bloomImages";
+import { kBloomCanvasSelector } from "../canvas/canvasElementUtils";
 
-export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> = props => {
+export const GamePromptDialog: React.FunctionComponent<
+    IGamePromptDialogProps
+> = (props) => {
     const promptL10nId = props.prompt?.getAttribute("data-caption-l10nid");
     const caption = useL10n("", promptL10nId);
     // The translation group that React creates in the dialog, kept in sync with the one in the prompt
@@ -75,14 +70,14 @@ export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> =
         <BloomDialog
             id="promptDialog"
             open={props.open}
-            onKeyDownCapture={e => {
+            onKeyDownCapture={(e) => {
                 if (e.key === "Enter") {
                     e.preventDefault();
                     closeDialog();
                 }
             }}
             onClose={closeDialog}
-            onCancel={reason => {
+            onCancel={(reason) => {
                 // For this dialog, effects are immediate. It seems more natural that most ways
                 // of closing the dialog keep the currently visible changes. So if the dialog is
                 // closed by the main Cancel button at the bottom, we undo the changes.
@@ -102,7 +97,7 @@ export const GamePromptDialog: React.FunctionComponent<IGamePromptDialogProps> =
             <DialogMiddle>
                 <div
                     id="promptInput"
-                    ref={ref => {
+                    ref={(ref) => {
                         localTg.current = ref;
                         if (ref && !haveLocalTg) {
                             setHaveLocalTg(true);
@@ -124,7 +119,7 @@ let draggableX = 0;
 let draggableY = 0;
 let targetX = 0;
 let targetY = 0;
-let originalDraggables: HTMLElement[] = [];
+const originalDraggables: HTMLElement[] = [];
 let originalClassLists: string[] = [];
 let originalStyles: string[] = [];
 let originalContents: string[] = [];
@@ -148,7 +143,7 @@ let originalPromptHtml = "";
 // in the dragActivityTool's newPageReady, which is called later.
 const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
     const promptTg = prompt.getElementsByClassName(
-        "bloom-translationGroup"
+        "bloom-translationGroup",
     )[0] as HTMLElement;
     if (!promptTg || !tg) {
         return;
@@ -160,14 +155,14 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         tg.setAttribute(attr.name, attr.value);
     }
     const editable = tg.getElementsByClassName(
-        "bloom-editable bloom-visibility-code-on"
+        "bloom-editable bloom-visibility-code-on",
     )[0] as HTMLElement;
     if (editable) {
         getToolboxBundleExports()?.activateLongPressFor($(editable));
     }
     // This interception prevents pasting anything but plain text (e.g., we don't want
     // HTML markup, possibly forcing an unwanted font into our document).
-    editable.addEventListener("paste", event => {
+    editable.addEventListener("paste", (event) => {
         event.preventDefault();
         const text = event.clipboardData?.getData("text");
         if (text) {
@@ -179,14 +174,14 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         }
     });
     promptEditable = promptTg.getElementsByClassName(
-        "bloom-editable bloom-visibility-code-on"
+        "bloom-editable bloom-visibility-code-on",
     )[0] as HTMLElement;
     if (!promptEditable) {
         throw new Error("No editable in dragActivity");
     }
     originalPromptHtml = promptEditable.innerHTML;
     const page = document.getElementsByClassName(
-        "bloom-page"
+        "bloom-page",
     )[0] as HTMLElement;
 
     const bubbles = BloomSourceBubbles.ProduceSourceBubbles(tg);
@@ -195,11 +190,11 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
             tg,
             bubbles,
             undefined,
-            true
+            true,
         );
     }
 
-    let startTryingToFocus = Date.now();
+    const startTryingToFocus = Date.now();
     // The prompt looks strange and the user can't type until we actually get focus onto the
     // editable. For some reason, simply calling focus doesn't always work.
     const tryToFocus = () => {
@@ -234,7 +229,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
             // that's in the dialog.)
             editable?.addEventListener(
                 "focusout",
-                e => {
+                (e) => {
                     if (Date.now() - startTryingToFocus < 500) {
                         // If we lose focus too quickly, it's likely the browser is somehow stealing
                         // focus.
@@ -252,7 +247,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
                         tryToFocus();
                     }
                 },
-                { once: true }
+                { once: true },
             );
         }
     };
@@ -281,14 +276,14 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
                 .filter(
                     (d, index) =>
                         index === 0 ||
-                        !d.classList.contains("bloom-unused-in-lang")
+                        !d.classList.contains("bloom-unused-in-lang"),
                 )
-                .map(d => d.offsetLeft)
+                .map((d) => d.offsetLeft),
         );
         first.style.left = minx + "px";
         // remember it to make sure we never take this branch again for this language
         CanvasElementManager.saveStateOfCanvasElementAsCurrentLangAlternate(
-            first
+            first,
         );
     }
     // Adjust which targets are visible based on the current language.
@@ -297,7 +292,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
     // Capture the state we want to restore on Cancel and the start positions for draggable and target rows
     for (let i = 0; i < originalDraggables.length; i++) {
         originalClassLists.push(
-            originalDraggables[i].getAttribute("class") ?? ""
+            originalDraggables[i].getAttribute("class") ?? "",
         );
         originalStyles.push(originalDraggables[i].getAttribute("style") ?? "");
         originalContents.push(originalDraggables[i].innerHTML);
@@ -322,7 +317,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
     }
     const setDraggableText = (draggable: HTMLElement, text: string) => {
         const ed = draggable.getElementsByClassName(
-            "bloom-editable bloom-visibility-code-on"
+            "bloom-editable bloom-visibility-code-on",
         )[0] as HTMLElement;
         // Text elements that are the output of a prompt dialog should not have source bubbles.
         // We'll reserve that for the dialog.
@@ -334,7 +329,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         if (!p) {
             console.assert(
                 !text,
-                "Expected to set a non-empty string, but found no paragraph"
+                "Expected to set a non-empty string, but found no paragraph",
             );
             return;
         }
@@ -360,7 +355,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         // How many can we fit in one row inside the parent?
         const maxBubbles = Math.floor(
             (draggables[0].parentElement?.offsetWidth ?? 0 - draggableX) /
-                separation
+                separation,
         );
         // truncate to the number of draggables we can display
         // This is important because (e.g., with autorepeat or paste) we can get a massive number of draggables
@@ -374,15 +369,14 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
             const lastDraggable = draggables[draggables.length - 1];
             for (let i = draggables.length; i < letters.length; i++) {
                 const newDraggable = lastDraggable.cloneNode(
-                    true
+                    true,
                 ) as HTMLElement;
                 setGeneratedDraggableId(newDraggable);
                 // Ensure the new draggable starts out empty.  See BL-14348.
                 // (This covers all languages present, visible or not.)
-                const paras = newDraggable.querySelectorAll(
-                    "div.Letter-style>p"
-                );
-                paras.forEach(p => {
+                const paras =
+                    newDraggable.querySelectorAll("div.Letter-style>p");
+                paras.forEach((p) => {
                     p.textContent = "";
                 });
                 lastDraggable.parentElement?.appendChild(newDraggable);
@@ -403,11 +397,11 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
             // up to the number of letters we have, they should be visible; others, not.
             draggables[i].classList.toggle(
                 "bloom-unused-in-lang",
-                i >= letters.length
+                i >= letters.length,
             );
             getTarget(draggables[i])?.classList.toggle(
                 "bloom-unused-in-lang",
-                i >= letters.length
+                i >= letters.length,
             );
             copyContentToTarget(draggables[i]);
         }
@@ -415,8 +409,9 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
         shuffledDraggables.splice(letters.length); // don't want any invisible ones taking up space
         shuffle(shuffledDraggables, isTheTextInDraggablesTheSame);
         for (let i = 0; i < shuffledDraggables.length; i++) {
-            shuffledDraggables[i].style.left = `${draggableX +
-                i * separation}px`;
+            shuffledDraggables[i].style.left = `${
+                draggableX + i * separation
+            }px`;
             shuffledDraggables[i].style.top = `${draggableY}px`;
             // Note that we use draggables, not shuffledDraggables, here. We want the targets
             // in the correct order, not the random order.
@@ -437,7 +432,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
                 newDraggable.closest(kBloomCanvasSelector) as HTMLElement,
                 new Bubble(newDraggable),
                 true, // attach events
-                false // don't make it active.
+                false, // don't make it active.
             );
         });
         // This seems to at least somewhat reduce the likelihood of losing focus
@@ -449,7 +444,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
     promptObserver.observe(editable, {
         childList: true,
         subtree: true,
-        characterData: true
+        characterData: true,
     });
 };
 
@@ -464,12 +459,14 @@ function cancel() {
             target.setAttribute("style", originalTargetStyles[i]);
             target.classList.toggle(
                 "bloom-unused-in-lang",
-                originalDraggables[i].classList.contains("bloom-unused-in-lang")
+                originalDraggables[i].classList.contains(
+                    "bloom-unused-in-lang",
+                ),
             );
             target.innerHTML = originalTargetContents[i];
         }
     }
-    createdBubbles.forEach(b => {
+    createdBubbles.forEach((b) => {
         getTarget(b)?.remove();
         b.remove();
     });
@@ -478,7 +475,7 @@ function cancel() {
 export function renderGamePromptDialog(
     root: HTMLElement,
     prompt: HTMLElement,
-    open: boolean
+    open: boolean,
 ) {
     ReactDOM.render(
         <GamePromptDialog
@@ -487,6 +484,6 @@ export function renderGamePromptDialog(
             // We don't actually store the open state anywhere, just re-render with the new value.
             setOpen={(o: boolean) => renderGamePromptDialog(root, prompt, o)}
         />,
-        root
+        root,
     );
 }

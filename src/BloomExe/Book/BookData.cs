@@ -10,16 +10,16 @@ using System.Xml.Linq;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.Edit;
+using Bloom.Publish;
+using Bloom.SafeXml;
 using L10NSharp;
 using Microsoft.CSharp.RuntimeBinder;
 using SIL.Extensions;
+using SIL.IO;
 using SIL.Linq;
 using SIL.Reporting;
 using SIL.Text;
 using SIL.WritingSystems;
-using SIL.IO;
-using Bloom.SafeXml;
-using Bloom.Publish;
 
 namespace Bloom.Book
 {
@@ -494,8 +494,8 @@ namespace Bloom.Book
             var decodableTool = tools.FirstOrDefault(t => t.ToolId == "decodableReader");
             if (decodableTool != null && bookClass.Contains("decodable-reader"))
             {
-                var stageString = decodableTool.State
-                    ?.Split(';')
+                var stageString = decodableTool
+                    .State?.Split(';')
                     .FirstOrDefault()
                     ?.Split(':')
                     .Skip(1)
@@ -536,8 +536,8 @@ namespace Bloom.Book
                                 Language1.Tag,
                                 false
                             );
-                            itemsToDelete.RemoveWhere(
-                                item => item.Item1 == "decodableStageLetters"
+                            itemsToDelete.RemoveWhere(item =>
+                                item.Item1 == "decodableStageLetters"
                             );
                         }
                         catch (XmlException e)
@@ -616,18 +616,17 @@ namespace Bloom.Book
             // BL-2746 For awhile during the v3.3 beta period, after the addition of ckeditor
             // our topic string was getting wrapped in html paragraph markers. There were a good
             // number of beta testers, so we need to clean up that mess.
-            topicStrings.Forms.ForEach(
-                languageForm =>
-                    topicStrings[languageForm.WritingSystemId] = languageForm.Form
-                        .Replace("<p>", "")
-                        .Replace("</p>", "")
+            topicStrings.Forms.ForEach(languageForm =>
+                topicStrings[languageForm.WritingSystemId] = languageForm
+                    .Form.Replace("<p>", "")
+                    .Replace("</p>", "")
             );
 
             if (!string.IsNullOrEmpty(topicStrings["en"]))
             {
                 //starting with 3.5, we only store the English key in the datadiv.
-                topicStrings.Forms
-                    .Where(lf => lf.WritingSystemId != "en")
+                topicStrings
+                    .Forms.Where(lf => lf.WritingSystemId != "en")
                     .ForEach(lf => topicStrings.RemoveLanguageForm(lf));
 
                 _dom.SafeSelectNodes(
@@ -671,7 +670,7 @@ namespace Bloom.Book
                         "Kartidaya",
                         "Little Zebra",
                         "JMPBK",
-                        "WPS"
+                        "WPS",
                     }
                 )
                 {
@@ -838,8 +837,8 @@ namespace Bloom.Book
 
             var tagsInPriorityOrder = GetLanguagePrioritiesForLocalizedTextOnPage();
             var langOfTopicToShowOnCover =
-                tagsInPriorityOrder.FirstOrDefault(
-                    t => LocalizationManager.GetIsStringAvailableForLangId(stringId, t)
+                tagsInPriorityOrder.FirstOrDefault(t =>
+                    LocalizationManager.GetIsStringAvailableForLangId(stringId, t)
                 ) ?? "en";
 
             var bestTranslation = LocalizationManager.GetDynamicStringOrEnglish(
@@ -1524,7 +1523,7 @@ namespace Bloom.Book
                 "bloom-content2",
                 "bloom-content3",
                 "bloom-contentNational1",
-                "bloom-contentNational2"
+                "bloom-contentNational2",
             }
         );
 
@@ -1939,8 +1938,7 @@ namespace Bloom.Book
                     if (
                         a.Item1 == "style"
                         && (
-                            node.ParentNode
-                                .GetOptionalStringAttribute("class", "")
+                            node.ParentNode.GetOptionalStringAttribute("class", "")
                                 .Contains("bloom-scale-with-code") || hasBackgroundImgData
                         )
                     )
@@ -2039,8 +2037,8 @@ namespace Bloom.Book
         )
         {
             var allForms = textAlternatives.GetOrderedAndFilteredForms(languagesToTry);
-            return allForms.FirstOrDefault(
-                harderWay => !StringAlternativeHasNoText(harderWay.Form)
+            return allForms.FirstOrDefault(harderWay =>
+                !StringAlternativeHasNoText(harderWay.Form)
             );
         }
 
@@ -2352,13 +2350,12 @@ namespace Bloom.Book
 
                     if (item.DataBook == "copyright")
                     {
-                        var presetContainsMoreThanPublisher = item.Content
-                            .SplitTrimmed(' ')
-                            .Any(
-                                word =>
-                                    word == "©"
-                                    || word.ToLowerInvariant() == "copyright"
-                                    || word.StartsWith("20")
+                        var presetContainsMoreThanPublisher = item
+                            .Content.SplitTrimmed(' ')
+                            .Any(word =>
+                                word == "©"
+                                || word.ToLowerInvariant() == "copyright"
+                                || word.StartsWith("20")
                             );
                         if (!presetContainsMoreThanPublisher)
                         {
@@ -2728,7 +2725,7 @@ namespace Bloom.Book
                 {
                     LangTag = code,
                     Name = name,
-                    EthnologueCode = ethCode
+                    EthnologueCode = ethCode,
                 };
             }
             return result;

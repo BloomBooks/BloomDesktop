@@ -10,7 +10,7 @@ namespace Bloom.Publish.Video
     {
         H264, // h.264
         H263, // h.263
-        MP3
+        MP3,
     }
 
     internal static class CodecUtils

@@ -67,7 +67,7 @@ namespace Bloom.Wizard.WinForms
             {
                 Text = "Back",
                 Size = new Size(75, 25),
-                Left = 0
+                Left = 0,
             };
             _backButton.Text = LocalizationManager.GetString(
                 "Common.BackButton",
@@ -78,7 +78,7 @@ namespace Bloom.Wizard.WinForms
             {
                 Text = "Next",
                 Size = new Size(75, 25),
-                Left = 80
+                Left = 80,
             };
             _nextAndFinishedButton.Text = LocalizationManager.GetString(
                 "Common.NextButton",
@@ -89,7 +89,7 @@ namespace Bloom.Wizard.WinForms
             {
                 Text = "Cancel",
                 Size = new Size(75, 25),
-                Left = 160
+                Left = 160,
             };
             _cancelButton.Text = LocalizationManager.GetString("Common.CancelButton", "Cancel");
 
@@ -99,7 +99,7 @@ namespace Bloom.Wizard.WinForms
             {
                 Dock = DockStyle.Bottom,
                 Height = 35,
-                Padding = new Padding(5)
+                Padding = new Padding(5),
             };
             var panel = new Panel { Dock = DockStyle.Right, AutoSize = true };
             panel.Controls.Add(_backButton);
@@ -148,6 +148,12 @@ namespace Bloom.Wizard.WinForms
                 if (Finished != null)
                     Finished(this, EventArgs.Empty);
 
+                return;
+            }
+
+            // Prevent navigation if AllowNext is false (e.g., from double-clicking)
+            if (!_currentShownPage.AllowNext)
+            {
                 return;
             }
 

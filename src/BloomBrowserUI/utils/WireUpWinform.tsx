@@ -12,13 +12,18 @@ import { hookupLinkHandler } from "./linkHandler";
  * but probably theoretically possible (although difficult) to pass children from WinForms, so allow FunctionComponent (implicit children) too
  */
 export function WireUpForWinforms(
-    component: React.VoidFunctionComponent | React.FunctionComponent
+    component: React.VoidFunctionComponent | React.FunctionComponent,
+    bgcolor: string = "#ffffff",
 ) {
     // The c# ReactControl creates an html page that will call this function.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).wireUpRootComponentFromWinforms = (
         root: HTMLElement,
-        props?: object
+        props?: object,
     ) => {
+        // Set background immediately to prevent flash during React mounting
+        root.style.backgroundColor = bgcolor;
+
         props = AddDialogPropsWhenWrappedByWinforms(props);
         const c = React.createElement(component, props, null);
         ReactDOM.render(<ThemedRoot>{c}</ThemedRoot>, root);
@@ -26,7 +31,7 @@ export function WireUpForWinforms(
     };
 }
 
-const ThemedRoot: React.FunctionComponent = props => {
+const ThemedRoot: React.FunctionComponent = (props) => {
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={lightTheme}>{props.children}</ThemeProvider>
@@ -38,14 +43,14 @@ const ThemedRoot: React.FunctionComponent = props => {
 function AddDialogPropsWhenWrappedByWinforms(props?: object) {
     const dialogParamsWhenWrappedByWinforms: IBloomDialogEnvironmentParams = {
         dialogFrameProvidedExternally: true,
-        initiallyOpen: true
+        initiallyOpen: true,
     };
     return props
         ? {
               dialogEnvironment: dialogParamsWhenWrappedByWinforms,
-              ...props
+              ...props,
           }
         : {
-              dialogEnvironment: dialogParamsWhenWrappedByWinforms
+              dialogEnvironment: dialogParamsWhenWrappedByWinforms,
           };
 }

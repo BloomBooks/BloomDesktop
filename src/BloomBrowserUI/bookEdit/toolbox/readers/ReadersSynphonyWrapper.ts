@@ -1,14 +1,14 @@
-/// <reference path="libSynphony/synphony_lib.d.ts" />
 /// <reference path="../../../typings/jquery/jquery.d.ts" />
 /// <reference path="ReaderSettings.ts" />
 
 import {
     theOneLanguageDataInstance,
     theOneLibSynphony,
-    LanguageData
+    LanguageData,
 } from "./libSynphony/synphony_lib";
 import { ReaderStage, ReaderLevel, ReaderSettings } from "./ReaderSettings";
 import * as _ from "underscore";
+import jQuery from "jquery";
 
 export default class ReadersSynphonyWrapper {
     public stages: ReaderStage[] = [];
@@ -30,14 +30,13 @@ export default class ReadersSynphonyWrapper {
 
         if (this.source.letters !== "") {
             theOneLanguageDataInstance.addGrapheme(
-                this.source.letters.split(" ")
+                this.source.letters.split(" "),
             );
             theOneLanguageDataInstance.addWord(
-                this.source.moreWords.split(" ")
+                this.source.moreWords.split(" "),
             );
-            theOneLanguageDataInstance.LanguageSortOrder = this.source.letters.split(
-                " "
-            );
+            theOneLanguageDataInstance.LanguageSortOrder =
+                this.source.letters.split(" ");
         }
 
         const stgs = this.source.stages;
@@ -49,9 +48,9 @@ export default class ReadersSynphonyWrapper {
                         jQuery.extend(
                             true,
                             new ReaderStage((j + 1).toString()),
-                            stgs[j]
+                            stgs[j],
                         )
-                    )
+                    ),
                 );
             }
         }
@@ -65,14 +64,14 @@ export default class ReadersSynphonyWrapper {
                         jQuery.extend(
                             true,
                             new ReaderLevel((i + 1).toString()),
-                            lvls[i]
+                            lvls[i],
                         )
-                    )
+                    ),
                 );
             }
         }
         theOneLibSynphony.setExtraSentencePunctuation(
-            this.source.sentencePunct
+            this.source.sentencePunct,
         );
     }
 
@@ -107,7 +106,7 @@ export default class ReadersSynphonyWrapper {
         for (let i = 0; i < wordNames.length; i++) {
             theOneLanguageDataInstance.addWord(
                 wordNames[i],
-                words[wordNames[i]]
+                words[wordNames[i]],
             );
         }
     }

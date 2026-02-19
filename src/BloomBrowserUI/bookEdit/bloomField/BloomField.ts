@@ -5,6 +5,9 @@ import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import { get, post } from "../../utils/bloomApi";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { tryProcessHyperlink } from "./hyperlinks";
+import $ from "jquery";
+import { showLinkTargetChooserDialog } from "../../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
+import { getLocalization } from "../../react_components/l10n";
 
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.
@@ -31,11 +34,11 @@ export default class BloomField {
         // ManageWhatHappensIfTheyDeleteEverything() is actually enough, it cleans things up. But can still show some momentary cursor
         // weirdness. So at least in this common case, we prevent the backspace altogether.
         BloomField.PreventBackspaceAtStartFromRemovingParagraph(
-            bloomEditableDiv
+            bloomEditableDiv,
         );
         BloomField.PreventArrowingOutIntoField(bloomEditableDiv);
         BloomField.PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(
-            bloomEditableDiv
+            bloomEditableDiv,
         );
 
         BloomField.MakeShiftEnterInsertLineBreak(bloomEditableDiv);
@@ -72,7 +75,7 @@ export default class BloomField {
     }
 
     private static MakeTabEnterTabElement(field: HTMLElement) {
-        $(field).keydown(e => {
+        $(field).keydown((e) => {
             if (e.key === "Tab") {
                 //note: some people introduce a new element, <tab>. That has the advantage
                 //of having a stylesheet-controllable width. However, Firefox leave the
@@ -136,13 +139,13 @@ export default class BloomField {
             // can avoid spuriously introducing it.
             const fixGoogleDocNormal = input.replace(
                 /<b style="font-weight: *(normal|[1234]).*?>(.*?)<\/b *>/gi,
-                "$2"
+                "$2",
             );
             // In order to handle the google doc bizarreness, we allow bold elements to have style
             // But we don't want it unless it is the google doc case we care about.
             const fixBoldStyle = fixGoogleDocNormal.replace(
                 /<b style=".*?>/gi,
-                "<b>"
+                "<b>",
             );
             const fixBold = fixBoldStyle.replace(/<(\/?)b>/gi, "<$1strong>");
             const fixItalic = fixBold.replace(/<(\/?)i>/gi, "<$1em>");
@@ -164,7 +167,7 @@ export default class BloomField {
             const span = spans[i];
             if (!span.hasAttributes()) {
                 const spanContent: (string | Node)[] = [];
-                span.childNodes.forEach(child => {
+                span.childNodes.forEach((child) => {
                     spanContent.push(child);
                 });
                 span.replaceWith(...spanContent);
@@ -180,12 +183,12 @@ export default class BloomField {
     // keypresses. To regain access, we have to wire up to ckeditor.
     public static WireToCKEditor(
         bloomEditableDiv: HTMLElement,
-        ckeditor: CKEDITOR.editor
+        ckeditor: CKEDITOR.editor,
     ) {
         ckeditor.config.colorButton_colors = CKEDITOR.config.colorButton_colors;
         if (
             bloomEditableDiv.classList.contains(
-                "bloom-copyFromOtherLanguageIfNecessary"
+                "bloom-copyFromOtherLanguageIfNecessary",
             ) &&
             bloomEditableDiv.innerText &&
             bloomEditableDiv.innerText !== "\n" &&
@@ -194,7 +197,7 @@ export default class BloomField {
             // See BL-13779. If the user deletes all the text in a div, we don't want to copy
             // the text from another language in the future. We set the data-user-deleted attribute
             // to keep this from happening.
-            ckeditor.on("change", event => {
+            ckeditor.on("change", (event) => {
                 if (
                     bloomEditableDiv.innerText === "" ||
                     bloomEditableDiv.innerText === "\n"
@@ -203,7 +206,7 @@ export default class BloomField {
                 }
             });
         }
-        ckeditor.on("key", event => {
+        ckeditor.on("key", (event) => {
             if (event.data.keyCode === CKEDITOR.SHIFT + 13) {
                 BloomField.InsertLineBreak();
                 event.cancel();
@@ -212,37 +215,39 @@ export default class BloomField {
         // ckeditor.on('afterPasteFromWord', event => {
         //     alert(event.data.dataValue);
         // });
-        ckeditor.on("paste", event => {
+        ckeditor.on("paste", (event) => {
             event.data.dataValue = this.restoreHtmlMarkupIfNecessary(
-                event.data
+                event.data,
             );
             event.data.dataValue = this.reconstituteParagraphsOnPlainTextPaste(
-                event.data
+                event.data,
             );
-            event.data.dataValue = this.convertStandardFormatVerseMarkersToSuperscript(
-                event.data.dataValue
-            );
+            event.data.dataValue =
+                this.convertStandardFormatVerseMarkersToSuperscript(
+                    event.data.dataValue,
+                );
 
             event.data.dataValue = this.fixPasteData(event.data.dataValue);
             event.data.dataValue = this.removeUselessSpanMarkup(
-                event.data.dataValue
+                event.data.dataValue,
             );
 
             // We can't just duplicate audio ids without running into trouble later!
             if (
                 event.sender.element.$.getAttribute(
-                    "data-audiorecordingmode"
+                    "data-audiorecordingmode",
                 ) === "Sentence"
             ) {
                 // We need to generate a new guid-based id, use it to copy the audio file, and
                 // insert it into the span when targeting a Sentence recording mode div.
-                event.data.dataValue = this.copyAudioFilesWithNewIdsDuringPasting(
-                    event.data.dataValue
-                );
+                event.data.dataValue =
+                    this.copyAudioFilesWithNewIdsDuringPasting(
+                        event.data.dataValue,
+                    );
             } else {
                 // Remove all audio related span markup when targeting a TextBox recording mode div.
                 event.data.dataValue = this.removeAudioSpanMarkupDuringPasting(
-                    event.data.dataValue
+                    event.data.dataValue,
                 );
             }
 
@@ -266,7 +271,7 @@ export default class BloomField {
                 .replace("</p>", endMkr);
         });
 
-        ckeditor.on("afterPaste", event => {
+        ckeditor.on("afterPaste", (event) => {
             // clean up possible unwanted paragraph inserted by paste event.
             $(".removeMe").remove();
         });
@@ -286,10 +291,9 @@ export default class BloomField {
         //   (for other tooltips, this defaults to what qtip places on the element itself)
         // * BloomSourceBubbles.SetupTooltips() has focus and blur handlers for Source Bubbles
         //   which remove or add the passive-bubble class.
-        ckeditor.on("focus", event => {
-            const qtipId = event.editor?.element?.getAttribute(
-                "aria-describedby"
-            );
+        ckeditor.on("focus", (event) => {
+            const qtipId =
+                event.editor?.element?.getAttribute("aria-describedby");
             if (qtipId) {
                 const tipElement = $(`#${qtipId}`);
                 if (tipElement) {
@@ -298,10 +302,9 @@ export default class BloomField {
                 }
             }
         });
-        ckeditor.on("blur", event => {
-            const qtipId = event.editor?.element?.getAttribute(
-                "aria-describedby"
-            );
+        ckeditor.on("blur", (event) => {
+            const qtipId =
+                event.editor?.element?.getAttribute("aria-describedby");
             if (qtipId) {
                 const tipElement = $(`#${qtipId}`);
                 if (tipElement) {
@@ -311,20 +314,18 @@ export default class BloomField {
             }
         });
 
-        ckeditor.addCommand("pasteHyperlink", {
-            exec: function(edt) {
-                get("common/clipboardText", result => {
-                    if (!result.data) {
-                        return; // More sanity checks are in bloomEditing.updateCkEditorButtonStatus
-                    }
-                    get("app/selectedBookInfo", bookInfo => {
+        ckeditor.addCommand("setupHyperlink", {
+            exec: function (edt) {
+                showLinkTargetChooserDialog("", (url) => {
+                    if (!url) return;
+                    get("app/selectedBookInfo", (bookInfo) => {
                         if (!bookInfo.data) {
                             return;
                         }
                         const anchor = document.createElement("a");
                         anchor.href = tryProcessHyperlink(
-                            result.data,
-                            bookInfo.data.id
+                            url,
+                            bookInfo.data.id,
                         );
                         try {
                             document
@@ -339,21 +340,27 @@ export default class BloomField {
                                 "EditTab.HyperlinkPasteFailure",
                                 englishErrorMessage,
                                 "Shows when a hyperlink cannot be pasted due to invalid selection.",
-                                "CantPasteHyperlink"
+                                "CantPasteHyperlink",
                             );
                         }
                     });
                 });
                 return true; // probaby means success, but I'm not sure. Typescript says this function has to return a boolean.
-            }
+            },
         });
 
-        ckeditor.ui.addButton("PasteLink", {
-            // add new button and bind our command
-            label: "Paste Hyperlink",
-            command: "pasteHyperlink",
-            toolbar: "insert",
-            icon: "/bloom/images/link.png"
+        getLocalization({
+            english: "Set Up Hyperlink",
+            l10nKey: "EditTab.SetupHyperlink",
+            callback: (localizedString) => {
+                ckeditor.ui.addButton("SetupLink", {
+                    // add new button and bind our command
+                    label: localizedString,
+                    command: "setupHyperlink",
+                    toolbar: "insert",
+                    icon: "/bloom/images/link.png",
+                });
+            },
         });
 
         // This makes it easy to find the right editor instance. There may be some ckeditor built-in way, but
@@ -413,7 +420,7 @@ export default class BloomField {
             // Finding where the original string with its newlines was passed inside the
             // dataTransfer object was a bit tricky.
             const textWithReturns = eventData.dataTransfer.getData(
-                "text/plain"
+                "text/plain",
             ) as string;
             if (!textWithReturns.includes("\n")) {
                 return eventData.dataValue; // no change
@@ -423,7 +430,7 @@ export default class BloomField {
                 .split("\n")
                 .reduce(
                     (resultSoFar, part) => resultSoFar + "<p>" + part + "</p>",
-                    ""
+                    "",
                 );
             // Reset dataValue
             return reconstitutedTextWithParas;
@@ -434,7 +441,7 @@ export default class BloomField {
     // Not private so we can unit test it. It is too difficult to get the actual paste
     // event to get fired and handled correctly in tests.
     public static convertStandardFormatVerseMarkersToSuperscript(
-        inputText: any
+        inputText: any,
     ): any {
         const re = /\\v\s(\d+)/g;
         const matches = re.exec(inputText);
@@ -453,7 +460,7 @@ export default class BloomField {
     // that .audio-sentence and .bloom-highlightSegment classes are mutually exclusive since the
     // former is used for recording by sentence and the latter is used for recording by textbox.)
     public static copyAudioFilesWithNewIdsDuringPasting(
-        inputHtml: string // could be plain text or have embedded/surrounding HTML markup
+        inputHtml: string, // could be plain text or have embedded/surrounding HTML markup
     ): string {
         const temp = document.createElement("template");
         temp.innerHTML = inputHtml;
@@ -465,20 +472,20 @@ export default class BloomField {
                     const newId = AudioRecording.createValidXhtmlUniqueId();
                     span.setAttribute("id", newId);
                     post(`audio/copyAudioFile?oldId=${oldId}&newId=${newId}`);
-                }
+                },
             );
             return temp.innerHTML;
         }
         // span.audio-sentence doesn't exist, but we may have span.bloom-highlightSegment markup to remove.
         return this.removeMatchingAudioSpanMarkup(
             inputHtml,
-            "span.bloom-highlightSegment"
+            "span.bloom-highlightSegment",
         );
     }
 
     private static removeMatchingAudioSpanMarkup(
         inputHtml: string, // could be plain text or have embedded/surrounding HTML markup
-        selector: string
+        selector: string,
     ): string {
         const temp = document.createElement("template");
         temp.innerHTML = inputHtml;
@@ -489,9 +496,9 @@ export default class BloomField {
                 (span: Element, key: number, parent: NodeListOf<Element>) => {
                     outputHtml = outputHtml.replace(
                         span.outerHTML,
-                        span.innerHTML
+                        span.innerHTML,
                     );
-                }
+                },
             );
             return outputHtml; // could be plain text by now even if input had HTML audio span markup
         }
@@ -499,16 +506,16 @@ export default class BloomField {
     }
 
     public static removeAudioSpanMarkupDuringPasting(
-        inputHtml: string // could be plain text or have embedded/surrounding HTML markup
+        inputHtml: string, // could be plain text or have embedded/surrounding HTML markup
     ): string {
         return this.removeMatchingAudioSpanMarkup(
             inputHtml,
-            "span.audio-sentence, span.bloom-highlightSegment"
+            "span.audio-sentence, span.bloom-highlightSegment",
         );
     }
 
     private static MakeShiftEnterInsertLineBreak(field: HTMLElement) {
-        $(field).keypress(e => {
+        $(field).keypress((e) => {
             //NB: This will not fire in the (now normal case) that ckeditor is in charge of this field.
             if (e.key === "Enter") {
                 if (e.shiftKey) {
@@ -540,7 +547,7 @@ export default class BloomField {
 
     // Since embedded images come before the first editable text, going to the beginning of the field and pressing Backspace moves the current paragraph into the caption. Sigh.
     private static PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(
-        field: HTMLElement
+        field: HTMLElement,
     ) {
         if (
             $(field).find(".bloom-keepFirstInField.bloom-preventRemoval")
@@ -550,7 +557,7 @@ export default class BloomField {
         }
 
         const divToProtect = $(field).find(
-            ".bloom-keepFirstInField.bloom-preventRemoval"
+            ".bloom-keepFirstInField.bloom-preventRemoval",
         )[0];
 
         //We have this to fix up cases existing before we introduced this prevention, and also
@@ -562,7 +569,7 @@ export default class BloomField {
         //the image - container(which in turn contains the caption).
         $(divToProtect)
             .children()
-            .filter(function() {
+            .filter(function () {
                 return this.localName.toLowerCase() != "div";
             })
             .each(() => {
@@ -572,7 +579,7 @@ export default class BloomField {
         //note this is still only one level deep, so it doesn't endanger the caption
         $(divToProtect)
             .contents()
-            .filter(function() {
+            .filter(function () {
                 return (
                     this.nodeType == Node.TEXT_NODE &&
                     this.textContent.trim().length > 0
@@ -588,7 +595,7 @@ export default class BloomField {
         //be 0. To really solve this, we would need to be able to determine if we are in the first text node
         //of the paragraph, because that's the case where FF will try and remove the  P and move it into the
         //preceding div.
-        $(field).keydown(e => {
+        $(field).keydown((e) => {
             if (e.key == "Backspace") {
                 const sel = window.getSelection();
                 if (!sel || !sel.anchorNode) return;
@@ -617,7 +624,7 @@ export default class BloomField {
     // Without this, ctrl+a followed by a left-arrow or right-arrow gets you out of all paragraphs,
     // so you can start messing things up.
     private static PreventArrowingOutIntoField(field: HTMLElement) {
-        $(field).keydown(function(e) {
+        $(field).keydown(function (e) {
             const leftArrowPressed = e.key === "ArrowLeft";
             const rightArrowPressed = e.key === "ArrowRight";
             if (leftArrowPressed || rightArrowPressed) {
@@ -628,7 +635,7 @@ export default class BloomField {
                         this,
                         leftArrowPressed
                             ? CursorPosition.start
-                            : CursorPosition.end
+                            : CursorPosition.end,
                     );
                 }
             }
@@ -638,11 +645,7 @@ export default class BloomField {
     private static EnsureStartsWithParagraphElement(field: HTMLElement) {
         if (
             $(field).children().length > 0 &&
-            $(field)
-                .children()
-                .first()
-                .prop("tagName")
-                .toLowerCase() === "p"
+            $(field).children().first().prop("tagName").toLowerCase() === "p"
         ) {
             return;
         }
@@ -653,11 +656,7 @@ export default class BloomField {
         //Enhance: move any errant paragraphs to after the bloom-canvas
         if (
             $(field).children().length > 0 &&
-            $(field)
-                .children()
-                .last()
-                .prop("tagName")
-                .toLowerCase() === "p"
+            $(field).children().last().prop("tagName").toLowerCase() === "p"
         ) {
             return;
         }
@@ -699,9 +698,7 @@ export default class BloomField {
         if ($(field).hasClass("WordFind-style")) return;
 
         BloomField.ConvertTopLevelTextNodesToParagraphs(field);
-        $(field)
-            .find("br")
-            .remove();
+        $(field).find("br").remove();
 
         // in cases where we are embedding images inside of bloom-editables, the paragraphs actually have to go at the
         // end, for reason of wrapping. See SHRP C1P4 Pupils Book
@@ -722,21 +719,13 @@ export default class BloomField {
 
     private static MoveCursorToEdgeOfField(
         field: HTMLElement,
-        position: CursorPosition
+        position: CursorPosition,
     ) {
         const range = document.createRange();
         if (position === CursorPosition.start) {
-            range.selectNodeContents(
-                $(field)
-                    .find("p")
-                    .first()[0]
-            );
+            range.selectNodeContents($(field).find("p").first()[0]);
         } else {
-            range.selectNodeContents(
-                $(field)
-                    .find("p")
-                    .last()[0]
-            );
+            range.selectNodeContents($(field).find("p").last()[0]);
         }
         range.collapse(position === CursorPosition.start); //true puts it at the start
         const sel = window.getSelection();
@@ -750,7 +739,7 @@ export default class BloomField {
         // if the user types (ctrl+a, del) then we get an empty element or '<br></br>', and need to get a <p> in there.
         // if the user types (ctrl+a, 'blah'), then we get blah outside of any paragraph
 
-        $(field).keyup(e => {
+        $(field).keyup((e) => {
             if ($(field).find("p").length === 0) {
                 BloomField.EnsureParagraphsPresent(field);
 
@@ -766,10 +755,11 @@ export default class BloomField {
     // inadvertently remove the embedded images. So we introduced the "bloom-preventRemoval" class, and this
     // tries to safeguard elements bearing that class.
     private static PreventRemovalOfSomeElements(field: HTMLElement) {
-        const numberThatShouldBeThere = $(field).find(".bloom-preventRemoval")
-            .length;
+        const numberThatShouldBeThere = $(field).find(
+            ".bloom-preventRemoval",
+        ).length;
         if (numberThatShouldBeThere > 0) {
-            $(field).keyup(e => {
+            $(field).keyup((e) => {
                 if (
                     $(field).find(".bloom-preventRemoval").length <
                     numberThatShouldBeThere
@@ -786,15 +776,11 @@ export default class BloomField {
         // Since the elements that should not be deleted are part of a parallel field in a
         // template language, initial page setup will copy it into a new version of the messed
         // up one if the relevant language version is missing altogether
-        $(field).blur(function(e) {
-            if (
-                $(this)
-                    .html()
-                    .indexOf("RESETRESET") > -1
-            ) {
+        $(field).blur(function (e) {
+            if ($(this).html().indexOf("RESETRESET") > -1) {
                 $(this).remove();
                 alert(
-                    "Now go to another book, then back to this book and page."
+                    "Now go to another book, then back to this book and page.",
                 );
             }
         });
@@ -832,11 +818,7 @@ export default class BloomField {
         //when this was wired up, we used ".one()", but actually we're getting multiple calls for some reason,
         //and that gets characters in the wrong place because this messes with the insertion point. So now
         //we check to see if the space is still there before touching it
-        if (
-            $(field)
-                .html()
-                .indexOf("&nbsp;") === 0
-        ) {
+        if ($(field).html().indexOf("&nbsp;") === 0) {
             //earlier we stuck a &nbsp; in to work around a FF bug on empty boxes.
             //now remove it a soon as they type something
 
@@ -852,7 +834,7 @@ export default class BloomField {
                 let doNotDeleteOrMove = false;
                 // if we've typed a backspace, delete, or arrow key, don't do it and call this method again next time.
                 // see https://silbloom.myjetbrains.com/youtrack/issue/BL-2274.
-                if (typeof event.charCode == "number" && event.charCode == 0) {
+                if (typeof event.charCode === "number" && event.charCode == 0) {
                     doNotDeleteOrMove =
                         event.keyCode == 8 /*backspace*/ ||
                         event.keyCode == 46 /*delete*/ ||
@@ -879,7 +861,7 @@ export default class BloomField {
     }
 
     private static PreventBackspaceAtStartFromRemovingParagraph(
-        field: HTMLElement
+        field: HTMLElement,
     ) {
         field.addEventListener("keydown", (e: KeyboardEvent) => {
             if (e.key === "Backspace") {
@@ -912,7 +894,7 @@ export default class BloomField {
                     if (
                         !this.isNodeALeftMostDescendant(
                             closestP[0],
-                            sel.anchorNode
+                            sel.anchorNode,
                         )
                     ) {
                         return;
@@ -932,7 +914,7 @@ export default class BloomField {
     // That is, it's on the "left"-most path if you drew it as a tree structure with the earlier children on the left.
     private static isNodeALeftMostDescendant(
         rootElement: Element,
-        targetNode: Node
+        targetNode: Node,
     ) {
         let curr = rootElement.firstChild;
         while (curr) {
@@ -949,7 +931,7 @@ export default class BloomField {
 }
 enum CursorPosition {
     start,
-    end
+    end,
 }
 interface FFSelection extends Selection {
     //This is nonstandard, but supported by firefox. So we have to tell typescript about it

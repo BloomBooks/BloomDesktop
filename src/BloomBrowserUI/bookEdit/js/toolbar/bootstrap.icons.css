@@ -39,13 +39,13 @@
     display: inline-block;
     width: 14px;
     height: 14px;
-    *margin-right: .3em;
+    *margin-right: 0.3em;
     line-height: 14px;
     vertical-align: text-top;
     background-image: url("glyphicons-halflings.png");
     background-position: 14px 14px;
     background-repeat: no-repeat;
-margin-top: 9px;
+    margin-top: 9px;
 }
 /* White icons with optional class, or on hover/active states of certain elements */
 .icon-white,
@@ -64,7 +64,7 @@ margin-top: 9px;
     background-image: url("../img/glyphicons-halflings-white.png");
 }
 .icon-glass {
-    background-position: 0      0;
+    background-position: 0 0;
 }
 .icon-music {
     background-position: -24px 0;

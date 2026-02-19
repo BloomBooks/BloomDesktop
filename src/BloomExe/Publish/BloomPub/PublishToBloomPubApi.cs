@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using Bloom.Api;
@@ -9,19 +9,18 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.Publish.BloomPub.file;
-using SIL.Windows.Forms.Miscellaneous;
-
-#if !__MonoCS__
-using Bloom.Publish.BloomPub.usb;
-#endif
 using Bloom.Publish.BloomPub.wifi;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.web;
 using Bloom.web.controllers;
 using DesktopAnalytics;
-using SIL.IO;
 using Newtonsoft.Json;
+using SIL.IO;
 using SIL.Reporting;
-using Bloom.SubscriptionAndFeatures;
+using SIL.Windows.Forms.Miscellaneous;
+#if !__MonoCS__
+using Bloom.Publish.BloomPub.usb;
+#endif
 
 namespace Bloom.Publish.BloomPub
 {
@@ -62,7 +61,7 @@ namespace Bloom.Publish.BloomPub
 #if !__MonoCS__
             _usbPublisher = new UsbPublisher(_progress, _bookServer)
             {
-                Stopped = () => SetState("stopped")
+                Stopped = () => SetState("stopped"),
             };
 #endif
         }
@@ -315,7 +314,7 @@ namespace Bloom.Publish.BloomPub
                     { "mode", mode },
                     { "BookId", book.ID },
                     { "Country", book.CollectionSettings.Country },
-                    { "Language", book.BookData.Language1.Tag }
+                    { "Language", book.BookData.Language1.Tag },
                 }
             );
             book.ReportSimplisticFontAnalytics(
@@ -368,7 +367,6 @@ namespace Bloom.Publish.BloomPub
 
             // REVIEW: Why is this here in this method? We do a bunch of things to convert a book, but this one thing, audio, was
             // put here instead in BloomReaderFileMaker along with all the other operations.
-
 
             // Compress audio if needed, with progress message
             if (AudioProcessor.IsAnyCompressedAudioMissing(book.FolderPath, book.RawDom))
@@ -436,7 +434,7 @@ namespace Bloom.Publish.BloomPub
             // a large difference in page size.
             if (
                 layout.SizeAndOrientation.PageSizeName != desiredLayoutSize
-                && !book.HasComicalOverlays
+                && !book.HasComicalElements
             )
             {
                 // The progress object has been initialized to use an id prefix.  So we'll access L10NSharp explicitly here.  We also want to make the string blue,

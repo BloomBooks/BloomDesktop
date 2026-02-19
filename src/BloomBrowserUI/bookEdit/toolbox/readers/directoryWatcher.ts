@@ -1,5 +1,7 @@
 /// <reference path="../../../typings/jquery/jquery.d.ts" />
 
+import $ from "jquery";
+
 /**
  * Implements a simple directory watcher in javascript. The localhost is listening for requests that begin with this
  * pattern: "/bloom/api/directoryWatcher/..."
@@ -86,7 +88,7 @@ export class DirectoryWatcher {
             ajaxSettings["data"] = postKeyValueDataObject;
 
         // we are expecting the value returned in 'data' to be either 'yes' or 'no'
-        $.ajax(ajaxSettings).done(data => {
+        $.ajax(ajaxSettings).done((data) => {
             self.ifChangedFireEvents(data, self);
         });
     }

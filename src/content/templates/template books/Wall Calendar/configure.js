@@ -36,7 +36,7 @@ function runUpdate(jsonConfig) {
 //
 // Used to create a calendar in a Wall Calendar book
 //
-var CalendarConfigurator = (function() {
+var CalendarConfigurator = (function () {
     function CalendarConfigurator(jsonConfig) {
         if (jsonConfig && jsonConfig["library"])
             this.configObject = new CalendarConfigObject(jsonConfig);
@@ -45,38 +45,36 @@ var CalendarConfigurator = (function() {
     //
     // Updates the dom to reflect the given configuration settings
     //
-    CalendarConfigurator.prototype.updateDom = function() {
+    CalendarConfigurator.prototype.updateDom = function () {
         var year = this.configObject.year;
         var originalMonthsPicturePage = $(".calendarMonthTop")[0];
         var pageToInsertAfter = originalMonthsPicturePage;
         for (var month = 0; month < 12; month++) {
             var monthsPicturePage = $(originalMonthsPicturePage).clone()[0];
-            $(monthsPicturePage)
-                .removeClass("templateOnly")
-                .removeAttr("id"); // don't want to copy a Guid!
+            $(monthsPicturePage).removeClass("templateOnly").removeAttr("id"); // don't want to copy a Guid!
             $(pageToInsertAfter).after(monthsPicturePage);
             var monthDaysPage = this.generateMonth(
                 year,
                 month,
                 this.configObject.monthNames[month],
-                this.configObject.dayAbbreviations
+                this.configObject.dayAbbreviations,
             );
             $(monthsPicturePage).after(monthDaysPage);
             pageToInsertAfter = monthDaysPage;
         }
         $(".templateOnly").remove(); // removes 2 template pages (calendarMonthTop and calendarMonthBottom)
     };
-    CalendarConfigurator.prototype.generateMonth = function(
+    CalendarConfigurator.prototype.generateMonth = function (
         year,
         month,
         monthName,
-        dayAbbreviations
+        dayAbbreviations,
     ) {
         var marginBox = document.createElement("div");
         $(marginBox).addClass("marginBox");
         var monthPage = document.createElement("div");
         $(monthPage).addClass(
-            "bloom-page bloom-required A5Landscape calendarMonthBottom"
+            "bloom-page bloom-required A5Landscape calendarMonthBottom",
         );
         $(monthPage).attr("data-page", "required");
         this.buildCalendarBottomPage(
@@ -84,17 +82,17 @@ var CalendarConfigurator = (function() {
             year,
             month,
             monthName,
-            dayAbbreviations
+            dayAbbreviations,
         );
         monthPage.appendChild(marginBox);
         return monthPage;
     };
-    CalendarConfigurator.prototype.buildCalendarBottomPage = function(
+    CalendarConfigurator.prototype.buildCalendarBottomPage = function (
         bottomPageContainer,
         year,
         month,
         monthName,
-        dayAbbreviations
+        dayAbbreviations,
     ) {
         var header = document.createElement("p");
         $(header).addClass("calendarBottomPageHeader");
@@ -105,13 +103,13 @@ var CalendarConfigurator = (function() {
         this.buildCalendarBody(table, year, month);
         $(bottomPageContainer).append(table);
     };
-    CalendarConfigurator.prototype.buildCalendarHeader = function(
+    CalendarConfigurator.prototype.buildCalendarHeader = function (
         containingTable,
-        dayAbbreviations
+        dayAbbreviations,
     ) {
         var thead = document.createElement("thead");
         var row = document.createElement("tr");
-        dayAbbreviations.forEach(function(abbr) {
+        dayAbbreviations.forEach(function (abbr) {
             var thElem = document.createElement("th");
             $(thElem).text(abbr);
             $(row).append(thElem);
@@ -119,10 +117,10 @@ var CalendarConfigurator = (function() {
         $(thead).append(row);
         $(containingTable).append(thead);
     };
-    CalendarConfigurator.prototype.buildCalendarBody = function(
+    CalendarConfigurator.prototype.buildCalendarBody = function (
         containingTable,
         year,
-        month
+        month,
     ) {
         var body = document.createElement("tbody");
         var start = new Date(parseInt(year), month, 1);
@@ -132,7 +130,7 @@ var CalendarConfigurator = (function() {
         } while (start.getMonth() == month);
         $(containingTable).append(body);
     };
-    CalendarConfigurator.prototype.buildWeek = function(body, date, month) {
+    CalendarConfigurator.prototype.buildWeek = function (body, date, month) {
         var row = document.createElement("tr");
         for (var i = 0; i < 7; i++) {
             var dayCell = document.createElement("td");
@@ -151,7 +149,7 @@ var CalendarConfigurator = (function() {
     };
     return CalendarConfigurator;
 })();
-var CalendarConfigObject = (function() {
+var CalendarConfigObject = (function () {
     function CalendarConfigObject(jsonConfig) {
         this.defaultConfig = {
             calendar: { year: "2015" },
@@ -169,7 +167,7 @@ var CalendarConfigObject = (function() {
                         "sep",
                         "oct",
                         "nov",
-                        "dec"
+                        "dec",
                     ],
                     dayAbbreviations: [
                         "Sun",
@@ -178,10 +176,10 @@ var CalendarConfigObject = (function() {
                         "Wed",
                         "Thu",
                         "Fri",
-                        "Sat"
-                    ]
-                }
-            }
+                        "Sat",
+                    ],
+                },
+            },
         };
         if (typeof jsonConfig === "undefined" || !jsonConfig["library"])
             jsonConfig = this.defaultConfig;
@@ -194,7 +192,7 @@ var CalendarConfigObject = (function() {
 // Test class for manual debugging
 // Just load DistFiles\factoryCollections\Templates\Wall Calendar\Wall Calendar.htm into Firefox
 // and type "TestCalendar()" in Firefox's Console tab to debug
-var TestCalendar = (function() {
+var TestCalendar = (function () {
     function TestCalendar() {
         // test config is in French, just for fun
         this.testConfig =

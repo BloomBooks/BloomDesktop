@@ -21,7 +21,7 @@ namespace Bloom.SubscriptionAndFeatures
         // This is also used for Web publishing. Neither medium causes any
         // pages to be removed, and this seems unlikely to change.
         BloomPub = 1 << 3,
-        All = Epub | Video | PDF | BloomPub
+        All = Epub | Video | PDF | BloomPub,
     }
 
     /// <summary>
@@ -31,13 +31,13 @@ namespace Bloom.SubscriptionAndFeatures
     {
         // We will publish the feature if it is there, even though we don't allow creating it
         // (e.g., some tiers don't allow recording audio at the text block level, but if we have
-        // such recordings in a book we will just publish them. Also, books with overlays
+        // such recordings in a book we will just publish them. Also, books with canvas elements
         // may be published in any tier in derivatives.)
         None,
 
         // The book may not be published at all if it has this feature
-        // (e.g., overlays in non-derivative books).
-        // Note: Remove trumps Block; for example, if the only overlays in a book
+        // (e.g., canvas elements in non-derivative books).
+        // Note: Remove trumps Block; for example, if the only canvas elements in a book
         // are on Game pages, that does not block publishing.
         Block,
 
@@ -59,7 +59,7 @@ namespace Bloom.SubscriptionAndFeatures
         // The feature must have ExistsInPageXPath so we can identify pages that need this
         // treatment, and at least one of ClassesToRemoveToDisable or AttributesToRemoveToDisable.
         // Enhance: we may at some point identify other ways of specifying ways to disable features.
-        DisabledByModifyingDom
+        DisabledByModifyingDom,
     }
 
     public class FeatureInfo
@@ -166,7 +166,7 @@ namespace Bloom.SubscriptionAndFeatures
                 FeatureName = feature.Feature,
                 SubscriptionTier = feature.SubscriptionTier,
                 Enabled = enabled,
-                Visible = true // for now, we have not hooked up the advanced/experimental flags yet.
+                Visible = true, // for now, we have not hooked up the advanced/experimental flags yet.
             };
         }
 
@@ -197,7 +197,7 @@ namespace Bloom.SubscriptionAndFeatures
         {
             None,
             InsufficientSubscription,
-            UnsupportedMedium
+            UnsupportedMedium,
         }
 
         public static ReasonForRemoval ShouldPageBeRemovedForPublishing(
@@ -224,10 +224,9 @@ namespace Bloom.SubscriptionAndFeatures
             if (
                 PageMatchesAnyFeature(
                     page,
-                    FeatureRegistry.Features.Where(
-                        f =>
-                            f.PreventPublishingInUnsupportedMediums == PreventionMethod.Remove
-                            && (f.SupportedMediums & medium) == 0
+                    FeatureRegistry.Features.Where(f =>
+                        f.PreventPublishingInUnsupportedMediums == PreventionMethod.Remove
+                        && (f.SupportedMediums & medium) == 0
                     )
                 )
             )
@@ -273,8 +272,8 @@ namespace Bloom.SubscriptionAndFeatures
             IEnumerable<FeatureInfo> features
         )
         {
-            return features.Any(
-                feature => pageNode.SelectSingleNode(feature.ExistsInPageXPath) != null
+            return features.Any(feature =>
+                pageNode.SelectSingleNode(feature.ExistsInPageXPath) != null
             );
         }
 
@@ -292,8 +291,8 @@ namespace Bloom.SubscriptionAndFeatures
                 return null;
 
             var disabledFeaturesToLookFor = new List<FeatureInfo>();
-            var removableFeatures = FeatureRegistry.Features
-                .Where(f => f.PreventPublishingInOriginalBooks == PreventionMethod.Remove)
+            var removableFeatures = FeatureRegistry
+                .Features.Where(f => f.PreventPublishingInOriginalBooks == PreventionMethod.Remove)
                 .ToList();
 
             foreach (
@@ -301,8 +300,8 @@ namespace Bloom.SubscriptionAndFeatures
                     // None obviously doesn't restrict anything; Remove gets rid of individual pages but doesn't completely forbid;
                     // The Disabled ones allow publishing but without the feature. So it's only Block ones that mustn't exist at all.
                     f =>
-                        f.PreventPublishingInOriginalBooks == PreventionMethod.Block
-                        && !string.IsNullOrEmpty(f.ExistsInPageXPath)
+                    f.PreventPublishingInOriginalBooks == PreventionMethod.Block
+                    && !string.IsNullOrEmpty(f.ExistsInPageXPath)
                 )
             )
             {

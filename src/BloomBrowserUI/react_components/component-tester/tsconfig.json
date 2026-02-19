@@ -1,0 +1,22 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+
+        "module": "ESNext",
+        "target": "ES2020",
+        "moduleResolution": "Node",
+        "jsx": "react-jsx",
+        "jsxImportSource": "@emotion/react",
+        "types": ["vite/client"],
+        "noEmit": true
+    },
+    "include": [
+        "./*.ts",
+        "./*.tsx",
+        "../**/component-tests/**/*.ts",
+        "../**/component-tests/**/*.tsx",
+        "./vite.config.ts"
+    ],
+    "exclude": ["./node_modules"]
+}

@@ -1,4 +1,5 @@
 import bloomQtipUtils from "./bloomQtipUtils";
+import $ from "jquery";
 
 // For testing and debugging, functionality to replace invisible characters with symbols.
 
@@ -8,19 +9,18 @@ const invisibles = [
     {
         name: "Zero Width Non-Joiner",
         re: "&zwnj;|\u200C",
-        symbol: "\uE079"
+        symbol: "\uE079",
     },
     { name: "Combining Grapheme Joiner", re: "\u034F", symbol: "\uE07A" },
     {
         name: "Zero Width Space",
-        re:
-            "&ZeroWidthSpace;|&NegativeMediumSpace;|&NegativeThickSpace;|&NegativeThinSpace;|&NegativeVeryThinSpace;|\u200B",
-        symbol: "\uE081"
+        re: "&ZeroWidthSpace;|&NegativeMediumSpace;|&NegativeThickSpace;|&NegativeThinSpace;|&NegativeVeryThinSpace;|\u200B",
+        symbol: "\uE081",
     },
     {
         name: "No-Break Space",
         re: "&nbsp;|&NonBreakingSpace;|\u00A0",
-        symbol: "\uE082"
+        symbol: "\uE082",
     },
     { name: "Narrow No-Break Space", re: "\u202F", symbol: "\uE083" },
     { name: "En Quad", re: "\u2000", symbol: "\uE084" },
@@ -35,17 +35,17 @@ const invisibles = [
     {
         name: "Thin Space",
         re: "&thinsp;|&ThinSpace;|\u2009",
-        symbol: "\uE08D"
+        symbol: "\uE08D",
     },
     {
         name: "Hair Space",
         re: "&VeryThinSpace;|&hairsp;|\u200A",
-        symbol: "\uE08E"
+        symbol: "\uE08E",
     },
     { name: "Left-To-Right Mark", re: "&lrm;|\u200E", symbol: "\uE090" },
     { name: "Right-To-Left Mark", re: "&rlm;|\u200F", symbol: "\uE091" },
     { name: "Soft Hyphen", re: "&shy;|\u00AD", symbol: "\uE0A1" },
-    { name: "Horizontal Tabulation", re: "&Tab;|\u0009", symbol: "\uE0A2" }
+    { name: "Horizontal Tabulation", re: "&Tab;|\u0009", symbol: "\uE0A2" },
 ];
 
 let inShowInvisiblesMode = false;
@@ -58,7 +58,7 @@ function invisibleToCode(invisible) {
     if (invisible.length > 1) {
         throw new Error(
             "Something went wrong - invisible character is neither an html entity nor a single UTF-16 character: " +
-                invisible
+                invisible,
         );
     }
     const codePoint = invisible.charCodeAt(0);
@@ -75,7 +75,7 @@ function invisibleFromCode(unicodeCode, entity) {
             "Something went wrong - we got both a unicode code and an html entity: " +
                 unicodeCode +
                 " and " +
-                entity
+                entity,
         );
         return "";
     }
@@ -96,14 +96,14 @@ export function showInvisibles(e) {
     inShowInvisiblesMode = true;
     editable.html((i, html) => {
         // for each replacement, replace all instances of the invisible char/entity with the symbol
-        invisibles.forEach(function(invisibleType) {
+        invisibles.forEach(function (invisibleType) {
             // Just in case there were invisibles-replacement spans left in the document,
             // don't match anything immediately following data-original="
             const re = new RegExp(
                 `(?<!data-original=\")(${invisibleType.re})`,
-                "g"
+                "g",
             );
-            html = html.replace(re, match => {
+            html = html.replace(re, (match) => {
                 const code = invisibleToCode(match); // get something like \u00A0 for unicode chars. leaves html entities as is.
                 return `<span class="invisibles" data-name-of-invisible="${invisibleType.name}" data-original="${code}">${invisibleType.symbol}</span>`;
             });
@@ -114,32 +114,32 @@ export function showInvisibles(e) {
     // Make one qtip per type of invisible character to explain the symbol to the user without cluttering the page too much
     const invisibleCharTypesWithQtips = new Set();
 
-    $(".invisibles").each(function() {
+    $(".invisibles").each(function () {
         const $this: JQuery = $(this);
         if (
             !invisibleCharTypesWithQtips.has(
-                $this.attr("data-name-of-invisible")
+                $this.attr("data-name-of-invisible"),
             )
         ) {
             invisibleCharTypesWithQtips.add(
-                $this.attr("data-name-of-invisible")
+                $this.attr("data-name-of-invisible"),
             );
             $this.qtip({
                 position: {
                     my: "top left",
                     at: "bottom right",
-                    container: bloomQtipUtils.qtipZoomContainer()
+                    container: bloomQtipUtils.qtipZoomContainer(),
                 },
                 content: $this.attr("data-name-of-invisible"),
                 show: {
-                    ready: true
+                    ready: true,
                 },
                 hide: {
                     inactive: 2000,
-                    effect: function() {
+                    effect: function () {
                         $(this).fadeOut(250);
-                    }
-                }
+                    },
+                },
             });
         }
     });
@@ -150,7 +150,7 @@ export function hideInvisibles(e) {
         inShowInvisiblesMode = false;
 
         // destroy all qtips
-        $(".invisibles").each(function() {
+        $(".invisibles").each(function () {
             const $this: JQuery = $(this);
             $this.qtip("destroy");
         });
@@ -161,9 +161,9 @@ export function hideInvisibles(e) {
             return html.replace(
                 /<span class="invisibles"[^<>]*data-original="(?:\\u(....)|(&[a-z,0-9]*;))"[^<>]*>.<\/span>/g,
                 // p1 will match unicode char codes, p2 will html entities
-                function(match, p1, p2) {
+                function (match, p1, p2) {
                     return invisibleFromCode(p1, p2);
-                }
+                },
             );
         });
     }

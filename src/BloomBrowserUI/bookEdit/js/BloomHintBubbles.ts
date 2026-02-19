@@ -7,6 +7,7 @@
 /// <reference path="../../typings/jquery.qtipSecondary.d.ts" />
 /// <reference path="../../typings/jquery.qtip.d.ts" />
 
+import $ from "jquery";
 import { get, postString } from "../../utils/bloomApi";
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
@@ -21,7 +22,7 @@ export default class BloomHintBubbles {
     public static addHintBubbles(
         container: HTMLElement,
         divsThatHaveSourceBubbles: Array<Element>,
-        contentOfBubbleDivs: Array<Element>
+        contentOfBubbleDivs: Array<Element>,
     ): void {
         //Handle <label>-defined hint bubbles on mono fields, that is divs that aren't in the context of a
         //bloom-translationGroup (those should have a single <label> for the whole group).
@@ -31,7 +32,7 @@ export default class BloomHintBubbles {
         //so it is preferred when making new templates by hand.
         $(container)
             .find(".bloom-editable:visible label.bubble")
-            .each(function() {
+            .each(function () {
                 const labelElement = $(this);
                 const whatToSay = labelElement.text();
                 if (!whatToSay) return;
@@ -44,7 +45,7 @@ export default class BloomHintBubbles {
                 // since it's not in a translation group we don't have to worry about the parent group having a source bubble.
                 BloomHintBubbles.MakeHelpBubble(
                     $(enclosingEditableDiv),
-                    labelElement
+                    labelElement,
                 );
             });
 
@@ -73,7 +74,7 @@ export default class BloomHintBubbles {
                         groupElement,
                         labelElement,
                         divsThatHaveSourceBubbles,
-                        contentOfBubbleDivs
+                        contentOfBubbleDivs,
                     );
                 } else {
                     //attach the bubble, separately, to every visible field inside the group
@@ -84,7 +85,7 @@ export default class BloomHintBubbles {
                                 $(elt),
                                 labelElement,
                                 divsThatHaveSourceBubbles,
-                                contentOfBubbleDivs
+                                contentOfBubbleDivs,
                             );
                         });
                 }
@@ -92,7 +93,7 @@ export default class BloomHintBubbles {
 
         $(container)
             .find("*.bloom-canvas > label.bubble")
-            .each(function() {
+            .each(function () {
                 const labelElement = $(this);
                 const bloomCanvas = $(this).parent();
                 const whatToSay = labelElement.text();
@@ -106,7 +107,7 @@ export default class BloomHintBubbles {
         //and need a place to preserve the contents of the <label>, which is in danger of being edited away.
         $(container)
             .find("*[data-hint]")
-            .each(function() {
+            .each(function () {
                 let whatToSay = $(this).attr("data-hint"); //don't use .data(), as that will trip over any } in the hint and try to interpret it as json
                 if (!whatToSay) return;
 
@@ -121,7 +122,7 @@ export default class BloomHintBubbles {
                     $(this),
                     $(this),
                     divsThatHaveSourceBubbles,
-                    contentOfBubbleDivs
+                    contentOfBubbleDivs,
                 );
             });
     }
@@ -129,7 +130,7 @@ export default class BloomHintBubbles {
     public static InsertHintIntoBubbleDiv(
         bubbleDiv: JQuery,
         elementThatHasSourceBubble: JQuery,
-        elementWithBubbleAttributes: JQuery
+        elementWithBubbleAttributes: JQuery,
     ) {
         const headers = bubbleDiv.find("ul");
 
@@ -138,29 +139,28 @@ export default class BloomHintBubbles {
         // idea of whether the hint is empty, however.
         let whatToSay = this.getHintContent(
             elementThatHasSourceBubble,
-            elementWithBubbleAttributes
+            elementWithBubbleAttributes,
         );
         if (whatToSay != null && whatToSay.startsWith("*"))
             whatToSay = whatToSay.substring(1);
         if (!whatToSay) return; // just forget adding a hint if there's no text.
         // Don't use the corresponding svg from artwork here. Somehow it causes about a 4 second delay (on a fast workstation)
         headers.prepend(
-            "<li id='hint'><a class='sourceTextTab' href='#hint'><img src='/bloom/images/information-i.png'/></a></li>"
+            "<li id='hint'><a class='sourceTextTab' href='#hint'><img src='/bloom/images/information-i.png'/></a></li>",
         );
         // Posting 'hint' to editView/sourceTextTab doesn't currently work. See comment on handler.
         // But it may be wanted, so I decided to keep the code that does it for now.
-        (headers.get(
-            0
-        ) as HTMLElement).firstElementChild?.firstElementChild?.addEventListener(
-            "click",
-            () => postString("editView/sourceTextTab", "hint")
+        (
+            headers.get(0) as HTMLElement
+        ).firstElementChild?.firstElementChild?.addEventListener("click", () =>
+            postString("editView/sourceTextTab", "hint"),
         );
         const nav = $(headers.parent());
         whatToSay =
             whatToSay +
             this.getPossibleHyperlink(
                 elementWithBubbleAttributes,
-                elementThatHasSourceBubble
+                elementThatHasSourceBubble,
             );
         // This is bizarre. We modified "jquery.easytabs.js" to target @lang attributes, rather than ids.
         // This allows us to have multiple source bubbles each with the same languages, whereas
@@ -168,7 +168,9 @@ export default class BloomHintBubbles {
         // shows for the tab with href='#hint', we have to pretend that is is in a language
         // called hint. See comments in BloomSourceBubbles.MakeSourceTextDivForGroup().
         const content = $(
-            "<div lang='hint' class='sourceText'><p>" + whatToSay + "</p></div>"
+            "<div lang='hint' class='sourceText'><p>" +
+                whatToSay +
+                "</p></div>",
         );
         nav.after(content);
         // whatToSay may not actually be what we want. To make it what we want, we need the real list of
@@ -176,19 +178,19 @@ export default class BloomHintBubbles {
         // We can't wait until we have the language list to insert the main hint element into the source bubble,
         // because doing that causes the manipulations that easytabs does to the results of this method
         // to skip the hint tab. (At least, when you're not stepping through the code.)
-        get("bubbleLanguages", result => {
+        get("bubbleLanguages", (result) => {
             const preferredLangs: Array<string> = (<any>result.data).langs;
             whatToSay = this.getHintContent(
                 elementThatHasSourceBubble,
                 elementWithBubbleAttributes,
-                preferredLangs
+                preferredLangs,
             );
             if (whatToSay != null && whatToSay.startsWith("*"))
                 whatToSay = whatToSay.substring(1);
             if (!whatToSay) return;
             const hyperlink = this.getPossibleHyperlink(
                 elementWithBubbleAttributes,
-                elementThatHasSourceBubble
+                elementThatHasSourceBubble,
             );
             content.find("p").text(whatToSay);
             if (hyperlink.length > 0) content.find("p").append(hyperlink);
@@ -208,7 +210,7 @@ export default class BloomHintBubbles {
     // bubbles and doesn't handle all the options of the full routine.
     public static updateQtipPlacement(
         groupElement: JQuery,
-        whatToSaySource: string
+        whatToSaySource: string,
     ) {
         groupElement.qtip("destroy");
         const children = groupElement.find("div.bloom-editable:visible");
@@ -219,23 +221,23 @@ export default class BloomHintBubbles {
         if (this.wantHelpBubbleOnGroup(groupElement)) {
             const whatToSay = theOneLocalizationManager.insertLangIntoHint(
                 whatToSaySource,
-                groupElement
+                groupElement.get(0),
             );
             this.makeHintBubbleCore(
                 groupElement,
                 whatToSay,
-                !whatToSay.startsWith("*")
+                !whatToSay.startsWith("*"),
             ); // should we support * here?
         } else {
             children.each((i, target) => {
                 const whatToSay = theOneLocalizationManager.insertLangIntoHint(
                     whatToSaySource,
-                    $(target)
+                    target as HTMLElement,
                 );
                 this.makeHintBubbleCore(
                     $(target),
                     whatToSay,
-                    !whatToSay.startsWith("*")
+                    !whatToSay.startsWith("*"),
                 ); // should we support * here?
             });
         }
@@ -260,7 +262,7 @@ export default class BloomHintBubbles {
         targetElement: JQuery,
         elementWithBubbleAttributes: JQuery,
         divsThatHaveSourceBubbles: Array<Element>,
-        contentOfBubbleDivs: Array<Element>
+        contentOfBubbleDivs: Array<Element>,
     ) {
         // If the element we want to put a hint on IS one of the groups that has source bubbles, add it to that
         // group's source bubble.
@@ -269,7 +271,7 @@ export default class BloomHintBubbles {
             this.InsertHintIntoBubbleDiv(
                 $(contentOfBubbleDivs[index]),
                 targetElement,
-                elementWithBubbleAttributes
+                elementWithBubbleAttributes,
             );
             return;
         }
@@ -283,7 +285,7 @@ export default class BloomHintBubbles {
                 this.InsertHintIntoBubbleDiv(
                     $(contentOfBubbleDivs[i]),
                     targetElement,
-                    elementWithBubbleAttributes
+                    elementWithBubbleAttributes,
                 );
                 return;
             }
@@ -305,13 +307,13 @@ export default class BloomHintBubbles {
                     this.InsertHintIntoBubbleDiv(
                         $(contentOfBubbleDivs[i]),
                         targetElement,
-                        elementWithBubbleAttributes
+                        elementWithBubbleAttributes,
                     );
                     return;
                 } else {
                     this.MakeHelpBubble(
                         targetElement,
-                        elementWithBubbleAttributes
+                        elementWithBubbleAttributes,
                     );
                     return;
                 }
@@ -319,13 +321,13 @@ export default class BloomHintBubbles {
         }
         // And if targetElement is not related in any of these ways to any of the divs that have source bubbles,
         // go ahead and give it its own help/hint bubble.
-        get("bubbleLanguages", result => {
+        get("bubbleLanguages", (result) => {
             const orderedLangsForBubble: Array<string> = (<any>result.data)
                 .langs;
             this.MakeHelpBubble(
                 targetElement,
                 elementWithBubbleAttributes,
-                orderedLangsForBubble
+                orderedLangsForBubble,
             );
         });
     }
@@ -333,7 +335,7 @@ export default class BloomHintBubbles {
     private static getHintContent(
         elementToAttachBubbleTo: JQuery,
         elementWithBubbleAttributes: JQuery,
-        preferredLangs?: Array<string>
+        preferredLangs?: Array<string>,
     ): string | null {
         let doNotLocalize = false;
         let whatToSay = elementToAttachBubbleTo.attr("data-hint");
@@ -384,7 +386,7 @@ export default class BloomHintBubbles {
             // still need to substitute {lang} if any
             whatToSay = theOneLocalizationManager.insertLangIntoHint(
                 whatToSay,
-                elementToAttachBubbleTo
+                elementToAttachBubbleTo.get(0),
             );
         } else {
             // Most legacy label elements don't have data-i18n and are inserted into our
@@ -394,7 +396,7 @@ export default class BloomHintBubbles {
                 elementWithBubbleAttributes.attr("data-i18n") || whatToSay;
             whatToSay = theOneLocalizationManager.getLocalizedHint(
                 l10nId,
-                elementToAttachBubbleTo
+                elementToAttachBubbleTo.get(0),
             );
         }
         return whatToSay;
@@ -405,7 +407,7 @@ export default class BloomHintBubbles {
     private static MakeHelpBubble(
         targetElement: JQuery,
         elementWithBubbleAttributes: JQuery,
-        preferredLangs?: Array<string>
+        preferredLangs?: Array<string>,
     ) {
         const target = $(targetElement);
         const source = $(elementWithBubbleAttributes);
@@ -458,14 +460,14 @@ export default class BloomHintBubbles {
     // Handle a second line in the bubble which links to something like a javascript function
     private static getPossibleHyperlink(
         bubbleSource: JQuery,
-        target: JQuery
+        target: JQuery,
     ): string {
         let linkText = bubbleSource.attr("data-link-text");
         let linkTarget = bubbleSource.attr("data-link-target");
         if (linkText && linkTarget) {
             linkText = theOneLocalizationManager.getLocalizedHint(
                 linkText,
-                target
+                target.get(0),
             );
             if (linkTarget.indexOf("(") > 0)
                 linkTarget = "javascript:" + linkTarget + ";";
@@ -477,14 +479,14 @@ export default class BloomHintBubbles {
     private static makeHintBubbleCore(
         target: JQuery,
         whatToSay: string,
-        shouldShowAlways: boolean
+        shouldShowAlways: boolean,
     ) {
         const pos = {
             at: "right center",
             my: "left center",
             viewport: $(window),
             adjust: { method: "none" },
-            container: bloomQtipUtils.qtipZoomContainer()
+            container: bloomQtipUtils.qtipZoomContainer(),
         };
 
         const theClasses = "ui-tooltip-shadow ui-tooltip-plain";
@@ -495,14 +497,14 @@ export default class BloomHintBubbles {
             position: pos,
             show: {
                 event: "focusin mouseenter",
-                ready: shouldShowAlways //would rather have this kind of dynamic thing, but it isn't right: function(){$(this).is(':empty')}//
+                ready: shouldShowAlways, //would rather have this kind of dynamic thing, but it isn't right: function(){$(this).is(':empty')}//
             },
             hide: {
-                event: hideEvents
+                event: hideEvents,
             },
             style: {
-                classes: theClasses
-            }
+                classes: theClasses,
+            },
         });
     }
 

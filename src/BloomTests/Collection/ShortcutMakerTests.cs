@@ -1,11 +1,11 @@
 ﻿// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System.IO;
+using Bloom;
 using Bloom.Collection;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.PlatformUtilities;
-using Bloom;
 
 namespace BloomTests.Collection
 {
@@ -27,7 +27,7 @@ namespace BloomTests.Collection
                         & (FileAttributes.Directory | FileAttributes.Normal),
                     Is.Not.Null
                 );
-                Assert.That(ResolveShortcut.Resolve(expectedFile), Is.EqualTo(targetPath.Path));
+                Assert.That(Shortcut.Resolve(expectedFile), Is.EqualTo(targetPath.Path));
             }
         }
 
@@ -52,7 +52,7 @@ namespace BloomTests.Collection
                         & (FileAttributes.Directory | FileAttributes.Normal),
                     Is.Not.Null
                 );
-                Assert.That(ResolveShortcut.Resolve(expectedFile), Is.EqualTo(targetPath.Path));
+                Assert.That(Shortcut.Resolve(expectedFile), Is.EqualTo(targetPath.Path));
             }
         }
     }

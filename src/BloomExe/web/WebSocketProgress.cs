@@ -13,7 +13,7 @@ namespace Bloom.web
         Note,
         Progress,
         Heading,
-        Fatal // Like Error, but Bloom will have to quit after reporting.
+        Fatal, // Like Error, but Bloom will have to quit after reporting.
     };
 
     // NB: This class is designed to map, via json, to IBloomWebSocketProgressEvent, so the
@@ -114,7 +114,7 @@ namespace Bloom.web
         {
             return new WebSocketProgress(_bloomWebSocketServer, _clientContext)
             {
-                _l10IdPrefix = localizationIdPrefix
+                _l10IdPrefix = localizationIdPrefix,
             };
         }
 

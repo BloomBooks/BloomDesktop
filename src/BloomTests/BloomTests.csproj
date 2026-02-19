@@ -4,18 +4,22 @@
 		<FileUpgradeFlags />
 		<UpgradeBackupLocation />
 		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
-		<OutputPath>..\..\output\$(Configuration)\</OutputPath>
-		<Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+		<OutputPath>..\..\output\Tests\$(Configuration)\$(Platform)\</OutputPath>
+		<Platform Condition=" '$(Platform)' == '' ">x64</Platform>
 		<AssemblyTitle>BloomTests</AssemblyTitle>
 		<Company>SIL</Company>
 		<Product>BloomTests</Product>
 		<Copyright>© SIL International 2014-2024</Copyright>
-		<Version>6.2.0.0</Version>
+		<Version>6.3.0.0</Version>
 		<BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
-		<TargetFramework>net472</TargetFramework>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
 		<LangVersion>11.0</LangVersion>
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<IsTestProject>true</IsTestProject>
+		<Platforms>x64;ARM64</Platforms>
 	</PropertyGroup>
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">
@@ -30,15 +34,23 @@
 			<_Parameter1_IsLiteral>true</_Parameter1_IsLiteral>
 		</AssemblyAttribute>
 	</ItemGroup>
-	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
 		<DebugType>full</DebugType>
-		<PlatformTarget>x86</PlatformTarget>
+		<PlatformTarget>x64</PlatformTarget>
 	</PropertyGroup>
-	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+		<DebugType>full</DebugType>
+		<PlatformTarget>ARM64</PlatformTarget>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
 		<DebugType>pdbonly</DebugType>
-		<PlatformTarget>x86</PlatformTarget>
+		<PlatformTarget>x64</PlatformTarget>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+		<DebugType>pdbonly</DebugType>
+		<PlatformTarget>ARM64</PlatformTarget>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
 		<DebugType>full</DebugType>
 		<CodeAnalysisLogFile>..\..\output\Debug\BloomTests.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
 		<CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
@@ -50,7 +62,7 @@
 		<CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
 		<CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
 		<DebugType>pdbonly</DebugType>
 		<CodeAnalysisLogFile>bin\Release\BloomTests.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
 		<CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
@@ -72,7 +84,11 @@
     I believe this is unnecessary on Linux, they usually already have 4 GB virtual address space available.
     -->
 		<LargeAddressAware>true</LargeAddressAware>
-		<PlatformTarget>x86</PlatformTarget>
+	</PropertyGroup>
+	<PropertyGroup>
+		<!-- We should delete this when we get rid of WebThumbNailList.Designer.cs. I believe we are only using binary formatter serialization in working with the ImageStream there. -->
+		<!-- The WebThumbNailList gets initialized by autofac during CreateArtifactsCommandTests -->
+		<EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
 	</PropertyGroup>
 	<Target Name="AfterBuildMigrated">
 		<Message Text="AfterBuild target completed." Importance="high" />
@@ -84,26 +100,28 @@
 	</Target>
 	<ItemGroup>
 		<PackageReference Include="EPPlus" Version="6.2.4" />
-		<PackageReference Include="L10NSharp" Version="8.0.0" />
+		<PackageReference Include="L10NSharp" Version="9.0.0-beta0001" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
 		<PackageReference Include="Mono.Unix" Version="7.1.0-final.1.21458.1" />
 		<PackageReference Include="Moq" Version="4.14.7" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="NUnit" Version="3.13.3" />
-		<PackageReference Include="NUnit.Extension.TeamCityEventListener" Version="1.0.7" />
-		<PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+		<PackageReference Include="NUnit" Version="3.14.0" />
+		<PackageReference Include="NUnit.ConsoleRunner" Version="3.20.1" />
+		<PackageReference Include="NUnit.Extension.TeamCityEventListener" Version="1.0.10" />
+		<PackageReference Include="NUnit3TestAdapter" Version="5.1.0" />
 		<PackageReference Include="RestSharp" Version="106.12.0" />
 		<PackageReference Include="SharpZipLib" Version="1.3.3" />
-		<PackageReference Include="SIL.Core" Version="16.1.0-beta0004" />
-		<PackageReference Include="SIL.Core.Desktop" Version="16.1.0-beta0004" />
-		<PackageReference Include="SIL.Media" Version="16.1.0-beta0004" />
-		<PackageReference Include="SIL.TestUtilities" Version="16.1.0-beta0004" />
-		<PackageReference Include="SIL.Windows.Forms" Version="16.1.0-beta0004" />
-		<PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+		<PackageReference Include="SIL.Core" Version="17.0.0-beta0079" />
+		<PackageReference Include="SIL.Core.Desktop" Version="17.0.0-beta0079" />
+		<PackageReference Include="SIL.Media" Version="17.0.0-beta0079" />
+		<PackageReference Include="SIL.TestUtilities" Version="17.0.0-beta0079" />
+		<PackageReference Include="SIL.Windows.Forms" Version="17.0.0-beta0079" />
+		<PackageReference Include="System.Drawing.Common" Version="7.0.0" />
 		<PackageReference Include="PolySharp" Version="1.13.2">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<Reference Include="System.Windows.Forms" />

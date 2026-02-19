@@ -1,8 +1,8 @@
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react-vite";
 import { LibraryPublishScreen } from "../LibraryPublish/LibraryPublishScreen";
 import {
     IUploadCollisionDlgData,
-    UploadCollisionDlg
+    UploadCollisionDlg,
 } from "../LibraryPublish/uploadCollisionDlg";
 import { normalDialogEnvironmentForStorybook } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import "../storiesApiMocks";
@@ -17,13 +17,13 @@ const propsObject: IUploadCollisionDlgData = {
     existingCreatedDate: "10/21/2021",
     existingUpdatedDate: "10/29/2021",
     dialogEnvironment: normalDialogEnvironmentForStorybook,
-    count: 1
+    count: 1,
 };
 
 const lotsOfLanguages = ["Sokoro", "English", "Swahili", "Hausa"];
 
 const meta: Meta = {
-    title: "Publish/Web"
+    title: "Publish/Web",
 };
 
 export default meta;
@@ -31,7 +31,7 @@ type Story = StoryObj;
 
 export const LibraryPublishScreenStory: Story = {
     name: "LibraryPublishScreen",
-    render: () => <LibraryPublishScreen />
+    render: () => <LibraryPublishScreen />,
 };
 
 export const UploadCollisionDialogStory: Story = {
@@ -42,7 +42,7 @@ export const UploadCollisionDialogStory: Story = {
             conflictIndex={0}
             setConflictIndex={() => {}}
         />
-    )
+    ),
 };
 
 export const UploadCollisionDialogLotsOfLanguagesStory: Story = {
@@ -54,5 +54,5 @@ export const UploadCollisionDialogLotsOfLanguagesStory: Story = {
             conflictIndex={0}
             setConflictIndex={() => {}}
         />
-    )
+    ),
 };

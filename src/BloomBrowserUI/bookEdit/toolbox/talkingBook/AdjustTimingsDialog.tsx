@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useCallback, useState } from "react";
@@ -9,15 +8,15 @@ import {
     BloomDialog,
     DialogBottomButtons,
     DialogTitle,
-    DialogMiddle
+    DialogMiddle,
 } from "../../../react_components/BloomDialog/BloomDialog";
 import {
     IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
+    useSetupBloomDialog,
 } from "../../../react_components/BloomDialog/BloomDialogPlumbing";
 import {
     DialogCancelButton,
-    DialogOkButton
+    DialogOkButton,
 } from "../../../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { getAsync, postBoolean, postJsonAsync } from "../../../utils/bloomApi";
@@ -25,7 +24,7 @@ import { kAudioCurrent } from "./audioRecording";
 import { AdjustTimingsControl, TimedTextSegment } from "./AdjustTimingsControl";
 import {
     getUrlPrefixFromWindowHref,
-    kHighlightSegmentClass
+    kHighlightSegmentClass,
 } from "bloom-player";
 import { Div } from "../../../react_components/l10nComponents";
 import SyncIcon from "@mui/icons-material/Sync";
@@ -45,15 +44,11 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
     editTimingsFile: (timingsFilePath?: string) => Promise<void>;
     applyTimingsFile: (timingsFilePath?: string) => Promise<string | undefined>;
     closing: (canceling: boolean) => void;
-}> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
-    const [segments, setSegments] = useState<
-        { start: number; end: number; text: string }[]
-    >();
+}> = (props) => {
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
+    const [segments, setSegments] =
+        useState<{ start: number; end: number; text: string }[]>();
     // Should the next render of the AdjustTimingsControl adjust the segments based on the audio?
     // This should only happen on the render immediately after we create the segments based on the text length.
     const [shouldAdjustSegments, setShouldAdjustSegments] = useState(false);
@@ -79,15 +74,13 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
     const setAudioRecordingEndTimes = useCallback(
         (newTimes: string | undefined | null) => {
             setAudioRecordingEndTimesReal(newTimes);
-            setGeneration(oldGen => oldGen + 1);
+            setGeneration((oldGen) => oldGen + 1);
         },
-        []
+        [],
     );
     // More menu
-    const [
-        moreElForAdvancedMenu,
-        setMoreElForAdvancedMenu
-    ] = React.useState<null | HTMLElement>(null);
+    const [moreElForAdvancedMenu, setMoreElForAdvancedMenu] =
+        React.useState<null | HTMLElement>(null);
     const moreMenuOpen = Boolean(moreElForAdvancedMenu);
     const handleClick = () => {
         const anchor = document.getElementById(timingsMenuId);
@@ -118,7 +111,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
 
     const dialogTitle = useL10n(
         "Adjust Timings",
-        "EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Title"
+        "EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Title",
     );
     const [timingsFilePath, setTimingsFilePath] = useState<string>();
 
@@ -134,7 +127,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
     React.useEffect(() => {
         const checkForAeneas = async () => {
             const result = await getAsync(
-                "audioSegmentation/checkAutoSegmentDependencies"
+                "audioSegmentation/checkAutoSegmentDependencies",
             );
 
             setHaveAeneasDeps(result.data !== "FALSE");
@@ -143,13 +136,14 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
                     .asyncGetText(
                         "EditTab.Toolbox.TalkingBook.MissingDependency",
                         "To split recordings into sentences, first install this {0} system.",
-                        "The placeholder {0} will be replaced with the dependency that needs to be installed."
+                        "The placeholder {0} will be replaced with the dependency that needs to be installed.",
                     )
-                    .done(localizedMessage => {
-                        const missingDependencyHoverTip = theOneLocalizationManager.simpleFormat(
-                            localizedMessage,
-                            ["aeneas"]
-                        );
+                    .done((localizedMessage) => {
+                        const missingDependencyHoverTip =
+                            theOneLocalizationManager.simpleFormat(
+                                localizedMessage,
+                                ["aeneas"],
+                            );
                         setMissingAeneasTip(missingDependencyHoverTip);
                     });
             }
@@ -160,7 +154,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
         // if we have one. This really wants to not happen again, since it would discard any changes
         // the user has made.
         setAudioRecordingEndTimes(
-            getCurrentTextBox()?.getAttribute("data-audiorecordingendtimes")
+            getCurrentTextBox()?.getAttribute("data-audiorecordingendtimes"),
         );
         // This is supposed to execute exactly once, when the dialog is first opened.
         // React insists it must have this dependency, even though I set up a useCallback
@@ -176,7 +170,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
         const bloomEditable = getCurrentTextBox();
 
         const segmentElements = Array.from(
-            bloomEditable.getElementsByClassName(kHighlightSegmentClass)
+            bloomEditable.getElementsByClassName(kHighlightSegmentClass),
         ) as HTMLSpanElement[];
         // if the user OKs without changing anything, these are the times to save.
         // (probably redundant, the dialog will send us new values after adjusting).
@@ -191,14 +185,14 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
             setTimingsFilePath(await getTimingsFileName());
         }
         getTimingsFileData();
-        let ff = (
+        const ff = (
             bloomEditable.ownerDocument.defaultView || window
         ).getComputedStyle(bloomEditable).fontFamily;
 
         setFontFamily(ff);
         let endTimes = audioRecordingEndTimes?.split(" ").map(parseFloat);
         let segmentElements = Array.from(
-            bloomEditable.getElementsByClassName(kHighlightSegmentClass)
+            bloomEditable.getElementsByClassName(kHighlightSegmentClass),
         ) as HTMLSpanElement[];
         if (
             // No segments typically occurs with new texts that have never been split into segments
@@ -223,7 +217,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
             // gets set back to false when the control sends us the adjusted times.
             setShouldAdjustSegments(true);
             segmentElements = Array.from(
-                bloomEditable.getElementsByClassName(kHighlightSegmentClass)
+                bloomEditable.getElementsByClassName(kHighlightSegmentClass),
             ) as HTMLSpanElement[];
         }
         // if the user OKs without changing anything, these are the times to save.
@@ -231,10 +225,10 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
 
         setSegments(computeSegments(endTimes, segmentElements));
         const prefix = getUrlPrefixFromWindowHref(
-            (bloomEditable.ownerDocument.defaultView || window).location.href
+            (bloomEditable.ownerDocument.defaultView || window).location.href,
         );
         setAudioFileUrl(
-            `${prefix}/audio/${bloomEditable.getAttribute("id")}.mp3`
+            `${prefix}/audio/${bloomEditable.getAttribute("id")}.mp3`,
         );
     }, [propsForBloomDialog.open, audioRecordingEndTimes, generation]);
 
@@ -243,7 +237,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
             {...propsForBloomDialog}
             fullWidth={true}
             maxWidth={false}
-            onCancel={reason => {
+            onCancel={(reason) => {
                 if (reason !== "backdropClick") {
                     props.closing(true);
                     closeDialog();
@@ -255,7 +249,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
                 <AdjustTimingsControl
                     segments={segments!}
                     audioFileUrl={audioFileUrl!}
-                    setEndTimes={endTimes => updateEndTimes(endTimes)}
+                    setEndTimes={(endTimes) => updateEndTimes(endTimes)}
                     fontFamily={fontFamily}
                     shouldAdjustSegments={shouldAdjustSegments}
                 />
@@ -370,9 +364,8 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
                         l10nId="EditTab.Toolbox.TalkingBookTool.ApplyTimingsFile"
                         onClick={async () => {
                             closeMoreMenu();
-                            const newTimes = await props.applyTimingsFile(
-                                timingsFilePath
-                            );
+                            const newTimes =
+                                await props.applyTimingsFile(timingsFilePath);
                             if (newTimes) {
                                 setAudioRecordingEndTimes(newTimes);
                             }
@@ -391,7 +384,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
                         const bloomEditable = getCurrentTextBox();
                         bloomEditable.setAttribute(
                             "data-audiorecordingendtimes",
-                            endTimes.join(" ")
+                            endTimes.join(" "),
                         );
                         // We have confirmed split times, display it as split.
                         getAudioRecorder()?.markAudioSplit();
@@ -414,7 +407,7 @@ export function showAdjustTimingsDialog(
     split: (timingFilePath: string) => Promise<string | undefined>,
     editTimingsFile: (timingsFilePath?: string) => Promise<void>,
     applyTimingsFile: (timingsFilePath?: string) => Promise<string | undefined>,
-    closing: (canceling: boolean) => void
+    closing: (canceling: boolean) => void,
 ) {
     try {
         ReactDOM.render(
@@ -426,7 +419,7 @@ export function showAdjustTimingsDialog(
             />,
             // creates (or recreates) a div in the top frame to allow the dialog to be as wide as possible.
             // it can overlap both the book and the toolbox.
-            getModalContainer()
+            getModalContainer(),
         );
     } catch (error) {
         console.error(error);
@@ -436,7 +429,7 @@ export function showAdjustTimingsDialog(
 
 function getModalContainer(): HTMLElement {
     let modalDialogContainer = document.getElementById(
-        "AdjustTimingsDialogContainer"
+        "AdjustTimingsDialogContainer",
     );
     if (modalDialogContainer) {
         modalDialogContainer.remove();
@@ -449,7 +442,7 @@ function getModalContainer(): HTMLElement {
 
 function getCurrentTextBox(): HTMLElement {
     const page = parent.window.document.getElementById(
-        "page"
+        "page",
     ) as HTMLIFrameElement;
     const pageBody = page.contentWindow!.document.body;
     const audioCurrentElements = pageBody.getElementsByClassName(kAudioCurrent);
@@ -465,7 +458,7 @@ async function getTimingsFileName(): Promise<string> {
     const fileName = `audio/${bloomEditable.getAttribute("id")}_timings.txt`;
     // id should be a guid, so should not need encoding.
     const result = await postJsonAsync("fileIO/completeRelativePath?", {
-        relativePath: fileName
+        relativePath: fileName,
     });
     return result?.data;
 }
@@ -474,7 +467,7 @@ async function getTimingsFileName(): Promise<string> {
 // based on parallel arrays of endTimes and the elements that represent the segments.
 const computeSegments = (
     endTimes: number[],
-    segmentElements: HTMLSpanElement[]
+    segmentElements: HTMLSpanElement[],
 ): TimedTextSegment[] => {
     // Review: pathological cases are still possible. I saw a book somehow get into a state where
     // data-audiorecordingendtimes was present but had no value, and endtimes was [NaN]. Hopefully
@@ -492,7 +485,7 @@ const computeSegments = (
     // which should give the right number of segments, at least.
     console.assert(
         endTimes.length === segmentElements.length,
-        "Mismatched endTimes and segments"
+        "Mismatched endTimes and segments",
     );
 
     let start = 0;
@@ -501,7 +494,7 @@ const computeSegments = (
         segmentArray.push({
             start,
             end,
-            text: segmentElements[i].textContent || ""
+            text: segmentElements[i].textContent || "",
         });
         start = end;
     }
@@ -512,11 +505,11 @@ const computeSegments = (
 // or using a tool like Audacity.
 const exportTimingsFile = async (
     timingsFileName: string,
-    endTimes: number[]
+    endTimes: number[],
 ) => {
     const bloomEditable = getCurrentTextBox();
     const segmentElements = Array.from(
-        bloomEditable.getElementsByClassName(kHighlightSegmentClass)
+        bloomEditable.getElementsByClassName(kHighlightSegmentClass),
     ) as HTMLElement[];
     let start = 0;
     let fileContent = "";
@@ -529,6 +522,6 @@ const exportTimingsFile = async (
     }
     await postJsonAsync("fileIO/writeFile", {
         path: timingsFileName,
-        content: fileContent
+        content: fileContent,
     });
 };

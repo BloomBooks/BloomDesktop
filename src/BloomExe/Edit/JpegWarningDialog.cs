@@ -54,8 +54,8 @@ Please select from one of the following, then click “OK”:"
         private static bool IsGreyScale(Bitmap bmp)
         {
             var sampleLinePercentages = new[] { 20, 50, 70 };
-            return sampleLinePercentages.Any(
-                sampleLine => GetIsGrey(bmp, (int)(bmp.Height * (sampleLine / 100.0)))
+            return sampleLinePercentages.Any(sampleLine =>
+                GetIsGrey(bmp, (int)(bmp.Height * (sampleLine / 100.0)))
             );
         }
 
@@ -68,9 +68,8 @@ Please select from one of the following, then click “OK”:"
             // Just turning the bloom placeholder flower into jpeg gives us 10 "colors" (different shades of grey)
             const int threshold = 100;
             var sampleLinePercentages = new[] { 20, 50, 70 };
-            return sampleLinePercentages.Any(
-                sampleLine =>
-                    GetNumberOfColors(bmp, (int)(bmp.Height * (sampleLine / 100.0))) > threshold
+            return sampleLinePercentages.Any(sampleLine =>
+                GetNumberOfColors(bmp, (int)(bmp.Height * (sampleLine / 100.0))) > threshold
             );
         }
 
@@ -78,9 +77,8 @@ Please select from one of the following, then click “OK”:"
         {
             const double threshold = .5; // we'll warn if any of the samples we take of the image show > 50% white
             var sampleLinePercentages = new[] { 20, 50, 70 };
-            return sampleLinePercentages.Any(
-                sampleLine =>
-                    GetPercentWhiteOfLine(bmp, (int)(bmp.Height * (sampleLine / 100.0))) > threshold
+            return sampleLinePercentages.Any(sampleLine =>
+                GetPercentWhiteOfLine(bmp, (int)(bmp.Height * (sampleLine / 100.0))) > threshold
             );
         }
 

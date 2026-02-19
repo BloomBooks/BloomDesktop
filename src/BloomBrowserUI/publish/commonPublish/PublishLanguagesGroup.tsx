@@ -3,7 +3,7 @@ import { useL10n } from "../../react_components/l10nHooks";
 import { get, post } from "../../utils/bloomApi";
 import {
     LangCheckboxValue,
-    LanguageSelectionSettingsGroup
+    LanguageSelectionSettingsGroup,
 } from "./LanguageSelectionSettingsGroup";
 
 // NOTE: Must correspond to C#"s LanguagePublishInfo
@@ -47,7 +47,7 @@ class LanguagePublishInfo implements ILanguagePublishInfo {
 // control which of them to include in the published book.
 export const PublishLanguagesGroup: React.FunctionComponent<{
     onChange?: () => void;
-}> = props => {
+}> = (props) => {
     const initialValue: ILanguagePublishInfo[] = [];
     const [langs, setLangs] = React.useState(initialValue);
     React.useEffect(() => {
@@ -55,7 +55,7 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
             "publish/languagesInBook",
 
             // onSuccess
-            result => {
+            (result) => {
                 let newLangs = result.data;
                 // This is for debugging. When all is well, the JSON gets parsed automatically.
                 // If there's a syntax error in the JSON, result.data is just the string.
@@ -67,7 +67,7 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
                 // Note that these are just simple objects with fields, not instances of classes with methods.
                 // That's why these are ILanguagePublishInfo's (interface) instead of LanguagePublishInfo's (class)
                 setLangs(newLangs as ILanguagePublishInfo[]);
-            }
+            },
 
             // onError
             // Currently just ignoring errors... letting BloomServer take care of reporting anything that comes up
@@ -76,48 +76,48 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
         );
     }, []);
 
-    const checkboxValuesForTextLangs = langs.map(item => {
+    const checkboxValuesForTextLangs = langs.map((item) => {
         return {
             code: item.code,
             name: item.name,
             warnIncomplete: !item.complete,
             isEnabled: !item.required,
             isChecked: item.includeText,
-            required: item.required
+            required: item.required,
         };
     });
 
-    const checkboxValuesForAudioLangs = langs.map(item => {
+    const checkboxValuesForAudioLangs = langs.map((item) => {
         return {
             code: item.code,
             name: item.name,
             warnIncomplete: false, // Only show for text checkboxes
             isEnabled: item.includeText && item.containsAnyAudio,
             isChecked:
-                item.includeText && item.containsAnyAudio && item.includeAudio
+                item.includeText && item.containsAnyAudio && item.includeAudio,
         };
     });
 
     const onLanguageUpdated = (
         item: LangCheckboxValue,
         newState: boolean,
-        fieldToUpdate: string
+        fieldToUpdate: string,
     ) => {
         setLangs(
-            langs.map(lang => {
+            langs.map((lang) => {
                 if (lang.code === item.code) {
                     const newLangObj = new LanguagePublishInfo(lang);
                     newLangObj[fieldToUpdate] = newState;
 
                     post(
-                        `publish/includeLanguage?langCode=${newLangObj.code}&${fieldToUpdate}=${newState}`
+                        `publish/includeLanguage?langCode=${newLangObj.code}&${fieldToUpdate}=${newState}`,
                     );
 
                     return newLangObj;
                 } else {
                     return lang;
                 }
-            })
+            }),
         );
 
         if (props.onChange) {
@@ -126,7 +126,8 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
     };
 
     const showAudioLanguageCheckboxes =
-        checkboxValuesForAudioLangs?.filter(item => item.isEnabled).length > 0;
+        checkboxValuesForAudioLangs?.filter((item) => item.isEnabled).length >
+        0;
 
     return (
         <div>

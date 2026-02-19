@@ -1,10 +1,11 @@
+import { describe, it, expect } from "vitest";
 import { normalizeColorInfoColorsAsHex, IColorInfo } from "./colorSwatch";
 
 describe("ColorSwatch tests", () => {
     it("normalizeColorInfoAsHex", () => {
         const colorInfoWithRgba: IColorInfo = {
             colors: ["rgba (255, 0, 0, .5)"],
-            opacity: 50
+            opacity: 50,
         };
         normalizeColorInfoColorsAsHex(colorInfoWithRgba);
 

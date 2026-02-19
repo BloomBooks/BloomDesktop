@@ -4,10 +4,10 @@ import { BloomSplitButton } from "../bloomSplitButton";
 import { ImportIcon } from "../../bookEdit/toolbox/talkingBook/TalkingBookToolboxIcons";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react-vite";
 
 const meta: Meta = {
-    title: "Localizable Widgets"
+    title: "Localizable Widgets",
 };
 
 export default meta;
@@ -23,7 +23,7 @@ export const Expandable: Story = {
         >
             Look at this!
         </Expandable1>
-    )
+    ),
 };
 
 export const BloomButtonStory: Story = {
@@ -92,7 +92,7 @@ export const BloomButtonStory: Story = {
                 Small
             </BloomButton>
         </div>
-    )
+    ),
 };
 
 export const BloomSplitButtonStory: Story = {
@@ -108,17 +108,17 @@ export const BloomSplitButtonStory: Story = {
 
                         onClick: () => {
                             alert("Option 1 clicked");
-                        }
+                        },
                     },
                     {
                         english: "Option 2",
                         l10nId: "already-localized",
                         onClick: () => {
                             alert("Option 2 clicked");
-                        }
-                    }
+                        },
+                    },
                 ]}
             ></BloomSplitButton>
         </div>
-    )
+    ),
 };

@@ -22,11 +22,10 @@ mixin choice
 mixin quizPage
 	+page("Comprehension Quiz").simple-comprehension-quiz.bloom-ignoreForReaderStats.bloom-interactive-page.numberedPage.game-theme-blue-on-white#F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D(data-page='extra'  data-feature='game'  data-analyticsCategories="comprehension"  data-activity="simple-checkbox-quiz" data-reader-version="2" data-tool-id="game")
 		.quiz
-			.bloom-translationGroup.QuizHeader-style.bloom-ignoreChildrenForBookLanguageList(data-default-languages="auto")&attributes(attributes)
+			.bloom-translationGroup.GameHeader-style.bloom-ignoreChildrenForBookLanguageList(data-default-languages="auto")&attributes(attributes)
 				//- data-collection doesn't actually work across the collection currently,
 				//- but we wish it did in this case. And it does work across the book.
 				+editable("en")(data-generate-translations="true", data-i18n="Quiz.CheckYourUnderstanding", data-collection='simpleComprehensionQuizHeading') Check Your Understanding
 			+field("auto").QuizQuestion-style(data-hint="Put a comprehension question here")
 			each count in new Array(6)
 				+choice()
-			script(src="simpleComprehensionQuiz.js")

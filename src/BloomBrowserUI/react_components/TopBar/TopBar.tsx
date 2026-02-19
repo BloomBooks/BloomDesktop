@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { CollectionsTabIcon } from "./CollectionsTabIcon";
 import { EditTabIcon } from "./EditTabIcon";
@@ -8,7 +7,7 @@ import { PublishTabIcon } from "./PublishTabIcon";
 const tabs = [
     { name: "Collections", svg: <CollectionsTabIcon />, height: 32 },
     { name: "Edit", svg: <EditTabIcon />, height: 32 },
-    { name: "Publish", svg: <PublishTabIcon />, height: 27 }
+    { name: "Publish", svg: <PublishTabIcon />, height: 27 },
 ];
 
 export const TopBar: React.FunctionComponent = () => {
@@ -28,7 +27,7 @@ const Tab: React.FunctionComponent<{
     tab: { name: string; svg: React.ReactNode; height: number };
     selected: boolean;
     select: () => void;
-}> = props => {
+}> = (props) => {
     return (
         <li role="presentation">
             <a
@@ -91,7 +90,7 @@ export const BloomTabs: React.FunctionComponent = () => {
                 `
             }
         >
-            {tabs.map(tab => (
+            {tabs.map((tab) => (
                 <Tab
                     key={tab.name}
                     tab={tab}

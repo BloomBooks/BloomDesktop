@@ -1,18 +1,18 @@
-﻿using Bloom.Workspace;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Windows.Forms;
+using Bloom.Workspace;
+using DotImpose.LayoutMethods;
 using L10NSharp;
-using PdfDroplet.LayoutMethods;
 using PdfSharp;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 using SIL.IO;
 using SIL.Progress;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Windows.Forms;
 
 namespace Bloom.Publish.PDF
 {
@@ -212,19 +212,21 @@ namespace Bloom.Publish.PDF
         public static string GetDistributedColorProfilesFolder()
         {
             var baseFolder = FileLocationUtilities.DirectoryOfApplicationOrSolution;
-			var distFolder = Path.Combine(baseFolder, "ColorProfiles", "CMYK");
-			if (!Directory.Exists(distFolder))
-				distFolder = Path.Combine(baseFolder, "DistFiles", "ColorProfiles", "CMYK");
+            var distFolder = Path.Combine(baseFolder, "ColorProfiles", "CMYK");
+            if (!Directory.Exists(distFolder))
+                distFolder = Path.Combine(baseFolder, "DistFiles", "ColorProfiles", "CMYK");
             return distFolder;
-		}
+        }
 
         public static string GetUserColorProfilesFolder()
         {
-			var baseFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-			return Path.Combine(baseFolder, "SIL", "Bloom", "ColorProfiles", "CMYK");
-		}
+            var baseFolder = Environment.GetFolderPath(
+                Environment.SpecialFolder.LocalApplicationData
+            );
+            return Path.Combine(baseFolder, "SIL", "Bloom", "ColorProfiles", "CMYK");
+        }
 
-		public class MakingPdfFailedException : Exception
+        public class MakingPdfFailedException : Exception
         {
             private MakingPdfFailedException(string message)
                 : base(message) { }
@@ -259,6 +261,13 @@ namespace Bloom.Publish.PDF
             }
         }
 
+        internal class PaperSize
+        {
+            public string Name;
+            public double WidthInInches;
+            public double HeightInInches;
+        }
+
         private void MakeBooklet(PdfMakingSpecs specs)
         {
             //TODO: we need to let the user chose the paper size, as they do in PdfDroplet.
@@ -267,7 +276,7 @@ namespace Bloom.Publish.PDF
             var incomingPaperSize = specs.PaperSizeName;
 
             PageSize pageSize;
-            System.Drawing.Printing.PaperSize customPageSize = null;
+            PaperSize customPageSize = null;
             switch (incomingPaperSize)
             {
                 case "A3":
@@ -298,25 +307,34 @@ namespace Bloom.Publish.PDF
                     pageSize = PageSize.Statement; // ?? Wikipedia says HalfLetter is aka Statement
                     break;
                 case "Legal":
-                    pageSize = PageSize.Legal; //TODO... what's reasonable?
+                    pageSize = PageSize.Undefined;
+                    customPageSize = new PaperSize
+                    {
+                        Name = "DoubleLegal",
+                        WidthInInches = 14,
+                        HeightInInches = 17,
+                    };
                     break;
                 case "HalfLegal":
                     pageSize = PageSize.Legal;
                     break;
                 case "Cm13":
+                    // Should we use a custom size here?
                     pageSize = PageSize.A3;
                     break;
                 case "USComic":
+                    // Should we use a custom size here?
                     pageSize = PageSize.A3; // Ledger would work as well.
                     break;
                 case "Size6x9":
                     // 9"x12" can hold two 6"x9" pages.
                     pageSize = PageSize.Undefined;
-                    customPageSize = new System.Drawing.Printing.PaperSize(
-                        "9\"x12\"",
-                        9 * 100,
-                        12 * 100
-                    );
+                    customPageSize = new PaperSize
+                    {
+                        Name = "9\"x12\"",
+                        WidthInInches = 9,
+                        HeightInInches = 12,
+                    };
                     break;
                 default:
                     throw new ApplicationException(
@@ -385,7 +403,11 @@ namespace Bloom.Publish.PDF
                             "customPageSize must be set if pageSize is Undefined, but customPageSize was null."
                         );
 
-                    paperTarget = new PaperTarget(paperTargetName, customPageSize);
+                    paperTarget = new PaperTarget(
+                        paperTargetName,
+                        customPageSize.WidthInInches,
+                        customPageSize.HeightInInches
+                    );
                 }
 
                 var pdf = XPdfForm.FromFile(incoming.Path); //REVIEW: this whole giving them the pdf and the file too... I checked once and it wasn't wasting effort...the path was only used with a NullLayout option

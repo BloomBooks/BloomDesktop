@@ -16,12 +16,13 @@ export default class BloomMessageBoxSupport {
         l10nKey: string,
         englishText: string,
         l10nComment: string,
-        helpButtonFileId?: string
+        helpButtonFileId?: string,
     ) {
         theOneLocalizationManager
             .asyncGetText(l10nKey, englishText, l10nComment)
-            .done(localizedMessage => {
-                const container = getEditTabBundleExports().getModalDialogContainer();
+            .done((localizedMessage) => {
+                const container =
+                    getEditTabBundleExports().getModalDialogContainer();
                 if (!container) {
                     // Fallback to alert; unlikely to happen.
                     alert(localizedMessage);
@@ -29,7 +30,7 @@ export default class BloomMessageBoxSupport {
                 }
                 theOneLocalizationManager
                     .asyncGetText("Common.OK", "OK", "")
-                    .done(okText => {
+                    .done((okText) => {
                         ReactDOM.render(
                             React.createElement(BloomMessageBox, {
                                 messageHtml: localizedMessage,
@@ -38,16 +39,16 @@ export default class BloomMessageBoxSupport {
                                     {
                                         text: okText,
                                         id: "OKButton",
-                                        default: true
-                                    }
+                                        default: true,
+                                    },
                                 ],
                                 helpButtonFileId,
                                 dialogEnvironment: {
                                     dialogFrameProvidedExternally: false,
-                                    initiallyOpen: false
-                                }
+                                    initiallyOpen: false,
+                                },
                             }),
-                            container
+                            container,
                         );
                         showBloomMessageBox();
                     });

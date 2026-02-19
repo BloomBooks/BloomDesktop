@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useApiString } from "../utils/bloomApi";
@@ -17,15 +16,15 @@ export const BookProblem: React.FunctionComponent<{
     errorMessage: string;
     clickHereArg: string;
     className?: string; // also supports Emotion
-}> = props => {
+}> = (props) => {
     const bookProblemMessage = useApiString(
         "common/problemWithBookMessage",
-        "There was a problem with the current book in the Team Collection System"
+        "There was a problem with the current book in the Team Collection System",
     );
 
     const clickHereForHelpMessage = useApiString(
         "common/clickHereForHelp?problem=" + props.clickHereArg,
-        "Please click here to get help from the Bloom support team."
+        "Please click here to get help from the Bloom support team.",
     );
 
     return (

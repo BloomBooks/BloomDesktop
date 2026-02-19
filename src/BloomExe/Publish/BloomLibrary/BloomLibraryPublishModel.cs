@@ -1,26 +1,27 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Bloom.Properties;
-using BookInstance = Bloom.Book.Book;
-using Bloom.WebLibraryIntegration;
-using SIL.Windows.Forms.ClearShare;
-using BloomTemp;
-using System.IO;
 using System.Diagnostics;
+using System.Drawing;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Bloom.Book;
+using Bloom.Collection;
+using Bloom.ImageProcessing;
+using Bloom.Properties;
+using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
+using Bloom.WebLibraryIntegration;
+using BloomTemp;
+using L10NSharp;
+using Newtonsoft.Json.Linq;
 using SIL.IO;
 using SIL.Progress;
-using Bloom.Book;
-using System.Globalization;
-using Bloom.ImageProcessing;
-using System.Drawing;
-using Bloom.Collection;
-using Bloom.ToPalaso;
-using Newtonsoft.Json.Linq;
 using SIL.Reporting;
-using L10NSharp;
+using SIL.Windows.Forms.ClearShare;
+using BookInstance = Bloom.Book.Book;
 
 namespace Bloom.Publish.BloomLibrary
 {
@@ -148,8 +149,8 @@ namespace Bloom.Publish.BloomLibrary
             // So if we are working with a book that had that, then just convert it to the new model.
             if (!result.ContainsKey("subscriptionCode") && result.ContainsKey("branding"))
             {
-                result["subscriptionCode"] = SubscriptionAndFeatures.Subscription
-                    .FromLegacyBranding(result["branding"].ToString())
+                result["subscriptionCode"] = SubscriptionAndFeatures
+                    .Subscription.FromLegacyBranding(result["branding"].ToString())
                     .Code;
             }
             result.Remove("branding");
@@ -210,8 +211,8 @@ namespace Bloom.Publish.BloomLibrary
                 var bookFolder = bookOfCollectionData["bookFolder"]?.ToString();
                 if (bookFolder == pathToBookFolder.Replace("\\", "/"))
                 {
-                    var matchingBook = books.FirstOrDefault(
-                        b => b["id"] == databaseId && b["instanceId"] == instanceId
+                    var matchingBook = books.FirstOrDefault(b =>
+                        b["id"] == databaseId && b["instanceId"] == instanceId
                     );
                     if (matchingBook != null)
                     {
@@ -318,7 +319,7 @@ namespace Bloom.Publish.BloomLibrary
             Book.BookInfo.IsSuitableForMakingShells || Book.HasOnlyPictureOnlyPages();
 
         /// <returns>On success, returns the book objectId; on failure, returns empty string</returns>
-        internal string UploadOneBook(
+        internal async Task<string> UploadOneBook(
             BookInstance book,
             IProgress progress,
             PublishModel publishModel,
@@ -346,7 +347,7 @@ namespace Bloom.Publish.BloomLibrary
                     ExcludeMusic = excludeMusic,
                     PreserveThumbnails = false,
                 };
-                return _uploader.FullUpload(
+                return await _uploader.FullUpload(
                     book,
                     progress,
                     publishModel,
@@ -410,8 +411,8 @@ namespace Bloom.Publish.BloomLibrary
 
         public void UpdateBookMetadataFeatures(bool isTalkingBook, bool isSignLanguage)
         {
-            var allowedLanguages = Book.BookInfo.PublishSettings.BloomLibrary.TextLangs
-                .IncludedLanguages()
+            var allowedLanguages = Book
+                .BookInfo.PublishSettings.BloomLibrary.TextLangs.IncludedLanguages()
                 .Union(Book.BookInfo.PublishSettings.BloomLibrary.SignLangs.IncludedLanguages());
 
             Book.UpdateMetadataFeatures(
@@ -542,8 +543,8 @@ namespace Bloom.Publish.BloomLibrary
             var settingForNewLang = InclusionSetting.IncludeByDefault;
             if (
                 bookInfo.PublishSettings.BloomLibrary.AudioLangs.Any()
-                && bookInfo.PublishSettings.BloomLibrary.AudioLangs.All(
-                    kvp => !kvp.Value.IsIncluded()
+                && bookInfo.PublishSettings.BloomLibrary.AudioLangs.All(kvp =>
+                    !kvp.Value.IsIncluded()
                 )
             )
                 settingForNewLang = InclusionSetting.ExcludeByDefault;
@@ -568,8 +569,8 @@ namespace Bloom.Publish.BloomLibrary
         {
             // User may have unset or modified the sign language for the collection in which case we need to exclude the old one it if it was previously included.
             foreach (
-                var includedSignLangCode in bookInfo.PublishSettings.BloomLibrary.SignLangs
-                    .IncludedLanguages()
+                var includedSignLangCode in bookInfo
+                    .PublishSettings.BloomLibrary.SignLangs.IncludedLanguages()
                     .ToList()
             )
             {
@@ -599,8 +600,8 @@ namespace Bloom.Publish.BloomLibrary
         public void ClearSignLanguageToPublish()
         {
             foreach (
-                var includedSignLangCode in Book.BookInfo.PublishSettings.BloomLibrary.SignLangs
-                    .IncludedLanguages()
+                var includedSignLangCode in Book
+                    .BookInfo.PublishSettings.BloomLibrary.SignLangs.IncludedLanguages()
                     .ToList()
             )
             {
@@ -617,7 +618,7 @@ namespace Bloom.Publish.BloomLibrary
                 InclusionSetting
             >
             {
-                [langCode] = InclusionSetting.Include
+                [langCode] = InclusionSetting.Include,
             };
             Book.BookInfo.Save();
         }
@@ -646,8 +647,8 @@ namespace Bloom.Publish.BloomLibrary
         }
 
         public IEnumerable<string> TextLanguagesToUpload =>
-            Book.BookInfo.PublishSettings.BloomLibrary.TextLangs
-                .Where(l => l.Value.IsIncluded())
+            Book
+                .BookInfo.PublishSettings.BloomLibrary.TextLangs.Where(l => l.Value.IsIncluded())
                 .Select(l => l.Key);
 
         public IEnumerable<string> TextLanguagesToAdvertiseOnBloomLibrary =>
@@ -679,7 +680,7 @@ namespace Bloom.Publish.BloomLibrary
                 {
                     FileName = "cmd.exe",
                     Arguments = $"/k {MiscUtils.EscapeForCmd(command)}",
-                    WorkingDirectory = Path.GetDirectoryName(bloomExePath)
+                    WorkingDirectory = Path.GetDirectoryName(bloomExePath),
                 };
             }
             else
@@ -696,7 +697,7 @@ namespace Bloom.Publish.BloomLibrary
                 {
                     FileName = program,
                     Arguments = command,
-                    WorkingDirectory = Path.GetDirectoryName(bloomExePath)
+                    WorkingDirectory = Path.GetDirectoryName(bloomExePath),
                 };
                 // LD_PRELOAD is a Linux environment variable for a shared library that should be loaded before any other library is
                 // loaded by a program that is starting up.  It is rarely needed, but the mozilla code used by Geckofx is one place
@@ -847,7 +848,7 @@ namespace Bloom.Publish.BloomLibrary
                 oldSubscriptionDescriptor,
                 uploader = existingBookInfo.uploader.email,
                 count = existingBookInfo.count,
-                permissions = existingBookInfo.permissions
+                permissions = existingBookInfo.permissions,
             };
         }
 
@@ -890,14 +891,14 @@ namespace Bloom.Publish.BloomLibrary
 
             const string slash = "%2f";
             var folderWithoutLastSlash = baseUrl;
-            if (baseUrl.EndsWith(slash))
+            if (baseUrl.EndsWith(slash, StringComparison.InvariantCultureIgnoreCase))
             {
                 folderWithoutLastSlash = baseUrl.Substring(0, baseUrl.Length - 3);
             }
 
             var index = folderWithoutLastSlash.LastIndexOf(
                 slash,
-                StringComparison.InvariantCulture
+                StringComparison.InvariantCultureIgnoreCase
             );
             var pathWithoutBookName = folderWithoutLastSlash.Substring(0, index);
             var pathToHarvestedBookFolder = pathWithoutBookName
@@ -906,12 +907,10 @@ namespace Bloom.Publish.BloomLibrary
 
             // Harvested books are stored in a separate S3 bucket from the original uploads.
             // Harvester stores harvested thumbnails in a 'thumbnails' subfolder,
-            // whereas the orignally-uploaded book doesn't have a separate subfolder for thumbnails.
+            // whereas the originally-uploaded book doesn't have a separate subfolder for thumbnails.
             // BloomLibrary code depends on this location to find the thumbnails it displays.
             return CreateUrlWithCacheBusting(
-                pathToHarvestedBookFolder
-                    + "/thumbnails/"
-                    + BloomLibraryPublishModel.kThumbnailFileName,
+                pathToHarvestedBookFolder + "/thumbnails/" + kThumbnailFileName,
                 lastUpdate
             );
         }
@@ -964,8 +963,8 @@ namespace Bloom.Publish.BloomLibrary
             newLanguages = newLanguages1.ToArray();
 
             existingLanguages = databaseLangObjects
-                .Select<dynamic, string>(
-                    languageObject => mapCodeToName[languageObject.tag.ToString()]
+                .Select<dynamic, string>(languageObject =>
+                    mapCodeToName[languageObject.tag.ToString()]
                 )
                 .ToArray();
         }
@@ -1009,10 +1008,15 @@ namespace Bloom.Publish.BloomLibrary
             if (subscription != null && subscription.ToLowerInvariant().EndsWith("-pro"))
             {
                 var subscriptionEmail = subscription.Substring(0, subscription.Length - 4);
-                if (WebUserId == null || WebUserId.ToLowerInvariant() != subscriptionEmail.ToLowerInvariant())
+                if (
+                    WebUserId == null
+                    || WebUserId.ToLowerInvariant() != subscriptionEmail.ToLowerInvariant()
+                )
                 {
-                    var message = LocalizationManager.GetString("Subscription.Pro.EmailMismatch",
-                        "Your Pro subscription for {0} does not match this BloomLibrary.org account: {1}.");
+                    var message = LocalizationManager.GetString(
+                        "Subscription.Pro.EmailMismatch",
+                        "Your Pro subscription for {0} does not match this BloomLibrary.org account: {1}."
+                    );
                     return string.Format(message, subscriptionEmail, WebUserId);
                 }
             }
@@ -1029,6 +1033,6 @@ namespace Bloom.Publish.BloomLibrary
     {
         Null,
         CreativeCommons,
-        Custom
+        Custom,
     }
 }

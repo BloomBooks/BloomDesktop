@@ -1,10 +1,10 @@
-﻿using SIL.IO;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
+using SIL.IO;
 
 namespace BloomTests.DataBuilders
 {

@@ -9,6 +9,7 @@
  *
  * Requires: 1.2.2+
  */
+import jQuery from "jquery";
 
 (function($) {
 

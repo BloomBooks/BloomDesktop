@@ -1,21 +1,22 @@
-using System.Windows.Forms;
-using Bloom.CollectionTab;
-using Bloom.WebLibraryIntegration;
 using System.Drawing;
-using Bloom.Publish.BloomPub;
+using System.Windows.Forms;
+using Bloom.Api;
+using Bloom.CollectionTab;
 using Bloom.Publish.BloomLibrary;
+using Bloom.Publish.BloomPub;
 using Bloom.Publish.Epub;
 using Bloom.Publish.Video;
-using Bloom.web.controllers;
 using Bloom.web;
-using Bloom.Api;
+using Bloom.web.controllers;
+using Bloom.WebLibraryIntegration;
 
 namespace Bloom.Publish
 {
-    public partial class PublishView : UserControl, IBloomTabArea
+    public class PublishView : UserControl, IBloomTabArea
     {
         public readonly PublishModel _model;
         private BookUpload _bookTransferrer;
+        private PublishToBloomPubApi _publishToBloomPubApi;
         private PublishAudioVideoAPI _publishToVideoApi;
         private PublishEpubApi _publishEpubApi;
         private BloomWebSocketServer _webSocketServer;
@@ -29,12 +30,14 @@ namespace Bloom.Publish
             SelectedTabChangedEvent selectedTabChangedEvent,
             LocalizationChangedEvent localizationChangedEvent,
             BookUpload bookTransferrer,
+            PublishToBloomPubApi publishToBloomPubApi,
             PublishEpubApi publishEpubApi,
             PublishAudioVideoAPI publishToVideoApi,
             BloomWebSocketServer webSocketServer
         )
         {
             _bookTransferrer = bookTransferrer;
+            _publishToBloomPubApi = publishToBloomPubApi;
             _publishEpubApi = publishEpubApi;
             _publishToVideoApi = publishToVideoApi;
             _model = model;
@@ -89,6 +92,7 @@ namespace Bloom.Publish
             {
                 _reactControl?.Dispose();
                 _publishEpubApi?.EpubMaker?.Dispose();
+                _publishToBloomPubApi?.Dispose();
             }
             base.Dispose(disposing);
         }

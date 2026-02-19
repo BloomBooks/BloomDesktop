@@ -1,13 +1,18 @@
 {
     "compilerOptions": {
-        "target": "es2019",
-        "module": "commonjs",
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
         "sourceMap": true,
+        "allowJs": true,
         "jsx": "react-jsx",
         "jsxImportSource": "@emotion/react",
+        "esModuleInterop": true,
         "types": [
             /*"@emotion/core",*/
-            "@emotion/react/types/css-prop"
+            "@emotion/react/types/css-prop",
+            "vitest/globals",
+            "@testing-library/jest-dom"
         ],
         "lib": ["dom", "es6", "scripthost", "es2019"],
         "experimentalDecorators": true,
@@ -15,12 +20,18 @@
         "noImplicitReturns": true,
         "strictNullChecks": true,
         "outDir": "../../output/browser",
-        "resolveJsonModule": true,
+        //"resolveJsonModule": true,
         // this solved the 'foo' cannot be used as a JSX component. Its instance type 'foo' is not a valid JSX element,
         // which came in when we were at react 17 but some things are going towards 18
         "paths": {
             "react": ["./node_modules/@types/react"]
         }
     },
-    "exclude": ["node_modules", "typings"]
+    "exclude": [
+        "node_modules",
+        "typings",
+        "react_components/component-tester",
+        "react_components/**/component-tests",
+        "vite.config.ts"
+    ]
 }

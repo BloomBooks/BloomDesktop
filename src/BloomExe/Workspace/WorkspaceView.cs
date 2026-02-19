@@ -11,26 +11,24 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.CollectionCreating;
 using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Publish;
-using Bloom.Registration;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
 using L10NSharp;
+using L10NSharp.Windows.Forms;
 using Messir.Windows.Forms;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Reporting;
 using SIL.Unicode;
-using SIL.Windows.Forms.Miscellaneous;
 using SIL.Windows.Forms.ReleaseNotes;
 using SIL.Windows.Forms.SettingProtection;
 using SIL.WritingSystems;
@@ -144,6 +142,13 @@ namespace Bloom.Workspace
             FatalExceptionHandler.UseFallback = false;
 
             InitializeComponent();
+
+            // Counter the scaling that WinForms does under .Net 8 based on default font size.
+            // We've retained the old default font and size to avoid changing the dialog sizes
+            // inappropriately, but need this scaling to keep the top pane of the workspace
+            // from being too small.  (BL-15518)
+            float scaleFactor = 1.1f; // determined experimentally
+            this.Scale(new SizeF(scaleFactor, scaleFactor));
 
             _checkForNewVersionMenuItem.Visible = Platform.IsWindows;
 
@@ -428,7 +433,7 @@ namespace Bloom.Workspace
                     deletable,
                     collectionKind,
                     aboutBookInfoUrl,
-                    isTemplate = book?.IsTemplateBook
+                    isTemplate = book?.IsTemplateBook,
                 }
             );
             return result;
@@ -602,12 +607,16 @@ namespace Bloom.Workspace
         private void _applicationUpdateCheckTimer_Tick(object sender, EventArgs e)
         {
             _applicationUpdateCheckTimer.Enabled = false;
-            if (!Debugger.IsAttached && Platform.IsWindows)
+            if (
+                !Debugger.IsAttached
+                && Platform.IsWindows
+                && !InstallerSupport.SharedByAllUsers()
+                && !ApplicationUpdateSupport.IsDev
+            )
             {
-                ApplicationUpdateSupport.CheckForASquirrelUpdate(
+                ApplicationUpdateSupport.CheckForAVelopackUpdate(
                     ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Quiet,
-                    newInstallDir => RestartBloom(newInstallDir),
-                    Settings.Default.AutoUpdate
+                    () => RestartBloom()
                 );
             }
         }
@@ -813,7 +822,30 @@ namespace Bloom.Workspace
         {
             var tag = (LanguageItem)item.Tag;
 
-            LocalizationManager.SetUILanguage(tag.LangTag, true);
+            try
+            {
+                LocalizationManagerWinforms.SetUILanguage(tag.LangTag, true);
+            }
+            catch (Exception e)
+            {
+                // When reapplying localizations, L10NSharp can sometimes try to update controls that have
+                // already been disposed (e.g. controls from dialogs that have been closed).
+                // Changing the UI language should not crash Bloom; fall back to setting the language
+                // without reapplying localizations.
+                Logger.WriteError(
+                    "Ignoring Exception while reapplying localizations after changing UI language.",
+                    e
+                );
+                try
+                {
+                    LocalizationManagerWinforms.SetUILanguage(tag.LangTag, false);
+                }
+                catch (Exception e2)
+                {
+                    Logger.WriteError("Failed to set UI language after Exception.", e2);
+                    return; // Don't save since we didn't successfully change the language.
+                }
+            }
             // TODO-WV2: Can we set the browser language in WV2?  Do we need to?
             Settings.Default.UserInterfaceLanguage = tag.LangTag;
             Settings.Default.UserInterfaceLanguageSetExplicitly = true;
@@ -875,7 +907,7 @@ namespace Bloom.Workspace
                 LangTag = code,
                 MenuText = menuText,
                 FractionApproved = FractionApproved(code),
-                FractionTranslated = FractionTranslated(code)
+                FractionTranslated = FractionTranslated(code),
             };
         }
 
@@ -1098,7 +1130,7 @@ namespace Bloom.Workspace
 
             CurrentTabView = view as IBloomTabArea;
             // Warn the user if we're starting to use too much memory.
-            MemoryManagement.CheckMemory(false, "switched tab in workspace", true);
+            //MemoryManagement.CheckMemory(false, "switched tab in workspace", true);
 
             if (_previouslySelectedControl != null)
             {
@@ -1163,7 +1195,7 @@ namespace Bloom.Workspace
                                 _toolStrip.Items.Remove(_zoomWrapper);
                         }
                         // TODO-WV2: Can we clear the cache in WV2?  Do we need to?
-                    }
+                    },
                 }
             );
         }
@@ -1207,7 +1239,7 @@ namespace Bloom.Workspace
             TabStripButton btn = (TabStripButton)e.SelectedTab;
             _tabStrip.BackColor = btn.BarColor;
             _toolSpecificPanel.BackColor = _panelHoldingToolStrip.BackColor = _tabStrip.BackColor;
-            Logger.WriteEvent("Selecting Tab Page: " + e.SelectedTab.Name);
+            //Logger.WriteEvent("Selecting Tab Page: " + e.SelectedTab.Name);
             SelectPage((Control)e.SelectedTab.Tag);
             AdjustTabStripDisplayForScreenSize();
             if (_tabSelection.ActiveTab == WorkspaceTab.collection && _collectionTabView != null)
@@ -1247,19 +1279,10 @@ namespace Bloom.Workspace
 
         private void OnAboutBoxClick(object sender, EventArgs e)
         {
-            string path = BloomFileLocator.GetBrowserFile(
-                true,
-                "infoPages",
-                "aboutBox-" + LocalizationManager.UILanguageId + ".htm"
-            );
-            if (String.IsNullOrEmpty(path))
-            {
-                path = BloomFileLocator.GetBrowserFile(false, "infoPages", "aboutBox.htm");
-            }
-            using (var dlg = new SILAboutBox(path))
-            {
-                dlg.ShowDialog();
-            }
+            if (_tabStrip.SelectedTab == _editTab)
+                _editingView.ShowAboutDialog();
+            else
+                _webSocketServer.LaunchDialog("AboutDialog");
         }
 
         private void toolStripMenuItem3_Click(object sender, EventArgs e)
@@ -1389,7 +1412,7 @@ namespace Bloom.Workspace
                             return;
                         Settings.Default.ForumInvitationLastShown = today;
                         Settings.Default.Save();
-                        _webSocketServer.LaunchDialog("ForumInvitationDialog", new DynamicJson());
+                        _webSocketServer.LaunchDialog("ForumInvitationDialog");
                     },
                     shouldHideSplashScreen: true,
                     lowPriority: true,
@@ -1416,9 +1439,17 @@ namespace Bloom.Workspace
 
         private void OnRegistrationMenuItem_Click(object sender, EventArgs e)
         {
-            using (var dlg = new RegistrationDialog(true, _tcManager.UserMayChangeEmail))
+            ShowRegistrationDialog();
+        }
+
+        public void ShowRegistrationDialog()
+        {
+            if (_tabStrip.SelectedTab == _editTab)
+                _editingView.ShowRegistrationDialog();
+            else
             {
-                dlg.ShowDialog();
+                dynamic messageBundle = new DynamicJson();
+                _webSocketServer.LaunchDialog("RegistrationDialog", messageBundle);
             }
         }
 
@@ -1457,18 +1488,6 @@ namespace Bloom.Workspace
 
         private void _checkForNewVersionMenuItem_Click(object sender, EventArgs e)
         {
-            if (ApplicationUpdateSupport.BloomUpdateInProgress)
-            {
-                //enhance: ideally, what this would do is show a toast of whatever it is squirrel is doing: checking, downloading, waiting for a restart.
-                MessageBox.Show(
-                    this,
-                    LocalizationManager.GetString(
-                        "CollectionTab.UpdateCheckInProgress",
-                        "Bloom is already working on checking for updates."
-                    )
-                );
-                return;
-            }
             if (Debugger.IsAttached)
             {
                 MessageBox.Show(this, "Sorry, you cannot check for updates from the debugger.");
@@ -1492,15 +1511,14 @@ namespace Bloom.Workspace
             }
             else
             {
-                ApplicationUpdateSupport.CheckForASquirrelUpdate(
+                ApplicationUpdateSupport.CheckForAVelopackUpdate(
                     ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Verbose,
-                    newInstallDir => RestartBloom(newInstallDir),
-                    Settings.Default.AutoUpdate
+                    () => RestartBloom()
                 );
             }
         }
 
-        private void RestartBloom(string newInstallDir)
+        private void RestartBloom()
         {
             Control ancestor = Parent;
             while (ancestor != null && !(ancestor is Shell))
@@ -1508,15 +1526,7 @@ namespace Bloom.Workspace
             if (ancestor == null)
                 return;
             var shell = (Shell)ancestor;
-            var pathToNewExe = Path.Combine(
-                newInstallDir,
-                Path.ChangeExtension(Application.ProductName, ".exe")
-            );
-            if (!RobustFile.Exists(pathToNewExe))
-                return; // aargh!
             shell.QuitForVersionUpdate = true;
-            Process.Start(pathToNewExe);
-            Thread.Sleep(2000);
             shell.Close();
         }
 
@@ -1627,7 +1637,7 @@ namespace Bloom.Workspace
             FullSize,
             Stage1,
             Stage2,
-            Stage3
+            Stage3,
         }
 
         private Shrinkage _currentShrinkage = Shrinkage.FullSize;

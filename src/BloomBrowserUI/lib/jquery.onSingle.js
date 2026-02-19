@@ -5,6 +5,7 @@
  * @param [handler]
  * @returns {Object}
  */
+import $ from "jquery";
 $.fn.onSafe = function (eventName, data, handler) {
         this.each(function () {
                 if (data)

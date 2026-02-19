@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import FormGroup from "@mui/material/FormGroup";
 import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
@@ -41,7 +40,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
     onSetPageRange: (arg: number[]) => void;
     motion: boolean;
     onMotionChange: (arg: boolean) => void;
-}> = props => {
+}> = (props) => {
     // Stores which formats should be non-selectable.
     const [disabledFormats, setDisabledFormats] = useState<string[]>([]);
     const [motionEnabled] = useApiBoolean("publish/canHaveMotionMode", false);
@@ -51,22 +50,22 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
     // When component is mounted, find out which formats should be disabled, then update the state.
     useEffect(() => {
         // Currently, only mp3 format can be disabled. Everything else is always enabled right now.
-        get("publish/av/isMP3FormatSupported", c => {
+        get("publish/av/isMP3FormatSupported", (c) => {
             const isSupported = c.data as boolean;
             if (!isSupported) {
-                setDisabledFormats(prevValue => prevValue.concat(["mp3"]));
+                setDisabledFormats((prevValue) => prevValue.concat(["mp3"]));
             }
         });
     }, []);
 
     useEffect(() => {
-        get("publish/av/tooBigForScreenMsg", c => {
+        get("publish/av/tooBigForScreenMsg", (c) => {
             setTooBigMsg(c.data);
         });
     }, [props.format]);
     const [pageLabels, setPageLabels] = useState([]);
-    useSubscribeToWebSocketForObject("publishPageLabels", "ready", data =>
-        setPageLabels((data as any).labels)
+    useSubscribeToWebSocketForObject("publishPageLabels", "ready", (data) =>
+        setPageLabels((data as any).labels),
     );
 
     const setPageRange = (range: number[]) => {
@@ -114,7 +113,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
     const prettyPrintResolution = (
         width: number,
         height: number,
-        aspectRatio: string
+        aspectRatio: string,
     ) => {
         return `${width}x${height} (${aspectRatio})`;
     };
@@ -127,7 +126,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
             idealDimension: prettyPrintResolution(1280, 720, "16:9"),
             fileFormat: "MP4",
             codec: "H.264",
-            icon: <img src="/bloom/images/facebook.png" height="16px" />
+            icon: <img src="/bloom/images/facebook.png" height="16px" />,
         },
         {
             format: "feature",
@@ -136,7 +135,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
             idealDimension: prettyPrintResolution(352, 288, "5:4"),
             fileFormat: "3GP",
             codec: "H.263",
-            icon: <img src="/bloom/images/featurephone.svg" height="16px" />
+            icon: <img src="/bloom/images/featurephone.svg" height="16px" />,
         },
         {
             format: "youtube",
@@ -145,7 +144,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
             idealDimension: prettyPrintResolution(1920, 1080, "16:9"),
             fileFormat: "MP4",
             codec: "H.264",
-            icon: <img src="/bloom/images/youtube.png" height="16px" />
+            icon: <img src="/bloom/images/youtube.png" height="16px" />,
         },
         {
             format: "mp3",
@@ -162,8 +161,8 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                         font-size: 1rem; // seems to make it the same size as the 16-px icons.
                     `}
                 />
-            )
-        }
+            ),
+        },
     ]);
 
     const updatedFormatDimensionsList = useApiData<
@@ -177,9 +176,9 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
             return;
         }
 
-        const newFormatItems = formatItems.map(item => {
+        const newFormatItems = formatItems.map((item) => {
             const newDimensions = updatedFormatDimensionsList.find(
-                x => x.format === item.format
+                (x) => x.format === item.format,
             );
 
             if (!newDimensions) {
@@ -188,7 +187,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
             const newIdealDimensionStr = prettyPrintResolution(
                 newDimensions.desiredWidth,
                 newDimensions.desiredHeight,
-                newDimensions.aspectRatio
+                newDimensions.aspectRatio,
             );
 
             const isActualDifferentThanIdeal =
@@ -199,7 +198,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                 ? prettyPrintResolution(
                       newDimensions.actualWidth,
                       newDimensions.actualHeight,
-                      newDimensions.aspectRatio
+                      newDimensions.aspectRatio,
                   )
                 : undefined;
 
@@ -225,8 +224,8 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
         // Ensure selection is not disabled
         if (disabledFormats.includes(props.format)) {
             const firstNonDisabledFormat = formatItems
-                .map(x => x.format)
-                .find(f => !disabledFormats.includes(f));
+                .map((x) => x.format)
+                .find((f) => !disabledFormats.includes(f));
 
             if (firstNonDisabledFormat === undefined) {
                 // If for some weird reason, all formats are disabled, just leave it at whatever format was originally selected.
@@ -273,27 +272,27 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                     `}
                                     variant="outlined"
                                     value={props.format}
-                                    onChange={e => {
+                                    onChange={(e) => {
                                         const newFormat = e.target
                                             .value as string;
                                         props.onFormatChanged(newFormat);
                                     }}
                                     style={{ width: 160 }}
-                                    renderValue={f => {
+                                    renderValue={(f) => {
                                         const item = formatItems.find(
-                                            item => item.format === f
+                                            (item) => item.format === f,
                                         )!;
                                         return (
                                             <VideoFormatItem
                                                 disabled={disabledFormats.includes(
-                                                    item.format
+                                                    item.format,
                                                 )}
                                                 {...item}
                                             />
                                         );
                                     }}
                                 >
-                                    {formatItems.map(item => {
+                                    {formatItems.map((item) => {
                                         return (
                                             <MenuItem
                                                 value={item.format}
@@ -302,7 +301,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                             >
                                                 <VideoFormatItem
                                                     disabled={disabledFormats.includes(
-                                                        item.format
+                                                        item.format,
                                                     )}
                                                     {...item}
                                                 />
@@ -354,7 +353,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                         step={0.5}
                                         onChange={(event, value) =>
                                             props.onSetPageTurnDelay(
-                                                value as number
+                                                value as number,
                                             )
                                         }
                                         size="small"
@@ -429,9 +428,11 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
     );
 };
 
-const VideoFormatItem: React.FunctionComponent<IFormatItem & {
-    disabled: boolean;
-}> = props => {
+const VideoFormatItem: React.FunctionComponent<
+    IFormatItem & {
+        disabled: boolean;
+    }
+> = (props) => {
     const id = "mouse-over-popover-" + props.format;
 
     return (
@@ -441,7 +442,7 @@ const VideoFormatItem: React.FunctionComponent<IFormatItem & {
             showDisabled={props.disabled}
             tipWhenDisabled={{
                 english: "unused",
-                l10nKey: props.disabledL10nKey!
+                l10nKey: props.disabledL10nKey!,
             }}
             tip={
                 <div

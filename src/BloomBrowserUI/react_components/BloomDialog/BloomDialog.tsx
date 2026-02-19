@@ -7,13 +7,13 @@ import {
     DialogProps,
     IconButton,
     Paper,
-    PaperProps
+    PaperProps,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import {
     kDialogPadding,
     kUiFontStack,
-    lightTheme
+    lightTheme,
 } from "../../bloomMaterialUITheme";
 import { useL10n } from "../l10nHooks";
 import Draggable from "react-draggable";
@@ -47,7 +47,7 @@ export interface IBloomDialogProps extends DialogProps {
             | "escapeKeyDown"
             | "backdropClick"
             | "titleCloseClick"
-            | "cancelClicked"
+            | "cancelClicked",
     ) => void;
 
     // we know of at least one scenario (CopyrightAndLicenseDialog) which needs to do
@@ -82,11 +82,9 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                     padding-bottom: ${kDialogBottomPadding};
                     // dialogFrameProvidedExternally means that we're inside of a winforms dialog.
                     /// So we grow to fit it, and we supply a single black border for some reason (?)
-                    ${
-                        props.dialogFrameProvidedExternally
-                            ? `height: 100%; border: solid thin black; box-sizing: border-box;`
-                            : ""
-                    }
+                    ${props.dialogFrameProvidedExternally
+                        ? `height: 100%; border: solid thin black; box-sizing: border-box;`
+                        : ""}
 
                     // This value is the same as that given in bloomMaterialUITheme.  For some
                     // reason, it is not being applied here.  See BL-10208 and BL-10228.
@@ -115,7 +113,7 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
             // but AFTER react has created the actual DOM so we can find the element we want
             // to focus.
             const initialFocus = document.getElementsByClassName(
-                "initialFocus"
+                "initialFocus",
             )[0] as HTMLButtonElement;
             if (!initialFocus) {
                 return; // Enter won't do anything, unless the user tabs to focus a button.
@@ -161,7 +159,7 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                 : !!dialogFrameProvidedExternally;
 
         function hasChildOfType(typeName: string) {
-            return React.Children.toArray(props.children).some(c => {
+            return React.Children.toArray(props.children).some((c) => {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 return (c as any)?.type?.name === typeName;
             });
@@ -185,13 +183,13 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                         <BloomDialogContext.Provider
                             value={{
                                 onCancel: props.onCancel,
-                                disableDragging: disableDragging
+                                disableDragging: disableDragging,
                             }}
                         >
                             <Dialog
                                 onClose={(
                                     event: object,
-                                    reason: "escapeKeyDown" | "backdropClick"
+                                    reason: "escapeKeyDown" | "backdropClick",
                                 ) => {
                                     // MUI.Dialog onClose() is only called if you click outside the dialog or escape, so that's
                                     // the same as canceling for dialogs that have a notion of canceling.
@@ -227,7 +225,7 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                 </ThemeProvider>
             </StyledEngineProvider>
         );
-    }
+    },
 );
 
 export const DialogTitle: FunctionComponent<{
@@ -247,7 +245,7 @@ export const DialogTitle: FunctionComponent<{
     title: string; // note, this is prop instead of just a child so that we can ensure vertical alignment and bar height, which are easy to mess up.
     // true: no close button. otherwise: close button iff BloomDialogContext has onCancel.
     preventCloseButton?: boolean;
-}> = props => {
+}> = (props) => {
     const color = props.color || "black";
     const background = props.backgroundColor || "transparent";
 
@@ -340,7 +338,7 @@ DialogTitle.displayName = "DialogTitle";
 
 // The height of this is determined by what is inside of it. If the content might grow (e.g. a progress box), then it's up to the
 // client to set maxes or fixed dimensions. See <ProgressDialog> for an example.
-export const DialogMiddle: FunctionComponent = props => {
+export const DialogMiddle: FunctionComponent = (props) => {
     return (
         <div
             id="draggable-dialog-middle"
@@ -372,7 +370,7 @@ export const DialogMiddle: FunctionComponent = props => {
 };
 
 // should be a child of DialogBottomButtons
-export const DialogBottomLeftButtons: FunctionComponent = props => (
+export const DialogBottomLeftButtons: FunctionComponent = (props) => (
     <div
         css={css`
             margin-right: auto;
@@ -380,15 +378,15 @@ export const DialogBottomLeftButtons: FunctionComponent = props => (
 
             /* -- button separation -- */
             // this is better but Firefox doesn't support it until FF 63:  gap: ${kDialogPadding};
-            button{
+            button {
                 margin-right: ${kDialogPadding};
             }
-             //padding-left: 0;//  would be good, if we could only apply it to un-outlined material buttons to make them left-align
-             // or margin-left:-8px, which left-aligns such buttons but keeps the padding, which is used in hover effects.
+            //padding-left: 0;//  would be good, if we could only apply it to un-outlined material buttons to make them left-align
+            // or margin-left:-8px, which left-aligns such buttons but keeps the padding, which is used in hover effects.
 
-             button{
-                 margin-left:0 !important;
-             }
+            button {
+                margin-left: 0 !important;
+            }
         `}
     >
         {props.children}
@@ -396,7 +394,7 @@ export const DialogBottomLeftButtons: FunctionComponent = props => (
 );
 
 // normally one or more buttons. 1st child can also be <DialogBottomLeftButtons> if you have left-aligned buttons to show
-export const DialogBottomButtons: FunctionComponent = props => {
+export const DialogBottomButtons: FunctionComponent = (props) => {
     return (
         <div
             css={css`
@@ -405,12 +403,12 @@ export const DialogBottomButtons: FunctionComponent = props => {
                 padding-top: 20px; // leave room between us and the content above us
                 display: flex;
                 justify-content: flex-end; // make buttons line up on the right, unless wrapped in <DialogBottomLeftButtons>
-                      // this is better but Firefox doesn't support it until FF 63:  gap: ${kDialogPadding};
+                // this is better but Firefox doesn't support it until FF 63:  gap: ${kDialogPadding};
 
                 /* -- button separation -- */
-                button{
-                margin-left: ${kDialogPadding};
-            }
+                button {
+                    margin-left: ${kDialogPadding};
+                }
 
                 // As per material (https://i.imgur.com/REsXU1C.png), we actually should be closer to the right than
                 // the content.
@@ -432,7 +430,7 @@ interface EnhancedPaperProps extends PaperProps {
 // Don't be tempted to make this an anonymous function that returns a JSX.Element
 // (instead of a FunctionComponent), it causes focus problems. (BL-11406).
 // (Probably the same for the things below that use it.)
-const DraggablePaperCore: FunctionComponent<EnhancedPaperProps> = props => {
+const DraggablePaperCore: FunctionComponent<EnhancedPaperProps> = (props) => {
     const { handleId, ...paperProps } = props;
     return (
         <Draggable
@@ -455,7 +453,7 @@ const DraggablePaperCore: FunctionComponent<EnhancedPaperProps> = props => {
 // We need things that just take PaperProps to pass to the PaperComponent
 // property of Dialog. So the above component gets instantiated several ways.
 
-const DraggablePaperLimited: FunctionComponent<PaperProps> = props => {
+const DraggablePaperLimited: FunctionComponent<PaperProps> = (props) => {
     return <DraggablePaperCore handleId="draggable-dialog-title" {...props} />;
 };
 
@@ -466,11 +464,11 @@ type BloomDialogContextArgs = {
             | "escapeKeyDown"
             | "backdropClick"
             | "titleCloseClick"
-            | "cancelClicked" // an instance of DialogCancelButton was clicked
+            | "cancelClicked", // an instance of DialogCancelButton was clicked
     ) => void;
     disableDragging: boolean;
 };
 export const BloomDialogContext = React.createContext<BloomDialogContextArgs>({
     onCancel: undefined,
-    disableDragging: true
+    disableDragging: true,
 });

@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { get, post, postString } from "../utils/bloomApi";
 import { BooksOfCollection, IBookInfo } from "./BooksOfCollection";
@@ -18,10 +17,11 @@ import GreyTriangleMenuIcon from "../react_components/icons/GreyTriangleMenuIcon
 import {
     LocalizableCheckboxMenuItem,
     LocalizableMenuItem,
-    LocalizableNestedMenuItem
+    LocalizableNestedMenuItem,
 } from "../react_components/localizableMenuItem";
 import { TeamCollectionDialogLauncher } from "../teamCollection/TeamCollectionDialog";
 import { SpreadsheetExportDialogLauncher } from "./spreadsheet/SpreadsheetExportDialog";
+import { RegistrationDialogEventLauncher } from "../react_components/registration/registrationDialogLauncher";
 import { H1 } from "../react_components/l10nComponents";
 import { useL10n } from "../react_components/l10nHooks";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
@@ -36,6 +36,12 @@ import { ForumInvitationDialogLauncher } from "../react_components/forumInvitati
 import { CollectionSettingsDialog } from "../collection/CollectionSettingsDialog";
 import { BooksOnBlorgProgressBar } from "../booksOnBlorg/BooksOnBlorgProgressBar";
 import { SubscriptionStatus } from "./SubscriptionStatus";
+import {
+    MakeReaderTemplateBloomPackDialog,
+    showMakeReaderTemplateBloomPackDialog,
+} from "../react_components/makeReaderTemplateBloomPackDialog";
+import { AboutDialogLauncher } from "../react_components/aboutDialog";
+import { RegistrationDialogLauncher } from "../react_components/registration/registrationDialog";
 
 const kResizerSize = 10;
 
@@ -56,7 +62,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         [CollectionInfo] | undefined
     >();
     useEffect(() => {
-        get("collections/list", c => {
+        get("collections/list", (c) => {
             setCollections(c.data);
         });
     }, []);
@@ -65,7 +71,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
     // not explicitly referenced anywhere except for being set, not having it results
     // in no refreshes when collections are removed.
     const [collectionCount, setCollectionCount] = useState<number>(
-        collections?.length ?? 0
+        collections?.length ?? 0,
     );
 
     const removeSourceCollection = (id: string) => {
@@ -80,7 +86,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
 
     const finishAddingNewSourceCollection = (collection: CollectionInfo) => {
         if (!collections) return;
-        const currentIndex = collections.findIndex(value => {
+        const currentIndex = collections.findIndex((value) => {
             return value.id && value.id === collection.id;
         });
         if (currentIndex >= 0) {
@@ -112,7 +118,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         if (newIndex === collections.length) --newIndex;
         if (newIndex >= 0) {
             const element = document.getElementById(
-                sanitize(collections[newIndex].id)
+                sanitize(collections[newIndex].id),
             );
             if (element) element.scrollIntoView();
         }
@@ -125,7 +131,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
     useSubscribeToWebSocketForObject<{
         success: boolean;
         collection: CollectionInfo;
-    }>("collections", "addSourceCollection-results", results => {
+    }>("collections", "addSourceCollection-results", (results) => {
         if (results.success) {
             setNewCollection(results.collection);
         }
@@ -146,7 +152,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
     useSubscribeToWebSocketForObject<{
         success: boolean;
         list: [any];
-    }>("collections", "updateCollectionList", results => {
+    }>("collections", "updateCollectionList", (results) => {
         setCollections(results.list);
     });
 
@@ -166,7 +172,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
     const [splitHeights, setSplitHeights] = useState([1, 1]);
     const [generation, setGeneration] = useState(0);
     useSubscribeToWebSocketForEvent("window", "restored", () => {
-        setGeneration(old => old + 1);
+        setGeneration((old) => old + 1);
     });
 
     const manager: BookSelectionManager = useMemo(() => {
@@ -186,7 +192,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
     const setAdjustedContextMenuPoint = (x: number, y: number) => {
         setContextMousePoint({
             mouseX: x - 2,
-            mouseY: y - 4
+            mouseY: y - 4,
         });
     };
 
@@ -208,7 +214,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
     });
 
     useEffect(() => {
-        window.addEventListener("keyup", ev => {
+        window.addEventListener("keyup", (ev) => {
             if (ev.code == "F2") {
                 // We want to make the selected button show the renaming state.
                 manager.setRenaming();
@@ -221,7 +227,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         // we want to set the splitter to hide the bottom pane.
         if (haveNoSources) {
             setSplitHeights([1, 0]);
-            setGeneration(old => old + 1);
+            setGeneration((old) => old + 1);
         }
     }, [haveNoSources]);
 
@@ -230,7 +236,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
     }
 
     const handleCollectionMenuClick = (
-        event: React.MouseEvent<HTMLButtonElement>
+        event: React.MouseEvent<HTMLButtonElement>,
     ) => {
         // If there's already a Material-UI menu open somewhere (probably one of the book buttons),
         // we don't want to open our own menu, and it's tricky to make it open the menu appropriate
@@ -240,7 +246,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         // This is a known bug in Material-UI, fixed in version 5, so we may be able to do better
         // when we switch to that. See https://github.com/mui/material-ui/issues/19145.
         const menuBackdrop = (event.target as HTMLElement).closest(
-            ".MuiPopover-root"
+            ".MuiPopover-root",
         );
         if (menuBackdrop) {
             (event.target as HTMLElement).click();
@@ -261,19 +267,20 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
             label: "Open or Create Another Collection",
             l10nId: "CollectionTab.OpenCreateCollectionMenuItem",
             command: "workspace/openOrCreateCollection",
-            addEllipsis: true
+            addEllipsis: true,
         },
         {
             label: "Make Bloom Pack of Shell Books",
             l10nId: "CollectionTab.MakeBloomPackOfShellBooks",
             command: "collections/makeShellBooksBloompack",
-            addEllipsis: true
+            addEllipsis: true,
         },
         {
             label: "Make Reader Template Bloom Pack...",
-            l10nId:
-                "CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem",
-            command: "collections/makeBloompack"
+            l10nId: "CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem",
+            onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
+                showMakeReaderTemplateBloomPackDialog();
+            },
         },
         {
             label: "Troubleshooting",
@@ -283,22 +290,21 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
                     label: "Do Checks of All Books",
                     l10nId: "CollectionTab.CollectionMenu.doChecksOfAllBooks",
                     command: "collections/doChecksOfAllBooks",
-                    addEllipsis: true
+                    addEllipsis: true,
                 },
                 {
                     label: "Do Updates of All Books",
-                    l10nId:
-                        "CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks",
+                    l10nId: "CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks",
                     command: "collections/doUpdatesOfAllBooks",
-                    addEllipsis: true
+                    addEllipsis: true,
                 },
                 {
                     label: "Rescue Missing Images...",
                     l10nId: "CollectionTab.CollectionMenu.rescueMissingImages",
-                    command: "collections/rescueMissingImages"
-                }
-            ]
-        }
+                    command: "collections/rescueMissingImages",
+                },
+            ],
+        },
     ];
     const bookInfo = manager.getSelectedBookInfo();
     const collectionMenuItems = makeMenuItems(
@@ -310,7 +316,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         // the collection menu commands don't actually use the ID of
         // a particular book
         "",
-        collections[0].id
+        collections[0].id,
     );
 
     if (newCollection) {
@@ -326,12 +332,12 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         // when we're in the "download for editing" mode, there are no other collections
         sourcesCollections = [
             ...processTemplatesCollection(sourcesCollections[0]),
-            ...sourcesCollections.slice(1)
+            ...sourcesCollections.slice(1),
         ];
     }
     // Enhance: may want to sort these by local name, though probably keeping Templates
     // and possibly Sample Shells at the top.
-    const collectionComponents = sourcesCollections.map(c => {
+    const collectionComponents = sourcesCollections.map((c) => {
         return (
             <BooksOfCollectionWithHeading
                 key={c.key ?? c.id}
@@ -395,18 +401,18 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
                 resizerOptions={{
                     css: {
                         width: `${kResizerSize}px`,
-                        background: `${kDarkestBackground}`
+                        background: `${kDarkestBackground}`,
                     },
                     hoverCss: {
                         width: `${kResizerSize}px`,
-                        background: `${kDarkestBackground}`
+                        background: `${kDarkestBackground}`,
                     },
-                    grabberSize: `${kResizerSize / 2}px`
+                    grabberSize: `${kResizerSize / 2}px`,
                 }}
                 hooks={{
                     onDragStarted: () => {
                         setDraggingSplitter(true);
-                    }
+                    },
                 }}
                 // onDragFinished={() => {
                 //     alert("stopped dragging");
@@ -422,20 +428,20 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
                     resizerOptions={{
                         css: {
                             height: `${kResizerSize}px`,
-                            background: `${kDarkestBackground}`
+                            background: `${kDarkestBackground}`,
                         },
                         hoverCss: {
                             height: `${kResizerSize}px`,
-                            background: `${kDarkestBackground}`
-                        }
+                            background: `${kDarkestBackground}`,
+                        },
                     }}
                     hooks={{
                         onDragStarted: () => {
                             setDraggingSplitter(true);
                         },
-                        onSaveSizes: sizes => {
+                        onSaveSizes: (sizes) => {
                             setSplitHeights(sizes);
-                        }
+                        },
                     }}
                 >
                     <div
@@ -489,46 +495,49 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
                         />
                     </div>
 
-                    {lockedToOneDownloadedBook || (
-                        <Transition in={true} appear={true} timeout={2000}>
-                            {state => (
-                                <div
-                                    css={css`
-                                        margin: 10px;
-                                    `}
-                                    className={`group fade-${state}`}
-                                >
-                                    <H1
-                                        l10nKey={collectionsHeaderKey}
+                    <>
+                        {!lockedToOneDownloadedBook && (
+                            <Transition in={true} appear={true} timeout={2000}>
+                                {(state) => (
+                                    <div
                                         css={css`
-                                            padding-bottom: 20px;
+                                            margin: 10px;
                                         `}
+                                        className={`group fade-${state}`}
                                     >
-                                        {collectionsHeaderText}
-                                    </H1>
+                                        <H1
+                                            l10nKey={collectionsHeaderKey}
+                                            css={css`
+                                                padding-bottom: 20px;
+                                            `}
+                                        >
+                                            {collectionsHeaderText}
+                                        </H1>
 
-                                    <ShowAfterDelay
-                                        waitBeforeShow={100} // REview: we really want to wait for an event that indicates the main collection is mostly painted
-                                    >
-                                        {collectionComponents}
-                                    </ShowAfterDelay>
-                                    <Link
-                                        l10nKey="CollectionTab.AddSourceCollection"
-                                        css={css`
-                                            text-transform: uppercase;
-                                            padding-bottom: 10px;
-                                        `}
-                                        onClick={() => addSourceCollection()}
-                                    >
-                                        Show another collection...
-                                    </Link>
-                                </div>
-                            )}
-                        </Transition>
-                    )
-                    // Enhance:possibly if we're NOT showing the Sources for new Books stuff,
-                    // we could have a message saying why and to pick an Enterprise subscription to fix it.
-                    }
+                                        <ShowAfterDelay
+                                            waitBeforeShow={100} // REview: we really want to wait for an event that indicates the main collection is mostly painted
+                                        >
+                                            {collectionComponents}
+                                        </ShowAfterDelay>
+                                        <Link
+                                            l10nKey="CollectionTab.AddSourceCollection"
+                                            css={css`
+                                                text-transform: uppercase;
+                                                padding-bottom: 10px;
+                                            `}
+                                            onClick={() =>
+                                                addSourceCollection()
+                                            }
+                                        >
+                                            Show another collection...
+                                        </Link>
+                                    </div>
+                                )}
+                            </Transition>
+                        )}
+                    </>
+                    {/* Enhance:possibly if we're NOT showing the Sources for new Books stuff,
+                    we could have a message saying why and to pick an Enterprise subscription to fix it. */}
                 </SplitPane>
                 {/* This wrapper is used to... fix up some margin/color stuff I was having trouble with from SplitPane */}
                 <div
@@ -555,7 +564,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
                     anchorReference="anchorPosition"
                     anchorPosition={{
                         top: contextMousePoint!.mouseY,
-                        left: contextMousePoint!.mouseX
+                        left: contextMousePoint!.mouseX,
                     }}
                 >
                     {collectionMenuItems}
@@ -564,8 +573,11 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
             <TeamCollectionDialogLauncher />
             <SpreadsheetExportDialogLauncher />
             <ForumInvitationDialogLauncher />
+            <RegistrationDialogEventLauncher />
+            <AboutDialogLauncher />
             <CollectionSettingsDialog />
             <EmbeddedProgressDialog id="collectionTab" />
+            <MakeReaderTemplateBloomPackDialog />
         </div>
     );
 };
@@ -609,7 +621,7 @@ export const makeMenuItems = (
     close: () => void,
     bookId: string,
     collectionId: string,
-    tooltipIfCannotSaveBook?: string
+    tooltipIfCannotSaveBook?: string,
 ) => {
     const menuItemsT = menuItemsSpecs
         .map((spec: MenuItemSpec, index: number) => {
@@ -625,7 +637,7 @@ export const makeMenuItems = (
                     close,
                     bookId,
                     collectionId,
-                    tooltipIfCannotSaveBook
+                    tooltipIfCannotSaveBook,
                 );
                 return submenuItems.length ? (
                     <LocalizableNestedMenuItem
@@ -635,9 +647,7 @@ export const makeMenuItems = (
                     >
                         {submenuItems}
                     </LocalizableNestedMenuItem>
-                ) : (
-                    undefined
-                );
+                ) : undefined;
             }
 
             if (spec.hide && spec.hide()) {
@@ -678,9 +688,9 @@ export const makeMenuItems = (
                 close();
                 postString(
                     `${spec.command!}?collection-id=${encodeURIComponent(
-                        collectionId
+                        collectionId,
                     )}`,
-                    bookId
+                    bookId,
                 );
             };
             if (spec.onClick) {
@@ -701,7 +711,7 @@ export const makeMenuItems = (
                 ></LocalizableMenuItem>
             );
         })
-        .filter(x => x); // that is, remove ones where the map function returned undefined
+        .filter((x) => x); // that is, remove ones where the map function returned undefined
 
     // Can't find a really good way to tell that an element is a Divider.
     // But we only have Dividers and LocalizableMenuItems in this list,
@@ -715,7 +725,7 @@ export const makeMenuItems = (
             !isDivider(elt!) ||
             (index > 0 &&
                 index < menuItemsT.length - 1 &&
-                !isDivider(menuItemsT[index + 1]!))
+                !isDivider(menuItemsT[index + 1]!)),
     );
 };
 
@@ -729,12 +739,12 @@ const BooksOfCollectionWithHeading: React.FunctionComponent<{
     onRemoveSourceCollection: (id: string) => void;
     onRemoveSourceFolder: (id: string) => void;
     filter?: (book: IBookInfo) => boolean;
-}> = props => {
+}> = (props) => {
     // Using a null l10nId lets us not make a server call when we don't want to.
     // (We can't call useL10n conditionally.)
     const collectionName = useL10n(
         props.name,
-        props.shouldLocalizeName ? `CollectionTab.${props.name}` : null
+        props.shouldLocalizeName ? `CollectionTab.${props.name}` : null,
     );
 
     return (
@@ -747,7 +757,7 @@ const BooksOfCollectionWithHeading: React.FunctionComponent<{
                     "DoNotShowCollection",
                     "CollectionTab.DoNotShowCollection",
                     "Do not show this collection here.",
-                    <CloseIcon />
+                    <CloseIcon />,
                 )
             ) : props.isRemovableFolder ? (
                 getRemovableCollectionHeaderDiv(
@@ -757,7 +767,7 @@ const BooksOfCollectionWithHeading: React.FunctionComponent<{
                     "RemoveThisGroup",
                     "CollectionTab.RemoveThisGroup",
                     "To remove this group, you will need to delete the folder. Click here to view the folder on your drive.",
-                    <FolderOpenOutlinedIcon />
+                    <FolderOpenOutlinedIcon />,
                 )
             ) : (
                 <h2>{collectionName}</h2>
@@ -781,14 +791,14 @@ function getRemovableCollectionHeaderDiv(
     tooltipId: string,
     tooltipL10nKey: string,
     tooltipText: string,
-    icon: JSX.Element
+    icon: JSX.Element,
 ): JSX.Element {
     // Make the book list semi-transparent when hovering over the
     // "remove collection" button.  This function is called with true
     // for onMouseEnter and false for onMouseLeave.
     function setBooklistTransparency(
         ev: React.MouseEvent<HTMLDivElement, MouseEvent>,
-        makeTransparent: boolean
+        makeTransparent: boolean,
     ): void {
         let div: HTMLElement | null = ev.target as HTMLElement;
         if (div) {
@@ -826,8 +836,8 @@ function getRemovableCollectionHeaderDiv(
                     background-color: transparent;
                 `}
                 onClick={() => clickFunction(collectionId)}
-                onMouseEnter={ev => setBooklistTransparency(ev, true)}
-                onMouseLeave={ev => setBooklistTransparency(ev, false)}
+                onMouseEnter={(ev) => setBooklistTransparency(ev, true)}
+                onMouseLeave={(ev) => setBooklistTransparency(ev, false)}
             >
                 <BloomTooltip
                     id={tooltipId}
@@ -848,11 +858,11 @@ function sanitize(id: string): string {
 // Divide the one "templates/" collection into separate collections and sort them
 // TODO: sort them according to some criteria TBD
 function processTemplatesCollection(
-    templatesCollection: CollectionInfo
+    templatesCollection: CollectionInfo,
 ): CollectionInfo[] {
     const simpleTemplates = {
         ...templatesCollection,
-        key: templatesCollection.id + "/Simple"
+        key: templatesCollection.id + "/Simple",
     };
 
     // this "f" garbage is because TS refused to see that simpleTemplates.filter is never undefined
@@ -866,7 +876,7 @@ function processTemplatesCollection(
     const specializedTemplates = {
         ...templatesCollection,
         key: templatesCollection.id + "/Specialized",
-        name: "Specialized Templates"
+        name: "Specialized Templates",
     };
     specializedTemplates.filter = (book: IBookInfo) => {
         return !f(book);
@@ -874,4 +884,4 @@ function processTemplatesCollection(
 
     return [simpleTemplates, specializedTemplates];
 }
-WireUpForWinforms(CollectionsTabPane);
+WireUpForWinforms(CollectionsTabPane, kPanelBackground);

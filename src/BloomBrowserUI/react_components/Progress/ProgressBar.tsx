@@ -1,12 +1,11 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 
 export const ProgressBar: React.FunctionComponent<{
     percentage: number;
-}> = props => {
+}> = (props) => {
     const widthRule = `width: ${props.percentage}%;`;
     return (
         <span

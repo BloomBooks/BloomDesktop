@@ -4,7 +4,7 @@ const kContentfulSpace = "72i7e2mqidxz";
 // there's a problem with the TS types in the Contentful library, hence this "any"
 const contentfulClientPublished = Contentful.createClient({
     accessToken: "XPudkny5JX74w0dxrwqS_WY3GUBA5xO_AzFR7fwO2aE",
-    space: kContentfulSpace
+    space: kContentfulSpace,
 });
 
 // BloomLibrary also has a previewKey, which allows seeing unpublished content.

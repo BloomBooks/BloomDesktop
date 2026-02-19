@@ -8,7 +8,7 @@ import { Checkbox } from "./checkbox";
 interface IProps extends ILocalizationProps {
     apiEndpoint: string;
     // The parent can give us this function which we use to subscribe to refresh events
-    // See notes in accessibiltiyChecklist for a thorough discussion.
+    // See notes in accessibilityChecklist for a thorough discussion.
     subscribeToRefresh?: (queryData: () => void) => void;
     // Extra function to call before posting apiEndpoint.
     priorClickAction?: () => void;
@@ -22,7 +22,7 @@ interface IState {
 
 export class ApiBackedCheckbox extends React.Component<IProps, IState> {
     public readonly state: IState = {
-        checked: false
+        checked: false,
     };
 
     public componentDidMount() {
@@ -33,7 +33,7 @@ export class ApiBackedCheckbox extends React.Component<IProps, IState> {
         }
     }
     private queryData() {
-        get(this.props.apiEndpoint, result => {
+        get(this.props.apiEndpoint, (result) => {
             const c = result.data as boolean;
             this.setState({ checked: c });
             if (this.props.onCheckChanged) {
@@ -48,13 +48,13 @@ export class ApiBackedCheckbox extends React.Component<IProps, IState> {
                 className={this.props.className}
                 checked={this.state.checked}
                 l10nKey={this.props.l10nKey}
-                onCheckChanged={c => {
+                onCheckChanged={(c) => {
                     this.setState({ checked: c });
                     if (this.props.priorClickAction) {
                         this.props.priorClickAction();
                     }
                     postDataWithConfig(this.props.apiEndpoint, c, {
-                        headers: { "Content-Type": "application/json" }
+                        headers: { "Content-Type": "application/json" },
                     });
                     if (this.props.onCheckChanged) {
                         this.props.onCheckChanged(c);

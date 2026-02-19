@@ -222,11 +222,11 @@
 	</TypeIdentifier>
 	<Lollipop Position="0.2" Collapsed="true" />
   </Class>
-  <Class Name="Bloom.ResolveShortcut" Collapsed="true">
+  <Class Name="Bloom.Shortcut" Collapsed="true">
 	<Position X="31.25" Y="6.5" Width="1.5" />
 	<TypeIdentifier>
 	  <HashCode>AAAAAACCAACAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAA=</HashCode>
-	  <FileName>ResolveShortcut.cs</FileName>
+	  <FileName>Shortcut.cs</FileName>
 	</TypeIdentifier>
   </Class>
   <Class Name="Bloom.Shell" Collapsed="true">

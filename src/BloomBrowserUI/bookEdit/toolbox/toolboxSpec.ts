@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { cleanUpNbsps, removeCommentsFromEditableHtml } from "./toolbox";
 
 describe("toolbox tests", () => {
@@ -16,7 +17,7 @@ describe("toolbox tests", () => {
 
         // validate our setup
         expect(p.innerHTML).toBe(
-            "<span>text</span><!--comment--><span><!--another \r\ncomment-->more <!---->text</span>"
+            "<span>text</span><!--comment--><span><!--another \r\ncomment-->more <!---->text</span>",
         );
 
         removeCommentsFromEditableHtml(p);
@@ -46,20 +47,20 @@ describe("toolbox tests", () => {
 
         // Real, complex talking book scenario; bookmark ok
         runNbspTest(
-            '<span class="bloom-ui-current-audio-marker bloom-ui"></span><span id="i98d2ec63-7472-4f10-964a-e6ed9c7daf45" class="audio-sentence ui-audioCurrent" recordingmd5="undefined">A.</span> <span id="i686c601d-f814-4fdd-9a90-280e2d426437" class="audio-sentence" recordingmd5="undefined">B. dd <span id="cke_bm_49C" style="display: none;">&nbsp;</span><strong>C</strong></span>'
+            '<span class="bloom-ui-current-audio-marker bloom-ui"></span><span id="i98d2ec63-7472-4f10-964a-e6ed9c7daf45" class="audio-sentence ui-audioCurrent" recordingmd5="undefined">A.</span> <span id="i686c601d-f814-4fdd-9a90-280e2d426437" class="audio-sentence" recordingmd5="undefined">B. dd <span id="cke_bm_49C" style="display: none;">&nbsp;</span><strong>C</strong></span>',
         );
 
         //hidden span in middle, keep preceding nbsp
         runNbspTest(
-            'A&nbsp;<span data-cke-bookmark="1" id="cke_bm_67C" style="display: none;">&nbsp;</span> B'
+            'A&nbsp;<span data-cke-bookmark="1" id="cke_bm_67C" style="display: none;">&nbsp;</span> B',
         );
         //hidden span at beginning, keep following nbsp
         runNbspTest(
-            '<span data-cke-bookmark="1" id="cke_bm_68C" style="display: none;">&nbsp;</span>&nbsp;A'
+            '<span data-cke-bookmark="1" id="cke_bm_68C" style="display: none;">&nbsp;</span>&nbsp;A',
         );
         //hidden span at end, after ending nbsp; keep ending nbsp
         runNbspTest(
-            'A&nbsp;<span data-cke-bookmark="1" id="cke_bm_68D" style="display: none;">&nbsp;</span>'
+            'A&nbsp;<span data-cke-bookmark="1" id="cke_bm_68D" style="display: none;">&nbsp;</span>',
         );
     });
 
@@ -101,13 +102,13 @@ describe("toolbox tests", () => {
         // bookmark doesn't cause problem
         runNbspTest(
             'A<span data-cke-bookmark="1" id="cke_bm_70E" style="display: none;">&nbsp;</span>&nbsp;B',
-            'A<span data-cke-bookmark="1" id="cke_bm_70E" style="display: none;">&nbsp;</span> B'
+            'A<span data-cke-bookmark="1" id="cke_bm_70E" style="display: none;">&nbsp;</span> B',
         );
 
         // Real, complex talking book scenario; bookmark doesn't cause problem
         runNbspTest(
             '<span class="bloom-ui-current-audio-marker bloom-ui"></span><span id="i98d2ec63-7472-4f10-964a-e6ed9c7daf45" class="audio-sentence ui-audioCurrent" recordingmd5="undefined">A.</span> <span id="i686c601d-f814-4fdd-9a90-280e2d426437" class="audio-sentence" recordingmd5="undefined">B. dd&nbsp;<span id="cke_bm_49C" style="display: none;">&nbsp;</span><strong>C</strong></span>',
-            '<span class="bloom-ui-current-audio-marker bloom-ui"></span><span id="i98d2ec63-7472-4f10-964a-e6ed9c7daf45" class="audio-sentence ui-audioCurrent" recordingmd5="undefined">A.</span> <span id="i686c601d-f814-4fdd-9a90-280e2d426437" class="audio-sentence" recordingmd5="undefined">B. dd <span id="cke_bm_49C" style="display: none;">&nbsp;</span><strong>C</strong></span>'
+            '<span class="bloom-ui-current-audio-marker bloom-ui"></span><span id="i98d2ec63-7472-4f10-964a-e6ed9c7daf45" class="audio-sentence ui-audioCurrent" recordingmd5="undefined">A.</span> <span id="i686c601d-f814-4fdd-9a90-280e2d426437" class="audio-sentence" recordingmd5="undefined">B. dd <span id="cke_bm_49C" style="display: none;">&nbsp;</span><strong>C</strong></span>',
         );
     });
 
@@ -116,7 +117,7 @@ describe("toolbox tests", () => {
         runNbspTest('<span data-attr="&nbsp;yuck!">A B</span>');
         runNbspTest('<span data-attr="&nbsp;yuck!">A&nbsp; B</span>');
         runNbspTest(
-            '<span data-attr="&nbsp;yuck!">A&nbsp; <span id="cke_bm_99F" style="display: none;">&nbsp;</span>B</span>'
+            '<span data-attr="&nbsp;yuck!">A&nbsp; <span id="cke_bm_99F" style="display: none;">&nbsp;</span>B</span>',
         );
 
         // Ideally, we would remove the nbsp here, but in this corner case, the most

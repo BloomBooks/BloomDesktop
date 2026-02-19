@@ -4,7 +4,7 @@ const message =
     "Fake error with a line break<br> and <b>bold</b> and <a href='https://google.com'>link</a>...";
 
 export default {
-    title: "Problem Report/ProblemDialog"
+    title: "Problem Report/ProblemDialog",
 };
 
 export const ProblemDialogProblemKindFatal = () => (
@@ -12,7 +12,7 @@ export const ProblemDialogProblemKindFatal = () => (
 );
 
 ProblemDialogProblemKindFatal.story = {
-    name: "ProblemDialog ProblemKind.Fatal"
+    name: "ProblemDialog ProblemKind.Fatal",
 };
 
 export const ProblemDialogNotifyWithReport = () => (
@@ -24,7 +24,7 @@ export const ProblemDialogNotifyWithReport = () => (
 );
 
 ProblemDialogNotifyWithReport.story = {
-    name: "ProblemDialog notify with Report"
+    name: "ProblemDialog notify with Report",
 };
 
 export const ProblemDialogNotifyWithSecondaryButton = () => (
@@ -36,7 +36,7 @@ export const ProblemDialogNotifyWithSecondaryButton = () => (
 );
 
 ProblemDialogNotifyWithSecondaryButton.story = {
-    name: "ProblemDialog notify with secondary button"
+    name: "ProblemDialog notify with secondary button",
 };
 
 export const ProblemDialogNotifyWithBoth = () => (
@@ -49,5 +49,5 @@ export const ProblemDialogNotifyWithBoth = () => (
 );
 
 ProblemDialogNotifyWithBoth.story = {
-    name: "ProblemDialog notify with both"
+    name: "ProblemDialog notify with both",
 };

@@ -7,7 +7,7 @@ export enum BloomPalette {
     CoverBackground = "cover-background",
     BloomReaderBookshelf = "bloom-reader-bookshelf",
     TextBackground = "overlay-background",
-    HighlightBackground = "highlight-background"
+    HighlightBackground = "highlight-background",
 }
 
 // This array provides a useful default palette for the color picker dialog.
@@ -35,7 +35,7 @@ export const TextColorPalette: string[] = [
     "#7ed957",
     "#c9e265",
     "#ffde59",
-    "#ff914d"
+    "#ff914d",
 ];
 
 // copied from colorChooser.tsx
@@ -53,7 +53,7 @@ export const CoverBackgroundPalette: string[] = [
     "#ABB8C3",
     "#C1EF93",
     "#FFD4D4",
-    "#FFAAD4"
+    "#FFAAD4",
 ];
 
 export const HighlightBackgroundPalette: string[] = [
@@ -61,7 +61,7 @@ export const HighlightBackgroundPalette: string[] = [
     "#FFFF00",
     "#FBDBCF",
     "#BBF4BB",
-    "#C5F0FF"
+    "#C5F0FF",
 ];
 
 const specialColors: IColorInfo[] = [
@@ -71,36 +71,35 @@ const specialColors: IColorInfo[] = [
     {
         name: "whiteToCalico",
         colors: ["white", "#DFB28B"],
-        opacity: 1
+        opacity: 1,
     },
     // https://www.htmlcsscolor.com/hex/ACCCDD
     {
         name: "whiteToFrenchPass",
         colors: ["white", "#ACCCDD"],
-        opacity: 1
+        opacity: 1,
     },
     // https://encycolorpedia.com/7b8eb8
     {
         name: "whiteToPortafino",
         colors: ["white", "#7b8eb8"],
-        opacity: 1
-    }
+        opacity: 1,
+    },
 ];
 const plainColors: IColorInfo[] = [
     { name: "black", colors: ["black"], opacity: 1 },
     { name: "white", colors: ["white"], opacity: 1 },
-    { name: "partialTransparent", colors: [kBloomGray], opacity: 0.5 }
+    { name: "partialTransparent", colors: [kBloomGray], opacity: 0.5 },
 ];
 
 // These colors are what the canvas element tool has been using for the background color chooser.
-export const TextBackgroundColors: IColorInfo[] = plainColors.concat(
-    specialColors
-);
+export const TextBackgroundColors: IColorInfo[] =
+    plainColors.concat(specialColors);
 
 // all colors, whether factory or "custom"
 // no leading "#", no gradients
 export async function getHexColorsForPalette(
-    palette: BloomPalette
+    palette: BloomPalette,
 ): Promise<string[]> {
     let factoryColors: string[];
     switch (palette) {
@@ -116,12 +115,12 @@ export async function getHexColorsForPalette(
             break;
         case BloomPalette.TextBackground:
             throw new Error(
-                "getColorHexNumbersFromPalette cannot currently handle TextBackground because it contains gradients"
+                "getColorHexNumbersFromPalette cannot currently handle TextBackground because it contains gradients",
             );
     }
     return getWithPromise(
-        `settings/getCustomPaletteColors?palette=${palette}`
-    ).then(result => {
+        `settings/getCustomPaletteColors?palette=${palette}`,
+    ).then((result) => {
         let customColors: Array<string> = [];
         if (result && result.data) {
             // {"data":[{"colors":["#0071ff"],"opacity":1},{"colors":["#0000ff"],"opacity":1}]
@@ -130,16 +129,20 @@ export async function getHexColorsForPalette(
             // already have reported it, so we don't need to, and doing so again can have some bad
             // results, e.g., BL-11657. The worst consequence here is that we revert to factory
             // colors. Hopefully, any new customizations will be saved in the current way and work.
-            customColors = (result.data as Array<{
-                colors: string[];
-            }>).map(c => c.colors[0]);
+            customColors = (
+                result.data as Array<{
+                    colors: string[];
+                }>
+            ).map((c) => c.colors[0]);
         }
-        return [...factoryColors, ...customColors].map(c => c.replace("#", ""));
+        return [...factoryColors, ...customColors].map((c) =>
+            c.replace("#", ""),
+        );
     });
 }
 
 export function getDefaultColorsFromPalette(
-    paletteType: BloomPalette
+    paletteType: BloomPalette,
 ): IColorInfo[] {
     if (paletteType === BloomPalette.TextBackground)
         return JSON.parse(JSON.stringify(TextBackgroundColors));
@@ -158,33 +161,37 @@ export function getDefaultColorsFromPalette(
             break;
     }
     return palette.map((color: string) =>
-        getColorInfoFromSpecialNameOrColorString(color)
+        getColorInfoFromSpecialNameOrColorString(color),
     );
 }
 
 // Handles all types of color strings: special-named, hex, rgb(), or rgba().
 // If color entails opacity, this string should be of the form "rgba(r, g, b, a)".
 export const getColorInfoFromSpecialNameOrColorString = (
-    specialNameOrColorString: string
+    specialNameOrColorString: string,
 ): IColorInfo => {
     if (isSpecialColorName(specialNameOrColorString)) {
         // A "special" color gradient, get our colorInfo from the definitions.
         // It "has" to be there, because we just checked to see if the name was a special color!
         return specialColors.find(
-            color => color.name === specialNameOrColorString
+            (color) => color.name === specialNameOrColorString,
         ) as IColorInfo;
     }
     return getColorInfoFromString(specialNameOrColorString);
 };
 
 const isSpecialColorName = (colorName: string): boolean =>
-    !!specialColors.find(item => item.name === colorName);
+    !!specialColors.find((item) => item.name === colorName);
 
 export const getSpecialColorName = (
-    colorArray: string[]
+    colorArray: string[],
 ): string | undefined => {
     const special = specialColors.find(
-        elem => elem.colors[1] === colorArray[1]
+        // All our special colors have two colors. But the argument colorArray might not.
+        // So we use optional chaining to avoid an error.
+        (specialColor) =>
+            specialColor.colors[1].toLowerCase() ===
+            colorArray[1]?.toLowerCase(),
     );
     return special ? special.name : undefined;
 };

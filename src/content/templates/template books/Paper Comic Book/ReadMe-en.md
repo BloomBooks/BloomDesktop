@@ -6,13 +6,13 @@ it should probably be changed in both readmes.
 
 # Paper Comic Book {i18n="comic.template.paper.title"}
 
-Note: The Overlay Tool requires that you have a valid <a href="" onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">Bloom subscription</a>. However, you can localize a shellbook that contains overlay elements into your own language without a Bloom subscription. {i18n="comic.template.subscription"}
+Note: The Canvas Tool requires that you have a valid <a href="" onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">Bloom subscription</a>. However, you can localize a shellbook that contains canvas elements into your own language without a Bloom subscription. {i18n="comic.template.subscription"}
 
 Use this template as a starting point for comics designed for print. The size will be set to "US Comic Portrait," which is 6.625 in x 10.25 in (16.826 cm X 26.04 cm). {i18n="comic.template.paper.use"}
 
 ## About Full Bleed {i18n="comic.template.paper.full.bleed.header"}
 
-This template tells Bloom that this book is a candidate for "[full bleed](https://dw-wp.com/resources/cartooning-quickguides/layout-quickguides/quickguides-bleeds/)" printing by a printshop. This feature is available with a Bloom subscription. If this feature is enabled, then in the Edit tab, you will see semi-opaque borders. The outer one is the "bleed"; this is the area that will probably be cut off by a printshop. The inner border is an area that *might* be cut off, so you should avoid putting things in there that would look really bad if they were cut off. To actually get a PDF that is ready for this commercial printing, please see the "PDF Options" under the Publish Tab. {i18n="comic.template.paper.full.bleed"}
+This template works best with "[full bleed](https://docs.bloomlibrary.org/full-bleed)" printing by a printshop. This feature is available with a Bloom subscription. If this feature is enabled in book settings, then in the Edit tab, you will see semi-opaque borders. The outer one is the "bleed"; this is the area that will probably be cut off by a printshop. The inner border is an area that *might* be cut off, so you should avoid putting things in there that would look really bad if they were cut off. To actually get a PDF that is ready for this commercial printing, please see the "PDF Options" under the Publish Tab. {i18n="comic.template.paper.full.bleed.v2"}
 
 ## Limitations of Bloom's current comic book support
 
@@ -22,7 +22,7 @@ This template tells Bloom that this book is a candidate for "[full bleed](https:
 - Comic books can show only one language on an image at the same time.
 - If a comic book contains multiple languages (as sources), users can switch between languages in Bloom Reader, the web, etc.
 
-## Tips on using the Overlay Toolbox
+## Tips on using the Canvas Toolbox
 
 - To move a bubble, click on it once, then drag anywhere in the bubble.
 - To edit the text in a bubble, click on it once a second time.

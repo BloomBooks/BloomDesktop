@@ -1,17 +1,23 @@
 @import "../../bloomUI.less";
 
+@toggle-button-height: 32px;
+
 #leveled-reader-tool-content,
 #decodable-reader-tool-content {
     // Slide/fade the content in and out when toggled.
     transition-property: max-height, opacity;
     transition-duration: 0.5s;
     transition-timing-function: ease-in-out;
-    max-height: 100%;
-    overflow: hidden;
+    max-height: calc(100% - @toggle-button-height);
+    overflow: auto;
     &.turned-off {
         max-height: 0;
         opacity: 0;
     }
+}
+#leveled-reader-tool-toggle-react-container,
+#decodable-reader-tool-toggle-react-container {
+    max-height: @toggle-button-height;
 }
 
 /*Styles for ReaderTools.htm*/
@@ -126,10 +132,12 @@ div.section ul li {
 #make-letter-word-list-div {
     position: absolute;
     bottom: 0;
-    padding: 8px 4px;
+    left: -3px; // matches the 3px left padding in toolbox.less
+    padding: 8px;
+    padding-left: 11px; // 8px plus 3px to match the -3px left above
     background-color: @bloom-darkestBackground;
     box-sizing: border-box;
-    width: ~"calc(100% - 3px)";
+    width: calc(100% + 3px); // to match the -3px left above
 }
 #make-letter-word-list {
     font-size: 10px;

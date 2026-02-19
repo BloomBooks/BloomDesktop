@@ -1,6 +1,5 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
-import "SubscriptionStatus.less";
+import { css } from "@emotion/react";
+import "./SubscriptionStatus.less";
 import { useApiString } from "../utils/bloomApi";
 import * as React from "react";
 import WarningIcon from "@mui/icons-material/Warning";
@@ -17,16 +16,16 @@ import { useIsTeamCollection } from "../teamCollection/teamCollectionApi";
 
 export const SubscriptionStatus: React.FunctionComponent<{
     minimalUI?: boolean;
-}> = props => {
+}> = (props) => {
     const deprecatedBrandingsExpiryDateAsYYYYMMDD = useApiString(
         "settings/deprecatedBrandingsExpiryDate",
-        "dbed-pending"
+        "dbed-pending",
     );
     const {
         subscriptionCodeIntegrity,
         expiryDateStringAsYYYYMMDD,
         subscriptionDescriptor,
-        haveData
+        haveData,
     } = useSubscriptionInfo();
 
     let descriptorToShow = "";
@@ -41,14 +40,14 @@ export const SubscriptionStatus: React.FunctionComponent<{
             subscriptionTier = "Pro";
             descriptorToShow = subscriptionDescriptor.slice(
                 0,
-                subscriptionDescriptor.length - 4
+                subscriptionDescriptor.length - 4,
             );
             subscriptionMessageKey = "SubscriptionStatus.UsingProSubscription";
         } else if (subscriptionDescriptor.toLowerCase().endsWith("-lc")) {
             subscriptionTier = "LocalCommunity";
             descriptorToShow = subscriptionDescriptor.slice(
                 0,
-                subscriptionDescriptor.length - 3
+                subscriptionDescriptor.length - 3,
             );
             subscriptionMessageKey =
                 "SubscriptionStatus.UsingLocalCommunitySubscription";
@@ -63,7 +62,7 @@ export const SubscriptionStatus: React.FunctionComponent<{
 
     // a "deprecated" subscription is one that used to be eternal but is now being phased out
     const haveDeprecatedSubscription = expiryDateStringAsYYYYMMDD.startsWith(
-        deprecatedBrandingsExpiryDateAsYYYYMMDD
+        deprecatedBrandingsExpiryDateAsYYYYMMDD,
     ); // just the year-month-day, ignore the time the time that follows it
 
     const localizedExpiryDate = expiryDateStringAsYYYYMMDD
@@ -75,21 +74,21 @@ export const SubscriptionStatus: React.FunctionComponent<{
         "SubscriptionStatus.ExpiringSoonMessage",
         "",
         descriptorToShow,
-        localizedExpiryDate
+        localizedExpiryDate,
     ).replace("  ", " "); // remove extra space
     const expiredMessage = useL10n(
         "Your {0} subscription expired on {1}.",
         "SubscriptionStatus.ExpiredMessage",
         "",
         descriptorToShow,
-        localizedExpiryDate
+        localizedExpiryDate,
     );
     const defaultStatusMessage = useL10n(
         "Using subscription: {0}. Expires {1}",
         "SubscriptionStatus.DefaultMessage",
         "",
         descriptorToShow,
-        localizedExpiryDate
+        localizedExpiryDate,
     );
     const isTeamCollection = useIsTeamCollection();
     if (!haveData) {
@@ -165,12 +164,11 @@ export const SubscriptionStatus: React.FunctionComponent<{
     else if (props.minimalUI) return null;
     // in the collection tab, we show a subtle message
     else {
-        if (subscriptionTier === "Pro") {
-            // We want Pro subscriptions to show in red. We can't put the {.bloom-Red} in the l10n string
-            // because it somehow messes up finding the translations in other languages.
-            // So for the Pro message, we add all the descriptor formatting here.
-            descriptorToShow = `**${descriptorToShow}**{.bloom-Red}`;
-        }
+        // We want subscription descriptors to show in red. We can't put the {.bloom-Red}
+        // in the l10n string because it somehow messes up finding the translations in other
+        // languages.  So for the message, we add all the descriptor formatting here,
+        // including the ** to signal <strong>.
+        descriptorToShow = `**${descriptorToShow}**{.bloom-Red}`;
         return (
             <Markdown
                 css={css`
@@ -191,7 +189,7 @@ export const SubscriptionStatus: React.FunctionComponent<{
 const ExpiringSubscriptionStatus: React.FunctionComponent<{
     message: string;
     expired?: boolean;
-}> = props => {
+}> = (props) => {
     return (
         <BoxWithIconAndText
             // NOTE: be careful not to optimize for only one of the two locations where this is used (Collection Tab and Enterprise settings)

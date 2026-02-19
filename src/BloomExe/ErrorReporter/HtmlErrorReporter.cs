@@ -237,6 +237,9 @@ namespace Bloom.ErrorReporter
                 {
                     return;
                 }
+                // OneDriveUtils.CheckForAndHandleOneDriveExceptions recurses through inner exceptions as needed,
+                // but if we get here, we want to skip over exceptions thrown by Autofac.
+                originalException = MiscUtils.UnwrapUntilInterestingException(originalException);
 
                 if (policy == null)
                 {
@@ -436,7 +439,7 @@ namespace Bloom.ErrorReporter
                             level = ProblemLevel.kNotify,
                             reportLabel = reportButtonLabel,
                             secondaryLabel = extraButtonLabel,
-                            message = message
+                            message = message,
                         };
 
                         // Precondition: we must be on the UI thread for Gecko to work.
@@ -465,6 +468,7 @@ namespace Bloom.ErrorReporter
                             try
                             {
                                 dlg.ShowDialog();
+                                Logger.WriteMinorEvent("closing error report dialog");
 
                                 // Take action if the user clicked a button other than Close
                                 if (
@@ -564,7 +568,8 @@ namespace Bloom.ErrorReporter
                     fallbackReporter.ReportFatalMessageWithStackTrace(message, null);
             }
             else if (
-                levelOfProblem == ProblemLevel.kNonFatal || levelOfProblem == ProblemLevel.kUser
+                levelOfProblem == ProblemLevel.kNonFatal
+                || levelOfProblem == ProblemLevel.kUser
             )
             {
                 // FYI, if levelOfProblem==kUser, we're unfortunately going to be

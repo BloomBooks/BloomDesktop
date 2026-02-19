@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Xml;
+using Bloom.SafeXml;
 using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Xml;
-using Bloom.SafeXml;
 
 namespace Bloom.Book
 {
@@ -70,6 +70,18 @@ namespace Bloom.Book
             name = name.Replace("folio", "Folio");
             name = name.Replace("Uscomic", "USComic");
             return name;
+        }
+
+        /// <summary>
+        /// Determines whether this page size and orientation supports full bleed printing.
+        /// </summary>
+        /// <returns>True if full bleed is supported for this size and orientation, false otherwise</returns>
+        public bool SupportsFullBleed()
+        {
+            return Bloom.Publish.PDF.MakePdfUsingExternalPdfMakerProgram.GetFullBleedPageSize(
+                    PageSizeName,
+                    IsLandScape
+                ) != null;
         }
 
         public static void AddClassesForLayout(HtmlDom dom, Layout layout)

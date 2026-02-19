@@ -28,7 +28,7 @@ enum AlignmentPosition {
     Bottom,
     Left,
     HorizontalCenter,
-    Right
+    Right,
 }
 
 /**
@@ -36,7 +36,7 @@ enum AlignmentPosition {
  */
 enum EqualDimension {
     Width,
-    Height
+    Height,
 }
 
 /**
@@ -101,8 +101,6 @@ export class CanvasGuideProvider {
     private dynamicEqualDimElements: HTMLElement[] = []; // Track dynamically created indicator clones
     private currentAction: "resize" | "move" = "move"; // Type of operation
 
-    constructor() {}
-
     /**
      * Prepares the manager for a new drag operation.
      * @param action The type of operation ("move" or "resize").
@@ -110,12 +108,12 @@ export class CanvasGuideProvider {
      */
     public startDrag(
         action: "resize" | "move",
-        elementsToAlignAgainst: HTMLElement[]
+        elementsToAlignAgainst: HTMLElement[],
     ): void {
         this.currentAction = action;
         // Filter out any null/undefined elements
-        this.targetElements = (elementsToAlignAgainst || []).filter(el =>
-            this.shouldAlignAgainst(el)
+        this.targetElements = (elementsToAlignAgainst || []).filter((el) =>
+            this.shouldAlignAgainst(el),
         );
         this.createGuides();
         if (action === "resize") {
@@ -153,10 +151,10 @@ export class CanvasGuideProvider {
         const draggedBounds = this.getElementBounds(draggedElement);
         // Don't include the draggedElement itself
         const filteredTargetElements = this.targetElements.filter(
-            el => el !== draggedElement
+            (el) => el !== draggedElement,
         );
-        const targetBounds = filteredTargetElements.map(el =>
-            this.getElementBounds(el)
+        const targetBounds = filteredTargetElements.map((el) =>
+            this.getElementBounds(el),
         );
 
         // Check and display alignment lines
@@ -175,7 +173,7 @@ export class CanvasGuideProvider {
         this.hideAllGuides();
         this.targetElements = []; // Clear the list of target elements
         // First clean up the dynamic elements that are created during drag operations
-        this.dynamicEqualDimElements.forEach(element => {
+        this.dynamicEqualDimElements.forEach((element) => {
             if (element && element.parentNode) {
                 element.parentNode.removeChild(element);
             }
@@ -183,13 +181,13 @@ export class CanvasGuideProvider {
         this.dynamicEqualDimElements = [];
 
         // Remove template elements from the DOM
-        this.alignmentLines.forEach(line => {
+        this.alignmentLines.forEach((line) => {
             if (line.element && line.element.parentNode) {
                 line.element.parentNode.removeChild(line.element);
             }
         });
 
-        this.equalDimensionIndicators.forEach(indicator => {
+        this.equalDimensionIndicators.forEach((indicator) => {
             if (indicator.element && indicator.element.parentNode) {
                 indicator.element.parentNode.removeChild(indicator.element);
             }
@@ -215,12 +213,12 @@ export class CanvasGuideProvider {
             AlignmentPosition.Bottom,
             AlignmentPosition.Left,
             AlignmentPosition.HorizontalCenter,
-            AlignmentPosition.Right
+            AlignmentPosition.Right,
         ];
         if (this.targetElements.length === 0) return; // No elements to align against
         const doc = this.targetElements[0].ownerDocument || document; // make them in the right iframe
 
-        positions.forEach(position => {
+        positions.forEach((position) => {
             const line = this.createGuideElement(this.GUIDE_LINE_CLASS, doc);
             line.style.backgroundColor = this.GUIDE_COLOR;
 
@@ -250,10 +248,10 @@ export class CanvasGuideProvider {
         if (this.targetElements.length === 0) return; // No elements to align against
         const doc = this.targetElements[0].ownerDocument || document; // make them in the right iframe
 
-        dimensions.forEach(dimension => {
+        dimensions.forEach((dimension) => {
             const indicator = this.createGuideElement(
                 this.EQUAL_DIM_INDICATOR_CLASS,
-                doc
+                doc,
             );
             indicator.style.backgroundColor = this.EQUAL_DIM_COLOR;
 
@@ -269,7 +267,7 @@ export class CanvasGuideProvider {
             doc.body.appendChild(indicator);
             this.equalDimensionIndicators.push({
                 type: dimension,
-                element: indicator
+                element: indicator,
             });
         });
     }
@@ -295,11 +293,11 @@ export class CanvasGuideProvider {
      */
     private hideAllGuides(): void {
         // Hide the reusable alignment lines
-        this.alignmentLines.forEach(line => {
+        this.alignmentLines.forEach((line) => {
             line.element.style.display = "none";
         });
         // Remove the dynamically created clones for equal dimensions
-        this.dynamicEqualDimElements.forEach(element => element.remove());
+        this.dynamicEqualDimElements.forEach((element) => element.remove());
         this.dynamicEqualDimElements = []; // Clear the tracking array
     }
 
@@ -325,7 +323,7 @@ export class CanvasGuideProvider {
             center: rect.left + scrollX + rect.width / 2,
             right: rect.left + scrollX + rect.width,
             width: rect.width,
-            height: rect.height
+            height: rect.height,
         };
     }
 
@@ -336,7 +334,7 @@ export class CanvasGuideProvider {
      */
     private checkAndShowGuides(
         draggedBounds: ElementBounds,
-        targetBounds: ElementBounds[]
+        targetBounds: ElementBounds[],
     ): void {
         const allBounds = [draggedBounds, ...targetBounds];
 
@@ -345,23 +343,23 @@ export class CanvasGuideProvider {
             { pos: AlignmentPosition.Top, value: draggedBounds.top },
             {
                 pos: AlignmentPosition.VerticalCenter,
-                value: draggedBounds.middle
+                value: draggedBounds.middle,
             },
-            { pos: AlignmentPosition.Bottom, value: draggedBounds.bottom }
+            { pos: AlignmentPosition.Bottom, value: draggedBounds.bottom },
         ];
 
-        horizontalPoints.forEach(dragPoint => {
+        horizontalPoints.forEach((dragPoint) => {
             const alignedElements = this.findAlignedElements(
                 dragPoint.value,
                 ["top", "middle", "bottom"],
-                allBounds
+                allBounds,
             );
             if (alignedElements.length > 1) {
                 // Need dragged element + at least one target
                 this.showGuideLine(
                     dragPoint.pos,
                     dragPoint.value,
-                    alignedElements
+                    alignedElements,
                 );
             }
         });
@@ -371,22 +369,22 @@ export class CanvasGuideProvider {
             { pos: AlignmentPosition.Left, value: draggedBounds.left },
             {
                 pos: AlignmentPosition.HorizontalCenter,
-                value: draggedBounds.center
+                value: draggedBounds.center,
             },
-            { pos: AlignmentPosition.Right, value: draggedBounds.right }
+            { pos: AlignmentPosition.Right, value: draggedBounds.right },
         ];
 
-        verticalPoints.forEach(dragPoint => {
+        verticalPoints.forEach((dragPoint) => {
             const alignedElements = this.findAlignedElements(
                 dragPoint.value,
                 ["left", "center", "right"],
-                allBounds
+                allBounds,
             );
             if (alignedElements.length > 1) {
                 this.showGuideLine(
                     dragPoint.pos,
                     dragPoint.value,
-                    alignedElements
+                    alignedElements,
                 );
             }
         });
@@ -404,7 +402,7 @@ export class CanvasGuideProvider {
         axesToCheck: Array<
             "top" | "middle" | "bottom" | "left" | "center" | "right"
         >,
-        allBounds: ElementBounds[]
+        allBounds: ElementBounds[],
     ): ElementBounds[] {
         const aligned: ElementBounds[] = [];
         let firstMatchCoord = coordinate; // Use the dragged element's coord as the initial target
@@ -428,7 +426,7 @@ export class CanvasGuideProvider {
         }
 
         // Second pass: Collect all elements aligning to the found coordinate
-        allBounds.forEach(bounds => {
+        allBounds.forEach((bounds) => {
             for (const axis of axesToCheck) {
                 const elementCoord = bounds[axis];
                 if (
@@ -453,10 +451,11 @@ export class CanvasGuideProvider {
     private showGuideLine(
         position: AlignmentPosition,
         coordinate: number,
-        alignedElements: ElementBounds[]
+        alignedElements: ElementBounds[],
     ): void {
-        const line = this.alignmentLines.find(l => l.position === position)
-            ?.element;
+        const line = this.alignmentLines.find(
+            (l) => l.position === position,
+        )?.element;
         if (!line || alignedElements.length < 2) return; // Need at least two elements to align
 
         const isHorizontal =
@@ -466,22 +465,24 @@ export class CanvasGuideProvider {
 
         if (isHorizontal) {
             // Find the min left and max right edges among the aligned elements
-            const minLeft = Math.min(...alignedElements.map(b => b.left));
-            const maxRight = Math.max(...alignedElements.map(b => b.right));
+            const minLeft = Math.min(...alignedElements.map((b) => b.left));
+            const maxRight = Math.max(...alignedElements.map((b) => b.right));
 
-            line.style.top = `${coordinate -
-                parseFloat(this.GUIDE_LINE_THICKNESS) / 2}px`; // Center line thickness
+            line.style.top = `${
+                coordinate - parseFloat(this.GUIDE_LINE_THICKNESS) / 2
+            }px`; // Center line thickness
             line.style.left = `${minLeft}px`;
             line.style.width = `${maxRight - minLeft}px`;
             line.style.height = this.GUIDE_LINE_THICKNESS; // Ensure height is set correctly
         } else {
             // Vertical line
             // Find the min top and max bottom edges among the aligned elements
-            const minTop = Math.min(...alignedElements.map(b => b.top));
-            const maxBottom = Math.max(...alignedElements.map(b => b.bottom));
+            const minTop = Math.min(...alignedElements.map((b) => b.top));
+            const maxBottom = Math.max(...alignedElements.map((b) => b.bottom));
 
-            line.style.left = `${coordinate -
-                parseFloat(this.GUIDE_LINE_THICKNESS) / 2}px`; // Center line thickness
+            line.style.left = `${
+                coordinate - parseFloat(this.GUIDE_LINE_THICKNESS) / 2
+            }px`; // Center line thickness
             line.style.top = `${minTop}px`;
             line.style.height = `${maxBottom - minTop}px`;
             line.style.width = this.GUIDE_LINE_THICKNESS; // Ensure width is set correctly
@@ -499,7 +500,7 @@ export class CanvasGuideProvider {
      */
     private checkAndShowEqualDimensions(
         draggedBounds: ElementBounds,
-        targetBounds: ElementBounds[]
+        targetBounds: ElementBounds[],
     ): void {
         const dragWidth = draggedBounds.width;
         const dragHeight = draggedBounds.height;
@@ -508,7 +509,7 @@ export class CanvasGuideProvider {
         const matchingHeightElements: ElementBounds[] = [];
 
         // Find target elements matching width or height
-        targetBounds.forEach(bounds => {
+        targetBounds.forEach((bounds) => {
             if (
                 Math.abs(dragWidth - bounds.width) <= this.PROXIMITY_THRESHOLD
             ) {
@@ -528,7 +529,7 @@ export class CanvasGuideProvider {
             matchingWidthElements.push(draggedBounds);
             this.showEqualDimensionIndicators(
                 EqualDimension.Width,
-                matchingWidthElements
+                matchingWidthElements,
             );
         }
         if (matchingHeightElements.length > 0) {
@@ -536,7 +537,7 @@ export class CanvasGuideProvider {
             matchingHeightElements.push(draggedBounds);
             this.showEqualDimensionIndicators(
                 EqualDimension.Height,
-                matchingHeightElements
+                matchingHeightElements,
             );
         }
     }
@@ -549,33 +550,35 @@ export class CanvasGuideProvider {
      */
     private showEqualDimensionIndicators(
         dimension: EqualDimension,
-        matchingElements: ElementBounds[]
+        matchingElements: ElementBounds[],
     ): void {
         const templateIndicator = this.equalDimensionIndicators.find(
-            ind => ind.type === dimension
+            (ind) => ind.type === dimension,
         )?.element;
         if (!templateIndicator || matchingElements.length === 0) return;
 
         const lineThickness = parseFloat(this.EQUAL_DIM_LINE_THICKNESS);
 
-        matchingElements.forEach(bounds => {
+        matchingElements.forEach((bounds) => {
             // Clone the template indicator for each matching element
             const indicatorClone = templateIndicator.cloneNode(
-                true
+                true,
             ) as HTMLElement;
 
             if (dimension === EqualDimension.Width) {
                 // Horizontal line centered vertically
                 indicatorClone.style.left = `${bounds.left}px`;
-                indicatorClone.style.top = `${bounds.middle -
-                    lineThickness / 2}px`; // Center the line
+                indicatorClone.style.top = `${
+                    bounds.middle - lineThickness / 2
+                }px`; // Center the line
                 indicatorClone.style.width = `${bounds.width}px`;
                 indicatorClone.style.height = this.EQUAL_DIM_LINE_THICKNESS; // Ensure height is set
             } else {
                 // Height
                 // Vertical line centered horizontally
-                indicatorClone.style.left = `${bounds.center -
-                    lineThickness / 2}px`; // Center the line
+                indicatorClone.style.left = `${
+                    bounds.center - lineThickness / 2
+                }px`; // Center the line
                 indicatorClone.style.top = `${bounds.top}px`;
                 indicatorClone.style.height = `${bounds.height}px`;
                 indicatorClone.style.width = this.EQUAL_DIM_LINE_THICKNESS; // Ensure width is set

@@ -6,19 +6,20 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using Bloom;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.ImageProcessing;
+using Bloom.web.controllers;
 using L10NSharp;
+using L10NSharp.Windows.Forms;
+using Moq;
+using Newtonsoft.Json;
 using NUnit.Framework;
 using SIL.IO;
-using Bloom;
-using Bloom.ImageProcessing;
-using Bloom.Api;
-using Bloom.web.controllers;
-using Newtonsoft.Json;
 using SIL.Reporting;
 using TemporaryFolder = SIL.TestUtilities.TemporaryFolder;
-using Moq;
 
 namespace BloomTests.web
 {
@@ -38,8 +39,7 @@ namespace BloomTests.web
             LocalizationManager.UseLanguageCodeFolders = true;
             var localizationDirectory =
                 FileLocationUtilities.GetDirectoryDistributedWithApplication("localization");
-            _localizationManager = LocalizationManager.Create(
-                TranslationMemory.XLiff,
+            _localizationManager = LocalizationManagerWinforms.Create(
                 "fr",
                 "Bloom",
                 "Bloom",
@@ -747,7 +747,10 @@ namespace BloomTests.web
 
                 server.MakeReply(transaction);
 
-                Assert.AreEqual(transaction.ReplyContents.Trim(), "This is the one in DistFiles");
+                Assert.AreEqual(
+                    transaction.ReplyContents.Trim(),
+                    "/* This is the one in DistFiles */"
+                );
             }
         }
 

@@ -1,4 +1,3 @@
-/** @jsxImportSource @emotion/react */
 import { css } from "@emotion/react";
 import {
     LanguageChooser,
@@ -6,26 +5,26 @@ import {
     defaultSearchResultModifier,
     parseLangtagFromLangChooser,
     defaultRegionForLangTag,
-    defaultDisplayName
+    defaultDisplayName,
 } from "@ethnolib/language-chooser-react-mui";
 import * as React from "react";
 
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import {
     IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
+    useSetupBloomDialog,
 } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import { get, postData } from "../utils/bloomApi";
 import {
     BloomDialog,
-    DialogBottomButtons
+    DialogBottomButtons,
 } from "../react_components/BloomDialog/BloomDialog";
 import * as ReactDOM from "react-dom";
 import { AppBar } from "@mui/material";
 import { kBloomLightGray } from "../utils/colorUtils";
 import {
     DialogCancelButton,
-    DialogOkButton
+    DialogOkButton,
 } from "../react_components/BloomDialog/commonDialogComponents";
 import { H1 } from "../react_components/l10nComponents";
 
@@ -39,7 +38,7 @@ export interface ILanguageData {
 
 export function getLanguageData(
     languageTag: string | undefined,
-    selection: IOrthography | undefined
+    selection: IOrthography | undefined,
 ): ILanguageData {
     const nameInScript = selection?.script?.languageNameInScript;
     const defaultName =
@@ -55,7 +54,7 @@ export function getLanguageData(
         Country: languageTag
             ? defaultRegionForLangTag(languageTag, selection?.language)?.name ||
               null
-            : null
+            : null,
     };
 }
 
@@ -63,29 +62,23 @@ export const LanguageChooserDialog: React.FunctionComponent<{
     initialLanguageTag?: string;
     initialCustomName?: string;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
-}> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+}> = (props) => {
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useSetupBloomDialog(props.dialogEnvironment);
 
     show = showDialog;
 
-    const initialSelection:
-        | IOrthography
-        | undefined = parseLangtagFromLangChooser(
-        props.initialLanguageTag || ""
-    );
+    const initialSelection: IOrthography | undefined =
+        parseLangtagFromLangChooser(props.initialLanguageTag || "");
     const [pendingSelection, setPendingSelection] = React.useState(
-        initialSelection || ({} as IOrthography)
+        initialSelection || ({} as IOrthography),
     );
     const [pendingLanguageTag, setPendingLanguageTag] = React.useState(
-        props.initialLanguageTag || ""
+        props.initialLanguageTag || "",
     );
     function onSelectionChange(
         orthographyInfo: IOrthography | undefined,
-        languageTag: string | undefined
+        languageTag: string | undefined,
     ) {
         setPendingSelection(orthographyInfo || ({} as IOrthography));
         setPendingLanguageTag(languageTag || "");
@@ -117,14 +110,14 @@ export const LanguageChooserDialog: React.FunctionComponent<{
     function onOk(languageSelection: IOrthography, languageTag: string) {
         postData(
             "settings/changeLanguage",
-            getLanguageData(languageTag, languageSelection)
+            getLanguageData(languageTag, languageSelection),
         );
         closeDialog();
     }
 
     const [uiLanguage, setUiLanguage] = React.useState("en");
     React.useEffect(() => {
-        get("currentUiLanguage", result => {
+        get("currentUiLanguage", (result) => {
             setUiLanguage(result.data);
         });
     }, []);
@@ -180,7 +173,7 @@ let show: () => void = () => {
 
 export function showLanguageChooserDialog(
     initialLanguageTag?: string,
-    initialCustomName?: string
+    initialCustomName?: string,
 ) {
     try {
         ReactDOM.render(
@@ -188,7 +181,7 @@ export function showLanguageChooserDialog(
                 initialLanguageTag={initialLanguageTag}
                 initialCustomName={initialCustomName}
             />,
-            getModalContainer()
+            getModalContainer(),
         );
     } catch (error) {
         console.error(error);
@@ -198,7 +191,7 @@ export function showLanguageChooserDialog(
 
 function getModalContainer(): HTMLElement {
     let modalDialogContainer = document.getElementById(
-        "LanguageChooserDialogContainer"
+        "LanguageChooserDialogContainer",
     );
     if (modalDialogContainer) {
         modalDialogContainer.remove();

@@ -16,30 +16,32 @@ import { default as CircleIcon } from "@mui/icons-material/Circle";
 import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
 import { default as ArrowUpwardIcon } from "@mui/icons-material/ArrowUpward";
 import { default as ArrowDownwardIcon } from "@mui/icons-material/ArrowDownward";
+import { LinkIcon } from "./LinkIcon";
 import { showCopyrightAndLicenseDialog } from "../editViewFrame";
 import {
     doImageCommand,
     getImageUrlFromImageContainer,
-    kImageContainerClass
+    kImageContainerClass,
+    isPlaceHolderImage,
 } from "./bloomImages";
 import {
     doVideoCommand,
     findNextVideoContainer,
-    findPreviousVideoContainer
+    findPreviousVideoContainer,
 } from "./bloomVideo";
 import {
     copyAndPlaySoundAsync,
     makeDuplicateOfDragBubble,
     makeTargetForDraggable,
     playSound,
-    showDialogToChooseSoundFileAsync
+    showDialogToChooseSoundFileAsync,
 } from "../toolbox/games/GameTool";
 import { ThemeProvider } from "@mui/material/styles";
 import {
     divider,
     ILocalizableMenuItemProps,
     LocalizableMenuItem,
-    LocalizableNestedMenuItem
+    LocalizableNestedMenuItem,
 } from "../../react_components/localizableMenuItem";
 import Menu from "@mui/material/Menu";
 import { Divider } from "@mui/material";
@@ -49,13 +51,12 @@ import {
     isDraggable,
     kBackgroundImageClass,
     kDraggableIdAttribute,
-    theOneCanvasElementManager
+    theOneCanvasElementManager,
 } from "./CanvasElementManager";
 import { copySelection, GetEditor, pasteClipboard } from "./bloomEditing";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { useL10n } from "../../react_components/l10nHooks";
 import { CogIcon } from "./CogIcon";
-import { getHyperlinkFromClipboard } from "../bloomField/hyperlinks";
 import { MissingMetadataIcon } from "./MissingMetadataIcon";
 import { FillSpaceIcon } from "./FillSpaceIcon";
 import { kBloomDisabledOpacity } from "../../utils/colorUtils";
@@ -63,10 +64,20 @@ import { Span } from "../../react_components/l10nComponents";
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import { getAudioSentencesOfVisibleEditables } from "bloom-player";
 import { GameType, getGameType } from "../toolbox/games/GameInfo";
-import { setGeneratedDraggableId } from "../toolbox/overlay/CanvasElementItem";
+import { setGeneratedDraggableId } from "../toolbox/canvas/CanvasElementItem";
+import { editLinkGrid } from "./linkGrid";
+import { showLinkTargetChooserDialog } from "../../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
+import { kBloomButtonClass } from "../toolbox/canvas/canvasElementUtils";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
+}
+
+// These names are not quite consistent, but the behaviors we want to control are currently
+// specific to navigation buttons, while the class name is meant to cover buttons in general.
+// Eventually we may need a way to distinguish buttons used for navigation from other buttons.
+function isNavigationButton(canvasElement: HTMLElement) {
+    return canvasElement.classList.contains(kBloomButtonClass);
 }
 
 // This is the controls bar that appears beneath a canvas element when it is selected. It contains buttons
@@ -84,35 +95,37 @@ const CanvasElementContextControls: React.FunctionComponent<{
     menuOpen: boolean;
     setMenuOpen: (open: boolean) => void;
     menuAnchorPosition?: { left: number; top: number };
-}> = props => {
-    const imgContainer = props.canvasElement.getElementsByClassName(
-        kImageContainerClass
-    )[0];
+}> = (props) => {
+    const imgContainer =
+        props.canvasElement.getElementsByClassName(kImageContainerClass)[0];
     const hasImage = !!imgContainer;
     const hasText =
         props.canvasElement.getElementsByClassName("bloom-editable").length > 0;
-    const rectangles = props.canvasElement.getElementsByClassName(
-        "bloom-rectangle"
-    );
+    const linkGrid = props.canvasElement.getElementsByClassName(
+        "bloom-link-grid",
+    )[0] as HTMLElement | undefined;
+    const isLinkGrid = !!linkGrid;
+    const isNavButton = isNavigationButton(props.canvasElement);
+    const rectangles =
+        props.canvasElement.getElementsByClassName("bloom-rectangle");
     // This is only used by the menu option that toggles it. If the menu stayed up, we would need a state
     // and useEffect. But since it closes when we choose an option, we can just get the current value to show
     // in the current menu opening.
     const hasRectangle = rectangles.length > 0;
     const rectangleHasBackground = rectangles[0]?.classList.contains(
-        "bloom-theme-background"
+        "bloom-theme-background",
     );
     const img = imgContainer?.getElementsByTagName("img")[0];
-    const missingImage = img?.classList.contains("bloom-imageLoadError");
     //const hasLicenseProblem = hasImage && !img.getAttribute("data-copyright");
     const videoContainer = props.canvasElement.getElementsByClassName(
-        "bloom-videoContainer"
+        "bloom-videoContainer",
     )[0];
     const hasVideo = !!videoContainer;
     const video = videoContainer?.getElementsByTagName("video")[0];
     const videoSource = video?.getElementsByTagName("source")[0];
     const videoAlreadyChosen = !!videoSource?.getAttribute("src");
     const isPlaceHolder =
-        hasImage && img?.getAttribute("src")?.startsWith("placeHolder.png");
+        hasImage && isPlaceHolderImage(img?.getAttribute("src"));
     const missingMetadata =
         hasImage &&
         !isPlaceHolder &&
@@ -144,9 +157,13 @@ const CanvasElementContextControls: React.FunctionComponent<{
 
     const noneLabel = useL10n("None", "EditTab.Toolbox.DragActivity.None", "");
     const aRecordingLabel = useL10n("A Recording", "ARecording", "");
+    const chooseBooksLabel = useL10n(
+        "Choose books...",
+        "EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks",
+    );
 
     const currentDraggableTargetId = props.canvasElement?.getAttribute(
-        kDraggableIdAttribute
+        kDraggableIdAttribute,
     );
     const [currentDraggableTarget, setCurrentDraggableTarget] = useState<
         HTMLElement | undefined
@@ -161,8 +178,8 @@ const CanvasElementContextControls: React.FunctionComponent<{
 
         setCurrentDraggableTarget(
             page?.querySelector(
-                `[data-target-of="${currentDraggableTargetId}"]`
-            ) as HTMLElement
+                `[data-target-of="${currentDraggableTargetId}"]`,
+            ) as HTMLElement,
         );
         // We need to re-evaluate when changing pages, it's possible the initially selected item
         // on a new page has the same currentDraggableTargetId.
@@ -179,23 +196,24 @@ const CanvasElementContextControls: React.FunctionComponent<{
         setImageSound(props.canvasElement.getAttribute("data-sound") ?? "none");
     }, [props.canvasElement]);
     const isBackgroundImage = props.canvasElement.classList.contains(
-        kBackgroundImageClass
+        kBackgroundImageClass,
     );
     // We might eventually want a more general class for this, but for now, we want to prevent
     // deleting and duplicating the special sentence object in the order words game, and this
     // class is already in use to indicate it.
     const isSpecialGameElementSelected = props.canvasElement.classList.contains(
-        "drag-item-order-sentence"
+        "drag-item-order-sentence",
     );
     const children = props.canvasElement.parentElement?.querySelectorAll(
-        ".bloom-canvas-element"
+        ".bloom-canvas-element",
     );
     const canvasHasMultipleElements = (children?.length ?? 0) > 1; // kBackgroundImageClass is also a canvas element
     const backgroundImageText = useL10n(
         "Background Image",
-        "EditTab.Image.BackgroundImage"
+        "EditTab.Image.BackgroundImage",
     );
-    const canExpandBackgroundImage = theOneCanvasElementManager?.canExpandToFillSpace();
+    const canExpandBackgroundImage =
+        theOneCanvasElementManager?.canExpandToFillSpace();
 
     const canToggleDraggability =
         isInDraggableGame &&
@@ -214,24 +232,24 @@ const CanvasElementContextControls: React.FunctionComponent<{
 
     const [textHasAudio, setTextHasAudio] = useState(true);
     useEffect(() => {
-        if (!props.menuOpen || !props.canvasElement) return;
+        if (!props.menuOpen || !props.canvasElement || !hasText) return;
 
         const audioSentences = getAudioSentencesOfVisibleEditables(
-            props.canvasElement
+            props.canvasElement,
         );
-        const ids = audioSentences.map(sentence => sentence.id);
+        const ids = audioSentences.map((sentence) => sentence.id);
         AudioRecording.audioExistsForIdsAsync(ids)
-            .then(audioExists => {
+            .then((audioExists) => {
                 setTextHasAudio(audioExists);
             })
-            .catch(err => {
+            .catch((err) => {
                 console.error(
                     "Error checking for existing of audio for IDs: ",
-                    err
+                    err,
                 );
             });
         // Need to include menuOpen so we can re-evaluate if the user has added or removed audio.
-    }, [props.canvasElement, props.menuOpen]);
+    }, [props.canvasElement, props.menuOpen, hasText]);
 
     if (!page) {
         // Probably right after deleting the canvas element. Wish we could return early sooner,
@@ -249,14 +267,16 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     .getElementsByClassName("bloom-rectangle")[0]
                     ?.classList.toggle("bloom-theme-background");
             },
-            icon: rectangleHasBackground && <CheckIcon css={getMenuIconCss()} />
+            icon: rectangleHasBackground && (
+                <CheckIcon css={getMenuIconCss()} />
+            ),
         });
     }
-    if (hasText && !isInDraggableGame) {
+    if (hasText && !isInDraggableGame && !isNavButton) {
         menuOptions.splice(0, 0, {
             l10nId: "EditTab.Toolbox.ComicTool.Options.AddChildBubble",
             english: "Add Child Bubble",
-            onClick: theOneCanvasElementManager?.addChildCanvasElement
+            onClick: theOneCanvasElementManager?.addChildCanvasElement,
         });
     }
     if (canToggleDraggability) {
@@ -264,7 +284,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
             menuOptions,
             props.canvasElement,
             currentDraggableTarget,
-            setCurrentDraggableTarget
+            setCurrentDraggableTarget,
         );
     }
     if (currentDraggableTargetId) {
@@ -273,7 +293,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
             props.canvasElement,
             currentDraggableTargetId,
             currentDraggableTarget,
-            setCurrentDraggableTarget
+            setCurrentDraggableTarget,
         );
     }
     if (canChooseAudioForElement) {
@@ -286,24 +306,64 @@ const CanvasElementContextControls: React.FunctionComponent<{
     }
     if (hasImage) {
         const canModifyImage = !imgContainer.classList.contains(
-            "bloom-unmodifiable-image"
+            "bloom-unmodifiable-image",
         );
         if (canModifyImage)
             addImageMenuOptions(
                 menuOptions,
                 props.canvasElement,
                 img,
-                missingImage,
-                setMenuOpen
+                setMenuOpen,
             );
     }
     if (hasVideo) {
         addVideoMenuItems(menuOptions, videoContainer, setMenuOpen);
     }
 
+    if (isLinkGrid) {
+        // For link grids, add edit and delete options in the menu
+        menuOptions.push({
+            l10nId: "EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks",
+            english: "Choose books...",
+            onClick: () => {
+                if (!linkGrid) return;
+                editLinkGrid(linkGrid);
+            },
+            icon: <CogIcon css={getMenuIconCss()} />,
+        });
+        menuOptions.push({
+            l10nId: "Common.Delete",
+            english: "Delete",
+            onClick: theOneCanvasElementManager?.deleteCurrentCanvasElement,
+            icon: <DeleteIcon css={getMenuIconCss()} />,
+        });
+    }
+
+    const editableTextElement = props.canvasElement.getElementsByClassName(
+        "bloom-editable bloom-visibility-code-on",
+    )[0] as HTMLElement;
+
+    if (isNavButton) {
+        menuOptions.splice(0, 0, {
+            l10nId: "EditTab.Toolbox.CanvasTool.SetDest",
+            english: "Set Destination",
+            onClick: () => setLinkDestination(),
+            icon: <LinkIcon css={getMenuIconCss()} />,
+            featureName: "canvas",
+        });
+        if (editableTextElement) {
+            menuOptions.push(divider);
+            addTextMenuItems(
+                menuOptions,
+                editableTextElement,
+                props.canvasElement,
+            );
+        }
+    }
+
     menuOptions.push(divider);
 
-    if (!isBackgroundImage && !isSpecialGameElementSelected) {
+    if (!isBackgroundImage && !isSpecialGameElementSelected && !isLinkGrid) {
         menuOptions.push({
             l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
             english: "Duplicate",
@@ -311,7 +371,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 if (!props.canvasElement) return;
                 makeDuplicateOfDragBubble();
             },
-            icon: <DuplicateIcon css={getMenuIconCss()} />
+            icon: <DuplicateIcon css={getMenuIconCss()} />,
         });
     }
 
@@ -328,10 +388,10 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     // tweak to align better for an icon that is wider than most
                     css={getMenuIconCss(1, "left: -3px;")}
                 />
-            )
+            ),
         };
         let index = menuOptions.findIndex(
-            option => option.l10nId === "EditTab.Image.Reset"
+            (option) => option.l10nId === "EditTab.Image.Reset",
         );
         if (index < 0) {
             index = menuOptions.indexOf(divider);
@@ -339,21 +399,22 @@ const CanvasElementContextControls: React.FunctionComponent<{
         menuOptions.splice(index, 0, fillItem);
 
         // we can't delete the placeholder (or if there isn't an img, somehow)
-        deleteEnabled = !!(
-            img && !img.getAttribute("src")?.startsWith("placeHolder.png")
-        );
-    } else if (isSpecialGameElementSelected) {
-        deleteEnabled = false; // don't allow deleting the single drag item in a sentence drag game
+        deleteEnabled = hasRealImage(img);
+    } else if (isSpecialGameElementSelected || isLinkGrid) {
+        deleteEnabled = false; // don't allow deleting the single drag item in a sentence drag game or link grids
     }
 
     // last one
-    menuOptions.push({
-        l10nId: "Common.Delete",
-        english: "Delete",
-        disabled: !deleteEnabled,
-        onClick: theOneCanvasElementManager?.deleteCurrentCanvasElement,
-        icon: <DeleteIcon css={getMenuIconCss()} />
-    });
+    if (!isLinkGrid) {
+        menuOptions.push({
+            l10nId: "Common.Delete",
+            english: "Delete",
+            disabled: !deleteEnabled,
+            onClick: theOneCanvasElementManager?.deleteCurrentCanvasElement,
+            icon: <DeleteIcon css={getMenuIconCss()} />,
+        });
+    }
+
     const handleMenuButtonMouseDown = (e: React.MouseEvent) => {
         // This prevents focus leaving the text box.
         e.preventDefault();
@@ -365,20 +426,19 @@ const CanvasElementContextControls: React.FunctionComponent<{
         e.stopPropagation();
         setMenuOpen(true); // Review: better on mouse down? But then the mouse up may be missed, if the menu is on top...
     };
-    const editable = props.canvasElement.getElementsByClassName(
-        "bloom-editable bloom-visibility-code-on"
-    )[0] as HTMLElement;
-    const langName = editable?.getAttribute("data-languagetipcontent");
+    const langName = editableTextElement?.getAttribute(
+        "data-languagetipcontent",
+    );
     // and these for text boxes
-    if (editable) {
-        addTextMenuItems(menuOptions, editable, props.canvasElement);
+    if (editableTextElement && !isNavButton) {
+        addTextMenuItems(menuOptions, editableTextElement, props.canvasElement);
     }
 
     const runMetadataDialog = () => {
         if (!props.canvasElement) return;
         if (!imgContainer) return;
         showCopyrightAndLicenseDialog(
-            getImageUrlFromImageContainer(imgContainer as HTMLElement)
+            getImageUrlFromImageContainer(imgContainer as HTMLElement),
         );
     };
 
@@ -436,68 +496,113 @@ const CanvasElementContextControls: React.FunctionComponent<{
                         }
                     `}
                 >
+                    {isLinkGrid && (
+                        <>
+                            <ButtonWithTooltip
+                                tipL10nKey="EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks"
+                                icon={CogIcon}
+                                relativeSize={0.8}
+                                onClick={() => {
+                                    if (!linkGrid) return;
+                                    editLinkGrid(linkGrid);
+                                }}
+                            />
+                            <span
+                                css={css`
+                                    color: ${kBloomBlue};
+                                    font-size: 10px;
+                                    margin-left: 4px;
+                                    cursor: pointer;
+                                `}
+                                onClick={() => {
+                                    if (!linkGrid) return;
+                                    editLinkGrid(linkGrid);
+                                }}
+                            >
+                                {chooseBooksLabel}
+                            </span>
+                        </>
+                    )}
+                    {isNavButton && (
+                        <ButtonWithTooltip
+                            tipL10nKey="EditTab.Toolbox.CanvasTool.ClickToSetLinkDest"
+                            icon={LinkIcon}
+                            relativeSize={0.8}
+                            onClick={setLinkDestination}
+                        />
+                    )}
                     {hasImage && (
                         <Fragment>
-                            {// Want an attention-grabbing version of set metadata if there is none and image exists.
-                            missingMetadata && !missingImage && (
-                                <ButtonWithTooltip
-                                    tipL10nKey="EditTab.Image.EditMetadataOverlay"
-                                    icon={MissingMetadataIcon}
-                                    onClick={() => runMetadataDialog()}
-                                />
-                            )}
-                            {// Choose image is only a LIKELY choice if we don't yet have one.
-                            // (or if it's a background image...not sure why, except otherwise
-                            // the toolbar might not have any icons for a background image.)
-                            (isPlaceHolder || isBackgroundImage) && (
-                                <ButtonWithTooltip
-                                    tipL10nKey="EditTab.Image.ChooseImage"
-                                    icon={SearchIcon}
-                                    onClick={_ => {
-                                        if (!props.canvasElement) return;
-                                        const imgContainer = props.canvasElement.getElementsByClassName(
-                                            kImageContainerClass
-                                        )[0] as HTMLElement;
-                                        if (!imgContainer) return;
-                                        doImageCommand(
-                                            imgContainer.getElementsByTagName(
-                                                "img"
-                                            )[0] as HTMLImageElement,
-                                            "change"
-                                        );
-                                    }}
-                                />
-                            )}
+                            {
+                                // Want an attention-grabbing version of set metadata if there is none and image exists.
+                                missingMetadata &&
+                                    !isNavButton &&
+                                    hasRealImage(img) && (
+                                        <ButtonWithTooltip
+                                            tipL10nKey="EditTab.Image.EditMetadataOverlay"
+                                            icon={MissingMetadataIcon}
+                                            onClick={() => runMetadataDialog()}
+                                        />
+                                    )
+                            }
+                            {
+                                // Choose image is only a LIKELY choice if we don't yet have one.
+                                // (or if it's a background image...not sure why, except otherwise
+                                // the toolbar might not have any icons for a background image.)
+                                (isPlaceHolder || isBackgroundImage) && (
+                                    <ButtonWithTooltip
+                                        tipL10nKey="EditTab.Image.ChooseImage"
+                                        icon={SearchIcon}
+                                        onClick={(_) => {
+                                            if (!props.canvasElement) return;
+                                            const imgContainer =
+                                                props.canvasElement.getElementsByClassName(
+                                                    kImageContainerClass,
+                                                )[0] as HTMLElement;
+                                            if (!imgContainer) return;
+                                            doImageCommand(
+                                                imgContainer.getElementsByTagName(
+                                                    "img",
+                                                )[0] as HTMLImageElement,
+                                                "change",
+                                            );
+                                        }}
+                                    />
+                                )
+                            }
                             {(isPlaceHolder || isBackgroundImage) && (
                                 <ButtonWithTooltip
                                     tipL10nKey="EditTab.Image.PasteImage"
                                     icon={PasteIcon}
                                     relativeSize={0.9}
-                                    onClick={_ => {
+                                    onClick={(_) => {
                                         if (!props.canvasElement) return;
-                                        const imgContainer = props.canvasElement.getElementsByClassName(
-                                            kImageContainerClass
-                                        )[0] as HTMLElement;
+                                        const imgContainer =
+                                            props.canvasElement.getElementsByClassName(
+                                                kImageContainerClass,
+                                            )[0] as HTMLElement;
                                         if (!imgContainer) return;
                                         doImageCommand(
                                             imgContainer.getElementsByTagName(
-                                                "img"
+                                                "img",
                                             )[0] as HTMLImageElement,
-                                            "paste"
+                                            "paste",
                                         );
                                     }}
                                 ></ButtonWithTooltip>
                             )}
                         </Fragment>
                     )}
-                    {editable && (
+                    {editableTextElement && !isNavButton && (
                         <ButtonWithTooltip
                             tipL10nKey="EditTab.Toolbox.ComicTool.Options.Format"
                             icon={CogIcon}
                             relativeSize={0.8}
                             onClick={() => {
                                 if (!props.canvasElement) return;
-                                GetEditor().runFormatDialog(editable);
+                                GetEditor().runFormatDialog(
+                                    editableTextElement,
+                                );
                             }}
                         />
                     )}
@@ -521,7 +626,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                         </Fragment>
                     )}
                     {(!(hasImage && isPlaceHolder) &&
-                        !editable &&
+                        !editableTextElement &&
                         !(hasVideo && !videoAlreadyChosen)) || (
                         // Add a spacer if there is any button before these
                         <div
@@ -532,7 +637,8 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     )}
                     {!hasVideo &&
                         !isBackgroundImage &&
-                        !isSpecialGameElementSelected && (
+                        !isSpecialGameElementSelected &&
+                        !isLinkGrid && (
                             <ButtonWithTooltip
                                 tipL10nKey="EditTab.Toolbox.ComicTool.Options.Duplicate"
                                 icon={DuplicateIcon}
@@ -543,19 +649,23 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                 }}
                             />
                         )}
-                    {// Not sure of the reasoning here, since we do have a way to 'delete' a background image,
-                    // not by removing the canvas element but by setting the image back to a placeholder.
-                    // But the mockup in BL-14069 definitely doesn't have it.
-                    isBackgroundImage || isSpecialGameElementSelected || (
-                        <ButtonWithTooltip
-                            tipL10nKey="Common.Delete"
-                            icon={DeleteIcon}
-                            onClick={() => {
-                                if (!props.canvasElement) return;
-                                theOneCanvasElementManager?.deleteCurrentCanvasElement();
-                            }}
-                        />
-                    )}
+                    {
+                        // Not sure of the reasoning here, since we do have a way to 'delete' a background image,
+                        // not by removing the canvas element but by setting the image back to a placeholder.
+                        // But the mockup in BL-14069 definitely doesn't have it.
+                        isBackgroundImage ||
+                            isSpecialGameElementSelected ||
+                            isLinkGrid || (
+                                <ButtonWithTooltip
+                                    tipL10nKey="Common.Delete"
+                                    icon={DeleteIcon}
+                                    onClick={() => {
+                                        if (!props.canvasElement) return;
+                                        theOneCanvasElementManager?.deleteCurrentCanvasElement();
+                                    }}
+                                />
+                            )
+                    }
                     {isBackgroundImage && (
                         <ButtonWithTooltip
                             tipL10nKey="EditTab.Toolbox.ComicTool.Options.FillSpace"
@@ -568,7 +678,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                         />
                     )}
                     <button
-                        ref={ref => (menuEl.current = ref)}
+                        ref={(ref) => (menuEl.current = ref)}
                         css={getIconCss()}
                         // It would be more natural to handle a click. But clicks are a combination of
                         // mouse down and mouse up, and those have side effects, especially change of focus,
@@ -655,7 +765,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                                         `}
                                                     />
                                                 );
-                                            }
+                                            },
                                         )}
                                     </LocalizableNestedMenuItem>
                                 );
@@ -664,7 +774,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                 <LocalizableMenuItem
                                     key={option.l10nId}
                                     {...option}
-                                    onClick={e => {
+                                    onClick={(e) => {
                                         setMenuOpen(false);
                                         option.onClick(e);
                                     }}
@@ -692,23 +802,22 @@ const CanvasElementContextControls: React.FunctionComponent<{
 
     function getAudioMenuItem(
         english: string,
-        subMenu: ILocalizableMenuItemProps[]
+        subMenu: ILocalizableMenuItemProps[],
     ) {
         return {
             l10nId: null,
             english,
             subLabelL10nId: "EditTab.Image.PlayWhenTouched",
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
             onClick: () => {},
             icon: <VolumeUpIcon css={getMenuIconCss(1, "left:2px;")} />,
-            featureName: "overlay",
-            subMenu
+            featureName: "canvas",
+            subMenu,
         };
     }
 
     function getAudioMenuItemForTextItem(
         textHasAudio: boolean,
-        setMenuOpen: (open: boolean, launchingDialog?: boolean) => void
+        setMenuOpen: (open: boolean, launchingDialog?: boolean) => void,
     ) {
         return getAudioMenuItem(textHasAudio ? aRecordingLabel : noneLabel, [
             {
@@ -717,15 +826,15 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 onClick: () => {
                     setMenuOpen(false);
                     AudioRecording.showTalkingBookTool();
-                }
-            }
+                },
+            },
         ]);
     }
 
     function getAudioMenuItemForImage(
         imageSound: string,
         setImageSound: (sound: string) => void,
-        setMenuOpen: (open: boolean, launchingDialog?: boolean) => void
+        setMenuOpen: (open: boolean, launchingDialog?: boolean) => void,
     ) {
         // This is uncomfortably similar to the method by the same name in GameTool.
         // And indeed that method has a case for handling an image sound, which is no longer
@@ -738,7 +847,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
             }
 
             const page = props.canvasElement.closest(
-                ".bloom-page"
+                ".bloom-page",
             ) as HTMLElement;
             const copyBuiltIn = false; // already copied, and not in our sounds folder
             props.canvasElement.setAttribute("data-sound", newSoundId);
@@ -755,7 +864,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     props.canvasElement.removeAttribute("data-sound");
                     setImageSound("none");
                     setMenuOpen(false);
-                }
+                },
             },
             {
                 l10nId: "EditTab.Toolbox.DragActivity.ChooseSound",
@@ -763,7 +872,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 onClick: () => {
                     setMenuOpen(false, true);
                     updateSoundShowingDialog();
-                }
+                },
             },
             divider,
             {
@@ -772,9 +881,8 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 subLabelL10nId: "EditTab.Toolbox.DragActivity.ChooseSound.Help",
                 subLabel:
                     "You can use elevenlabs.io to create sound effects if your book is non-commercial. Make sure to give credit to “elevenlabs.io”.",
-                // eslint-disable-next-line @typescript-eslint/no-empty-function
-                onClick: () => {}
-            }
+                onClick: () => {},
+            },
         ];
         if (imageSound !== "none") {
             subMenu.splice(1, 0, {
@@ -783,16 +891,16 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 onClick: () => {
                     playSound(
                         imageSound,
-                        props.canvasElement.closest(".bloom-page")!
+                        props.canvasElement.closest(".bloom-page")!,
                     );
                     setMenuOpen(false);
                 },
-                icon: <CheckIcon css={getMenuIconCss()} />
+                icon: <CheckIcon css={getMenuIconCss()} />,
             });
         }
         return getAudioMenuItem(
             imageSound === "none" ? noneLabel : imageSoundLabel,
-            subMenu
+            subMenu,
         );
     }
 };
@@ -805,19 +913,19 @@ const ButtonWithTooltip: React.FunctionComponent<{
     onClick: React.MouseEventHandler;
     relativeSize?: number;
     disabled?: boolean;
-}> = props => {
+}> = (props) => {
     return (
         <BloomTooltip
             placement="top"
             tip={{
-                l10nKey: props.tipL10nKey
+                l10nKey: props.tipL10nKey,
             }}
         >
             <button
                 onClick={props.onClick}
                 css={getIconCss(
                     props.relativeSize,
-                    props.disabled ? `opacity: ${kBloomDisabledOpacity};` : ""
+                    props.disabled ? `opacity: ${kBloomDisabledOpacity};` : "",
                 )}
                 disabled={props.disabled}
             >
@@ -831,7 +939,7 @@ const ButtonWithTooltip: React.FunctionComponent<{
 export function renderCanvasElementContextControls(
     canvasElement: HTMLElement,
     menuOpen: boolean,
-    menuAnchorPosition?: { left: number; top: number }
+    menuAnchorPosition?: { left: number; top: number },
 ) {
     const root = document.getElementById("canvas-element-context-controls");
     if (!root) {
@@ -841,9 +949,9 @@ export function renderCanvasElementContextControls(
                 renderCanvasElementContextControls(
                     canvasElement,
                     menuOpen,
-                    menuAnchorPosition
+                    menuAnchorPosition,
                 ),
-            200
+            200,
         );
         return;
     }
@@ -858,7 +966,7 @@ export function renderCanvasElementContextControls(
             }}
             menuAnchorPosition={menuAnchorPosition}
         />,
-        root
+        root,
     );
 }
 
@@ -890,7 +998,7 @@ function getMenuIconCss(relativeSize?: number, extra = "") {
 function addTextMenuItems(
     menuOptions: IMenuItemWithSubmenu[],
     editable: HTMLElement,
-    canvasElement: HTMLElement
+    canvasElement: HTMLElement,
 ) {
     const autoHeight = !canvasElement.classList.contains("bloom-noAutoHeight");
     const toggleAutoHeight = () => {
@@ -900,18 +1008,19 @@ function addTextMenuItems(
         // an updated value for autoHeight. But the menu is going to be hidden, and showing it again
         // will involve a re-render, and we don't care until then.
     };
-    menuOptions.unshift(
+
+    const textMenuItem: ILocalizableMenuItemProps[] = [
         {
             l10nId: "EditTab.Toolbox.ComicTool.Options.Format",
             english: "Format",
             onClick: () => GetEditor().runFormatDialog(editable),
-            icon: <CogIcon css={getMenuIconCss()} />
+            icon: <CogIcon css={getMenuIconCss()} />,
         },
         {
             l10nId: "EditTab.Toolbox.ComicTool.Options.CopyText",
             english: "Copy Text",
             onClick: () => copySelection(),
-            icon: <CopyIcon css={getMenuIconCss()} />
+            icon: <CopyIcon css={getMenuIconCss()} />,
         },
         {
             l10nId: "EditTab.Toolbox.ComicTool.Options.PasteText",
@@ -920,23 +1029,29 @@ function addTextMenuItems(
                 // We don't actually know there's no image on the clipboard, but it's not relevant for a text box.
                 pasteClipboard(false);
             },
-            icon: <PasteIcon css={getMenuIconCss()} />
+            icon: <PasteIcon css={getMenuIconCss()} />,
         },
-        divider,
-        {
+    ];
+    // Normally text boxes have the auto-height option, but we keep buttons manual.
+    // One reason is that we haven't figured out a good automatic approach to adjusting the button
+    // height vs adjusting the image size, when both are present. Also, our current auto-height
+    // code doesn't handle padding where our canvas-buttons have it.
+    if (!canvasElement.classList.contains(kBloomButtonClass)) {
+        textMenuItem.push(divider, {
             l10nId: "EditTab.Toolbox.ComicTool.Options.AutoHeight",
             english: "Auto Height",
             // We don't actually know there's no image on the clipboard, but it's not relevant for a text box.
             onClick: () => toggleAutoHeight(),
-            icon: autoHeight && <CheckIcon css={getMenuIconCss()} />
-        }
-    );
+            icon: autoHeight && <CheckIcon css={getMenuIconCss()} />,
+        });
+    }
+    menuOptions.push(...textMenuItem);
 }
 
 function addVideoMenuItems(
     menuOptions: IMenuItemWithSubmenu[],
     videoContainer: Element,
-    setMenuOpen: (open: boolean, launchingDialog?: boolean) => void
+    setMenuOpen: (open: boolean, launchingDialog?: boolean) => void,
 ) {
     menuOptions.unshift(
         {
@@ -946,13 +1061,13 @@ function addVideoMenuItems(
                 doVideoCommand(videoContainer, "choose");
                 setMenuOpen(false, true);
             },
-            icon: <SearchIcon css={getMenuIconCss()} />
+            icon: <SearchIcon css={getMenuIconCss()} />,
         },
         {
             l10nId: "EditTab.Toolbox.ComicTool.Options.RecordYourself",
             english: "Record yourself...",
             onClick: () => doVideoCommand(videoContainer, "record"),
-            icon: <CircleIcon css={getMenuIconCss(0.85)} />
+            icon: <CircleIcon css={getMenuIconCss(0.85)} />,
         },
         divider,
         {
@@ -962,7 +1077,7 @@ function addVideoMenuItems(
                 doVideoCommand(videoContainer, "playEarlier");
             },
             icon: <ArrowUpwardIcon css={getMenuIconCss()} />,
-            disabled: !findPreviousVideoContainer(videoContainer)
+            disabled: !findPreviousVideoContainer(videoContainer),
         },
         {
             l10nId: "EditTab.Toolbox.ComicTool.Options.PlayLater",
@@ -971,9 +1086,19 @@ function addVideoMenuItems(
                 doVideoCommand(videoContainer, "playLater");
             },
             icon: <ArrowDownwardIcon css={getMenuIconCss()} />,
-            disabled: !findNextVideoContainer(videoContainer)
+            disabled: !findNextVideoContainer(videoContainer),
         },
-        divider
+        divider,
+    );
+}
+
+function hasRealImage(img) {
+    return (
+        img &&
+        !isPlaceHolderImage(img.getAttribute("src")) &&
+        !img.classList.contains("bloom-imageLoadError") &&
+        img.parentElement &&
+        !img.parentElement.classList.contains("bloom-imageLoadError")
     );
 }
 
@@ -981,11 +1106,10 @@ function addImageMenuOptions(
     menuOptions: IMenuItemWithSubmenu[],
     canvasElement: HTMLElement,
     img: HTMLElement,
-    missingImage: boolean,
-    setMenuOpen: (open: boolean, launchingDialog?: boolean) => void
+    setMenuOpen: (open: boolean, launchingDialog?: boolean) => void,
 ) {
     const imgContainer = canvasElement.getElementsByClassName(
-        kImageContainerClass
+        kImageContainerClass,
     )[0] as HTMLElement;
 
     const isCropped = !!img?.style.width;
@@ -994,10 +1118,11 @@ function addImageMenuOptions(
         if (!canvasElement) return;
         if (!imgContainer) return;
         showCopyrightAndLicenseDialog(
-            getImageUrlFromImageContainer(imgContainer)
+            getImageUrlFromImageContainer(imgContainer),
         );
     };
 
+    const realImagePresent = hasRealImage(img);
     const imageMenuOptions: IMenuItemWithSubmenu[] = [
         {
             l10nId: "EditTab.Image.ChooseImage",
@@ -1006,20 +1131,20 @@ function addImageMenuOptions(
                 doImageCommand(img, "change");
                 setMenuOpen(false, true);
             },
-            icon: <SearchIcon css={getMenuIconCss()} />
+            icon: <SearchIcon css={getMenuIconCss()} />,
         },
         {
             l10nId: "EditTab.Image.PasteImage",
             english: "Paste image",
             onClick: () => doImageCommand(img, "paste"),
-            icon: <PasteIcon css={getMenuIconCss()} />
+            icon: <PasteIcon css={getMenuIconCss()} />,
         },
         {
             l10nId: "EditTab.Image.CopyImage",
             english: "Copy image",
             onClick: () => doImageCommand(img, "copy"),
-            disabled: missingImage,
-            icon: <CopyIcon css={getMenuIconCss()} />
+            icon: <CopyIcon css={getMenuIconCss()} />,
+            disabled: !realImagePresent,
         },
         // If the image doesn't exist, we still show the menu item for editing metadata,
         // but disable it.  Menu items are often disabled instead of hidden when they
@@ -1030,8 +1155,8 @@ function addImageMenuOptions(
             english: "Set Image Information...",
             subLabelL10nId: "EditTab.Image.EditMetadataOverlayMore",
             onClick: runMetadataDialog,
-            disabled: missingImage,
-            icon: <CopyrightIcon css={getMenuIconCss()} />
+            icon: <CopyrightIcon css={getMenuIconCss()} />,
+            disabled: !realImagePresent,
         },
         {
             l10nId: "EditTab.Image.Reset",
@@ -1046,15 +1171,21 @@ function addImageMenuOptions(
                     // tweak to align better and make it look the same size as the other icons
                     css={getMenuIconCss(1, "left: -1px; width: 22px;")}
                 />
-            )
-        }
+            ),
+        },
     ];
-    // It would be too confusing and difficult for the element to be both draggable and clickable with different
-    //  behavior such that we'd have to distinguish between the two.
-    if (!isDraggable(canvasElement)) {
+
+    if (
+        // Don't include the Set Up Hyperlink item for navigation buttons
+        // because they have their own Set Destination item.
+        !isNavigationButton(canvasElement) &&
+        // It would be too confusing and difficult for the element to be both draggable and clickable with different
+        //  behavior such that we'd have to distinguish between the two.
+        !isDraggable(canvasElement)
+    ) {
         imageMenuOptions.push({
-            l10nId: "EditTab.PasteHyperlink",
-            english: "Paste Hyperlink",
+            l10nId: "EditTab.SetupHyperlink",
+            english: "Set Up Hyperlink",
             subLabel: imgContainer.getAttribute("data-href") && (
                 <Span
                     // This is tricky and I don't fully understand it myself.
@@ -1082,55 +1213,44 @@ function addImageMenuOptions(
                     Currently: %0
                 </Span>
             ),
-            featureName: "overlay",
-            onClick: () => pasteLink(canvasElement)
-
-            /*
-            Since the clipboard is not readable by us directly, but
-            only through an async call to the server, I haven't found
-            a way to know if there is a hyperlink on the clipboard. I could
-            know if there was one when we last rendered.
-            disabled: !haveHyperlinkOnClipboard
-            */
+            featureName: "canvas",
+            onClick: () => {
+                // Initially, we could only set links on images. For some reason,
+                // we decided to put it on the image container rather than the canvas element.
+                // Now we have implemented other canvas elements (navigation buttons) which
+                // can have links. Those set the data-href on the canvas element itself.
+                // But we didn't modify how the existing image link setup works so as not to break 6.2.
+                // Thus, for images, we put data-href on the image container, but for other elements, we
+                // put it on the canvas element.
+                const imgContainer = canvasElement.getElementsByClassName(
+                    kImageContainerClass,
+                )[0] as HTMLElement;
+                showLinkTargetChooserDialog(
+                    imgContainer.getAttribute("data-href") || "",
+                    (url) => {
+                        if (url) {
+                            imgContainer.setAttribute("data-href", url);
+                        } else if (imgContainer.hasAttribute("data-href")) {
+                            imgContainer.removeAttribute("data-href");
+                        }
+                    },
+                );
+            },
         });
-        // Enhance: some way to remove a link you don't want anymore. For now, you can paste an empty string.
     }
 
     menuOptions.unshift(...imageMenuOptions);
-}
-function pasteLink(canvasElement: HTMLElement) {
-    const imgContainer = canvasElement.getElementsByClassName(
-        kImageContainerClass
-    )[0];
-
-    getHyperlinkFromClipboard(url => {
-        if (url) imgContainer.setAttribute("data-href", url);
-        else {
-            if (imgContainer.hasAttribute("data-href")) {
-                imgContainer.removeAttribute("data-href");
-                // Note, not localizing this stuff yet. A better
-                // UX would be nice, just doing this budge English alert for now.
-                alert(
-                    "Did not find a hyperlink on the clipboard, so the existing hyperlink was removed."
-                );
-            } else {
-                // Note, not localizing this stuff yet. A better
-                // UX would be nice, just doing this budge English alert for now.
-                alert("Did not find a hyperlink on the clipboard.");
-            }
-        }
-    });
 }
 
 // applies the modification to all classes of element
 function modifyClassNames(
     element: HTMLElement,
-    modification: (className: string) => string
+    modification: (className: string) => string,
 ): void {
     const classList = Array.from(element.classList);
     const newClassList = classList
         .map(modification)
-        .filter(className => className !== "");
+        .filter((className) => className !== "");
     element.classList.remove(...classList);
     element.classList.add(...newClassList);
 }
@@ -1138,10 +1258,10 @@ function modifyClassNames(
 // applies the modification to all classes of element and all its descendants
 function modifyAllDescendantsClassNames(
     element: HTMLElement,
-    modification: (className: string) => string
+    modification: (className: string) => string,
 ): void {
     const descendants = element.querySelectorAll("*");
-    descendants.forEach(descendant => {
+    descendants.forEach((descendant) => {
         modifyClassNames(descendant as HTMLElement, modification);
     });
 }
@@ -1150,7 +1270,7 @@ function addMenuItemForTogglingDraggability(
     menuOptions: IMenuItemWithSubmenu[],
     canvasElement: HTMLElement,
     currentDraggableTarget: HTMLElement | undefined,
-    setCurrentDraggableTarget: (target: HTMLElement | undefined) => void
+    setCurrentDraggableTarget: (target: HTMLElement | undefined) => void,
 ) {
     const toggleDragability = () => {
         if (isDraggable(canvasElement)) {
@@ -1166,11 +1286,11 @@ function addMenuItemForTogglingDraggability(
                 canvasElement.getElementsByClassName("bloom-editable").length >
                 0
             ) {
-                modifyAllDescendantsClassNames(canvasElement, className =>
+                modifyAllDescendantsClassNames(canvasElement, (className) =>
                     className.replace(
                         /GameDrag((?:Small|Medium|Large)(?:Start|Center))-style/,
-                        "GameText$1-style"
-                    )
+                        "GameText$1-style",
+                    ),
                 );
                 canvasElement.classList.remove("draggable-text");
             }
@@ -1180,7 +1300,7 @@ function addMenuItemForTogglingDraggability(
             // Draggables cannot have hyperlinks, otherwise Bloom Player will launch the hyperlink when you click on it
             // and you won't be able to drag it.
             const imageContainer = canvasElement.getElementsByClassName(
-                kImageContainerClass
+                kImageContainerClass,
             )[0] as HTMLElement;
             if (imageContainer) {
                 imageContainer.removeAttribute("data-href");
@@ -1191,26 +1311,25 @@ function addMenuItemForTogglingDraggability(
                 canvasElement.getElementsByClassName("bloom-editable").length >
                 0
             ) {
-                modifyAllDescendantsClassNames(canvasElement, className =>
+                modifyAllDescendantsClassNames(canvasElement, (className) =>
                     className.replace(
                         /GameText((?:Small|Medium|Large)(?:Start|Center))-style/,
-                        "GameDrag$1-style"
-                    )
+                        "GameDrag$1-style",
+                    ),
                 );
                 canvasElement.classList.add("draggable-text");
             }
         }
     };
+    const visibilityCss = isDraggable(canvasElement)
+        ? ""
+        : "visibility: hidden;";
     menuOptions.push(divider, {
         l10nId: "EditTab.Toolbox.DragActivity.Draggability",
         english: "Draggable",
         subLabelL10nId: "EditTab.Toolbox.DragActivity.DraggabilityMore",
         onClick: toggleDragability,
-        icon: isDraggable(canvasElement) ? (
-            <CheckIcon css={getMenuIconCss()} />
-        ) : (
-            undefined
-        )
+        icon: <CheckIcon css={getMenuIconCss(1, visibilityCss)} />,
     });
 }
 
@@ -1219,7 +1338,7 @@ function addMenuItemsForDraggable(
     canvasElement: HTMLElement,
     currentDraggableTargetId: string,
     currentDraggableTarget: HTMLElement | undefined,
-    setCurrentDraggableTarget: (target: HTMLElement | undefined) => void
+    setCurrentDraggableTarget: (target: HTMLElement | undefined) => void,
 ) {
     const toggleIsPartOfRightAnswer = () => {
         if (!currentDraggableTargetId) {
@@ -1235,16 +1354,13 @@ function addMenuItemsForDraggable(
             setCurrentDraggableTarget(makeTargetForDraggable(canvasElement));
         }
     };
+    const visibilityCss = currentDraggableTarget ? "" : "visibility: hidden;";
     menuOptions.push({
         l10nId: "EditTab.Toolbox.DragActivity.PartOfRightAnswer",
         english: "Part of the right answer",
-        subLabelL10nId: "EditTab.Toolbox.DragActivity.PartOfRightAnswerMore",
+        subLabelL10nId: "EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2",
         onClick: toggleIsPartOfRightAnswer,
-        icon: currentDraggableTarget ? (
-            <CheckIcon css={getMenuIconCss()} />
-        ) : (
-            undefined
-        )
+        icon: <CheckIcon css={getMenuIconCss(1, visibilityCss)} />,
     });
 }
 
@@ -1265,4 +1381,23 @@ function cleanUpDividers(menuItems: IMenuItemWithSubmenu[]) {
         return true;
     });
     return cleanMenuItems;
+}
+
+function setLinkDestination(): void {
+    const activeElement = theOneCanvasElementManager?.getActiveElement();
+    if (!activeElement) return;
+
+    // Note that here we place data-href on the canvas element itself.
+    // This is different from how we do it for simple images (not in nav buttons),
+    // where we put data-href on the image container.
+    // We didn't want to change the existing behavior for simple images,
+    // so as not to break existing books in 6.2.
+    const currentUrl = activeElement.getAttribute("data-href") || "";
+    showLinkTargetChooserDialog(currentUrl, (newUrl) => {
+        if (newUrl) {
+            activeElement.setAttribute("data-href", newUrl);
+        } else {
+            activeElement.removeAttribute("data-href");
+        }
+    });
 }

@@ -18,7 +18,7 @@ namespace Bloom.MiscUI
             CommonOpenFileDialog dialog = new CommonOpenFileDialog
             {
                 InitialDirectory = initialFolderPath,
-                IsFolderPicker = true
+                IsFolderPicker = true,
             };
             if (!string.IsNullOrEmpty(description))
                 dialog.Title = description;

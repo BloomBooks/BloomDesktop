@@ -1,9 +1,9 @@
-﻿using Bloom.Api;
+﻿using System.IO;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.web.controllers;
 using NUnit.Framework;
 using SIL.TestUtilities;
-using System.IO;
 
 namespace BloomTests.web.controllers
 {

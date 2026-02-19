@@ -1,8 +1,8 @@
 using System;
 using System.Globalization;
 using System.Threading;
-using NUnit.Framework;
 using Bloom.SubscriptionAndFeatures;
+using NUnit.Framework;
 
 namespace BloomTests.SubscriptionAndFeatures
 {

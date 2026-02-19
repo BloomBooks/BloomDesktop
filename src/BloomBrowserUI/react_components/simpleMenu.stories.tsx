@@ -5,8 +5,8 @@ const menuItems: (SimpleMenuItem | "-")[] = [
     {
         text: "About my Avatar...",
         l10nKey: "TeamCollection.AboutAvatar",
-        action: () => undefined
-    }
+        action: () => undefined,
+    },
 ];
 
 const menuBoxStyles: React.CSSProperties = {
@@ -15,11 +15,11 @@ const menuBoxStyles: React.CSSProperties = {
     border: "1px solid red",
     padding: 20,
     backgroundColor: "black",
-    width: 150
+    width: 150,
 };
 
 export default {
-    title: "Team Collection components/Menu component"
+    title: "Team Collection components/Menu component",
 };
 
 export const SimpleMenuTest = () => (
@@ -34,5 +34,5 @@ export const SimpleMenuTest = () => (
 );
 
 SimpleMenuTest.story = {
-    name: "SimpleMenu test"
+    name: "SimpleMenu test",
 };

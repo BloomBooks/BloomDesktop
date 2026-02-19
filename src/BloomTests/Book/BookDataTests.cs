@@ -3,23 +3,22 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Web;
-using System.Windows.Input;
-using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using L10NSharp;
+using L10NSharp.Windows.Forms;
 using NUnit.Framework;
+using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.TestUtilities;
 using SIL.Text;
 using SIL.Windows.Forms.ClearShare;
-using Bloom.SubscriptionAndFeatures;
 
 // TODO (default name BL-13703) currently, the Tag setter also automatically sets the name using LibPalasso logic.
 // If we make changes to that logic now that we are changing default names with the new
@@ -59,8 +58,7 @@ namespace BloomTests.Book
             LocalizationManager.UseLanguageCodeFolders = true;
             var localizationDirectory =
                 FileLocationUtilities.GetDirectoryDistributedWithApplication("localization");
-            _localizationManager = LocalizationManager.Create(
-                TranslationMemory.XLiff,
+            _localizationManager = LocalizationManagerWinforms.Create(
                 "fr",
                 "Bloom",
                 "Bloom",
@@ -68,10 +66,10 @@ namespace BloomTests.Book
                 localizationDirectory,
                 "SIL/Bloom",
                 null,
-                ""
+                "",
+                new string[] { }
             );
-            _palasoLocalizationManager = LocalizationManager.Create(
-                TranslationMemory.XLiff,
+            _palasoLocalizationManager = LocalizationManagerWinforms.Create(
                 "fr",
                 "Palaso",
                 "Palaso",
@@ -79,7 +77,8 @@ namespace BloomTests.Book
                 localizationDirectory,
                 "SIL/Palaso",
                 null,
-                ""
+                "",
+                new string[] { }
             );
         }
 
@@ -287,8 +286,8 @@ namespace BloomTests.Book
                 ceStyle.Item2.Unencoded,
                 Is.EqualTo("width: 254.663px; top: 0px; left: 197.168px; height: 231px;")
             );
-            var sizeBasedOnDefault = attributes.FirstOrDefault(
-                x => x.Item1 == "data-canvas-imgsizebasedon"
+            var sizeBasedOnDefault = attributes.FirstOrDefault(x =>
+                x.Item1 == "data-canvas-imgsizebasedon"
             );
             Assert.That(sizeBasedOnDefault, Is.Not.Null);
             Assert.That(sizeBasedOnDefault.Item2.Unencoded, Is.EqualTo("649,231"));
@@ -326,7 +325,7 @@ namespace BloomTests.Book
                         "width: 254.663px; top: 0px; left: 197.168px; height: 231px;"
                     )
                 ),
-                Tuple.Create("data-canvas-imgsizebasedon", XmlString.FromUnencoded("649,231"))
+                Tuple.Create("data-canvas-imgsizebasedon", XmlString.FromUnencoded("649,231")),
             };
             dsv.SetAttributeList("*", attributes);
             var imgNode =
@@ -1694,14 +1693,14 @@ namespace BloomTests.Book
             );
             var collectionSettings = CreateCollection();
             var data = new BookData(dom, collectionSettings, null);
-            Assert.Throws<ApplicationException>(
-                () => data.SetMultilingualContentLanguages(new[] { "de" })
+            Assert.Throws<ApplicationException>(() =>
+                data.SetMultilingualContentLanguages(new[] { "de" })
             );
-            Assert.Throws<ApplicationException>(
-                () => data.SetMultilingualContentLanguages(new[] { "fr", "de" })
+            Assert.Throws<ApplicationException>(() =>
+                data.SetMultilingualContentLanguages(new[] { "fr", "de" })
             );
-            Assert.Throws<ApplicationException>(
-                () => data.SetMultilingualContentLanguages(new[] { "fr", "en", "de" })
+            Assert.Throws<ApplicationException>(() =>
+                data.SetMultilingualContentLanguages(new[] { "fr", "en", "de" })
             );
         }
 
@@ -2005,7 +2004,7 @@ namespace BloomTests.Book
                 {
                     Country = country,
                     Province = province,
-                    District = district
+                    District = district,
                 },
                 null
             );
@@ -2250,9 +2249,21 @@ namespace BloomTests.Book
             );
             var data = new BookData(htmlDom, settings, null);
             Assert.That(data.GetDisplayNameForLanguage("de"), Is.EqualTo("Deutsch"));
-            Assert.That(data.GetDisplayNameForLanguage("fr"), Is.EqualTo("français"));
-            Assert.That(data.GetDisplayNameForLanguage("en"), Is.EqualTo("English"));
-            Assert.That(data.GetDisplayNameForLanguage("es"), Is.EqualTo("español"));
+            // Which of these we find seems to depend on whether some ICU directory is found in the path.
+            // Not being too picky about it because we're getting pretty good about using the user-supplied language
+            // name, so I can't find anywhere this actually shows up.
+            Assert.That(
+                data.GetDisplayNameForLanguage("fr"),
+                Is.EqualTo("français").Or.EqualTo("Französisch")
+            );
+            Assert.That(
+                data.GetDisplayNameForLanguage("en"),
+                Is.EqualTo("English").Or.EqualTo("Englisch")
+            );
+            Assert.That(
+                data.GetDisplayNameForLanguage("es"),
+                Is.EqualTo("español").Or.EqualTo("Spanisch")
+            );
         }
 
         [Test]

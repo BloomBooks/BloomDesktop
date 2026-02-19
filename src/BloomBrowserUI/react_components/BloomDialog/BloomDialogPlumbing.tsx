@@ -7,7 +7,7 @@ import { useWebSocketListener } from "../../utils/WebSocketManager";
 export enum Mode {
     Collection,
     Edit,
-    Publish
+    Publish,
 }
 
 export interface IBloomDialogEnvironmentParams {
@@ -20,10 +20,11 @@ export interface IBloomDialogEnvironmentParams {
     mode?: Mode;
 }
 
-export const normalDialogEnvironmentForStorybook: IBloomDialogEnvironmentParams = {
-    dialogFrameProvidedExternally: false,
-    initiallyOpen: true
-};
+export const normalDialogEnvironmentForStorybook: IBloomDialogEnvironmentParams =
+    {
+        dialogFrameProvidedExternally: false,
+        initiallyOpen: true,
+    };
 
 // Storybook stories use this to open dialogs that take their settings via parameters to the open function, rather than props.
 // Example
@@ -33,18 +34,18 @@ export const normalDialogEnvironmentForStorybook: IBloomDialogEnvironmentParams 
 export const StorybookDialogWrapper: React.FunctionComponent<{
     id: string;
     params: object;
-}> = props => {
+}> = (props) => {
     useEffect(() => {
         // I'm not certain this delay is needed, but I do want to make sure the dialog
-        // function runs first so it can wire up its even receiver.
+        // function runs first so it can wire up its event receiver.
         window.setTimeout(
             () =>
                 document.dispatchEvent(
                     new CustomEvent("LaunchDialog", {
-                        detail: { id: props.id, ...props.params }
-                    })
+                        detail: { id: props.id, ...props.params },
+                    }),
                 ),
-            100
+            100,
         );
     }, [props.id, props.params]);
     return <React.Fragment>{props.children}</React.Fragment>;
@@ -54,10 +55,10 @@ export const StorybookDialogWrapper: React.FunctionComponent<{
 export function useEventLaunchedBloomDialog(idForLaunchingFromServer: string) {
     const dialogEnvironment = useSetupBloomDialog({
         initiallyOpen: false,
-        dialogFrameProvidedExternally: false
+        dialogFrameProvidedExternally: false,
     });
     // for c# server
-    useWebSocketListener("LaunchDialog", event => {
+    useWebSocketListener("LaunchDialog", (event) => {
         if (event.id === idForLaunchingFromServer) {
             dialogEnvironment.showDialog(event);
         }
@@ -74,11 +75,11 @@ export function useEventLaunchedBloomDialog(idForLaunchingFromServer: string) {
 // Dialogs using <BloomDialog> that are still shown via a winforms dialog call this hook and use what it returns to manage the dialog.
 // See the uses of it in the code for examples.
 export function useSetupBloomDialog(
-    dialogEnvironment?: IBloomDialogEnvironmentParams
+    dialogEnvironment?: IBloomDialogEnvironmentParams,
 ) {
     const [currentlyOpen, setOpen] = useState(
         // we default to closed
-        dialogEnvironment ? dialogEnvironment.initiallyOpen : false
+        dialogEnvironment ? dialogEnvironment.initiallyOpen : false,
     );
 
     // the websocket event can have properties like props, comes from the opening of the dialog from c# (see useSetupBloomDialogFromServer())
@@ -104,7 +105,7 @@ export function useSetupBloomDialog(
             open: currentlyOpen,
             onClose: closeDialog,
             dialogFrameProvidedExternally:
-                dialogEnvironment?.dialogFrameProvidedExternally || false
-        }
+                dialogEnvironment?.dialogFrameProvidedExternally || false,
+        },
     };
 }

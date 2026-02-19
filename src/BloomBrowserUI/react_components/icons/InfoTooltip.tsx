@@ -1,9 +1,8 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import {
     ILocalizationProps,
-    Span
+    Span,
 } from "../../react_components/l10nComponents";
 import { default as InfoIcon } from "@mui/icons-material/InfoOutlined";
 import { Popover } from "@mui/material";
@@ -17,7 +16,7 @@ interface IProps extends ILocalizationProps {
 // (as a Span, centered below the icon, if there is room).
 // Enhance: eventually we may want additional props to control things like placement, or another version
 // that is more flexible about what children may be.
-export const InfoTooltip: React.FunctionComponent<IProps> = props => {
+export const InfoTooltip: React.FunctionComponent<IProps> = (props) => {
     // controls visibility and placement of the 'tooltip' on the info icon when bookdata is disabled.
     const [anchorEl, setAnchorEl] = React.useState<SVGSVGElement | null>(null);
     const tooltipOpen = Boolean(anchorEl);
@@ -54,13 +53,13 @@ export const InfoTooltip: React.FunctionComponent<IProps> = props => {
                 anchorEl={anchorEl}
                 anchorOrigin={{
                     vertical: "bottom",
-                    horizontal: "center"
+                    horizontal: "center",
                 }}
                 transformOrigin={{
                     // 15 pixels below the bottom (based on anchorOrigin) of the anchor;
                     // leaves room for arrow and a bit of margin.
                     vertical: -15,
-                    horizontal: "center"
+                    horizontal: "center",
                 }}
                 onClose={() => setAnchorEl(null)}
                 disableRestoreFocus // most MUI examples have this, not sure what it does.

@@ -1,21 +1,14 @@
 @import "../../../bloomUI.less";
-@textColor: @bloom-buff; // #0C8597;
-@toolboxBackgroundColor: @bloom-panelBackground;
-@motionBodyPadding: 15px;
 @buttonColumnWidth: 40px;
 @previewSettingsMargin: 15px;
 
 .ui-motionBody {
-    padding-left: @motionBodyPadding;
-    padding-right: @motionBodyPadding;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 
-    *,
-    a {
-        color: @textColor;
-    }
-
-    background-color: @toolboxBackgroundColor;
-    background-position: center;
+    padding: @toolboxContentPadding;
+    height: @toolboxContentHeight;
 
     .intro {
         margin-bottom: 2em;
@@ -30,12 +23,6 @@
         background-repeat: no-repeat;
         display: inline-block;
         margin-bottom: 5px;
-    }
-
-    .enable-checkbox {
-        // I don't why this is needed to line it up correctly...
-        // I can't get FF to open with tools anymore, so I can't really investigate
-        margin-left: -4px;
     }
 
     .motion-label {

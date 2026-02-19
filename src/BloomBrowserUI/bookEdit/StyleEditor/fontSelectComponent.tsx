@@ -1,10 +1,14 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { ThemeProvider } from "@mui/material/styles";
 import { lightTheme } from "../../bloomMaterialUITheme";
-import { MenuItem, Popover, PopoverOrigin } from "@mui/material";
+import {
+    MenuItem,
+    Popover,
+    PopoverOrigin,
+    SelectChangeEvent,
+} from "@mui/material";
 import FontDisplayBar from "../../react_components/fontDisplayBar";
 import FontInformationPane from "../../react_components/fontInformationPane";
 import WinFormsStyleSelect from "../../react_components/winFormsStyleSelect";
@@ -39,14 +43,16 @@ interface FontSelectProps {
     popoverZindex?: string;
 }
 
-const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
+const FontSelectComponent: React.FunctionComponent<FontSelectProps> = (
+    props,
+) => {
     const getFontDataFromName = (fontName: string) => {
         if (!props.fontMetadata) return undefined;
-        return props.fontMetadata.find(f => f.name === fontName);
+        return props.fontMetadata.find((f) => f.name === fontName);
     };
 
     const [fontChoice, setFontChoice] = useState<IFontMetaData | undefined>(
-        undefined
+        undefined,
     );
 
     // If the font metadata isn't initially available, reload the 'fontChoice' when it "arrives".
@@ -59,14 +65,14 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
     // that shows when hovering over the suitability icon near the end of the FontDisplayBar,
     // NOT the select dropdown.
     const [popoverFont, setPopoverFont] = useState<IFontMetaData | undefined>(
-        undefined
+        undefined,
     );
     const [popoverAnchorElement, setPopoverAnchorElement] = useState<
         HTMLElement | undefined
     >(undefined);
     const handlePopoverOpen = (
         hoverTarget: HTMLElement,
-        metadata: IFontMetaData
+        metadata: IFontMetaData,
     ) => {
         setPopoverAnchorElement(hoverTarget as HTMLElement);
         setPopoverFont(metadata);
@@ -101,7 +107,7 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
         });
     };
 
-    const handleFontChange = event => {
+    const handleFontChange = (event: SelectChangeEvent) => {
         const fontName: string = event.target.value;
         setFontChoice(getFontDataFromName(event.target.value));
         if (props.onChangeFont) {
@@ -113,7 +119,7 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
 
     const transformOrigin: PopoverOrigin = {
         vertical: "top",
-        horizontal: "left"
+        horizontal: "left",
     };
 
     const textValue = fontChoice ? fontChoice.name : props.currentFontName;
@@ -135,7 +141,7 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
                 // Popver puts its top-left corner in the center of the round suitability icon.
                 anchorOrigin={{
                     vertical: "center",
-                    horizontal: "center"
+                    horizontal: "center",
                 }}
                 transformOrigin={transformOrigin}
                 disableRestoreFocus

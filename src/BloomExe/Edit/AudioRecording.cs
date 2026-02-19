@@ -1,26 +1,26 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using Bloom.Book;
 using Bloom.Api;
+using Bloom.Book;
 using L10NSharp;
+using SIL.Code;
 using SIL.IO;
 using SIL.Media;
+using SIL.Reporting;
+using Timer = System.Windows.Forms.Timer;
 #if __MonoCS__
 using SIL.Media.AlsaAudio;
 #else
 using SIL.Media.Naudio;
 #endif
-using SIL.Reporting;
-using Timer = System.Windows.Forms.Timer;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using SIL.Code;
 
 // Note: it is for the benefit of this component that Bloom references NAudio. We don't use it directly,
 // but Palaso.Media does, and we need to make sure it gets copied to our output.
@@ -89,7 +89,9 @@ namespace Bloom.Edit
         {
             _bookSelection = bookSelection;
             _startRecordingTimer = new Timer();
-            _startRecordingTimer.Interval = 300; //  ms from click to actual recording
+            //  ms from click to actual recording
+            // Should match the delay in JS startRecordCurrentAsync (audioRecording.ts)
+            _startRecordingTimer.Interval = 300;
             _startRecordingTimer.Tick += OnStartRecordingTimer_Elapsed;
             _backupPathForRecordableAudio = Path.GetTempFileName();
             _backupPathForPublishableAudio = Path.GetTempFileName();
@@ -457,7 +459,7 @@ namespace Bloom.Edit
         static HashSet<Type> retryMp3Exceptions = new HashSet<Type>
         {
             Type.GetType("System.IO.IOException"),
-            Type.GetType("System.ApplicationException")
+            Type.GetType("System.ApplicationException"),
         };
 
         private void Recorder_Stopped(IAudioRecorder arg1, ErrorEventArgs arg2)

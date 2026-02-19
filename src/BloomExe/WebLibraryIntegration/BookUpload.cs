@@ -1,17 +1,27 @@
 using System;
+using System;
+using System.Collections.Generic;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics;
+using System.IO;
 using System.IO;
 using System.Linq;
+using System.Linq;
+using System.Net;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Windows.Forms;
 using Amazon.Runtime;
 using Amazon.S3;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.SafeXml;
@@ -26,14 +36,6 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Windows.Forms;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -159,9 +161,9 @@ namespace Bloom.WebLibraryIntegration
         /// <summary>
         /// Only for use in tests
         /// </summary>
-        internal string UploadBook_ForUnitTest(string bookFolder)
+        internal async Task<string> UploadBook_ForUnitTestAsync(string bookFolder)
         {
-            return UploadBook(
+            return await UploadBookAsync(
                 bookFolder,
                 new NullProgress(),
                 null,
@@ -176,9 +178,8 @@ namespace Bloom.WebLibraryIntegration
             );
         }
 
-        internal string UploadBook_ForUnitTest(
+        internal async Task<(string, string)> UploadBook_ForUnitTestAsync(
             string bookFolder,
-            out string s3PrefixUploadedTo,
             IProgress progress = null,
             string existingBookObjectId = null,
             CollectionSettings collectionSettings = null
@@ -186,7 +187,7 @@ namespace Bloom.WebLibraryIntegration
         {
             if (progress == null)
                 progress = new NullProgress();
-            var result = UploadBook(
+            var result = await UploadBookAsync(
                 bookFolder,
                 progress,
                 existingBookObjectId,
@@ -200,11 +201,15 @@ namespace Bloom.WebLibraryIntegration
                 null
             );
 
-            s3PrefixUploadedTo = _s3PrefixToUploadTo;
-            return result;
+            return (result, _s3PrefixToUploadTo);
         }
 
-        private string UploadBook(
+        // Gets incremented each time so staging folder is unique.
+        // May help with BL-15810, which we suspect was caused by re-uploading a book
+        // before the file system finished deleting a very large staged video.
+        private static int _stagingVariable = 0;
+
+        private async Task<string> UploadBookAsync(
             string bookFolder,
             IProgress progress,
             string existingBookObjectIdOrNull,
@@ -217,7 +222,8 @@ namespace Bloom.WebLibraryIntegration
             string metadataLang1Code,
             string metadataLang2Code,
             bool isForBulkUpload = false,
-            bool changeUploader = false
+            bool changeUploader = false,
+            Control controlToInvokeOn = null
         )
         {
             var htmlFile = BookStorage.FindBookHtmlInFolder(bookFolder);
@@ -289,15 +295,17 @@ namespace Bloom.WebLibraryIntegration
                     if (progress.CancelRequested)
                         return "";
 
-                    // This currently (unfortunately) enforces a single upload at a time.
-                    // If we want to change that in the future, we would need different folder names,
-                    // perhaps appending an ID or even just a GUID.
+                    // I think just adding a number is enough for uniqueness. It's theoretically possible that
+                    // more than one instance is running and trying to upload the same book, but even then it's unlikely
+                    // that they get to the same index at near enough to the same time to matter.
                     using (
-                        var stagingDirectoryTempFolder = new TemporaryFolder("BloomUploadStaging")
+                        var stagingDirectoryTempFolder = new TemporaryFolder(
+                            "BloomUploadStaging" + _stagingVariable++
+                        )
                     )
                     {
                         var stagingDirectory = stagingDirectoryTempFolder.FolderPath;
-                        SetUpStaging(
+                        await SetUpStagingAsync(
                             bookFolder,
                             stagingDirectory,
                             progress,
@@ -309,7 +317,8 @@ namespace Bloom.WebLibraryIntegration
                             metadataLang1Code,
                             metadataLang2Code,
                             collectionSettings?.SettingsFilePath,
-                            isForBulkUpload
+                            isForBulkUpload,
+                            controlToInvokeOn
                         );
 
                         string[] filesToUpload = null;
@@ -486,7 +495,7 @@ namespace Bloom.WebLibraryIntegration
                         Path = fullFilePath
                             .Substring(stagingDirectory.Length + 1)
                             .Replace("\\", "/"),
-                        Hash = BloomS3Client.GetProbableEtag(fullFilePath)
+                        Hash = BloomS3Client.GetProbableEtag(fullFilePath),
                     }
                 );
             }
@@ -494,7 +503,7 @@ namespace Bloom.WebLibraryIntegration
         }
 
         // Copy the needed files to the staging directory and make any modifications needed before upload.
-        private void SetUpStaging(
+        private async Task SetUpStagingAsync(
             string pathToBloomBookDirectory,
             string stagingDirectory,
             IProgress progress,
@@ -506,7 +515,8 @@ namespace Bloom.WebLibraryIntegration
             string metadataLang1Code,
             string metadataLang2Code,
             string collectionSettingsPath = null,
-            bool isForBulkUpload = false
+            bool isForBulkUpload = false,
+            Control controlToInvokeOn = null
         )
         {
             var filter = new BookFileFilter(pathToBloomBookDirectory)
@@ -516,7 +526,7 @@ namespace Bloom.WebLibraryIntegration
                     includeNarrationAudio ? audioLanguagesToInclude : Array.Empty<string>()
                 ),
                 WantVideo = true,
-                WantMusic = includeMusic
+                WantMusic = includeMusic,
             };
             if (pdfToInclude != null)
                 filter.AlwaysAccept(pdfToInclude);
@@ -535,7 +545,11 @@ namespace Bloom.WebLibraryIntegration
                     metadataLang2Code
                 );
 
-            PublishHelper.ReportInvalidFonts(stagingDirectory, progress);
+            await PublishHelper.ReportInvalidFontsAsync(
+                stagingDirectory,
+                progress,
+                controlToInvokeOn
+            );
 
             // Really crop images, which allows us to simplify the representation of background images,
             // so the new structure with the background canvas elements doesn't get uploaded.
@@ -547,7 +561,7 @@ namespace Bloom.WebLibraryIntegration
             var htmlFile = BookStorage.FindBookHtmlInFolder(stagingDirectory);
             var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlFile, false);
 
-            PublishHelper.ReallyCropImages(xmlDomFromHtmlFile, stagingDirectory, stagingDirectory);
+            ImageUtils.ReallyCropImages(xmlDomFromHtmlFile, stagingDirectory, stagingDirectory);
             PublishHelper.SimplifyBackgroundImages(xmlDomFromHtmlFile); // after really cropping
 
             XmlHtmlConverter.SaveDOMAsHtml5(xmlDomFromHtmlFile, htmlFile);
@@ -732,8 +746,8 @@ namespace Bloom.WebLibraryIntegration
             var matchingBooks = GetBooksOnServer(bookInstanceId);
             // We are counting on there not being more than one book uploaded by any given user
             // with the same ID; we have prevented that from the earliest days of book uploading.
-            var result = matchingBooks.FirstOrDefault(
-                b => b.uploader?.email == Settings.Default.WebUserId
+            var result = matchingBooks.FirstOrDefault(b =>
+                b.uploader?.email == Settings.Default.WebUserId
             );
             if (result != null)
             {
@@ -880,7 +894,7 @@ namespace Bloom.WebLibraryIntegration
         /// Common routine used in normal upload and bulk upload.
         /// </summary>
         /// <returns>On success, returns the book objectId; on failure, returns empty string</returns>
-        internal string FullUpload(
+        internal async Task<string> FullUpload(
             Book.Book book,
             IProgress progress,
             PublishModel publishModel,
@@ -896,8 +910,8 @@ namespace Bloom.WebLibraryIntegration
             {
                 var bookFolder = book.FolderPath;
 
-                var languagesToUpload = book.BookInfo.PublishSettings.BloomLibrary.TextLangs
-                    .IncludedLanguages()
+                var languagesToUpload = book
+                    .BookInfo.PublishSettings.BloomLibrary.TextLangs.IncludedLanguages()
                     .ToArray();
                 var languagesToAdvertiseOnBlorg = book.GetTextLanguagesToAdvertiseOnBloomLibrary(
                         languagesToUpload
@@ -995,8 +1009,8 @@ namespace Bloom.WebLibraryIntegration
 
                 // Figure out which languages to upload audio for.
                 // There's no point in including languages for which we won't have text.
-                var audioLanguagesToUpload = book.BookInfo.PublishSettings.BloomLibrary.AudioLangs
-                    .IncludedLanguages()
+                var audioLanguagesToUpload = book
+                    .BookInfo.PublishSettings.BloomLibrary.AudioLangs.IncludedLanguages()
                     .Intersect(
                         book.BookInfo.PublishSettings.BloomLibrary.TextLangs.IncludedLanguages()
                     );
@@ -1012,7 +1026,7 @@ namespace Bloom.WebLibraryIntegration
                 if (progress.CancelRequested)
                     return "";
 
-                var bookObjectId = UploadBook(
+                var bookObjectId = await UploadBookAsync(
                     bookFolder,
                     progress,
                     existingBookObjectIdOrNull,
@@ -1025,7 +1039,8 @@ namespace Bloom.WebLibraryIntegration
                     book.BookData.MetadataLanguage1Tag,
                     book.BookData.MetadataLanguage2Tag,
                     bookParams.IsForBulkUpload,
-                    changeUploader
+                    changeUploader,
+                    publishModel.View
                 );
 
                 Debug.Assert(

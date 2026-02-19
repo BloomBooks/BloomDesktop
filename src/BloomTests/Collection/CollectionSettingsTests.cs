@@ -422,7 +422,7 @@ namespace BloomTests.Collection
                     makeBloomBundle = false,
                     bookshelfColor = "#FF0000",
                     distributionTag = "distTag",
-                    bookshelfLabel = "bookshelfLabel"
+                    bookshelfLabel = "bookshelfLabel",
                 };
 
             // System under test
@@ -447,7 +447,7 @@ namespace BloomTests.Collection
             var collectionName = "loadBulkPublishSettingsTest";
             var collectionSettingsPath = Path.Combine(
                 _folder.Path,
-                $"{collectionName}.bloomCollection"
+                CollectionSettings.GetFileName(collectionName)
             );
             if (RobustFile.Exists(collectionSettingsPath))
             {
@@ -490,7 +490,7 @@ namespace BloomTests.Collection
             var collectionSettingsPath = Path.Combine(
                 _folder.Path,
                 collectionName,
-                $"{collectionName}.bloomCollection"
+                CollectionSettings.GetFileName(collectionName)
             );
             if (RobustFile.Exists(collectionSettingsPath))
                 RobustFile.Delete(collectionSettingsPath);
@@ -561,7 +561,7 @@ namespace BloomTests.Collection
             var collectionSettingsPath = Path.Combine(
                 _folder.Path,
                 collectionName,
-                $"{collectionName}.bloomCollection"
+                CollectionSettings.GetFileName(collectionName)
             );
             if (RobustFile.Exists(collectionSettingsPath))
                 RobustFile.Delete(collectionSettingsPath);
@@ -610,7 +610,7 @@ namespace BloomTests.Collection
         [TestCase("en", "en", ExpectedResult = "English")]
         [TestCase("fr", "en", ExpectedResult = "French")]
         [TestCase("fr", "fr", ExpectedResult = "français")]
-        [TestCase("zh-CN", "zh-CN", ExpectedResult = "中文(中国)")]
+        [TestCase("zh-CN", "zh-CN", ExpectedResult = "简体中文")]
         // For invalid "inLanguage" subtags, fall back to returning tag.
         // (Actually, we don't care what we get as long as it's reasonable,
         // but previously, invalid subtags threw an exception; see BL-15159.)

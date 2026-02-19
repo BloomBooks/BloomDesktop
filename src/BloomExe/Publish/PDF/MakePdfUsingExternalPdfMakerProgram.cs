@@ -337,14 +337,21 @@ namespace Bloom.Publish.PDF
             //bldr.Append(" --debug");
         }
 
-        private static void ConfigureFullBleedPageSize(StringBuilder bldr, PdfMakingSpecs specs)
+        /// <summary>
+        /// Returns the height and width (in mm) for page sizes that support full bleed printing.
+        /// Returns null if the page size does not support full bleed.
+        /// </summary>
+        /// <param name="paperSizeName">The name of the paper size (e.g., "A4", "USComic", etc.)</param>
+        /// <param name="landscape">True if landscape orientation, false if portrait</param>
+        /// <returns>A tuple of (height, width) in mm, or null if the page size doesn't support full bleed</returns>
+        public static (double height, double width)? GetFullBleedPageSize(
+            string paperSizeName,
+            bool landscape
+        )
         {
-            // We will make a non-standard page size that is 6mm bigger in each dimension than the size indicated
-            // by the paperSizeName. Unfortunately doing that means we can't just pass the name, we have to figure
-            // out the size.
             double height;
             double width;
-            switch (specs.PaperSizeName.ToLowerInvariant())
+            switch (paperSizeName.ToLowerInvariant())
             {
                 case "a5":
                     height = A4PortraitWidth + bleedExtra;
@@ -373,21 +380,35 @@ namespace Bloom.Publish.PDF
                     width = Size6x9PortraitWidth + bleedExtra;
                     break;
                 default:
-                    var exception = new ArgumentException(
-                        "Full bleed printing of paper sizes other than A5, A4, A3, USComic, and Size6x9 is not yet implemented"
-                    );
-                    exception.Data["argument"] = "specs.PaperSizeName";
-                    throw exception;
+                    return null; // Page size doesn't support full bleed
             }
 
-            if (specs.Landscape)
+            if (landscape)
             {
                 var temp = height;
                 height = width;
                 width = temp;
             }
 
-            bldr.Append($" -h {height} -w {width}");
+            return (height, width);
+        }
+
+        private static void ConfigureFullBleedPageSize(StringBuilder bldr, PdfMakingSpecs specs)
+        {
+            // We will make a non-standard page size that is 6mm bigger in each dimension than the size indicated
+            // by the paperSizeName. Unfortunately doing that means we can't just pass the name, we have to figure
+            // out the size.
+            var dimensions = GetFullBleedPageSize(specs.PaperSizeName, specs.Landscape);
+            if (dimensions == null)
+            {
+                var exception = new ArgumentException(
+                    $"Full bleed printing of paper size '{specs.PaperSizeName}' is not yet implemented. Supported sizes are: A5, A4, A3, USComic, HalfFolio, and Size6x9."
+                );
+                exception.Data["argument"] = "specs.PaperSizeName";
+                throw exception;
+            }
+
+            bldr.Append($" -h {dimensions.Value.height} -w {dimensions.Value.width}");
         }
     }
 

@@ -9,6 +9,7 @@ using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.FontProcessing;
+using Bloom.ImageProcessing;
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
@@ -154,7 +155,10 @@ namespace Bloom.Publish.BloomPub
 
             BookCompressor.MakeSizedThumbnail(modifiedBook, modifiedBook.FolderPath, 256);
 
-            MakeSha(BookStorage.FindBookHtmlInFolder(bookFolderPath), modifiedBook.FolderPath);
+            CreateVersionFileWithSha(
+                BookStorage.FindBookHtmlInFolder(bookFolderPath),
+                modifiedBook.FolderPath
+            );
             CompressImages(
                 modifiedBook.FolderPath,
                 settings.ImagePublishSettings,
@@ -167,11 +171,11 @@ namespace Bloom.Publish.BloomPub
                 modifiedBook.FolderPath
             );
             var newContent = XmlHtmlConverter.ConvertDomToHtml5(modifiedBook.RawDom);
-            RobustFile.WriteAllText(
-                BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath),
-                newContent,
-                Encoding.UTF8
-            );
+
+            var originalBookHtmlPath = BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath);
+            RobustFile.Delete(originalBookHtmlPath);
+            var indexHtmPath = Path.Combine(modifiedBook.FolderPath, "index.htm");
+            RobustFile.WriteAllText(indexHtmPath, newContent, Encoding.UTF8);
 
             BookCompressor.CompressBookDirectory(
                 outputPath,
@@ -194,7 +198,7 @@ namespace Bloom.Publish.BloomPub
                 IncludeFilesNeededForBloomPlayer = true,
                 WantMusic = true,
                 WantVideo = true,
-                NarrationLanguages = null
+                NarrationLanguages = null,
             };
             // these are artifacts of uploading book to BloomLibrary.org and not useful in BloomPubs
             filter.AlwaysReject("thumbnail-256.png");
@@ -363,14 +367,14 @@ namespace Bloom.Publish.BloomPub
             return System.Web.HttpUtility.UrlDecode(filename);
         }
 
-        private static void MakeSha(string pathToFileForSha, string folderForSha)
+        private static void CreateVersionFileWithSha(string bookFilePath, string outputDirectory)
         {
-            var sha = Book.Book.ComputeHashForAllBookRelatedFiles(pathToFileForSha);
+            var sha = Book.Book.ComputeHashForAllBookRelatedFiles(bookFilePath);
             var name = "version.txt"; // must match what BloomReader is looking for in NewBookListenerService.IsBookUpToDate()
             // We send the straight string without a BOM in our advertisement, so that needs to be what we write
             // in the file, otherwise, BR never recognizes that it already has the current version.
             RobustFile.WriteAllText(
-                Path.Combine(folderForSha, name),
+                Path.Combine(outputDirectory, name),
                 sha,
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)
             );
@@ -390,7 +394,6 @@ namespace Bloom.Publish.BloomPub
         )
         {
             // MakeDeviceXmatterTempBook needs to be able to copy customCollectionStyles.css etc into parent of bookFolderPath
-            // And bloom-player expects folder name to match html file name.
             var htmPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
             var tentativeBookFolderPath = Path.Combine(
                 temp.FolderPath,
@@ -425,6 +428,12 @@ namespace Bloom.Publish.BloomPub
             modifiedBook.SetMotionAttributesOnBody(
                 settings?.PublishAsMotionBookIfApplicable == true && modifiedBook.HasMotionPages
             );
+
+            if ((settings.PublishingMedium & PublishingMediums.Video) != 0)
+            {
+                foreach (var page in modifiedBook.OurHtmlDom.GetPageElements())
+                    page.AddClass("bloom-publish-video");
+            }
 
             // Although usually tentativeBookFolderPath and modifiedBook.FolderPath are the same, there are some exceptions
             // In the process of bringing a book up-to-date (called by MakeDeviceXmatterTempBook), the folder path may change.
@@ -496,9 +505,9 @@ namespace Bloom.Publish.BloomPub
                 && modifiedBook.OurHtmlDom.SelectSingleNode(BookStorage.ComicalXpath) != null
             )
             {
-                // This indicates that we are harvesting a book with canvas elements (Overlay Tool).
+                // This indicates that we are harvesting a book with canvas elements (Canvas Tool).
                 // For books with canvas elements, we only publish a single language. This harks back to a time when we couldn't
-                // store different sizes and positions for overlays in different languages. Now we can, but a book we're
+                // store different sizes and positions for canvas elements in different languages. Now we can, but a book we're
                 // harvesting doesn't necessarily have appropriate locations stored for each language. So for now we'll just
                 // publish the first one.
                 var languagesToInclude = new string[1] { modifiedBook.BookData.Language1.Tag };
@@ -723,19 +732,15 @@ namespace Bloom.Publish.BloomPub
             {
                 question = questionElt.InnerText.Trim(),
                 answers = answerElts
-                    .Select(
-                        a =>
-                            new Answer()
-                            {
-                                text = a.InnerText.Trim(),
-                                correct = (
-                                    (a.ParentNode?.ParentNode as SafeXmlElement)?.GetAttribute(
-                                        "class"
-                                    ) ?? ""
-                                ).Contains("correct-answer")
-                            }
-                    )
-                    .ToArray()
+                    .Select(a => new Answer()
+                    {
+                        text = a.InnerText.Trim(),
+                        correct = (
+                            (a.ParentNode?.ParentNode as SafeXmlElement)?.GetAttribute("class")
+                            ?? ""
+                        ).Contains("correct-answer"),
+                    })
+                    .ToArray(),
             };
             group.questions = new[] { question };
 
@@ -749,9 +754,13 @@ namespace Bloom.Publish.BloomPub
                 var imgElt in dom.SafeSelectNodes("//img[@src]").Cast<SafeXmlElement>().ToArray()
             )
             {
-                var file = UrlPathString
-                    .CreateFromUrlEncodedString(imgElt.GetAttribute("src"))
-                    .PathOnly.NotEncoded;
+                // As of BL-15441, we use css rather than real files to display placeholders, but we still mark the img elements with src="placeHolder.png".
+                // Don't strip such img elements here - we want them to persist in template books. For other books we
+                // are already removing them in PublishHelper.RemoveUnwantedContent.
+                string src = imgElt.GetAttribute("src");
+                if (ImageUtils.IsPlaceholderImageFilename(src))
+                    continue;
+                var file = UrlPathString.CreateFromUrlEncodedString(src).PathOnly.NotEncoded;
                 if (!RobustFile.Exists(Path.Combine(folderPath, file)))
                 {
                     imgElt.ParentNode.RemoveChild(imgElt);
@@ -805,8 +814,8 @@ namespace Bloom.Publish.BloomPub
                     .ToArray()
             )
             {
-                var img = imgContainer.ChildNodes.FirstOrDefault(
-                    n => n is SafeXmlElement && n.Name == "img"
+                var img = imgContainer.ChildNodes.FirstOrDefault(n =>
+                    n is SafeXmlElement && n.Name == "img"
                 );
                 if (img == null || string.IsNullOrEmpty(img.GetAttribute("src")))
                     continue;
@@ -902,7 +911,8 @@ namespace Bloom.Publish.BloomPub
             fontsWanted.RemoveWhere(x => x.fontFamily == PublishHelper.DefaultFont);
             // We don't need to embed Andika New Basic, because Andika will handle it.
             fontsWanted.RemoveWhere( // The default Andika font will handle Andika New Basic
-                x => x.fontFamily == "Andika New Basic"
+                x =>
+                x.fontFamily == "Andika New Basic"
             );
 
             PublishHelper.CheckFontsForEmbedding(
@@ -920,6 +930,7 @@ namespace Bloom.Publish.BloomPub
             }
             // Create the fonts.css file, which tells the browser where to find the fonts for those families.
             var sb = new StringBuilder();
+            var normalFacesAdded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var font in fontsWanted.OrderBy(x => x.ToString()))
             {
                 if (badFonts.Contains(font.fontFamily))
@@ -927,7 +938,7 @@ namespace Bloom.Publish.BloomPub
                 var group = fontFileFinder.GetGroupForFont(font.fontFamily);
                 if (group != null)
                 {
-                    EpubMaker.AddFontFace(sb, font, group);
+                    EpubMaker.AddFontFace(sb, font, group, normalFacesAdded);
                 }
                 // We don't need (or want) a rule to use Andika instead.
                 // The reader typically WILL use Andika, because we have a rule making it the default font
@@ -996,7 +1007,7 @@ namespace Bloom.Publish.BloomPub
                     // now add those may not actually show up in firefox, but are in the pre-existing
                     // unit tests, presumably with written-by-hand html?
                     "</br>",
-                    "<p />"
+                    "<p />",
                 };
                 var lines = source.InnerXml.Split(separators, StringSplitOptions.None);
                 var questions = new List<Question>();

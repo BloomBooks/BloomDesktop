@@ -63,8 +63,8 @@ namespace Bloom
 
         private Book.Book FindAndCreateTemplateBookByFileName(string fileName)
         {
-            return FindAndCreateTemplateBook(
-                templateDirectory => Path.GetFileName(templateDirectory) == fileName
+            return FindAndCreateTemplateBook(templateDirectory =>
+                Path.GetFileName(templateDirectory) == fileName
             );
         }
 
@@ -155,7 +155,7 @@ namespace Bloom
                 foreach (
                     var collectionDir in Directory
                         .GetFiles(root, "*.lnk", SearchOption.TopDirectoryOnly)
-                        .Select(ResolveShortcut.Resolve)
+                        .Select(Shortcut.Resolve)
                         .Where(Directory.Exists)
                 )
                 {

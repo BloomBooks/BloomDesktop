@@ -1,12 +1,11 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { useState, useRef } from "react";
 
 import {
     PreviewPanel,
     HelpGroup,
-    SettingsPanel
+    SettingsPanel,
 } from "../commonPublish/PublishScreenBaseComponents";
 import { PDFPrintFeaturesGroup } from "./PDFPrintFeaturesGroup";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
@@ -32,7 +31,7 @@ const PrintSaveButton: React.FunctionComponent<{
     l10nId: string;
     imgSrc: string;
     enabled: boolean;
-}> = props => {
+}> = (props) => {
     const label = useL10n(props.label, props.l10nId);
     return (
         <Button
@@ -70,11 +69,11 @@ export const PDFPrintPublishScreen = () => {
 
     const [allowPublishing, _setAllowPublishing] = useApiBoolean(
         "publish/pdf/licenseOK",
-        false
+        false,
     );
     const [isPlaygroundBook, setIsPlaygroundBook] = useApiBoolean(
         "publish/isPlaygroundBook",
-        true
+        true,
     );
 
     const [isProgressDialogOpen, setIsProgressDialogOpen] = useState(false);
@@ -106,7 +105,7 @@ export const PDFPrintPublishScreen = () => {
 
     const helpHeader = useL10n(
         "Here are the settings you need for printing this booklet:",
-        "PublishTab.PDF.Booklet.HelpHeader"
+        "PublishTab.PDF.Booklet.HelpHeader",
     );
     const mainPanel = (
         <React.Fragment>
@@ -147,7 +146,7 @@ export const PDFPrintPublishScreen = () => {
                     setIsProgressDialogOpen(allowPublishing);
                     setBookletMode(newMode);
                 }}
-                onGotPdf={path => {
+                onGotPdf={(path) => {
                     setPath(path);
                     setIsProgressDialogOpen(false);
                 }}
@@ -182,7 +181,7 @@ export const PDFPrintPublishScreen = () => {
     };
 
     const handlePrint = () => {
-        get("publish/pdf/printSettingsHelp", response => {
+        get("publish/pdf/printSettingsHelp", (response) => {
             // This causes the localized instructions to be displayed for
             // the current page size.
             setBookletPrintHelp(response.data.helps);

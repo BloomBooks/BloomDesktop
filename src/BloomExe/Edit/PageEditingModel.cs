@@ -43,11 +43,17 @@ namespace Bloom.Edit
             );
             try
             {
-                ImageUtils.SaveImageMetadata(imageInfo, Path.Combine(bookFolderPath, imageFileName));
+                ImageUtils.SaveImageMetadata(
+                    imageInfo,
+                    Path.Combine(bookFolderPath, imageFileName)
+                );
             }
             catch (Exception e)
             {
-                ImageUtils.ReportImageMetadataProblem(Path.Combine(bookFolderPath, imageFileName), e);
+                ImageUtils.ReportImageMetadataProblem(
+                    Path.Combine(bookFolderPath, imageFileName),
+                    e
+                );
             }
             return new ImageInfoForJavascript()
             {
@@ -55,7 +61,7 @@ namespace Bloom.Edit
                 src = UrlPathString.CreateFromUnencodedString(imageFileName).UrlEncoded,
                 copyright = imageInfo.Metadata.CopyrightNotice ?? "",
                 creator = imageInfo.Metadata.Creator ?? "",
-                license = imageInfo.Metadata.License?.ToString() ?? ""
+                license = imageInfo.Metadata.License?.ToString() ?? "",
             };
         }
 

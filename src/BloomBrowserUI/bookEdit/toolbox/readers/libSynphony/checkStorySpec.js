@@ -1,7 +1,8 @@
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { theOneLibSynphony, setLangData } from "./synphony_lib";
 import _ from "underscore";
 
-describe("Check Story", function() {
+describe("Check Story", function () {
     const lettersInLanguage = [
         "a",
         "b",
@@ -34,7 +35,7 @@ describe("Check Story", function() {
         "b'",
         "-",
         "aa",
-        "ng"
+        "ng",
     ];
 
     function generateTestData() {
@@ -56,7 +57,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "b",
@@ -68,7 +69,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "c",
@@ -80,7 +81,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "d",
@@ -92,7 +93,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "e",
@@ -104,7 +105,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "f",
@@ -116,7 +117,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "g",
@@ -128,7 +129,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "h",
@@ -140,7 +141,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "i",
@@ -152,7 +153,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "j",
@@ -164,7 +165,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "k",
@@ -176,7 +177,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "l",
@@ -188,7 +189,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "m",
@@ -200,7 +201,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "n",
@@ -212,7 +213,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "o",
@@ -224,7 +225,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "p",
@@ -236,7 +237,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "q",
@@ -248,7 +249,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "r",
@@ -260,7 +261,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "s",
@@ -272,7 +273,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "t",
@@ -284,7 +285,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "u",
@@ -296,7 +297,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "v",
@@ -308,7 +309,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "w",
@@ -320,7 +321,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "x",
@@ -332,7 +333,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "y",
@@ -344,7 +345,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "z",
@@ -356,7 +357,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "ch",
@@ -368,7 +369,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "'",
@@ -380,7 +381,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "b'",
@@ -392,7 +393,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "-",
@@ -404,7 +405,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "aa",
@@ -416,7 +417,7 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
+                    Alt: [],
                 },
                 {
                     GPC: "ng",
@@ -428,25 +429,25 @@ describe("Check Story", function() {
                     Frequency: 1,
                     TokenFreq: 1,
                     IPA: "",
-                    Alt: []
-                }
+                    Alt: [],
+                },
             ],
             VocabularyGroupsDescriptions: [],
             VocabularyGroups: 1,
             group1: [],
-            UseFullGPCNotation: false
+            UseFullGPCNotation: false,
         });
     }
 
-    beforeEach(function() {
+    beforeEach(function () {
         generateTestData();
     });
 
-    afterEach(function() {
+    afterEach(function () {
         //
     });
 
-    it("Validate letter combination separately from letters", function() {
+    it("Validate letter combination separately from letters", function () {
         var inputText = "a bad cad chad ch,ad had d,ach d,ac";
         var knownGPCs = ["a", "b", "ch", "d", "n"];
         var results = theOneLibSynphony.checkStory(
@@ -454,13 +455,13 @@ describe("Check Story", function() {
             [],
             knownGPCs,
             inputText,
-            ""
+            "",
         );
         expect(results.possible_words.length).toBe(5); // a bad chad ch,ad d,ach
         expect(results.remaining_words.length).toBe(3); // cad had d,ac
     });
 
-    it("Check letter combination and letters", function() {
+    it("Check letter combination and letters", function () {
         var inputText = "a bad cad chad ch,ad had d,ach d,ac";
         var knownGPCs = ["a", "b", "ch", "h", "d", "n"];
         var results = theOneLibSynphony.checkStory(
@@ -468,13 +469,13 @@ describe("Check Story", function() {
             [],
             knownGPCs,
             inputText,
-            ""
+            "",
         );
         expect(results.possible_words.length).toBe(6); // a bad chad ch,ad d,ach had
         expect(results.remaining_words.length).toBe(2); // cad d,ac
     });
 
-    it("Check usage of single quote as GPC", function() {
+    it("Check usage of single quote as GPC", function () {
         var inputText = "o'o 'obo bodo' cob";
         var knownGPCs = ["'", "b", "o", "d"];
         var results = theOneLibSynphony.checkStory(
@@ -482,13 +483,13 @@ describe("Check Story", function() {
             [],
             knownGPCs,
             inputText,
-            ""
+            "",
         );
         expect(results.possible_words.length).toBe(3); // o'o 'obo bodo'
         expect(results.remaining_words.length).toBe(1); // cobc
     });
 
-    it("Check single quote in digraph, but not as single character", function() {
+    it("Check single quote in digraph, but not as single character", function () {
         var inputText = "o'o b'ob bob' ob'o cob";
         var knownGPCs = ["b", "b'", "o", "d"];
         var results = theOneLibSynphony.checkStory(
@@ -496,13 +497,13 @@ describe("Check Story", function() {
             [],
             knownGPCs,
             inputText,
-            ""
+            "",
         );
         expect(results.possible_words.length).toBe(3); // b'ob bob' ob'o
         expect(results.remaining_words.length).toBe(2); // o'o cob
     });
 
-    it("Check hyphen in digraph, but not as single character", function() {
+    it("Check hyphen in digraph, but not as single character", function () {
         var inputText = "o-o b-ob bob- ob-o do-b";
         var knownGPCs = ["b", "o", "-o", "d"];
         var results = theOneLibSynphony.checkStory(
@@ -510,7 +511,7 @@ describe("Check Story", function() {
             [],
             knownGPCs,
             inputText,
-            ""
+            "",
         );
         expect(results.possible_words.length).toBe(3); // o-o b-ob ob-o
         expect(results.remaining_words.length).toBe(2); // bob- do-b
@@ -520,7 +521,7 @@ describe("Check Story", function() {
     // in possible_words. The exterior hyphens are stripped off of '-obo' and 'bodo-'.
     // Not sure why or how much trouble it'd be to fix. Also not sure it's a problem, since
     // hyphens are usually word internal things (except in linguistics).
-    it("Check usage of hyphen as GPC", function() {
+    it("Check usage of hyphen as GPC", function () {
         var inputText = "o-o -obo bodo- cob d,oc";
         var knownGPCs = ["b", "-", "o", "d"];
         var results = theOneLibSynphony.checkStory(
@@ -528,13 +529,13 @@ describe("Check Story", function() {
             [],
             knownGPCs,
             inputText,
-            ""
+            "",
         );
         expect(results.possible_words.length).toBe(3); // o-o -obo bodo-
         expect(results.remaining_words.length).toBe(2); // cob d,oc
     });
 
-    it("Check double letter combinations", function() {
+    it("Check double letter combinations", function () {
         var inputText = "a and nad dan aa dad aand naad daan";
         var knownGPCs = ["a", "d", "n"];
         var results = theOneLibSynphony.checkStory(
@@ -542,14 +543,14 @@ describe("Check Story", function() {
             [],
             knownGPCs,
             inputText,
-            ""
+            "",
         );
         expect(results.possible_words.length).toBe(5); // a and nad dan dad
         expect(results.remaining_words.length).toBe(4); // aa aand naad daan
     });
 
     // BL-4720
-    it("The only unknown letter is part of a known digraph", function() {
+    it("The only unknown letter is part of a known digraph", function () {
         var inputText = "a an ang gang ga nga ngag";
         var knownGPCs = _.without(lettersInLanguage, "g"); // g is the only unknown letter
         expect(_.contains(knownGPCs, "ng")).toBe(true); // make sure our test is set up correctly. 'ng' is known
@@ -558,7 +559,7 @@ describe("Check Story", function() {
             [],
             knownGPCs,
             inputText,
-            ""
+            "",
         );
         expect(results.possible_words.length).toBe(4); // a an ang nga
         expect(results.remaining_words.length).toBe(3); // gang ga ngag

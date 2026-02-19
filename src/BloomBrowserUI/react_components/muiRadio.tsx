@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 
 import * as React from "react";
 import { FormControlLabel, Radio } from "@mui/material";
@@ -7,12 +6,14 @@ import { useL10n } from "./l10nHooks";
 import { ILocalizationProps } from "./l10nComponents";
 
 // wrap up the complex material-ui radio control in something simple; and make it localizable
-export const MuiRadio: React.FunctionComponent<ILocalizationProps & {
-    label: string;
-    value?: string;
-    disabled?: boolean;
-    onChanged?: (v: boolean | undefined) => void;
-}> = props => {
+export const MuiRadio: React.FunctionComponent<
+    ILocalizationProps & {
+        label: string;
+        value?: string;
+        disabled?: boolean;
+        onChanged?: (v: boolean | undefined) => void;
+    }
+> = (props) => {
     const localizedLabel = useL10n(
         props.label,
         props.alreadyLocalized || props.temporarilyDisableI18nWarning
@@ -20,7 +21,7 @@ export const MuiRadio: React.FunctionComponent<ILocalizationProps & {
             : props.l10nKey,
         props.l10nComment,
         props.l10nParam0,
-        props.l10nParam1
+        props.l10nParam1,
     );
 
     // Work has been done below to ensure that a multiline (wrapped) label will align with the control correctly.

@@ -2,14 +2,14 @@ import {
     RequiresSubscriptionDialog,
     RequiresSubscriptionNotice,
     RequiresSubscriptionNoticeDialog,
-    RequiresSubscriptionOverlayWrapper
+    RequiresSubscriptionOverlayWrapper,
 } from "../requiresSubscription";
 import { normalDialogEnvironmentForStorybook } from "../BloomDialog/BloomDialogPlumbing";
 
-import { Meta, StoryObj } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react-vite";
 
 const meta: Meta = {
-    title: "RequiresSubscription"
+    title: "RequiresSubscription",
 };
 
 export default meta;
@@ -17,7 +17,7 @@ type Story = StoryObj;
 
 export const RequiresSubscriptionNoticeDialogStory: Story = {
     name: "RequiresSubscriptionNoticeDialog",
-    render: () => <RequiresSubscriptionNoticeDialog featureName="overlay" />
+    render: () => <RequiresSubscriptionNoticeDialog featureName="canvas" />,
 };
 
 export const RequiresSubscriptionDialogStory: Story = {
@@ -26,15 +26,15 @@ export const RequiresSubscriptionDialogStory: Story = {
         <RequiresSubscriptionDialog
             dialogEnvironment={normalDialogEnvironmentForStorybook}
         />
-    )
+    ),
 };
 
 export const RequiresSubscriptionNoticeStory: Story = {
     name: "RequiresSubscriptionNotice",
-    render: () => <RequiresSubscriptionNotice featureName={"foobar"} />
+    render: () => <RequiresSubscriptionNotice featureName={"foobar"} />,
 };
 
 export const RequiresSubscriptionOverlayWrapperStory: Story = {
     name: "RequiresSubscriptionOverlayWrapper",
-    render: () => <RequiresSubscriptionOverlayWrapper featureName={"foobar"} />
+    render: () => <RequiresSubscriptionOverlayWrapper featureName={"foobar"} />,
 };

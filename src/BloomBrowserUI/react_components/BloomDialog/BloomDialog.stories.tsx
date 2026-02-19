@@ -6,14 +6,14 @@ import {
     DialogBottomButtons,
     DialogBottomLeftButtons,
     DialogMiddle,
-    DialogTitle
+    DialogTitle,
 } from "./BloomDialog";
 import { Button, CircularProgress } from "@mui/material";
 
 import PersonIcon from "@mui/icons-material/Person";
 import {
     DialogCancelButton,
-    DialogCloseButton
+    DialogCloseButton,
 } from "./commonDialogComponents";
 import {
     WarningBox,
@@ -21,15 +21,11 @@ import {
     NoteBoxSansBorder,
     NoteBox,
     BoxWithIconAndText,
-    WaitBox
+    WaitBox,
 } from "../boxes";
 import {
-    INumberChooserDialogProps,
-    NumberChooserDialog
-} from "../numberChooserDialog";
-import {
     normalDialogEnvironmentForStorybook,
-    useSetupBloomDialog
+    useSetupBloomDialog,
 } from "./BloomDialogPlumbing";
 
 const circularProgress = (
@@ -47,16 +43,13 @@ const circularProgress = (
 );
 
 export default {
-    title: "BloomDialog"
+    title: "BloomDialog",
 };
 
 export const SimpleDialog = () => {
     return React.createElement(() => {
-        const {
-            showDialog,
-            closeDialog,
-            propsForBloomDialog
-        } = useSetupBloomDialog(normalDialogEnvironmentForStorybook);
+        const { showDialog, closeDialog, propsForBloomDialog } =
+            useSetupBloomDialog(normalDialogEnvironmentForStorybook);
         // normally here we would assign showDialog to an exported function that
         // other parts of the UI can use to show this dialog. But that doesn't
         // really work here in story-land, so we'll just use it below in a button.
@@ -96,11 +89,8 @@ export const SimpleDialog = () => {
 
 export const DialogWithCloseIcon = () => {
     return React.createElement(() => {
-        const {
-            showDialog,
-            closeDialog,
-            propsForBloomDialog
-        } = useSetupBloomDialog(normalDialogEnvironmentForStorybook);
+        const { showDialog, closeDialog, propsForBloomDialog } =
+            useSetupBloomDialog(normalDialogEnvironmentForStorybook);
         return (
             <div>
                 <BloomDialog onCancel={closeDialog} {...propsForBloomDialog}>
@@ -133,16 +123,13 @@ export const DialogWithCloseIcon = () => {
 };
 
 DialogWithCloseIcon.story = {
-    name: "Dialog with Close icon"
+    name: "Dialog with Close icon",
 };
 
 export const DialogWithProgressAndClose = () => {
     return React.createElement(() => {
-        const {
-            showDialog,
-            closeDialog,
-            propsForBloomDialog
-        } = useSetupBloomDialog(normalDialogEnvironmentForStorybook);
+        const { showDialog, closeDialog, propsForBloomDialog } =
+            useSetupBloomDialog(normalDialogEnvironmentForStorybook);
         return (
             <div>
                 <BloomDialog
@@ -182,16 +169,13 @@ export const DialogWithProgressAndClose = () => {
 };
 
 DialogWithProgressAndClose.story = {
-    name: "Dialog with Progress and Close"
+    name: "Dialog with Progress and Close",
 };
 
 export const DialogWithTheKitchenSink = () => {
     return React.createElement(() => {
-        const {
-            showDialog,
-            closeDialog,
-            propsForBloomDialog
-        } = useSetupBloomDialog(normalDialogEnvironmentForStorybook);
+        const { showDialog, closeDialog, propsForBloomDialog } =
+            useSetupBloomDialog(normalDialogEnvironmentForStorybook);
         return (
             <BloomDialog onCancel={closeDialog} {...propsForBloomDialog}>
                 <DialogTitle
@@ -282,23 +266,7 @@ export const DialogWithTheKitchenSink = () => {
 };
 
 DialogWithTheKitchenSink.story = {
-    name: "Dialog with the kitchen sink"
-};
-
-export const _NumberChooserDialog = () => {
-    const props: INumberChooserDialogProps = {
-        min: 2,
-        max: 777,
-        title: "My Random Chooser Title",
-        prompt: "Enter some number from 2 to 777",
-        onClick: num => {
-            console.log(`We chose ${num}.`);
-        },
-        dialogEnvironment: normalDialogEnvironmentForStorybook
-    };
-    return React.createElement(() => {
-        return <NumberChooserDialog {...props}></NumberChooserDialog>;
-    });
+    name: "Dialog with the kitchen sink",
 };
 
 export const TestDragResize = () => (
@@ -323,5 +291,5 @@ export const TestDragResize = () => (
 );
 
 TestDragResize.story = {
-    name: "Test drag & resize"
+    name: "Test drag & resize",
 };

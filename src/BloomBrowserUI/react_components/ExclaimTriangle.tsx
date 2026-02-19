@@ -5,7 +5,7 @@ interface IProps {
     exclaimColor: string;
 }
 
-export const ExclaimTriangle: React.FunctionComponent<IProps> = props => {
+export const ExclaimTriangle: React.FunctionComponent<IProps> = (props) => {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -23,7 +23,7 @@ export const ExclaimTriangle: React.FunctionComponent<IProps> = props => {
                     strokeLinejoin: "round",
                     strokeMiterlimit: 4,
                     strokeDasharray: "none",
-                    strokeOpacity: 1
+                    strokeOpacity: 1,
                 }}
                 d="m 314.7913,33.70932 148.12211,256.55505 148.12213,256.55505 -296.24425,-1e-5 -296.244254,-10e-6 148.122124,-256.55503 z"
                 transform="matrix(0.8402744,0,0,0.82490495,53.231396,34.635543)"

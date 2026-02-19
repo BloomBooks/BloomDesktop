@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file original="velopack.exe" source-language="en" target-language="es" datatype="plaintext">
+    <body>
+      <trans-unit id="templates.setup_title">
+        <source xml:lang="en">{app_title} Setup {app_version}</source>
+        <target xml:lang="es-ES" state="translated">Instalación de {app_title} {app_version}</target>
+      </trans-unit>
+      <trans-unit id="templates.setup_title_no_version">
+        <source xml:lang="en">{app_title} Setup</source>
+        <target xml:lang="es-ES" state="translated">Instalación de {app_title}</target>
+      </trans-unit>
+      <trans-unit id="templates.update_title">
+        <source xml:lang="en">{app_title} Update {app_version}</source>
+        <target xml:lang="es-ES" state="translated">Actualización de {app_title} {app_version}</target>
+      </trans-unit>
+      <trans-unit id="templates.update_title_no_version">
+        <source xml:lang="en">{app_title} Update</source>
+        <target xml:lang="es-ES" state="translated">Actualización de {app_title}</target>
+      </trans-unit>
+      <trans-unit id="templates.uninstall_title">
+        <source xml:lang="en">{app_title} Uninstall</source>
+        <target xml:lang="es-ES" state="translated">Desinstalación de {app_title}</target>
+      </trans-unit>
+      <trans-unit id="templates.error_title">
+        <source xml:lang="en">{program_name} Error</source>
+        <target xml:lang="es-ES" state="translated">Error de {program_name}</target>
+      </trans-unit>
+      <trans-unit id="templates.install_directory_default">
+        <source xml:lang="en">The install directory is '&lt;A HREF="na"&gt;%LocalAppData%\{app_id}&lt;/A&gt;'</source>
+        <target xml:lang="es-ES" state="translated">El directorio de instalación es '&lt;A HREF="na"&gt;%LocalAppData%\{app_id}&lt;/A&gt;'</target>
+      </trans-unit>
+      <trans-unit id="templates.install_directory_custom">
+        <source xml:lang="en">The install directory is '&lt;A HREF="na"&gt;{path}&lt;/A&gt;'</source>
+        <target xml:lang="es-ES" state="translated">El directorio de instalación es '&lt;A HREF="na"&gt;{path}&lt;/A&gt;'</target>
+      </trans-unit>
+      <trans-unit id="progress.installing_app">
+        <source xml:lang="en">Installing {app_title}...</source>
+        <target xml:lang="es-ES" state="translated">Instalando {app_title}...</target>
+      </trans-unit>
+      <trans-unit id="progress.downloading_runtime">
+        <source xml:lang="en">Downloading {runtime_name}...</source>
+        <target xml:lang="es-ES" state="translated">Descargando {runtime_name}...</target>
+      </trans-unit>
+      <trans-unit id="buttons.ok">
+        <source xml:lang="en">Ok</source>
+        <target xml:lang="es-ES" state="translated">Aceptar</target>
+      </trans-unit>
+      <trans-unit id="buttons.yes">
+        <source xml:lang="en">Yes</source>
+        <target xml:lang="es-ES" state="translated">Sí</target>
+      </trans-unit>
+      <trans-unit id="buttons.no">
+        <source xml:lang="en">No</source>
+        <target xml:lang="es-ES" state="translated">No</target>
+      </trans-unit>
+      <trans-unit id="buttons.install_update">
+        <source xml:lang="en">Install Update</source>
+        <target xml:lang="es-ES" state="translated">Instalar actualización</target>
+      </trans-unit>
+      <trans-unit id="buttons.install_and_update">
+        <source xml:lang="en">Install &amp; Update</source>
+        <target xml:lang="es-ES" state="translated">Instalar y actualizar</target>
+      </trans-unit>
+      <trans-unit id="buttons.install">
+        <source xml:lang="en">Install</source>
+        <target xml:lang="es-ES" state="translated">Instalar</target>
+      </trans-unit>
+      <trans-unit id="buttons.hide">
+        <source xml:lang="en">Hide</source>
+        <target xml:lang="es-ES" state="translated">Ocultar</target>
+      </trans-unit>
+      <trans-unit id="buttons.retry_close_programs">
+        <source xml:lang="en">Retry\nTry again if you've closed the program(s)</source>
+        <target xml:lang="es-ES" state="translated">Reintentar\nInténtalo de nuevo si ya cerraste los programas</target>
+        <note>Note: you must preserve the '\n' after the first word.</note>
+      </trans-unit>
+      <trans-unit id="buttons.continue_close_programs">
+        <source xml:lang="en">Continue\nAttempt to close the program(s) automatically</source>
+        <target xml:lang="es-ES" state="translated">Continuar\nIntentar cerrar los programas automáticamente</target>
+        <note>Note: you must preserve the '\n' after the first word.</note>
+      </trans-unit>
+      <trans-unit id="buttons.cancel_stop_update">
+        <source xml:lang="en">Cancel\nThe update will not continue</source>
+        <target xml:lang="es-ES" state="translated">Cancelar\nLa actualización no continuará</target>
+        <note>Note: you must preserve the '\n' after the first word.</note>
+      </trans-unit>
+      <trans-unit id="buttons.repair">
+        <source xml:lang="en">Repair\nErase the application and re-install version {app_version}.</source>
+        <target xml:lang="es-ES" state="translated">Reparar\nEliminar la aplicación y volver a instalar la versión {app_version}.</target>
+        <note>Note: you must preserve the '\n' after the first word.</note>
+      </trans-unit>
+      <trans-unit id="buttons.update">
+        <source xml:lang="en">Update\nTo version {target_version}</source>
+        <target xml:lang="es-ES" state="translated">Actualizar\nA la versión {target_version}</target>
+        <note>Note: you must preserve the '\n' after the first word.</note>
+      </trans-unit>
+      <trans-unit id="buttons.downgrade">
+        <source xml:lang="en">Downgrade\nTo version {target_version}</source>
+        <target xml:lang="es-ES" state="translated">Instalar versión anterior\nA la versión {target_version}</target>
+        <note>Note: you must preserve the '\n' after the first word.</note>
+      </trans-unit>
+      <trans-unit id="buttons.cancel_backup_first">
+        <source xml:lang="en">Cancel\nBackup or save your work first</source>
+        <target xml:lang="es-ES" state="translated">Cancelar\nHaz una copia de seguridad o guarda tu trabajo primero</target>
+        <note>Note: you must preserve the '\n' after the first word.</note>
+      </trans-unit>
+      <trans-unit id="dialogs.restart_required.instruction">
+        <source xml:lang="en">Restart Required</source>
+        <target xml:lang="es-ES" state="translated">Reinicio requerido</target>
+      </trans-unit>
+      <trans-unit id="dialogs.restart_required.content">
+        <source xml:lang="en">A restart is required before Setup can continue. Please restart your computer and try again.</source>
+        <target xml:lang="es-ES" state="translated">Se requiere un reinicio antes de que la Instalación pueda continuar. Reinicia el equipo e inténtalo de nuevo.</target>
+      </trans-unit>
+      <trans-unit id="dialogs.update_missing_dependencies.header">
+        <source xml:lang="en">{app_title} would like to update from {from_version} to {to_version}</source>
+        <target xml:lang="es-ES" state="translated">{app_title} desea actualizar de {from_version} a {to_version}</target>
+      </trans-unit>
+      <trans-unit id="dialogs.update_missing_dependencies.content">
+        <source xml:lang="en">{app_title} {to_version} has missing dependencies which need to be installed: {dependency_list}. Would you like to continue?</source>
+        <target xml:lang="es-ES" state="translated">{app_title} {to_version} tiene dependencias que deben instalarse: {dependency_list}. ¿Deseas continuar?</target>
+      </trans-unit>
+      <trans-unit id="dialogs.setup_missing_dependencies.header">
+        <source xml:lang="en">{app_title} has missing system dependencies.</source>
+        <target xml:lang="es-ES" state="translated">{app_title} tiene dependencias del sistema faltantes.</target>
+      </trans-unit>
+      <trans-unit id="dialogs.setup_missing_dependencies.content">
+        <source xml:lang="en">{app_title} requires the following packages to be installed: {dependency_list}. Would you like to continue?</source>
+        <target xml:lang="es-ES" state="translated">{app_title} requiere que se instalen los siguientes paquetes: {dependency_list}. ¿Deseas continuar?</target>
+      </trans-unit>
+      <trans-unit id="dialogs.uninstall_complete_with_errors.instruction">
+        <source xml:lang="en">{app_title} uninstall has completed with errors.</source>
+        <target xml:lang="es-ES" state="translated">La desinstalación de {app_title} se ha completado con errores.</target>
+      </trans-unit>
+      <trans-unit id="dialogs.uninstall_complete_with_errors.content">
+        <source xml:lang="en">There may be left-over files or directories on your system. You can attempt to remove these manually or re-install the application and try again.</source>
+        <target xml:lang="es-ES" state="translated">Pueden quedar archivos o directorios residuales en tu sistema. Puedes intentar eliminarlos manualmente o volver a instalar la aplicación e intentarlo de nuevo.</target>
+      </trans-unit>
+      <trans-unit id="dialogs.uninstall_complete_with_errors.footer">
+        <source xml:lang="en">Log file: '&lt;A HREF="na"&gt;{log_path}&lt;/A&gt;'</source>
+        <target xml:lang="es-ES" state="translated">Archivo de registro: '&lt;A HREF="na"&gt;{log_path}&lt;/A&gt;'</target>
+      </trans-unit>
+      <trans-unit id="dialogs.processes_locking_folder.content">
+        <source xml:lang="en">There are programs ({process_names}) preventing the {app_title} update from proceeding.\n\nYou can press Continue to have this updater attempt to close them automatically, or if you've closed them yourself press Retry for the updater to check again.</source>
+        <target xml:lang="es-ES" state="translated">Hay programas ({process_names}) que impiden que continúe la actualización de {app_title}.\n\nPuedes presionar Continuar para que este actualizador intente cerrarlos automáticamente, o si ya los has cerrado, presiona Reintentar para que el actualizador vuelva a comprobar.</target>
+      </trans-unit>
+      <trans-unit id="dialogs.overwrite_repair.default_instruction">
+        <source xml:lang="en">{app_title} is already installed.</source>
+        <target xml:lang="es-ES" state="translated">{app_title} ya está instalado.</target>
+      </trans-unit>
+      <trans-unit id="dialogs.overwrite_repair.default_content">
+        <source xml:lang="en">This application is installed on your computer. If it is not functioning correctly, you can attempt to repair it.</source>
+        <target xml:lang="es-ES" state="translated">Esta aplicación está instalada en tu equipo. Si no funciona correctamente, puedes intentar repararla.</target>
+      </trans-unit>
+      <trans-unit id="dialogs.overwrite_repair.update_instruction">
+        <source xml:lang="en">An older version of {app_title} is installed.</source>
+        <target xml:lang="es-ES" state="translated">Hay instalada una versión anterior de {app_title}.</target>
+      </trans-unit>
+      <trans-unit id="dialogs.overwrite_repair.update_content">
+        <source xml:lang="en">Would you like to update from {old_version} to {new_version}?</source>
+        <target xml:lang="es-ES" state="translated">¿Deseas actualizar de {old_version} a {new_version}?</target>
+      </trans-unit>
+      <trans-unit id="dialogs.overwrite_repair.downgrade_instruction">
+        <source xml:lang="en">A newer version of {app_title} is installed.</source>
+        <target xml:lang="es-ES" state="translated">Hay instalada una versión más reciente de {app_title}.</target>
+      </trans-unit>
+      <trans-unit id="dialogs.overwrite_repair.downgrade_content">
+        <source xml:lang="en">You already have {old_version} installed. Would you like to downgrade this application to an older version?</source>
+        <target xml:lang="es-ES" state="translated">Ya tienes instalada {old_version}. ¿Deseas cambiar esta aplicación a una versión anterior?</target>
+      </trans-unit>
+      <trans-unit id="dialogs.elevation_prompt.content">
+        <source xml:lang="en">{app_title} would like to update to version {new_version}, but requires elevated permissions to do so. Would you like to proceed?</source>
+        <target xml:lang="es-ES" state="translated">{app_title} desea actualizar a la versión {new_version}, pero requiere permisos elevados para hacerlo. ¿Deseas continuar?</target>
+      </trans-unit>
+      <trans-unit id="dialogs.install_hook_failed.content">
+        <source xml:lang="en">Installation has completed, but the application install hook failed. It may not have installed correctly.</source>
+        <target xml:lang="es-ES" state="translated">La instalación se completó, pero el hook de instalación de la aplicación falló. Es posible que no se haya instalado correctamente.</target>
+      </trans-unit>
+      <trans-unit id="dialogs.legacy_migration_failed.header">
+        <source xml:lang="en">Unable to start app</source>
+        <target xml:lang="es-ES" state="translated">No se puede iniciar la aplicación</target>
+      </trans-unit>
+      <trans-unit id="dialogs.legacy_migration_failed.content">
+        <source xml:lang="en">This app installation has been corrupted and cannot be started. Please re-install the app.</source>
+        <target xml:lang="es-ES" state="translated">Esta instalación de la aplicación está dañada y no puede iniciarse. Vuelve a instalar la aplicación.</target>
+      </trans-unit>
+      <trans-unit id="dialogs.uninstall_success.content">
+        <source xml:lang="en">{app_title} was successfully uninstalled.</source>
+        <target xml:lang="es-ES" state="translated">La aplicación se desinstaló correctamente.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

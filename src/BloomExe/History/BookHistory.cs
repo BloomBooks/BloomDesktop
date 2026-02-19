@@ -44,7 +44,7 @@ namespace Bloom.History
                 UserName = ch.UserName,
                 Type = ch.Type,
                 When = ch.When,
-                BloomVersion = ch.BloomVersion
+                BloomVersion = ch.BloomVersion,
             };
         }
     }
@@ -245,7 +245,7 @@ namespace Bloom.History
                                 Type = eventType,
                                 // Be sure to use UTC, otherwise, order will not be preserved properly.
                                 When = DateTime.UtcNow,
-                                BloomVersion = Application.ProductVersion
+                                BloomVersion = Application.ProductVersion,
                             };
 
                             db.Insert(evt);
@@ -271,6 +271,72 @@ namespace Bloom.History
             BloomWebSocketServer.Instance?.SendEvent("bookHistory", "eventAdded");
         }
 
+        public static bool RemoveMostRecentEvent(
+            Book.Book book,
+            BookHistoryEventType eventType,
+            string message = ""
+        )
+        {
+            return RemoveMostRecentEvent(book.FolderPath, book.ID, eventType, message);
+        }
+
+        public static bool RemoveMostRecentEvent(
+            string folderPath,
+            string bookId,
+            BookHistoryEventType eventType,
+            string message = ""
+        )
+        {
+            if (SIL.PlatformUtilities.Platform.IsLinux)
+                return false; // SQLiteConnection never works on Linux.
+            try
+            {
+                var sQLiteExceptionSet = new HashSet<Type>() { typeof(SQLiteException) };
+                var removed = false;
+
+                RetryUtility.Retry(
+                    () =>
+                    {
+                        using (var db = GetConnection(folderPath))
+                        {
+                            var mostRecentMatchingEvent = db.Table<BookHistoryEvent>()
+                                .Where(ev =>
+                                    ev.BookId == bookId
+                                    && ev.Type == eventType
+                                    && ev.Message == message
+                                )
+                                .OrderByDescending(ev => ev.Id)
+                                .FirstOrDefault();
+                            if (mostRecentMatchingEvent != null)
+                            {
+                                db.Delete(mostRecentMatchingEvent);
+                                removed = true;
+                            }
+                            db.Close();
+                        }
+                    },
+                    exceptionTypesToRetry: sQLiteExceptionSet,
+                    memo: "opening history db for removing a book event"
+                );
+
+                if (removed)
+                    BloomWebSocketServer.Instance?.SendEvent("bookHistory", "eventAdded");
+                return removed;
+            }
+            catch (Exception e)
+            {
+                NonFatalProblem.Report(
+                    ModalIf.None,
+                    PassiveIf.All,
+                    "Problem removing book history event",
+                    $"folder={folderPath}",
+                    e
+                );
+                // swallow... we don't want to prevent whatever was about to happen.
+            }
+            return false;
+        }
+
         private static BookHistoryBook GetOrMakeBookRecord(Book.Book book, SQLiteConnection db)
         {
             return GetOrMakeBookRecord(book.NameBestForUserDisplay, book.ID, db);
@@ -289,7 +355,7 @@ namespace Bloom.History
                 {
                     Id = bookId,
                     // TODO: update Name every time because it can change? Add an event if we notice that it changed?
-                    Name = bookName
+                    Name = bookName,
                 };
                 db.Insert(bookRecord);
             }

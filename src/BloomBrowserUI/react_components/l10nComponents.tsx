@@ -1,29 +1,35 @@
+import { css } from "@emotion/react";
 import { CancelTokenStatic } from "axios";
 import * as React from "react";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 import { get } from "../utils/bloomApi";
 import { getLocalization } from "./l10n";
+import { kBloomBlue } from "../bloomMaterialUITheme";
 
 // set the following boolean to highlight all translated strings to see if any are missing
 const highlightTranslatedStrings: boolean = false;
 
 export let channelName: string = ""; // ensure it's defined non-null
-get("/common/channel", r => {
-    channelName = r.data;
-    // Setting the class on the body element here to include the channel appears
-    // to work for the places that this code affects.  Should we want to expand
-    // marking untranslated strings visually in other places, then it would be
-    // necessary to make this assignment in C# code.  Which unfortunately would
-    // have to happen in at least half a dozen places.
-    let channelClass = channelName.toLowerCase();
-    if (channelClass.startsWith("developer/")) channelClass = "developer";
-    if (document && document.body) {
-        document.body.classList.add(channelClass);
-        if (highlightTranslatedStrings) {
-            document.body.classList.add("highlightTranslatedStrings");
+
+// Only fetch channel name if localization is not bypassed (i.e., not in test mode)
+if (!theOneLocalizationManager.isBypassEnabled()) {
+    get("/common/channel", (r) => {
+        channelName = r.data;
+        // Setting the class on the body element here to include the channel appears
+        // to work for the places that this code affects.  Should we want to expand
+        // marking untranslated strings visually in other places, then it would be
+        // necessary to make this assignment in C# code.  Which unfortunately would
+        // have to happen in at least half a dozen places.
+        let channelClass = channelName.toLowerCase();
+        if (channelClass.startsWith("developer/")) channelClass = "developer";
+        if (document && document.body) {
+            document.body.classList.add(channelClass);
+            if (highlightTranslatedStrings) {
+                document.body.classList.add("highlightTranslatedStrings");
+            }
         }
-    }
-});
+    });
+}
 
 // This would be used by a control that doesn't have any text of its own,
 // but has children that need to be localized.
@@ -42,7 +48,7 @@ export interface ILocalizationProps extends IUILanguageAwareProps {
     l10nParams?: string[]; // Array of parameters to use in format strings
     l10nParam0?: string; // Legacy parameter 0 (for backward compatibility)
     l10nParam1?: string; // Legacy parameter 1 (for backward compatibility)
-    onClick?: () => void; // not yet implemented by String subclass and maybe others outside this file
+    onClick?: (event?: React.MouseEvent<HTMLElement>) => void; // not yet implemented by String subclass and maybe others outside this file
     id?: string; // not yet implented by all
 
     // Set to true if we don't want the yellow highlighting in the UI for now.
@@ -62,7 +68,7 @@ export interface ILocalizationState {
 // A base class for all elements that display text. It uses Bloom's localizationManager wrapper to get strings.
 export class LocalizableElement<
     P extends ILocalizationProps,
-    S extends ILocalizationState
+    S extends ILocalizationState,
 > extends React.Component<P, ILocalizationState> {
     public readonly state: ILocalizationState = {};
     private localizationRequestCancelToken: CancelTokenStatic;
@@ -121,7 +127,7 @@ export class LocalizableElement<
             if (typeof children === "string") {
                 return `<${type}${this.attributeString(
                     type,
-                    props
+                    props,
                 )}>${children}</${type}>`;
             }
         }
@@ -133,16 +139,16 @@ export class LocalizableElement<
         // Otherwise, fall back to the individual l10nParam0 and l10nParam1 properties
         const params = this.props.l10nParams || [
             this.props.l10nParam0,
-            this.props.l10nParam1
+            this.props.l10nParam1,
         ];
 
         const newText = theOneLocalizationManager.simpleFormat(
             this.state.retrievedTranslation ?? this.getOriginalStringContent(),
-            params
+            params,
         );
         if (newText != this.state.translation) {
             this.setState({
-                translation: newText
+                translation: newText,
             });
         }
         if (this.props.l10nKey != this.previousL10nKey) {
@@ -195,16 +201,16 @@ export class LocalizableElement<
                 // getLocalization when they change...they are used in the output that it produces.
                 // l10nParam0: this.props.l10nParam0,
                 // l10nParam1: this.props.l10nParam1,
-                temporarilyDisableI18nWarning: this.props
-                    .temporarilyDisableI18nWarning,
+                temporarilyDisableI18nWarning:
+                    this.props.temporarilyDisableI18nWarning,
                 callback: (localizedText, success) => {
                     if (this.isComponentMounted) {
                         this.setState({
                             retrievedTranslation: localizedText,
-                            lookupSuccessful: success
+                            lookupSuccessful: success,
                         });
                     }
-                }
+                },
             });
         }
         if (this.props.l10nTipEnglishEnabled) {
@@ -212,9 +218,9 @@ export class LocalizableElement<
                 .asyncGetText(
                     this.tooltipKey,
                     this.props.l10nTipEnglishEnabled!,
-                    this.props.l10nComment
+                    this.props.l10nComment,
                 )
-                .done(result => {
+                .done((result) => {
                     if (this.isComponentMounted) {
                         this.setState({ tipEnabledTranslation: result });
                     }
@@ -225,9 +231,9 @@ export class LocalizableElement<
                 .asyncGetText(
                     this.disabledTooltipKey,
                     this.props.l10nTipEnglishDisabled!,
-                    this.props.l10nComment
+                    this.props.l10nComment,
                 )
-                .done(result => {
+                .done((result) => {
                     if (this.isComponentMounted) {
                         this.setState({ tipDisabledTranslation: result });
                     }
@@ -274,7 +280,7 @@ export class LocalizableElement<
                 l10nClass = "assumedTranslated";
             }
             text = theOneLocalizationManager.processSimpleMarkdown(
-                this.state.translation
+                this.state.translation,
             );
         } else if (this.props.temporarilyDisableI18nWarning) {
             l10nClass = "assumedTranslated";
@@ -293,8 +299,8 @@ export class LocalizableElement<
             (controlIsEnabled
                 ? this.state.tipEnabledTranslation
                 : this.state.tipDisabledTranslation
-                ? this.state.tipDisabledTranslation
-                : this.state.tipEnabledTranslation) || ""
+                  ? this.state.tipDisabledTranslation
+                  : this.state.tipEnabledTranslation) || ""
         );
     }
 
@@ -313,9 +319,9 @@ export class H1 extends LocalizableElement<
         return (
             <h1
                 className={this.getClassName()}
-                onClick={() => {
+                onClick={(event) => {
                     if (this.props.onClick) {
-                        this.props.onClick();
+                        this.props.onClick(event);
                     }
                 }}
             >
@@ -333,9 +339,9 @@ export class H2 extends LocalizableElement<
         return (
             <h2
                 className={this.getClassName()}
-                onClick={() => {
+                onClick={(event) => {
                     if (this.props.onClick) {
-                        this.props.onClick();
+                        this.props.onClick(event);
                     }
                 }}
             >
@@ -353,9 +359,9 @@ export class H3 extends LocalizableElement<
         return (
             <h3
                 className={this.getClassName()}
-                onClick={() => {
+                onClick={(event) => {
                     if (this.props.onClick) {
-                        this.props.onClick();
+                        this.props.onClick(event);
                     }
                 }}
             >
@@ -373,9 +379,9 @@ export class P extends LocalizableElement<
         return (
             <p
                 className={this.getClassName()}
-                onClick={() => {
+                onClick={(event) => {
                     if (this.props.onClick) {
-                        this.props.onClick();
+                        this.props.onClick(event);
                     }
                 }}
             >
@@ -394,9 +400,9 @@ export class Div extends LocalizableElement<
             <div
                 className={this.getClassName()}
                 id={this.props.id}
-                onClick={() => {
+                onClick={(event) => {
                     if (this.props.onClick) {
-                        this.props.onClick();
+                        this.props.onClick(event);
                     }
                 }}
             >
@@ -428,9 +434,20 @@ export class Label extends LocalizableElement<
             <label
                 htmlFor={this.props.htmlFor}
                 className={this.getClassName()}
-                onClick={() => {
+                css={css`
+                    a,
+                    a:visited {
+                        color: ${kBloomBlue};
+                        text-decoration: none;
+                    }
+
+                    a:hover {
+                        text-decoration: underline;
+                    }
+                `}
+                onClick={(event) => {
                     if (this.props.onClick) {
-                        this.props.onClick();
+                        this.props.onClick(event);
                     }
                 }}
             >
@@ -450,9 +467,9 @@ export class Span extends LocalizableElement<
             <span
                 {...restOfProps}
                 className={this.getClassName()}
-                onClick={() => {
+                onClick={(event) => {
                     if (this.props.onClick) {
-                        this.props.onClick();
+                        this.props.onClick(event);
                     }
                 }}
             >

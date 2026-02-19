@@ -11,7 +11,7 @@ namespace Bloom.Api
         Put,
         Post,
         Delete,
-        Options
+        Options,
     };
 
     public interface IRequestInfo
@@ -20,10 +20,11 @@ namespace Bloom.Api
         string RequestContentType { get; }
         string ResponseContentType { set; }
         string RawUrl { get; }
-        bool HaveOutput { get; }
+        bool HaveFullyProcessedRequest { get; }
         void WriteCompleteOutput(string s);
         void ReplyWithFileContent(string path, string originalPath = null);
         void ReplyWithStreamContent(Stream input, string responseType);
+        void ReplyWithStreamContent(Stream input, string responseType, int length);
         void ReplyWithImage(string path, string originalPath = null);
         void WriteError(int errorCode);
         void WriteError(int errorCode, string errorDescription);
@@ -34,6 +35,7 @@ namespace Bloom.Api
         string GetPostString(bool unescape = true);
         HttpMethods HttpMethod { get; }
         void ExternalLinkSucceeded();
+        void WriteNoContent();
         string DoNotCacheFolder { set; }
         byte[] GetRawPostData();
         Stream GetRawPostStream();

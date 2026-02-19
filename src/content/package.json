@@ -1,11 +1,13 @@
 {
+    "license": "MIT",
     "scripts": {
-        "build": "npm-run-all build:pug build:less build:branding:files build:templates:files build:templates:typescript build:appearance build:appearanceMigrations",
+        "build": "npm-run-all build:pug build:less build:branding:files build:templates:files build:appearance build:appearanceMigrations",
         "watch": "npm-run-all watch:pug watch:less watch:branding:files",
-        "//1": "TODO: currently we haven't figured this out without gulp, so we're just building *all* pugs in this directory along with BloomBrowserUI/",
+        "//1": "TODO: currently we haven't figured this out with the simple build tools we're using here, so we're just building *all* pugs in this directory along with BloomBrowserUI/",
         "//2": "See https://github.com/Qard/onchange/issues/118",
         "//3": "The key to navigating these issues it to realize that the problem doesn't exist outside windows. Elsewhere, the terminal expands globs.",
-        "build:pug": "cd ../BloomBrowserUI && npm run-script build:pug",
+        "//4": "I'm not making this actually do the BloomBrowserUI pug build, because it's currently part of the whole vite build, which turns around and builds this, so could be recursive.",
+        "build:pug": "echo \"Run a build in BloomBrowserUI to get pug files built.\"",
         "//NB we don't have a version of pug that handles globs, so we wrap with onchange": "",
         "//Notice that onchange can steer files to the right folder, which isn't doable with the command with built-in glob handling": "",
         "The -j option is how many jobs to do in parallel": "",
@@ -19,19 +21,19 @@
         "watch:less": "npm-run-all --parallel watch:branding:less watch:templates:less watch:layout:less",
         "build:templates:files": "cpx \"templates/**/!(tsconfig).{png,jpg,svg,css,json,htm,html,txt,js,gif}\" \"../../output/browser/templates\" -v",
         "watch:templates:files": "cpx \"templates/**/!(tsconfig).{png,jpg,svg,css,json,htm,html,txt,js,gif}\" \"../../output/browser/templates\" --watch -v",
-        "build:templates:typescript": "cd \"templates/template books/Activity\" && npx tsc && echo \"typescript build done\"",
         "build:branding:files": "cpx \"branding/**/!(source)/*.{png,jpg,svg,css,json,htm}\" ../../output/browser/branding -v",
         "build:branding:less": "less-watch-compiler --source-map --run-once branding ../../output/browser/branding",
         "build:templates:less": "less-watch-compiler --source-map --run-once  templates  ../../output/browser/templates",
         "build:layout:less": "less-watch-compiler --source-map --run-once  bookLayout ../../output/browser/bookLayout",
+        "build:layout:less:main": "lessc --source-map bookLayout/basePage.less ../../output/browser/bookLayout/basePage.css && lessc --source-map bookLayout/canvasElement.less ../../output/browser/bookLayout/canvasElement.css",
         "build:appearance": "yarn rimraf ../../output/browser/appearanceThemes && cpx \"appearanceThemes/**/*.css\" ../../output/browser/appearanceThemes -v",
         "watch:appearance": "cpx \"appearanceThemes/**/*.css\" ../../output/browser/appearanceThemes --watch -v",
         "watch:branding:files": "cpx \"branding/**/!(source)/*.{png,jpg,svg,css,json,htm,html,txt,js}\" ../../output/browser/branding --watch -v",
         "build:appearanceMigrations": "cpx \"appearanceMigrations/**\" ../../output/browser/appearanceMigrations -v",
         "watch:appearanceMigrations": "cpx \"appearanceMigrations/**\" ../../output/browser/appearanceMigrations --watch -v",
-        "watch:branding:less": "less-watch-compiler --source-map branding ../../output/browser/branding",
-        "watch:templates:less": "less-watch-compiler --source-map  templates  ../../output/browser/templates",
-        "watch:layout:less": "less-watch-compiler --source-map  bookLayout ../../output/browser/bookLayout",
+        "watch:branding:less": "onchange -k -i -a \"branding/**/*.less\" -- npm run build:branding:less",
+        "watch:templates:less": "onchange -k -i -a \"templates/**/*.less\" -- npm run build:templates:less",
+        "watch:layout:less": "onchange -k -i -a \"bookLayout/**/*.less\" -- npm run build:layout:less:main",
         "///": "______________________________________________________________________________________________________",
         "//This is  slow compared to less-watch-compiler: watch:less": "onchange -a \"**/*.less\" -- lessc {{file}} ../../output/browser/{{fileDir}}",
         "//Note that this is really slow compared to cpx with the glob (buildBrandingFiles/watchBrandingFiles)": "//",
@@ -48,23 +50,21 @@
         "lessc-glob": "^1.0.9",
         "npm-run-all": "^4.1.5",
         "onchange": "^7.1.0",
-        "prettier": "^3.0.3",
+        "prettier": "^3.6.2",
         "pug": "^3.0.2",
         "pug-cli": "^1.0.0-alpha6",
         "rimraf": "^5.0.5",
-        "ts-node": "^10.9.1"
+        "ts-node": "^10.9.2"
     },
-    "license": "MIT",
     "dependencies": {
-        "@types/node": "^18.6.3",
-        "typescript": "^4.6.3"
+        "@types/node": "^22.11.0",
+        "typescript": "^5.0"
     },
-    "packageManager": "yarn@1.22.19",
     "lint-staged": {
         "*": "prettier --write"
     },
     "volta": {
-        "node": "22.11.0",
-        "yarn": "1.22.19"
+        "node": "22.21.1",
+        "yarn": "1.22.22"
     }
 }

@@ -77,7 +77,7 @@ namespace Bloom.web.controllers
                             new
                             {
                                 // user won't see this message, the UI just sees that there is an error and hides the indicator
-                                error = "Could not find a book with that id."
+                                error = "Could not find a book with that id.",
                             }
                         );
                         return;

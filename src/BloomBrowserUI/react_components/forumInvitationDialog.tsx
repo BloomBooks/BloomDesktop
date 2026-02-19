@@ -5,7 +5,7 @@ import {
     DialogBottomButtons,
     DialogMiddle,
     DialogTitle,
-    IBloomDialogProps
+    IBloomDialogProps,
 } from "./BloomDialog/BloomDialog";
 import BloomButton from "./bloomButton";
 import { useEventLaunchedBloomDialog } from "./BloomDialog/BloomDialogPlumbing";
@@ -17,11 +17,8 @@ import { css } from "@emotion/react";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 
 export const ForumInvitationDialogLauncher: React.FunctionComponent = () => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useEventLaunchedBloomDialog("ForumInvitationDialog");
+    const { showDialog, closeDialog, propsForBloomDialog } =
+        useEventLaunchedBloomDialog("ForumInvitationDialog");
 
     return propsForBloomDialog.open ? (
         <ForumInvitationDialog
@@ -36,10 +33,10 @@ export const ForumInvitationDialog: React.FunctionComponent<{
     closeDialog: () => void;
     showDialog: () => void;
     propsForBloomDialog: IBloomDialogProps;
-}> = props => {
+}> = (props) => {
     const dialogTitle = useL10n(
         "Bloom Community Forum",
-        "ForumInvitationDialog.BloomCommunityForum"
+        "ForumInvitationDialog.BloomCommunityForum",
     );
     const closeDialog = () => {
         // notify the server that we're closing the dialog.
@@ -89,11 +86,11 @@ export const ForumInvitationDialog: React.FunctionComponent<{
                         // Stop bringing back up the forum invitation once user has clicked "How to Join"
                         postData("app/UserSetting", {
                             settingName: "ForumInvitationAcknowledged",
-                            settingValue: "true"
+                            settingValue: "true",
                         });
                         postString(
                             "link",
-                            "https://docs.bloomlibrary.org/forum"
+                            "https://docs.bloomlibrary.org/forum",
                         );
                         closeDialog();
                     }}

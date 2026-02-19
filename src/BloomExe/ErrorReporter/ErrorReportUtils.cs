@@ -1,12 +1,12 @@
-#if !debug
-using Bloom.WebLibraryIntegration;
-#endif
-using L10NSharp;
-using SIL.Reporting;
 using System;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using L10NSharp;
+using SIL.Reporting;
+#if !debug
+using Bloom.WebLibraryIntegration;
+#endif
 
 namespace Bloom.ErrorReporter
 {
@@ -61,17 +61,6 @@ namespace Bloom.ErrorReporter
         private static void CheckForFakeTestErrors(string title)
         {
             const string fakeProblemMessage = "Fake problem for development/testing purposes";
-            Exception fakeException;
-
-            // Throwing/catching the exception populates the stack trace
-            try
-            {
-                throw new ApplicationException("Fake exception for development/testing purposes");
-            }
-            catch (ApplicationException e)
-            {
-                fakeException = e;
-            }
 
             if (title == "Error NotifyUser NoReport")
             {
@@ -102,11 +91,13 @@ namespace Bloom.ErrorReporter
             else if (title == "Error NotifyUser Report NoRetry")
             {
                 // Exercises another path through libPalaso directly (goes thru overloads 3, 4)
+                var fakeException = GenerateFakeException();
                 ErrorReport.NotifyUserOfProblem(fakeException, fakeProblemMessage);
             }
             else if (title == "Error NotifyUser Report NoRetry 2")
             {
                 // Exercises a path where you go through BloomErrorReport
+                var fakeException = GenerateFakeException();
                 BloomErrorReport.NotifyUserOfProblem(
                     fakeProblemMessage,
                     fakeException,
@@ -120,6 +111,7 @@ namespace Bloom.ErrorReporter
                     "ErrorReportDialog.Retry",
                     "Retry"
                 );
+                var fakeException = GenerateFakeException();
                 BloomErrorReport.NotifyUserOfProblem(
                     fakeProblemMessage,
                     fakeException,
@@ -148,10 +140,12 @@ namespace Bloom.ErrorReporter
             }
             else if (title == "Error ReportNonFatalException")
             {
+                var fakeException = GenerateFakeException();
                 ErrorReport.ReportNonFatalException(fakeException);
             }
             else if (title == "Error ReportNonFatalExceptionWithMessage")
             {
+                var fakeException = GenerateFakeException();
                 ErrorReport.ReportNonFatalExceptionWithMessage(fakeException, fakeProblemMessage);
             }
             else if (title == "Error ReportNonFatalExceptionWithMessage Scrollbar")
@@ -159,6 +153,7 @@ namespace Bloom.ErrorReporter
                 var longMessageBuilder = new StringBuilder();
                 while (longMessageBuilder.Length < 500)
                     longMessageBuilder.AppendLine(fakeProblemMessage);
+                var fakeException = GenerateFakeException();
                 ErrorReport.ReportNonFatalExceptionWithMessage(
                     fakeException,
                     longMessageBuilder.ToString()
@@ -170,6 +165,7 @@ namespace Bloom.ErrorReporter
             }
             else if (title == "Error ReportFatalException")
             {
+                var fakeException = GenerateFakeException();
                 ErrorReport.ReportFatalException(fakeException);
             }
             else if (title == "Error ReportFatalMessageWithStackTrace")
@@ -183,6 +179,22 @@ namespace Bloom.ErrorReporter
                     longMessageBuilder.AppendLine(fakeProblemMessage);
                 ErrorReport.ReportFatalMessageWithStackTrace(longMessageBuilder.ToString());
             }
+        }
+
+        private static Exception GenerateFakeException()
+        {
+            Exception fakeException;
+            // Throwing/catching the exception populates the stack trace
+            try
+            {
+                throw new ApplicationException("Fake exception for development/testing purposes");
+            }
+            catch (ApplicationException e)
+            {
+                fakeException = e;
+            }
+
+            return fakeException;
         }
         #endregion
     }

@@ -9,6 +9,6 @@
 // Example Book: https://bloomlibrary.org/:search:bookInstanceId%3Ad3cb9d52-326f-4b03-a8bd-d348a7055fab
 // A replacement customBookStyles.css has been generated.
 {
-  "cssThemeName": "default",
-  "pageNumber-show": false,
+    "cssThemeName": "default",
+    "pageNumber-position": "hidden"
 }

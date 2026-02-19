@@ -1,10 +1,10 @@
-﻿using Bloom;
-using Bloom.Api;
-using NUnit.Framework;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Bloom;
+using Bloom.Api;
+using NUnit.Framework;
 
 namespace BloomTests
 {

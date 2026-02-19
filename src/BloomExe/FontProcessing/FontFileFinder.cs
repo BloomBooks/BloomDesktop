@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing.Text;
 using System.IO;
+using System.Threading;
 using Bloom.Api;
 using SIL.IO;
-using System.Threading;
-using System.Diagnostics;
 using SIL.Reporting;
-
 #if __MonoCS__
 using SharpFont; // Linux only (interface to libfreetype.so.6)
 #else
@@ -124,10 +123,10 @@ namespace Bloom.FontProcessing
                 {
                     if (!string.IsNullOrEmpty(group.BoldItalic))
                         return group.BoldItalic;
-                    else if (!string.IsNullOrEmpty(group.Bold))
-                        return group.Bold;
                     else if (!string.IsNullOrEmpty(group.Italic))
                         return group.Italic;
+                    else if (!string.IsNullOrEmpty(group.Bold))
+                        return group.Bold;
                     else if (!string.IsNullOrEmpty(group.Normal))
                         return group.Normal;
                 }

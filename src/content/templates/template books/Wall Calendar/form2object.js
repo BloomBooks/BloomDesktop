@@ -24,7 +24,7 @@
  * Time: 19:02:33
  */
 
-(function(global) {
+(function (global) {
     /**
      * Returns form values represented as Javascript object
      * "name" attribute defines structure of resulting object
@@ -35,12 +35,12 @@
      * @param nodeCallback {Function} custom function to get node value
      * @param useIdIfEmptyName {Boolean} if true value of id attribute of field will be used if name of field is empty
      */
-    global.form2object = function(
+    global.form2object = function (
         rootNode,
         delimiter,
         skipEmpty,
         nodeCallback,
-        useIdIfEmptyName
+        useIdIfEmptyName,
     ) {
         if (typeof skipEmpty == "undefined" || skipEmpty == null)
             skipEmpty = true;
@@ -64,14 +64,14 @@
         ) {
             while ((currNode = rootNode[i++])) {
                 formValues = formValues.concat(
-                    getFormValues(currNode, nodeCallback, useIdIfEmptyName)
+                    getFormValues(currNode, nodeCallback, useIdIfEmptyName),
                 );
             }
         } else {
             formValues = getFormValues(
                 rootNode,
                 nodeCallback,
-                useIdIfEmptyName
+                useIdIfEmptyName,
             );
         }
 
@@ -125,7 +125,7 @@
                         }
 
                         arrIdx = namePart[k].match(
-                            /([a-z_]+)?\[([a-z_][a-z0-9]+?)\]/i
+                            /([a-z_]+)?\[([a-z_][a-z0-9]+?)\]/i,
                         );
                         if (arrIdx) {
                             for (l = 1; l < arrIdx.length; l++) {
@@ -155,11 +155,11 @@
                     arrNameFull += "_" + arrName + "_" + arrIdx;
 
                     /*
-           * Because arrIdx in field name can be not zero-based and step can be
-           * other than 1, we can't use them in target array directly.
-           * Instead we're making a hash where key is arrIdx and value is a reference to
-           * added array element
-           */
+                     * Because arrIdx in field name can be not zero-based and step can be
+                     * other than 1, we can't use them in target array directly.
+                     * Instead we're making a hash where key is arrIdx and value is a reference to
+                     * added array element
+                     */
 
                     if (!arrays[arrNameFull]) arrays[arrNameFull] = {};
                     if (arrName != "" && !currResult[arrName])
@@ -212,7 +212,7 @@
         var result = extractNodeValues(
             rootNode,
             nodeCallback,
-            useIdIfEmptyName
+            useIdIfEmptyName,
         );
         return result.length > 0
             ? result
@@ -228,7 +228,7 @@
 
         while (currentNode) {
             result = result.concat(
-                extractNodeValues(currentNode, nodeCallback, useIdIfEmptyName)
+                extractNodeValues(currentNode, nodeCallback, useIdIfEmptyName),
             );
             currentNode = currentNode.nextSibling;
         }
@@ -252,7 +252,7 @@
         } else if (fieldName != "" && node.nodeName.match(/SELECT/i)) {
             fieldValue = getFieldValue(node);
             result = [
-                { name: fieldName.replace(/\[\]$/, ""), value: fieldValue }
+                { name: fieldName.replace(/\[\]$/, ""), value: fieldValue },
             ];
         } else {
             result = getSubFormValues(node, nodeCallback, useIdIfEmptyName);

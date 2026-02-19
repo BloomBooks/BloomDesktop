@@ -57,6 +57,11 @@ namespace Bloom.Edit
         {
             return item.ToObject<ToolboxToolState>();
         }
+
+        internal void SetToolId(string toolId)
+        {
+            ToolId = toolId;
+        }
     }
 
     /// <summary>

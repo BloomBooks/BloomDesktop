@@ -5,7 +5,7 @@ import { get } from "../../utils/bloomApi";
 // returns a simplified version if it is a link to the current book
 export function tryProcessHyperlink(
     text: string,
-    currentBookId: string
+    currentBookId: string,
 ): string {
     if (!text || !currentBookId) {
         return "";
@@ -13,8 +13,8 @@ export function tryProcessHyperlink(
     // Is this probably a valid URL?
     const allowedPrefixes = ["http://", "https://", "mailto:", "#", "/book/"];
     if (
-        !allowedPrefixes.some(prefix =>
-            text.toLocaleLowerCase().startsWith(prefix)
+        !allowedPrefixes.some((prefix) =>
+            text.toLocaleLowerCase().startsWith(prefix),
         )
     ) {
         return "";
@@ -31,13 +31,13 @@ export function tryProcessHyperlink(
 }
 
 export function getHyperlinkFromClipboard(
-    callback: (url: string) => void
+    callback: (url: string) => void,
 ): void {
-    get("common/clipboardText", result => {
+    get("common/clipboardText", (result) => {
         if (!result.data) {
             callback("");
         }
-        get("app/selectedBookInfo", bookInfo => {
+        get("app/selectedBookInfo", (bookInfo) => {
             if (!bookInfo.data) {
                 callback("");
             }

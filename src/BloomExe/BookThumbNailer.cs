@@ -123,7 +123,7 @@ namespace Bloom
                 Width = 200,
                 CenterImageUsingTransparentPadding = false,
                 FileName = "coverImage200.jpg",
-                BorderStyle = GetThumbnailBorderStyle(book)
+                BorderStyle = GetThumbnailBorderStyle(book),
             };
             CreateThumbnailOfCoverImage(book, options);
         }
@@ -193,7 +193,7 @@ namespace Bloom
         {
             if (string.IsNullOrEmpty(imageSrc))
                 return false;
-            else if (Path.GetFileName(imageSrc) == "placeHolder.png")
+            else if (ImageUtils.IsPlaceholderImageFilename(imageSrc))
             {
                 // Valid examples:
                 // thumbnail.png
@@ -235,6 +235,16 @@ namespace Bloom
             if (!Directory.Exists(book.FolderPath))
                 return false;
             var imageSrc = book.GetCoverImagePathAndElt(out SafeXmlElement coverImgElt);
+            // We still use src="placeHolder.png" to indicate no image has been chosen, but we use css rather than a file to display it.
+            // Detect this case and use a placeHolder file to make the thumbnail.
+            // Enhance: skip unnecessary checking and processing below in the case where this is a placeholder image
+            if (!String.IsNullOrEmpty(imageSrc) && ImageUtils.IsPlaceholderImageFilename(imageSrc))
+            {
+                var bloomRoot = FileLocationUtilities.GetDirectoryDistributedWithApplication(
+                    BloomFileLocator.BrowserRoot
+                );
+                imageSrc = Path.Combine(bloomRoot, "images", "placeHolder.png");
+            }
             if (!IsCoverImageSrcValid(imageSrc, options))
             {
                 Debug.WriteLine(book.StoragePageFolder + " does not have a cover image.");
@@ -243,7 +253,7 @@ namespace Bloom
             // Crop the image if we need to. Put the cropped image in the system temp folder.
             // Optimize: there's probably some way we could combine cropping with the other
             // work we do here and avoid writing two files. But it would be a pain.
-            var croppedImagePath = PublishHelper.MakeCroppedImage(
+            var croppedImagePath = ImageUtils.MakeCroppedImage(
                 coverImgElt,
                 book.StoragePageFolder,
                 Path.GetTempPath()
@@ -355,7 +365,7 @@ namespace Bloom
             {
                 //since this is destined for HTML, it's much easier to handle if there is no pre-padding
                 CenterImageUsingTransparentPadding = false,
-                RequestId = requestId
+                RequestId = requestId,
             };
 
             if (height != -1)
@@ -373,7 +383,7 @@ namespace Bloom
         ///   Currently used by the image server
         ///   to get thumbnails that are used in the add page dialog. Since this dialog can show
         ///   an enlarged version of the page, we generate these at a higher resolution than usual.
-        ///   Also, to make more realistic views of template pages we insert fake text wherever
+        ///   Also, to make more realistic views of template pages we insert text placeholders (grey bars) wherever
         ///   there is an empty edit block.
         ///
         ///   The result is cached for possible future use so the caller should not dispose of it.
@@ -392,10 +402,10 @@ namespace Bloom
                 BackgroundColor = Color.White, // matches the hand-made previews.
                 BorderStyle = HtmlThumbNailer.ThumbnailOptions.BorderStyles.None, // allows the HTML to add its preferred border in the larger preview
                 CenterImageUsingTransparentPadding = true,
-                MustRegenerate = mustRegenerate
+                MustRegenerate = mustRegenerate,
             };
-            var pageDiv = pageDom.RawDom
-                .SafeSelectNodes("descendant-or-self::div[contains(@class,'bloom-page')]")
+            var pageDiv = pageDom
+                .RawDom.SafeSelectNodes("descendant-or-self::div[contains(@class,'bloom-page')]")
                 .Cast<SafeXmlElement>()
                 .FirstOrDefault();
             // The actual page size is rather arbitrary, but we want the right ratio for A4.

@@ -69,7 +69,7 @@
 			//
 			this._percentLabel.Anchor = System.Windows.Forms.AnchorStyles.Top;
 			this._percentLabel.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._percentLabel.Location = new System.Drawing.Point(20, 4);
+			this._percentLabel.Location = new System.Drawing.Point(20, 3);
 			this._percentLabel.Name = "_percentLabel";
 			this._percentLabel.Size = new System.Drawing.Size(35, 13);
 			this._percentLabel.TabIndex = 2;

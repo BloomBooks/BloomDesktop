@@ -1,23 +1,23 @@
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml;
+using Bloom.Collection;
+using Bloom.CollectionTab;
+using Bloom.ImageProcessing;
+using Bloom.SafeXml;
+using Bloom.Utils;
 using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
 using SIL.IO;
-using System.Drawing;
-using System;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.Xml;
-using Bloom.ImageProcessing;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Xml;
-using System.Collections.Generic;
-using Bloom.Collection;
-using Bloom.CollectionTab;
-using Bloom.Utils;
-using Bloom.SafeXml;
 
 namespace Bloom.Book
 {
@@ -31,7 +31,7 @@ namespace Bloom.Book
             ".png",
             ".bmp",
             ".jpg",
-            ".jpeg"
+            ".jpeg",
         };
 
         internal static void MakeSizedThumbnail(
@@ -46,13 +46,9 @@ namespace Bloom.Book
             BookThumbNailer.GenerateImageForWeb(book);
 
             var coverImagePath = book.GetCoverImagePath();
-            if (coverImagePath == null)
+            if (coverImagePath == null || ImageUtils.IsPlaceholderImageFilename(coverImagePath))
             {
-                var blankImage = Path.Combine(
-                    FileLocationUtilities.DirectoryOfApplicationOrSolution,
-                    "DistFiles",
-                    "Blank.png"
-                );
+                var blankImage = BloomFileLocator.GetFileFromDistFiles("Blank.png");
                 if (RobustFile.Exists(blankImage))
                     coverImagePath = blankImage;
             }
@@ -250,7 +246,7 @@ namespace Bloom.Book
                         ? CompressionMethod.Deflated
                         : CompressionMethod.Stored,
                     DateTime = fi.LastWriteTime,
-                    IsUnicodeText = true
+                    IsUnicodeText = true,
                 };
 
                 byte[] modifiedContent = null;
@@ -467,6 +463,13 @@ namespace Bloom.Book
                 var image = originalImage.Image;
                 int originalWidth = image.Width;
                 int originalHeight = image.Height;
+                // Adjust maxWidth and maxHeight to match the orientation of the original image. (BL-15710)
+                if (originalWidth < originalHeight && maxWidth > maxHeight)
+                {
+                    var t = maxWidth;
+                    maxWidth = maxHeight;
+                    maxHeight = t;
+                }
                 var appearsToBeJpeg = ImageUtils.AppearsToBeJpeg(originalImage);
                 if (originalWidth > maxWidth || originalHeight > maxHeight || !appearsToBeJpeg)
                 {

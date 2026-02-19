@@ -270,11 +270,10 @@ namespace Bloom.Book
             // In real life we always have a book and can get nicer names. I put the fallback in for testing.
             var langs = string.Join(
                 CultureInfo.CurrentCulture.TextInfo.ListSeparator + " ",
-                problems.Select(
-                    x =>
-                        book == null
-                            ? IetfLanguageTag.GetLocalizedLanguageName(x, "")
-                            : book.PrettyPrintLanguage(x)
+                problems.Select(x =>
+                    book == null
+                        ? IetfLanguageTag.GetLocalizedLanguageName(x, "")
+                        : book.PrettyPrintLanguage(x)
                 )
             );
             return string.Format(template, langs);

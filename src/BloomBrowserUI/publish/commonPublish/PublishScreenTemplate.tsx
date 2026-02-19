@@ -1,11 +1,10 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import PublishScreenBanner from "./PublishScreenBanner";
 import {
     kBloomBlue,
     kMainPanelBackgroundColor,
-    kOptionPanelBackgroundColor
+    kOptionPanelBackgroundColor,
 } from "../../bloomMaterialUITheme";
 import { hookupLinkHandler } from "../../utils/linkHandler";
 import { SelectedBookProvider } from "../../app/SelectedBookContext";
@@ -19,7 +18,7 @@ export const PublishScreenTemplate: React.FunctionComponent<{
     // This one "node" should include all the publishing mode options as well as the Help links.
     optionsPanelContents?: React.ReactNode;
     bottomBanner?: React.ReactNode;
-}> = props => {
+}> = (props) => {
     React.useEffect(() => {
         // Tells CSharp land to handle our external links correctly (by opening in the system browser)
         hookupLinkHandler();
@@ -69,7 +68,7 @@ export const PublishScreenTemplate: React.FunctionComponent<{
 };
 
 // Takes "children" and displays them in the largest part of the screen (lower left).
-export const MainPanel: React.FunctionComponent = props => (
+export const MainPanel: React.FunctionComponent = (props) => (
     <div
         css={css`
             flex: 5; // The MainPanel fills out the rest of the width not taken by the OptionPanel.
@@ -84,7 +83,7 @@ export const MainPanel: React.FunctionComponent = props => (
 );
 
 // Takes "children" and displays them in the Options sidebar (right side).
-export const OptionPanel: React.FunctionComponent = props => (
+export const OptionPanel: React.FunctionComponent = (props) => (
     <div
         css={css`
             background-color: ${kOptionPanelBackgroundColor};

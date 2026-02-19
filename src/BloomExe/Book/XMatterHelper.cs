@@ -182,7 +182,7 @@ namespace Bloom.Book
                 // This allows the Harvseter to preserve custom branding if those books are uploaded to web. (See BL-BL-9084)
                 var extraSearchPaths = new string[]
                 {
-                    BloomFileLocator.GetCustomXMatterDirectory()
+                    BloomFileLocator.GetCustomXMatterDirectory(),
                 };
                 fileLocator = fileLocator.CloneAndCustomize(extraSearchPaths);
             }

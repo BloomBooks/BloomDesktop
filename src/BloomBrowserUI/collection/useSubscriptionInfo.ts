@@ -31,13 +31,13 @@ export const useSubscriptionInfo = () => {
         CodeIntegrity: "none",
         SubscriptionDescriptor: "",
         MissingBrandingFiles: false,
-        EditingBlorgBook: false
+        EditingBlorgBook: false,
     });
     const [haveData, setHaveData] = useState(false);
 
     // This is called once initially, then each time the user types in the subscription code field or does a paste
     const querySubscriptionInfo = useCallback(() => {
-        get("settings/subscription", result => {
+        get("settings/subscription", (result) => {
             setSubscriptionData(result.data);
             setHaveData(true);
         });
@@ -47,13 +47,13 @@ export const useSubscriptionInfo = () => {
     useEffect(() => {
         document.addEventListener(
             "subscriptionCodeChanged",
-            querySubscriptionInfo
+            querySubscriptionInfo,
         );
 
         return () => {
             document.removeEventListener(
                 "subscriptionCodeChanged",
-                querySubscriptionInfo
+                querySubscriptionInfo,
             );
         };
     }, [querySubscriptionInfo]);
@@ -66,13 +66,14 @@ export const useSubscriptionInfo = () => {
     return {
         code: subscriptionData.Code,
         tier: subscriptionData.Tier,
-        subscriptionCodeIntegrity: subscriptionData.CodeIntegrity as SubscriptionCodeIntegrity,
+        subscriptionCodeIntegrity:
+            subscriptionData.CodeIntegrity as SubscriptionCodeIntegrity,
         expiryDateStringAsYYYYMMDD: subscriptionData.Expiration || "",
         subscriptionDescriptor: subscriptionData.SubscriptionDescriptor,
         subscriptionSummary: subscriptionData.Summary,
         missingBrandingFiles: subscriptionData.MissingBrandingFiles,
         editingBlorgBook: subscriptionData.EditingBlorgBook,
-        haveData
+        haveData,
     };
 };
 
@@ -80,6 +81,6 @@ export const useSubscriptionInfo = () => {
 export function useLocalizedTier(tier: string) {
     return useL10n2({
         english: tier,
-        key: "Subscription.Tier." + tier
+        key: "Subscription.Tier." + tier,
     });
 }

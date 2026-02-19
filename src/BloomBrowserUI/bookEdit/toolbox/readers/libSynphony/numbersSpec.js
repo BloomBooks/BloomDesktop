@@ -9,17 +9,18 @@
 
 import { StoryCheckResults } from "./synphony_lib";
 import _ from "underscore";
+import { describe, it, expect, afterEach, beforeEach } from "vitest";
 
-describe("NumberTests", function() {
-    beforeEach(function() {
+describe("NumberTests", function () {
+    beforeEach(function () {
         //
     });
 
-    afterEach(function() {
+    afterEach(function () {
         //
     });
 
-    it("latinNumerals", function() {
+    it("latinNumerals", function () {
         var remainingWords = ["qwerty", "a1sdfg", "123", "12zxcvb", "456.789"];
         var storyResults = new StoryCheckResults(
             [],
@@ -28,7 +29,7 @@ describe("NumberTests", function() {
             [],
             remainingWords,
             0,
-            0
+            0,
         );
 
         var numbers = storyResults.getNumbers();
@@ -39,7 +40,7 @@ describe("NumberTests", function() {
         expect(numbers[1]).toBe("456.789");
     });
 
-    it("arabicNumerals", function() {
+    it("arabicNumerals", function () {
         var remainingWords = ["qwerty", "٠asdfg", "٠١٢", "zxc٤vb", "٣٤٥٦٧٨٩"];
         var storyResults = new StoryCheckResults(
             [],
@@ -48,7 +49,7 @@ describe("NumberTests", function() {
             [],
             remainingWords,
             0,
-            0
+            0,
         );
 
         var numbers = storyResults.getNumbers();
@@ -59,7 +60,7 @@ describe("NumberTests", function() {
         expect(numbers[1]).toBe("٣٤٥٦٧٨٩");
     });
 
-    it("devanagariNumerals", function() {
+    it("devanagariNumerals", function () {
         var remainingWords = ["qwerty", "९asdfg९", "०१२", "zxcvb", "३४५६७८९"];
         var storyResults = new StoryCheckResults(
             [],
@@ -68,7 +69,7 @@ describe("NumberTests", function() {
             [],
             remainingWords,
             0,
-            0
+            0,
         );
 
         var numbers = storyResults.getNumbers();
@@ -79,14 +80,14 @@ describe("NumberTests", function() {
         expect(numbers[1]).toBe("३४५६७८९");
     });
 
-    it("testRemainingWords", function() {
+    it("testRemainingWords", function () {
         var remainingWords = [
             "qwerty",
             "a1sdfg",
             "on",
             "123",
             "12zxcvb",
-            "456.789"
+            "456.789",
         ];
         var storyResults = new StoryCheckResults(
             [],
@@ -95,7 +96,7 @@ describe("NumberTests", function() {
             [],
             remainingWords,
             0,
-            0
+            0,
         );
 
         var numbers = storyResults.getNumbers();

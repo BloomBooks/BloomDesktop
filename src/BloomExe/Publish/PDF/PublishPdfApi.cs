@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
@@ -9,12 +8,8 @@ using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
-using Bloom.MiscUI;
-using Bloom.Properties;
 using DesktopAnalytics;
 using L10NSharp;
-using Microsoft.VisualBasic.FileIO;
-using SIL.IO;
 using SIL.Reporting;
 using Application = System.Windows.Forms.Application;
 
@@ -82,16 +77,18 @@ namespace Bloom.Publish.PDF
                 true
             );
             apiHandler.RegisterBooleanEndpointHandler(
-                kApiUrlPart + "fullBleed",
+                kApiUrlPart + "excludePrintBleed",
                 request =>
-                    (CurrentBook?.FullBleed ?? false)
-                    && (CurrentBook?.UserPrefs.FullBleed ?? false),
+                    !(
+                        (CurrentBook?.FullBleed ?? false)
+                        && (CurrentBook?.UserPrefs.FullBleed ?? false)
+                    ),
                 (
                     (writeRequest, value) =>
                     {
                         if (CurrentBook != null)
                         {
-                            CurrentBook.UserPrefs.FullBleed = value;
+                            CurrentBook.UserPrefs.FullBleed = !value;
                         }
                     }
                 ),
@@ -127,36 +124,24 @@ namespace Bloom.Publish.PDF
                 HandleColorProfiles,
                 false
             );
-            apiHandler.RegisterBooleanEndpointHandler(
-                kApiUrlPart + "dontShowSamplePrint",
-                request => Settings.Default.DontShowPrintNotification,
-                (
-                    (writeRequest, value) =>
-                    {
-                        Settings.Default.DontShowPrintNotification = value;
-                        Settings.Default.Save();
-                    }
-                ),
-                false
-            );
         }
 
         private void HandleColorProfiles(ApiRequest request)
         {
             if (request.HttpMethod == HttpMethods.Get)
             {
-				var result = new StringBuilder();
-				result.Append($"[\"none\"");
+                var result = new StringBuilder();
+                result.Append($"[\"none\"");
                 var distFolder = PdfMaker.GetDistributedColorProfilesFolder();
-				if (Directory.Exists(distFolder))
+                if (Directory.Exists(distFolder))
                 {
-					var files = Directory.GetFiles(distFolder, "*.icc");
-					foreach (var file in files)
-					{
-						var name = Path.GetFileNameWithoutExtension(file);
-						result.AppendFormat(",\"{0}\"", name);
-					}
-				}
+                    var files = Directory.GetFiles(distFolder, "*.icc");
+                    foreach (var file in files)
+                    {
+                        var name = Path.GetFileNameWithoutExtension(file);
+                        result.AppendFormat(",\"{0}\"", name);
+                    }
+                }
                 var folder = PdfMaker.GetUserColorProfilesFolder();
                 if (Directory.Exists(folder))
                 {
@@ -308,7 +293,7 @@ namespace Bloom.Publish.PDF
                 new Dictionary<string, string>()
                 {
                     { "BookId", CurrentBook.ID },
-                    { "Country", CurrentBook.CollectionSettings.Country }
+                    { "Country", CurrentBook.CollectionSettings.Country },
                 }
             );
             CurrentBook.ReportSimplisticFontAnalytics(

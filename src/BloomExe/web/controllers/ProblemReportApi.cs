@@ -300,11 +300,9 @@ namespace Bloom.web.controllers
             try
             {
                 var subject =
-                    reportKind == "User"
-                        ? "User Problem"
-                        : reportKind == "Fatal"
-                            ? "Crash Report"
-                            : "Error Report";
+                    reportKind == "User" ? "User Problem"
+                    : reportKind == "Fatal" ? "Crash Report"
+                    : "Error Report";
 
                 issueSubmission = new YouTrackIssueSubmitter(YouTrackProjectKey);
                 if (
@@ -327,9 +325,12 @@ namespace Bloom.web.controllers
                 diagnosticInfo = GetDiagnosticInfo(includeBook, userDesc, userEmail);
                 if (!string.IsNullOrWhiteSpace(userEmail))
                 {
-                    // remember their email
-                    Bloom.Registration.Registration.Default.Email = userEmail;
-                    Bloom.Registration.Registration.Default.Save();
+                    // remember their email if they don't already have one (BL-14809)
+                    if (string.IsNullOrEmpty(Registration.Registration.Default.Email))
+                    {
+                        Registration.Registration.Default.Email = userEmail;
+                        Registration.Registration.Default.Save();
+                    }
                 }
 
                 issueId = issueSubmission.SubmitToYouTrack(subject, diagnosticInfo);
@@ -441,7 +442,7 @@ namespace Bloom.web.controllers
                             .CollectionSettings
                             .Subscription
                             .Descriptor,
-                        issueId = basename // the issueID (unless we're doing an email report, in which case it's "ProblemBook")
+                        issueId = basename, // the issueID (unless we're doing an email report, in which case it's "ProblemBook")
                     };
                     _reportZipFile.AddTopLevelFileWithText(
                         "BloomProblemBook.json",
@@ -847,6 +848,9 @@ namespace Bloom.web.controllers
                 }
                 return;
             }
+            // OneDriveUtils.CheckForAndHandleOneDriveExceptions recurses through inner exceptions as needed,
+            // but if we get here, we want to skip over exceptions thrown by Autofac.
+            originalException = MiscUtils.UnwrapUntilInterestingException(originalException);
 
             GatherReportInfoExceptScreenshot(
                 originalException,
@@ -1013,6 +1017,12 @@ namespace Bloom.web.controllers
                 }
                 heading = exception.Message;
                 isHeadingPreEncoded = false;
+                // If it's a file permissions problem, we can give a link to help the user. (BL-15282)
+                if (exception is System.UnauthorizedAccessException)
+                {
+                    heading = BookStorage.GetHelpLinkForFilePermissions() + "<br>" + heading;
+                    isHeadingPreEncoded = true;
+                }
             }
 
             var book = _bookSelection?.CurrentSelection;
@@ -1341,10 +1351,10 @@ namespace Bloom.web.controllers
         private static object GetNameString(string firstName, string lastName)
         {
             return !string.IsNullOrWhiteSpace(firstName) && !string.IsNullOrWhiteSpace(lastName)
-                ? lastName + ", " + firstName
+                    ? lastName + ", " + firstName
                 : string.IsNullOrWhiteSpace(lastName) && string.IsNullOrWhiteSpace(firstName)
                     ? "unknown"
-                    : (lastName + firstName).Trim();
+                : (lastName + firstName).Trim();
         }
 
         private static void GetStandardErrorReportingProperties(StringBuilder bldr, bool appendLog)
@@ -1514,7 +1524,9 @@ namespace Bloom.web.controllers
         private static IEnumerable<string> GetCollectionFilePaths(string collectionFolder)
         {
             var result = Directory.GetFiles(collectionFolder, "*CollectionStyles.css").ToList();
-            result.AddRange(Directory.GetFiles(collectionFolder, "*.bloomCollection"));
+            result.AddRange(
+                Directory.GetFiles(collectionFolder, CollectionSettings.kWildSearchPattern)
+            );
             return result;
         }
 
@@ -1557,9 +1569,7 @@ namespace Bloom.web.controllers
             var collectionFolder = Path.Combine(tempFolder, fileNameWIthoutExtension);
             ZipUtils.ExpandZip(path, collectionFolder);
             // get the path to the file ending in ".bloomCollection" in tempFolder
-            var collectionPath = Directory
-                .GetFiles(collectionFolder, "*.bloomCollection")
-                .FirstOrDefault();
+            CollectionSettings.TryGetSettingsFilePath(collectionFolder, out var collectionPath);
 
             // rename the collection to match the issueId, this makes it easier for the dev to know what's what.
             var problemReportSettingsPath = Path.Combine(collectionFolder, kProblemBookJsonName);
@@ -1572,7 +1582,7 @@ namespace Bloom.web.controllers
                 {
                     var newCollectionPath = Path.Combine(
                         collectionFolder,
-                        issueId.Value<string>() + ".bloomCollection"
+                        CollectionSettings.GetFileName(issueId.Value<string>())
                     );
                     RobustFile.Move(collectionPath, newCollectionPath);
                     return newCollectionPath;

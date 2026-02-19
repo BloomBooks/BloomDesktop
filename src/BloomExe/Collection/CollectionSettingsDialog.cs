@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.Properties;
@@ -9,10 +13,6 @@ using L10NSharp;
 using SIL.Extensions;
 using SIL.Reporting;
 using SIL.Windows.Forms.SettingProtection;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Windows.Forms;
 
 namespace Bloom.Collection
 {
@@ -367,7 +367,7 @@ namespace Bloom.Collection
                     new
                     {
                         initialLanguageTag = languageIdentifier,
-                        initialCustomName = potentiallyCustomName
+                        initialCustomName = potentiallyCustomName,
                     }
                 )
             )
@@ -434,6 +434,7 @@ namespace Bloom.Collection
                     _pendingSubscription = null; // not allowed; dialog already explained this
                 else
                 {
+                    _originalSubscription = _collectionSettings.Subscription;
                     _collectionSettings.Subscription = _pendingSubscription;
 
                     if (
@@ -485,10 +486,93 @@ namespace Bloom.Collection
             Logger.WriteEvent("Closing Collection Settings Dialog");
 
             _collectionSettings.DefaultBookshelf = PendingDefaultBookshelf;
+            // If the user has not changed the subscription code (signaled by a null pending Subscription
+            // object) and has not changed the bookshelf (signaled by an empty pending string), we want
+            // to keep the bookshelf that was set when a subscription expired.  We also want to keep the
+            // bookshelf if the user changes the subscription code to one that is for the same subscription,
+            // but has been renewed even if they misenter it. (BL-15056)
+            //
+            // _collectionSettings.ExpiredBookshelf is not written to the .bloomCollection file, but is
+            // set from _collectionSettings.DefaultBookshelf when the file is read if the subscription
+            // has expired.  (In which case, _collectionSettings.DefaultBookshelf is cleared.)  This is
+            // so that if the user has not changed the bookshelf or the subscription, we can restore the
+            // bookshelf when the user gets the subscription renewed.  But we don't want to start showing
+            // the user the expired bookshelf while the subscription is still expired since they can't
+            // make use of it until they renew the subscription.  So if we've written the expired value to
+            // the file, we want to clear it from memory to restore the status quo coming into the
+            // dialog.  We signal to do this by setting clearDefaultBookshelfAfterSaving. (BL-15056)
+            var clearDefaultBookshelfAfterSaving = false;
+            if (
+                String.IsNullOrEmpty(PendingDefaultBookshelf)
+                && !string.IsNullOrEmpty(_collectionSettings.ExpiredBookshelf)
+            )
+            {
+                if (_pendingSubscription == null)
+                {
+                    // The subscription has not changed, it's still the same one that expired.
+                    // We need to keep remembering the former bookshelf.
+                    _collectionSettings.DefaultBookshelf = _collectionSettings.ExpiredBookshelf;
+                    clearDefaultBookshelfAfterSaving = true;
+                }
+                else if (IsPendingSubscriptionSameAsOriginalSubscription())
+                {
+                    // The subscription has changed, but the new one is for the same subscription, presumably renewed.
+                    // We restore the bookshelf that was set when the subscription expired.
+                    _collectionSettings.DefaultBookshelf = _collectionSettings.ExpiredBookshelf;
+                    if (_pendingSubscription.IsExpired())
+                    {
+                        // This could be partially entered as well as expired.
+                        clearDefaultBookshelfAfterSaving = true;
+                    }
+                    else
+                    {
+                        // If the new subscription is not expired, we can clear the expired bookshelf.
+                        _collectionSettings.ExpiredBookshelf = string.Empty;
+                    }
+                }
+                else
+                {
+                    // The subscription has changed, and the new one is for a different subscription.
+                    // The user has essentially told us to forget the expired bookshelf.
+                    _collectionSettings.ExpiredBookshelf = string.Empty;
+                }
+            }
             _collectionSettings.Save();
+
+            if (clearDefaultBookshelfAfterSaving)
+                _collectionSettings.DefaultBookshelf = "";
+
             Close();
 
             DialogResult = AnyReasonToRestart() ? DialogResult.Yes : DialogResult.OK;
+        }
+
+        /// <summary>
+        /// Check whether the pending subscription is the same as the original subscription, or
+        /// possibly a renewed version of the same subscription.
+        /// </summary>
+        /// <remarks>
+        /// Call this only if _pendingSubscription is not null.
+        /// </remarks>
+        private bool IsPendingSubscriptionSameAsOriginalSubscription()
+        {
+            if (_originalSubscription == null)
+                return false; // no subscription, so can't be the same
+            if (_originalSubscription.Descriptor == _pendingSubscription.Descriptor)
+                return true;
+            if (
+                _pendingSubscription.Descriptor.StartsWith(_originalSubscription.Descriptor + "-")
+                || _originalSubscription.Descriptor.StartsWith(
+                    _pendingSubscription.Descriptor + "-"
+                )
+            )
+            {
+                // This may be the case when the user has entered a new subscription code that is for
+                // the same subscription, but it is incorrectly entered.  An incorrectly entered
+                // subscription may have been persisted already.
+                return true;
+            }
+            return false;
         }
 
         // internal and static to facilitate unit testing
@@ -616,6 +700,7 @@ namespace Bloom.Collection
         /// </summary>
         public bool FixingEnterpriseSubscriptionCode;
         private Subscription _pendingSubscription;
+        private Subscription _originalSubscription;
 
         private void OnLoad(object sender, EventArgs e)
         {
@@ -754,8 +839,7 @@ namespace Bloom.Collection
             // this.settingsProtectionLauncherButton1 has a private TextBox named betterLinkLabel1, which is the one we want to click
             // use reflection to get at the control and raise the OnClick() event
             var betterLinkLabel1 =
-                this.settingsProtectionLauncherButton1
-                    .GetType()
+                this.settingsProtectionLauncherButton1.GetType()
                     .GetField(
                         "betterLinkLabel1",
                         System.Reflection.BindingFlags.NonPublic

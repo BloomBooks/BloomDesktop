@@ -4,19 +4,19 @@
  * Time: 20:09
  */
 
-(function($) {
+(function ($) {
     /**
      * jQuery wrapper for form2object()
      * Extracts data from child inputs into javascript object
      */
-    $.fn.toObject = function(options) {
+    $.fn.toObject = function (options) {
         var result = [],
             settings = {
                 mode: "first", // what to convert: 'all' or 'first' matched node
                 delimiter: ".",
                 skipEmpty: true,
                 nodeCallback: null,
-                useIdIfEmptyName: false
+                useIdIfEmptyName: false,
             };
 
         if (options) {
@@ -30,19 +30,19 @@
                     settings.delimiter,
                     settings.skipEmpty,
                     settings.nodeCallback,
-                    settings.useIdIfEmptyName
+                    settings.useIdIfEmptyName,
                 );
                 break;
             case "all":
-                this.each(function() {
+                this.each(function () {
                     result.push(
                         form2object(
                             this,
                             settings.delimiter,
                             settings.skipEmpty,
                             settings.nodeCallback,
-                            settings.useIdIfEmptyName
-                        )
+                            settings.useIdIfEmptyName,
+                        ),
                     );
                 });
                 return result;
@@ -53,7 +53,7 @@
                     settings.delimiter,
                     settings.skipEmpty,
                     settings.nodeCallback,
-                    settings.useIdIfEmptyName
+                    settings.useIdIfEmptyName,
                 );
                 break;
         }

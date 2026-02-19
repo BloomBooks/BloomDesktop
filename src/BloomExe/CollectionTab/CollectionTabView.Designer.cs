@@ -57,7 +57,7 @@ namespace Bloom.CollectionTab
             this._legacySettingsButton = new System.Windows.Forms.ToolStripButton();
 			this._settingsButton = new System.Windows.Forms.ToolStripButton();
 			this._openCreateCollectionButton = new System.Windows.Forms.ToolStripButton();
-            this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+            this._L10NSharpExtender = new L10NSharp.Windows.Forms.L10NSharpExtender(this.components);
 			this._topBarControl.SuspendLayout();
 			this._toolStripLeft.SuspendLayout();
 			this._toolStrip.SuspendLayout();
@@ -225,7 +225,7 @@ namespace Bloom.CollectionTab
 
 		#endregion
 		public System.Windows.Forms.Panel _topBarControl;
-		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
+		private L10NSharp.Windows.Forms.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.ToolStrip _toolStrip;
 		private System.Windows.Forms.ToolStripButton _legacySettingsButton;
 		private System.Windows.Forms.ToolStripButton _settingsButton;
