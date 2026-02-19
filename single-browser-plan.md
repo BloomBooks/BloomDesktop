@@ -134,6 +134,7 @@ Those are post-milestone phases and should be planned separately.
 - Added tab lifecycle parity diagnostics in `workspace/singleBrowserDiagnostics.tabRouting`.
 - Added Edit visibility-transition parity diagnostics in `editParity.model` (`visibleTransition*`).
 - Added diagnostics reset metadata (`diagnosticsLastResetUtc`, `diagnosticsSecondsSinceReset`) for repeatable run tracking.
+- Added host-dispatch last activity diagnostics (`hostDispatch.lastSuccess*`, `hostDispatch.lastFallback*`) for bridge troubleshooting.
 
 ### Next focus (Phase 2)
 - Start functional parity tracking for key Edit workflows while keeping legacy internal iframes.

@@ -68,6 +68,10 @@ namespace Bloom.Workspace
         private ReactControl _workspaceShellReactControl;
         private int _visibleEditHostDispatchSuccessCount;
         private int _visibleEditHostDispatchFallbackCount;
+        private string _lastVisibleEditHostDispatchSuccessScript;
+        private DateTime? _lastVisibleEditHostDispatchSuccessUtc;
+        private string _lastVisibleEditHostDispatchFallbackScript;
+        private DateTime? _lastVisibleEditHostDispatchFallbackUtc;
         private int _changeTabRequestCount;
         private int _changeTabNoOpCount;
         private int _changeTabToCollectionCount;
@@ -578,9 +582,17 @@ namespace Bloom.Workspace
             diagnostics.visibleEditHostDispatchSuccessCount = _visibleEditHostDispatchSuccessCount;
             diagnostics.visibleEditHostDispatchFallbackCount =
                 _visibleEditHostDispatchFallbackCount;
+            diagnostics.hostDispatch = new
+            {
+                lastSuccessScript = _lastVisibleEditHostDispatchSuccessScript,
+                lastSuccessUtc = _lastVisibleEditHostDispatchSuccessUtc,
+                lastFallbackScript = _lastVisibleEditHostDispatchFallbackScript,
+                lastFallbackUtc = _lastVisibleEditHostDispatchFallbackUtc,
+            };
             diagnostics.diagnosticsLastResetUtc = _singleBrowserDiagnosticsLastResetUtc;
-            diagnostics.diagnosticsSecondsSinceReset =
-                (DateTime.UtcNow - _singleBrowserDiagnosticsLastResetUtc).TotalSeconds;
+            diagnostics.diagnosticsSecondsSinceReset = (
+                DateTime.UtcNow - _singleBrowserDiagnosticsLastResetUtc
+            ).TotalSeconds;
             diagnostics.zoom = GetZoomInfo();
             diagnostics.workspaceShellWebViewZoomFactor =
                 _workspaceShellReactControl?.GetWebViewZoomFactor();
@@ -603,6 +615,10 @@ namespace Bloom.Workspace
         {
             _visibleEditHostDispatchSuccessCount = 0;
             _visibleEditHostDispatchFallbackCount = 0;
+            _lastVisibleEditHostDispatchSuccessScript = null;
+            _lastVisibleEditHostDispatchSuccessUtc = null;
+            _lastVisibleEditHostDispatchFallbackScript = null;
+            _lastVisibleEditHostDispatchFallbackUtc = null;
             _changeTabRequestCount = 0;
             _changeTabNoOpCount = 0;
             _changeTabToCollectionCount = 0;
@@ -669,6 +685,8 @@ namespace Bloom.Workspace
                 if (string.Equals(result, "true", StringComparison.OrdinalIgnoreCase))
                 {
                     _visibleEditHostDispatchSuccessCount++;
+                    _lastVisibleEditHostDispatchSuccessScript = SummarizeScriptForDiagnostics(script);
+                    _lastVisibleEditHostDispatchSuccessUtc = DateTime.UtcNow;
                     return true;
                 }
 
@@ -677,6 +695,8 @@ namespace Bloom.Workspace
             }
 
             _visibleEditHostDispatchFallbackCount++;
+            _lastVisibleEditHostDispatchFallbackScript = SummarizeScriptForDiagnostics(script);
+            _lastVisibleEditHostDispatchFallbackUtc = DateTime.UtcNow;
             if ((_visibleEditHostDispatchFallbackCount % 25) == 0)
             {
                 Logger.WriteMinorEvent(
@@ -687,6 +707,18 @@ namespace Bloom.Workspace
             }
 
             return false;
+        }
+
+        private static string SummarizeScriptForDiagnostics(string script)
+        {
+            if (string.IsNullOrWhiteSpace(script))
+                return string.Empty;
+
+            var normalized = script.Replace("\r", " ").Replace("\n", " ").Trim();
+            const int maxLength = 160;
+            return normalized.Length <= maxLength
+                ? normalized
+                : normalized.Substring(0, maxLength) + "…";
         }
 
         private string GetTabStateForUi(string tabId, string activeTabId)
