@@ -68,13 +68,5 @@
         "Winforms",
         "xmatter"
     ],
-    "chat.useNestedAgentsMdFiles": true,
-    "workbench.colorCustomizations": {
-        "statusBar.background": "#f9e64f",
-        "statusBar.foreground": "#15202b",
-        "statusBarItem.hoverBackground": "#f7df1e",
-        "statusBarItem.remoteBackground": "#f9e64f",
-        "statusBarItem.remoteForeground": "#15202b"
-    },
-    "peacock.color": "#f9e64f"
+    "chat.useNestedAgentsMdFiles": true
 }
