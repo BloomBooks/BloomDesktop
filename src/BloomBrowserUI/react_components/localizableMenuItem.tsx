@@ -1,4 +1,4 @@
-import { css } from "@emotion/react";
+import { css, SerializedStyles } from "@emotion/react";
 
 import * as React from "react";
 import { Fragment, ReactNode, useEffect, useState } from "react";
@@ -62,6 +62,13 @@ export interface ILocalizableMenuItemProps
     subscriptionTooltipOverride?: string;
     className?: string;
     isDivider?: boolean;
+    // The optional css`` for the overall MenuItem li element.  Typical settings
+    // could be the padding and min-height to make the menu items more compact.
+    itemCss?: SerializedStyles;
+    // The optional css`` for the label text element, usually an h6 inside the li.
+    // Typical settings could be font-size and line-height to control the size of
+    // the menu text, and white-space to allow wrapping of the item's text.
+    labelCss?: SerializedStyles;
 }
 
 interface ILocalizableCheckboxMenuItemProps
@@ -162,13 +169,11 @@ export const LocalizableMenuItem: React.FunctionComponent<
             <MenuItem
                 key={props.l10nId}
                 onClick={menuClickHandler}
-                // dense={true}
-                // css={css`
-                //     padding: 0 6px !important; // eliminate top and bottom padding to make even denser
-                //     font-size: 14pt;
-                // `}
                 disabled={props.disabled}
                 className={props.className}
+                css={css`
+                    ${props.itemCss ? props.itemCss : css``}
+                `}
             >
                 <React.Fragment>
                     {iconElement}
@@ -178,6 +183,7 @@ export const LocalizableMenuItem: React.FunctionComponent<
                                 font-weight: 400 !important; // H6 defaults to 500; too thick
                                 font-family: ${kUiFontStack};
                                 color: ${menuItemColor} !important;
+                                ${props.labelCss ? props.labelCss : css``}
 
                                 // We can't use the disabled prop because it prevents the click from opening settings and
                                 // prevents the tooltip. So we just make it look disabled (using the same setting as Mui-disabled).

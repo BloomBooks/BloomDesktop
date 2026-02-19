@@ -52,7 +52,19 @@ namespace Bloom.web
                 true
             );
             apiHandler
-                .RegisterEndpointHandler("pageList/menuClicked", HandleShowMenuRequest, true)
+                .RegisterEndpointHandler(
+                    "pageList/contextMenuItemEnabled",
+                    HandleContextMenuItemEnabled,
+                    false,
+                    false
+                )
+                .Measureable();
+            apiHandler
+                .RegisterEndpointHandler(
+                    "pageList/contextMenuItemClicked",
+                    HandleContextMenuItemClickedRequest,
+                    true
+                )
                 .Measureable();
 
             apiHandler.RegisterEndpointHandler(
@@ -109,14 +121,25 @@ namespace Bloom.web
             request.PostSucceeded();
         }
 
-        // User clicked on the down arrow, we respond by showing the same menu as for right click.
-        private void HandleShowMenuRequest(ApiRequest request)
+        private void HandleContextMenuItemEnabled(ApiRequest request)
+        {
+            var commandId = request.Parameters["commandId"];
+            var pageId = request.Parameters["pageId"];
+            IPage page = PageFromId(pageId);
+            if (page != null)
+                request.ReplyWithBoolean(PageList.IsContextMenuCommandEnabled(page, commandId));
+            else
+                request.ReplyWithBoolean(false);
+        }
+
+        private void HandleContextMenuItemClickedRequest(ApiRequest request)
         {
             var requestData = DynamicJson.Parse(request.RequiredPostJson());
             string pageId = requestData.pageId;
+            string commandId = requestData.commandId;
             IPage page = PageFromId(pageId);
             if (page != null)
-                PageList.MenuClicked(page);
+                PageList.ExecuteContextMenuCommand(page, commandId);
             request.PostSucceeded();
         }
 
