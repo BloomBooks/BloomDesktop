@@ -50,17 +50,6 @@ namespace Bloom.Edit
 
         internal BloomWebSocketServer WebSocketServer { get; set; }
 
-        internal class MenuItemSpec
-        {
-            public string Label;
-            public Func<IPage, bool> EnableFunction; // called to determine whether the item should be enabled.
-            public Action<IPage> ExecuteCommand; // called when the item is chosen to perform the action.
-        }
-
-        // A list of menu items that should be in both the web browser'movedPageIdAndNewIndex right-click menu and
-        // the one we show ourselves when the arrow is clicked.
-        internal List<MenuItemSpec> ContextMenuItems { get; set; }
-
         public PageThumbnailList()
         {
             // set the thumbnail interval based on physical RAM
@@ -207,39 +196,72 @@ namespace Bloom.Edit
                 InvokePageSelectedChanged(page);
         }
 
-        internal void MenuClicked(IPage page)
+        /// <summary>
+        /// Check whether or not the page thumbnail context menu item is enabled for the
+        /// given page.
+        /// </summary>
+        /// <remarks>
+        /// The list of commandId values is found in pageThumbnailList.tsx in the
+        /// pageMenuDefinition array.
+        /// </remarks>
+        internal bool IsContextMenuCommandEnabled(IPage page, string commandId)
         {
             if (!Enabled || page == null)
-                return;
-            var menu = new ContextMenuStrip();
-            foreach (var item in ContextMenuItems)
+                return false;
+
+            switch (commandId)
             {
-                var useItem = item; // for use in Click action (reference to loop variable has unpredictable results)
-                var menuItem = new ToolStripMenuItem(item.Label);
-                menuItem.Click += (sender, args) => useItem.ExecuteCommand(page);
-                menuItem.Enabled = item.EnableFunction(page);
-                menu.Items.Add(menuItem);
+                case "duplicatePage":
+                case "duplicatePageManyTimes":
+                    return Model.CanDuplicatePage;
+                case "copyPage":
+                    return Model.CanCopyPage;
+                case "pastePage":
+                    return Model.CanAddPages && Model.GetClipboardHasPage();
+                case "removePage":
+                    return Model.CanDeletePage;
+                case "chooseDifferentLayout":
+                    return !page.Required
+                        && !page.GetDivNodeForThisPage()
+                            .GetAttribute("data-tool-id")
+                            .Equals("game");
+                default:
+                    return false;
             }
-
-            Model.GetEditingBrowser().OnBrowserClick += Browser_Click;
-            _popupPageMenu = menu;
-
-            menu.Show(Control.MousePosition);
         }
 
-        ContextMenuStrip _popupPageMenu;
+        internal void ExecuteContextMenuCommand(IPage page, string commandId)
+        {
+            if (!IsContextMenuCommandEnabled(page, commandId))
+                return;
+
+            switch (commandId)
+            {
+                case "duplicatePage":
+                    Model.DuplicatePage(page);
+                    break;
+                case "duplicatePageManyTimes":
+                    Model.DuplicateManyPages(page);
+                    break;
+                case "copyPage":
+                    Model.CopyPage(page);
+                    break;
+                case "pastePage":
+                    Model.PastePage(page);
+                    break;
+                case "removePage":
+                    if (ConfirmRemovePageDialog.Confirm())
+                        Model.DeletePage(page);
+                    break;
+                case "chooseDifferentLayout":
+                    Model.GetEditingBrowser().Focus();
+                    Model.ChangePageLayout(page);
+                    break;
+            }
+        }
+
         private PageListApi _pageListApi;
         internal bool Enabled = true;
-
-        private void Browser_Click(object sender, EventArgs e)
-        {
-            if (_popupPageMenu != null)
-            {
-                _popupPageMenu.Close(ToolStripDropDownCloseReason.CloseCalled);
-                _popupPageMenu = null;
-                Model.GetEditingBrowser().OnBrowserClick -= Browser_Click;
-            }
-        }
 
         // This gets invoked by Javascript (via the PageListApi) when it determines that a particular page has been moved.
         // newIndex is the (zero-based) index that the page is moving to
