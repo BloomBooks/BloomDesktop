@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -10,6 +11,7 @@ using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.SafeXml;
 using Bloom.Utils;
+using SIL.Reporting;
 
 namespace Bloom.web
 {
@@ -52,7 +54,19 @@ namespace Bloom.web
                 true
             );
             apiHandler
-                .RegisterEndpointHandler("pageList/menuClicked", HandleShowMenuRequest, true)
+                .RegisterEndpointHandler(
+                    "pageList/contextMenuItemEnabled",
+                    HandleContextMenuItemEnabled,
+                    false,
+                    false
+                )
+                .Measureable();
+            apiHandler
+                .RegisterEndpointHandler(
+                    "pageList/contextMenuItemClicked",
+                    HandleContextMenuItemClickedRequest,
+                    true
+                )
                 .Measureable();
 
             apiHandler.RegisterEndpointHandler(
@@ -109,14 +123,54 @@ namespace Bloom.web
             request.PostSucceeded();
         }
 
-        // User clicked on the down arrow, we respond by showing the same menu as for right click.
-        private void HandleShowMenuRequest(ApiRequest request)
+        private void HandleContextMenuItemEnabled(ApiRequest request)
+        {
+            var commandId = request.Parameters["commandId"];
+            var pageId = request.Parameters["pageId"];
+            IPage page = PageFromId(pageId);
+            if (page != null)
+                request.ReplyWithBoolean(PageList.IsContextMenuCommandEnabled(page, commandId));
+            else
+                request.ReplyWithBoolean(false);
+        }
+
+        private void HandleContextMenuItemClickedRequest(ApiRequest request)
         {
             var requestData = DynamicJson.Parse(request.RequiredPostJson());
             string pageId = requestData.pageId;
+            string commandId = requestData.commandId;
             IPage page = PageFromId(pageId);
+            
             if (page != null)
-                PageList.MenuClicked(page);
+            {
+                // Execute the command asynchronously after a short delay
+                // The discard operator _ indicates we're intentionally not awaiting this
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(100); // 100ms delay to let the UI respond
+                    
+                    // Execute on the UI thread using the form's synchronization context
+                    var form = Form.ActiveForm ?? Application.OpenForms.Cast<Form>().FirstOrDefault();
+                    if (form != null && !form.IsDisposed)
+                    {
+                        form.BeginInvoke(new Action(() =>
+                        {
+                            try
+                            {
+                                PageList.ExecuteContextMenuCommand(page, commandId);
+                            }
+                            catch (Exception ex)
+                            {
+                                // Log the error.  Should we notify the user as well?
+                                Logger.WriteEvent($"Error executing content menu command for {commandId} on page {pageId}");
+                                Logger.WriteError(ex);
+                            }
+                        }));
+                    }
+                });
+            }
+            
+            // Return success immediately without waiting for the command to execute
             request.PostSucceeded();
         }
 
