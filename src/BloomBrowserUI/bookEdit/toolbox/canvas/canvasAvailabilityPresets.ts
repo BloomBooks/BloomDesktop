@@ -91,7 +91,10 @@ export const wholeElementAvailabilityRules: AvailabilityRulesMap = {
     delete: {
         surfacePolicy: {
             toolbar: {
-                visible: (ctx) => !ctx.isLinkGrid && !ctx.isSpecialGameElement,
+                visible: (ctx) =>
+                    !ctx.isLinkGrid &&
+                    !ctx.isBackgroundImage &&
+                    !ctx.isSpecialGameElement,
             },
             menu: {
                 visible: (ctx) => !ctx.isLinkGrid,

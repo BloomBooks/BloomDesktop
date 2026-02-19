@@ -331,6 +331,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         icon: MissingMetadataIcon,
         menu: {
             icon: React.createElement(CopyrightIcon, null),
+            subLabelL10nId: "EditTab.Image.EditMetadataOverlayMore",
         },
         action: async (ctx, runtime) => {
             const imageContainer = getImageContainer(ctx);
