@@ -61,6 +61,9 @@ namespace Bloom.Edit
         private int _copyCommandCount;
         private int _pasteCommandCount;
         private int _undoCommandCount;
+        private int _onVisibleChangedCallCount;
+        private int _onVisibleChangedToVisibleCount;
+        private int _onVisibleChangedToHiddenCount;
 
         public delegate EditingView Factory(); //autofac uses this
 
@@ -308,6 +311,12 @@ namespace Bloom.Edit
         /// </summary>
         public async Task OnVisibleChanged(bool visible)
         {
+            _onVisibleChangedCallCount++;
+            if (visible)
+                _onVisibleChangedToVisibleCount++;
+            else
+                _onVisibleChangedToHiddenCount++;
+
             _visible = visible;
             if (visible)
             {
@@ -1975,6 +1984,9 @@ namespace Bloom.Edit
                 copyCommandCount = _copyCommandCount,
                 pasteCommandCount = _pasteCommandCount,
                 undoCommandCount = _undoCommandCount,
+                onVisibleChangedCallCount = _onVisibleChangedCallCount,
+                onVisibleChangedToVisibleCount = _onVisibleChangedToVisibleCount,
+                onVisibleChangedToHiddenCount = _onVisibleChangedToHiddenCount,
                 model = _model.GetParityDiagnostics(),
             };
         }
@@ -1990,6 +2002,9 @@ namespace Bloom.Edit
             _copyCommandCount = 0;
             _pasteCommandCount = 0;
             _undoCommandCount = 0;
+            _onVisibleChangedCallCount = 0;
+            _onVisibleChangedToVisibleCount = 0;
+            _onVisibleChangedToHiddenCount = 0;
             _model.ResetParityDiagnostics();
         }
 
