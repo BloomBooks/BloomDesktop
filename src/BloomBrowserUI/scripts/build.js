@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const { spawn } = require("child_process");
+const fs = require("fs");
 const path = require("path");
 
 const args = new Set(process.argv.slice(2));
@@ -10,29 +11,38 @@ const contentRoot = path.resolve(browserUIRoot, "..", "content");
 
 const env = { ...process.env };
 
-const viteBin = path.join(
-    browserUIRoot,
-    "node_modules",
-    "vite",
-    "bin",
-    "vite.js",
-);
-const tsNodeBin = path.join(
-    contentRoot,
-    "node_modules",
-    "ts-node",
-    "dist",
-    "bin.js",
-);
-const cpxBin = path.join(contentRoot, "node_modules", "cpx", "bin", "index.js");
-const rimrafBin = path.join(
-    contentRoot,
-    "node_modules",
-    "rimraf",
-    "dist",
-    "esm",
-    "bin.mjs",
-);
+const readJson = (filePath) => JSON.parse(fs.readFileSync(filePath, "utf8"));
+
+const resolvePackageBin = (packageRoot, packageName, binName) => {
+    const packageJsonPath = path.resolve(
+        packageRoot,
+        "node_modules",
+        packageName,
+        "package.json",
+    );
+    const packageJson = readJson(packageJsonPath);
+    const binField = packageJson.bin;
+    const binRelativePath =
+        typeof binField === "string" ? binField : binField?.[binName];
+
+    if (!binRelativePath) {
+        throw new Error(
+            `Unable to resolve bin \"${binName}\" from ${packageJsonPath}`,
+        );
+    }
+
+    return path.resolve(
+        packageRoot,
+        "node_modules",
+        packageName,
+        binRelativePath,
+    );
+};
+
+const viteBin = resolvePackageBin(browserUIRoot, "vite", "vite");
+const tsNodeBin = resolvePackageBin(contentRoot, "ts-node", "ts-node");
+const cpxBin = resolvePackageBin(contentRoot, "cpx", "cpx");
+const rimrafBin = resolvePackageBin(contentRoot, "rimraf", "rimraf");
 
 const runCommand = (command, commandArgs, options = {}) =>
     new Promise((resolve, reject) => {
@@ -58,6 +68,7 @@ const runCommand = (command, commandArgs, options = {}) =>
                     );
                 }
             });
+            child.on("error", reject);
             return;
         }
 

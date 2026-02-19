@@ -56,18 +56,38 @@ const isVerbose = process.argv.includes("--verbose");
 
 const defaultVitePort = 5173;
 
+const parsePortValue = (value) => {
+    const parsed = Number.parseInt(value, 10);
+    if (Number.isInteger(parsed) && parsed > 0 && parsed <= 65535) {
+        return parsed;
+    }
+    return undefined;
+};
+
 const parsePort = () => {
-    const arg = process.argv.find((value) => value?.startsWith("--port="));
-    if (arg) {
-        const parsed = Number.parseInt(arg.split("=")[1], 10);
-        if (Number.isFinite(parsed)) {
+    const equalsArg = process.argv.find((value) =>
+        value?.startsWith("--port="),
+    );
+    if (equalsArg) {
+        const parsed = parsePortValue(equalsArg.split("=")[1]);
+        if (parsed !== undefined) {
+            return parsed;
+        }
+    }
+
+    const flagIndex = process.argv.findIndex(
+        (value) => value === "--port" || value === "-p",
+    );
+    if (flagIndex >= 0 && flagIndex + 1 < process.argv.length) {
+        const parsed = parsePortValue(process.argv[flagIndex + 1]);
+        if (parsed !== undefined) {
             return parsed;
         }
     }
 
     if (process.env.PORT) {
-        const parsed = Number.parseInt(process.env.PORT, 10);
-        if (Number.isFinite(parsed)) {
+        const parsed = parsePortValue(process.env.PORT);
+        if (parsed !== undefined) {
             return parsed;
         }
     }
@@ -79,8 +99,8 @@ const isPortAvailable = (port) =>
     new Promise((resolve) => {
         const server = net
             .createServer()
-            .once("error", (err) => {
-                resolve(err.code !== "EADDRINUSE");
+            .once("error", () => {
+                resolve(false);
             })
             .once("listening", () => {
                 server.close(() => resolve(true));
@@ -168,17 +188,27 @@ function startVite(port) {
         vite.stderr.on("data", (data) => process.stderr.write(data));
 
         vite.on("error", (err) => {
+            if (isShuttingDown) {
+                return;
+            }
             console.error("Vite failed to start:", err);
-            process.exit(1);
+            cleanup(1);
         });
 
         vite.on("close", (code) => {
+            if (isShuttingDown) {
+                return;
+            }
             if (!ready) {
                 console.error(
                     `Vite exited before becoming ready (code ${code}).`,
                 );
-                process.exit(1);
+                cleanup(1);
+                return;
             }
+
+            console.error(`Vite exited unexpectedly (code ${code}).`);
+            cleanup(code ?? 1);
         });
     });
 }
