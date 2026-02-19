@@ -17,8 +17,12 @@ function resolvePaths(options = {}) {
     const outputBase =
         options.outputBase ??
         path.resolve(browserUIRoot, "../../output/browser");
+    const repoRoot =
+        options.repoRoot ?? path.resolve(browserUIRoot, "..", "..");
+    const metadataPath =
+        options.metadataPath ?? path.join(outputBase, ".pug-watch-state.json");
 
-    return { browserUIRoot, contentRoot, outputBase };
+    return { browserUIRoot, contentRoot, outputBase, repoRoot, metadataPath };
 }
 
 function getMTime(filePath) {
@@ -46,8 +50,27 @@ function needsRebuild(sourceFile, dependencyFiles, outputFile) {
     return false;
 }
 
+function readJson(filePath) {
+    try {
+        return JSON.parse(fs.readFileSync(filePath, "utf8"));
+    } catch {
+        return null;
+    }
+}
+
+function writeJsonAtomic(filePath, data) {
+    const dirPath = path.dirname(filePath);
+    if (!fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath, { recursive: true });
+    }
+    const tmpPath = `${filePath}.tmp`;
+    fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2));
+    fs.renameSync(tmpPath, filePath);
+}
+
 export async function compilePugFiles(options = {}) {
-    const { browserUIRoot, contentRoot, outputBase } = resolvePaths(options);
+    const { browserUIRoot, contentRoot, outputBase, repoRoot, metadataPath } =
+        resolvePaths(options);
     const {
         logSummary = false,
         logWhenNoChanges = false,
@@ -70,6 +93,14 @@ export async function compilePugFiles(options = {}) {
 
     const allPugFiles = [...browserUIPugFiles, ...contentPugFiles];
 
+    const metadataVersion = 1;
+    const existingMetadata = readJson(metadataPath);
+    const cachedEntries =
+        existingMetadata?.version === metadataVersion
+            ? (existingMetadata.entries ?? {})
+            : {};
+    const nextEntries = {};
+
     let compiled = 0;
     let skipped = 0;
 
@@ -82,6 +113,17 @@ export async function compilePugFiles(options = {}) {
             .replace(/\.pug$/i, ".html");
 
         const outputFile = path.join(outputBase, relativePath);
+        const entryId = path.relative(repoRoot, file).replace(/\\/g, "/");
+
+        const cachedDependencies = (cachedEntries[entryId] ?? []).map((dep) =>
+            path.resolve(repoRoot, dep),
+        );
+
+        if (!needsRebuild(file, cachedDependencies, outputFile)) {
+            nextEntries[entryId] = cachedEntries[entryId] ?? [];
+            skipped++;
+            continue;
+        }
 
         const compiledTemplate = pug.compileFile(file, {
             basedir: baseRoot,
@@ -94,6 +136,10 @@ export async function compilePugFiles(options = {}) {
                     path.resolve(dep),
                 ),
             ),
+        );
+
+        nextEntries[entryId] = dependencies.map((dep) =>
+            path.relative(repoRoot, dep).replace(/\\/g, "/"),
         );
 
         if (!needsRebuild(file, dependencies, outputFile)) {
@@ -115,6 +161,11 @@ export async function compilePugFiles(options = {}) {
         }
         compiled++;
     }
+
+    writeJsonAtomic(metadataPath, {
+        version: metadataVersion,
+        entries: nextEntries,
+    });
 
     const total = allPugFiles.length;
     if (logSummary && (logWhenNoChanges || compiled > 0)) {

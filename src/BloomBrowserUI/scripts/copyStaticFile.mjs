@@ -60,9 +60,10 @@ function copyStaticFile(filePath, options = {}) {
     const relativePath = path
         .relative(browserUIRoot, absolutePath)
         .replace(/\\/g, "/");
+    const fileName = path.basename(relativePath).toLowerCase();
 
     if (
-        relativePath === "tsconfig.json" ||
+        fileName === "tsconfig.json" ||
         relativePath.startsWith(".") ||
         excludedExtensions.has(path.extname(relativePath))
     ) {

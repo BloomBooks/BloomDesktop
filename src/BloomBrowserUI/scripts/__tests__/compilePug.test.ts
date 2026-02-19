@@ -1,7 +1,8 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import pug from "pug";
 import { compilePugFiles } from "../compilePug.mjs";
 
 let tempDir: string;
@@ -63,5 +64,25 @@ describe("compilePugFiles", () => {
         const secondHtml = fs.readFileSync(outPath, "utf8");
         expect(secondHtml).toContain("Partial B");
         expect(secondHtml).not.toContain("Partial A");
+    });
+
+    it("skips expensive compilation when files are up to date", async () => {
+        const mainPath = path.join(browserUIRoot, "pages", "main.pug");
+        writeFile(mainPath, "p Hello\n");
+
+        await compilePugFiles({ browserUIRoot, contentRoot, outputBase });
+
+        const compileSpy = vi.spyOn(pug, "compileFile");
+        const result = await compilePugFiles({
+            browserUIRoot,
+            contentRoot,
+            outputBase,
+        });
+
+        expect(compileSpy).not.toHaveBeenCalled();
+        expect(result.compiled).toBe(0);
+        expect(result.skipped).toBeGreaterThan(0);
+
+        compileSpy.mockRestore();
     });
 });
