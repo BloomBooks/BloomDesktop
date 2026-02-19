@@ -11,7 +11,7 @@ import {
 } from "./canvasElementConstants";
 import { getCanvasElementManager } from "./canvasElementUtils";
 import { inferCanvasElementType } from "./canvasElementTypeInference";
-import { canvasElementDefinitionsNew } from "./canvasElementNewDefinitions";
+import { canvasElementDefinitions } from "./canvasElementDefinitions";
 import { CanvasElementType } from "./canvasElementTypes";
 import { IControlContext } from "./canvasControlTypes";
 
@@ -44,7 +44,7 @@ export const buildControlContext = (
     const isKnownType =
         !!inferredCanvasElementType &&
         Object.prototype.hasOwnProperty.call(
-            canvasElementDefinitionsNew,
+            canvasElementDefinitions,
             inferredCanvasElementType,
         );
 
@@ -56,7 +56,7 @@ export const buildControlContext = (
         );
     } else if (!isKnownType) {
         console.warn(
-            `Canvas element type '${inferredCanvasElementType}' is not registered in canvasElementDefinitionsNew. Falling back to 'none'.`,
+            `Canvas element type '${inferredCanvasElementType}' is not registered in canvasElementDefinitions. Falling back to 'none'.`,
         );
     }
 

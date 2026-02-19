@@ -214,7 +214,7 @@
       </trans-unit>
       <trans-unit id="BookEditor.CharacterMap.Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To select, use your mouse wheel or point at what you want, or press the key shown in purple. Finally, release the key that you pressed to show this list.</source>
-        <target xml:lang="es-ES" state="final">Para seleccionar, utilice la rueda del ratón, apunte a lo que quiere, o apriete la tecla mostrada en color púrpura. 
+        <target xml:lang="es-ES" state="final">Para seleccionar, utilice la rueda del ratón, apunte a lo que quiere, o apriete la tecla mostrada en color púrpura.
 Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: BookEditor.CharacterMap.Instructions</note>
       </trans-unit>
@@ -2146,7 +2146,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Cortar la imagen</target>
         <note>ID: EditTab.Image.CutImage</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Image.EditMetadata.MenuHelp" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Edit image credits, copyright, &amp; license</source>
         <target xml:lang="es-ES" state="final">Editar créditos de la imagen, derechos de autor y licencia</target>
         <note>ID: EditTab.Image.EditMetadata</note>

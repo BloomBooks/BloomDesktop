@@ -214,7 +214,7 @@
       </trans-unit>
       <trans-unit id="BookEditor.CharacterMap.Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To select, use your mouse wheel or point at what you want, or press the key shown in purple. Finally, release the key that you pressed to show this list.</source>
-        <target xml:lang="quc" state="final">Chech uch'axik, chakojo ri setesik rech ri ch'o, chak'utu' ri kawaj, te'qne chapitz'a' ri cholnak'tz'ib' uk'utum ruk' ri raxkaqkoj q'o'b'al. 
+        <target xml:lang="quc" state="final">Chech uch'axik, chakojo ri setesik rech ri ch'o, chak'utu' ri kawaj, te'qne chapitz'a' ri cholnak'tz'ib' uk'utum ruk' ri raxkaqkoj q'o'b'al.
 K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'aj.</target>
         <note>ID: BookEditor.CharacterMap.Instructions</note>
       </trans-unit>
@@ -2146,7 +2146,7 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="final">Uqupixik ri wachib'al</target>
         <note>ID: EditTab.Image.CutImage</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Image.EditMetadata.MenuHelp" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Edit image credits, copyright, &amp; license</source>
         <target xml:lang="quc" state="final">Ukolomaxik b'i'aj kech rajawab' le wachib'al, le ya'tal chech le b'anal rech xuquje' uwujil patanib'al</target>
         <note>ID: EditTab.Image.EditMetadata</note>
@@ -4185,7 +4185,7 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This book has text in a font named "{0}", but Bloom could not find that font on this computer.</source>
-        <target xml:lang="quc" state="final">We no'jwuj ri' k'o woktzij chi upam ruk ' jun kemuxe' ub'i' "{0}" xa are k'ut Bloom man xurij ta 
+        <target xml:lang="quc" state="final">We no'jwuj ri' k'o woktzij chi upam ruk ' jun kemuxe' ub'i' "{0}" xa are k'ut Bloom man xurij ta
  le kemuxe' pa we kematz'ib' ri'.</target>
         <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
       </trans-unit>

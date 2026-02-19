@@ -63,6 +63,7 @@ export type SectionId =
     | "linkGrid"
     | "url"
     | "bubble"
+    | "outline"
     | "text"
     | "wholeElement";
 
@@ -130,6 +131,9 @@ export interface IControlMenuCommandRow {
     englishLabel?: string;
     subLabelL10nId?: string;
     subLabel?: string;
+    helpRowL10nId?: string;
+    helpRowEnglish?: string;
+    helpRowSeparatorAbove?: boolean;
     icon?: React.ReactNode;
     disabled?: boolean;
     featureName?: string;
@@ -144,23 +148,16 @@ export interface IControlMenuCommandRow {
     onSelect: (ctx: IControlContext, runtime: IControlRuntime) => Promise<void>;
 }
 
-export interface IControlMenuHelpRow {
-    kind: "help";
-    helpRowL10nId: string;
-    helpRowEnglish: string;
-    separatorAbove?: boolean;
-    availability?: {
-        visible?: (ctx: IControlContext) => boolean;
-    };
-}
-
-export type IControlMenuRow = IControlMenuCommandRow | IControlMenuHelpRow;
+export type IControlMenuRow = IControlMenuCommandRow;
 
 export interface IBaseControlDefinition {
     id: TopLevelControlId;
     featureName?: string;
     l10nId: string;
     englishLabel: string;
+    helpRowL10nId?: string;
+    helpRowEnglish?: string;
+    helpRowSeparatorAbove?: boolean;
     icon?: IControlIcon;
     tooltipL10nId?: string;
 }

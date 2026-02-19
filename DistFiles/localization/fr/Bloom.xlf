@@ -2144,7 +2144,7 @@
         <target xml:lang="fr" state="final">Couper l'image</target>
         <note>ID: EditTab.Image.CutImage</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Image.EditMetadata.MenuHelp" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Edit image credits, copyright, &amp; license</source>
         <target xml:lang="fr" state="final">Modifier les mentions pour les Images, les Droits d'auteur &amp; la Licence</target>
         <note>ID: EditTab.Image.EditMetadata</note>

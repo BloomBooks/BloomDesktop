@@ -789,7 +789,7 @@ export function SetupMetadataButton(parent: HTMLElement) {
         // this function is called again.
         let buttonClasses = `editMetadataButton imageButton bloom-ui`;
         let title = "Edit image credits, copyright, & license";
-        let titleId = "EditTab.Image.EditMetadata";
+        let titleId = "EditTab.Image.EditMetadata.MenuHelp";
         if (!copyright || copyright.length === 0) {
             buttonClasses += " imgMetadataProblem";
             title = "Image is missing information on Credits, Copyright";

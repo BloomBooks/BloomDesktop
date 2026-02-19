@@ -2144,7 +2144,7 @@
         <target xml:lang="zh-CN" state="final">剪切图像</target>
         <note>ID: EditTab.Image.CutImage</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Image.EditMetadata.MenuHelp" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Edit image credits, copyright, &amp; license</source>
         <target xml:lang="zh-CN" state="final">编辑图像来源，版权和许可证。</target>
         <note>ID: EditTab.Image.EditMetadata</note>

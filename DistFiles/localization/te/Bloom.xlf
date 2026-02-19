@@ -2144,7 +2144,7 @@
         <target xml:lang="te" state="needs-translation">Cut image</target>
         <note>ID: EditTab.Image.CutImage</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Image.EditMetadata.MenuHelp" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Edit image credits, copyright, &amp; license</source>
         <target xml:lang="te" state="final">మార్చు చిత్రం క్రెడిట్స్ కాపీరైట్ &amp; లైసెన్సు</target>
         <note>ID: EditTab.Image.EditMetadata</note>

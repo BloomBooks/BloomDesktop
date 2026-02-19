@@ -1,4 +1,3 @@
-import { css } from "@emotion/react";
 import * as React from "react";
 import { default as ArrowDownwardIcon } from "@mui/icons-material/ArrowDownward";
 import { default as ArrowUpwardIcon } from "@mui/icons-material/ArrowUpward";
@@ -41,6 +40,7 @@ import { kBloomBlue } from "../../../bloomMaterialUITheme";
 import {
     IControlContext,
     IControlDefinition,
+    ICommandControlDefinition,
     IControlRuntime,
     IControlSection,
     IControlMenuCommandRow,
@@ -256,6 +256,10 @@ const makeChooseAudioMenuItemForImage = (
                 l10nId: "EditTab.Toolbox.DragActivity.ChooseSound",
                 englishLabel: "Choose...",
                 featureName: "canvas",
+                helpRowL10nId: "EditTab.Toolbox.DragActivity.ChooseSound.Help",
+                helpRowEnglish:
+                    'You can use elevenlabs.io to create sound effects if your book is non-commercial. Make sure to give credit to "elevenlabs.io".',
+                helpRowSeparatorAbove: true,
                 onSelect: async () => {
                     runtime.closeMenu(true);
                     const newSoundId = await showDialogToChooseSoundFileAsync();
@@ -267,13 +271,6 @@ const makeChooseAudioMenuItemForImage = (
                     copyAndPlaySoundAsync(newSoundId, ctx.page, false);
                 },
             },
-            {
-                kind: "help",
-                helpRowL10nId: "EditTab.Toolbox.DragActivity.ChooseSound.Help",
-                helpRowEnglish:
-                    'You can use elevenlabs.io to create sound effects if your book is non-commercial. Make sure to give credit to "elevenlabs.io".',
-                separatorAbove: true,
-            },
         ],
     };
 };
@@ -282,7 +279,6 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
     chooseImage: {
         kind: "command",
         id: "chooseImage",
-        featureName: "canvas",
         l10nId: "EditTab.Image.ChooseImage",
         englishLabel: "Choose image from your computer...",
         icon: SearchIcon,
@@ -299,7 +295,6 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
     pasteImage: {
         kind: "command",
         id: "pasteImage",
-        featureName: "canvas",
         l10nId: "EditTab.Image.PasteImage",
         englishLabel: "Paste image",
         icon: PasteIcon,
@@ -315,7 +310,6 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
     copyImage: {
         kind: "command",
         id: "copyImage",
-        featureName: "canvas",
         l10nId: "EditTab.Image.CopyImage",
         englishLabel: "Copy image",
         icon: CopyIcon,
@@ -331,9 +325,9 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
     missingMetadata: {
         kind: "command",
         id: "missingMetadata",
-        featureName: "canvas",
         l10nId: "EditTab.Image.EditMetadataOverlay",
         englishLabel: "Set Image Information...",
+        helpRowL10nId: "EditTab.Image.EditMetadataOverlay.MenuHelp",
         icon: MissingMetadataIcon,
         menu: {
             icon: React.createElement(CopyrightIcon, null),
@@ -353,12 +347,12 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
     resetImage: {
         kind: "command",
         id: "resetImage",
-        featureName: "canvas",
         l10nId: "EditTab.Image.Reset",
         englishLabel: "Reset Image",
         icon: React.createElement("img", {
             src: "/bloom/images/reset image black.svg",
             alt: "",
+            className: "canvas-context-menu-monochrome-icon",
         }),
         action: async () => {
             getCanvasElementManager()?.resetCropping();
@@ -367,7 +361,6 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
     expandToFillSpace: {
         kind: "command",
         id: "expandToFillSpace",
-        featureName: "canvas",
         l10nId: "EditTab.Toolbox.ComicTool.Options.FillSpace",
         englishLabel: "Fit Space",
         icon: FillSpaceIcon,
@@ -375,6 +368,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
             icon: React.createElement("img", {
                 src: "/bloom/images/fill image black.svg",
                 alt: "",
+                className: "canvas-context-menu-monochrome-icon",
             }),
         },
         action: async () => {
@@ -456,6 +450,9 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         l10nId: "EditTab.Toolbox.ComicTool.Options.Format",
         englishLabel: "Format",
         icon: CogIcon,
+        toolbar: {
+            relativeSize: 0.8,
+        },
         action: async (ctx) => {
             const editable = getEditable(ctx);
             if (!editable) {
@@ -506,7 +503,9 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                     },
                 }),
                 onSelect: async (rowCtx) => {
-                    await controlRegistry.autoHeight.action(rowCtx, runtime);
+                    await (
+                        controlRegistry.autoHeight as ICommandControlDefinition
+                    ).action(rowCtx, runtime);
                 },
             }),
         },
@@ -530,10 +529,9 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                     ? React.createElement(CheckIcon, null)
                     : undefined,
                 onSelect: async (rowCtx) => {
-                    await controlRegistry.fillBackground.action(
-                        rowCtx,
-                        runtime,
-                    );
+                    await (
+                        controlRegistry.fillBackground as ICommandControlDefinition
+                    ).action(rowCtx, runtime);
                 },
             }),
         },
@@ -602,6 +600,9 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         l10nId: "EditTab.Toolbox.CanvasTool.SetDest",
         englishLabel: "Set Destination",
         icon: LinkIcon,
+        toolbar: {
+            relativeSize: 0.8,
+        },
         action: async (ctx, runtime) => {
             runtime.closeMenu(true);
 
@@ -637,32 +638,32 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                     React.createElement(
                         "button",
                         {
-                            css: css`
-                                border-color: transparent;
-                                background-color: transparent;
-                                vertical-align: middle;
-                                width: 22px;
-                                svg {
-                                    font-size: 1.04rem;
-                                }
-                            `,
+                            style: {
+                                borderColor: "transparent",
+                                backgroundColor: "transparent",
+                                verticalAlign: "middle",
+                                width: "22px",
+                            },
                             onClick: () => {
                                 editLinkGrid(linkGrid);
                             },
                         },
                         React.createElement(CogIcon, {
                             color: "primary",
+                            style: {
+                                fontSize: "1.04rem",
+                            },
                         }),
                     ),
                     React.createElement(
                         "span",
                         {
-                            css: css`
-                                color: ${kBloomBlue};
-                                font-size: 10px;
-                                margin-left: 4px;
-                                cursor: pointer;
-                            `,
+                            style: {
+                                color: kBloomBlue,
+                                fontSize: "10px",
+                                marginLeft: "4px",
+                                cursor: "pointer",
+                            },
                             onClick: () => {
                                 editLinkGrid(linkGrid);
                             },
@@ -687,7 +688,6 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
     duplicate: {
         kind: "command",
         id: "duplicate",
-        featureName: "canvas",
         l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
         englishLabel: "Duplicate",
         icon: DuplicateIcon,
@@ -698,7 +698,6 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
     delete: {
         kind: "command",
         id: "delete",
-        featureName: "canvas",
         l10nId: "Common.Delete",
         englishLabel: "Delete",
         icon: DeleteIcon,
@@ -726,10 +725,9 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                     },
                 }),
                 onSelect: async (rowCtx) => {
-                    await controlRegistry.toggleDraggable.action(
-                        rowCtx,
-                        runtime,
-                    );
+                    await (
+                        controlRegistry.toggleDraggable as ICommandControlDefinition
+                    ).action(rowCtx, runtime);
                 },
             }),
         },
@@ -758,10 +756,9 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                     },
                 }),
                 onSelect: async (rowCtx) => {
-                    await controlRegistry.togglePartOfRightAnswer.action(
-                        rowCtx,
-                        runtime,
-                    );
+                    await (
+                        controlRegistry.togglePartOfRightAnswer as ICommandControlDefinition
+                    ).action(rowCtx, runtime);
                 },
             }),
         },
@@ -841,12 +838,13 @@ export const controlSections: Record<SectionId, IControlSection> = {
         id: "bubble",
         controlsBySurface: {
             menu: ["addChildBubble"],
-            toolPanel: [
-                "bubbleStyle",
-                "showTail",
-                "roundedCorners",
-                "outlineColor",
-            ],
+            toolPanel: ["bubbleStyle", "showTail", "roundedCorners"],
+        },
+    },
+    outline: {
+        id: "outline",
+        controlsBySurface: {
+            toolPanel: ["outlineColor"],
         },
     },
     text: {

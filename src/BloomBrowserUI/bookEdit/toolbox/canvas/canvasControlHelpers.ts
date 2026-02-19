@@ -30,7 +30,7 @@ const toRenderedIcon = (icon: React.ReactNode | undefined): React.ReactNode => {
     }
 
     if (typeof icon === "function") {
-        return React.createElement(icon, null);
+        return React.createElement(icon as React.ElementType, null);
     }
 
     if (typeof icon === "object" && "$$typeof" in (icon as object)) {
@@ -130,14 +130,6 @@ const applyRowAvailability = (
     ctx: IControlContext,
     parentEnabled: boolean,
 ): IControlMenuRow | undefined => {
-    if (row.kind === "help") {
-        if (row.availability?.visible && !row.availability.visible(ctx)) {
-            return undefined;
-        }
-
-        return row;
-    }
-
     if (row.availability?.visible && !row.availability.visible(ctx)) {
         return undefined;
     }
@@ -243,6 +235,9 @@ export const getMenuSections = (
                       id: control.id,
                       l10nId: control.l10nId,
                       englishLabel: control.englishLabel,
+                      helpRowL10nId: control.helpRowL10nId,
+                      helpRowEnglish: control.helpRowEnglish,
+                      helpRowSeparatorAbove: control.helpRowSeparatorAbove,
                       subLabelL10nId: control.menu?.subLabelL10nId,
                       icon: iconToNode(control, "menu"),
                       featureName: control.featureName,
@@ -265,7 +260,7 @@ export const getMenuSections = (
                 ctx,
                 enabled,
             );
-            if (!rowWithAvailability || rowWithAvailability.kind === "help") {
+            if (!rowWithAvailability) {
                 return;
             }
 
@@ -274,6 +269,14 @@ export const getMenuSections = (
                 icon: rowWithAvailability.icon ?? iconToNode(control, "menu"),
                 featureName:
                     rowWithAvailability.featureName ?? control.featureName,
+                helpRowL10nId:
+                    rowWithAvailability.helpRowL10nId ?? control.helpRowL10nId,
+                helpRowEnglish:
+                    rowWithAvailability.helpRowEnglish ??
+                    control.helpRowEnglish,
+                helpRowSeparatorAbove:
+                    rowWithAvailability.helpRowSeparatorAbove ??
+                    control.helpRowSeparatorAbove,
             };
 
             resolvedControls.push({

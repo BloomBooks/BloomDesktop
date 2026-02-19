@@ -2144,7 +2144,7 @@
         <target xml:lang="ha" state="final">Yanke Sura</target>
         <note>ID: EditTab.Image.CutImage</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Image.EditMetadata.MenuHelp" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Edit image credits, copyright, &amp; license</source>
         <target xml:lang="ha" state="final">Gyara Ta'allaƙar Sura, Haƙƙin Mallaka da kuma Izini</target>
         <note>ID: EditTab.Image.EditMetadata</note>

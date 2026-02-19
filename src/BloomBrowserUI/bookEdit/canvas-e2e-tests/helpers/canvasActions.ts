@@ -7,7 +7,6 @@ import {
     waitForCanvasReady,
 } from "./canvasFrames";
 import { canvasSelectors, type CanvasPaletteItemKey } from "./canvasSelectors";
-import { kUseNewCanvasControlsStorageKey } from "../../toolbox/canvas/newCanvasControlsFlag";
 
 type BoundingBox = {
     x: number;
@@ -107,12 +106,6 @@ export const openCanvasToolOnCurrentPage = async (
     page: Page,
     options?: { navigate?: boolean },
 ): Promise<ICanvasPageContext> => {
-    if (process.env.BLOOM_USE_NEW_CANVAS_CONTROLS === "true") {
-        await page.addInitScript((storageKey: string) => {
-            window.localStorage.setItem(storageKey, "true");
-        }, kUseNewCanvasControlsStorageKey);
-    }
-
     if (options?.navigate ?? true) {
         await gotoCurrentPage(page);
     }

@@ -2144,7 +2144,7 @@
         <target xml:lang="pt-PT" state="final">Cortar a imagem</target>
         <note>ID: EditTab.Image.CutImage</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Image.EditMetadata.MenuHelp" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Edit image credits, copyright, &amp; license</source>
         <target xml:lang="pt-PT" state="final">Editar créditos de imagens créditos, direitos autorais, e licença</target>
         <note>ID: EditTab.Image.EditMetadata</note>
@@ -6593,7 +6593,7 @@ is mostly status, which shows on the Collection Tab -->
           This game can be customized in many ways using the Game Tool.
         </source>
         <target xml:lang="pt-PT" state="translated">
-          Os leitores arrastam imagens para as áreas corretas na tela. 
+          Os leitores arrastam imagens para as áreas corretas na tela.
           Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogos.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Images to Targets</note>
@@ -6604,7 +6604,7 @@ is mostly status, which shows on the Collection Tab -->
           This game can be customized in many ways using the Game Tool.
         </source>
         <target xml:lang="pt-PT" state="translated">
-          Os leitores arrastam cada imagem para a palavra correta na tela. 
+          Os leitores arrastam cada imagem para a palavra correta na tela.
           Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogos.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Images to Words</note>

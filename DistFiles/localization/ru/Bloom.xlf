@@ -2144,7 +2144,7 @@
         <target xml:lang="ru" state="final">Вырезать изображение</target>
         <note>ID: EditTab.Image.CutImage</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Image.EditMetadata.MenuHelp" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Edit image credits, copyright, &amp; license</source>
         <target xml:lang="ru" state="final">Редактировать информацию об авторских правах и лицензии на изображение</target>
         <note>ID: EditTab.Image.EditMetadata</note>
@@ -5687,15 +5687,15 @@
       <trans-unit id="ReaderSetup.MaxAverageWordsPerPage" sil:dynamic="true">
         <source xml:lang="en">Average per **Page**</source>
         <target xml:lang="ru" state="translated">
-          
+
 Среднее по <g id="mawpp-1" ctype="x-html-strong">Странице</g></target>
         <note>ID: ReaderSetup.MaxAverageWordsPerPage</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.MaxAverageSentencesPerPage" sil:dynamic="true">
         <source xml:lang="en">Average per **Page**</source>
         <target xml:lang="ru" state="translated">
-          
-Среднее по <g id="maspp-1" ctype="x-html-strong">странице</g>        
+
+Среднее по <g id="maspp-1" ctype="x-html-strong">странице</g>
         </target>
         <note>ID: ReaderSetup.MaxAverageSentencesPerPage</note>
       </trans-unit>
@@ -5707,8 +5707,8 @@
       <trans-unit id="ReaderSetup.MaxSentencesPerPage" sil:dynamic="true">
         <source xml:lang="en">Per **Page**</source>
         <target xml:lang="ru" state="translated">
-          
-За<g id="mspp-1" ctype="x-html-strong">страницу</g>        
+
+За<g id="mspp-1" ctype="x-html-strong">страницу</g>
         </target>
         <note>ID: ReaderSetup.MaxSentencesPerPage</note>
       </trans-unit>

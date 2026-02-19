@@ -61,6 +61,13 @@ import {
 import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { CanvasTool } from "./canvasTool";
+import { buildControlContext } from "./buildControlContext";
+import { canvasElementDefinitions } from "./canvasElementDefinitions";
+import { getToolPanelControls } from "./canvasControlHelpers";
+import {
+    ICanvasToolsPanelState,
+    TopLevelControlId,
+} from "./canvasControlTypes";
 
 const kImageFillModePaddedValue = "padded";
 type ImageFillMode =
@@ -625,15 +632,6 @@ const CanvasToolControls: React.FunctionComponent = () => {
     const activeElement = canvasElementManager?.getActiveElement();
     const isButton =
         activeElement?.classList.contains(kBloomButtonClass) ?? false;
-    const hasImage =
-        (activeElement?.getElementsByClassName("bloom-imageContainer")
-            ?.length ?? 0) > 0;
-    const hasText =
-        (activeElement?.getElementsByClassName("bloom-translationGroup")
-            ?.length ?? 0) > 0;
-    const isBookGrid =
-        (activeElement?.getElementsByClassName("bloom-link-grid")?.length ??
-            0) > 0;
 
     const noControlsSection = (
         <div id="noOptionsSection">
@@ -694,173 +692,262 @@ const CanvasToolControls: React.FunctionComponent = () => {
         </FormControl>
     );
 
-    const getControlOptionsRegion = (): JSX.Element => {
-        if (isBookGrid) return <>{backgroundColorControl}</>;
-        if (isButton)
-            return (
-                <>
-                    {hasText && textColorControl}
-                    {backgroundColorControl}
-                    {hasImage && imageFillControl}
-                </>
-            );
-        switch (canvasElementType) {
-            case "image":
-            case "video":
-                return noControlsSection;
-            case undefined:
-            case "text":
-                return (
-                    <form autoComplete="off">
-                        <FormControl variant="standard">
-                            <InputLabel htmlFor="canvasElement-style-dropdown">
-                                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.Style">
-                                    Style
-                                </Span>
-                            </InputLabel>
-                            <ThemeProvider theme={toolboxMenuPopupTheme}>
-                                <BloomSelect
-                                    variant="standard"
-                                    value={style}
-                                    onChange={(event) => {
-                                        handleStyleChanged(event);
-                                    }}
-                                    className="canvasElementOptionDropdown"
-                                    inputProps={{
-                                        name: "style",
-                                        id: "canvasElement-style-dropdown",
-                                    }}
-                                    MenuProps={{
-                                        className:
-                                            "canvasElement-options-dropdown-menu",
-                                    }}
-                                >
-                                    <MenuItem value="caption">
-                                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption">
-                                            Caption
-                                        </Div>
-                                    </MenuItem>
-                                    <MenuItem value="pointedArcs">
-                                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Exclamation">
-                                            Exclamation
-                                        </Div>
-                                    </MenuItem>
-                                    <MenuItem value="none">
-                                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.JustText">
-                                            Just Text
-                                        </Div>
-                                    </MenuItem>
-                                    <MenuItem value="speech">
-                                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Speech">
-                                            Speech
-                                        </Div>
-                                    </MenuItem>
-                                    <MenuItem value="ellipse">
-                                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Ellipse">
-                                            Ellipse
-                                        </Div>
-                                    </MenuItem>
-                                    <MenuItem value="thought">
-                                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Thought">
-                                            Thought
-                                        </Div>
-                                    </MenuItem>
-                                    <MenuItem value="circle">
-                                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Circle">
-                                            Circle
-                                        </Div>
-                                    </MenuItem>
-                                    <MenuItem value="rectangle">
-                                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Rectangle">
-                                            Rectangle
-                                        </Div>
-                                    </MenuItem>
-                                </BloomSelect>
-                            </ThemeProvider>
+    const bubbleStyleControl = (
+        <FormControl variant="standard">
+            <InputLabel htmlFor="canvasElement-style-dropdown">
+                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.Style">
+                    Style
+                </Span>
+            </InputLabel>
+            <ThemeProvider theme={toolboxMenuPopupTheme}>
+                <BloomSelect
+                    variant="standard"
+                    value={style}
+                    onChange={(event) => {
+                        handleStyleChanged(event);
+                    }}
+                    className="canvasElementOptionDropdown"
+                    inputProps={{
+                        name: "style",
+                        id: "canvasElement-style-dropdown",
+                    }}
+                    MenuProps={{
+                        className: "canvasElement-options-dropdown-menu",
+                    }}
+                >
+                    <MenuItem value="caption">
+                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption">
+                            Caption
+                        </Div>
+                    </MenuItem>
+                    <MenuItem value="pointedArcs">
+                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Exclamation">
+                            Exclamation
+                        </Div>
+                    </MenuItem>
+                    <MenuItem value="none">
+                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.JustText">
+                            Just Text
+                        </Div>
+                    </MenuItem>
+                    <MenuItem value="speech">
+                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Speech">
+                            Speech
+                        </Div>
+                    </MenuItem>
+                    <MenuItem value="ellipse">
+                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Ellipse">
+                            Ellipse
+                        </Div>
+                    </MenuItem>
+                    <MenuItem value="thought">
+                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Thought">
+                            Thought
+                        </Div>
+                    </MenuItem>
+                    <MenuItem value="circle">
+                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Circle">
+                            Circle
+                        </Div>
+                    </MenuItem>
+                    <MenuItem value="rectangle">
+                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Rectangle">
+                            Rectangle
+                        </Div>
+                    </MenuItem>
+                </BloomSelect>
+            </ThemeProvider>
+        </FormControl>
+    );
 
-                            <BloomCheckbox
-                                label="Show Tail"
-                                l10nKey="EditTab.Toolbox.ComicTool.Options.ShowTail"
-                                checked={showTailChecked}
-                                disabled={isChild(currentItemSpec) || isButton}
-                                onCheckChanged={(v) => {
-                                    handleShowTailChanged(v as boolean);
-                                }}
-                            />
+    const showTailControl = (
+        <BloomCheckbox
+            label="Show Tail"
+            l10nKey="EditTab.Toolbox.ComicTool.Options.ShowTail"
+            checked={showTailChecked}
+            disabled={isChild(currentItemSpec) || isButton}
+            onCheckChanged={(v) => {
+                handleShowTailChanged(v as boolean);
+            }}
+        />
+    );
 
-                            <BloomCheckbox
-                                label="Rounded Corners"
-                                l10nKey="EditTab.Toolbox.ComicTool.Options.RoundedCorners"
-                                checked={isRoundedCornersChecked}
-                                disabled={
-                                    !styleSupportsRoundedCorners(
-                                        currentBubble?.getBubbleSpec(),
-                                    )
-                                }
-                                onCheckChanged={(newValue) => {
-                                    handleRoundedCornersChanged(newValue);
-                                }}
-                            />
-                        </FormControl>
-                        {textColorControl}
-                        {backgroundColorControl}
-                        <FormControl
-                            variant="standard"
-                            className={
-                                isBubble(currentBubble?.getBubbleSpec())
-                                    ? ""
-                                    : "disabled"
-                            }
-                        >
-                            <InputLabel htmlFor="canvasElement-outlineColor-dropdown">
-                                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor">
-                                    Outer Outline Color
-                                </Span>
-                            </InputLabel>
-                            <ThemeProvider theme={toolboxMenuPopupTheme}>
-                                <BloomSelect
-                                    variant="standard"
-                                    value={outlineColor ? outlineColor : "none"}
-                                    className="canvasElementOptionDropdown"
-                                    inputProps={{
-                                        name: "outlineColor",
-                                        id: "canvasElement-outlineColor-dropdown",
-                                    }}
-                                    MenuProps={{
-                                        className:
-                                            "canvasElement-options-dropdown-menu",
-                                    }}
-                                    onChange={(event) => {
-                                        if (
-                                            isBubble(
-                                                currentBubble?.getBubbleSpec(),
-                                            )
-                                        ) {
-                                            handleOutlineColorChanged(event);
-                                        }
-                                    }}
-                                >
-                                    <MenuItem value="none">
-                                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None">
-                                            None
-                                        </Div>
-                                    </MenuItem>
-                                    <MenuItem value="yellow">
-                                        <Div l10nKey="Common.Colors.Yellow">
-                                            Yellow
-                                        </Div>
-                                    </MenuItem>
-                                    <MenuItem value="crimson">
-                                        <Div l10nKey="Common.Colors.Crimson">
-                                            Crimson
-                                        </Div>
-                                    </MenuItem>
-                                </BloomSelect>
-                            </ThemeProvider>
-                        </FormControl>
-                    </form>
-                );
+    const roundedCornersControl = (
+        <BloomCheckbox
+            label="Rounded Corners"
+            l10nKey="EditTab.Toolbox.ComicTool.Options.RoundedCorners"
+            checked={isRoundedCornersChecked}
+            disabled={
+                !styleSupportsRoundedCorners(currentBubble?.getBubbleSpec())
+            }
+            onCheckChanged={(newValue) => {
+                handleRoundedCornersChanged(newValue);
+            }}
+        />
+    );
+
+    const outlineColorControl = (
+        <FormControl
+            variant="standard"
+            className={
+                isBubble(currentBubble?.getBubbleSpec()) ? "" : "disabled"
+            }
+        >
+            <InputLabel htmlFor="canvasElement-outlineColor-dropdown">
+                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor">
+                    Outer Outline Color
+                </Span>
+            </InputLabel>
+            <ThemeProvider theme={toolboxMenuPopupTheme}>
+                <BloomSelect
+                    variant="standard"
+                    value={outlineColor ? outlineColor : "none"}
+                    className="canvasElementOptionDropdown"
+                    inputProps={{
+                        name: "outlineColor",
+                        id: "canvasElement-outlineColor-dropdown",
+                    }}
+                    MenuProps={{
+                        className: "canvasElement-options-dropdown-menu",
+                    }}
+                    onChange={(event) => {
+                        if (isBubble(currentBubble?.getBubbleSpec())) {
+                            handleOutlineColorChanged(event);
+                        }
+                    }}
+                >
+                    <MenuItem value="none">
+                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None">
+                            None
+                        </Div>
+                    </MenuItem>
+                    <MenuItem value="yellow">
+                        <Div l10nKey="Common.Colors.Yellow">Yellow</Div>
+                    </MenuItem>
+                    <MenuItem value="crimson">
+                        <Div l10nKey="Common.Colors.Crimson">Crimson</Div>
+                    </MenuItem>
+                </BloomSelect>
+            </ThemeProvider>
+        </FormControl>
+    );
+
+    const panelState: ICanvasToolsPanelState = {
+        style,
+        setStyle,
+        showTail: showTailChecked,
+        setShowTail: setShowTailChecked,
+        roundedCorners: isRoundedCornersChecked,
+        setRoundedCorners: setIsRoundedCornersChecked,
+        outlineColor,
+        setOutlineColor,
+        textColorSwatch,
+        setTextColorSwatch,
+        backgroundColorSwatch,
+        setBackgroundColorSwatch,
+        imageFillMode,
+        setImageFillMode,
+        currentBubble,
+    };
+
+    const getPanelControlNode = (
+        controlId: TopLevelControlId,
+    ): React.ReactNode => {
+        switch (controlId) {
+            case "bubbleStyle":
+                return bubbleStyleControl;
+            case "showTail":
+                return showTailControl;
+            case "roundedCorners":
+                return roundedCornersControl;
+            case "outlineColor":
+                return outlineColorControl;
+            case "textColor":
+                return textColorControl;
+            case "backgroundColor":
+                return backgroundColorControl;
+            case "imageFillMode":
+                return imageFillControl;
+            default:
+                return undefined;
         }
+    };
+
+    const getControlOptionsRegion = (): JSX.Element => {
+        if (!activeElement) {
+            return (
+                <form autoComplete="off">
+                    {bubbleStyleControl}
+                    {showTailControl}
+                    {roundedCornersControl}
+                    <div
+                        css={css`
+                            margin-top: 10px;
+                        `}
+                    >
+                        {textColorControl}
+                    </div>
+                    {backgroundColorControl}
+                    {outlineColorControl}
+                </form>
+            );
+        }
+
+        const controlContext = buildControlContext(activeElement);
+        const definition =
+            canvasElementDefinitions[controlContext.elementType] ??
+            canvasElementDefinitions.none;
+        const panelControls = getToolPanelControls(definition, controlContext);
+        const renderedControls = panelControls.map((panelControl, index) => {
+            const defaultNode = (
+                <panelControl.Component
+                    ctx={panelControl.ctx}
+                    panelState={panelState}
+                />
+            );
+            return {
+                id: `${panelControl.controlId}-${index}`,
+                controlId: panelControl.controlId,
+                node:
+                    getPanelControlNode(panelControl.controlId) ?? defaultNode,
+            };
+        });
+
+        if (renderedControls.length === 0) {
+            if (
+                controlContext.elementType === "image" ||
+                controlContext.elementType === "video" ||
+                controlContext.elementType === "sound"
+            ) {
+                return noControlsSection;
+            }
+            return <></>;
+        }
+
+        const hasRoundedCornersControl = renderedControls.some(
+            (panelControl) => panelControl.controlId === "roundedCorners",
+        );
+
+        return (
+            <form autoComplete="off">
+                {renderedControls.map((panelControl) => (
+                    <React.Fragment key={panelControl.id}>
+                        {panelControl.controlId === "textColor" &&
+                        hasRoundedCornersControl ? (
+                            <div
+                                css={css`
+                                    margin-top: 10px;
+                                `}
+                            >
+                                {panelControl.node}
+                            </div>
+                        ) : (
+                            panelControl.node
+                        )}
+                    </React.Fragment>
+                ))}
+            </form>
+        );
     };
 
     return (

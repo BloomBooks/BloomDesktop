@@ -2144,7 +2144,7 @@
         <target xml:lang="ne-NP" state="final">छवि काट्नुहोस्</target>
         <note>ID: EditTab.Image.CutImage</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true" approved="yes">
+      <trans-unit id="EditTab.Image.EditMetadata.MenuHelp" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Edit image credits, copyright, &amp; license</source>
         <target xml:lang="ne-NP" state="final">छविको श्रेय, प्रतिलिपि अधिकार र इजाजतपत्र सम्पादन गर्नुहोस्</target>
         <note>ID: EditTab.Image.EditMetadata</note>
