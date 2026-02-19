@@ -1,12 +1,16 @@
 @import "../branding-base.less";
 [class*="Landscape"] {
-    [data-book="outside-back-cover-branding-bottom-html"] img {
+    [data-book="outside-back-cover-branding-bottom-html"] img:not(.vanilla) {
         max-width: 50%;
         max-height: 50%;
     }
 }
 
-[data-book="outside-back-cover-branding-bottom-html"] img {
+[data-book="outside-back-cover-branding-bottom-html"] img:not(.vanilla) {
     max-width: 60%;
     max-height: 60%;
+}
+
+.outsideBackCover img.branding.vanilla {
+    width: 5cm;
 }
