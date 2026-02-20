@@ -30,7 +30,9 @@ export const getToolboxFrame = async (page: Page): Promise<Frame> => {
     return waitForFrame(
         page,
         (frame) =>
-            frame.name() === "toolbox" || /toolboxcontent/i.test(frame.url()),
+            (/toolboxcontent/i.test(frame.url()) ||
+                frame.name() === "toolbox") &&
+            !/about:blank/i.test(frame.url()),
         "toolbox",
     );
 };
@@ -43,7 +45,7 @@ export const getPageFrame = async (page: Page): Promise<Frame> => {
                 return false;
             }
             if (frame.name() === "page") {
-                return true;
+                return !/about:blank/i.test(frame.url());
             }
             const url = frame.url();
             if (!url || /toolboxcontent/i.test(url)) {
@@ -56,6 +58,10 @@ export const getPageFrame = async (page: Page): Promise<Frame> => {
 };
 
 export const openCanvasToolTab = async (toolboxFrame: Frame): Promise<void> => {
+    await toolboxFrame.waitForLoadState("domcontentloaded").catch(() => {
+        return;
+    });
+
     const controls = toolboxFrame.locator("#canvasToolControls").first();
     if (await controls.isVisible().catch(() => false)) {
         return;
@@ -67,7 +73,31 @@ export const openCanvasToolTab = async (toolboxFrame: Frame): Promise<void> => {
         )
         .first();
 
-    await canvasToolHeader.click();
+    const headerVisible = await canvasToolHeader
+        .waitFor({
+            state: "visible",
+            timeout: 10000,
+        })
+        .then(() => true)
+        .catch(() => false);
+
+    if (!headerVisible) {
+        if (await controls.isVisible().catch(() => false)) {
+            return;
+        }
+
+        throw new Error(
+            "Canvas tool header did not become visible in toolbox frame.",
+        );
+    }
+
+    await canvasToolHeader.click({ timeout: 5000 }).catch(async (error) => {
+        if (await controls.isVisible().catch(() => false)) {
+            return;
+        }
+
+        throw error;
+    });
     await controls.waitFor({
         state: "visible",
         timeout: 10000,

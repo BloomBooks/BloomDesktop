@@ -59,27 +59,58 @@ const printUsage = () => {
     );
 };
 
-const assertCurrentPageAvailable = async () => {
-    const url = "http://localhost:8089/bloom/CURRENTPAGE";
-    const pagesApiUrl = "http://localhost:8089/bloom/api/pageList/pages";
-    const pageContentApiBase =
-        "http://localhost:8089/bloom/api/pageList/pageContent?page-id=";
+const bloomBaseUrls = ["http://localhost:8089", "http://127.0.0.1:8089"];
+
+const fetchWithTimeout = async (url, timeoutMs = 6000) => {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-        const response = await fetch(url, {
+        return await fetch(url, {
             method: "GET",
             signal: controller.signal,
         });
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
+    } finally {
+        clearTimeout(timeoutId);
+    }
+};
 
-        const pagesResponse = await fetch(pagesApiUrl, {
-            method: "GET",
-            signal: controller.signal,
-        });
+const resolveBloomBaseUrl = async () => {
+    let lastError;
+
+    for (const baseUrl of bloomBaseUrls) {
+        const currentPageUrl = `${baseUrl}/bloom/CURRENTPAGE`;
+        try {
+            const response = await fetchWithTimeout(currentPageUrl);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            return {
+                baseUrl,
+                currentPageUrl,
+            };
+        } catch (error) {
+            lastError = error;
+        }
+    }
+
+    throw new Error(
+        lastError instanceof Error ? lastError.message : String(lastError),
+    );
+};
+
+const assertCurrentPageAvailable = async () => {
+    let currentPageUrl;
+
+    try {
+        const resolved = await resolveBloomBaseUrl();
+        const baseUrl = resolved.baseUrl;
+        currentPageUrl = resolved.currentPageUrl;
+        const pagesApiUrl = `${baseUrl}/bloom/api/pageList/pages`;
+        const pageContentApiBase = `${baseUrl}/bloom/api/pageList/pageContent?page-id=`;
+
+        const pagesResponse = await fetchWithTimeout(pagesApiUrl);
         if (!pagesResponse.ok) {
             throw new Error(`HTTP ${pagesResponse.status} from ${pagesApiUrl}`);
         }
@@ -97,12 +128,8 @@ const assertCurrentPageAvailable = async () => {
             process.exit(1);
         }
 
-        const pageContentResponse = await fetch(
+        const pageContentResponse = await fetchWithTimeout(
             `${pageContentApiBase}${encodeURIComponent(selectedPageId)}`,
-            {
-                method: "GET",
-                signal: controller.signal,
-            },
         );
         if (!pageContentResponse.ok) {
             throw new Error(
@@ -123,12 +150,15 @@ const assertCurrentPageAvailable = async () => {
         }
     } catch (error) {
         console.error(
-            `Cannot reach ${url}. Start Bloom so CURRENTPAGE is available, then rerun \'yarn e2e canvas\'.`,
+            `Cannot reach Bloom CURRENTPAGE on localhost or 127.0.0.1. Start Bloom so CURRENTPAGE is available, then rerun \'yarn e2e canvas\'.`,
         );
+        if (currentPageUrl) {
+            console.error(
+                `Last successful CURRENTPAGE probe: ${currentPageUrl}`,
+            );
+        }
         console.error(error instanceof Error ? error.message : String(error));
         process.exit(1);
-    } finally {
-        clearTimeout(timeoutId);
     }
 };
 

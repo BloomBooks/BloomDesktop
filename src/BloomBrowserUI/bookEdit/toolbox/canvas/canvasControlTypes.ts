@@ -70,6 +70,7 @@ export type TopLevelControlId = Exclude<
 >;
 
 export type SectionId =
+    | "gameDraggable"
     | "image"
     | "imagePanel"
     | "video"

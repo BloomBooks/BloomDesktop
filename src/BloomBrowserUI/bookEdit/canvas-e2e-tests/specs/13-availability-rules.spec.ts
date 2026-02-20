@@ -58,11 +58,6 @@ const openFreshContextMenu = async (
     canvasContext: ICanvasPageContext,
 ): Promise<void> => {
     await canvasContext.page.keyboard.press("Escape").catch(() => undefined);
-    await canvasContext.pageFrame
-        .locator(canvasSelectors.page.contextMenuListVisible)
-        .first()
-        .waitFor({ state: "hidden", timeout: 2000 })
-        .catch(() => undefined);
     await openContextMenuFromToolbar(canvasContext);
 };
 
@@ -96,18 +91,14 @@ const withTemporaryPageActivity = async (
     action: () => Promise<void>,
 ): Promise<void> => {
     const previousActivity = await canvasContext.pageFrame.evaluate(() => {
-        const pages = Array.from(
-            document.querySelectorAll(".bloom-page"),
-        ) as HTMLElement[];
+        const pages = Array.from(document.querySelectorAll(".bloom-page"));
         return pages.map(
             (page) => page.getAttribute("data-activity") ?? undefined,
         );
     });
 
     await canvasContext.pageFrame.evaluate((activityValue: string) => {
-        const pages = Array.from(
-            document.querySelectorAll(".bloom-page"),
-        ) as HTMLElement[];
+        const pages = Array.from(document.querySelectorAll(".bloom-page"));
         if (pages.length === 0) {
             throw new Error("Could not find bloom-page element.");
         }
@@ -123,7 +114,7 @@ const withTemporaryPageActivity = async (
             (prior: Array<string | undefined>) => {
                 const pages = Array.from(
                     document.querySelectorAll(".bloom-page"),
-                ) as HTMLElement[];
+                );
                 pages.forEach((page, index) => {
                     const value = prior[index];
                     if (value === undefined) {
@@ -180,7 +171,7 @@ test("K2: Fill Background appears only when element is rectangle style", async (
     await canvasTestContext.pageFrame.evaluate(() => {
         const active = document.querySelector(
             '.bloom-canvas-element[data-bloom-active="true"]',
-        ) as HTMLElement | null;
+        );
         if (!active) {
             throw new Error("No active canvas element.");
         }
@@ -321,7 +312,7 @@ test("K4: Play Earlier/Later enabled states reflect video order", async ({
         const expected = await canvasTestContext.pageFrame.evaluate(() => {
             const active = document.querySelector(
                 '.bloom-canvas-element[data-bloom-active="true"]',
-            ) as HTMLElement | null;
+            );
             const activeVideo = active?.querySelector(".bloom-videoContainer");
             if (!activeVideo) {
                 return {
@@ -403,9 +394,7 @@ test("K5: background-image availability controls include Fit Space and backgroun
 
     const backgroundIndex = await canvasTestContext.pageFrame.evaluate(
         (selector: string) => {
-            const elements = Array.from(
-                document.querySelectorAll(selector),
-            ) as HTMLElement[];
+            const elements = Array.from(document.querySelectorAll(selector));
             return elements.findIndex((element) =>
                 element.classList.contains("bloom-backgroundImage"),
             );
@@ -428,7 +417,7 @@ test("K5: background-image availability controls include Fit Space and backgroun
         () => {
             const active = document.querySelector(
                 '.bloom-canvas-element[data-bloom-active="true"]',
-            ) as HTMLElement | null;
+            );
             return !!active?.classList.contains("bloom-backgroundImage");
         },
     );
@@ -457,7 +446,7 @@ test("K5: background-image availability controls include Fit Space and backgroun
 
         const active = document.querySelector(
             '.bloom-canvas-element[data-bloom-active="true"]',
-        ) as HTMLElement | null;
+        );
         const image = active?.querySelector(
             ".bloom-imageContainer img",
         ) as HTMLImageElement | null;
@@ -534,7 +523,7 @@ test("K6: special game element hides Duplicate and disables Delete", async ({
     await canvasTestContext.pageFrame.evaluate(() => {
         const active = document.querySelector(
             '.bloom-canvas-element[data-bloom-active="true"]',
-        ) as HTMLElement | null;
+        );
         if (!active) {
             throw new Error("No active canvas element.");
         }
@@ -622,7 +611,7 @@ test("K8: image-audio submenu in drag game shows dynamic parent label, choose ro
             await canvasTestContext.pageFrame.evaluate(() => {
                 const active = document.querySelector(
                     '.bloom-canvas-element[data-bloom-active="true"]',
-                ) as HTMLElement | null;
+                );
                 if (!active) {
                     throw new Error("No active canvas element.");
                 }
@@ -701,7 +690,7 @@ test("K9: draggable toggles on/off and right-answer visibility follows draggable
                 await canvasTestContext.pageFrame.evaluate(() => {
                     const active = document.querySelector(
                         '.bloom-canvas-element[data-bloom-active="true"]',
-                    ) as HTMLElement | null;
+                    );
                     return !!active?.getAttribute("data-draggable-id");
                 });
             expect(hasDraggableIdAfterOn).toBe(true);
@@ -719,7 +708,7 @@ test("K9: draggable toggles on/off and right-answer visibility follows draggable
                 await canvasTestContext.pageFrame.evaluate(() => {
                     const active = document.querySelector(
                         '.bloom-canvas-element[data-bloom-active="true"]',
-                    ) as HTMLElement | null;
+                    );
                     return !!active?.getAttribute("data-draggable-id");
                 });
             expect(hasDraggableIdAfterOff).toBe(false);
@@ -744,9 +733,7 @@ test("K10: background image selection shows toolbar label text", async ({
 
     const backgroundIndex = await canvasTestContext.pageFrame.evaluate(
         (selector: string) => {
-            const elements = Array.from(
-                document.querySelectorAll(selector),
-            ) as HTMLElement[];
+            const elements = Array.from(document.querySelectorAll(selector));
             return elements.findIndex((element) =>
                 element.classList.contains("bloom-backgroundImage"),
             );

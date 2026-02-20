@@ -40,15 +40,17 @@ export interface ICanvasPageContext extends ICanvasTestContext {
     page: Page;
 }
 
-const nativeDialogMenuCommands = new Set([
-    "Choose image from your computer...",
-    "Change image",
-    "Choose Video from your Computer...",
-    "Record yourself...",
-]);
+const nativeDialogMenuCommandPatterns = [
+    /choose\s+image\s+from\s+your\s+computer/i,
+    /change\s+image/i,
+    /choose\s+video\s+from\s+your\s+computer/i,
+    /record\s+yourself/i,
+];
 
 const assertNativeDialogCommandNotInvoked = (label: string): void => {
-    if (nativeDialogMenuCommands.has(label)) {
+    if (
+        nativeDialogMenuCommandPatterns.some((pattern) => pattern.test(label))
+    ) {
         throw new Error(
             `Refusing to invoke context-menu command \"${label}\" because it opens a native dialog and can hang the canvas e2e host. Assert visibility/enabled state only.`,
         );
@@ -111,6 +113,12 @@ export const openCanvasToolOnCurrentPage = async (
     }
     const toolboxFrame = await getToolboxFrame(page);
     const pageFrame = await getPageFrame(page);
+    await toolboxFrame.waitForLoadState("domcontentloaded").catch(() => {
+        return;
+    });
+    await pageFrame.waitForLoadState("domcontentloaded").catch(() => {
+        return;
+    });
     await openCanvasToolTab(toolboxFrame);
     await waitForCanvasReady(pageFrame);
 
@@ -182,15 +190,15 @@ const waitForCanvasElementCountBelow = async (
     upperExclusive: number,
     timeoutMs = 2500,
 ): Promise<boolean> => {
-    const endTime = Date.now() + timeoutMs;
-    while (Date.now() < endTime) {
-        const count = await getCanvasElementCount(canvasContext);
-        if (count < upperExclusive) {
-            return true;
-        }
-        await canvasContext.pageFrame.page().waitForTimeout(100);
-    }
-    return false;
+    return expect
+        .poll(async () => getCanvasElementCount(canvasContext), {
+            timeout: timeoutMs,
+        })
+        .toBeLessThan(upperExclusive)
+        .then(
+            () => true,
+            () => false,
+        );
 };
 
 const deleteLastCanvasElementViaManager = async (
@@ -206,8 +214,8 @@ const deleteLastCanvasElementViaManager = async (
         }
 
         const elements = Array.from(
-            document.querySelectorAll(selector),
-        ) as HTMLElement[];
+            document.querySelectorAll<HTMLElement>(selector),
+        );
         if (elements.length === 0) {
             return;
         }
@@ -362,7 +370,7 @@ export const dragPaletteItemToCanvas = async (params: {
     await params.canvasContext.page.mouse.move(sourceX, sourceY);
     await params.canvasContext.page.mouse.down();
     await params.canvasContext.page.mouse.move(targetX, targetY, {
-        steps: 16,
+        steps: 10,
     });
     await params.canvasContext.page.mouse.up();
 };
@@ -396,7 +404,6 @@ export const selectCanvasElementAtIndex = async (
             if (attempt === maxAttempts - 1) {
                 throw error;
             }
-            await canvasContext.pageFrame.page().waitForTimeout(100);
         }
     }
 
@@ -633,24 +640,59 @@ export const openContextMenuFromToolbar = async (
         timeout: 10000,
     });
 
-    const menuButton = controls.locator("button").last();
-    try {
-        await menuButton.click();
-    } catch {
-        await canvasContext.pageFrame
-            .page()
-            .keyboard.press("Escape")
-            .catch(() => undefined);
-        await menuButton.click({ force: true });
+    const activeCanvasElement = canvasContext.pageFrame
+        .locator(canvasSelectors.page.activeCanvasElement)
+        .first();
+
+    await activeCanvasElement.click({ force: true }).catch(() => undefined);
+    await canvasContext.pageFrame
+        .page()
+        .keyboard.press("Shift+F10")
+        .catch(() => undefined);
+
+    const menuVisibleFromKeyboard = await canvasContext.pageFrame
+        .locator(canvasSelectors.page.contextMenuListVisible)
+        .first()
+        .isVisible()
+        .catch(() => false);
+    if (menuVisibleFromKeyboard) {
+        return;
+    }
+
+    await activeCanvasElement
+        .click({ button: "right", force: true })
+        .catch(() => undefined);
+    const menuVisibleFromRightClick = await canvasContext.pageFrame
+        .locator(canvasSelectors.page.contextMenuListVisible)
+        .first()
+        .isVisible()
+        .catch(() => false);
+    if (menuVisibleFromRightClick) {
+        return;
     }
 
     await canvasContext.pageFrame
+        .page()
+        .keyboard.press("Escape")
+        .catch(() => undefined);
+    await activeCanvasElement.click({ force: true }).catch(() => undefined);
+    await canvasContext.pageFrame
+        .page()
+        .keyboard.press("Shift+F10")
+        .catch(() => undefined);
+
+    const menuVisibleAfterRetry = await canvasContext.pageFrame
         .locator(canvasSelectors.page.contextMenuListVisible)
         .first()
-        .waitFor({
-            state: "visible",
-            timeout: 10000,
-        });
+        .isVisible()
+        .catch(() => false);
+    if (menuVisibleAfterRetry) {
+        return;
+    }
+
+    throw new Error(
+        "Could not open context menu via keyboard/right-click without invoking toolbar buttons.",
+    );
 };
 
 export const clickContextMenuItem = async (
@@ -719,7 +761,6 @@ export const dismissCanvasDialogsIfPresent = async (
         if (!dismissedTop && !dismissedFrame) {
             return;
         }
-        await canvasContext.page.waitForTimeout(100);
     }
 };
 
@@ -768,19 +809,28 @@ export const setStyleDropdown = async (
             continue;
         }
 
-        const timeoutMs = 3000;
-        const endTime = Date.now() + timeoutMs;
-        while (Date.now() < endTime) {
-            const selectedValue = (await styleInput.inputValue()).toLowerCase();
-            if (selectedValue === normalizedTarget) {
-                return;
-            }
-            await canvasContext.toolboxFrame.page().waitForTimeout(100);
+        const changed = await expect
+            .poll(
+                async () => {
+                    return (await styleInput.inputValue()).toLowerCase();
+                },
+                {
+                    timeout: 3000,
+                },
+            )
+            .toBe(normalizedTarget)
+            .then(
+                () => true,
+                () => false,
+            );
+
+        if (changed) {
+            return;
         }
 
         if (attempt === maxAttempts - 1) {
             throw new Error(
-                `Style dropdown did not change to ${normalizedTarget} within ${timeoutMs}ms.`,
+                `Style dropdown did not change to ${normalizedTarget}.`,
             );
         }
     }
@@ -874,14 +924,23 @@ export const setOutlineColorDropdown = async (
             continue;
         }
 
-        const timeoutMs = 2000;
-        const endTime = Date.now() + timeoutMs;
-        while (Date.now() < endTime) {
-            const updatedValue = (await input.inputValue()).toLowerCase();
-            if (updatedValue === normalizedTarget) {
-                return;
-            }
-            await canvasContext.toolboxFrame.page().waitForTimeout(100);
+        const changed = await expect
+            .poll(
+                async () => {
+                    return (await input.inputValue()).toLowerCase();
+                },
+                {
+                    timeout: 2000,
+                },
+            )
+            .toBe(normalizedTarget)
+            .then(
+                () => true,
+                () => false,
+            );
+
+        if (changed) {
+            return;
         }
     }
 
@@ -906,6 +965,20 @@ export const clickToolbarButtonByIndex = async (
     await controls.waitFor({ state: "visible", timeout: 10000 });
 
     const button = controls.locator("button").nth(buttonIndex);
+
+    const activeElementHasImageContainer =
+        (await canvasContext.pageFrame
+            .locator(canvasSelectors.page.activeCanvasElement)
+            .first()
+            .locator(canvasSelectors.page.imageContainer)
+            .count()
+            .catch(() => 0)) > 0;
+    if (activeElementHasImageContainer) {
+        throw new Error(
+            "Refusing to click image toolbar buttons in canvas e2e because they may open the native Image Toolbox. Use visibility/enabled assertions instead.",
+        );
+    }
+
     await button.click();
 };
 

@@ -10,6 +10,7 @@ import {
     getActiveCanvasElement,
     clickContextMenuItem,
     openContextMenuFromToolbar,
+    type ICanvasPageContext,
 } from "../helpers/canvasActions";
 import {
     expectCanvasElementCountToIncrease,
@@ -21,7 +22,9 @@ import { canvasSelectors } from "../helpers/canvasSelectors";
 
 // ── Helper ──────────────────────────────────────────────────────────────
 
-const createSpeechElement = async (canvasTestContext) => {
+const createSpeechElement = async (
+    canvasTestContext: ICanvasPageContext,
+): Promise<void> => {
     const maxAttempts = 3;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -47,14 +50,14 @@ const createSpeechElement = async (canvasTestContext) => {
 };
 
 const duplicateActiveCanvasElementViaUi = async (
-    canvasTestContext,
+    canvasTestContext: ICanvasPageContext,
 ): Promise<void> => {
     await openContextMenuFromToolbar(canvasTestContext);
     await clickContextMenuItem(canvasTestContext, "Duplicate");
 };
 
 const deleteActiveCanvasElementViaUi = async (
-    canvasTestContext,
+    canvasTestContext: ICanvasPageContext,
 ): Promise<void> => {
     await openContextMenuFromToolbar(canvasTestContext);
     await clickContextMenuItem(canvasTestContext, "Delete");

@@ -37,17 +37,3 @@
 - `CanvasElementBubbleLevelUtils.ts`
 - `CanvasElementSharedTypes.ts`
 
-### Specs
-- `canvasElementManagerSpec.ts`
-
-
-## Refactor safety notes
-
-- Prefer small, cohesive extractions over large monolithic edits.
-- After moving code, immediately run targeted error checks on touched files.
-- Validate with `yarn lint` from `src/BloomBrowserUI`.
-- Do not run `yarn build` unless explicitly requested.
-
-## Current long-term objective
-
-- Continue reducing `CanvasElementManager.ts` toward the target size in `REFACTOR_PLAN.md` while preserving behavior and toolbox/page iframe boundaries.

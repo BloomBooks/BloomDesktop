@@ -236,10 +236,13 @@ const makeChooseAudioMenuItemForText = (
     ctx: IControlContext,
     runtime: IControlRuntime,
 ): IControlMenuCommandRow => {
+    const hasTextRecording = ctx.textHasAudio;
     return {
         id: "chooseAudio",
-        l10nId: "EditTab.Toolbox.DragActivity.ChooseSound",
-        englishLabel: ctx.textHasAudio ? "A Recording" : "None",
+        l10nId: hasTextRecording
+            ? "ARecording"
+            : "EditTab.Toolbox.DragActivity.None",
+        englishLabel: hasTextRecording ? "A Recording" : "None",
         subLabelL10nId: "EditTab.Image.PlayWhenTouched",
         featureName: "canvas",
         icon: React.createElement(VolumeUpIcon, null),
@@ -249,7 +252,6 @@ const makeChooseAudioMenuItemForText = (
                 id: "useTalkingBookTool",
                 l10nId: "UseTalkingBookTool",
                 englishLabel: "Use Talking Book Tool",
-                featureName: "canvas",
                 onSelect: () => {
                     runtime.closeMenu(false);
                     AudioRecording.showTalkingBookTool();
@@ -270,7 +272,9 @@ const makeChooseAudioMenuItemForImage = (
 
     return {
         id: "chooseAudio",
-        l10nId: "EditTab.Toolbox.DragActivity.ChooseSound",
+        l10nId: ctx.hasCurrentImageSound
+            ? undefined
+            : "EditTab.Toolbox.DragActivity.None",
         englishLabel: imageSoundLabel === "none" ? "None" : imageSoundLabel,
         subLabelL10nId: "EditTab.Image.PlayWhenTouched",
         featureName: "canvas",
@@ -350,6 +354,9 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         l10nId: "EditTab.Image.PasteImage",
         englishLabel: "Paste image",
         icon: PasteIcon,
+        menu: {
+            shortcutDisplay: "Ctrl+V",
+        },
         action: (ctx) => {
             const img = getImage(ctx);
             if (!img) {
@@ -365,6 +372,9 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         l10nId: "EditTab.Image.CopyImage",
         englishLabel: "Copy image",
         icon: CopyIcon,
+        menu: {
+            shortcutDisplay: "Ctrl+C",
+        },
         action: (ctx) => {
             const img = getImage(ctx);
             if (!img) {
@@ -379,7 +389,6 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         id: "missingMetadata",
         l10nId: "EditTab.Image.EditMetadataOverlay",
         englishLabel: "Set Image Information...",
-        helpRowL10nId: "EditTab.Image.EditMetadataOverlay.MenuHelp",
         icon: MissingMetadataIcon,
         menu: {
             icon: React.createElement(CopyrightIcon, null),
@@ -457,6 +466,14 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         l10nId: "EditTab.Toolbox.ComicTool.Options.RecordYourself",
         englishLabel: "Record yourself...",
         icon: CircleIcon,
+        toolbar: {
+            relativeSize: 0.8,
+        },
+        menu: {
+            icon: React.createElement(CircleIcon, {
+                fontSize: "small",
+            }),
+        },
         action: (ctx, runtime) => {
             const videoContainer = getVideoContainer(ctx);
             if (!videoContainer) {
@@ -737,6 +754,9 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
         englishLabel: "Duplicate",
         icon: DuplicateIcon,
+        menu: {
+            shortcutDisplay: "Ctrl+D",
+        },
         action: () => {
             makeDuplicateOfDragBubble();
         },
@@ -823,6 +843,12 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
 };
 
 export const controlSections: Record<SectionId, IControlSection> = {
+    gameDraggable: {
+        id: "gameDraggable",
+        controlsBySurface: {
+            menu: ["toggleDraggable", "togglePartOfRightAnswer"],
+        },
+    },
     image: {
         id: "image",
         controlsBySurface: {
@@ -900,12 +926,7 @@ export const controlSections: Record<SectionId, IControlSection> = {
     wholeElement: {
         id: "wholeElement",
         controlsBySurface: {
-            menu: [
-                "duplicate",
-                "delete",
-                "toggleDraggable",
-                "togglePartOfRightAnswer",
-            ],
+            menu: ["duplicate", "delete"],
         },
     },
 };

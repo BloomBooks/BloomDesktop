@@ -9,7 +9,6 @@ import {
     expandNavigationSection,
     getCanvasElementCount,
     getActiveCanvasElement,
-    pageFrameToTopLevel,
 } from "../helpers/canvasActions";
 import {
     expectCanvasElementCountToIncrease,
@@ -61,16 +60,10 @@ for (const row of navigationPaletteRows) {
         row.paletteItem === "navigation-label-button" ||
         row.paletteItem === "navigation-image-button" ||
         row.paletteItem === "navigation-image-with-label-button";
-    const testFn = skip ? test.skip : test;
-    testFn(
-        `A1-nav: drag "${row.paletteItem}" onto canvas creates an element`,
-        async ({ canvasTestContext }) => {
-            // TODO: Remove this retry annotation once cross-iframe navigation
-            // palette dragging is consistently reliable in CI and headed runs.
-            test.info().annotations.push({
-                type: "retry",
-                description: "cross-iframe drag can be flaky",
-            });
+    if (skip) {
+        test.skip(`A1-nav: drag "${row.paletteItem}" onto canvas creates an element`, async ({
+            canvasTestContext,
+        }) => {
             await expandNavigationSection(canvasTestContext);
 
             const beforeCount = await getCanvasElementCount(canvasTestContext);
@@ -84,8 +77,33 @@ for (const row of navigationPaletteRows) {
                 canvasTestContext,
                 beforeCount,
             );
-        },
-    );
+        });
+        continue;
+    }
+
+    test(`A1-nav: drag "${row.paletteItem}" onto canvas creates an element`, async ({
+        canvasTestContext,
+    }) => {
+        // TODO: Remove this retry annotation once cross-iframe navigation
+        // palette dragging is consistently reliable in CI and headed runs.
+        test.info().annotations.push({
+            type: "retry",
+            description: "cross-iframe drag can be flaky",
+        });
+        await expandNavigationSection(canvasTestContext);
+
+        const beforeCount = await getCanvasElementCount(canvasTestContext);
+
+        await dragPaletteItemToCanvas({
+            canvasContext: canvasTestContext,
+            paletteItem: row.paletteItem,
+        });
+
+        await expectCanvasElementCountToIncrease(
+            canvasTestContext,
+            beforeCount,
+        );
+    });
 }
 
 // ── A2: Drop at different points and verify multiple creation ────────────

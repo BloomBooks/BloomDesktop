@@ -262,6 +262,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 english: row.englishLabel ?? "",
                 subLabelL10nId: row.subLabelL10nId,
                 generatedSubLabel: row.subLabel,
+                shortcutDisplay: row.shortcut?.display,
                 icon: row.icon,
                 disabled: row.disabled,
                 featureName: row.featureName,
@@ -471,6 +472,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     ))}
                     <button
                         ref={(ref) => (menuEl.current = ref)}
+                        data-testid="canvas-context-menu-button"
                         css={getIconCss()}
                         // It would be more natural to handle a click. But clicks are a combination of
                         // mouse down and mouse up, and those have side effects, especially change of focus,

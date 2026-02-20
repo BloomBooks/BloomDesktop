@@ -47,11 +47,6 @@ const openFreshContextMenu = async (
     canvasContext: ICanvasPageContext,
 ): Promise<void> => {
     await canvasContext.page.keyboard.press("Escape").catch(() => undefined);
-    await canvasContext.pageFrame
-        .locator(canvasSelectors.page.contextMenuListVisible)
-        .first()
-        .waitFor({ state: "hidden", timeout: 2000 })
-        .catch(() => undefined);
     await openContextMenuFromToolbar(canvasContext);
 };
 
@@ -100,7 +95,7 @@ const setActiveToken = async (
     await canvasContext.pageFrame.evaluate((value) => {
         const active = document.querySelector(
             '.bloom-canvas-element[data-bloom-active="true"]',
-        ) as HTMLElement | null;
+        );
         if (!active) {
             throw new Error("No active canvas element.");
         }
@@ -116,7 +111,7 @@ const expectActiveToken = async (
     const hasToken = await canvasContext.pageFrame.evaluate((value) => {
         const active = document.querySelector(
             '.bloom-canvas-element[data-bloom-active="true"]',
-        ) as HTMLElement | null;
+        );
         return active?.getAttribute("data-e2e-focus-token") === value;
     }, token);
 
@@ -191,7 +186,7 @@ const withOnlyActiveVideoContainer = async (
     const prepared = await canvasContext.pageFrame.evaluate(() => {
         const active = document.querySelector(
             '.bloom-canvas-element[data-bloom-active="true"]',
-        ) as HTMLElement | null;
+        );
         const activeVideo = active?.querySelector(".bloom-videoContainer");
         if (!activeVideo) {
             return false;
@@ -226,7 +221,7 @@ const withOnlyActiveVideoContainer = async (
                 document.querySelectorAll(
                     '[data-e2e-removed-video-container="true"]',
                 ),
-            ) as HTMLElement[];
+            );
 
             removed.forEach((video) => {
                 video.classList.add("bloom-videoContainer");
@@ -420,16 +415,16 @@ test("D1: placeholder image renders Copy image and Reset image as disabled", asy
     await selectCanvasElementAtIndex(canvasTestContext, created.index);
 
     await canvasTestContext.pageFrame.evaluate(() => {
-        const active = document.querySelector(
+        const active = document.querySelector<HTMLElement>(
             '.bloom-canvas-element[data-bloom-active="true"]',
-        ) as HTMLElement | null;
+        );
         if (!active) {
             throw new Error("No active canvas element.");
         }
 
-        const image = active.querySelector(
+        const image = active.querySelector<HTMLImageElement>(
             ".bloom-imageContainer img",
-        ) as HTMLImageElement | null;
+        );
         if (!image) {
             throw new Error("No image element found.");
         }
@@ -464,15 +459,13 @@ test("D2: background-image placeholder disables Delete and hides Duplicate", asy
     await canvasTestContext.pageFrame.evaluate(() => {
         const active = document.querySelector(
             '.bloom-canvas-element[data-bloom-active="true"]',
-        ) as HTMLElement | null;
+        );
         if (!active) {
             throw new Error("No active canvas element.");
         }
 
         active.classList.add("bloom-backgroundImage");
-        const image = active.querySelector(
-            ".bloom-imageContainer img",
-        ) as HTMLImageElement | null;
+        const image = active.querySelector(".bloom-imageContainer img");
         if (!image) {
             throw new Error("No image element found.");
         }
@@ -496,7 +489,7 @@ test("D2: background-image placeholder disables Delete and hides Duplicate", asy
         await canvasTestContext.pageFrame.evaluate(() => {
             const active = document.querySelector(
                 '.bloom-canvas-element[data-bloom-active="true"]',
-            ) as HTMLElement | null;
+            );
             active?.classList.remove("bloom-backgroundImage");
         });
     }
@@ -514,7 +507,7 @@ test("D3: Expand-to-fill command is disabled when manager reports cannot expand"
     await canvasTestContext.pageFrame.evaluate(() => {
         const active = document.querySelector(
             '.bloom-canvas-element[data-bloom-active="true"]',
-        ) as HTMLElement | null;
+        );
         if (!active) {
             throw new Error("No active canvas element.");
         }
@@ -560,7 +553,7 @@ test("D3: Expand-to-fill command is disabled when manager reports cannot expand"
         await canvasTestContext.pageFrame.evaluate(() => {
             const active = document.querySelector(
                 '.bloom-canvas-element[data-bloom-active="true"]',
-            ) as HTMLElement | null;
+            );
             active?.classList.remove("bloom-backgroundImage");
         });
     }

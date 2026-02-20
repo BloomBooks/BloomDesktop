@@ -136,12 +136,12 @@ const setImageCroppedForTest = async (
     // canvas-image cropping affordances are reliably automatable in this suite.
     await pageFrame.evaluate((index: number) => {
         const elements = Array.from(
-            document.querySelectorAll(".bloom-canvas-element"),
-        ) as HTMLElement[];
+            document.querySelectorAll<HTMLElement>(".bloom-canvas-element"),
+        );
         const target = elements[index];
-        const image = target?.querySelector(
+        const image = target?.querySelector<HTMLImageElement>(
             ".bloom-imageContainer img",
-        ) as HTMLImageElement | null;
+        );
         if (!image) {
             return;
         }

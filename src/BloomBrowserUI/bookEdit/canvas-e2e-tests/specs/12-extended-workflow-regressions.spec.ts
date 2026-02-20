@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call */
+
 import { test, expect } from "../fixtures/canvasTest";
 import type { Frame, Locator, Page } from "playwright/test";
 import {
@@ -71,13 +73,9 @@ const setActivePatriarchBubbleViaManager = async (
         }
 
         const patriarchBubble = manager.getPatriarchBubbleOfActiveElement?.();
-        const patriarchContent = patriarchBubble?.content as
-            | HTMLElement
-            | undefined;
+        const patriarchContent = patriarchBubble?.content;
         if (!patriarchContent) {
-            const firstCanvasElement = document.querySelector(
-                selector,
-            ) as HTMLElement | null;
+            const firstCanvasElement = document.querySelector(selector);
             if (!firstCanvasElement) {
                 return false;
             }
@@ -114,9 +112,7 @@ const setCanvasElementDataTokenByIndex = async (
     // once canvas elements expose dedicated test ids.
     await canvasContext.pageFrame.evaluate(
         ({ selector, elementIndex, value }) => {
-            const elements = Array.from(
-                document.querySelectorAll(selector),
-            ) as HTMLElement[];
+            const elements = Array.from(document.querySelectorAll(selector));
             const element = elements[elementIndex];
             if (!element) {
                 throw new Error(
@@ -139,9 +135,7 @@ const getCanvasElementIndexByToken = async (
 ): Promise<number> => {
     return canvasContext.pageFrame.evaluate(
         ({ selector, value }) => {
-            const elements = Array.from(
-                document.querySelectorAll(selector),
-            ) as HTMLElement[];
+            const elements = Array.from(document.querySelectorAll(selector));
             return elements.findIndex(
                 (element) => element.getAttribute("data-e2e-token") === value,
             );
@@ -166,18 +160,14 @@ const getCanvasElementSnapshotByIndex = async (
 }> => {
     return canvasContext.pageFrame.evaluate(
         ({ selector, elementIndex }) => {
-            const elements = Array.from(
-                document.querySelectorAll(selector),
-            ) as HTMLElement[];
+            const elements = Array.from(document.querySelectorAll(selector));
             const element = elements[elementIndex];
             if (!element) {
                 throw new Error(
                     `No canvas element found at index ${elementIndex}.`,
                 );
             }
-            const editable = element.querySelector(
-                ".bloom-editable",
-            ) as HTMLElement | null;
+            const editable = element.querySelector(".bloom-editable");
             return {
                 text: editable?.innerText ?? "",
                 className: element.className,
@@ -227,13 +217,11 @@ const getTextForActiveElement = async (
     return canvasContext.pageFrame.evaluate(() => {
         const active = document.querySelector(
             '.bloom-canvas-element[data-bloom-active="true"]',
-        ) as HTMLElement | null;
+        );
         if (!active) {
             return "";
         }
-        const editable = active.querySelector(
-            ".bloom-editable",
-        ) as HTMLElement | null;
+        const editable = active.querySelector(".bloom-editable");
         return editable?.innerText ?? "";
     });
 };
@@ -464,7 +452,7 @@ const cropActiveImageForReset = async (
     await canvasContext.pageFrame.evaluate(() => {
         const active = document.querySelector(
             '.bloom-canvas-element[data-bloom-active="true"]',
-        ) as HTMLElement | null;
+        );
         const image = active?.querySelector(
             ".bloom-imageContainer img",
         ) as HTMLImageElement | null;
@@ -483,7 +471,7 @@ const getActiveImageState = async (
     return canvasContext.pageFrame.evaluate(() => {
         const active = document.querySelector(
             '.bloom-canvas-element[data-bloom-active="true"]',
-        ) as HTMLElement | null;
+        );
         const image = active?.querySelector(
             ".bloom-imageContainer img",
         ) as HTMLImageElement | null;
@@ -806,7 +794,7 @@ test.fixme(
         await canvasTestContext.pageFrame.evaluate(() => {
             const active = document.querySelector(
                 '.bloom-canvas-element[data-bloom-active="true"]',
-            ) as HTMLElement | null;
+            );
             if (!active) {
                 throw new Error("No active canvas element.");
             }
@@ -1541,7 +1529,7 @@ test.fixme(
             () => {
                 const active = document.querySelector(
                     '.bloom-canvas-element[data-bloom-active="true"] .bloom-editable',
-                ) as HTMLElement | null;
+                );
                 return active?.style.color ?? "";
             },
         );
@@ -1563,7 +1551,7 @@ test.fixme(
         const revertedColor = await canvasTestContext.pageFrame.evaluate(() => {
             const active = document.querySelector(
                 '.bloom-canvas-element[data-bloom-active="true"] .bloom-editable',
-            ) as HTMLElement | null;
+            );
             return active?.style.color ?? "";
         });
         expect(revertedColor).toBe("");
@@ -1634,7 +1622,7 @@ test("Workflow 16: navigation label button shows only text/background controls a
     const rendered = await canvasTestContext.pageFrame.evaluate(() => {
         const active = document.querySelector(
             '.bloom-canvas-element[data-bloom-active="true"]',
-        ) as HTMLElement | null;
+        );
         const editable = active?.querySelector(
             ".bloom-editable",
         ) as HTMLElement | null;
@@ -1663,7 +1651,7 @@ test.fixme(
             return canvasTestContext.pageFrame.evaluate((selector) => {
                 const elements = Array.from(
                     document.querySelectorAll(selector),
-                ) as HTMLElement[];
+                );
                 return elements.findIndex(
                     (element) =>
                         element.getElementsByClassName("bloom-link-grid")
@@ -1718,7 +1706,7 @@ test.fixme(
             (selector) => {
                 const elements = Array.from(
                     document.querySelectorAll(selector),
-                ) as HTMLElement[];
+                );
                 return elements.filter(
                     (element) =>
                         element.getElementsByClassName("bloom-link-grid")
@@ -1738,7 +1726,7 @@ test.fixme(
             (selector) => {
                 const elements = Array.from(
                     document.querySelectorAll(selector),
-                ) as HTMLElement[];
+                );
                 return elements.filter(
                     (element) =>
                         element.getElementsByClassName("bloom-link-grid")
