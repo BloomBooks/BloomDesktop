@@ -34,12 +34,12 @@ namespace Bloom.Api
         private HashSet<string> _applicationLevelRegistrationKeys = new HashSet<string>();
 
         // Special lock for making thumbnails. See discussion at the one point of usage.
-        private readonly SemaphoreSlim ThumbnailsAndPreviewsSyncObj = new SemaphoreSlim(1, 1);
+        private object ThumbnailsAndPreviewsSyncObj = new object();
 
         // We use two different locks to synchronize access to API requests.
         // This allows certain methods to run concurrently.
-        private readonly SemaphoreSlim I18NLock = new SemaphoreSlim(1, 1); // used to synchronize access to I18N methods
-        private readonly SemaphoreSlim SyncObj = new SemaphoreSlim(1, 1); // used to synchronize access to various other methods
+        private object I18NLock = new object(); // used to synchronize access to I18N methods
+        private object SyncObj = new object(); // used to synchronize access to various other methods
         private readonly BookSelection _bookSelection;
 
         public CollectionSettings CurrentCollectionSettings { get; private set; }
@@ -380,9 +380,11 @@ namespace Bloom.Api
                 else if (localPathLc.StartsWith("api/i18n/"))
                     syncOn = I18NLock;
 
-                // We wrap RegisterThreadBlocking/Unblocked around acquiring the lock.
-                // SemaphoreSlim is used instead of Monitor so we can safely await while the lock is held.
-                // See BL-15586.
+                // Basically what lock(syncObj) {} is syntactic sugar for (see its documentation),
+                // but we wrap RegisterThreadBlocking/Unblocked around acquiring the lock.
+                // We need the more complicated structure because we would like RegisterThreadUnblocked
+                // to be called immediately after acquiring the lock (notably, before Handle() is called),
+                // but we also want to handle the case where Monitor.Enter throws an exception.
                 bool lockAcquired = false;
                 try
                 {
@@ -390,8 +392,8 @@ namespace Bloom.Api
                     BloomServer._theOneInstance.RegisterThreadBlocking();
                     try
                     {
-                        syncOn.Wait();
-                        lockAcquired = true;
+                        // Blocks until it either succeeds (lockAcquired will then always be true) or throws (lockAcquired will stay false)
+                        Monitor.Enter(syncOn, ref lockAcquired);
                     }
                     finally
                     {
@@ -414,7 +416,9 @@ namespace Bloom.Api
                 finally
                 {
                     if (lockAcquired)
-                        syncOn.Release();
+                    {
+                        Monitor.Exit(syncOn);
+                    }
                 }
             }
             else
