@@ -874,9 +874,9 @@
         <target xml:lang="fr" state="final">Pages de Contenu</target>
         <note>BookSettings.ContentPagesGroupLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.PrintPublishingGroupLabel" sil:dynamic="true">
+      <trans-unit id="BookSettings.PrintPublishingGroupLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Print Publishing</source>
-        <target xml:lang="fr" state="translated">Imprimer la publication</target>
+        <target xml:lang="fr" state="final">Imprimer la publication</target>
         <note>ID: BookSettings.PrintPublishingGroupLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.NormalTextBoxLangsLabel" sil:dynamic="true" approved="yes">
