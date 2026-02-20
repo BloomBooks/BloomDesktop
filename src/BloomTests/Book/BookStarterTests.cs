@@ -260,7 +260,8 @@ namespace BloomTests.Book
             );
 
             var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
-            Assert.AreEqual("Book", Path.GetFileName(path));
+            // With unique book names, the folder name should be "Book-" followed by 8 hex characters
+            Assert.That(Path.GetFileName(path), Does.Match("^Book-[a-f0-9]{8}$"));
         }
 
         [Test]
@@ -1002,7 +1003,8 @@ namespace BloomTests.Book
                 GetShellBookFolder(),
                 _projectFolder.Path
             );
-            Assert.AreEqual("Book", Path.GetFileName(folderPath));
+            // With unique book names, the folder name should be "Book-" followed by 8 hex characters
+            Assert.That(Path.GetFileName(folderPath), Does.Match("^Book-[a-f0-9]{8}$"));
         }
 
         [Test]
@@ -1017,9 +1019,19 @@ namespace BloomTests.Book
                 _projectFolder.Path
             );
 
-            Assert.IsTrue(File.Exists(firstPath.CombineForPath("Book.htm")));
-            Assert.IsTrue(File.Exists(secondPath.CombineForPath("Book 2.htm")));
+            // With unique book names, each book gets a unique ID suffix, so the HTML file names will be different
+            var firstName = Path.GetFileName(firstPath);
+            var secondName = Path.GetFileName(secondPath);
+            Assert.That(firstName, Does.Match("^Book-[a-f0-9]{8}$"));
+            Assert.That(secondName, Does.Match("^Book-[a-f0-9]{8}$"));
+            Assert.IsTrue(File.Exists(Path.Combine(firstPath, firstName + ".htm")));
+            Assert.IsTrue(File.Exists(Path.Combine(secondPath, secondName + ".htm")));
             Assert.IsTrue(Directory.Exists(secondPath), "it clobbered the first one!");
+            Assert.AreNotEqual(
+                firstName,
+                secondName,
+                "Both books should have different unique names"
+            );
         }
 
         [Test]
@@ -1033,7 +1045,8 @@ namespace BloomTests.Book
             );
             var path = GetPathToHtml(bookFolderPath);
 
-            Assert.AreEqual("Book.htm", Path.GetFileName(path));
+            // With unique book names, the HTML file name should be "Book-<8 hex chars>.htm"
+            Assert.That(Path.GetFileName(path), Does.Match("^Book-[a-f0-9]{8}\\.htm$"));
             Assert.IsTrue(Directory.Exists(bookFolderPath));
             Assert.IsTrue(File.Exists(path));
         }
@@ -1295,6 +1308,7 @@ namespace BloomTests.Book
         [Test]
         public void CreateBookOnDiskFromTemplate_FromFactoryTemplate_SameNameAlreadyUsed_FindsUsableNumberSuffix()
         {
+            // Create some directories with old-style naming to ensure the new unique naming doesn't conflict
             Directory.CreateDirectory(_projectFolder.Combine("Book"));
             Directory.CreateDirectory(_projectFolder.Combine("Book 2"));
             Directory.CreateDirectory(_projectFolder.Combine("Book 4"));
@@ -1303,28 +1317,35 @@ namespace BloomTests.Book
 
             var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 
-            Assert.AreEqual("Book 3", Path.GetFileName(path));
+            // With unique book names, the new book should get a unique ID suffix and not conflict
+            var folderName = Path.GetFileName(path);
+            Assert.That(folderName, Does.Match("^Book-[a-f0-9]{8}$"));
             Assert.IsTrue(Directory.Exists(path));
-            Assert.IsTrue(File.Exists(Path.Combine(path, "Book 3.htm")));
+            Assert.IsTrue(File.Exists(Path.Combine(path, folderName + ".htm")));
+            // Verify it didn't use the old numbering scheme
+            Assert.AreNotEqual("Book 3", folderName);
         }
 
         [Test]
         public void CreateBookOnDiskFromTemplate_CreationFailsForSomeReason_DoesNotLeaveIncompleteFolderAround()
         {
             var source = BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book");
-            var goodPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
-            SIL.IO.RobustIO.DeleteDirectoryAndContents(goodPath); //remove that good one. We just did it to get an idea of what the path is
+
+            // Get the count of folders before attempting the failed creation
+            var folderCountBeforeFailure = Directory.GetDirectories(_projectFolder.Path).Length;
 
             //now fail while making a book
-
             _starter.OnNextRunSimulateFailureMakingBook = true;
             Assert.Throws<ApplicationException>(() =>
                 _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path)
             );
 
-            Assert.IsFalse(
-                Directory.Exists(goodPath),
-                "Should not have left the folder there, after a failed book creation"
+            // Verify no new folders were created
+            var folderCountAfterFailure = Directory.GetDirectories(_projectFolder.Path).Length;
+            Assert.AreEqual(
+                folderCountBeforeFailure,
+                folderCountAfterFailure,
+                "Should not have left any folders after a failed book creation"
             );
         }
 
