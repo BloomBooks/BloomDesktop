@@ -2,11 +2,13 @@ import * as React from "react";
 import {
     ICanvasElementDefinition,
     ICanvasToolsPanelState,
+    IControlAvailability,
     IControlContext,
     IControlDefinition,
     IControlMenuCommandRow,
     IControlMenuRow,
     IControlRule,
+    IControlSurfaceRule,
     IControlRuntime,
     IResolvedControl,
     TopLevelControlId,
@@ -17,9 +19,24 @@ const defaultRuntime: IControlRuntime = {
     closeMenu: () => {},
 };
 
-const alwaysVisible = (): boolean => true;
-const alwaysEnabled = (): boolean => true;
+const evaluateAvailability = (
+    availability: IControlAvailability | undefined,
+    ctx: IControlContext,
+    fallback: boolean,
+): boolean => {
+    if (availability === undefined) {
+        return fallback;
+    }
 
+    if (typeof availability === "boolean") {
+        return availability;
+    }
+
+    return availability(ctx);
+};
+
+// Registry icons may be declared as component types, already-created elements,
+// or legacy icon objects; normalize all of them to renderable nodes.
 const toRenderedIcon = (icon: React.ReactNode | undefined): React.ReactNode => {
     if (!icon) {
         return undefined;
@@ -51,22 +68,20 @@ const getEffectiveRule = (
     definition: ICanvasElementDefinition,
     controlId: TopLevelControlId,
     surface: "toolbar" | "menu" | "toolPanel",
-): {
-    visible: (ctx: IControlContext) => boolean;
-    enabled: (ctx: IControlContext) => boolean;
-} => {
+): IControlSurfaceRule => {
     const rule = getRuleForControl(definition, controlId);
     if (rule === "exclude") {
         return {
-            visible: () => false,
-            enabled: () => false,
+            visible: false,
+            enabled: false,
         };
     }
 
+    // Precedence: per-surface rule > general rule > always visible/enabled.
     const surfaceRule = rule?.surfacePolicy?.[surface];
     return {
-        visible: surfaceRule?.visible ?? rule?.visible ?? alwaysVisible,
-        enabled: surfaceRule?.enabled ?? rule?.enabled ?? alwaysEnabled,
+        visible: surfaceRule?.visible ?? rule?.visible,
+        enabled: surfaceRule?.enabled ?? rule?.enabled,
     };
 };
 
@@ -130,14 +145,18 @@ const applyRowAvailability = (
     ctx: IControlContext,
     parentEnabled: boolean,
 ): IControlMenuRow | undefined => {
-    if (row.availability?.visible && !row.availability.visible(ctx)) {
+    if (!evaluateAvailability(row.availability?.visible, ctx, true)) {
         return undefined;
     }
 
-    const rowEnabled = row.availability?.enabled
-        ? row.availability.enabled(ctx)
-        : true;
+    const rowEnabled = evaluateAvailability(
+        row.availability?.enabled,
+        ctx,
+        true,
+    );
 
+    // Child rows inherit disabled state from all ancestors so submenu items
+    // don't become clickable when the parent row is unavailable.
     const subMenuItems = row.subMenuItems
         ?.map((subItem) =>
             applyRowAvailability(subItem, ctx, parentEnabled && rowEnabled),
@@ -151,6 +170,8 @@ const applyRowAvailability = (
     };
 };
 
+// Resolves a canvas element definition into toolbar controls, applying
+// visibility/enabled rules and normalizing spacer placement.
 export const getToolbarItems = (
     definition: ICanvasElementDefinition,
     ctx: IControlContext,
@@ -170,11 +191,11 @@ export const getToolbarItems = (
             toolbarItem,
             "toolbar",
         );
-        if (!effectiveRule.visible(ctx)) {
+        if (!evaluateAvailability(effectiveRule.visible, ctx, true)) {
             return;
         }
 
-        const enabled = effectiveRule.enabled(ctx);
+        const enabled = evaluateAvailability(effectiveRule.enabled, ctx, true);
         items.push({
             control,
             enabled,
@@ -201,6 +222,8 @@ export const getToolbarItems = (
     return normalizeToolbarItems(items);
 };
 
+// Resolves section-based menu controls into concrete menu rows for the current
+// context, including nested availability and disabled-state propagation.
 export const getMenuSections = (
     definition: ICanvasElementDefinition,
     ctx: IControlContext,
@@ -224,14 +247,21 @@ export const getMenuSections = (
                 controlId,
                 "menu",
             );
-            if (!effectiveRule.visible(ctx)) {
+            if (!evaluateAvailability(effectiveRule.visible, ctx, true)) {
                 return;
             }
 
-            const enabled = effectiveRule.enabled(ctx);
+            const enabled = evaluateAvailability(
+                effectiveRule.enabled,
+                ctx,
+                true,
+            );
             const builtRow = control.menu?.buildMenuItem
                 ? control.menu.buildMenuItem(ctx, runtime)
                 : {
+                      // This is the default mapping from a command control
+                      // definition to one menu row. Optional help-row metadata
+                      // rides along and is rendered by the menu layer.
                       id: control.id,
                       l10nId: control.l10nId,
                       englishLabel: control.englishLabel,
@@ -294,6 +324,8 @@ export const getMenuSections = (
     return sections;
 };
 
+// Resolves the tool-panel controls that should render for the current canvas
+// element context.
 export const getToolPanelControls = (
     definition: ICanvasElementDefinition,
     ctx: IControlContext,
@@ -328,7 +360,7 @@ export const getToolPanelControls = (
                 controlId,
                 "toolPanel",
             );
-            if (!effectiveRule.visible(ctx)) {
+            if (!evaluateAvailability(effectiveRule.visible, ctx, true)) {
                 return;
             }
 

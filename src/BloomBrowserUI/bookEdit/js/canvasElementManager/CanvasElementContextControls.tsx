@@ -6,7 +6,6 @@ import * as ReactDOM from "react-dom";
 import { kBloomBlue, lightTheme } from "../../../bloomMaterialUITheme";
 import { SvgIconProps } from "@mui/material";
 import { default as MenuIcon } from "@mui/icons-material/MoreHorizSharp";
-import { kImageContainerClass } from "../bloomImages";
 import { ThemeProvider } from "@mui/material/styles";
 import {
     divider,
@@ -89,9 +88,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const menuEl = useRef<HTMLElement | null>(null);
 
     // After deleting a draggable, we may get rendered again, and page will be null.
-    const page = props.canvasElement.closest(
-        ".bloom-page",
-    ) as HTMLElement | null;
+    const page = props.canvasElement.closest(".bloom-page");
 
     const isBackgroundImage = props.canvasElement.classList.contains(
         kBackgroundImageClass,
@@ -199,6 +196,31 @@ const CanvasElementContextControls: React.FunctionComponent<{
 
     const maxMenuWidth = 260;
 
+    // Control callbacks can be either sync or async by contract.
+    // We always call through this helper so sync exceptions and async
+    // rejections are handled consistently from UI event handlers.
+    const runControlCallback = (
+        callbackLabel: string,
+        callback: () => void | Promise<void>,
+    ): void => {
+        try {
+            const result = callback();
+            if (result) {
+                void result.catch((error) => {
+                    console.error(
+                        `Canvas control callback failed (${callbackLabel})`,
+                        error,
+                    );
+                });
+            }
+        } catch (error) {
+            console.error(
+                `Canvas control callback failed (${callbackLabel})`,
+                error,
+            );
+        }
+    };
+
     const getSpacerToolbarItem = (index: number): IToolbarItem => {
         return {
             key: `spacer-${index}`,
@@ -248,7 +270,10 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     if (!convertedSubMenu) {
                         controlRuntime.closeMenu();
                     }
-                    void row.onSelect(controlContext, controlRuntime);
+                    runControlCallback(
+                        `menu:${row.id ?? row.englishLabel ?? "unknown"}`,
+                        () => row.onSelect(controlContext, controlRuntime),
+                    );
                 },
             };
 
@@ -283,7 +308,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
         index: number,
         controlContext: IControlContext,
     ): IToolbarItem | undefined => {
-        if ("id" in item && item.id === "spacer") {
+        if (!("control" in item)) {
             return getSpacerToolbarItem(index);
         }
 
@@ -291,29 +316,33 @@ const CanvasElementContextControls: React.FunctionComponent<{
             return undefined;
         }
 
-        if (item.control.toolbar?.render) {
+        const control = item.control;
+
+        if (control.toolbar?.render) {
             return {
-                key: `${item.control.id}-${index}`,
-                node: item.control.toolbar.render(controlContext, {
+                key: `${control.id}-${index}`,
+                node: control.toolbar.render(controlContext, {
                     closeMenu: () => {},
                 }),
             };
         }
 
-        const icon = item.control.toolbar?.icon ?? item.control.icon;
+        const icon = control.toolbar?.icon ?? control.icon;
         const onClick = () => {
-            void item.control.action(controlContext, {
-                closeMenu: () => {},
-            });
+            runControlCallback(`toolbar:${control.id}`, () =>
+                control.action(controlContext, {
+                    closeMenu: () => {},
+                }),
+            );
         };
 
         if (typeof icon === "function") {
             return makeToolbarButton({
-                key: `${item.control.id}-${index}`,
-                tipL10nKey: item.control.tooltipL10nId ?? item.control.l10nId,
-                icon,
+                key: `${control.id}-${index}`,
+                tipL10nKey: control.tooltipL10nId ?? control.l10nId,
+                icon: icon as React.FunctionComponent<SvgIconProps>,
                 onClick,
-                relativeSize: item.control.toolbar?.relativeSize,
+                relativeSize: control.toolbar?.relativeSize,
                 disabled: !item.enabled,
             });
         }
@@ -329,19 +358,18 @@ const CanvasElementContextControls: React.FunctionComponent<{
               : icon;
 
         return {
-            key: `${item.control.id}-${index}`,
+            key: `${control.id}-${index}`,
             node: (
                 <BloomTooltip
                     placement="top"
                     tip={{
-                        l10nKey:
-                            item.control.tooltipL10nId ?? item.control.l10nId,
+                        l10nKey: control.tooltipL10nId ?? control.l10nId,
                     }}
                 >
                     <button
                         onClick={onClick}
                         css={getIconCss(
-                            item.control.toolbar?.relativeSize,
+                            control.toolbar?.relativeSize,
                             !item.enabled
                                 ? `opacity: ${kBloomDisabledOpacity};`
                                 : "",

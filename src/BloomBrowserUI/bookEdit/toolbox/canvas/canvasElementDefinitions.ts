@@ -1,3 +1,19 @@
+// Declarative canvas element definitions.
+//
+// This file is the per-element source of truth for which controls appear on each
+// surface:
+// - `menuSections`: which menu section groups are shown and in what order
+// - `toolbar`: which context-toolbar controls are shown and in what order
+// - `toolPanel`: which right-side toolbox panel sections are shown
+// - `availabilityRules`: per-control visibility/enabled policy overrides
+//
+// Supporting modules:
+// - `canvasControlRegistry.ts` provides concrete control implementations and section maps.
+// - `canvasControlAvailabilityPresets.ts` provides shared policy fragments composed here.
+// - `canvasControlHelpers.ts` resolves these definitions into concrete UI rows/buttons.
+//
+// Design intent: keep each element definition explicit and readable so reviewers can
+// understand behavior from this file without chasing constructor indirection.
 import { CanvasElementType } from "./canvasElementTypes";
 import {
     ICanvasElementDefinition,
@@ -10,10 +26,15 @@ import {
     textAvailabilityRules,
     videoAvailabilityRules,
     wholeElementAvailabilityRules,
-} from "./canvasAvailabilityPresets";
+} from "./canvasControlAvailabilityPresets";
 
 const mergeRules = (...rules: AvailabilityRulesMap[]): AvailabilityRulesMap => {
-    return Object.assign({}, ...rules);
+    return rules.reduce<AvailabilityRulesMap>((result, rule) => {
+        return {
+            ...result,
+            ...rule,
+        };
+    }, {});
 };
 
 export const imageCanvasElementDefinition: ICanvasElementDefinition = {
@@ -103,27 +124,7 @@ export const bookLinkGridDefinition: ICanvasElementDefinition = {
     toolbar: ["linkGridChooseBooks", "spacer", "duplicate", "delete"],
     toolPanel: ["text"],
     availabilityRules: {
-        linkGridChooseBooks: {
-            visible: (ctx) => ctx.isLinkGrid,
-        },
-        duplicate: {
-            visible: (ctx) => ctx.isLinkGrid,
-        },
-        delete: {
-            surfacePolicy: {
-                toolbar: {
-                    visible: (ctx) => ctx.isLinkGrid,
-                },
-                menu: {
-                    visible: (ctx) => ctx.isLinkGrid,
-                },
-            },
-            enabled: (ctx) => ctx.isLinkGrid,
-        },
         textColor: "exclude",
-        backgroundColor: {
-            visible: (ctx) => ctx.isBookGrid,
-        },
     },
 };
 
@@ -146,7 +147,7 @@ export const navigationImageButtonDefinition: ICanvasElementDefinition = {
             wholeElementAvailabilityRules,
         ),
         setDestination: {
-            visible: () => true,
+            visible: true,
         },
         imageFillMode: {
             visible: (ctx) => ctx.hasImage,
@@ -155,12 +156,14 @@ export const navigationImageButtonDefinition: ICanvasElementDefinition = {
             visible: (ctx) => ctx.hasText,
         },
         backgroundColor: {
-            visible: () => true,
+            visible: true,
         },
         missingMetadata: {
+            // Keep metadata editing in the menu for navigation buttons,
+            // but do not show it as a toolbar icon.
             surfacePolicy: {
                 toolbar: {
-                    visible: () => false,
+                    visible: false,
                 },
                 menu: {
                     visible: (ctx) => ctx.hasImage && ctx.canModifyImage,
@@ -191,7 +194,7 @@ export const navigationImageWithLabelButtonDefinition: ICanvasElementDefinition 
                 wholeElementAvailabilityRules,
             ),
             setDestination: {
-                visible: () => true,
+                visible: true,
             },
             imageFillMode: {
                 visible: (ctx) => ctx.hasImage,
@@ -200,12 +203,14 @@ export const navigationImageWithLabelButtonDefinition: ICanvasElementDefinition 
                 visible: (ctx) => ctx.hasText,
             },
             backgroundColor: {
-                visible: () => true,
+                visible: true,
             },
             missingMetadata: {
+                // Keep metadata editing in the menu for navigation buttons,
+                // but do not show it as a toolbar icon.
                 surfacePolicy: {
                     toolbar: {
-                        visible: () => false,
+                        visible: false,
                     },
                     menu: {
                         visible: (ctx) => ctx.hasImage && ctx.canModifyImage,
@@ -224,10 +229,10 @@ export const navigationLabelButtonDefinition: ICanvasElementDefinition = {
     availabilityRules: {
         ...mergeRules(textAvailabilityRules, wholeElementAvailabilityRules),
         setDestination: {
-            visible: () => true,
+            visible: true,
         },
         backgroundColor: {
-            visible: () => true,
+            visible: true,
         },
     },
 };

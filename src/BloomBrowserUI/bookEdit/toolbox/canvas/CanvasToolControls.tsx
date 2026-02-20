@@ -2,6 +2,7 @@ import { css, ThemeProvider } from "@emotion/react";
 
 import * as React from "react";
 import { useState, useEffect } from "react";
+import tinycolor from "tinycolor2";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import "./canvasTool.less";
 import { getEditTabBundleExports } from "../../js/bloomFrames";
@@ -11,13 +12,9 @@ import type {
 } from "../../js/canvasElementManager/CanvasElementManager";
 import { Bubble, BubbleSpec, TailSpec } from "comicaljs";
 import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
-import FormControl from "@mui/material/FormControl";
-import { MenuItem, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { Div, Span } from "../../../react_components/l10nComponents";
-import InputLabel from "@mui/material/InputLabel";
-import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
-import { ColorBar } from "./colorBar";
 import { IColorInfo } from "../../../react_components/color-picking/colorSwatch";
 import { IColorPickerDialogProps } from "../../../react_components/color-picking/colorPickerDialog";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
@@ -41,21 +38,19 @@ import {
     NavigationLabelButtonPaletteItem,
     NavigationImageWithLabelButtonPaletteItem,
 } from "./CanvasElementItem";
+import { getCanvasElementManager } from "./canvasElementUtils";
 import {
-    getCanvasElementManager,
     kBloomButtonClass,
     kImageFitModeAttribute,
     kImageFitModeContainValue,
     kImageFitModeCoverValue,
-} from "./canvasElementUtils";
+} from "./canvasElementConstants";
 import { deselectVideoContainers } from "../../js/videoUtils";
 import { CanvasElementKeyHints } from "./CanvasElementKeyHints";
 import { ToolBox } from "../toolbox";
-import BloomSelect from "../../../react_components/bloomSelect";
 import {
     kBloomBlue,
     kToolboxContentPadding,
-    toolboxMenuPopupTheme,
     toolboxTheme,
 } from "../../../bloomMaterialUITheme";
 import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
@@ -65,15 +60,29 @@ import { buildControlContext } from "./buildControlContext";
 import { canvasElementDefinitions } from "./canvasElementDefinitions";
 import { getToolPanelControls } from "./canvasControlHelpers";
 import {
+    ImageFillMode,
     ICanvasToolsPanelState,
-    TopLevelControlId,
+    kImageFitModePaddedValue,
 } from "./canvasControlTypes";
+import { CanvasElementType } from "./canvasElementTypes";
 
-const kImageFillModePaddedValue = "padded";
-type ImageFillMode =
-    | typeof kImageFillModePaddedValue
-    | typeof kImageFitModeContainValue
-    | typeof kImageFitModeCoverValue;
+const getBubbleSpec = (bubble: Bubble | undefined): BubbleSpec | undefined => {
+    return bubble?.getBubbleSpec() as BubbleSpec | undefined;
+};
+
+const tryGetEventTargetStringValue = (event: unknown): string | undefined => {
+    if (typeof event !== "object" || event === null || !("target" in event)) {
+        return undefined;
+    }
+
+    const target = (event as { target?: unknown }).target;
+    if (typeof target !== "object" || target === null || !("value" in target)) {
+        return undefined;
+    }
+
+    const value = (target as { value?: unknown }).value;
+    return typeof value === "string" ? value : undefined;
+};
 
 const getImageFillModeForElement = (element: HTMLElement): ImageFillMode => {
     const currentFillMode = element.getAttribute(kImageFitModeAttribute);
@@ -81,27 +90,27 @@ const getImageFillModeForElement = (element: HTMLElement): ImageFillMode => {
         currentFillMode === kImageFitModeContainValue ||
         currentFillMode === kImageFitModeCoverValue
     ) {
-        return currentFillMode;
+        return currentFillMode as ImageFillMode;
     }
-    return kImageFillModePaddedValue;
+    return kImageFitModePaddedValue;
 };
 
 const CanvasToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
-    type CanvasElementType = "text" | "image" | "video" | undefined;
 
     // Declare all the hooks
     const [style, setStyle] = useState("none");
     const [outlineColor, setOutlineColor] = useState<string | undefined>(
         undefined,
     );
-    const [canvasElementType, setCanvasElementType] =
-        useState<CanvasElementType>(undefined);
+    const [canvasElementType, setCanvasElementType] = useState<
+        CanvasElementType | undefined
+    >(undefined);
     const [showTailChecked, setShowTailChecked] = useState(false);
     const [isRoundedCornersChecked, setIsRoundedCornersChecked] =
         useState(false);
     const [imageFillMode, setImageFillMode] = useState<ImageFillMode>(
-        kImageFillModePaddedValue,
+        kImageFitModePaddedValue,
     );
     const [isXmatter, setIsXmatter] = useState(true);
     // This 'counter' increments on new page ready so we can re-check if the book is locked.
@@ -189,8 +198,8 @@ const CanvasToolControls: React.FunctionComponent = () => {
 
     // Reset UI when current bubble spec changes (e.g. user clicked on a bubble).
     useEffect(() => {
-        if (currentBubble) {
-            const currentBubbleSpec = currentBubble.getBubbleSpec();
+        const currentBubbleSpec = getBubbleSpec(currentBubble);
+        if (currentBubble && currentBubbleSpec) {
             setStyle(currentBubbleSpec.style);
             setShowTailChecked(
                 currentBubbleSpec.tails && currentBubbleSpec.tails.length > 0,
@@ -228,25 +237,28 @@ const CanvasToolControls: React.FunctionComponent = () => {
             }
         } else {
             setCanvasElementType(undefined);
-            setImageFillMode(kImageFillModePaddedValue);
+            setImageFillMode(kImageFitModePaddedValue);
         }
     }, [currentBubble]);
 
     const getBubbleType = (
         mgr: CanvasElementManager | undefined,
-    ): CanvasElementType => {
+    ): CanvasElementType | undefined => {
         if (!mgr) {
             return undefined;
         }
         if (mgr.isActiveElementPictureCanvasElement()) {
             return "image";
         }
-        return mgr.isActiveElementVideoCanvasElement() ? "video" : "text";
+        return mgr.isActiveElementVideoCanvasElement() ? "video" : "speech";
     };
 
     // Callback for style changed
-    const handleStyleChanged = (event) => {
-        const newStyle = event.target.value;
+    const handleStyleChanged = (event: unknown) => {
+        const newStyle = tryGetEventTargetStringValue(event);
+        if (!newStyle) {
+            return;
+        }
 
         // Update the toolbox controls
         setStyle(newStyle);
@@ -260,7 +272,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
 
             // BL-8537: If we are choosing "caption" style, we make sure that the background color is opaque.
             const backgroundColorArray =
-                currentBubble?.getBubbleSpec()?.backgroundColors;
+                getBubbleSpec(currentBubble)?.backgroundColors;
             if (
                 newStyle === "caption" &&
                 backgroundColorArray &&
@@ -448,7 +460,16 @@ const CanvasToolControls: React.FunctionComponent = () => {
     };
 
     const handleImageFillChanged = (event) => {
-        const newMode = event.target.value as ImageFillMode;
+        const selectedValue = tryGetEventTargetStringValue(event);
+        if (
+            selectedValue !== kImageFitModeContainValue &&
+            selectedValue !== kImageFitModeCoverValue &&
+            selectedValue !== kImageFitModePaddedValue
+        ) {
+            return;
+        }
+
+        const newMode = selectedValue as ImageFillMode;
         setImageFillMode(newMode);
         const activeElement = getCanvasElementManager()?.getActiveElement();
         if (!activeElement) {
@@ -475,8 +496,11 @@ const CanvasToolControls: React.FunctionComponent = () => {
     };
 
     // Callback when outline color of the bubble is changed
-    const handleOutlineColorChanged = (event) => {
-        let newValue = event.target.value;
+    const handleOutlineColorChanged = (event: unknown) => {
+        let newValue = tryGetEventTargetStringValue(event);
+        if (!newValue) {
+            return;
+        }
 
         if (newValue === "none") {
             newValue = undefined;
@@ -491,30 +515,6 @@ const CanvasToolControls: React.FunctionComponent = () => {
             canvasElementManager.updateSelectedFamilyBubbleSpec({
                 outerBorderColor: newValue,
             });
-        }
-    };
-
-    const styleSupportsRoundedCorners = (
-        currentBubbleSpec: BubbleSpec | undefined,
-    ) => {
-        if (!currentBubbleSpec) {
-            return false;
-        }
-
-        const bgColors = currentBubbleSpec.backgroundColors;
-        if (bgColors && bgColors.includes("transparent")) {
-            // Don't allow on transparent bubbles
-            return false;
-        }
-
-        switch (currentBubbleSpec.style) {
-            case "caption":
-                return true;
-            case "none":
-                // Just text - rounded corners applicable if it has a background color
-                return bgColors && bgColors.length > 0;
-            default:
-                return false;
         }
     };
 
@@ -570,7 +570,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
 
     const percentTransparentFromOpacity = !needToCalculateTransparency()
         ? "0" // We shouldn't call this under these circumstances.
-        : (100 - (backgroundColorSwatch.opacity as number) * 100).toFixed(0);
+        : (100 - backgroundColorSwatch.opacity * 100).toFixed(0);
 
     const transparencyString = useL10n(
         "Percent Transparent",
@@ -585,53 +585,10 @@ const CanvasToolControls: React.FunctionComponent = () => {
     const percentTransparencyString =
         percentTransparentFromOpacity === "0" ? undefined : transparencyString;
 
-    // Note: Make sure bubble spec is the current ITEM's spec, not the current FAMILY's spec.
-    const isChild = (bubbleSpec: BubbleSpec | undefined) => {
-        const order = bubbleSpec?.order ?? 0;
-        return order > 1;
-    };
-
     const canvasElementManager = getCanvasElementManager();
-    const currentItemSpec = canvasElementManager?.getSelectedItemBubbleSpec();
-
-    // BL-8537 Because of the black shadow background, partly transparent backgrounds don't work for
-    // captions. We'll use this to tell the color chooser not to show the alpha option.
-    const isCaption = currentBubble?.getBubbleSpec()?.style === "caption";
-
-    const backgroundColorControl = (
-        <FormControl variant="standard">
-            <InputLabel shrink={true} htmlFor="background-color-bar">
-                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.BackgroundColor">
-                    Background Color
-                </Span>
-            </InputLabel>
-            <ColorBar
-                id="background-color-bar"
-                onClick={() => launchBackgroundColorChooser(!isCaption)}
-                colorInfo={backgroundColorSwatch}
-                text={percentTransparencyString}
-            />
-        </FormControl>
-    );
-    const textColorControl = (
-        <FormControl variant="standard">
-            <InputLabel htmlFor="text-color-bar" shrink={true}>
-                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.TextColor">
-                    Text Color
-                </Span>
-            </InputLabel>
-            <ColorBar
-                id="text-color-bar"
-                onClick={launchTextColorChooser}
-                colorInfo={textColorSwatch}
-                isDefault={textColorIsDefault}
-            />
-        </FormControl>
-    );
+    const selectedItemSpec = canvasElementManager?.getSelectedItemBubbleSpec();
 
     const activeElement = canvasElementManager?.getActiveElement();
-    const isButton =
-        activeElement?.classList.contains(kBloomButtonClass) ?? false;
 
     const noControlsSection = (
         <div id="noOptionsSection">
@@ -649,242 +606,37 @@ const CanvasToolControls: React.FunctionComponent = () => {
         </div>
     );
 
-    const imageFillControl = (
-        <FormControl variant="standard">
-            <InputLabel htmlFor="image-fill-mode-dropdown">
-                <Span l10nKey="EditTab.Toolbox.CanvasTool.ImageFit">
-                    Image Fit
-                </Span>
-            </InputLabel>
-            <ThemeProvider theme={toolboxMenuPopupTheme}>
-                <BloomSelect
-                    variant="standard"
-                    value={imageFillMode}
-                    onChange={(event) => {
-                        handleImageFillChanged(event);
-                    }}
-                    className="canvasElementOptionDropdown"
-                    inputProps={{
-                        name: "imageFillMode",
-                        id: "image-fill-mode-dropdown",
-                    }}
-                    MenuProps={{
-                        className: "canvasElement-options-dropdown-menu",
-                    }}
-                >
-                    <MenuItem value={kImageFillModePaddedValue}>
-                        <Div l10nKey="EditTab.Toolbox.CanvasTool.ImageFit.Margin">
-                            Fit with Margin
-                        </Div>
-                    </MenuItem>
-                    <MenuItem value={kImageFitModeContainValue}>
-                        <Div l10nKey="EditTab.Toolbox.CanvasTool.ImageFit.FitToEdge">
-                            Fit to Edge
-                        </Div>
-                    </MenuItem>
-                    <MenuItem value={kImageFitModeCoverValue}>
-                        <Div l10nKey="EditTab.Toolbox.CanvasTool.ImageFit.Fill">
-                            Fill
-                        </Div>
-                    </MenuItem>
-                </BloomSelect>
-            </ThemeProvider>
-        </FormControl>
-    );
-
-    const bubbleStyleControl = (
-        <FormControl variant="standard">
-            <InputLabel htmlFor="canvasElement-style-dropdown">
-                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.Style">
-                    Style
-                </Span>
-            </InputLabel>
-            <ThemeProvider theme={toolboxMenuPopupTheme}>
-                <BloomSelect
-                    variant="standard"
-                    value={style}
-                    onChange={(event) => {
-                        handleStyleChanged(event);
-                    }}
-                    className="canvasElementOptionDropdown"
-                    inputProps={{
-                        name: "style",
-                        id: "canvasElement-style-dropdown",
-                    }}
-                    MenuProps={{
-                        className: "canvasElement-options-dropdown-menu",
-                    }}
-                >
-                    <MenuItem value="caption">
-                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption">
-                            Caption
-                        </Div>
-                    </MenuItem>
-                    <MenuItem value="pointedArcs">
-                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Exclamation">
-                            Exclamation
-                        </Div>
-                    </MenuItem>
-                    <MenuItem value="none">
-                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.JustText">
-                            Just Text
-                        </Div>
-                    </MenuItem>
-                    <MenuItem value="speech">
-                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Speech">
-                            Speech
-                        </Div>
-                    </MenuItem>
-                    <MenuItem value="ellipse">
-                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Ellipse">
-                            Ellipse
-                        </Div>
-                    </MenuItem>
-                    <MenuItem value="thought">
-                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Thought">
-                            Thought
-                        </Div>
-                    </MenuItem>
-                    <MenuItem value="circle">
-                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Circle">
-                            Circle
-                        </Div>
-                    </MenuItem>
-                    <MenuItem value="rectangle">
-                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Rectangle">
-                            Rectangle
-                        </Div>
-                    </MenuItem>
-                </BloomSelect>
-            </ThemeProvider>
-        </FormControl>
-    );
-
-    const showTailControl = (
-        <BloomCheckbox
-            label="Show Tail"
-            l10nKey="EditTab.Toolbox.ComicTool.Options.ShowTail"
-            checked={showTailChecked}
-            disabled={isChild(currentItemSpec) || isButton}
-            onCheckChanged={(v) => {
-                handleShowTailChanged(v as boolean);
-            }}
-        />
-    );
-
-    const roundedCornersControl = (
-        <BloomCheckbox
-            label="Rounded Corners"
-            l10nKey="EditTab.Toolbox.ComicTool.Options.RoundedCorners"
-            checked={isRoundedCornersChecked}
-            disabled={
-                !styleSupportsRoundedCorners(currentBubble?.getBubbleSpec())
-            }
-            onCheckChanged={(newValue) => {
-                handleRoundedCornersChanged(newValue);
-            }}
-        />
-    );
-
-    const outlineColorControl = (
-        <FormControl
-            variant="standard"
-            className={
-                isBubble(currentBubble?.getBubbleSpec()) ? "" : "disabled"
-            }
-        >
-            <InputLabel htmlFor="canvasElement-outlineColor-dropdown">
-                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor">
-                    Outer Outline Color
-                </Span>
-            </InputLabel>
-            <ThemeProvider theme={toolboxMenuPopupTheme}>
-                <BloomSelect
-                    variant="standard"
-                    value={outlineColor ? outlineColor : "none"}
-                    className="canvasElementOptionDropdown"
-                    inputProps={{
-                        name: "outlineColor",
-                        id: "canvasElement-outlineColor-dropdown",
-                    }}
-                    MenuProps={{
-                        className: "canvasElement-options-dropdown-menu",
-                    }}
-                    onChange={(event) => {
-                        if (isBubble(currentBubble?.getBubbleSpec())) {
-                            handleOutlineColorChanged(event);
-                        }
-                    }}
-                >
-                    <MenuItem value="none">
-                        <Div l10nKey="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None">
-                            None
-                        </Div>
-                    </MenuItem>
-                    <MenuItem value="yellow">
-                        <Div l10nKey="Common.Colors.Yellow">Yellow</Div>
-                    </MenuItem>
-                    <MenuItem value="crimson">
-                        <Div l10nKey="Common.Colors.Crimson">Crimson</Div>
-                    </MenuItem>
-                </BloomSelect>
-            </ThemeProvider>
-        </FormControl>
-    );
-
     const panelState: ICanvasToolsPanelState = {
         style,
         setStyle,
+        onStyleChanged: handleStyleChanged,
         showTail: showTailChecked,
         setShowTail: setShowTailChecked,
+        onShowTailChanged: handleShowTailChanged,
         roundedCorners: isRoundedCornersChecked,
         setRoundedCorners: setIsRoundedCornersChecked,
+        onRoundedCornersChanged: handleRoundedCornersChanged,
         outlineColor,
         setOutlineColor,
+        onOutlineColorChanged: handleOutlineColorChanged,
         textColorSwatch,
         setTextColorSwatch,
+        textColorIsDefault,
+        openTextColorChooser: launchTextColorChooser,
         backgroundColorSwatch,
         setBackgroundColorSwatch,
+        percentTransparencyString,
+        openBackgroundColorChooser: launchBackgroundColorChooser,
         imageFillMode,
         setImageFillMode,
+        onImageFillChanged: handleImageFillChanged,
         currentBubble,
-    };
-
-    const getPanelControlNode = (
-        controlId: TopLevelControlId,
-    ): React.ReactNode => {
-        switch (controlId) {
-            case "bubbleStyle":
-                return bubbleStyleControl;
-            case "showTail":
-                return showTailControl;
-            case "roundedCorners":
-                return roundedCornersControl;
-            case "outlineColor":
-                return outlineColorControl;
-            case "textColor":
-                return textColorControl;
-            case "backgroundColor":
-                return backgroundColorControl;
-            case "imageFillMode":
-                return imageFillControl;
-            default:
-                return undefined;
-        }
+        selectedItemSpec,
     };
 
     const getControlOptionsRegion = (): JSX.Element => {
         if (!activeElement) {
-            return (
-                <form autoComplete="off" className="canvasToolControlStack">
-                    {bubbleStyleControl}
-                    {showTailControl}
-                    {roundedCornersControl}
-                    {textColorControl}
-                    {backgroundColorControl}
-                    {outlineColorControl}
-                </form>
-            );
+            return <></>;
         }
 
         const controlContext = buildControlContext(activeElement);
@@ -893,17 +645,14 @@ const CanvasToolControls: React.FunctionComponent = () => {
             canvasElementDefinitions.none;
         const panelControls = getToolPanelControls(definition, controlContext);
         const renderedControls = panelControls.map((panelControl, index) => {
-            const defaultNode = (
-                <panelControl.Component
-                    ctx={panelControl.ctx}
-                    panelState={panelState}
-                />
-            );
             return {
                 id: `${panelControl.controlId}-${index}`,
-                controlId: panelControl.controlId,
-                node:
-                    getPanelControlNode(panelControl.controlId) ?? defaultNode,
+                node: (
+                    <panelControl.Component
+                        ctx={panelControl.ctx}
+                        panelState={panelState}
+                    />
+                ),
             };
         });
 
@@ -1114,10 +863,6 @@ function setOpaque(color: string) {
     const firstColor = new tinycolor(color);
     firstColor.setAlpha(1.0);
     return firstColor.toHexString();
-}
-function isBubble(item: BubbleSpec | undefined): boolean {
-    // "none" is the style assigned to the plain text box.
-    return !!item && item.style != "none" && item.style != "caption";
 }
 
 export default CanvasToolControls;

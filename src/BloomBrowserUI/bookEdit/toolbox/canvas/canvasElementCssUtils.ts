@@ -4,6 +4,7 @@
 // Keep this file dependency-light: it is intentionally safe to import from anywhere
 // in the Toolbox without dragging in editView/CanvasElementManager.
 
+// Parses CSS dimensions like "12px" (and plain numeric strings) into numbers.
 export const pxToNumber = (
     cssDimension: string | undefined | null,
     fallback: number = NaN,

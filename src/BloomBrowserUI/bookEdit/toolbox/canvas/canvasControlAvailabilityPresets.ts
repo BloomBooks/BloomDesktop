@@ -1,3 +1,16 @@
+// Reusable availability policy fragments for canvas controls.
+//
+// This module centralizes `visible`/`enabled` rules that are reused by multiple
+// element definitions. `canvasElementDefinitions.ts` composes these presets per
+// element type to keep element declarations concise and declarative.
+//
+// Runtime flow:
+// 1) `buildControlContext()` computes `IControlContext` facts.
+// 2) `canvasControlHelpers.ts` evaluates these rules per surface (toolbar/menu/panel).
+// 3) `canvasControlRegistry.ts` provides the concrete command/panel implementations
+//    that are filtered by these rules.
+//
+// Keep preset objects behavior-focused and side-effect free.
 import { AvailabilityRulesMap } from "./canvasControlTypes";
 
 export const imageAvailabilityRules: AvailabilityRulesMap = {
@@ -83,21 +96,16 @@ export const bubbleAvailabilityRules: AvailabilityRulesMap = {
 
 export const wholeElementAvailabilityRules: AvailabilityRulesMap = {
     duplicate: {
-        visible: (ctx) =>
-            !ctx.isLinkGrid &&
-            !ctx.isBackgroundImage &&
-            !ctx.isSpecialGameElement,
+        visible: (ctx) => !ctx.isBackgroundImage && !ctx.isSpecialGameElement,
     },
     delete: {
         surfacePolicy: {
             toolbar: {
                 visible: (ctx) =>
-                    !ctx.isLinkGrid &&
-                    !ctx.isBackgroundImage &&
-                    !ctx.isSpecialGameElement,
+                    !ctx.isBackgroundImage && !ctx.isSpecialGameElement,
             },
             menu: {
-                visible: (ctx) => !ctx.isLinkGrid,
+                visible: true,
             },
         },
         enabled: (ctx) => {

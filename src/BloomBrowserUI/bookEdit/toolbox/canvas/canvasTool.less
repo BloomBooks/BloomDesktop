@@ -54,17 +54,23 @@
     padding: @SideMargin @SideMargin 0 @SideMargin;
 
     .canvasToolControlStack {
+        // Single source of truth for vertical rhythm between controls.
+        // Keep spacing here instead of ad-hoc per-control margins.
         display: flex;
         flex-direction: column;
         gap: @ControlVerticalSpacing;
     }
 
     .canvasToolControlStack > .bloom-checkbox-form-control-label {
+        // BloomCheckbox has default top padding tuned for many contexts.
+        // In the canvas control stack we normalize spacing via `gap`, so
+        // clear that padding to prevent uneven row spacing.
         padding-top: 0;
         margin: 0;
     }
 
     .canvasToolControlStack .bloom-checkbox {
+        // Align checkbox glyph and label vertically in this compact toolbox UI.
         align-items: center;
     }
 

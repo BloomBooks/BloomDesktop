@@ -1,3 +1,26 @@
+// Canvas control registry and section map.
+//
+// This module defines:
+// - `controlRegistry`: each top-level control id mapped to concrete behavior
+//   (command actions, menu metadata, toolbar hints, or panel component mapping).
+// - `controlSections`: declarative section groupings used by menu and tool panel
+//   surfaces.
+//
+// How the declarative system composes:
+// - `canvasElementDefinitions.ts` picks section/order for each element type.
+// - `canvasControlHelpers.ts` resolves those declarations into renderable rows/buttons.
+// - `canvasAvailabilityPresets.ts` + per-element rules decide visibility/enabled state.
+// - `canvasPanelControls.tsx` supplies panel UI components referenced here.
+//
+// Note on sync vs async callbacks:
+// - Keep handlers synchronous when they only do immediate DOM/manager work
+//   (examples: `toggleDraggable`, `copyText`, `duplicate`, `setDestination`).
+// - Use async only when we must await asynchronous APIs
+//   (example: `chooseAudio` submenu "Choose..." awaits `showDialogToChooseSoundFileAsync`).
+//
+// UI invocation sites handle both forms through a shared safe runner so promise
+// rejections are not dropped when handlers are called from click events.
+
 import * as React from "react";
 import { default as ArrowDownwardIcon } from "@mui/icons-material/ArrowDownward";
 import { default as ArrowUpwardIcon } from "@mui/icons-material/ArrowUpward";
@@ -40,17 +63,24 @@ import { kBloomBlue } from "../../../bloomMaterialUITheme";
 import {
     IControlContext,
     IControlDefinition,
-    ICommandControlDefinition,
     IControlRuntime,
     IControlSection,
     IControlMenuCommandRow,
-    ICanvasToolsPanelState,
     SectionId,
     TopLevelControlId,
 } from "./canvasControlTypes";
 import { getCanvasElementManager } from "./canvasElementUtils";
 import { isDraggable, kDraggableIdAttribute } from "./canvasElementDraggables";
 import { setGeneratedDraggableId } from "./CanvasElementItem";
+import {
+    BackgroundColorPanelControl,
+    BubbleStylePanelControl,
+    ImageFillModePanelControl,
+    OutlineColorPanelControl,
+    RoundedCornersPanelControl,
+    ShowTailPanelControl,
+    TextColorPanelControl,
+} from "./canvasPanelControls";
 
 const getImageContainer = (ctx: IControlContext): HTMLElement | undefined => {
     return ctx.canvasElement.getElementsByClassName(kImageContainerClass)[0] as
@@ -74,11 +104,29 @@ const getEditable = (ctx: IControlContext): HTMLElement | undefined => {
     )[0] as HTMLElement | undefined;
 };
 
-const placeholderPanelControl: React.FunctionComponent<{
-    ctx: IControlContext;
-    panelState: ICanvasToolsPanelState;
-}> = (_props) => {
-    return null;
+const buildDynamicMenuItemFromControl = (
+    controlId: TopLevelControlId,
+    runtime: IControlRuntime,
+    overrides: Partial<IControlMenuCommandRow>,
+): IControlMenuCommandRow => {
+    const control = controlRegistry[controlId];
+    if (control.kind !== "command") {
+        throw new Error(
+            `Control '${controlId}' must be a command to build a menu row.`,
+        );
+    }
+
+    return {
+        id: control.id,
+        l10nId: control.l10nId,
+        englishLabel: control.englishLabel,
+        ...overrides,
+        onSelect:
+            overrides.onSelect ??
+            (async (rowCtx) => {
+                await control.action(rowCtx, runtime);
+            }),
+    };
 };
 
 const modifyClassNames = (
@@ -116,6 +164,8 @@ const getCurrentDraggableTarget = (
         | undefined;
 };
 
+// Draggability is represented both by data attributes and by style-family class names.
+// Keep both in sync so the element's appearance and game behavior stay consistent.
 const toggleDraggability = (ctx: IControlContext): void => {
     const currentDraggableTarget = getCurrentDraggableTarget(ctx);
 
@@ -148,6 +198,7 @@ const toggleDraggability = (ctx: IControlContext): void => {
         kImageContainerClass,
     )[0] as HTMLElement | undefined;
     if (imageContainer) {
+        // Draggables must not also act as hyperlinks in player mode.
         imageContainer.removeAttribute("data-href");
     }
 
@@ -192,14 +243,14 @@ const makeChooseAudioMenuItemForText = (
         subLabelL10nId: "EditTab.Image.PlayWhenTouched",
         featureName: "canvas",
         icon: React.createElement(VolumeUpIcon, null),
-        onSelect: async () => {},
+        onSelect: () => {},
         subMenuItems: [
             {
                 id: "useTalkingBookTool",
                 l10nId: "UseTalkingBookTool",
                 englishLabel: "Use Talking Book Tool",
                 featureName: "canvas",
-                onSelect: async () => {
+                onSelect: () => {
                     runtime.closeMenu(false);
                     AudioRecording.showTalkingBookTool();
                 },
@@ -224,14 +275,14 @@ const makeChooseAudioMenuItemForImage = (
         subLabelL10nId: "EditTab.Image.PlayWhenTouched",
         featureName: "canvas",
         icon: React.createElement(VolumeUpIcon, null),
-        onSelect: async () => {},
+        onSelect: () => {},
         subMenuItems: [
             {
                 id: "removeAudio",
                 l10nId: "EditTab.Toolbox.DragActivity.None",
                 englishLabel: "None",
                 featureName: "canvas",
-                onSelect: async () => {
+                onSelect: () => {
                     ctx.canvasElement.removeAttribute("data-sound");
                     runtime.closeMenu(false);
                 },
@@ -244,7 +295,7 @@ const makeChooseAudioMenuItemForImage = (
                 availability: {
                     visible: (itemCtx) => itemCtx.hasCurrentImageSound,
                 },
-                onSelect: async () => {
+                onSelect: () => {
                     if (ctx.page && currentSoundId !== "none") {
                         playSound(currentSoundId, ctx.page);
                     }
@@ -262,13 +313,14 @@ const makeChooseAudioMenuItemForImage = (
                 helpRowSeparatorAbove: true,
                 onSelect: async () => {
                     runtime.closeMenu(true);
-                    const newSoundId = await showDialogToChooseSoundFileAsync();
-                    if (!newSoundId || !ctx.page) {
+                    const selectedSound =
+                        (await showDialogToChooseSoundFileAsync()) as unknown;
+                    if (typeof selectedSound !== "string" || !ctx.page) {
                         return;
                     }
 
-                    ctx.canvasElement.setAttribute("data-sound", newSoundId);
-                    copyAndPlaySoundAsync(newSoundId, ctx.page, false);
+                    ctx.canvasElement.setAttribute("data-sound", selectedSound);
+                    void copyAndPlaySoundAsync(selectedSound, ctx.page, false);
                 },
             },
         ],
@@ -282,7 +334,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         l10nId: "EditTab.Image.ChooseImage",
         englishLabel: "Choose image from your computer...",
         icon: SearchIcon,
-        action: async (ctx, runtime) => {
+        action: (ctx, runtime) => {
             const img = getImage(ctx);
             if (!img) {
                 return;
@@ -298,7 +350,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         l10nId: "EditTab.Image.PasteImage",
         englishLabel: "Paste image",
         icon: PasteIcon,
-        action: async (ctx) => {
+        action: (ctx) => {
             const img = getImage(ctx);
             if (!img) {
                 return;
@@ -313,7 +365,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         l10nId: "EditTab.Image.CopyImage",
         englishLabel: "Copy image",
         icon: CopyIcon,
-        action: async (ctx) => {
+        action: (ctx) => {
             const img = getImage(ctx);
             if (!img) {
                 return;
@@ -333,7 +385,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
             icon: React.createElement(CopyrightIcon, null),
             subLabelL10nId: "EditTab.Image.EditMetadataOverlayMore",
         },
-        action: async (ctx, runtime) => {
+        action: (ctx, runtime) => {
             const imageContainer = getImageContainer(ctx);
             if (!imageContainer) {
                 return;
@@ -355,7 +407,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
             alt: "",
             className: "canvas-context-menu-monochrome-icon",
         }),
-        action: async () => {
+        action: () => {
             getCanvasElementManager()?.resetCropping();
         },
     },
@@ -372,7 +424,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                 className: "canvas-context-menu-monochrome-icon",
             }),
         },
-        action: async () => {
+        action: () => {
             getCanvasElementManager()?.expandImageToFillSpace();
         },
     },
@@ -381,7 +433,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         id: "imageFillMode",
         l10nId: "EditTab.Toolbox.CanvasTool.ImageFit",
         englishLabel: "Image Fit",
-        canvasToolsControl: placeholderPanelControl,
+        canvasToolsControl: ImageFillModePanelControl,
     },
     chooseVideo: {
         kind: "command",
@@ -389,7 +441,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         l10nId: "EditTab.Toolbox.ComicTool.Options.ChooseVideo",
         englishLabel: "Choose Video from your Computer...",
         icon: SearchIcon,
-        action: async (ctx, runtime) => {
+        action: (ctx, runtime) => {
             const videoContainer = getVideoContainer(ctx);
             if (!videoContainer) {
                 return;
@@ -405,7 +457,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         l10nId: "EditTab.Toolbox.ComicTool.Options.RecordYourself",
         englishLabel: "Record yourself...",
         icon: CircleIcon,
-        action: async (ctx, runtime) => {
+        action: (ctx, runtime) => {
             const videoContainer = getVideoContainer(ctx);
             if (!videoContainer) {
                 return;
@@ -421,7 +473,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         l10nId: "EditTab.Toolbox.ComicTool.Options.PlayEarlier",
         englishLabel: "Play Earlier",
         icon: ArrowUpwardIcon,
-        action: async (ctx) => {
+        action: (ctx) => {
             const videoContainer = getVideoContainer(ctx);
             if (!videoContainer) {
                 return;
@@ -436,7 +488,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         l10nId: "EditTab.Toolbox.ComicTool.Options.PlayLater",
         englishLabel: "Play Later",
         icon: ArrowDownwardIcon,
-        action: async (ctx) => {
+        action: (ctx) => {
             const videoContainer = getVideoContainer(ctx);
             if (!videoContainer) {
                 return;
@@ -454,7 +506,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         toolbar: {
             relativeSize: 0.8,
         },
-        action: async (ctx) => {
+        action: (ctx) => {
             const editable = getEditable(ctx);
             if (!editable) {
                 return;
@@ -469,7 +521,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         l10nId: "EditTab.Toolbox.ComicTool.Options.CopyText",
         englishLabel: "Copy Text",
         icon: CopyIcon,
-        action: async () => {
+        action: () => {
             copySelection();
         },
     },
@@ -479,7 +531,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         l10nId: "EditTab.Toolbox.ComicTool.Options.PasteText",
         englishLabel: "Paste Text",
         icon: PasteIcon,
-        action: async () => {
+        action: () => {
             pasteClipboard(false);
         },
     },
@@ -490,27 +542,20 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         englishLabel: "Auto Height",
         icon: CheckIcon,
         menu: {
-            buildMenuItem: (ctx, runtime) => ({
-                id: "autoHeight",
-                l10nId: "EditTab.Toolbox.ComicTool.Options.AutoHeight",
-                englishLabel: "Auto Height",
-                icon: React.createElement(CheckIcon, {
-                    style: {
-                        visibility: ctx.canvasElement.classList.contains(
-                            "bloom-noAutoHeight",
-                        )
-                            ? "hidden"
-                            : "visible",
-                    },
+            buildMenuItem: (ctx, runtime) =>
+                buildDynamicMenuItemFromControl("autoHeight", runtime, {
+                    icon: React.createElement(CheckIcon, {
+                        style: {
+                            visibility: ctx.canvasElement.classList.contains(
+                                "bloom-noAutoHeight",
+                            )
+                                ? "hidden"
+                                : "visible",
+                        },
+                    }),
                 }),
-                onSelect: async (rowCtx) => {
-                    await (
-                        controlRegistry.autoHeight as ICommandControlDefinition
-                    ).action(rowCtx, runtime);
-                },
-            }),
         },
-        action: async (ctx) => {
+        action: (ctx) => {
             ctx.canvasElement.classList.toggle("bloom-noAutoHeight");
             getCanvasElementManager()?.updateAutoHeight();
         },
@@ -522,21 +567,14 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         englishLabel: "Fill Background",
         icon: CheckIcon,
         menu: {
-            buildMenuItem: (ctx, runtime) => ({
-                id: "fillBackground",
-                l10nId: "EditTab.Toolbox.ComicTool.Options.FillBackground",
-                englishLabel: "Fill Background",
-                icon: ctx.rectangleHasBackground
-                    ? React.createElement(CheckIcon, null)
-                    : undefined,
-                onSelect: async (rowCtx) => {
-                    await (
-                        controlRegistry.fillBackground as ICommandControlDefinition
-                    ).action(rowCtx, runtime);
-                },
-            }),
+            buildMenuItem: (ctx, runtime) =>
+                buildDynamicMenuItemFromControl("fillBackground", runtime, {
+                    icon: ctx.rectangleHasBackground
+                        ? React.createElement(CheckIcon, null)
+                        : undefined,
+                }),
         },
-        action: async (ctx) => {
+        action: (ctx) => {
             const rectangle = ctx.canvasElement.getElementsByClassName(
                 "bloom-rectangle",
             )[0] as HTMLElement | undefined;
@@ -548,7 +586,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         id: "addChildBubble",
         l10nId: "EditTab.Toolbox.ComicTool.Options.AddChildBubble",
         englishLabel: "Add Child Bubble",
-        action: async () => {
+        action: () => {
             getCanvasElementManager()?.addChildCanvasElement?.();
         },
     },
@@ -557,42 +595,42 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         id: "bubbleStyle",
         l10nId: "EditTab.Toolbox.ComicTool.Options.Style",
         englishLabel: "Style",
-        canvasToolsControl: placeholderPanelControl,
+        canvasToolsControl: BubbleStylePanelControl,
     },
     showTail: {
         kind: "panel",
         id: "showTail",
         l10nId: "EditTab.Toolbox.ComicTool.Options.ShowTail",
         englishLabel: "Show Tail",
-        canvasToolsControl: placeholderPanelControl,
+        canvasToolsControl: ShowTailPanelControl,
     },
     roundedCorners: {
         kind: "panel",
         id: "roundedCorners",
         l10nId: "EditTab.Toolbox.ComicTool.Options.RoundedCorners",
         englishLabel: "Rounded Corners",
-        canvasToolsControl: placeholderPanelControl,
+        canvasToolsControl: RoundedCornersPanelControl,
     },
     textColor: {
         kind: "panel",
         id: "textColor",
         l10nId: "EditTab.Toolbox.ComicTool.Options.TextColor",
         englishLabel: "Text Color",
-        canvasToolsControl: placeholderPanelControl,
+        canvasToolsControl: TextColorPanelControl,
     },
     backgroundColor: {
         kind: "panel",
         id: "backgroundColor",
         l10nId: "EditTab.Toolbox.ComicTool.Options.BackgroundColor",
         englishLabel: "Background Color",
-        canvasToolsControl: placeholderPanelControl,
+        canvasToolsControl: BackgroundColorPanelControl,
     },
     outlineColor: {
         kind: "panel",
         id: "outlineColor",
         l10nId: "EditTab.Toolbox.ComicTool.Options.OutlineColor",
         englishLabel: "Outline Color",
-        canvasToolsControl: placeholderPanelControl,
+        canvasToolsControl: OutlineColorPanelControl,
     },
     setDestination: {
         kind: "command",
@@ -604,9 +642,11 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         toolbar: {
             relativeSize: 0.8,
         },
-        action: async (ctx, runtime) => {
+        action: (ctx, runtime) => {
             runtime.closeMenu(true);
 
+            // For navigation canvas elements we keep the destination on the canvas
+            // element itself (not on any nested image container).
             const currentUrl =
                 ctx.canvasElement.getAttribute("data-href") ?? "";
             showLinkTargetChooserDialog(currentUrl, (newUrl) => {
@@ -633,6 +673,9 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                     return null;
                 }
 
+                // This toolbar node is built with React.createElement (not JSX).
+                // Use plain style objects here: passing Emotion's css prop through
+                // createElement would serialize to a literal DOM attribute.
                 return React.createElement(
                     React.Fragment,
                     null,
@@ -660,6 +703,8 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                         "span",
                         {
                             style: {
+                                // UX requirement: match the primary-blue affordance
+                                // used by other clickable toolbar text.
                                 color: kBloomBlue,
                                 fontSize: "10px",
                                 marginLeft: "4px",
@@ -674,7 +719,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                 );
             },
         },
-        action: async (ctx, runtime) => {
+        action: (ctx, runtime) => {
             const linkGrid = ctx.canvasElement.getElementsByClassName(
                 "bloom-link-grid",
             )[0] as HTMLElement | undefined;
@@ -692,7 +737,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
         englishLabel: "Duplicate",
         icon: DuplicateIcon,
-        action: async () => {
+        action: () => {
             makeDuplicateOfDragBubble();
         },
     },
@@ -702,7 +747,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         l10nId: "Common.Delete",
         englishLabel: "Delete",
         icon: DeleteIcon,
-        action: async () => {
+        action: () => {
             getCanvasElementManager()?.deleteCurrentCanvasElement?.();
         },
     },
@@ -713,26 +758,20 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         englishLabel: "Draggable",
         icon: CheckIcon,
         menu: {
-            buildMenuItem: (ctx, runtime) => ({
-                id: "toggleDraggable",
-                l10nId: "EditTab.Toolbox.DragActivity.Draggability",
-                englishLabel: "Draggable",
-                subLabelL10nId: "EditTab.Toolbox.DragActivity.DraggabilityMore",
-                icon: React.createElement(CheckIcon, {
-                    style: {
-                        visibility: isDraggable(ctx.canvasElement)
-                            ? "visible"
-                            : "hidden",
-                    },
+            buildMenuItem: (ctx, runtime) =>
+                buildDynamicMenuItemFromControl("toggleDraggable", runtime, {
+                    subLabelL10nId:
+                        "EditTab.Toolbox.DragActivity.DraggabilityMore",
+                    icon: React.createElement(CheckIcon, {
+                        style: {
+                            visibility: isDraggable(ctx.canvasElement)
+                                ? "visible"
+                                : "hidden",
+                        },
+                    }),
                 }),
-                onSelect: async (rowCtx) => {
-                    await (
-                        controlRegistry.toggleDraggable as ICommandControlDefinition
-                    ).action(rowCtx, runtime);
-                },
-            }),
         },
-        action: async (ctx) => {
+        action: (ctx) => {
             toggleDraggability(ctx);
         },
     },
@@ -743,27 +782,24 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         englishLabel: "Part of the right answer",
         icon: CheckIcon,
         menu: {
-            buildMenuItem: (ctx, runtime) => ({
-                id: "togglePartOfRightAnswer",
-                l10nId: "EditTab.Toolbox.DragActivity.PartOfRightAnswer",
-                englishLabel: "Part of the right answer",
-                subLabelL10nId:
-                    "EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2",
-                icon: React.createElement(CheckIcon, {
-                    style: {
-                        visibility: ctx.hasDraggableTarget
-                            ? "visible"
-                            : "hidden",
+            buildMenuItem: (ctx, runtime) =>
+                buildDynamicMenuItemFromControl(
+                    "togglePartOfRightAnswer",
+                    runtime,
+                    {
+                        subLabelL10nId:
+                            "EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2",
+                        icon: React.createElement(CheckIcon, {
+                            style: {
+                                visibility: ctx.hasDraggableTarget
+                                    ? "visible"
+                                    : "hidden",
+                            },
+                        }),
                     },
-                }),
-                onSelect: async (rowCtx) => {
-                    await (
-                        controlRegistry.togglePartOfRightAnswer as ICommandControlDefinition
-                    ).action(rowCtx, runtime);
-                },
-            }),
+                ),
         },
-        action: async (ctx) => {
+        action: (ctx) => {
             togglePartOfRightAnswer(ctx);
         },
     },
@@ -774,7 +810,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         l10nId: "EditTab.Toolbox.DragActivity.ChooseSound",
         englishLabel: "Choose...",
         icon: VolumeUpIcon,
-        action: async () => {},
+        action: () => {},
         menu: {
             buildMenuItem: (ctx, runtime) => {
                 if (ctx.hasText) {

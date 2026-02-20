@@ -35,19 +35,22 @@ const hasRealImage = (img: HTMLImageElement | undefined): boolean => {
     return true;
 };
 
+// Builds the runtime context used to resolve which canvas controls should be
+// shown/enabled for the currently selected canvas element.
 export const buildControlContext = (
     canvasElement: HTMLElement,
 ): IControlContext => {
-    const page = canvasElement.closest(".bloom-page") as HTMLElement | null;
+    const closestPage = canvasElement.closest(".bloom-page");
+    const page = closestPage instanceof HTMLElement ? closestPage : null;
 
     const inferredCanvasElementType = inferCanvasElementType(canvasElement);
     const isKnownType =
         !!inferredCanvasElementType &&
-        Object.prototype.hasOwnProperty.call(
-            canvasElementDefinitions,
-            inferredCanvasElementType,
-        );
+        inferredCanvasElementType in canvasElementDefinitions;
 
+    // Fail soft for unknown/undefined inferred types. We need this because
+    // type is inferred from DOM (not persisted), and mixed-version content can
+    // legitimately produce shapes this build doesn't recognize yet.
     if (!inferredCanvasElementType) {
         const canvasElementId = canvasElement.getAttribute("id");
         const canvasElementClasses = canvasElement.getAttribute("class");
@@ -60,6 +63,7 @@ export const buildControlContext = (
         );
     }
 
+    // "none" intentionally degrades to safest controls rather than throwing.
     const elementType: CanvasElementType = isKnownType
         ? inferredCanvasElementType
         : "none";
@@ -83,9 +87,6 @@ export const buildControlContext = (
     const rectangle = canvasElement.getElementsByClassName(
         "bloom-rectangle",
     )[0] as HTMLElement | undefined;
-
-    const isLinkGrid =
-        canvasElement.getElementsByClassName("bloom-link-grid").length > 0;
     const isBackgroundImage = canvasElement.classList.contains(
         kBackgroundImageClass,
     );
@@ -105,6 +106,9 @@ export const buildControlContext = (
     );
     const hasDraggableId = !!currentDraggableId;
 
+    // Draggability is intentionally constrained for several element kinds and
+    // game states so we don't offer controls that would create invalid or
+    // unsupported game behavior.
     const canToggleDraggability =
         page !== null &&
         isInDraggableGame &&
@@ -135,10 +139,8 @@ export const buildControlContext = (
         rectangleHasBackground:
             rectangle?.classList.contains("bloom-theme-background") ?? false,
         isCropped: !!img?.style?.width,
-        isLinkGrid,
         isNavigationButton: elementType.startsWith("navigation-"),
         isButton,
-        isBookGrid: isLinkGrid,
         isBackgroundImage,
         isSpecialGameElement,
         canModifyImage:

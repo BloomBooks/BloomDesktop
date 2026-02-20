@@ -16,9 +16,8 @@ export default [
     reactPlugin.configs.flat.recommended, // Recommended for react 17+ (new?)
     reactPlugin.configs.flat["jsx-runtime"], // the doc for typescript-eslint does not have the ..., but without it we get a weird error
     // saying TypeError: Unexpected array
-    // recommended for typescript
-    ...tseslint.configs.recommended, // this might be alpha or beta? doc recommends for well-typed code, but comes up undefined.
-    //tseslint.configs.recommendedTypeChecked,
+    // recommended for type-aware typescript linting
+    ...tseslint.configs.recommendedTypeChecked,
     eslintPluginPrettierRecommended, // this object exists, but it seems to be in eslintrc mode, and eslint 9 chokes.
     // Instead, I list it as a plugin and import the rules directly into the rules section.
     //hooksPlugin.configs.recommended,
@@ -68,6 +67,8 @@ export default [
                 ecmaFeatures: {
                     jsx: true,
                 },
+                projectService: true,
+                tsconfigRootDir: import.meta.dirname,
             },
             globals: {
                 // I think this replaces the env section of the old .eslintrc.js
