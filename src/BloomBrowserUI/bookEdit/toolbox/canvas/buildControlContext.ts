@@ -165,6 +165,6 @@ export const buildControlContext = (
         hasDraggableTarget:
             !!currentDraggableId &&
             !!page?.querySelector(`[data-target-of=\"${currentDraggableId}\"]`),
-        textHasAudio: true,
+        textHasAudio: false,
     };
 };
