@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
@@ -197,6 +197,30 @@ namespace Bloom.SafeXml
                 current != null
                 && !(" " + current.GetAttribute("class") + " ").Contains(" " + targetClass + " ")
             )
+                current = current.ParentNode as SafeXmlElement;
+            return current;
+        }
+
+        public SafeXmlElement ParentWithAttribute(string targetAttribute)
+        {
+            var current = ParentElement;
+            while (current != null && !current.HasAttribute(targetAttribute))
+                current = current.ParentNode as SafeXmlElement;
+            return current;
+        }
+
+        /// <summary>
+        /// Get a parent element if any that has the specified value for the specified attribute
+        /// Note: currently if attrVal is empty it will match both parents where the attribute
+        /// is present and empty, and parents that don't have the attribute at all. It is not
+        /// intended that it should be used this way.
+        /// </summary>
+        public SafeXmlElement ParentWithAttributeValue(string targetAttribute, string attrVal)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(attrVal);
+
+            var current = ParentElement;
+            while (current != null && current.GetAttribute(targetAttribute) != attrVal)
                 current = current.ParentNode as SafeXmlElement;
             return current;
         }
