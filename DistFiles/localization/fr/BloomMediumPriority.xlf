@@ -876,7 +876,7 @@
       </trans-unit>
       <trans-unit id="BookSettings.PrintPublishingGroupLabel" sil:dynamic="true">
         <source xml:lang="en">Print Publishing</source>
-        <target xml:lang="fr" state="needs-translation">Print Publishing</target>
+        <target xml:lang="fr" state="translated">Imprimer la publication</target>
         <note>ID: BookSettings.PrintPublishingGroupLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.NormalTextBoxLangsLabel" sil:dynamic="true" approved="yes">
