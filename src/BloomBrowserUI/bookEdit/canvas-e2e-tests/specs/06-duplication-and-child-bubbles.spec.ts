@@ -114,34 +114,30 @@ test("G2: duplicated speech element contains bloom-editable", async ({
 
 // TODO BL-15770: Re-enable after duplicate/delete count transitions are
 // deterministic in shared-mode runs.
-test.fixme(
-    "G5: total element count is correct after duplicate + delete",
-    async ({ canvasTestContext }) => {
-        await createSpeechElement(canvasTestContext);
+test("G5: total element count is correct after duplicate + delete", async ({
+    canvasTestContext,
+}) => {
+    await createSpeechElement(canvasTestContext);
 
-        const afterCreate = await getCanvasElementCount(canvasTestContext);
+    const afterCreate = await getCanvasElementCount(canvasTestContext);
 
-        // Duplicate
-        await duplicateActiveCanvasElementViaUi(canvasTestContext);
-        await expectCanvasElementCountToIncrease(
-            canvasTestContext,
-            afterCreate,
-        );
+    // Duplicate
+    await duplicateActiveCanvasElementViaUi(canvasTestContext);
+    await expectCanvasElementCountToIncrease(canvasTestContext, afterCreate);
 
-        const afterDuplicate = await getCanvasElementCount(canvasTestContext);
+    const afterDuplicate = await getCanvasElementCount(canvasTestContext);
 
-        // Delete the duplicate
-        await deleteActiveCanvasElementViaUi(canvasTestContext);
+    // Delete the duplicate
+    await deleteActiveCanvasElementViaUi(canvasTestContext);
 
-        await expect
-            .poll(async () => {
-                return canvasTestContext.pageFrame
-                    .locator(canvasSelectors.page.canvasElements)
-                    .count();
-            })
-            .toBeLessThan(afterDuplicate);
-    },
-);
+    await expect
+        .poll(async () => {
+            return canvasTestContext.pageFrame
+                .locator(canvasSelectors.page.canvasElements)
+                .count();
+        })
+        .toBeLessThan(afterDuplicate);
+});
 
 // ── G3: Duplicate restrictions – creates exactly one copy ───────────
 

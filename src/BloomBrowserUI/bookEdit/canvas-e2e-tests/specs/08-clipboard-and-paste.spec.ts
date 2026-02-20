@@ -96,6 +96,81 @@ const writeRepoImageToClipboard = async (
     });
 };
 
+const waitForActiveImageToBeNonPlaceholder = async (
+    canvasTestContext: ICanvasPageContext,
+): Promise<boolean> => {
+    const activeImage = canvasTestContext.pageFrame
+        .locator(
+            `${canvasSelectors.page.activeCanvasElement} ${canvasSelectors.page.imageContainer} img`,
+        )
+        .first();
+
+    return expect
+        .poll(
+            async () => {
+                const isVisible = await activeImage
+                    .isVisible()
+                    .catch(() => false);
+                if (!isVisible) {
+                    return false;
+                }
+
+                return activeImage
+                    .evaluate((element) => {
+                        const image = element as HTMLImageElement;
+                        const src = (
+                            image.getAttribute("src") ??
+                            image.src ??
+                            ""
+                        ).toLowerCase();
+                        return (
+                            src !== "" &&
+                            !src.includes("placeholder.png") &&
+                            !image.classList.contains("bloom-imageLoadError")
+                        );
+                    })
+                    .catch(() => false);
+            },
+            {
+                timeout: 15000,
+            },
+        )
+        .toBe(true)
+        .then(
+            () => true,
+            () => false,
+        );
+};
+
+const setActiveImageToRepoImageForTest = async (
+    canvasTestContext: ICanvasPageContext,
+): Promise<boolean> => {
+    const activeImageAssigned = await canvasTestContext.pageFrame
+        .evaluate(() => {
+            const active = document.querySelector<HTMLElement>(
+                '.bloom-canvas-element[data-bloom-active="true"]',
+            );
+            const image = active?.querySelector<HTMLImageElement>(
+                ".bloom-imageContainer img",
+            );
+            if (!image) {
+                return false;
+            }
+
+            image.classList.remove("bloom-imageLoadError");
+            image.parentElement?.classList.remove("bloom-imageLoadError");
+            image.setAttribute("src", "/bloom/images/SIL_Logo_80pxTall.png");
+            return true;
+        })
+        .catch(() => false);
+
+    if (!activeImageAssigned) {
+        return false;
+    }
+
+    return waitForActiveImageToBeNonPlaceholder(canvasTestContext);
+};
+
 const pasteImageIntoActiveElement = async (
     canvasTestContext: ICanvasPageContext,
 ): Promise<boolean> => {
@@ -121,6 +196,17 @@ const pasteImageIntoActiveElement = async (
             type: "note",
             description:
                 "Host clipboard integration blocked image paste; skipping non-placeholder image state assertions in this run.",
+        });
+        return false;
+    }
+
+    const becameNonPlaceholder =
+        await waitForActiveImageToBeNonPlaceholder(canvasTestContext);
+    if (!becameNonPlaceholder) {
+        test.info().annotations.push({
+            type: "note",
+            description:
+                "Paste command completed but active image remained placeholder/loading in this run; skipping non-placeholder assertions.",
         });
         return false;
     }
@@ -348,45 +434,45 @@ test("I-menu: placeholder image disables copy/metadata/reset and enables paste",
 
 // ── I-menu: Non-placeholder image menu states ──────────────────────────
 
-// TODO BL-15770: Re-enable after image metadata enabled-state is deterministic
-// in shared canvas runs.
-test.fixme(
-    "I-menu: non-placeholder image enables copy and metadata commands",
-    async ({ canvasTestContext }) => {
-        await createElementWithRetry({
-            canvasTestContext,
-            paletteItem: "image",
-        });
+test("I-menu: non-placeholder image enables copy and metadata commands", async ({
+    canvasTestContext,
+}) => {
+    const createdIndex = await createElementWithRetry({
+        canvasTestContext,
+        paletteItem: "image",
+    });
 
-        const pasted = await pasteImageIntoActiveElement(canvasTestContext);
-        if (!pasted) {
-            return;
-        }
+    await selectCanvasElementAtIndex(canvasTestContext, createdIndex);
 
-        await openContextMenuFromToolbar(canvasTestContext);
+    const pasted = await setActiveImageToRepoImageForTest(canvasTestContext);
+    expect(
+        pasted,
+        "Expected test setup to assign a real image before asserting non-placeholder menu state.",
+    ).toBe(true);
 
-        await expectContextMenuItemEnabledState(
-            canvasTestContext.pageFrame,
-            "Paste image",
-            true,
-        );
-        await expectContextMenuItemEnabledState(
-            canvasTestContext.pageFrame,
-            "Copy image",
-            true,
-        );
-        await expectContextMenuItemEnabledState(
-            canvasTestContext.pageFrame,
-            "Set image information...",
-            true,
-        );
-        await expectContextMenuItemEnabledState(
-            canvasTestContext.pageFrame,
-            "Reset image",
-            false,
-        );
-    },
-);
+    await openContextMenuFromToolbar(canvasTestContext);
+
+    await expectContextMenuItemEnabledState(
+        canvasTestContext.pageFrame,
+        "Paste image",
+        true,
+    );
+    await expectContextMenuItemEnabledState(
+        canvasTestContext.pageFrame,
+        "Copy image",
+        true,
+    );
+    await expectContextMenuItemEnabledState(
+        canvasTestContext.pageFrame,
+        "Set image information...",
+        true,
+    );
+    await expectContextMenuItemEnabledState(
+        canvasTestContext.pageFrame,
+        "Reset image",
+        false,
+    );
+});
 
 // ── I-menu: Cropped image enables reset ───────────────────────────────
 
@@ -398,10 +484,13 @@ test("I-menu: cropped image enables Reset image", async ({
         paletteItem: "image",
     });
 
-    const pasted = await pasteImageIntoActiveElement(canvasTestContext);
-    if (!pasted) {
-        return;
-    }
+    await selectCanvasElementAtIndex(canvasTestContext, createdIndex);
+
+    const pasted = await setActiveImageToRepoImageForTest(canvasTestContext);
+    expect(
+        pasted,
+        "Expected test setup to assign a real image before asserting cropped-image menu state.",
+    ).toBe(true);
     await setImageCroppedForTest(canvasTestContext.pageFrame, createdIndex);
 
     await openContextMenuFromToolbar(canvasTestContext);

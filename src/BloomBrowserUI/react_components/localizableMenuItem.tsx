@@ -8,6 +8,7 @@ import {
     ListItemIcon,
     ListItemText,
     MenuItem,
+    Typography,
     TypographyProps,
     TypographyPropsVariantOverrides,
 } from "@mui/material";
@@ -45,6 +46,7 @@ interface IBaseLocalizableMenuItemProps {
     subLabelL10nId?: string;
     tooltip?: string;
     featureName?: string;
+    shortcutDisplay?: string;
 }
 
 export interface INestedMenuItemProps extends IBaseLocalizableMenuItemProps {
@@ -79,6 +81,7 @@ export const divider: ILocalizableMenuItemProps = {
 
 const kIconCheckboxAffordance = 28;
 const kEnterpriseStickerAffordance = 28;
+const kShortcutAffordance = 44;
 const menuItemColor = "black";
 
 export const LocalizableMenuItem: React.FunctionComponent<
@@ -148,6 +151,28 @@ export const LocalizableMenuItem: React.FunctionComponent<
         />
     );
 
+    const shortcutElement = props.shortcutDisplay ? (
+        <Typography
+            variant="caption"
+            css={css`
+                color: rgba(0, 0, 0, 0.6);
+                min-width: ${kShortcutAffordance}px;
+                text-align: right;
+                margin-left: 10px;
+                opacity: ${enabled ? undefined : kBloomDisabledOpacity};
+            `}
+        >
+            {props.shortcutDisplay}
+        </Typography>
+    ) : (
+        <div
+            css={css`
+                min-width: ${kShortcutAffordance}px;
+                margin-left: 10px;
+            `}
+        />
+    );
+
     const localizedSubLabel = useL10n("", props.subLabelL10nId ?? null);
     const subLabel =
         props.subLabel ?? props.generatedSubLabel ?? localizedSubLabel;
@@ -191,6 +216,7 @@ export const LocalizableMenuItem: React.FunctionComponent<
                         primary={label + ellipsis}
                         secondary={subLabel !== "" ? subLabel : null} // null is needed to not leave an empty row
                     ></ListItemText>
+                    {shortcutElement}
                     {subscriptionElement}
                 </React.Fragment>
             </MenuItem>

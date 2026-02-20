@@ -22,11 +22,15 @@ import {
 
 // ── Helper: create a speech element and ensure it's active ──────────────
 
-const createSpeechElement = async (canvasTestContext) => {
+const createSpeechElement = async (
+    canvasTestContext,
+    dropOffset?: { x: number; y: number },
+) => {
     const beforeCount = await getCanvasElementCount(canvasTestContext);
     await dragPaletteItemToCanvas({
         canvasContext: canvasTestContext,
         paletteItem: "speech",
+        dropOffset,
     });
     await expectCanvasElementCountToIncrease(canvasTestContext, beforeCount);
     await expectAnyCanvasElementActive(canvasTestContext);
@@ -48,28 +52,31 @@ test("B1: move a canvas element by mouse drag", async ({
 
 // ── B2: Resize from corners ─────────────────────────────────────────────
 
-const corners = [
-    "bottom-right",
-    "bottom-left",
-    "top-right",
-    "top-left",
-] as const;
+test("B2: resize from all corners", async ({ canvasTestContext }) => {
+    const corners = [
+        { corner: "bottom-right", dx: 30, dy: 20 },
+        { corner: "bottom-left", dx: -30, dy: 20 },
+        { corner: "top-right", dx: 30, dy: -20 },
+        { corner: "top-left", dx: -30, dy: -20 },
+    ] as const;
 
-for (const corner of corners) {
-    test(`B2: resize from ${corner} corner`, async ({ canvasTestContext }) => {
-        await createSpeechElement(canvasTestContext);
+    for (const resize of corners) {
+        await createSpeechElement(canvasTestContext, {
+            x: 320,
+            y: 220,
+        });
 
         const { activeElement } = await resizeActiveElementFromCorner(
             canvasTestContext,
-            corner,
-            30,
-            20,
+            resize.corner,
+            resize.dx,
+            resize.dy,
         );
 
         await expectElementVisible(activeElement);
         await expectElementHasPositiveSize(activeElement);
-    });
-}
+    }
+});
 
 // ── B3: Resize from side handles ────────────────────────────────────────
 

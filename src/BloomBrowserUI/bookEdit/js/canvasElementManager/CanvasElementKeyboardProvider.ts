@@ -13,6 +13,10 @@ const kArrowMoveByKey: Record<string, { dx: number; dy: number }> = {
 
 export interface ICanvasElementKeyboardActions {
     deleteCurrentCanvasElement: () => void;
+    duplicateCanvasElement: () => void;
+    copyActiveImageCanvasElement: () => boolean;
+    pasteIntoActiveImageCanvasElement: () => boolean;
+    cutActiveImageCanvasElement: () => boolean;
     moveActiveCanvasElement: (
         dx: number,
         dy: number,
@@ -72,6 +76,45 @@ export class CanvasElementKeyboardProvider {
         if (event.key === "Delete" || event.key === "Backspace") {
             this.actions.deleteCurrentCanvasElement();
             event.preventDefault(); // Prevent default browser back navigation on Backspace
+            return;
+        }
+
+        if (
+            (event.ctrlKey || event.metaKey) &&
+            event.key.toLowerCase() === "d"
+        ) {
+            this.actions.duplicateCanvasElement();
+            event.preventDefault();
+            return;
+        }
+
+        if (
+            (event.ctrlKey || event.metaKey) &&
+            event.key.toLowerCase() === "c"
+        ) {
+            if (this.actions.copyActiveImageCanvasElement()) {
+                event.preventDefault();
+            }
+            return;
+        }
+
+        if (
+            (event.ctrlKey || event.metaKey) &&
+            event.key.toLowerCase() === "v"
+        ) {
+            if (this.actions.pasteIntoActiveImageCanvasElement()) {
+                event.preventDefault();
+            }
+            return;
+        }
+
+        if (
+            (event.ctrlKey || event.metaKey) &&
+            event.key.toLowerCase() === "x"
+        ) {
+            if (this.actions.cutActiveImageCanvasElement()) {
+                event.preventDefault();
+            }
             return;
         }
 

@@ -56,7 +56,7 @@ export const canvasSelectors = {
         contextToolbar: "#canvas-element-context-controls",
         contextToolbarButtons: "#canvas-element-context-controls button",
         contextToolbarMenuButton:
-            '#canvas-element-context-controls button[data-testid="canvas-context-menu-button"], #canvas-element-context-controls button:last-of-type',
+            '#canvas-element-context-controls button[data-testid="canvas-context-menu-button"]',
         contextMenuList: ".MuiMenu-list",
         contextMenuListVisible: ".MuiMenu-list:visible",
         contextMenuItems: ".MuiMenu-list li[role='menuitem']",

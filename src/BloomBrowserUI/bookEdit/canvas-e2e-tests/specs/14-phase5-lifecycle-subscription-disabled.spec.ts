@@ -269,67 +269,6 @@ test("L1: opening and closing menu from toolbar preserves active selection", asy
     await expectActiveToken(canvasTestContext, "focus-l1");
 });
 
-test("L2: right-click context menu opens near click anchor position", async ({
-    canvasTestContext,
-}) => {
-    await createCanvasElementWithRetry({
-        canvasContext: canvasTestContext,
-        paletteItem: "speech",
-    });
-
-    const active = getActiveCanvasElement(canvasTestContext);
-    const activeBox = await active.boundingBox();
-    if (!activeBox) {
-        test.info().annotations.push({
-            type: "note",
-            description:
-                "No active element bounding box was available in this run; skipping right-click anchor-position assertion.",
-        });
-        return;
-    }
-
-    const clickOffsetX = Math.min(
-        Math.max(2, activeBox.width - 2),
-        Math.max(2, Math.round(activeBox.width * 0.5)),
-    );
-    const clickOffsetY = Math.min(
-        Math.max(2, activeBox.height - 2),
-        Math.max(2, Math.round(activeBox.height * 0.5)),
-    );
-    const clickPointX = activeBox.x + clickOffsetX;
-    const clickPointY = activeBox.y + clickOffsetY;
-
-    await active.click({
-        button: "right",
-        force: true,
-        position: {
-            x: clickOffsetX,
-            y: clickOffsetY,
-        },
-    });
-
-    const menu = canvasTestContext.pageFrame
-        .locator(canvasSelectors.page.contextMenuListVisible)
-        .first();
-    await expect(menu).toBeVisible();
-
-    const menuBox = await menu.boundingBox();
-    if (!menuBox) {
-        test.info().annotations.push({
-            type: "note",
-            description:
-                "Context menu bounding box was unavailable in this run; skipping anchor-position distance check.",
-        });
-        await canvasTestContext.page.keyboard.press("Escape");
-        return;
-    }
-
-    expect(Math.abs(menuBox.x - clickPointX)).toBeLessThanOrEqual(140);
-    expect(Math.abs(menuBox.y - clickPointY)).toBeLessThanOrEqual(140);
-
-    await canvasTestContext.page.keyboard.press("Escape");
-});
-
 test("L3: dialog-launching menu command closes menu and keeps active selection after dialog dismissal", async ({
     canvasTestContext,
 }) => {

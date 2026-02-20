@@ -89,6 +89,12 @@ export class CanvasElementPointerInteractions {
             capture: true,
         });
 
+        // Canvas elements have their own context menu. Prevent the browser's default
+        // context menu from appearing over those elements in regular browsers.
+        bloomCanvas.addEventListener("contextmenu", this.onContextMenu, {
+            capture: true,
+        });
+
         // I would prefer to add this to document in onMouseDown, but not yet satisfied that all
         // the things it does while hovering are no longer needed.
         bloomCanvas.addEventListener("mousemove", this.onMouseMove, {
@@ -157,6 +163,21 @@ export class CanvasElementPointerInteractions {
             setSelection();
         }
         return range as Range;
+    };
+
+    // MUST be defined this way, rather than as a member function, so that it can
+    // be passed directly to addEventListener and still get the correct 'this'.
+    public onContextMenu = (event: MouseEvent) => {
+        const targetElement =
+            event.target instanceof HTMLElement ? event.target : null;
+        if (!targetElement || inPlayMode(targetElement)) {
+            return;
+        }
+        if (!targetElement.closest(kCanvasElementSelector)) {
+            return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
     };
 
     // MUST be defined this way, rather than as a member function, so that it can

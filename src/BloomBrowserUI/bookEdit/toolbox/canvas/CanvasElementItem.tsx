@@ -102,6 +102,7 @@ const ondragend = (
         rightTopOffset,
     );
     if (!canvasElement) return;
+    canvasElement.ownerDocument.defaultView?.focus();
     if (extraAction) {
         extraAction(canvasElement);
     }

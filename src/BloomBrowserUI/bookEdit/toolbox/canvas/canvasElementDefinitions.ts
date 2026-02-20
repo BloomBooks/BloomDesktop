@@ -39,7 +39,11 @@ const mergeRules = (...rules: AvailabilityRulesMap[]): AvailabilityRulesMap => {
 
 export const imageCanvasElementDefinition: ICanvasElementDefinition = {
     type: "image",
-    menuSections: ["image", "audio", "wholeElement"],
+    // Shared definition: image elements can appear on standard canvas pages and
+    // also as game pieces created from the Game tool.
+    // `gameDraggable` is intentionally listed here so game pages can surface
+    // draggable commands; availability rules/context keep it hidden on non-game pages.
+    menuSections: ["image", "audio", "gameDraggable", "wholeElement"],
     toolbar: [
         "missingMetadata",
         "chooseImage",
@@ -59,7 +63,11 @@ export const imageCanvasElementDefinition: ICanvasElementDefinition = {
 
 export const videoCanvasElementDefinition: ICanvasElementDefinition = {
     type: "video",
-    menuSections: ["video", "wholeElement"],
+    // Shared definition: video elements are used both in normal canvas editing
+    // and as game pieces on game pages.
+    // `gameDraggable` is game-only in practice; non-game pages resolve this
+    // section to no visible rows via runtime availability.
+    menuSections: ["video", "gameDraggable", "wholeElement"],
     toolbar: ["chooseVideo", "recordVideo", "spacer", "duplicate", "delete"],
     toolPanel: [],
     availabilityRules: mergeRules(
@@ -70,7 +78,11 @@ export const videoCanvasElementDefinition: ICanvasElementDefinition = {
 
 export const soundCanvasElementDefinition: ICanvasElementDefinition = {
     type: "sound",
-    menuSections: ["audio", "wholeElement"],
+    // Shared definition: sound elements are used in regular canvas content and
+    // can also participate in game layouts.
+    // `gameDraggable` is included for game contexts and intentionally resolves
+    // to no rows on non-game pages.
+    menuSections: ["audio", "gameDraggable", "wholeElement"],
     toolbar: ["duplicate", "delete"],
     toolPanel: [],
     availabilityRules: mergeRules(
@@ -81,6 +93,8 @@ export const soundCanvasElementDefinition: ICanvasElementDefinition = {
 
 export const rectangleCanvasElementDefinition: ICanvasElementDefinition = {
     type: "rectangle",
+    // Shared definition: rectangle bubbles are used in standard canvas pages and
+    // can also appear as fixed game pieces.
     menuSections: ["audio", "bubble", "text", "wholeElement"],
     toolbar: ["format", "spacer", "duplicate", "delete"],
     toolPanel: ["bubble", "text", "outline"],
@@ -94,7 +108,11 @@ export const rectangleCanvasElementDefinition: ICanvasElementDefinition = {
 
 export const speechCanvasElementDefinition: ICanvasElementDefinition = {
     type: "speech",
-    menuSections: ["audio", "bubble", "text", "wholeElement"],
+    // Shared definition: speech bubbles are used in normal canvas pages and
+    // are also a primary game piece type.
+    // `gameDraggable` is listed so game pages can expose drag-specific commands;
+    // it remains hidden outside game context.
+    menuSections: ["audio", "bubble", "gameDraggable", "text", "wholeElement"],
     toolbar: ["format", "spacer", "duplicate", "delete"],
     toolPanel: ["bubble", "text", "outline"],
     availabilityRules: mergeRules(
@@ -107,7 +125,11 @@ export const speechCanvasElementDefinition: ICanvasElementDefinition = {
 
 export const captionCanvasElementDefinition: ICanvasElementDefinition = {
     type: "caption",
-    menuSections: ["audio", "bubble", "text", "wholeElement"],
+    // Shared definition: caption elements are used in regular canvas editing
+    // and can also be used as game pieces.
+    // `gameDraggable` is included for game behavior and is not shown on
+    // non-game pages because availability gates it.
+    menuSections: ["audio", "bubble", "gameDraggable", "text", "wholeElement"],
     toolbar: ["format", "spacer", "duplicate", "delete"],
     toolPanel: ["bubble", "text", "outline"],
     availabilityRules: mergeRules(

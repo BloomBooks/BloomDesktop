@@ -26,6 +26,7 @@ import {
 } from "../bloomEditing";
 import {
     EnableAllImageEditing,
+    doImageCommand,
     getImageFromCanvasElement,
     kImageContainerClass,
     SetupMetadataButton,
@@ -322,6 +323,13 @@ export class CanvasElementManager {
             {
                 deleteCurrentCanvasElement:
                     this.deleteCurrentCanvasElement.bind(this),
+                duplicateCanvasElement: this.duplicateCanvasElement.bind(this),
+                copyActiveImageCanvasElement:
+                    this.copyActiveImageCanvasElement.bind(this),
+                pasteIntoActiveImageCanvasElement:
+                    this.pasteIntoActiveImageCanvasElement.bind(this),
+                cutActiveImageCanvasElement:
+                    this.cutActiveImageCanvasElement.bind(this),
                 moveActiveCanvasElement:
                     this.moveActiveCanvasElement.bind(this),
                 getActiveCanvasElement: this.getActiveElement.bind(this),
@@ -3110,6 +3118,66 @@ export class CanvasElementManager {
 
     private static inPlayMode(someElt: Element) {
         return inPlayModeFromPositioning(someElt);
+    }
+
+    public copyActiveImageCanvasElement(): boolean {
+        const active = this.getActiveElement();
+        if (!active) {
+            return false;
+        }
+
+        const img = getImageFromCanvasElement(active);
+        if (
+            !img ||
+            isPlaceHolderImage(img.getAttribute("src")) ||
+            img.classList.contains("bloom-imageLoadError") ||
+            img.parentElement?.classList.contains("bloom-imageLoadError")
+        ) {
+            return false;
+        }
+
+        doImageCommand(img, "copy");
+        return true;
+    }
+
+    public pasteIntoActiveImageCanvasElement(): boolean {
+        const active = this.getActiveElement();
+        if (!active) {
+            return false;
+        }
+
+        const img = getImageFromCanvasElement(active);
+        if (
+            !img ||
+            img.parentElement?.classList.contains("bloom-unmodifiable-image")
+        ) {
+            return false;
+        }
+
+        doImageCommand(img, "paste");
+        return true;
+    }
+
+    public cutActiveImageCanvasElement(): boolean {
+        const active = this.getActiveElement();
+        if (!active) {
+            return false;
+        }
+
+        const img = getImageFromCanvasElement(active);
+        if (
+            !img ||
+            img.parentElement?.classList.contains("bloom-unmodifiable-image")
+        ) {
+            return false;
+        }
+
+        if (!this.copyActiveImageCanvasElement()) {
+            return false;
+        }
+
+        this.deleteCurrentCanvasElement();
+        return true;
     }
 
     public deleteCurrentCanvasElement(): void {

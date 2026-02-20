@@ -192,6 +192,7 @@ export const test = base.extend<ICanvasFixtures, ICanvasWorkerFixtures>({
             const canvasContext = await openCanvasToolOnCurrentPage(page, {
                 navigate: false,
             });
+            await dismissCanvasDialogsIfPresent(canvasContext);
             await removeCanvasElementsDownToCount(
                 canvasContext,
                 sharedCanvasBaselineCount,
