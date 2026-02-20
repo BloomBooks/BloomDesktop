@@ -292,7 +292,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     l10nId: null,
                     english: "",
                     subLabelL10nId: row.helpRowL10nId,
-                    subLabel: row.helpRowEnglish,
+                    generatedSubLabel: row.helpRowEnglish,
                     onClick: () => {},
                     disabled: true,
                     dontGiveAffordanceForCheckbox: true,
