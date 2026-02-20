@@ -385,18 +385,28 @@ namespace Bloom.TeamCollection
             {
                 var joinType = FolderTeamCollection.JoinCollectionTeam();
                 ReactDialog.CloseCurrentModal();
-
-                Analytics.Track(
-                    "TeamCollectionJoin",
-                    new Dictionary<string, string>()
-                    {
-                        { "CollectionId", _settings?.CollectionId },
-                        { "CollectionName", _settings?.CollectionName },
-                        { "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
-                        { "User", CurrentUser },
-                        { "JoinType", joinType }, // create, open, or merge
-                    }
-                );
+                // If this is null, something went badly wrong, and should have already been reported.
+                // We haven't joined the TC, so don't track it.
+                // This check was added in connection with problems when the TC we're trying to join
+                // doesn't have an "other" folder, or it doesn't have the zip that contains the .bloomCollection
+                // file. Such a problem will usually be detected and reported long before we open the
+                // dialog, so there's no likely path to this happening. The file would have to
+                // disappear between when we open the dialog and when we click the button to join.
+                // But we may as well handle the situation properly.
+                if (!string.IsNullOrEmpty(joinType))
+                {
+                    Analytics.Track(
+                        "TeamCollectionJoin",
+                        new Dictionary<string, string>()
+                        {
+                            { "CollectionId", _settings?.CollectionId },
+                            { "CollectionName", _settings?.CollectionName },
+                            { "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
+                            { "User", CurrentUser },
+                            { "JoinType", joinType }, // create, open, or merge
+                        }
+                    );
+                }
 
                 request.PostSucceeded();
             }
