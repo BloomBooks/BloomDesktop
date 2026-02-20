@@ -1,7 +1,7 @@
 import { css, ThemeProvider } from "@emotion/react";
 
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import "./canvasTool.less";
 import { getEditTabBundleExports } from "../../js/bloomFrames";
@@ -102,9 +102,9 @@ const CanvasToolControls: React.FunctionComponent = () => {
     // don't currently allow it to be used; it is partly historical,
     // and partly we want to show a special message if someone tries to use it there.
     const [pageTypeForbidsCanvasTools, setPageTypeForbidsCanvasTools] =
-        useState(true);
+        useState(ToolboxToolReactAdaptor.isXmatter(true));
     // This 'counter' increments on new page ready so we can re-check if the book is locked.
-    const [pageRefreshIndicator, setPageRefreshIndicator] = useState(0);
+    const [_pageRefreshIndicator, setPageRefreshIndicator] = useState(0);
 
     // While renaming Comic -> Overlay, I (gjm) intentionally left several (21) "keys" with
     // the old "ComicTool" to avoid the whole deprecate/invalidate/retranslate issue.
@@ -142,9 +142,27 @@ const CanvasToolControls: React.FunctionComponent = () => {
     const [currentBubble, setCurrentBubble] = useState<Bubble | undefined>(
         undefined,
     );
+    const lastPolledTypeRef = useRef<CanvasElementType>(undefined);
+    const lastPolledBubbleRef = useRef<Bubble | undefined>(undefined);
 
     // Callback to initialize bubbleEditing and get the initial bubbleSpec
-    const bubbleSpecInitialization = () => {
+    const getBubbleType = useCallback(
+        (mgr: CanvasElementManager | undefined): CanvasElementType => {
+            if (!mgr) {
+                return undefined;
+            }
+            if (!mgr.getActiveElement()) {
+                return undefined;
+            }
+            if (mgr.isActiveElementPictureCanvasElement()) {
+                return "image";
+            }
+            return mgr.isActiveElementVideoCanvasElement() ? "video" : "text";
+        },
+        [],
+    );
+
+    const bubbleSpecInitialization = useCallback(() => {
         const canvasElementManager = getCanvasElementManager();
         if (!canvasElementManager) {
             console.assert(
@@ -165,28 +183,80 @@ const CanvasToolControls: React.FunctionComponent = () => {
             "canvasElement",
             (bubble: Bubble | undefined) => {
                 setCurrentBubble(bubble);
+                setCanvasElementType(getBubbleType(canvasElementManager));
             },
         );
 
         setCurrentBubble(bubble);
-    };
+        setCanvasElementType(getBubbleType(canvasElementManager));
+    }, [getBubbleType]);
 
-    // Enhance: if we don't want to have a static, or don't want
-    // this function to know about CanvasTool, we could just pass
-    // a setter for this as a property.
-    // In production, CanvasTool.theOneCanvasTool is always defined here.
-    // During hot module reloading in dev mode, somehow it is sometimes not.
-    // In such cases the initialization should already have been done.
-    if (CanvasTool.theOneCanvasTool) {
-        CanvasTool.theOneCanvasTool.callOnNewPageReady = () => {
-            bubbleSpecInitialization();
-            setPageTypeForbidsCanvasTools(
-                ToolboxToolReactAdaptor.isXmatter(true),
-            );
-            const count = pageRefreshIndicator;
-            setPageRefreshIndicator(count + 1);
+    const refreshFromCurrentPage = useCallback(() => {
+        bubbleSpecInitialization();
+        setPageTypeForbidsCanvasTools(ToolboxToolReactAdaptor.isXmatter(true));
+        setPageRefreshIndicator((count) => count + 1);
+    }, [bubbleSpecInitialization]);
+
+    useEffect(() => {
+        let wiredCanvasTool: CanvasTool | undefined;
+        let retryTimer: number | undefined;
+
+        const wireCanvasTool = (): boolean => {
+            const canvasTool = CanvasTool.theOneCanvasTool;
+            if (!canvasTool) {
+                return false;
+            }
+
+            canvasTool.callOnNewPageReady = refreshFromCurrentPage;
+            wiredCanvasTool = canvasTool;
+
+            // Make sure the initial mount reflects the current page state even if
+            // newPageReady fired before this component finished mounting.
+            refreshFromCurrentPage();
+            return true;
         };
-    }
+
+        if (!wireCanvasTool()) {
+            retryTimer = window.setInterval(() => {
+                if (wireCanvasTool() && retryTimer !== undefined) {
+                    window.clearInterval(retryTimer);
+                    retryTimer = undefined;
+                }
+            }, 200);
+        }
+
+        return () => {
+            if (retryTimer !== undefined) {
+                window.clearInterval(retryTimer);
+            }
+            if (wiredCanvasTool) {
+                wiredCanvasTool.callOnNewPageReady = () => undefined;
+            }
+        };
+    }, [refreshFromCurrentPage]);
+
+    // Keep controls synced with current canvas selection, even if a focus/click path
+    // fails to trigger the usual canvasElement change notification.
+    useEffect(() => {
+        const pollTimer = window.setInterval(() => {
+            const manager = getCanvasElementManager();
+            const polledType = getBubbleType(manager);
+            if (polledType !== lastPolledTypeRef.current) {
+                lastPolledTypeRef.current = polledType;
+                setCanvasElementType(polledType);
+            }
+
+            const polledBubble = manager?.getPatriarchBubbleOfActiveElement();
+            if (polledBubble !== lastPolledBubbleRef.current) {
+                lastPolledBubbleRef.current = polledBubble;
+                setCurrentBubble(polledBubble);
+            }
+        }, 250);
+
+        return () => {
+            window.clearInterval(pollTimer);
+        };
+    }, [getBubbleType]);
 
     // Reset UI when current bubble spec changes (e.g. user clicked on a bubble).
     useEffect(() => {
@@ -228,22 +298,10 @@ const CanvasToolControls: React.FunctionComponent = () => {
                 setTextColorSwatch(newSwatch);
             }
         } else {
-            setCanvasElementType(undefined);
+            setCanvasElementType(getBubbleType(getCanvasElementManager()));
             setImageFillMode(kImageFillModePaddedValue);
         }
-    }, [currentBubble]);
-
-    const getBubbleType = (
-        mgr: CanvasElementManager | undefined,
-    ): CanvasElementType => {
-        if (!mgr) {
-            return undefined;
-        }
-        if (mgr.isActiveElementPictureCanvasElement()) {
-            return "image";
-        }
-        return mgr.isActiveElementVideoCanvasElement() ? "video" : "text";
-    };
+    }, [currentBubble, getBubbleType]);
 
     // Callback for style changed
     const handleStyleChanged = (event) => {
@@ -631,6 +689,8 @@ const CanvasToolControls: React.FunctionComponent = () => {
     );
 
     const activeElement = canvasElementManager?.getActiveElement();
+    const effectiveCanvasElementType =
+        getBubbleType(canvasElementManager) ?? canvasElementType;
     const isButton =
         activeElement?.classList.contains(kBloomButtonClass) ?? false;
     const hasImage =
@@ -712,7 +772,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
                     {hasImage && imageFillControl}
                 </>
             );
-        switch (canvasElementType) {
+        switch (effectiveCanvasElementType) {
             case "image":
             case "video":
                 return noControlsSection;
@@ -1035,7 +1095,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                 <div
                                     id={"canvasToolControlOptionsRegion"}
                                     className={
-                                        canvasElementType &&
+                                        effectiveCanvasElementType &&
                                         !pageTypeForbidsCanvasTools
                                             ? ""
                                             : "disabled"

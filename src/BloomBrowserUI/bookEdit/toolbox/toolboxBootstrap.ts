@@ -30,6 +30,7 @@ import {
 import { activateLongPressFor } from "../js/bloomEditing";
 import { IAudioRecorder } from "./talkingBook/IAudioRecorder";
 import { theOneAudioRecorder } from "./talkingBook/audioRecording";
+import { renderToolboxRoot } from "./ToolboxRoot";
 
 export interface IToolboxFrameExports {
     addWordListChangedListener(
@@ -113,6 +114,7 @@ export function copyLeveledReaderStatsToClipboard() {
 }
 
 $(document).ready(() => {
+    renderToolboxRoot();
     getTheOneToolbox().initialize();
 });
 
