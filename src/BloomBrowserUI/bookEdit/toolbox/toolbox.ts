@@ -1127,8 +1127,12 @@ function handlePageEditing(
     // would mean we already have a page content delay in place and should not add another.
     // However, the markup changes that we are making here are stripped out by Save anyway,
     // so I don't believe we need to worry about suppressing saves while we're doing this.
-    keypressTimer = setTimeout(async () => {
-        // This happens 500ms after the user stops typing.
+    // We'll initially try this mainTask after 500ms. If the user types another key before that,
+    // the code above will cancel that and start a new 500ms timer, so we won't do the mainTask
+    // until 500ms after the user stops typing. Also, if we find that the selection state is
+    // (perhaps temporarily) invalid for doing the markup, we'll try again a few times with a
+    // shorter delay, and if it still isn't valid, we'll just give up until the next keyup or paste.
+    const mainTask = async (remainingRetries: number) => {
         const page: HTMLIFrameElement = <HTMLIFrameElement>(
             parent.window.document.getElementById("page")
         );
@@ -1149,12 +1153,10 @@ function handlePageEditing(
         if (selectionStateIsInvalidForMarkup) {
             // Copilot suggested that there are some cases after a paste where the selection
             // is only temporarily a range, so it's worth trying again a few times.
-            if (remainingRetriesForInvalidSelectionState > 0) {
-                setTimeout(
-                    () =>
-                        handlePageEditing(
-                            remainingRetriesForInvalidSelectionState - 1,
-                        ),
+            // This callback can also be canceled by a new keypress etc.
+            if (remainingRetries > 0) {
+                keypressTimer = setTimeout(
+                    () => mainTask(remainingRetries - 1),
                     retryDelayForPasteMarkupUpdateInMilliseconds,
                 );
             }
@@ -1278,7 +1280,11 @@ function handlePageEditing(
         }
         // clear this value to prevent unnecessary calls to clearTimeout() for timeouts that have already expired.
         keypressTimer = null;
-    }, 500);
+    };
+    keypressTimer = setTimeout(
+        () => mainTask(remainingRetriesForInvalidSelectionState),
+        500,
+    );
 }
 
 function RemoveNonPTags(editableDivHtml: string): string {
