@@ -1642,21 +1642,34 @@ svg.bloom-videoControl {
     }
 }
 
+// Detector above the canvas so we can detect hover and clicks of playback controls
+.bloom-videoMouseDetector {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    z-index: @canvasElementCanvasZIndex + 1;
+}
+
 // Show pause and replay when playing and hovered.
-.bloom-videoContainer.playing:hover {
-    .bloom-videoControlContainer {
-        &.bloom-videoPauseIcon,
-        &.bloom-videoReplayIcon {
-            display: flex;
+.bloom-videoContainer.playing {
+    .bloom-videoMouseDetector:hover {
+        .bloom-videoControlContainer {
+            &.bloom-videoPauseIcon,
+            &.bloom-videoReplayIcon {
+                display: flex;
+            }
         }
     }
 }
 
 // Show play, centered, when hovering a video that is not paused or playing
-.bloom-videoContainer:not(.paused):not(.playing):hover {
-    .bloom-videoPlayIcon {
-        display: flex;
-        left: calc(50% - @videoIconSize / 2);
+.bloom-videoContainer:not(.paused):not(.playing) {
+    .bloom-videoMouseDetector:hover {
+        .bloom-videoPlayIcon {
+            display: flex;
+            left: calc(50% - @videoIconSize / 2);
+        }
     }
 }
 
@@ -1672,6 +1685,13 @@ svg.bloom-videoControl {
     .bloom-videoPlayIcon {
         display: none;
     }
+}
+
+// TODO copilot did this and it works but I'm not sure it's the right fix. Let's see if HandlePlayClick gets fixed in BL-15936
+// For draggable videos in Play Mode, disable pointer events on the mouse detector
+// so clicks can pass through to the drag system which handles playback
+.drag-activity-play [data-draggable-id] .bloom-videoMouseDetector {
+    pointer-events: none;
 }
 
 // If the background image hasn't been set in a game, we don't want to show the placeholder image.

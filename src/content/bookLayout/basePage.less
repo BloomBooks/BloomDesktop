@@ -336,9 +336,6 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
             background-size: contain;
         }
 
-        // above canvas so we can click playback controls
-        z-index: @canvasElementCanvasZIndex + 1;
-
         video {
             // I don't know exactly why this works, but it makes the video shrink to fit,
             // keep its aspect ratio, and center in whatever direction is not filled.
