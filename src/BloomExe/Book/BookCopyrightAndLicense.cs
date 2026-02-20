@@ -85,7 +85,10 @@ namespace Bloom.Book
             {
                 try
                 {
-                    metadata.License = CreativeCommonsLicense.FromLicenseUrl(licenseUrl);
+                    metadata.License =
+                        CreativeCommonsLicenseInfo.CreateCreativeCommonsLicenseInfoFromUrl(
+                            licenseUrl
+                        );
                 }
                 catch (IndexOutOfRangeException)
                 {
@@ -94,7 +97,10 @@ namespace Bloom.Book
                     if (!licenseUrl.EndsWith("/"))
                         licenseUrl += "/";
                     licenseUrl += CreativeCommonsLicenseInfo.kDefaultVersion;
-                    metadata.License = CreativeCommonsLicense.FromLicenseUrl(licenseUrl);
+                    metadata.License =
+                        CreativeCommonsLicenseInfo.CreateCreativeCommonsLicenseInfoFromUrl(
+                            licenseUrl
+                        );
                 }
                 catch (Exception e)
                 {
@@ -154,7 +160,7 @@ namespace Bloom.Book
             Logger.WriteEvent(
                 "For BL-3166 Investigation: GetMetadata() setting to default license"
             );
-            metadata.License = new CreativeCommonsLicense(
+            metadata.License = new CreativeCommonsLicenseInfo(
                 true,
                 true,
                 CreativeCommonsLicenseInfo.DerivativeRules.Derivatives

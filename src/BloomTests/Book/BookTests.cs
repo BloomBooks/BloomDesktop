@@ -4213,10 +4213,11 @@ namespace BloomTests.Book
             var book = CreateBook();
 
             // Creative Commons License
-            var licenseData = new Metadata();
-            licenseData.License = CreativeCommonsLicense.FromLicenseUrl(
-                "http://creativecommons.org/licenses/by-sa/3.0/"
-            );
+            var licenseData = new MetadataCore();
+            licenseData.License =
+                CreativeCommonsLicenseInfo.CreateCreativeCommonsLicenseInfoFromUrl(
+                    "http://creativecommons.org/licenses/by-sa/3.0/"
+                );
             licenseData.License.RightsStatement =
                 "Please acknowledge nicely to joe.blow@example.com";
 

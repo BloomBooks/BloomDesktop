@@ -245,7 +245,7 @@ namespace BloomTests.Book
             var dom = new HtmlDom(
                 @"<html ><head></head><body>
                 <div id='bloomDataDiv'>
-                    
+
                 </div>
                 <div class='bloom-page' id='guid2'>
                     <div class=""bloom-canvas bloom-has-canvas-element"" data-imgsizebasedon=""649,231"" >

@@ -13,6 +13,8 @@ This plan is library-first: Bloom should avoid custom workaround logic where a c
 - Replaced most concrete-license checks (`CreativeCommonsLicense`, `CustomLicense`) with core type checks (`CreativeCommonsLicenseInfo`, `CustomLicenseInfo`) in domain logic.
 - Widened several non-UI method signatures from `Metadata` to `MetadataCore`.
 - Updated tests/build to compile with the widened signatures.
+- Converted additional core construction sites to instantiate core types directly (`MetadataCore`, `CreativeCommonsLicenseInfo`) instead of WinForms concrete types where behavior is equivalent.
+- Updated more test construction sites to use `MetadataCore`/`CreativeCommonsLicenseInfo` when no WinForms-specific behavior is needed.
 - Removed additional stale `SIL.Windows.Forms.ClearShare` imports from non-UI/domain files now using core types:
    - `src/BloomExe/Book/Book.cs`
    - `src/BloomExe/Book/BookInfo.cs`
@@ -25,6 +27,13 @@ This plan is library-first: Bloom should avoid custom workaround logic where a c
 - Remaining `using SIL.Windows.Forms.ClearShare;` in `BloomExe`: **7 files**.
 - Remaining `ILicenseWithImage` / `GetImage()` license-image dependencies: `BookCopyrightAndLicense` and `CopyrightAndLicenseApi`.
 - Remaining WinForms-dependent image metadata entrypoint: `RobustFileIO.MetadataFromFile()` and downstream image-edit/credit flows.
+
+### Audit status vs `master` (2026-02-19)
+- Audited all ClearShare-related changes currently in the branch delta (`Book`, `BookInfo`, `ImageUpdater`, `EditingModel`, `BookCopyrightAndLicense`, `CopyrightAndLicenseApi`, and related tests).
+- Confirmed core-first signatures and core license/type checks are now used across these domain paths.
+- Confirmed current `MetadataCore` → WinForms `Metadata` adaptation is limited to image-edit/save boundaries.
+- Fixed an unsafe runtime cast in `CopyrightAndLicenseApi` image POST handling by using a dedicated WinForms-`Metadata` construction path at the image boundary.
+- No additional branch-delta locations were found where core types could be safely substituted without crossing known libpalaso boundary constraints.
 
 ### Commits on branch
 - `8ac9cc809f` — core license info checks in Bloom domain logic
@@ -203,6 +212,10 @@ This section lists what still needs Bloom changes after/beside library updates.
 - Highest risk area is image metadata/toolbox integration due to callback type boundaries.
 - Next risk is image-license icon rendering transition away from `ILicenseWithImage`.
 - Domain-license logic risk is lower now that most checks use core info types.
+- Not 100% safe yet (explicitly accepted until library changes):
+   - `CopyrightAndLicenseApi.HandleGetCCImage()` still uses `CreativeCommonsLicense.FromToken(...)` to obtain license images for token-based preview.
+   - `BookCopyrightAndLicense.UpdateBookLicenseIcon()` and `CopyrightAndLicenseApi` still require `ILicenseWithImage` to render/save license icons.
+   - `CopyrightAndLicenseApi` image POST path must still construct WinForms `Metadata` (not `MetadataCore`) before calling image-save/edit flows typed as `Metadata`.
 
 ---
 

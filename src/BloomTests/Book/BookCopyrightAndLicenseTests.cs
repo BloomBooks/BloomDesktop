@@ -9,7 +9,6 @@ using SIL.Core.Desktop.i18n;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.TestUtilities;
-using SIL.Windows.Forms.ClearShare;
 
 namespace BloomTests.Book
 {
@@ -243,7 +242,7 @@ namespace BloomTests.Book
             );
             Assert.IsTrue(creativeCommonsLicense.AttributionRequired); // yes, we got a CC license from the 'en' licenseUrl
             var newLicense = new CustomLicenseInfo();
-            var newMetaData = new Metadata();
+            var newMetaData = new MetadataCore();
             newMetaData.License = newLicense;
             BookCopyrightAndLicense.SetMetadata(newMetaData, dom, null, bookData, false);
             AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@data-book='licenseUrl']");
@@ -256,13 +255,13 @@ namespace BloomTests.Book
             _collectionSettings.Language2Tag = "en";
 
             TestSetLicenseMetdataEffectOnDataDiv(
-                new Metadata()
+                new MetadataCore()
                 {
                     CopyrightNotice = "foo",
-                    License = new CreativeCommonsLicense(
+                    License = new CreativeCommonsLicenseInfo(
                         true,
                         true,
-                        CreativeCommonsLicense.DerivativeRules.Derivatives
+                        CreativeCommonsLicenseInfo.DerivativeRules.Derivatives
                     ),
                 },
                 startingDataDivContent: "",
@@ -275,13 +274,13 @@ namespace BloomTests.Book
         public void SetLicenseMetadata_CCLicense_LicenseImageAddedToDataDiv()
         {
             TestSetLicenseMetdataEffectOnDataDiv(
-                new Metadata()
+                new MetadataCore()
                 {
                     CopyrightNotice = "foo",
-                    License = new CreativeCommonsLicense(
+                    License = new CreativeCommonsLicenseInfo(
                         true,
                         true,
-                        CreativeCommonsLicense.DerivativeRules.Derivatives
+                        CreativeCommonsLicenseInfo.DerivativeRules.Derivatives
                     ),
                 },
                 startingDataDivContent: "",
@@ -294,7 +293,7 @@ namespace BloomTests.Book
         public void SetLicenseMetadata_CustomLicense_LicenseImageRemovedFromDataDiv()
         {
             TestSetLicenseMetdataEffectOnDataDiv(
-                new Metadata() { CopyrightNotice = "foo", License = new CustomLicenseInfo() },
+                new MetadataCore() { CopyrightNotice = "foo", License = new CustomLicenseInfo() },
                 startingDataDivContent: "<div data-book='licenseImage' lang='*'>license.png</div>",
                 xpath: "//*[@data-book='licenseImage']",
                 expectedCount: 0
@@ -305,7 +304,7 @@ namespace BloomTests.Book
         public void SetLicenseMetadata_NullLicense_LicenseImageRemovedFromDataDiv()
         {
             TestSetLicenseMetdataEffectOnDataDiv(
-                new Metadata() { CopyrightNotice = "foo", License = new NullLicense() },
+                new MetadataCore() { CopyrightNotice = "foo", License = new NullLicense() },
                 startingDataDivContent: "<div data-book='licenseImage' lang='*'>license.png</div>",
                 xpath: "//*[@data-book='licenseImage']",
                 expectedCount: 0
@@ -319,7 +318,7 @@ namespace BloomTests.Book
             // This will probably improve in the future, but for now, the custom rights statement does not have a language.
             // This test makes sure that we don't leave obsolete descriptions around in a preferred language.
             var dom = TestSetLicenseMetdataEffectOnDataDiv(
-                new Metadata()
+                new MetadataCore()
                 {
                     CopyrightNotice = "foo",
                     License = new CustomLicenseInfo() { RightsStatement = "custom rights" },
@@ -341,7 +340,7 @@ namespace BloomTests.Book
         public void SetMetadata_CustomLicense_LicenseImageSrcAndAltAreEmpty()
         {
             TestSetLicenseMetdataEffectOnDataDiv(
-                new Metadata() { CopyrightNotice = "foo", License = new CustomLicenseInfo() },
+                new MetadataCore() { CopyrightNotice = "foo", License = new CustomLicenseInfo() },
                 startingPageContent: "<img data-derived='licenseImage' lang='*' alt='This picture, license.png, is missing or was loading too slowly.'>license.png</img>",
                 xpath: "//img[@data-derived='licenseImage' and (not(@alt) or @alt='') and @src='']",
                 expectedCount: 1

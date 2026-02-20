@@ -118,7 +118,7 @@ namespace Bloom.web.controllers
                     request.ReplyWithJson(intellectualPropertyData);
                     break;
                 case HttpMethods.Post:
-                    metadata = (Metadata)GetMetadataFromJson(request, forBook: false);
+                    metadata = GetImageMetadataFromJson(request);
                     View.Model.SaveThen(
                         () =>
                         { // Saved DOM must be up to date with possibly new imageUrl
@@ -133,7 +133,7 @@ namespace Bloom.web.controllers
                             bool shouldAskUserIfCopyMetadataToAllImages =
                                 wasNormalSuccessfulSave && isNormalImageType;
                             bool copyMetadataToAllImages = shouldAskUserIfCopyMetadataToAllImages
-                                ? View.AskUserIfCopyImageMetadataToAllImages(metadata)
+                                ? View.AskUserIfCopyImageMetadataToAllImages()
                                 : false;
                             if (copyMetadataToAllImages)
                             {
@@ -298,7 +298,26 @@ namespace Bloom.web.controllers
                     );
             }
 
-            var metadata = new Metadata { Creator = settings.copyrightInfo.imageCreator };
+            var metadata = new MetadataCore();
+            PopulateMetadataFromSettings(metadata, settings);
+
+            return metadata;
+        }
+
+        private Metadata GetImageMetadataFromJson(ApiRequest request)
+        {
+            var json = request.RequiredPostJson();
+            var settings = DynamicJson.Parse(json);
+
+            var metadata = new Metadata();
+            PopulateMetadataFromSettings(metadata, settings);
+
+            return metadata;
+        }
+
+        private void PopulateMetadataFromSettings(MetadataCore metadata, dynamic settings)
+        {
+            metadata.Creator = settings.copyrightInfo.imageCreator;
             metadata.SetCopyrightNotice(
                 settings.copyrightInfo.copyrightYear,
                 settings.copyrightInfo.copyrightHolder
@@ -306,7 +325,7 @@ namespace Bloom.web.controllers
 
             if (settings.licenseInfo.licenseType == "creativeCommons")
             {
-                metadata.License = new CreativeCommonsLicense(
+                metadata.License = new CreativeCommonsLicenseInfo(
                     true,
                     settings.licenseInfo.creativeCommonsInfo.allowCommercial == "yes",
                     GetCcDerivativeRule(settings.licenseInfo.creativeCommonsInfo.allowDerivatives)
@@ -320,7 +339,10 @@ namespace Bloom.web.controllers
             }
             else if (settings.licenseInfo.licenseType == "publicDomain")
             {
-                metadata.License = CreativeCommonsLicense.FromToken("cc0");
+                metadata.License =
+                    CreativeCommonsLicenseInfo.CreateCreativeCommonsLicenseInfoFromUrl(
+                        CreativeCommonsLicenseInfo.CC0Url
+                    );
             }
             else if (settings.licenseInfo.licenseType == "contact")
             {
@@ -332,8 +354,6 @@ namespace Bloom.web.controllers
             }
 
             metadata.License.RightsStatement = settings.licenseInfo.rightsStatement;
-
-            return metadata;
         }
     }
 }
