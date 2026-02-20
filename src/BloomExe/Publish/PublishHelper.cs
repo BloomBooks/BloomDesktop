@@ -322,6 +322,9 @@ namespace Bloom.Publish
                     pageElts.Add(page);
             }
 
+            if (pageElts.Count > 0 && pageElts[0].HasClass("outsideFrontCover"))
+                RemoveUnwantedMarginBoxFromCover(pageElts[0]);
+
             RemovePagesByFeatureSystem(book, dom, pageElts, medium, omittedPages);
             RemoveAssetsWhichRequireSubscription(book);
             RemoveClassesAndAttrsToDisableFeatures(
@@ -582,6 +585,30 @@ namespace Bloom.Publish
             Debug.WriteLine(
                 $"RemoveUnwantedContentInternal took {(endRemoveTime - startRemoveTime).TotalMilliseconds} ms"
             );
+        }
+
+        private static void RemoveUnwantedMarginBoxFromCover(SafeXmlElement page)
+        {
+            var marginBoxes = page.SafeSelectNodes(".//div[contains(@class, 'marginBox')]")
+                .Cast<SafeXmlElement>()
+                .ToList();
+
+            if (marginBoxes.Count <= 1)
+                return; // Nothing to remove if there's only one or none
+
+            // Determine which marginBox to keep based on whether the book is using a custom cover
+            var keepCustom = page.HasClass("bloom-custom-cover");
+
+            foreach (var marginBox in marginBoxes)
+            {
+                var isCustomMarginBox = marginBox.HasClass("bloom-customMarginBox");
+
+                // Remove if it doesn't match what we want to keep
+                if (isCustomMarginBox != keepCustom)
+                {
+                    marginBox.ParentNode.RemoveChild(marginBox);
+                }
+            }
         }
 
         /// <summary>
@@ -1056,7 +1083,13 @@ namespace Bloom.Publish
             // Must come after ReallyCropImages, because any cropping for background images is
             // destroyed by SimplifyBackgroundImages.
             SimplifyBackgroundImages(modifiedBook.RawDom);
-            modifiedBook.Save();
+            // We don't need a data-div in a publication; save some space.
+            var dataDiv = modifiedBook.RawDom.SelectSingleNode("//div[@id='bloomDataDiv']");
+            if (dataDiv != null)
+            {
+                dataDiv.ParentElement.RemoveChild(dataDiv);
+            }
+            modifiedBook.Save(true);
             modifiedBook.UpdateSupportFiles();
             return modifiedBook;
         }
@@ -1157,26 +1190,6 @@ namespace Bloom.Publish
                 )
                 {
                     bloomCanvas.RemoveClass("bloom-has-canvas-element");
-                }
-            }
-
-            // We need to clear out these attributes from the data-div, or a later call to update things will try to restore
-            // the background image representation of any cover image.
-            var dataDiv = dom.SelectSingleNode("//div[@id='bloomDataDiv']");
-            var bgImgDataAttrs = HtmlDom.BackgroundImgTupleNames;
-            if (dataDiv != null)
-            {
-                foreach (
-                    var elt in dataDiv
-                        .SafeSelectNodes($".//div[@{bgImgDataAttrs[0]}]")
-                        .Cast<SafeXmlElement>()
-                )
-                {
-                    foreach (var attr in bgImgDataAttrs)
-                    {
-                        if (elt.HasAttribute(attr))
-                            elt.RemoveAttribute(attr);
-                    }
                 }
             }
         }

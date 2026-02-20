@@ -351,7 +351,7 @@ namespace Bloom.Book
 
             _bookDom.EnsureStylesheetLinks(Path.GetFileName(PathToXMatterStylesheet));
 
-            var divBeforeNextFrontMatterPage = _bookDom.RawDom.SelectSingleNode(
+            var divToInsertNextPageAfter = _bookDom.RawDom.SelectSingleNode(
                 "//body/div[@id='bloomDataDiv']"
             );
 
@@ -432,7 +432,7 @@ namespace Bloom.Book
                 )
                 {
                     //note: this is redundant unless this is the 1st backmatterpage in the list
-                    divBeforeNextFrontMatterPage = _bookDom.RawDom.SelectSingleNode(
+                    divToInsertNextPageAfter = _bookDom.RawDom.SelectSingleNode(
                         "//body/div[last()]"
                     );
                 }
@@ -452,10 +452,10 @@ namespace Bloom.Book
                     }
                 }
 
-                _bookDom.RawDom
-                    .SelectSingleNode("//body")
-                    .InsertAfter(newPageDiv, divBeforeNextFrontMatterPage);
-                divBeforeNextFrontMatterPage = newPageDiv;
+                _bookDom
+                    .RawDom.SelectSingleNode("//body")
+                    .InsertAfter(newPageDiv, divToInsertNextPageAfter);
+                divToInsertNextPageAfter = newPageDiv;
 
                 //enhance... this is really ugly. I'm just trying to clear out any remaining "{blah}" left over from the template
                 foreach (

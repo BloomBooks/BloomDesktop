@@ -95,12 +95,19 @@ export default abstract class ToolboxToolReactAdaptor
         page.setAttribute(name, encodeURIComponent(unencodedValue));
     }
 
-    public static isXmatter(): boolean {
+    public static isXmatter(returnFalseForCustomCover = false): boolean {
         const pageClass = this.getBloomPageAttrDecoded("class");
-        return !pageClass
-            ? false // paranoia
-            : pageClass.indexOf("bloom-frontMatter") >= 0 ||
-                  pageClass.indexOf("bloom-backMatter") >= 0;
+        if (!pageClass) return false; // paranoia
+        if (
+            returnFalseForCustomCover &&
+            pageClass.indexOf("bloom-custom-cover") >= 0
+        ) {
+            return false;
+        }
+        return (
+            pageClass.indexOf("bloom-frontMatter") >= 0 ||
+            pageClass.indexOf("bloom-backMatter") >= 0
+        );
     }
 
     public static isCurrentPageABloomGame(): boolean {

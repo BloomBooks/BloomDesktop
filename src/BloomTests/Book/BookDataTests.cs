@@ -159,18 +159,18 @@ namespace BloomTests.Book
 				</div>
 				<div class='bloom-page' id='guid2'>
 					<div class='bloom-translationGroup bloom-clearWhenMakingDerivative'>
-						<div class='bloom-editable' data-book='printingInfo' lang='es'><p>First Edition 2020<br />Second Edition 2023</p></div>
-						<div class='bloom-editable' data-book='printingInfo' lang='z'></div>
-						<div class='bloom-editable' data-book='printingInfo' lang='en'>English here</div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='printingInfo' lang='es'><p>First Edition 2020<br />Second Edition 2023</p></div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='printingInfo' lang='z'></div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='printingInfo' lang='en'>English here</div>
 					</div>
 					<div class='bloom-translationGroup'><!-- No 'clear out derivative stuff' class here. -->
-						<div class='bloom-editable' data-book='randomOtherInfo' lang='es'>Something weird here</div>
-						<div class='bloom-editable' data-book='randomOtherInfo' lang='z'></div>
-						<div class='bloom-editable' data-book='randomOtherInfo' lang='en'>Some other stuff.</div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='randomOtherInfo' lang='es'>Something weird here</div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='randomOtherInfo' lang='z'></div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='randomOtherInfo' lang='en'>Some other stuff.</div>
 					</div>
 					<div class='bloom-translationGroup bloom-clearWhenMakingDerivative'>
-						<div class='bloom-editable' data-book='newNonDerivField' lang='es'>Something that oughta be removed in a new book.</div>
-						<div class='bloom-editable' data-book='newNonDerivField' lang='z'></div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='newNonDerivField' lang='es'>Something that oughta be removed in a new book.</div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='newNonDerivField' lang='z'></div>
 					</div>
 				</div>
 			 </body></html>"
@@ -245,7 +245,7 @@ namespace BloomTests.Book
             var dom = new HtmlDom(
                 @"<html ><head></head><body>
                 <div id='bloomDataDiv'>
-                    
+
                 </div>
                 <div class='bloom-page' id='guid2'>
                     <div class=""bloom-canvas bloom-has-canvas-element"" data-imgsizebasedon=""649,231"" >
@@ -597,13 +597,13 @@ namespace BloomTests.Book
             HtmlDom bookDom = new HtmlDom(
                 @"<html ><head></head><body>
 				<div id='bloomDataDiv'>
-					<div data-book='bookTitle' lang='dcc'>DccTitle</div>
-					<div data-book='bookTitle' lang='en'>EnTitle</div>
+					<div data-book='bookTitle bloom-visibility-code-on' lang='dcc'>DccTitle</div>
+					<div data-book='bookTitle bloom-visibility-code-on' lang='en'>EnTitle</div>
 				</div>
 				<div class='bloom-page cover' id='guid4'>
 					<div class='bloom-translationGroup'>
-						<div class='bloom-editable' data-book='bookTitle' lang='dcc'>DccTitle</div>
-						<div class='bloom-editable' data-book='bookTitle' lang='en'>EnTitle</div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='bookTitle' lang='dcc'>DccTitle</div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='bookTitle' lang='en'>EnTitle</div>
 					</div>
 				</div>
 				<div class='bloom-page titlePage' id='guid5'>
@@ -621,8 +621,8 @@ namespace BloomTests.Book
                 @"<html ><head></head><body>
 				<div class='bloom-page cover' id='guid4'>
 					<div class='bloom-translationGroup'>
-						<div class='bloom-editable' data-book='bookTitle' lang='dcc'>DccTitle</div>
-						<div class='bloom-editable' data-book='bookTitle' lang='en'><p></p></div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='bookTitle' lang='dcc'>DccTitle</div>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='bookTitle' lang='en'><p></p></div>
 					</div>
 				</div>
 			 </body></html>"
@@ -3266,6 +3266,122 @@ namespace BloomTests.Book
             dataPage = data.GetXmatterPageDataAttributeValue("outsideBackCover", "data-page");
             Assert.That(pageNumber, Is.EqualTo(""));
             Assert.That(dataPage, Is.EqualTo("required singleton"));
+        }
+
+        [Test]
+        public void SuckInDataFromEditedDom_ContainsChildData_InactivatesNestedDataAndClassesInDataDiv_ButRestoresInLiveDom()
+        {
+            var bookDom = new HtmlDom(
+                @"<html><head></head><body>
+				<div id='bloomDataDiv'></div>
+				<div class='bloom-page'>
+                    <div class='marginBox bloom-customMarginBox bloom-contains-child-data' data-book='customCover' id='customCover1'></div>
+                    <div class='marginBox bloom-customMarginBox bloom-contains-child-data' data-book='customCover' id='customCover2'></div>
+				</div>
+			</body></html>"
+            );
+            var data = new BookData(bookDom, _collectionSettings, null);
+
+            var editedPageDom = new HtmlDom(
+                @"<html><head></head><body>
+				<div class='bloom-page'>
+					<div class='marginBox bloom-customMarginBox bloom-contains-child-data' data-book='customCover'>
+                        <div data-derived='topic'>Topic Placeholder</div>
+                        <div class='bloom-translationGroup someOtherClass'>
+                            <div class='bloom-editable bloom-visibility-code-on otherClass' data-book='bookTitle' lang='en'>My Title</div>
+						</div>
+						<div data-collection='x'>Collection Value</div>
+						<div data-library='y'>Library Value</div>
+						<div data-xmatter-page='frontCover'>xmatter</div>
+					</div>
+				</div>
+			</body></html>"
+            );
+
+            // SUT. This function first copies the data into the bloomDataDiv, then updates the live DOM to match
+            // So we expect that after this function, the bloomDataDiv will have the inactivated data,
+            // but the live DOM have the normal data in BOTH elements that have the data-book attribute.
+            data.SuckInDataFromEditedDom(editedPageDom);
+
+            // Validate that the bloomDataDiv has the inactivated data and classes
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasNoMatchForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customCover']//*[@data-book or @data-derived or @data-collection or @data-library or @data-xmatter-page]"
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customCover']//*[@data-book-inactive]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customCover']//*[@data-derived-inactive]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customCover']//*[@data-collection-inactive]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customCover']//*[@data-library-inactive]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customCover']//*[@data-xmatter-page-inactive]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customCover']//*[contains(concat(' ', normalize-space(@class), ' '), ' tg-inactive ')]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customCover']//*[contains(concat(' ', normalize-space(@class), ' '), ' edit-inactive ')]",
+                    1
+                );
+
+            // Validate that the live DOM has the normal data and classes in both elements with the main data-book attribute
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page')]//div[contains(@class,'bloom-customMarginBox') and @data-book='customCover']//*[contains(concat(' ', normalize-space(@class), ' '), ' bloom-translationGroup ')]",
+                    2
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page')]//div[contains(@class,'bloom-customMarginBox') and @data-book='customCover']//*[contains(concat(' ', normalize-space(@class), ' '), ' bloom-editable ')]",
+                    2
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasNoMatchForXpath(
+                    "//div[contains(@class,'bloom-page')]//div[contains(@class,'bloom-customMarginBox') and @data-book='customCover']//*[@data-book-inactive or @data-derived-inactive or @data-collection-inactive or @data-library-inactive or @data-xmatter-page-inactive]"
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page')]//div[contains(@class,'bloom-customMarginBox') and @data-book='customCover']//*[@data-book='bookTitle']",
+                    2
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page')]//div[contains(@class,'bloom-customMarginBox') and @data-book='customCover']//*[@data-derived='topic']",
+                    2
+                );
         }
 
         public static CollectionSettings CreateCollection(

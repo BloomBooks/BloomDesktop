@@ -4585,6 +4585,10 @@ namespace Bloom.Book
             var marginBox = GetMarginBox(page);
             if (marginBox == null)
                 return true; // marginBox should not be missing
+            // If we're on a custom cover page, well, I suppose the author can delete
+            // everything if they want.
+            if (marginBox.HasClass("bloom-customMarginBox"))
+                return false;
             var internalNodes = marginBox.ChildNodes.Where(x => x is SafeXmlElement).ToList();
             if (internalNodes.Count == 0)
             {
@@ -4605,16 +4609,26 @@ namespace Bloom.Book
             return false;
         }
 
-        // I think this is more efficient than an xpath, especially since marginBox is usually the last top-level child.
-        static SafeXmlElement GetMarginBox(SafeXmlElement parent)
+        // I think this is more efficient than an xpath, especially since marginBox is usually the last top-level child
+        // (except for cover pages, where there is often an empty custom margin box after the main one).
+        static SafeXmlElement GetMarginBox(SafeXmlElement parent, bool onCustomPage = false)
         {
+            if (parent.HasClass("bloom-page"))
+                onCustomPage = parent.HasClass("bloom-custom-cover");
             foreach (
                 SafeXmlElement child in parent.ChildNodes.Where(x => x is SafeXmlElement).Reverse()
             )
             {
-                if (child.GetAttribute("class").Contains("marginBox"))
-                    return child;
-                var mb = GetMarginBox(child);
+                if (child.HasClass("marginBox"))
+                {
+                    var isCustomMarginBox = child.HasClass("bloom-customMarginBox");
+                    // We'll find the one that is currently relevant.
+                    if (onCustomPage && isCustomMarginBox || !onCustomPage && !isCustomMarginBox)
+                        return child;
+                    continue; // we don't need to search inside either kind of marginBox
+                }
+
+                var mb = GetMarginBox(child, onCustomPage);
                 if (mb != null)
                     return mb;
             }

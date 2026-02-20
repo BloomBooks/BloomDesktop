@@ -611,16 +611,7 @@ namespace Bloom.Publish.BloomPub
             ConvertCoverLinkToRealPageId(modifiedBook);
 
             AddDistributionFile(modifiedBookFolderPath, creator, settings);
-            // Make sure the bookdata we save is consistent with any changes we made (for example,
-            // to attributes of xmatter pages, BL-14907). Such changes are typically not made to the DataDiv itself,
-            // so we need to suck in the data from the edited DOM WITHOUT the DataDiv.
-            var dataDiv = modifiedBook.OurHtmlDom.SelectSingleNode("//div[@id='bloomDataDiv']");
-            var parent = dataDiv.ParentElement;
-            var next = dataDiv.NextSibling;
-            parent.RemoveChild(dataDiv);
-            modifiedBook.BookData.SuckInDataFromEditedDom(modifiedBook.OurHtmlDom);
-            parent.InsertBefore(dataDiv, next);
-            modifiedBook.Save();
+            modifiedBook.Save(true);
 
             return modifiedBook;
         }

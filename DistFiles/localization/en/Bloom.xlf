@@ -1337,6 +1337,18 @@
         <source xml:lang="en">Copy Page</source>
         <note>ID: EditTab.CopyPage</note>
       </trans-unit>
+      <trans-unit id="EditTab.CustomCover.Standard" translate="no">
+        <source xml:lang="en">Standard</source>
+        <note>ID: EditTab.CustomCover.Standard</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomCover.CoverLayout" translate="no">
+        <source xml:lang="en">Cover Layout: </source>
+        <note>ID: EditTab.CustomCover.CoverLayout</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomCover.Custom" translate="no">
+        <source xml:lang="en">Custom</source>
+        <note>ID: EditTab.CustomCover.Custom</note>
+      </trans-unit>
       <trans-unit id="EditTab.CustomPage.ChangeLayout" sil:dynamic="true">
         <source xml:lang="en">Change Layout</source>
         <note>ID: EditTab.CustomPage.ChangeLayout</note>
@@ -2185,6 +2197,10 @@
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace</note>
         <note>A background color that looks like old lace</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BecomeBackground" translate="no">
+        <source xml:lang="en">Become background</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.BecomeBackground</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ChooseVideo" sil:dynamic="true">
         <source xml:lang="en">Choose video from your computer...</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ChooseVideo</note>
@@ -2193,10 +2209,18 @@
         <source xml:lang="en">Copy text</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.CopyText</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.CoverImage" sil:dynamic="true" translate ="no">
+        <source xml:lang="en">Cover Image</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.CoverImage</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Duplicate" sil:dynamic="true">
         <source xml:lang="en">Duplicate</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
         <note>Tooltip for the bubble Duplicate icon</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FieldType" translate ="no">
+        <source xml:lang="en">Field Type:</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.FieldType</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillBackground" sil:dynamic="true" translate ="no">
         <source xml:lang="en">Fill Background</source>
@@ -2219,6 +2243,11 @@
         <source xml:lang="en">Outer Outline Color</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor</note>
         <note>Refers to the Outer Outline Color of the bubble used by the callout</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Language" translate="no">
+        <source xml:lang="en">Language:</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Language</note>
+        <note>Used to switch which alternative of a text overlay is shown</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None" sil:dynamic="true">
         <source xml:lang="en">None</source>
