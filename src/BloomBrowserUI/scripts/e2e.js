@@ -61,8 +61,11 @@ const printUsage = () => {
 
 const assertCurrentPageAvailable = async () => {
     const url = "http://localhost:8089/bloom/CURRENTPAGE";
+    const pagesApiUrl = "http://localhost:8089/bloom/api/pageList/pages";
+    const pageContentApiBase =
+        "http://localhost:8089/bloom/api/pageList/pageContent?page-id=";
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
 
     try {
         const response = await fetch(url, {
@@ -71,6 +74,52 @@ const assertCurrentPageAvailable = async () => {
         });
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
+        }
+
+        const pagesResponse = await fetch(pagesApiUrl, {
+            method: "GET",
+            signal: controller.signal,
+        });
+        if (!pagesResponse.ok) {
+            throw new Error(`HTTP ${pagesResponse.status} from ${pagesApiUrl}`);
+        }
+
+        const pagesData = await pagesResponse.json();
+        const selectedPageId = pagesData?.selectedPageId;
+        const selectedPage = (pagesData?.pages ?? []).find(
+            (pageInfo) => pageInfo.key === selectedPageId,
+        );
+
+        if (!selectedPageId) {
+            console.error(
+                `Canvas E2E preflight failed: Bloom did not report a selected page id. Select a canvas page in Bloom, then rerun 'yarn e2e canvas'.`,
+            );
+            process.exit(1);
+        }
+
+        const pageContentResponse = await fetch(
+            `${pageContentApiBase}${encodeURIComponent(selectedPageId)}`,
+            {
+                method: "GET",
+                signal: controller.signal,
+            },
+        );
+        if (!pageContentResponse.ok) {
+            throw new Error(
+                `HTTP ${pageContentResponse.status} from page content API`,
+            );
+        }
+
+        const pageContentData = await pageContentResponse.json();
+        const pageContent = pageContentData?.content ?? "";
+        const hasCanvasSurface = /\bbloom-canvas\b/i.test(pageContent);
+
+        if (!hasCanvasSurface) {
+            const selectedCaption = selectedPage?.caption ?? selectedPageId;
+            console.error(
+                `CURRENTPAGE is reachable, but the currently selected page ("${selectedCaption}") is not a canvas page (no .bloom-canvas found in page content). Select a canvas page in Bloom, then rerun 'yarn e2e canvas'.`,
+            );
+            process.exit(1);
         }
     } catch (error) {
         console.error(
