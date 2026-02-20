@@ -13,6 +13,7 @@ using Bloom.Utils;
 using Bloom.web;
 using L10NSharp;
 using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom.TeamCollection
 {
@@ -550,6 +551,9 @@ namespace Bloom.TeamCollection
             // allows writing it but not moving/deleting it. But it seems the way our zip
             // utility overwrites files involves something that is not allowed. We need to free
             // it up while we do this.
+            // Note: I'm ignoring the remote possibility that CopyRepoCollectionFilesTo
+            // might fail or return false. If the repo files are for some reason not available,
+            // we will just carry on with the local ones as are they are (having notified the user).
             _collectionLock.UnlockFor(() => CopyRepoCollectionFilesTo(destFolder, _repoFolderPath));
             ExtractFolder(destFolder, _repoFolderPath, "Allowed Words");
             ExtractFolder(destFolder, _repoFolderPath, "Sample Texts");
@@ -631,11 +635,23 @@ namespace Bloom.TeamCollection
             return string.Join(" ", localList);
         }
 
-        private static void CopyRepoCollectionFilesTo(string destFolder, string repoFolder)
+        // Returns true if it was able to do the copy. If false is returned, the user has been notified of the problem.
+        // Some callers may simply exit the program at that point, if not obtaining a local collection file is
+        // catastrophic, like when joining a team collection. Others may choose to ignore it.
+        private static bool CopyRepoCollectionFilesTo(string destFolder, string repoFolder)
         {
             var collectionZipPath = GetRepoProjectFilesZipPath(repoFolder);
             if (!RobustFile.Exists(collectionZipPath))
-                return;
+            {
+                // For now, TC messages are not being localized.
+                var msg = string.Format(
+                    "This Team Collection is missing \"{0}\". See https://docs.bloomlibrary.org/team-collections-problems/",
+                    collectionZipPath
+                );
+                ErrorReport.NotifyUserOfProblem(msg);
+                return false;
+            }
+
             try
             {
                 RobustZip.ExtractFolderFromZip(
@@ -654,7 +670,10 @@ namespace Bloom.TeamCollection
                     "Bloom could not unpack the collection files in your Team Collection",
                     exception: e
                 );
+                return false;
             }
+
+            return true;
         }
 
         private static void SyncColorPaletteFileWithRepo(
@@ -1335,7 +1354,8 @@ namespace Bloom.TeamCollection
         /// <summary>
         /// Called when the user clicks the Join{ and Merge} button in the dialog.
         /// </summary>
-        /// <returns>an indication of the type of join for analytics</returns>
+        /// <returns>an indication of the type of join for analytics (or null if something
+        /// went catastrophically wrong and the join should be aborted)</returns>
         public static string JoinCollectionTeam()
         {
             var repoFolder = Path.GetDirectoryName(_joinCollectionPath);
@@ -1376,6 +1396,8 @@ namespace Bloom.TeamCollection
                 repoFolder,
                 localCollectionFolder
             );
+            if (string.IsNullOrEmpty(_newCollectionToJoin))
+                return null;
             // Soon we will open the new collection, and do a SyncAtStartup. We want that to have some
             // special behavior, but only if joining for the first time.
             if (firstTimeJoin)
@@ -1388,6 +1410,7 @@ namespace Bloom.TeamCollection
         /// in the specified repoFolder. (We could get away without unpacking more than the .bloomCollection
         /// file, but we'll want the others soon, and typically it's not a lot.)
         /// </summary>
+        /// <returns>path to collection file, or null if something went catastrophically wrong</returns>
         public static string SetupMinimumLocalCollectionFilesForRepo(
             string repoFolder,
             string localCollectionFolder
@@ -1395,7 +1418,8 @@ namespace Bloom.TeamCollection
         {
             Directory.CreateDirectory(localCollectionFolder);
             CreateTeamCollectionLinkFile(localCollectionFolder, repoFolder);
-            CopyRepoCollectionFilesTo(localCollectionFolder, repoFolder);
+            if (!CopyRepoCollectionFilesTo(localCollectionFolder, repoFolder))
+                return null;
             return CollectionPath(localCollectionFolder);
         }
 
