@@ -128,7 +128,7 @@
         "@nivo/core": "^0.80.0",
         "@nivo/scatterplot": "^0.80.0",
         "@nivo/tooltip": "^0.80.0",
-        "@sillsdev/config-r": "1.0.0-alpha.15",
+        "@sillsdev/config-r": "1.0.0-alpha.18",
         "@types/filesize": "^5.0.0",
         "@types/react-transition-group": "^4.4.1",
         "@use-it/event-listener": "^0.1.7",
