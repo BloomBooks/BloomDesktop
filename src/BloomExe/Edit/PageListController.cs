@@ -40,6 +40,7 @@ namespace Bloom.Edit
             menuItems.Add(
                 new PageThumbnailList.MenuItemSpec()
                 {
+                    Id = "duplicatePage",
                     Label = LocalizationManager.GetString(
                         "EditTab.DuplicatePageButton",
                         "Duplicate Page"
@@ -51,6 +52,7 @@ namespace Bloom.Edit
             menuItems.Add(
                 new PageThumbnailList.MenuItemSpec()
                 {
+                    Id = "duplicatePageManyTimes",
                     Label = LocalizationManager.GetString(
                         "EditTab.DuplicatePageMultiple",
                         "Duplicate Page Many Times..."
@@ -62,6 +64,7 @@ namespace Bloom.Edit
             menuItems.Add(
                 new PageThumbnailList.MenuItemSpec()
                 {
+                    Id = "copyPage",
                     Label = LocalizationManager.GetString("EditTab.CopyPage", "Copy Page"),
                     EnableFunction = (page) => page != null && _model.CanCopyPage,
                     ExecuteCommand = (page) => _model.CopyPage(page),
@@ -70,6 +73,7 @@ namespace Bloom.Edit
             menuItems.Add(
                 new PageThumbnailList.MenuItemSpec()
                 {
+                    Id = "pastePage",
                     Label = LocalizationManager.GetString("EditTab.PastePage", "Paste Page"),
                     EnableFunction = (page) =>
                         page != null && _model.CanAddPages && _model.GetClipboardHasPage(),
@@ -79,6 +83,7 @@ namespace Bloom.Edit
             menuItems.Add(
                 new PageThumbnailList.MenuItemSpec()
                 {
+                    Id = "removePage",
                     Label = LocalizationManager.GetString(
                         "EditTab.DeletePageButton",
                         "Remove Page"
@@ -94,6 +99,7 @@ namespace Bloom.Edit
             menuItems.Add(
                 new PageThumbnailList.MenuItemSpec()
                 {
+                    Id = "chooseDifferentLayout",
                     Label = LocalizationManager.GetString(
                         "EditTab.ChooseLayoutButton",
                         "Choose Different Layout"

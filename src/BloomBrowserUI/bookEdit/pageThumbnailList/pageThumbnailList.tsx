@@ -8,9 +8,10 @@
 
 import $ from "jquery";
 import { css } from "@emotion/react";
+import { Menu, MenuItem } from "@mui/material";
 
 import * as React from "react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import * as ReactDOM from "react-dom";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
@@ -57,6 +58,20 @@ export interface IPage {
     content: string;
 }
 
+// This must match MenuItemStatus in PageThumbnailList.cs. It is used for receiving data from the
+// server to build the context menu on the client side.  The labels are localized on the server.
+interface IPageMenuItem {
+    id: string;
+    label: string;
+    enabled: boolean;
+}
+
+interface IContextMenuPoint {
+    mouseX: number;
+    mouseY: number;
+    pageId: string;
+}
+
 // This map goes from page ID to a callback that we get from the page thumbnail
 // which should be called when the main Bloom program informs us that
 // the thumbnail needs to be updated.
@@ -75,6 +90,11 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
     // when the websocket detects a request for this.
     const [resetValue, setResetValue] = useState(1);
     const [twoColumns, setTwoColumns] = useState(true);
+    const [contextMenuPoint, setContextMenuPoint] =
+        useState<IContextMenuPoint>();
+    const [contextMenuItems, setContextMenuItems] = useState<IPageMenuItem[]>(
+        [],
+    );
 
     const [selectedPageId, setSelectedPageId] = useState("");
     const bookAttributesThatMayAffectDisplay = useApiData<any>(
@@ -204,7 +224,7 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
     const handleGridItemClick = (e: React.MouseEvent<HTMLDivElement>) => {
         e.stopPropagation();
         e.preventDefault();
-        NotifyCSharpOfClick();
+        closeContextMenu();
 
         // for manual testing
         if (e.getModifierState("Control") && e.getModifierState("Alt")) {
@@ -230,17 +250,54 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
         }
     };
 
+    const closeContextMenu = () => {
+        setContextMenuPoint(undefined);
+        setContextMenuItems([]);
+    };
+
+    const openContextMenu = (pageId: string, x: number, y: number) => {
+        // If the user right-clicks on a page that is not selected, ignore the click and
+        // close any existing context menu.
+        if (pageId !== selectedPageId) {
+            closeContextMenu();
+            return;
+        }
+
+        postJson("pageList/contextMenuItems", { pageId }, (response) => {
+            const menuItems = response.data as IPageMenuItem[];
+            if (!menuItems || menuItems.length === 0) {
+                closeContextMenu();
+                return;
+            }
+
+            setContextMenuItems(menuItems);
+            setContextMenuPoint({
+                mouseX: x - 2,
+                mouseY: y - 4,
+                pageId,
+            });
+        });
+    };
+
+    const onContextMenuItemClick = (commandId: string) => {
+        if (!contextMenuPoint) return;
+
+        postJson("pageList/contextMenuItemClicked", {
+            pageId: contextMenuPoint.pageId,
+            commandId,
+        });
+        closeContextMenu();
+    };
+
     const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
         e.stopPropagation();
         e.preventDefault();
-        NotifyCSharpOfClick();
         if (e.currentTarget) {
             const pageElt = e.currentTarget.closest("[id]")!;
             const pageId = pageElt.getAttribute("id");
-            if (pageId === selectedPageId)
-                postJson("pageList/menuClicked", {
-                    pageId,
-                });
+            if (pageId) {
+                openContextMenu(pageId, e.clientX, e.clientY);
+            }
         }
     };
 
@@ -255,66 +312,63 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
         },
         ...realPageList,
     ];
-    const pages = useMemo(() => {
-        const pages1 = pageList.map((pageContent, index) => {
-            return (
-                <div
-                    key={pageContent.key} // for efficient react manipulation of list
-                    id={pageContent.key} // used by C# code to identify page
-                    data-caption={pageContent.caption}
-                    className={
-                        "gridItem " +
-                        (pageContent.key === "placeholder"
-                            ? " placeholder"
-                            : "") +
-                        (selectedPageId === pageContent.key
-                            ? " gridSelected"
-                            : "")
+    const pages = pageList.map((pageContent, index) => {
+        return (
+            <div
+                key={pageContent.key} // for efficient react manipulation of list
+                id={pageContent.key} // used by C# code to identify page
+                data-caption={pageContent.caption}
+                className={
+                    "gridItem " +
+                    (pageContent.key === "placeholder" ? " placeholder" : "") +
+                    (selectedPageId === pageContent.key ? " gridSelected" : "")
+                }
+                css={css`
+                    .lazyload-wrapper {
+                        height: 100%;
                     }
-                    css={css`
-                        .lazyload-wrapper {
-                            height: 100%;
-                        }
-                    `}
+                `}
+            >
+                <LazyLoad
+                    height={rowHeight}
+                    scrollContainer="#pageGridWrapper"
+                    resize={true} // expand lazy elements as needed when container resizes
                 >
-                    <LazyLoad
-                        height={rowHeight}
-                        scrollContainer="#pageGridWrapper"
-                        resize={true} // expand lazy elements as needed when container resizes
-                    >
-                        <PageThumbnail
-                            page={pageContent}
-                            left={!(index % 2)}
-                            pageLayout={props.pageLayout}
-                            configureReloadCallback={(id, callback) =>
-                                pageIdToRefreshMap.set(id, callback)
-                            }
-                            onClick={handleGridItemClick}
-                            onContextMenu={handleContextMenu}
-                        />
-                        {selectedPageId === pageContent.key && (
-                            <div id="menuIconHolder" className="menuHolder">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="18"
-                                    height="18"
-                                    viewBox="0 0 18 18"
-                                    onClick={() => {
-                                        postJson("pageList/menuClicked", {
-                                            pageId: pageContent.key,
-                                        });
-                                    }}
-                                >
-                                    <path d="M5 8l4 4 4-4z" fill="white" />
-                                </svg>
-                            </div>
-                        )}
-                    </LazyLoad>
-                </div>
-            );
-        });
-        return pages1;
-    }, [pageList]);
+                    <PageThumbnail
+                        page={pageContent}
+                        left={!(index % 2)}
+                        pageLayout={props.pageLayout}
+                        configureReloadCallback={(id, callback) =>
+                            pageIdToRefreshMap.set(id, callback)
+                        }
+                        onClick={handleGridItemClick}
+                        onContextMenu={handleContextMenu}
+                    />
+                    {selectedPageId === pageContent.key && (
+                        <div id="menuIconHolder" className="menuHolder">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="18"
+                                height="18"
+                                viewBox="0 0 18 18"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    openContextMenu(
+                                        pageContent.key,
+                                        e.clientX,
+                                        e.clientY,
+                                    );
+                                }}
+                            >
+                                <path d="M5 8l4 4 4-4z" fill="white" />
+                            </svg>
+                        </div>
+                    )}
+                </LazyLoad>
+            </div>
+        );
+    });
 
     // Set up some objects and functions we need as params for our main element.
     // Some of them come in sets "lg" and "sm". Currently the "lg" (two-column)
@@ -391,6 +445,34 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
             >
                 {pages}
             </Responsive>
+            {contextMenuPoint && (
+                <Menu
+                    keepMounted={true}
+                    open={!!contextMenuPoint}
+                    onClose={closeContextMenu}
+                    anchorReference="anchorPosition"
+                    anchorPosition={{
+                        top: contextMenuPoint.mouseY,
+                        left: contextMenuPoint.mouseX,
+                    }}
+                    disableAutoFocusItem={true} // don't automatically focus the first item
+                >
+                    {contextMenuItems.map((item) => (
+                        <MenuItem
+                            key={item.id}
+                            disabled={!item.enabled}
+                            onClick={() => onContextMenuItemClick(item.id)}
+                            css={css`
+                                font-size: 10pt;
+                                white-space: normal; // allow wrapping of long menu items
+                            `}
+                            dense={true} // reduce vertical padding
+                        >
+                            {item.label}
+                        </MenuItem>
+                    ))}
+                </Menu>
+            )}
         </div>
     );
 };
@@ -402,19 +484,7 @@ $(window).ready(() => {
         <PageList pageLayout={pageLayout} />,
         document.getElementById("pageGridWrapper"),
     );
-
-    // If the user clicks outside of the context menu, we want to close it.
-    // Since it is currently a winforms menu, we do that by sending a message
-    // back to c#-land.
-    // We can remove this in 5.6, or whenever we replace the winforms context menu with a rect menu.
-    $(window).click(() => {
-        NotifyCSharpOfClick();
-    });
 });
-
-function NotifyCSharpOfClick() {
-    (window as any).chrome?.webview?.postMessage("browser-clicked");
-}
 
 // Function invoked when dragging a page ends. Note that it is often
 // called when all the user intended was to click the page, presumably
