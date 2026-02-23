@@ -85,8 +85,23 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                "editView/topBarDropdownClicked",
-                HandleTopBarDropdownClicked,
+                "editView/topBar/contentLanguagesMenu",
+                HandleGetContentLanguagesMenu,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/topBar/contentLanguagesMenuAction",
+                HandleContentLanguagesMenuAction,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/topBar/layoutChoicesMenu",
+                HandleGetLayoutChoicesMenu,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/topBar/layoutChoicesMenuAction",
+                HandleLayoutChoicesMenuAction,
                 true
             );
             apiHandler.RegisterEndpointHandler(
@@ -307,19 +322,34 @@ namespace Bloom.web.controllers
             request.PostSucceeded();
         }
 
-        private void HandleTopBarDropdownClicked(ApiRequest request)
+        private void HandleGetContentLanguagesMenu(ApiRequest request)
         {
-            dynamic data = DynamicJson.Parse(request.RequiredPostJson());
+            request.ReplyWithJson(View.GetContentLanguagesMenuForClient());
+        }
+
+        private void HandleContentLanguagesMenuAction(ApiRequest request)
+        {
+            dynamic data = request.RequiredPostDynamic();
+            var languageTag = (string)data.id;
+            var isChecked = Convert.ToBoolean(data.@checked);
+
             View.Browser.Focus();
-            switch (data.command)
-            {
-                case "contentLanguages":
-                    View.ContentLanguagesDropdownClicked();
-                    break;
-                case "layoutChoices":
-                    View.LayoutChoicesDropdownClicked();
-                    break;
-            }
+            View.HandleContentLanguagesMenuActionForClient(languageTag, isChecked);
+            request.PostSucceeded();
+        }
+
+        private void HandleGetLayoutChoicesMenu(ApiRequest request)
+        {
+            request.ReplyWithJson(View.GetLayoutChoicesMenuForClient());
+        }
+
+        private void HandleLayoutChoicesMenuAction(ApiRequest request)
+        {
+            dynamic data = request.RequiredPostDynamic();
+            var layoutClassName = (string)data.id;
+
+            View.Browser.Focus();
+            View.HandleLayoutChoicesMenuActionForClient(layoutClassName);
             request.PostSucceeded();
         }
 

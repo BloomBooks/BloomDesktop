@@ -32,13 +32,23 @@ namespace Bloom.web.controllers
             );
 
             apiHandler.RegisterEndpointHandler(
-                "workspace/topRight/openLanguageMenu",
-                HandleOpenLanguageMenu,
+                "workspace/topRight/uiLanguageMenu",
+                HandleGetUiLanguageMenu,
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                "workspace/topRight/openHelpMenu",
-                HandleOpenHelpMenu,
+                "workspace/topRight/uiLanguageMenuAction",
+                HandleUiLanguageMenuAction,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "workspace/topRight/helpMenu",
+                HandleGetHelpMenu,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "workspace/topRight/helpMenuAction",
+                HandleHelpMenuAction,
                 true
             );
             apiHandler.RegisterEndpointHandler(
@@ -91,15 +101,29 @@ namespace Bloom.web.controllers
             request.ReplyWithJson(WorkspaceView.GetCurrentUiLanguageLabel());
         }
 
-        private void HandleOpenLanguageMenu(ApiRequest request)
+        private void HandleGetUiLanguageMenu(ApiRequest request)
         {
-            WorkspaceView.ShowUiLanguageMenu();
+            request.ReplyWithJson(WorkspaceView.GetUiLanguageMenuForClient());
+        }
+
+        private void HandleUiLanguageMenuAction(ApiRequest request)
+        {
+            dynamic data = request.RequiredPostDynamic();
+            var id = (string)data.id;
+            WorkspaceView.HandleUiLanguageMenuActionForClient(id);
             request.PostSucceeded();
         }
 
-        private void HandleOpenHelpMenu(ApiRequest request)
+        private void HandleGetHelpMenu(ApiRequest request)
         {
-            WorkspaceView.ShowHelpMenu();
+            request.ReplyWithJson(WorkspaceView.GetHelpMenuForClient());
+        }
+
+        private void HandleHelpMenuAction(ApiRequest request)
+        {
+            dynamic data = request.RequiredPostDynamic();
+            var id = (string)data.id;
+            WorkspaceView.HandleHelpMenuActionForClient(id);
             request.PostSucceeded();
         }
 

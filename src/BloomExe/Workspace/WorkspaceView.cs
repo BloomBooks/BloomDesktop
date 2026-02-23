@@ -52,7 +52,6 @@ namespace Bloom.Workspace
         public static float DPIOfThisAccount;
         private ZoomModel _zoomModel;
         private bool _tabsEnabled = true;
-        private readonly ContextMenuStrip _uiLanguageContextMenu = new ContextMenuStrip();
         private readonly ContextMenuStrip _helpContextMenu = new ContextMenuStrip();
 
         public delegate WorkspaceView Factory();
@@ -185,12 +184,6 @@ namespace Bloom.Workspace
             //
             this._publishView = publishViewFactory();
             this._publishView.WorkspaceView = this;
-
-            // Temporary: while Help/UI language menus are WinForms menus and tabs run in separate browsers,
-            // listen for browser clicks from each main browser so those WinForms menus can close.
-            // Remove once menus are in the single browser UI.
-            if (_mainBrowser != null)
-                _mainBrowser.OnBrowserClick += HandleAnyBrowserClick;
 
             SelectTab(_collectionTabView, _editingView, selectedControlForEvent: null);
 
@@ -537,18 +530,14 @@ namespace Bloom.Workspace
                 return;
 
             EnsureMainBrowserHasWorkspaceRootLoaded();
-            _ = _topBarIframeReactControl.Load(_mainBrowser, "topBarBundle", null, "topBar");
+            _ = _topBarIframeReactControl.Load(
+                _mainBrowser,
+                "topBarBundle",
+                null,
+                "topBar",
+                Color.FromArgb(29, 148, 164)
+            );
             _topBarLoadedIntoIframe = true;
-        }
-
-        // Temporary helper used to close WinForms menus from browser click notifications.
-        // Remove once menus are rendered in the single browser UI.
-        private void HandleAnyBrowserClick(object sender, EventArgs e)
-        {
-            if (_uiLanguageContextMenu.Visible)
-                _uiLanguageContextMenu.Close();
-            if (_helpContextMenu.Visible)
-                _helpContextMenu.Close();
         }
 
         public dynamic GetTabInfoForClient()
@@ -651,16 +640,122 @@ namespace Bloom.Workspace
             return items;
         }
 
-        public void ShowUiLanguageMenu()
+        public object GetUiLanguageMenuForClient()
         {
-            SetupUiLanguageMenu();
-            ShowContextMenu(_uiLanguageContextMenu);
+            var items = new List<object>();
+            var languageItems = GetLanguageItems(onlyActiveItem: false);
+            var current = GetAndNormalizeCurrentUiLanguage();
+
+            foreach (var langItem in languageItems)
+            {
+                items.Add(
+                    new
+                    {
+                        id = $"lang:{langItem.LangTag}",
+                        label = langItem.MenuText,
+                        enabled = true,
+                        @checked = langItem.LangTag == current,
+                    }
+                );
+            }
+
+            items.Add(new { separator = true });
+            items.Add(
+                new
+                {
+                    id = "toggleShowUnapproved",
+                    label = GetShowUnapprovedTranslationsMenuText(),
+                    enabled = true,
+                    @checked = Settings.Default.ShowUnapprovedLocalizations,
+                }
+            );
+            items.Add(new { separator = true });
+            items.Add(
+                new
+                {
+                    id = "helpTranslate",
+                    label = LocalizationManager.GetString(
+                        "CollectionTab.UILanguageMenu.HelpTranslate",
+                        "Help us translate Bloom (web)",
+                        "The final item in the UI Language menu. When clicked, it opens Bloom's page in the Crowdin web-based translation system."
+                    ),
+                    enabled = true,
+                    @checked = false,
+                }
+            );
+
+            return new { items };
         }
 
-        public void ShowHelpMenu()
+        public void HandleUiLanguageMenuActionForClient(string id)
+        {
+            if (String.IsNullOrEmpty(id))
+                return;
+
+            if (id.StartsWith("lang:"))
+            {
+                var langTag = id.Substring("lang:".Length);
+                SetUiLanguage(langTag);
+                return;
+            }
+
+            if (id == "toggleShowUnapproved")
+            {
+                ToggleShowingOnlyApprovedTranslations();
+                return;
+            }
+
+            if (id == "helpTranslate")
+            {
+                ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.LocalizingSystem, null));
+            }
+        }
+
+        public object GetHelpMenuForClient()
         {
             BuildHelpContextMenu();
-            ShowContextMenu(_helpContextMenu);
+            var items = new List<object>();
+
+            foreach (ToolStripItem toolStripItem in _helpContextMenu.Items)
+            {
+                if (toolStripItem is ToolStripSeparator)
+                {
+                    items.Add(new { separator = true });
+                    continue;
+                }
+
+                if (toolStripItem is ToolStripMenuItem menuItem)
+                {
+                    items.Add(
+                        new
+                        {
+                            id = menuItem.Name,
+                            label = menuItem.Text,
+                            enabled = menuItem.Enabled,
+                            @checked = menuItem.Checked,
+                        }
+                    );
+                }
+            }
+
+            return new { items };
+        }
+
+        public void HandleHelpMenuActionForClient(string id)
+        {
+            if (String.IsNullOrEmpty(id))
+                return;
+
+            BuildHelpContextMenu();
+            var menuItem = _helpContextMenu
+                .Items.OfType<ToolStripMenuItem>()
+                .FirstOrDefault(item => item.Name == id);
+            if (menuItem == null)
+                return;
+            if (!menuItem.Enabled)
+                return;
+
+            menuItem.PerformClick();
         }
 
         private void BuildHelpContextMenu()
@@ -689,30 +784,6 @@ namespace Bloom.Workspace
             );
         }
 
-        private void ShowContextMenu(ContextMenuStrip menu)
-        {
-            // Align the menu's right edge with the window's right edge.
-            // Ensures it stays on the same monitor.
-            // But also, it provides more consistency than having it shift left/right
-            // depending on where the mouse is.
-            var host = FindForm();
-            var windowRight = host?.Bounds.Right ?? MousePosition.X;
-            var menuWidth = menu.Width > 0 ? menu.Width : menu.GetPreferredSize(Size.Empty).Width;
-            var x = windowRight - menuWidth;
-            var y = MousePosition.Y + 8;
-
-            var timer = new System.Windows.Forms.Timer { Interval = 10 };
-            timer.Tick += (s, a) =>
-            {
-                menu.Left = x;
-                menu.Top = y;
-                menu.Show(x, y);
-                timer.Stop();
-                timer.Dispose();
-            };
-            timer.Start();
-        }
-
         private void SendZoomInfo()
         {
             _webSocketServer?.SendBundle("workspaceTopRightControls", "zoom", GetZoomInfo());
@@ -733,38 +804,6 @@ namespace Bloom.Workspace
                     () => RestartBloom()
                 );
             }
-        }
-
-        ToolStripMenuItem _showAllTranslationsItem;
-
-        private void SetupUiLanguageMenu()
-        {
-            var items = GetLanguageItems(onlyActiveItem: false);
-            var tooltipFormat = GetUiLanguageTooltipFormat();
-            var current = GetAndNormalizeCurrentUiLanguage();
-            _uiLanguageContextMenu.Items.Clear();
-            AddUiLanguageMenuItems(
-                _uiLanguageContextMenu.Items,
-                items,
-                current,
-                tooltipFormat,
-                checkCurrentItem: true,
-                (langItem) => SetUiLanguage(langItem.LangTag),
-                onCurrentItemAdded: null
-            );
-
-            _uiLanguageContextMenu.Items.Add(new ToolStripSeparator());
-            _showAllTranslationsItem = new ToolStripMenuItem(
-                GetShowUnapprovedTranslationsMenuText()
-            )
-            {
-                Checked = Settings.Default.ShowUnapprovedLocalizations,
-            };
-            _showAllTranslationsItem.Click += (sender, args) =>
-                ToggleShowingOnlyApprovedTranslations();
-            _uiLanguageContextMenu.Items.Add(_showAllTranslationsItem);
-
-            AddHelpTranslateMenuItem(_uiLanguageContextMenu.Items);
         }
 
         private static string GetUiLanguageTooltipFormat()
@@ -836,7 +875,6 @@ namespace Bloom.Workspace
             LocalizationManager.ReturnOnlyApprovedStrings = !Settings
                 .Default
                 .ShowUnapprovedLocalizations;
-            SetupUiLanguageMenu();
             FinishUiLanguageMenuItemClick(); // apply newly revealed/hidden localizations
             // until L10nSharp changes to allow dynamic response to setting change
             Settings.Default.Save();
@@ -963,7 +1001,6 @@ namespace Bloom.Workspace
 
         private void FinishUiLanguageMenuItemClick()
         {
-            _showAllTranslationsItem.Text = GetShowUnapprovedTranslationsMenuText();
             _localizationChangedEvent.Raise(null);
         }
 

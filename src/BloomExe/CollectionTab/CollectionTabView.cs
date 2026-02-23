@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -260,7 +261,8 @@ namespace Bloom.CollectionTab
                 WorkspaceView.MainBrowser,
                 "collectionsTabPaneBundle",
                 null,
-                "collectionTab"
+                "collectionTab",
+                Color.FromArgb(51, 51, 51)
             );
             _loadedIntoIframe = true;
         }

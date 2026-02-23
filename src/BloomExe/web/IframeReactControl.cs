@@ -13,7 +13,8 @@ namespace Bloom.web
             Browser browser,
             string javascriptBundleName,
             object props,
-            string iframeId
+            string iframeId,
+            Color? backColor = null
         )
         {
             if (browser == null)
@@ -26,7 +27,7 @@ namespace Bloom.web
             var html = ReactControl.GetHtmlForReactBundle(
                 javascriptBundleName,
                 props,
-                Color.White,
+                backColor ?? Color.White,
                 hideVerticalOverflow: false
             );
 

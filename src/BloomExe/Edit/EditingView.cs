@@ -37,8 +37,6 @@ namespace Bloom.Edit
     {
         private readonly EditingModel _model;
         private PageListController _pageListView;
-        private ContextMenuStrip _contentLanguagesDropdown = new();
-        private ContextMenuStrip _layoutChoicesDropdown = new();
         private readonly CutCommand _cutCommand;
         private readonly CopyCommand _copyCommand;
         private readonly PasteCommand _pasteCommand;
@@ -52,7 +50,6 @@ namespace Bloom.Edit
         private BloomWebSocketServer _webSocketServer;
         private ZoomModel _zoomModel;
         private PageListApi _pageListApi;
-        private DateTime? _lastTopBarMenuClosedTime;
         private Browser _browser1 => WorkspaceView?.MainBrowser;
         private bool _waitingForFirstEditModeInitialization;
         private bool _workspaceRootDocumentLoaded;
@@ -171,70 +168,9 @@ namespace Bloom.Edit
                 ColorAdjustType.Bitmap
             );
 
-            // Prevent the layout choices and book language dropdown menus from closing
-            // immediately in Linux/Gnome (default for ubuntu 18.04 aka bionic).
-            _layoutChoices.DropDown.Closing += DropDown_Closing;
-            _contentLanguagesDropdown.DropDown.Closing += DropDown_Closing;
-            _layoutChoices.DropDown.Opening += DropDown_Opening;
-            _contentLanguagesDropdown.DropDown.Opening += DropDown_Opening;
+            // Edit top bar menus are now rendered in React/MUI.
 #endif
         }
-
-#if __MonoCS__
-        private bool _ignoreNextAppFocusChange;
-
-        /// <summary>
-        /// Prevent the book language and layout dropdown menus from closing prematurely.
-        /// This is a big problem for Gnome, which is the default window manager in Ubuntu 18.04.
-        /// (This must be due to the way Gnome sends out various windowing messages.)
-        /// </summary>
-        /// <remarks>
-        /// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6107.
-        /// See also WorkspaceView.DropDown_Closing (UI language menu dropdown), which has largely
-        /// been in place for some time.  This is similar to that method.
-        /// The side-effect of this method on systems other than Gnome is that the first click
-        /// outside the menu will not close it.  But since we don't have a good way to detect
-        /// Gnome, this seems like a minimal price to pay for allowing Gnome to work.
-        /// </remarks>
-        void DropDown_Closing(object sender, ToolStripDropDownClosingEventArgs e)
-        {
-            // ReSharper disable once SwitchStatementMissingSomeCases
-            switch (e.CloseReason)
-            {
-                case ToolStripDropDownCloseReason.AppFocusChange:
-                    // With Linux/Gnome, a spurious focus change happens as soon as the menu is opened.
-                    // So we want to ignore the first closing caused by AppFocusChange.
-                    e.Cancel = _ignoreNextAppFocusChange;
-                    break;
-                case ToolStripDropDownCloseReason.Keyboard:
-                    // "reason" is Keyboard, but this seems to be generated just by moving the mouse over
-                    // the adjacent (visible) button.
-                    var mousePos = _layoutChoices.Owner.PointToClient(MousePosition);
-                    var bounds =
-                        (sender == _layoutChoices.DropDown)
-                            ? _contentLanguagesDropdown.Bounds
-                            : _layoutChoices.Bounds;
-                    if (bounds.Contains(mousePos))
-                    {
-                        e.Cancel = true; // probably a false positive
-                    }
-                    break;
-                default: // includes ItemClicked, CloseCalled, AppClicked
-                    break;
-            }
-            _ignoreNextAppFocusChange = false;
-            Debug.WriteLine(
-                "DEBUG EditingView.DropDown_Closing: reason={0}, cancel={1}",
-                e.CloseReason.ToString(),
-                e.Cancel
-            );
-        }
-
-        void DropDown_Opening(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            _ignoreNextAppFocusChange = true;
-        }
-#endif
 
         public EditingModel Model => _model;
 
@@ -1483,21 +1419,6 @@ namespace Bloom.Edit
         }
 
         /// <summary>
-        /// Make a menu item for a dropdown button and return it.  Avoid creating a ToolStripSeparator instead of a
-        /// ToolStripMenuItem even for a hyphen.
-        /// </summary>
-        /// <returns>the dropdown menu item</returns>
-        /// <remarks>See https://silbloom.myjetbrains.com/youtrack/issue/BL-3796.</remarks>
-        private ToolStripMenuItem AddDropdownItemSafely(string text)
-        {
-            // A single hyphen triggers a ToolStripSeparator instead of a ToolStripMenuItem, so change it minimally.
-            // (Surely localizers wouldn't do this to us, but it has happened to a user.)
-            if (text == "-")
-                text = "- ";
-            return new ToolStripMenuItem(text);
-        }
-
-        /// <summary>
         /// Send info to javascript on how the Dropdown Menu Buttons should appear both on page change and when
         /// requested through the Api.
         /// </summary>
@@ -1521,171 +1442,119 @@ namespace Bloom.Edit
             return eventBundle.message;
         }
 
-        public void ContentLanguagesDropdownClicked()
+        public object GetContentLanguagesMenuForClient()
         {
-            // Suppress reopening if just closed
-            if (IsRecentTopBarMenuClose())
-            {
-                _lastTopBarMenuClosedTime = null;
-                return;
-            }
+            var contentLanguages = _model.ContentLanguages.ToList();
+            var nSelected = contentLanguages.Count(l => l.Selected);
+            var items = contentLanguages
+                .Select(language =>
+                    (object)
+                        new
+                        {
+                            id = language.LangTag,
+                            label = language.Name,
+                            enabled = !language.Selected || nSelected > 1,
+                            @checked = language.Selected,
+                        }
+                )
+                .ToList();
 
-            _contentLanguagesDropdown.Items.Clear();
-
-            var nSelected = _model.ContentLanguages.Count(l => l.Selected);
-            foreach (var item in _model.ContentLanguages)
-            {
-                var language = item;
-                var text = language.ToString();
-                var menuItem = AddDropdownItemSafely(item.Name);
-                menuItem.Tag = language;
-                menuItem.Enabled = !language.Selected || nSelected > 1;
-                menuItem.Checked = language.Selected;
-                menuItem.CheckOnClick = true;
-                menuItem.ImageScaling = ToolStripItemImageScaling.None;
-                // Any language which is not selected may be turned on.
-                // A language which is turned on may only be turned off if more than one is selected.
-                menuItem.CheckedChanged += new EventHandler(
-                    OnContentLanguageDropdownItem_CheckedChanged
-                );
-                _contentLanguagesDropdown.Items.Add(menuItem);
-            }
-
-            Browser.OnBrowserClick += Browser_Click;
-
-            ShowContextMenu(_contentLanguagesDropdown);
+            return new { items };
         }
 
-        private void ShowContextMenu(ContextMenuStrip menu)
+        public void HandleContentLanguagesMenuActionForClient(string languageTag, bool isChecked)
         {
-            // Let the menu appear slightly below where the mouse is since it might be
-            // hard to find exactly where the bottom left of the Dropdown button is
-            // We should just be able to say menu.Show(mouseX, mouseY). But there is some sort
-            // of race condition that happens if the menu is activated by the very first click
-            // after the program is started and switched to edit mode. AI recommended using
-            // BeginInvoke to make sure the click completes (so that it won't re-hide the menu).
-            // That wasn't enough. Also setting the position of the menu before we show it
-            // seemed to help, but it still wasn't right 100% of the time. Hopefully a 10ms
-            // delay is not noticeable but enough to make it reliable.
-            var mouseX = MousePosition.X;
-            var mouseY = MousePosition.Y + 8;
-            menu.Left = mouseX;
-            menu.Top = mouseY;
-            var timer = new Timer();
-            timer.Interval = 10; // very soon, but after the click is over and done with.
-            timer.Tick += (s, a) =>
-            {
-                menu.Left = mouseX;
-                menu.Top = mouseY;
-                menu.Show(mouseX, mouseY);
-                timer.Stop();
-                timer.Dispose();
-            };
-            timer.Start();
+            var contentLanguages = _model.ContentLanguages.ToList();
+            var language = contentLanguages.FirstOrDefault(l => l.LangTag == languageTag);
+            if (language == null)
+                throw new ArgumentException($"Unknown language tag '{languageTag}'");
+
+            if (language.Selected == isChecked)
+                return;
+
+            var nSelected = contentLanguages.Count(l => l.Selected);
+            if (!isChecked && language.Selected && nSelected <= 1)
+                return;
+
+            language.Selected = isChecked;
+            _model.ContentLanguagesSelectionChanged();
         }
 
-        public void LayoutChoicesDropdownClicked()
+        public object GetLayoutChoicesMenuForClient()
         {
-            // Suppress reopening if just closed
-            if (IsRecentTopBarMenuClose())
-            {
-                _lastTopBarMenuClosedTime = null;
-                return;
-            }
-
-            _layoutChoicesDropdown.Items.Clear();
-
             var layout = _model.GetCurrentLayout();
-            var sizeAndOrientationChoices = _model.GetSizeAndOrientationChoices();
+            var sizeAndOrientationChoices = _model.GetSizeAndOrientationChoices().ToList();
 
-            foreach (var item in sizeAndOrientationChoices)
-            {
-                var choice = item;
-                var text = choice.DisplayName;
-                var menuItem = AddDropdownItemSafely(text);
-                menuItem.Tag = choice;
-                menuItem.Click += new EventHandler(OnPaperSizeAndOrientationMenuClick);
+            var items = sizeAndOrientationChoices
+                .Select(choice =>
+                    (object)
+                        new
+                        {
+                            id = choice.SizeAndOrientation.ClassName,
+                            label = choice.DisplayName,
+                            enabled = true,
+                            @checked = choice.SizeAndOrientation.ClassName
+                                == layout.SizeAndOrientation.ClassName,
+                        }
+                )
+                .ToList();
 
-                _layoutChoicesDropdown.Items.Add(menuItem);
-            }
-
-            if (sizeAndOrientationChoices.Count() < 2)
+            if (sizeAndOrientationChoices.Count < 2)
             {
                 var text = LocalizationManager.GetString(
                     "EditTab.NoOtherLayouts",
                     "There are no other options for this template.",
                     "Show in the size/orientation chooser dropdown of the edit tab, if there was only a single choice"
                 );
-                var menuItem = AddDropdownItemSafely(text);
-                menuItem.Tag = null;
-                menuItem.Enabled = false;
-                _layoutChoicesDropdown.Items.Add(menuItem);
+                items.Add(
+                    new
+                    {
+                        id = "",
+                        label = text,
+                        enabled = false,
+                        @checked = false,
+                    }
+                );
             }
 
-            Browser.OnBrowserClick += Browser_Click;
-
-            ShowContextMenu(_layoutChoicesDropdown);
+            return new { items };
         }
 
-        private bool IsRecentTopBarMenuClose()
+        public void HandleLayoutChoicesMenuActionForClient(string layoutClassName)
         {
-            if (_lastTopBarMenuClosedTime.HasValue)
-            {
-                var timeSinceLastClose = DateTime.UtcNow - _lastTopBarMenuClosedTime.Value;
-                return timeSinceLastClose.TotalMilliseconds < 300;
-            }
-            return false;
+            if (String.IsNullOrWhiteSpace(layoutClassName))
+                return;
+
+            var choice = _model
+                .GetSizeAndOrientationChoices()
+                .FirstOrDefault(item => item.SizeAndOrientation.ClassName == layoutClassName);
+            if (choice == null)
+                throw new ArgumentException($"Unknown layout class '{layoutClassName}'");
+
+            _model.SetLayout(choice);
         }
-
-        void OnPaperSizeAndOrientationMenuClick(object sender, EventArgs e)
-        {
-            var item = (ToolStripMenuItem)sender;
-            _model.SetLayout((Layout)item.Tag);
-        }
-
-        void OnContentLanguageDropdownItem_CheckedChanged(object sender, EventArgs e)
-        {
-            var item = (ToolStripMenuItem)sender;
-            ((EditingModel.ContentLanguage)item.Tag).Selected = item.Checked;
-
-            if (_sendingContentLanguagesSelectionChanged)
-                _model.ContentLanguagesSelectionChanged();
-        }
-
-        private bool _sendingContentLanguagesSelectionChanged = true;
 
         public void SetActiveLanguages(bool L1, bool L2, bool L3)
         {
             var contentLanguages = _model.ContentLanguages.ToList();
             bool changed = false;
-            try
+
+            if (contentLanguages[0].Selected != L1)
             {
-                // Send it once at the end. This reduces flicker and avoids problems where temporarily
-                // all are off, since using the new book settings dialog it is possible to change more
-                // than one in a single call to this method.
-                _sendingContentLanguagesSelectionChanged = false;
-
-                if (contentLanguages[0].Selected != L1)
-                {
-                    contentLanguages[0].Selected = L1;
-                    changed = true;
-                }
-
-                if (contentLanguages.Count > 1 && contentLanguages[1].Selected != L2)
-                {
-                    contentLanguages[1].Selected = L2;
-                    changed = true;
-                }
-
-                if (contentLanguages.Count > 2 && contentLanguages[2].Selected != L3)
-                {
-                    contentLanguages[2].Selected = L3;
-                    changed = true;
-                }
+                contentLanguages[0].Selected = L1;
+                changed = true;
             }
-            finally
+
+            if (contentLanguages.Count > 1 && contentLanguages[1].Selected != L2)
             {
-                _sendingContentLanguagesSelectionChanged = true;
+                contentLanguages[1].Selected = L2;
+                changed = true;
+            }
+
+            if (contentLanguages.Count > 2 && contentLanguages[2].Selected != L3)
+            {
+                contentLanguages[2].Selected = L3;
+                changed = true;
             }
 
             if (changed)
@@ -2042,18 +1911,6 @@ namespace Bloom.Edit
                     );
                     Debug.WriteLine("Failed to download image: " + ex.Message);
                 }
-            }
-        }
-
-        private void Browser_Click(object sender, EventArgs e)
-        {
-            Browser.OnBrowserClick -= Browser_Click;
-
-            if (_contentLanguagesDropdown.Visible || _layoutChoicesDropdown.Visible)
-            {
-                _contentLanguagesDropdown?.Hide();
-                _layoutChoicesDropdown?.Hide();
-                _lastTopBarMenuClosedTime = DateTime.UtcNow;
             }
         }
     }
