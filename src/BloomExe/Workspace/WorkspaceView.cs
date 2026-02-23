@@ -182,15 +182,13 @@ namespace Bloom.Workspace
             // _pdfView
             //
             this._publishView = publishViewFactory();
-            this._publishView.Dock = DockStyle.Fill;
+            this._publishView.WorkspaceView = this;
 
             // Temporary: while Help/UI language menus are WinForms menus and tabs run in separate browsers,
             // listen for browser clicks from each main browser so those WinForms menus can close.
             // Remove once menus are in the single browser UI.
             if (_mainBrowser != null)
                 _mainBrowser.OnBrowserClick += HandleAnyBrowserClick;
-            if (_publishView != null)
-                _publishView.BrowserClick += HandleAnyBrowserClick;
 
             SelectTab(_collectionTabView, _editingView, selectedControlForEvent: null);
 
@@ -1269,7 +1267,9 @@ namespace Bloom.Workspace
                     }
                     break;
                 case WorkspaceTab.publish:
-                    SelectTab(_publishView, _publishView, _publishView);
+                    _publishView.EnsureLoadedInMainBrowser();
+                    _editingView.SetWorkspaceMode("publish");
+                    SelectTab(_publishView, _editingView, null);
                     break;
             }
         }

@@ -287,6 +287,9 @@ export function showRegistrationDialogInEditTab() {
 let hasActivatedEditMode = false;
 
 const normalizeWorkspaceMode = (mode: string | null | undefined): string => {
+    if (mode === "publish") {
+        return "publish";
+    }
     return mode === "edit" ? "edit" : "collection";
 };
 

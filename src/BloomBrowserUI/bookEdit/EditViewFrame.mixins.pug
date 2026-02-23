@@ -12,9 +12,12 @@ html
 			#left { width:100%; box-sizing: border-box;}
 			div#pusherContainer { padding-right: 35px;height: 100%;}
 			#collectionTab { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
+			#publishTab { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
 			.pure-container { display: block; height: 100%; position: relative; z-index: 1; }
 			body.collection-mode #collectionTab { display: block; }
+			body.publish-mode #publishTab { display: block; }
 			body.collection-mode .pure-container { visibility: hidden; pointer-events: none; }
+			body.publish-mode .pure-container { visibility: hidden; pointer-events: none; }
 			body.edit-mode .pure-container { visibility: visible; pointer-events: auto; }
 			/* These rules achieve a change in the width of the frame I added just inside the pure-pusher
 			(the main content of the pure-drawer system) when the check-box is checked. The second line
@@ -30,6 +33,7 @@ html
 			.pure-toggle[data-toggle='right']:checked ~ .pure-pusher-container div#pusherContainer { padding-right: 200px;}
 	body.collection-mode
 		iframe#collectionTab(width='100%', height='100%', src='/bloom/fixed-simulated/collectionTab-memsim-Frame.html')
+		iframe#publishTab(width='100%', height='100%', src='/bloom/fixed-simulated/publishTab-memsim-Frame.html')
 		//.
 			All the pure- stuff here is the required framework for pure-drawer to make the toolbox appear and disappear
 			based on the litle control in the top right. Note particularly that C# code is aware of the pure-toggle-right input,
