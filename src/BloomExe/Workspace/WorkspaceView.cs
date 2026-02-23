@@ -46,6 +46,8 @@ namespace Bloom.Workspace
         private Control _previouslySelectedControl;
         private Control _previouslyDisplayedControl;
         private IBloomTabArea _previouslySelectedTabArea;
+        private readonly IframeReactControl _topBarIframeReactControl;
+        private bool _topBarLoadedIntoIframe;
         public event EventHandler ReopenCurrentProject;
         public static float DPIOfThisAccount;
         private ZoomModel _zoomModel;
@@ -67,7 +69,6 @@ namespace Bloom.Workspace
 
         private NewCollectionWizardApi _newCollectionWizardApi;
 
-        internal ReactControl TopBarReactControl => _topBarReactControl;
         internal Browser MainBrowser => _mainBrowser;
 
         //autofac uses this
@@ -118,6 +119,7 @@ namespace Bloom.Workspace
             _newCollectionWizardApi = newCollectionWizardApi;
 
             _collectionSettings = collectionSettings;
+            _topBarIframeReactControl = new IframeReactControl();
             // This provides the common API with a hook it can use to reload
             // the project. Another option would be to make Autofac pass a WorkspaceView
             // to the CommonApi constructor so it could raise the event more
@@ -193,7 +195,7 @@ namespace Bloom.Workspace
             SelectTab(_collectionTabView, _editingView, selectedControlForEvent: null);
 
             SetupZoomModel();
-            SetupTopBarReactControl();
+            SetupTopBarIframeControl();
             SendZoomInfo();
             CommonApi.WorkspaceView = this;
 
@@ -516,16 +518,27 @@ namespace Bloom.Workspace
             SendZoomInfo();
         }
 
-        private void SetupTopBarReactControl()
+        private void SetupTopBarIframeControl()
         {
-            _topBarReactControl.SetLocalizationChangedEvent(_localizationChangedEvent);
-            _topBarReactControl.ReplaceContextMenu = () =>
+            _localizationChangedEvent.Subscribe(unused =>
             {
-                Shell.GetShellOrNull()?.ShowContextMenuAt(MousePosition);
-            };
-            // Temporary: top bar is currently hosted as a separate browser from other tabs.
-            // Remove once menus and top bar run in one browser UI.
-            _topBarReactControl.OnBrowserClick += HandleAnyBrowserClick;
+                if (_topBarLoadedIntoIframe)
+                {
+                    ReloadTopBarIntoIframe();
+                }
+            });
+
+            ReloadTopBarIntoIframe();
+        }
+
+        private void ReloadTopBarIntoIframe()
+        {
+            if (_mainBrowser == null)
+                return;
+
+            EnsureMainBrowserHasWorkspaceRootLoaded();
+            _ = _topBarIframeReactControl.Load(_mainBrowser, "topBarBundle", null, "topBar");
+            _topBarLoadedIntoIframe = true;
         }
 
         // Temporary helper used to close WinForms menus from browser click notifications.

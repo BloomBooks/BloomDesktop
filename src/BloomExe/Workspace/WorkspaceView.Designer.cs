@@ -39,7 +39,6 @@ namespace Bloom.Workspace
 		{
 			this.components = new System.ComponentModel.Container();
 			this._containerPanel = new System.Windows.Forms.Panel();
-			this._topBarReactControl = new Bloom.web.ReactControl();
 			this._L10NSharpExtender = new L10NSharp.Windows.Forms.L10NSharpExtender(this.components);
 			this._documentationMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._bloomDocsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -64,22 +63,10 @@ namespace Bloom.Workspace
 			// _containerPanel
 			//
 			this._containerPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._containerPanel.Location = new System.Drawing.Point(0, 64);
+			this._containerPanel.Location = new System.Drawing.Point(0, 0);
 			this._containerPanel.Name = "_containerPanel";
-			this._containerPanel.Size = new System.Drawing.Size(1098, 457);
+			this._containerPanel.Size = new System.Drawing.Size(1098, 528);
 			this._containerPanel.TabIndex = 16;
-			//
-			// _topBarReactControl
-			//
-			this._topBarReactControl.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
-			this._topBarReactControl.Dock = System.Windows.Forms.DockStyle.Top;
-			this._topBarReactControl.HideVerticalOverflow = true;
-			this._topBarReactControl.JavascriptBundleName = "topBarBundle";
-			this._topBarReactControl.Location = new System.Drawing.Point(0, 0);
-			this._topBarReactControl.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			this._topBarReactControl.Name = "_topBarReactControl";
-			this._topBarReactControl.Size = new System.Drawing.Size(1098, 64);
-			this._topBarReactControl.TabIndex = 17;
 			//
 			// _L10NSharpExtender
 			//
@@ -252,7 +239,6 @@ namespace Bloom.Workspace
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.Controls.Add(this._containerPanel);
-			this.Controls.Add(this._topBarReactControl);
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "WorkspaceView.WorkspaceView");
@@ -268,7 +254,6 @@ namespace Bloom.Workspace
 		#endregion
 
 		private System.Windows.Forms.Panel _containerPanel;
-		private ReactControl _topBarReactControl;
 		private L10NSharp.Windows.Forms.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.Timer _applicationUpdateCheckTimer;
 		private System.Windows.Forms.ToolStripMenuItem _documentationMenuItem;

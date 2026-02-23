@@ -1552,7 +1552,6 @@ namespace Bloom.Edit
             }
 
             Browser.OnBrowserClick += Browser_Click;
-            CommonApi.WorkspaceView.TopBarReactControl.OnBrowserClick += Browser_Click;
 
             ShowContextMenu(_contentLanguagesDropdown);
         }
@@ -1624,7 +1623,6 @@ namespace Bloom.Edit
             }
 
             Browser.OnBrowserClick += Browser_Click;
-            CommonApi.WorkspaceView.TopBarReactControl.OnBrowserClick += Browser_Click;
 
             ShowContextMenu(_layoutChoicesDropdown);
         }
@@ -2050,7 +2048,6 @@ namespace Bloom.Edit
         private void Browser_Click(object sender, EventArgs e)
         {
             Browser.OnBrowserClick -= Browser_Click;
-            CommonApi.WorkspaceView.TopBarReactControl.OnBrowserClick -= Browser_Click;
 
             if (_contentLanguagesDropdown.Visible || _layoutChoicesDropdown.Visible)
             {
