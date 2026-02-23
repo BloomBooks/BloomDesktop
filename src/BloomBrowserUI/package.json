@@ -147,6 +147,7 @@
         "mobx-react": "^9.2.0",
         "mui-nested-menu-item": "^1.2.6",
         "prop-types": "^15.7.2",
+        "pug": "^3.0.3",
         "pug-cli": "^1.0.0-alpha6",
         "rc-slider": "8.6.9",
         "react": "^17.0.2",
