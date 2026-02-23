@@ -1443,12 +1443,12 @@ namespace Bloom.Book
             var keepOriginal =
                 originalLicense is NullLicense
                 || // must preserve "contact copyright holder"
-                originalLicense is CustomLicenseInfo
+                originalLicense is CustomLicense
                 || // must preserve custom licenses
                 (
-                    originalLicense is CreativeCommonsLicenseInfo
-                    && (originalLicense as CreativeCommonsLicenseInfo).DerivativeRule
-                        == CreativeCommonsLicenseInfo.DerivativeRules.NoDerivatives
+                    originalLicense is CreativeCommonsLicense
+                    && (originalLicense as CreativeCommonsLicense).DerivativeRule
+                        == CreativeCommonsLicense.DerivativeRules.NoDerivatives
                 );
             if (!keepOriginal)
                 return;

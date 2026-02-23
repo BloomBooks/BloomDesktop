@@ -628,7 +628,7 @@ namespace Bloom.Edit
             }
         }
 
-        public bool AskUserIfCopyImageMetadataToAllImages()
+        public bool AskUserIfCopyImageMetadataToAllImages(Metadata metadata)
         {
             var answer = MessageBox.Show(
                 LocalizationManager.GetString(

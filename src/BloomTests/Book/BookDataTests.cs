@@ -245,7 +245,7 @@ namespace BloomTests.Book
             var dom = new HtmlDom(
                 @"<html ><head></head><body>
                 <div id='bloomDataDiv'>
-
+                    
                 </div>
                 <div class='bloom-page' id='guid2'>
                     <div class=""bloom-canvas bloom-has-canvas-element"" data-imgsizebasedon=""649,231"" >
@@ -1075,7 +1075,7 @@ namespace BloomTests.Book
                     Assert.That(metadata.CopyrightNotice, Is.Null);
                 if (dataDivName == "licenseUrl")
                 {
-                    Assert.That(metadata.License, Is.InstanceOf<CreativeCommonsLicenseInfo>());
+                    Assert.That(metadata.License, Is.InstanceOf<CreativeCommonsLicense>());
                     Assert.That(
                         metadata.License.Url,
                         Is.EqualTo("http://creativecommons.org/licenses/by-nd/3.0/bynd/")
@@ -1087,7 +1087,7 @@ namespace BloomTests.Book
                 }
                 else
                 {
-                    Assert.That(metadata.License, Is.InstanceOf<CustomLicenseInfo>());
+                    Assert.That(metadata.License is CustomLicense);
                 }
 
                 if (dataDivName == "licenseNotes")
@@ -1133,7 +1133,7 @@ namespace BloomTests.Book
                 data.MergeBrandingSettings(tempFolder.Path);
                 var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, data);
 
-                Assert.That(metadata.License, Is.InstanceOf<CustomLicenseInfo>());
+                Assert.That(metadata.License, Is.InstanceOf<CustomLicense>());
                 Assert.That(metadata.License.Url, Is.Null.Or.Empty);
 
                 Assert.That(metadata.License.RightsStatement, Is.EqualTo("My custom license."));

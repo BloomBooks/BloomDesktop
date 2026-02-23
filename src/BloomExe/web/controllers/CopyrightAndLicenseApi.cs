@@ -133,7 +133,7 @@ namespace Bloom.web.controllers
                             bool shouldAskUserIfCopyMetadataToAllImages =
                                 wasNormalSuccessfulSave && isNormalImageType;
                             bool copyMetadataToAllImages = shouldAskUserIfCopyMetadataToAllImages
-                                ? View.AskUserIfCopyImageMetadataToAllImages()
+                                ? View.AskUserIfCopyImageMetadataToAllImages(metadata)
                                 : false;
                             if (copyMetadataToAllImages)
                             {
@@ -200,9 +200,9 @@ namespace Bloom.web.controllers
         private dynamic GetLicense(Metadata metadata)
         {
             dynamic creativeCommonsInfoJson = GetDefaultCreativeCommonsInfo();
-            if (metadata.License is CreativeCommonsLicenseInfo)
+            if (metadata.License is CreativeCommonsLicense)
                 creativeCommonsInfoJson = GetCreativeCommonsInfo(
-                    (CreativeCommonsLicenseInfo)metadata.License
+                    (CreativeCommonsLicense)metadata.License
                 );
             return new
             {
@@ -222,7 +222,7 @@ namespace Bloom.web.controllers
             };
         }
 
-        private dynamic GetCreativeCommonsInfo(CreativeCommonsLicenseInfo ccLicense)
+        private dynamic GetCreativeCommonsInfo(CreativeCommonsLicense ccLicense)
         {
             return new
             {
@@ -234,34 +234,32 @@ namespace Bloom.web.controllers
         }
 
         private static string GetCcDerivativeRulesAsString(
-            CreativeCommonsLicenseInfo.DerivativeRules rules
+            CreativeCommonsLicense.DerivativeRules rules
         )
         {
             switch (rules)
             {
-                case CreativeCommonsLicenseInfo.DerivativeRules.DerivativesWithShareAndShareAlike:
+                case CreativeCommonsLicense.DerivativeRules.DerivativesWithShareAndShareAlike:
                     return "sharealike";
-                case CreativeCommonsLicenseInfo.DerivativeRules.Derivatives:
+                case CreativeCommonsLicense.DerivativeRules.Derivatives:
                     return "yes";
-                case CreativeCommonsLicenseInfo.DerivativeRules.NoDerivatives:
+                case CreativeCommonsLicense.DerivativeRules.NoDerivatives:
                     return "no";
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        private CreativeCommonsLicenseInfo.DerivativeRules GetCcDerivativeRule(string jsonValue)
+        private CreativeCommonsLicense.DerivativeRules GetCcDerivativeRule(string jsonValue)
         {
             switch (jsonValue)
             {
                 case "sharealike":
-                    return CreativeCommonsLicenseInfo
-                        .DerivativeRules
-                        .DerivativesWithShareAndShareAlike;
+                    return CreativeCommonsLicense.DerivativeRules.DerivativesWithShareAndShareAlike;
                 case "yes":
-                    return CreativeCommonsLicenseInfo.DerivativeRules.Derivatives;
+                    return CreativeCommonsLicense.DerivativeRules.Derivatives;
                 case "no":
-                    return CreativeCommonsLicenseInfo.DerivativeRules.NoDerivatives;
+                    return CreativeCommonsLicense.DerivativeRules.NoDerivatives;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -269,13 +267,13 @@ namespace Bloom.web.controllers
 
         private string GetLicenseType(LicenseInfo licenseInfo)
         {
-            if (licenseInfo is CreativeCommonsLicenseInfo)
+            if (licenseInfo is CreativeCommonsLicense)
             {
-                if (licenseInfo.Url == CreativeCommonsLicenseInfo.CC0Url)
+                if (licenseInfo.Url == CreativeCommonsLicense.CC0Url)
                     return "publicDomain";
                 return "creativeCommons";
             }
-            if (licenseInfo is CustomLicenseInfo)
+            if (licenseInfo is CustomLicense)
                 return "custom";
             return "contact";
         }

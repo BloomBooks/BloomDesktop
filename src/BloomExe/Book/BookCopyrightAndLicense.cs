@@ -93,7 +93,7 @@ namespace Bloom.Book
                     // Simply set it to the default version.
                     if (!licenseUrl.EndsWith("/"))
                         licenseUrl += "/";
-                    licenseUrl += CreativeCommonsLicenseInfo.kDefaultVersion;
+                    licenseUrl += CreativeCommonsLicense.kDefaultVersion;
                     metadata.License = CreativeCommonsLicense.FromLicenseUrl(licenseUrl);
                 }
                 catch (Exception e)
@@ -157,7 +157,7 @@ namespace Bloom.Book
             metadata.License = new CreativeCommonsLicense(
                 true,
                 true,
-                CreativeCommonsLicenseInfo.DerivativeRules.Derivatives
+                CreativeCommonsLicense.DerivativeRules.Derivatives
             );
             return metadata;
         }
@@ -206,7 +206,7 @@ namespace Bloom.Book
             // CustomLicense returns "und" for the description language unless the description is empty.
             // For an empty description, it returns the localized form of the boilerplate text
             // "For permission to reuse, contact the copyright holder." with the appropriate language tag.
-            //if (!(languageUsedForDescription == "und" && metadata.License is CustomLicenseInfo))
+            //if (!(languageUsedForDescription == "und" && metadata.License is CustomLicense))
             //{
             //    LocalizationHelper.CheckForMissingLocalization(
             //        langPriorities.ToList(),
@@ -231,7 +231,7 @@ namespace Bloom.Book
             );
 
             // we could do away with licenseImage in the bloomDataDiv, since the name is always the same, but we keep it for backward compatibility
-            if (metadata.License is CreativeCommonsLicenseInfo)
+            if (metadata.License is CreativeCommonsLicense)
             {
                 dom.SetBookSetting("licenseImage", "*", "license.png");
             }
@@ -327,7 +327,7 @@ namespace Bloom.Book
             {
                 // For CC0, we store the "copyright", but don't display it in the text of the book.
                 var licenseUrl = dom.GetBookSetting("licenseUrl").GetExactAlternative("*");
-                if (licenseUrl == CreativeCommonsLicenseInfo.CC0Url)
+                if (licenseUrl == CreativeCommonsLicense.CC0Url)
                     source = new MultiTextBase();
             }
 
@@ -531,7 +531,7 @@ namespace Bloom.Book
         )
         {
             licenseOnly = licenseInfo.GetMinimalFormForCredits(languagePriorityIds, out _);
-            if (licenseInfo is CustomLicenseInfo)
+            if (licenseInfo is CustomLicense)
             {
                 // I can imagine being more fancy... something like "Licensed under custom license:", and get localizations
                 // for that... but sheesh, these are even now very rare in Bloom-land and should become more rare.

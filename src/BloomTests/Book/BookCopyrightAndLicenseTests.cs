@@ -79,7 +79,7 @@ namespace BloomTests.Book
         public void GetLicenseMetadata_HasNoCopyrightOrLicense_ReturnCcByForDefault()
         {
             string dataDivContent = @"";
-            Assert.True(GetMetadata(dataDivContent).License is CreativeCommonsLicenseInfo);
+            Assert.True(GetMetadata(dataDivContent).License is CreativeCommonsLicense);
         }
 
         [Test]
@@ -97,7 +97,7 @@ namespace BloomTests.Book
             string dataDivContent =
                 @"<div lang='en' data-book='licenseNotes'>my custom</div>
 					<div data-book='copyright' lang='*' class='bloom-content1'>Copyright © 2012, test</div>";
-            Assert.IsTrue(GetMetadata(dataDivContent).License is CustomLicenseInfo);
+            Assert.IsTrue(GetMetadata(dataDivContent).License is CustomLicense);
         }
 
         [Test]
@@ -113,7 +113,7 @@ namespace BloomTests.Book
             Assert.IsFalse(creativeCommonsLicense.CommercialUseAllowed);
             Assert.IsTrue(
                 creativeCommonsLicense.DerivativeRule
-                    == CreativeCommonsLicenseInfo.DerivativeRules.DerivativesWithShareAndShareAlike
+                    == CreativeCommonsLicense.DerivativeRules.DerivativesWithShareAndShareAlike
             );
         }
 
@@ -262,7 +262,7 @@ namespace BloomTests.Book
                     License = new CreativeCommonsLicense(
                         true,
                         true,
-                        CreativeCommonsLicenseInfo.DerivativeRules.Derivatives
+                        CreativeCommonsLicense.DerivativeRules.Derivatives
                     ),
                 },
                 startingDataDivContent: "",
@@ -281,7 +281,7 @@ namespace BloomTests.Book
                     License = new CreativeCommonsLicense(
                         true,
                         true,
-                        CreativeCommonsLicenseInfo.DerivativeRules.Derivatives
+                        CreativeCommonsLicense.DerivativeRules.Derivatives
                     ),
                 },
                 startingDataDivContent: "",
@@ -364,7 +364,7 @@ namespace BloomTests.Book
                     + "</div></head><body></body></html>"
             );
             var bookData = new BookData(dom, _collectionSettings, null);
-            BookCopyrightAndLicense.SetMetadata(metadata, dom, null, bookData, false);
+            Bloom.Book.BookCopyrightAndLicense.SetMetadata(metadata, dom, null, bookData, false);
             AssertThatXmlIn
                 .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(xpath, expectedCount);
