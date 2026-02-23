@@ -117,7 +117,7 @@
         "@emotion/core": "^11.0.0",
         "@emotion/react": "^11.11.4",
         "@emotion/styled": "^11.11.5",
-        "@ethnolib/language-chooser-react-mui": "^0.1.21",
+        "@ethnolib/language-chooser-react-mui": "^0.1.22",
         "@fortawesome/fontawesome-svg-core": "^6.4.0",
         "@fortawesome/free-solid-svg-icons": "^6.4.0",
         "@mui/icons-material": "^5.11.0",
