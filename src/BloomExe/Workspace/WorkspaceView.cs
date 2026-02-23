@@ -40,6 +40,7 @@ namespace Bloom.Workspace
         private readonly LocalizationChangedEvent _localizationChangedEvent;
         private readonly CollectionSettings _collectionSettings;
         private EditingView _editingView;
+        private Browser _mainBrowser;
         private PublishView _publishView;
         private CollectionTabView _collectionTabView;
         private Control _previouslySelectedControl;
@@ -65,6 +66,7 @@ namespace Bloom.Workspace
         private NewCollectionWizardApi _newCollectionWizardApi;
 
         internal ReactControl TopBarReactControl => _topBarReactControl;
+        internal Browser MainBrowser => _mainBrowser;
 
         //autofac uses this
 
@@ -154,12 +156,21 @@ namespace Bloom.Workspace
             // and that is done by the EditingView constructor.
             //
             this._editingView = editingViewFactory();
+            this._editingView.WorkspaceView = this;
             this._editingView.Dock = DockStyle.Fill;
             this._editingView.Model.EnableSwitchingTabs = (enabled) =>
             {
                 _tabsEnabled = enabled;
                 SendTopBarState();
             };
+
+            if (!Program.RunningHarvesterMode)
+            {
+                _mainBrowser = BrowserMaker.MakeBrowser();
+                InitializeMainBrowser();
+                _editingView.AttachMainBrowser(_mainBrowser);
+                _editingView.InitializeMainBrowserForEditMode();
+            }
 
             _collectionTabView = collectionsTabViewFactory();
             _collectionTabView.Dock = DockStyle.Fill;
@@ -179,8 +190,8 @@ namespace Bloom.Workspace
             // Temporary: while Help/UI language menus are WinForms menus and tabs run in separate browsers,
             // listen for browser clicks from each main browser so those WinForms menus can close.
             // Remove once menus are in the single browser UI.
-            if (_editingView.Browser != null)
-                _editingView.Browser.OnBrowserClick += HandleAnyBrowserClick;
+            if (_mainBrowser != null)
+                _mainBrowser.OnBrowserClick += HandleAnyBrowserClick;
             if (_collectionTabView != null)
                 _collectionTabView.BrowserClick += HandleAnyBrowserClick;
             if (_publishView != null)
@@ -251,6 +262,20 @@ namespace Bloom.Workspace
         private void ReadyToShowCollections()
         {
             _collectionTabView.ReadyToShowCollections();
+        }
+
+        private void InitializeMainBrowser()
+        {
+            _mainBrowser.BackColor = System.Drawing.Color.DarkGray;
+            _mainBrowser.ContextMenuProvider = null;
+            _mainBrowser.ReplaceContextMenu = null;
+            _mainBrowser.ControlKeyEvent = null;
+            _mainBrowser.Dock = DockStyle.Fill;
+            _mainBrowser.Location = new Point(0, 0);
+            _mainBrowser.Margin = new Padding(5);
+            _mainBrowser.Name = "_mainBrowser";
+            _mainBrowser.Size = new Size(826, 561);
+            _mainBrowser.TabIndex = 1;
         }
 
         /// <summary>

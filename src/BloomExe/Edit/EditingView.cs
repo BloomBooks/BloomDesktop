@@ -43,6 +43,7 @@ namespace Bloom.Edit
         private readonly CopyCommand _copyCommand;
         private readonly PasteCommand _pasteCommand;
         private readonly UndoCommand _undoCommand;
+        private readonly ControlKeyEvent _controlKeyEvent;
         private readonly SignLanguageApi _signLanguageApi;
         private readonly CopyrightAndLicenseApi _copyrightAndLicenseApi;
         private Color _enabledToolbarColor = Palette.DarkTextAgainstBackgroundColor;
@@ -52,6 +53,9 @@ namespace Bloom.Edit
         private ZoomModel _zoomModel;
         private PageListApi _pageListApi;
         private DateTime? _lastTopBarMenuClosedTime;
+        private Browser _browser1 => WorkspaceView?.MainBrowser;
+
+        internal WorkspaceView WorkspaceView { get; set; }
 
         public delegate EditingView Factory(); //autofac uses this
 
@@ -78,28 +82,10 @@ namespace Bloom.Edit
             _copyCommand = copyCommand;
             _pasteCommand = pasteCommand;
             _undoCommand = undoCommand;
+            _controlKeyEvent = controlKeyEvent;
             _webSocketServer = model.EditModelSocketServer;
             _pageListApi = pageListApi;
             InitializeComponent();
-
-            // This used to be part of InitializeComponent, but we want to make which browser to use
-            // configurable. It can possibly move back to the Designer code once we settle on WebView2.
-            // Turning off for this PR because it's not working well enough yet.
-            if (!Program.RunningHarvesterMode)
-            {
-                _browser1 = BrowserMaker.MakeBrowser();
-                _browser1.BackColor = System.Drawing.Color.DarkGray;
-                _browser1.ContextMenuProvider = null;
-                _browser1.ReplaceContextMenu = null;
-                _browser1.ControlKeyEvent = null;
-                _browser1.Dock = System.Windows.Forms.DockStyle.Fill;
-                _browser1.Location = new System.Drawing.Point(0, 0);
-                _browser1.Margin = new System.Windows.Forms.Padding(5);
-                _browser1.Name = "_browser1";
-                _browser1.Size = new System.Drawing.Size(826, 561);
-                _browser1.TabIndex = 1;
-                Controls.Add(_browser1);
-            }
 
             //SetupThumbnailLists();
             _model.SetView(this);
@@ -113,11 +99,6 @@ namespace Bloom.Edit
             _copyrightAndLicenseApi = copyrightAndLicenseApi;
             copyrightAndLicenseApi.Model = _model;
             copyrightAndLicenseApi.View = this;
-            if (!Program.RunningHarvesterMode)
-            {
-                _browser1.SetEditingCommands(cutCommand, copyCommand, pasteCommand, undoCommand);
-                _browser1.ControlKeyEvent = controlKeyEvent;
-            }
 
             controlKeyEvent.Subscribe(HandleControlKeyEvent);
 
@@ -254,6 +235,24 @@ namespace Bloom.Edit
 #endif
 
         public EditingModel Model => _model;
+
+        internal void AttachMainBrowser(Browser browser)
+        {
+            if (browser == null)
+                throw new ArgumentNullException(nameof(browser));
+
+            if (!Controls.Contains(browser))
+                Controls.Add(browser);
+        }
+
+        internal void InitializeMainBrowserForEditMode()
+        {
+            if (Program.RunningHarvesterMode || _browser1 == null)
+                return;
+
+            _browser1.SetEditingCommands(_cutCommand, _copyCommand, _pasteCommand, _undoCommand);
+            _browser1.ControlKeyEvent = _controlKeyEvent;
+        }
 
         private void HandleControlKeyEvent(object keyData)
         {

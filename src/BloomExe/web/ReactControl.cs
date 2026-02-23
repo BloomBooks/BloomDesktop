@@ -168,17 +168,35 @@ namespace Bloom.web
 
         private TempFile MakeTempFile()
         {
+            return MakeTempFileForReactBundle(
+                _javascriptBundleName,
+                Props,
+                BackColor,
+                HideVerticalOverflow,
+                detach: true
+            );
+        }
+
+        internal static TempFile MakeTempFileForReactBundle(
+            string javascriptBundleName,
+            object propsObject,
+            Color backColor,
+            bool hideVerticalOverflow,
+            bool detach
+        )
+        {
             var tempFile = TempFile.WithExtension("htm");
-            tempFile.Detach(); // the browser control will clean it up
+            if (detach)
+                tempFile.Detach(); // caller is responsible for cleanup when detached
 
-            var props = Props == null ? "{}" : JsonConvert.SerializeObject(Props);
+            var props = propsObject == null ? "{}" : JsonConvert.SerializeObject(propsObject);
 
-            if (_javascriptBundleName == null)
+            if (javascriptBundleName == null)
             {
                 throw new ArgumentNullException("React Control needs a _javascriptBundleName");
             }
 
-            var bundleNameWithExtension = _javascriptBundleName;
+            var bundleNameWithExtension = javascriptBundleName;
             if (!bundleNameWithExtension.EndsWith(".js"))
             {
                 bundleNameWithExtension += ".js";
@@ -186,9 +204,9 @@ namespace Bloom.web
 
             // We insert this as the initial background color of the HTML element
             // to prevent a flash of white while the React is rendering.
-            var backColor = MiscUtils.ColorToHtmlCode(BackColor);
+            var backColorCode = MiscUtils.ColorToHtmlCode(backColor);
 
-            var overflowY = HideVerticalOverflow ? " overflow-y: hidden;" : "";
+            var overflowY = hideVerticalOverflow ? " overflow-y: hidden;" : "";
 
             var bundleToViteModulePathMap = new Dictionary<string, string>
             {
@@ -234,13 +252,13 @@ namespace Bloom.web
             };
             string viteModulePath = null;
             var useViteDev = ShouldUseViteDev(() =>
-                bundleToViteModulePathMap.TryGetValue(_javascriptBundleName, out viteModulePath)
+                bundleToViteModulePathMap.TryGetValue(javascriptBundleName, out viteModulePath)
                 && viteModulePath != null
             );
 
             var body =
                 $@"
-                <body style='margin:0; height:100%; display: flex; flex: 1; flex-direction: column; background-color:{backColor};{overflowY}'>
+                <body style='margin:0; height:100%; display: flex; flex: 1; flex-direction: column; background-color:{backColorCode};{overflowY}'>
                     <div id='reactRoot' style='height:100%'>
                     <div class='spinner-container' style='position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);'>
                         <svg class='spinner' width='40' height='40' viewBox='0 0 40 40' style='animation: spin 1s linear infinite;'>
@@ -262,7 +280,7 @@ namespace Bloom.web
                     $@"<!DOCTYPE html>
                 <html style='height:100%'>
                 <head>
-                    <title>ReactControl (Vite {_javascriptBundleName})</title>
+                    <title>ReactControl (Vite {javascriptBundleName})</title>
                     <meta charset='UTF-8' />
                     <script type='module'>
                         import RefreshRuntime from ""http://localhost:5173/@react-refresh"";
@@ -336,7 +354,7 @@ namespace Bloom.web
                     $@"<!DOCTYPE html>
 				<html style='height:100%'>
 				<head>
-					<title>ReactControl ({_javascriptBundleName})</title>
+                    <title>ReactControl ({javascriptBundleName})</title>
 					<meta charset = 'UTF-8' />
                     <script src = '/{bundleNameWithExtension}'  type='module'></script>
 					<script>
