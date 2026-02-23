@@ -21,7 +21,6 @@ using SIL.Core.ClearShare;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
-using SIL.Windows.Forms.ClearShare;
 using BookInstance = Bloom.Book.Book;
 
 namespace Bloom.Publish.BloomLibrary
@@ -62,7 +61,7 @@ namespace Bloom.Publish.BloomLibrary
         internal string LicenseRights => _license.RightsStatement ?? string.Empty;
 
         // ReSharper disable once InconsistentNaming
-        internal string CCLicenseUrl => (_license as CreativeCommonsLicense)?.Url;
+        internal string CCLicenseUrl => (_license as CreativeCommonsLicenseInfo)?.Url;
 
         internal string LicenseToken => _license.Token.ToUpperInvariant();
 
@@ -373,7 +372,7 @@ namespace Bloom.Publish.BloomLibrary
         {
             get
             {
-                if (_license is CreativeCommonsLicense)
+                if (_license is CreativeCommonsLicenseInfo)
                 {
                     return LicenseState.CreativeCommons;
                 }
