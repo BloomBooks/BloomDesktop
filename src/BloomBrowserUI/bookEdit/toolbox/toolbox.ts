@@ -1072,6 +1072,8 @@ function beginAddTool(
 }
 
 let keydownEventCounter = 0;
+const retryDelayForPasteMarkupUpdateInMilliseconds = 100;
+const maxPasteMarkupUpdateRetries = 3;
 
 export function scheduleMarkupUpdateAfterPaste(): void {
     // AI thinks we might need this to "allow the DOM to settle" even before we do the
@@ -1081,7 +1083,7 @@ export function scheduleMarkupUpdateAfterPaste(): void {
     // that is hard to reproduce reliably. I'd rather have a timeout that we don't
     // need than have the markup occasionally not update, let alone somehow have
     // the markup update somehow mess up the paste. So I decided to leave it in.
-    setTimeout(() => handlePageEditing(), 0);
+    setTimeout(() => handlePageEditing(maxPasteMarkupUpdateRetries), 0);
 }
 
 // Handle edits to the page: mainly triggered by key up, but also by paste.
@@ -1089,7 +1091,9 @@ export function scheduleMarkupUpdateAfterPaste(): void {
 // delay should prevent us from doing the markup more than once per paste.
 // Similarly, since updating the markup is fairly costly, it's good not to do it on every keystroke
 // while the user is typing rapidly.
-function handlePageEditing(): void {
+function handlePageEditing(
+    remainingRetriesForInvalidSelectionState: number = 0,
+): void {
     // BL-599: "Unresponsive script" while typing in text.
     // The function setTimeout() returns an integer, not a timer object, and therefore it does not have a member
     // function called "clearTimeout." Because of this, the jQuery method $.isFunction(keypressTimer.clearTimeout)
@@ -1123,8 +1127,12 @@ function handlePageEditing(): void {
     // would mean we already have a page content delay in place and should not add another.
     // However, the markup changes that we are making here are stripped out by Save anyway,
     // so I don't believe we need to worry about suppressing saves while we're doing this.
-    keypressTimer = setTimeout(async () => {
-        // This happens 500ms after the user stops typing.
+    // We'll initially try this mainTask after 500ms. If the user types another key before that,
+    // the code above will cancel that and start a new 500ms timer, so we won't do the mainTask
+    // until 500ms after the user stops typing. Also, if we find that the selection state is
+    // (perhaps temporarily) invalid for doing the markup, we'll try again a few times with a
+    // shorter delay, and if it still isn't valid, we'll just give up until the next keyup or paste.
+    const mainTask = async (remainingRetries: number) => {
         const page: HTMLIFrameElement = <HTMLIFrameElement>(
             parent.window.document.getElementById("page")
         );
@@ -1135,13 +1143,23 @@ function handlePageEditing(): void {
         const active = anchor
             ? <HTMLDivElement>$(anchor).closest("div").get(0)
             : null;
-        if (
+        const selectionStateIsInvalidForMarkup =
             !active ||
             (selection &&
                 (selection.rangeCount > 1 ||
                     (selection.rangeCount === 1 &&
-                        !selection.getRangeAt(0).collapsed)))
-        ) {
+                        !selection.getRangeAt(0).collapsed)));
+
+        if (selectionStateIsInvalidForMarkup) {
+            // Copilot suggested that there are some cases after a paste where the selection
+            // is only temporarily a range, so it's worth trying again a few times.
+            // This callback can also be canceled by a new keypress etc.
+            if (remainingRetries > 0) {
+                keypressTimer = setTimeout(
+                    () => mainTask(remainingRetries - 1),
+                    retryDelayForPasteMarkupUpdateInMilliseconds,
+                );
+            }
             return; // don't even try to adjust markup while there is some complex selection
         }
 
@@ -1262,7 +1280,11 @@ function handlePageEditing(): void {
         }
         // clear this value to prevent unnecessary calls to clearTimeout() for timeouts that have already expired.
         keypressTimer = null;
-    }, 500);
+    };
+    keypressTimer = setTimeout(
+        () => mainTask(remainingRetriesForInvalidSelectionState),
+        500,
+    );
 }
 
 function RemoveNonPTags(editableDivHtml: string): string {
