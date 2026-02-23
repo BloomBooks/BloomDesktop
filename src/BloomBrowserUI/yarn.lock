@@ -2930,10 +2930,10 @@
   resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.52.5.tgz#1657f56326bbe0ac80eedc9f9c18fc1ddd24e107"
   integrity sha512-TAcgQh2sSkykPRWLrdyy2AiceMckNf5loITqXxFI5VuQjS5tSuw3WlwdN8qv8vzjLAUTvYaH/mVjSFpbkFbpTg==
 
-"@sillsdev/config-r@1.0.0-alpha.15":
-  version "1.0.0-alpha.15"
-  resolved "https://registry.yarnpkg.com/@sillsdev/config-r/-/config-r-1.0.0-alpha.15.tgz#0979c316e50e6d7edbe699e30235c3160cbf18b0"
-  integrity sha512-blKYURgkxTr7kdjR13+7JDwnyqolMtfKaTKAVRuEiyLxbNNUiHDIXazc7A9k/tNBPNpItAT21tu4E+3RZB9gXQ==
+"@sillsdev/config-r@1.0.0-alpha.18":
+  version "1.0.0-alpha.18"
+  resolved "https://registry.npmjs.org/@sillsdev/config-r/-/config-r-1.0.0-alpha.18.tgz#177178ec2bba9e2843a3edab949c6b6489f0286d"
+  integrity sha512-EFiyAwUTMJ4jlvXRMBsO4+Zm8Gkaur+idUB3czXADqE0zG8ZnrMug951dWv67uFLH6hZT9jhGasEsHU1G/2/qA==
   dependencies:
     "@textea/json-viewer" "^2.13.1"
     formik "^2.2.9"
