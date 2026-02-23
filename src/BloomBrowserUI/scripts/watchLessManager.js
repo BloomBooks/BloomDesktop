@@ -467,14 +467,13 @@ class LessWatchManager {
                 return this.compileEntry(entry, reason);
             });
 
-        this.pendingBuilds.set(
-            entryId,
-            next.finally(() => {
-                if (this.pendingBuilds.get(entryId) === next) {
-                    this.pendingBuilds.delete(entryId);
-                }
-            }),
-        );
+        const wrapped = next.finally(() => {
+            if (this.pendingBuilds.get(entryId) === wrapped) {
+                this.pendingBuilds.delete(entryId);
+            }
+        });
+
+        this.pendingBuilds.set(entryId, wrapped);
 
         await next;
     }
