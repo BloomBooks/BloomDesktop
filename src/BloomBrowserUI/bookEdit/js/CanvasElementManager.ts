@@ -6535,7 +6535,8 @@ export class CanvasElementManager {
                 .find(".bloom-ui")
                 .filter(
                     (_, x) =>
-                        !x.classList.contains("bloom-videoControlContainer"),
+                        !x.classList.contains("bloom-videoControlContainer") &&
+                        !x.classList.contains("bloom-videoMouseDetector"),
                 )
                 .remove();
             thisCanvasElement.find(".bloom-dragHandleTOP").remove(); // BL-7903 remove any left over drag handles (this was the class used in 4.7 alpha)

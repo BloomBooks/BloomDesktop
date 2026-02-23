@@ -31,9 +31,14 @@ export function SetupVideoEditing(container) {
             // debugging, and just might prevent a problem in normal operation.
             videoElement.parentElement?.classList.remove("playing");
             videoElement.parentElement?.classList.remove("paused");
-            videoElement.addEventListener("click", handleVideoClick);
+            const mouseDetector =
+                videoElement.ownerDocument.createElement("div");
+            mouseDetector.classList.add("bloom-videoMouseDetector");
+            mouseDetector.classList.add("bloom-ui"); // don't save as part of document
+            mouseDetector.addEventListener("click", handleVideoClick);
+            videoElement.parentElement?.appendChild(mouseDetector);
             const playButton = wrapVideoIcon(
-                videoElement,
+                mouseDetector,
                 // Alternatively, we could import the Material UI icon, make this file a TSX, and use
                 // ReactDom.render to render the icon into the div. But just creating the SVG
                 // ourselves (as these methods do) seems more natural to me. We would not be using
@@ -44,13 +49,13 @@ export function SetupVideoEditing(container) {
             );
             playButton.addEventListener("click", handlePlayClick);
             const pauseButton = wrapVideoIcon(
-                videoElement,
+                mouseDetector,
                 getPauseIcon("#ffffff", videoElement),
                 "bloom-videoPauseIcon",
             );
             pauseButton.addEventListener("click", handlePauseClick);
             const replayButton = wrapVideoIcon(
-                videoElement,
+                mouseDetector,
                 getReplayIcon("#ffffff", videoElement),
                 "bloom-videoReplayIcon",
             );
@@ -302,17 +307,17 @@ export function updateVideoInContainer(container: Element, url: string): void {
 // configure one of the icons we display over videos. We put a div around it and apply
 // various classes and append it to the parent of the video.
 function wrapVideoIcon(
-    videoElement: HTMLVideoElement,
+    parent: HTMLElement,
     icon: HTMLElement,
     iconClass: string,
 ): HTMLElement {
-    const wrapper = videoElement.ownerDocument.createElement("div");
+    const wrapper = parent.ownerDocument.createElement("div");
     wrapper.classList.add("bloom-videoControlContainer");
     wrapper.classList.add("bloom-ui"); // don't save as part of document
     wrapper.appendChild(icon);
     wrapper.classList.add(iconClass);
     icon.classList.add("bloom-videoControl");
-    videoElement.parentElement?.appendChild(wrapper);
+    parent.appendChild(wrapper);
     return icon;
 }
 
@@ -336,6 +341,7 @@ export function handlePlayClick(ev: MouseEvent, forcePlay?: boolean) {
     // becuse the click might be a drag on the canvas element. We'll let CanvasElementManager
     // decide and call playVideo if appropriate. That is, if we're not in Play mode,
     // where dragging is not applicable, or being called FROM the CanvasElementManager.
+    // TODO The above comment is out of date; there
     if (
         !forcePlay &&
         video.closest(kCanvasElementSelector) &&
@@ -391,12 +397,14 @@ function handlePauseClick(ev: MouseEvent) {
 // be a natural bit of code to put in dragActivityRuntime.ts, except we don't need
 // it there, because BloomPlayer has this behavior for all videos, not just in Games.)
 const handleVideoClick = (ev: MouseEvent) => {
-    const video = ev.currentTarget as HTMLVideoElement;
+    const video = (ev.currentTarget as HTMLElement)
+        ?.closest(".bloom-videoContainer")
+        ?.getElementsByTagName("video")[0];
 
     // If we're not in Play mode, we don't need these behaviors.
     // At least I don't think so. Outside Play mode, clicking on canvas elements is mainly about moving
     // them, but we have a visible Play button in case you want to play one. In BP (and Play mode), you
-    // can't move them (unless one day we make them something you can drag to a target), so it
+    // can't move them if they aren't draggable, so it
     // makes sense that a click anywhere on the video would play it; there's nothing else useful
     // to do in response.
     if (!video.closest(".drag-activity-play")) {
