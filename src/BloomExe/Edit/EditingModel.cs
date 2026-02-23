@@ -1323,7 +1323,7 @@ namespace Bloom.Edit
                 OptimizeForLinux(pageListDom);
 
             pageListDom = CurrentBook.GetHtmlDomForPageList(pageListDom);
-            var url =_view.Browser.CreateSimulatedFile(
+            var url = _view.Browser.CreateSimulatedFile(
                 pageListDom,
                 false,
                 InMemoryHtmlFileSource.Pagelist
@@ -1377,6 +1377,26 @@ namespace Bloom.Edit
             }
 
             return dom;
+        }
+
+        public HtmlDom GetXmlDocumentForWorkspaceRootOnly()
+        {
+            var path = FileLocationUtilities.GetFileDistributedWithApplication(
+                Path.Combine(
+                    BloomFileLocator.BrowserRoot,
+                    "bookEdit",
+                    ReactControl.ShouldUseViteDev()
+                        ? "EditViewFrame.vite-dev.html"
+                        : "EditViewFrame.html"
+                )
+            );
+
+            var frameText = RobustFile
+                .ReadAllText(path, Encoding.UTF8)
+                .Replace("{simulatedPageFileInBookFolder}", "about:blank")
+                .Replace("{simulatedPageListFile}", "about:blank");
+
+            return new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));
         }
 
         /// <summary>

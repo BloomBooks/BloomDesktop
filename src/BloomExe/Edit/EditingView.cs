@@ -54,6 +54,8 @@ namespace Bloom.Edit
         private PageListApi _pageListApi;
         private DateTime? _lastTopBarMenuClosedTime;
         private Browser _browser1 => WorkspaceView?.MainBrowser;
+        private bool _waitingForFirstEditModeInitialization;
+        private bool _workspaceRootDocumentLoaded;
 
         internal WorkspaceView WorkspaceView { get; set; }
 
@@ -254,6 +256,21 @@ namespace Bloom.Edit
             _browser1.ControlKeyEvent = _controlKeyEvent;
         }
 
+        internal void EnsureWorkspaceRootDocumentLoadedForCollectionMode()
+        {
+            if (_workspaceRootDocumentLoaded || _browser1 == null)
+                return;
+
+            _browser1.DocumentCompleted += WebBrowser_ReadyStateChanged;
+            var dom = _model.GetXmlDocumentForWorkspaceRootOnly();
+            _browser1.Navigate(
+                dom,
+                setAsCurrentPageForDebugging: true,
+                source: InMemoryHtmlFileSource.Frame
+            );
+            _workspaceRootDocumentLoaded = true;
+        }
+
         private void HandleControlKeyEvent(object keyData)
         {
             if (_visible && (Keys)keyData == (Keys.Control | Keys.N))
@@ -315,6 +332,11 @@ namespace Bloom.Edit
                     _pageListView.Clear();
                 }
                 _model.OnBecomeVisible();
+                if (_waitingForFirstEditModeInitialization)
+                {
+                    _waitingForFirstEditModeInitialization = false;
+                    _model.DocumentCompleted();
+                }
                 Logger.WriteEvent("Entered Edit Tab");
                 Cursor = Cursors.Default;
             }
@@ -334,7 +356,6 @@ namespace Bloom.Edit
         /// </summary>
         public void OnHideEditTab()
         {
-            _browser1.Navigate("about:blank", false); //so we don't see the old one for moment, the next time we open this tab
             _model.ClearBookForToolboxContent(); // there's no longer a frame ready for a new page displayed in the browser.
         }
 
@@ -403,17 +424,34 @@ namespace Bloom.Edit
             // never happens.
             // Do this before we change the src of the iframe to make sure we're ready when the document-completed arrives.
             _browser1.DocumentCompleted += WebBrowser_ReadyStateChanged;
-            if (
-                _model.AreToolboxAndOuterFrameCurrent()
-                && !_changingUiLanguage
-                && !ShouldDoFullReload()
-            )
+            var canReuseCurrentRoot = !_changingUiLanguage && !ShouldDoFullReload();
+            var canReuseWorkspaceRootOnly = _workspaceRootDocumentLoaded && canReuseCurrentRoot;
+            if (_model.AreToolboxAndOuterFrameCurrent() && canReuseCurrentRoot)
             {
                 // Keep the top document and toolbox iframe, just navigate the page iframe to the new page.
                 var pageUrl = _model.GetUrlForCurrentPage();
                 var urlFile = Path.GetFileName(pageUrl); // this actually works with a leading http://.
                 Logger.WriteEvent(
                     $"changing page via editTabBundle.switchContentPage('{urlFile}')"
+                );
+                _browser1.RunJavascriptFireAndForget(
+                    "editTabBundle.switchContentPage('" + pageUrl + "');"
+                );
+            }
+            else if (canReuseWorkspaceRootOnly)
+            {
+                // We already have the workspace root loaded (typically from collection mode),
+                // so don't navigate the top document again. Just initialize edit-frame content.
+                _model.SetupServerWithCurrentBookToolboxContents();
+                var pageListUrl = _model.GetUrlForPageListFile();
+                var pageUrl = _model.GetUrlForCurrentPage();
+
+                _browser1.RunJavascriptFireAndForget(
+                    "(function(){ const toolbox = document.getElementById('toolbox'); if (toolbox && toolbox.contentWindow) { toolbox.contentWindow.location.reload(); } })();"
+                );
+
+                _browser1.RunJavascriptFireAndForget(
+                    "editTabBundle.switchThumbnailPage('" + pageListUrl + "');"
                 );
                 _browser1.RunJavascriptFireAndForget(
                     "editTabBundle.switchContentPage('" + pageUrl + "');"
@@ -474,6 +512,19 @@ namespace Bloom.Edit
         {
             _browser1.DocumentCompleted -= WebBrowser_ReadyStateChanged;
             HidePageAndShowWaitCursor(false);
+            if (!_visible)
+            {
+                _browser1.RunJavascriptFireAndForget(
+                    "window.editTabBundle?.setWorkspaceMode?.('collection');"
+                );
+                _waitingForFirstEditModeInitialization = true;
+                return;
+            }
+
+            _browser1.RunJavascriptFireAndForget(
+                "window.editTabBundle?.setWorkspaceMode?.('edit');"
+            );
+
             _model.DocumentCompleted();
             _browser1.Focus(); //fix BL-3078 No Initial Insertion Point when any page shown
             var beginGarbageCollect = DateTime.Now;
@@ -509,6 +560,16 @@ namespace Bloom.Edit
         {
             await _browser1.RunJavascriptAsync(script);
             return;
+        }
+
+        internal void SetWorkspaceMode(string mode)
+        {
+            RunJavascriptAsync($"editTabBundle.setWorkspaceMode('{mode}');");
+            if (mode == "edit" && _waitingForFirstEditModeInitialization)
+            {
+                _waitingForFirstEditModeInitialization = false;
+                _model.DocumentCompleted();
+            }
         }
 
         private Metadata _originalImageMetadataFromImageToolbox;

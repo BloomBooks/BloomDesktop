@@ -2,15 +2,13 @@ using System;
 using System.Drawing;
 using System.Threading.Tasks;
 using Bloom;
+using Bloom.Api;
 using Newtonsoft.Json;
-using SIL.IO;
 
 namespace Bloom.web
 {
     public class IframeReactControl : IDisposable
     {
-        private TempFile _tempFile;
-
         public async Task Load(
             Browser browser,
             string javascriptBundleName,
@@ -25,26 +23,46 @@ namespace Bloom.web
             if (string.IsNullOrEmpty(iframeId))
                 throw new ArgumentNullException(nameof(iframeId));
 
-            _tempFile?.Dispose();
-            _tempFile = ReactControl.MakeTempFileForReactBundle(
+            var html = ReactControl.GetHtmlForReactBundle(
                 javascriptBundleName,
                 props,
                 Color.White,
-                hideVerticalOverflow: false,
-                detach: false
+                hideVerticalOverflow: false
             );
+
+            var baseUrl = BloomServer.PutFixedSimulatedHtmlForId(
+                iframeId,
+                html,
+                InMemoryHtmlFileSource.Frame
+            );
+            var srcWithVersion = baseUrl + "?v=" + Guid.NewGuid();
 
             var iframeIdJson = JsonConvert.SerializeObject(iframeId);
-            var srcJson = JsonConvert.SerializeObject(_tempFile.Path.ToLocalhost());
+            var srcJson = JsonConvert.SerializeObject(srcWithVersion);
             await browser.RunJavascriptAsync(
-                $"(() => {{ const iframe = document.getElementById({iframeIdJson}); if (!iframe) return; iframe.src = {srcJson}; }})()"
+                $@"(() => {{
+                    const targetId = {iframeIdJson};
+                    const src = {srcJson};
+                    let attempts = 0;
+                    const maxAttempts = 40;
+                    const setSrcWhenReady = () => {{
+                        const iframe = document.getElementById(targetId);
+                        if (iframe) {{
+                            iframe.src = src;
+                            return;
+                        }}
+
+                        attempts += 1;
+                        if (attempts < maxAttempts) {{
+                            window.setTimeout(setSrcWhenReady, 50);
+                        }}
+                    }};
+
+                    setSrcWhenReady();
+                }})()"
             );
         }
 
-        public void Dispose()
-        {
-            _tempFile?.Dispose();
-            _tempFile = null;
-        }
+        public void Dispose() { }
     }
 }

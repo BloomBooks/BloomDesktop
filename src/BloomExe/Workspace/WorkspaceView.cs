@@ -44,6 +44,8 @@ namespace Bloom.Workspace
         private PublishView _publishView;
         private CollectionTabView _collectionTabView;
         private Control _previouslySelectedControl;
+        private Control _previouslyDisplayedControl;
+        private IBloomTabArea _previouslySelectedTabArea;
         public event EventHandler ReopenCurrentProject;
         public static float DPIOfThisAccount;
         private ZoomModel _zoomModel;
@@ -173,12 +175,7 @@ namespace Bloom.Workspace
             }
 
             _collectionTabView = collectionsTabViewFactory();
-            _collectionTabView.Dock = DockStyle.Fill;
-            _collectionTabView.BackColor = System.Drawing.Color.FromArgb(
-                ((int)(((byte)(87)))),
-                ((int)(((byte)(87)))),
-                ((int)(((byte)(87))))
-            );
+            _collectionTabView.WorkspaceView = this;
             _tabSelection.ActiveTab = WorkspaceTab.collection;
 
             //
@@ -192,12 +189,10 @@ namespace Bloom.Workspace
             // Remove once menus are in the single browser UI.
             if (_mainBrowser != null)
                 _mainBrowser.OnBrowserClick += HandleAnyBrowserClick;
-            if (_collectionTabView != null)
-                _collectionTabView.BrowserClick += HandleAnyBrowserClick;
             if (_publishView != null)
                 _publishView.BrowserClick += HandleAnyBrowserClick;
 
-            SelectTab(_collectionTabView);
+            SelectTab(_collectionTabView, _editingView, selectedControlForEvent: null);
 
             SetupZoomModel();
             SetupTopBarReactControl();
@@ -262,6 +257,11 @@ namespace Bloom.Workspace
         private void ReadyToShowCollections()
         {
             _collectionTabView.ReadyToShowCollections();
+        }
+
+        internal void EnsureMainBrowserHasWorkspaceRootLoaded()
+        {
+            _editingView.EnsureWorkspaceRootDocumentLoadedForCollectionMode();
         }
 
         private void InitializeMainBrowser()
@@ -1168,21 +1168,25 @@ namespace Bloom.Workspace
             );
         }
 
-        private void SelectTab(Control view)
+        private void SelectTab(
+            IBloomTabArea view,
+            Control displayedView,
+            Control selectedControlForEvent
+        )
         {
             // Already on the desired tab: nothing to do.  And possible problems if we do do something.
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-8382.
-            if (view == _previouslySelectedControl)
+            if (view == _previouslySelectedTabArea)
                 return;
 
-            CurrentTabView = view as IBloomTabArea;
+            CurrentTabView = view;
             // Warn the user if we're starting to use too much memory.
             //MemoryManagement.CheckMemory(false, "switched tab in workspace", true);
 
-            if (_previouslySelectedControl != null)
+            if (_previouslyDisplayedControl != null && _previouslyDisplayedControl != displayedView)
             {
-                _containerPanel.Controls.Remove(_previouslySelectedControl);
-                if (_previouslySelectedControl is EditingView)
+                _containerPanel.Controls.Remove(_previouslyDisplayedControl);
+                if (_previouslySelectedTabArea is EditingView)
                 {
                     // I wish this was unnecessary; ideally, we'd get the notification to
                     // stop monitoring from the stopMonitoring function in audioRecording.ts.
@@ -1193,21 +1197,30 @@ namespace Bloom.Workspace
                 }
             }
 
-            view.Dock = DockStyle.Fill;
-            _containerPanel.Controls.Add(view);
+            displayedView.Dock = DockStyle.Fill;
+            if (!_containerPanel.Controls.Contains(displayedView))
+            {
+                _containerPanel.Controls.Add(displayedView);
+            }
 
             _selectedTabAboutToChangeEvent.Raise(
                 new TabChangedDetails()
                 {
                     From = _previouslySelectedControl,
-                    To = view,
+                    To = selectedControlForEvent,
                     PostponedWork = () =>
                     {
                         _selectedTabChangedEvent.Raise(
-                            new TabChangedDetails() { From = _previouslySelectedControl, To = view }
+                            new TabChangedDetails()
+                            {
+                                From = _previouslySelectedControl,
+                                To = selectedControlForEvent,
+                            }
                         );
 
-                        _previouslySelectedControl = view;
+                        _previouslySelectedControl = selectedControlForEvent;
+                        _previouslyDisplayedControl = displayedView;
+                        _previouslySelectedTabArea = view;
                         _collectionApi.ResetUpdatingList();
 
                         var zoomManager = CurrentTabView as IZoomManager;
@@ -1231,10 +1244,13 @@ namespace Bloom.Workspace
             switch (newTab)
             {
                 case WorkspaceTab.edit:
-                    SelectTab(_editingView);
+                    _editingView.SetWorkspaceMode("edit");
+                    SelectTab(_editingView, _editingView, _editingView);
                     break;
                 case WorkspaceTab.collection:
-                    SelectTab(_collectionTabView);
+                    _collectionTabView.EnsureLoadedInMainBrowser();
+                    _editingView.SetWorkspaceMode("collection");
+                    SelectTab(_collectionTabView, _editingView, null);
                     if (_returnToCollectionTabNotifier != null)
                     {
                         _returnToCollectionTabNotifier.CloseSafely();
@@ -1253,7 +1269,7 @@ namespace Bloom.Workspace
                     }
                     break;
                 case WorkspaceTab.publish:
-                    SelectTab(_publishView);
+                    SelectTab(_publishView, _publishView, _publishView);
                     break;
             }
         }

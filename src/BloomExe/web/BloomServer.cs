@@ -154,6 +154,7 @@ namespace Bloom.Api
         private bool _useCache;
 
         private const string SimulatedFileUrlMarker = "-memsim-";
+        private const string FixedSimulatedPathPrefix = "fixed-simulated/";
         static Dictionary<string, string> _urlToSimulatedPageContent =
             new Dictionary<string, string>(); // see comment on MakeInMemoryHtmlFileInBookFolder
         private BloomFileLocator _fileLocator;
@@ -224,6 +225,46 @@ namespace Bloom.Api
 
         public string CurrentPageContent { get; set; }
         public string ToolboxContent { get; set; }
+
+        private static string SanitizeFixedSimulatedId(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+                throw new ArgumentNullException(nameof(id));
+
+            return id.Replace("/", "_").Replace("\\", "_").Replace(" ", "_");
+        }
+
+        internal static string GetFixedSimulatedKeyForId(
+            string id,
+            InMemoryHtmlFileSource source = InMemoryHtmlFileSource.Frame
+        )
+        {
+            var safeId = SanitizeFixedSimulatedId(id);
+            return $"{FixedSimulatedPathPrefix}{safeId}{SimulatedFileUrlMarker}{source}.html";
+        }
+
+        internal static string GetFixedSimulatedUrlForId(
+            string id,
+            InMemoryHtmlFileSource source = InMemoryHtmlFileSource.Frame
+        )
+        {
+            return GetFixedSimulatedKeyForId(id, source).ToLocalhost();
+        }
+
+        internal static string PutFixedSimulatedHtmlForId(
+            string id,
+            string html,
+            InMemoryHtmlFileSource source = InMemoryHtmlFileSource.Frame
+        )
+        {
+            var key = GetFixedSimulatedKeyForId(id, source);
+            lock (_urlToSimulatedPageContent)
+            {
+                _urlToSimulatedPageContent[key] = html ?? "";
+            }
+
+            return key.ToLocalhost();
+        }
 
         public Book.Book CurrentBook => _bookSelection?.CurrentSelection;
 
@@ -595,6 +636,14 @@ namespace Bloom.Api
             {
                 request.ResponseContentType = "text/html";
                 request.WriteCompleteOutput(content ?? "");
+                return true;
+            }
+
+            if (localPath.StartsWith(FixedSimulatedPathPrefix, StringComparison.Ordinal))
+            {
+                // Stable in-memory iframe URL exists but has not been populated yet.
+                request.ResponseContentType = "text/html";
+                request.WriteCompleteOutput("");
                 return true;
             }
 

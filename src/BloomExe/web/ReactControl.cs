@@ -189,6 +189,23 @@ namespace Bloom.web
             if (detach)
                 tempFile.Detach(); // caller is responsible for cleanup when detached
 
+            var html = GetHtmlForReactBundle(
+                javascriptBundleName,
+                propsObject,
+                backColor,
+                hideVerticalOverflow
+            );
+            RobustFile.WriteAllText(tempFile.Path, html);
+            return tempFile;
+        }
+
+        internal static string GetHtmlForReactBundle(
+            string javascriptBundleName,
+            object propsObject,
+            Color backColor,
+            bool hideVerticalOverflow
+        )
+        {
             var props = propsObject == null ? "{}" : JsonConvert.SerializeObject(propsObject);
 
             if (javascriptBundleName == null)
@@ -275,9 +292,7 @@ namespace Bloom.web
 
             if (useViteDev)
             {
-                RobustFile.WriteAllText(
-                    tempFile.Path,
-                    $@"<!DOCTYPE html>
+                return $@"<!DOCTYPE html>
                 <html style='height:100%'>
                 <head>
                     <title>ReactControl (Vite {javascriptBundleName})</title>
@@ -342,16 +357,13 @@ namespace Bloom.web
                     </script>
                 </head>
                 {body}
-                </html>"
-                );
+                </html>";
             }
             else
             {
                 // The 'body' height: auto rule keeps a winforms tab that only contains a ReactControl
                 // from unnecessary scrolling.
-                RobustFile.WriteAllText(
-                    tempFile.Path,
-                    $@"<!DOCTYPE html>
+                return $@"<!DOCTYPE html>
 				<html style='height:100%'>
 				<head>
                     <title>ReactControl ({javascriptBundleName})</title>
@@ -365,10 +377,8 @@ namespace Bloom.web
 					</script>
 				</head>
 				{body}
-				</html>"
-                );
+                </html>";
             }
-            return tempFile;
         }
 
         // Determines the basics of whether to load the vite dev versions of various things.

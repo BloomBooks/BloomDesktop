@@ -9,20 +9,27 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
+using Bloom.web;
 using Bloom.Workspace;
 using L10NSharp;
 using SIL.Reporting;
 
 namespace Bloom.CollectionTab
 {
-    public partial class CollectionTabView : UserControl, IBloomTabArea
+    public class CollectionTabView : IBloomTabArea, IDisposable
     {
         private readonly CollectionModel _model;
         private WorkspaceTabSelection _tabSelection;
         private BookSelection _bookSelection;
         private BloomWebSocketServer _webSocketServer;
         private TeamCollectionManager _tcManager;
+        private readonly IframeReactControl _iframeReactControl;
+        private bool _loadedIntoIframe;
+        private bool _isDisposed;
         private bool _bookChangesPending = false; // bookchanged event while tab not visible
+        private EventHandler _mainBrowserClickBridge;
+
+        internal WorkspaceView WorkspaceView { get; set; }
 
         public delegate CollectionTabView Factory(); //autofac uses this
 
@@ -42,6 +49,7 @@ namespace Bloom.CollectionTab
             _bookSelection = bookSelection;
             _webSocketServer = webSocketServer;
             _tcManager = tcManager;
+            _iframeReactControl = new IframeReactControl();
 
             // Commented out because of BL-12890, while we think about that.
             //bookRefreshEvent.Subscribe(book => {
@@ -52,15 +60,19 @@ namespace Bloom.CollectionTab
 
             BookCollection.CollectionCreated += OnBookCollectionCreated;
 
-            InitializeComponent();
-            _reactControl.SetLocalizationChangedEvent(localizationChangedEvent); // after InitializeComponent, which creates it.
-            BackColor = _reactControl.BackColor = Palette.GeneralBackground;
+            localizationChangedEvent.Subscribe(unused =>
+            {
+                if (_loadedIntoIframe)
+                {
+                    ReloadIntoIframe();
+                }
+            });
 
             //TODO splitContainer1.SplitterDistance = _collectionListView.PreferredWidth;
 
             selectedTabChangedEvent.Subscribe(c =>
             {
-                if (c.To == this)
+                if (_tabSelection.ActiveTab == WorkspaceTab.collection)
                 {
                     Logger.WriteEvent("Entered Collections Tab");
                     if (_bookChangesPending && _bookSelection.CurrentSelection != null)
@@ -70,40 +82,18 @@ namespace Bloom.CollectionTab
             SetTeamCollectionStatus(tcManager);
             TeamCollectionManager.TeamCollectionStatusChanged += (sender, args) =>
             {
-                if (IsHandleCreated && !IsDisposed)
+                if (WorkspaceView != null && !_isDisposed)
                 {
                     SafeInvoke.InvokeIfPossible(
                         "update TC status",
-                        this,
+                        WorkspaceView,
                         false,
                         () => SetTeamCollectionStatus(tcManager)
                     );
                 }
             };
-
-            // We don't want this control initializing until team collections sync (if any) is done.
-            // That could change, but for now we're not trying to handle async changes arriving from
-            // the TC to the local collection, and as part of that, the collection tab doesn't expect
-            // the local collection to change because of TC stuff once it starts loading.
-            Controls.Remove(_reactControl);
             bookSelection.SelectionChanged += (sender, e) =>
                 BookSelectionChanged(bookSelection.CurrentSelection);
-        }
-
-        private bool _minimized;
-
-        protected override void OnSizeChanged(EventArgs e)
-        {
-            base.OnSizeChanged(e);
-            // To correct a weird SplitPane behavior in CollectionsTabPane, we need
-            // a notification when our window changes state from minimized to something else.
-            bool minimized = ParentForm?.WindowState == FormWindowState.Minimized;
-            if (!minimized && _minimized)
-            {
-                _webSocketServer.SendEvent("window", "restored");
-            }
-
-            _minimized = minimized;
         }
 
         private void BookSelectionChanged(Book.Book book)
@@ -156,7 +146,7 @@ namespace Bloom.CollectionTab
             {
                 c.FolderContentChanged += (sender, eventArgs) =>
                 {
-                    if (IsDisposed)
+                    if (_isDisposed)
                     {
                         Debug.Fail(
                             "FolderContentChanged handler invoked from a CollectionTabView that has already been disposed. Did the collection have cleanup such as StopWatchingDirectory() occur?"
@@ -233,24 +223,46 @@ namespace Bloom.CollectionTab
 
         public void ReadyToShowCollections()
         {
-            Invoke(
-                (Action)(
-                    () =>
-                    {
-                        // I'm not sure this is the best place to do this. The old LibraryListView had a comment:
-                        // "If we repair duplicates and there is a reason to toast (e.g. locked meta.json file),
-                        // The ongoing UI activity focuses Bloom over top of the toast after a brief flash.
-                        // For that reason, we add a new stage for tasks that need to happen after the UI is updated."
-                        // I don't fully understand that. In that view, it was done after we created the collection buttons.
-                        // My current inclination is that it's not a view responsibility at all.
-                        // However, until we get rid of the old collection tab, it's tricky to move it, so I've just
-                        // duplicated it here.
-                        // Doing it at this point seems to work fine.
-                        CheckForDuplicatesAndRepair();
-                        Controls.Add(_reactControl);
-                    }
-                )
+            void work()
+            {
+                // I'm not sure this is the best place to do this. The old LibraryListView had a comment:
+                // "If we repair duplicates and there is a reason to toast (e.g. locked meta.json file),
+                // The ongoing UI activity focuses Bloom over top of the toast after a brief flash.
+                // For that reason, we add a new stage for tasks that need to happen after the UI is updated."
+                // I don't fully understand that. In that view, it was done after we created the collection buttons.
+                // My current inclination is that it's not a view responsibility at all.
+                // However, until we get rid of the old collection tab, it's tricky to move it, so I've just
+                // duplicated it here.
+                // Doing it at this point seems to work fine.
+                CheckForDuplicatesAndRepair();
+                ReloadIntoIframe();
+            }
+
+            if (WorkspaceView != null && WorkspaceView.InvokeRequired)
+                WorkspaceView.Invoke((Action)work);
+            else
+                work();
+        }
+
+        internal void EnsureLoadedInMainBrowser()
+        {
+            ReloadIntoIframe();
+        }
+
+        private void ReloadIntoIframe()
+        {
+            if (WorkspaceView?.MainBrowser == null)
+                return;
+
+            WorkspaceView.EnsureMainBrowserHasWorkspaceRootLoaded();
+
+            _ = _iframeReactControl.Load(
+                WorkspaceView.MainBrowser,
+                "collectionsTabPaneBundle",
+                null,
+                "collectionTab"
             );
+            _loadedIntoIframe = true;
         }
 
         private void CheckForDuplicatesAndRepair()
@@ -330,12 +342,52 @@ namespace Bloom.CollectionTab
             );
         }
 
-        // Temporary bridge while workspace menus are still WinForms menus.
-        // Remove when menus and tabs run in one browser UI.
         internal event EventHandler BrowserClick
         {
-            add { _reactControl.OnBrowserClick += value; }
-            remove { _reactControl.OnBrowserClick -= value; }
+            add
+            {
+                if (WorkspaceView?.MainBrowser == null)
+                    return;
+
+                _mainBrowserClickBridge += value;
+                WorkspaceView.MainBrowser.OnBrowserClick += value;
+            }
+            remove
+            {
+                if (WorkspaceView?.MainBrowser == null)
+                    return;
+
+                _mainBrowserClickBridge -= value;
+                WorkspaceView.MainBrowser.OnBrowserClick -= value;
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_isDisposed)
+                return;
+
+            _isDisposed = true;
+            BookCollection.CollectionCreated -= OnBookCollectionCreated;
+
+            if (WorkspaceView?.MainBrowser != null && _mainBrowserClickBridge != null)
+                WorkspaceView.MainBrowser.OnBrowserClick -= _mainBrowserClickBridge;
+
+            try
+            {
+                var collections =
+                    _model?.GetBookCollections(true) ?? Enumerable.Empty<BookCollection>();
+                foreach (var collection in collections)
+                    collection?.StopWatchingDirectory();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("Caught exception in CollectionTabView.Dispose(): {0}", e);
+                if (!Program.RunningInConsoleMode)
+                    throw;
+            }
+
+            _iframeReactControl.Dispose();
         }
     }
 }
