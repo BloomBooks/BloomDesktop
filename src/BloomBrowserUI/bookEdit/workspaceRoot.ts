@@ -7,6 +7,7 @@ import {
     showColorPickerDialog as doShowColorPickerDialog,
     hideColorPickerDialog as doHideColorPickerDialog,
 } from "../react_components/color-picking/colorPickerDialog";
+import { postJson } from "../utils/bloomApi";
 import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 import $ from "jquery";
 
@@ -70,7 +71,9 @@ import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
 import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
 import * as ReactDOM from "react-dom";
+import * as React from "react";
 import { FunctionComponentElement } from "react";
+import { ToastHost, toastDebugEvents } from "../toast/ToastHost";
 
 import { showAdjustTimingsDialog } from "./toolbox/talkingBook/AdjustTimingsDialog";
 import { getPageIframeBody } from "../utils/shared";
@@ -434,6 +437,31 @@ const initializeWorkspaceModeFromUrl = (): void => {
     }
 };
 
+const mountWorkspaceToastHost = (): void => {
+    const root = document.getElementById("workspace-toast-host-root");
+    if (!root) {
+        return;
+    }
+
+    ReactDOM.render(React.createElement(ToastHost), root);
+};
+
+const installDevToolsHooks = (): void => {
+    window.bloomToastTest = (scenario = "all") => {
+        postJson("toast/test", { scenario });
+    };
+    window.bloomToastShow = (toast) => {
+        window.dispatchEvent(
+            new CustomEvent(toastDebugEvents.show, {
+                detail: toast,
+            }),
+        );
+    };
+    window.bloomToastClear = () => {
+        window.dispatchEvent(new CustomEvent(toastDebugEvents.clear));
+    };
+};
+
 // When the main window comes up from the "open in edge" command or by using
 // CURRENTPAGE.htm or after using Refresh, params in the URL tell us what mode to be
 // in and where to find the page and pagelist, if relevant. It has proved difficult
@@ -502,6 +530,17 @@ const initializeWorkspaceModeFromUrlWithRetries = (): void => {
 
 let workspaceModeInitializationStarted = false;
 let workspaceModeInitializationListenersInstalled = false;
+let workspaceRootDocumentInitialized = false;
+
+const initializeWorkspaceRootDocument = (): void => {
+    if (workspaceRootDocumentInitialized) {
+        return;
+    }
+
+    workspaceRootDocumentInitialized = true;
+    mountWorkspaceToastHost();
+    installDevToolsHooks();
+};
 
 // We use several strategies to try to make sure we run this critical initialization.
 // It has proved difficult to get it run reliably and only when appropriate (i.e., when
@@ -522,6 +561,7 @@ const tryStartWorkspaceModeInitialization = (): void => {
     }
 
     workspaceModeInitializationStarted = true;
+    initializeWorkspaceRootDocument();
     initializeWorkspaceModeFromUrlWithRetries();
 };
 
@@ -642,6 +682,37 @@ declare global {
     interface Window {
         workspaceBundle: WorkspaceBundleApi;
         bloomIsWorkspaceRoot?: boolean;
+        bloomToastTest?: (scenario?: string) => void;
+        bloomToastShow?: (
+            toast:
+                | {
+                      severity?: "error" | "warning" | "notice";
+                      text?: string;
+                      l10nId?: string;
+                      durationSeconds?: number;
+                      action?: {
+                          label?: string;
+                          l10nId?: string;
+                          url?: string;
+                          callbackId?: string;
+                      };
+                      toastId?: string;
+                  }
+                | Array<{
+                      severity?: "error" | "warning" | "notice";
+                      text?: string;
+                      l10nId?: string;
+                      durationSeconds?: number;
+                      action?: {
+                          label?: string;
+                          l10nId?: string;
+                          url?: string;
+                          callbackId?: string;
+                      };
+                      toastId?: string;
+                  }>,
+        ) => void;
+        bloomToastClear?: () => void;
     }
 }
 

@@ -9,6 +9,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.MiscUI;
+using Bloom.web;
 using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -201,6 +202,25 @@ namespace Bloom.web.controllers
                 false
             );
 
+            apiHandler.RegisterEndpointHandler(
+                "toast/performAction",
+                request =>
+                {
+                    var requestData = DynamicJson.Parse(request.RequiredPostJson());
+                    var callbackId = (string)requestData.callbackId;
+                    if (!ToastService.PerformAction(callbackId))
+                    {
+                        request.Failed("Toast action callback was not found.");
+                        return;
+                    }
+
+                    request.PostSucceeded();
+                },
+                false
+            );
+
+            apiHandler.RegisterEndpointHandler("toast/test", HandleToastTest, false);
+
             // At this point we open dialogs from c# code; if we opened dialogs from javascript, we wouldn't need this
             // api to do it. We just need a way to close a c#-opened dialog from javascript (e.g. the Close button of the dialog).
             //
@@ -305,6 +325,121 @@ namespace Bloom.web.controllers
         {
             var message = request.RequiredPostString();
             Logger.WriteEvent(message);
+            request.PostSucceeded();
+        }
+
+        private void HandleToastTest(ApiRequest request)
+        {
+            var requestData = DynamicJson.Parse(request.RequiredPostJson());
+            var scenario = (string)requestData.scenario ?? "all";
+
+            switch (scenario)
+            {
+                case "nonfatal/report":
+                    NonFatalProblem.Report(
+                        ModalIf.None,
+                        PassiveIf.All,
+                        "Toast test: nonfatal problem with report",
+                        "Toast test details for nonfatal report path.",
+                        new ApplicationException("Toast test nonfatal report"),
+                        showSendReport: true
+                    );
+                    break;
+                case "nonfatal/details":
+                    NonFatalProblem.Report(
+                        ModalIf.None,
+                        PassiveIf.All,
+                        "Toast test: nonfatal problem with details",
+                        "Toast test details for nonfatal details path.",
+                        new ApplicationException("Toast test nonfatal details"),
+                        showSendReport: false,
+                        showRequestDetails: true
+                    );
+                    break;
+                case "errorReporter/unobtrusive":
+                    Bloom.ErrorReporter.BloomErrorReport.NotifyUserUnobtrusively(
+                        "Toast test: unobtrusive warning",
+                        "Toast test longer unobtrusive message.",
+                        new ApplicationException("Toast test unobtrusive error")
+                    );
+                    break;
+                case "workspace/teamCollectionClobber":
+                    WorkspaceView?.DebugShowTeamCollectionClobberToast();
+                    break;
+                case "update/looking":
+                    ApplicationUpdateSupport.DebugShowToastScenario("looking");
+                    break;
+                case "update/upToDate":
+                    ApplicationUpdateSupport.DebugShowToastScenario("upToDate");
+                    break;
+                case "update/foundUpdates":
+                    ApplicationUpdateSupport.DebugShowToastScenario("foundUpdates", () => { });
+                    break;
+                case "update/downloading":
+                    ApplicationUpdateSupport.DebugShowToastScenario("downloading");
+                    break;
+                case "update/downloadedWaitingForRestart":
+                    ApplicationUpdateSupport.DebugShowToastScenario(
+                        "downloadedWaitingForRestart",
+                        () => { }
+                    );
+                    break;
+                case "update/error":
+                    ApplicationUpdateSupport.DebugShowToastScenario("error");
+                    break;
+                case "update/failure":
+                    ApplicationUpdateSupport.DebugShowToastScenario("failure");
+                    break;
+                case "all":
+                    ToastService.ShowToast(text: "Toast test: notice", durationSeconds: 5);
+                    ToastService.ShowToast(
+                        ToastSeverity.Warning,
+                        text: "Toast test: warning",
+                        durationSeconds: 7
+                    );
+                    ToastService.ShowToast(
+                        ToastSeverity.Error,
+                        text: "Toast test: persistent with action",
+                        action: new ToastAction { Label = "Dismiss", Callback = () => { } }
+                    );
+                    break;
+                case "notice":
+                    ToastService.ShowToast(text: "Toast test: notice", durationSeconds: 5);
+                    break;
+                case "warning":
+                    ToastService.ShowToast(
+                        ToastSeverity.Warning,
+                        text: "Toast test: warning",
+                        durationSeconds: 7
+                    );
+                    break;
+                case "error":
+                    ToastService.ShowToast(
+                        ToastSeverity.Error,
+                        text: "Toast test: error",
+                        durationSeconds: 10
+                    );
+                    break;
+                case "action":
+                    ToastService.ShowToast(
+                        text: "Toast test: click action button",
+                        durationSeconds: 15,
+                        action: new ToastAction
+                        {
+                            Label = "Run Action",
+                            Callback = () =>
+                                ToastService.ShowToast(
+                                    text: "Toast test action callback executed",
+                                    durationSeconds: 5
+                                ),
+                        }
+                    );
+                    break;
+                default:
+                    request.Failed($"Unknown toast test scenario '{scenario}'");
+                    return;
+            }
+
             request.PostSucceeded();
         }
 
