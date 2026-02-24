@@ -101,7 +101,6 @@ namespace Bloom.ErrorReporter
                 dedupeKey: shortMsg,
                 action: new ToastAction
                 {
-                    Kind = ToastActionKind.OpenErrorDialog,
                     Callback = () =>
                     {
                         BloomErrorReport.NotifyUserOfProblem(

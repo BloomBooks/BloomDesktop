@@ -4,6 +4,10 @@ using Bloom.Api;
 
 namespace Bloom.web
 {
+    /// <summary>
+    /// Severity values for toast notifications sent over websocket.
+    /// Keep these values in sync with ToastSeverity in src/BloomBrowserUI/toast/ToastHost.tsx.
+    /// </summary>
     public static class ToastSeverity
     {
         public const string Error = "error";
@@ -11,30 +15,31 @@ namespace Bloom.web
         public const string Notice = "notice";
     }
 
-    public static class ToastActionKind
-    {
-        public const string Restart = "restart";
-        public const string Navigate = "navigate";
-        public const string OpenErrorDialog = "openErrorDialog";
-        public const string Callback = "callback";
-    }
-
+    /// <summary>
+    /// Optional action metadata attached to a toast.
+    /// Keep property names and semantics in sync with IToastAction in src/BloomBrowserUI/toast/ToastHost.tsx.
+    /// </summary>
     public class ToastAction
     {
         public string Label { get; set; }
         public string L10nId { get; set; }
-        public string Kind { get; set; }
         public string Url { get; set; }
         public Action Callback { get; set; }
-        public int CallbackTimeoutSeconds { get; set; } = 600;
+        public int? CallbackTimeoutSeconds { get; set; }
     }
 
+    /// <summary>
+    /// Sends toast show/dismiss events to the browser UI and dispatches optional action callbacks.
+    /// </summary>
     public static class ToastService
     {
         private const string kToastClientContext = "toast";
         private const string kToastShowEvent = "show";
         private const string kToastDismissEvent = "dismiss";
 
+        /// <summary>
+        /// Tracks callback actions that can be executed later from browser toast interactions.
+        /// </summary>
         private class CallbackRecord
         {
             public Action Action { get; set; }
@@ -82,18 +87,23 @@ namespace Bloom.web
                     actionBundle.label = action.Label;
                 if (!string.IsNullOrWhiteSpace(action.L10nId))
                     actionBundle.l10nId = action.L10nId;
-                if (!string.IsNullOrWhiteSpace(action.Kind))
-                    actionBundle.kind = action.Kind;
                 if (!string.IsNullOrWhiteSpace(action.Url))
                     actionBundle.url = action.Url;
 
                 if (action.Callback != null)
                 {
+                    var callbackTimeoutSeconds =
+                        action.CallbackTimeoutSeconds
+                        ?? (
+                            autoDismiss
+                                ? Math.Max(600, ((durationMs ?? 6000) / 1000) + 120)
+                                : 7 * 24 * 60 * 60
+                        );
                     var callbackId = Guid.NewGuid().ToString("N");
                     s_callbackActions[callbackId] = new CallbackRecord
                     {
                         Action = action.Callback,
-                        ExpiresUtc = DateTime.UtcNow.AddSeconds(action.CallbackTimeoutSeconds),
+                        ExpiresUtc = DateTime.UtcNow.AddSeconds(callbackTimeoutSeconds),
                     };
                     actionBundle.callbackId = callbackId;
                 }

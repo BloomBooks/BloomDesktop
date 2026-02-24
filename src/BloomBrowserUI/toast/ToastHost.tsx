@@ -7,12 +7,13 @@ import WebSocketManager, {
 } from "../utils/WebSocketManager";
 import { postJson } from "../utils/bloomApi";
 
+// Keep values in sync with ToastSeverity in src/BloomExe/web/ToastService.cs.
 type ToastSeverity = "error" | "warning" | "notice";
 
 interface IToastAction {
+    // Keep property names and semantics in sync with ToastAction in src/BloomExe/web/ToastService.cs.
     label?: string;
     l10nId?: string;
-    kind?: "restart" | "navigate" | "openErrorDialog" | "callback";
     url?: string;
     callbackId?: string;
 }
@@ -29,21 +30,11 @@ interface IToast {
     action?: IToastAction;
 }
 
-interface IToastShowEvent extends IBloomWebSocketEvent {
-    toastId: string;
-    severity: ToastSeverity;
-    text?: string;
-    l10nId?: string;
-    l10nDefaultText?: string;
-    autoDismiss: boolean;
-    durationMs?: number;
-    dedupeKey?: string;
-    action?: IToastAction;
-}
+type IToastShowEvent = IBloomWebSocketEvent & IToast;
 
-interface IToastDismissEvent extends IBloomWebSocketEvent {
+type IToastDismissEvent = IBloomWebSocketEvent & {
     toastId: string;
-}
+};
 
 const getMuiSeverity = (severity: ToastSeverity) => {
     if (severity === "error") return "error";
@@ -59,11 +50,11 @@ const ToastItem: React.FunctionComponent<{
 }> = (props) => {
     const localizedMessage = useL10n(
         props.toast.l10nDefaultText || props.toast.text || "",
-        props.toast.l10nId ?? null,
+        props.toast.l10nId,
     );
     const localizedActionLabel = useL10n(
         props.toast.action?.label || "",
-        props.toast.action?.l10nId ?? null,
+        props.toast.action?.l10nId,
     );
 
     return (
@@ -81,9 +72,11 @@ const ToastItem: React.FunctionComponent<{
                 }
                 props.onClose(props.toast.toastId);
             }}
-            sx={{
-                bottom: `${16 + props.index * 76}px !important`,
-            }}
+            css={css`
+                && {
+                    bottom: ${16 + props.index * 76}px;
+                }
+            `}
         >
             <Alert
                 severity={getMuiSeverity(props.toast.severity)}
@@ -133,7 +126,7 @@ export const ToastHost: React.FunctionComponent = () => {
                 return;
             }
 
-            if (toast.action.kind === "navigate" && toast.action.url) {
+            if (toast.action.url) {
                 window.location.href = toast.action.url;
                 removeToast(toast.toastId);
                 return;

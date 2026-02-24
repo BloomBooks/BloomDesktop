@@ -299,7 +299,6 @@ namespace Bloom
                 action: new ToastAction
                 {
                     Label = actionInstall,
-                    Kind = ToastActionKind.Callback,
                     Callback = () => DownloadAndApplyUpdates(restartBloom),
                 }
             );
@@ -319,7 +318,6 @@ namespace Bloom
                 dedupeKey: msg,
                 action: new ToastAction
                 {
-                    Kind = ToastActionKind.OpenErrorDialog,
                     Callback = () => ErrorReport.NotifyUserOfProblem(_updateException, msg),
                 }
             );
@@ -383,7 +381,6 @@ namespace Bloom
                 action: new ToastAction
                 {
                     Label = action,
-                    Kind = ToastActionKind.Restart,
                     Callback = () =>
                     {
                         _restartingAfterToastClicked = true;

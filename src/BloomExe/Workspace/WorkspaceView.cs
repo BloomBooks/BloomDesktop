@@ -464,7 +464,6 @@ namespace Bloom.Workspace
                             dedupeKey: "TeamCollection.ClobberProblem",
                             action: new ToastAction
                             {
-                                Kind = ToastActionKind.Callback,
                                 Callback = () => ChangeTab(WorkspaceTab.collection),
                             }
                         );

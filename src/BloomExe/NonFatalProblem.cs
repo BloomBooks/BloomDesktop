@@ -320,7 +320,6 @@ namespace Bloom
                 action = new ToastAction
                 {
                     Label = "Report",
-                    Kind = ToastActionKind.OpenErrorDialog,
                     Callback = () =>
                     {
                         var formForSynchronizing = Shell.GetShellOrOtherOpenForm();
@@ -339,7 +338,6 @@ namespace Bloom
                 action = new ToastAction
                 {
                     Label = "Details",
-                    Kind = ToastActionKind.OpenErrorDialog,
                     Callback = () =>
                     {
                         ErrorReport.NotifyUserOfProblem(

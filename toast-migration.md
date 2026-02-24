@@ -105,9 +105,8 @@ Backend sends websocket event:
   - `action?:`
     - `label?: string`
     - `l10nId?: string`
-    - `kind: "restart" | "navigate" | "openErrorDialog" | "callback"`
-    - `url?: string` (for navigate)
-    - `callbackId?: string` (for backend callback)
+      - `url?: string` (browser navigation target)
+      - `callbackId?: string` (backend callback)
 
 Browser sends API callback for toast action:
 - `POST /bloom/api/toast/performAction`
@@ -123,7 +122,6 @@ Browser sends API callback for toast action:
 - Add a toast service that:
   - sends websocket `toast/show` messages
   - registers callback actions (`callbackId -> Action`)
-  - handles duplicate suppression
 - Add API endpoint for toast action dispatch.
 
 ### Milestone 3: Frontend stacked snackbar
