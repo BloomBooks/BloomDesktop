@@ -9,6 +9,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.MiscUI;
+using Bloom.web;
 using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -196,6 +197,18 @@ namespace Bloom.web.controllers
                 {
                     var message = request.RequiredPostString();
                     Debug.WriteLine("FROM JS: " + message);
+                    request.PostSucceeded();
+                },
+                false
+            );
+
+            apiHandler.RegisterEndpointHandler(
+                "toast/performAction",
+                request =>
+                {
+                    var requestData = DynamicJson.Parse(request.RequiredPostJson());
+                    var callbackId = (string)requestData.callbackId;
+                    BrowserToastService.PerformAction(callbackId);
                     request.PostSucceeded();
                 },
                 false

@@ -11,7 +11,6 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
-using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.TeamCollection;
@@ -54,7 +53,7 @@ namespace Bloom.Workspace
 
         private TeamCollectionManager _tcManager;
         private BookSelection _bookSelection;
-        private ToastNotifier _returnToCollectionTabNotifier;
+        private string _returnToCollectionTabToastId;
         private BloomWebSocketServer _webSocketServer;
         private BookServer _bookServer;
         private WorkspaceTabSelection _tabSelection;
@@ -439,7 +438,7 @@ namespace Bloom.Workspace
                 return; // change is not to the book we're interested in.
             if (_tabSelection.ActiveTab == WorkspaceTab.collection)
                 return; // this toast is all about returning to the collection tab
-            if (_returnToCollectionTabNotifier != null)
+            if (!string.IsNullOrEmpty(_returnToCollectionTabToastId))
                 return; // notification already up
             if (_tcManager.CurrentCollection == null)
                 return;
@@ -456,14 +455,18 @@ namespace Bloom.Workspace
                             "TeamCollection.ClobberProblem",
                             "The Team Collection has a newer version of this book. Return to the Collection Tab for more information."
                         );
-                        _returnToCollectionTabNotifier = new ToastNotifier();
-                        _returnToCollectionTabNotifier.Image.Image = Resources.Error32x32;
-                        _returnToCollectionTabNotifier.ToastClicked += (sender, _) =>
-                        {
-                            _returnToCollectionTabNotifier.CloseSafely();
-                            ChangeTab(WorkspaceTab.collection);
-                        };
-                        _returnToCollectionTabNotifier.Show(msg, "", -1);
+
+                        _returnToCollectionTabToastId = BrowserToastService.ShowToast(
+                            BrowserToastSeverity.Error,
+                            text: msg,
+                            autoDismiss: false,
+                            dedupeKey: "TeamCollection.ClobberProblem",
+                            action: new BrowserToastAction
+                            {
+                                Kind = BrowserToastActionKind.Callback,
+                                Callback = () => ChangeTab(WorkspaceTab.collection),
+                            }
+                        );
                     }
                 );
             }
@@ -1210,10 +1213,10 @@ namespace Bloom.Workspace
                     break;
                 case WorkspaceTab.collection:
                     SelectTab(_collectionTabView);
-                    if (_returnToCollectionTabNotifier != null)
+                    if (!string.IsNullOrEmpty(_returnToCollectionTabToastId))
                     {
-                        _returnToCollectionTabNotifier.CloseSafely();
-                        _returnToCollectionTabNotifier = null;
+                        BrowserToastService.DismissToast(_returnToCollectionTabToastId);
+                        _returnToCollectionTabToastId = null;
                     }
                     if (_collectionTabView != null)
                     {

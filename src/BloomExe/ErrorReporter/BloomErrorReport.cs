@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using Bloom.MiscUI;
+using Bloom.web;
 using SIL.Reporting;
 
 namespace Bloom.ErrorReporter
@@ -93,16 +93,25 @@ namespace Bloom.ErrorReporter
             Exception ex = null
         )
         {
-            var toast = new ToastNotifier();
-            toast.ToastClicked += (sender, args) =>
-            {
-                BloomErrorReport.NotifyUserOfProblem(
-                    longerMsg,
-                    ex,
-                    new NotifyUserOfProblemSettings(AllowSendReport.Disallow)
-                );
-            };
-            toast.Show(shortMsg, null, 10);
+            BrowserToastService.ShowToast(
+                BrowserToastSeverity.Warning,
+                text: shortMsg,
+                autoDismiss: true,
+                durationMs: 10000,
+                dedupeKey: shortMsg,
+                action: new BrowserToastAction
+                {
+                    Kind = BrowserToastActionKind.OpenErrorDialog,
+                    Callback = () =>
+                    {
+                        BloomErrorReport.NotifyUserOfProblem(
+                            longerMsg,
+                            ex,
+                            new NotifyUserOfProblemSettings(AllowSendReport.Disallow)
+                        );
+                    },
+                }
+            );
         }
     }
 }

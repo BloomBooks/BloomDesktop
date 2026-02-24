@@ -7,8 +7,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Bloom.MiscUI;
 using Bloom.Properties;
+using Bloom.web;
 using L10NSharp;
 using SIL.PlatformUtilities;
 #if !__MonoCS__
@@ -136,9 +136,13 @@ namespace Bloom
                             "CollectionTab.UpdateCheckInProgress",
                             "Bloom is already working on checking for updates."
                         );
-                        var workingNotifier = new ToastNotifier();
-                        workingNotifier.Image.Image = Resources.BloomIcon.ToBitmap();
-                        workingNotifier.Show(message, "", 5);
+                        BrowserToastService.ShowToast(
+                            BrowserToastSeverity.Notice,
+                            text: message,
+                            autoDismiss: true,
+                            durationMs: 5000,
+                            dedupeKey: message
+                        );
                     }
 
                     return;
@@ -263,9 +267,13 @@ namespace Bloom
                     "CollectionTab.UpToDate",
                     "Your Bloom is up to date."
                 );
-                var noneNotifier = new ToastNotifier();
-                noneNotifier.Image.Image = Resources.BloomIcon.ToBitmap();
-                noneNotifier.Show(message, "", 5);
+                BrowserToastService.ShowToast(
+                    BrowserToastSeverity.Notice,
+                    text: message,
+                    autoDismiss: true,
+                    durationMs: 5000,
+                    dedupeKey: message
+                );
             }
         }
 
@@ -282,13 +290,19 @@ namespace Bloom
                 "CollectionTab.UpdateNow",
                 "Update Now"
             );
-            var notifierAvail = new ToastNotifier();
-            notifierAvail.Image.Image = Resources.Bloom;
-            notifierAvail.ToastClicked += (sender, args) =>
-            {
-                DownloadAndApplyUpdates(restartBloom);
-            };
-            notifierAvail.Show(msgAvail, actionInstall, 10);
+            BrowserToastService.ShowToast(
+                BrowserToastSeverity.Notice,
+                text: msgAvail,
+                autoDismiss: true,
+                durationMs: 10000,
+                dedupeKey: msgAvail,
+                action: new BrowserToastAction
+                {
+                    Label = actionInstall,
+                    Kind = BrowserToastActionKind.Callback,
+                    Callback = () => DownloadAndApplyUpdates(restartBloom),
+                }
+            );
         }
 
         private static void ShowToastForError(string msg, Exception e = null)
@@ -297,13 +311,18 @@ namespace Bloom
             _status = UploadStatus.Failed;
             if (e != null)
                 _updateException = e;
-            var notifierError = new ToastNotifier();
-            notifierError.Image.Image = Resources.Bloom; // or error icon? But wants to be recognizable as Bloom.
-            notifierError.ToastClicked += (sender, args) =>
-            {
-                ErrorReport.NotifyUserOfProblem(_updateException, msg);
-            };
-            notifierError.Show(msg, "", 10);
+            BrowserToastService.ShowToast(
+                BrowserToastSeverity.Error,
+                text: msg,
+                autoDismiss: true,
+                durationMs: 10000,
+                dedupeKey: msg,
+                action: new BrowserToastAction
+                {
+                    Kind = BrowserToastActionKind.OpenErrorDialog,
+                    Callback = () => ErrorReport.NotifyUserOfProblem(_updateException, msg),
+                }
+            );
         }
 
         private static bool _restartingAfterToastClicked = false;
@@ -328,13 +347,13 @@ namespace Bloom
                 _newVersion.TargetFullRelease.Version.ToString(),
                 downloadSize / 1024
             );
-
-            var updatingNotifier = new ToastNotifier();
-            updatingNotifier.Image.Image = Resources.Bloom;
-            // Since it's not conveying any new information, I don't think it needs to
-            // hang around. The user can "check for updates" again if they want to,
-            // and get the same message.
-            updatingNotifier.Show(updatingMsg, "", 5);
+            BrowserToastService.ShowToast(
+                BrowserToastSeverity.Notice,
+                text: updatingMsg,
+                autoDismiss: true,
+                durationMs: 5000,
+                dedupeKey: updatingMsg
+            );
         }
 
         private static void ShowToastForDownloadedWaitingForRestart(Action restartBloom)
@@ -356,16 +375,24 @@ namespace Bloom
             );
             // Unfortunately, there's no good time to dispose of this object...according to its own comments
             // it's not even safe to close it. It moves itself out of sight eventually if ignored.
-            var notifier = new ToastNotifier();
-            notifier.Image.Image = Resources.Bloom;
-            notifier.ToastClicked += (sender, args) =>
-            {
-                _restartingAfterToastClicked = true;
-                _bloomUpdateManager.WaitExitThenApplyUpdates(null);
-                Logger.WriteMinorEvent("shutting Bloom down in order to apply updates");
-                restartBloom();
-            };
-            notifier.Show(msg, action, -1); //stay up until clicked
+            BrowserToastService.ShowToast(
+                BrowserToastSeverity.Notice,
+                text: msg,
+                autoDismiss: false,
+                dedupeKey: msg,
+                action: new BrowserToastAction
+                {
+                    Label = action,
+                    Kind = BrowserToastActionKind.Restart,
+                    Callback = () =>
+                    {
+                        _restartingAfterToastClicked = true;
+                        _bloomUpdateManager.WaitExitThenApplyUpdates(null);
+                        Logger.WriteMinorEvent("shutting Bloom down in order to apply updates");
+                        restartBloom();
+                    },
+                }
+            );
         }
 
         // returns true if we should proceed with the update check.
@@ -439,9 +466,13 @@ namespace Bloom
 
         private static void ShowFailureNotification(string failMsg)
         {
-            var failNotifier = new ToastNotifier();
-            failNotifier.Image.Image = Resources.Bloom;
-            failNotifier.Show(failMsg, "", 5);
+            BrowserToastService.ShowToast(
+                BrowserToastSeverity.Warning,
+                text: failMsg,
+                autoDismiss: true,
+                durationMs: 5000,
+                dedupeKey: failMsg
+            );
         }
 
         internal const string kChannelNameForUnitTests = "TestChannel";
