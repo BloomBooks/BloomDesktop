@@ -11,6 +11,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
+using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.TeamCollection;
@@ -456,14 +457,14 @@ namespace Bloom.Workspace
                             "The Team Collection has a newer version of this book. Return to the Collection Tab for more information."
                         );
 
-                        _returnToCollectionTabToastId = BrowserToastService.ShowToast(
-                            BrowserToastSeverity.Error,
+                        _returnToCollectionTabToastId = ToastService.ShowToast(
+                            ToastSeverity.Error,
                             text: msg,
                             autoDismiss: false,
                             dedupeKey: "TeamCollection.ClobberProblem",
-                            action: new BrowserToastAction
+                            action: new ToastAction
                             {
-                                Kind = BrowserToastActionKind.Callback,
+                                Kind = ToastActionKind.Callback,
                                 Callback = () => ChangeTab(WorkspaceTab.collection),
                             }
                         );
@@ -1215,7 +1216,7 @@ namespace Bloom.Workspace
                     SelectTab(_collectionTabView);
                     if (!string.IsNullOrEmpty(_returnToCollectionTabToastId))
                     {
-                        BrowserToastService.DismissToast(_returnToCollectionTabToastId);
+                        ToastService.DismissToast(_returnToCollectionTabToastId);
                         _returnToCollectionTabToastId = null;
                     }
                     if (_collectionTabView != null)

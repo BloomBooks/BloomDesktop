@@ -93,15 +93,15 @@ namespace Bloom.ErrorReporter
             Exception ex = null
         )
         {
-            BrowserToastService.ShowToast(
-                BrowserToastSeverity.Warning,
+            ToastService.ShowToast(
+                ToastSeverity.Warning,
                 text: shortMsg,
                 autoDismiss: true,
                 durationMs: 10000,
                 dedupeKey: shortMsg,
-                action: new BrowserToastAction
+                action: new ToastAction
                 {
-                    Kind = BrowserToastActionKind.OpenErrorDialog,
+                    Kind = ToastActionKind.OpenErrorDialog,
                     Callback = () =>
                     {
                         BloomErrorReport.NotifyUserOfProblem(

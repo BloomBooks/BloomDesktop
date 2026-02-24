@@ -208,7 +208,7 @@ namespace Bloom.web.controllers
                 {
                     var requestData = DynamicJson.Parse(request.RequiredPostJson());
                     var callbackId = (string)requestData.callbackId;
-                    BrowserToastService.PerformAction(callbackId);
+                    ToastService.PerformAction(callbackId);
                     request.PostSucceeded();
                 },
                 false

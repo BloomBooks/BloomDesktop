@@ -4,14 +4,14 @@ using Bloom.Api;
 
 namespace Bloom.web
 {
-    public static class BrowserToastSeverity
+    public static class ToastSeverity
     {
         public const string Error = "error";
         public const string Warning = "warning";
         public const string Notice = "notice";
     }
 
-    public static class BrowserToastActionKind
+    public static class ToastActionKind
     {
         public const string Restart = "restart";
         public const string Navigate = "navigate";
@@ -19,7 +19,7 @@ namespace Bloom.web
         public const string Callback = "callback";
     }
 
-    public class BrowserToastAction
+    public class ToastAction
     {
         public string Label { get; set; }
         public string L10nId { get; set; }
@@ -29,7 +29,7 @@ namespace Bloom.web
         public int CallbackTimeoutSeconds { get; set; } = 600;
     }
 
-    public static class BrowserToastService
+    public static class ToastService
     {
         private const string kToastClientContext = "toast";
         private const string kToastShowEvent = "show";
@@ -52,7 +52,7 @@ namespace Bloom.web
             bool autoDismiss = true,
             int? durationMs = null,
             string dedupeKey = null,
-            BrowserToastAction action = null,
+            ToastAction action = null,
             string toastId = null
         )
         {

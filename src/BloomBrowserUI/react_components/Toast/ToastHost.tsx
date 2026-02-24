@@ -7,9 +7,9 @@ import WebSocketManager, {
 } from "../../utils/WebSocketManager";
 import { postJson } from "../../utils/bloomApi";
 
-type BrowserToastSeverity = "error" | "warning" | "notice";
+type ToastSeverity = "error" | "warning" | "notice";
 
-interface IBrowserToastAction {
+interface IToastAction {
     label?: string;
     l10nId?: string;
     kind?: "restart" | "navigate" | "openErrorDialog" | "callback";
@@ -17,45 +17,45 @@ interface IBrowserToastAction {
     callbackId?: string;
 }
 
-interface IBrowserToast {
+interface IToast {
     toastId: string;
-    severity: BrowserToastSeverity;
+    severity: ToastSeverity;
     text?: string;
     l10nId?: string;
     l10nDefaultText?: string;
     autoDismiss: boolean;
     durationMs?: number;
     dedupeKey?: string;
-    action?: IBrowserToastAction;
+    action?: IToastAction;
 }
 
 interface IToastShowEvent extends IBloomWebSocketEvent {
     toastId: string;
-    severity: BrowserToastSeverity;
+    severity: ToastSeverity;
     text?: string;
     l10nId?: string;
     l10nDefaultText?: string;
     autoDismiss: boolean;
     durationMs?: number;
     dedupeKey?: string;
-    action?: IBrowserToastAction;
+    action?: IToastAction;
 }
 
 interface IToastDismissEvent extends IBloomWebSocketEvent {
     toastId: string;
 }
 
-const getMuiSeverity = (severity: BrowserToastSeverity) => {
+const getMuiSeverity = (severity: ToastSeverity) => {
     if (severity === "error") return "error";
     if (severity === "warning") return "warning";
     return "info";
 };
 
 const ToastItem: React.FunctionComponent<{
-    toast: IBrowserToast;
+    toast: IToast;
     index: number;
     onClose: (toastId: string) => void;
-    onAction: (toast: IBrowserToast) => void;
+    onAction: (toast: IToast) => void;
 }> = (props) => {
     const localizedMessage = useL10n(
         props.toast.l10nDefaultText || props.toast.text || "",
@@ -75,7 +75,7 @@ const ToastItem: React.FunctionComponent<{
                     ? (props.toast.durationMs ?? 6000)
                     : null
             }
-            onClose={(event, reason) => {
+            onClose={(_event, reason) => {
                 if (reason === "clickaway") {
                     return;
                 }
@@ -118,8 +118,8 @@ const ToastItem: React.FunctionComponent<{
     );
 };
 
-export const BrowserToastHost: React.FunctionComponent = () => {
-    const [toasts, setToasts] = React.useState<IBrowserToast[]>([]);
+export const ToastHost: React.FunctionComponent = () => {
+    const [toasts, setToasts] = React.useState<IToast[]>([]);
 
     const removeToast = React.useCallback((toastId: string) => {
         setToasts((currentToasts) =>
@@ -128,7 +128,7 @@ export const BrowserToastHost: React.FunctionComponent = () => {
     }, []);
 
     const handleAction = React.useCallback(
-        (toast: IBrowserToast) => {
+        (toast: IToast) => {
             if (!toast.action) {
                 return;
             }
@@ -150,7 +150,7 @@ export const BrowserToastHost: React.FunctionComponent = () => {
         [removeToast],
     );
 
-    // Subscribe once to backend toast websocket events so the host can show and dismiss browser toasts.
+    // Subscribe once to backend websocket toast events so the host can show and dismiss toasts.
     React.useEffect(() => {
         const listener = (event: IBloomWebSocketEvent) => {
             if (event.id === "show") {

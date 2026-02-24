@@ -111,9 +111,7 @@ Backend sends websocket event:
 
 Browser sends API callback for toast action:
 - `POST /bloom/api/toast/performAction`
-  - `toastId`
-  - `actionKind`
-  - `callbackId?`
+   - `callbackId`
 
 ## Migration Plan
 
@@ -122,7 +120,7 @@ Browser sends API callback for toast action:
 - Confirm all current toast scenarios are represented.
 
 ### Milestone 2: Backend toast pipeline
-- Add a browser toast service that:
+- Add a toast service that:
   - sends websocket `toast/show` messages
   - registers callback actions (`callbackId -> Action`)
   - handles duplicate suppression
@@ -136,10 +134,10 @@ Browser sends API callback for toast action:
 - Support raw text first; add optional l10nId resolution path.
 
 ### Milestone 4: Migrate all WinForms toast callsites
-- `NonFatalProblem.ShowToast()` -> browser toast service
-- `ApplicationUpdateSupport` toast methods -> browser toast service
-- `WorkspaceView` clobber toast -> browser toast service
-- `BloomErrorReport.NotifyUserUnobtrusively()` -> browser toast service
+- `NonFatalProblem.ShowToast()` -> toast service
+- `ApplicationUpdateSupport` toast methods -> toast service
+- `WorkspaceView` clobber toast -> toast service
+- `BloomErrorReport.NotifyUserUnobtrusively()` -> toast service
 
 ### Milestone 5: Verify and cleanup
 - Validate compile/test paths relevant to modified files.
@@ -151,7 +149,7 @@ Browser sends API callback for toast action:
    - `src/BloomExe/MiscUI/ToastNotifier.cs`
    - `src/BloomExe/MiscUI/ToastNotifier.designer.cs`
    - `src/BloomExe/MiscUI/ToastNotifier.resx`
-- Keep browser-toast path as single implementation source.
+- Keep toast path as single implementation source.
 
 ## Notes on Hyperlinks / Markdown
 

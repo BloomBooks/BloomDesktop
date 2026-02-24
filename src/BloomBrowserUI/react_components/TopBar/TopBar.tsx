@@ -14,7 +14,7 @@ import {
     kGreyOnDarkColor,
 } from "../../bloomMaterialUITheme";
 import { ScopedCssBaseline } from "@mui/material";
-import { BrowserToastHost } from "../Toast/BrowserToastHost";
+import { ToastHost } from "../Toast/ToastHost";
 
 export type WorkspaceTabId = "collection" | "edit" | "publish";
 
@@ -145,7 +145,7 @@ export const TopBar: React.FunctionComponent = () => {
                     />
                     <TopBarControls activeTab={activeTab} />
                 </div>
-                <BrowserToastHost />
+                <ToastHost />
             </>
         </ScopedCssBaseline>
     );

@@ -314,13 +314,13 @@ namespace Bloom
             bool showDetailsOnRequest = false
         )
         {
-            BrowserToastAction action = null;
+            ToastAction action = null;
             if (showSendReport)
             {
-                action = new BrowserToastAction
+                action = new ToastAction
                 {
                     Label = "Report",
-                    Kind = BrowserToastActionKind.OpenErrorDialog,
+                    Kind = ToastActionKind.OpenErrorDialog,
                     Callback = () =>
                     {
                         var formForSynchronizing = Shell.GetShellOrOtherOpenForm();
@@ -336,10 +336,10 @@ namespace Bloom
             }
             else if (showDetailsOnRequest)
             {
-                action = new BrowserToastAction
+                action = new ToastAction
                 {
                     Label = "Details",
-                    Kind = BrowserToastActionKind.OpenErrorDialog,
+                    Kind = ToastActionKind.OpenErrorDialog,
                     Callback = () =>
                     {
                         ErrorReport.NotifyUserOfProblem(
@@ -359,8 +359,8 @@ namespace Bloom
                 };
             }
 
-            BrowserToastService.ShowToast(
-                BrowserToastSeverity.Warning,
+            ToastService.ShowToast(
+                ToastSeverity.Warning,
                 text: shortUserLevelMessage,
                 autoDismiss: true,
                 durationMs: 15000,

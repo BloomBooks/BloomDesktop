@@ -136,8 +136,8 @@ namespace Bloom
                             "CollectionTab.UpdateCheckInProgress",
                             "Bloom is already working on checking for updates."
                         );
-                        BrowserToastService.ShowToast(
-                            BrowserToastSeverity.Notice,
+                        ToastService.ShowToast(
+                            ToastSeverity.Notice,
                             text: message,
                             autoDismiss: true,
                             durationMs: 5000,
@@ -267,8 +267,8 @@ namespace Bloom
                     "CollectionTab.UpToDate",
                     "Your Bloom is up to date."
                 );
-                BrowserToastService.ShowToast(
-                    BrowserToastSeverity.Notice,
+                ToastService.ShowToast(
+                    ToastSeverity.Notice,
                     text: message,
                     autoDismiss: true,
                     durationMs: 5000,
@@ -290,16 +290,16 @@ namespace Bloom
                 "CollectionTab.UpdateNow",
                 "Update Now"
             );
-            BrowserToastService.ShowToast(
-                BrowserToastSeverity.Notice,
+            ToastService.ShowToast(
+                ToastSeverity.Notice,
                 text: msgAvail,
                 autoDismiss: true,
                 durationMs: 10000,
                 dedupeKey: msgAvail,
-                action: new BrowserToastAction
+                action: new ToastAction
                 {
                     Label = actionInstall,
-                    Kind = BrowserToastActionKind.Callback,
+                    Kind = ToastActionKind.Callback,
                     Callback = () => DownloadAndApplyUpdates(restartBloom),
                 }
             );
@@ -311,15 +311,15 @@ namespace Bloom
             _status = UploadStatus.Failed;
             if (e != null)
                 _updateException = e;
-            BrowserToastService.ShowToast(
-                BrowserToastSeverity.Error,
+            ToastService.ShowToast(
+                ToastSeverity.Error,
                 text: msg,
                 autoDismiss: true,
                 durationMs: 10000,
                 dedupeKey: msg,
-                action: new BrowserToastAction
+                action: new ToastAction
                 {
-                    Kind = BrowserToastActionKind.OpenErrorDialog,
+                    Kind = ToastActionKind.OpenErrorDialog,
                     Callback = () => ErrorReport.NotifyUserOfProblem(_updateException, msg),
                 }
             );
@@ -347,8 +347,8 @@ namespace Bloom
                 _newVersion.TargetFullRelease.Version.ToString(),
                 downloadSize / 1024
             );
-            BrowserToastService.ShowToast(
-                BrowserToastSeverity.Notice,
+            ToastService.ShowToast(
+                ToastSeverity.Notice,
                 text: updatingMsg,
                 autoDismiss: true,
                 durationMs: 5000,
@@ -375,15 +375,15 @@ namespace Bloom
             );
             // Unfortunately, there's no good time to dispose of this object...according to its own comments
             // it's not even safe to close it. It moves itself out of sight eventually if ignored.
-            BrowserToastService.ShowToast(
-                BrowserToastSeverity.Notice,
+            ToastService.ShowToast(
+                ToastSeverity.Notice,
                 text: msg,
                 autoDismiss: false,
                 dedupeKey: msg,
-                action: new BrowserToastAction
+                action: new ToastAction
                 {
                     Label = action,
-                    Kind = BrowserToastActionKind.Restart,
+                    Kind = ToastActionKind.Restart,
                     Callback = () =>
                     {
                         _restartingAfterToastClicked = true;
@@ -466,8 +466,8 @@ namespace Bloom
 
         private static void ShowFailureNotification(string failMsg)
         {
-            BrowserToastService.ShowToast(
-                BrowserToastSeverity.Warning,
+            ToastService.ShowToast(
+                ToastSeverity.Warning,
                 text: failMsg,
                 autoDismiss: true,
                 durationMs: 5000,
