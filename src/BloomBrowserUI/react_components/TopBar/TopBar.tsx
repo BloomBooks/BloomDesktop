@@ -14,6 +14,7 @@ import {
     kGreyOnDarkColor,
 } from "../../bloomMaterialUITheme";
 import { ScopedCssBaseline } from "@mui/material";
+import { BrowserToastHost } from "../Toast/BrowserToastHost";
 
 export type WorkspaceTabId = "collection" | "edit" | "publish";
 
@@ -106,7 +107,12 @@ export const TopBar: React.FunctionComponent = () => {
     // Remove this bridge when top bar and menus are all running in one browser UI.
     React.useEffect(() => {
         const notifyBrowserClicked = () => {
-            (window as any).chrome?.webview?.postMessage("browser-clicked");
+            const webViewWindow = window as unknown as {
+                chrome?: {
+                    webview?: { postMessage: (message: string) => void };
+                };
+            };
+            webViewWindow.chrome?.webview?.postMessage("browser-clicked");
         };
 
         window.addEventListener("click", notifyBrowserClicked);
@@ -123,18 +129,24 @@ export const TopBar: React.FunctionComponent = () => {
            I'm using ScopedCssBaseline instead of CssBaseline because when we move to single browser,
            CssBaseline would apply everywhere. */
         <ScopedCssBaseline>
-            <div
-                css={css`
-                    background-color: ${getColorForTab(activeTab)};
-                    padding-top: 2px;
-                    display: flex;
-                    align-items: flex-start;
-                    gap: 100px;
-                `}
-            >
-                <BloomTabs tabStates={tabStates} selectTab={handleSelectTab} />
-                <TopBarControls activeTab={activeTab} />
-            </div>
+            <>
+                <div
+                    css={css`
+                        background-color: ${getColorForTab(activeTab)};
+                        padding-top: 2px;
+                        display: flex;
+                        align-items: flex-start;
+                        gap: 100px;
+                    `}
+                >
+                    <BloomTabs
+                        tabStates={tabStates}
+                        selectTab={handleSelectTab}
+                    />
+                    <TopBarControls activeTab={activeTab} />
+                </div>
+                <BrowserToastHost />
+            </>
         </ScopedCssBaseline>
     );
 };
