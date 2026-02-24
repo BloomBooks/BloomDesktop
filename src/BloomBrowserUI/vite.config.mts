@@ -469,8 +469,9 @@ export default defineConfig(async ({ command }) => {
             "./bookEdit/pageThumbnailList/pageThumbnailList.tsx",
         pageControlsBundle:
             "./bookEdit/pageThumbnailList/pageControls/pageControls.tsx",
-        accessibilityCheckBundle:
-            "./publish/accessibilityCheck/accessibilityCheckScreen.tsx",
+        accessibilityCheckBundle: glob.sync(
+            "./publish/accessibilityCheck/**/*.tsx",
+        )[0], // Take first match
         subscriptionSettingsBundle: "./collection/subscriptionSettingsTab.tsx",
         performanceLogBundle: "./performance/PerformanceLogPage.tsx",
         appBundle: "./app/App.tsx",
@@ -498,7 +499,9 @@ export default defineConfig(async ({ command }) => {
             "./collection/NewCollectionLanguageChooser.tsx",
         registrationDialogBundle:
             "./react_components/registration/registrationDialog.tsx",
-        topBarBundle: "./react_components/TopBar/TopBar.entry.tsx",
+        editTopBarControlsBundle: "./bookEdit/topbar/editTopBarControls.tsx",
+        collectionTopBarControlsBundle:
+            "./react_components/TopBar/CollectionTopBarControls/CollectionTopBarControls.tsx",
     };
 
     // MAIN VITE CONFIGURATION
