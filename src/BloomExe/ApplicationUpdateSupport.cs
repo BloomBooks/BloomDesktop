@@ -7,8 +7,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Bloom.MiscUI;
 using Bloom.Properties;
+using Bloom.web;
 using L10NSharp;
 using SIL.PlatformUtilities;
 #if !__MonoCS__
@@ -132,13 +132,7 @@ namespace Bloom
                     // asked us to check).
                     if (verbosity == BloomUpdateMessageVerbosity.Verbose)
                     {
-                        var message = LocalizationManager.GetString(
-                            "CollectionTab.UpdateCheckInProgress",
-                            "Bloom is already working on checking for updates."
-                        );
-                        var workingNotifier = new ToastNotifier();
-                        workingNotifier.Image.Image = Resources.BloomIcon.ToBitmap();
-                        workingNotifier.Show(message, "", 5);
+                        ShowToastForLookingForUpdates();
                     }
 
                     return;
@@ -263,10 +257,17 @@ namespace Bloom
                     "CollectionTab.UpToDate",
                     "Your Bloom is up to date."
                 );
-                var noneNotifier = new ToastNotifier();
-                noneNotifier.Image.Image = Resources.BloomIcon.ToBitmap();
-                noneNotifier.Show(message, "", 5);
+                ToastService.ShowToast(text: message, durationSeconds: 5);
             }
+        }
+
+        private static void ShowToastForLookingForUpdates()
+        {
+            var message = LocalizationManager.GetString(
+                "CollectionTab.UpdateCheckInProgress",
+                "Bloom is already working on checking for updates."
+            );
+            ToastService.ShowToast(text: message, durationSeconds: 5);
         }
 
         private static void ShowToastForFoundUpdates(
@@ -282,13 +283,15 @@ namespace Bloom
                 "CollectionTab.UpdateNow",
                 "Update Now"
             );
-            var notifierAvail = new ToastNotifier();
-            notifierAvail.Image.Image = Resources.Bloom;
-            notifierAvail.ToastClicked += (sender, args) =>
-            {
-                DownloadAndApplyUpdates(restartBloom);
-            };
-            notifierAvail.Show(msgAvail, actionInstall, 10);
+            ToastService.ShowToast(
+                text: msgAvail,
+                durationSeconds: 10,
+                action: new ToastAction
+                {
+                    Label = actionInstall,
+                    Callback = () => DownloadAndApplyUpdates(restartBloom),
+                }
+            );
         }
 
         private static void ShowToastForError(string msg, Exception e = null)
@@ -297,13 +300,15 @@ namespace Bloom
             _status = UploadStatus.Failed;
             if (e != null)
                 _updateException = e;
-            var notifierError = new ToastNotifier();
-            notifierError.Image.Image = Resources.Bloom; // or error icon? But wants to be recognizable as Bloom.
-            notifierError.ToastClicked += (sender, args) =>
-            {
-                ErrorReport.NotifyUserOfProblem(_updateException, msg);
-            };
-            notifierError.Show(msg, "", 10);
+            ToastService.ShowToast(
+                ToastSeverity.Error,
+                text: msg,
+                durationSeconds: 10,
+                action: new ToastAction
+                {
+                    Callback = () => ErrorReport.NotifyUserOfProblem(_updateException, msg),
+                }
+            );
         }
 
         private static bool _restartingAfterToastClicked = false;
@@ -328,16 +333,26 @@ namespace Bloom
                 _newVersion.TargetFullRelease.Version.ToString(),
                 downloadSize / 1024
             );
+            ShowToastForDownloadingMessage(updatingMsg);
+        }
 
-            var updatingNotifier = new ToastNotifier();
-            updatingNotifier.Image.Image = Resources.Bloom;
-            // Since it's not conveying any new information, I don't think it needs to
-            // hang around. The user can "check for updates" again if they want to,
-            // and get the same message.
-            updatingNotifier.Show(updatingMsg, "", 5);
+        private static void ShowToastForDownloadingMessage(string updatingMsg)
+        {
+            ToastService.ShowToast(text: updatingMsg, durationSeconds: 5);
         }
 
         private static void ShowToastForDownloadedWaitingForRestart(Action restartBloom)
+        {
+            ShowToastForDownloadedWaitingForRestart(
+                _newVersion.TargetFullRelease.Version.ToString(),
+                restartBloom
+            );
+        }
+
+        private static void ShowToastForDownloadedWaitingForRestart(
+            string version,
+            Action restartBloom
+        )
         {
             var msg = String.Format(
                 LocalizationManager.GetString(
@@ -345,7 +360,7 @@ namespace Bloom
                     "Update for {0} is ready",
                     "Appears after Bloom has downloaded a program update in the background and is ready to switch the user to it the next time they run Bloom."
                 ),
-                _newVersion.TargetFullRelease.Version
+                version
             );
             var action = String.Format(
                 LocalizationManager.GetString(
@@ -356,16 +371,20 @@ namespace Bloom
             );
             // Unfortunately, there's no good time to dispose of this object...according to its own comments
             // it's not even safe to close it. It moves itself out of sight eventually if ignored.
-            var notifier = new ToastNotifier();
-            notifier.Image.Image = Resources.Bloom;
-            notifier.ToastClicked += (sender, args) =>
-            {
-                _restartingAfterToastClicked = true;
-                _bloomUpdateManager.WaitExitThenApplyUpdates(null);
-                Logger.WriteMinorEvent("shutting Bloom down in order to apply updates");
-                restartBloom();
-            };
-            notifier.Show(msg, action, -1); //stay up until clicked
+            ToastService.ShowToast(
+                text: msg,
+                action: new ToastAction
+                {
+                    Label = action,
+                    Callback = () =>
+                    {
+                        _restartingAfterToastClicked = true;
+                        _bloomUpdateManager.WaitExitThenApplyUpdates(null);
+                        Logger.WriteMinorEvent("shutting Bloom down in order to apply updates");
+                        restartBloom();
+                    },
+                }
+            );
         }
 
         // returns true if we should proceed with the update check.
@@ -439,9 +458,46 @@ namespace Bloom
 
         private static void ShowFailureNotification(string failMsg)
         {
-            var failNotifier = new ToastNotifier();
-            failNotifier.Image.Image = Resources.Bloom;
-            failNotifier.Show(failMsg, "", 5);
+            ToastService.ShowToast(ToastSeverity.Warning, text: failMsg, durationSeconds: 5);
+        }
+
+        internal static void DebugShowToastScenario(string scenario, Action restartBloom = null)
+        {
+            restartBloom ??= () => { };
+
+            switch (scenario)
+            {
+                case "looking":
+                    ShowToastForLookingForUpdates();
+                    return;
+                case "upToDate":
+                    ShowToastForUpToDate(BloomUpdateMessageVerbosity.Verbose);
+                    return;
+                case "foundUpdates":
+                    ShowToastForFoundUpdates(BloomUpdateMessageVerbosity.Verbose, restartBloom);
+                    return;
+                case "downloading":
+                    ShowToastForDownloadingMessage("Downloading update to 9.9.9 (123K)");
+                    return;
+                case "downloadedWaitingForRestart":
+                    ShowToastForDownloadedWaitingForRestart("9.9.9", restartBloom);
+                    return;
+                case "error":
+                    ShowToastForError(
+                        "Bloom was unable to download and install updates. Restart to try again.",
+                        new ApplicationException("Debug update error")
+                    );
+                    return;
+                case "failure":
+                    ShowFailureNotification(
+                        "Could not connect to the server to check for an update. Are you connected to the internet?"
+                    );
+                    return;
+                default:
+                    throw new ArgumentException(
+                        $"Unknown update toast debug scenario '{scenario}'"
+                    );
+            }
         }
 
         internal const string kChannelNameForUnitTests = "TestChannel";
@@ -519,38 +575,6 @@ namespace Bloom
         {
             public string NewInstallDirectory;
             public UpdateOutcome Outcome;
-        }
-
-        private static void UpdateProgress(
-            ToastNotifier updatingNotifier,
-            string updatingMsg,
-            string progressMsg,
-            int x
-        )
-        {
-            if (updatingNotifier.IsHandleCreated) // Must have a handle to Invoke anything!
-            {
-                try
-                {
-                    updatingNotifier.Invoke(
-                        (Action)(
-                            () =>
-                            {
-                                updatingNotifier.UpdateMessage(
-                                    updatingMsg + " " + string.Format(progressMsg, x)
-                                );
-                            }
-                        )
-                    );
-                }
-                catch (InvalidOperationException)
-                {
-                    // This can be caused by someone clicking on the progress Toast display (BL-2465).
-                    // Ignore it.  (It's possible that the IsHandleCreated above removes the possibility
-                    // of this error, but I've always been a belt AND suspenders type guy when it comes
-                    // to bugfixing.)
-                }
-            }
         }
     }
 }
