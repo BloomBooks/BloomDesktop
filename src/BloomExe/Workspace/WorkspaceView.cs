@@ -56,7 +56,6 @@ namespace Bloom.Workspace
 
         private TeamCollectionManager _tcManager;
         private BookSelection _bookSelection;
-        private ToastNotifier _returnToCollectionTabNotifier;
         private BloomWebSocketServer _webSocketServer;
         private BookServer _bookServer;
         private WorkspaceTabSelection _tabSelection;
@@ -490,8 +489,6 @@ namespace Bloom.Workspace
                 return; // change is not to the book we're interested in.
             if (_tabSelection.ActiveTab == WorkspaceTab.collection)
                 return; // this toast is all about returning to the collection tab
-            if (_returnToCollectionTabNotifier != null)
-                return; // notification already up
             if (_tcManager.CurrentCollection == null)
                 return;
             if (_tcManager.CurrentCollection.HasClobberProblem(bookName))
@@ -501,23 +498,19 @@ namespace Bloom.Workspace
                     this,
                     false,
                     true,
-                    () =>
-                    {
-                        var msg = LocalizationManager.GetString(
-                            "TeamCollection.ClobberProblem",
-                            "The Team Collection has a newer version of this book. Return to the Collection Tab for more information."
-                        );
-                        _returnToCollectionTabNotifier = new ToastNotifier();
-                        _returnToCollectionTabNotifier.Image.Image = Resources.Error32x32;
-                        _returnToCollectionTabNotifier.ToastClicked += (sender, _) =>
-                        {
-                            _returnToCollectionTabNotifier.CloseSafely();
-                            ChangeTab(WorkspaceTab.collection);
-                        };
-                        _returnToCollectionTabNotifier.Show(msg, "", -1);
-                    }
+                    ShowTeamCollectionClobberToast
                 );
             }
+        }
+
+        internal void ShowTeamCollectionClobberToast()
+        {
+            ToastService.ShowToast(
+                ToastSeverity.Error,
+                text: "The Team Collection has a newer version of this book. Return to the Collection Tab for more information.",
+                action: new ToastAction { Callback = () => ChangeTab(WorkspaceTab.collection) },
+                toastId: "team-collection-clobber"
+            );
         }
 
         private void SetupZoomModel()
@@ -1319,11 +1312,6 @@ namespace Bloom.Workspace
 
         private void ApplyPostCollectionTabBehavior()
         {
-            if (_returnToCollectionTabNotifier != null)
-            {
-                _returnToCollectionTabNotifier.CloseSafely();
-                _returnToCollectionTabNotifier = null;
-            }
             if (_collectionTabView != null)
             {
                 if (Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded)
@@ -1375,8 +1363,8 @@ namespace Bloom.Workspace
         /// change the tab, but that can't happen until the code that does it is loaded! So I think we are
         /// safe, but be aware of this issue if you are adding some new code that opens a different tab
         /// at startup.
-        /// </note
-        /// <param name="newTab"></param>
+        /// </note>
+        /// <param name="newTab">The tab to activate.</param>
         public void ChangeTab(WorkspaceTab newTab)
         {
             _tabSelection.ActiveTab = newTab;
