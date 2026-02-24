@@ -112,7 +112,11 @@ namespace Bloom.web
 
             dynamic bundle = new DynamicJson();
             bundle.toastId = toastId;
-            BloomWebSocketServer.Instance?.SendBundle(kToastClientContext, kToastDismissEvent, bundle);
+            BloomWebSocketServer.Instance?.SendBundle(
+                kToastClientContext,
+                kToastDismissEvent,
+                bundle
+            );
         }
 
         public static bool PerformAction(string callbackId)
