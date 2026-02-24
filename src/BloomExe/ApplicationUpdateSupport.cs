@@ -551,37 +551,5 @@ namespace Bloom
             public string NewInstallDirectory;
             public UpdateOutcome Outcome;
         }
-
-        private static void UpdateProgress(
-            ToastNotifier updatingNotifier,
-            string updatingMsg,
-            string progressMsg,
-            int x
-        )
-        {
-            if (updatingNotifier.IsHandleCreated) // Must have a handle to Invoke anything!
-            {
-                try
-                {
-                    updatingNotifier.Invoke(
-                        (Action)(
-                            () =>
-                            {
-                                updatingNotifier.UpdateMessage(
-                                    updatingMsg + " " + string.Format(progressMsg, x)
-                                );
-                            }
-                        )
-                    );
-                }
-                catch (InvalidOperationException)
-                {
-                    // This can be caused by someone clicking on the progress Toast display (BL-2465).
-                    // Ignore it.  (It's possible that the IsHandleCreated above removes the possibility
-                    // of this error, but I've always been a belt AND suspenders type guy when it comes
-                    // to bugfixing.)
-                }
-            }
-        }
     }
 }

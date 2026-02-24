@@ -144,7 +144,14 @@ Browser sends API callback for toast action:
 ### Milestone 5: Verify and cleanup
 - Validate compile/test paths relevant to modified files.
 - Confirm no remaining production callsites instantiate `ToastNotifier`.
-- Keep `ToastNotifier` class temporarily for compatibility until final removal phase.
+
+### Milestone 6: Remove obsolete WinForms toast code
+- Remove dead helper code left behind in update flow.
+- Delete `ToastNotifier` implementation files once no callsites remain:
+   - `src/BloomExe/MiscUI/ToastNotifier.cs`
+   - `src/BloomExe/MiscUI/ToastNotifier.designer.cs`
+   - `src/BloomExe/MiscUI/ToastNotifier.resx`
+- Keep browser-toast path as single implementation source.
 
 ## Notes on Hyperlinks / Markdown
 
@@ -156,5 +163,4 @@ Current migration path:
 ## Out of Scope for This Change
 
 - Replacing browser `toastr` usage in page thumbnail list.
-- Removing `ToastNotifier` source files entirely.
 - New visual theme beyond existing MUI tokens.
