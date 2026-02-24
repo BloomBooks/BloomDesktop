@@ -1633,7 +1633,8 @@ svg.bloom-videoControl {
 }
 
 // Show play and replay when paused
-.bloom-videoContainer.paused {
+// (currently we use bloom-ui-no-control on draggable videos which can't be paused anyway but I thought I'd put this for consistency)
+.bloom-videoContainer.paused:not(:has(video.bloom-ui-no-controls)) {
     .bloom-videoControlContainer {
         &.bloom-videoPlayIcon,
         &.bloom-videoReplayIcon {
@@ -1643,7 +1644,7 @@ svg.bloom-videoControl {
 }
 
 // Show pause and replay when playing and hovered.
-.bloom-videoContainer.playing:hover {
+.bloom-videoContainer.playing:hover:not(:has(video.bloom-ui-no-controls)) {
     .bloom-videoControlContainer {
         &.bloom-videoPauseIcon,
         &.bloom-videoReplayIcon {
