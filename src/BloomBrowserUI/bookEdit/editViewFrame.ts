@@ -7,6 +7,7 @@ import {
     showColorPickerDialog as doShowColorPickerDialog,
     hideColorPickerDialog as doHideColorPickerDialog,
 } from "../react_components/color-picking/colorPickerDialog";
+import { postJson } from "../utils/bloomApi";
 import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 import $ from "jquery";
 
@@ -70,7 +71,9 @@ import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
 import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
 import * as ReactDOM from "react-dom";
+import * as React from "react";
 import { FunctionComponentElement } from "react";
+import { ToastHost, toastDebugEvents } from "../toast/ToastHost";
 
 import { showAdjustTimingsDialog } from "./toolbox/talkingBook/AdjustTimingsDialog";
 import { getPageIframeBody } from "../utils/shared";
@@ -364,7 +367,38 @@ const initializeWorkspaceModeFromUrl = (): void => {
     restoreIframeSrcFromUrlIfNeeded("pageList", "pageListSrc");
 };
 
-initializeWorkspaceModeFromUrl();
+const mountWorkspaceToastHost = (): void => {
+    const root = document.getElementById("workspace-toast-host-root");
+    if (!root) {
+        return;
+    }
+
+    ReactDOM.render(React.createElement(ToastHost), root);
+};
+
+const installDevToolsHooks = (): void => {
+    window.bloomToastTest = (scenario = "all") => {
+        postJson("toast/test", { scenario });
+    };
+    window.bloomToastShow = (toast) => {
+        window.dispatchEvent(
+            new CustomEvent(toastDebugEvents.show, {
+                detail: toast,
+            }),
+        );
+    };
+    window.bloomToastClear = () => {
+        window.dispatchEvent(new CustomEvent(toastDebugEvents.clear));
+    };
+};
+
+const initializeWorkspaceRootDocument = (): void => {
+    initializeWorkspaceModeFromUrl();
+    mountWorkspaceToastHost();
+    installDevToolsHooks();
+};
+
+initializeWorkspaceRootDocument();
 
 export function setWorkspaceMode(mode: string): void {
     const normalizedMode = normalizeWorkspaceMode(mode);
@@ -443,6 +477,37 @@ interface EditTabBundleApi {
 declare global {
     interface Window {
         editTabBundle: EditTabBundleApi;
+        bloomToastTest?: (scenario?: string) => void;
+        bloomToastShow?: (
+            toast:
+                | {
+                      severity?: "error" | "warning" | "notice";
+                      text?: string;
+                      l10nId?: string;
+                      durationSeconds?: number;
+                      action?: {
+                          label?: string;
+                          l10nId?: string;
+                          url?: string;
+                          callbackId?: string;
+                      };
+                      toastId?: string;
+                  }
+                | Array<{
+                      severity?: "error" | "warning" | "notice";
+                      text?: string;
+                      l10nId?: string;
+                      durationSeconds?: number;
+                      action?: {
+                          label?: string;
+                          l10nId?: string;
+                          url?: string;
+                          callbackId?: string;
+                      };
+                      toastId?: string;
+                  }>,
+        ) => void;
+        bloomToastClear?: () => void;
     }
 }
 
