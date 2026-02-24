@@ -85,4 +85,28 @@ describe("compilePugFiles", () => {
 
         compileSpy.mockRestore();
     });
+
+    it("writes content pug output under output base", async () => {
+        const contentPugPath = path.join(contentRoot, "dialogs", "info.pug");
+        writeFile(contentPugPath, "p From content\n");
+
+        await compilePugFiles({ browserUIRoot, contentRoot, outputBase });
+
+        const expectedOutputPath = path.join(
+            outputBase,
+            "dialogs",
+            "info.html",
+        );
+        const unexpectedContentHtmlPath = path.join(
+            contentRoot,
+            "dialogs",
+            "info.html",
+        );
+
+        expect(fs.existsSync(expectedOutputPath)).toBe(true);
+        expect(fs.readFileSync(expectedOutputPath, "utf8")).toContain(
+            "From content",
+        );
+        expect(fs.existsSync(unexpectedContentHtmlPath)).toBe(false);
+    });
 });

@@ -91,7 +91,10 @@ export async function compilePugFiles(options = {}) {
         absolute: true,
     });
 
-    const allPugFiles = [...browserUIPugFiles, ...contentPugFiles];
+    const allPugFiles = [
+        ...browserUIPugFiles.map((file) => ({ file, baseRoot: browserUIRoot })),
+        ...contentPugFiles.map((file) => ({ file, baseRoot: contentRoot })),
+    ];
 
     const metadataVersion = 1;
     const existingMetadata = readJson(metadataPath);
@@ -104,9 +107,7 @@ export async function compilePugFiles(options = {}) {
     let compiled = 0;
     let skipped = 0;
 
-    for (const file of allPugFiles) {
-        const isContentFile = file.startsWith(contentRoot + path.sep);
-        const baseRoot = isContentFile ? contentRoot : browserUIRoot;
+    for (const { file, baseRoot } of allPugFiles) {
         const relativePath = path
             .relative(baseRoot, file)
             .replace(/\\/g, "/")
