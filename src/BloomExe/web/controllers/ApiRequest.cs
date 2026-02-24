@@ -298,7 +298,12 @@ namespace Bloom.Api
                     "Bloom could not access {0}.  The file may be open in another program.",
                     info.RawUrl
                 );
-                NonFatalProblem.Report(ModalIf.None, PassiveIf.All, shortMsg, longMsg, e);
+                // Report the error after a delay so the API call can finish.
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(100);
+                    NonFatalProblem.Report(ModalIf.None, PassiveIf.All, shortMsg, longMsg, e);
+                });
                 request.Failed(shortMsg);
                 return false;
             }
@@ -307,12 +312,17 @@ namespace Bloom.Api
                 //Hard to reproduce, but I got one of these supertooltip disposal errors in a yellow box
                 //while switching between publish tabs (e.g. /bloom/api/publish/bloompub/cleanup).
                 //I don't think these are worth alarming the user about, so let's be sensitive to what channel we're on.
-                NonFatalProblem.Report(
-                    ModalIf.Alpha,
-                    PassiveIf.All,
-                    "Error in " + info.RawUrl,
-                    exception: e
-                );
+                // Report the error after a delay so the API call can finish.
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(100);
+                    NonFatalProblem.Report(
+                        ModalIf.Alpha,
+                        PassiveIf.All,
+                        "Error in " + info.RawUrl,
+                        exception: e
+                    );
+                });
                 request.Failed("Error in " + info.RawUrl);
                 return false;
             }
