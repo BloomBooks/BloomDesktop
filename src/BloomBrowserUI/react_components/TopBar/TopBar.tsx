@@ -14,7 +14,7 @@ import {
     kGreyOnDarkColor,
 } from "../../bloomMaterialUITheme";
 import { ScopedCssBaseline } from "@mui/material";
-import { ToastHost } from "../Toast/ToastHost";
+import { ToastHost } from "../../toast/ToastHost";
 
 export type WorkspaceTabId = "collection" | "edit" | "publish";
 

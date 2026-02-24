@@ -1,11 +1,11 @@
 import { css } from "@emotion/react";
 import { Alert, Button, Snackbar } from "@mui/material";
 import * as React from "react";
-import { useL10n } from "../l10nHooks";
+import { useL10n } from "../react_components/l10nHooks";
 import WebSocketManager, {
     IBloomWebSocketEvent,
-} from "../../utils/WebSocketManager";
-import { postJson } from "../../utils/bloomApi";
+} from "../utils/WebSocketManager";
+import { postJson } from "../utils/bloomApi";
 
 type ToastSeverity = "error" | "warning" | "notice";
 
