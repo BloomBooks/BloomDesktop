@@ -151,94 +151,106 @@ export class ToolBox {
     public configureElementsForTools(container: HTMLElement) {
         for (let i = 0; i < masterToolList.length; i++) {
             masterToolList[i].configureElements(container);
-            // the toolbox itself handles keypresses in order to manage the process
-            // of giving each tool a chance to update things when the user stops typing
-            // (while maintaining the selection if at all possible).
-            /* Note: BL-3900: "Decodable & Talking Book tools delete text after longpress".
-                 In that bug, longpress.replacePreviousLetterWithText() would delete back
-                 to the start of the current markup span (e.g. a sentence in
-                 Talking Book, or a non-decodable word in Decodable Reader).
-                 A past fix was to trigger markup on keydown, rather than keyup or keypress.
-                 Keeping the comment in case it recurs:
-                 ****This is exactly the opposite of what we would expect****
-
-                 If we trigger on keyup here, the sequence looks right but longpress will eat up the span.
-                 Here's the sequence:
-                            longpress: replacePreviousLetterWithText()
-                            Toolbox: setting timer markup
-                            Toolbox: doing markup
-                            Toolbox: Restoring Selection after markup
-
-                    So the mystery in the above case is, what is going on with the dom and longpress.replacePreviousLetterWithText()
-                    such that replacePreviousLetterWithText() replaces a bunch of characters instead of 1 character?
-
-                    Counterintuitively, if we instead trigger on keydown here, the settimeout()
-                    doesn't fire until longpress is all done and all is well:
-                            1) Toolbox: setting timer markup
-                            2) longpress: replacePreviousLetterWithText()
-                            3) Toolbox: doing markup
-                            4) Toolbox: Restoring Selection after markup
-
-                    (3) is delayed presumably because (2) is still in the event-handling loop. That's fine. But the
-                    mystery then was: why does it help longpress.replacePreviousLetterWithText() to not eat up a whole span?
-
-                    It turns out that when longpress goes to get the selection,
-                    in the keyup or keypress senarios, the selection's startContainer is the markup span (which has the #text
-                    node inside of it). So then a deleteContents() wiped out *all* the text in the span (I've added a check for
-                    that scenario so that if it happens again, longpress will fail instead of deleting text).
-                    However in the keydown case, we get a #text node for the selection, as expected. My hypothesis is that by doing
-                    the work during the keyDown event, some code somewhere runs when the key goes up, restoring a good selection.
-                    So when longpress is used, it doesn't trip over the span.
-
-                    For now I'm just going to commit the fix and if someday we revisit this, maybe another piece of the
-                    puzzle will emerge.
-                    ----end of BL-3900 comment
-                    Using Keydown had its own problems (BL-12889). If the user holds down a key (e.g., for longpress), it will
-                    fire repeatedly. I made various further attempts to get handleKeyboardInput to abort if longpress was
-                    doing something, but it was fragile and I never got it entirely right. Keyup is much better, though
-                    watch out for a keyup from the extra keystroke that is one way to select a key in longpress. And BL-3900
-                    does not seem to have recurred. Not sure whether this is because at some point we got a newer version of
-                    CkEditor, or because of improvements we've made to bookmark handling (including in the PR for BL-12889),
-                    or because of the switch to WebView2, or something else. But as far as I can tell, using keyup helps
-                    solve BL-12889 and does not cause BL-3900 to recur.
-            */
-
-            $(container)
-                .find(".bloom-editable")
-                .keyup((event) => {
-                    //don't do markup on cursor keys
-                    if (event.keyCode >= 37 && event.keyCode <= 40) {
-                        // this is check is another workaround for one scenario of BL-3490, but one that, as far as I can tell makes sense.
-                        // if all they did was move the cursor, we don't need to look at markup.
-                        //console.log("skipping markup on arrow key");
-                        return;
-                    }
-                    handlePageEditing();
-                })
-                .on("compositionend", (argument) => {
-                    // Keyman (and other IME's?) don't send keydown events, but do send compositionend events
-                    // See https://silbloom.myjetbrains.com/youtrack/issue/BL-5440.
-                    handlePageEditing();
-                })
-                // These next two were added to try to catch paste events that are not caught by the keyup
-                // on Ctrl+V. They don't catch paste caused by the toolbar button, which is caught elsewhere.
-                // I'm not sure how a paste can be triggered in current Bloom without causing a keyup,
-                // but just possibly the paste might take longer than the standard keyup delay to finish
-                // modifying the DOM? AI suggested adding these and I decided it was safest to keep them.
-                .on("input", (event) => {
-                    const inputEvent = event.originalEvent as InputEvent;
-                    if (
-                        inputEvent?.inputType &&
-                        inputEvent.inputType.startsWith("insertFromPaste")
-                    ) {
-                        handlePageEditing();
-                    }
-                })
-                .on("paste", () => {
-                    // Wait a tick so the DOM reflects the pasted content.
-                    setTimeout(() => handlePageEditing(), 0);
-                });
         }
+        // the toolbox itself handles keypresses in order to manage the process
+        // of giving each tool a chance to update things when the user stops typing
+        // (while maintaining the selection if at all possible).
+        /* Note: BL-3900: "Decodable & Talking Book tools delete text after longpress".
+                In that bug, longpress.replacePreviousLetterWithText() would delete back
+                to the start of the current markup span (e.g. a sentence in
+                Talking Book, or a non-decodable word in Decodable Reader).
+                A past fix was to trigger markup on keydown, rather than keyup or keypress.
+                Keeping the comment in case it recurs:
+                ****This is exactly the opposite of what we would expect****
+
+                If we trigger on keyup here, the sequence looks right but longpress will eat up the span.
+                Here's the sequence:
+                        longpress: replacePreviousLetterWithText()
+                        Toolbox: setting timer markup
+                        Toolbox: doing markup
+                        Toolbox: Restoring Selection after markup
+
+                So the mystery in the above case is, what is going on with the dom and longpress.replacePreviousLetterWithText()
+                such that replacePreviousLetterWithText() replaces a bunch of characters instead of 1 character?
+
+                Counterintuitively, if we instead trigger on keydown here, the settimeout()
+                doesn't fire until longpress is all done and all is well:
+                        1) Toolbox: setting timer markup
+                        2) longpress: replacePreviousLetterWithText()
+                        3) Toolbox: doing markup
+                        4) Toolbox: Restoring Selection after markup
+
+                (3) is delayed presumably because (2) is still in the event-handling loop. That's fine. But the
+                mystery then was: why does it help longpress.replacePreviousLetterWithText() to not eat up a whole span?
+
+                It turns out that when longpress goes to get the selection,
+                in the keyup or keypress senarios, the selection's startContainer is the markup span (which has the #text
+                node inside of it). So then a deleteContents() wiped out *all* the text in the span (I've added a check for
+                that scenario so that if it happens again, longpress will fail instead of deleting text).
+                However in the keydown case, we get a #text node for the selection, as expected. My hypothesis is that by doing
+                the work during the keyDown event, some code somewhere runs when the key goes up, restoring a good selection.
+                So when longpress is used, it doesn't trip over the span.
+
+                For now I'm just going to commit the fix and if someday we revisit this, maybe another piece of the
+                puzzle will emerge.
+                ----end of BL-3900 comment
+                Using Keydown had its own problems (BL-12889). If the user holds down a key (e.g., for longpress), it will
+                fire repeatedly. I made various further attempts to get handleKeyboardInput to abort if longpress was
+                doing something, but it was fragile and I never got it entirely right. Keyup is much better, though
+                watch out for a keyup from the extra keystroke that is one way to select a key in longpress. And BL-3900
+                does not seem to have recurred. Not sure whether this is because at some point we got a newer version of
+                CkEditor, or because of improvements we've made to bookmark handling (including in the PR for BL-12889),
+                or because of the switch to WebView2, or something else. But as far as I can tell, using keyup helps
+                solve BL-12889 and does not cause BL-3900 to recur.
+        */
+
+        $(container)
+            .find(".bloom-editable")
+            .keydown((event) => {
+                // Ctrl/Cmd+V doesn't always produce a keyup we can rely on in all environments.
+                // Schedule the same markup-update side effects explicitly when paste is requested.
+                const isPasteShortcut =
+                    (event.ctrlKey || event.metaKey) && event.keyCode === 86;
+                if (isPasteShortcut) {
+                    setTimeout(
+                        () => handlePageEditing(maxPasteMarkupUpdateRetries),
+                        0,
+                    );
+                }
+            })
+            .keyup((event) => {
+                //don't do markup on cursor keys
+                if (event.keyCode >= 37 && event.keyCode <= 40) {
+                    // this is check is another workaround for one scenario of BL-3490, but one that, as far as I can tell makes sense.
+                    // if all they did was move the cursor, we don't need to look at markup.
+                    //console.log("skipping markup on arrow key");
+                    return;
+                }
+                handlePageEditing();
+            })
+            .on("compositionend", (argument) => {
+                // Keyman (and other IME's?) don't send keydown events, but do send compositionend events
+                // See https://silbloom.myjetbrains.com/youtrack/issue/BL-5440.
+                handlePageEditing();
+            })
+            // These next two were added to try to catch paste events that are not caught by the keyup
+            // on Ctrl+V. They don't catch paste caused by the toolbar button, which is caught elsewhere.
+            // I'm not sure how a paste can be triggered in current Bloom without causing a keyup,
+            // but just possibly the paste might take longer than the standard keyup delay to finish
+            // modifying the DOM? AI suggested adding these and I decided it was safest to keep them.
+            .on("input", (event) => {
+                const inputEvent = event.originalEvent as InputEvent;
+                if (
+                    inputEvent?.inputType &&
+                    inputEvent.inputType.startsWith("insertFromPaste")
+                ) {
+                    handlePageEditing();
+                }
+            })
+            .on("paste", () => {
+                // Wait a tick so the DOM reflects the pasted content.
+                setTimeout(() => handlePageEditing(), 0);
+            });
     }
 
     public getTheOneGameTool(): GameTool | undefined {
