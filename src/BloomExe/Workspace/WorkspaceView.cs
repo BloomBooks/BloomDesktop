@@ -457,7 +457,6 @@ namespace Bloom.Workspace
                         ToastService.ShowToast(
                             ToastSeverity.Error,
                             text: msg,
-                            autoDismiss: false,
                             dedupeKey: "TeamCollection.ClobberProblem",
                             action: new ToastAction
                             {

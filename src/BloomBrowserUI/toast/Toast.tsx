@@ -1,5 +1,4 @@
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import { css } from "@emotion/react";
 import { Button, Snackbar, useTheme } from "@mui/material";
@@ -24,8 +23,7 @@ export interface IToast {
     text?: string;
     l10nId?: string;
     l10nDefaultText?: string;
-    autoDismiss: boolean;
-    durationMs?: number;
+    durationSeconds?: number;
     dedupeKey?: string;
     action?: IToastAction;
 }
@@ -39,7 +37,16 @@ const getSeverityIcon = (severity: ToastSeverity): React.ReactNode => {
         return <WarningAmberIcon fontSize="small" />;
     }
 
-    return <InfoOutlinedIcon fontSize="small" />;
+    return (
+        <img
+            src="/bloom/images/favicon.ico"
+            alt="Bloom"
+            css={css`
+                width: 16px;
+                height: 16px;
+            `}
+        />
+    );
 };
 
 const getSeverityColor = (severity: ToastSeverity, theme: Theme): string => {
@@ -75,8 +82,8 @@ export const Toast: React.FunctionComponent<{
             open={true}
             anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
             autoHideDuration={
-                props.toast.autoDismiss
-                    ? (props.toast.durationMs ?? 6000)
+                props.toast.durationSeconds
+                    ? props.toast.durationSeconds * 1000
                     : null
             }
             onClose={(_event, reason) => {

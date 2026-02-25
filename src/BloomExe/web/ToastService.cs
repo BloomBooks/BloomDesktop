@@ -49,12 +49,11 @@ namespace Bloom.web
             new ConcurrentDictionary<string, CallbackRecord>();
 
         public static string ShowToast(
-            string severity,
+            string severity = ToastSeverity.Notice,
             string text = null,
             string l10nId = null,
             string l10nDefaultText = null,
-            bool autoDismiss = true,
-            int? durationMs = null,
+            int? durationSeconds = null,
             string dedupeKey = null,
             ToastAction action = null,
             string toastId = null
@@ -66,7 +65,6 @@ namespace Bloom.web
             dynamic bundle = new DynamicJson();
             bundle.toastId = resolvedToastId;
             bundle.severity = severity;
-            bundle.autoDismiss = autoDismiss;
 
             if (!string.IsNullOrWhiteSpace(text))
                 bundle.text = text;
@@ -74,8 +72,8 @@ namespace Bloom.web
                 bundle.l10nId = l10nId;
             if (!string.IsNullOrWhiteSpace(l10nDefaultText))
                 bundle.l10nDefaultText = l10nDefaultText;
-            if (durationMs.HasValue)
-                bundle.durationMs = durationMs.Value;
+            if (durationSeconds.HasValue)
+                bundle.durationSeconds = durationSeconds.Value;
             if (!string.IsNullOrWhiteSpace(dedupeKey))
                 bundle.dedupeKey = dedupeKey;
 
@@ -94,8 +92,8 @@ namespace Bloom.web
                     var callbackTimeoutSeconds =
                         action.CallbackTimeoutSeconds
                         ?? (
-                            autoDismiss
-                                ? Math.Max(600, ((durationMs ?? 6000) / 1000) + 120)
+                            durationSeconds.HasValue
+                                ? Math.Max(600, durationSeconds.Value + 120)
                                 : 7 * 24 * 60 * 60
                         );
                     var callbackId = Guid.NewGuid().ToString("N");

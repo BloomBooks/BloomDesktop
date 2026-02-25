@@ -137,10 +137,8 @@ namespace Bloom
                             "Bloom is already working on checking for updates."
                         );
                         ToastService.ShowToast(
-                            ToastSeverity.Notice,
                             text: message,
-                            autoDismiss: true,
-                            durationMs: 5000,
+                            durationSeconds: 5,
                             dedupeKey: message
                         );
                     }
@@ -267,13 +265,7 @@ namespace Bloom
                     "CollectionTab.UpToDate",
                     "Your Bloom is up to date."
                 );
-                ToastService.ShowToast(
-                    ToastSeverity.Notice,
-                    text: message,
-                    autoDismiss: true,
-                    durationMs: 5000,
-                    dedupeKey: message
-                );
+                ToastService.ShowToast(text: message, durationSeconds: 5, dedupeKey: message);
             }
         }
 
@@ -291,10 +283,8 @@ namespace Bloom
                 "Update Now"
             );
             ToastService.ShowToast(
-                ToastSeverity.Notice,
                 text: msgAvail,
-                autoDismiss: true,
-                durationMs: 10000,
+                durationSeconds: 10,
                 dedupeKey: msgAvail,
                 action: new ToastAction
                 {
@@ -313,8 +303,7 @@ namespace Bloom
             ToastService.ShowToast(
                 ToastSeverity.Error,
                 text: msg,
-                autoDismiss: true,
-                durationMs: 10000,
+                durationSeconds: 10,
                 dedupeKey: msg,
                 action: new ToastAction
                 {
@@ -345,13 +334,7 @@ namespace Bloom
                 _newVersion.TargetFullRelease.Version.ToString(),
                 downloadSize / 1024
             );
-            ToastService.ShowToast(
-                ToastSeverity.Notice,
-                text: updatingMsg,
-                autoDismiss: true,
-                durationMs: 5000,
-                dedupeKey: updatingMsg
-            );
+            ToastService.ShowToast(text: updatingMsg, durationSeconds: 5, dedupeKey: updatingMsg);
         }
 
         private static void ShowToastForDownloadedWaitingForRestart(Action restartBloom)
@@ -374,9 +357,7 @@ namespace Bloom
             // Unfortunately, there's no good time to dispose of this object...according to its own comments
             // it's not even safe to close it. It moves itself out of sight eventually if ignored.
             ToastService.ShowToast(
-                ToastSeverity.Notice,
                 text: msg,
-                autoDismiss: false,
                 dedupeKey: msg,
                 action: new ToastAction
                 {
@@ -466,8 +447,7 @@ namespace Bloom
             ToastService.ShowToast(
                 ToastSeverity.Warning,
                 text: failMsg,
-                autoDismiss: true,
-                durationMs: 5000,
+                durationSeconds: 5,
                 dedupeKey: failMsg
             );
         }

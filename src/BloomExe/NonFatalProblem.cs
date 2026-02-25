@@ -360,8 +360,7 @@ namespace Bloom
             ToastService.ShowToast(
                 ToastSeverity.Warning,
                 text: shortUserLevelMessage,
-                autoDismiss: true,
-                durationMs: 15000,
+                durationSeconds: 15,
                 dedupeKey: shortUserLevelMessage,
                 action: action
             );
