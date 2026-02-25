@@ -17,6 +17,8 @@ When working in the front-end, cd to src/BloomBrowserUI
 ## Code Style
 
 - Always use arrow functions and function components in React
+- For functions, prefer typescript "function" syntax over const foo = () ==> functions.
+- When writing less, use new css features supported by our current version of webview2. E.g. "is()".
 
 - Avoid removing existing comments.
 - Avoid adding a comment like "// add this line".
