@@ -32,10 +32,6 @@ interface IToast {
 
 type IToastShowEvent = IBloomWebSocketEvent & IToast;
 
-type IToastDismissEvent = IBloomWebSocketEvent & {
-    toastId: string;
-};
-
 const getMuiSeverity = (severity: ToastSeverity) => {
     if (severity === "error") return "error";
     if (severity === "warning") return "warning";
@@ -111,7 +107,9 @@ const ToastItem: React.FunctionComponent<{
     );
 };
 
-export const ToastHost: React.FunctionComponent = () => {
+export const ToastHost: React.FunctionComponent<{
+    dismissDedupeKeys?: string[];
+}> = (props) => {
     const [toasts, setToasts] = React.useState<IToast[]>([]);
 
     const removeToast = React.useCallback((toastId: string) => {
@@ -143,7 +141,7 @@ export const ToastHost: React.FunctionComponent = () => {
         [removeToast],
     );
 
-    // Subscribe once to backend websocket toast events so the host can show and dismiss toasts.
+    // Subscribe once to backend websocket toast show events so the host can render toasts.
     React.useEffect(() => {
         const listener = (event: IBloomWebSocketEvent) => {
             if (event.id === "show") {
@@ -162,18 +160,26 @@ export const ToastHost: React.FunctionComponent = () => {
 
                     return [...currentToasts, { ...showEvent }];
                 });
-                return;
-            }
-
-            if (event.id === "dismiss") {
-                const dismissEvent = event as IToastDismissEvent;
-                removeToast(dismissEvent.toastId);
             }
         };
 
         WebSocketManager.addListener("toast", listener);
         return () => WebSocketManager.removeListener("toast", listener);
-    }, [removeToast]);
+    }, []);
+
+    // Dismiss selected dedupe-key toasts when container UI state says they are no longer relevant.
+    React.useEffect(() => {
+        if (!props.dismissDedupeKeys || props.dismissDedupeKeys.length === 0) {
+            return;
+        }
+
+        setToasts((currentToasts) =>
+            currentToasts.filter(
+                (toast) =>
+                    !props.dismissDedupeKeys?.includes(toast.dedupeKey || ""),
+            ),
+        );
+    }, [props.dismissDedupeKeys]);
 
     return (
         <>

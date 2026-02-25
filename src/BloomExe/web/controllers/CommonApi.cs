@@ -214,6 +214,8 @@ namespace Bloom.web.controllers
                 false
             );
 
+            apiHandler.RegisterEndpointHandler("toast/test", HandleToastTest, false);
+
             // At this point we open dialogs from c# code; if we opened dialogs from javascript, we wouldn't need this
             // api to do it. We just need a way to close a c#-opened dialog from javascript (e.g. the Close button of the dialog).
             //
@@ -318,6 +320,92 @@ namespace Bloom.web.controllers
         {
             var message = request.RequiredPostString();
             Logger.WriteEvent(message);
+            request.PostSucceeded();
+        }
+
+        private void HandleToastTest(ApiRequest request)
+        {
+            var requestData = DynamicJson.Parse(request.RequiredPostJson());
+            var scenario = (string)requestData.scenario ?? "all";
+
+            switch (scenario)
+            {
+                case "all":
+                    ToastService.ShowToast(
+                        ToastSeverity.Notice,
+                        text: "Toast test: notice",
+                        autoDismiss: true,
+                        durationMs: 5000,
+                        dedupeKey: "toast-test-notice"
+                    );
+                    ToastService.ShowToast(
+                        ToastSeverity.Warning,
+                        text: "Toast test: warning",
+                        autoDismiss: true,
+                        durationMs: 7000,
+                        dedupeKey: "toast-test-warning"
+                    );
+                    ToastService.ShowToast(
+                        ToastSeverity.Error,
+                        text: "Toast test: persistent with action",
+                        autoDismiss: false,
+                        dedupeKey: "toast-test-persistent",
+                        action: new ToastAction { Label = "Dismiss", Callback = () => { } }
+                    );
+                    break;
+                case "notice":
+                    ToastService.ShowToast(
+                        ToastSeverity.Notice,
+                        text: "Toast test: notice",
+                        autoDismiss: true,
+                        durationMs: 5000,
+                        dedupeKey: "toast-test-notice"
+                    );
+                    break;
+                case "warning":
+                    ToastService.ShowToast(
+                        ToastSeverity.Warning,
+                        text: "Toast test: warning",
+                        autoDismiss: true,
+                        durationMs: 7000,
+                        dedupeKey: "toast-test-warning"
+                    );
+                    break;
+                case "error":
+                    ToastService.ShowToast(
+                        ToastSeverity.Error,
+                        text: "Toast test: error",
+                        autoDismiss: true,
+                        durationMs: 10000,
+                        dedupeKey: "toast-test-error"
+                    );
+                    break;
+                case "action":
+                    ToastService.ShowToast(
+                        ToastSeverity.Notice,
+                        text: "Toast test: click action button",
+                        autoDismiss: true,
+                        durationMs: 15000,
+                        dedupeKey: "toast-test-action",
+                        action: new ToastAction
+                        {
+                            Label = "Run Action",
+                            Callback = () =>
+                                ToastService.ShowToast(
+                                    ToastSeverity.Notice,
+                                    text: "Toast test action callback executed",
+                                    autoDismiss: true,
+                                    durationMs: 5000,
+                                    dedupeKey: "toast-test-action-result"
+                                ),
+                        }
+                    );
+                    break;
+                default:
+                    request.Failed($"Unknown toast test scenario '{scenario}'");
+                    return;
+            }
+
             request.PostSucceeded();
         }
 

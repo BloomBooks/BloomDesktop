@@ -54,7 +54,6 @@ namespace Bloom.Workspace
 
         private TeamCollectionManager _tcManager;
         private BookSelection _bookSelection;
-        private string _returnToCollectionTabToastId;
         private BloomWebSocketServer _webSocketServer;
         private BookServer _bookServer;
         private WorkspaceTabSelection _tabSelection;
@@ -439,8 +438,6 @@ namespace Bloom.Workspace
                 return; // change is not to the book we're interested in.
             if (_tabSelection.ActiveTab == WorkspaceTab.collection)
                 return; // this toast is all about returning to the collection tab
-            if (!string.IsNullOrEmpty(_returnToCollectionTabToastId))
-                return; // notification already up
             if (_tcManager.CurrentCollection == null)
                 return;
             if (_tcManager.CurrentCollection.HasClobberProblem(bookName))
@@ -457,7 +454,7 @@ namespace Bloom.Workspace
                             "The Team Collection has a newer version of this book. Return to the Collection Tab for more information."
                         );
 
-                        _returnToCollectionTabToastId = ToastService.ShowToast(
+                        ToastService.ShowToast(
                             ToastSeverity.Error,
                             text: msg,
                             autoDismiss: false,
@@ -1213,11 +1210,6 @@ namespace Bloom.Workspace
                     break;
                 case WorkspaceTab.collection:
                     SelectTab(_collectionTabView);
-                    if (!string.IsNullOrEmpty(_returnToCollectionTabToastId))
-                    {
-                        ToastService.DismissToast(_returnToCollectionTabToastId);
-                        _returnToCollectionTabToastId = null;
-                    }
                     if (_collectionTabView != null)
                     {
                         if (Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded)

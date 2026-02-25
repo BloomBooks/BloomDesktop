@@ -17,6 +17,11 @@ import { ScopedCssBaseline } from "@mui/material";
 import { ToastHost } from "../../toast/ToastHost";
 
 export type WorkspaceTabId = "collection" | "edit" | "publish";
+const kTeamCollectionClobberDedupeKey = "TeamCollection.ClobberProblem";
+
+interface ITopBarWindow extends Window {
+    bloomToastTest?: (scenario?: string) => void;
+}
 
 type WorkspaceTabState = "active" | "enabled" | "disabled" | "hidden";
 
@@ -77,6 +82,14 @@ export const TopBar: React.FunctionComponent = () => {
         );
     }, [tabStates]);
 
+    const dismissDedupeKeys = React.useMemo(
+        () =>
+            activeTab === "collection"
+                ? [kTeamCollectionClobberDedupeKey]
+                : undefined,
+        [activeTab],
+    );
+
     const handleSelectTab = React.useCallback(
         (tab: WorkspaceTabId) => {
             const tabState = tabStates[tab];
@@ -121,6 +134,18 @@ export const TopBar: React.FunctionComponent = () => {
         };
     }, []);
 
+    // Expose a lightweight manual toast test hook for developers in browser devtools.
+    React.useEffect(() => {
+        const topBarWindow = window as ITopBarWindow;
+        topBarWindow.bloomToastTest = (scenario = "all") => {
+            postJson("toast/test", { scenario });
+        };
+
+        return () => {
+            delete topBarWindow.bloomToastTest;
+        };
+    }, []);
+
     return (
         /* ScopedCssBaseline injects MUI's base styles (it sets html/body to the theme typography,
            normalizes margins, etc.).
@@ -145,7 +170,7 @@ export const TopBar: React.FunctionComponent = () => {
                     />
                     <TopBarControls activeTab={activeTab} />
                 </div>
-                <ToastHost />
+                <ToastHost dismissDedupeKeys={dismissDedupeKeys} />
             </>
         </ScopedCssBaseline>
     );

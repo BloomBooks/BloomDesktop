@@ -29,13 +29,12 @@ namespace Bloom.web
     }
 
     /// <summary>
-    /// Sends toast show/dismiss events to the browser UI and dispatches optional action callbacks.
+    /// Sends toast show events to the browser UI and dispatches optional action callbacks.
     /// </summary>
     public static class ToastService
     {
         private const string kToastClientContext = "toast";
         private const string kToastShowEvent = "show";
-        private const string kToastDismissEvent = "dismiss";
 
         /// <summary>
         /// Tracks callback actions that can be executed later from browser toast interactions.
@@ -113,20 +112,6 @@ namespace Bloom.web
 
             BloomWebSocketServer.Instance?.SendBundle(kToastClientContext, kToastShowEvent, bundle);
             return resolvedToastId;
-        }
-
-        public static void DismissToast(string toastId)
-        {
-            if (string.IsNullOrWhiteSpace(toastId))
-                return;
-
-            dynamic bundle = new DynamicJson();
-            bundle.toastId = toastId;
-            BloomWebSocketServer.Instance?.SendBundle(
-                kToastClientContext,
-                kToastDismissEvent,
-                bundle
-            );
         }
 
         public static bool PerformAction(string callbackId)
