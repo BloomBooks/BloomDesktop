@@ -40,6 +40,11 @@ import {
     getToolboxBundleExports,
 } from "./bloomFrames";
 import { showInvisibles, hideInvisibles } from "./showInvisibles";
+import {
+    cleanupPageHoverTooltips,
+    getBodyInnerHtmlWithoutPageHoverTooltips,
+    setupPageHoverTooltips,
+} from "./pageHoverTooltips";
 
 //promise may be needed to run tests with phantomjs
 //import promise = require('es6-promise');
@@ -155,6 +160,7 @@ function Cleanup() {
     cleanupImages();
     cleanupOrigami();
     cleanupNiceScroll();
+    cleanupPageHoverTooltips();
 }
 
 //add a delete button which shows up when you hover
@@ -1096,6 +1102,7 @@ export function bootstrap() {
 
     SetupElements(document.body);
     OneTimeSetup();
+    setupPageHoverTooltips();
 
     // configure ckeditor
     if (typeof CKEDITOR === "undefined") return; // this happens during unit testing
@@ -1338,7 +1345,7 @@ export function getBodyContentForSavePage() {
         );
     }
 
-    const result = document.body.innerHTML;
+    const result = getBodyInnerHtmlWithoutPageHoverTooltips();
 
     if (canvasElementEditingOn) {
         theOneCanvasElementManager.turnOnCanvasElementEditing();
