@@ -205,6 +205,20 @@ export class ToolBox {
 
             $(container)
                 .find(".bloom-editable")
+                .keydown((event) => {
+                    // Ctrl/Cmd+V doesn't always produce a keyup we can rely on in all environments.
+                    // Schedule the same markup-update side effects explicitly when paste is requested.
+                    const isPasteShortcut =
+                        (event.ctrlKey || event.metaKey) &&
+                        event.keyCode === 86;
+                    if (isPasteShortcut) {
+                        setTimeout(
+                            () =>
+                                handlePageEditing(maxPasteMarkupUpdateRetries),
+                            0,
+                        );
+                    }
+                })
                 .keyup((event) => {
                     //don't do markup on cursor keys
                     if (event.keyCode >= 37 && event.keyCode <= 40) {
