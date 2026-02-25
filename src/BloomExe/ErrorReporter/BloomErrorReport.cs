@@ -97,7 +97,6 @@ namespace Bloom.ErrorReporter
                 ToastSeverity.Warning,
                 text: shortMsg,
                 durationSeconds: 10,
-                dedupeKey: shortMsg,
                 action: new ToastAction
                 {
                     Callback = () =>

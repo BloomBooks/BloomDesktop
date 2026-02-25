@@ -43,6 +43,7 @@ import {
 } from "../react_components/makeReaderTemplateBloomPackDialog";
 import { AboutDialogLauncher } from "../react_components/aboutDialog";
 import { RegistrationDialogLauncher } from "../react_components/registration/registrationDialog";
+import { ToastHost } from "../toast/ToastHost";
 
 const kResizerSize = 10;
 
@@ -592,6 +593,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
             <CollectionSettingsDialog />
             <EmbeddedProgressDialog id="collectionTab" />
             <MakeReaderTemplateBloomPackDialog />
+            <ToastHost />
         </div>
     );
 };

@@ -74,6 +74,11 @@ namespace Bloom.web
                 bundle.l10nDefaultText = l10nDefaultText;
             if (durationSeconds.HasValue)
                 bundle.durationSeconds = durationSeconds.Value;
+            if (string.IsNullOrWhiteSpace(dedupeKey))
+                dedupeKey =
+                    !string.IsNullOrWhiteSpace(text) ? text
+                    : !string.IsNullOrWhiteSpace(l10nId) ? l10nId
+                    : null;
             if (!string.IsNullOrWhiteSpace(dedupeKey))
                 bundle.dedupeKey = dedupeKey;
 
