@@ -6,7 +6,7 @@ namespace Bloom.web
 {
     /// <summary>
     /// Severity values for toast notifications sent over websocket.
-    /// Keep these values in sync with ToastSeverity in src/BloomBrowserUI/toast/ToastHost.tsx.
+    /// Keep these values in sync with ToastSeverity in src/BloomBrowserUI/toast/Toast.tsx.
     /// </summary>
     public static class ToastSeverity
     {
@@ -17,7 +17,7 @@ namespace Bloom.web
 
     /// <summary>
     /// Optional action metadata attached to a toast.
-    /// Keep property names and semantics in sync with IToastAction in src/BloomBrowserUI/toast/ToastHost.tsx.
+    /// Keep property names and semantics in sync with IToastAction in src/BloomBrowserUI/toast/Toast.tsx.
     /// </summary>
     public class ToastAction
     {

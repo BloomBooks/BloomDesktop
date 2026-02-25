@@ -1,111 +1,11 @@
-import { css } from "@emotion/react";
-import { Alert, Button, Snackbar } from "@mui/material";
+import { postJson } from "../utils/bloomApi";
 import * as React from "react";
-import { useL10n } from "../react_components/l10nHooks";
 import WebSocketManager, {
     IBloomWebSocketEvent,
 } from "../utils/WebSocketManager";
-import { postJson } from "../utils/bloomApi";
-
-// Keep values in sync with ToastSeverity in src/BloomExe/web/ToastService.cs.
-type ToastSeverity = "error" | "warning" | "notice";
-
-interface IToastAction {
-    // Keep property names and semantics in sync with ToastAction in src/BloomExe/web/ToastService.cs.
-    label?: string;
-    l10nId?: string;
-    url?: string;
-    callbackId?: string;
-}
-
-interface IToast {
-    toastId: string;
-    severity: ToastSeverity;
-    text?: string;
-    l10nId?: string;
-    l10nDefaultText?: string;
-    autoDismiss: boolean;
-    durationMs?: number;
-    dedupeKey?: string;
-    action?: IToastAction;
-}
+import { IToast, Toast } from "./Toast";
 
 type IToastShowEvent = IBloomWebSocketEvent & IToast;
-
-const getMuiSeverity = (severity: ToastSeverity) => {
-    if (severity === "error") return "error";
-    if (severity === "warning") return "warning";
-    return "info";
-};
-
-const ToastItem: React.FunctionComponent<{
-    toast: IToast;
-    index: number;
-    onClose: (toastId: string) => void;
-    onAction: (toast: IToast) => void;
-}> = (props) => {
-    const localizedMessage = useL10n(
-        props.toast.l10nDefaultText || props.toast.text || "",
-        props.toast.l10nId,
-    );
-    const localizedActionLabel = useL10n(
-        props.toast.action?.label || "",
-        props.toast.action?.l10nId,
-    );
-
-    return (
-        <Snackbar
-            open={true}
-            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-            autoHideDuration={
-                props.toast.autoDismiss
-                    ? (props.toast.durationMs ?? 6000)
-                    : null
-            }
-            onClose={(_event, reason) => {
-                if (reason === "clickaway") {
-                    return;
-                }
-                props.onClose(props.toast.toastId);
-            }}
-            css={css`
-                && {
-                    bottom: ${16 + props.index * 76}px;
-                }
-            `}
-        >
-            <Alert
-                severity={getMuiSeverity(props.toast.severity)}
-                variant="filled"
-                css={css`
-                    min-width: 360px;
-                    cursor: ${props.toast.action ? "pointer" : "default"};
-                `}
-                onClick={() => {
-                    if (props.toast.action) {
-                        props.onAction(props.toast);
-                    }
-                }}
-                action={
-                    props.toast.action && localizedActionLabel ? (
-                        <Button
-                            color="inherit"
-                            size="small"
-                            onClick={(event) => {
-                                event.stopPropagation();
-                                props.onAction(props.toast);
-                            }}
-                        >
-                            {localizedActionLabel}
-                        </Button>
-                    ) : undefined
-                }
-            >
-                {localizedMessage}
-            </Alert>
-        </Snackbar>
-    );
-};
 
 export const ToastHost: React.FunctionComponent<{
     dismissDedupeKeys?: string[];
@@ -184,7 +84,7 @@ export const ToastHost: React.FunctionComponent<{
     return (
         <>
             {toasts.map((toast, index) => (
-                <ToastItem
+                <Toast
                     key={toast.toastId}
                     toast={toast}
                     index={index}
