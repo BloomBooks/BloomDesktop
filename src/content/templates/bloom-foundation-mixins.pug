@@ -114,11 +114,13 @@ mixin field-version1(placeholder)
 //- but that needs sizes and positions that depend on the page size and orientation. I tentatively
 //- think it's better to make the template books with the old architecture, and let them be migrated
 //- and sized when the page opens in our editor.
+//- height and width will be replaced with pixel values by the Canvas Element Manager at edit time
 mixin image
 	- requireZeroArguments('image', arguments);
-	.bloom-canvas&attributes(attributes)
-		img(src="placeHolder.png", width=attributes.initialImageWidth)
-		block
+	.bloom-canvas.bloom-has-canvas-element&attributes(attributes)
+		.bloom-canvas-element.bloom-backgroundImage(style="width:100%; height:100%;")
+			.bloom-imageContainer
+				img(src="placeHolder.png") 
 
 mixin video
 	- requireZeroArguments('video', arguments);
