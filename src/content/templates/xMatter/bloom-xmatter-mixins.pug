@@ -153,12 +153,12 @@ mixin standard-cover-contents
 //- The usual code for creating image description on demand is not satisfactory,
 //- because the cover image description needs to have a data-book attribute
 //- so that the contents will survive changes to xmatter (and updates in bringBookUpToDate)
+//- Height and width will be replaced with pixel values by the Canvas Element Manager at edit time
 mixin standard-cover-image
-	.bloom-canvas
-		//- We're using the old structure with the img a direct child of the bloom-canvas,
-		//- because we can't set the right size of the new background-image structure until
-		//- we've loaded the page into a browser.
-		img(data-book="coverImage", src="placeHolder.png")&attributes(attributes)
+	.bloom-canvas.bloom-has-canvas-element
+		.bloom-canvas-element.bloom-backgroundImage(style="width:100%; height:100%;")
+			.bloom-imageContainer
+				img(data-book="coverImage", src="placeHolder.png")&attributes(attributes)
 		+field-cover-image("auto").bloom-imageDescription.bloom-trailingElement
 
 mixin field-cover-image(languages)
