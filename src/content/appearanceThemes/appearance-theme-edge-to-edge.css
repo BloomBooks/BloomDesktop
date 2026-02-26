@@ -1,15 +1,14 @@
 /* replaces the pre-v6.0 "EFL Template 1" custom CSS: which had no margins, no page numbers.
 Note that hiding the page numbers is done by a setting in appearance.json, not here. */
 
-[class*="Device"].bloom-frontMatter,
-[class*="Device"].bloom-backMatter {
+.bloom-frontMatter,
+.bloom-backMatter {
     --page-margin: 3mm;
 }
 
 /* This statement sets the margins on the numbered content pages */
 
-:not(.bloom-interactive-page).numberedPage.Device16x9Landscape,
-:not(.bloom-interactive-page).numberedPage.Device16x9Portrait {
+.numberedPage:not(.bloom-interactive-page) {
     --page-margin: 0mm;
 
     /* instead of a gap, we are using padding because the text should look centered between the image and edge of the screen */
@@ -25,6 +24,17 @@ Note that hiding the page numbers is done by a setting in appearance.json, not h
     /* this rule will apply more generally than we'd prefer, but the common situation we're improving here
     is picture on top, text on the bottom, we need to make room for the page number */
     --pageNumber-extra-height: 12mm !important;
+}
+.bloom-fullBleed .numberedPage.side-left::after {
+    --pageNumber-left-margin: calc(
+        var(--page-margin-left, 0mm) + (var(--full-bleed-excess-width, 0mm) / 2)
+    );
+}
+.bloom-fullBleed .numberedPage.side-right::after {
+    --pageNumber-right-margin: calc(
+        var(--page-margin-right, 0mm) +
+            (var(--full-bleed-excess-width, 0mm) / 2)
+    );
 }
 .bloom-fullBleed .Device16x9Landscape.numberedPage {
     /* On full-bleed pages we want the page number positioned based on the ideal place where
@@ -61,10 +71,10 @@ Note that hiding the page numbers is done by a setting in appearance.json, not h
 }
 
 /* using "where:" so that the user's custom appearance can override the theme if specified */
-.numberedPage:where([class*="Device"]:not(.bloom-interactive-page)) {
+.numberedPage:where(:not(.bloom-interactive-page)) {
     --topLevel-text-padding: 0.5em;
 }
-[class*="Device"].numberedPage:not(.bloom-interactive-page) {
+.numberedPage:not(.bloom-interactive-page) {
     /* move so that page number doesn't it hide it if the text box is in the lower left */
     --formatButton-pageNumber-dodge: 20px;
 }

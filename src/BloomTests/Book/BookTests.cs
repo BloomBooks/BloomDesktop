@@ -407,11 +407,11 @@ namespace BloomTests.Book
 					</div>";
             var book = CreateBookWithPhysicalFile(body, bringBookUpToDate: false);
             var cssPath = Path.Combine(book.FolderPath, "customBookStyles.css");
-            File.WriteAllText(cssPath, AppearanceMigratorTests.cssThatTriggersEbookZeroMarginTheme);
+            File.WriteAllText(cssPath, AppearanceMigratorTests.cssThatTriggersEbookEdgeToEdgeTheme);
             book.EnsureUpToDate();
 
             var appearanceSettings = book.BookInfo.AppearanceSettings;
-            Assert.That(appearanceSettings.CssThemeName, Is.EqualTo("zero-margin-ebook"));
+            Assert.That(appearanceSettings.CssThemeName, Is.EqualTo("edge-to-edge"));
 
             AssertThatXmlIn
                 .Dom(book.OurHtmlDom.RawDom)

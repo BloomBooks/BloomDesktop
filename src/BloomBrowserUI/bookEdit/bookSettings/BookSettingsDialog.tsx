@@ -276,7 +276,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
         "BookSettings.FullBleed",
     );
     const fullBleedDescription = useL10n(
-        "Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.",
+        'Enable full bleed layout for printing. Use with the "Edge to Edge" theme. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.',
         "BookSettings.FullBleed.Description",
     );
 
