@@ -537,6 +537,7 @@ export class CanvasElementManager {
         const bloomCanvases: HTMLElement[] = this.getAllBloomCanvasesOnPage();
 
         bloomCanvases.forEach((bloomCanvas) => {
+            this.setupBackgroundImageAttributes(bloomCanvas);
             this.adjustCanvasElementsForCurrentLanguage(bloomCanvas);
             this.ensureCanvasElementsIntersectParent(bloomCanvas);
             // image containers are already set by CSS to overflow:hidden, so they
@@ -6918,16 +6919,7 @@ export class CanvasElementManager {
             newImg.classList.remove("bloom-imageLoadError");
             newImgContainer.appendChild(newImg);
 
-            // Set level so Comical will consider the new canvas element to be under the existing ones.
-            const canvasElementElements = Array.from(
-                bloomCanvas.getElementsByClassName(kCanvasElementClass),
-            ) as HTMLElement[];
-            CanvasElementManager.putBubbleBefore(
-                bgCanvasElement,
-                canvasElementElements,
-                1,
-            );
-            bgCanvasElement.style.visibility = "none"; // hide it until we adjust its shape and position
+            bgCanvasElement.style.visibility = "hidden"; // hide it until we adjust its shape and position
             // consistent with level, we want it in front of the (new, placeholder) background image
             // and behind the other canvas elements.
             if (oldBgImage) {
@@ -6962,12 +6954,41 @@ export class CanvasElementManager {
             "src",
             oldBgImage?.getAttribute("src") ?? "placeHolder.png",
         );
-        this.adjustBackgroundImageSize(bloomCanvas, bgCanvasElement, true);
+        this.setupBackgroundImageAttributes(bloomCanvas, bgCanvasElement, true);
         bgCanvasElement.style.visibility = ""; // now we can show it, if it was new and hidden
         SetupMetadataButton(bloomCanvas);
         if (oldBgImage) {
             oldBgImage.remove();
         }
+    }
+
+    public setupBackgroundImageAttributes(
+        bloomCanvas: HTMLElement,
+        bgElement?: HTMLElement,
+        useSizeOfNewImage: boolean = false,
+    ) {
+        if (!bgElement) {
+            bgElement = bloomCanvas.getElementsByClassName(
+                kBackgroundImageClass,
+            )[0] as HTMLElement;
+        }
+        if (bgElement.getAttribute("data-bubble")) {
+            return; // setup has already been done (data-bubble is added by putBubbleBefore)
+        }
+        // Newly added background image element has not yet been given its size
+        this.adjustBackgroundImageSize(
+            bloomCanvas,
+            bgElement,
+            useSizeOfNewImage,
+        );
+        // Set level so Comical will consider the new canvas element to be under the existing ones.
+        CanvasElementManager.putBubbleBefore(
+            bgElement,
+            Array.from(
+                bloomCanvas.getElementsByClassName(kCanvasElementClass),
+            ) as HTMLElement[],
+            1,
+        );
     }
 
     // Adjust the levels of all the bubbles of all the listed canvas elements so that

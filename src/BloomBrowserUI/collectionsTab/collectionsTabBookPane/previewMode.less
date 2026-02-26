@@ -145,7 +145,8 @@ and as a result, the labels are shifted to this many pixels to the width. This s
     }
 }
 
-// As of 6.3 it is currently still possible to get old-style placeholder img elements wrapped in nothing but a bloom-canvas (BL-15763) at publication.
+// If the book was created in 6.3 or earlier, it could possibly have old-style placeholder img elements wrapped in
+// nothing but a bloom-canvas (BL-15763)
 .hidePlaceHolders img[src*="placeHolder.png"] {
     display: none;
 }

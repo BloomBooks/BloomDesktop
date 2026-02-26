@@ -2627,7 +2627,7 @@ namespace Bloom.Book
                 "//body/div[@id='bloomDataDiv']/div[@data-book='coverImage']"
             );
             if (node == null)
-                return; // shouldn't happen, but nothing to fix if it does.
+                return;
             var text = node.InnerText;
             if (
                 !String.IsNullOrWhiteSpace(text)
