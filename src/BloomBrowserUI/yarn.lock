@@ -2244,7 +2244,7 @@
     iso-15924 "^3.2.0"
     iso-3166 "^4.3.0"
 
-"@ethnolib/language-chooser-react-mui@^0.1.22":
+"@ethnolib/language-chooser-react-mui@^0.1.23":
   version "0.1.23"
   resolved "https://registry.yarnpkg.com/@ethnolib/language-chooser-react-mui/-/language-chooser-react-mui-0.1.23.tgz#2dc511011ba8bcbb4d43296506325648c56d7116"
   integrity sha512-Hty91DrhJRwBiOe85AOzbfOv0X6No5XcH/3sKla4D1nnMQeE5FzSqcFTdFgFkiLBldd253peaBk9dkgSuzPFvw==
