@@ -153,9 +153,9 @@ namespace Bloom
             // which for now is not supported in 5.5+.
             GraphicsManager.GtkVersionInUse = GraphicsManager.GtkVersion.Gtk3;
 
-#if DEBUG
-            //MessageBox.Show("Attach debugger now");
-#endif
+            if ((Control.ModifierKeys & (Keys.Control | Keys.Alt)) == (Keys.Control | Keys.Alt))
+                MessageBox.Show("Attach debugger now");
+
             // Bloom has several command line scenarios, without a coherent system for them.
             // The following is how we will do things from now on, and things can be moved
             // into this as time allows. See CommandLineOptions.cs.
@@ -321,9 +321,6 @@ namespace Bloom
                 {
                     if (IsLocalizationHarvestingLaunch(args))
                         LocalizationManager.IgnoreExistingEnglishTranslationFiles = true;
-                    else
-                        // This allows us to debug things like  interpreting a URL.
-                        MessageBox.Show("Attach debugger now");
                 }
                 var harvest = Environment.GetEnvironmentVariable("HARVEST_FOR_LOCALIZATION");
                 if (
