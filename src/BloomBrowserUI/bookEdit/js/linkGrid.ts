@@ -5,18 +5,6 @@ import { postJson } from "../../utils/bloomApi";
 import { showBookGridSetupDialog } from "../../react_components/BookGridSetup/BookGridSetupDialog";
 import { Link } from "../../react_components/BookGridSetup/BookLinkTypes";
 
-const pageIconThumbnailUrl =
-    "/bloom/bookEdit/pageThumbnailList/pageControls/bookGridPageIcon.svg";
-
-const getPageIdFromHref = (href: string): string | undefined => {
-    const hashIndex = href.indexOf("#");
-    if (hashIndex < 0) {
-        return undefined;
-    }
-    const pageId = href.substring(hashIndex + 1);
-    return pageId || undefined;
-};
-
 export function setupBookLinkGrids(container: HTMLElement) {
     // Add skeleton to empty grids on initial setup
     const linkGrids = Array.from(
@@ -46,65 +34,18 @@ export function editLinkGrid(linkGrid: HTMLElement) {
                 child.classList.contains("bloom-bookButton") &&
                 child.hasAttribute("data-bloom-book-id"), // drop buttons that might have been edited by hand and don't have this
         )
-        .map((button: Element, index) => {
+        .map((button: Element) => {
             const id = button.getAttribute("data-bloom-book-id")!; // we already filtered out any that don't have this
-            const href = button.getAttribute("data-href") || "";
-            const pageIdFromHref = getPageIdFromHref(href);
-            const pageId =
-                button.getAttribute("data-bloom-page-id") || pageIdFromHref;
             const titleElement = button.getElementsByTagName("p")[0]; // TODO should this be something computed from the Book by asking the server?
-            const label = titleElement?.textContent || "";
-            const thumbnailUrl =
-                button.getAttribute("data-bloom-thumbnail-url") ||
-                `${window.location.origin}/bloom/api/collections/book/coverImage?book-id=${id}`;
-            const thumbnailSource = button.getAttribute(
-                "data-bloom-thumbnail-source",
-            ) as "pageImage" | "pageIcon" | null;
-            const thumbnailImageIndexRaw = button.getAttribute(
-                "data-bloom-thumbnail-image-index",
-            );
-            const thumbnailImageIndex =
-                thumbnailImageIndexRaw === null
-                    ? undefined
-                    : Number(thumbnailImageIndexRaw);
-            const pageCaption =
-                button.getAttribute("data-bloom-page-caption") || undefined;
-
             return {
-                id:
-                    button.getAttribute("data-bloom-link-id") ||
-                    `book-grid-existing-${index + 1}`,
-                label,
                 book: {
                     id,
-                    title: "",
+                    title: titleElement?.textContent || "",
                     // we don't know what the server path to this book would be at the moment
                     thumbnail: `${window.location.origin}/bloom/api/collections/book/coverImage?book-id=${id}`,
                 },
-                page: pageId
-                    ? {
-                          pageId,
-                          thumbnail: thumbnailUrl,
-                          caption: pageCaption,
-                          isFrontCover: pageId === "cover",
-                          thumbnailSource:
-                              thumbnailSource ||
-                              (thumbnailUrl === pageIconThumbnailUrl
-                                  ? "pageIcon"
-                                  : "pageImage"),
-                          thumbnailImageIndex:
-                              thumbnailImageIndex !== undefined &&
-                              !isNaN(thumbnailImageIndex)
-                                  ? thumbnailImageIndex
-                                  : undefined,
-                      }
-                    : undefined,
             };
         });
-
-    const gridMode = linkGrid.classList.contains("bloom-toc-grid")
-        ? "toc"
-        : "book";
 
     showBookGridSetupDialog(
         currentLinks,
@@ -117,58 +58,22 @@ export function editLinkGrid(linkGrid: HTMLElement) {
                 addSkeletonIfEmpty(linkGrid);
             } else {
                 // Add real book buttons
-                links.forEach((link, index) => {
+                links.forEach((link) => {
                     const button = document.createElement("div");
                     button.className = "bloom-bookButton";
-                    const targetPageId = link.page?.pageId;
-                    const href =
-                        targetPageId && targetPageId !== "cover"
-                            ? `/book/${link.book.id}#${targetPageId}`
-                            : `/book/${link.book.id}`;
-                    button.setAttribute("data-href", href);
+                    button.setAttribute("data-href", `/book/${link.book.id}`);
                     button.setAttribute("data-bloom-book-id", link.book.id);
-                    const linkId = link.id || `book-grid-link-${index + 1}`;
-                    button.setAttribute("data-bloom-link-id", linkId);
                     if (link.page) {
                         button.setAttribute(
                             "data-bloom-page-id",
                             link.page.pageId.toString(),
-                        );
-                        if (link.page.caption) {
-                            button.setAttribute(
-                                "data-bloom-page-caption",
-                                link.page.caption,
-                            );
-                        }
-                    }
-
-                    const selectedThumbnailUrl =
-                        link.page?.thumbnail ||
-                        link.book.thumbnail ||
-                        pageIconThumbnailUrl;
-                    if (selectedThumbnailUrl) {
-                        button.setAttribute(
-                            "data-bloom-thumbnail-url",
-                            selectedThumbnailUrl,
-                        );
-                    }
-                    if (link.page?.thumbnailSource) {
-                        button.setAttribute(
-                            "data-bloom-thumbnail-source",
-                            link.page.thumbnailSource,
-                        );
-                    }
-                    if (link.page?.thumbnailImageIndex !== undefined) {
-                        button.setAttribute(
-                            "data-bloom-thumbnail-image-index",
-                            link.page.thumbnailImageIndex.toString(),
                         );
                     }
                     // create img for the thumbnail
                     const img = document.createElement("img");
                     button.appendChild(img);
 
-                    const desiredFileNameWithoutExtension = `bookButton-${index}-${link.book.id}-${linkId.replace(/[^a-zA-Z0-9_-]/g, "_")}`;
+                    const desiredFileNameWithoutExtension = `bookButton-${link.book.id}`;
 
                     const messageContext =
                         "makeThumbnailFile-" + desiredFileNameWithoutExtension;
@@ -182,7 +87,7 @@ export function editLinkGrid(linkGrid: HTMLElement) {
                         postJson("editView/addImageFromUrl", {
                             desiredFileNameWithoutExtension:
                                 desiredFileNameWithoutExtension,
-                            url: selectedThumbnailUrl,
+                            url: link.book.thumbnail,
                         });
                     });
 
@@ -190,17 +95,13 @@ export function editLinkGrid(linkGrid: HTMLElement) {
 
                     const p = document.createElement("p");
                     p.textContent =
-                        link.label ||
-                        link.book.title ||
-                        link.book.folderName ||
-                        "";
+                        link.book.title || link.book.folderName || "";
                     button.appendChild(p);
 
                     linkGrid.appendChild(button);
                 });
             }
         },
-        gridMode,
     );
 }
 

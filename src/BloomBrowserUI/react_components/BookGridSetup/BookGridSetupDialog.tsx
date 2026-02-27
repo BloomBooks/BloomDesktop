@@ -15,30 +15,20 @@ import { useWatchApiData, useApiString } from "../../utils/bloomApi";
 import { ShowEditViewDialog } from "../../bookEdit/editViewFrame";
 import { BookGridSetup } from "./BookGridSetup";
 import { css } from "@emotion/react";
-import { BookInfoForLinks, BookGridSetupMode, Link } from "./BookLinkTypes";
+import { BookInfoForLinks, Link } from "./BookLinkTypes";
 import { IBookInfo } from "../../collectionsTab/BooksOfCollection";
 import { useL10n } from "../l10nHooks";
 
 export const BookGridSetupDialog: React.FunctionComponent<{
     initialLinks: Link[];
     setLinksCallback: (links: Link[]) => void;
-    mode?: BookGridSetupMode;
 }> = (props) => {
     const { closeDialog, propsForBloomDialog } = useSetupBloomDialog({
         initiallyOpen: true,
         dialogFrameProvidedExternally: false,
     });
 
-    const bookGridDialogTitle = useL10n(
-        "Book Grid Setup",
-        "BookGridSetupDialog.Title",
-    );
-    const tocGridDialogTitle = useL10n(
-        "Table of Contents Grid Setup",
-        "BookGridSetupDialog.TocTitle",
-    );
-    const isTocMode = props.mode === "toc";
-    const dialogTitle = isTocMode ? tocGridDialogTitle : bookGridDialogTitle;
+    const dialogTitle = useL10n("Book Grid Setup", "BookGridSetupDialog.Title");
 
     function saveLinksAndCloseDialog() {
         props.setLinksCallback(selectedLinks);
@@ -49,29 +39,6 @@ export const BookGridSetupDialog: React.FunctionComponent<{
         props.initialLinks,
     );
 
-    // Get the current book ID so whole-book mode can exclude it while
-    // individual-page mode can include it.
-    const currentBookId = useApiString("editView/currentBookId", "");
-    const lastKnownTocBookIdRef = React.useRef<string | undefined>(
-        props.initialLinks[0]?.book.id,
-    );
-    if (currentBookId) {
-        lastKnownTocBookIdRef.current = currentBookId;
-    }
-    const resolvedCurrentBookId =
-        currentBookId ||
-        lastKnownTocBookIdRef.current ||
-        props.initialLinks[0]?.book.id;
-
-    React.useEffect(() => {
-        if (!isTocMode || !resolvedCurrentBookId) {
-            return;
-        }
-        setSelectedLinks((links) =>
-            links.filter((link) => link.book.id === resolvedCurrentBookId),
-        );
-    }, [resolvedCurrentBookId, isTocMode]);
-
     const unfilteredBooks = useWatchApiData<Array<IBookInfo>>(
         `collections/books?realTitle=true`,
         [],
@@ -79,7 +46,16 @@ export const BookGridSetupDialog: React.FunctionComponent<{
         "unused", // we don't care about updates, so maybe we don't care about this?
     );
 
-    const bookLinks: BookInfoForLinks[] = unfilteredBooks.map((book) => ({
+    // Get the current book ID so we can exclude it from the source list.
+    // A book shouldn't be able to link to itself.
+    const currentBookId = useApiString("editView/currentBookId", "");
+
+    // Filter out the current book from the source list
+    const filteredBooks = unfilteredBooks.filter(
+        (book) => book.id !== currentBookId,
+    );
+
+    const bookLinks: BookInfoForLinks[] = filteredBooks.map((book) => ({
         id: book.id,
         folderName: book.folderName,
         title: book.title,
@@ -119,8 +95,6 @@ export const BookGridSetupDialog: React.FunctionComponent<{
             >
                 <BookGridSetup
                     sourceBooks={bookLinks}
-                    currentBookId={resolvedCurrentBookId}
-                    mode={props.mode}
                     /*  not using these the trimmed down version
                     collectionNames={collections.map(c => c.name)}
                     currentCollection={currentCollection}
@@ -157,13 +131,11 @@ export const BookGridSetupDialog: React.FunctionComponent<{
 export function showBookGridSetupDialog(
     currentLinks: Link[],
     setLinksCallback: (links: Link[]) => void,
-    mode?: BookGridSetupMode,
 ) {
     ShowEditViewDialog(
         <BookGridSetupDialog
             initialLinks={currentLinks}
             setLinksCallback={setLinksCallback}
-            mode={mode}
         />,
     );
 }

@@ -34,7 +34,6 @@ export type CanvasElementType =
     | "speech"
     | "caption"
     | "book-link-grid"
-    | "toc-link-grid"
     | "navigation-image-button"
     | "navigation-image-with-label-button"
     | "navigation-label-button"
@@ -616,18 +615,6 @@ export const CanvasElementLinkGridItem: React.FunctionComponent = (props) => {
             // This icon is not square; forcing it to be, on a row by itself, makes too much white space
             // and makes it too small
             width="80px"
-        />
-    );
-};
-
-export const CanvasElementTocGridItem: React.FunctionComponent = (props) => {
-    return (
-        <CanvasElementItem
-            src={
-                "/bloom/bookEdit/pageThumbnailList/pageControls/TOCGridPaletteItem.svg"
-            }
-            canvasElementType="toc-link-grid"
-            width="65px"
         />
     );
 };

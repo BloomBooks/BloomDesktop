@@ -4975,14 +4975,6 @@ export class CanvasElementManager {
                 rightTopOffset,
             );
         }
-        if (canvasElementType === "toc-link-grid") {
-            return this.addBookLinkGridCanvasElement(
-                positionInBloomCanvas,
-                bloomCanvas,
-                rightTopOffset,
-                true,
-            );
-        }
         if (canvasElementType === "navigation-image-button") {
             return this.addNavigationImageButtonElement(
                 positionInBloomCanvas,
@@ -5447,12 +5439,10 @@ export class CanvasElementManager {
         location: Point,
         bloomCanvasJQuery: JQuery,
         rightTopOffset?: string,
-        isTocGrid?: boolean,
     ): HTMLElement {
-        const gridClasses = isTocGrid
-            ? "bloom-link-grid bloom-toc-grid"
-            : "bloom-link-grid";
-        const html = `<div tabindex='0' class='${gridClasses}'></div>`;
+        const html =
+            // The tabindex here is necessary to allow it to be focused.
+            "<div tabindex='0' class='bloom-link-grid'></div>";
         const canvasElement = this.finishAddingCanvasElement(
             bloomCanvasJQuery,
             html,

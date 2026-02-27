@@ -6,7 +6,7 @@ import { bookGridContainerStyles } from "./sharedStyles";
 
 interface BookSourcesListProps {
     books: BookInfoForLinks[];
-    selectedBook: BookInfoForLinks | undefined;
+    selectedBook: BookInfoForLinks | null;
     onSelectBook: (book: BookInfoForLinks) => void;
     disabledBookIds?: string[]; // IDs of books that should be shown as disabled
 }
@@ -56,7 +56,6 @@ export const BookSourcesList: React.FC<BookSourcesListProps> = ({
                             }
                             preferFolderName={true}
                             disabled={isDisabled}
-                            matchOnPageStyle={true}
                         />
                     </div>
                 );
