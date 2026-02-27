@@ -119,17 +119,26 @@ namespace Bloom.SubscriptionAndFeatures
                 if (sub.ExpirationDate < tomorrow)
                     sub.ExpirationDate = tomorrow;
 
-                if (code == null && brandingProjectName == "Default")
-                    sub.Tier = SubscriptionTier.Basic;
+                // Default to Basic in Download-for-Edit unless we can positively identify another tier.
+                // We usually get a redacted code now, but older collections/version transitions can still
+                // provide no code and rely on branding fallback.
+                sub.Tier = SubscriptionTier.Basic;
+
                 // After migration, the code for "Local-Community" is "Legacy-LC-5809-2533", but the branding project
-                // name is still written out as "Local-Community".  The second part of the test is probably not needed,
+                // name is still written out as "Local-Community". The final part of the test is probably not needed,
                 // but we all believe in both belt and suspenders, right?
-                else if (
-                    (descriptor != null && descriptor.EndsWith("-LC"))
+                if (
+                    sub.Descriptor.ToLowerInvariant().EndsWith("-lc")
+                    || (descriptor != null && descriptor.ToLowerInvariant().EndsWith("-lc"))
                     || brandingProjectName == "Local-Community"
                 )
                     sub.Tier = SubscriptionTier.LocalCommunity;
-                else
+                else if (sub.Descriptor.ToLowerInvariant().EndsWith("-pro"))
+                    sub.Tier = SubscriptionTier.Pro;
+                else if (
+                    !string.IsNullOrWhiteSpace(sub.Descriptor)
+                    && !string.Equals(sub.Descriptor, "Default", StringComparison.OrdinalIgnoreCase)
+                )
                     sub.Tier = SubscriptionTier.Enterprise; // see https://issues.bloomlibrary.org/youtrack/issue/BL-14419
 
                 return sub;
