@@ -1273,6 +1273,13 @@ namespace Bloom.Book
                 return; // shouldn't happen, but paranoia sometimes pays off, especially in running tests.
             var nodes = dataDiv
                 .SafeSelectNodes("(.//div|.//span)[@id and contains(@class,'audio-sentence')]")
+                // We expect the customCover to have copies of other stuff in the data div.
+                .Where(x =>
+                    !(
+                        x is SafeXmlElement e
+                        && e.ParentWithAttributeValue("data-book", "customCover") != null
+                    )
+                )
                 .ToList();
             var duplicateAudioIdsFixed = 0;
             foreach (var audioElement in nodes)
@@ -1283,6 +1290,7 @@ namespace Bloom.Book
                 {
                     var newId = FixDuplicateAudioId(audioElement, id);
                     idSet.Add(newId);
+                    duplicateAudioIdsFixed++;
                 }
             }
             // OK, now fix all the places any duplicates were used in the book's pages.
