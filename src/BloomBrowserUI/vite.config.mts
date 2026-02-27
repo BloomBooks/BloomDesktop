@@ -13,12 +13,12 @@ import { glob } from "glob";
 import react from "@vitejs/plugin-react";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 import * as fs from "fs";
-import less from "less";
 import MarkdownIt from "markdown-it";
 import markdownItContainer from "markdown-it-container";
 import markdownItAttrs from "markdown-it-attrs";
 import { playwright } from "@vitest/browser-playwright";
 import { compilePugFiles } from "./scripts/compilePug.mjs";
+import { compileLessFiles } from "./scripts/compileLess.mjs";
 
 // Custom plugin to compile Pug files to HTML
 // There are a couple of npm packages for pug, but as of October 2025, they are experimental
@@ -38,73 +38,14 @@ function compilePugPlugin(): Plugin {
 
 // Custom plugin to compile LESS files to CSS
 // Similar to pug plugin - compiles standalone LESS files to CSS with sourcemaps
+// Handles both BloomBrowserUI and content LESS files
 // Claude sonnet 4.5 came up with this.
 function compileLessPlugin(): Plugin {
     return {
         name: "compile-less",
         apply: "build",
         async closeBundle() {
-            // Find LESS files in BloomBrowserUI
-            const lessFiles = glob.sync("./**/*.less", {
-                ignore: ["**/node_modules/**"],
-            });
-
-            console.log(`\nCompiling ${lessFiles.length} LESS files...`);
-
-            const outputBase = path.resolve(__dirname, "../../output/browser");
-
-            for (const file of lessFiles) {
-                // Normalize path separators
-                const normalizedFile = file.replace(/\\/g, "/");
-
-                // Convert to output path: "./bookEdit/css/editMode.less" -> "bookEdit/css/editMode.css"
-                const relativePath = normalizedFile
-                    .replace("./", "")
-                    .replace(".less", ".css");
-
-                const outputFile = path.join(outputBase, relativePath);
-                const outputDir = path.dirname(outputFile);
-
-                // Ensure output directory exists
-                if (!fs.existsSync(outputDir)) {
-                    fs.mkdirSync(outputDir, { recursive: true });
-                }
-
-                try {
-                    // Read LESS file
-                    const lessContent = fs.readFileSync(file, "utf8");
-
-                    // Compile LESS to CSS with sourcemap
-                    const result = await less.render(lessContent, {
-                        filename: file,
-                        sourceMap: {
-                            sourceMapFileInline: false,
-                            outputSourceFiles: true,
-                            sourceMapURL: path.basename(outputFile) + ".map",
-                        },
-                    });
-
-                    // Write CSS file with sourcemap reference
-                    let cssOutput = result.css;
-                    if (result.map) {
-                        cssOutput += `\n/*# sourceMappingURL=${path.basename(outputFile)}.map */`;
-                    }
-                    fs.writeFileSync(outputFile, cssOutput);
-
-                    // Write sourcemap if generated
-                    if (result.map) {
-                        const mapFile = outputFile + ".map";
-                        fs.writeFileSync(mapFile, result.map);
-                    }
-
-                    console.log(`  ✓ ${file} → ${relativePath}`);
-                } catch (error) {
-                    console.error(`  ✗ Error compiling ${file}:`, error);
-                    throw error; // Exit build on LESS compilation error
-                }
-            }
-
-            console.log(`LESS compilation complete!\n`);
+            await compileLessFiles();
         },
     };
 }
@@ -501,6 +442,12 @@ ${injectedCss.map((call) => `(function() { ${call} })();`).join("\n")}
 // config, Node can still load ESM-only plugins (like @vitejs/plugin-react) via
 // native dynamic import instead of require().
 export default defineConfig(async ({ command }) => {
+    const parsedPort = Number.parseInt(process.env.PORT ?? "", 10);
+    const devServerPort =
+        Number.isInteger(parsedPort) && parsedPort > 0 && parsedPort <= 65535
+            ? parsedPort
+            : 5173;
+
     // ENTRY POINTS CONFIGURATION
     // Define all JavaScript/TypeScript entry points - these are the "root" files that
     // Vite will build into separate bundles. Each entry becomes a standalone .js file
@@ -523,7 +470,7 @@ export default defineConfig(async ({ command }) => {
         pageControlsBundle:
             "./bookEdit/pageThumbnailList/pageControls/pageControls.tsx",
         accessibilityCheckBundle:
-            "./publish/accessibilityCheck/accessibilityCheckScreen.tsx",
+            "./publish/accessibilityCheck/accessibilityCheckScreen.entry.tsx",
         subscriptionSettingsBundle: "./collection/subscriptionSettingsTab.tsx",
         performanceLogBundle: "./performance/PerformanceLogPage.tsx",
         appBundle: "./app/App.tsx",
@@ -561,7 +508,7 @@ export default defineConfig(async ({ command }) => {
         plugins: [
             // React plugin: Enables JSX, Fast Refresh, and React-specific optimizations
             react({
-                reactRefreshHost: `http://localhost:${process.env.PORT || 5173}`,
+                reactRefreshHost: `http://localhost:${devServerPort}`,
                 babel: {
                     parserOpts: {
                         // This enables decorators like @mobxReact.observer.
@@ -630,12 +577,13 @@ export default defineConfig(async ({ command }) => {
         // DEV SERVER CONFIGURATION
         // Controls the local development server behavior
         server: {
-            port: 5173, // Default Vite port
+            port: devServerPort,
             strictPort: true, // Fail if port is already in use (don't try other ports)
             hmr: {
                 protocol: "ws",
                 host: "localhost", // The host where your Vite server is running
-                port: 5173, // The port where your Vite server is running
+                port: devServerPort,
+                clientPort: devServerPort,
                 overlay: true,
             },
         },
