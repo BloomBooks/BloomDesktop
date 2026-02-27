@@ -607,8 +607,14 @@ namespace Bloom.Book
             e.RemoveAttribute("dir");
         }
 
-        public static void RemoveClassesBeginningWith(SafeXmlElement xmlElement, string classPrefix)
+        public static void RemoveClassesBeginningWith(
+            SafeXmlElement xmlElement,
+            string classPrefix,
+            HashSet<string> classesToKeep = null
+        )
         {
+            if (classesToKeep == null)
+                classesToKeep = new HashSet<string>();
             var oldClasses = xmlElement.GetClasses();
 
             if (oldClasses.Length == 0)
@@ -617,7 +623,7 @@ namespace Bloom.Book
             var classes = "";
             foreach (var part in oldClasses)
             {
-                if (!part.StartsWith(classPrefix))
+                if (!part.StartsWith(classPrefix) || classesToKeep.Contains(part))
                     classes += part + " ";
             }
             xmlElement.SetAttribute("class", classes.Trim());
@@ -3787,6 +3793,12 @@ namespace Bloom.Book
         )
         {
             var result = new List<Tuple<string, string>>();
+            // Don't save any of this data for an image in the custom margin box. We don't
+            // need it for reconstructing that image, because it is saved with all its parents
+            // in the data-div entry for the custom margin box. And we don't want to transfer
+            // its layout settings to the standard one.
+            if (IsInCustomLayoutPage(node))
+                return result;
             var ce = node.ParentElement?.ParentElement;
             if (ce != null)
             {
@@ -3828,6 +3840,13 @@ namespace Bloom.Book
             string[] backgroundImgValues
         )
         {
+            // We don't need to do this to the cover image that is on a page with custom layout,
+            // because its containers with the style on the bloom-canvas-element
+            // and the data-imgsizebasedon of the bloom-canvas are saved as part of the content
+            // of the custom margin box. (We won't find one in the data-div copy, because we rename
+            // the data-book attribute there.)
+            if (IsInCustomLayoutPage(node))
+                return;
             // The situation we want to establish is that the image is inside an imageContainer
             // inside a canvasElement inside a bloomCanvas. That may not be true initially.
             var imageContainer = node.ParentElement;
@@ -3870,6 +3889,11 @@ namespace Bloom.Book
             bloomCanvas.AddClass("bloom-has-canvas-element"); // probably only necessary if we added the canvas element
             bloomCanvas.SetAttribute("data-imgsizebasedon", backgroundImgValues[0]);
             canvasElement.SetAttribute("style", backgroundImgValues[1]);
+        }
+
+        public static bool IsInCustomLayoutPage(SafeXmlElement node)
+        {
+            return node.ParentWithClass("bloom-customLayout") != null;
         }
     }
 }

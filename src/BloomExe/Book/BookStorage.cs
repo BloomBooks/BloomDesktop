@@ -4649,6 +4649,10 @@ namespace Bloom.Book
             var marginBox = GetMarginBox(page);
             if (marginBox == null)
                 return true; // marginBox should not be missing
+            // If we're on a custom cover page, well, I suppose the author can delete
+            // everything if they want.
+            if (page.HasClass("bloom-customLayout"))
+                return false;
             var internalNodes = marginBox.ChildNodes.Where(x => x is SafeXmlElement).ToList();
             if (internalNodes.Count == 0)
             {
@@ -4670,14 +4674,16 @@ namespace Bloom.Book
         }
 
         // I think this is more efficient than an xpath, especially since marginBox is usually the last top-level child.
-        static SafeXmlElement GetMarginBox(SafeXmlElement parent)
+        public static SafeXmlElement GetMarginBox(SafeXmlElement parent)
         {
             foreach (
                 SafeXmlElement child in parent.ChildNodes.Where(x => x is SafeXmlElement).Reverse()
             )
             {
-                if (child.GetAttribute("class").Contains("marginBox"))
+                if (child.HasClass("marginBox"))
+                {
                     return child;
+                }
                 var mb = GetMarginBox(child);
                 if (mb != null)
                     return mb;

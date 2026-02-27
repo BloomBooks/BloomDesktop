@@ -28,7 +28,7 @@ const checkLeaveOffTool: string = "Visualizer";
 
 let savedSettings: string;
 
-let keypressTimer: any = null;
+let keypressTimer: ReturnType<typeof setTimeout> | null = null;
 
 const showExperimentalTools = false; // set by Toolbox.initialize()
 
@@ -215,7 +215,7 @@ export class ToolBox {
                     }
                     handlePageEditing();
                 })
-                .on("compositionend", (argument) => {
+                .on("compositionend", (_argument) => {
                     // Keyman (and other IME's?) don't send keydown events, but do send compositionend events
                     // See https://silbloom.myjetbrains.com/youtrack/issue/BL-5440.
                     handlePageEditing();
@@ -671,7 +671,7 @@ export function restoreToolboxSettings() {
         const contentWin = pageFrame.contentWindow;
         if (contentWin && contentWin.document.readyState === "loading") {
             // We can't finish restoring settings until the main document is loaded, so arrange to call the next stage when it is.
-            $(contentWin.document).ready((e) =>
+            $(contentWin.document).ready((_e) =>
                 restoreToolboxSettingsWhenPageReady(result.data),
             );
             return;
@@ -699,7 +699,7 @@ function doWhenPageReady(action: () => void) {
         // Somehow, despite firing this function when the document is supposedly ready,
         // it may not really be ready when this is first called. If it doesn't even have a body yet,
         // we need to try again later.
-        setTimeout((e) => doWhenPageReady(action), 100);
+        setTimeout(() => doWhenPageReady(action), 100);
         return;
     }
     doWhenCkEditorReady(action, page);
@@ -723,15 +723,17 @@ function doWhenCkEditorReady(action: () => void, page: HTMLElement) {
 
 function doWhenCkEditorReadyCore(
     arg: {
-        removers: Array<any>;
+        removers: Array<{ removeListener: () => void }>;
         done: boolean;
         action: () => void;
     },
     page: HTMLElement,
 ): void {
-    if ((<any>ToolBox.getPageFrame().contentWindow).CKEDITOR) {
-        const editorInstances = (<any>ToolBox.getPageFrame().contentWindow)
-            .CKEDITOR.instances;
+    const contentWindow = ToolBox.getPageFrame().contentWindow as
+        | (Window & { CKEDITOR?: typeof CKEDITOR })
+        | null;
+    if (contentWindow?.CKEDITOR) {
+        const editorInstances = contentWindow.CKEDITOR.instances;
         // Somewhere in the process of initializing ckeditor, it resets content to what it was initially.
         // This wipes out (at least) our page initialization.
         // To prevent this we hold our initialization until CKEditor has done initializing.
@@ -741,14 +743,18 @@ function doWhenCkEditorReadyCore(
         // (The instances property leads to an object in which each property is an instance of CkEditor)
         let gotOne = false;
         for (const property in editorInstances) {
-            const instance = editorInstances[property];
+            const instance = editorInstances[property] as CKEDITOR.editor & {
+                instanceReady?: boolean;
+                on: (
+                    event: string,
+                    callback: (eventInfo: unknown) => void,
+                ) => { removeListener: () => void } | void;
+            };
             gotOne = true;
             if (!instance.instanceReady) {
-                arg.removers.push(
-                    instance.on("instanceReady", (e) => {
-                        doWhenCkEditorReadyCore(arg, page);
-                    }),
-                );
+                instance.on("instanceReady", (_e) => {
+                    doWhenCkEditorReadyCore(arg, page);
+                });
                 return;
             }
         }
@@ -756,14 +762,19 @@ function doWhenCkEditorReadyCore(
             if (page.querySelector(ckeditableSelector)) {
                 // If any editable divs exist, call us again once the page gets set up with ckeditor.
                 // See BL-12381.
-                arg.removers.push(
-                    (<any>ToolBox.getPageFrame().contentWindow).CKEDITOR.on(
-                        "instanceReady",
-                        (e) => {
-                            doWhenCkEditorReadyCore(arg, page);
-                        },
-                    ),
-                );
+                const ckEditorGlobal =
+                    contentWindow.CKEDITOR as typeof CKEDITOR & {
+                        on?: (
+                            event: string,
+                            callback: (eventInfo: unknown) => void,
+                        ) => { removeListener: () => void } | void;
+                    };
+                const remover = ckEditorGlobal.on?.("instanceReady", (_e) => {
+                    doWhenCkEditorReadyCore(arg, page);
+                });
+                if (remover && typeof remover.removeListener === "function") {
+                    arg.removers.push(remover);
+                }
                 return;
             }
         }
@@ -961,7 +972,7 @@ function getITool(toolId: string): ITool {
         toolId.indexOf("Tool") > -1
             ? toolId.substring(0, toolId.length - 4)
             : toolId; // strip off "Tool"
-    return (<any>masterToolList).find((tool) => tool.id() === reactToolId);
+    return masterToolList.find((tool) => tool.id() === reactToolId)!;
 }
 
 /**
@@ -1201,7 +1212,9 @@ function handlePageEditing(
         // In 3.9, this is null when you press backspace in an empty box; the selection.anchorNode is itself a .bloom-editable, so
         // presumably we could adjust the above query to still get the div it's looking for.
         if (editableDiv) {
-            const ckeditorOfThisBox = (<any>editableDiv).bloomCkEditor;
+            const ckeditorOfThisBox = (
+                editableDiv as HTMLElement & { bloomCkEditor?: CKEDITOR.editor }
+            ).bloomCkEditor;
             // Normally every editable box has a ckeditor attached. But some arithmetic template boxes are
             // intended to contain numbers not needing translation and don't get one...because the logic
             // that invokes WireToCKEditor is looking for classes like bloom-content1 that are not present
@@ -1247,7 +1260,7 @@ function handlePageEditing(
                         const actualUpdateFunc =
                             await currentTool.updateMarkupAsync();
                         if (
-                            keydownEventCounter ==
+                            keydownEventCounter ===
                             counterValueThatIdentifiesThisKeyDown
                         ) {
                             // go ahead and make the change. (If the counts are different,
@@ -1415,7 +1428,7 @@ export function removeCommentsFromEditableHtml(editable: HTMLElement) {
     const fixedHtml = editable.innerHTML.replace(/<!--[\s\S]*?-->/g, "");
     // This test makes it less likely we will move the selection. But you should still allow for
     // the possibility.
-    if (fixedHtml != editable.innerHTML) {
+    if (fixedHtml !== editable.innerHTML) {
         editable.innerHTML = fixedHtml;
     }
 }

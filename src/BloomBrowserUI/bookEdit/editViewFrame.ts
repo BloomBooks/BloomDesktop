@@ -11,11 +11,14 @@ import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for d
 import $ from "jquery";
 
 export interface IEditViewFrameExports {
-    showDialog(dialogContents: string | JQuery, options: any): JQuery;
+    showDialog(
+        dialogContents: string | JQuery,
+        options: JQueryUI.DialogOptions,
+    ): JQuery;
     closeDialog(id: string): void;
     toolboxIsShowing(): boolean;
     doWhenToolboxLoaded(
-        task: (toolboxFrameExports: IToolboxFrameExports) => any,
+        task: (toolboxFrameExports: IToolboxFrameExports) => unknown,
     );
     getModalDialogContainer(): HTMLElement | null;
     showConfirmDialog(props: IConfirmDialogProps): void;
@@ -115,7 +118,7 @@ export function switchContentPage(newSource: string) {
         // problems, but don't let them stop us loading the new page.
         try {
             reportError(e.message, e.stack);
-        } catch (e2) {
+        } catch {
             // swallow
         }
     }
@@ -155,7 +158,7 @@ export function switchContentPage(newSource: string) {
 // if the jquery wrapper for the element is created in a different frame than the parent of the dialog element.
 export function showDialog(
     dialogContents: string | JQuery,
-    options: any,
+    options: JQueryUI.DialogOptions,
 ): JQuery {
     const dialogElement = $(dialogContents).appendTo($("body"));
     dialogElement.dialog(options);
@@ -177,7 +180,7 @@ export function toolboxIsShowing() {
 // (The value passed to the task function will be the value from getToolboxBundleExports(). Unfortunately we
 // haven't yet managed to declare a type for that, so I can't easily specify it here.)
 export function doWhenToolboxLoaded(
-    task: (toolboxFrameExports: IToolboxFrameExports) => any,
+    task: (toolboxFrameExports: IToolboxFrameExports) => unknown,
 ) {
     const toolboxWindow = getToolboxBundleExports();
     if (toolboxWindow) {
@@ -193,7 +196,7 @@ export function doWhenToolboxLoaded(
 export function canUndo(): string {
     // See comments on handleUndo()
     const contentWindow = getEditablePageBundleExports();
-    if (contentWindow && (<any>contentWindow).origamiCanUndo()) {
+    if (contentWindow && contentWindow.origamiCanUndo()) {
         return "yes";
     }
     const toolboxWindow = getToolboxBundleExports();
@@ -215,7 +218,7 @@ export function getModalDialogContainer(): HTMLElement | null {
     return document.getElementById("modal-dialog-container");
 }
 
-export function ShowEditViewDialog(dialog: FunctionComponentElement<any>) {
+export function ShowEditViewDialog(dialog: FunctionComponentElement<unknown>) {
     const doc = getPageIframeBody()?.ownerDocument ?? document;
     // I don't fully understand this. Something seems to go wrong if we just call this function
     // directly from the toolbox, but when we call it through getEditablePageBundleExports,

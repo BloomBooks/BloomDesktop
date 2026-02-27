@@ -14,6 +14,7 @@ using Bloom.SafeXml;
 using Bloom.Utils;
 using L10NSharp;
 using SIL.IO;
+using SIL.Progress;
 using SIL.Windows.Forms.Miscellaneous;
 
 namespace Bloom.web.controllers
@@ -114,6 +115,65 @@ namespace Bloom.web.controllers
                 "editView/showBookSettingsDialog",
                 HandleShowBookSettingsDialog,
                 true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/toggleCustomPageLayout",
+                HandleToggleCustomCover,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/getDataBookValue",
+                HandleGetDataBookValue,
+                true
+            );
+        }
+
+        private void HandleGetDataBookValue(ApiRequest request)
+        {
+            var lang = request.RequiredParam("lang");
+            var dataBook = request.RequiredParam("dataBook");
+            var multiText = View.Model.CurrentBook.BookData.GetMultiTextVariableOrEmpty(dataBook);
+            var value = multiText.GetExactAlternative(lang) ?? "";
+            request.ReplyWithText(value);
+        }
+
+        /// <summary>
+        /// Save the current state of the page, then toggle the book cover custom flag, and finally reload the page.
+        /// If we are in standard mode and do not have any saved state for custom mode, we return false, and
+        /// the calling code will generate a new custom page state.
+        /// </summary>
+        private void HandleToggleCustomCover(ApiRequest request)
+        {
+            var pageId = request.GetPostStringOrNull();
+            var book = View.Model.CurrentBook;
+            var page = book.GetPage(pageId);
+            var pageElt = page.GetDivNodeForThisPage();
+            var switchingToCustom = !pageElt.HasClass("bloom-customLayout");
+            if (switchingToCustom)
+            {
+                var customLayoutId = pageElt.GetAttribute("data-custom-layout-id");
+                var customLayoutData = book.BookData.GetVariableOrNull(customLayoutId, "*");
+                if (string.IsNullOrEmpty(customLayoutData.Xml))
+                {
+                    request.ReplyWithText("false");
+                    return;
+                }
+            }
+
+            request.ReplyWithText("true");
+            View.Model.SaveThen(
+                () =>
+                {
+                    if (pageElt.HasClass("bloom-customLayout"))
+                        pageElt.RemoveClass("bloom-customLayout");
+                    else
+                        pageElt.AddClass("bloom-customLayout");
+                    // Bring everything up to date consistent with the new
+                    // state. Might be enough just do the BookData update.
+                    book.EnsureUpToDateMemory(new NullProgress());
+                    return pageId;
+                },
+                () => { }
             );
         }
 
