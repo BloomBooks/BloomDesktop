@@ -383,11 +383,6 @@
         <target xml:lang="prs" state="needs-translation">Book Grid Setup</target>
         <note>ID: BookGridSetupDialog.Title</note>
       </trans-unit>
-      <trans-unit id="BookGridSetupDialog.TocTitle">
-        <source xml:lang="en">Table of Contents Grid Setup</source>
-        <target xml:lang="prs" state="needs-translation">Table of Contents Grid Setup</target>
-        <note>ID: BookGridSetupDialog.TocTitle</note>
-      </trans-unit>
       <trans-unit id="BookGridSetup.BooksInCollection">
         <source xml:lang="en">Books in this Collection</source>
         <target xml:lang="prs" state="needs-translation">Books in this Collection</target>
@@ -407,11 +402,6 @@
         <source xml:lang="en">Links in Grid (%0)</source>
         <target xml:lang="prs" state="needs-translation">Links in Grid (%0)</target>
         <note>ID: BookGridSetup.LinksInGrid</note>
-      </trans-unit>
-      <trans-unit id="BookGridSetup.AddLink">
-        <source xml:lang="en">+ Add Link</source>
-        <target xml:lang="prs" state="needs-translation">+ Add Link</target>
-        <note>ID: BookGridSetup.AddLink</note>
       </trans-unit>
     </body>
   </file>
