@@ -6003,9 +6003,9 @@
         <target xml:lang="pt-PT" state="final">Como está você usando {0}?</target>
         <note>ID: RegisterDialog.HowAreYouUsing</note>
       </trans-unit>
-      <trans-unit id="RegisterDialog.IAmStuckLabel">
+      <trans-unit id="RegisterDialog.IAmStuckLabel" approved="yes">
         <source xml:lang="en">I'm stuck, I'll finish this later.</source>
-        <target xml:lang="pt-PT" state="translated">Não consigo preencher agora, vou terminar mais tarde.</target>
+        <target xml:lang="pt-PT" state="final">Não consigo preencher agora, vou terminar mais tarde.</target>
         <note>ID: RegisterDialog.IAmStuckLabel</note>
       </trans-unit>
       <trans-unit id="RegisterDialog.Organization" approved="yes">
