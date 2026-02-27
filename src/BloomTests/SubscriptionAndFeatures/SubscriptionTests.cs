@@ -98,6 +98,35 @@ namespace BloomTests.SubscriptionAndFeatures
             Assert.AreEqual(expectedTier, subscription.Tier);
         }
 
+        [TestCase("Default-***-***", "Default", true, SubscriptionTier.Basic)]
+        [TestCase("", "Default", true, SubscriptionTier.Basic)]
+        [TestCase(null, "Default", true, SubscriptionTier.Basic)]
+        [TestCase(null, "SomeProject-Pro", true, SubscriptionTier.Pro)]
+        [TestCase("SomeProject-Pro-***-***", "Default", true, SubscriptionTier.Pro)]
+        [TestCase("", "SomeProject", true, SubscriptionTier.Enterprise)]
+        [TestCase(null, "SomeProject", true, SubscriptionTier.Enterprise)]
+        [TestCase("SomeProject-***-***", "Default", true, SubscriptionTier.Enterprise)]
+        [TestCase("Local-Community-***-***", "Default", true, SubscriptionTier.LocalCommunity)]
+        [TestCase(null, "Local-Community", true, SubscriptionTier.LocalCommunity)]
+        [TestCase(null, "SomeCommunity-LC", true, SubscriptionTier.LocalCommunity)]
+        [TestCase("", "SomeCommunity-LC", true, SubscriptionTier.LocalCommunity)]
+        [TestCase("SomeProject-Pro-***-***", "Default", false, SubscriptionTier.Basic)]
+        public void FromCollectionSettingsInfo_ReturnsExpectedTier(
+            string code,
+            string brandingProjectName,
+            bool editingABlorgBook,
+            SubscriptionTier expectedTier
+        )
+        {
+            var subscription = Subscription.FromCollectionSettingsInfo(
+                code,
+                brandingProjectName,
+                editingABlorgBook
+            );
+
+            Assert.That(subscription.Tier, Is.EqualTo(expectedTier));
+        }
+
         [TestCase("", "none")]
         [TestCase(null, "none")]
         [TestCase("NameOnly", "incomplete")]
