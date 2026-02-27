@@ -22,9 +22,12 @@ mixin preview-cover-contents
 
 	.bottomBlock
 
+//- height and width will be replaced with pixel values by the Canvas Element Manager at edit time
 mixin preview-cover-image
-	.bloom-canvas
-		img(data-book="coverImage", src="placeHolder.png")
+	.bloom-canvas.bloom-has-canvas-element
+		.bloom-canvas-element.bloom-backgroundImage(style="width:100%; height:100%;")
+			.bloom-imageContainer
+				img(data-book="coverImage", src="placeHolder.png")
 
 mixin preview-outsideFrontCover
 	// FRONT COVER
