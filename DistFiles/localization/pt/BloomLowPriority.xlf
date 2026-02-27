@@ -55,7 +55,7 @@
       <!-- Link Target Chooser -->
       <trans-unit id="LinkTargetChooser.Dialog.Title">
         <source xml:lang="en">Choose Link Target</source>
-        <target xml:lang="pt-PT" state="translated">Escolher Alvo do Link</target>
+        <target xml:lang="pt-PT" state="translated">Escolher o Alvo do Link</target>
         <note>ID: LinkTargetChooser.Dialog.Title</note>
       </trans-unit>
       <trans-unit id="LinkTargetChooser.BookList.Heading">
@@ -118,9 +118,9 @@
         <target xml:lang="pt-PT" state="translated">Voltar no histórico de links</target>
         <note>ID: LinkTargetChooser.URLSection.OptionsMenu.Back.Tooltip</note>
       </trans-unit>
-      <trans-unit id="LinkTargetChooser.URLSection.OptionsMenu.Back.Label">
+      <trans-unit id="LinkTargetChooser.URLSection.OptionsMenu.Back.Label" approved="yes">
         <source xml:lang="en">Back</source>
-        <target xml:lang="pt-PT" state="translated">Voltar</target>
+        <target xml:lang="pt-PT" state="final">Voltar</target>
         <note>ID: LinkTargetChooser.URLSection.OptionsMenu.Back.Label</note>
       </trans-unit>
       <trans-unit id="LinkTargetChooser.URLSection.PasteButton.Tooltip">
