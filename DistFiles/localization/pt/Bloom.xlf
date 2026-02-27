@@ -6003,9 +6003,9 @@
         <target xml:lang="pt-PT" state="final">Como está você usando {0}?</target>
         <note>ID: RegisterDialog.HowAreYouUsing</note>
       </trans-unit>
-      <trans-unit id="RegisterDialog.IAmStuckLabel">
+      <trans-unit id="RegisterDialog.IAmStuckLabel" approved="yes">
         <source xml:lang="en">I'm stuck, I'll finish this later.</source>
-        <target xml:lang="pt-PT" state="translated">Não consigo preencher agora, vou terminar mais tarde.</target>
+        <target xml:lang="pt-PT" state="final">Não consigo preencher agora, vou terminar mais tarde.</target>
         <note>ID: RegisterDialog.IAmStuckLabel</note>
       </trans-unit>
       <trans-unit id="RegisterDialog.Organization" approved="yes">
@@ -6220,14 +6220,14 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="pt-PT" state="final">Usando a assinatura **Pro** para {0}. Expira {1}</target>
         <note>ID: SubscriptionStatus.UsingProSubscription</note>
       </trans-unit>
-      <trans-unit id="SubscriptionStatus.UsingLocalCommunitySubscription" approved="yes">
+      <trans-unit id="SubscriptionStatus.UsingLocalCommunitySubscription">
         <source xml:lang="en">Using **Local Community** subscription for {0}. Expires {1}</source>
-        <target xml:lang="pt-PT" state="final">Usando a assinatura da **Comunidade Local** por {0}. Expira {1}</target>
+        <target xml:lang="pt-PT" state="translated">Usando a assinatura da **Comunidade Local** por **{0}**. Expira {1}</target>
         <note>ID: SubscriptionStatus.UsingLocalCommunitySubscription</note>
       </trans-unit>
-      <trans-unit id="SubscriptionStatus.UsingEnterpriseSubscription" approved="yes">
+      <trans-unit id="SubscriptionStatus.UsingEnterpriseSubscription">
         <source xml:lang="en">Using **Enterprise** subscription for {0}. Expires **{1}**</source>
-        <target xml:lang="pt-PT" state="final">Usando a assinatura de **Enterprise** para {0}. Expira **{1}**</target>
+        <target xml:lang="pt-PT" state="translated">Usando a assinatura de **Enterprise** para **{0}**. Expira **{1}**</target>
         <note>ID: SubscriptionStatus.UsingEnterpriseSubscription</note>
       </trans-unit>
       <trans-unit id="TeamCollection.DuplicateIds" approved="yes">
