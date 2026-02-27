@@ -36,6 +36,7 @@ import {
     CanvasElementItemRegion,
     CanvasElementItemRow,
     CanvasElementLinkGridItem,
+    CanvasElementTocGridItem,
     NavigationImageButtonPaletteItem,
     CanvasElementTextItem,
     NavigationLabelButtonPaletteItem,
@@ -1015,6 +1016,17 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                                     }
                                                 >
                                                     <CanvasElementLinkGridItem />
+                                                </BloomTooltip>
+                                                <BloomTooltip
+                                                    id="tocGrid"
+                                                    placement="top-end"
+                                                    tip={
+                                                        <Div l10nKey="EditTab.Toolbox.CanvasTool.TocGrid">
+                                                            TOC Grid
+                                                        </Div>
+                                                    }
+                                                >
+                                                    <CanvasElementTocGridItem />
                                                 </BloomTooltip>
                                             </CanvasElementItemRow>
                                         </div>

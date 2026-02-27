@@ -16,6 +16,7 @@ import { default as CircleIcon } from "@mui/icons-material/Circle";
 import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
 import { default as ArrowUpwardIcon } from "@mui/icons-material/ArrowUpward";
 import { default as ArrowDownwardIcon } from "@mui/icons-material/ArrowDownward";
+import { default as PagesIcon } from "@mui/icons-material/AutoStories";
 import { LinkIcon } from "./LinkIcon";
 import { showCopyrightAndLicenseDialog } from "../editViewFrame";
 import {
@@ -105,6 +106,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
         "bloom-link-grid",
     )[0] as HTMLElement | undefined;
     const isLinkGrid = !!linkGrid;
+    const isTocGrid = !!linkGrid?.classList.contains("bloom-toc-grid");
     const isNavButton = isNavigationButton(props.canvasElement);
     const rectangles =
         props.canvasElement.getElementsByClassName("bloom-rectangle");
@@ -161,6 +163,14 @@ const CanvasElementContextControls: React.FunctionComponent<{
         "Choose books...",
         "EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks",
     );
+    const chooseTocLabel = useL10n(
+        "Choose pages...",
+        "EditTab.Toolbox.CanvasTool.TocGrid.ChooseLinks",
+    );
+    const chooseGridLabel = isTocGrid ? chooseTocLabel : chooseBooksLabel;
+    const chooseGridL10nId = isTocGrid
+        ? "EditTab.Toolbox.CanvasTool.TocGrid.ChooseLinks"
+        : "EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks";
 
     const currentDraggableTargetId = props.canvasElement?.getAttribute(
         kDraggableIdAttribute,
@@ -183,7 +193,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
         );
         // We need to re-evaluate when changing pages, it's possible the initially selected item
         // on a new page has the same currentDraggableTargetId.
-    }, [currentDraggableTargetId]);
+    }, [currentDraggableTargetId, page]);
 
     // The audio menu item states the audio will play when the item is touched.
     // That isn't true yet outside of games, so don't show it.
@@ -323,13 +333,13 @@ const CanvasElementContextControls: React.FunctionComponent<{
     if (isLinkGrid) {
         // For link grids, add edit and delete options in the menu
         menuOptions.push({
-            l10nId: "EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks",
-            english: "Choose books...",
+            l10nId: chooseGridL10nId,
+            english: isTocGrid ? "Choose pages..." : "Choose books...",
             onClick: () => {
                 if (!linkGrid) return;
                 editLinkGrid(linkGrid);
             },
-            icon: <CogIcon css={getMenuIconCss()} />,
+            icon: <PagesIcon css={getMenuIconCss()} />,
         });
         menuOptions.push({
             l10nId: "Common.Delete",
@@ -499,8 +509,8 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     {isLinkGrid && (
                         <>
                             <ButtonWithTooltip
-                                tipL10nKey="EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks"
-                                icon={CogIcon}
+                                tipL10nKey={chooseGridL10nId}
+                                icon={PagesIcon}
                                 relativeSize={0.8}
                                 onClick={() => {
                                     if (!linkGrid) return;
@@ -519,7 +529,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                     editLinkGrid(linkGrid);
                                 }}
                             >
-                                {chooseBooksLabel}
+                                {chooseGridLabel}
                             </span>
                         </>
                     )}
@@ -910,6 +920,7 @@ const buttonWidth = "22px";
 const ButtonWithTooltip: React.FunctionComponent<{
     icon: React.FunctionComponent<SvgIconProps>;
     tipL10nKey: string;
+    tipText?: string;
     onClick: React.MouseEventHandler;
     relativeSize?: number;
     disabled?: boolean;
@@ -917,9 +928,7 @@ const ButtonWithTooltip: React.FunctionComponent<{
     return (
         <BloomTooltip
             placement="top"
-            tip={{
-                l10nKey: props.tipL10nKey,
-            }}
+            tip={props.tipText || { l10nKey: props.tipL10nKey }}
         >
             <button
                 onClick={props.onClick}

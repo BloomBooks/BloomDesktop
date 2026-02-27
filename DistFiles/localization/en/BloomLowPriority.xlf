@@ -353,6 +353,11 @@
         <note>ID: BookGridSetupDialog.Title</note>
         <note>Title of the dialog for setting up a grid of book links</note>
       </trans-unit>
+      <trans-unit id="BookGridSetupDialog.TocTitle">
+        <source xml:lang="en">Table of Contents Grid Setup</source>
+        <note>ID: BookGridSetupDialog.TocTitle</note>
+        <note>Title of the dialog for setting up a TOC grid for the current book</note>
+      </trans-unit>
       <trans-unit id="BookGridSetup.BooksInCollection">
         <source xml:lang="en">Books in this Collection</source>
         <note>ID: BookGridSetup.BooksInCollection</note>
@@ -372,6 +377,11 @@
         <source xml:lang="en">Links in Grid (%0)</source>
         <note>ID: BookGridSetup.LinksInGrid</note>
         <note>Header for the list of books that have been added to the grid, %0 is the count</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.AddLink">
+        <source xml:lang="en">+ Add Link</source>
+        <note>ID: BookGridSetup.AddLink</note>
+        <note>Button text to add one more link tile in TOC grid setup</note>
       </trans-unit>
     </body>
   </file>

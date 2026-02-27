@@ -455,6 +455,10 @@
         <source xml:lang="en">A grid of buttons that jump you to books in your app</source>
         <note>ID: EditTab.Toolbox.CanvasTool.BookGrid</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.TocGrid" sil:dynamic="true">
+        <source xml:lang="en">A grid of buttons that jump you to pages in this book</source>
+        <note>ID: EditTab.Toolbox.CanvasTool.TocGrid</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.ClickToSetLinkDest" sil:dynamic="true">
         <source xml:lang="en">Click to set where the link takes you</source>
         <note>ID: EditTab.Toolbox.CanvasTool.ClickToSetLinkDest</note>
@@ -486,6 +490,11 @@
         <source xml:lang="en">Choose books...</source>
         <note>ID: EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks</note>
         <note>Button text for opening the dialog to choose books for a link grid</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.TocGrid.ChooseLinks" sil:dynamic="true">
+        <source xml:lang="en">Choose pages...</source>
+        <note>ID: EditTab.Toolbox.CanvasTool.TocGrid.ChooseLinks</note>
+        <note>Button text for opening the dialog to choose links for a TOC grid</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.NavButtons" sil:dynamic="true">
         <source xml:lang="en">A button that jumps you to a page or book in your app</source>
