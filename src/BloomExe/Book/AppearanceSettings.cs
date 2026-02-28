@@ -45,6 +45,12 @@ public class AppearanceSettings
     public static string kOverrideGroupsArrayKey = "groupsToOverrideFromParent"; // e.g. "coverFields, xmatter"
     public static string kUnset = "unset";
     public static string kDeliberatelyInvalid = "deliberately-invalid";
+
+    // Canonical theme id used by appearance-theme-edge-to-edge.css.
+    public const string kEdgeToEdgeThemeName = "edge-to-edge";
+
+    // Legacy id still present in existing books and migration descriptors.
+    public const string kLegacyEdgeToEdgeThemeAlias = "zero-margin-ebook";
     private static AppearanceMigrator _appearanceMigrator;
 
     // A representation of the content of Appearance.json
@@ -172,12 +178,23 @@ public class AppearanceSettings
     /// </summary>
     public string CssThemeName
     {
-        get { return _properties.cssThemeName; }
+        // Expose a canonical theme name so callers never need to handle aliases.
+        get { return NormalizeThemeName((string)_properties.cssThemeName); }
         set
         {
-            _properties.cssThemeName = value;
+            // Code paths that set the theme directly also route through the same normalization.
+            _properties.cssThemeName = NormalizeThemeName(value);
             SetRequiredValuesIfLegacyTheme();
         }
+    }
+
+    private static string NormalizeThemeName(string themeName)
+    {
+        // Books can store either id; normalize to the canonical value everywhere.
+        if (themeName == kLegacyEdgeToEdgeThemeAlias)
+            return kEdgeToEdgeThemeName;
+
+        return themeName;
     }
 
     // Some setting's values are not allowed in legacy mode.
@@ -209,17 +226,28 @@ public class AppearanceSettings
 
     private void SetProperty(KeyValuePair<string, object> property)
     {
+        var propertyToSet = property;
+        if (property.Key == "cssThemeName" && property.Value is string themeName)
+        {
+            // JSON/config-driven updates route through this path, so normalize here too.
+            propertyToSet = new KeyValuePair<string, object>(
+                property.Key,
+                NormalizeThemeName(themeName)
+            );
+        }
+
+        // Track only effective value changes (after normalization) when deciding xmatter updates.
         if (
-            !Properties.ContainsKey(property.Key)
-            || !Properties[property.Key].Equals(property.Value)
+            !Properties.ContainsKey(propertyToSet.Key)
+            || !Properties[propertyToSet.Key].Equals(propertyToSet.Value)
         )
         {
-            var propDef = propertyDefinitions.FirstOrDefault(pd => pd.Name == property.Key);
+            var propDef = propertyDefinitions.FirstOrDefault(pd => pd.Name == propertyToSet.Key);
             if (propDef?.RequiresXmatterUpdate == true)
                 PendingChangeRequiresXmatterUpdate = true;
         }
 
-        Properties[property.Key] = property.Value;
+        Properties[propertyToSet.Key] = propertyToSet.Value;
     }
 
     public bool CoverIsImage
@@ -890,7 +918,7 @@ public class AppearanceSettings
         // parse the json into an object
         var x = JsonConvert.DeserializeObject<ExpandoObject>(json);
 
-        // and then for each property, copy into the Properties object.
+        // Route each property through SetProperty so all data sources share normalization and change-tracking logic.
         foreach (var property in (IDictionary<string, object>)x)
             SetProperty(property);
 
@@ -972,7 +1000,13 @@ public class AppearanceSettings
     private string GetLocalizedLabel(string name)
     {
         var key = "AppearanceTheme." + name;
-        var localizedLabel = LocalizationManager.GetDynamicString("BloomMediumPriority", key, null);
+        // Provide a user-facing fallback while localized strings are still catching up.
+        var defaultLabel = name == kEdgeToEdgeThemeName ? "Edge to Edge" : null;
+        var localizedLabel = LocalizationManager.GetDynamicString(
+            "BloomMediumPriority",
+            key,
+            defaultLabel
+        );
         if (String.IsNullOrEmpty(localizedLabel))
             return name;
         return localizedLabel;
