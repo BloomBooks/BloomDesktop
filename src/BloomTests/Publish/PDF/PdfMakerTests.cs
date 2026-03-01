@@ -2,7 +2,12 @@
 using System.IO;
 using Bloom.Publish;
 using Bloom.Publish.PDF;
+using DotImpose.LayoutMethods;
 using NUnit.Framework;
+using PdfSharp;
+using PdfSharp.Drawing;
+using PdfSharp.Pdf;
+using PdfSharp.Pdf.IO;
 using SIL.IO;
 
 namespace BloomTests.Publish.PDF
@@ -14,6 +19,64 @@ namespace BloomTests.Publish.PDF
     [NUnit.Framework.Category("RequiresUI")]
     public class PdfMakerTests
     {
+        [Test]
+        public void GetNullLayoutBleedOffsetMm_FullBleedWithoutCropMarks_IsJustBleedInset()
+        {
+            Assert.AreEqual(3, PdfMaker.GetNullLayoutBleedOffsetMm(true, false));
+        }
+
+        [Test]
+        public void GetNullLayoutBleedOffsetMm_FullBleedWithCropMarks_IncludesCropMargin()
+        {
+            Assert.AreEqual(3, PdfMaker.GetNullLayoutBleedOffsetMm(true, true));
+        }
+
+        [Test]
+        public void GetNullLayoutBleedOffsetMm_NotFullBleed_IsZero()
+        {
+            Assert.AreEqual(0, PdfMaker.GetNullLayoutBleedOffsetMm(false, true));
+            Assert.AreEqual(0, PdfMaker.GetNullLayoutBleedOffsetMm(false, false));
+        }
+
+        [Test]
+        public void NullLayoutMethod_FullBleedWithCropMarks_KeepsTrimAtFinalPageSize()
+        {
+            using (var input = TempFile.WithExtension("pdf"))
+            using (var output = TempFile.WithExtension("pdf"))
+            {
+                CreateSinglePagePdf(input.Path, 216, 303);
+                var method = new NullLayoutMethod(
+                    PdfMaker.GetNullLayoutBleedOffsetMm(true, true)
+                );
+
+                method.Layout(
+                    XPdfForm.FromFile(input.Path),
+                    input.Path,
+                    output.Path,
+                    new PaperTarget("A4", PageSize.A4),
+                    false,
+                    true
+                );
+
+                using (var outputDoc = PdfReader.Open(output.Path, PdfDocumentOpenMode.Import))
+                {
+                    var trimBox = outputDoc.Pages[0].TrimBox.ToXRect();
+                    Assert.AreEqual(
+                        210,
+                        XUnit.FromPoint(trimBox.Width).Millimeter,
+                        0.2,
+                        "Trim width should stay at final A4 width"
+                    );
+                    Assert.AreEqual(
+                        297,
+                        XUnit.FromPoint(trimBox.Height).Millimeter,
+                        0.2,
+                        "Trim height should stay at final A4 height"
+                    );
+                }
+            }
+        }
+
         [Test]
         public void MakePdf_BookStyleIsNone_OutputsPdf()
         {
@@ -229,6 +292,17 @@ namespace BloomTests.Publish.PDF
                 eventArgs,
                 null
             );
+        }
+
+        private static void CreateSinglePagePdf(string path, double widthMm, double heightMm)
+        {
+            using (var doc = new PdfDocument())
+            {
+                var page = doc.AddPage();
+                page.Width = XUnit.FromMillimeter(widthMm);
+                page.Height = XUnit.FromMillimeter(heightMm);
+                doc.Save(path);
+            }
         }
     }
 }
