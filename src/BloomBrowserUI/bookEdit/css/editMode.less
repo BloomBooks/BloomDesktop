@@ -4,6 +4,14 @@
 @import "../../placeHolderImages.less";
 
 @bleed: 3mm; // Duplicated from basePage.less to remove circular dependency between BloomBrowserUI and content
+@trimCropMarkColor: #ffffff;
+@trimCropMarkThickness: 1px;
+@trimCropMarkLength: 2mm;
+@trimCropMarkCornerGap: 1mm;
+@trimCropMarkAtTrimInBleed: @bleed - @trimCropMarkThickness;
+@trimCropMarkStartFromMediaEdge: @bleed - @trimCropMarkCornerGap -
+    @trimCropMarkLength;
+@safetyAreaColor: rgba(0, 0, 0, 0.05);
 
 @focusBorderColor: transparent; // #d6eaed; // @bloom-blue; // rgba(82, 168, 236, 0.6);
 @tipLinkColor: #8e3581; // intentionally a bit darker to be legible
@@ -77,6 +85,11 @@ body {
         pointer-events: auto; // start up clicks again a the next level
     }
 
+    // Default to trim-only view in edit mode; full-bleed guides are hover affordances.
+    :not(.Device16x9Portrait):not(.Device16x9Landscape)& {
+        clip-path: inset(@bleed);
+    }
+
     :not(.Device16x9Portrait):not(.Device16x9Landscape)&::before {
         // show bleed area
         content: "";
@@ -86,21 +99,90 @@ body {
 
         top: 0;
         bottom: 0;
-        border: 3mm solid rgba(0, 0, 0, 0.8);
+        // dark bleed band plus lighter safety area strips inside trim
+        box-sizing: border-box;
+        border: @bleed solid #000000cc;
+        background-image:
+            linear-gradient(@safetyAreaColor, @safetyAreaColor),
+            linear-gradient(@safetyAreaColor, @safetyAreaColor),
+            linear-gradient(@safetyAreaColor, @safetyAreaColor),
+            linear-gradient(@safetyAreaColor, @safetyAreaColor);
+        background-size:
+            calc(100% - 2 * @bleed) @bleed,
+            @bleed calc(100% - 2 * @bleed),
+            calc(100% - 2 * @bleed) @bleed,
+            @bleed calc(100% - 2 * @bleed);
+        background-position:
+            @bleed @bleed,
+            @bleed @bleed,
+            @bleed calc(100% - @bleed),
+            calc(100% - @bleed) @bleed;
+        background-repeat: no-repeat;
+        background-origin: border-box;
+        background-clip: border-box;
+        opacity: 0;
         z-index: 1;
     }
 
     :not(.Device16x9Portrait):not(.Device16x9Landscape)&:after {
-        // show safety area (the area inside of the trim box that still could get cut)
+        // draw white crop marks on top so they stay fully opaque
         content: "";
         position: absolute;
-        left: @bleed;
-        right: @bleed;
-        top: @bleed;
-        bottom: @bleed;
-        border: 3mm solid rgba(0, 0, 0, 0.05);
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        background-image:
+            linear-gradient(@trimCropMarkColor, @trimCropMarkColor),
+            linear-gradient(@trimCropMarkColor, @trimCropMarkColor),
+            linear-gradient(@trimCropMarkColor, @trimCropMarkColor),
+            linear-gradient(@trimCropMarkColor, @trimCropMarkColor),
+            linear-gradient(@trimCropMarkColor, @trimCropMarkColor),
+            linear-gradient(@trimCropMarkColor, @trimCropMarkColor),
+            linear-gradient(@trimCropMarkColor, @trimCropMarkColor),
+            linear-gradient(@trimCropMarkColor, @trimCropMarkColor);
+        background-position:
+            left @trimCropMarkStartFromMediaEdge top @trimCropMarkAtTrimInBleed,
+            left @trimCropMarkAtTrimInBleed top @trimCropMarkStartFromMediaEdge,
+            right @trimCropMarkStartFromMediaEdge top @trimCropMarkAtTrimInBleed,
+            right @trimCropMarkAtTrimInBleed top @trimCropMarkStartFromMediaEdge,
+            left @trimCropMarkStartFromMediaEdge bottom
+                @trimCropMarkAtTrimInBleed,
+            left @trimCropMarkAtTrimInBleed bottom
+                @trimCropMarkStartFromMediaEdge,
+            right @trimCropMarkStartFromMediaEdge bottom
+                @trimCropMarkAtTrimInBleed,
+            right @trimCropMarkAtTrimInBleed bottom
+                @trimCropMarkStartFromMediaEdge;
+        background-size:
+            @trimCropMarkLength @trimCropMarkThickness,
+            @trimCropMarkThickness @trimCropMarkLength,
+            @trimCropMarkLength @trimCropMarkThickness,
+            @trimCropMarkThickness @trimCropMarkLength,
+            @trimCropMarkLength @trimCropMarkThickness,
+            @trimCropMarkThickness @trimCropMarkLength,
+            @trimCropMarkLength @trimCropMarkThickness,
+            @trimCropMarkThickness @trimCropMarkLength;
+        background-repeat: no-repeat;
+        opacity: 0;
         z-index: 2;
     }
+}
+
+// Show bleed/safety/crop guides only when the page itself is hovered.
+:not(.Device16x9Portrait):not(.Device16x9Landscape).bloom-mediaBox:has(
+        .bloom-page:hover
+    ) {
+    clip-path: none;
+}
+
+:not(.Device16x9Portrait):not(.Device16x9Landscape).bloom-mediaBox:has(
+        .bloom-page:hover
+    )::before,
+:not(.Device16x9Portrait):not(.Device16x9Landscape).bloom-mediaBox:has(
+        .bloom-page:hover
+    ):after {
+    opacity: 1;
 }
 
 #labelAndLayoutPane {

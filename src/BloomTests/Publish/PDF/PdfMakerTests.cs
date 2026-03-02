@@ -45,9 +45,7 @@ namespace BloomTests.Publish.PDF
             using (var output = TempFile.WithExtension("pdf"))
             {
                 CreateSinglePagePdf(input.Path, 216, 303);
-                var method = new NullLayoutMethod(
-                    PdfMaker.GetNullLayoutBleedOffsetMm(true, true)
-                );
+                var method = new NullLayoutMethod(PdfMaker.GetNullLayoutBleedOffsetMm(true, true));
 
                 method.Layout(
                     XPdfForm.FromFile(input.Path),
