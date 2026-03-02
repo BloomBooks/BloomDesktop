@@ -264,7 +264,7 @@
 		<PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="18.0.0-beta0001" />
 		<PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="18.0.0-beta0001" />
 		<PackageReference Include="SIL.WritingSystems" Version="18.0.0-beta0001" />
-		<PackageReference Include="sillsdev.dotImpose" Version="2.6.2" />
+			<PackageReference Include="sillsdev.dotImpose" Version="2.6.2-local.202603011446" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
 		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.2" />
 		<PackageReference Include="SQLitePCLRaw.core" Version="2.1.2" />

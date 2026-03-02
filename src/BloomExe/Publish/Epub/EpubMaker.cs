@@ -588,34 +588,15 @@ namespace Bloom.Publish.Epub
 
         public static void GetPageDimensions(string pageSize, out double width, out double height)
         {
-            var path = FileLocationUtilities.GetFileDistributedWithApplication("pageSizes.json");
-            var json = RobustFile.ReadAllText(path);
-            var sizes = DynamicJson.Parse(json).sizes;
-            // FirstOrDefault would be cleaner, but I can't figure out how to use it with dynamic data.
-            for (int i = 0; i < sizes.Count; i++)
+            const double pixelsPerMillimeter = 96d / 25.4d;
+            if (!SizeAndOrientation.TryGetSizeInMillimeters(pageSize, out var dimensions))
             {
-                if (sizes[i].size == pageSize)
-                {
-                    width = ConvertDimension(sizes[i].width);
-                    height = ConvertDimension(sizes[i].height);
-                    return;
-                }
+                // Unknown: use A5Portrait.
+                SizeAndOrientation.TryGetSizeInMillimeters("A5Portrait", out dimensions);
             }
-            // unknown: use first (which should be A5Portrait)
-            width = ConvertDimension(sizes[0].width);
-            height = ConvertDimension(sizes[0].height);
-        }
 
-        // Method must parse the json input in a culture invariant manner, since the computer's culture may not match
-        // the culture of the json file.
-        private static double ConvertDimension(string input)
-        {
-            string unit = input.Substring(input.Length - 2);
-            var num = Double.Parse(
-                input.Substring(0, input.Length - 2),
-                CultureInfo.InvariantCulture
-            );
-            return num * (unit == "mm" ? 96 / 25.4 : 96);
+            width = dimensions.width * pixelsPerMillimeter;
+            height = dimensions.height * pixelsPerMillimeter;
         }
 
         /// <summary>
