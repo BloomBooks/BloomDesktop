@@ -1057,6 +1057,16 @@ namespace Bloom.Publish
             // destroyed by SimplifyBackgroundImages.
             SimplifyBackgroundImages(modifiedBook.RawDom);
             // We don't need a data-div in a publication; save some space.
+            // Also, with custom pages, a single entry in the data-div can look a lot like part of
+            // a page. Code that is looking for all the elements of a certain kind, or with a
+            // certain class or attribute, may find one there and do something unintended.  (For example,
+            // it might include an image in the bloom-pub that isn't really in use because there is a src
+            // attribute using it in a copy of custom page data, even though custom page is turned off.
+            // Or it might find what it thinks is a duplicate there and try to fix it.)
+            // We've guarded against the common cases of this by renaming things like bloom-editable
+            // and bloom-translationGroup in saved versions of custom pages, but getting
+            // rid of the data-div altogether prevents any possibility of publication code
+            // finding things there.
             var dataDiv = modifiedBook.RawDom.SelectSingleNode("//div[@id='bloomDataDiv']");
             if (dataDiv != null)
             {

@@ -1732,7 +1732,15 @@ function addImageMenuOptions(
                     // remove an existing data-book value if the current image doesn't have one.
                     if (currentDataBook) {
                         bgImg.setAttribute("data-book", currentDataBook);
+                        // Arguable. But the only image that currently has a data-book is the cover image.
+                        // I think it makes most sense to consider the background image on the cover page
+                        // to be the cover image, if it once becomes that way. So we'll not transfer that
+                        // to the demoted image. The user can correct things with the field type menu.
+                        // (It's dangerous if two different images both have this...eventually one will
+                        // get changed to match the other.)
+                        img.removeAttribute("data-book");
                     }
+
                     if (!haveRealBgImage) {
                         // delete the image that we turned into the background; there's no
                         // real image to swap with it. We avoid doing this before we've copied everything

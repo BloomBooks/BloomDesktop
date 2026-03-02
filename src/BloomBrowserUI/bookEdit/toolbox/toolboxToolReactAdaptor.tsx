@@ -97,11 +97,18 @@ export default abstract class ToolboxToolReactAdaptor
         page.setAttribute(name, encodeURIComponent(unencodedValue));
     }
 
-    public static isXmatter(returnFalseForCustomCover = false): boolean {
+    // Generally returns true if the page is xmatter. Some callers (enabling canvas tool) want to treat
+    // a custom page as not being xmatter, so we support an override for that. Could be just a boolean,
+    // but using an object with a named field makes it clearer what the argument is for where it is used.
+    public static isXmatter(
+        args: { returnFalseForCustomPage: boolean } = {
+            returnFalseForCustomPage: false,
+        },
+    ): boolean {
         const pageClass = this.getBloomPageAttrDecoded("class");
         if (!pageClass) return false; // paranoia
         if (
-            returnFalseForCustomCover &&
+            args?.returnFalseForCustomPage &&
             pageClass.indexOf("bloom-customLayout") >= 0
         ) {
             return false;

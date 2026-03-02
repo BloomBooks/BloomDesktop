@@ -597,8 +597,8 @@ namespace BloomTests.Book
             HtmlDom bookDom = new HtmlDom(
                 @"<html ><head></head><body>
 				<div id='bloomDataDiv'>
-					<div data-book='bookTitle bloom-visibility-code-on' lang='dcc'>DccTitle</div>
-					<div data-book='bookTitle bloom-visibility-code-on' lang='en'>EnTitle</div>
+                    <div class='bloom-visibility-code-on' data-book='bookTitle' lang='dcc'>DccTitle</div>
+                    <div class='bloom-visibility-code-on' data-book='bookTitle' lang='en'>EnTitle</div>
 				</div>
 				<div class='bloom-page cover' id='guid4'>
 					<div class='bloom-translationGroup'>
