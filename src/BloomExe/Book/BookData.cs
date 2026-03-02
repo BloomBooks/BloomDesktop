@@ -1954,31 +1954,8 @@ namespace Bloom.Book
                 // we do use it as part of our cropping mechanism for cover images.)
                 if (tuple.Item1 == "style")
                 {
-                    var filteredStyleDeclarations = tuple
-                        .Item2.Unencoded.Split(';')
-                        .Select(part => part.Trim())
-                        .Where(part => !string.IsNullOrWhiteSpace(part))
-                        .Where(part =>
-                        {
-                            var colonIndex = part.IndexOf(':');
-                            if (colonIndex < 0)
-                                return true;
-                            var propertyName = part.Substring(0, colonIndex).Trim();
-                            return !propertyName.Equals(
-                                "display",
-                                StringComparison.OrdinalIgnoreCase
-                            );
-                        })
-                        .ToList();
-
-                    if (filteredStyleDeclarations.Any())
-                    {
-                        node.SetAttribute("style", string.Join("; ", filteredStyleDeclarations));
-                    }
-                    else if (node.HasAttribute("style"))
-                    {
-                        node.RemoveAttribute("style");
-                    }
+                    node.SetAttribute("style", tuple.Item2.Unencoded);
+                    HtmlDom.RemoveInlineStyleSubfield(node, "display");
 
                     continue;
                 }

@@ -3420,6 +3420,9 @@ export class CanvasElementManager {
 
     // Move all child canvas elements as necessary so they are at least partly inside their container
     // (by as much as we require when dragging them).
+    // Note: a similar algorithm that tries harder to get elements entirely on the page may be found
+    // in customXmatterPage.ensureDerivedFieldsFitOnCustomPage. If it proves more widely usable it
+    // should probably be moved.
     public ensureCanvasElementsIntersectParent(parentContainer: HTMLElement) {
         const canvasElements = Array.from(
             parentContainer.getElementsByClassName(kCanvasElementClass),

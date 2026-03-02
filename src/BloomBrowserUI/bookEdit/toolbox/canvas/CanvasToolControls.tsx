@@ -194,7 +194,9 @@ const CanvasToolControls: React.FunctionComponent = () => {
         CanvasTool.theOneCanvasTool.callOnNewPageReady = () => {
             bubbleSpecInitialization();
             setPageTypeForbidsCanvasTools(
-                ToolboxToolReactAdaptor.isXmatter(true),
+                ToolboxToolReactAdaptor.isXmatter({
+                    returnFalseForCustomPage: true,
+                }),
             );
             const count = pageRefreshIndicator;
             setPageRefreshIndicator(count + 1);

@@ -3477,6 +3477,47 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// If the element has an attribute 'style' with a declaration for the specified subfield,
+        /// remove that declaration from the style attribute. For example, if subfieldName is "display"
+        /// and style is "display: none; color: red;", then the style attribute will be changed to "color: red;".
+        /// If style is "display:block", then the style attribute will be removed entirely.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="subfieldName"></param>
+        public static void RemoveInlineStyleSubfield(SafeXmlElement element, string subfieldName)
+        {
+            if (element == null || String.IsNullOrWhiteSpace(subfieldName))
+                return;
+
+            var existingStyle = element.GetAttribute("style");
+            if (String.IsNullOrWhiteSpace(existingStyle))
+                return;
+
+            var filteredStyleDeclarations = existingStyle
+                .Split(';')
+                .Select(part => part.Trim())
+                .Where(part => !String.IsNullOrWhiteSpace(part))
+                .Where(part =>
+                {
+                    var colonIndex = part.IndexOf(':');
+                    if (colonIndex < 0)
+                        return true;
+                    var propertyName = part.Substring(0, colonIndex).Trim();
+                    return !propertyName.Equals(subfieldName, StringComparison.OrdinalIgnoreCase);
+                })
+                .ToList();
+
+            if (filteredStyleDeclarations.Any())
+            {
+                element.SetAttribute("style", String.Join("; ", filteredStyleDeclarations));
+            }
+            else if (element.HasAttribute("style"))
+            {
+                element.RemoveAttribute("style");
+            }
+        }
+
+        /// <summary>
         /// Reorder any div elements that need to be reordered for proper use in publications.
         /// The different-language children of a translation group are ordered in Bloom's displays by flex-box CSS
         /// that puts the div with class bloom-content1 before the one with bloom-content2 etc.  Since we don't

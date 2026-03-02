@@ -46,6 +46,7 @@ import { FieldVisibilityGroup } from "./FieldVisibilityGroup";
 import { StyleAndFontTable } from "./StyleAndFontTable";
 import { BloomSubscriptionIndicatorIconAndText } from "../../react_components/requiresSubscription";
 import { useGetFeatureStatus } from "../../react_components/featureStatus";
+import { isLegacyThemeName } from "./appearanceThemeUtils";
 
 let isOpenAlready = false;
 
@@ -374,7 +375,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                 normalizeConfigrSettings(settingsToReturnLater) ?? settings;
             // when we're in legacy, we're just going to disable all the appearance controls
             setAppearanceDisabled(
-                liveSettings?.appearance?.cssThemeName === "legacy-5-6",
+                isLegacyThemeName(liveSettings?.appearance?.cssThemeName),
             );
             setTheme(liveSettings?.appearance?.cssThemeName ?? "");
         }
@@ -595,7 +596,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                 // but I don't think the logic is complex enough to be worth it, when only used in two places.
                             }
                             {firstPossiblyLegacyCss.length > 0 &&
-                                theme === "legacy-5-6" && (
+                                isLegacyThemeName(theme) && (
                                     <ConfigrStatic>
                                         <WarningBox>
                                             <MessageUsingLegacyThemeWithIncompatibleCss
@@ -608,7 +609,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                 )}
                             {firstPossiblyLegacyCss ===
                                 "customBookStyles.css" &&
-                                theme !== "legacy-5-6" && (
+                                !isLegacyThemeName(theme) && (
                                     <ConfigrStatic>
                                         <NoteBox>
                                             <div>
@@ -666,7 +667,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                             {firstPossiblyLegacyCss.length > 0 &&
                                 firstPossiblyLegacyCss !==
                                     "customBookStyles.css" &&
-                                theme !== "legacy-5-6" && (
+                                !isLegacyThemeName(theme) && (
                                     <ConfigrStatic>
                                         <NoteBox>
                                             <MessageIgnoringIncompatibleCss

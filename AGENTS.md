@@ -13,6 +13,8 @@ The front-end uses yarn 1.22.22. Never ever use npm.
 
 - Style elements using the css macro from @emotion/react directly on the element being styled, using the css prop. E.g. `<div css={css`color:red`}>`
 
+- Where possible style things using @emotion/react rather than using sx objects.
+
 - For Typescript coding style, see ./src/BloomBrowserUI/AGENTS.md
 
 # Testing
