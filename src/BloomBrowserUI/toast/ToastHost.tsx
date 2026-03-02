@@ -7,8 +7,20 @@ import { IToast, Toast } from "./Toast";
 
 type IToastShowEvent = IBloomWebSocketEvent & IToast;
 
+const getMessageIdentity = (toast: IToast): string | undefined => {
+    if (toast.l10nId) {
+        return toast.l10nId;
+    }
+
+    if (toast.text) {
+        return toast.text;
+    }
+
+    return toast.l10nDefaultText;
+};
+
 export const ToastHost: React.FunctionComponent<{
-    dismissDedupeKeys?: string[];
+    dismissMessageKeys?: string[];
 }> = (props) => {
     const [toasts, setToasts] = React.useState<IToast[]>([]);
 
@@ -51,8 +63,9 @@ export const ToastHost: React.FunctionComponent<{
                         currentToasts.some(
                             (toast) =>
                                 toast.toastId === showEvent.toastId ||
-                                (!!showEvent.dedupeKey &&
-                                    showEvent.dedupeKey === toast.dedupeKey),
+                                (!!getMessageIdentity(showEvent) &&
+                                    getMessageIdentity(showEvent) ===
+                                        getMessageIdentity(toast)),
                         )
                     ) {
                         return currentToasts;
@@ -69,17 +82,22 @@ export const ToastHost: React.FunctionComponent<{
 
     // Dismiss selected dedupe-key toasts when container UI state says they are no longer relevant.
     React.useEffect(() => {
-        if (!props.dismissDedupeKeys || props.dismissDedupeKeys.length === 0) {
+        if (
+            !props.dismissMessageKeys ||
+            props.dismissMessageKeys.length === 0
+        ) {
             return;
         }
 
         setToasts((currentToasts) =>
             currentToasts.filter(
                 (toast) =>
-                    !props.dismissDedupeKeys?.includes(toast.dedupeKey || ""),
+                    !props.dismissMessageKeys?.includes(
+                        getMessageIdentity(toast) || "",
+                    ),
             ),
         );
-    }, [props.dismissDedupeKeys]);
+    }, [props.dismissMessageKeys]);
 
     return (
         <>

@@ -449,15 +449,10 @@ namespace Bloom.Workspace
                     true,
                     () =>
                     {
-                        var msg = LocalizationManager.GetString(
-                            "TeamCollection.ClobberProblem",
-                            "The Team Collection has a newer version of this book. Return to the Collection Tab for more information."
-                        );
-
                         ToastService.ShowToast(
                             ToastSeverity.Error,
-                            text: msg,
-                            dedupeKey: "TeamCollection.ClobberProblem",
+                            l10nId: "TeamCollection.ClobberProblem",
+                            l10nDefaultText: "The Team Collection has a newer version of this book. Return to the Collection Tab for more information.",
                             action: new ToastAction
                             {
                                 Callback = () => ChangeTab(WorkspaceTab.collection),

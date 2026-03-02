@@ -54,7 +54,6 @@ namespace Bloom.web
             string l10nId = null,
             string l10nDefaultText = null,
             int? durationSeconds = null,
-            string dedupeKey = null,
             ToastAction action = null,
             string toastId = null
         )
@@ -74,13 +73,6 @@ namespace Bloom.web
                 bundle.l10nDefaultText = l10nDefaultText;
             if (durationSeconds.HasValue)
                 bundle.durationSeconds = durationSeconds.Value;
-            if (string.IsNullOrWhiteSpace(dedupeKey))
-                dedupeKey =
-                    !string.IsNullOrWhiteSpace(text) ? text
-                    : !string.IsNullOrWhiteSpace(l10nId) ? l10nId
-                    : null;
-            if (!string.IsNullOrWhiteSpace(dedupeKey))
-                bundle.dedupeKey = dedupeKey;
 
             if (action != null)
             {

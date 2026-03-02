@@ -331,60 +331,46 @@ namespace Bloom.web.controllers
             switch (scenario)
             {
                 case "all":
-                    ToastService.ShowToast(
-                        text: "Toast test: notice",
-                        durationSeconds: 5,
-                        dedupeKey: "toast-test-notice"
-                    );
+                    ToastService.ShowToast(text: "Toast test: notice", durationSeconds: 5);
                     ToastService.ShowToast(
                         ToastSeverity.Warning,
                         text: "Toast test: warning",
-                        durationSeconds: 7,
-                        dedupeKey: "toast-test-warning"
+                        durationSeconds: 7
                     );
                     ToastService.ShowToast(
                         ToastSeverity.Error,
                         text: "Toast test: persistent with action",
-                        dedupeKey: "toast-test-persistent",
                         action: new ToastAction { Label = "Dismiss", Callback = () => { } }
                     );
                     break;
                 case "notice":
-                    ToastService.ShowToast(
-                        text: "Toast test: notice",
-                        durationSeconds: 5,
-                        dedupeKey: "toast-test-notice"
-                    );
+                    ToastService.ShowToast(text: "Toast test: notice", durationSeconds: 5);
                     break;
                 case "warning":
                     ToastService.ShowToast(
                         ToastSeverity.Warning,
                         text: "Toast test: warning",
-                        durationSeconds: 7,
-                        dedupeKey: "toast-test-warning"
+                        durationSeconds: 7
                     );
                     break;
                 case "error":
                     ToastService.ShowToast(
                         ToastSeverity.Error,
                         text: "Toast test: error",
-                        durationSeconds: 10,
-                        dedupeKey: "toast-test-error"
+                        durationSeconds: 10
                     );
                     break;
                 case "action":
                     ToastService.ShowToast(
                         text: "Toast test: click action button",
                         durationSeconds: 15,
-                        dedupeKey: "toast-test-action",
                         action: new ToastAction
                         {
                             Label = "Run Action",
                             Callback = () =>
                                 ToastService.ShowToast(
                                     text: "Toast test action callback executed",
-                                    durationSeconds: 5,
-                                    dedupeKey: "toast-test-action-result"
+                                    durationSeconds: 5
                                 ),
                         }
                     );

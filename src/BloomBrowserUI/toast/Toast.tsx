@@ -24,7 +24,6 @@ export interface IToast {
     l10nId?: string;
     l10nDefaultText?: string;
     durationSeconds?: number;
-    dedupeKey?: string;
     action?: IToastAction;
 }
 

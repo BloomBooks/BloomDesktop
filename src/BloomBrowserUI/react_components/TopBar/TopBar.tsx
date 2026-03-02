@@ -17,7 +17,7 @@ import { ScopedCssBaseline } from "@mui/material";
 import { ToastHost } from "../../toast/ToastHost";
 
 export type WorkspaceTabId = "collection" | "edit" | "publish";
-const kTeamCollectionClobberDedupeKey = "TeamCollection.ClobberProblem";
+const kTeamCollectionClobberMessageKey = "TeamCollection.ClobberProblem";
 
 interface ITopBarWindow extends Window {
     bloomToastTest?: (scenario?: string) => void;
@@ -82,10 +82,10 @@ export const TopBar: React.FunctionComponent = () => {
         );
     }, [tabStates]);
 
-    const dismissDedupeKeys = React.useMemo(
+    const dismissMessageKeys = React.useMemo(
         () =>
             activeTab === "collection"
-                ? [kTeamCollectionClobberDedupeKey]
+                ? [kTeamCollectionClobberMessageKey]
                 : undefined,
         [activeTab],
     );
@@ -170,7 +170,7 @@ export const TopBar: React.FunctionComponent = () => {
                     />
                     <TopBarControls activeTab={activeTab} />
                 </div>
-                <ToastHost dismissDedupeKeys={dismissDedupeKeys} />
+                <ToastHost dismissMessageKeys={dismissMessageKeys} />
             </>
         </ScopedCssBaseline>
     );
