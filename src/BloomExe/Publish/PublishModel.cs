@@ -386,10 +386,11 @@ namespace Bloom.Publish
 
         private bool GetPrintingWithFullBleed()
         {
-            // Keep the source PDF content consistent before DotImpose regardless of layout method.
-            // Previously we disabled full-bleed whenever booklet layout was selected, which caused
-            // booklet mode to generate trim-sized input while no-booklet mode generated bleed-sized input.
-            return _currentlyLoadedBook.FullBleed && _currentlyLoadedBook.UserPrefs.FullBleed;
+            // Booklet layouts expect trim-sized source pages; full-bleed source pages can
+            // produce incorrect sizing in the imposed output.
+            return _currentlyLoadedBook.FullBleed
+                && GetBookletLayoutMethod() == BookletLayoutMethod.NoBooklet
+                && _currentlyLoadedBook.UserPrefs.FullBleed;
         }
 
         private bool LayoutPagesForRightToLeft
