@@ -1128,7 +1128,7 @@ public class AppearanceSettings
                 SetProperty(
                     new KeyValuePair<string, object>(
                         kPageNumberLeftMarginOverrideVar,
-                        "calc(var(--page-margin-left) + var(--pageNumber-full-bleed-extra-margin, 0px))"
+                        "calc(var(--pageNumber-side-left-inset, var(--page-margin-left)) + var(--pageNumber-full-bleed-extra-margin, 0mm))"
                     )
                 );
                 SetProperty(
@@ -1152,7 +1152,7 @@ public class AppearanceSettings
                 SetProperty(
                     new KeyValuePair<string, object>(
                         kPageNumberRightMarginOverrideVar,
-                        "calc(var(--page-margin-right) + var(--pageNumber-full-bleed-extra-margin, 0px))"
+                        "calc(var(--pageNumber-side-right-inset, var(--page-margin-right)) + var(--pageNumber-full-bleed-extra-margin, 0mm))"
                     )
                 );
                 SetProperty(
