@@ -16,6 +16,7 @@ import { recomputeSourceBubblesForPage } from "../../js/bloomEditing";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import { getToolboxBundleExports } from "../../js/bloomFrames";
 import { ILanguageNameValues } from "../../bookSettings/FieldVisibilityGroup";
+import { isLegacyThemeCssLoaded } from "../../bookSettings/appearanceThemeUtils";
 
 /* Summary of how custom covers work
 	- a page (currently just cover) which can be customized has a new attribute,
@@ -227,6 +228,19 @@ function finishReactivatingPage(page: HTMLElement): void {
     getToolboxBundleExports()?.applyToolboxStateToPage();
 }
 
+// This function tries to make sure that all derived-field canvas elements fit on the page.
+// We're trying to fix really nasty-looking messes, like changing topic from "Math" to
+// "Animal stories" and finding that all but the first few letters are off the page.
+// On the other hand, we don't want to mess with anything that MIGHT be just how the
+// user wants it. The constraints applied here are my best guess of what might be helpful:
+// - don't change the height
+// - don't make it smaller
+// - don't make it wider than necessary to fit the content
+// - in particular, if it's already high enough for multiple lines of text, take
+//   advantage of that and don't make it wider than necessary to fit the text when
+//   nicely wrapped to however many lines fit.
+// Once we have determined a size, move it minimally so that, if possible, the whole
+// thing is on the page, or as much as possible.
 function ensureDerivedFieldsFitOnCustomPage(page: HTMLElement): void {
     if (!page.classList.contains("bloom-customLayout")) {
         return;
@@ -346,7 +360,7 @@ export function setupPageLayoutMenu(): void {
     // only pages with data-custom-layout-id can be customized.
     if (!page || !page.hasAttribute("data-custom-layout-id")) return;
 
-    const usingLegacyTheme = isUsingLegacyTheme();
+    const usingLegacyTheme = isLegacyThemeCssLoaded();
     if (usingLegacyTheme && page.classList.contains("bloom-customLayout")) {
         postString("editView/toggleCustomPageLayout", page.getAttribute("id")!);
         return;
@@ -382,7 +396,7 @@ export function setupPageLayoutMenu(): void {
 function renderPageLayoutMenu(page: HTMLElement, container: HTMLElement): void {
     // Render a CustomPageLayoutMenu React component into this container
     const isCustomPage = page.classList.contains("bloom-customLayout");
-    const usingLegacyTheme = isUsingLegacyTheme();
+    const usingLegacyTheme = isLegacyThemeCssLoaded();
     ReactDOM.render(
         <CustomPageLayoutMenu
             isCustom={isCustomPage}
@@ -417,8 +431,4 @@ function renderPageLayoutMenu(page: HTMLElement, container: HTMLElement): void {
         />,
         container,
     );
-}
-
-function isUsingLegacyTheme(): boolean {
-    return !!document.querySelector("link[href*='basePage-legacy-5-6.css']");
 }
