@@ -433,7 +433,7 @@ namespace Bloom.Collection
                 {
                     pattern = LocalizationManager.GetString(
                         "CollectionSettingsDialog.BookMakingTab.QrCodeBadgeText",
-                        "Get more books in the {0} language on BloomLibrary.org",
+                        "Get more books in the {0} language on BloomLibrary.org.",
                         "",
                         new string[] { Language1Tag, Language2Tag, Language3Tag, "en" },
                         out string _
