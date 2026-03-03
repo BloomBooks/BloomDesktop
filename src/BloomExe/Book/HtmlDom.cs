@@ -2001,6 +2001,11 @@ namespace Bloom.Book
                 var element in topElement.SafeSelectNodes(".//a").Cast<SafeXmlElement>().ToArray()
             )
             {
+                var branding = element.ChildNodes.FirstOrDefault(e =>
+                    e.Name.ToLowerInvariant() == "img" && e.GetAttribute("class") == "branding"
+                );
+                if (branding != null)
+                    continue; // Don't remove an <a> that contains a branding image, even if it has no text.
                 if (element.InnerText == "")
                     element.ParentNode.RemoveChild(element);
                 else if (element.HasAttribute("data-cke-saved-href"))
