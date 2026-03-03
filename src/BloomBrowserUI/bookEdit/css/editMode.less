@@ -68,6 +68,42 @@ body {
     transition: transform 20ms;
 }
 
+.bloom-page-tooltip {
+    position: fixed;
+    z-index: @formatButtonZIndex;
+    display: none;
+    pointer-events: none;
+    white-space: nowrap;
+    padding: 2px 6px;
+    border: none;
+    border-radius: 3px;
+    background-color: black;
+    color: white;
+    font-family: @UIFontStack;
+    font-size: 8pt;
+}
+
+.bloom-page-tooltip-target {
+    position: absolute;
+    pointer-events: auto;
+    background-color: transparent;
+}
+
+.bloom-gutter-tooltip-target {
+    top: 0;
+    bottom: 0;
+    width: var(--page-gutter);
+    z-index: 3;
+}
+
+.bloom-gutter-target-side-left {
+    right: 0;
+}
+
+.bloom-gutter-target-side-right {
+    left: 0;
+}
+
 // See comments on .bloom-mediaBox in basePage.less for a description of the mediaBox.
 // Here, we are causing it to be visible when desired.
 .bloom-mediaBox {
@@ -140,6 +176,41 @@ body:has(.MuiPaper-root:hover) > .qtip {
 // So we have this rule to suppress that default outline.
 .bloom-page:not(:hover) .bloom-editable:focus {
     outline: none !important;
+}
+
+// Show the paper-page gutter (binding space) in edit mode.
+// Show this only while the page is active (hover/focus) like other edit affordances.
+.bloom-page:is(.side-left, .side-right):not(.outsideFrontCover):not(
+        .outsideBackCover
+    )::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: var(--page-gutter);
+    background-color: var(--page-structure-color);
+    box-sizing: border-box;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+}
+.bloom-page.side-left:not(.outsideFrontCover):not(.outsideBackCover)::before {
+    right: 0;
+    border-left: 2px dashed white;
+}
+.bloom-page.side-right:not(.outsideFrontCover):not(.outsideBackCover)::before {
+    left: 0;
+    border-right: 2px dashed white;
+}
+
+.bloom-page:is(:hover, :focus-within):is(.side-left, .side-right):not(
+        .outsideFrontCover
+    ):not(.outsideBackCover)::before,
+body:has(#canvas-element-context-controls:hover)
+    .bloom-page:is(.side-left, .side-right):not(.outsideFrontCover):not(
+        .outsideBackCover
+    )::before {
+    opacity: 1;
 }
 
 // Keep together here all the effects we want when hovering (previously: also when focus-within)
