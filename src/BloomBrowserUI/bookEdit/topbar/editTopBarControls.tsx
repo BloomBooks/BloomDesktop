@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import BloomButton from "../../react_components/bloomButton";
-import { getBloomApiPrefix, post, postJson } from "../../utils/bloomApi";
+import { get, getBloomApiPrefix, post, postJson } from "../../utils/bloomApi";
 import { useEffect, useState } from "react";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
@@ -12,12 +12,86 @@ import {
 } from "../../bloomMaterialUITheme";
 import { ArrowDropDown } from "@mui/icons-material";
 import { BookSettingsButton } from "../../react_components/BookSettingsButton";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import Checkbox from "@mui/material/Checkbox";
+import createCache from "@emotion/cache";
+import { CacheProvider, type EmotionCache } from "@emotion/react";
+import { createPortal } from "react-dom";
+import { useL10n } from "../../react_components/l10nHooks";
 
 interface IDropdownData {
     contentLanguagesEnabled: boolean;
     contentLanguagesNumber: number;
     layoutChoicesText: string;
 }
+
+interface ITopBarMenuItem {
+    id: string;
+    label: string;
+    enabled: boolean;
+    checked?: boolean;
+}
+
+const normalizeContentLanguageUsageItems = (
+    languages: unknown,
+): ITopBarMenuItem[] => {
+    if (!Array.isArray(languages)) {
+        return [];
+    }
+
+    const normalized = languages.map((language) => {
+        const languageInfo = language as Record<string, unknown>;
+        return {
+            id: String(languageInfo.id ?? ""),
+            label: String(languageInfo.label ?? ""),
+            checked: Boolean(languageInfo.isUsedForContent),
+        };
+    });
+
+    const selectedCount = normalized.filter(
+        (language) => language.checked,
+    ).length;
+    return normalized.map((language) => ({
+        id: language.id,
+        label: language.label,
+        checked: language.checked,
+        enabled: !language.checked || selectedCount > 1,
+    }));
+};
+
+const normalizeLayoutChoiceItems = (
+    choices: unknown,
+    currentLayoutChoiceId: unknown,
+    noOtherLayoutsText: string,
+): ITopBarMenuItem[] => {
+    if (!Array.isArray(choices)) {
+        return [];
+    }
+
+    const currentId = String(currentLayoutChoiceId ?? "");
+    const normalizedChoices = choices.map((choice) => {
+        const choiceInfo = choice as Record<string, unknown>;
+        const id = String(choiceInfo.id ?? "");
+        return {
+            id,
+            label: String(choiceInfo.label ?? ""),
+            enabled: true,
+            checked: id === currentId,
+        };
+    });
+
+    if (normalizedChoices.length < 2) {
+        normalizedChoices.push({
+            id: "",
+            label: noOtherLayoutsText,
+            enabled: false,
+            checked: false,
+        });
+    }
+
+    return normalizedChoices;
+};
 
 export const EditTopBarControls: React.FunctionComponent = () => {
     const [buttonsEnabled, setButtonsEnabled] = useState({
@@ -51,6 +125,8 @@ export const EditTopBarControls: React.FunctionComponent = () => {
         setLayoutChoicesLocalizedText(data.layoutChoicesText);
     }
 
+    // Ask the backend for the initial dropdown state on mount, because this state
+    // is sourced from C# and cannot be derived from React state alone.
     useEffect(() => {
         post("editView/updateTopBarDropdownDisplay");
     }, []);
@@ -303,26 +379,56 @@ export const ContentLanguagesDropdown: React.FunctionComponent<{
     enabled: boolean;
     number: number;
 }> = (props) => {
-    let l10nKey;
+    const monolingualText = useL10n("Monolingual", "EditTab.Monolingual");
+    const bilingualText = useL10n("Bilingual", "EditTab.Bilingual");
+    const trilingualText = useL10n("Trilingual", "EditTab.Trilingual");
+
+    let buttonText = "";
     switch (props.number) {
         case 1:
-            l10nKey = "EditTab.Monolingual";
+            buttonText = monolingualText;
             break;
         case 2:
-            l10nKey = "EditTab.Bilingual";
+            buttonText = bilingualText;
             break;
         case 3:
-            l10nKey = "EditTab.Trilingual";
+            buttonText = trilingualText;
             break;
     }
+
+    const loadMenuItems = (onLoaded?: (itemCount: number) => void) => {
+        get("editView/topBar/contentLanguageUsage", (result) => {
+            const items = normalizeContentLanguageUsageItems(
+                result.data?.languages,
+            );
+            onLoaded?.(items.length);
+            setContentLanguageMenuItems(items);
+        });
+    };
+
+    const [contentLanguageMenuItems, setContentLanguageMenuItems] = useState<
+        ITopBarMenuItem[]
+    >([]);
+
+    const onMenuItemClick = (item: ITopBarMenuItem) => {
+        postJson("editView/topBar/contentLanguageUsageChange", {
+            languageTag: item.id,
+            isUsedForContent: !item.checked,
+        });
+        post("editView/updateTopBarDropdownDisplay");
+    };
 
     return (
         <EditingControlDropdown
             enabled={props.enabled}
-            l10nKey={l10nKey}
+            localizedText={buttonText}
             tooltipL10nKey="EditTab.ContentLanguagesDropdown.ToolTip"
             disabledTooltipL10nKey="EditTab.ContentLanguagesDropdown.DisabledTooltip"
-            onClickAction="contentLanguages"
+            buttonId="contentLanguagesDropdownButton"
+            menuItems={contentLanguageMenuItems}
+            loadMenuItems={loadMenuItems}
+            onMenuItemClick={onMenuItemClick}
+            showChecks={true}
         />
     );
 };
@@ -330,25 +436,184 @@ export const ContentLanguagesDropdown: React.FunctionComponent<{
 export const LayoutChoicesDropdown: React.FunctionComponent<{
     localizedText: string;
 }> = (props) => {
+    const [layoutChoiceMenuItems, setLayoutChoiceMenuItems] = useState<
+        ITopBarMenuItem[]
+    >([]);
+    const noOtherLayoutsText = useL10n(
+        "There are no other options for this template.",
+        "EditTab.NoOtherLayouts",
+        "Show in the size/orientation chooser dropdown of the edit tab, if there was only a single choice",
+    );
+
+    const loadMenuItems = (onLoaded?: (itemCount: number) => void) => {
+        get("editView/topBar/layoutChoiceData", (result) => {
+            const items = normalizeLayoutChoiceItems(
+                result.data?.choices,
+                result.data?.currentLayoutChoiceId,
+                noOtherLayoutsText,
+            );
+            onLoaded?.(items.length);
+            setLayoutChoiceMenuItems(items);
+        });
+    };
+
+    const onMenuItemClick = (item: ITopBarMenuItem) => {
+        postJson("editView/topBar/layoutChoiceChange", {
+            layoutChoiceId: item.id,
+        });
+        post("editView/updateTopBarDropdownDisplay");
+    };
+
     return (
         <EditingControlDropdown
             enabled={true}
             localizedText={props.localizedText}
             tooltipL10nKey={"EditTab.PageSizeAndOrientation.Tooltip"}
-            onClickAction="layoutChoices"
+            buttonId="layoutChoicesDropdownButton"
+            menuItems={layoutChoiceMenuItems}
+            loadMenuItems={loadMenuItems}
+            onMenuItemClick={onMenuItemClick}
+            showChecks={false}
         />
     );
 };
 
 export const EditingControlDropdown: React.FunctionComponent<{
     enabled: boolean;
-    // Provide either l10nKey or localizedText
-    l10nKey?: string;
-    localizedText?: string;
+    localizedText: string;
     tooltipL10nKey: string;
     disabledTooltipL10nKey?: string;
-    onClickAction: "contentLanguages" | "layoutChoices";
+    buttonId: string;
+    menuItems: ITopBarMenuItem[];
+    loadMenuItems: (onLoaded?: (itemCount: number) => void) => void;
+    onMenuItemClick: (item: ITopBarMenuItem) => void;
+    showChecks: boolean;
 }> = (props) => {
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    const [parentAnchorEl, setParentAnchorEl] = useState<HTMLElement | null>(
+        null,
+    );
+    const [parentContainer, setParentContainer] = useState<HTMLElement | null>(
+        null,
+    );
+    const [parentEmotionCache, setParentEmotionCache] =
+        useState<EmotionCache | null>(null);
+
+    const onClose = () => {
+        setAnchorEl(null);
+        if (parentAnchorEl) {
+            parentAnchorEl.remove();
+            setParentAnchorEl(null);
+        }
+        setParentContainer(null);
+        setParentEmotionCache(null);
+    };
+
+    const onOpen = () => {
+        if (!props.enabled) {
+            return;
+        }
+
+        const buttonElement = document.getElementById(props.buttonId);
+        if (!buttonElement) {
+            return;
+        }
+        const parentWindow = window.parent;
+        const parentDocument = parentWindow?.document;
+
+        if (!parentDocument || parentDocument === document) {
+            setAnchorEl(buttonElement);
+            props.loadMenuItems();
+            return;
+        }
+
+        const rect = buttonElement.getBoundingClientRect();
+        const parentAnchor = parentDocument.createElement("div");
+        parentAnchor.style.position = "fixed";
+        parentAnchor.style.left = `${rect.left}px`;
+        parentAnchor.style.top = `${rect.bottom}px`;
+        parentAnchor.style.width = `${rect.width}px`;
+        parentAnchor.style.height = "1px";
+        parentAnchor.style.pointerEvents = "none";
+        parentAnchor.style.zIndex = "2147483647";
+        parentDocument.body.appendChild(parentAnchor);
+
+        const cache = createCache({
+            key: `${props.buttonId}-menu-parent`,
+            container: parentDocument.head,
+            prepend: true,
+        });
+
+        setParentAnchorEl(parentAnchor);
+        setParentContainer(parentDocument.body);
+        setParentEmotionCache(cache as unknown as EmotionCache);
+
+        if (props.menuItems.length > 0) {
+            setAnchorEl(parentAnchor);
+            props.loadMenuItems();
+            return;
+        }
+
+        props.loadMenuItems((itemCount) => {
+            if (itemCount > 0) {
+                setAnchorEl(parentAnchor);
+            } else {
+                parentAnchor.remove();
+                setParentAnchorEl(null);
+                setParentContainer(null);
+                setParentEmotionCache(null);
+            }
+        });
+    };
+
+    const onMenuItemClick = (item: ITopBarMenuItem) => {
+        if (!item.enabled) {
+            return;
+        }
+        props.onMenuItemClick(item);
+        onClose();
+    };
+
+    const menu = (
+        <Menu
+            open={Boolean(anchorEl)}
+            anchorEl={anchorEl}
+            onClose={onClose}
+            disablePortal={false}
+            keepMounted={false}
+            anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+            transformOrigin={{ vertical: "top", horizontal: "left" }}
+            container={parentContainer ?? undefined}
+            slotProps={{
+                paper: {
+                    sx: {
+                        minWidth: 220,
+                        maxWidth: 440,
+                    },
+                },
+            }}
+        >
+            {props.menuItems.map((item) => (
+                <MenuItem
+                    key={`${props.buttonId}-${item.id}-${item.label}`}
+                    onClick={() => onMenuItemClick(item)}
+                    disabled={!item.enabled}
+                    dense
+                >
+                    {props.showChecks ? (
+                        <Checkbox
+                            checked={Boolean(item.checked)}
+                            size="small"
+                            disableRipple
+                            sx={{ padding: "0 6px 0 0" }}
+                        />
+                    ) : null}
+                    {item.label}
+                </MenuItem>
+            ))}
+        </Menu>
+    );
+
     return (
         <BloomTooltip
             tip={{ l10nKey: props.tooltipL10nKey }}
@@ -362,31 +627,48 @@ export const EditingControlDropdown: React.FunctionComponent<{
                 tooltip: { sx: { maxWidth: "167px", "font-size": "11px" } },
             }}
         >
-            <BloomButton
-                enabled={props.enabled}
-                l10nKey={props.l10nKey || ""}
-                onClick={() => {
-                    postJson("editView/topBarDropdownClicked", {
-                        command: props.onClickAction,
-                    });
-                }}
-                hasText={true}
-                variant="text"
-                endIcon={<ArrowDropDown />}
-                css={css`
-                    background-color: ${kBloomPurple};
-                    color: ${kTextOnPurple};
-                    border: hidden;
-                    font-size: 11px;
-                    padding-inline: 5px;
-                    padding-top: 1px;
-                    padding-bottom: 2px;
-                    text-transform: none;
-                    width: fit-content;
-                `}
-            >
-                {props.localizedText}
-            </BloomButton>
+            <>
+                <BloomButton
+                    id={props.buttonId}
+                    onClick={() => onOpen()}
+                    enabled={props.enabled}
+                    l10nKey={props.buttonId}
+                    alreadyLocalized={true}
+                    iconBeforeText={<ArrowDropDown />}
+                    size="small"
+                    variant="text"
+                    disableRipple
+                    disableElevation
+                    disableFocusRipple
+                    disableTouchRipple
+                    css={css`
+                        font-size: 11px;
+                        padding: 1px 5px 2px 5px;
+                        text-transform: none;
+                        width: fit-content;
+                        min-width: unset;
+                        background-color: ${kBloomPurple};
+                        color: ${kTextOnPurple};
+                        border: hidden;
+                        flex-direction: row-reverse;
+
+                        .MuiButton-startIcon {
+                            margin-right: 0;
+                            margin-left: 4px;
+                        }
+                    `}
+                >
+                    {props.localizedText}
+                </BloomButton>
+                {parentContainer && parentEmotionCache
+                    ? createPortal(
+                          <CacheProvider value={parentEmotionCache}>
+                              {menu}
+                          </CacheProvider>,
+                          parentContainer,
+                      )
+                    : menu}
+            </>
         </BloomTooltip>
     );
 };
