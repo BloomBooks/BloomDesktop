@@ -440,11 +440,18 @@ function reportBuildErrorPlugin(): Plugin {
 // Helper function to inject CSS into DOM
 function createCssInjector() {
     return `
+function stripCssSourceMapComments(cssContent) {
+    return cssContent
+        .split('\\n')
+        .filter((line) => !line.includes('sourceMappingURL='))
+        .join('\\n');
+}
+
 function injectCss(cssContent, source) {
     if (typeof window !== 'undefined' && window.document) {
         const style = document.createElement('style');
         style.setAttribute('data-source', source || 'inline');
-        style.textContent = cssContent;
+        style.textContent = stripCssSourceMapComments(cssContent);
         document.head.appendChild(style);
     }
 }`;
@@ -491,7 +498,7 @@ function transformLessImportsPlugin(): Plugin {
 ${injectedCss.map((call) => `(function() { ${call} })();`).join("\n")}
 `;
 
-            transformedCode = `${injectorFunction}\n${immediateInjection}\n${transformedCode}`;
+            transformedCode = `${transformedCode}\n${injectorFunction}\n${immediateInjection}`;
 
             return { code: transformedCode, map: null };
         },

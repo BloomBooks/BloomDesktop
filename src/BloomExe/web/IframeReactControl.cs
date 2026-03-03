@@ -7,6 +7,13 @@ using Newtonsoft.Json;
 
 namespace Bloom.web
 {
+    /// <summary>
+    /// Loads a React bundle into an existing iframe element in the current top-level browser document.
+    /// It creates stable in-memory HTML for the requested iframe id, then sets iframe.src (with a cache-busting
+    /// version query) once the target iframe is present, retrying briefly because the host document may still be rendering.
+    /// It borrows the logic from ReactControl that allows the relevant code to be hot-loaded from vite dev
+    /// or read normally in production.
+    /// </summary>
     public class IframeReactControl : IDisposable
     {
         public async Task Load(

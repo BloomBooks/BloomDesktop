@@ -464,7 +464,7 @@ namespace Bloom.Api
             var contentType = _actualContext.Request.ContentType;
             Debug.Assert(
                 contentType != null,
-                "The backend expected this post to have content-type text/plain but it ContentType is null."
+                "The backend expected this post to have content-type text/plain but its ContentType is null."
             );
             Debug.Assert(
                 contentType != null && contentType.ToLowerInvariant().Contains("text/plain"),

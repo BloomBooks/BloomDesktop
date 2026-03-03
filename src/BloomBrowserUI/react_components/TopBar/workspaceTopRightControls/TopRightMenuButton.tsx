@@ -6,6 +6,8 @@ interface TopRightMenuButtonProps {
     buttonId?: string;
     text: string;
     onClick: () => void;
+    onMouseEnter?: () => void;
+    onMouseLeave?: () => void;
     startIcon?: React.ReactNode;
     endIcon?: React.ReactNode;
     hasText?: boolean;
@@ -25,6 +27,8 @@ export const TopRightMenuButton: React.FunctionComponent<
             alreadyLocalized={true}
             enabled={true}
             onClick={props.onClick}
+            onMouseEnter={props.onMouseEnter}
+            onMouseLeave={props.onMouseLeave}
             startIcon={props.startIcon}
             endIcon={props.endIcon}
             hasText={props.hasText === undefined ? true : props.hasText}

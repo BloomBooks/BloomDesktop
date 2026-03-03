@@ -15,10 +15,8 @@ import { BookSettingsButton } from "../../react_components/BookSettingsButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Checkbox from "@mui/material/Checkbox";
-import createCache from "@emotion/cache";
-import { CacheProvider, type EmotionCache } from "@emotion/react";
-import { createPortal } from "react-dom";
 import { useL10n } from "../../react_components/l10nHooks";
+import { useParentFrameMenuPortal } from "../../react_components/TopBar/useParentFrameMenuPortal";
 
 interface IDropdownData {
     contentLanguagesEnabled: boolean;
@@ -343,6 +341,11 @@ export const EditingControlButton: React.FunctionComponent<{
             <BloomButton
                 enabled={props.enabled}
                 l10nKey={props.l10nKey}
+                onMouseDown={(e) => {
+                    // Keep focus in the main editable browser; otherwise this button takes focus
+                    // first and copy/cut/paste/undo may run against the wrong context.
+                    e.preventDefault();
+                }}
                 onClick={() => {
                     postJson("editView/topBarButtonClick", {
                         command: props.onClickAction,
@@ -489,79 +492,49 @@ export const EditingControlDropdown: React.FunctionComponent<{
     onMenuItemClick: (item: ITopBarMenuItem) => void;
     showChecks: boolean;
 }> = (props) => {
-    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const [parentAnchorEl, setParentAnchorEl] = useState<HTMLElement | null>(
-        null,
-    );
-    const [parentContainer, setParentContainer] = useState<HTMLElement | null>(
-        null,
-    );
-    const [parentEmotionCache, setParentEmotionCache] =
-        useState<EmotionCache | null>(null);
+    const {
+        anchorEl,
+        suppressTooltip,
+        closeMenu,
+        setMenuAnchor,
+        prepareAnchorAtButton,
+        suppressTooltipUntilPointerReset,
+        clearTooltipSuppression,
+        releaseTooltipSuppressionIfMenuClosed,
+        menuContainer,
+        renderMenuInParentFrame,
+    } = useParentFrameMenuPortal();
 
     const onClose = () => {
-        setAnchorEl(null);
-        if (parentAnchorEl) {
-            parentAnchorEl.remove();
-            setParentAnchorEl(null);
-        }
-        setParentContainer(null);
-        setParentEmotionCache(null);
+        closeMenu();
     };
 
     const onOpen = () => {
         if (!props.enabled) {
             return;
         }
+        suppressTooltipUntilPointerReset();
 
-        const buttonElement = document.getElementById(props.buttonId);
-        if (!buttonElement) {
+        const preparedAnchor = prepareAnchorAtButton(
+            props.buttonId,
+            `${props.buttonId}-menu-parent`,
+        );
+        if (!preparedAnchor) {
+            clearTooltipSuppression();
             return;
         }
-        const parentWindow = window.parent;
-        const parentDocument = parentWindow?.document;
-
-        if (!parentDocument || parentDocument === document) {
-            setAnchorEl(buttonElement);
-            props.loadMenuItems();
-            return;
-        }
-
-        const rect = buttonElement.getBoundingClientRect();
-        const parentAnchor = parentDocument.createElement("div");
-        parentAnchor.style.position = "fixed";
-        parentAnchor.style.left = `${rect.left}px`;
-        parentAnchor.style.top = `${rect.bottom}px`;
-        parentAnchor.style.width = `${rect.width}px`;
-        parentAnchor.style.height = "1px";
-        parentAnchor.style.pointerEvents = "none";
-        parentAnchor.style.zIndex = "2147483647";
-        parentDocument.body.appendChild(parentAnchor);
-
-        const cache = createCache({
-            key: `${props.buttonId}-menu-parent`,
-            container: parentDocument.head,
-            prepend: true,
-        });
-
-        setParentAnchorEl(parentAnchor);
-        setParentContainer(parentDocument.body);
-        setParentEmotionCache(cache as unknown as EmotionCache);
 
         if (props.menuItems.length > 0) {
-            setAnchorEl(parentAnchor);
+            setMenuAnchor(preparedAnchor);
             props.loadMenuItems();
             return;
         }
 
         props.loadMenuItems((itemCount) => {
             if (itemCount > 0) {
-                setAnchorEl(parentAnchor);
+                setMenuAnchor(preparedAnchor);
             } else {
-                parentAnchor.remove();
-                setParentAnchorEl(null);
-                setParentContainer(null);
-                setParentEmotionCache(null);
+                closeMenu();
             }
         });
     };
@@ -583,7 +556,7 @@ export const EditingControlDropdown: React.FunctionComponent<{
             keepMounted={false}
             anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
             transformOrigin={{ vertical: "top", horizontal: "left" }}
-            container={parentContainer ?? undefined}
+            container={menuContainer}
             slotProps={{
                 paper: {
                     sx: {
@@ -616,7 +589,9 @@ export const EditingControlDropdown: React.FunctionComponent<{
 
     return (
         <BloomTooltip
-            tip={{ l10nKey: props.tooltipL10nKey }}
+            tip={
+                suppressTooltip ? undefined : { l10nKey: props.tooltipL10nKey }
+            }
             tipWhenDisabled={
                 props.disabledTooltipL10nKey
                     ? { l10nKey: props.disabledTooltipL10nKey }
@@ -631,6 +606,8 @@ export const EditingControlDropdown: React.FunctionComponent<{
                 <BloomButton
                     id={props.buttonId}
                     onClick={() => onOpen()}
+                    onMouseEnter={releaseTooltipSuppressionIfMenuClosed}
+                    onMouseLeave={releaseTooltipSuppressionIfMenuClosed}
                     enabled={props.enabled}
                     l10nKey={props.buttonId}
                     alreadyLocalized={true}
@@ -660,14 +637,7 @@ export const EditingControlDropdown: React.FunctionComponent<{
                 >
                     {props.localizedText}
                 </BloomButton>
-                {parentContainer && parentEmotionCache
-                    ? createPortal(
-                          <CacheProvider value={parentEmotionCache}>
-                              {menu}
-                          </CacheProvider>,
-                          parentContainer,
-                      )
-                    : menu}
+                {renderMenuInParentFrame(menu)}
             </>
         </BloomTooltip>
     );

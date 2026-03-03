@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -64,6 +65,7 @@ namespace Bloom.Workspace
         private CollectionApi _collectionApi;
         private AudioRecording _audioRecording;
         private CollectionSettingsApi _collectionSettingsApi;
+        private bool _workspaceRootDocumentLoaded;
 
         private NewCollectionWizardApi _newCollectionWizardApi;
 
@@ -249,9 +251,37 @@ namespace Bloom.Workspace
             _collectionTabView.ReadyToShowCollections();
         }
 
-        internal void EnsureMainBrowserHasWorkspaceRootLoaded()
+        internal void EnsureWorkspaceRootDocumentLoaded()
         {
-            _editingView.EnsureWorkspaceRootDocumentLoadedForCollectionMode();
+            if (_workspaceRootDocumentLoaded || _mainBrowser == null)
+                return;
+
+            _mainBrowser.Navigate(
+                GetWorkspaceRootDocument(),
+                setAsCurrentPageForDebugging: true,
+                source: InMemoryHtmlFileSource.Frame
+            );
+            _workspaceRootDocumentLoaded = true;
+        }
+
+        private HtmlDom GetWorkspaceRootDocument()
+        {
+            var path = FileLocationUtilities.GetFileDistributedWithApplication(
+                Path.Combine(
+                    BloomFileLocator.BrowserRoot,
+                    "bookEdit",
+                    ReactControl.ShouldUseViteDev()
+                        ? "EditViewFrame.vite-dev.html"
+                        : "EditViewFrame.html"
+                )
+            );
+
+            var frameText = RobustFile
+                .ReadAllText(path, Encoding.UTF8)
+                .Replace("{simulatedPageFileInBookFolder}", "about:blank")
+                .Replace("{simulatedPageListFile}", "about:blank");
+
+            return new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));
         }
 
         private void InitializeMainBrowser()
@@ -526,7 +556,7 @@ namespace Bloom.Workspace
             if (_mainBrowser == null)
                 return;
 
-            EnsureMainBrowserHasWorkspaceRootLoaded();
+            EnsureWorkspaceRootDocumentLoaded();
             _ = _topBarIframeReactControl.Load(
                 _mainBrowser,
                 "topBarBundle",
@@ -1226,18 +1256,23 @@ namespace Bloom.Workspace
 
         protected IBloomTabArea CurrentTabView { get; set; }
 
+        internal void SetWorkspaceMode(string mode)
+        {
+            _mainBrowser?.RunJavascriptFireAndForget($"editTabBundle.setWorkspaceMode('{mode}');");
+        }
+
         public void ChangeTab(WorkspaceTab newTab)
         {
             _tabSelection.ActiveTab = newTab;
             switch (newTab)
             {
                 case WorkspaceTab.edit:
-                    _editingView.SetWorkspaceMode("edit");
+                    SetWorkspaceMode("edit");
                     SelectTab(_editingView, _editingView, _editingView);
                     break;
                 case WorkspaceTab.collection:
                     _collectionTabView.EnsureLoadedInMainBrowser();
-                    _editingView.SetWorkspaceMode("collection");
+                    SetWorkspaceMode("collection");
                     SelectTab(_collectionTabView, _editingView, null);
                     if (_returnToCollectionTabNotifier != null)
                     {
@@ -1258,7 +1293,7 @@ namespace Bloom.Workspace
                     break;
                 case WorkspaceTab.publish:
                     _publishView.EnsureLoadedInMainBrowser();
-                    _editingView.SetWorkspaceMode("publish");
+                    SetWorkspaceMode("publish");
                     SelectTab(_publishView, _editingView, null);
                     break;
             }
