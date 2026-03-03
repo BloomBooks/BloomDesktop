@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing.Imaging;
+using System.Drawing;
 using System.Dynamic;
 using System.Globalization;
 using System.IO;
@@ -10,7 +10,6 @@ using System.Net;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.ErrorReporter;
@@ -22,7 +21,6 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
-using Cairo;
 using L10NSharp;
 using Newtonsoft.Json;
 using QRCoder;
@@ -32,7 +30,6 @@ using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Progress;
 using SIL.Reporting;
-using static QRCoder.SvgQRCode;
 using Image = System.Drawing.Image;
 using Path = System.IO.Path;
 
@@ -1792,7 +1789,7 @@ namespace Bloom.Book
                     ),
                     msg
                 );
-                // Application.Exit() is not drastic enough to terminate all the call paths here and all the code
+                // Application. Exit() is not drastic enough to terminate all the call paths here and all the code
                 // that tries to make sure we save on exit. Get lots of flashing windows during shutdown.
                 Environment.Exit(-1);
             }
@@ -2796,125 +2793,157 @@ namespace Bloom.Book
         )
         {
             var qrWrappers = dom.SafeSelectNodes(
-                "//div[contains(@class, 'bloom-branding-wrapper')]"
-            );
+                    "//div[contains(@class, 'bloom-branding-wrapper')]"
+                )
+                .Cast<SafeXmlElement>();
+            var url = "https://bloomlibrary.org/language:" + langCode;
 
             string qrFileName = null;
 
             foreach (var qrWrapper in qrWrappers)
             {
-                var img = qrWrapper.ChildNodes.FirstOrDefault(n =>
+                var anchor =
+                    qrWrapper.ChildNodes.FirstOrDefault(n =>
+                        n is SafeXmlElement element && element.Name.ToLowerInvariant() == "a"
+                    ) as SafeXmlElement;
+                anchor.SetAttribute("href", url);
+                var imgQr = anchor.ChildNodes.FirstOrDefault(n =>
                     n is SafeXmlElement element
                     && element.Name.ToLowerInvariant() == "img"
                     && element.HasClass("bloom-qrcode")
                 );
-                var label = qrWrapper.ChildNodes.FirstOrDefault(n =>
+                var imgLogo = anchor.ChildNodes.FirstOrDefault(n =>
+                    n is SafeXmlElement element
+                    && element.Name.ToLowerInvariant() == "img"
+                    && element.HasClass("bloom-logo")
+                );
+                var label = anchor.ChildNodes.FirstOrDefault(n =>
                     n is SafeXmlElement element
                     && element.Name.ToLowerInvariant() == "div"
                     && element.HasClass("bloom-lang-on-blorg")
                 );
+                var imgBranding = anchor.ChildNodes.FirstOrDefault(n =>
+                    n is SafeXmlElement element
+                    && element.Name.ToLowerInvariant() == "img"
+                    && element.HasClass("branding")
+                );
                 if (!shouldHaveQrCode)
                 {
-                    if (img != null)
+                    if (imgQr != null)
                     {
-                        qrWrapper.RemoveChild(img);
-                        // We could delete the svg file, but I'm inclined to leave it for
+                        anchor.RemoveChild(imgQr);
+                        // We could delete the qrcode image file, but I'm inclined to leave it for
                         // our usual cleanup code.
                     }
-
+                    if (imgLogo != null)
+                    {
+                        anchor.RemoveChild(imgLogo);
+                        // Same for the log image file.
+                    }
                     if (label != null)
-                        qrWrapper.RemoveChild(label);
-                    return;
+                        anchor.RemoveChild(label);
+                    if (imgBranding != null)
+                    {
+                        var src = imgBranding.GetAttribute("src");
+                        src = src.Replace("-text", "");
+                        imgBranding.SetAttribute("src", src);
+                    }
+                    anchor.RemoveAttribute("href");
+                    qrWrapper.AddClass("noqrcode");
+                    continue; // change both data-div and back page
+                }
+                else
+                {
+                    if (imgBranding != null)
+                    {
+                        var src = imgBranding.GetAttribute("src");
+                        var name = Path.GetFileNameWithoutExtension(src);
+                        if (!name.EndsWith("-text"))
+                        {
+                            src = name + "-text.svg";
+                            imgBranding.SetAttribute("src", src);
+                        }
+                    }
+                    qrWrapper.RemoveClass("noqrcode");
                 }
 
                 if (qrFileName == null)
                 {
                     using (var qrGenerator = new QRCodeGenerator())
                     {
-                        var url = "https://bloomlibrary.org/language:" + langCode;
                         var qrData = qrGenerator.CreateQrCode(url, QRCodeGenerator.ECCLevel.Q);
-                        using (var qrCode = new SvgQRCode(qrData))
+                        using (var qrCode = new ArtQRCode(qrData))
                         {
-                            var bloomLogoSvg = CreateBloomSvgLogo();
-                            var svgContent = qrCode.GetGraphic(
-                                pixelsPerModule: 20,
-                                System.Drawing.Color.Black,
-                                System.Drawing.Color.White,
-                                // we'll do our own padding
-                                drawQuietZones: false,
-                                sizingMode: SvgQRCode.SizingMode.WidthHeightAttribute,
-                                bloomLogoSvg
+                            var qrBitmap = qrCode.GetGraphic(
+                                20,
+                                Color.FromArgb(255, 91, 91, 91),
+                                Color.White,
+                                Color.White,
+                                null,
+                                1,
+                                false
                             );
-
-                            // Modify SVG to make corner detection pattern centers red
-                            svgContent = MakeQrCodeDotsRed(svgContent);
-
-                            qrFileName = "lang-qr-code.svg";
-                            RobustFile.WriteAllText(
-                                Path.Combine(bookFolderPath, qrFileName),
-                                svgContent
-                            );
+                            // Modify image to make corner detection pattern centers red
+                            // Also make center square white to overlay Bloom logo
+                            // (TODO) Round off corners of detection squares
+                            TweakQrCodeBitmap(qrBitmap);
+                            qrFileName = "lang-qr-code.png";
+                            qrBitmap.Save(Path.Combine(bookFolderPath, qrFileName));
                         }
                     }
                 }
 
-                if (img == null)
+                if (imgQr == null)
                 {
-                    img = qrWrapper.OwnerDocument.CreateElement("img");
-                    img.SetAttribute("class", "bloom-qrcode");
-                    qrWrapper.AppendChild(img);
+                    imgQr = anchor.OwnerDocument.CreateElement("img");
+                    imgQr.SetAttribute("class", "bloom-qrcode");
+                    anchor.AppendChild(imgQr);
                 }
 
-                img.SetAttribute("src", qrFileName);
-                img.SetAttribute("alt", "QR code linking to book online");
+                imgQr.SetAttribute("src", qrFileName);
+                imgQr.SetAttribute("alt", "QR code linking to book online");
+
+                if (imgLogo == null)
+                {
+                    imgLogo = anchor.OwnerDocument.CreateElement("img");
+                    imgLogo.SetAttribute("class", "bloom-logo");
+                    anchor.AppendChild(imgLogo);
+                }
+
+                imgLogo.SetAttribute("src", "bloom-icon.svg");
+                imgLogo.SetAttribute("alt", "logo for center of qr code image");
 
                 if (label == null)
                 {
-                    label = qrWrapper.OwnerDocument.CreateElement("div");
+                    label = anchor.OwnerDocument.CreateElement("div");
                     label.SetAttribute("class", "bloom-lang-on-blorg");
-                    qrWrapper.AppendChild(label);
+                    anchor.AppendChild(label);
                 }
 
                 label.InnerText = settings.BadgeQrCodeLabelLocalizedWithLang;
             }
         }
 
-        private static SvgLogo CreateBloomSvgLogo()
+        public static void TweakQrCodeBitmap(Bitmap qrBitmap)
         {
-            var logoSvgContent =
-                @"<svg viewBox=""0 0 108 90"" width=""100"" height=""83"" xmlns=""http://www.w3.org/2000/svg"">
-        <path fill-rule=""evenodd"" clip-rule=""evenodd"" 
-              d=""M8.49428 1.35104C10.2192 0.180836 12.3491 -0.253985 14.4012 0.144001C24.3888 2.07973 38.3364 7.3822 45.8943 12.7641C45.9372 12.7948 45.98 12.8256 46.019 12.8571C46.2799 13.0495 46.5524 13.2504 46.8406 13.4611C50.4034 16.0777 56.0299 20.2063 60.465 27.9499C65.2349 36.2776 68.2798 48.0303 67.9644 65.6143L52.3502 65.3378C52.6345 49.5878 49.8699 40.8049 46.8833 35.5911C44.1148 30.7566 40.8479 28.3428 37.3824 25.781C37.1644 25.6179 36.9425 25.4544 36.7206 25.2897C32.9825 22.6461 26.0709 19.5759 19.3736 17.4288C17.6097 33.2287 18.883 49.4309 23.7191 61.8755C26.5421 69.1304 30.4204 74.7277 35.2214 78.4031C39.9018 81.9854 45.906 84.0994 53.8377 83.738C64.0044 83.2743 70.7563 81.0486 75.3549 77.9405C79.8561 74.9002 82.975 70.5598 85.0816 64.5345C87.2426 58.359 88.2706 50.5904 88.5276 41.111C88.7223 33.9164 88.4731 26.026 88.0448 17.4421C81.1956 18.5604 76.5347 20.0727 73.552 21.3308C71.535 22.1816 70.2734 22.9214 69.6076 23.3579C69.2766 23.574 69.0898 23.7177 69.0275 23.7672C68.7977 23.9763 68.5563 24.1714 68.2993 24.3516L66.8976 25.3438L57.821 12.7516L58.8996 11.9872C58.997 11.9039 59.106 11.8147 59.2268 11.7194C59.6668 11.3677 60.2469 10.9371 60.9867 10.4523C62.4664 9.48111 64.573 8.29888 67.4349 7.09098C73.1666 4.67441 81.8848 2.17715 94.6916 1.02369C96.7981 0.833671 98.8968 1.50099 100.501 2.87255C102.105 4.2441 103.075 6.20225 103.196 8.2979C103.861 20.0899 104.414 31.3473 104.142 41.5261C103.865 51.6753 102.759 61.2567 99.8391 69.6027C96.8681 78.099 91.9619 85.4517 84.1548 90.7274C76.4451 95.9354 66.6055 98.6486 54.5541 99.1976C43.1453 99.7178 33.4497 96.6043 25.6738 90.6499C18.0147 84.7882 12.684 76.5399 9.14844 67.4393C2.12401 49.3744 1.56728 26.4773 5.21577 6.36899C5.58569 4.32887 6.76932 2.52121 8.49428 1.35104Z"" 
-              fill=""#D65649""/>
-    </svg>";
-
-            // Create SvgLogo with the Bloom logo content
-            // The SvgLogo constructor typically takes the SVG content and sizing information
-            return new SvgLogo(logoSvgContent, 30);
-        }
-
-        public static string MakeQrCodeDotsRed(string svgContent)
-        {
-            var index = svgContent.LastIndexOf("</svg>");
-            if (index < 0)
-                return svgContent;
-            // Review: this is a very crude way of making the corner dots red. It works
-            // only because the pixel grid is a specific size. I don't know whether it
-            // would still work with a different length string, which might require more
-            // or fewer dots in the square. However, the string we're making this qr code
-            // for is fixed in length...only the actual language code changes. So I think
-            // this should be good enough.
-            // (AI suggested various strategies for things like finding which path in the
-            // svg is the corner dots, but they don't work. The whole dot pattern including
-            // the corner dots is one path as produced by qrcoder. There's no obvious way
-            // to extract a piece of it that corresponds to the corner dots. If necessary,
-            // it might be possible to figure out where they must be based on the overall
-            // size.)
-            return svgContent.Substring(0, index)
-                + @"  <path fill=""#D65649"" d=""M 2 2 h3 v3 h-3 z""/>
-  <path fill=""#D65649"" d=""M 28 2 h3 v3 h-3 z""/>
-  <path fill=""#D65649"" d=""M 2 28 h3 v3 h-3 z""/>"
-                + svgContent.Substring(index);
+            Debug.Assert(qrBitmap.Width == 660);
+            Debug.Assert(qrBitmap.Height == 660);
+            using (Graphics g = Graphics.FromImage(qrBitmap))
+            {
+                var bloomRed = Color.FromArgb(255, 206, 85, 70);
+                using (var brush = new SolidBrush(bloomRed))
+                {
+                    // Fill the specified rectangle area with the brush color
+                    g.FillRectangle(brush, new Rectangle(40, 40, 60, 60));
+                    g.FillRectangle(brush, new Rectangle(40, 560, 60, 60));
+                    g.FillRectangle(brush, new Rectangle(560, 40, 60, 60));
+                }
+                // Make background of the logo in the center white.
+                using (var brush = new SolidBrush(Color.White))
+                {
+                    g.FillRectangle(brush, new Rectangle(245, 245, 170, 170));
+                }
+            }
         }
 
         public ExpandoObject XmatterAppearanceSettings =>
