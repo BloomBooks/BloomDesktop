@@ -319,7 +319,13 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
     // split-panes.)
     overflow: hidden;
 }
-.customPage {
+// probably some of these are not needed for custom covers, but the one that makes a
+// translation group fill its containing canvas element is critical; otherwise, an
+// empty one can't be clicked. A custom xmatter page is very like an origami custom page
+// with no origami splits but just one bloom-canvas that fills the page, so I think
+// it's most likely to avoid problems if we share all the rules.
+.customPage,
+.bloom-customLayout {
     .bloom-canvas {
         width: 100%;
         height: 100%;

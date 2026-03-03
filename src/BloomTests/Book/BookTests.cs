@@ -2334,6 +2334,43 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void BringBookUpToDate_CustomLayoutPage_PreservesCustomLayoutClass()
+        {
+            _bookDom = new HtmlDom(
+                @"
+				<html>
+					<head>
+						<meta name='xmatter' content='Factory' />
+					</head>
+					<body>
+						<div id='bloomDataDiv'></div>
+                        <div class='bloom-page cover coverColor bloom-frontMatter frontCover bloom-customLayout A5Portrait side-right'
+							data-page='required singleton'
+							data-export='front-matter-cover'
+							data-xmatter-page='frontCover'
+                            data-custom-layout-id='customOutsideFrontCover'
+							id='frontCover-id'>
+							<div class='marginBox'>
+								<div class='bloom-canvas'></div>
+							</div>
+						</div>
+					</body>
+				</html>"
+            );
+
+            var book = CreateBook();
+
+            book.BringBookUpToDate(new NullProgress());
+
+            AssertThatXmlIn
+                .Dom(book.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class, 'bloom-page') and @data-custom-layout-id='customOutsideFrontCover' and contains(concat(' ', normalize-space(@class), ' '), ' bloom-customLayout ')]",
+                    1
+                );
+        }
+
+        [Test]
         public void BringBookUpToDate_RepairQuestionsPages_DoesNotMessUpGoodPages()
         {
             const string xpathQuestionsPrefix = "//div[contains(@class,'questions')]";
@@ -6562,6 +6599,32 @@ namespace BloomTests.Book
             var body = doc.CreateElement("body");
 
             Assert.That(Bloom.Book.Book.ElementIsInXMatter(body), Is.False);
+        }
+
+        [Test]
+        public void GetCoverImagePathAndElt_HasNoCoverImage_ReturnsNulls()
+        {
+            SetDom(
+                @"
+<div id='bloomDataDiv'>
+	<div data-book='someOtherData' lang='*'>value</div>
+</div>
+<div class='bloom-page'>
+	<div class='marginBox'>
+        <div class='bloom-canvas'>
+            <div class=""bloom-canvas-element"" >
+                <div class=""bloom-imageContainer"">
+                    <img src=""IMG_1413.jpg"" id='not-cover'/>
+                </div>
+            </div>
+		</div>
+	</div>
+</div>"
+            );
+            var book = CreateBook();
+            var coverImgPath = book.GetCoverImagePathAndElt(out SafeXmlElement coverImgElt);
+            Assert.That(coverImgPath, Is.Null);
+            Assert.That(coverImgElt, Is.Null);
         }
     }
 }
