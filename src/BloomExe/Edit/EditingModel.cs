@@ -1273,6 +1273,12 @@ namespace Bloom.Edit
             );
         }
 
+        /// <summary>
+        /// The returned url is to a simulated file that contains the page list HTML.  The file
+        /// is created in memory and served by our local server, but it has a url that makes it
+        /// seem to be in the book folder so local urls work.  The returned URL is HTTP encoded
+        /// for use in an iframe src.
+        /// </summary>
         internal string GetUrlForPageListFile()
         {
             var useViteDev = ReactControl.ShouldUseViteDev();
@@ -1317,11 +1323,13 @@ namespace Bloom.Edit
                 OptimizeForLinux(pageListDom);
 
             pageListDom = CurrentBook.GetHtmlDomForPageList(pageListDom);
-            return _view.Browser.CreateSimulatedFile(
+            var url =_view.Browser.CreateSimulatedFile(
                 pageListDom,
                 false,
                 InMemoryHtmlFileSource.Pagelist
             );
+            var urlPath = UrlPathString.CreateFromUnencodedString(url);
+            return urlPath.UrlEncodedForHttpPath;
         }
 
         private static void OptimizeForLinux(HtmlDom pageListDom)
