@@ -110,12 +110,16 @@ const CanvasToolControls: React.FunctionComponent = () => {
         kImageFillModePaddedValue,
     );
     // This is generally true if the page is xmatter (tools are forbidden).
-    // There is a special case where it is false for custom front cover (tools are allowed).
+    // There is a special case where it is false for custom page layouts (tools are allowed).
     // Currently it will be true for game pages, although in fact we
     // don't currently allow it to be used; it is partly historical,
     // and partly we want to show a special message if someone tries to use it there.
     const [pageTypeForbidsCanvasTools, setPageTypeForbidsCanvasTools] =
-        useState(ToolboxToolReactAdaptor.isXmatter(true));
+        useState(
+            ToolboxToolReactAdaptor.isXmatter({
+                returnFalseForCustomPage: true,
+            }),
+        );
     // This 'counter' increments on new page ready so we can re-check if the book is locked.
     const [_pageRefreshIndicator, setPageRefreshIndicator] = useState(0);
 
@@ -152,11 +156,16 @@ const CanvasToolControls: React.FunctionComponent = () => {
 
     // If canvasElementType is not undefined, corresponds to the active canvas element's family.
     // Otherwise, corresponds to the most recently active canvas element's family.
-    const [currentBubble, setCurrentBubble] = useState<Bubble | undefined>(
+    const [currentBubble, setCurrentBubbleState] = useState<Bubble | undefined>(
         undefined,
     );
     const lastPolledTypeRef = useRef<CanvasElementType>(undefined);
     const lastPolledBubbleRef = useRef<Bubble | undefined>(undefined);
+
+    function setCurrentBubble(bubble: Bubble | undefined) {
+        lastPolledBubbleRef.current = bubble;
+        setCurrentBubbleState(bubble);
+    }
 
     // Callback to initialize bubbleEditing and get the initial bubbleSpec
     const getBubbleType = useCallback(
@@ -204,6 +213,14 @@ const CanvasToolControls: React.FunctionComponent = () => {
         setCanvasElementType(getBubbleType(canvasElementManager));
     }, [getBubbleType]);
 
+    // We want the code in this method to execute when a new page is loaded
+    // and the toolbox is also loaded. Depending on the exact sequence of events
+    // as the various iframes are loaded and tools and pages are changed, knowing
+    // when everything is ready to do this is tricky. The following useEffect
+    // makes sure it gets called at the right time.
+    // (This got added when we went to a single browser. Not sure whether it
+    // became necessary then, or whether it just made an existing race condition
+    // more likely to happen.)
     const refreshFromCurrentPage = useCallback(() => {
         bubbleSpecInitialization();
         setPageTypeForbidsCanvasTools(
@@ -215,6 +232,8 @@ const CanvasToolControls: React.FunctionComponent = () => {
     }, [bubbleSpecInitialization]);
 
     useEffect(() => {
+        // This variable tracks whether we have successfully wired up the CanvasTool
+        // to call our refreshFromCurrentPage callback when a new page is ready.
         let wiredCanvasTool: CanvasTool | undefined;
         let retryTimer: number | undefined;
 
@@ -254,6 +273,8 @@ const CanvasToolControls: React.FunctionComponent = () => {
 
     // Keep controls synced with current canvas selection, even if a focus/click path
     // fails to trigger the usual canvasElement change notification.
+    // This was also added when we went to single-browser; it may have been coincidence
+    // that testing that found some corner cases where things did not end up in sync.
     useEffect(() => {
         const pollTimer = window.setInterval(() => {
             const manager = getCanvasElementManager();
@@ -264,8 +285,9 @@ const CanvasToolControls: React.FunctionComponent = () => {
             }
 
             const polledBubble = manager?.getPatriarchBubbleOfActiveElement();
-            if (polledBubble !== lastPolledBubbleRef.current) {
-                lastPolledBubbleRef.current = polledBubble;
+            if (
+                polledBubble?.content !== lastPolledBubbleRef.current?.content
+            ) {
                 setCurrentBubble(polledBubble);
             }
         }, 250);

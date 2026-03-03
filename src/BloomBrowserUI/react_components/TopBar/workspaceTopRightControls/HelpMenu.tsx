@@ -7,11 +7,9 @@ import { useL10n } from "../../l10nHooks";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Divider from "@mui/material/Divider";
-import createCache from "@emotion/cache";
-import { CacheProvider, type EmotionCache } from "@emotion/react";
-import { createPortal } from "react-dom";
 import { showAboutDialog } from "../../aboutDialog";
 import { showRegistrationDialog } from "../../registration/registrationDialog";
+import { useParentFrameMenuPortal } from "../useParentFrameMenuPortal";
 
 interface IMenuItem {
     id?: string;
@@ -75,13 +73,17 @@ export const HelpMenu: React.FunctionComponent = () => {
     const showIconOnly =
         helpText === "?" || ["en", "fr", "de", "es"].includes(uiLanguage);
 
-    const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
-    const [parentContainer, setParentContainer] =
-        React.useState<HTMLElement | null>(null);
-    const [parentAnchorEl, setParentAnchorEl] =
-        React.useState<HTMLElement | null>(null);
-    const [parentEmotionCache, setParentEmotionCache] =
-        React.useState<EmotionCache | null>(null);
+    const {
+        anchorEl,
+        suppressTooltip,
+        closeMenu,
+        openMenuAtButton,
+        suppressTooltipUntilPointerReset,
+        clearTooltipSuppression,
+        releaseTooltipSuppressionIfMenuClosed,
+        menuContainer,
+        renderMenuInParentFrame,
+    } = useParentFrameMenuPortal();
 
     const showRegistrationDialogFromWorkspaceRoot = React.useCallback(() => {
         const topWindow = window.top;
@@ -265,50 +267,20 @@ export const HelpMenu: React.FunctionComponent = () => {
     );
 
     const onClose = React.useCallback(() => {
-        setAnchorEl(null);
-        if (parentAnchorEl) {
-            parentAnchorEl.remove();
-            setParentAnchorEl(null);
-        }
-        setParentContainer(null);
-        setParentEmotionCache(null);
-    }, [parentAnchorEl]);
+        closeMenu();
+    }, [closeMenu]);
 
     const onOpen = React.useCallback(() => {
-        const buttonElement = document.getElementById("helpMenuButton");
-        if (!buttonElement) {
-            return;
+        suppressTooltipUntilPointerReset();
+        const anchor = openMenuAtButton("helpMenuButton", "help-menu-parent");
+        if (!anchor) {
+            clearTooltipSuppression();
         }
-
-        const parentWindow = window.parent;
-        const parentDocument = parentWindow?.document;
-        if (!parentDocument || parentDocument === document) {
-            setAnchorEl(buttonElement);
-            return;
-        }
-
-        const rect = buttonElement.getBoundingClientRect();
-        const parentAnchor = parentDocument.createElement("div");
-        parentAnchor.style.position = "fixed";
-        parentAnchor.style.left = `${rect.left}px`;
-        parentAnchor.style.top = `${rect.bottom}px`;
-        parentAnchor.style.width = `${rect.width}px`;
-        parentAnchor.style.height = "1px";
-        parentAnchor.style.pointerEvents = "none";
-        parentAnchor.style.zIndex = "2147483647";
-        parentDocument.body.appendChild(parentAnchor);
-
-        const cache = createCache({
-            key: "help-menu-parent",
-            container: parentDocument.head,
-            prepend: true,
-        });
-
-        setParentContainer(parentDocument.body);
-        setParentAnchorEl(parentAnchor);
-        setParentEmotionCache(cache as unknown as EmotionCache);
-        setAnchorEl(parentAnchor);
-    }, []);
+    }, [
+        clearTooltipSuppression,
+        openMenuAtButton,
+        suppressTooltipUntilPointerReset,
+    ]);
 
     const handleMenuItemClick = React.useCallback(
         (item: IMenuItem) => {
@@ -330,7 +302,7 @@ export const HelpMenu: React.FunctionComponent = () => {
             keepMounted={false}
             anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
             transformOrigin={{ vertical: "top", horizontal: "left" }}
-            container={parentContainer ?? undefined}
+            container={menuContainer}
             slotProps={{
                 paper: {
                     sx: {
@@ -364,6 +336,8 @@ export const HelpMenu: React.FunctionComponent = () => {
             buttonId="helpMenuButton"
             text={showIconOnly ? "" : helpText}
             onClick={onOpen}
+            onMouseEnter={releaseTooltipSuppressionIfMenuClosed}
+            onMouseLeave={releaseTooltipSuppressionIfMenuClosed}
             startIcon={showIconOnly ? <HelpOutline /> : undefined}
             endIcon={<ArrowDropDown css={topRightMenuArrowCss} />}
             hasText={!showIconOnly}
@@ -374,31 +348,23 @@ export const HelpMenu: React.FunctionComponent = () => {
         return (
             <>
                 {button}
-                {parentContainer && parentEmotionCache
-                    ? createPortal(
-                          <CacheProvider value={parentEmotionCache}>
-                              {menu}
-                          </CacheProvider>,
-                          parentContainer,
-                      )
-                    : menu}
+                {renderMenuInParentFrame(menu)}
             </>
         );
     }
 
     return (
         <>
-            <BloomTooltip tip={{ l10nKey: "HelpMenu.Help Menu" }}>
+            <BloomTooltip
+                tip={
+                    suppressTooltip
+                        ? undefined
+                        : { l10nKey: "HelpMenu.Help Menu" }
+                }
+            >
                 {button}
             </BloomTooltip>
-            {parentContainer && parentEmotionCache
-                ? createPortal(
-                      <CacheProvider value={parentEmotionCache}>
-                          {menu}
-                      </CacheProvider>,
-                      parentContainer,
-                  )
-                : menu}
+            {renderMenuInParentFrame(menu)}
         </>
     );
 };

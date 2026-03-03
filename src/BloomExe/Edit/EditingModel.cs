@@ -1379,60 +1379,6 @@ namespace Bloom.Edit
             return dom;
         }
 
-        public HtmlDom GetXmlDocumentForWorkspaceRootOnly()
-        {
-            var path = FileLocationUtilities.GetFileDistributedWithApplication(
-                Path.Combine(
-                    BloomFileLocator.BrowserRoot,
-                    "bookEdit",
-                    ReactControl.ShouldUseViteDev()
-                        ? "EditViewFrame.vite-dev.html"
-                        : "EditViewFrame.html"
-                )
-            );
-
-            var frameText = RobustFile
-                .ReadAllText(path, Encoding.UTF8)
-                .Replace("{simulatedPageFileInBookFolder}", "about:blank")
-                .Replace("{simulatedPageListFile}", "about:blank");
-
-            return new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));
-        }
-
-        /// <summary>
-        /// View calls this once the main document has completed loading.
-        /// But this is not really reliable.
-        /// Also see comments in EditingView.StartNavigationToEditPage.
-        /// TODO really need a more reliable way of determining when the document really is complete
-        /// </summary>
-        internal void DocumentCompleted()
-        {
-            Application.Idle += OnIdleAfterDocumentSupposedlyCompleted;
-        }
-
-        /// <summary>
-        /// For some reason, we need to call this code OnIdle.
-        /// We couldn't figure out the timing any other way.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void OnIdleAfterDocumentSupposedlyCompleted(object sender, EventArgs e)
-        {
-            Application.Idle -= OnIdleAfterDocumentSupposedlyCompleted;
-
-            //Work-around for BL-422: https://jira.sil.org/browse/BL-422
-            if (_currentlyDisplayedBook == null)
-            {
-                Debug.Fail(
-                    "Debug Only: BL-422 reproduction (currentlyDisplayedBook was null in OnIdleAfterDocumentSupposedlyCompleted)."
-                );
-                Logger.WriteEvent(
-                    "BL-422 happened just now (currentlyDisplayedBook was null in OnIdleAfterDocumentSupposedlyCompleted)."
-                );
-                return;
-            }
-        }
-
         internal void SaveToolboxSettings(string data)
         {
             // ref BL-9859, BL-9912, BL-9978
@@ -1551,16 +1497,10 @@ namespace Bloom.Edit
 
         private bool CannotSavePage()
         {
-            var returnVal =
-                _bookSelection == null
+            return _bookSelection == null
                 || CurrentBook == null
                 || _pageSelection.CurrentSelection == null
                 || _currentlyDisplayedBook == null;
-
-            if (returnVal)
-                _view.HidePageAndShowWaitCursor(false);
-
-            return returnVal;
         }
 
         // We set this true for the interval between starting to navigate to a new

@@ -660,6 +660,16 @@ const masterToolList: ITool[] = [];
 let currentTool: ITool | undefined = undefined;
 let toolboxReactActivationHooked = false;
 
+// The AI decided to create this react adapter object and save in in a window variable.
+// It gets set in a useEffect in the React component that is the root of the toolbox.
+// This function retrieves it. Once the toolbox has started up, it should always
+// successfully return a valid adapter object. AI has built fallback code that tries to
+// do various things in other ways when it is not available. Most of that fallback code
+// is probably already redundant, but it's hard to be sure which. I'm inclined to leave
+// it until we get all the tools migrated to React; then we can do a lot of simplification
+// and probably get rid the adapter and fallbacks entirely; instead, each component
+// will belong to its own accordion section and will be able to manage its own state
+// and lifecycle.
 function getToolboxReactAdapter(): IToolboxReactAdapter | undefined {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const adapter = (window as any).toolboxReactAdapter as

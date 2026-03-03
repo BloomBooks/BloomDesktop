@@ -25,7 +25,6 @@ namespace Bloom.Publish
         private readonly IframeReactControl _iframeReactControl;
         private bool _loadedIntoIframe;
         private bool _isActive;
-        private EventHandler _mainBrowserClickBridge;
 
         internal WorkspaceView WorkspaceView { get; set; }
 
@@ -98,9 +97,6 @@ namespace Bloom.Publish
 
         public void Dispose()
         {
-            if (WorkspaceView?.MainBrowser != null && _mainBrowserClickBridge != null)
-                WorkspaceView.MainBrowser.OnBrowserClick -= _mainBrowserClickBridge;
-
             _iframeReactControl?.Dispose();
             _publishEpubApi?.EpubMaker?.Dispose();
             _publishToBloomPubApi?.Dispose();
@@ -125,7 +121,7 @@ namespace Bloom.Publish
             if (WorkspaceView?.MainBrowser == null)
                 return;
 
-            WorkspaceView.EnsureMainBrowserHasWorkspaceRootLoaded();
+            WorkspaceView.EnsureWorkspaceRootDocumentLoaded();
             _ = _iframeReactControl.Load(
                 WorkspaceView.MainBrowser,
                 "publishTabPaneBundle",
@@ -161,28 +157,6 @@ namespace Bloom.Publish
         public string HelpTopicUrl
         {
             get { return "/Tasks/Publish_tasks/Publish_tasks_overview.htm"; }
-        }
-
-        // Temporary bridge while workspace menus are still WinForms menus.
-        // Remove when menus and tabs run in one browser UI.
-        internal event EventHandler BrowserClick
-        {
-            add
-            {
-                if (WorkspaceView?.MainBrowser == null)
-                    return;
-
-                _mainBrowserClickBridge += value;
-                WorkspaceView.MainBrowser.OnBrowserClick += value;
-            }
-            remove
-            {
-                if (WorkspaceView?.MainBrowser == null)
-                    return;
-
-                _mainBrowserClickBridge -= value;
-                WorkspaceView.MainBrowser.OnBrowserClick -= value;
-            }
         }
     }
 }

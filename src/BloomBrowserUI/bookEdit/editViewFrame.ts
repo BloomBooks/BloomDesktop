@@ -290,6 +290,7 @@ export function showRegistrationDialogFromWorkspaceRoot() {
 
 let hasActivatedEditMode = false;
 
+// In various contexts if we don't have an explicit mode, we default to collection mode.
 const normalizeWorkspaceMode = (mode: string | null | undefined): string => {
     if (mode === "publish") {
         return "publish";
@@ -297,6 +298,8 @@ const normalizeWorkspaceMode = (mode: string | null | undefined): string => {
     return mode === "edit" ? "edit" : "collection";
 };
 
+// Apply to the body a class indicating which mode we're in...collection, edit, or publish.
+// This is used to control which elements are visible in the workspace.
 const applyWorkspaceModeClass = (mode: string): void => {
     const classesToRemove: string[] = [];
     document.body.classList.forEach((className) => {
@@ -324,6 +327,10 @@ const updateWorkspaceUrlParam = (name: string, value: string): void => {
     window.history.replaceState(window.history.state, "", url.toString());
 };
 
+// When an iframe is not in use, we set its src to about:blank. This at least frees up memory,
+// and may help with other issues caused by having a stale page in the edit iframe while
+// activity in the collection tab has moved us to another book, and similar problems.
+// This function is used to restore the proper src of an iframe when we switch to its tab.
 const restoreIframeSrcFromUrlIfNeeded = (
     iframeId: string,
     paramName: string,

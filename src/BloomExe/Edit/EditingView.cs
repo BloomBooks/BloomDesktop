@@ -52,7 +52,6 @@ namespace Bloom.Edit
         private PageListApi _pageListApi;
         private Browser _browser1 => WorkspaceView?.MainBrowser;
         private bool _waitingForFirstEditModeInitialization;
-        private bool _workspaceRootDocumentLoaded;
 
         internal WorkspaceView WorkspaceView { get; set; }
 
@@ -192,21 +191,6 @@ namespace Bloom.Edit
             _browser1.ControlKeyEvent = _controlKeyEvent;
         }
 
-        internal void EnsureWorkspaceRootDocumentLoadedForCollectionMode()
-        {
-            if (_workspaceRootDocumentLoaded || _browser1 == null)
-                return;
-
-            _browser1.DocumentCompleted += WebBrowser_ReadyStateChanged;
-            var dom = _model.GetXmlDocumentForWorkspaceRootOnly();
-            _browser1.Navigate(
-                dom,
-                setAsCurrentPageForDebugging: true,
-                source: InMemoryHtmlFileSource.Frame
-            );
-            _workspaceRootDocumentLoaded = true;
-        }
-
         private void HandleControlKeyEvent(object keyData)
         {
             if (_visible && (Keys)keyData == (Keys.Control | Keys.N))
@@ -271,7 +255,6 @@ namespace Bloom.Edit
                 if (_waitingForFirstEditModeInitialization)
                 {
                     _waitingForFirstEditModeInitialization = false;
-                    _model.DocumentCompleted();
                 }
                 Logger.WriteEvent("Entered Edit Tab");
                 Cursor = Cursors.Default;
@@ -292,7 +275,9 @@ namespace Bloom.Edit
         /// </summary>
         public void OnHideEditTab()
         {
-            _model.ClearBookForToolboxContent(); // there's no longer a frame ready for a new page displayed in the browser.
+            // Tells the model to prepare for possibly changing the current book, which
+            // currently requires reloading the toolbox.
+            _model.ClearBookForToolboxContent();
         }
 
         DateTime _beginPageLoad;
@@ -347,21 +332,8 @@ namespace Bloom.Edit
             _pageListView.SelectThumbnailWithoutSendingEvent(page);
             _pageListView.UpdateThumbnailAsync(page);
             _model.SaveStateForFullSaveDecision();
-            // The following comment applies to GeckoFx. The logic described has moved into GeckoFxBrowser.
-            // Hopefully the WebView2 DocumentCompleted is more reliable and it won't be needed there.
-            // Unfortunately this comment isn't easily modifiable for the new context, so I'm leaving it here for now.
-            // So far, the most reliable way I've found to detect that the page is fully loaded and we can call
-            // initialize() is the ReadyStateChanged event (combined with checking that ReadyState is "complete").
-            // This works for most pages but not all...some (e.g., the credits page in a basic book) seem to just go on
-            // being "interactive". As a desperate step I tried looking for DocumentCompleted (which fires too soon and often),
-            // but still, we never get one where the ready state is completed. This page just stays 'interactive'.
-            // A desperate expedient would be to try running some Javascript to test whether the 'initialize' function
-            // has actually loaded. If you try that, be careful...this function seems to be used in cases where that
-            // never happens.
-            // Do this before we change the src of the iframe to make sure we're ready when the document-completed arrives.
-            _browser1.DocumentCompleted += WebBrowser_ReadyStateChanged;
+
             var canReuseCurrentRoot = !_changingUiLanguage && !ShouldDoFullReload();
-            var canReuseWorkspaceRootOnly = _workspaceRootDocumentLoaded && canReuseCurrentRoot;
             if (_model.AreToolboxAndOuterFrameCurrent() && canReuseCurrentRoot)
             {
                 // Keep the top document and toolbox iframe, just navigate the page iframe to the new page.
@@ -374,9 +346,9 @@ namespace Bloom.Edit
                     "editTabBundle.switchContentPage('" + pageUrl + "');"
                 );
             }
-            else if (canReuseWorkspaceRootOnly)
+            else if (canReuseCurrentRoot)
             {
-                // We already have the workspace root loaded (typically from collection mode),
+                // The workspace root is always loaded (after initial startup),
                 // so don't navigate the top document again. Just initialize edit-frame content.
                 _model.SetupServerWithCurrentBookToolboxContents();
                 var pageListUrl = _model.GetUrlForPageListFile();
@@ -444,39 +416,6 @@ namespace Bloom.Edit
                 || RobustFile.Exists("/tmp/UseBackgroundGC");
         }
 
-        void WebBrowser_ReadyStateChanged(object sender, EventArgs e)
-        {
-            _browser1.DocumentCompleted -= WebBrowser_ReadyStateChanged;
-            HidePageAndShowWaitCursor(false);
-            if (!_visible)
-            {
-                _browser1.RunJavascriptFireAndForget(
-                    "window.editTabBundle?.setWorkspaceMode?.('collection');"
-                );
-                _waitingForFirstEditModeInitialization = true;
-                return;
-            }
-
-            _browser1.RunJavascriptFireAndForget(
-                "window.editTabBundle?.setWorkspaceMode?.('edit');"
-            );
-
-            _model.DocumentCompleted();
-            _browser1.Focus(); //fix BL-3078 No Initial Insertion Point when any page shown
-            var beginGarbageCollect = DateTime.Now;
-            if (UseBackgroundGC())
-            {
-                GC.Collect(2, GCCollectionMode.Optimized, false, true);
-            }
-            else
-            {
-                GC.Collect( /*2, GCCollectionMode.Optimized, false, true*/
-                );
-                GC.WaitForPendingFinalizers();
-            }
-            var endPageLoad = DateTime.Now;
-        }
-
         public void UpdatePageList(bool emptyThumbnailCache)
         {
             if (emptyThumbnailCache)
@@ -496,16 +435,6 @@ namespace Bloom.Edit
         {
             await _browser1.RunJavascriptAsync(script);
             return;
-        }
-
-        internal void SetWorkspaceMode(string mode)
-        {
-            RunJavascriptAsync($"editTabBundle.setWorkspaceMode('{mode}');");
-            if (mode == "edit" && _waitingForFirstEditModeInitialization)
-            {
-                _waitingForFirstEditModeInitialization = false;
-                _model.DocumentCompleted();
-            }
         }
 
         private Metadata _originalImageMetadataFromImageToolbox;
@@ -1667,21 +1596,6 @@ namespace Bloom.Edit
         internal void SetModalState(bool isModal)
         {
             _pageListView.Enabled = !isModal;
-        }
-
-        /// <summary>
-        /// BL-2153: This is to provide visual feedback to the user that the program has received their
-        ///          page change click and is actively processing the request.
-        /// </summary>
-        public void HidePageAndShowWaitCursor(bool hidePage)
-        {
-            if (_browser1.Visible != hidePage)
-                return;
-
-            _browser1.Visible = !hidePage;
-            _pageListView.Enabled = !hidePage;
-            Cursor = hidePage ? Cursors.WaitCursor : Cursors.Default;
-            // _pageListView.Cursor = Cursor;
         }
 
         public void ShowAddPageDialog()

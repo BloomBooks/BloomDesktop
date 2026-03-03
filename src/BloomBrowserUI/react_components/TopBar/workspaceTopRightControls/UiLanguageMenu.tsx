@@ -7,9 +7,7 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Checkbox from "@mui/material/Checkbox";
 import Divider from "@mui/material/Divider";
-import createCache, { EmotionCache } from "@emotion/cache";
-import { CacheProvider } from "@emotion/react";
-import { createPortal } from "react-dom";
+import { useParentFrameMenuPortal } from "../useParentFrameMenuPortal";
 
 interface IMenuItem {
     action?:
@@ -41,13 +39,14 @@ export const UiLanguageMenu: React.FunctionComponent = () => {
         "Help us translate Bloom (web)",
         "CollectionTab.UILanguageMenu.HelpTranslate",
     );
-    const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
-    const [parentContainer, setParentContainer] =
-        React.useState<HTMLElement | null>(null);
-    const [parentAnchorEl, setParentAnchorEl] =
-        React.useState<HTMLElement | null>(null);
-    const [parentEmotionCache, setParentEmotionCache] =
-        React.useState<EmotionCache | null>(null);
+    const {
+        anchorEl,
+        closeMenu,
+        setMenuAnchor,
+        prepareAnchorAtButton,
+        menuContainer,
+        renderMenuInParentFrame,
+    } = useParentFrameMenuPortal();
     const [menuItems, setMenuItems] = React.useState<IMenuItem[]>([]);
 
     const loadMenuItems = React.useCallback(
@@ -85,67 +84,38 @@ export const UiLanguageMenu: React.FunctionComponent = () => {
     );
 
     const onClose = React.useCallback(() => {
-        setAnchorEl(null);
-        if (parentAnchorEl) {
-            parentAnchorEl.remove();
-            setParentAnchorEl(null);
-        }
-        setParentContainer(null);
-        setParentEmotionCache(null);
-    }, [parentAnchorEl]);
+        closeMenu();
+    }, [closeMenu]);
 
     const onOpen = React.useCallback(() => {
-        const buttonElement = document.getElementById("uiLanguageMenuButton");
-        if (!buttonElement) {
+        const preparedAnchor = prepareAnchorAtButton(
+            "uiLanguageMenuButton",
+            "ui-language-menu-parent",
+        );
+        if (!preparedAnchor) {
             return;
         }
-
-        const parentWindow = window.parent;
-        const parentDocument = parentWindow?.document;
-        if (!parentDocument || parentDocument === document) {
-            setAnchorEl(buttonElement);
-            loadMenuItems();
-            return;
-        }
-
-        const rect = buttonElement.getBoundingClientRect();
-        const parentAnchor = parentDocument.createElement("div");
-        parentAnchor.style.position = "fixed";
-        parentAnchor.style.left = `${rect.left}px`;
-        parentAnchor.style.top = `${rect.bottom}px`;
-        parentAnchor.style.width = `${rect.width}px`;
-        parentAnchor.style.height = "1px";
-        parentAnchor.style.pointerEvents = "none";
-        parentAnchor.style.zIndex = "2147483647";
-        parentDocument.body.appendChild(parentAnchor);
-
-        const cache = createCache({
-            key: "ui-language-menu-parent",
-            container: parentDocument.head,
-            prepend: true,
-        });
-
-        setParentContainer(parentDocument.body);
-        setParentAnchorEl(parentAnchor);
-        setParentEmotionCache(cache);
 
         if (menuItems.length > 0) {
-            setAnchorEl(parentAnchor);
+            setMenuAnchor(preparedAnchor);
             loadMenuItems();
             return;
         }
 
         loadMenuItems((itemCount) => {
             if (itemCount > 0) {
-                setAnchorEl(parentAnchor);
+                setMenuAnchor(preparedAnchor);
             } else {
-                parentAnchor.remove();
-                setParentAnchorEl(null);
-                setParentContainer(null);
-                setParentEmotionCache(null);
+                closeMenu();
             }
         });
-    }, [loadMenuItems, menuItems.length]);
+    }, [
+        closeMenu,
+        loadMenuItems,
+        menuItems.length,
+        prepareAnchorAtButton,
+        setMenuAnchor,
+    ]);
 
     const handleMenuItemClick = React.useCallback(
         (item: IMenuItem) => {
@@ -170,7 +140,7 @@ export const UiLanguageMenu: React.FunctionComponent = () => {
             keepMounted={false}
             anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
             transformOrigin={{ vertical: "top", horizontal: "left" }}
-            container={parentContainer ?? undefined}
+            container={menuContainer}
             slotProps={{
                 paper: {
                     sx: {
@@ -213,14 +183,7 @@ export const UiLanguageMenu: React.FunctionComponent = () => {
                 onClick={onOpen}
                 endIcon={<ArrowDropDown css={topRightMenuArrowCss} />}
             />
-            {parentContainer && parentEmotionCache
-                ? createPortal(
-                      <CacheProvider value={parentEmotionCache}>
-                          {menu}
-                      </CacheProvider>,
-                      parentContainer,
-                  )
-                : menu}
+            {renderMenuInParentFrame(menu)}
         </>
     );
 };

@@ -28,7 +28,6 @@ namespace Bloom.CollectionTab
         private bool _loadedIntoIframe;
         private bool _isDisposed;
         private bool _bookChangesPending = false; // bookchanged event while tab not visible
-        private EventHandler _mainBrowserClickBridge;
 
         internal WorkspaceView WorkspaceView { get; set; }
 
@@ -255,7 +254,7 @@ namespace Bloom.CollectionTab
             if (WorkspaceView?.MainBrowser == null)
                 return;
 
-            WorkspaceView.EnsureMainBrowserHasWorkspaceRootLoaded();
+            WorkspaceView.EnsureWorkspaceRootDocumentLoaded();
 
             _ = _iframeReactControl.Load(
                 WorkspaceView.MainBrowser,
@@ -344,26 +343,6 @@ namespace Bloom.CollectionTab
             );
         }
 
-        internal event EventHandler BrowserClick
-        {
-            add
-            {
-                if (WorkspaceView?.MainBrowser == null)
-                    return;
-
-                _mainBrowserClickBridge += value;
-                WorkspaceView.MainBrowser.OnBrowserClick += value;
-            }
-            remove
-            {
-                if (WorkspaceView?.MainBrowser == null)
-                    return;
-
-                _mainBrowserClickBridge -= value;
-                WorkspaceView.MainBrowser.OnBrowserClick -= value;
-            }
-        }
-
         public void Dispose()
         {
             if (_isDisposed)
@@ -371,9 +350,6 @@ namespace Bloom.CollectionTab
 
             _isDisposed = true;
             BookCollection.CollectionCreated -= OnBookCollectionCreated;
-
-            if (WorkspaceView?.MainBrowser != null && _mainBrowserClickBridge != null)
-                WorkspaceView.MainBrowser.OnBrowserClick -= _mainBrowserClickBridge;
 
             try
             {
