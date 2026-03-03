@@ -132,6 +132,35 @@ const sortToolIdsAlphabetically = (toolIds: string[]): string[] => {
     );
 };
 
+const makeSectionFromToolId = (toolId: string): ToolboxSection => {
+    return {
+        id: toolId,
+        label: makeLabelFromToolId(toolId),
+        legacyToolHtmlSubPath: legacyToolSubPathByToolId[toolId],
+    };
+};
+
+const sortSectionsAlphabeticallyWithSettingsLast = (
+    sections: ToolboxSection[],
+): ToolboxSection[] => {
+    const settingsSection = sections.find(
+        (section) => section.id === "settings",
+    );
+    const nonSettingsSections = sections
+        .filter((section) => section.id !== "settings")
+        .sort((a, b) =>
+            a.label.localeCompare(b.label, undefined, {
+                sensitivity: "base",
+            }),
+        );
+
+    if (!settingsSection) {
+        return nonSettingsSections;
+    }
+
+    return [...nonSettingsSections, settingsSection];
+};
+
 const parseEnabledToolIds = (value: string): string[] => {
     const normalized = value
         .split(",")
@@ -152,14 +181,9 @@ const buildSectionsFromEnabledToolIds = (
     );
     withMoreTabLast.push("settings");
 
-    return withMoreTabLast.map((toolId) => {
-        const label = makeLabelFromToolId(toolId);
-        return {
-            id: toolId,
-            label,
-            legacyToolHtmlSubPath: legacyToolSubPathByToolId[toolId],
-        };
-    });
+    return sortSectionsAlphabeticallyWithSettingsLast(
+        withMoreTabLast.map((toolId) => makeSectionFromToolId(toolId)),
+    );
 };
 
 // Locate an existing legacy tool body element, checking both old and new data
@@ -501,35 +525,10 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                     return previousSections;
                 }
 
-                const settingsSection = previousSections.find(
-                    (section) => section.id === "settings",
-                );
-                const nonSettingsSections = previousSections
-                    .filter((section) => section.id !== "settings")
-                    .sort((a, b) =>
-                        a.label.localeCompare(b.label, undefined, {
-                            sensitivity: "base",
-                        }),
-                    );
-                const addedSection = {
-                    id: addedToolId,
-                    label: makeLabelFromToolId(addedToolId),
-                    legacyToolHtmlSubPath:
-                        legacyToolSubPathByToolId[addedToolId],
-                } as ToolboxSection;
-
-                const nextSections = [
-                    ...nonSettingsSections,
-                    addedSection,
-                ].sort((a, b) =>
-                    a.label.localeCompare(b.label, undefined, {
-                        sensitivity: "base",
-                    }),
-                );
-                if (settingsSection) {
-                    nextSections.push(settingsSection);
-                }
-                return nextSections;
+                return sortSectionsAlphabeticallyWithSettingsLast([
+                    ...previousSections,
+                    makeSectionFromToolId(addedToolId),
+                ]);
             });
 
             void hydrateToolBody(addedToolId);
@@ -545,12 +544,16 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                     (section) => section.id !== removedToolId,
                 );
 
-                if (expandedSectionId === removedToolId) {
-                    const firstSection = nextSections[0];
-                    setExpandedSectionId(
-                        firstSection ? firstSection.id : undefined,
-                    );
-                }
+                const firstSection = nextSections[0];
+                // actually changes the expanded section only if the removed tool was the expanded one.
+                // The awkward way of doing this is to guard against a stale value of expandedSectionId.
+                setExpandedSectionId((previousExpandedSectionId) =>
+                    previousExpandedSectionId === removedToolId
+                        ? firstSection
+                            ? firstSection.id
+                            : undefined
+                        : previousExpandedSectionId,
+                );
 
                 return nextSections;
             });
@@ -565,7 +568,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
             window.removeEventListener("toolbox-tool-added", onToolAdded);
             window.removeEventListener("toolbox-tool-removed", onToolRemoved);
         };
-    }, [expandedSectionId, hydrateToolBody]);
+    }, [hydrateToolBody]);
 
     // Expose activation adapter so legacy toolbox code can drive and observe React accordion state.
     React.useEffect(() => {

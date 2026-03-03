@@ -115,7 +115,11 @@ const CanvasToolControls: React.FunctionComponent = () => {
     // don't currently allow it to be used; it is partly historical,
     // and partly we want to show a special message if someone tries to use it there.
     const [pageTypeForbidsCanvasTools, setPageTypeForbidsCanvasTools] =
-        useState(ToolboxToolReactAdaptor.isXmatter(true));
+        useState(
+            ToolboxToolReactAdaptor.isXmatter({
+                returnFalseForCustomPage: true,
+            }),
+        );
     // This 'counter' increments on new page ready so we can re-check if the book is locked.
     const [_pageRefreshIndicator, setPageRefreshIndicator] = useState(0);
 
