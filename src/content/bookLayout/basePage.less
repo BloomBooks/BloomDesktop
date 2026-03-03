@@ -1012,20 +1012,21 @@ The buffer would be absent if the marginBox had a border or the page has a backg
 }
 
 .bloom-branding-wrapper {
-    border: 3px solid @bloom-red;
+    border: 5px solid @bloom-red;
     // there may be a little space bewteen our logo and the border,
     //  especially where the logo is rounded on the right.
     background-color: white;
     border-radius: 8px;
-    display: inline-grid;
-    grid-template-columns: max-content max-content;
-    grid-auto-rows: auto;
-    column-gap: 2px;
-    row-gap: 2px;
     width: fit-content;
     max-width: 100%;
     margin-left: auto;
     margin-right: auto;
+    img.branding {
+        width: 4.5cm;
+        padding: 10px;
+        box-sizing: border-box;
+        vertical-align: top;
+    }
     .bloom-qrcode {
         // Review: This produces some unevenness in rendering the QR code.
         // On my monitor, it looks better if the size (without padding)
@@ -1038,7 +1039,7 @@ The buffer would be absent if the marginBox had a border or the page has a backg
         // all monitors, though...it might only work if the real pixel size is
         // 96dpi or a multiple. Or course the larger we can make it the less
         // the pixelation matters.
-        width: 2cm;
+        width: 2.8cm;
         padding: 10px;
         box-sizing: border-box;
         // suggested by AI, don't seem to help
@@ -1046,15 +1047,15 @@ The buffer would be absent if the marginBox had a border or the page has a backg
         // vector-effect: non-scaling-stroke;
     }
     .bloom-lang-on-blorg {
-        font-size: x-small;
-        grid-column: 1 / span 2;
+        font-size: smaller;
+        line-height: 1.2;
         width: 100%;
         box-sizing: border-box;
         margin-left: 12px;
         margin-right: 10px;
         margin-bottom: 10px;
 
-        // bloom logo is set to 5cm; qr code to 2cm.
+        // bloom logo is set to 4cm; qr code to 2.5cm.
         // This will need to be overridden if this structure is used
         // with another logo that wants to be a different size; however,
         // the current intent is only to use this with the Bloom logo.
