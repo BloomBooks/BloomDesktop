@@ -10,7 +10,6 @@ import {
     getActiveCanvasElement,
     clickContextMenuItem,
     openContextMenuFromToolbar,
-    type ICanvasPageContext,
 } from "../helpers/canvasActions";
 import {
     expectCanvasElementCountToIncrease,
@@ -22,9 +21,7 @@ import { canvasSelectors } from "../helpers/canvasSelectors";
 
 // ── Helper ──────────────────────────────────────────────────────────────
 
-const createSpeechElement = async (
-    canvasTestContext: ICanvasPageContext,
-): Promise<void> => {
+const createSpeechElement = async (canvasTestContext) => {
     const maxAttempts = 3;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -50,14 +47,14 @@ const createSpeechElement = async (
 };
 
 const duplicateActiveCanvasElementViaUi = async (
-    canvasTestContext: ICanvasPageContext,
+    canvasTestContext,
 ): Promise<void> => {
     await openContextMenuFromToolbar(canvasTestContext);
     await clickContextMenuItem(canvasTestContext, "Duplicate");
 };
 
 const deleteActiveCanvasElementViaUi = async (
-    canvasTestContext: ICanvasPageContext,
+    canvasTestContext,
 ): Promise<void> => {
     await openContextMenuFromToolbar(canvasTestContext);
     await clickContextMenuItem(canvasTestContext, "Delete");
@@ -112,8 +109,6 @@ test("G2: duplicated speech element contains bloom-editable", async ({
 
 // ── G5: Element order sanity after duplication ──────────────────────────
 
-// TODO BL-15770: Re-enable after duplicate/delete count transitions are
-// deterministic in shared-mode runs.
 test("G5: total element count is correct after duplicate + delete", async ({
     canvasTestContext,
 }) => {

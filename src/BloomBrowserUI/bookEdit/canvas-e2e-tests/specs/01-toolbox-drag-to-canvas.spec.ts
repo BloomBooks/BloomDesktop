@@ -9,6 +9,7 @@ import {
     expandNavigationSection,
     getCanvasElementCount,
     getActiveCanvasElement,
+    pageFrameToTopLevel,
 } from "../helpers/canvasActions";
 import {
     expectCanvasElementCountToIncrease,
@@ -53,18 +54,21 @@ for (const row of mainPaletteRows) {
 for (const row of navigationPaletteRows) {
     // TODO: Replace this skip with a deterministic lifecycle test once we have
     // a stable way to reset/recreate book-link-grid across shared-mode runs.
-    // TODO BL-15770: Re-enable these palette items when cross-iframe navigation
-    // drag for navigation image button variants is reliable in CI/shared mode.
-    const skip =
-        row.paletteItem === "book-link-grid" ||
-        row.paletteItem === "navigation-label-button" ||
-        row.paletteItem === "navigation-image-button" ||
-        row.paletteItem === "navigation-image-with-label-button";
-    if (skip) {
-        test.skip(`A1-nav: drag "${row.paletteItem}" onto canvas creates an element`, async ({
-            canvasTestContext,
-        }) => {
+    const skip = row.paletteItem === "book-link-grid";
+    const testFn = skip ? test.skip : test;
+    testFn(
+        `A1-nav: drag "${row.paletteItem}" onto canvas creates an element`,
+        async ({ canvasTestContext }) => {
+            // TODO: Remove this retry annotation once cross-iframe navigation
+            // palette dragging is consistently reliable in CI and headed runs.
+            test.info().annotations.push({
+                type: "retry",
+                description: "cross-iframe drag can be flaky",
+            });
             await expandNavigationSection(canvasTestContext);
+
+            // Short settle after expanding the section
+            await canvasTestContext.page.waitForTimeout(300);
 
             const beforeCount = await getCanvasElementCount(canvasTestContext);
 
@@ -77,33 +81,8 @@ for (const row of navigationPaletteRows) {
                 canvasTestContext,
                 beforeCount,
             );
-        });
-        continue;
-    }
-
-    test(`A1-nav: drag "${row.paletteItem}" onto canvas creates an element`, async ({
-        canvasTestContext,
-    }) => {
-        // TODO: Remove this retry annotation once cross-iframe navigation
-        // palette dragging is consistently reliable in CI and headed runs.
-        test.info().annotations.push({
-            type: "retry",
-            description: "cross-iframe drag can be flaky",
-        });
-        await expandNavigationSection(canvasTestContext);
-
-        const beforeCount = await getCanvasElementCount(canvasTestContext);
-
-        await dragPaletteItemToCanvas({
-            canvasContext: canvasTestContext,
-            paletteItem: row.paletteItem,
-        });
-
-        await expectCanvasElementCountToIncrease(
-            canvasTestContext,
-            beforeCount,
-        );
-    });
+        },
+    );
 }
 
 // ── A2: Drop at different points and verify multiple creation ────────────

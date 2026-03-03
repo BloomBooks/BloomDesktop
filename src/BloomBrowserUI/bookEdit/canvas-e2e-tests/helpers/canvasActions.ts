@@ -7,6 +7,7 @@ import {
     waitForCanvasReady,
 } from "./canvasFrames";
 import { canvasSelectors, type CanvasPaletteItemKey } from "./canvasSelectors";
+import { kUseNewCanvasControlsStorageKey } from "../../toolbox/canvas/newCanvasControlsFlag";
 
 type BoundingBox = {
     x: number;
@@ -40,17 +41,15 @@ export interface ICanvasPageContext extends ICanvasTestContext {
     page: Page;
 }
 
-const nativeDialogMenuCommandPatterns = [
-    /choose\s+image\s+from\s+your\s+computer/i,
-    /change\s+image/i,
-    /choose\s+video\s+from\s+your\s+computer/i,
-    /record\s+yourself/i,
-];
+const nativeDialogMenuCommands = new Set([
+    "Choose image from your computer...",
+    "Change image",
+    "Choose Video from your Computer...",
+    "Record yourself...",
+]);
 
 const assertNativeDialogCommandNotInvoked = (label: string): void => {
-    if (
-        nativeDialogMenuCommandPatterns.some((pattern) => pattern.test(label))
-    ) {
+    if (nativeDialogMenuCommands.has(label)) {
         throw new Error(
             `Refusing to invoke context-menu command \"${label}\" because it opens a native dialog and can hang the canvas e2e host. Assert visibility/enabled state only.`,
         );
@@ -108,17 +107,17 @@ export const openCanvasToolOnCurrentPage = async (
     page: Page,
     options?: { navigate?: boolean },
 ): Promise<ICanvasPageContext> => {
+    if (process.env.BLOOM_USE_NEW_CANVAS_CONTROLS === "true") {
+        await page.addInitScript((storageKey: string) => {
+            window.localStorage.setItem(storageKey, "true");
+        }, kUseNewCanvasControlsStorageKey);
+    }
+
     if (options?.navigate ?? true) {
         await gotoCurrentPage(page);
     }
     const toolboxFrame = await getToolboxFrame(page);
     const pageFrame = await getPageFrame(page);
-    await toolboxFrame.waitForLoadState("domcontentloaded").catch(() => {
-        return;
-    });
-    await pageFrame.waitForLoadState("domcontentloaded").catch(() => {
-        return;
-    });
     await openCanvasToolTab(toolboxFrame);
     await waitForCanvasReady(pageFrame);
 
@@ -190,15 +189,15 @@ const waitForCanvasElementCountBelow = async (
     upperExclusive: number,
     timeoutMs = 2500,
 ): Promise<boolean> => {
-    return expect
-        .poll(async () => getCanvasElementCount(canvasContext), {
-            timeout: timeoutMs,
-        })
-        .toBeLessThan(upperExclusive)
-        .then(
-            () => true,
-            () => false,
-        );
+    const endTime = Date.now() + timeoutMs;
+    while (Date.now() < endTime) {
+        const count = await getCanvasElementCount(canvasContext);
+        if (count < upperExclusive) {
+            return true;
+        }
+        await canvasContext.pageFrame.page().waitForTimeout(100);
+    }
+    return false;
 };
 
 const deleteLastCanvasElementViaManager = async (
@@ -214,8 +213,8 @@ const deleteLastCanvasElementViaManager = async (
         }
 
         const elements = Array.from(
-            document.querySelectorAll<HTMLElement>(selector),
-        );
+            document.querySelectorAll(selector),
+        ) as HTMLElement[];
         if (elements.length === 0) {
             return;
         }
@@ -370,7 +369,7 @@ export const dragPaletteItemToCanvas = async (params: {
     await params.canvasContext.page.mouse.move(sourceX, sourceY);
     await params.canvasContext.page.mouse.down();
     await params.canvasContext.page.mouse.move(targetX, targetY, {
-        steps: 10,
+        steps: 16,
     });
     await params.canvasContext.page.mouse.up();
 };
@@ -404,6 +403,7 @@ export const selectCanvasElementAtIndex = async (
             if (attempt === maxAttempts - 1) {
                 throw error;
             }
+            await canvasContext.pageFrame.page().waitForTimeout(100);
         }
     }
 
@@ -606,29 +606,6 @@ export const keyboardNudge = async (
 export const openContextMenuFromToolbar = async (
     canvasContext: ICanvasTestContext,
 ): Promise<void> => {
-    const keyboardPage = canvasContext.pageFrame.page();
-
-    const closeVisibleDialogInScope = async (root: Page | Frame) => {
-        const dialog = root.locator(".MuiDialog-root:visible").first();
-        if (!(await dialog.isVisible().catch(() => false))) {
-            return;
-        }
-
-        const closeButton = dialog
-            .locator(
-                'button:has-text("OK"), button:has-text("Close"), button:has-text("Cancel"), button[aria-label="Close"]',
-            )
-            .first();
-        if (await closeButton.isVisible().catch(() => false)) {
-            await closeButton.click({ force: true }).catch(() => undefined);
-        } else {
-            await keyboardPage.keyboard.press("Escape").catch(() => undefined);
-        }
-    };
-
-    await closeVisibleDialogInScope(canvasContext.pageFrame);
-    await closeVisibleDialogInScope(keyboardPage);
-
     const visibleMenu = canvasContext.pageFrame
         .locator(canvasSelectors.page.contextMenuListVisible)
         .first();
@@ -641,36 +618,12 @@ export const openContextMenuFromToolbar = async (
         .first();
 
     if (!(await controls.isVisible().catch(() => false))) {
-        const selectedViaManager = await canvasContext.pageFrame
-            .evaluate((selector) => {
-                const bundle = (window as IEditablePageBundleWindow)
-                    .editablePageBundle;
-                const manager = bundle?.getTheOneCanvasElementManager?.();
-                if (!manager) {
-                    return false;
-                }
-
-                const activeElement = document.querySelector<HTMLElement>(
-                    `${selector}[data-bloom-active=\"true\"]`,
-                );
-                const firstNonBackgroundElement =
-                    document.querySelector<HTMLElement>(
-                        `${selector}:not(.bloom-backgroundImage)`,
-                    );
-                const firstElement =
-                    document.querySelector<HTMLElement>(selector);
-                const elementToActivate =
-                    activeElement &&
-                    !activeElement.classList.contains("bloom-backgroundImage")
-                        ? activeElement
-                        : (firstNonBackgroundElement ?? firstElement);
-
-                manager.setActiveElement(elementToActivate ?? undefined);
-                return !!elementToActivate;
-            }, canvasSelectors.page.canvasElements)
-            .catch(() => false);
-
-        if (!selectedViaManager) {
+        const active = canvasContext.pageFrame
+            .locator(canvasSelectors.page.activeCanvasElement)
+            .first();
+        if (await active.isVisible().catch(() => false)) {
+            await active.click({ force: true }).catch(() => undefined);
+        } else {
             const firstCanvasElement = canvasContext.pageFrame
                 .locator(canvasSelectors.page.canvasElements)
                 .first();
@@ -687,70 +640,24 @@ export const openContextMenuFromToolbar = async (
         timeout: 10000,
     });
 
-    const contextMenuButton = canvasContext.pageFrame
-        .locator(canvasSelectors.page.contextToolbarMenuButton)
-        .first();
-
-    if (!(await contextMenuButton.isVisible().catch(() => false))) {
+    const menuButton = controls.locator("button").last();
+    try {
+        await menuButton.click();
+    } catch {
         await canvasContext.pageFrame
-            .evaluate((selector) => {
-                const bundle = (window as IEditablePageBundleWindow)
-                    .editablePageBundle;
-                const manager = bundle?.getTheOneCanvasElementManager?.();
-                if (!manager) {
-                    return;
-                }
-
-                const firstNonBackgroundElement =
-                    document.querySelector<HTMLElement>(
-                        `${selector}:not(.bloom-backgroundImage)`,
-                    );
-                manager.setActiveElement(
-                    firstNonBackgroundElement ?? undefined,
-                );
-            }, canvasSelectors.page.canvasElements)
+            .page()
+            .keyboard.press("Escape")
             .catch(() => undefined);
-    }
-
-    if (await contextMenuButton.isVisible().catch(() => false)) {
-        await contextMenuButton.click({ force: true }).catch(() => undefined);
-    }
-
-    const menuVisibleFromToolbarButton = await canvasContext.pageFrame
-        .locator(canvasSelectors.page.contextMenuListVisible)
-        .first()
-        .isVisible()
-        .catch(() => false);
-    if (menuVisibleFromToolbarButton) {
-        return;
+        await menuButton.click({ force: true });
     }
 
     await canvasContext.pageFrame
-        .page()
-        .keyboard.press("Escape")
-        .catch(() => undefined);
-
-    if (await contextMenuButton.isVisible().catch(() => false)) {
-        await contextMenuButton.click({ force: true }).catch(() => undefined);
-    } else {
-        await canvasContext.pageFrame
-            .page()
-            .keyboard.press("Shift+F10")
-            .catch(() => undefined);
-    }
-
-    const menuVisibleAfterRetry = await canvasContext.pageFrame
         .locator(canvasSelectors.page.contextMenuListVisible)
         .first()
-        .isVisible()
-        .catch(() => false);
-    if (menuVisibleAfterRetry) {
-        return;
-    }
-
-    throw new Error(
-        "Could not open context menu via keyboard or toolbar menu button.",
-    );
+        .waitFor({
+            state: "visible",
+            timeout: 10000,
+        });
 };
 
 export const clickContextMenuItem = async (
@@ -788,18 +695,14 @@ export const dismissCanvasDialogsIfPresent = async (
     canvasContext: ICanvasPageContext,
 ): Promise<void> => {
     const tryDismissInScope = async (root: Page | Frame): Promise<boolean> => {
-        const dialog = root
-            .locator(
-                '.MuiDialog-root:visible, .bloomModalDialog:visible, [role="dialog"]:visible',
-            )
-            .first();
+        const dialog = root.locator(".MuiDialog-root:visible").first();
         if (!(await dialog.isVisible().catch(() => false))) {
             return false;
         }
 
         const closeButton = dialog
             .locator(
-                'button:has-text("OK"), button:has-text("Close"), button:has-text("Cancel"), button[aria-label="Close"]',
+                'button:has-text("OK"), button:has-text("Close"), button:has-text("Cancel")',
             )
             .first();
 
@@ -823,6 +726,7 @@ export const dismissCanvasDialogsIfPresent = async (
         if (!dismissedTop && !dismissedFrame) {
             return;
         }
+        await canvasContext.page.waitForTimeout(100);
     }
 };
 
@@ -841,17 +745,8 @@ export const getContextToolbarButtonCount = async (
 export const setStyleDropdown = async (
     canvasContext: ICanvasTestContext,
     value: string,
-    options?: {
-        maxAttempts?: number;
-        dropdownVisibleTimeoutMs?: number;
-        optionVisibleTimeoutMs?: number;
-        settleTimeoutMs?: number;
-    },
 ): Promise<void> => {
-    const maxAttempts = options?.maxAttempts ?? 3;
-    const dropdownVisibleTimeoutMs = options?.dropdownVisibleTimeoutMs ?? 5000;
-    const optionVisibleTimeoutMs = options?.optionVisibleTimeoutMs ?? 5000;
-    const settleTimeoutMs = options?.settleTimeoutMs ?? 3000;
+    const maxAttempts = 3;
     const normalizedTarget = value.toLowerCase();
     const styleInput = canvasContext.toolboxFrame
         .locator("#canvasElement-style-dropdown")
@@ -861,10 +756,7 @@ export const setStyleDropdown = async (
         const dropdown = canvasContext.toolboxFrame
             .locator("#mui-component-select-style")
             .first();
-        await dropdown.waitFor({
-            state: "visible",
-            timeout: dropdownVisibleTimeoutMs,
-        });
+        await dropdown.waitFor({ state: "visible", timeout: 5000 });
         await dropdown.click({ force: true });
 
         const option = canvasContext.toolboxFrame
@@ -872,10 +764,7 @@ export const setStyleDropdown = async (
                 `.canvasElement-options-dropdown-menu li[data-value="${value}"]`,
             )
             .last();
-        await option.waitFor({
-            state: "visible",
-            timeout: optionVisibleTimeoutMs,
-        });
+        await option.waitFor({ state: "visible", timeout: 5000 });
 
         try {
             await option.click({ force: true });
@@ -886,28 +775,19 @@ export const setStyleDropdown = async (
             continue;
         }
 
-        const changed = await expect
-            .poll(
-                async () => {
-                    return (await styleInput.inputValue()).toLowerCase();
-                },
-                {
-                    timeout: settleTimeoutMs,
-                },
-            )
-            .toBe(normalizedTarget)
-            .then(
-                () => true,
-                () => false,
-            );
-
-        if (changed) {
-            return;
+        const timeoutMs = 3000;
+        const endTime = Date.now() + timeoutMs;
+        while (Date.now() < endTime) {
+            const selectedValue = (await styleInput.inputValue()).toLowerCase();
+            if (selectedValue === normalizedTarget) {
+                return;
+            }
+            await canvasContext.toolboxFrame.page().waitForTimeout(100);
         }
 
         if (attempt === maxAttempts - 1) {
             throw new Error(
-                `Style dropdown did not change to ${normalizedTarget}.`,
+                `Style dropdown did not change to ${normalizedTarget} within ${timeoutMs}ms.`,
             );
         }
     }
@@ -1001,23 +881,14 @@ export const setOutlineColorDropdown = async (
             continue;
         }
 
-        const changed = await expect
-            .poll(
-                async () => {
-                    return (await input.inputValue()).toLowerCase();
-                },
-                {
-                    timeout: 2000,
-                },
-            )
-            .toBe(normalizedTarget)
-            .then(
-                () => true,
-                () => false,
-            );
-
-        if (changed) {
-            return;
+        const timeoutMs = 2000;
+        const endTime = Date.now() + timeoutMs;
+        while (Date.now() < endTime) {
+            const updatedValue = (await input.inputValue()).toLowerCase();
+            if (updatedValue === normalizedTarget) {
+                return;
+            }
+            await canvasContext.toolboxFrame.page().waitForTimeout(100);
         }
     }
 
@@ -1042,20 +913,6 @@ export const clickToolbarButtonByIndex = async (
     await controls.waitFor({ state: "visible", timeout: 10000 });
 
     const button = controls.locator("button").nth(buttonIndex);
-
-    const activeElementHasImageContainer =
-        (await canvasContext.pageFrame
-            .locator(canvasSelectors.page.activeCanvasElement)
-            .first()
-            .locator(canvasSelectors.page.imageContainer)
-            .count()
-            .catch(() => 0)) > 0;
-    if (activeElementHasImageContainer) {
-        throw new Error(
-            "Refusing to click image toolbar buttons in canvas e2e because they may open the native Image Toolbox. Use visibility/enabled assertions instead.",
-        );
-    }
-
     await button.click();
 };
 

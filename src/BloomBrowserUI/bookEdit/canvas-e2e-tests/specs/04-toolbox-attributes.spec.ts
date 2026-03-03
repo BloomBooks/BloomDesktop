@@ -4,7 +4,6 @@
 
 import { test, expect } from "../fixtures/canvasTest";
 import {
-    createCanvasElementWithRetry,
     dragPaletteItemToCanvas,
     getCanvasElementCount,
     setStyleDropdown,
@@ -49,11 +48,27 @@ const createAndVerify = async (
     canvasTestContext,
     paletteItem: CanvasPaletteItemKey,
 ) => {
-    await createCanvasElementWithRetry({
-        canvasContext: canvasTestContext,
-        paletteItem,
-        maxAttempts: 5,
-    });
+    const maxAttempts = 3;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const beforeCount = await getCanvasElementCount(canvasTestContext);
+        await dragPaletteItemToCanvas({
+            canvasContext: canvasTestContext,
+            paletteItem,
+        });
+
+        try {
+            await expectCanvasElementCountToIncrease(
+                canvasTestContext,
+                beforeCount,
+            );
+            return;
+        } catch (error) {
+            if (attempt === maxAttempts - 1) {
+                throw error;
+            }
+        }
+    }
 };
 
 const duplicateActiveCanvasElementViaUi = async (

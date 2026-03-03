@@ -59,106 +59,27 @@ const printUsage = () => {
     );
 };
 
-const bloomBaseUrls = ["http://localhost:8089", "http://127.0.0.1:8089"];
-
-const fetchWithTimeout = async (url, timeoutMs = 6000) => {
+const assertCurrentPageAvailable = async () => {
+    const url = "http://localhost:8089/bloom/CURRENTPAGE";
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
 
     try {
-        return await fetch(url, {
+        const response = await fetch(url, {
             method: "GET",
             signal: controller.signal,
         });
-    } finally {
-        clearTimeout(timeoutId);
-    }
-};
-
-const resolveBloomBaseUrl = async () => {
-    let lastError;
-
-    for (const baseUrl of bloomBaseUrls) {
-        const currentPageUrl = `${baseUrl}/bloom/CURRENTPAGE`;
-        try {
-            const response = await fetchWithTimeout(currentPageUrl);
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-
-            return {
-                baseUrl,
-                currentPageUrl,
-            };
-        } catch (error) {
-            lastError = error;
-        }
-    }
-
-    throw new Error(
-        lastError instanceof Error ? lastError.message : String(lastError),
-    );
-};
-
-const assertCurrentPageAvailable = async () => {
-    let currentPageUrl;
-
-    try {
-        const resolved = await resolveBloomBaseUrl();
-        const baseUrl = resolved.baseUrl;
-        currentPageUrl = resolved.currentPageUrl;
-        const pagesApiUrl = `${baseUrl}/bloom/api/pageList/pages`;
-        const pageContentApiBase = `${baseUrl}/bloom/api/pageList/pageContent?page-id=`;
-
-        const pagesResponse = await fetchWithTimeout(pagesApiUrl);
-        if (!pagesResponse.ok) {
-            throw new Error(`HTTP ${pagesResponse.status} from ${pagesApiUrl}`);
-        }
-
-        const pagesData = await pagesResponse.json();
-        const selectedPageId = pagesData?.selectedPageId;
-        const selectedPage = (pagesData?.pages ?? []).find(
-            (pageInfo) => pageInfo.key === selectedPageId,
-        );
-
-        if (!selectedPageId) {
-            console.error(
-                `Canvas E2E preflight failed: Bloom did not report a selected page id. Select a canvas page in Bloom, then rerun 'yarn e2e canvas'.`,
-            );
-            process.exit(1);
-        }
-
-        const pageContentResponse = await fetchWithTimeout(
-            `${pageContentApiBase}${encodeURIComponent(selectedPageId)}`,
-        );
-        if (!pageContentResponse.ok) {
-            throw new Error(
-                `HTTP ${pageContentResponse.status} from page content API`,
-            );
-        }
-
-        const pageContentData = await pageContentResponse.json();
-        const pageContent = pageContentData?.content ?? "";
-        const hasCanvasSurface = /\bbloom-canvas\b/i.test(pageContent);
-
-        if (!hasCanvasSurface) {
-            const selectedCaption = selectedPage?.caption ?? selectedPageId;
-            console.error(
-                `CURRENTPAGE is reachable, but the currently selected page ("${selectedCaption}") is not a canvas page (no .bloom-canvas found in page content). Select a canvas page in Bloom, then rerun 'yarn e2e canvas'.`,
-            );
-            process.exit(1);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
         }
     } catch (error) {
         console.error(
-            `Cannot reach Bloom CURRENTPAGE on localhost or 127.0.0.1. Start Bloom so CURRENTPAGE is available, then rerun \'yarn e2e canvas\'.`,
+            `Cannot reach ${url}. Start Bloom so CURRENTPAGE is available, then rerun \'yarn e2e canvas\'.`,
         );
-        if (currentPageUrl) {
-            console.error(
-                `Last successful CURRENTPAGE probe: ${currentPageUrl}`,
-            );
-        }
         console.error(error instanceof Error ? error.message : String(error));
         process.exit(1);
+    } finally {
+        clearTimeout(timeoutId);
     }
 };
 

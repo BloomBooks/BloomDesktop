@@ -156,22 +156,13 @@ export const expectToolboxOptionsEnabled = async (
 export const expectToolboxControlsVisible = async (
     canvasContext: ICanvasTestContext,
     controlKeys: ReadonlyArray<keyof typeof toolboxControlSelectorMap>,
-    timeoutMs?: number,
 ): Promise<void> => {
     for (const controlKey of controlKeys) {
         const selector = toolboxControlSelectorMap[controlKey];
-        const control = canvasContext.toolboxFrame.locator(selector).first();
-        if (timeoutMs === undefined) {
-            await expect(
-                control,
-                `Expected toolbox control "${controlKey}" to be visible`,
-            ).toBeVisible();
-        } else {
-            await expect(
-                control,
-                `Expected toolbox control "${controlKey}" to be visible`,
-            ).toBeVisible({ timeout: timeoutMs });
-        }
+        await expect(
+            canvasContext.toolboxFrame.locator(selector).first(),
+            `Expected toolbox control "${controlKey}" to be visible`,
+        ).toBeVisible();
     }
 };
 

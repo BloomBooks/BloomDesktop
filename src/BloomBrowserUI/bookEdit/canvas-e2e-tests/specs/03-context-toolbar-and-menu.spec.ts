@@ -33,22 +33,18 @@ const waitForCountBelow = async (
     upperExclusive: number,
     timeoutMs = 3000,
 ): Promise<boolean> => {
-    return expect
-        .poll(
-            async () => {
-                return canvasTestContext.pageFrame
-                    .locator(canvasSelectors.page.canvasElements)
-                    .count();
-            },
-            {
-                timeout: timeoutMs,
-            },
-        )
-        .toBeLessThan(upperExclusive)
-        .then(
-            () => true,
-            () => false,
-        );
+    const pageFrame = canvasTestContext.pageFrame;
+    const endTime = Date.now() + timeoutMs;
+    while (Date.now() < endTime) {
+        const count = await pageFrame
+            .locator(canvasSelectors.page.canvasElements)
+            .count();
+        if (count < upperExclusive) {
+            return true;
+        }
+        await pageFrame.page().waitForTimeout(100);
+    }
+    return false;
 };
 
 const createAndExpectCountIncrease = async (

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call */
-
 import { test, expect } from "../fixtures/canvasTest";
 import type { Frame, Locator, Page } from "playwright/test";
 import {
@@ -12,6 +10,7 @@ import {
     getCanvasElementCount,
     keyboardNudge,
     openContextMenuFromToolbar,
+    resizeActiveElementFromSide,
     selectCanvasElementAtIndex,
     setRoundedCorners,
     setOutlineColorDropdown,
@@ -49,7 +48,9 @@ const setActiveCanvasElementByIndexViaManager = async (
                 return false;
             }
 
-            const elements = Array.from(document.querySelectorAll(selector));
+            const elements = Array.from(
+                document.querySelectorAll(selector),
+            ) as HTMLElement[];
             const element = elements[elementIndex];
             if (!element) {
                 return false;
@@ -82,9 +83,13 @@ const setActivePatriarchBubbleViaManager = async (
         }
 
         const patriarchBubble = manager.getPatriarchBubbleOfActiveElement?.();
-        const patriarchContent = patriarchBubble?.content;
+        const patriarchContent = patriarchBubble?.content as
+            | HTMLElement
+            | undefined;
         if (!patriarchContent) {
-            const firstCanvasElement = document.querySelector(selector);
+            const firstCanvasElement = document.querySelector(
+                selector,
+            ) as HTMLElement | null;
             if (!firstCanvasElement) {
                 return false;
             }
@@ -121,7 +126,9 @@ const setCanvasElementDataTokenByIndex = async (
     // once canvas elements expose dedicated test ids.
     await canvasContext.pageFrame.evaluate(
         ({ selector, elementIndex, value }) => {
-            const elements = Array.from(document.querySelectorAll(selector));
+            const elements = Array.from(
+                document.querySelectorAll(selector),
+            ) as HTMLElement[];
             const element = elements[elementIndex];
             if (!element) {
                 throw new Error(
@@ -144,7 +151,9 @@ const getCanvasElementIndexByToken = async (
 ): Promise<number> => {
     return canvasContext.pageFrame.evaluate(
         ({ selector, value }) => {
-            const elements = Array.from(document.querySelectorAll(selector));
+            const elements = Array.from(
+                document.querySelectorAll(selector),
+            ) as HTMLElement[];
             return elements.findIndex(
                 (element) => element.getAttribute("data-e2e-token") === value,
             );
@@ -169,24 +178,25 @@ const getCanvasElementSnapshotByIndex = async (
 }> => {
     return canvasContext.pageFrame.evaluate(
         ({ selector, elementIndex }) => {
-            const elements = Array.from(document.querySelectorAll(selector));
+            const elements = Array.from(
+                document.querySelectorAll(selector),
+            ) as HTMLElement[];
             const element = elements[elementIndex];
             if (!element) {
                 throw new Error(
                     `No canvas element found at index ${elementIndex}.`,
                 );
             }
-            const htmlElement = element as HTMLElement;
-            const editable = htmlElement.querySelector(
+            const editable = element.querySelector(
                 ".bloom-editable",
             ) as HTMLElement | null;
             return {
                 text: editable?.innerText ?? "",
-                className: htmlElement.className,
-                left: htmlElement.style.left,
-                top: htmlElement.style.top,
-                width: htmlElement.style.width,
-                height: htmlElement.style.height,
+                className: element.className,
+                left: element.style.left,
+                top: element.style.top,
+                width: element.style.width,
+                height: element.style.height,
             };
         },
         {
@@ -229,7 +239,7 @@ const getTextForActiveElement = async (
     return canvasContext.pageFrame.evaluate(() => {
         const active = document.querySelector(
             '.bloom-canvas-element[data-bloom-active="true"]',
-        );
+        ) as HTMLElement | null;
         if (!active) {
             return "";
         }
@@ -282,18 +292,17 @@ const contextMenuItemLocator = (pageFrame: Frame, label: string): Locator => {
         .first();
 };
 
-const nativeDialogMenuCommandPatterns = [
-    /choose\s+image\s+from\s+your\s+computer/i,
-    /change\s+image/i,
-    /set\s+image\s+information/i,
-    /choose\s+video\s+from\s+your\s+computer/i,
-    /record\s+yourself/i,
-];
+const nativeDialogMenuCommands = new Set([
+    "Choose image from your computer...",
+    "Change image",
+    "Set Image Information...",
+    "Set image information...",
+    "Choose Video from your Computer...",
+    "Record yourself...",
+]);
 
 const assertNativeDialogCommandNotInvoked = (label: string): void => {
-    if (
-        nativeDialogMenuCommandPatterns.some((pattern) => pattern.test(label))
-    ) {
+    if (nativeDialogMenuCommands.has(label)) {
         throw new Error(
             `Refusing to invoke context-menu command \"${label}\" because it opens a native dialog and can hang the canvas e2e host. Assert visibility/enabled state only.`,
         );
@@ -463,7 +472,7 @@ const cropActiveImageForReset = async (
     await canvasContext.pageFrame.evaluate(() => {
         const active = document.querySelector(
             '.bloom-canvas-element[data-bloom-active="true"]',
-        );
+        ) as HTMLElement | null;
         const image = active?.querySelector(
             ".bloom-imageContainer img",
         ) as HTMLImageElement | null;
@@ -482,7 +491,7 @@ const getActiveImageState = async (
     return canvasContext.pageFrame.evaluate(() => {
         const active = document.querySelector(
             '.bloom-canvas-element[data-bloom-active="true"]',
-        );
+        ) as HTMLElement | null;
         const image = active?.querySelector(
             ".bloom-imageContainer img",
         ) as HTMLImageElement | null;
@@ -525,37 +534,6 @@ const chooseColorSwatchInDialog = async (
         .last()
         .click({ force: true });
     await clickDialogOkIfVisible(page);
-};
-
-const chooseDefaultTextColorIfVisible = async (
-    page: Page,
-): Promise<boolean> => {
-    const maxAttempts = 3;
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const defaultLabel = page
-            .locator('.bloomModalDialog:visible:has-text("Default for style")')
-            .locator('text="Default for style"')
-            .first();
-
-        const visible = await defaultLabel.isVisible().catch(() => false);
-        if (!visible) {
-            await page.keyboard.press("Escape").catch(() => undefined);
-            return false;
-        }
-
-        const clicked = await defaultLabel
-            .click({ force: true })
-            .then(() => true)
-            .catch(() => false);
-        if (clicked) {
-            await clickDialogOkIfVisible(page);
-            return true;
-        }
-
-        await page.keyboard.press("Escape").catch(() => undefined);
-    }
-
-    return false;
 };
 
 const setActiveElementBackgroundColorViaManager = async (
@@ -608,6 +586,8 @@ const getActiveElementStyleSummary = async (
 test("Workflow 01: navigation image+label command sweep keeps canvas stable and count transitions correct", async ({
     canvasTestContext,
 }) => {
+    test.setTimeout(90000);
+
     await expandNavigationSection(canvasTestContext);
 
     await createElementAndReturnIndex(
@@ -682,6 +662,95 @@ test("Workflow 01: navigation image+label command sweep keeps canvas stable and 
         .toBe(beforeDelete - 1);
 });
 
+test("Workflow 02: add-child bubble lifecycle survives middle-child delete and parent cleanup", async ({
+    canvasTestContext,
+}) => {
+    test.setTimeout(90000);
+
+    const baselineCount = await getCanvasElementCount(canvasTestContext);
+    await createElementAndReturnIndex(canvasTestContext, "speech");
+
+    for (let index = 0; index < 3; index++) {
+        await setActivePatriarchBubbleViaManager(canvasTestContext);
+
+        const before = await getCanvasElementCount(canvasTestContext);
+        const added = await clickContextMenuItemIfEnabled(
+            canvasTestContext,
+            "Add Child Bubble",
+        );
+        expect(added).toBe(true);
+        await expectCanvasElementCountToIncrease(canvasTestContext, before);
+
+        const newChildIndex =
+            await getActiveCanvasElementIndex(canvasTestContext);
+        expect(newChildIndex).toBeGreaterThanOrEqual(0);
+        await setCanvasElementDataTokenByIndex(
+            canvasTestContext,
+            newChildIndex,
+            `wf02-child-${index + 1}`,
+        );
+    }
+
+    const middleChildIndex = await getCanvasElementIndexByToken(
+        canvasTestContext,
+        "wf02-child-2",
+    );
+    expect(middleChildIndex).toBeGreaterThanOrEqual(0);
+    await setActiveCanvasElementByIndexViaManager(
+        canvasTestContext,
+        middleChildIndex,
+    );
+
+    const beforeMiddleDelete = await getCanvasElementCount(canvasTestContext);
+    const middleDeleted = await clickContextMenuItemIfEnabled(
+        canvasTestContext,
+        "Delete",
+    );
+    expect(middleDeleted).toBe(true);
+    await expect
+        .poll(async () => getCanvasElementCount(canvasTestContext))
+        .toBeLessThan(beforeMiddleDelete);
+
+    const survivingChildCandidates = ["wf02-child-1", "wf02-child-3"];
+    for (const childToken of survivingChildCandidates) {
+        const childIndex = await getCanvasElementIndexByToken(
+            canvasTestContext,
+            childToken,
+        );
+        if (childIndex >= 0) {
+            await setActiveCanvasElementByIndexViaManager(
+                canvasTestContext,
+                childIndex,
+            );
+            break;
+        }
+    }
+
+    await setActivePatriarchBubbleViaManager(canvasTestContext);
+
+    const beforeReAdd = await getCanvasElementCount(canvasTestContext);
+    const childAddedAgain = await clickContextMenuItemIfEnabled(
+        canvasTestContext,
+        "Add Child Bubble",
+    );
+    expect(childAddedAgain).toBe(true);
+    await expectCanvasElementCountToIncrease(canvasTestContext, beforeReAdd);
+
+    await setActivePatriarchBubbleViaManager(canvasTestContext);
+    const beforeParentDelete = await getCanvasElementCount(canvasTestContext);
+    const parentDeleted = await clickContextMenuItemIfEnabled(
+        canvasTestContext,
+        "Delete",
+    );
+    expect(parentDeleted).toBe(true);
+    await canvasTestContext.page.waitForTimeout(150);
+    const afterParentDelete = await getCanvasElementCount(canvasTestContext);
+    expect(afterParentDelete).toBeLessThanOrEqual(beforeParentDelete);
+    expect(
+        await getCanvasElementCount(canvasTestContext),
+    ).toBeGreaterThanOrEqual(baselineCount);
+});
+
 test("Workflow 03: auto-height grows for multiline content and shrinks after content removal", async ({
     canvasTestContext,
 }) => {
@@ -698,7 +767,7 @@ test("Workflow 03: auto-height grows for multiline content and shrinks after con
     await canvasTestContext.pageFrame.evaluate(() => {
         const active = document.querySelector(
             '.bloom-canvas-element[data-bloom-active="true"]',
-        );
+        ) as HTMLElement | null;
         if (!active) {
             throw new Error("No active canvas element.");
         }
@@ -910,7 +979,7 @@ test("Workflow 05: image paste/copy/reset command chain updates image state and 
     }
 
     await clickContextMenuItemIfEnabled(canvasTestContext, "Paste image");
-    const pasted = await getActiveImageState(canvasTestContext);
+    let pasted = await getActiveImageState(canvasTestContext);
     const pasteChanged = !!pasted.src && pasted.src !== initial.src;
     if (!pasteChanged && clipboardResult.ok) {
         expect(pasted.src).not.toBe(initial.src);
@@ -1017,106 +1086,97 @@ test("Workflow 07: video choose/record commands are present without invoking nat
     }
 });
 
-// TODO BL-15770: Re-enable after play-earlier/play-later DOM reorder assertions
-// are deterministic in shared-mode workflow runs.
-test.fixme(
-    "Workflow 08: play-earlier and play-later reorder video elements in DOM order",
-    async ({ canvasTestContext }) => {
-        const firstVideoIndex = await createElementAndReturnIndex(
-            canvasTestContext,
-            "video",
-            { x: 110, y: 110 },
-        );
-        await setCanvasElementDataTokenByIndex(
-            canvasTestContext,
-            firstVideoIndex,
-            "wf08-video-1",
-        );
+test("Workflow 08: play-earlier and play-later reorder video elements in DOM order", async ({
+    canvasTestContext,
+}) => {
+    const firstVideoIndex = await createElementAndReturnIndex(
+        canvasTestContext,
+        "video",
+        { x: 110, y: 110 },
+    );
+    await setCanvasElementDataTokenByIndex(
+        canvasTestContext,
+        firstVideoIndex,
+        "wf08-video-1",
+    );
 
-        const secondVideoIndex = await createElementAndReturnIndex(
-            canvasTestContext,
-            "video",
-            { x: 260, y: 180 },
-        );
-        await setCanvasElementDataTokenByIndex(
-            canvasTestContext,
-            secondVideoIndex,
-            "wf08-video-2",
-        );
+    const secondVideoIndex = await createElementAndReturnIndex(
+        canvasTestContext,
+        "video",
+        { x: 260, y: 180 },
+    );
+    await setCanvasElementDataTokenByIndex(
+        canvasTestContext,
+        secondVideoIndex,
+        "wf08-video-2",
+    );
 
-        const getVideoIndices = async (): Promise<{
-            video1: number;
-            video2: number;
-        }> => {
-            return {
-                video1: await getCanvasElementIndexByToken(
-                    canvasTestContext,
-                    "wf08-video-1",
-                ),
-                video2: await getCanvasElementIndexByToken(
-                    canvasTestContext,
-                    "wf08-video-2",
-                ),
-            };
+    const getVideoIndices = async (): Promise<{
+        video1: number;
+        video2: number;
+    }> => {
+        return {
+            video1: await getCanvasElementIndexByToken(
+                canvasTestContext,
+                "wf08-video-1",
+            ),
+            video2: await getCanvasElementIndexByToken(
+                canvasTestContext,
+                "wf08-video-2",
+            ),
         };
+    };
 
-        const invokeOrderCommandOnEnabledVideo = async (
-            command: "Play Earlier" | "Play Later",
-        ): Promise<boolean> => {
-            const indices = await getVideoIndices();
-            const candidates = [indices.video1, indices.video2].filter(
-                (index) => index >= 0,
+    const invokeOrderCommandOnEnabledVideo = async (
+        command: "Play Earlier" | "Play Later",
+    ): Promise<boolean> => {
+        const indices = await getVideoIndices();
+        const candidates = [indices.video1, indices.video2].filter(
+            (index) => index >= 0,
+        );
+
+        for (const index of candidates) {
+            await setActiveCanvasElementByIndexViaManager(
+                canvasTestContext,
+                index,
             );
-
-            for (const index of candidates) {
-                await setActiveCanvasElementByIndexViaManager(
-                    canvasTestContext,
-                    index,
-                );
-                await openContextMenuFromToolbar(canvasTestContext);
-                const disabled = await isContextMenuItemDisabled(
-                    canvasTestContext.pageFrame,
-                    command,
-                );
-                await canvasTestContext.page.keyboard.press("Escape");
-                if (disabled) {
-                    continue;
-                }
-
-                return clickContextMenuItemIfEnabled(
-                    canvasTestContext,
-                    command,
-                );
+            await openContextMenuFromToolbar(canvasTestContext);
+            const disabled = await isContextMenuItemDisabled(
+                canvasTestContext.pageFrame,
+                command,
+            );
+            await canvasTestContext.page.keyboard.press("Escape");
+            if (disabled) {
+                continue;
             }
 
-            return false;
-        };
-
-        const beforeEarlier = await getVideoIndices();
-        const movedEarlier =
-            await invokeOrderCommandOnEnabledVideo("Play Earlier");
-
-        if (movedEarlier) {
-            const afterEarlier = await getVideoIndices();
-            expect(afterEarlier.video1).not.toBe(beforeEarlier.video1);
-            expect(afterEarlier.video2).not.toBe(beforeEarlier.video2);
+            return clickContextMenuItemIfEnabled(canvasTestContext, command);
         }
 
-        const beforeLater = await getVideoIndices();
-        const movedLater = await invokeOrderCommandOnEnabledVideo("Play Later");
+        return false;
+    };
 
-        if (movedLater) {
-            const afterLater = await getVideoIndices();
-            expect(afterLater.video1).not.toBe(beforeLater.video1);
-            expect(afterLater.video2).not.toBe(beforeLater.video2);
-        }
+    const beforeEarlier = await getVideoIndices();
+    const movedEarlier = await invokeOrderCommandOnEnabledVideo("Play Earlier");
 
-        expect(movedEarlier || movedLater).toBe(true);
-    },
-);
+    if (movedEarlier) {
+        const afterEarlier = await getVideoIndices();
+        expect(afterEarlier.video1).not.toBe(beforeEarlier.video1);
+        expect(afterEarlier.video2).not.toBe(beforeEarlier.video2);
+    }
 
-// TODO BL-15770: Re-enable after selection stability through menu/toolbar
-// format commands no longer intermittently times out.
+    const beforeLater = await getVideoIndices();
+    const movedLater = await invokeOrderCommandOnEnabledVideo("Play Later");
+
+    if (movedLater) {
+        const afterLater = await getVideoIndices();
+        expect(afterLater.video1).not.toBe(beforeLater.video1);
+        expect(afterLater.video2).not.toBe(beforeLater.video2);
+    }
+
+    expect(movedEarlier || movedLater).toBe(true);
+});
+
 test("Workflow 09: non-navigation text-capable types keep active selection through menu and toolbar format commands", async ({
     canvasTestContext,
 }) => {
@@ -1146,26 +1206,14 @@ test("Workflow 09: non-navigation text-capable types keep active selection throu
             });
         }
         await clickDialogOkIfVisible(canvasTestContext.page);
-        await dismissCanvasDialogsIfPresent(canvasTestContext);
-        await canvasTestContext.page.keyboard
-            .press("Escape")
-            .catch(() => undefined);
         await expectAnyCanvasElementActive(canvasTestContext);
     }
-
-    await dismissCanvasDialogsIfPresent(canvasTestContext);
-    await canvasTestContext.page.keyboard
-        .press("Escape")
-        .catch(() => undefined);
 });
 
 test("Workflow 10: duplicate creates independent copies for each type that supports duplicate", async ({
     canvasTestContext,
 }) => {
-    await dismissCanvasDialogsIfPresent(canvasTestContext);
-    await canvasTestContext.page.keyboard
-        .press("Escape")
-        .catch(() => undefined);
+    test.setTimeout(120000);
 
     const rowsWithDuplicate = canvasMatrix.filter((row) =>
         row.menuCommandLabels.includes("Duplicate"),
@@ -1245,12 +1293,71 @@ test("Workflow 10: duplicate creates independent copies for each type that suppo
     }
 });
 
-// TODO BL-15770: Re-enable after style matrix interactions complete reliably
-// without intermittent timeouts in shared-mode runs.
+test("Workflow 11: delete command leaves a valid active-selection handoff for each type that supports delete", async ({
+    canvasTestContext,
+}) => {
+    test.setTimeout(120000);
+
+    const rowsWithDelete = canvasMatrix.filter((row) =>
+        row.menuCommandLabels.includes("Delete"),
+    );
+    await expandNavigationSection(canvasTestContext);
+
+    for (const row of rowsWithDelete) {
+        const firstIndex = await createElementAndReturnIndex(
+            canvasTestContext,
+            row.paletteItem,
+            { x: 90, y: 90 },
+        );
+        const secondIndex = await createElementAndReturnIndex(
+            canvasTestContext,
+            row.paletteItem,
+            { x: 270, y: 170 },
+        );
+
+        await setActiveCanvasElementByIndexViaManager(
+            canvasTestContext,
+            firstIndex,
+        );
+        const beforeDeleteCount =
+            await getCanvasElementCount(canvasTestContext);
+        const deleted = await clickContextMenuItemIfEnabled(
+            canvasTestContext,
+            "Delete",
+        );
+        expect(deleted).toBe(true);
+
+        await expect
+            .poll(async () => getCanvasElementCount(canvasTestContext))
+            .toBe(beforeDeleteCount - 1);
+
+        const activeCount = await canvasTestContext.pageFrame
+            .locator(canvasSelectors.page.activeCanvasElement)
+            .count();
+        expect(activeCount).toBeLessThanOrEqual(1);
+
+        if (activeCount === 1) {
+            await expectAnyCanvasElementActive(canvasTestContext);
+        }
+
+        const afterDeleteCount = await getCanvasElementCount(canvasTestContext);
+        if (afterDeleteCount > 0) {
+            const remainingIndex = Math.min(
+                secondIndex - 1,
+                afterDeleteCount - 1,
+            );
+            await setActiveCanvasElementByIndexViaManager(
+                canvasTestContext,
+                remainingIndex,
+            );
+            await expectAnyCanvasElementActive(canvasTestContext);
+        }
+    }
+});
+
 test("Workflow 12: speech/caption style matrix toggles style values and control eligibility", async ({
     canvasTestContext,
 }) => {
-    const failFastTimeoutMs = 1000;
     await createElementAndReturnIndex(canvasTestContext, "speech");
 
     const allStyleValues = [
@@ -1269,12 +1376,7 @@ test("Workflow 12: speech/caption style matrix toggles style values and control 
         .first();
 
     for (const value of allStyleValues) {
-        const styleApplied = await setStyleDropdown(canvasTestContext, value, {
-            maxAttempts: 1,
-            dropdownVisibleTimeoutMs: failFastTimeoutMs,
-            optionVisibleTimeoutMs: failFastTimeoutMs,
-            settleTimeoutMs: failFastTimeoutMs,
-        })
+        const styleApplied = await setStyleDropdown(canvasTestContext, value)
             .then(() => true)
             .catch(() => false);
         if (!styleApplied) {
@@ -1288,28 +1390,18 @@ test("Workflow 12: speech/caption style matrix toggles style values and control 
         const styleInput = canvasTestContext.toolboxFrame
             .locator("#canvasElement-style-dropdown")
             .first();
-        await expect(styleInput).toHaveValue(value, {
-            timeout: failFastTimeoutMs,
-        });
-        await expectToolboxControlsVisible(
-            canvasTestContext,
-            [
-                "styleDropdown",
-                "textColorBar",
-                "backgroundColorBar",
-                "outlineColorDropdown",
-            ],
-            failFastTimeoutMs,
-        );
+        await expect(styleInput).toHaveValue(value);
+        await expectToolboxControlsVisible(canvasTestContext, [
+            "styleDropdown",
+            "textColorBar",
+            "backgroundColorBar",
+            "outlineColorDropdown",
+        ]);
 
         if (value === "caption") {
-            await expect(roundedCheckbox).toBeEnabled({
-                timeout: failFastTimeoutMs,
-            });
+            await expect(roundedCheckbox).toBeEnabled();
         } else {
-            await expect(roundedCheckbox).toBeVisible({
-                timeout: failFastTimeoutMs,
-            });
+            await expect(roundedCheckbox).toBeVisible();
         }
     }
 });
@@ -1361,25 +1453,10 @@ test("Workflow 13: style transition preserves intended rounded/outline/text/back
     await expect(roundedCheckbox).toBeChecked();
 });
 
-// TODO BL-15770: Re-enable after text-color workflow no longer triggers
-// intermittent shared-mode teardown instability.
 test("Workflow 14: text color control can apply a non-default color and revert to style default", async ({
     canvasTestContext,
 }) => {
-    const created = await createElementAndReturnIndex(
-        canvasTestContext,
-        "speech",
-    )
-        .then(() => true)
-        .catch(() => false);
-    if (!created) {
-        test.info().annotations.push({
-            type: "note",
-            description:
-                "Could not create speech element for text-color workflow in this run; skipping workflow to avoid false negatives.",
-        });
-        return;
-    }
+    await createElementAndReturnIndex(canvasTestContext, "speech");
 
     await clickTextColorBar(canvasTestContext);
     await chooseColorSwatchInDialog(canvasTestContext.page, 3);
@@ -1393,17 +1470,14 @@ test("Workflow 14: text color control can apply a non-default color and revert t
     expect(withExplicitColor).not.toBe("");
 
     await clickTextColorBar(canvasTestContext);
-    const revertedToDefault = await chooseDefaultTextColorIfVisible(
-        canvasTestContext.page,
+    const defaultLabel = canvasTestContext.page.locator(
+        '.bloomModalDialog:visible:has-text("Default for style")',
     );
-    if (!revertedToDefault) {
-        test.info().annotations.push({
-            type: "note",
-            description:
-                '"Default for style" option was unavailable or unstable in this run; skipping default-reversion assertion.',
-        });
-        return;
-    }
+    await defaultLabel
+        .locator('text="Default for style"')
+        .first()
+        .click({ force: true });
+    await clickDialogOkIfVisible(canvasTestContext.page);
 
     const revertedColor = await canvasTestContext.pageFrame.evaluate(() => {
         const active = document.querySelector(
@@ -1503,7 +1577,9 @@ test("Workflow 17: book-link-grid choose-books command remains available and rep
 
     const getBookLinkGridIndex = async (): Promise<number> => {
         return canvasTestContext.pageFrame.evaluate((selector) => {
-            const elements = Array.from(document.querySelectorAll(selector));
+            const elements = Array.from(
+                document.querySelectorAll(selector),
+            ) as HTMLElement[];
             return elements.findIndex(
                 (element) =>
                     element.getElementsByClassName("bloom-link-grid").length >
@@ -1553,7 +1629,9 @@ test("Workflow 17: book-link-grid choose-books command remains available and rep
 
     const beforeSecondDrop = await canvasTestContext.pageFrame.evaluate(
         (selector) => {
-            const elements = Array.from(document.querySelectorAll(selector));
+            const elements = Array.from(
+                document.querySelectorAll(selector),
+            ) as HTMLElement[];
             return elements.filter(
                 (element) =>
                     element.getElementsByClassName("bloom-link-grid").length >
@@ -1571,7 +1649,9 @@ test("Workflow 17: book-link-grid choose-books command remains available and rep
 
     const afterSecondDrop = await canvasTestContext.pageFrame.evaluate(
         (selector) => {
-            const elements = Array.from(document.querySelectorAll(selector));
+            const elements = Array.from(
+                document.querySelectorAll(selector),
+            ) as HTMLElement[];
             return elements.filter(
                 (element) =>
                     element.getElementsByClassName("bloom-link-grid").length >
@@ -1586,11 +1666,11 @@ test("Workflow 17: book-link-grid choose-books command remains available and rep
     expect(afterSecondDrop).toBeLessThanOrEqual(beforeSecondDrop + 1);
 });
 
-// TODO BL-15770: Re-enable after mixed workflow selection/menu stability is
-// deterministic through nudge and duplicate/delete sequences.
 test("Workflow 18: mixed workflow across speech/image/video/navigation remains stable through nudge + duplicate/delete", async ({
     canvasTestContext,
 }) => {
+    test.setTimeout(90000);
+
     const speechIndex = await createElementAndReturnIndex(
         canvasTestContext,
         "speech",
@@ -1679,4 +1759,11 @@ test("Workflow 18: mixed workflow across speech/image/video/navigation remains s
     await expect
         .poll(async () => getCanvasElementCount(canvasTestContext))
         .toBe(beforeDelete - 1);
+
+    const remainingCount = await getCanvasElementCount(canvasTestContext);
+    if (remainingCount > 0) {
+        await setActiveCanvasElementByIndexViaManager(canvasTestContext, 0);
+    }
+    await expectAnyCanvasElementActive(canvasTestContext);
+    await expectContextControlsVisible(canvasTestContext);
 });
