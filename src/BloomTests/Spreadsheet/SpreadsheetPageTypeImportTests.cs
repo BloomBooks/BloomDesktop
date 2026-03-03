@@ -330,7 +330,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[contains(@class, 'bloom-canvas') and @data-test-id='ic{tag}']/img[@src='{src ?? fileName}']",
+                    $".//div[contains(@class, 'bloom-canvas') and @data-test-id='ic{tag}']//img[@src='{src ?? fileName}']",
                     1
                 );
             Assert.That(RobustFile.Exists(Path.Combine(_bookFolder.FolderPath, fileName)));
@@ -344,7 +344,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[contains(@class, 'bloom-canvas')]/img[@src='{fileName}']",
+                    $".//div[contains(@class, 'bloom-canvas')]//img[@src='{fileName}']",
                     1
                 );
             Assert.That(RobustFile.Exists(Path.Combine(_bookFolder.FolderPath, fileName)));

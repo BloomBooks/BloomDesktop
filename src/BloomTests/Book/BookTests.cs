@@ -232,7 +232,7 @@ namespace BloomTests.Book
             );
             Assert.AreEqual("myImage.png", dataBookImage.InnerText);
             var pageImage = dom.SelectSingleNodeHonoringDefaultNS(
-                "//div[contains(@class,'bloom-canvas')]/img[@data-book='coverImage']"
+                "//div[contains(@class,'bloom-canvas')]//img[@data-book='coverImage']"
             );
             Assert.IsTrue(pageImage.GetAttribute("src").Equals("myImage.png"));
         }
@@ -291,7 +291,7 @@ namespace BloomTests.Book
             if (dataBookImage != null) // used to just set the src of the img, but removing the dataDiv element altogether is better still.
                 Assert.AreEqual(placeHolderFile, dataBookImage.InnerText);
             var pageImage = dom.SelectSingleNodeHonoringDefaultNS(
-                "//div[contains(@class,'bloom-canvas')]/img[@data-book='coverImage']"
+                "//div[contains(@class,'bloom-canvas')]//img[@data-book='coverImage']"
             );
             Assert.IsTrue(pageImage.GetAttribute("src").Equals(placeHolderFile));
         }
@@ -481,7 +481,7 @@ namespace BloomTests.Book
             );
             Assert.AreEqual(imageFilename, dataBookImage.InnerText);
             var pageImage = dom.SelectSingleNodeHonoringDefaultNS(
-                "//div[contains(@class,'bloom-canvas')]/img[@data-book='coverImage']"
+                "//div[contains(@class,'bloom-canvas')]//img[@data-book='coverImage']"
             );
             Assert.IsTrue(pageImage.GetAttribute("src").Equals(noPlusEncodedName));
 
@@ -2568,7 +2568,7 @@ namespace BloomTests.Book
             AssertThatXmlIn
                 .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    "//div[contains(@class,'bloom-canvas')]/img[@data-book='coverImage' and @src='theCover.png']",
+                    "//div[contains(@class,'bloom-canvas')]//img[@data-book='coverImage' and @src='theCover.png']",
                     1
                 );
         }
