@@ -1539,6 +1539,21 @@
         <target xml:lang="prs" state="final">صفحه کاپی</target>
         <note>ID: EditTab.CopyPage</note>
       </trans-unit>
+      <trans-unit id="EditTab.CustomCover.Standard" translate="no">
+        <source xml:lang="en">Standard</source>
+        <target xml:lang="prs" state="needs-translation">Standard</target>
+        <note>ID: EditTab.CustomCover.Standard</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomCover.CoverLayout" translate="no">
+        <source xml:lang="en">Cover Layout:</source>
+        <target xml:lang="prs" state="needs-translation">Cover Layout:</target>
+        <note>ID: EditTab.CustomCover.CoverLayout</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomCover.Custom" translate="no">
+        <source xml:lang="en">Custom</source>
+        <target xml:lang="prs" state="needs-translation">Custom</target>
+        <note>ID: EditTab.CustomCover.Custom</note>
+      </trans-unit>
       <trans-unit id="EditTab.CustomPage.ChangeLayout" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change Layout</source>
         <target xml:lang="prs" state="final">تغیر طرح</target>
@@ -2499,6 +2514,11 @@
         <target xml:lang="prs" state="final">بند قدیمی</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BecomeBackground" translate="no">
+        <source xml:lang="en">Become background</source>
+        <target xml:lang="prs" state="needs-translation">Become background</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.BecomeBackground</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ChooseVideo" sil:dynamic="true">
         <source xml:lang="en">Choose video from your computer...</source>
         <target xml:lang="prs" state="needs-translation">Choose video from your computer...</target>
@@ -2509,10 +2529,20 @@
         <target xml:lang="prs" state="needs-translation">Copy text</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.CopyText</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.CoverImage" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Cover Image</source>
+        <target xml:lang="prs" state="needs-translation">Cover Image</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.CoverImage</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Duplicate" sil:dynamic="true">
         <source xml:lang="en">Duplicate</source>
         <target xml:lang="prs" state="needs-translation">Duplicate</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FieldType" translate="no">
+        <source xml:lang="en">Field Type:</source>
+        <target xml:lang="prs" state="needs-translation">Field Type:</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.FieldType</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillBackground" sil:dynamic="true" translate="no">
         <source xml:lang="en">Fill Background</source>
@@ -2538,6 +2568,11 @@
         <source xml:lang="en">Outer Outline Color</source>
         <target xml:lang="prs" state="final">رنگ طرح بیرونی</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Language" translate="no">
+        <source xml:lang="en">Language:</source>
+        <target xml:lang="prs" state="needs-translation">Language:</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Language</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None" sil:dynamic="true" approved="yes">
         <source xml:lang="en">None</source>
