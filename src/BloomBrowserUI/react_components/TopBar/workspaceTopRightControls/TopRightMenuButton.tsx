@@ -3,6 +3,7 @@ import * as React from "react";
 import BloomButton from "../../bloomButton";
 
 interface TopRightMenuButtonProps {
+    buttonId?: string;
     text: string;
     onClick: () => void;
     startIcon?: React.ReactNode;
@@ -19,6 +20,7 @@ export const TopRightMenuButton: React.FunctionComponent<
 > = (props) => {
     return (
         <BloomButton
+            id={props.buttonId}
             l10nKey=""
             alreadyLocalized={true}
             enabled={true}

@@ -37,10 +37,12 @@ export interface IEditViewFrameExports {
         closing: (canceled: boolean) => void,
     );
     showRequiresSubscriptionDialog(featureName: string): void;
-    showRegistrationDialogInEditTab(
+    showRegistrationDialogFromWorkspaceRoot(
         mayChangeEmail?: boolean,
         emailRequiredForTeamCollection?: boolean,
     ): void;
+    showAboutDialogFromWorkspaceRoot(): void;
+    setWorkspaceMode(mode: string): void;
 }
 
 export function SayHello() {
@@ -99,6 +101,7 @@ export function handleUndo(): void {
 export function switchThumbnailPage(newSource: string) {
     const iframe = <HTMLIFrameElement>document.getElementById("pageList");
     iframe.src = newSource;
+    updateWorkspaceUrlParam("pageListSrc", newSource);
 }
 
 export function switchContentPage(newSource: string) {
@@ -135,11 +138,14 @@ export function switchContentPage(newSource: string) {
     const handler = () => {
         handlerCalled = true;
         iframe.removeEventListener("load", handler);
-        getToolboxBundleExports()!.applyToolboxStateToPage();
+        doWhenToolboxLoaded((toolboxFrameExports: IToolboxFrameExports) => {
+            toolboxFrameExports.applyToolboxStateToPage();
+        });
     };
     iframe.removeEventListener("load", handler);
     iframe.addEventListener("load", handler);
     iframe.src = newSource;
+    updateWorkspaceUrlParam("pageSrc", newSource);
     // When we don't already have a video (either a new page, or it has been deleted),
     // and record a new one, we switchContentPage to make the new video show up.
     // And for no known reason, the load event never fires. There may possibly be
@@ -270,7 +276,7 @@ export function showEditViewBookSettingsDialog(
     showBookSettingsDialog(initiallySelectedGroupIndex);
 }
 
-export function showAboutDialogInEditTab() {
+export function showAboutDialogFromWorkspaceRoot() {
     showAboutDialog();
 }
 
@@ -278,8 +284,92 @@ export function showRequiresSubscriptionDialog(featureName: string): void {
     showRequiresSubscriptionDialogInEditView(featureName);
 }
 
-export function showRegistrationDialogInEditTab() {
+export function showRegistrationDialogFromWorkspaceRoot() {
     showRegistrationDialogForEditTab();
+}
+
+let hasActivatedEditMode = false;
+
+const normalizeWorkspaceMode = (mode: string | null | undefined): string => {
+    if (mode === "publish") {
+        return "publish";
+    }
+    return mode === "edit" ? "edit" : "collection";
+};
+
+const applyWorkspaceModeClass = (mode: string): void => {
+    const classesToRemove: string[] = [];
+    document.body.classList.forEach((className) => {
+        if (className.endsWith("-mode")) {
+            classesToRemove.push(className);
+        }
+    });
+
+    classesToRemove.forEach((className) =>
+        document.body.classList.remove(className),
+    );
+    document.body.classList.add(`${mode}-mode`);
+};
+
+// We manage a param in the root url so that if the main browser is refreshed, it can reopen
+// in the same tab.
+const updateWorkspaceModeInUrl = (mode: string): void => {
+    const normalizedMode = normalizeWorkspaceMode(mode);
+    updateWorkspaceUrlParam("mode", normalizedMode);
+};
+
+const updateWorkspaceUrlParam = (name: string, value: string): void => {
+    const url = new URL(window.location.href);
+    url.searchParams.set(name, value);
+    window.history.replaceState(window.history.state, "", url.toString());
+};
+
+const restoreIframeSrcFromUrlIfNeeded = (
+    iframeId: string,
+    paramName: string,
+): void => {
+    const iframe = document.getElementById(
+        iframeId,
+    ) as HTMLIFrameElement | null;
+    if (!iframe) {
+        return;
+    }
+
+    const currentSrc = iframe.getAttribute("src") || "";
+    const needsRestore = currentSrc === "" || currentSrc === "about:blank";
+    if (!needsRestore) {
+        return;
+    }
+
+    const url = new URL(window.location.href);
+    const savedSrc = url.searchParams.get(paramName);
+    if (savedSrc) {
+        iframe.src = savedSrc;
+    }
+};
+
+const initializeWorkspaceModeFromUrl = (): void => {
+    const url = new URL(window.location.href);
+    const mode = normalizeWorkspaceMode(url.searchParams.get("mode"));
+    applyWorkspaceModeClass(mode);
+    updateWorkspaceModeInUrl(mode);
+    restoreIframeSrcFromUrlIfNeeded("page", "pageSrc");
+    restoreIframeSrcFromUrlIfNeeded("pageList", "pageListSrc");
+};
+
+initializeWorkspaceModeFromUrl();
+
+export function setWorkspaceMode(mode: string): void {
+    const normalizedMode = normalizeWorkspaceMode(mode);
+    applyWorkspaceModeClass(normalizedMode);
+    updateWorkspaceModeInUrl(normalizedMode);
+
+    if (normalizedMode === "edit" && !hasActivatedEditMode) {
+        hasActivatedEditMode = true;
+        window.dispatchEvent(
+            new CustomEvent("bloom-edit-mode-first-activated"),
+        );
+    }
 }
 
 // Adjusts the zoom scaling element created in C# SetupPageZoom; keep in sync with that code.
@@ -329,9 +419,10 @@ interface EditTabBundleApi {
     showCopyrightAndLicenseDialog: typeof showCopyrightAndLicenseDialog;
     showEditViewTopicChooserDialog: typeof showEditViewTopicChooserDialog;
     showEditViewBookSettingsDialog: typeof showEditViewBookSettingsDialog;
-    showAboutDialogInEditTab: typeof showAboutDialogInEditTab;
+    showAboutDialogFromWorkspaceRoot: typeof showAboutDialogFromWorkspaceRoot;
     showRequiresSubscriptionDialog: typeof showRequiresSubscriptionDialog;
-    showRegistrationDialogInEditTab: typeof showRegistrationDialogInEditTab;
+    showRegistrationDialogFromWorkspaceRoot: typeof showRegistrationDialogFromWorkspaceRoot;
+    setWorkspaceMode: typeof setWorkspaceMode;
     showAdjustTimingsDialogFromEditViewFrame: typeof showAdjustTimingsDialogFromEditViewFrame;
     setZoom: typeof setZoom;
     getToolboxBundleExports: typeof getToolboxBundleExports;
@@ -367,9 +458,10 @@ window.editTabBundle = {
     showCopyrightAndLicenseDialog,
     showEditViewTopicChooserDialog,
     showEditViewBookSettingsDialog,
-    showAboutDialogInEditTab,
+    showAboutDialogFromWorkspaceRoot,
     showRequiresSubscriptionDialog,
-    showRegistrationDialogInEditTab,
+    showRegistrationDialogFromWorkspaceRoot,
+    setWorkspaceMode,
     showAdjustTimingsDialogFromEditViewFrame:
         showAdjustTimingsDialogFromEditViewFrame,
     setZoom,

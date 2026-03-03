@@ -37,12 +37,11 @@ namespace Bloom.Edit
     {
         private readonly EditingModel _model;
         private PageListController _pageListView;
-        private ContextMenuStrip _contentLanguagesDropdown = new();
-        private ContextMenuStrip _layoutChoicesDropdown = new();
         private readonly CutCommand _cutCommand;
         private readonly CopyCommand _copyCommand;
         private readonly PasteCommand _pasteCommand;
         private readonly UndoCommand _undoCommand;
+        private readonly ControlKeyEvent _controlKeyEvent;
         private readonly SignLanguageApi _signLanguageApi;
         private readonly CopyrightAndLicenseApi _copyrightAndLicenseApi;
         private Color _enabledToolbarColor = Palette.DarkTextAgainstBackgroundColor;
@@ -51,7 +50,11 @@ namespace Bloom.Edit
         private BloomWebSocketServer _webSocketServer;
         private ZoomModel _zoomModel;
         private PageListApi _pageListApi;
-        private DateTime? _lastTopBarMenuClosedTime;
+        private Browser _browser1 => WorkspaceView?.MainBrowser;
+        private bool _waitingForFirstEditModeInitialization;
+        private bool _workspaceRootDocumentLoaded;
+
+        internal WorkspaceView WorkspaceView { get; set; }
 
         public delegate EditingView Factory(); //autofac uses this
 
@@ -78,28 +81,10 @@ namespace Bloom.Edit
             _copyCommand = copyCommand;
             _pasteCommand = pasteCommand;
             _undoCommand = undoCommand;
+            _controlKeyEvent = controlKeyEvent;
             _webSocketServer = model.EditModelSocketServer;
             _pageListApi = pageListApi;
             InitializeComponent();
-
-            // This used to be part of InitializeComponent, but we want to make which browser to use
-            // configurable. It can possibly move back to the Designer code once we settle on WebView2.
-            // Turning off for this PR because it's not working well enough yet.
-            if (!Program.RunningHarvesterMode)
-            {
-                _browser1 = BrowserMaker.MakeBrowser();
-                _browser1.BackColor = System.Drawing.Color.DarkGray;
-                _browser1.ContextMenuProvider = null;
-                _browser1.ReplaceContextMenu = null;
-                _browser1.ControlKeyEvent = null;
-                _browser1.Dock = System.Windows.Forms.DockStyle.Fill;
-                _browser1.Location = new System.Drawing.Point(0, 0);
-                _browser1.Margin = new System.Windows.Forms.Padding(5);
-                _browser1.Name = "_browser1";
-                _browser1.Size = new System.Drawing.Size(826, 561);
-                _browser1.TabIndex = 1;
-                Controls.Add(_browser1);
-            }
 
             //SetupThumbnailLists();
             _model.SetView(this);
@@ -113,11 +98,6 @@ namespace Bloom.Edit
             _copyrightAndLicenseApi = copyrightAndLicenseApi;
             copyrightAndLicenseApi.Model = _model;
             copyrightAndLicenseApi.View = this;
-            if (!Program.RunningHarvesterMode)
-            {
-                _browser1.SetEditingCommands(cutCommand, copyCommand, pasteCommand, undoCommand);
-                _browser1.ControlKeyEvent = controlKeyEvent;
-            }
 
             controlKeyEvent.Subscribe(HandleControlKeyEvent);
 
@@ -188,72 +168,44 @@ namespace Bloom.Edit
                 ColorAdjustType.Bitmap
             );
 
-            // Prevent the layout choices and book language dropdown menus from closing
-            // immediately in Linux/Gnome (default for ubuntu 18.04 aka bionic).
-            _layoutChoices.DropDown.Closing += DropDown_Closing;
-            _contentLanguagesDropdown.DropDown.Closing += DropDown_Closing;
-            _layoutChoices.DropDown.Opening += DropDown_Opening;
-            _contentLanguagesDropdown.DropDown.Opening += DropDown_Opening;
+            // Edit top bar menus are now rendered in React/MUI.
 #endif
         }
-
-#if __MonoCS__
-        private bool _ignoreNextAppFocusChange;
-
-        /// <summary>
-        /// Prevent the book language and layout dropdown menus from closing prematurely.
-        /// This is a big problem for Gnome, which is the default window manager in Ubuntu 18.04.
-        /// (This must be due to the way Gnome sends out various windowing messages.)
-        /// </summary>
-        /// <remarks>
-        /// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6107.
-        /// See also WorkspaceView.DropDown_Closing (UI language menu dropdown), which has largely
-        /// been in place for some time.  This is similar to that method.
-        /// The side-effect of this method on systems other than Gnome is that the first click
-        /// outside the menu will not close it.  But since we don't have a good way to detect
-        /// Gnome, this seems like a minimal price to pay for allowing Gnome to work.
-        /// </remarks>
-        void DropDown_Closing(object sender, ToolStripDropDownClosingEventArgs e)
-        {
-            // ReSharper disable once SwitchStatementMissingSomeCases
-            switch (e.CloseReason)
-            {
-                case ToolStripDropDownCloseReason.AppFocusChange:
-                    // With Linux/Gnome, a spurious focus change happens as soon as the menu is opened.
-                    // So we want to ignore the first closing caused by AppFocusChange.
-                    e.Cancel = _ignoreNextAppFocusChange;
-                    break;
-                case ToolStripDropDownCloseReason.Keyboard:
-                    // "reason" is Keyboard, but this seems to be generated just by moving the mouse over
-                    // the adjacent (visible) button.
-                    var mousePos = _layoutChoices.Owner.PointToClient(MousePosition);
-                    var bounds =
-                        (sender == _layoutChoices.DropDown)
-                            ? _contentLanguagesDropdown.Bounds
-                            : _layoutChoices.Bounds;
-                    if (bounds.Contains(mousePos))
-                    {
-                        e.Cancel = true; // probably a false positive
-                    }
-                    break;
-                default: // includes ItemClicked, CloseCalled, AppClicked
-                    break;
-            }
-            _ignoreNextAppFocusChange = false;
-            Debug.WriteLine(
-                "DEBUG EditingView.DropDown_Closing: reason={0}, cancel={1}",
-                e.CloseReason.ToString(),
-                e.Cancel
-            );
-        }
-
-        void DropDown_Opening(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            _ignoreNextAppFocusChange = true;
-        }
-#endif
 
         public EditingModel Model => _model;
+
+        internal void AttachMainBrowser(Browser browser)
+        {
+            if (browser == null)
+                throw new ArgumentNullException(nameof(browser));
+
+            if (!Controls.Contains(browser))
+                Controls.Add(browser);
+        }
+
+        internal void InitializeMainBrowserForEditMode()
+        {
+            if (Program.RunningHarvesterMode || _browser1 == null)
+                return;
+
+            _browser1.SetEditingCommands(_cutCommand, _copyCommand, _pasteCommand, _undoCommand);
+            _browser1.ControlKeyEvent = _controlKeyEvent;
+        }
+
+        internal void EnsureWorkspaceRootDocumentLoadedForCollectionMode()
+        {
+            if (_workspaceRootDocumentLoaded || _browser1 == null)
+                return;
+
+            _browser1.DocumentCompleted += WebBrowser_ReadyStateChanged;
+            var dom = _model.GetXmlDocumentForWorkspaceRootOnly();
+            _browser1.Navigate(
+                dom,
+                setAsCurrentPageForDebugging: true,
+                source: InMemoryHtmlFileSource.Frame
+            );
+            _workspaceRootDocumentLoaded = true;
+        }
 
         private void HandleControlKeyEvent(object keyData)
         {
@@ -316,6 +268,11 @@ namespace Bloom.Edit
                     _pageListView.Clear();
                 }
                 _model.OnBecomeVisible();
+                if (_waitingForFirstEditModeInitialization)
+                {
+                    _waitingForFirstEditModeInitialization = false;
+                    _model.DocumentCompleted();
+                }
                 Logger.WriteEvent("Entered Edit Tab");
                 Cursor = Cursors.Default;
             }
@@ -335,7 +292,6 @@ namespace Bloom.Edit
         /// </summary>
         public void OnHideEditTab()
         {
-            _browser1.Navigate("about:blank", false); //so we don't see the old one for moment, the next time we open this tab
             _model.ClearBookForToolboxContent(); // there's no longer a frame ready for a new page displayed in the browser.
         }
 
@@ -404,17 +360,34 @@ namespace Bloom.Edit
             // never happens.
             // Do this before we change the src of the iframe to make sure we're ready when the document-completed arrives.
             _browser1.DocumentCompleted += WebBrowser_ReadyStateChanged;
-            if (
-                _model.AreToolboxAndOuterFrameCurrent()
-                && !_changingUiLanguage
-                && !ShouldDoFullReload()
-            )
+            var canReuseCurrentRoot = !_changingUiLanguage && !ShouldDoFullReload();
+            var canReuseWorkspaceRootOnly = _workspaceRootDocumentLoaded && canReuseCurrentRoot;
+            if (_model.AreToolboxAndOuterFrameCurrent() && canReuseCurrentRoot)
             {
                 // Keep the top document and toolbox iframe, just navigate the page iframe to the new page.
                 var pageUrl = _model.GetUrlForCurrentPage();
                 var urlFile = Path.GetFileName(pageUrl); // this actually works with a leading http://.
                 Logger.WriteEvent(
                     $"changing page via editTabBundle.switchContentPage('{urlFile}')"
+                );
+                _browser1.RunJavascriptFireAndForget(
+                    "editTabBundle.switchContentPage('" + pageUrl + "');"
+                );
+            }
+            else if (canReuseWorkspaceRootOnly)
+            {
+                // We already have the workspace root loaded (typically from collection mode),
+                // so don't navigate the top document again. Just initialize edit-frame content.
+                _model.SetupServerWithCurrentBookToolboxContents();
+                var pageListUrl = _model.GetUrlForPageListFile();
+                var pageUrl = _model.GetUrlForCurrentPage();
+
+                _browser1.RunJavascriptFireAndForget(
+                    "(function(){ const toolbox = document.getElementById('toolbox'); if (toolbox && toolbox.contentWindow) { toolbox.contentWindow.location.reload(); } })();"
+                );
+
+                _browser1.RunJavascriptFireAndForget(
+                    "editTabBundle.switchThumbnailPage('" + pageListUrl + "');"
                 );
                 _browser1.RunJavascriptFireAndForget(
                     "editTabBundle.switchContentPage('" + pageUrl + "');"
@@ -475,6 +448,19 @@ namespace Bloom.Edit
         {
             _browser1.DocumentCompleted -= WebBrowser_ReadyStateChanged;
             HidePageAndShowWaitCursor(false);
+            if (!_visible)
+            {
+                _browser1.RunJavascriptFireAndForget(
+                    "window.editTabBundle?.setWorkspaceMode?.('collection');"
+                );
+                _waitingForFirstEditModeInitialization = true;
+                return;
+            }
+
+            _browser1.RunJavascriptFireAndForget(
+                "window.editTabBundle?.setWorkspaceMode?.('edit');"
+            );
+
             _model.DocumentCompleted();
             _browser1.Focus(); //fix BL-3078 No Initial Insertion Point when any page shown
             var beginGarbageCollect = DateTime.Now;
@@ -510,6 +496,16 @@ namespace Bloom.Edit
         {
             await _browser1.RunJavascriptAsync(script);
             return;
+        }
+
+        internal void SetWorkspaceMode(string mode)
+        {
+            RunJavascriptAsync($"editTabBundle.setWorkspaceMode('{mode}');");
+            if (mode == "edit" && _waitingForFirstEditModeInitialization)
+            {
+                _waitingForFirstEditModeInitialization = false;
+                _model.DocumentCompleted();
+            }
         }
 
         private Metadata _originalImageMetadataFromImageToolbox;
@@ -1423,21 +1419,6 @@ namespace Bloom.Edit
         }
 
         /// <summary>
-        /// Make a menu item for a dropdown button and return it.  Avoid creating a ToolStripSeparator instead of a
-        /// ToolStripMenuItem even for a hyphen.
-        /// </summary>
-        /// <returns>the dropdown menu item</returns>
-        /// <remarks>See https://silbloom.myjetbrains.com/youtrack/issue/BL-3796.</remarks>
-        private ToolStripMenuItem AddDropdownItemSafely(string text)
-        {
-            // A single hyphen triggers a ToolStripSeparator instead of a ToolStripMenuItem, so change it minimally.
-            // (Surely localizers wouldn't do this to us, but it has happened to a user.)
-            if (text == "-")
-                text = "- ";
-            return new ToolStripMenuItem(text);
-        }
-
-        /// <summary>
         /// Send info to javascript on how the Dropdown Menu Buttons should appear both on page change and when
         /// requested through the Api.
         /// </summary>
@@ -1461,173 +1442,117 @@ namespace Bloom.Edit
             return eventBundle.message;
         }
 
-        public void ContentLanguagesDropdownClicked()
+        public object GetContentLanguageUsageForClient()
         {
-            // Suppress reopening if just closed
-            if (IsRecentTopBarMenuClose())
-            {
-                _lastTopBarMenuClosedTime = null;
-                return;
-            }
+            var contentLanguages = _model.ContentLanguages.ToList();
+            var languages = contentLanguages
+                .Where(language =>
+                    !String.IsNullOrWhiteSpace(language.LangTag)
+                    && !String.IsNullOrWhiteSpace(language.Name)
+                )
+                .GroupBy(language => language.LangTag)
+                .Select(language =>
+                    (object)
+                        new
+                        {
+                            id = language.Key,
+                            label = language.First().Name,
+                            isUsedForContent = language.Any(item => item.Selected),
+                        }
+                )
+                .ToList();
 
-            _contentLanguagesDropdown.Items.Clear();
-
-            var nSelected = _model.ContentLanguages.Count(l => l.Selected);
-            foreach (var item in _model.ContentLanguages)
-            {
-                var language = item;
-                var text = language.ToString();
-                var menuItem = AddDropdownItemSafely(item.Name);
-                menuItem.Tag = language;
-                menuItem.Enabled = !language.Selected || nSelected > 1;
-                menuItem.Checked = language.Selected;
-                menuItem.CheckOnClick = true;
-                menuItem.ImageScaling = ToolStripItemImageScaling.None;
-                // Any language which is not selected may be turned on.
-                // A language which is turned on may only be turned off if more than one is selected.
-                menuItem.CheckedChanged += new EventHandler(
-                    OnContentLanguageDropdownItem_CheckedChanged
-                );
-                _contentLanguagesDropdown.Items.Add(menuItem);
-            }
-
-            Browser.OnBrowserClick += Browser_Click;
-            CommonApi.WorkspaceView.TopBarReactControl.OnBrowserClick += Browser_Click;
-
-            ShowContextMenu(_contentLanguagesDropdown);
+            return new { languages };
         }
 
-        private void ShowContextMenu(ContextMenuStrip menu)
+        public void HandleContentLanguageUsageChangeForClient(
+            string languageTag,
+            bool isUsedForContent
+        )
         {
-            // Let the menu appear slightly below where the mouse is since it might be
-            // hard to find exactly where the bottom left of the Dropdown button is
-            // We should just be able to say menu.Show(mouseX, mouseY). But there is some sort
-            // of race condition that happens if the menu is activated by the very first click
-            // after the program is started and switched to edit mode. AI recommended using
-            // BeginInvoke to make sure the click completes (so that it won't re-hide the menu).
-            // That wasn't enough. Also setting the position of the menu before we show it
-            // seemed to help, but it still wasn't right 100% of the time. Hopefully a 10ms
-            // delay is not noticeable but enough to make it reliable.
-            var mouseX = MousePosition.X;
-            var mouseY = MousePosition.Y + 8;
-            menu.Left = mouseX;
-            menu.Top = mouseY;
-            var timer = new Timer();
-            timer.Interval = 10; // very soon, but after the click is over and done with.
-            timer.Tick += (s, a) =>
-            {
-                menu.Left = mouseX;
-                menu.Top = mouseY;
-                menu.Show(mouseX, mouseY);
-                timer.Stop();
-                timer.Dispose();
-            };
-            timer.Start();
+            var contentLanguages = _model.ContentLanguages.ToList();
+            var matchingLanguages = contentLanguages
+                .Where(language => language.LangTag == languageTag)
+                .ToList();
+            if (matchingLanguages.Count == 0)
+                throw new ArgumentException($"Unknown language tag '{languageTag}'");
+
+            var isCurrentlyUsedForContent = matchingLanguages.Any(language => language.Selected);
+            if (isCurrentlyUsedForContent == isUsedForContent)
+                return;
+
+            var nSelected = contentLanguages
+                .Where(language => language.Selected)
+                .Select(language => language.LangTag)
+                .Distinct()
+                .Count();
+            if (!isUsedForContent && isCurrentlyUsedForContent && nSelected <= 1)
+                return;
+
+            matchingLanguages.ForEach(language => language.Selected = isUsedForContent);
+            _model.ContentLanguagesSelectionChanged();
         }
 
-        public void LayoutChoicesDropdownClicked()
+        public object GetLayoutChoiceDataForClient()
         {
-            // Suppress reopening if just closed
-            if (IsRecentTopBarMenuClose())
-            {
-                _lastTopBarMenuClosedTime = null;
-                return;
-            }
-
-            _layoutChoicesDropdown.Items.Clear();
-
             var layout = _model.GetCurrentLayout();
-            var sizeAndOrientationChoices = _model.GetSizeAndOrientationChoices();
+            var layoutChoices = _model.GetSizeAndOrientationChoices().ToList();
 
-            foreach (var item in sizeAndOrientationChoices)
-            {
-                var choice = item;
-                var text = choice.DisplayName;
-                var menuItem = AddDropdownItemSafely(text);
-                menuItem.Tag = choice;
-                menuItem.Click += new EventHandler(OnPaperSizeAndOrientationMenuClick);
+            var choices = layoutChoices
+                .Select(choice =>
+                    (object)
+                        new { id = choice.SizeAndOrientation.ClassName, label = choice.DisplayName }
+                )
+                .ToList();
 
-                _layoutChoicesDropdown.Items.Add(menuItem);
-            }
-
-            if (sizeAndOrientationChoices.Count() < 2)
-            {
-                var text = LocalizationManager.GetString(
-                    "EditTab.NoOtherLayouts",
-                    "There are no other options for this template.",
-                    "Show in the size/orientation chooser dropdown of the edit tab, if there was only a single choice"
-                );
-                var menuItem = AddDropdownItemSafely(text);
-                menuItem.Tag = null;
-                menuItem.Enabled = false;
-                _layoutChoicesDropdown.Items.Add(menuItem);
-            }
-
-            Browser.OnBrowserClick += Browser_Click;
-            CommonApi.WorkspaceView.TopBarReactControl.OnBrowserClick += Browser_Click;
-
-            ShowContextMenu(_layoutChoicesDropdown);
+            return new { choices, currentLayoutChoiceId = layout.SizeAndOrientation.ClassName };
         }
 
-        private bool IsRecentTopBarMenuClose()
+        public void HandleLayoutChoiceChangeForClient(string layoutClassName)
         {
-            if (_lastTopBarMenuClosedTime.HasValue)
-            {
-                var timeSinceLastClose = DateTime.UtcNow - _lastTopBarMenuClosedTime.Value;
-                return timeSinceLastClose.TotalMilliseconds < 300;
-            }
-            return false;
+            if (String.IsNullOrWhiteSpace(layoutClassName))
+                return;
+
+            var choice = _model
+                .GetSizeAndOrientationChoices()
+                .FirstOrDefault(item => item.SizeAndOrientation.ClassName == layoutClassName);
+            if (choice == null)
+                throw new ArgumentException($"Unknown layout class '{layoutClassName}'");
+
+            _model.SetLayout(choice);
         }
 
-        void OnPaperSizeAndOrientationMenuClick(object sender, EventArgs e)
+        public object GetLayoutChoicesMenuForClient()
         {
-            var item = (ToolStripMenuItem)sender;
-            _model.SetLayout((Layout)item.Tag);
+            return GetLayoutChoiceDataForClient();
         }
 
-        void OnContentLanguageDropdownItem_CheckedChanged(object sender, EventArgs e)
+        public void HandleLayoutChoicesMenuActionForClient(string layoutClassName)
         {
-            var item = (ToolStripMenuItem)sender;
-            ((EditingModel.ContentLanguage)item.Tag).Selected = item.Checked;
-
-            if (_sendingContentLanguagesSelectionChanged)
-                _model.ContentLanguagesSelectionChanged();
+            HandleLayoutChoiceChangeForClient(layoutClassName);
         }
-
-        private bool _sendingContentLanguagesSelectionChanged = true;
 
         public void SetActiveLanguages(bool L1, bool L2, bool L3)
         {
             var contentLanguages = _model.ContentLanguages.ToList();
             bool changed = false;
-            try
+
+            if (contentLanguages[0].Selected != L1)
             {
-                // Send it once at the end. This reduces flicker and avoids problems where temporarily
-                // all are off, since using the new book settings dialog it is possible to change more
-                // than one in a single call to this method.
-                _sendingContentLanguagesSelectionChanged = false;
-
-                if (contentLanguages[0].Selected != L1)
-                {
-                    contentLanguages[0].Selected = L1;
-                    changed = true;
-                }
-
-                if (contentLanguages.Count > 1 && contentLanguages[1].Selected != L2)
-                {
-                    contentLanguages[1].Selected = L2;
-                    changed = true;
-                }
-
-                if (contentLanguages.Count > 2 && contentLanguages[2].Selected != L3)
-                {
-                    contentLanguages[2].Selected = L3;
-                    changed = true;
-                }
+                contentLanguages[0].Selected = L1;
+                changed = true;
             }
-            finally
+
+            if (contentLanguages.Count > 1 && contentLanguages[1].Selected != L2)
             {
-                _sendingContentLanguagesSelectionChanged = true;
+                contentLanguages[1].Selected = L2;
+                changed = true;
+            }
+
+            if (contentLanguages.Count > 2 && contentLanguages[2].Selected != L3)
+            {
+                contentLanguages[2].Selected = L3;
+                changed = true;
             }
 
             if (changed)
@@ -1771,17 +1696,6 @@ namespace Bloom.Edit
             PageTemplatesApi.ForPageLayout = true;
             //if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
             RunJavascriptAsync("editTabBundle.showPageChooserDialog(true);");
-        }
-
-        internal void ShowRegistrationDialog()
-        {
-            var command = $"editTabBundle.showRegistrationDialogInEditTab();";
-            RunJavascriptAsync(command);
-        }
-
-        internal void ShowAboutDialog()
-        {
-            RunJavascriptAsync($"editTabBundle.showAboutDialogInEditTab();");
         }
 
         public int Zoom => EditingView.ZoomSetting;
@@ -1984,19 +1898,6 @@ namespace Bloom.Edit
                     );
                     Debug.WriteLine("Failed to download image: " + ex.Message);
                 }
-            }
-        }
-
-        private void Browser_Click(object sender, EventArgs e)
-        {
-            Browser.OnBrowserClick -= Browser_Click;
-            CommonApi.WorkspaceView.TopBarReactControl.OnBrowserClick -= Browser_Click;
-
-            if (_contentLanguagesDropdown.Visible || _layoutChoicesDropdown.Visible)
-            {
-                _contentLanguagesDropdown?.Hide();
-                _layoutChoicesDropdown?.Hide();
-                _lastTopBarMenuClosedTime = DateTime.UtcNow;
             }
         }
     }

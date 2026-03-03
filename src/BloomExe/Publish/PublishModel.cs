@@ -301,7 +301,7 @@ namespace Bloom.Publish
         )
         {
             if (owner == null)
-                owner = View;
+                owner = View?.GetHostControlForInvoke();
             Debug.Assert(owner != null || Program.RunningInConsoleMode); // must pass if we don't have a view.
             try
             {
