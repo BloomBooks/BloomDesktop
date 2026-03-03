@@ -1085,14 +1085,12 @@ namespace BloomTests.Spreadsheet
         [TestCase(4, "ic4", "man.png")]
         [TestCase(5, "ic5", "placeHolder.png")] // Todo: should be placeholder
         [TestCase(5, "ic6", "shirt.png")]
-        [TestCase(11, "ic7", "Mars%204.png")]
-        [TestCase(13, "ic7", "shirt1.png")]
         public void GotImageSourceOnPageN(int n, string tag, string text)
         {
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[@data-test-id='{tag}']/img[@src='{text}']",
+                    $".//div[@data-test-id='{tag}']//img[@src='{text}']",
                     1
                 );
         }
@@ -1104,7 +1102,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[contains(@class, 'bloom-canvas')]/img[@src='{src}']",
+                    $".//div[contains(@class, 'bloom-canvas')]//img[@src='{src}']",
                     1
                 );
             // This is the ID for the standard "Just a picture" page
@@ -1124,19 +1122,19 @@ namespace BloomTests.Spreadsheet
             "LakePendOreille.jpg",
             "Copyright © 2012, Stephen McConnel"
         )]
+        [TestCase(10, "this is something extra on a new page before 8", "Mars%204.png", "")]
         [TestCase(
-            10,
-            "this is something extra on a new page before 8",
-            "levels.png",
-            "Copyright © 2021, USAID \"Okuu keremet!\""
+            11,
+            "this is something extra after all the original pages",
+            "shirt1.png",
+            "CC0 Public Domain Dedication http://creativecommons.org/publicdomain/zero/1.0/"
         )]
-        [TestCase(12, "this is something extra after all the original pages", "man1.png", "")]
         public void PageAddedWithTextAndPicture(int n, string text, string src, string copyright)
         {
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[contains(@class, 'bloom-canvas')]/img[@src='{src}']",
+                    $".//div[contains(@class, 'bloom-canvas')]//img[@src='{src}']",
                     1
                 );
             AssertThatXmlIn
@@ -1160,7 +1158,7 @@ namespace BloomTests.Spreadsheet
         }
 
         [TestCase(9, "This will go on a new page before 8")]
-        [TestCase(14, "This will go on a new just-text page at the end")]
+        [TestCase(12, "This will go on a new just-text page at the end")]
         public void PageAddedWithText(int n, string text)
         {
             AssertThatXmlIn
@@ -1262,7 +1260,6 @@ namespace BloomTests.Spreadsheet
             Assert.That(_warnings.Count, Is.EqualTo(1));
         }
 
-        [TestCase("by copying the last page")]
         [TestCase("Adding page 7 using a Just a Picture")]
         [TestCase("Updating page 3")]
         [TestCase("was not found")]
@@ -1385,34 +1382,34 @@ namespace BloomTests.Spreadsheet
             _bookFolder?.Dispose();
         }
 
-        [TestCase(2, "man.png")]
+        [TestCase(1, "man.png")]
         public void PageAddedWithPicture(int n, string src)
         {
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[contains(@class, 'bloom-canvas')]/img[@src='{src}']",
+                    $".//div[contains(@class, 'bloom-canvas')]//img[@src='{src}']",
                     1
                 );
             // This is the ID for the standard "Just a picture" page
             Assert.That(
                 _contentPages[n].GetAttribute("data-pagelineage"),
-                Does.Contain(Bloom.Book.Book.JustPictureGuid)
+                Does.Contain(Bloom.Book.Book.PictureOnLeftGuid)
             );
             Assert.That(
                 _contentPages[n].GetAttribute("id"),
-                Is.Not.EqualTo(Bloom.Book.Book.JustPictureGuid)
+                Is.Not.EqualTo(Bloom.Book.Book.PictureOnLeftGuid)
             );
             Assert.That(_contentPages[n].GetAttribute("class"), Does.Contain("A4Landscape"));
         }
 
-        [TestCase(1, "this is page 2", "lady24b.png")]
+        [TestCase(1, "this is page 2", "man.png")]
         public void PageAddedWithTextAndPicture(int n, string text, string src)
         {
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[contains(@class, 'bloom-canvas')]/img[@src='{src}']",
+                    $".//div[contains(@class, 'bloom-canvas')]//img[@src='{src}']",
                     1
                 );
             AssertThatXmlIn
