@@ -1,7 +1,7 @@
 // not yet: neither bloomEditing nor this is yet a module import {SetupImage} from './bloomEditing';
 ///<reference path="../../lib/split-pane/split-pane.d.ts" />
 import { SetupImage } from "./bloomImages";
-import { kBloomCanvasClass } from "../toolbox/canvas/canvasElementConstants";
+import { kBloomCanvasClass } from "../toolbox/canvas/canvasElementUtils";
 import "../../lib/split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
 import { post, postThatMightNavigate } from "../../utils/bloomApi";
@@ -67,11 +67,6 @@ export function setupOrigami() {
 export function cleanupOrigami() {
     // Otherwise, we get a new one each time the page is loaded
     $(".split-pane-resize-shim").remove();
-}
-function isEmpty(el) {
-    const temp = $.trim(el[0].textContent);
-    //alert("-" + temp + "- equals empty string: " + (temp == "").toString());
-    return temp === "";
 }
 function setupLayoutMode() {
     theOneCanvasElementManager.suspendComicEditing("forTool");
@@ -217,7 +212,7 @@ function adjustModifiedChild(resizedElt: HTMLElement | undefined) {
     }
 }
 
-const origamiUndoStack: any[] = [];
+const origamiUndoStack: Array<{ original: JQuery<HTMLElement> }> = [];
 let origamiUndoIndex = 0; // of item that should be redone next, if any
 
 // Add a point to which the user can return using 'undo'. Call this before making any change that
@@ -501,12 +496,18 @@ function makeImageOrCanvasFieldClickHandler(
     const container = clickedElement.closest(".split-pane-component-inner");
     addUndoPoint();
     const bloomCanvas = $(
-        `<div class='bloom-canvas bloom-leadingElement'${
+        `<div class='bloom-canvas bloom-has-canvas-element bloom-leadingElement'${
             isCanvasClick ? ` data-tool-id='${kCanvasToolId}'` : ""
         }></div>`,
     );
+    const canvasElement = $(
+        "<div class='bloom-canvas-element bloom-backgroundImage' style='width:100%; height:100%;'></div>",
+    );
+    const imageContainer = $("<div class='bloom-imageContainer'></div>");
     const image = $("<img src='placeHolder.png'/>");
-    bloomCanvas.append(image);
+    imageContainer.append(image);
+    canvasElement.append(imageContainer);
+    bloomCanvas.append(canvasElement);
     SetupImage(image); // Must attach it first so event handler gets added to parent
     container.append(bloomCanvas);
     clickedElement.closest(".selector-links").remove();
