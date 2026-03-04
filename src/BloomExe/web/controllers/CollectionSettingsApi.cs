@@ -219,7 +219,9 @@ namespace Bloom.web.controllers
                     }
                     else // post
                     {
-                        var val = request.RequiredPostString();
+                        var val = request.GetPostStringOrNull();
+                        if (val == null)
+                            val = ""; // RequiredPostString won't allow us to just pass an empty string, but we want to allow it.
 
                         if (DialogBeingEdited != null)
                         {
@@ -227,7 +229,7 @@ namespace Bloom.web.controllers
                             // We don't really need a change as drastic as a restart,
                             // but I don't expect this to change often, and somehow the
                             // badge needs to get updated.
-                            if (val != _collectionSettings.BadgeQrCodeLabelLocalizedWithLang)
+                            if (val != _collectionSettings.BadgeQrCodeLabelLocalized)
                                 DialogBeingEdited.ChangeThatRequiresRestart();
                         }
                         request.PostSucceeded();

@@ -2001,8 +2001,10 @@ namespace Bloom.Book
                 var element in topElement.SafeSelectNodes(".//a").Cast<SafeXmlElement>().ToArray()
             )
             {
-                var branding = element.ChildNodes.FirstOrDefault(e =>
-                    e.Name.ToLowerInvariant() == "img" && e.GetAttribute("class") == "branding"
+                var branding = element.ChildNodes.FirstOrDefault(n =>
+                    n is SafeXmlElement e
+                    && n.Name.ToLowerInvariant() == "img"
+                    && e.HasClass("branding")
                 );
                 if (branding != null)
                     continue; // Don't remove an <a> that contains a branding image, even if it has no text.
