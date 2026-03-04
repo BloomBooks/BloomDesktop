@@ -493,9 +493,16 @@ namespace Bloom.Spreadsheet
 
         public static string GetLabelFromPage(SafeXmlElement page)
         {
-            var labelElt = page?.SafeSelectNodes(".//div[@class='pageLabel' and @lang='en']")
-                .Cast<SafeXmlElement>()
-                .FirstOrDefault();
+            var labelElt =
+                page == null
+                    ? null
+                    : SafeSelectNodesByClassName(
+                            page,
+                            ".//div",
+                            "pageLabel",
+                            additionalPredicate: "@lang='en'"
+                        )
+                        .FirstOrDefault();
             if (labelElt != null)
             {
                 // Note that while the file may show something like "Basic Text &amp; Picture",
@@ -548,7 +555,7 @@ namespace Bloom.Spreadsheet
                 var bookPath = _bookTemplatePaths[0];
                 _bookTemplatePaths.RemoveAt(0);
                 var dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
-                var pages = dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]");
+                var pages = SafeSelectNodesByClassName(dom, "//div", "bloom-page");
                 foreach (SafeXmlElement page in pages)
                 {
                     var pageLabel = GetLabelFromPage(page).ToLowerInvariant();
@@ -1217,9 +1224,7 @@ namespace Bloom.Spreadsheet
                         ImportStylesheetsIfNeeded(_activityTemplatePath);
                     }
                     var pageLabel =
-                        templatePage
-                            .SafeSelectNodes(".//div[@class='pageLabel']")
-                            .Cast<SafeXmlElement>()
+                        SafeSelectNodesByClassName(templatePage, ".//div", "pageLabel")
                             .FirstOrDefault()
                             ?.InnerText ?? "";
                     Progress($"Adding page {PageNumberToReport} using a {pageLabel} layout");
@@ -1254,10 +1259,12 @@ namespace Bloom.Spreadsheet
             // clear everything: this is useful in case it has slots we won't use.
             // They might have content either from the original last page, or from the
             // modifications we already made to it.
-            var editables = page.SafeSelectNodes(
-                    ".//div[contains(@class, 'bloom-editable') and @lang != 'z']"
+            var editables = SafeSelectNodesByClassName(
+                    page,
+                    ".//div",
+                    "bloom-editable",
+                    additionalPredicate: "@lang != 'z'"
                 )
-                .Cast<SafeXmlElement>()
                 .ToArray();
             foreach (var e in editables)
             {
@@ -1294,10 +1301,12 @@ namespace Bloom.Spreadsheet
 
             // This is not tested yet, but we want to remove video content if any from whatever last page we're copying.
             foreach (
-                var v in page.SafeSelectNodes(
-                        ".//div[contains(@class, 'bloom-videoContainer')]/video"
+                var v in SafeSelectNodesByClassName(
+                        page,
+                        ".//div",
+                        "bloom-videoContainer",
+                        trailingXPath: "/video"
                     )
-                    .Cast<SafeXmlElement>()
                     .ToList()
             )
             {
@@ -1307,10 +1316,12 @@ namespace Bloom.Spreadsheet
 
             // and widgets (also not tested)
             foreach (
-                var w in page.SafeSelectNodes(
-                        ".//div[contains(@class, 'bloom-widgetContainer')]/iframe"
+                var w in SafeSelectNodesByClassName(
+                        page,
+                        ".//div",
+                        "bloom-widgetContainer",
+                        trailingXPath: "/iframe"
                     )
-                    .Cast<SafeXmlElement>()
                     .ToList()
             )
             {
@@ -1322,15 +1333,19 @@ namespace Bloom.Spreadsheet
             {
                 // No answer should be marked correct unless a row specifies it
                 foreach (
-                    SafeXmlElement tg in page.SafeSelectNodes(
-                        ".//div[contains(@class, 'correct-answer')]"
+                    SafeXmlElement tg in SafeSelectNodesByClassName(
+                        page,
+                        ".//div",
+                        "correct-answer"
                     )
                 )
                     tg.RemoveClass("correct-answer");
                 // All the answers are, for the moment, empty, so mark them accordingly.
                 foreach (
-                    SafeXmlElement tg in page.SafeSelectNodes(
-                        ".//div[contains(@class, 'QuizAnswer-style')]"
+                    SafeXmlElement tg in SafeSelectNodesByClassName(
+                        page,
+                        ".//div",
+                        "QuizAnswer-style"
                     )
                 )
                     (tg.ParentNode.ParentNode as SafeXmlElement).AddClass("empty");
@@ -1630,30 +1645,45 @@ namespace Bloom.Spreadsheet
         private int CurrentRowIndexForMessages =>
             _sheet.GetIndexOfRow(_inputRows[_currentRowIndex]) + 1;
 
-        private List<SafeXmlElement> GetBloomCanvases(SafeXmlElement ancestor)
+        private static IEnumerable<SafeXmlElement> SafeSelectNodesByClassName(
+            SafeXmlNode ancestor,
+            string elementXPath,
+            string className,
+            string additionalPredicate = null,
+            string trailingXPath = null
+        )
         {
+            var optionalPredicate = string.IsNullOrEmpty(additionalPredicate)
+                ? ""
+                : " and " + additionalPredicate;
             return ancestor
                 .SafeSelectNodes(
-                    ".//div[contains(concat(' ', normalize-space(@class), ' '), ' bloom-canvas ')]"
-                ) // Don't catch substring matches like "bloom-canvas-element"
-                .Cast<SafeXmlElement>()
-                .ToList();
+                    $"{elementXPath}[contains(concat(' ', normalize-space(@class), ' '), ' {className} '){optionalPredicate}]{trailingXPath ?? ""}"
+                )
+                .Cast<SafeXmlElement>();
+        }
+
+        private static bool HasExactClassName(SafeXmlElement element, string className)
+        {
+            return element
+                .GetAttribute("class")
+                .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Contains(className);
+        }
+
+        private List<SafeXmlElement> GetBloomCanvases(SafeXmlElement ancestor)
+        {
+            return SafeSelectNodesByClassName(ancestor, ".//div", "bloom-canvas").ToList();
         }
 
         private List<SafeXmlElement> GetVideoContainers(SafeXmlElement ancestor)
         {
-            return ancestor
-                .SafeSelectNodes(".//div[contains(@class, 'bloom-videoContainer')]")
-                .Cast<SafeXmlElement>()
-                .ToList();
+            return SafeSelectNodesByClassName(ancestor, ".//div", "bloom-videoContainer").ToList();
         }
 
         private List<SafeXmlElement> GetWidgetContainers(SafeXmlElement ancestor)
         {
-            return ancestor
-                .SafeSelectNodes(".//div[contains(@class, 'bloom-widgetContainer')]")
-                .Cast<SafeXmlElement>()
-                .ToList();
+            return SafeSelectNodesByClassName(ancestor, ".//div", "bloom-widgetContainer").ToList();
         }
 
         private void CollectElementsFromCurrentPage()
@@ -1671,7 +1701,7 @@ namespace Bloom.Spreadsheet
             // They are handled by special extra rows inserted after the row that has the image.
             var allGroups = TranslationGroupManager.SortedGroupsOnPage(currentPage, true);
             blocksOnPageCollector[translationGroupIndex] = allGroups
-                .Where(x => !x.GetAttribute("class").Contains("bloom-imageDescription"))
+                .Where(x => !HasExactClassName(x, "bloom-imageDescription"))
                 .ToList();
             blocksOnPageCollector[videoContainerIndex] = GetVideoContainers(currentPage);
             blocksOnPageCollector[widgetContainerIndex] = GetWidgetContainers(currentPage);
@@ -1771,7 +1801,7 @@ namespace Bloom.Spreadsheet
         /// <param name="group"></param>
         private async Task PutRowInGroupAsync(ContentRow row, SafeXmlElement group)
         {
-            if (group.GetAttribute("class").Contains("QuizAnswer-style"))
+            if (HasExactClassName(group, "QuizAnswer-style"))
             {
                 (group.ParentNode as SafeXmlElement).RemoveClass("empty");
             }
