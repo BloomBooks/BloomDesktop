@@ -55,6 +55,7 @@ export type ControlId =
     | "pasteText"
     | "autoHeight"
     | "language"
+    | "fieldType"
     | "fillBackground"
     | "addChildBubble"
     | "bubbleStyle"

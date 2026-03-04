@@ -60,6 +60,7 @@ import {
 import AudioRecording from "../talkingBook/audioRecording";
 import { showLinkTargetChooserDialog } from "../../../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
 import { kBloomBlue } from "../../../bloomMaterialUITheme";
+import { getString, postThatMightNavigate } from "../../../utils/bloomApi";
 import {
     IControlContext,
     IControlDefinition,
@@ -277,6 +278,186 @@ const makeLanguageMenuItem = (ctx: IControlContext): IControlMenuCommandRow => {
         id: "language",
         l10nId: "EditTab.Toolbox.ComicTool.Options.Language",
         englishLabel: "Language:",
+        onSelect: () => {},
+        subMenuItems,
+    };
+};
+
+const fieldTypeData: Array<{
+    dataBook: string;
+    dataDerived: string;
+    label: string;
+    readOnly: boolean;
+    editableClasses: string[];
+    classes: string[];
+    hint?: string;
+    functionOnHintClick?: string;
+}> = [
+    {
+        dataBook: "bookTitle",
+        dataDerived: "",
+        label: "Book Title",
+        readOnly: false,
+        editableClasses: ["Title-On-Cover-style", "bloom-padForOverflow"],
+        classes: ["bookTitle"],
+    },
+    {
+        dataBook: "smallCoverCredits",
+        dataDerived: "",
+        label: "Cover Credits",
+        readOnly: false,
+        editableClasses: ["smallCoverCredits", "Cover-Default-style"],
+        classes: [],
+    },
+    {
+        dataBook: "",
+        dataDerived: "languagesOfBook",
+        label: "Languages",
+        readOnly: true,
+        editableClasses: [],
+        classes: ["coverBottomLangName", "Cover-Default-style"],
+    },
+    {
+        dataBook: "",
+        dataDerived: "topic",
+        label: "Topic",
+        readOnly: true,
+        editableClasses: [],
+        classes: [
+            "coverBottomBookTopic",
+            "bloom-userCannotModifyStyles",
+            "bloom-alwaysShowBubble",
+            "Cover-Default-style",
+        ],
+        hint: "Click to choose topic",
+        functionOnHintClick: "showTopicChooser",
+    },
+];
+
+const clearFieldTypeClasses = (translationGroup: HTMLElement): void => {
+    fieldTypeData.forEach((fieldType) => {
+        fieldType.classes.forEach((className) => {
+            translationGroup.classList.remove(className);
+        });
+        Array.from(
+            translationGroup.getElementsByClassName("bloom-editable"),
+        ).forEach((editable) => {
+            (editable as HTMLElement).classList.remove(
+                ...fieldType.editableClasses,
+            );
+        });
+    });
+};
+
+const makeFieldTypeMenuItem = (
+    ctx: IControlContext,
+): IControlMenuCommandRow => {
+    const translationGroup = ctx.canvasElement.getElementsByClassName(
+        "bloom-translationGroup",
+    )[0] as HTMLElement | undefined;
+    const activeType = (
+        translationGroup?.getElementsByClassName(
+            "bloom-editable bloom-visibility-code-on",
+        )[0] as HTMLElement | undefined
+    )?.getAttribute("data-book");
+    const subMenuItems: IControlMenuCommandRow[] = [
+        {
+            id: "fieldType",
+            l10nId: "EditTab.Toolbox.DragActivity.None",
+            englishLabel: "None",
+            icon: !activeType
+                ? React.createElement(CheckIcon, null)
+                : undefined,
+            onSelect: () => {
+                if (!translationGroup) {
+                    return;
+                }
+                clearFieldTypeClasses(translationGroup);
+                Array.from(
+                    translationGroup.getElementsByClassName("bloom-editable"),
+                ).forEach((editable) => {
+                    const htmlEditable = editable as HTMLElement;
+                    htmlEditable.removeAttribute("data-book");
+                    htmlEditable.removeAttribute("data-derived");
+                });
+            },
+        },
+    ];
+
+    fieldTypeData.forEach((fieldType) => {
+        subMenuItems.push({
+            id: "fieldType",
+            englishLabel: fieldType.label,
+            icon:
+                activeType === fieldType.dataBook
+                    ? React.createElement(CheckIcon, null)
+                    : undefined,
+            onSelect: () => {
+                if (!translationGroup) {
+                    return;
+                }
+                clearFieldTypeClasses(translationGroup);
+                const editables = Array.from(
+                    translationGroup.getElementsByClassName("bloom-editable"),
+                ) as HTMLElement[];
+                if (fieldType.readOnly) {
+                    const readOnlyDiv = document.createElement("div");
+                    readOnlyDiv.setAttribute(
+                        "data-derived",
+                        fieldType.dataDerived,
+                    );
+                    if (fieldType.hint) {
+                        readOnlyDiv.setAttribute("data-hint", fieldType.hint);
+                    }
+                    if (fieldType.functionOnHintClick) {
+                        readOnlyDiv.setAttribute(
+                            "data-functiononhintclick",
+                            fieldType.functionOnHintClick,
+                        );
+                    }
+                    readOnlyDiv.classList.add(...fieldType.classes);
+                    translationGroup.parentElement?.insertBefore(
+                        readOnlyDiv,
+                        translationGroup,
+                    );
+                    translationGroup.remove();
+                    postThatMightNavigate(
+                        "common/saveChangesAndRethinkPageEvent",
+                    );
+                    return;
+                }
+
+                translationGroup.classList.add(...fieldType.classes);
+                editables.forEach((editable) => {
+                    editable.classList.add(...fieldType.editableClasses);
+                    editable.removeAttribute("data-derived");
+                    editable.setAttribute("data-book", fieldType.dataBook);
+                    if (
+                        editable.classList.contains(
+                            "bloom-visibility-code-on",
+                        ) &&
+                        fieldType.dataBook
+                    ) {
+                        getString(
+                            `editView/getDataBookValue?lang=${editable.getAttribute("lang")}&dataBook=${fieldType.dataBook}`,
+                            (content) => {
+                                const temp = document.createElement("div");
+                                temp.innerHTML = content || "";
+                                if (temp.textContent.trim() !== "") {
+                                    editable.innerHTML = content;
+                                }
+                            },
+                        );
+                    }
+                });
+            },
+        });
+    });
+
+    return {
+        id: "fieldType",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.FieldType",
+        englishLabel: "Field Type:",
         onSelect: () => {},
         subMenuItems,
     };
@@ -765,6 +946,16 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
             buildMenuItem: (ctx) => makeLanguageMenuItem(ctx),
         },
     },
+    fieldType: {
+        kind: "command",
+        id: "fieldType",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.FieldType",
+        englishLabel: "Field Type:",
+        action: () => {},
+        menu: {
+            buildMenuItem: (ctx) => makeFieldTypeMenuItem(ctx),
+        },
+    },
     fillBackground: {
         kind: "command",
         id: "fillBackground",
@@ -1107,6 +1298,7 @@ export const controlSections: Record<SectionId, IControlSection> = {
                 "pasteText",
                 "autoHeight",
                 "language",
+                "fieldType",
                 "fillBackground",
             ],
             toolPanel: ["textColor", "backgroundColor"],

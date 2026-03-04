@@ -106,6 +106,20 @@ export const textAvailabilityRules: AvailabilityRulesMap = {
             return new Set(tags).size > 1;
         },
     },
+    fieldType: {
+        visible: (ctx) => {
+            const translationGroup = ctx.canvasElement.getElementsByClassName(
+                "bloom-translationGroup",
+            )[0] as HTMLElement | undefined;
+            return (
+                ctx.isCustomPage &&
+                !ctx.isNavigationButton &&
+                !!translationGroup &&
+                translationGroup.getElementsByClassName("bloom-editable")
+                    .length > 0
+            );
+        },
+    },
     fillBackground: {
         visible: (ctx) => ctx.isRectangle,
     },
