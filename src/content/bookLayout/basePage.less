@@ -1021,6 +1021,22 @@ The buffer would be absent if the marginBox had a border or the page has a backg
     max-width: 100%;
     margin-left: auto;
     margin-right: auto;
+    .bloom-qrcode-container {
+        display: inline-block;
+        position: relative;
+        vertical-align: top;
+
+        img.bloom-logo {
+            position: absolute;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            transform: translate(
+                -50%,
+                -60%
+            ); // The extra -10% is needed to center vertically.
+        }
+    }
     img.branding {
         width: 4.5cm;
         padding: 10px;

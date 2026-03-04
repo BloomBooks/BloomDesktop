@@ -3,7 +3,8 @@
         {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
-            "content": "<div class='bloom-branding-wrapper'><a href='https://bloomlibrary.org/language:{0}'><img class='branding' src='made-with-bloom-badge-text.svg'/></a></div>",
+            "//": "The href in the <a> element below will be replaced at runtime",
+            "content": "<div class='bloom-branding-wrapper'><a href='https://bloomlibrary.org/'><img class='branding' src='made-with-bloom-badge-text.svg'/></a></div>",
             "condition": "always"
         }
     ]

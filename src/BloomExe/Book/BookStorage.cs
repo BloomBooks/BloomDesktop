@@ -2806,128 +2806,224 @@ namespace Bloom.Book
                     qrWrapper.ChildNodes.FirstOrDefault(n =>
                         n is SafeXmlElement element && element.Name.ToLowerInvariant() == "a"
                     ) as SafeXmlElement;
-                anchor.SetAttribute("href", url);
-                var imgQr = anchor.ChildNodes.FirstOrDefault(n =>
-                    n is SafeXmlElement element
-                    && element.Name.ToLowerInvariant() == "img"
-                    && element.HasClass("bloom-qrcode")
-                );
-                var imgLogo = anchor.ChildNodes.FirstOrDefault(n =>
-                    n is SafeXmlElement element
-                    && element.Name.ToLowerInvariant() == "img"
-                    && element.HasClass("bloom-logo")
-                );
-                var label = anchor.ChildNodes.FirstOrDefault(n =>
-                    n is SafeXmlElement element
-                    && element.Name.ToLowerInvariant() == "div"
-                    && element.HasClass("bloom-lang-on-blorg")
-                );
-                var imgBranding = anchor.ChildNodes.FirstOrDefault(n =>
-                    n is SafeXmlElement element
-                    && element.Name.ToLowerInvariant() == "img"
-                    && element.HasClass("branding")
-                );
+                if (anchor == null)
+                    continue; // html structure is corrupt/empty: nothing we can do
+
+                var imgQr = FindDescendantImg(anchor, "bloom-qrcode");
+                var imgLogo = FindDescendantImg(anchor, "bloom-logo");
+                var label = FindChildElement(anchor, "div", "bloom-lang-on-blorg");
+                var imgBranding = FindChildElement(anchor, "img", "branding");
+
                 if (!shouldHaveQrCode)
                 {
-                    if (imgQr != null)
-                    {
-                        anchor.RemoveChild(imgQr);
-                        // We could delete the qrcode image file, but I'm inclined to leave it for
-                        // our usual cleanup code.
-                    }
-                    if (imgLogo != null)
-                    {
-                        anchor.RemoveChild(imgLogo);
-                        // Same for the log image file.
-                    }
-                    if (label != null)
-                        anchor.RemoveChild(label);
-                    if (imgBranding != null)
-                    {
-                        var src = imgBranding.GetAttribute("src");
-                        src = src.Replace("-text", "");
-                        imgBranding.SetAttribute("src", src);
-                    }
-                    anchor.RemoveAttribute("href");
-                    qrWrapper.AddClass("noqrcode");
+                    AdjustHtmlForNoQrCode(qrWrapper, anchor, imgBranding, imgQr, imgLogo, label);
                     continue; // change both data-div and back page
                 }
-                else
-                {
-                    if (imgBranding != null)
-                    {
-                        var src = imgBranding.GetAttribute("src");
-                        var name = Path.GetFileNameWithoutExtension(src);
-                        if (!name.EndsWith("-text"))
-                        {
-                            src = name + "-text.svg";
-                            imgBranding.SetAttribute("src", src);
-                        }
-                    }
-                    qrWrapper.RemoveClass("noqrcode");
-                }
+
+                anchor.SetAttribute("href", url);
 
                 if (qrFileName == null)
                 {
-                    using (var qrGenerator = new QRCodeGenerator())
+                    qrFileName = GenerateQrCodeImage(bookFolderPath, url);
+                }
+
+                AdjustHtmlForHavingQrCode(
+                    qrWrapper,
+                    anchor,
+                    imgBranding,
+                    imgQr,
+                    imgLogo,
+                    label,
+                    qrFileName,
+                    settings.BadgeQrCodeLabelLocalizedWithLang
+                );
+            }
+        }
+
+        private static SafeXmlElement FindDescendantImg(SafeXmlElement parent, string className)
+        {
+            foreach (var child in parent.ChildNodes)
+            {
+                if (child is SafeXmlElement e1)
+                {
+                    if (e1.Name.ToLowerInvariant() == "img" && e1.HasClass(className))
+                        return e1;
+                    foreach (var grandchild in child.ChildNodes)
                     {
-                        var qrData = qrGenerator.CreateQrCode(url, QRCodeGenerator.ECCLevel.Q);
-                        using (var qrCode = new ArtQRCode(qrData))
+                        if (
+                            grandchild is SafeXmlElement e2
+                            && e2.Name.ToLowerInvariant() == "img"
+                            && e2.HasClass(className)
+                        )
                         {
-                            var qrBitmap = qrCode.GetGraphic(
-                                20,
-                                Color.FromArgb(255, 91, 91, 91),
-                                Color.White,
-                                Color.White,
-                                null,
-                                1,
-                                false
-                            );
-                            // Modify image to make corner detection pattern centers red
-                            // Also make center square white to overlay Bloom logo
-                            // (TODO) Round off corners of detection squares
-                            TweakQrCodeBitmap(qrBitmap);
-                            qrFileName = "lang-qr-code.png";
-                            qrBitmap.Save(Path.Combine(bookFolderPath, qrFileName));
+                            return e2;
                         }
                     }
                 }
-
-                if (imgQr == null)
-                {
-                    imgQr = anchor.OwnerDocument.CreateElement("img");
-                    imgQr.SetAttribute("class", "bloom-qrcode");
-                    anchor.AppendChild(imgQr);
-                }
-
-                imgQr.SetAttribute("src", qrFileName);
-                imgQr.SetAttribute("alt", "QR code linking to book online");
-
-                if (imgLogo == null)
-                {
-                    imgLogo = anchor.OwnerDocument.CreateElement("img");
-                    imgLogo.SetAttribute("class", "bloom-logo");
-                    anchor.AppendChild(imgLogo);
-                }
-
-                imgLogo.SetAttribute("src", "bloom-icon.svg");
-                imgLogo.SetAttribute("alt", "logo for center of qr code image");
-
-                if (label == null)
-                {
-                    label = anchor.OwnerDocument.CreateElement("div");
-                    label.SetAttribute("class", "bloom-lang-on-blorg");
-                    anchor.AppendChild(label);
-                }
-
-                label.InnerText = settings.BadgeQrCodeLabelLocalizedWithLang;
             }
+            return null;
+        }
+
+        private static SafeXmlElement FindChildElement(
+            SafeXmlElement anchor,
+            string name,
+            string className
+        )
+        {
+            return anchor.ChildNodes.FirstOrDefault(n =>
+                    n is SafeXmlElement element
+                    && element.Name.ToLowerInvariant() == name
+                    && element.HasClass(className)
+                ) as SafeXmlElement;
+        }
+
+        private static void AdjustHtmlForNoQrCode(
+            SafeXmlElement qrWrapper,
+            SafeXmlElement anchor,
+            SafeXmlNode imgBranding,
+            SafeXmlNode imgQr,
+            SafeXmlNode imgLogo,
+            SafeXmlNode label
+        )
+        {
+            if (imgQr != null)
+            {
+                imgQr.ParentNode?.RemoveChild(imgQr);
+                // We could delete the qrcode image file, but I'm inclined to leave it for
+                // our usual cleanup code.
+            }
+            if (imgLogo != null)
+            {
+                imgLogo.ParentNode?.RemoveChild(imgLogo);
+                // Same for the log image file.
+            }
+            // Remove the container div if is exists.
+            var qrContainer = FindChildElement(anchor, "div", "bloom-qrcode-container");
+            if (qrContainer != null)
+                anchor.RemoveChild(qrContainer);
+            if (label != null)
+                anchor.RemoveChild(label);
+            if (imgBranding != null)
+            {
+                var src = imgBranding.GetAttribute("src");
+                var name = Path.GetFileNameWithoutExtension(src);
+                var extension = Path.GetExtension(src);
+                var src1 = Regex.Replace(name, "^(.*)-text$", "$1") + extension;
+                imgBranding.SetAttribute("src", src1);
+            }
+            anchor.RemoveAttribute("href");
+        }
+
+        private static void AdjustHtmlForHavingQrCode(
+            SafeXmlElement qrWrapper,
+            SafeXmlElement anchor,
+            SafeXmlNode imgBranding,
+            SafeXmlNode imgQr,
+            SafeXmlNode imgLogo,
+            SafeXmlNode label,
+            string qrFileName,
+            string badgeLabel
+        )
+        {
+            var qrContainer = FindChildElement(anchor, "div", "bloom-qrcode-container");
+            if (qrContainer == null)
+            {
+                qrContainer = anchor.OwnerDocument.CreateElement("div");
+                qrContainer.AddClass("bloom-qrcode-container");
+                anchor.AppendChild(qrContainer);
+            }
+            if (imgBranding != null)
+            {
+                var src = imgBranding.GetAttribute("src");
+                var name = Path.GetFileNameWithoutExtension(src);
+                if (!name.EndsWith("-text"))
+                {
+                    var extension = Path.GetExtension(src);
+                    src = name + "-text" + extension;
+                    imgBranding.SetAttribute("src", src);
+                }
+            }
+
+            if (imgQr == null)
+            {
+                imgQr = anchor.OwnerDocument.CreateElement("img");
+                imgQr.SetAttribute("class", "bloom-qrcode");
+                qrContainer.AppendChild(imgQr);
+            }
+            else if (imgQr.ParentNode != qrContainer)
+            {
+                imgQr.ParentNode?.RemoveChild(imgQr);
+                qrContainer.AppendChild(imgQr);
+            }
+            imgQr.SetAttribute("src", qrFileName);
+            imgQr.SetAttribute("alt", "QR code linking to book online");
+
+            if (imgLogo == null)
+            {
+                imgLogo = anchor.OwnerDocument.CreateElement("img");
+                imgLogo.SetAttribute("class", "bloom-logo");
+                qrContainer.AppendChild(imgLogo);
+            }
+            else if (imgLogo.ParentNode != qrContainer)
+            {
+                imgLogo.ParentNode?.RemoveChild(imgLogo);
+                qrContainer.AppendChild(imgLogo);
+            }
+
+            imgLogo.SetAttribute("src", "bloom-icon.svg");
+            imgLogo.SetAttribute("alt", "logo for center of qr code image");
+
+            if (label == null)
+            {
+                label = anchor.OwnerDocument.CreateElement("div");
+                label.SetAttribute("class", "bloom-lang-on-blorg");
+                anchor.AppendChild(label);
+            }
+
+            label.InnerText = badgeLabel;
+        }
+
+        private static string GenerateQrCodeImage(string bookFolderPath, string url)
+        {
+            string qrFileName;
+            using (var qrGenerator = new QRCodeGenerator())
+            {
+                var qrData = qrGenerator.CreateQrCode(url, QRCodeGenerator.ECCLevel.Q);
+                using (var qrCode = new ArtQRCode(qrData))
+                {
+                    using (
+                        var qrBitmap = qrCode.GetGraphic(
+                            20,
+                            Color.FromArgb(255, 91, 91, 91), // medium dark gray
+                            Color.White,
+                            Color.White,
+                            null,
+                            1,
+                            false
+                        )
+                    )
+                    {
+                        // Modify image to make corner detection pattern centers red
+                        // Also make center square white to overlay Bloom logo
+                        // (TODO) Round off corners of detection squares
+                        TweakQrCodeBitmap(qrBitmap);
+                        qrFileName = "lang-qr-code.png";
+                        qrBitmap.Save(Path.Combine(bookFolderPath, qrFileName));
+                    }
+                }
+            }
+
+            return qrFileName;
         }
 
         public static void TweakQrCodeBitmap(Bitmap qrBitmap)
         {
-            Debug.Assert(qrBitmap.Width == 660);
-            Debug.Assert(qrBitmap.Height == 660);
+            var height = qrBitmap.Height;
+            var width = qrBitmap.Width;
+            if (height != width || height < 660)
+                throw new Exception(
+                    $"Unexpected QrCode bitmap size: height={height}, width={width}"
+                );
             using (Graphics g = Graphics.FromImage(qrBitmap))
             {
                 var bloomRed = Color.FromArgb(255, 206, 85, 70);
@@ -2935,13 +3031,17 @@ namespace Bloom.Book
                 {
                     // Fill the specified rectangle area with the brush color
                     g.FillRectangle(brush, new Rectangle(40, 40, 60, 60));
-                    g.FillRectangle(brush, new Rectangle(40, 560, 60, 60));
-                    g.FillRectangle(brush, new Rectangle(560, 40, 60, 60));
+                    g.FillRectangle(brush, new Rectangle(40, height - 100, 60, 60));
+                    g.FillRectangle(brush, new Rectangle(width - 100, 40, 60, 60));
                 }
                 // Make background of the logo in the center white.
                 using (var brush = new SolidBrush(Color.White))
                 {
-                    g.FillRectangle(brush, new Rectangle(245, 245, 170, 170));
+                    var logoWidth = (width / 4) + (width / 32);
+                    var logoHeight = (height / 4) + (height / 32);
+                    var x = (width / 2) - (logoWidth / 2);
+                    var y = (height / 2) - (logoHeight / 2);
+                    g.FillRectangle(brush, new Rectangle(x, y, logoWidth, logoHeight));
                 }
             }
         }

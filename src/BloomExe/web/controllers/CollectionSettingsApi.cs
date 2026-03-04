@@ -227,7 +227,7 @@ namespace Bloom.web.controllers
                             // We don't really need a change as drastic as a restart,
                             // but I don't expect this to change often, and somehow the
                             // badge needs to get updated.
-                            if (val != _collectionSettings.BadgeQrCodeLabelLocalizedWithLang)
+                            if (val != _collectionSettings.BadgeQrCodeLabelLocalized)
                                 DialogBeingEdited.ChangeThatRequiresRestart();
                         }
                         request.PostSucceeded();
