@@ -396,7 +396,14 @@ namespace Bloom.Collection
 
             _collectionSettings.PageNumberStyle = PendingNumberingStyle; // non-localized key
             _collectionSettings.ShowBlorgLanguageQrCode = PendingShowBlorgLanguageQrCode;
-            _collectionSettings.BadgeQrCodeLabel = PendingBadgeQrCodeLabel;
+            if (PendingBadgeQrCodeLabel != _collectionSettings.BadgeQrCodeLabelLocalized)
+            {
+                // Update the BadgeQrCodeLabel value only if the user has actually changed it.
+                // The default value displayed for BadgeQrCodeLabel is based on the current UI language,
+                // so if the user changes the UI language and then opens the Collection Settings dialog,
+                // we don't want to have the default BadgeQrCodeLabel frozen to the original UI language.
+                _collectionSettings.BadgeQrCodeLabel = PendingBadgeQrCodeLabel;
+            }
 
             if (_pendingSubscription != null)
             {
