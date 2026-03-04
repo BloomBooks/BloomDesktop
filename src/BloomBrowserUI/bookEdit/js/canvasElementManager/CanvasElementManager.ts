@@ -1925,6 +1925,25 @@ export class CanvasElementManager {
         // set in ComicToolControls.ondragstart() and make a canvas element with that style
         // at the drop position.
         container.ondrop = (ev) => {
+            if (
+                ev.dataTransfer &&
+                ev.dataTransfer.types.indexOf("text/x-bloom-canvas-element") >=
+                    0
+            ) {
+                (
+                    (window.top ?? window) as Window & {
+                        __bloomCanvasLastDrop?: {
+                            clientX: number;
+                            clientY: number;
+                            time: number;
+                        };
+                    }
+                ).__bloomCanvasLastDrop = {
+                    clientX: ev.clientX,
+                    clientY: ev.clientY,
+                    time: Date.now(),
+                };
+            }
             // test this so we don't interfere with dragging for text edit,
             // nor add canvas elements when something else is dragged
             if (
