@@ -46,8 +46,6 @@ namespace Bloom.Workspace
         public event EventHandler ReopenCurrentProject;
         public static float DPIOfThisAccount;
         private ZoomModel _zoomModel;
-        private ReactControl _topRightReactControl;
-        internal ReactControl TopBarReactControl => _topRightReactControl;
         private bool _tabsEnabled = true;
         private readonly ContextMenuStrip _uiLanguageContextMenu = new ContextMenuStrip();
         private readonly ContextMenuStrip _helpContextMenu = new ContextMenuStrip();
