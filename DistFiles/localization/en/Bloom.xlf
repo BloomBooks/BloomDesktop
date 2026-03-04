@@ -511,8 +511,12 @@
         <source xml:lang="en">Upper-Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.QrCodeBadgeLabelCaption" translate="no">
+        <source xml:lang="en">Label for QR code badge</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.QrCodeBadgeLabelCaption</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.QrCodeBadgeText" translate="no">
-        <source xml:lang="en">Get more books in the {0} language on BloomLibrary.org</source>
+        <source xml:lang="en">Get more books in the {0} language on BloomLibrary.org.</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.QrCodeBadgeText</note>
         <note>{0} will be replaced by a language name</note>
       </trans-unit>
