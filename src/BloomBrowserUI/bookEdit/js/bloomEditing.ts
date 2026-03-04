@@ -1450,8 +1450,15 @@ async function cutSelectionImpl() {
 
 // See comment on copySelection
 export const pasteClipboard = (imageAvailable: boolean) => {
-    pasteImpl(imageAvailable);
+    wrapWithRequestPageContentDelay(
+        () => pasteImpl(imageAvailable),
+        "pasteImpl",
+    );
 };
+
+function scheduleMarkupUpdateAfterPaste() {
+    getToolboxBundleExports()?.scheduleMarkupUpdateAfterPaste();
+}
 
 function pasteHandler(e: Event) {
     const activeElement = document.activeElement;
@@ -1502,7 +1509,9 @@ document.addEventListener("paste", pasteHandler);
 // once because of our handler here and once because the other handler
 // is not looking for exactly this event and still gets called.
 document.addEventListener("keydown", (e: KeyboardEvent) => {
-    if (e.ctrlKey && e.key === "v") {
+    const key = e.key?.toLowerCase();
+    const isCtrlV = e.ctrlKey && (key === "v" || e.code === "KeyV");
+    if (isCtrlV) {
         pasteHandler(e);
     }
 });
@@ -1552,6 +1561,7 @@ async function pasteImpl(imageAvailable: boolean) {
             manager.save(true);
             // We need to update the canvas element height (BL-14004).
             canvasElementManager.updateAutoHeight();
+            scheduleMarkupUpdateAfterPaste();
         }
         // It shouldn't happen that we don't have an editor, but if we don't, we just don't paste.
         // Otherwise, the paste is likely to go somewhere unexpected, wherever a ckeditor last had
@@ -1576,6 +1586,7 @@ async function pasteImpl(imageAvailable: boolean) {
         ) {
             canvasElementManager.updateAutoHeight();
         }
+        scheduleMarkupUpdateAfterPaste();
     } else if (
         !(document.activeElement instanceof HTMLInputElement) &&
         !(document.activeElement instanceof HTMLTextAreaElement)
@@ -1599,6 +1610,7 @@ async function pasteImpl(imageAvailable: boolean) {
             sel.removeAllRanges();
             sel.addRange(range);
         }
+        scheduleMarkupUpdateAfterPaste();
     }
 }
 
