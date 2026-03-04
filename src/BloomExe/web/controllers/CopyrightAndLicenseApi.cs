@@ -137,7 +137,7 @@ namespace Bloom.web.controllers
                             bool shouldAskUserIfCopyMetadataToAllImages =
                                 wasNormalSuccessfulSave && isNormalImageType;
                             bool copyMetadataToAllImages = shouldAskUserIfCopyMetadataToAllImages
-                                ? View.AskUserIfCopyImageMetadataToAllImages(metadata)
+                                ? View.AskUserIfCopyImageMetadataToAllImages()
                                 : false;
                             if (copyMetadataToAllImages)
                             {
@@ -204,10 +204,8 @@ namespace Bloom.web.controllers
         private dynamic GetLicense(Metadata metadata)
         {
             dynamic creativeCommonsInfoJson = GetDefaultCreativeCommonsInfo();
-            if (metadata.License is CreativeCommonsLicense)
-                creativeCommonsInfoJson = GetCreativeCommonsInfo(
-                    (CreativeCommonsLicense)metadata.License
-                );
+            if (IsCreativeCommonsLicense(metadata.License))
+                creativeCommonsInfoJson = GetCreativeCommonsInfo(metadata.License);
             return new
             {
                 licenseType = GetLicenseType(metadata.License),
@@ -226,28 +224,27 @@ namespace Bloom.web.controllers
             };
         }
 
-        private dynamic GetCreativeCommonsInfo(CreativeCommonsLicense ccLicense)
+        private dynamic GetCreativeCommonsInfo(LicenseInfo ccLicense)
         {
+            dynamic dynamicCcLicense = ccLicense;
             return new
             {
-                token = ccLicense.Token,
-                allowCommercial = ccLicense.CommercialUseAllowed ? "yes" : "no",
-                allowDerivatives = GetCcDerivativeRulesAsString(ccLicense.DerivativeRule),
-                intergovernmentalVersion = ccLicense.IntergovernmentalOrganizationQualifier,
+                token = dynamicCcLicense.Token,
+                allowCommercial = dynamicCcLicense.CommercialUseAllowed ? "yes" : "no",
+                allowDerivatives = GetCcDerivativeRulesAsString(dynamicCcLicense.DerivativeRule),
+                intergovernmentalVersion = dynamicCcLicense.IntergovernmentalOrganizationQualifier,
             };
         }
 
-        private static string GetCcDerivativeRulesAsString(
-            CreativeCommonsLicense.DerivativeRules rules
-        )
+        private static string GetCcDerivativeRulesAsString(object rules)
         {
-            switch (rules)
+            switch (rules?.ToString())
             {
-                case CreativeCommonsLicense.DerivativeRules.DerivativesWithShareAndShareAlike:
+                case "DerivativesWithShareAndShareAlike":
                     return "sharealike";
-                case CreativeCommonsLicense.DerivativeRules.Derivatives:
+                case "Derivatives":
                     return "yes";
-                case CreativeCommonsLicense.DerivativeRules.NoDerivatives:
+                case "NoDerivatives":
                     return "no";
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -271,15 +268,27 @@ namespace Bloom.web.controllers
 
         private string GetLicenseType(LicenseInfo licenseInfo)
         {
-            if (licenseInfo is CreativeCommonsLicense)
+            if (IsCreativeCommonsLicense(licenseInfo))
             {
                 if (licenseInfo.Url == CreativeCommonsLicense.CC0Url)
                     return "publicDomain";
                 return "creativeCommons";
             }
-            if (licenseInfo is CustomLicense)
+            if (IsCustomLicense(licenseInfo))
                 return "custom";
             return "contact";
+        }
+
+        private static bool IsCreativeCommonsLicense(LicenseInfo licenseInfo)
+        {
+            return licenseInfo is CreativeCommonsLicense
+                || licenseInfo?.GetType().Name == "CreativeCommonsLicenseInfo";
+        }
+
+        private static bool IsCustomLicense(LicenseInfo licenseInfo)
+        {
+            return licenseInfo is CustomLicense
+                || licenseInfo?.GetType().Name == "CustomLicenseInfo";
         }
 
         private Metadata GetMetadataFromJson(ApiRequest request, bool forBook)

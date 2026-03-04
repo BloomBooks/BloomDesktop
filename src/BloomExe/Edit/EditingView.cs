@@ -658,7 +658,7 @@ namespace Bloom.Edit
             }
         }
 
-        public bool AskUserIfCopyImageMetadataToAllImages(Metadata metadata)
+        public bool AskUserIfCopyImageMetadataToAllImages()
         {
             var answer = MessageBox.Show(
                 LocalizationManager.GetString(
@@ -2040,4 +2040,3 @@ namespace Bloom.Edit
         }
     }
 }
-
