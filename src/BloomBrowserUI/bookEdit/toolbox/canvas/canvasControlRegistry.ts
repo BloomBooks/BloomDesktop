@@ -36,6 +36,7 @@ import { showCopyrightAndLicenseDialog } from "../../editViewFrame";
 import {
     doImageCommand,
     getImageUrlFromImageContainer,
+    isPlaceHolderImage,
     kImageContainerClass,
 } from "../../js/bloomImages";
 import { doVideoCommand } from "../../js/bloomVideo";
@@ -103,6 +104,26 @@ const getEditable = (ctx: IControlContext): HTMLElement | undefined => {
     return ctx.canvasElement.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on",
     )[0] as HTMLElement | undefined;
+};
+
+const hasRealImage = (img: HTMLImageElement | undefined): boolean => {
+    if (!img) {
+        return false;
+    }
+
+    if (isPlaceHolderImage(img.getAttribute("src"))) {
+        return false;
+    }
+
+    if (img.classList.contains("bloom-imageLoadError")) {
+        return false;
+    }
+
+    if (img.parentElement?.classList.contains("bloom-imageLoadError")) {
+        return false;
+    }
+
+    return true;
 };
 
 const fieldsControlledByAppearanceSystem = ["bookTitle"];
@@ -796,6 +817,167 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
             getCanvasElementManager()?.expandImageToFillSpace();
         },
     },
+    imageFieldType: {
+        kind: "command",
+        id: "imageFieldType",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.FieldType",
+        englishLabel: "Field Type:",
+        action: () => {},
+        menu: {
+            buildMenuItem: (ctx) => {
+                const img = getImage(ctx);
+                const isCoverImage =
+                    img?.getAttribute("data-book") === "coverImage";
+
+                return {
+                    id: "imageFieldType",
+                    l10nId: "EditTab.Toolbox.ComicTool.Options.FieldType",
+                    englishLabel: "Field Type:",
+                    onSelect: () => {},
+                    subMenuItems: [
+                        {
+                            id: "imageFieldType",
+                            l10nId: "EditTab.Toolbox.ComicTool.Options.CoverImage",
+                            englishLabel: "Cover Image",
+                            icon: isCoverImage
+                                ? React.createElement(CheckIcon, null)
+                                : undefined,
+                            onSelect: (rowCtx) => {
+                                const rowImage = getImage(rowCtx);
+                                if (!rowImage) {
+                                    return;
+                                }
+
+                                if (isCoverImage) {
+                                    rowImage.removeAttribute("data-book");
+                                    return;
+                                }
+
+                                const page = rowCtx.canvasElement.closest(
+                                    ".bloom-page",
+                                ) as HTMLElement | null;
+                                if (!page) {
+                                    return;
+                                }
+
+                                Array.from(
+                                    page.querySelectorAll(
+                                        'img[data-book="coverImage"]',
+                                    ),
+                                ).forEach((existingCoverImage) => {
+                                    if (existingCoverImage !== rowImage) {
+                                        existingCoverImage.removeAttribute(
+                                            "data-book",
+                                        );
+                                    }
+                                });
+                                rowImage.setAttribute(
+                                    "data-book",
+                                    "coverImage",
+                                );
+                            },
+                        },
+                    ],
+                };
+            },
+        },
+    },
+    becomeBackground: {
+        kind: "command",
+        id: "becomeBackground",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.BecomeBackground",
+        englishLabel: "Become Background",
+        action: (ctx) => {
+            const img = getImage(ctx);
+            if (!img) {
+                return;
+            }
+
+            const bloomCanvas = ctx.canvasElement.closest(
+                kBloomCanvasSelector,
+            ) as HTMLElement | null;
+            if (!bloomCanvas) {
+                return;
+            }
+
+            const bgImageCe = bloomCanvas.getElementsByClassName(
+                kBackgroundImageClass,
+            )[0] as HTMLElement | undefined;
+            if (!bgImageCe) {
+                return;
+            }
+
+            const bgImg = bgImageCe
+                .getElementsByClassName(kImageContainerClass)[0]
+                ?.getElementsByTagName("img")[0] as
+                | HTMLImageElement
+                | undefined;
+            if (!bgImg) {
+                return;
+            }
+
+            const canvasElementManager = getCanvasElementManager();
+            if (!canvasElementManager) {
+                return;
+            }
+
+            const haveRealBgImage = hasRealImage(bgImg);
+            const currentImageSource = img.getAttribute("src") || "";
+            const currentCopyright = img.getAttribute("data-copyright");
+            const currentCreator = img.getAttribute("data-creator");
+            const currentLicense = img.getAttribute("data-license");
+            const currentDataBook = img.getAttribute("data-book");
+            const backgroundDataBook = bgImg.getAttribute("data-book");
+
+            if (haveRealBgImage) {
+                img.setAttribute("src", bgImg.getAttribute("src") || "");
+                img.setAttribute(
+                    "data-copyright",
+                    bgImg.getAttribute("data-copyright") || "",
+                );
+                img.setAttribute(
+                    "data-creator",
+                    bgImg.getAttribute("data-creator") || "",
+                );
+                img.setAttribute(
+                    "data-license",
+                    bgImg.getAttribute("data-license") || "",
+                );
+                if (backgroundDataBook) {
+                    img.setAttribute("data-book", backgroundDataBook);
+                } else {
+                    img.removeAttribute("data-book");
+                }
+                canvasElementManager.updateCanvasElementForChangedImage(img);
+            }
+
+            bgImg.src = currentImageSource;
+            bgImg.setAttribute("data-copyright", currentCopyright || "");
+            bgImg.setAttribute("data-creator", currentCreator || "");
+            bgImg.setAttribute("data-license", currentLicense || "");
+            if (currentDataBook) {
+                if (currentDataBook === "coverImage" && ctx.page) {
+                    Array.from(
+                        ctx.page.querySelectorAll(
+                            'img[data-book="coverImage"]',
+                        ),
+                    ).forEach((existingCoverImage) => {
+                        if (existingCoverImage !== bgImg) {
+                            existingCoverImage.removeAttribute("data-book");
+                        }
+                    });
+                }
+                bgImg.setAttribute("data-book", currentDataBook);
+                img.removeAttribute("data-book");
+            }
+
+            if (!haveRealBgImage) {
+                canvasElementManager.deleteCurrentCanvasElement();
+            }
+
+            canvasElementManager.updateCanvasElementForChangedImage(bgImg);
+        },
+    },
     imageFillMode: {
         kind: "panel",
         id: "imageFillMode",
@@ -1238,6 +1420,8 @@ export const controlSections: Record<SectionId, IControlSection> = {
                 "copyImage",
                 "resetImage",
                 "expandToFillSpace",
+                "imageFieldType",
+                "becomeBackground",
             ],
         },
     },

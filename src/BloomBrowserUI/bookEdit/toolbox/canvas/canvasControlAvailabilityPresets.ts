@@ -45,6 +45,18 @@ export const imageAvailabilityRules: AvailabilityRulesMap = {
         visible: (ctx) => ctx.isBackgroundImage,
         enabled: (ctx) => ctx.canExpandBackgroundImage,
     },
+    imageFieldType: {
+        visible: (ctx) =>
+            ctx.isCustomPage && ctx.hasImage && !ctx.isNavigationButton,
+    },
+    becomeBackground: {
+        visible: (ctx) =>
+            ctx.isCustomPage &&
+            ctx.hasImage &&
+            ctx.hasRealImage &&
+            !ctx.isNavigationButton &&
+            !ctx.isBackgroundImage,
+    },
 };
 
 export const videoAvailabilityRules: AvailabilityRulesMap = {

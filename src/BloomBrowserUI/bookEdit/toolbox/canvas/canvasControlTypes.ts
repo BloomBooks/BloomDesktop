@@ -45,6 +45,8 @@ export type ControlId =
     | "missingMetadata"
     | "resetImage"
     | "expandToFillSpace"
+    | "imageFieldType"
+    | "becomeBackground"
     | "imageFillMode"
     | "chooseVideo"
     | "recordVideo"
