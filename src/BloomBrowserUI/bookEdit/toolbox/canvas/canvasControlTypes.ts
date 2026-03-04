@@ -24,6 +24,15 @@ import { CanvasElementType } from "./canvasElementTypes";
 
 export const kImageFitModePaddedValue = "padded";
 
+export interface ILanguageNameValues {
+    language1Name: string;
+    language1Tag: string;
+    language2Name: string;
+    language2Tag: string;
+    language3Name?: string;
+    language3Tag?: string;
+}
+
 export type ImageFillMode =
     | typeof kImageFitModePaddedValue
     | typeof kImageFitModeContainValue
@@ -45,6 +54,7 @@ export type ControlId =
     | "copyText"
     | "pasteText"
     | "autoHeight"
+    | "language"
     | "fillBackground"
     | "addChildBubble"
     | "bubbleStyle"
@@ -110,6 +120,8 @@ export interface IControlContext {
     hasDraggableId: boolean;
     hasDraggableTarget: boolean;
     textHasAudio: boolean | undefined;
+    isCustomPage: boolean;
+    languageNameValues: ILanguageNameValues;
 }
 
 export interface IControlRuntime {

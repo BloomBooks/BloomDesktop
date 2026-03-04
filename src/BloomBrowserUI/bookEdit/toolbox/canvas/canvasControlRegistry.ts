@@ -104,6 +104,184 @@ const getEditable = (ctx: IControlContext): HTMLElement | undefined => {
     )[0] as HTMLElement | undefined;
 };
 
+const fieldsControlledByAppearanceSystem = ["bookTitle"];
+
+const removeClassesByPrefix = (element: HTMLElement, prefix: string): void => {
+    Array.from(element.classList).forEach((className) => {
+        if (className.startsWith(prefix)) {
+            element.classList.remove(className);
+        }
+    });
+};
+
+const updateTranslationGroupLanguage = (
+    translationGroup: HTMLElement,
+    langCode: string,
+    langName: string,
+    dataDefaultLang: string,
+    classes: string[],
+    appearanceClasses: string[],
+): void => {
+    translationGroup.setAttribute("data-default-languages", dataDefaultLang);
+    const editables = Array.from(
+        translationGroup.getElementsByClassName("bloom-editable"),
+    ) as HTMLElement[];
+    if (editables.length === 0) {
+        return;
+    }
+
+    let editableInLang = editables.find(
+        (editableElement) => editableElement.getAttribute("lang") === langCode,
+    );
+    if (editableInLang) {
+        editables.splice(editables.indexOf(editableInLang), 1);
+    } else {
+        let editableToClone = editables.find(
+            (editableElement) => editableElement.getAttribute("lang") === "z",
+        );
+        if (!editableToClone) {
+            editableToClone = editables[0];
+        }
+        editableInLang = editableToClone.cloneNode(true) as HTMLElement;
+        editableInLang.innerHTML = "<p><br></p>";
+        editableInLang.setAttribute("lang", langCode);
+        editableInLang.setAttribute("data-languagetipcontent", langName);
+        translationGroup.appendChild(editableInLang);
+    }
+
+    removeClassesByPrefix(editableInLang, "bloom-content");
+    removeClassesByPrefix(editableInLang, "bloom-visibility-code-");
+    editableInLang.classList.add("bloom-visibility-code-on");
+    editables.forEach((editableElement) => {
+        removeClassesByPrefix(editableElement, "bloom-visibility-code-");
+        editableElement.classList.add("bloom-visibility-code-off");
+    });
+    classes.forEach((className) => editableInLang?.classList.add(className));
+
+    const dataBookValue = editableInLang.getAttribute("data-book");
+    if (
+        dataBookValue &&
+        fieldsControlledByAppearanceSystem.includes(dataBookValue)
+    ) {
+        appearanceClasses.forEach((className) =>
+            editableInLang?.classList.add(className),
+        );
+    }
+};
+
+const makeLanguageMenuItem = (ctx: IControlContext): IControlMenuCommandRow => {
+    const translationGroup = ctx.canvasElement.getElementsByClassName(
+        "bloom-translationGroup",
+    )[0] as HTMLElement | undefined;
+    const visibleEditable = translationGroup?.querySelector(
+        ".bloom-editable.bloom-visibility-code-on",
+    ) as HTMLElement | undefined;
+    const activeLangTag =
+        visibleEditable?.getAttribute("lang") ??
+        (
+            translationGroup?.getElementsByClassName("bloom-editable")[0] as
+                | HTMLElement
+                | undefined
+        )?.getAttribute("lang");
+    const { languageNameValues } = ctx;
+
+    const subMenuItems: IControlMenuCommandRow[] = [
+        {
+            id: "language",
+            englishLabel: languageNameValues.language1Name,
+            icon:
+                activeLangTag === languageNameValues.language1Tag
+                    ? React.createElement(CheckIcon, null)
+                    : undefined,
+            onSelect: (rowCtx) => {
+                if (!translationGroup) {
+                    return;
+                }
+                updateTranslationGroupLanguage(
+                    translationGroup,
+                    languageNameValues.language1Tag,
+                    languageNameValues.language1Name,
+                    "V",
+                    ["bloom-content1"],
+                    ["bloom-contentFirst"],
+                );
+                getCanvasElementManager()?.setActiveElement(
+                    rowCtx.canvasElement,
+                );
+            },
+        },
+    ];
+
+    if (
+        languageNameValues.language2Tag &&
+        languageNameValues.language2Tag !== languageNameValues.language1Tag
+    ) {
+        subMenuItems.push({
+            id: "language",
+            englishLabel: languageNameValues.language2Name,
+            icon:
+                activeLangTag === languageNameValues.language2Tag
+                    ? React.createElement(CheckIcon, null)
+                    : undefined,
+            onSelect: (rowCtx) => {
+                if (!translationGroup) {
+                    return;
+                }
+                updateTranslationGroupLanguage(
+                    translationGroup,
+                    languageNameValues.language2Tag,
+                    languageNameValues.language2Name,
+                    "N1",
+                    ["bloom-contentNational1"],
+                    ["bloom-contentSecond"],
+                );
+                getCanvasElementManager()?.setActiveElement(
+                    rowCtx.canvasElement,
+                );
+            },
+        });
+    }
+
+    if (
+        languageNameValues.language3Tag &&
+        languageNameValues.language3Tag !== languageNameValues.language1Tag &&
+        languageNameValues.language3Tag !== languageNameValues.language2Tag
+    ) {
+        subMenuItems.push({
+            id: "language",
+            englishLabel: languageNameValues.language3Name,
+            icon:
+                activeLangTag === languageNameValues.language3Tag
+                    ? React.createElement(CheckIcon, null)
+                    : undefined,
+            onSelect: (rowCtx) => {
+                if (!translationGroup) {
+                    return;
+                }
+                updateTranslationGroupLanguage(
+                    translationGroup,
+                    languageNameValues.language3Tag!,
+                    languageNameValues.language3Name!,
+                    "N2",
+                    ["bloom-contentNational2"],
+                    ["bloom-contentThird"],
+                );
+                getCanvasElementManager()?.setActiveElement(
+                    rowCtx.canvasElement,
+                );
+            },
+        });
+    }
+
+    return {
+        id: "language",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.Language",
+        englishLabel: "Language:",
+        onSelect: () => {},
+        subMenuItems,
+    };
+};
+
 const buildDynamicMenuItemFromControl = (
     controlId: TopLevelControlId,
     runtime: IControlRuntime,
@@ -577,6 +755,16 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
             getCanvasElementManager()?.updateAutoHeight();
         },
     },
+    language: {
+        kind: "command",
+        id: "language",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.Language",
+        englishLabel: "Language:",
+        action: () => {},
+        menu: {
+            buildMenuItem: (ctx) => makeLanguageMenuItem(ctx),
+        },
+    },
     fillBackground: {
         kind: "command",
         id: "fillBackground",
@@ -918,6 +1106,7 @@ export const controlSections: Record<SectionId, IControlSection> = {
                 "copyText",
                 "pasteText",
                 "autoHeight",
+                "language",
                 "fillBackground",
             ],
             toolPanel: ["textColor", "backgroundColor"],

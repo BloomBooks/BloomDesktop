@@ -83,6 +83,29 @@ export const textAvailabilityRules: AvailabilityRulesMap = {
     autoHeight: {
         visible: (ctx) => ctx.hasText && !ctx.isButton,
     },
+    language: {
+        visible: (ctx) => {
+            const translationGroup = ctx.canvasElement.getElementsByClassName(
+                "bloom-translationGroup",
+            )[0] as HTMLElement | undefined;
+            if (
+                !ctx.isCustomPage ||
+                ctx.isNavigationButton ||
+                !translationGroup ||
+                translationGroup.getElementsByClassName("bloom-editable")
+                    .length === 0
+            ) {
+                return false;
+            }
+
+            const tags = [
+                ctx.languageNameValues.language1Tag,
+                ctx.languageNameValues.language2Tag,
+                ctx.languageNameValues.language3Tag,
+            ].filter((tag): tag is string => !!tag);
+            return new Set(tags).size > 1;
+        },
+    },
     fillBackground: {
         visible: (ctx) => ctx.isRectangle,
     },

@@ -20,12 +20,14 @@ import { kBackgroundImageClass } from "../../toolbox/canvas/canvasElementConstan
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { kBloomDisabledOpacity } from "../../../utils/colorUtils";
+import { useApiObject } from "../../../utils/bloomApi";
 import AudioRecording from "../../toolbox/talkingBook/audioRecording";
 import { getAudioSentencesOfVisibleEditables } from "bloom-player";
 import { canvasElementDefinitions as controlCanvasElementDefinitions } from "../../toolbox/canvas/canvasElementDefinitions";
 import { buildControlContext } from "../../toolbox/canvas/buildControlContext";
 import {
     IControlContext,
+    ILanguageNameValues,
     IControlMenuRow,
     IControlRuntime,
 } from "../../toolbox/canvas/canvasControlTypes";
@@ -86,6 +88,15 @@ const CanvasElementContextControls: React.FunctionComponent<{
     };
 
     const menuEl = useRef<HTMLElement | null>(null);
+    const languageNameValues = useApiObject<ILanguageNameValues>(
+        "settings/languageNames",
+        {
+            language1Name: "",
+            language1Tag: "",
+            language2Name: "",
+            language2Tag: "",
+        },
+    );
 
     // After deleting a draggable, we may get rendered again, and page will be null.
     const page = props.canvasElement.closest(".bloom-page");
@@ -393,6 +404,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const controlContext: IControlContext = {
         ...buildControlContext(props.canvasElement),
         textHasAudio,
+        languageNameValues,
     };
 
     const definition =

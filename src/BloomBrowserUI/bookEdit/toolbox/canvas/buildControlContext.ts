@@ -166,5 +166,12 @@ export const buildControlContext = (
             !!currentDraggableId &&
             !!page?.querySelector(`[data-target-of=\"${currentDraggableId}\"]`),
         textHasAudio: false,
+        isCustomPage: page?.classList.contains("bloom-customLayout") ?? false,
+        languageNameValues: {
+            language1Name: "",
+            language1Tag: "",
+            language2Name: "",
+            language2Tag: "",
+        },
     };
 };
