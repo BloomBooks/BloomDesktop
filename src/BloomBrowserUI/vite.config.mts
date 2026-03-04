@@ -437,6 +437,56 @@ function reportBuildErrorPlugin(): Plugin {
     };
 }
 
+// Normalize sourceMappingURL footer case to match the exact output filename.
+// This prevents case-mismatch logs on Windows when a chunk name differs only by casing.
+function normalizeSourceMapReferencesPlugin(): Plugin {
+    return {
+        name: "normalize-sourcemap-references",
+        apply: "build",
+        async closeBundle() {
+            const outputDir = path.resolve(__dirname, "../../output/browser");
+            const outputFiles = glob.sync("**/*.{js,css}", {
+                cwd: outputDir,
+                nodir: true,
+            });
+
+            for (const relativeFilePath of outputFiles) {
+                const outputFilePath = path.join(outputDir, relativeFilePath);
+                const sourceMapPath = `${outputFilePath}.map`;
+
+                if (!fs.existsSync(sourceMapPath)) {
+                    continue;
+                }
+
+                const expectedSourceMapName =
+                    path.basename(outputFilePath) + ".map";
+                const currentContent = await fs.promises.readFile(
+                    outputFilePath,
+                    "utf-8",
+                );
+
+                const normalizedContent = currentContent
+                    .replace(
+                        /\/\/# sourceMappingURL=[^\r\n]+/g,
+                        `//# sourceMappingURL=${expectedSourceMapName}`,
+                    )
+                    .replace(
+                        /\/\*# sourceMappingURL=[^*]*\*\//g,
+                        `/*# sourceMappingURL=${expectedSourceMapName} */`,
+                    );
+
+                if (normalizedContent !== currentContent) {
+                    await fs.promises.writeFile(
+                        outputFilePath,
+                        normalizedContent,
+                        "utf-8",
+                    );
+                }
+            }
+        },
+    };
+}
+
 // Helper function to inject CSS into DOM
 function createCssInjector() {
     return `
@@ -573,6 +623,7 @@ export default defineConfig(async ({ command }) => {
             compilePugPlugin(), // Compile Pug templates to HTML during build
             compileLessPlugin(), // Compile standalone LESS files to CSS during build
             compileMarkdownPlugin(), // Compile Markdown files to HTML during build
+            normalizeSourceMapReferencesPlugin(),
             reportBuildErrorPlugin(),
             postBuildPlugin(), // Process manifest and create final bundles (build only)
 

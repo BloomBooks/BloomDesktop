@@ -205,7 +205,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
     };
     // editable and langName are computed earlier, but keep them here for the UI below.
 
-    const maxMenuWidth = 260;
+    const maxMenuWidth = 338;
 
     // Control callbacks can be either sync or async by contract.
     // We always call through this helper so sync exceptions and async

@@ -38,6 +38,7 @@ export type ImageFillMode =
     | typeof kImageFitModeContainValue
     | typeof kImageFitModeCoverValue;
 
+// note: "controls" here include menus, toolbars, and tool panels.
 export type ControlId =
     | "chooseImage"
     | "pasteImage"
@@ -57,7 +58,7 @@ export type ControlId =
     | "pasteText"
     | "autoHeight"
     | "language"
-    | "fieldType"
+    | "fieldType" // used for fields like cover title, topic, etc.
     | "fillBackground"
     | "addChildBubble"
     | "bubbleStyle"
