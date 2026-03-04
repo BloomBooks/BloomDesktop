@@ -80,8 +80,12 @@ export const buildControlContext = (
 
     const hasImage = !!imgContainer;
     const hasVideo = !!videoContainer;
-    const hasText =
+    const hasEditableText =
         canvasElement.getElementsByClassName("bloom-editable").length > 0;
+    const hasDerivedText =
+        canvasElement.hasAttribute("data-derived") ||
+        canvasElement.querySelector("[data-derived]") !== null;
+    const hasText = hasEditableText || hasDerivedText;
     const isRectangle =
         canvasElement.getElementsByClassName("bloom-rectangle").length > 0;
     const rectangle = canvasElement.getElementsByClassName(

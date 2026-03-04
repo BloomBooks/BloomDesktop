@@ -1763,11 +1763,10 @@ export class CanvasElementManager {
             kCanvasElementSelector,
         ) as HTMLDivElement;
         topBox.style.color = "";
-        const editables = topBox.getElementsByClassName("bloom-editable");
-        for (let i = 0; i < editables.length; i++) {
-            const editableElement = editables[i] as HTMLElement;
-            editableElement.style.color = hexOrRgbColor;
-        }
+        const textColorTargets = this.getTextColorTargets(topBox);
+        textColorTargets.forEach((target) => {
+            target.style.color = hexOrRgbColor;
+        });
     }
 
     public getTextColorInformation(): ITextColorInfo {
@@ -1787,20 +1786,19 @@ export class CanvasElementManager {
             // bloom-editables. So if the canvas element div didn't have a color, check the inner
             // bloom-editables.
             if (textColor === "") {
-                const editables =
-                    topBox.getElementsByClassName("bloom-editable");
-                if (editables.length === 0) {
+                const textColorTargets = this.getTextColorTargets(topBox);
+                if (textColorTargets.length === 0) {
                     // Image on Image case comes here.
                     isDefaultStyleColor = true;
                     textColor = "black";
                 } else {
-                    const firstEditable = editables[0] as HTMLElement;
-                    const colorStyle = firstEditable.style.color;
+                    const firstTextTarget = textColorTargets[0];
+                    const colorStyle = firstTextTarget.style.color;
                     if (colorStyle) {
                         textColor = colorStyle;
                     } else {
                         textColor =
-                            this.getDefaultStyleTextColor(firstEditable);
+                            this.getDefaultStyleTextColor(firstTextTarget);
                         isDefaultStyleColor = true;
                     }
                 }
@@ -1809,11 +1807,28 @@ export class CanvasElementManager {
         return { color: textColor, isDefault: isDefaultStyleColor };
     }
 
+    private getTextColorTargets(topBox: HTMLElement): HTMLElement[] {
+        const editables = Array.from(
+            topBox.getElementsByClassName("bloom-editable"),
+        ) as HTMLElement[];
+        if (editables.length > 0) {
+            return editables;
+        }
+
+        const derivedTargets = Array.from(
+            topBox.querySelectorAll("[data-derived]"),
+        ) as HTMLElement[];
+        if (topBox.hasAttribute("data-derived")) {
+            derivedTargets.unshift(topBox);
+        }
+        return derivedTargets;
+    }
+
     // Returns the computed color of the text, which in the absence of a color style from the
     // Canvas element Tool will be from the Bubble-style (set in the StyleEditor).
     // An unfortunate, but greatly simplifying, use of JQuery.
-    public getDefaultStyleTextColor(firstEditable: HTMLElement): string {
-        return $(firstEditable).css("color");
+    public getDefaultStyleTextColor(textElement: HTMLElement): string {
+        return $(textElement).css("color");
     }
 
     // This gives us the patriarch (farthest ancestor) canvas element of a family of canvas elements.
