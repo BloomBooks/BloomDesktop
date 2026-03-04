@@ -46,10 +46,8 @@ export default class BloomSourceBubbles {
         container: HTMLElement | null | undefined,
     ): void {
         if (!container) return; // saves every client checking (often only because of eslint)
-        const groups = Array.from(
-            container.getElementsByClassName("bloom-translationGroup"),
-        );
-        if (container.classList.contains("bloom-translationGroup")) {
+        const groups = Array.from(container.querySelectorAll("[data-hasqtip]"));
+        if (container.hasAttribute("data-hasqtip")) {
             groups.push(container);
         }
         groups.forEach((group) => {
