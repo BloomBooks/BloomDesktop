@@ -74,23 +74,27 @@ export function useSubscribeToWebSocketForStringMessage(
     );
 }
 
-// Subscribe to an event and listen for the whole object bundle that the server sends. For an example of the c# server side of this, see HandleChooseFolder().
+// Subscribe to an object event and listen for payload-only data.
+// This strips websocket envelope fields (currently clientContext and id)
+// so callers can work with a stable object shape matching API payloads.
+// If a caller needs envelope fields, use useSubscribeToWebSocketForEvent instead.
+// For an example of the c# server side of this, see HandleChooseFolder().
 export function useSubscribeToWebSocketForObject<T>(
     clientContext: string,
     eventId: string,
     listener: (message: T) => void,
 ) {
-    useEffect(() => {
-        const websocketListener = (e) => {
-            if (e.id === eventId) {
-                listener(e as unknown as T);
-            }
-        };
-        WebSocketManager.addListener(clientContext, websocketListener);
-        return () => {
-            WebSocketManager.removeListener(clientContext, websocketListener);
-        };
-    }, [clientContext]);
+    useWebSocketListenerInnerWithMessage<T>(
+        clientContext,
+        eventId,
+        listener,
+        (e) => {
+            const payload = { ...(e as unknown as Record<string, unknown>) };
+            delete payload.clientContext;
+            delete payload.id;
+            return payload as T;
+        },
+    );
 }
 
 // Subscribe to an event where the "message" string is holding a JSON object

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Workspace;
@@ -47,6 +47,9 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler("workspace/topRight/zoom", HandleZoom, true);
+
+            apiHandler.RegisterEndpointHandler("workspace/selectTab", HandleSelectTab, true);
+            apiHandler.RegisterEndpointHandler("workspace/tabs", HandleTabs, true);
         }
 
         private void HandleOpenOrCreateCollection(ApiRequest request)
@@ -112,6 +115,36 @@ namespace Bloom.web.controllers
             int zoom = Convert.ToInt32(data.zoom);
             WorkspaceView.SetZoom(zoom);
             request.PostSucceeded();
+        }
+
+        private void HandleSelectTab(ApiRequest request)
+        {
+            var data = request.RequiredPostDynamic();
+            var tab = (string)data.tab;
+            switch (tab)
+            {
+                case "collection":
+                    WorkspaceView.ChangeTab(WorkspaceTab.collection);
+                    break;
+                case "edit":
+                    WorkspaceView.ChangeTab(WorkspaceTab.edit);
+                    break;
+                case "publish":
+                    WorkspaceView.ChangeTab(WorkspaceTab.publish);
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown tab '{tab}'");
+            }
+
+            request.PostSucceeded();
+        }
+
+        private void HandleTabs(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Get)
+                throw new ArgumentException("workspace/tabs only supports GET");
+
+            request.ReplyWithJson(WorkspaceView.GetTabInfoForClient());
         }
     }
 }

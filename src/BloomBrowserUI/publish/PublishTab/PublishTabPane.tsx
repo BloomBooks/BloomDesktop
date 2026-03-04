@@ -74,6 +74,19 @@ export const CheckoutNeededScreen: React.FunctionComponent<{
 export const PublishTabPane: React.FunctionComponent = () => {
     const kWaitForUserToChooseTabIndex = 5;
 
+    // Temporary: notify c# about clicks so WinForms menus can close.
+    // Remove this once menus move into the same browser UI.
+    React.useEffect(() => {
+        const notifyBrowserClicked = () => {
+            (window as any).chrome?.webview?.postMessage("browser-clicked");
+        };
+
+        window.addEventListener("click", notifyBrowserClicked);
+        return () => {
+            window.removeEventListener("click", notifyBrowserClicked);
+        };
+    }, []);
+
     const [publishTabReady, setPublishTabReady] = React.useState(false);
     const [publishTabInfo, setPublishTabInfo] = React.useState({
         checkoutNeeded: false,

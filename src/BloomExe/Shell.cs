@@ -22,9 +22,14 @@ namespace Bloom
 {
     public partial class Shell : SIL.Windows.Forms.Miscellaneous.FormForUsingPortableClipboard
     {
+        public static Shell GetShellOrNull()
+        {
+            return Application.OpenForms.OfType<Shell>().FirstOrDefault();
+        }
+
         public static Form GetShellOrOtherOpenForm()
         {
-            var form = Application.OpenForms.Cast<Form>().Where(x => x is Shell).FirstOrDefault();
+            Form form = GetShellOrNull();
             if (form == null)
                 form = Application.OpenForms.Cast<Form>().LastOrDefault();
             return form;
@@ -100,8 +105,6 @@ namespace Bloom
 
             WindowState = FormWindowState.Normal;
             Size = new Size(1024, 720);
-
-            _contextMenu.Opening += _contextMenu_Opening;
 
             _workspaceView = projectViewFactory();
 
@@ -193,7 +196,7 @@ namespace Bloom
                         )
                         {
                             // Without checking and resetting this flag, Linux endlessly spawns new instances. Apparently the Mono runtime
-                            // calls OnClosing again as a result of calling Program.RestartBloom() which calls Application.Exit().
+                            // calls OnClosing again as a result of calling Program.RestartBloom() which calls Application..Exit().
                             UserWantsToOpeReopenProject = false;
                             //Actually restart Bloom with a parameter requesting this name change. It's way more likely to succeed
                             //when this run isn't holding onto anything.
@@ -291,26 +294,6 @@ namespace Bloom
         private void Shell_Deactivate(object sender, EventArgs e)
         {
             Debug.WriteLine("Shell Deactivated");
-        }
-
-        /// <summary>
-        /// Prevent the window sizes text/debug context menu from displaying anywhere but along the
-        /// top tab strip of the workspace window.
-        /// </summary>
-        /// <remarks>
-        /// See https://issues.bloomlibrary.org/youtrack/issue/BL-8668.  I never figured out why this
-        /// menu started appearing more and more aggressively in the Edit tab where it wasn't wanted,
-        /// but not in the other tabs.  After close to a day spent on this issue, I decided that this
-        /// fix is good enough.
-        /// </remarks>
-        private void _contextMenu_Opening(object sender, CancelEventArgs e)
-        {
-            // In some ways, it would make more sense to have this context menu be attached
-            // to the TabStrip object, but since all of the menu actions affect the Shell
-            // object, it's just as easy to check its location before actually displaying
-            // the menu.
-            if (!_workspaceView.IsInTabStrip(this.PointToClient(_contextMenu.Location)))
-                e.Cancel = true;
         }
 
         private void On800x600Click(object sender, EventArgs e)
@@ -533,6 +516,11 @@ namespace Bloom
 
             // if we're always measuring, don't offer to start/stop
             //this.startMeasuringPerformanceToolStripMenuItem.Enabled = !Settings.Default.AlwaysMeasurePerformance;
+        }
+
+        public void ShowContextMenuAt(Point screenPoint)
+        {
+            _contextMenu?.Show(screenPoint);
         }
     }
 }

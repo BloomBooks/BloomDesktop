@@ -313,24 +313,34 @@ namespace Bloom.web.controllers
             request.ReplyWithJson(jsonString);
         }
 
-        // Used by BookSettingsDialog
+        // Used by BookSettingsDialog and others
         private void HandleGetLanguageNames(ApiRequest request)
         {
             var x = new ExpandoObject() as IDictionary<string, object>;
             // The values set here should correspond to the declaration of ILanguageNameValues
             // in BookSettingsDialog.tsx.
             x["language1Name"] = _bookSelection.CurrentSelection.CollectionSettings.Language1.Name;
+            x["language1Tag"] = _bookSelection.CurrentSelection.CollectionSettings.Language1.Tag;
             x["language2Name"] = _bookSelection.CurrentSelection.CollectionSettings.Language2.Name;
+            x["language2Tag"] = _bookSelection.CurrentSelection.CollectionSettings.Language2.Tag;
             if (
                 !String.IsNullOrEmpty(
                     _bookSelection.CurrentSelection.CollectionSettings.Language3?.Name
                 )
             )
+            {
                 x["language3Name"] = _bookSelection
                     .CurrentSelection
                     .CollectionSettings
                     .Language3
                     .Name;
+                x["language3Tag"] = _bookSelection
+                    .CurrentSelection
+                    .CollectionSettings
+                    .Language3
+                    .Tag;
+            }
+
             request.ReplyWithJson(JsonConvert.SerializeObject(x));
         }
 

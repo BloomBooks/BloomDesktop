@@ -1107,7 +1107,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       </trans-unit>
       <trans-unit id="Common.Default">
         <source xml:lang="en">Default</source>
-        <target xml:lang="es-ES" state="needs-translation">Default</target>
+        <target xml:lang="es-ES" state="translated">Por defecto</target>
         <note>ID: Common.Default</note>
       </trans-unit>
       <trans-unit id="Common.Delete" approved="yes">
@@ -1560,6 +1560,16 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <target xml:lang="es-ES" state="final">Imagen</target>
         <note>ID: EditTab.CustomPage.Picture</note>
       </trans-unit>
+      <trans-unit id="EditTab.CustomPage.Image" sil:dynamic="true">
+        <source xml:lang="en">Image</source>
+        <target xml:lang="es-ES" state="needs-translation">Image</target>
+        <note>ID: EditTab.CustomPage.Image</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomPage.Canvas" sil:dynamic="true">
+        <source xml:lang="en">Canvas</source>
+        <target xml:lang="es-ES" state="needs-translation">Canvas</target>
+        <note>ID: EditTab.CustomPage.Canvas</note>
+      </trans-unit>
       <trans-unit id="EditTab.CustomPage.Text" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Text</source>
         <target xml:lang="es-ES" state="final">Texto</target>
@@ -1810,6 +1820,16 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <target xml:lang="es-ES" state="final">Título en la portada</target>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Title-On-Title-Page-style</note>
       </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Navigation-Button-Label-style" sil:dynamic="true">
+        <source xml:lang="en">Navigation Button Label</source>
+        <target xml:lang="es-ES" state="translated">Etiqueta de botón de navegación</target>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Navigation-Button-Label-style</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Navigation-Button-With-Image-Label-style" sil:dynamic="true">
+        <source xml:lang="en">Navigation Button With Image Label</source>
+        <target xml:lang="es-ES" state="translated">Botón de navegación con etiqueta de imagen</target>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.Navigation-Button-With-Image-Label-style</note>
+      </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DontSeeNeed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Don't see what you need?</source>
         <target xml:lang="es-ES" state="final">¿No encuentra lo que necesita?</target>
@@ -1870,10 +1890,10 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <target xml:lang="es-ES" state="final">Nuevo estilo</target>
         <note>ID: EditTab.FormatDialog.NewStyle</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Overlay" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Overlay</source>
-        <target xml:lang="es-ES" state="final">Superposición</target>
-        <note>ID: EditTab.FormatDialog.Overlay</note>
+      <trans-unit id="EditTab.FormatDialog.Canvas" sil:dynamic="true">
+        <source xml:lang="en">Canvas Text</source>
+        <target xml:lang="es-ES" state="needs-translation">Canvas Text</target>
+        <note>ID: EditTab.FormatDialog.Canvas</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Padding" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Padding: space between the text and its border</source>
@@ -2426,14 +2446,14 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Información de la propiedad intelectual de la imagen</target>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.OverlayTool" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Overlay Tool</source>
-        <target xml:lang="es-ES" state="final">Herramienta de superposición</target>
-        <note>ID: EditTab.Toolbox.OverlayTool</note>
+      <trans-unit id="EditTab.Toolbox.CanvasTool" sil:dynamic="true">
+        <source xml:lang="en">Canvas Tool</source>
+        <target xml:lang="es-ES" state="needs-translation">Canvas Tool</target>
+        <note>ID: EditTab.Toolbox.CanvasTool</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Drag any of these overlays onto the image:</source>
-        <target xml:lang="es-ES" state="final">Arrastra para añadir a una imagen:</target>
+      <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true">
+        <source xml:lang="en">Drag any of these elements onto the image:</source>
+        <target xml:lang="es-ES" state="translated">Arrastra para añadir a una imagen:</target>
         <note>ID: EditTab.Toolbox.ComicTool.DragInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.ChangeShape" sil:dynamic="true">
@@ -2511,9 +2531,9 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="translated">Formatear texto...</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Format</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ImageSelected" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">There are no options for this kind of overlay</source>
-        <target xml:lang="es-ES" state="final">No hay opciones para este tipo de superposición</target>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ImageSelected" sil:dynamic="true">
+        <source xml:lang="en">There are no options for this kind of canvas element</source>
+        <target xml:lang="es-ES" state="translated">No hay opciones para este tipo de elemento superpuesto</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ImageSelected</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor" sil:dynamic="true" approved="yes">
@@ -3286,10 +3306,15 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Lo sentimos, pero su versión de Windows ya no recibe soporte de Microsoft. Esta versión de Bloom requiere Windows 10 o superior. Como resultado, tendrá que instalar Bloom versión 5.4. Bloom ahora abrirá una página web donde podrá descargar Bloom 5.4.</target>
         <note>ID: ErrorReport.Pre10WindowsNotSupported</note>
       </trans-unit>
-      <trans-unit id="Errors.PathTooLong" approved="yes">
-        <source xml:lang="en">Please move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by your collection being too deeply nested in many folders on your hard drive.</source>
-        <target xml:lang="es-ES" state="final">Por favor, mueva su colección más cerca a la raíz de su disco duro e inténtelo de nuevo. Uno de los archivos que Bloom estaba utilizando tenía una ruta de acceso demasiada larga. Esto se debe normalmente a que su colección está anidada muy profundamente en varias carpetas de su disco duro.</target>
+      <trans-unit id="Errors.PathTooLong">
+        <source xml:lang="en">Please give your collection a shorter name or move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by one of two things: 1) the collection has a very long name, or 2) the collection is too deeply nested inside many folders on your hard drive.</source>
+        <target xml:lang="es-ES" state="translated">Por favor, mueva su colección más cerca a la raíz de su disco duro e inténtelo de nuevo. Uno de los archivos que Bloom estaba utilizando tenía una ruta de acceso demasiada larga. Esto se debe normalmente a que su colección está anidada muy profundamente en varias carpetas de su disco duro.</target>
         <note>ID: Errors.PathTooLong</note>
+      </trans-unit>
+      <trans-unit id="Errors.PathTooLong2">
+        <source xml:lang="en">A file Bloom was working with had a path that was too long. You may need to give it a shorter name, or give your collection a shorter name, or move your collection closer to the root of your hard drive.</source>
+        <target xml:lang="es-ES" state="needs-translation">A file Bloom was working with had a path that was too long. You may need to give it a shorter name, or give your collection a shorter name, or move your collection closer to the root of your hard drive.</target>
+        <note>ID: Errors.PathTooLong2</note>
       </trans-unit>
       <trans-unit id="Errors.BookProblem" approved="yes">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
@@ -4553,10 +4578,10 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Las siguientes páginas fueron eliminados porque no son compatibles con los ePUBs:</target>
         <note>ID: PublishTab.Epub.OmittedPages</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.NoOverlaySupport" approved="yes">
-        <source xml:lang="en">Sorry, Bloom cannot produce ePUBs if there are any overlays. The first overlay is on page {0}.</source>
-        <target xml:lang="es-ES" state="final">Lo sentimos, Bloom no puede producir ePUBs si hay superposiciones. La primera superposición está en la página {0}.</target>
-        <note>ID: PublishTab.Epub.NoOverlaySupport</note>
+      <trans-unit id="PublishTab.Epub.NoCanvasSupport">
+        <source xml:lang="en">Sorry, Bloom cannot produce ePUBs if there are any canvas pages. The first canvas is on page {0}.</source>
+        <target xml:lang="es-ES" state="needs-translation">Sorry, Bloom cannot produce ePUBs if there are any canvas pages. The first canvas is on page {0}.</target>
+        <note>ID: PublishTab.Epub.NoCanvasSupport</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.PageLabel.Content" approved="yes">
         <source xml:lang="en">Content</source>
@@ -4598,14 +4623,14 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Con texto fluido</target>
         <note>ID: PublishTab.Epub.Flowable</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.Flowable.Description" approved="yes">
-        <source xml:lang="en">Allow ePUB readers to lay out images and text however they want. The user is more likely to be able to increase font size. Custom page layouts will not look good. This mode is not available if your book has overlay pages (comics).</source>
-        <target xml:lang="es-ES" state="final">Permitir a los lectores de ePUB colocar las imágenes y el texto en forma adaptable. De esa forma será más probable que el usuario pueda aumentar el tamaño de la fuente. Los diseños de páginas personalizadas generalmente no se verán bien. Este modo no está disponible si su libro tiene páginas superpuestas (cómicos).</target>
+      <trans-unit id="PublishTab.Epub.Flowable.Description">
+        <source xml:lang="en">Allow ePUB readers to lay out images and text however they want. The user is more likely to be able to increase font size. Custom page layouts will not look good. This mode is not available if your book has canvas pages (comics).</source>
+        <target xml:lang="es-ES" state="translated">Permitir a los lectores de ePUB colocar las imágenes y el texto en forma adaptable. De esa forma será más probable que el usuario pueda aumentar el tamaño de la fuente. Los diseños de páginas personalizadas generalmente no se verán bien. Este modo no está disponible si su libro tiene páginas superpuestas (cómicos).</target>
         <note>ID: PublishTab.Epub.Flowable.Description</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.Flowable.DisabledTooltip" approved="yes">
-        <source xml:lang="en">This is disabled because an ePUB viewer in flowable mode would not be able to display the overlay pages (comics) in this book.</source>
-        <target xml:lang="es-ES" state="final">Esto está desactivado porque un visor ePUB en modo intercambiable no podría mostrar las páginas superpuestas (cómics) en este libro.</target>
+      <trans-unit id="PublishTab.Epub.Flowable.DisabledTooltip">
+        <source xml:lang="en">This is disabled because an ePUB viewer in flowable mode would not be able to display the canvas pages (comics) in this book.</source>
+        <target xml:lang="es-ES" state="translated">Esto está desactivado porque un visor ePUB en modo intercambiable no podría mostrar las páginas superpuestas (cómics) en este libro.</target>
         <note>ID: PublishTab.Epub.Flowable.DisabledTooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Mode" approved="yes">
@@ -4777,6 +4802,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <source xml:lang="en">This is disabled because this book is not set up to be full bleed.</source>
         <target xml:lang="es-ES" state="final">Esto está deshabilitado porque este libro no está configurado para sangría completa.</target>
         <note>ID: PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.ExcludePrintBleed">
+        <source xml:lang="en">Exclude print bleed around page edges</source>
+        <target xml:lang="es-ES" state="needs-translation">Exclude print bleed around page edges</target>
+        <note>ID: PublishTab.PdfMaker.ExcludePrintBleed</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml" approved="yes">
         <source xml:lang="en">Making PDF from HTML</source>
@@ -5347,7 +5377,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: PublishTab.Upload.Missing.Title</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.OldVersion" approved="yes">
-        <source xml:lang="en">Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</source>
+        <source xml:lang="en">Sorry, this version of Bloom Editor is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</source>
         <target xml:lang="es-ES" state="final">Lo sentimos, esta versión de Bloom Desktop no es compatible con la versión actual de BloomLibrary.org. Por favor, actualice a una versión más reciente.</target>
         <note>ID: PublishTab.Upload.OldVersion</note>
       </trans-unit>
@@ -5953,6 +5983,11 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Dirección de correo electrónico</target>
         <note>ID: RegisterDialog.Email</note>
       </trans-unit>
+      <trans-unit id="RegisterDialog.CheckInToChangeEmail">
+        <source xml:lang="en">Check in to change email</source>
+        <target xml:lang="es-ES" state="needs-translation">Check in to change email</target>
+        <note>ID: RegisterDialog.CheckInToChangeEmail</note>
+      </trans-unit>
       <trans-unit id="RegisterDialog.FirstName" approved="yes">
         <source xml:lang="en">First Name</source>
         <target xml:lang="es-ES" state="final">Nombre</target>
@@ -6230,6 +6265,11 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <!--
 // Don't want these actually translated until things stabilize. Will need re-ordering.
+      <trans-unit id="TeamCollection.DropboxSettingsAcknowledgement" sil:dynamic="true">
+        <source xml:lang="en">I will ensure that all team members have properly configured [Critical Dropbox Settings](https://docs.bloomlibrary.org/critical-dropbox-settings/).</source>
+        <note>ID: TeamCollection.DropboxSettingsAcknowledgement</note>
+        <note>Checkbox acknowledgement shown when creating a Team Collection.</note>
+      </trans-unit>
       <trans-unit id="TeamCollection.AvailableDescription" sil:dynamic="true">
         <source xml:lang="en">When you check it out, no one on the team will be able to modify it or see your changes until you check it back in.</source>
         <note>ID: TeamCollection.AvailableDescription</note>
@@ -6515,6 +6555,11 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="es-ES" state="translated">Una página con un idioma encima de la imagen y otro debajo de ella.</target>
         <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Canvas" sil:dynamic="true">
+        <source xml:lang="en">A page with an empty canvas that you can add to.</source>
+        <target xml:lang="es-ES" state="needs-translation">A page with an empty canvas that you can add to.</target>
+        <note>ID: TemplateBooks.PageDescription.Canvas</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Comprehension Quiz" sil:dynamic="true">
         <source xml:lang="en">A simple quiz game that checks if readers understand key parts of the story they just read.</source>
         <target xml:lang="es-ES" state="needs-translation">A simple quiz game that checks if readers understand key parts of the story they just read.</target>
@@ -6655,6 +6700,11 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">A page of instructions to translators which appears only in the Edit tab.</source>
         <target xml:lang="es-ES" state="final">Una página de instrucciones para traductores que aparece solamente en la pestaña Editar.</target>
         <note>ID: TemplateBooks.PageDescription.Translation Instructions</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Page with Simple Book Grid" sil:dynamic="true">
+        <source xml:lang="en">A simple Table of Contents page for use in Bloom Apps.</source>
+        <target xml:lang="es-ES" state="needs-translation">A simple Table of Contents page for use in Bloom Apps.</target>
+        <note>ID: TemplateBooks.PageDescription.Page with Simple Book Grid</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Comic" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A full page image with no margin.</source>
@@ -6888,7 +6938,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Comprehension Quiz" sil:dynamic="true">
         <source xml:lang="en">Comprehension Quiz</source>
-        <target xml:lang="es-ES" state="needs-translation">Comprehension Quiz</target>
+        <target xml:lang="es-ES" state="translated">Prueba de comprensión</target>
         <note>ID: TemplateBooks.PageLabel.Comprehension Quiz</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Comic Full Page with Footer" sil:dynamic="true" approved="yes">
@@ -7001,6 +7051,11 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="es-ES" state="final">Solamente una imagen</target>
         <note>ID: TemplateBooks.PageLabel.Just an Image</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Canvas" sil:dynamic="true">
+        <source xml:lang="en">Canvas</source>
+        <target xml:lang="es-ES" state="needs-translation">Canvas</target>
+        <note>ID: TemplateBooks.PageLabel.Canvas</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Just Video" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Just Video</source>
         <target xml:lang="es-ES" state="final">Sólo video</target>
@@ -7095,6 +7150,11 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Translation Instructions</source>
         <target xml:lang="es-ES" state="final">Instrucciones de traducción</target>
         <note>ID: TemplateBooks.PageLabel.Translation Instructions</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Page with Simple Book Grid" sil:dynamic="true">
+        <source xml:lang="en">Page with Simple Book Grid</source>
+        <target xml:lang="es-ES" state="needs-translation">Page with Simple Book Grid</target>
+        <note>ID: TemplateBooks.PageLabel.Page with Simple Book Grid</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Video Over Text" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Video Over Text</source>

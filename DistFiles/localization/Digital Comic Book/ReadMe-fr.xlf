@@ -7,9 +7,9 @@
         <target xml:lang="fr" state="final">Bande Dessinée Numérique</target>
         <note>ID: comic.template.digital.title</note>
       </trans-unit>
-      <trans-unit id="comic.template.subscription" approved="yes">
-        <source xml:lang="en">Note: The Overlay Tool requires that you have a valid <g id="genid-1" ctype="x-html-a" html:href="" html:onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">Bloom subscription</g>. However, you can localize a shellbook that contains overlay elements into your own language without a Bloom subscription.</source>
-        <target xml:lang="fr" state="final">Remarque : Pour exploiter l'outil de superposition il faut un abonnement <g id="genid-1" ctype="x-html-a" html:href="" html:onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">valide à Bloom</g>. Cependant, on peut localiser un livre 'coquille' qui contient des éléments superposés dans votre propre langue sans abonnement à Bloom.</target>
+      <trans-unit id="comic.template.subscription">
+        <source xml:lang="en">Note: The Canvas Tool requires that you have a valid <g id="genid-1" ctype="x-html-a" html:href="" html:onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">Bloom subscription</g>. However, you can localize a shellbook that contains canvas elements into your own language without a Bloom subscription.</source>
+        <target xml:lang="fr" state="translated">Remarque : Pour exploiter l'outil de superposition il faut un abonnement <g id="genid-1" ctype="x-html-a" html:href="" html:onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">valide à Bloom</g>. Cependant, on peut localiser un livre 'coquille' qui contient des éléments superposés dans votre propre langue sans abonnement à Bloom.</target>
         <note>ID: comic.template.subscription</note>
       </trans-unit>
       <trans-unit id="comic.template.digital.use" approved="yes">

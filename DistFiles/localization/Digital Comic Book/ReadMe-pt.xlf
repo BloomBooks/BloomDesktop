@@ -4,27 +4,27 @@
     <body>
       <trans-unit id="comic.template.digital.title">
         <source xml:lang="en">Digital Comic Book</source>
-        <target xml:lang="pt-PT" state="needs-translation">Digital Comic Book</target>
+        <target xml:lang="pt-PT" state="translated">Livro de Quadrinhos (Banda desenhada) Digital</target>
         <note>ID: comic.template.digital.title</note>
       </trans-unit>
       <trans-unit id="comic.template.subscription">
-        <source xml:lang="en">Note: The Overlay Tool requires that you have a valid <g id="genid-1" ctype="x-html-a" html:href="" html:onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">Bloom subscription</g>. However, you can localize a shellbook that contains overlay elements into your own language without a Bloom subscription.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Note: The Overlay Tool requires that you have a valid <g id="genid-1" ctype="x-html-a" html:href="" html:onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">Bloom subscription</g>. However, you can localize a shellbook that contains overlay elements into your own language without a Bloom subscription.</target>
+        <source xml:lang="en">Note: The Canvas Tool requires that you have a valid <g id="genid-1" ctype="x-html-a" html:href="" html:onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">Bloom subscription</g>. However, you can localize a shellbook that contains canvas elements into your own language without a Bloom subscription.</source>
+        <target xml:lang="pt-PT" state="translated">Nota: A Ferramenta de Sobreposição requer uma assinatura <g id="genid-1" ctype="x-html-a" html:href="" html:onclick="fetch('/bloom/api/common/showSettingsDialog?tab=subscription', {method:'POST'})">Bloom</g>válida. No entanto, você pode traduzir um livro pré-desenhado que contém elementos de sobreposição para sua língua sem uma assinatura do Bloom.</target>
         <note>ID: comic.template.subscription</note>
       </trans-unit>
       <trans-unit id="comic.template.digital.use">
         <source xml:lang="en">Use this template as a starting point for comics designed for use on screens.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Use this template as a starting point for comics designed for use on screens.</target>
+        <target xml:lang="pt-PT" state="translated">Use este modelo como ponto de partida para livros de quadrinhos (banda desenhada) produzidos para uso digital.</target>
         <note>ID: comic.template.digital.use</note>
       </trans-unit>
       <trans-unit id="comic.template.tips.lettering.header">
         <source xml:lang="en">Tips on "lettering"</source>
-        <target xml:lang="pt-PT" state="needs-translation">Tips on "lettering"</target>
+        <target xml:lang="pt-PT" state="translated">Dicas para "letreiramento"</target>
         <note>ID: comic.template.tips.lettering.header</note>
       </trans-unit>
       <trans-unit id="comic.template.tips.lettering">
         <source xml:lang="en"><g id="genid-2" ctype="x-html-em">"Lettering"</g> is the term used for adding bubbles and text to comics. Take some time to learn what professional <g id="genid-3" ctype="x-html-em">letterers</g> say about making good-looking comics. Bloom takes care of some of these things for you, but there are many things that require training your eye. See <g id="genid-4" ctype="x-html-a" html:href="https://blambot.com/pages/lettering-tips">https://blambot.com/pages/lettering-tips</g>. Note, you do <g id="genid-5" ctype="x-html-em">not</g> need to only use upper case letters. It does look cool because we are used to seeing comics done this way, but you should do whatever is best for your audience. If you do choose upper case <g id="genid-6" ctype="x-html-em">and</g> have a script that is widely supported, consider using a special comic book font. See <g id="genid-7" ctype="x-html-a" html:href="https://blambot.com/collections/all-fonts/dialogue">here</g> and <g id="genid-8" ctype="x-html-a" html:href="https://jasonthibault.com/comic-book-fonts/">here</g>.</source>
-        <target xml:lang="pt-PT" state="needs-translation"><g id="genid-2" ctype="x-html-em">"Lettering"</g> is the term used for adding bubbles and text to comics. Take some time to learn what professional <g id="genid-3" ctype="x-html-em">letterers</g> say about making good-looking comics. Bloom takes care of some of these things for you, but there are many things that require training your eye. See <g id="genid-4" ctype="x-html-a" html:href="https://blambot.com/pages/lettering-tips">https://blambot.com/pages/lettering-tips</g>. Note, you do <g id="genid-5" ctype="x-html-em">not</g> need to only use upper case letters. It does look cool because we are used to seeing comics done this way, but you should do whatever is best for your audience. If you do choose upper case <g id="genid-6" ctype="x-html-em">and</g> have a script that is widely supported, consider using a special comic book font. See <g id="genid-7" ctype="x-html-a" html:href="https://blambot.com/collections/all-fonts/dialogue">here</g> and <g id="genid-8" ctype="x-html-a" html:href="https://jasonthibault.com/comic-book-fonts/">here</g>.</target>
+        <target xml:lang="pt-PT" state="translated"><g id="genid-2" ctype="x-html-em">"Letreiramento"</g> é o termo usado para adicionar balões e texto a quadrinhos (bandas desenhadas). Aprenda os elementos que <g id="genid-3" ctype="x-html-em">letristas</g> profisionais utilizam para fazer uma história em quadrinhos (banda desenhada) de qualidade. Bloom cuida de alguns desses elementos para você, mas há muita coisa que requer um olho treinado. Veja <g id="genid-4" ctype="x-html-a" html:href="https://blambot.com/pages/lettering-tips">https://blambot.com/pages/lettering-tips</g>. Note que você <g id="genid-5" ctype="x-html-em">não</g> precisa usar apenas letras maiúsculas. Estamos acostumados a ver quadrinhos (bandas desenhadas) feitos com letras de caixa alta, mas use o que for melhor para seu público. Se você escolher usar letras em maiúsculo <g id="genid-6" ctype="x-html-em">e</g> tem um sistema de escrita amplamente suportado, considere o uso de uma fonte feita para histórias em quadrinhos (banda desenhada). Veja <g id="genid-7" ctype="x-html-a" html:href="https://blambot.com/collections/all-fonts/dialogue">aqui</g> e <g id="genid-8" ctype="x-html-a" html:href="https://jasonthibault.com/comic-book-fonts/">aqui</g>.</target>
         <note>ID: comic.template.tips.lettering</note>
       </trans-unit>
     </body>

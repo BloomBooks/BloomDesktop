@@ -385,18 +385,28 @@ namespace Bloom.TeamCollection
             {
                 var joinType = FolderTeamCollection.JoinCollectionTeam();
                 ReactDialog.CloseCurrentModal();
-
-                Analytics.Track(
-                    "TeamCollectionJoin",
-                    new Dictionary<string, string>()
-                    {
-                        { "CollectionId", _settings?.CollectionId },
-                        { "CollectionName", _settings?.CollectionName },
-                        { "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
-                        { "User", CurrentUser },
-                        { "JoinType", joinType }, // create, open, or merge
-                    }
-                );
+                // If this is null, something went badly wrong, and should have already been reported.
+                // We haven't joined the TC, so don't track it.
+                // This check was added in connection with problems when the TC we're trying to join
+                // doesn't have an "other" folder, or it doesn't have the zip that contains the .bloomCollection
+                // file. Such a problem will usually be detected and reported long before we open the
+                // dialog, so there's no likely path to this happening. The file would have to
+                // disappear between when we open the dialog and when we click the button to join.
+                // But we may as well handle the situation properly.
+                if (!string.IsNullOrEmpty(joinType))
+                {
+                    Analytics.Track(
+                        "TeamCollectionJoin",
+                        new Dictionary<string, string>()
+                        {
+                            { "CollectionId", _settings?.CollectionId },
+                            { "CollectionName", _settings?.CollectionName },
+                            { "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
+                            { "User", CurrentUser },
+                            { "JoinType", joinType }, // create, open, or merge
+                        }
+                    );
+                }
 
                 request.PostSucceeded();
             }
@@ -949,15 +959,27 @@ namespace Bloom.TeamCollection
 
                     var book = _collectionModel.GetBookFromBookInfo(bookInfo);
                     var message = BookHistory.GetPendingCheckinMessage(book);
-                    _tcManager.CurrentCollection.PutBook(
-                        bookInfo.FolderPath,
-                        true,
-                        false,
-                        reportProgressFraction
-                    );
-                    // After we actually do the checkin, so if checkin throws, we don't record a checkin that didn't happen.
                     BookHistory.AddEvent(book, BookHistoryEventType.CheckIn, message);
                     BookHistory.SetPendingCheckinMessage(book, "");
+                    try
+                    {
+                        _tcManager.CurrentCollection.PutBook(
+                            bookInfo.FolderPath,
+                            true,
+                            false,
+                            reportProgressFraction
+                        );
+                    }
+                    catch (Exception)
+                    {
+                        BookHistory.RemoveMostRecentEvent(
+                            book,
+                            BookHistoryEventType.CheckIn,
+                            message
+                        );
+                        BookHistory.SetPendingCheckinMessage(book, message);
+                        throw;
+                    }
                     progress?.MessageWithoutLocalizing($"Completed check-in of '{bookInfo.Title}'");
 
                     reportProgressFraction(0); // hides the progress bar (important if a different book has been selected that is still checked out)

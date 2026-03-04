@@ -4,7 +4,14 @@ import * as React from "react";
 export const CollectionsTabIcon: React.FunctionComponent<SvgIconProps> = (
     props,
 ) => (
-    <SvgIcon width="32" height="35" viewBox="0 0 32 35" fill="none" {...props}>
+    <SvgIcon
+        width="32"
+        height="35"
+        viewBox="0 0 32 35"
+        fill="none"
+        style={{ width: "32px", height: "35px" }}
+        {...props}
+    >
         <path
             d="M0 0.489227H21.259V2.77647H3.51157V27.2806H0V0.489227Z"
             fill="#1D94A4"

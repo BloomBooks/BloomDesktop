@@ -1,8 +1,6 @@
-import { css, ThemeProvider } from "@emotion/react";
-import $ from "jquery";
+import { css } from "@emotion/react";
 import BloomButton from "../../react_components/bloomButton";
 import { getBloomApiPrefix, post, postJson } from "../../utils/bloomApi";
-import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import { useEffect, useState } from "react";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
@@ -11,7 +9,6 @@ import {
     kDisabledTextOnPurple,
     kTextOnPurple,
     kUiFontStack,
-    lightTheme,
 } from "../../bloomMaterialUITheme";
 import { ArrowDropDown } from "@mui/icons-material";
 import { BookSettingsButton } from "../../react_components/BookSettingsButton";
@@ -64,77 +61,76 @@ export const EditTopBarControls: React.FunctionComponent = () => {
     });
 
     return (
-        <ThemeProvider theme={lightTheme}>
+        <div
+            css={css`
+                display: flex;
+                justify-content: space-between;
+                width: 100%;
+            `}
+        >
             <div
                 css={css`
+                    // We originally set this to ${kBloomPurple}, but on some displays,
+                    // something caused a slightly different color to be displayed for the control
+                    // background compared to the WinForms bar it sits on.
+                    // This should improve things. Though now the buttons are probably slightly different
+                    // on that display. We could, in theory, do something similar for the buttons,
+                    // but that would probably break any hover/active/click effects.
+                    // This problem will go away when the whole top bar is react.
+                    background-color: transparent;
                     display: flex;
-                    justify-content: space-between;
+                    overflow-y: hidden;
+                    padding-top: 4px;
+                    padding-bottom: 2px;
+                    padding-inline: 3px;
                 `}
             >
+                <PasteButton enabled={buttonsEnabled.paste ?? true} />
                 <div
                     css={css`
-                        // We originally set this to ${kBloomPurple}, but on some displays,
-                        // something caused a slightly different color to be displayed for the control
-                        // background compared to the WinForms bar it sits on.
-                        // This should improve things. Though now the buttons are probably slightly different
-                        // on that display. We could, in theory, do something similar for the buttons,
-                        // but that would probably break any hover/active/click effects.
-                        // This problem will go away when the whole top bar is react.
-                        background-color: transparent;
                         display: flex;
-                        overflow-y: hidden;
-                        padding-top: 4px;
-                        padding-bottom: 2px;
-                        padding-inline: 3px;
+                        flex-direction: column;
+                        justify-content: space-evenly;
+                        width: 72px;
                     `}
                 >
-                    <PasteButton enabled={buttonsEnabled.paste ?? true} />
+                    <CutButton enabled={buttonsEnabled.cut ?? true} />
+                    <CopyButton enabled={buttonsEnabled.copy ?? true} />
                     <div
                         css={css`
-                            display: flex;
-                            flex-direction: column;
-                            justify-content: space-evenly;
-                            width: 72px;
+                            height: 6px;
                         `}
-                    >
-                        <CutButton enabled={buttonsEnabled.cut ?? true} />
-                        <CopyButton enabled={buttonsEnabled.copy ?? true} />
-                        <div
-                            css={css`
-                                height: 6px;
-                            `}
-                        />
-                    </div>
-                    <UndoButton enabled={buttonsEnabled.undo ?? true} />
-                    <div
-                        css={css`
-                            width: 18px;
-                        `}
+                    />
+                </div>
+                <UndoButton enabled={buttonsEnabled.undo ?? true} />
+                <div
+                    css={css`
+                        width: 18px;
+                    `}
+                />
+                <div
+                    css={css`
+                        display: flex;
+                        flex-direction: column;
+                        font-size: 11px;
+                    `}
+                >
+                    <ContentLanguagesDropdown
+                        enabled={contentLanguagesEnabled}
+                        number={contentLanguagesNumber}
                     />
                     <div
                         css={css`
-                            display: flex;
-                            flex-direction: column;
-                            font-size: 11px;
+                            height: 3px;
                         `}
-                    >
-                        <ContentLanguagesDropdown
-                            enabled={contentLanguagesEnabled}
-                            number={contentLanguagesNumber}
-                        />
-                        <div
-                            css={css`
-                                height: 3px;
-                            `}
-                        ></div>
-                        <LayoutChoicesDropdown
-                            localizedText={layoutChoicesLocalizedText}
-                        />
-                    </div>
+                    ></div>
+                    <LayoutChoicesDropdown
+                        localizedText={layoutChoicesLocalizedText}
+                    />
                 </div>
-                <BookSettingsButton />
             </div>
-        </ThemeProvider>
+            <BookSettingsButton />
+        </div>
     );
 };
 
@@ -394,15 +390,3 @@ export const EditingControlDropdown: React.FunctionComponent<{
         </BloomTooltip>
     );
 };
-
-$(window).ready(() => {
-    // If the user clicks outside of the context menu, we want to close it.
-    // Since it is currently a winforms menu, we do that by sending a message
-    // back to c#-land.
-    // We can remove this whenever we replace the winforms context menu with a react menu.
-    $(window).click(() => {
-        (window as any).chrome?.webview?.postMessage("browser-clicked");
-    });
-});
-
-WireUpForWinforms(EditTopBarControls, kBloomPurple);

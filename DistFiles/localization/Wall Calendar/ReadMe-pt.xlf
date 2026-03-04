@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="wall.calendar.use" approved="yes">
         <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
-        <target xml:lang="pt-PT" state="final">Usando este modelo, você pode fazer um calendário tamanho A5 de 12 meses, com uma imagem e uma citação no topo da página e os dias na parte inferior. O calendário usará os nomes dos meses e dias em seu idioma.</target>
+        <target xml:lang="pt-PT" state="final">Usando este modelo, pode fazer um calendário tamanho A5 de 12 meses, com uma imagem e uma citação na metade superior da página e os dias na parte inferior. O calendário usará os nomes dos meses e dias que você providencia na sua língua.</target>
         <note>ID: wall.calendar.use</note>
       </trans-unit>
       <trans-unit id="wall.calendar.limits" approved="yes">
@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="wall.calendar.noshells" approved="yes">
         <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
-        <target xml:lang="pt-PT" state="final">Atualmente, você não pode fazer um modelo que pode ser utilizado em outros idiomas.</target>
+        <target xml:lang="pt-PT" state="final">Atualmente, você não pode fazer um calendário pré-desenhado que pode ser utilizado em outras línguas.</target>
         <note>ID: wall.calendar.noshells</note>
       </trans-unit>
       <trans-unit id="wall.calendar.credits" approved="yes">
@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="wall.calendar.thanks" approved="yes">
         <source xml:lang="en">Thanks to Bruce Cox (SIL Cameroon) for getting this template started.</source>
-        <target xml:lang="pt-PT" state="final">Agradecemos Bruce Cox (SIL Camarões) por iniciar este modelo.</target>
+        <target xml:lang="pt-PT" state="final">Agradecemos Bruce Cox (SIL Camarões) por dar início a este modelo.</target>
         <note>ID: wall.calendar.thanks</note>
       </trans-unit>
     </body>

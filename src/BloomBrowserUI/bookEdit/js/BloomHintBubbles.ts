@@ -115,7 +115,7 @@ export default class BloomHintBubbles {
                     whatToSay = whatToSay.substring(1, 1000);
                 }
 
-                if (whatToSay.length == 0 || $(this).css("display") == "none")
+                if (whatToSay.length === 0 || $(this).css("display") === "none")
                     return;
 
                 BloomHintBubbles.MakeHelpBubbleOrAddToSource(
@@ -141,7 +141,7 @@ export default class BloomHintBubbles {
             elementThatHasSourceBubble,
             elementWithBubbleAttributes,
         );
-        if (whatToSay != null && whatToSay.startsWith("*"))
+        if (whatToSay && whatToSay.startsWith("*"))
             whatToSay = whatToSay.substring(1);
         if (!whatToSay) return; // just forget adding a hint if there's no text.
         // Don't use the corresponding svg from artwork here. Somehow it causes about a 4 second delay (on a fast workstation)
@@ -179,13 +179,17 @@ export default class BloomHintBubbles {
         // because doing that causes the manipulations that easytabs does to the results of this method
         // to skip the hint tab. (At least, when you're not stepping through the code.)
         get("bubbleLanguages", (result) => {
-            const preferredLangs: Array<string> = (<any>result.data).langs;
+            const preferredLangs: Array<string> = (
+                result.data as {
+                    langs: Array<string>;
+                }
+            ).langs;
             whatToSay = this.getHintContent(
                 elementThatHasSourceBubble,
                 elementWithBubbleAttributes,
                 preferredLangs,
             );
-            if (whatToSay != null && whatToSay.startsWith("*"))
+            if (whatToSay && whatToSay.startsWith("*"))
                 whatToSay = whatToSay.substring(1);
             if (!whatToSay) return;
             const hyperlink = this.getPossibleHyperlink(
@@ -280,7 +284,7 @@ export default class BloomHintBubbles {
             // add it to that group's source bubble
             // hints are sometimes put on a parent div (e.g., creditsRow on bottom of cover page)
             if (
-                divsThatHaveSourceBubbles[i].parentNode == targetElement.get(0)
+                divsThatHaveSourceBubbles[i].parentNode === targetElement.get(0)
             ) {
                 this.InsertHintIntoBubbleDiv(
                     $(contentOfBubbleDivs[i]),
@@ -296,7 +300,7 @@ export default class BloomHintBubbles {
             // vernacular bloom-editable div inserted into it. The others don't have source bubbles
             // and get their normal hints.
             if (
-                divsThatHaveSourceBubbles[i] ==
+                divsThatHaveSourceBubbles[i] ===
                 targetElement.get(0).parentElement
             ) {
                 // Is it the first visible?
@@ -322,8 +326,11 @@ export default class BloomHintBubbles {
         // And if targetElement is not related in any of these ways to any of the divs that have source bubbles,
         // go ahead and give it its own help/hint bubble.
         get("bubbleLanguages", (result) => {
-            const orderedLangsForBubble: Array<string> = (<any>result.data)
-                .langs;
+            const orderedLangsForBubble: Array<string> = (
+                result.data as {
+                    langs: Array<string>;
+                }
+            ).langs;
             this.MakeHelpBubble(
                 targetElement,
                 elementWithBubbleAttributes,
@@ -433,10 +440,11 @@ export default class BloomHintBubbles {
                 source.hasClass("bloom-showOnlyWhenTargetHasFocus") ||
                 bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles(target);
 
-            if (whatToSay != null && whatToSay.startsWith("*"))
+            if (whatToSay && whatToSay.startsWith("*"))
                 whatToSay = whatToSay.substring(1);
             if (!whatToSay) return; // no empty bubbles
             let functionCall: string = source.data("functiononhintclick");
+            let additionalQtipClasses: string | undefined;
             if (functionCall) {
                 if (functionCall === "showCopyrightAndLicenseDialog") {
                     if (!BloomHintBubbles.canChangeBookLicense()) return;
@@ -445,6 +453,7 @@ export default class BloomHintBubbles {
                 } else if (functionCall === "showTopicChooser") {
                     functionCall =
                         "javascript:(window.parent || window).editTabBundle.showEditViewTopicChooserDialog();";
+                    additionalQtipClasses = "topic-chooser-hint-bubble";
                 }
                 shouldShowAlways = true;
                 whatToSay = `<a href='${functionCall}'>${whatToSay}</a>`;
@@ -453,7 +462,12 @@ export default class BloomHintBubbles {
             if (onFocusOnly) {
                 shouldShowAlways = false;
             }
-            this.makeHintBubbleCore(target, whatToSay, shouldShowAlways);
+            this.makeHintBubbleCore(
+                target,
+                whatToSay,
+                shouldShowAlways,
+                additionalQtipClasses,
+            );
         }, bloomQtipUtils.horizontalOverlappingBubblesDelay);
     }
 
@@ -480,6 +494,7 @@ export default class BloomHintBubbles {
         target: JQuery,
         whatToSay: string,
         shouldShowAlways: boolean,
+        additionalClasses?: string,
     ) {
         const pos = {
             at: "right center",
@@ -489,7 +504,7 @@ export default class BloomHintBubbles {
             container: bloomQtipUtils.qtipZoomContainer(),
         };
 
-        const theClasses = "ui-tooltip-shadow ui-tooltip-plain";
+        const theClasses = `ui-tooltip-shadow ui-tooltip-plain${additionalClasses ? ` ${additionalClasses}` : ""}`;
         const hideEvents = shouldShowAlways ? false : "focusout mouseleave";
 
         target.qtip({
@@ -513,7 +528,7 @@ export default class BloomHintBubbles {
         const canChange = $(document).find('meta[name="canChangeLicense"]');
         if (
             canChange.length > 0 &&
-            canChange.attr("content").toLowerCase() == "false"
+            canChange.attr("content")?.toLowerCase() === "false"
         )
             return false;
 

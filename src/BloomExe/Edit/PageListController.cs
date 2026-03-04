@@ -5,7 +5,6 @@ using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.web;
-using L10NSharp;
 using SIL.Reporting;
 using SIL.Windows.Forms.Reporting;
 
@@ -35,92 +34,6 @@ namespace Bloom.Edit
             _thumbNailList.RelocatePageEvent = relocatePageEvent;
             _thumbNailList.PageSelectedChanged += new EventHandler(OnPageSelectedChanged);
             _thumbNailList.Model = model;
-            // First action determines whether the menu item is enabled, second performs it.
-            var menuItems = new List<PageThumbnailList.MenuItemSpec>();
-            menuItems.Add(
-                new PageThumbnailList.MenuItemSpec()
-                {
-                    Label = LocalizationManager.GetString(
-                        "EditTab.DuplicatePageButton",
-                        "Duplicate Page"
-                    ),
-                    EnableFunction = (page) => page != null && _model.CanDuplicatePage,
-                    ExecuteCommand = (page) => _model.DuplicatePage(page),
-                }
-            );
-            menuItems.Add(
-                new PageThumbnailList.MenuItemSpec()
-                {
-                    Label = LocalizationManager.GetString(
-                        "EditTab.DuplicatePageMultiple",
-                        "Duplicate Page Many Times..."
-                    ),
-                    EnableFunction = (page) => page != null && _model.CanDuplicatePage,
-                    ExecuteCommand = (page) => _model.DuplicateManyPages(page),
-                }
-            );
-            menuItems.Add(
-                new PageThumbnailList.MenuItemSpec()
-                {
-                    Label = LocalizationManager.GetString("EditTab.CopyPage", "Copy Page"),
-                    EnableFunction = (page) => page != null && _model.CanCopyPage,
-                    ExecuteCommand = (page) => _model.CopyPage(page),
-                }
-            );
-            menuItems.Add(
-                new PageThumbnailList.MenuItemSpec()
-                {
-                    Label = LocalizationManager.GetString("EditTab.PastePage", "Paste Page"),
-                    EnableFunction = (page) =>
-                        page != null && _model.CanAddPages && _model.GetClipboardHasPage(),
-                    ExecuteCommand = (page) => _model.PastePage(page),
-                }
-            );
-            menuItems.Add(
-                new PageThumbnailList.MenuItemSpec()
-                {
-                    Label = LocalizationManager.GetString(
-                        "EditTab.DeletePageButton",
-                        "Remove Page"
-                    ),
-                    EnableFunction = (page) => page != null && _model.CanDeletePage,
-                    ExecuteCommand = (page) =>
-                    {
-                        if (ConfirmRemovePageDialog.Confirm())
-                            _model.DeletePage(page);
-                    },
-                }
-            );
-            menuItems.Add(
-                new PageThumbnailList.MenuItemSpec()
-                {
-                    Label = LocalizationManager.GetString(
-                        "EditTab.ChooseLayoutButton",
-                        "Choose Different Layout"
-                    ),
-                    // We don't want to allow layout changes for game pages (except Widget pages).
-                    // Note: we also have to disable the Change Layout switch, in origami.ts
-                    EnableFunction = (page) =>
-                        page != null
-                        && !page.Required
-                        && !page.GetDivNodeForThisPage()
-                            .GetAttribute("data-tool-id")
-                            .Equals("game"),
-                    ExecuteCommand = (page) =>
-                    {
-                        // While we have separate browsers running for this page list and the editing view, we switch
-                        // the focus to the editing browser before launching the dialog so that Esc will work to close
-                        // the dialog without interacting with the dialog first.
-                        _model.GetEditingBrowser().Focus();
-                        _model.ChangePageLayout(page);
-                    },
-                }
-            );
-            // This sets up the context menu items that will be shown when the user clicks the
-            // arrow in the thumbnail list or right-clicks in the page list.
-            // Note that we can't use ContextMenuProvider here, because there is no reasonable
-            // way to know which page was right-clicked, if any. So we handle right-click in JS.
-            _thumbNailList.ContextMenuItems = menuItems;
         }
 
         private void OnPageSelectedChanged(object page, EventArgs e)

@@ -18,6 +18,7 @@ using Bloom.web.controllers;
 using BloomTemp;
 using Moq;
 using NUnit.Framework;
+using SIL.Core.ClearShare;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
@@ -231,7 +232,7 @@ namespace BloomTests.Book
             );
             Assert.AreEqual("myImage.png", dataBookImage.InnerText);
             var pageImage = dom.SelectSingleNodeHonoringDefaultNS(
-                "//div[contains(@class,'bloom-canvas')]/img[@data-book='coverImage']"
+                "//div[contains(@class,'bloom-canvas')]//img[@data-book='coverImage']"
             );
             Assert.IsTrue(pageImage.GetAttribute("src").Equals("myImage.png"));
         }
@@ -290,7 +291,7 @@ namespace BloomTests.Book
             if (dataBookImage != null) // used to just set the src of the img, but removing the dataDiv element altogether is better still.
                 Assert.AreEqual(placeHolderFile, dataBookImage.InnerText);
             var pageImage = dom.SelectSingleNodeHonoringDefaultNS(
-                "//div[contains(@class,'bloom-canvas')]/img[@data-book='coverImage']"
+                "//div[contains(@class,'bloom-canvas')]//img[@data-book='coverImage']"
             );
             Assert.IsTrue(pageImage.GetAttribute("src").Equals(placeHolderFile));
         }
@@ -480,7 +481,7 @@ namespace BloomTests.Book
             );
             Assert.AreEqual(imageFilename, dataBookImage.InnerText);
             var pageImage = dom.SelectSingleNodeHonoringDefaultNS(
-                "//div[contains(@class,'bloom-canvas')]/img[@data-book='coverImage']"
+                "//div[contains(@class,'bloom-canvas')]//img[@data-book='coverImage']"
             );
             Assert.IsTrue(pageImage.GetAttribute("src").Equals(noPlusEncodedName));
 
@@ -2333,6 +2334,43 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void BringBookUpToDate_CustomLayoutPage_PreservesCustomLayoutClass()
+        {
+            _bookDom = new HtmlDom(
+                @"
+				<html>
+					<head>
+						<meta name='xmatter' content='Factory' />
+					</head>
+					<body>
+						<div id='bloomDataDiv'></div>
+                        <div class='bloom-page cover coverColor bloom-frontMatter frontCover bloom-customLayout A5Portrait side-right'
+							data-page='required singleton'
+							data-export='front-matter-cover'
+							data-xmatter-page='frontCover'
+                            data-custom-layout-id='customOutsideFrontCover'
+							id='frontCover-id'>
+							<div class='marginBox'>
+								<div class='bloom-canvas'></div>
+							</div>
+						</div>
+					</body>
+				</html>"
+            );
+
+            var book = CreateBook();
+
+            book.BringBookUpToDate(new NullProgress());
+
+            AssertThatXmlIn
+                .Dom(book.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class, 'bloom-page') and @data-custom-layout-id='customOutsideFrontCover' and contains(concat(' ', normalize-space(@class), ' '), ' bloom-customLayout ')]",
+                    1
+                );
+        }
+
+        [Test]
         public void BringBookUpToDate_RepairQuestionsPages_DoesNotMessUpGoodPages()
         {
             const string xpathQuestionsPrefix = "//div[contains(@class,'questions')]";
@@ -2530,7 +2568,7 @@ namespace BloomTests.Book
             AssertThatXmlIn
                 .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    "//div[contains(@class,'bloom-canvas')]/img[@data-book='coverImage' and @src='theCover.png']",
+                    "//div[contains(@class,'bloom-canvas')]//img[@data-book='coverImage' and @src='theCover.png']",
                     1
                 );
         }
@@ -6561,6 +6599,32 @@ namespace BloomTests.Book
             var body = doc.CreateElement("body");
 
             Assert.That(Bloom.Book.Book.ElementIsInXMatter(body), Is.False);
+        }
+
+        [Test]
+        public void GetCoverImagePathAndElt_HasNoCoverImage_ReturnsNulls()
+        {
+            SetDom(
+                @"
+<div id='bloomDataDiv'>
+	<div data-book='someOtherData' lang='*'>value</div>
+</div>
+<div class='bloom-page'>
+	<div class='marginBox'>
+        <div class='bloom-canvas'>
+            <div class=""bloom-canvas-element"" >
+                <div class=""bloom-imageContainer"">
+                    <img src=""IMG_1413.jpg"" id='not-cover'/>
+                </div>
+            </div>
+		</div>
+	</div>
+</div>"
+            );
+            var book = CreateBook();
+            var coverImgPath = book.GetCoverImagePathAndElt(out SafeXmlElement coverImgElt);
+            Assert.That(coverImgPath, Is.Null);
+            Assert.That(coverImgElt, Is.Null);
         }
     }
 }

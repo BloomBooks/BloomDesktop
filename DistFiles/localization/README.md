@@ -141,7 +141,7 @@ a normal merge with all that history would probably be okay.)
 
     <pre>
         cd ~/tmp
-        git clone git@github.com:BloomBooks/BloomDesktop.git
+        git clone https://github.com/BloomBooks/BloomDesktop.git
         cd BloomDesktop
         git checkout l10n_master
     </pre>
@@ -153,13 +153,14 @@ a normal merge with all that history would probably be okay.)
         git log --oneline | grep -c '^[0-9A-Fa-f]\{9\} New translations .*\.xlf (.*)$'
     </pre>
 
-   <p>Then use the git command for amending history.  (Use whatever number the preceding command
-   prints instead of 432 in the following command.  For example, this assumes that there are 432
-   commits labeled "New translations" in the branch.)  Every line in the commit message file
-   except the first should be marked as *fixup*.  The first line should be marked *reword*.  The
-   "git log" command is just to reassure yourself that everything looks okay after squashing
-   down all the history.  [NB: the count is too high by 4.  Some individual commits have snuck
-   through somehow.  So you need to subtract 4 from the number returned by the git log command.]
+   <p>Then use the git command for amending history. This is the command below, but replace 432 with
+   the number from the log command above minus 4. (There are some old commits containing that string
+   that we cannot merge.) It will open a text editor showing a series of commands.  (The example below assumes that there are 436 commits labeled "New translations" in the branch.)  Every line in
+   the commit message file which automatically opens initially starts with 'pick'.
+   All except the first should be changed from 'pick' to *fixup*.
+   The first line 'pick' should be changed to *reword*.
+   The "git log" command is just to reassure yourself that everything looks okay after squashing
+   down all the history.
 
     <pre>
         git rebase -i HEAD~432
@@ -172,12 +173,13 @@ a normal merge with all that history would probably be okay.)
    command, followed optionally by moving the CheckOrFixXliff.exe and L10NSharp.dll files to a
    convenient location.  Note that if nuget is not obviously available on your machine, it can
    be downloaded from https://docs.microsoft.com/en-us/nuget/install-nuget-client-tools and
-   installed somewhere in your PATH.
+   installed somewhere in your PATH. Use the most recent (stable unless you need a beta)
+   version of CheckOrFixXliff. (Note the 'tee' which saves all the output in a file.)
 
    <pre>
        # Ensure needed program is somewhere in your PATH ... This needs to be done only once.
-       nuget install L10NSharp.CheckOrFixXliff -Version 4.2.0-beta0006
-       cp L10NSharp.CheckOrFixXliff.4.2.0-beta0006/tools/* /c/bin
+       nuget install L10NSharp.CheckOrFixXliff -Version 9
+       cp L10NSharp.CheckOrFixXliff.9.0000/tools/* /c/bin
 
        for f in DistFiles/localization/*/*.xlf; do
            echo ==== $f ====
@@ -205,6 +207,12 @@ a normal merge with all that history would probably be okay.)
    remove the "-fixed", and the commit updated to include the fixed file.  Then the command
    given above using CheckOrFixXliff.exe should be run again to check that nothing will crash.
 
+   You can find all these -fixed files using
+
+   <pre>
+       find Distfiles/localization -name *-fixed
+   </pre>
+
    Fix any crashing errors that are (still) reported.  If the XML file is malformed or malformed
    formatting markers remain that would crash Bloom, the output log file will contain the words
    "crash", "invalid", or "unexpected" in it.  This can be checked easily by
@@ -224,15 +232,18 @@ a normal merge with all that history would probably be okay.)
 
 5. Rebase the l10n_master branch on the master branch, and fix any merge conflicts.  (I find it
    easier to fix merge conflicts on the local machine rather than in the web interface.  Your
-   mileage may vary, as they say.)
+   mileage may vary, as they say.) [It may seem unusual to rebase a branch that is part of our
+   long-term process. But crowdin has set this branch up as a PR for all the new translations.
+   We've now squashed them, and after the rebase, we will merge and delete the branch, like
+   we normally do with a PR branch. Then crowdin will make a new temporary branch (and PR) with the
+   same name for the next round of changes.]
 
    <pre>
         git rebase master
    </pre>
 
-6. Force push the modified l10n_master branch back to the master BloomDesktop repository.  The
-   form of the command given here ensures that nobody else has modified the branch on github
-   since you acquired it.
+6. Force push the modified l10n_master branch back to the github/BloomBooks BloomDesktop
+   repository (origin).  The form of the command given here ensures that nobody else has modified the branch on github since you acquired it. This updates the PR that crowdin created.
 
     <pre>
         git push --force-with-lease origin l10n_master
@@ -243,7 +254,7 @@ a normal merge with all that history would probably be okay.)
    delete the remote l10n_master branch using the handy "Delete branch" button provide by the
    web browser interface.  **Do not forget to delete the remote l10n__master branch!**
 
-8. Delete the temporary local copy of the BloomDesktop repository.
+8. (optional...local cleanup) Delete the temporary local copy of the BloomDesktop repository.
 
     <pre>
         cd ~/tmp

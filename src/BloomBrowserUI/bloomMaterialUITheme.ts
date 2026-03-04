@@ -12,8 +12,9 @@ export const kBloomBlue50Transparent = "#8ecad280";
 export const kBloomPurple = "#96668f";
 export const kTextOnPurple = "#31202eff";
 export const kDisabledTextOnPurple = "#724a6aff";
+export const kBloomRed = "#d65649";
 const kDialogTopBottomGray = "#F1F3F4";
-const kGreyOnDarkColor = "#988b8b";
+export const kGreyOnDarkColor = "#988b8b";
 export const kBloomGold = "#f3aa18";
 export const kErrorColor = "red";
 export const kDialogPadding = "10px";
@@ -29,7 +30,7 @@ export const kMutedTextGray = "gray";
 export const kVerticalSpacingBetweenDialogSections = "20px";
 export const kBorderRadiusForSpecialBlocks = "3px";
 export const kBloomBuff = "#d2d2d2";
-export const kWarningColor = "#d65649";
+export const kWarningColor = kBloomRed;
 // css we want to apply to each MuiSelect to get the look we like.
 export const kSelectCss = `
     background-color: white;

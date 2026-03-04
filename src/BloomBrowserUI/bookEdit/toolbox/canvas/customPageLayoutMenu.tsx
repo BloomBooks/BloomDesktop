@@ -52,10 +52,16 @@ export const CustomPageLayoutMenu: React.FunctionComponent<{
     ) => {
         return (
             <MenuItem value={value} disabled={disabled}>
-                <ListItemIcon sx={{ minWidth: 32 }}>
+                <ListItemIcon
+                    css={css`
+                        min-width: 32px;
+                    `}
+                >
                     <CheckIcon
                         fontSize="small"
-                        sx={{ visibility: checked ? "visible" : "hidden" }}
+                        css={css`
+                            visibility: ${checked ? "visible" : "hidden"};
+                        `}
                     />
                 </ListItemIcon>
                 {label}

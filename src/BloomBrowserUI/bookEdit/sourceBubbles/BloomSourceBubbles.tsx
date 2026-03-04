@@ -41,7 +41,9 @@ export default class BloomSourceBubbles {
         return BloomSourceBubbles.MakeSourceTextDivForGroup(group, newLangTag);
     }
 
-    // remvoe tooltips from every TG in the container (and the container itself, if it IS a TG).
+    // remove tooltips from everything in the container (and the container itself, if it has one).
+    // warning: this will remove qtips even if they were not created by our source bubble or hint
+    // bubble code.
     public static removeSourceBubbles(
         container: HTMLElement | null | undefined,
     ): void {

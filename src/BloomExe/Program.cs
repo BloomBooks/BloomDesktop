@@ -32,6 +32,7 @@ using CommandLine;
 using L10NSharp;
 using L10NSharp.Windows.Forms;
 using Sentry;
+using SIL.Core.Desktop.i18n;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.Miscellaneous;
@@ -373,7 +374,7 @@ namespace Bloom
                     if (FolderTeamCollection.IsJoinTeamCollectionFile(args))
                     {
                         SetUpErrorHandling();
-                        string newCollection;
+                        string newCollection = null;
                         // When we're spinning up a fake local collection in "projectName", we don't want
                         // any chance of copying FROM there to the repo.
                         TeamCollectionManager.ForceNextSyncToLocal = true;
@@ -394,69 +395,77 @@ namespace Bloom
                                         Path.GetDirectoryName(args[0]),
                                         fakeProjectFolder.FolderPath
                                     );
-                                using (
-                                    var projectContext = _applicationContainer.CreateProjectContext(
-                                        fakeCollectionPath,
-                                        true
-                                    )
-                                )
+                                if (fakeCollectionPath != null)
                                 {
-                                    if (!UniqueToken.AcquireTokenQuietly(_mutexId))
-                                    {
-                                        var msg = LocalizationManager.GetString(
-                                            "TeamCollection.QuitOtherBloom",
-                                            "Please close Bloom before joining a Team Collection"
-                                        );
-                                        BloomMessageBox.ShowInfo(msg);
-                                        return 1;
-                                    }
-                                    _gotUniqueToken = true;
-
-                                    if (
-                                        projectContext.TeamCollectionManager.CurrentCollection
-                                        == null
+                                    using (
+                                        var projectContext =
+                                            _applicationContainer.CreateProjectContext(
+                                                fakeCollectionPath,
+                                                true
+                                            )
                                     )
                                     {
-                                        if (
-                                            projectContext
-                                                .TeamCollectionManager
-                                                .CurrentCollectionEvenIfDisconnected != null
-                                        )
+                                        if (!UniqueToken.AcquireTokenQuietly(_mutexId))
                                         {
                                             var msg = LocalizationManager.GetString(
-                                                "TeamCollection.ConnectToJoin",
-                                                "Bloom cannot currently join this collection."
+                                                "TeamCollection.QuitOtherBloom",
+                                                "Please close Bloom before joining a Team Collection"
                                             );
-                                            // This is a bit of a kludge, but when we make a disconnected collection it's pretty
-                                            // consistently true that the last message just says "you'll be disconnected till you fix this",
-                                            // but the previous one actually says what's wrong. So we'll reuse this in this (hopefully)
-                                            // rare case.
-                                            var messages =
-                                                projectContext.TeamCollectionManager.CurrentCollectionEvenIfDisconnected.MessageLog.GetProgressMessages();
+                                            BloomMessageBox.ShowInfo(msg);
+                                            return 1;
+                                        }
+
+                                        _gotUniqueToken = true;
+
+                                        if (
+                                            projectContext.TeamCollectionManager.CurrentCollection
+                                            == null
+                                        )
+                                        {
                                             if (
-                                                messages.Length > 1
-                                                && messages[messages.Length - 2].progressKind
-                                                    == "Error"
+                                                projectContext
+                                                    .TeamCollectionManager
+                                                    .CurrentCollectionEvenIfDisconnected != null
                                             )
                                             {
-                                                msg +=
-                                                    Environment.NewLine
-                                                    + messages[messages.Length - 2].message;
+                                                var msg = LocalizationManager.GetString(
+                                                    "TeamCollection.ConnectToJoin",
+                                                    "Bloom cannot currently join this collection."
+                                                );
+                                                // This is a bit of a kludge, but when we make a disconnected collection it's pretty
+                                                // consistently true that the last message just says "you'll be disconnected till you fix this",
+                                                // but the previous one actually says what's wrong. So we'll reuse this in this (hopefully)
+                                                // rare case.
+                                                var messages =
+                                                    projectContext.TeamCollectionManager.CurrentCollectionEvenIfDisconnected.MessageLog.GetProgressMessages();
+                                                if (
+                                                    messages.Length > 1
+                                                    && messages[messages.Length - 2].progressKind
+                                                        == "Error"
+                                                )
+                                                {
+                                                    msg +=
+                                                        Environment.NewLine
+                                                        + messages[messages.Length - 2].message;
+                                                }
+
+                                                ErrorReport.NotifyUserOfProblem(msg);
                                             }
-                                            ErrorReport.NotifyUserOfProblem(msg);
+
+                                            return 1; // something went wrong processing it, hopefully already reported.
                                         }
-                                        return 1; // something went wrong processing it, hopefully already reported.
+
+                                        newCollection =
+                                            FolderTeamCollection.ShowJoinCollectionTeamDialog(
+                                                args[0],
+                                                projectContext.TeamCollectionManager
+                                            );
                                     }
-                                    newCollection =
-                                        FolderTeamCollection.ShowJoinCollectionTeamDialog(
-                                            args[0],
-                                            projectContext.TeamCollectionManager
-                                        );
                                 }
                             }
                         }
 
-                        if (newCollection == null) // user canceled
+                        if (newCollection == null) // user canceled, or catastrophic problem already reported
                             return 1;
 
                         args = new string[] { }; // continue to open, but without args.
@@ -1604,6 +1613,8 @@ namespace Bloom
                 var uiLanguage = LocalizationManager.UILanguageId; //just feeding this into subsequent creates prevents asking the user twice if the language of their os isn't one we have a tmx for
                 if (uiLanguage != desiredLanguage)
                     Settings.Default.UserInterfaceLanguageSetExplicitly = true;
+
+                SIL.Localizer.Default = new L10NSharpLocalizer();
 
                 LocalizationManagerWinforms.Create(
                     uiLanguage,

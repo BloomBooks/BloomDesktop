@@ -22,7 +22,6 @@ using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.Workspace;
 using L10NSharp;
-using Microsoft.Win32;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
@@ -83,8 +82,6 @@ namespace Bloom.Edit
             _pageListApi = pageListApi;
             InitializeComponent();
 
-            _editControlsReactControl.SetLocalizationChangedEvent(localizationChangedEvent);
-
             // This used to be part of InitializeComponent, but we want to make which browser to use
             // configurable. It can possibly move back to the Designer code once we settle on WebView2.
             // Turning off for this PR because it's not working well enough yet.
@@ -124,9 +121,6 @@ namespace Bloom.Edit
 
             controlKeyEvent.Subscribe(HandleControlKeyEvent);
 
-            //we're giving it to the parent control through the TopBarControls property
-            if (_topBarPanel.Parent != null)
-                _topBarPanel.Parent.Controls.Remove(_topBarPanel);
             bookRenamedEvent.Subscribe(
                 (oldToNewPath) =>
                 {
@@ -270,13 +264,6 @@ namespace Bloom.Edit
             }
         }
 
-        public Control TopBarControl
-        {
-            get { return _topBarPanel; }
-        }
-
-        public int WidthToReserveForTopBarControl => _editControlsReactControl.Width;
-
         /// <summary>
         /// Prevents a white line from appearing below the tool strip
         /// Be careful if using this on Linux; it can have strange side-effects (https://jira.sil.org/browse/BL-509).
@@ -299,13 +286,6 @@ namespace Bloom.Edit
 
             _editButtonsUpdateTimer.Enabled = Parent != null;
         }
-
-        public void PlaceTopBarControl()
-        {
-            _topBarPanel.Dock = DockStyle.Left;
-        }
-
-        public Bitmap ToolStripBackground { get; set; }
 
         public void CheckFontAvailability()
         {
@@ -1931,14 +1911,6 @@ namespace Bloom.Edit
                 },
                 () => { } // wrong state, do nothing
             );
-        }
-
-        // This is temporary code we added in 6.0 when trying to determine why we are sometimes losing
-        // user data upon save. See BL-13120.
-        private void _topBarPanel_Click(object sender, EventArgs e)
-        {
-            if (Model.Visible && ModifierKeys == (Keys.Shift | Keys.Control))
-                _model.RethinkPageAndReloadItAndReportIfItFails();
         }
 
         public async Task AddImageFromUrlAsync(string desiredFileNameWithoutExtension, string url)

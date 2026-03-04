@@ -5,10 +5,13 @@ import { useApiObject } from "../../utils/bloomApi";
 import { useL10n } from "../../react_components/l10nHooks";
 import { useMemo } from "react";
 
-interface ILanguageNameValues {
+export interface ILanguageNameValues {
     language1Name: string;
+    language1Tag: string;
     language2Name: string;
+    language2Tag: string;
     language3Name?: string;
+    language3Tag?: string;
 }
 
 // This is used in BookSettingsDialog to provide a group of Config-R booleans that control
@@ -20,7 +23,7 @@ export const FieldVisibilityGroup: React.FunctionComponent<{
     labelFrame: string;
     labelFrameL10nKey: string;
     settings: object | undefined;
-    settingsToReturnLater: string;
+    settingsToReturnLater: string | object | undefined;
     disabled: boolean;
     L1MustBeTurnedOn?: boolean;
 
@@ -40,7 +43,9 @@ export const FieldVisibilityGroup: React.FunctionComponent<{
     const languageNameValues: ILanguageNameValues =
         useApiObject<ILanguageNameValues>("settings/languageNames", {
             language1Name: "",
+            language1Tag: "",
             language2Name: "",
+            language2Tag: "",
         });
     const showWrittenLanguage1TitleLabel = useL10n(
         props.labelFrame,
@@ -83,8 +88,13 @@ export const FieldVisibilityGroup: React.FunctionComponent<{
     const [showL1, showL2, showL3, numberShowing] = useMemo(() => {
         let appearance = props.settings?.["appearance"];
         if (props.settingsToReturnLater) {
-            // although we declared it a string, it appears the Config-R callback always gives us an object
-            appearance = props.settingsToReturnLater["appearance"];
+            // although we originally declared it a string, Config-R may return a JSON string or an object
+            if (typeof props.settingsToReturnLater === "string") {
+                const parsedSettings = JSON.parse(props.settingsToReturnLater);
+                appearance = parsedSettings["appearance"];
+            } else {
+                appearance = props.settingsToReturnLater["appearance"];
+            }
         }
         if (!appearance) {
             // This is a bit arbitrary. It should only apply during early renders.

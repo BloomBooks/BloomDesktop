@@ -1,4 +1,4 @@
-import { css, ThemeProvider } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { useState } from "react";
 import { TopBarButton } from "../../TopBarButton";
@@ -9,9 +9,8 @@ import {
     post,
     useWatchApiData,
 } from "../../../utils/bloomApi";
-import { WireUpForWinforms } from "../../../utils/WireUpWinform";
 import { useSubscribeToWebSocketForStringMessage } from "../../../utils/WebSocketManager";
-import { kBloomBlue, lightTheme } from "../../../bloomMaterialUITheme";
+import { kBloomBlue } from "../../../bloomMaterialUITheme";
 const bloomApiPrefix = getBloomApiPrefix(false);
 
 const kOpenCreateCollectionIcon = `${bloomApiPrefix}images/OpenCreateCollection24x24.png`;
@@ -49,45 +48,43 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
     }, []);
 
     return (
-        <ThemeProvider theme={lightTheme}>
-            {/* The result of the two sets of flex divs is we get the TC button
-                on the left and the other buttons on the right */}
+        /* The result of the two sets of flex divs is we get the TC button
+           on the left and the other buttons on the right */
+        <div
+            key={`collection-topbar-${generation}`}
+            css={css`
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                padding-top: 2px;
+                width: 100%;
+            `}
+        >
+            <TeamCollectionButton status={teamCollectionStatus} />
             <div
-                key={`collection-topbar-${generation}`}
                 css={css`
                     display: flex;
-                    align-items: flex-start;
-                    justify-content: space-between;
-                    padding-top: 2px;
+                    gap: 10px;
+                    align-items: center;
                 `}
             >
-                <TeamCollectionButton status={teamCollectionStatus} />
-                <div
-                    css={css`
-                        display: flex;
-                        gap: 10px;
-                        align-items: center;
-                    `}
-                >
-                    <TopBarButton
-                        iconPath={kSettingsIcon}
-                        labelL10nKey="CollectionTab.SettingsButton"
-                        labelEnglish="Settings"
-                        onClick={handleLegacySettingsClick}
-                        backgroundColor={mainButtonBackground}
-                        textColor={mainButtonTextColor}
-                    />
-                    <TopBarButton
-                        iconPath={kOpenCreateCollectionIcon}
-                        labelL10nKey="CollectionTab.Open/CreateCollectionButton"
-                        labelEnglish="Other Collection"
-                        onClick={handleOpenOrCreateClick}
-                        backgroundColor={mainButtonBackground}
-                        textColor={mainButtonTextColor}
-                    />
-                </div>
+                <TopBarButton
+                    iconPath={kSettingsIcon}
+                    labelL10nKey="CollectionTab.SettingsButton"
+                    labelEnglish="Settings"
+                    onClick={handleLegacySettingsClick}
+                    backgroundColor={mainButtonBackground}
+                    textColor={mainButtonTextColor}
+                />
+                <TopBarButton
+                    iconPath={kOpenCreateCollectionIcon}
+                    labelL10nKey="CollectionTab.Open/CreateCollectionButton"
+                    labelEnglish="Other Collection"
+                    onClick={handleOpenOrCreateClick}
+                    backgroundColor={mainButtonBackground}
+                    textColor={mainButtonTextColor}
+                />
             </div>
-        </ThemeProvider>
+        </div>
     );
 };
-WireUpForWinforms(CollectionTopBarControls, kBloomBlue);
