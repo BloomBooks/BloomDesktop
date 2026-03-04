@@ -55,6 +55,7 @@ namespace Bloom.Workspace
         public static float DPIOfThisAccount;
         private ZoomModel _zoomModel;
         private ReactControl _topRightReactControl;
+        internal ReactControl TopBarReactControl => _topRightReactControl;
         private readonly ContextMenuStrip _uiLanguageContextMenu = new ContextMenuStrip();
         private readonly ContextMenuStrip _helpContextMenu = new ContextMenuStrip();
 
@@ -1797,3 +1798,4 @@ namespace Bloom.Workspace
 #endif
     }
 }
+
