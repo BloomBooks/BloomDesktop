@@ -706,6 +706,9 @@ export class CanvasElementManager {
         const bloomCanvases: HTMLElement[] = this.getAllBloomCanvasesOnPage();
 
         bloomCanvases.forEach((bloomCanvas) => {
+            this.backgroundImageManager.setupBackgroundImageAttributes(
+                bloomCanvas,
+            );
             this.adjustCanvasElementsForCurrentLanguage(bloomCanvas);
             this.ensureCanvasElementsIntersectParent(bloomCanvas);
             // image containers are already set by CSS to overflow:hidden, so they

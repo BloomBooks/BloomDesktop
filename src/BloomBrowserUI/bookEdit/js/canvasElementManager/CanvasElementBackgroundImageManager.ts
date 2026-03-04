@@ -166,7 +166,7 @@ export class CanvasElementBackgroundImageManager {
                 bloomCanvas.getElementsByClassName(kCanvasElementClass),
             ) as HTMLElement[];
             this.putBubbleBefore(bgCanvasElement, canvasElementElements, 1);
-            bgCanvasElement.style.visibility = "none"; // hide it until we adjust its shape and position
+            bgCanvasElement.style.visibility = "hidden"; // hide it until we adjust its shape and position
             // consistent with level, we want it in front of the (new, placeholder) background image
             // and behind the other canvas elements.
             if (oldBgImage) {
@@ -201,12 +201,38 @@ export class CanvasElementBackgroundImageManager {
             "src",
             oldBgImage?.getAttribute("src") ?? "placeHolder.png",
         );
-        this.adjustBackgroundImageSize(bloomCanvas, bgCanvasElement, true);
+        this.setupBackgroundImageAttributes(bloomCanvas, bgCanvasElement, true);
         bgCanvasElement.style.visibility = ""; // now we can show it, if it was new and hidden
         SetupMetadataButton(bloomCanvas);
         if (oldBgImage) {
             oldBgImage.remove();
         }
+    }
+
+    public setupBackgroundImageAttributes(
+        bloomCanvas: HTMLElement,
+        bgElement?: HTMLElement,
+        useSizeOfNewImage = false,
+    ): void {
+        if (!bgElement) {
+            bgElement = bloomCanvas.getElementsByClassName(
+                kBackgroundImageClass,
+            )[0] as HTMLElement;
+        }
+        if (!bgElement || bgElement.getAttribute("data-bubble")) {
+            return;
+        }
+
+        this.adjustBackgroundImageSize(
+            bloomCanvas,
+            bgElement,
+            useSizeOfNewImage,
+        );
+
+        const canvasElementElements = Array.from(
+            bloomCanvas.getElementsByClassName(kCanvasElementClass),
+        ) as HTMLElement[];
+        this.putBubbleBefore(bgElement, canvasElementElements, 1);
     }
 
     // Adjust the levels of all the bubbles of all the listed canvas elements so that
