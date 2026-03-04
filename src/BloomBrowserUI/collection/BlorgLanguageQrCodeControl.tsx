@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 
 import * as React from "react";
-import { useApiStringWithUpdate } from "../utils/bloomApi";
+import { useApiStringState } from "../utils/bloomApi";
 import { TextField, Typography } from "@mui/material";
 import { useL10n } from "../react_components/l10nHooks";
 import { ApiCheckbox } from "../react_components/ApiCheckbox";
@@ -12,7 +12,7 @@ const BlorgLanguageQrCodeControl: React.FunctionComponent = () => {
         "CollectionSettingsDialog.BookMakingTab.QrCodeLabel",
     );
 
-    const [badgeLabel, setBadgeLabel] = useApiStringWithUpdate(
+    const [badgeLabel, setBadgeLabel] = useApiStringState(
         "settings/badgeQrCodeLabel",
         "",
     );

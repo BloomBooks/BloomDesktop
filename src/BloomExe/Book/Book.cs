@@ -2099,8 +2099,6 @@ namespace Bloom.Book
             UpdateCharacterStyleMarkup(OurHtmlDom);
 
             OurHtmlDom.SetImageAltAttrsFromDescriptions(_bookData.Language1.Tag);
-            // We've messed with xmatter, branding...need this back to what it should be.
-            //BookStorage.UpdateQrCode(OurHtmlDom, true, Language1Tag);
 
             //we've removed and possible added pages, so our page cache is invalid
             _pagesCache = null;
@@ -5387,7 +5385,7 @@ namespace Bloom.Book
                 OurHtmlDom,
                 CollectionSettings.ShowBlorgLanguageQrCode,
                 Language1Tag,
-                CollectionSettings,
+                CollectionSettings.BadgeQrCodeLabelLocalizedWithLang,
                 FolderPath
             );
         }
