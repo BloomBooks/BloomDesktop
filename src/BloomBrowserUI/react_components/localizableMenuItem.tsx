@@ -116,6 +116,10 @@ export const LocalizableMenuItem: React.FunctionComponent<
             css={css`
                 width: ${kIconCheckboxAffordance}px !important; // overrides MUI default that leaves way too much space
                 min-width: unset !important;
+                color: ${menuItemColor} !important;
+                svg {
+                    color: inherit !important;
+                }
 
                 // We can't use the disabled prop because it prevents the click from opening settings.
                 // So we just make it look disabled (using the same setting as Mui-disabled).
@@ -164,7 +168,10 @@ export const LocalizableMenuItem: React.FunctionComponent<
         <Typography
             variant="caption"
             css={css`
-                color: rgba(0, 0, 0, 0.6);
+                color: rgb(94, 94, 94);
+                font-family: ${kUiFontStack};
+                font-size: 14px;
+                font-weight: 500;
                 min-width: ${kShortcutAffordance}px;
                 text-align: right;
                 margin-left: 10px;
@@ -348,6 +355,9 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<
                     font-family: ${kUiFontStack};
                     font-size: 1rem !important; // Don't think this takes effect, MUI has a rule that applies to child.
                     color: ${menuItemColor} !important;
+                    svg {
+                        color: ${menuItemColor} !important;
+                    }
                     // probably need this back if we return to dense layout
                     //padding: 4px 6px 0 6px !important; // adjust for denser layout
                     justify-content: space-between !important; // move sub-menu arrow to right

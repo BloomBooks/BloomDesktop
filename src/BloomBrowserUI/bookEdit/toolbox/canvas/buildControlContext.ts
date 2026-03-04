@@ -2,7 +2,11 @@ import {
     findNextVideoContainer,
     findPreviousVideoContainer,
 } from "../../js/bloomVideo";
-import { isPlaceHolderImage, kImageContainerClass } from "../../js/bloomImages";
+import {
+    getImageFromContainer,
+    isPlaceHolderImage,
+    kImageContainerClass,
+} from "../../js/bloomImages";
 import { getGameType, GameType } from "../games/GameInfo";
 import { kDraggableIdAttribute } from "./canvasElementDraggables";
 import {
@@ -72,13 +76,18 @@ export const buildControlContext = (
         kImageContainerClass,
     )[0] as HTMLElement | undefined;
 
-    const img = imgContainer?.getElementsByTagName("img")[0];
+    const legacyImageContainer = canvasElement;
+    const img =
+        (imgContainer && getImageFromContainer(imgContainer)) ||
+        getImageFromContainer(legacyImageContainer);
+    const imageContainerForCommands =
+        imgContainer ?? (img ? legacyImageContainer : undefined);
 
     const videoContainer = canvasElement.getElementsByClassName(
         "bloom-videoContainer",
     )[0] as HTMLElement | undefined;
 
-    const hasImage = !!imgContainer;
+    const hasImage = !!img;
     const hasVideo = !!videoContainer;
     const hasEditableText =
         canvasElement.getElementsByClassName("bloom-editable").length > 0;
@@ -148,8 +157,10 @@ export const buildControlContext = (
         isBackgroundImage,
         isSpecialGameElement,
         canModifyImage:
-            !!imgContainer &&
-            !imgContainer.classList.contains("bloom-unmodifiable-image") &&
+            !!imageContainerForCommands &&
+            !imageContainerForCommands.classList.contains(
+                "bloom-unmodifiable-image",
+            ) &&
             !!img,
         canExpandBackgroundImage:
             getCanvasElementManager()?.canExpandToFillSpace() ?? false,

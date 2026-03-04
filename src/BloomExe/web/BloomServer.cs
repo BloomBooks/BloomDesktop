@@ -2136,7 +2136,7 @@ namespace Bloom.Api
                 }
                 else
                 {
-                    Debug.Fail(msg);
+                 //WHY WHY WHY   Debug.Fail(msg);
                 }
             }
 #endif

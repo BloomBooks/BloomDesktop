@@ -38,6 +38,7 @@ export type ImageFillMode =
     | typeof kImageFitModeContainValue
     | typeof kImageFitModeCoverValue;
 
+// note: "controls" here include menus, toolbars, and tool panels.
 export type ControlId =
     | "chooseImage"
     | "pasteImage"
@@ -57,7 +58,7 @@ export type ControlId =
     | "pasteText"
     | "autoHeight"
     | "language"
-    | "fieldType"
+    | "fieldType" // used for fields like cover title, topic, etc.
     | "fillBackground"
     | "addChildBubble"
     | "bubbleStyle"
@@ -169,7 +170,8 @@ export interface IControlMenuCommandRow {
     helpRowL10nId?: string;
     helpRowEnglish?: string;
     helpRowSeparatorAbove?: boolean;
-    icon?: React.ReactNode;
+    icon?: React.ReactNode; // for override only; e.g. dynamic checkmark row icon returned by buildMenuItem().
+    iconScale?: number; // for override only; e.g. shrink one dynamic menu row icon without changing control defaults.
     disabled?: boolean;
     featureName?: string;
     subscriptionTooltipOverride?: string;
@@ -199,6 +201,7 @@ export interface IBaseControlDefinition {
     helpRowEnglish?: string;
     helpRowSeparatorAbove?: boolean;
     icon?: IControlIcon;
+    iconScale?: number;
     tooltipL10nId?: string;
 }
 
@@ -211,15 +214,16 @@ export interface ICommandControlDefinition extends IBaseControlDefinition {
         runtime: IControlRuntime,
     ) => void | Promise<void>;
     toolbar?: {
-        relativeSize?: number;
-        icon?: IControlIcon;
+        icon?: IControlIcon; // for override only; e.g. use a toolbar-specific icon while keeping a monochrome menu icon.
+        iconScale?: number; // for override only; e.g. make a dense toolbar icon slightly smaller than the default control scale.
         render?: (
             ctx: IControlContext,
             runtime: IControlRuntime,
         ) => React.ReactNode;
     };
     menu?: {
-        icon?: React.ReactNode;
+        icon?: React.ReactNode; // for override only; e.g. swap in a grayscale-friendly menu icon while toolbar stays blue.
+        iconScale?: number; // for override only; e.g. reduce menu icon size if it appears heavy in list rows.
         subLabelL10nId?: string;
         shortcutDisplay?: string;
         buildMenuItem?: (

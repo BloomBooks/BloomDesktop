@@ -174,7 +174,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
         tipL10nKey: string;
         icon: React.FunctionComponent<SvgIconProps>;
         onClick: () => void;
-        relativeSize?: number;
+        iconScale?: number;
         disabled?: boolean;
     }): IToolbarItem => {
         return {
@@ -183,7 +183,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 <ButtonWithTooltip
                     tipL10nKey={props.tipL10nKey}
                     icon={props.icon}
-                    relativeSize={props.relativeSize}
+                    iconScale={props.iconScale}
                     disabled={props.disabled}
                     onClick={props.onClick}
                 />
@@ -205,7 +205,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
     };
     // editable and langName are computed earlier, but keep them here for the UI below.
 
-    const maxMenuWidth = 260;
+    const maxMenuWidth = 338;
 
     // Control callbacks can be either sync or async by contract.
     // We always call through this helper so sync exceptions and async
@@ -274,7 +274,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 subLabelL10nId: row.subLabelL10nId,
                 generatedSubLabel: row.subLabel,
                 shortcutDisplay: row.shortcut?.display,
-                icon: row.icon,
+                icon: scaleIconNode(row.icon, row.iconScale),
                 disabled: row.disabled,
                 featureName: row.featureName,
                 subscriptionTooltipOverride: row.subscriptionTooltipOverride,
@@ -340,6 +340,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
         }
 
         const icon = control.toolbar?.icon ?? control.icon;
+        const iconScale = control.toolbar?.iconScale ?? control.iconScale;
         const onClick = () => {
             runControlCallback(`toolbar:${control.id}`, () =>
                 control.action(controlContext, {
@@ -354,7 +355,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 tipL10nKey: control.tooltipL10nId ?? control.l10nId,
                 icon: icon as React.FunctionComponent<SvgIconProps>,
                 onClick,
-                relativeSize: control.toolbar?.relativeSize,
+                iconScale: iconScale ?? 1,
                 disabled: !item.enabled,
             });
         }
@@ -381,14 +382,14 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     <button
                         onClick={onClick}
                         css={getIconCss(
-                            control.toolbar?.relativeSize,
+                            iconScale,
                             !item.enabled
                                 ? `opacity: ${kBloomDisabledOpacity};`
                                 : "",
                         )}
                         disabled={!item.enabled}
                     >
-                        {renderedIcon}
+                        {scaleIconNode(renderedIcon, iconScale)}
                     </button>
                 </BloomTooltip>
             ),
@@ -508,14 +509,21 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                     display: flex;
                                     align-items: flex-start;
                                     color: #4d4d4d;
+                                    .MuiListItemIcon-root {
+                                        color: inherit !important;
+                                    }
                                     svg {
-                                        color: #4d4d4d;
+                                        color: inherit !important;
                                     }
                                     p,
                                     span {
                                         color: #4d4d4d;
                                     }
                                     img.canvas-context-menu-monochrome-icon {
+                                        display: block;
+                                        width: 24px;
+                                        height: 24px;
+                                        object-fit: contain;
                                         filter: brightness(0) saturate(100%)
                                             invert(31%) sepia(0%) saturate(0%)
                                             hue-rotate(180deg) brightness(95%)
@@ -639,7 +647,7 @@ const ButtonWithTooltip: React.FunctionComponent<{
     icon: React.FunctionComponent<SvgIconProps>;
     tipL10nKey: string;
     onClick: React.MouseEventHandler;
-    relativeSize?: number;
+    iconScale?: number;
     disabled?: boolean;
 }> = (props) => {
     return (
@@ -652,7 +660,7 @@ const ButtonWithTooltip: React.FunctionComponent<{
             <button
                 onClick={props.onClick}
                 css={getIconCss(
-                    props.relativeSize,
+                    props.iconScale,
                     props.disabled ? `opacity: ${kBloomDisabledOpacity};` : "",
                 )}
                 disabled={props.disabled}
@@ -698,9 +706,9 @@ export function renderCanvasElementContextControls(
     );
 }
 
-function getIconCss(relativeSize?: number, extra = "") {
+function getIconCss(iconScale?: number, extra = "") {
     const defaultFontSize = 1.3;
-    const fontSize = defaultFontSize * (relativeSize ?? 1);
+    const fontSize = defaultFontSize * (iconScale ?? 1);
     return css`
         ${extra}
         border-color: transparent;
@@ -713,6 +721,29 @@ function getIconCss(relativeSize?: number, extra = "") {
         }
     `;
 }
+
+const scaleIconNode = (
+    iconNode: React.ReactNode,
+    iconScale?: number,
+): React.ReactNode => {
+    if (!iconNode || iconScale === undefined || iconScale === 1) {
+        return iconNode;
+    }
+
+    return (
+        <span
+            css={css`
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                transform: scale(${iconScale});
+                transform-origin: center;
+            `}
+        >
+            {iconNode}
+        </span>
+    );
+};
 
 function joinMenuSectionsWithSingleDividers(
     menuSections: IMenuItemWithSubmenu[][],

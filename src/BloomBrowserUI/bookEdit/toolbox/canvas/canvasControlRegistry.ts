@@ -35,6 +35,7 @@ import { default as VolumeUpIcon } from "@mui/icons-material/VolumeUp";
 import { showCopyrightAndLicenseDialog } from "../../editViewFrame";
 import {
     doImageCommand,
+    getImageFromContainer,
     getImageUrlFromImageContainer,
     isPlaceHolderImage,
     kImageContainerClass,
@@ -71,6 +72,10 @@ import {
     SectionId,
     TopLevelControlId,
 } from "./canvasControlTypes";
+import {
+    kBackgroundImageClass,
+    kBloomCanvasSelector,
+} from "./canvasElementConstants";
 import { getCanvasElementManager } from "./canvasElementUtils";
 import { isDraggable, kDraggableIdAttribute } from "./canvasElementDraggables";
 import { setGeneratedDraggableId } from "./CanvasElementItem";
@@ -85,13 +90,23 @@ import {
 } from "./canvasPanelControls";
 
 const getImageContainer = (ctx: IControlContext): HTMLElement | undefined => {
-    return ctx.canvasElement.getElementsByClassName(kImageContainerClass)[0] as
-        | HTMLElement
-        | undefined;
+    const imageContainer = ctx.canvasElement.getElementsByClassName(
+        kImageContainerClass,
+    )[0] as HTMLElement | undefined;
+    if (imageContainer) {
+        return imageContainer;
+    }
+    return getImageFromContainer(ctx.canvasElement)
+        ? ctx.canvasElement
+        : undefined;
 };
 
 const getImage = (ctx: IControlContext): HTMLImageElement | undefined => {
-    return getImageContainer(ctx)?.getElementsByTagName("img")[0];
+    const imageContainer = getImageContainer(ctx);
+    if (!imageContainer) {
+        return undefined;
+    }
+    return getImageFromContainer(imageContainer) ?? undefined;
 };
 
 const getVideoContainer = (ctx: IControlContext): HTMLElement | undefined => {
@@ -478,7 +493,7 @@ const makeFieldTypeMenuItem = (
     return {
         id: "fieldType",
         l10nId: "EditTab.Toolbox.ComicTool.Options.FieldType",
-        englishLabel: "Field Type:",
+        englishLabel: "Field:",
         onSelect: () => {},
         subMenuItems,
     };
@@ -791,6 +806,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         id: "resetImage",
         l10nId: "EditTab.Image.Reset",
         englishLabel: "Reset Image",
+        iconScale: 0.9,
         icon: React.createElement("img", {
             src: "/bloom/images/reset image black.svg",
             alt: "",
@@ -807,6 +823,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         englishLabel: "Fit Space",
         icon: FillSpaceIcon,
         menu: {
+            iconScale: 0.8,
             icon: React.createElement("img", {
                 src: "/bloom/images/fill image black.svg",
                 alt: "",
@@ -821,7 +838,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         kind: "command",
         id: "imageFieldType",
         l10nId: "EditTab.Toolbox.ComicTool.Options.FieldType",
-        englishLabel: "Field Type:",
+        englishLabel: "Field:",
         action: () => {},
         menu: {
             buildMenuItem: (ctx) => {
@@ -832,7 +849,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                 return {
                     id: "imageFieldType",
                     l10nId: "EditTab.Toolbox.ComicTool.Options.FieldType",
-                    englishLabel: "Field Type:",
+                    englishLabel: "Field:",
                     onSelect: () => {},
                     subMenuItems: [
                         {
@@ -1011,7 +1028,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         englishLabel: "Record yourself...",
         icon: CircleIcon,
         toolbar: {
-            relativeSize: 0.8,
+            iconScale: 0.8,
         },
         menu: {
             icon: React.createElement(CircleIcon, {
@@ -1065,7 +1082,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         englishLabel: "Format",
         icon: CogIcon,
         toolbar: {
-            relativeSize: 0.8,
+            iconScale: 0.8,
         },
         action: (ctx) => {
             const editable = getEditable(ctx);
@@ -1135,7 +1152,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         kind: "command",
         id: "fieldType",
         l10nId: "EditTab.Toolbox.ComicTool.Options.FieldType",
-        englishLabel: "Field Type:",
+        englishLabel: "Field:",
         action: () => {},
         menu: {
             buildMenuItem: (ctx) => makeFieldTypeMenuItem(ctx),
@@ -1221,7 +1238,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         englishLabel: "Set Destination",
         icon: LinkIcon,
         toolbar: {
-            relativeSize: 0.8,
+            iconScale: 0.8,
         },
         action: (ctx, runtime) => {
             runtime.closeMenu(true);
@@ -1331,6 +1348,9 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         l10nId: "Common.Delete",
         englishLabel: "Delete",
         icon: DeleteIcon,
+        menu: {
+            iconScale: 1.2,
+        },
         action: () => {
             getCanvasElementManager()?.deleteCurrentCanvasElement?.();
         },
@@ -1423,8 +1443,8 @@ export const controlSections: Record<SectionId, IControlSection> = {
                 "copyImage",
                 "resetImage",
                 "expandToFillSpace",
-                "imageFieldType",
                 "becomeBackground",
+                "imageFieldType",
             ],
         },
     },
@@ -1486,7 +1506,6 @@ export const controlSections: Record<SectionId, IControlSection> = {
                 "autoHeight",
                 "language",
                 "fieldType",
-                "fillBackground",
             ],
             toolPanel: ["textColor", "backgroundColor"],
         },
