@@ -67,6 +67,7 @@ import { setupBookLinkGrids } from "./linkGrid";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
 import { handleUndo } from "../editViewFrame";
+import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -1029,6 +1030,7 @@ function OneTimeSetup() {
     setupOrigami();
     hookupLinkHandler();
     setupDragActivityTabControl();
+    setupPageLayoutMenu();
 }
 
 interface String {
