@@ -1631,7 +1631,9 @@ namespace Bloom.Spreadsheet
         private List<SafeXmlElement> GetBloomCanvases(SafeXmlElement ancestor)
         {
             return ancestor
-                .SafeSelectNodes(".//div[contains(@class, 'bloom-canvas')]")
+                .SafeSelectNodes(
+                    ".//div[contains(concat(' ', normalize-space(@class), ' '), ' bloom-canvas ')]"
+                ) // Don't catch substring matches like "bloom-canvas-element"
                 .Cast<SafeXmlElement>()
                 .ToList();
         }
