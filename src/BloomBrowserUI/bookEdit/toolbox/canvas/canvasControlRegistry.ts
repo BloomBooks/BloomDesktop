@@ -900,6 +900,14 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                 return;
             }
 
+            const canvasElementManager = getCanvasElementManager();
+            if (!canvasElementManager) {
+                return;
+            }
+
+            // Ensure a background canvas element exists before we try to swap.
+            canvasElementManager.turnOnCanvasElementEditing();
+
             const bgImageCe = bloomCanvas.getElementsByClassName(
                 kBackgroundImageClass,
             )[0] as HTMLElement | undefined;
@@ -913,11 +921,6 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                 | HTMLImageElement
                 | undefined;
             if (!bgImg) {
-                return;
-            }
-
-            const canvasElementManager = getCanvasElementManager();
-            if (!canvasElementManager) {
                 return;
             }
 
