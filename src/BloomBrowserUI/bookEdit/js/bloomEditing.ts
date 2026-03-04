@@ -46,7 +46,6 @@ import { showInvisibles, hideInvisibles } from "./showInvisibles";
 //promise.Promise.polyfill();
 import axios from "axios";
 import {
-    get,
     postBoolean,
     postJson,
     postString,
@@ -621,7 +620,7 @@ export function SetupElements(
             if (!theEvent.clipboardData) return;
 
             const s = theEvent.clipboardData.getData("text/plain");
-            if (s == null || s === "") return;
+            if (s === null || s === "") return;
 
             if ($(this).parent().hasClass("bloom-userCannotModifyStyles")) {
                 e.preventDefault();
@@ -997,12 +996,12 @@ function SetupCustomMissingTitleStylesheet() {
 
 const pageLabelL18nPrefix = "TemplateBooks.PageLabel.";
 
-function ConstrainContentsOfPageLabel(container) {
+function ConstrainContentsOfPageLabel(_container) {
     const pageLabel = <HTMLDivElement>(
         document.getElementsByClassName("pageLabel")[0]
     );
     if (!pageLabel) return;
-    $(pageLabel).blur((event) => {
+    $(pageLabel).blur((_event) => {
         // characters that cause problem in windows file names (linux is less picky, according to mono source)
         pageLabel.innerText = pageLabel.innerText
             .split(/[\/\\*:?"<>|]/)
@@ -1012,7 +1011,7 @@ function ConstrainContentsOfPageLabel(container) {
         // update data-i18n attribute to prevent this change being forgotten on reload; BL-5855
         let localizationAttr = pageLabel.getAttribute("data-i18n");
         if (
-            localizationAttr != null &&
+            localizationAttr !== null &&
             localizationAttr.startsWith(pageLabelL18nPrefix)
         ) {
             localizationAttr = pageLabelL18nPrefix + pageLabel.innerText;
@@ -1021,14 +1020,14 @@ function ConstrainContentsOfPageLabel(container) {
     });
 }
 
-function AddXMatterLabelAfterPageLabel(container) {
+function AddXMatterLabelAfterPageLabel(_container) {
     // All this rigamarole so we can localize...
     const pageLabel = <HTMLDivElement>(
         document.getElementsByClassName("pageLabel")[0]
     );
     if (!pageLabel) return;
     let xMatterLabel = window.getComputedStyle(pageLabel, ":before").content;
-    if (xMatterLabel == null) return;
+    if (xMatterLabel === null) return;
     xMatterLabel = xMatterLabel.replace(new RegExp('"', "g"), ""); //No idea why the quotes are still in there at this point.
     if (xMatterLabel === "" || xMatterLabel === "none") return;
     theOneLocalizationManager
@@ -1058,11 +1057,6 @@ function OneTimeSetup() {
     setupPageLayoutMenu();
 }
 
-interface String {
-    endsWith(string): boolean;
-    startsWith(string): boolean;
-}
-
 function isTextSelected(): boolean {
     const selection = document.getSelection();
     return !!selection && !selection.isCollapsed;
@@ -1082,7 +1076,7 @@ export function bootstrap() {
 
     document.addEventListener("selectionchange", () => {
         const textSelected = isTextSelected();
-        if (textSelected != reportedTextSelected) {
+        if (textSelected !== reportedTextSelected) {
             postBoolean("editView/isTextSelected", textSelected);
             reportedTextSelected = textSelected;
         }
@@ -1173,7 +1167,7 @@ function setupWheelZooming() {
         } else if (theEvent.deltaY > 0) {
             command = "edit/pageControls/zoomMinus";
         }
-        if (command != "") {
+        if (command !== "") {
             // Zooming re-loads the page (because of a text-over-picture issue)
             postThatMightNavigate(command);
         }
@@ -1799,7 +1793,7 @@ export function attachToCkEditor(element) {
                 .done((translation) => {
                     CKEDITOR.config.labelForDefaultColor = translation;
                 });
-        } catch (error) {
+        } catch {
             // swallow... it's not worth crashing over if something went bad in there.
         }
     }
