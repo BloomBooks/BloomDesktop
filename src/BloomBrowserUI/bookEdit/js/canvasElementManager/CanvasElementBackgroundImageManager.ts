@@ -160,12 +160,6 @@ export class CanvasElementBackgroundImageManager {
             }
             newImg.classList.remove("bloom-imageLoadError");
             newImgContainer.appendChild(newImg);
-
-            // Set level so Comical will consider the new canvas element to be under the existing ones.
-            const canvasElementElements = Array.from(
-                bloomCanvas.getElementsByClassName(kCanvasElementClass),
-            ) as HTMLElement[];
-            this.putBubbleBefore(bgCanvasElement, canvasElementElements, 1);
             bgCanvasElement.style.visibility = "hidden"; // hide it until we adjust its shape and position
             // consistent with level, we want it in front of the (new, placeholder) background image
             // and behind the other canvas elements.
@@ -201,29 +195,39 @@ export class CanvasElementBackgroundImageManager {
             "src",
             oldBgImage?.getAttribute("src") ?? "placeHolder.png",
         );
-        this.setupBackgroundImageAttributes(bloomCanvas, bgCanvasElement, true);
-        bgCanvasElement.style.visibility = ""; // now we can show it, if it was new and hidden
-        SetupMetadataButton(bloomCanvas);
-        if (oldBgImage) {
-            oldBgImage.remove();
-        }
+        // Keep the new background hidden until its first size adjustment settles,
+        // so users never see intermediate geometry.
+        void this.setupBackgroundImageAttributes(
+            bloomCanvas,
+            bgCanvasElement,
+            true,
+        ).finally(() => {
+            bgCanvasElement.style.visibility = "";
+            SetupMetadataButton(bloomCanvas);
+            if (oldBgImage) {
+                oldBgImage.remove();
+            }
+        });
     }
 
     public setupBackgroundImageAttributes(
         bloomCanvas: HTMLElement,
         bgElement?: HTMLElement,
         useSizeOfNewImage = false,
-    ): void {
+    ): Promise<void> {
         if (!bgElement) {
             bgElement = bloomCanvas.getElementsByClassName(
                 kBackgroundImageClass,
             )[0] as HTMLElement;
         }
-        if (!bgElement || bgElement.getAttribute("data-bubble")) {
-            return;
+        if (bgElement?.getAttribute("data-bubble")) {
+            return Promise.resolve(); // setup has already been done (data-bubble is added by putBubbleBefore)
+        }
+        if (!bgElement) {
+            return Promise.resolve();
         }
 
-        this.adjustBackgroundImageSize(
+        const sizeAdjustment = this.adjustBackgroundImageSize(
             bloomCanvas,
             bgElement,
             useSizeOfNewImage,
@@ -233,6 +237,7 @@ export class CanvasElementBackgroundImageManager {
             bloomCanvas.getElementsByClassName(kCanvasElementClass),
         ) as HTMLElement[];
         this.putBubbleBefore(bgElement, canvasElementElements, 1);
+        return sizeAdjustment;
     }
 
     // Adjust the levels of all the bubbles of all the listed canvas elements so that
@@ -272,12 +277,12 @@ export class CanvasElementBackgroundImageManager {
         bloomCanvas: HTMLElement,
         bgCanvasElement: HTMLElement,
         useSizeOfNewImage: boolean,
-    ): void => {
+    ): Promise<void> => {
         // adjustBackgroundImageSizeToFit may wait for the image to load and make modifications after,
         // and we want to make sure those modifications are included in any save that occurs in the meantime.
         // wrapWithRequestPageContentDelay will add the delay before calling the function and remove it
         // when the promise settles.
-        wrapWithRequestPageContentDelay(
+        return wrapWithRequestPageContentDelay(
             () =>
                 this.adjustBackgroundImageSizeToFit(
                     bloomCanvas,

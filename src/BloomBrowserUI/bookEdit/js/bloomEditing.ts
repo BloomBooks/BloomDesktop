@@ -954,6 +954,7 @@ function makeSourceBubblesIntoQtips(
 export function recomputeSourceBubblesForPage(container: HTMLElement) {
     const { divsThatHaveSourceBubbles, bubbleDivs } =
         prepareSourceAndHintBubbles(container);
+    PlaceholderProvider.addPlaceholders(container);
     setTimeout(() => {
         makeSourceBubblesIntoQtips(bubbleDivs, divsThatHaveSourceBubbles);
         BloomSourceBubbles.setupSizeChangedHandling(divsThatHaveSourceBubbles);

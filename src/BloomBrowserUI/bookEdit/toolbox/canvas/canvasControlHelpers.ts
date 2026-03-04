@@ -270,6 +270,7 @@ export const getMenuSections = (
                       helpRowSeparatorAbove: control.helpRowSeparatorAbove,
                       subLabelL10nId: control.menu?.subLabelL10nId,
                       icon: iconToNode(control, "menu"),
+                      iconScale: control.menu?.iconScale ?? control.iconScale,
                       featureName: control.featureName,
                       shortcut: control.menu?.shortcutDisplay
                           ? {
@@ -297,6 +298,10 @@ export const getMenuSections = (
             const menuRow: IControlMenuCommandRow = {
                 ...rowWithAvailability,
                 icon: rowWithAvailability.icon ?? iconToNode(control, "menu"),
+                iconScale:
+                    rowWithAvailability.iconScale ??
+                    control.menu?.iconScale ??
+                    control.iconScale,
                 featureName:
                     rowWithAvailability.featureName ?? control.featureName,
                 helpRowL10nId:

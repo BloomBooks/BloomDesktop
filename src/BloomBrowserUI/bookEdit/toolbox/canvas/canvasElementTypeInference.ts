@@ -38,6 +38,12 @@ const getBubbleStyle = (canvasElement: HTMLElement): string | undefined => {
     return styleClass.substring(0, styleClass.length - "-style".length);
 };
 
+const hasDirectImageChild = (canvasElement: HTMLElement): boolean => {
+    return Array.from(canvasElement.children).some(
+        (child) => child.nodeName === "IMG",
+    );
+};
+
 // Best-effort inference of canvas element type based on the DOM structure.
 // Keep this dependency-light; it is used from both the toolbox and the page iframe.
 export const inferCanvasElementType = (
@@ -80,6 +86,7 @@ export const inferCanvasElementType = (
     if (
         canvasElement.getElementsByClassName("bloom-imageContainer").length >
             0 ||
+        hasDirectImageChild(canvasElement) ||
         canvasElement.classList.contains(kBackgroundImageClass)
     ) {
         return "image";
