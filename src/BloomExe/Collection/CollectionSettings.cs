@@ -419,8 +419,15 @@ namespace Bloom.Collection
             get
             {
                 var pattern = BadgeQrCodeLabelLocalized;
-
-                return string.Format(pattern, Language1.Name);
+                try
+                {
+                    return string.Format(pattern, Language1.Name);
+                }
+                catch (FormatException)
+                {
+                    // If the pattern doesn't format correctly, just return the pattern.
+                    return pattern;
+                }
             }
         }
 
