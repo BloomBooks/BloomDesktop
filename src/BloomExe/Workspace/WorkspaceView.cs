@@ -271,8 +271,8 @@ namespace Bloom.Workspace
                     BloomFileLocator.BrowserRoot,
                     "bookEdit",
                     ReactControl.ShouldUseViteDev()
-                        ? "EditViewFrame.vite-dev.html"
-                        : "EditViewFrame.html"
+                        ? "WorkspaceRoot.vite-dev.html"
+                        : "WorkspaceRoot.html"
                 )
             );
 

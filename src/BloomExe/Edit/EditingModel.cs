@@ -1352,8 +1352,8 @@ namespace Bloom.Edit
                     BloomFileLocator.BrowserRoot,
                     "bookEdit",
                     ReactControl.ShouldUseViteDev()
-                        ? "EditViewFrame.vite-dev.html"
-                        : "EditViewFrame.html"
+                        ? "WorkspaceRoot.vite-dev.html"
+                        : "WorkspaceRoot.html"
                 )
             );
             // {simulatedPageFileInBookFolder} is placed in the template file where we want the source file for the 'page' iframe.
