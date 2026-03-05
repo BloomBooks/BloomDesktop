@@ -391,8 +391,6 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
                         if (eyedropperActive) {
                             return;
                         }
-                        if (reason === "backdropClick")
-                            onClose(DialogResult.OK);
                         if (reason === "escapeKeyDown")
                             onClose(DialogResult.Cancel);
                     }}
@@ -490,10 +488,19 @@ export const showSimpleColorPickerDialog = (
             props.initialColor,
         ),
         palette: props.palette,
-        onChange: (color: IColorInfo) => props.onChange(color.colors[0]),
+        onChange: (color: IColorInfo) =>
+            props.onChange(getColorStringFromColorInfo(color)),
         onInputFocus: props.onInputFocus,
     };
     showColorPickerDialog(fullProps, props.container);
+};
+
+const getColorStringFromColorInfo = (color: IColorInfo): string => {
+    const firstColor = color.colors[0];
+    if (color.opacity === 1) {
+        return firstColor;
+    }
+    return getRgbaColorStringFromColorAndOpacity(firstColor, color.opacity);
 };
 
 export interface IColorDisplayButtonProps {
@@ -508,21 +515,29 @@ export interface IColorDisplayButtonProps {
     disabled?: boolean;
     onClose: (result: DialogResult, newColor: string) => void;
     onChange?: (newColor: string) => void;
+    onColorPickerVisibilityChanged?: (open: boolean) => void;
     palette: BloomPalette;
 }
 
 export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = (
     props,
 ) => {
+    const onColorPickerVisibilityChanged = props.onColorPickerVisibilityChanged;
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [colorAtDialogOpen, setColorAtDialogOpen] = useState(
+        props.initialColor,
+    );
     const [currentButtonColor, setCurrentButtonColor] = useState(
         props.initialColor,
     );
     const widthString = props.width ? `width: ${props.width}px;` : "";
 
     const initialColorInfo = React.useMemo(
-        () => getColorInfoFromSpecialNameOrColorString(props.initialColor),
-        [props.initialColor],
+        () =>
+            getColorInfoFromSpecialNameOrColorString(
+                dialogOpen ? colorAtDialogOpen : props.initialColor,
+            ),
+        [props.initialColor, dialogOpen, colorAtDialogOpen],
     );
 
     useEffect(() => {
@@ -536,6 +551,15 @@ export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = (
         // other than a new props value changes it. )
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.initialColor]);
+
+    useEffect(() => {
+        return () => {
+            if (onColorPickerVisibilityChanged) {
+                onColorPickerVisibilityChanged(false);
+            }
+        };
+    }, [onColorPickerVisibilityChanged]);
+
     return (
         <div>
             <div
@@ -557,6 +581,10 @@ export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = (
                     `}
                     onClick={() => {
                         if (props.disabled) return;
+                        if (onColorPickerVisibilityChanged) {
+                            onColorPickerVisibilityChanged(true);
+                        }
+                        setColorAtDialogOpen(props.initialColor);
                         setDialogOpen(true);
                     }}
                 />
@@ -565,11 +593,17 @@ export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = (
                 open={dialogOpen}
                 close={(result: DialogResult) => {
                     setDialogOpen(false);
+                    if (onColorPickerVisibilityChanged) {
+                        onColorPickerVisibilityChanged(false);
+                    }
+                    if (result === DialogResult.Cancel) {
+                        setCurrentButtonColor(colorAtDialogOpen);
+                    }
                     props.onClose(
                         result,
                         result === DialogResult.OK
                             ? currentButtonColor
-                            : props.initialColor,
+                            : colorAtDialogOpen,
                     );
                 }}
                 localizedTitle={props.localizedTitle}
@@ -578,7 +612,7 @@ export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = (
                 initialColor={initialColorInfo}
                 onInputFocus={() => {}}
                 onChange={(color: IColorInfo) => {
-                    const newColor = color.colors[0];
+                    const newColor = getColorStringFromColorInfo(color);
                     setCurrentButtonColor(newColor);
                     if (props.onChange) {
                         props.onChange(newColor);

@@ -59,9 +59,8 @@ import { showPageChooserDialog } from "../pageChooser/PageChooserDialog";
 export { showPageChooserDialog };
 
 import "../lib/errorHandler";
-import { showBookSettingsDialog } from "./bookSettings/BookSettingsDialog";
+import { showBookSettingsDialog } from "./bookAndPageSettings/BookAndPageSettingsDialog";
 export { showBookSettingsDialog };
-import { showPageSettingsDialog } from "./pageSettings/PageSettingsDialog";
 import { showRegistrationDialogForEditTab } from "../react_components/registration/registrationDialog";
 export { showRegistrationDialogForEditTab as showRegistrationDialog };
 import { showAboutDialog } from "../react_components/aboutDialog";
@@ -277,7 +276,8 @@ export function showEditViewBookSettingsDialog(
 
 export function showAboutDialogFromWorkspaceRoot() {
 export function showEditViewPageSettingsDialog() {
-    showPageSettingsDialog();
+    // Book pages are first (0-4); Page > Colors is index 5.
+    showBookSettingsDialog(5);
 }
 
 export function showAboutDialogInEditTab() {

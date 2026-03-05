@@ -169,9 +169,17 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
 
     // Handler for when the user changes the hex code value (including pasting).
     const handleHexCodeChange = (hexColor: string) => {
+        let colorOnly = hexColor;
+        let newOpacity = props.currentColor.opacity;
+
+        if (props.transparency && /^#[0-9A-Fa-f]{8}$/.test(hexColor)) {
+            colorOnly = hexColor.substring(0, 7);
+            newOpacity = parseInt(hexColor.substring(7, 9), 16) / 255;
+        }
+
         const newColor = {
-            colors: [hexColor],
-            opacity: props.currentColor.opacity, // Don't change opacity
+            colors: [colorOnly],
+            opacity: newOpacity,
         };
         changeColor(newColor);
     };
@@ -314,6 +322,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
                 <HexColorInput
                     initial={props.currentColor}
                     onChangeComplete={handleHexCodeChange}
+                    includeOpacityChannel={!!props.transparency}
                 />
                 <ColorSwatch
                     colors={props.currentColor.colors}

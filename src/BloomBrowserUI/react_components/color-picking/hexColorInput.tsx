@@ -7,16 +7,21 @@ import { IColorInfo } from "./colorSwatch";
 interface IHexColorInputProps {
     initial: IColorInfo;
     onChangeComplete: (newValue: string) => void;
+    includeOpacityChannel?: boolean;
 }
 
 const hashChar = "#";
 
-const massageColorInput = (color: string): string => {
+const massageColorInput = (
+    color: string,
+    includeOpacityChannel?: boolean,
+): string => {
     let result = color.toUpperCase();
     result = result.replace(/[^0-9A-F]/g, ""); // eliminate any non-hex characters
     result = hashChar + result; // insert hash as the first character
-    if (result.length > 7) {
-        result = result.slice(0, 7);
+    const maxLength = includeOpacityChannel ? 9 : 7;
+    if (result.length > maxLength) {
+        result = result.slice(0, maxLength);
     }
     return result;
 };
@@ -24,28 +29,47 @@ const massageColorInput = (color: string): string => {
 // In general, we want our Hex Color input to reflect the first value in the 'colors' array.
 // For our predefined gradients, however, we want the hex input to be empty.
 // And for named colors, we need to show the hex equivalent.
-const getHexColorValueFromColorInfo = (colorInfo: IColorInfo): string => {
+const getHexColorValueFromColorInfo = (
+    colorInfo: IColorInfo,
+    includeOpacityChannel?: boolean,
+): string => {
     // First, our hex value will be empty, if we're dealing with a gradient.
     // The massage method below will add a hash character...
     if (colorInfo.colors.length > 1) return "";
     const firstColor = colorInfo.colors[0];
-    if (firstColor[0] === hashChar) return firstColor;
-    // In some cases we might be dealing with a color word like "black" or "white" or "transparent".
-    return tinycolor(firstColor).toHexString();
-};
+    const hexColor = tinycolor(firstColor).toHexString();
 
-const getInitialHexValue = (colorInfo: IColorInfo): string => {
-    return massageColorInput(getHexColorValueFromColorInfo(colorInfo));
+    if (!includeOpacityChannel) {
+        return hexColor;
+    }
+
+    const alphaHex = Math.round(colorInfo.opacity * 255)
+        .toString(16)
+        .padStart(2, "0")
+        .toUpperCase();
+    return `${hexColor}${alphaHex}`;
 };
 
 export const HexColorInput: React.FunctionComponent<IHexColorInputProps> = (
     props,
 ) => {
-    const [currentColor, setCurrentColor] = useState(() =>
-        getInitialHexValue(props.initial),
+    const getHexValue = React.useCallback(
+        (colorInfo: IColorInfo): string =>
+            massageColorInput(
+                getHexColorValueFromColorInfo(
+                    colorInfo,
+                    props.includeOpacityChannel,
+                ),
+                props.includeOpacityChannel,
+            ),
+        [props.includeOpacityChannel],
     );
 
-    const initialHexValue = getInitialHexValue(props.initial);
+    const [currentColor, setCurrentColor] = useState(() =>
+        getHexValue(props.initial),
+    );
+
+    const initialHexValue = getHexValue(props.initial);
 
     // Keep the displayed hex string in sync when the parent changes the color programmatically
     // (e.g. swatch click, eyedropper, or external currentColor updates).
@@ -56,15 +80,19 @@ export const HexColorInput: React.FunctionComponent<IHexColorInputProps> = (
     const handleInputChange: React.ChangeEventHandler<HTMLInputElement> = (
         e,
     ) => {
-        const result = massageColorInput(e.target.value);
+        const result = massageColorInput(
+            e.target.value,
+            props.includeOpacityChannel,
+        );
         setCurrentColor(result);
-        if (result.length === 7) {
+        const completeLength = props.includeOpacityChannel ? 9 : 7;
+        if (result.length === completeLength) {
             props.onChangeComplete(result);
         }
     };
 
     const borderThickness = 2;
-    const controlWidth = 60; // This width handles "#DDDDDD" as the maximum width input.
+    const controlWidth = props.includeOpacityChannel ? 80 : 60;
     const inputWidth = controlWidth - 2 * borderThickness;
 
     return (
