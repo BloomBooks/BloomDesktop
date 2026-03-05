@@ -3,8 +3,8 @@ import * as React from "react";
 import {
     ConfigrCustomStringInput,
     ConfigrGroup,
+    ConfigrPage,
     ConfigrPane,
-    ConfigrSubgroup,
 } from "@sillsdev/config-r";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import {
@@ -24,6 +24,7 @@ import {
     DialogResult,
 } from "../../react_components/color-picking/colorPickerDialog";
 import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
+import { ElementAttributeSnapshot } from "../../utils/ElementAttributeSnapshot";
 import { getPageIframeBody } from "../../utils/shared";
 import { ShowEditViewDialog } from "../editViewFrame";
 import tinycolor from "tinycolor2";
@@ -79,30 +80,68 @@ const getComputedStyleForPage = (page: HTMLElement): CSSStyleDeclaration => {
 
 const getCurrentPageBackgroundColor = (): string => {
     const page = getCurrentPageElement();
+    const computedPage = getComputedStyleForPage(page);
+
+    const inlineMarginBox = normalizeToHexOrEmpty(
+        page.style.getPropertyValue("--marginBox-background-color"),
+    );
+    if (inlineMarginBox) return inlineMarginBox;
 
     const inline = normalizeToHexOrEmpty(
         page.style.getPropertyValue("--page-background-color"),
     );
     if (inline) return inline;
 
-    const computedVariable = normalizeToHexOrEmpty(
-        getComputedStyleForPage(page).getPropertyValue(
-            "--page-background-color",
-        ),
-    );
-    if (computedVariable) return computedVariable;
-
     const computedMarginBoxVariable = normalizeToHexOrEmpty(
-        getComputedStyleForPage(page).getPropertyValue(
-            "--marginBox-background-color",
-        ),
+        computedPage.getPropertyValue("--marginBox-background-color"),
     );
     if (computedMarginBoxVariable) return computedMarginBoxVariable;
 
+    const computedVariable = normalizeToHexOrEmpty(
+        computedPage.getPropertyValue("--page-background-color"),
+    );
+    if (computedVariable) return computedVariable;
+
+    const marginBox = page.querySelector(".marginBox") as HTMLElement | null;
+    if (marginBox) {
+        const computedMarginBoxBackground = normalizeToHexOrEmpty(
+            getComputedStyleForPage(marginBox).backgroundColor,
+        );
+        if (computedMarginBoxBackground) return computedMarginBoxBackground;
+    }
+
     const computedBackground = normalizeToHexOrEmpty(
-        getComputedStyleForPage(page).backgroundColor,
+        computedPage.backgroundColor,
     );
     return computedBackground || "#FFFFFF";
+};
+
+const parsePageSettingsFromConfigrValue = (value: unknown): IPageSettings => {
+    if (typeof value === "string") {
+        return JSON.parse(value) as IPageSettings;
+    }
+
+    if (typeof value === "object" && value) {
+        return value as IPageSettings;
+    }
+
+    throw new Error(
+        "PageSettingsDialog: unexpected value from config-r onChange",
+    );
+};
+
+const arePageSettingsEquivalent = (
+    first: IPageSettings,
+    second: IPageSettings,
+): boolean => {
+    return (
+        normalizeToHexOrEmpty(first.page.backgroundColor) ===
+            normalizeToHexOrEmpty(second.page.backgroundColor) &&
+        normalizeToHexOrEmpty(first.page.pageNumberColor) ===
+            normalizeToHexOrEmpty(second.page.pageNumberColor) &&
+        normalizeToHexOrEmpty(first.page.pageNumberBackgroundColor) ===
+            normalizeToHexOrEmpty(second.page.pageNumberBackgroundColor)
+    );
 };
 
 const setOrRemoveCustomProperty = (
@@ -289,9 +328,16 @@ export const PageSettingsDialog: React.FunctionComponent = () => {
         IPageSettings | string | undefined
     >(undefined);
 
+    const initialPageAttributeSnapshot = React.useRef<
+        ElementAttributeSnapshot | undefined
+    >(undefined);
+
     // Read after mount so we get the current page's color even if opening this dialog
     // is preceded by a save/refresh that updates the page iframe.
     React.useEffect(() => {
+        initialPageAttributeSnapshot.current =
+            ElementAttributeSnapshot.fromElement(getCurrentPageElement());
+
         setInitialValues({
             page: {
                 backgroundColor: getCurrentPageBackgroundColor(),
@@ -325,8 +371,10 @@ export const PageSettingsDialog: React.FunctionComponent = () => {
             | "titleCloseClick"
             | "cancelClicked",
     ): void => {
-        if (initialValues) {
-            applyPageSettings(initialValues);
+        if (initialPageAttributeSnapshot.current) {
+            initialPageAttributeSnapshot.current.restoreToElement(
+                getCurrentPageElement(),
+            );
         }
         closeDialogAndClearOpenFlag();
     };
@@ -365,7 +413,6 @@ export const PageSettingsDialog: React.FunctionComponent = () => {
                         <ConfigrPane
                             label={pageSettingsTitle}
                             initialValues={initialValues}
-                            showAllGroups={true}
                             themeOverrides={{
                                 palette: {
                                     primary: { main: kBloomBlue },
@@ -374,28 +421,35 @@ export const PageSettingsDialog: React.FunctionComponent = () => {
                             showAppBar={false}
                             showJson={false}
                             onChange={(s: unknown) => {
+                                const settings =
+                                    parsePageSettingsFromConfigrValue(s);
+
+                                if (
+                                    !settingsToReturnLater &&
+                                    initialValues &&
+                                    arePageSettingsEquivalent(
+                                        settings,
+                                        initialValues,
+                                    )
+                                ) {
+                                    return;
+                                }
+
                                 if (typeof s === "string") {
                                     setSettingsToReturnLater(s);
-                                    applyPageSettings(
-                                        JSON.parse(s) as IPageSettings,
-                                    );
-                                    return;
-                                }
-
-                                if (typeof s === "object" && s) {
-                                    const settings = s as IPageSettings;
+                                } else {
                                     setSettingsToReturnLater(settings);
-                                    applyPageSettings(settings);
-                                    return;
                                 }
 
-                                throw new Error(
-                                    "PageSettingsDialog: unexpected value from config-r onChange",
-                                );
+                                applyPageSettings(settings);
                             }}
                         >
-                            <ConfigrGroup label={""} level={1}>
-                                <ConfigrSubgroup label={""} path={"page"}>
+                            <ConfigrPage
+                                label={pageSettingsTitle}
+                                pageKey={"pageSettings"}
+                                topLevel={true}
+                            >
+                                <ConfigrGroup label={""}>
                                     <ConfigrCustomStringInput
                                         label={backgroundColorLabel}
                                         path={"page.backgroundColor"}
@@ -420,8 +474,8 @@ export const PageSettingsDialog: React.FunctionComponent = () => {
                                         }
                                         disabled={false}
                                     />
-                                </ConfigrSubgroup>
-                            </ConfigrGroup>
+                                </ConfigrGroup>
+                            </ConfigrPage>
                         </ConfigrPane>
                     </div>
                 )}

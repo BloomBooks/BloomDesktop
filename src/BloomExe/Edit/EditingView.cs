@@ -1926,6 +1926,7 @@ namespace Bloom.Edit
             if (Model.Visible && ModifierKeys == (Keys.Shift | Keys.Control))
                 _model.RethinkPageAndReloadItAndReportIfItFails();
         }
+
         public async Task AddImageFromUrlAsync(string desiredFileNameWithoutExtension, string url)
         {
             using (var client = new System.Net.Http.HttpClient())

@@ -1323,7 +1323,7 @@ namespace Bloom.Edit
                 OptimizeForLinux(pageListDom);
 
             pageListDom = CurrentBook.GetHtmlDomForPageList(pageListDom);
-            var url =_view.Browser.CreateSimulatedFile(
+            var url = _view.Browser.CreateSimulatedFile(
                 pageListDom,
                 false,
                 InMemoryHtmlFileSource.Pagelist
