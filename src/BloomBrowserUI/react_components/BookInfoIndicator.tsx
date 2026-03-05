@@ -12,7 +12,7 @@ import {
     MessageUsingMigratedThemeInsteadOfIncompatibleCss,
     MessageUsingLegacyThemeWithIncompatibleCss,
     MessageIgnoringIncompatibleCssCanDelete,
-} from "../bookEdit/bookSettings/BookSettingsDialog";
+} from "../bookEdit/bookAndPageSettings/BookSettingsConfigrPages";
 
 export const BookInfoIndicator: React.FunctionComponent<{
     bookId: string;

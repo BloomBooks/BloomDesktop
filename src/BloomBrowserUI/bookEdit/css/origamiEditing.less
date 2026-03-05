@@ -182,15 +182,19 @@
 .page-settings-button {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 24px;
+    justify-content: flex-start;
+    gap: 6px;
+    width: auto;
     height: 24px;
-    padding: 0;
+    padding: 0 4px;
     margin-right: 8px;
     border: none;
     background-color: transparent;
     cursor: pointer;
     color: @bloom-purple;
+    white-space: nowrap;
+    font-size: 12px;
+    line-height: 1;
 
     &:hover {
         opacity: 0.8;
@@ -199,6 +203,13 @@
     svg {
         width: 20px;
         height: 20px;
+        flex-shrink: 0;
+    }
+
+    .page-settings-button-label {
+        font-size: 11px;
+        line-height: 1;
+        white-space: nowrap;
     }
 }
 

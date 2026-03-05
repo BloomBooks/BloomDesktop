@@ -727,10 +727,45 @@
         <note>BookSettings.LockedByXMatter</note>
         <note>{0} is the name of an xmatter pack</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Title" sil:dynamic="true">
-        <source xml:lang="en">Book Settings</source>
-        <note>BookSettings.Title</note>
+      <trans-unit id="BookAndPageSettings.Title" sil:dynamic="true">
+        <source xml:lang="en">Book and Page Settings</source>
+        <note>BookAndPageSettings.Title</note>
         <note>the heading of the dialog</note>
+      </trans-unit>
+      <trans-unit id="BookAndPageSettings.BookArea" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Book</source>
+        <note>ID: BookAndPageSettings.BookArea</note>
+        <note>Area label for tabs/pages that affect all pages in the current book.</note>
+      </trans-unit>
+      <trans-unit id="BookAndPageSettings.BookArea.Description" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Book settings apply to all of the pages of the current book.</source>
+        <note>ID: BookAndPageSettings.BookArea.Description</note>
+        <note>Description text shown for the Book area in the combined Book and Page Settings dialog.</note>
+      </trans-unit>
+      <trans-unit id="BookAndPageSettings.PageArea" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Page</source>
+        <note>ID: BookAndPageSettings.PageArea</note>
+        <note>Area label for tabs/pages that affect only the current page.</note>
+      </trans-unit>
+      <trans-unit id="BookAndPageSettings.PageArea.Description" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Page settings apply to the current page.</source>
+        <note>ID: BookAndPageSettings.PageArea.Description</note>
+        <note>Description text shown for the Page area in the combined Book and Page Settings dialog.</note>
+      </trans-unit>
+      <trans-unit id="BookAndPageSettings.Colors" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Colors</source>
+        <note>ID: BookAndPageSettings.Colors</note>
+        <note>Label for the page-level Colors page within the combined Book and Page Settings dialog.</note>
+      </trans-unit>
+      <trans-unit id="PageSettings.Title" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Page Settings</source>
+        <note>ID: PageSettings.Title</note>
+        <note>Title text for the standalone Page Settings dialog and the page settings button label above custom pages.</note>
+      </trans-unit>
+      <trans-unit id="PageSettings.OpenTooltip" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Open Page Settings...</source>
+        <note>ID: PageSettings.OpenTooltip</note>
+        <note>Tooltip shown when hovering over the Page Settings button above a custom page.</note>
       </trans-unit>
       <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true">
         <source xml:lang="en">Max Image Size</source>
