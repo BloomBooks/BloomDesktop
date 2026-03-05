@@ -26,6 +26,7 @@ export function useParentFrameMenuPortal() {
     const [parentEmotionCache, setParentEmotionCache] =
         React.useState<EmotionCache | null>(null);
     const parentAnchorElRef = React.useRef<HTMLElement | null>(null);
+    const parentEmotionCacheRef = React.useRef<EmotionCache | null>(null);
 
     const cleanupParentAnchor = React.useCallback(() => {
         if (parentAnchorElRef.current) {
@@ -34,12 +35,20 @@ export function useParentFrameMenuPortal() {
         }
     }, []);
 
+    const cleanupParentEmotionCache = React.useCallback(() => {
+        if (parentEmotionCacheRef.current) {
+            parentEmotionCacheRef.current.sheet.flush();
+            parentEmotionCacheRef.current = null;
+        }
+    }, []);
+
     const closeMenu = React.useCallback(() => {
         setAnchorEl(null);
         cleanupParentAnchor();
+        cleanupParentEmotionCache();
         setParentContainer(null);
         setParentEmotionCache(null);
-    }, [cleanupParentAnchor]);
+    }, [cleanupParentAnchor, cleanupParentEmotionCache]);
 
     const setMenuAnchor = React.useCallback((anchor: HTMLElement | null) => {
         setAnchorEl(anchor);
@@ -69,6 +78,7 @@ export function useParentFrameMenuPortal() {
             const parentDocument = window.parent?.document;
             if (!parentDocument || parentDocument === document) {
                 cleanupParentAnchor();
+                cleanupParentEmotionCache();
                 setParentContainer(null);
                 setParentEmotionCache(null);
                 return buttonElement;
@@ -94,12 +104,13 @@ export function useParentFrameMenuPortal() {
             });
 
             parentAnchorElRef.current = parentAnchor;
+            parentEmotionCacheRef.current = cache as unknown as EmotionCache;
             setParentContainer(parentDocument.body);
             setParentEmotionCache(cache as unknown as EmotionCache);
 
             return parentAnchor;
         },
-        [cleanupParentAnchor],
+        [cleanupParentAnchor, cleanupParentEmotionCache],
     );
 
     const openMenuAtButton = React.useCallback(

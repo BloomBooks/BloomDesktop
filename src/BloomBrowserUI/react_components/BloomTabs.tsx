@@ -1,6 +1,7 @@
-import { css, SerializedStyles } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { TabsProps, Tabs } from "react-tabs";
+import "react-tabs/style/react-tabs.css";
 interface IProps extends TabsProps {
     color: string; // text, borders
     // text and bottom border for selected tab
@@ -26,7 +27,6 @@ export const BloomTabs: React.FunctionComponent<IProps> = (props) => {
                     background-color: ${labelBackgroundColor};
                     color: ${color};
                     text-transform: uppercase;
-                    display: inline-block;
                 }
                 .react-tabs__tab--selected {
                     color: ${selectedColor} !important;
@@ -36,17 +36,11 @@ export const BloomTabs: React.FunctionComponent<IProps> = (props) => {
                 }
                 .react-tabs__tab-list {
                     border: none;
-                    list-style: none;
-                    padding: 0;
                     margin-bottom: 5px; // else the little selector slams into the content and looks bad
                 }
                 .react-tabs__tab-panel {
-                    display: none;
                     overflow-y: auto; // make these contents scroll if needed
                     height: 100%; // note, the child should normally also set height:100% to fill this up.
-                }
-                .react-tabs__tab-panel--selected {
-                    display: block;
                 }
             `}
         >

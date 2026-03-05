@@ -17,6 +17,14 @@ namespace Bloom.Workspace
 		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
 		protected override void Dispose(bool disposing)
 		{
+			if (disposing)
+			{
+				_collectionTabView?.Dispose();
+				_collectionTabView = null;
+
+				_publishView?.Dispose();
+				_publishView = null;
+			}
 			if (disposing && (components != null))
 			{
 				components.Dispose();
