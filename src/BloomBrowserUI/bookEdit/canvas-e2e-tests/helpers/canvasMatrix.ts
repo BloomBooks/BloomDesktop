@@ -10,11 +10,11 @@ import type {
     CanvasPaletteItemKey,
     CanvasToolboxControlKey,
 } from "./canvasSelectors";
-import {
-    canvasElementDefinitions,
-    type CanvasElementMenuSection,
-    type CanvasElementToolbarButton,
-} from "../../toolbox/canvas/canvasElementDefinitions";
+import { canvasElementDefinitions } from "../../toolbox/canvas/canvasElementDefinitions";
+import type {
+    SectionId,
+    TopLevelControlId,
+} from "../../toolbox/canvas/canvasControlTypes";
 import type { CanvasElementType } from "../../toolbox/canvas/canvasElementTypes";
 
 // ── Types ───────────────────────────────────────────────────────────────
@@ -25,9 +25,9 @@ export interface ICanvasMatrixRow {
     /** The `CanvasElementType` string this palette item creates. */
     expectedType: string;
     /** Menu section keys expected when this element is selected. */
-    menuSections: CanvasElementMenuSection[];
+    menuSections: SectionId[];
     /** Toolbar button keys expected when this element is selected. */
-    toolbarButtons: CanvasElementToolbarButton[];
+    toolbarButtons: Array<TopLevelControlId | "spacer">;
     /** Toolbox attribute controls visible when this element type is selected. */
     expectedToolboxControls: CanvasToolboxControlKey[];
     /** True if the element can be toggled to a draggable in game context. */
@@ -51,7 +51,7 @@ const makeMatrixRow = (props: {
         paletteItem: props.paletteItem,
         expectedType: props.expectedType,
         menuSections: [...definition.menuSections],
-        toolbarButtons: [...definition.toolbarButtons],
+        toolbarButtons: [...definition.toolbar],
         expectedToolboxControls: props.expectedToolboxControls,
         supportsDraggableToggle: props.supportsDraggableToggle,
         requiresNavigationExpand: props.requiresNavigationExpand,

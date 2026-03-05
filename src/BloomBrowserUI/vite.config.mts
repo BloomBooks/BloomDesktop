@@ -771,6 +771,7 @@ export default defineConfig(async ({ command }) => {
                 "**/cypress/**",
                 "**/.{idea,git,cache,output,temp}/**",
                 "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
+                "**/bookEdit/canvas-e2e-tests/**", // Exclude Playwright e2e suite (run via yarn e2e canvas)
                 "**/react_components/component-tester/**", // Exclude playwright component tests
                 "**/*.uitest.{ts,tsx}", // Exclude UI tests that use Playwright
             ],
