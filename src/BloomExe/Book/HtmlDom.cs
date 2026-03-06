@@ -1880,6 +1880,43 @@ namespace Bloom.Book
         public const string musicAttrName = "data-backgroundaudio";
         public const string musicVolumeName = musicAttrName + "volume";
 
+        private static readonly string[] kPageStylePropertiesToPersist =
+        {
+            "--page-background-color",
+            "--marginBox-background-color",
+            "--pageNumber-color",
+            "--pageNumber-background-color",
+        };
+
+        private static string GetPersistedPageStyleValue(SafeXmlElement editedPageDiv)
+        {
+            var style = editedPageDiv.GetAttribute("style");
+            if (string.IsNullOrWhiteSpace(style))
+                return string.Empty;
+
+            var persistedStyleSegments = style
+                .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(segment => segment.Trim())
+                .Where(segment => !string.IsNullOrEmpty(segment))
+                .Where(segment =>
+                {
+                    var colonIndex = segment.IndexOf(':');
+                    if (colonIndex <= 0)
+                        return false;
+
+                    var propertyName = segment.Substring(0, colonIndex).Trim();
+                    return kPageStylePropertiesToPersist.Contains(
+                        propertyName,
+                        StringComparer.OrdinalIgnoreCase
+                    );
+                })
+                .ToArray();
+
+            return persistedStyleSegments.Any()
+                ? string.Join("; ", persistedStyleSegments)
+                : string.Empty;
+        }
+
         public static void ProcessPageAfterEditing(
             SafeXmlElement destinationPageDiv,
             SafeXmlElement edittedPageDiv
@@ -1915,9 +1952,9 @@ namespace Bloom.Book
             //html file in a browser.
             destinationPageDiv.SetAttribute("lang", edittedPageDiv.GetAttribute("lang"));
 
-            // Allow saving per-page CSS custom properties (e.g. --page-background-color) stored on the page div.
-            // If missing, remove any previously-saved style.
-            var style = edittedPageDiv.GetAttribute("style");
+            // Save only the page color custom properties we manage in Page Settings.
+            // If all are missing, remove any previously-saved page-level custom properties.
+            var style = GetPersistedPageStyleValue(edittedPageDiv);
             if (string.IsNullOrEmpty(style))
                 destinationPageDiv.RemoveAttribute("style");
             else

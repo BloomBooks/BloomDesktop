@@ -46,7 +46,7 @@ type BookSettingsAreaProps = {
     tierAllowsFullBleed?: boolean;
     pageSizeSupportsFullBleed: boolean;
     settings: object | undefined;
-    settingsToReturnLater: string | object | undefined;
+    settingsToReturnLater: object | undefined;
     getAdditionalProps: <T>(subPath: string) => {
         path: string;
         overrideValue: T;

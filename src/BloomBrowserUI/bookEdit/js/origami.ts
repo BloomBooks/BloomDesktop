@@ -21,29 +21,41 @@ export function setupOrigami() {
             const isCanvasFeatureEnabled: boolean =
                 canvasFeatureStatus?.enabled || false;
             const customPages = document.getElementsByClassName("customPage");
-            if (customPages.length > 0) {
-                const width = customPages[0].clientWidth;
-                const origamiControl = getAbovePageControlContainer()
-                    .append(
-                        createTypeSelectors(
-                            isWidgetFeatureEnabled,
-                            isCanvasFeatureEnabled,
-                        ),
-                    )
-                    .append(createTextBoxIdentifier());
+            const bloomPage = document.getElementsByClassName(
+                "bloom-page",
+            )[0] as HTMLElement | undefined;
+            const pageWidth = bloomPage?.clientWidth;
+            if (pageWidth !== undefined) {
+                const showOrigamiControls = customPages.length > 0;
+                const pageControlContainer =
+                    getAbovePageControlContainer(showOrigamiControls);
+
+                if (showOrigamiControls) {
+                    pageControlContainer
+                        .append(
+                            createTypeSelectors(
+                                isWidgetFeatureEnabled,
+                                isCanvasFeatureEnabled,
+                            ),
+                        )
+                        .append(createTextBoxIdentifier());
+                }
+
                 // The order of this is not important in most ways, since it is positioned absolutely.
                 // However, we position the page label, also absolutely, in the same screen area, and
                 // we want it on top of origami control, so that in template pages the user can edit it.
                 // The page label is part of the page, so we want the page to come after the origami control.
                 // (Could also do this with z-order, but I prefer to do what I can by ordering elements,
                 // and save z-order for when it is really needed.)
-                $("#page-scaling-container").prepend(origamiControl);
+                $("#page-scaling-container").prepend(pageControlContainer);
                 // The container width is set to 100% in the CSS, but we need to
                 // limit it to no more than the actual width of the page.
                 const toggleContainer = $(".above-page-control-container").get(
                     0,
                 );
-                toggleContainer.style.maxWidth = width + "px";
+                if (toggleContainer instanceof HTMLElement) {
+                    toggleContainer.style.maxWidth = pageWidth + "px";
+                }
             }
             // I'm not clear why the rest of this needs to wait until we have
             // the two results, but none of the controls shows up if we leave it all
@@ -368,7 +380,7 @@ function getSplitPaneComponentInner() {
     return spci;
 }
 
-function getAbovePageControlContainer(): JQuery {
+function getAbovePageControlContainer(showOrigamiControls: boolean): JQuery {
     // for dragActivities we don't want the origami control, but we still make the
     // wrapper so that the dragActivity can put a different control in it.
     // Note: We also have to disable the Choose Different layout option in
@@ -384,6 +396,15 @@ ${getPageSettingsButtonHtml()}\
 </div>`,
         );
     }
+
+    if (!showOrigamiControls) {
+        return $(
+            `<div class='above-page-control-container bloom-ui'>\
+${getPageSettingsButtonHtml()}\
+</div>`,
+        );
+    }
+
     return $(
         `\
 <div class='above-page-control-container bloom-ui'> \
