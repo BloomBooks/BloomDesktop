@@ -1712,10 +1712,10 @@ namespace Bloom.Edit
             _model.SaveThen(
                 () =>
                 {
-                    // Open the book settings dialog to the context-specific group.
-                    var groupIndex = _model.CurrentPage.IsCoverPage ? 0 : 1;
+                    // Open the book settings dialog to the context-specific page.
+                    var pageKey = _model.CurrentPage.IsCoverPage ? "cover" : "contentPages";
                     RunJavascriptAsync(
-                        $"workspaceBundle.showEditViewBookSettingsDialog({groupIndex});"
+                        $"editTabBundle.showEditViewBookSettingsDialog('{pageKey}');"
                     );
                     return _model.CurrentPage.Id;
                 },

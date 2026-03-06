@@ -269,15 +269,17 @@ export function showEditViewTopicChooserDialog() {
     showTopicChooserDialog();
 }
 export function showEditViewBookSettingsDialog(
-    initiallySelectedGroupIndex?: number,
+    initiallySelectedPageKey?: string,
 ) {
-    showBookSettingsDialog(initiallySelectedGroupIndex);
+    showBookSettingsDialog(initiallySelectedPageKey);
 }
 
 export function showAboutDialogFromWorkspaceRoot() {
+    showAboutDialog();
+}
+
 export function showEditViewPageSettingsDialog() {
-    // Book pages are first (0-4); Page > Colors is index 5.
-    showBookSettingsDialog(5);
+    showBookSettingsDialog("colors");
 }
 
 export function showAboutDialogInEditTab() {
