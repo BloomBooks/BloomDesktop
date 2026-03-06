@@ -183,9 +183,10 @@ namespace Bloom.Api
             Failed(HttpStatusCode.ServiceUnavailable, text);
         }
 
+        int _statusCodeInt = 0; // not a valid HttpStatusCode, but we want to be able to tell if we've set it.
         private string _failedText;
 
-        public bool HasFailed => _failedText != null;
+        public bool HasFailed => _failedText != null || _statusCodeInt != 0;
 
         public void Failed(HttpStatusCode statusCode, string text = null)
         {
@@ -197,20 +198,20 @@ namespace Bloom.Api
             // likely from an outer exception handler and has less useful
             // information, and anyway it's too late to fix it, so just
             // keep what we already recorded.
-            if (_failedText != null)
+            if (HasFailed)
                 return;
             _failedText = text;
             _requestInfo.ResponseContentType = "text/plain";
-            int statusCodeInt = (int)statusCode;
+            _statusCodeInt = (int)statusCode;
             try
             {
                 if (text == null)
                 {
-                    _requestInfo.WriteError(statusCodeInt);
+                    _requestInfo.WriteError(_statusCodeInt);
                 }
                 else
                 {
-                    _requestInfo.WriteError(statusCodeInt, text);
+                    _requestInfo.WriteError(_statusCodeInt, text);
                 }
             }
             catch (Exception ex)
@@ -298,7 +299,12 @@ namespace Bloom.Api
                     "Bloom could not access {0}.  The file may be open in another program.",
                     info.RawUrl
                 );
-                NonFatalProblem.Report(ModalIf.None, PassiveIf.All, shortMsg, longMsg, e);
+                // Report the error after a delay so the API call can finish.
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(100);
+                    NonFatalProblem.Report(ModalIf.None, PassiveIf.All, shortMsg, longMsg, e);
+                });
                 request.Failed(shortMsg);
                 return false;
             }
@@ -307,13 +313,14 @@ namespace Bloom.Api
                 //Hard to reproduce, but I got one of these supertooltip disposal errors in a yellow box
                 //while switching between publish tabs (e.g. /bloom/api/publish/bloompub/cleanup).
                 //I don't think these are worth alarming the user about, so let's be sensitive to what channel we're on.
-                NonFatalProblem.Report(
-                    ModalIf.Alpha,
-                    PassiveIf.All,
-                    "Error in " + info.RawUrl,
-                    exception: e
-                );
-                request.Failed("Error in " + info.RawUrl);
+                var shortMesg = "Error in " + info.RawUrl;
+                // Report the error after a delay so the API call can finish.
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(100);
+                    NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, shortMesg, exception: e);
+                });
+                request.Failed(shortMesg);
                 return false;
             }
             return true;
