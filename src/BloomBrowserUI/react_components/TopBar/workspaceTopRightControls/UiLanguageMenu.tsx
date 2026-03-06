@@ -1,13 +1,19 @@
 import * as React from "react";
-import { ArrowDropDown } from "@mui/icons-material";
-import { get, postJson, useApiString } from "../../../utils/bloomApi";
+import { css } from "@emotion/react";
+import { ArrowDropDown, Check } from "@mui/icons-material";
+import {
+    get,
+    postJson,
+    useApiBoolean,
+    useApiString,
+} from "../../../utils/bloomApi";
 import { TopRightMenuButton, topRightMenuArrowCss } from "./TopRightMenuButton";
 import { useL10n } from "../../l10nHooks";
 import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
 import Checkbox from "@mui/material/Checkbox";
 import Divider from "@mui/material/Divider";
 import { useParentFrameMenuPortal } from "../useParentFrameMenuPortal";
+import { LocalizableMenuItem } from "../../localizableMenuItem";
 
 interface IMenuItem {
     action?:
@@ -20,6 +26,21 @@ interface IMenuItem {
     checked?: boolean;
     separator?: boolean;
 }
+
+const compactMenuItemCss = css`
+    padding-top: 1px !important;
+    padding-bottom: 1px !important;
+    min-height: 28px;
+`;
+
+const compactLabelCss = css`
+    font-size: 0.9rem;
+    line-height: 1.15;
+`;
+
+const compactDividerCss = css`
+    margin: 2px 0;
+`;
 
 const normalizeLanguageNames = (languageNames: unknown): string[] => {
     if (!Array.isArray(languageNames)) {
@@ -40,13 +61,13 @@ export const UiLanguageMenu: React.FunctionComponent = () => {
         "CollectionTab.UILanguageMenu.HelpTranslate",
     );
     const {
-        anchorEl,
         closeMenu,
-        setMenuAnchor,
-        prepareAnchorAtButton,
-        menuContainer,
+        openMenuAtButtonWithItemsLoader,
+        getRootMenuProps,
         renderMenuInParentFrame,
     } = useParentFrameMenuPortal();
+    const [showUnapprovedTranslations, setShowUnapprovedTranslations] =
+        useApiBoolean("workspace/showUnapprovedTranslations", false);
     const [menuItems, setMenuItems] = React.useState<IMenuItem[]>([]);
 
     const loadMenuItems = React.useCallback(
@@ -64,15 +85,15 @@ export const UiLanguageMenu: React.FunctionComponent = () => {
                 );
                 items.push({ separator: true });
                 items.push({
-                    action: "toggleShowUnapprovedTranslations",
-                    label: showUnapprovedTranslationsText,
+                    action: "helpTranslate",
+                    label: helpTranslateText,
                     enabled: true,
                     checked: false,
                 });
                 items.push({ separator: true });
                 items.push({
-                    action: "helpTranslate",
-                    label: helpTranslateText,
+                    action: "toggleShowUnapprovedTranslations",
+                    label: showUnapprovedTranslationsText,
                     enabled: true,
                     checked: false,
                 });
@@ -88,88 +109,79 @@ export const UiLanguageMenu: React.FunctionComponent = () => {
     }, [closeMenu]);
 
     const onOpen = React.useCallback(() => {
-        const preparedAnchor = prepareAnchorAtButton(
+        openMenuAtButtonWithItemsLoader(
             "uiLanguageMenuButton",
             "ui-language-menu-parent",
+            menuItems.length,
+            loadMenuItems,
         );
-        if (!preparedAnchor) {
-            return;
-        }
-
-        if (menuItems.length > 0) {
-            setMenuAnchor(preparedAnchor);
-            loadMenuItems();
-            return;
-        }
-
-        loadMenuItems((itemCount) => {
-            if (itemCount > 0) {
-                setMenuAnchor(preparedAnchor);
-            } else {
-                closeMenu();
-            }
-        });
-    }, [
-        closeMenu,
-        loadMenuItems,
-        menuItems.length,
-        prepareAnchorAtButton,
-        setMenuAnchor,
-    ]);
+    }, [loadMenuItems, menuItems.length, openMenuAtButtonWithItemsLoader]);
 
     const handleMenuItemClick = React.useCallback(
         (item: IMenuItem) => {
             if (!item.action || item.enabled === false) {
                 return;
             }
+
+            if (item.action === "toggleShowUnapprovedTranslations") {
+                setShowUnapprovedTranslations(!showUnapprovedTranslations);
+                onClose();
+                return;
+            }
+
             postJson("workspace/uiLanguageAction", {
                 action: item.action,
                 languageName: item.languageName ?? null,
             });
             onClose();
         },
-        [onClose],
+        [onClose, setShowUnapprovedTranslations, showUnapprovedTranslations],
     );
 
     const menu = (
-        <Menu
-            open={Boolean(anchorEl)}
-            anchorEl={anchorEl}
-            onClose={onClose}
-            disablePortal={false}
-            keepMounted={false}
-            anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-            transformOrigin={{ vertical: "top", horizontal: "left" }}
-            container={menuContainer}
-            slotProps={{
-                paper: {
-                    sx: {
-                        minWidth: 220,
-                        maxWidth: 440,
-                    },
-                },
-            }}
-        >
+        <Menu {...getRootMenuProps(onClose)}>
             {menuItems.map((item, index) => {
                 if (item.separator) {
-                    return <Divider key={`separator-${index}`} />;
+                    return (
+                        <Divider
+                            key={`separator-${index}`}
+                            css={compactDividerCss}
+                        />
+                    );
                 }
 
                 return (
-                    <MenuItem
+                    <LocalizableMenuItem
                         key={`${item.action ?? ""}:${item.languageName ?? ""}:${item.label ?? index}`}
+                        english={item.label ?? ""}
+                        l10nId={null}
                         onClick={() => handleMenuItemClick(item)}
                         disabled={item.enabled === false}
-                        dense
-                    >
-                        <Checkbox
-                            checked={Boolean(item.checked)}
-                            size="small"
-                            disableRipple
-                            sx={{ padding: "0 6px 0 0" }}
-                        />
-                        {item.label}
-                    </MenuItem>
+                        css={compactMenuItemCss}
+                        labelCss={compactLabelCss}
+                        variant="body2"
+                        icon={
+                            item.action === "setLanguage" ? (
+                                item.checked ? (
+                                    <Check
+                                        css={css`
+                                            padding: 0 6px 0 0;
+                                        `}
+                                    />
+                                ) : undefined
+                            ) : item.action ===
+                              "toggleShowUnapprovedTranslations" ? (
+                                <Checkbox
+                                    checked={showUnapprovedTranslations}
+                                    size="small"
+                                    disableRipple
+                                    css={css`
+                                        padding: 0 6px 0 0;
+                                    `}
+                                />
+                            ) : undefined
+                        }
+                    />
                 );
             })}
         </Menu>

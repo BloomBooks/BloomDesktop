@@ -5,11 +5,10 @@ import { postJson, useApiString } from "../../../utils/bloomApi";
 import { TopRightMenuButton, topRightMenuArrowCss } from "./TopRightMenuButton";
 import { useL10n } from "../../l10nHooks";
 import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
 import Divider from "@mui/material/Divider";
 import { showAboutDialog } from "../../aboutDialog";
-import { showRegistrationDialog } from "../../registration/registrationDialog";
 import { useParentFrameMenuPortal } from "../useParentFrameMenuPortal";
+import { LocalizableMenuItem } from "../../localizableMenuItem";
 
 interface IMenuItem {
     id?: string;
@@ -74,47 +73,24 @@ export const HelpMenu: React.FunctionComponent = () => {
         helpText === "?" || ["en", "fr", "de", "es"].includes(uiLanguage);
 
     const {
-        anchorEl,
         suppressTooltip,
         closeMenu,
         openMenuAtButton,
         suppressTooltipUntilPointerReset,
         clearTooltipSuppression,
         releaseTooltipSuppressionIfMenuClosed,
-        menuContainer,
+        getRootMenuProps,
         renderMenuInParentFrame,
     } = useParentFrameMenuPortal();
 
     const showRegistrationDialogFromWorkspaceRoot = React.useCallback(() => {
-        const topWindow = window.top;
-        const showFromRoot =
-            topWindow && "workspaceBundle" in topWindow
-                ? (
-                      topWindow as {
-                          workspaceBundle?: {
-                              showRegistrationDialogFromWorkspaceRoot?:
-                                  | (() => void)
-                                  | undefined;
-                              showAboutDialogFromWorkspaceRoot?:
-                                  | (() => void)
-                                  | undefined;
-                          };
-                      }
-                  ).workspaceBundle
-                : undefined;
-        const showRegistration =
-            showFromRoot?.showRegistrationDialogFromWorkspaceRoot;
-        if (typeof showRegistration === "function") {
-            showRegistration();
-            return;
-        }
-
-        const rootDocument = topWindow?.document ?? window.parent?.document;
-        const rootContainer = rootDocument
-            ? (rootDocument.getElementById("modal-dialog-container") ??
-              rootDocument.body)
-            : undefined;
-        showRegistrationDialog({}, rootContainer);
+        (
+            window.top as {
+                workspaceBundle: {
+                    showRegistrationDialogFromWorkspaceRoot: () => void;
+                };
+            }
+        ).workspaceBundle.showRegistrationDialogFromWorkspaceRoot();
     }, []);
 
     const showAboutDialogFromWorkspaceRoot = React.useCallback(() => {
@@ -165,7 +141,7 @@ export const HelpMenu: React.FunctionComponent = () => {
                 label: onlineHelpText,
                 onClick: () =>
                     postHelpAction(
-                        "safeStart",
+                        "safeStartInFront",
                         "https://docs.bloomlibrary.org",
                     ),
             },
@@ -219,7 +195,7 @@ export const HelpMenu: React.FunctionComponent = () => {
                 label: releaseNotesText,
                 onClick: () =>
                     postHelpAction(
-                        "safeStart",
+                        "safeStartInFront",
                         "https://docs.bloomlibrary.org/Release-Notes",
                     ),
             },
@@ -294,38 +270,21 @@ export const HelpMenu: React.FunctionComponent = () => {
     );
 
     const menu = (
-        <Menu
-            open={Boolean(anchorEl)}
-            anchorEl={anchorEl}
-            onClose={onClose}
-            disablePortal={false}
-            keepMounted={false}
-            anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-            transformOrigin={{ vertical: "top", horizontal: "left" }}
-            container={menuContainer}
-            slotProps={{
-                paper: {
-                    sx: {
-                        minWidth: 220,
-                        maxWidth: 440,
-                    },
-                },
-            }}
-        >
+        <Menu {...getRootMenuProps(onClose)}>
             {menuItems.map((item, index) => {
                 if (item.separator) {
                     return <Divider key={`separator-${index}`} />;
                 }
 
                 return (
-                    <MenuItem
+                    <LocalizableMenuItem
                         key={`${item.id ?? item.label ?? index}`}
+                        english={item.label ?? ""}
+                        l10nId={null}
                         onClick={() => handleMenuItemClick(item)}
                         disabled={item.enabled === false}
-                        dense
-                    >
-                        {item.label}
-                    </MenuItem>
+                        dontGiveAffordanceForCheckbox={true}
+                    />
                 );
             })}
         </Menu>
