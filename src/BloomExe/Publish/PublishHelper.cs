@@ -342,7 +342,7 @@ namespace Bloom.Publish
                 div.RemoveAttribute("role"); // this isn't an editable textbox in an ebook
                 div.RemoveAttribute("aria-label"); // don't want this without a role
                 div.RemoveAttribute("spellcheck"); // too late for spell checking in an ebook
-                div.RemoveAttribute("content-editable"); // too late for editing in an ebook
+                div.RemoveAttribute("contenteditable"); // too late for editing in an ebook
             }
 
             // Clean up img elements (BL-6035/BL-6036 and BL-7218)
