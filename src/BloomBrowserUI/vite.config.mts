@@ -269,6 +269,42 @@ function postBuildPlugin(): Plugin {
                 );
                 const manifest = JSON.parse(manifestContent);
 
+                const collectTransitiveCss = (
+                    manifestKey: string,
+                    seenKeys: Set<string>,
+                    cssFiles: Set<string>,
+                ) => {
+                    if (seenKeys.has(manifestKey)) {
+                        return;
+                    }
+                    seenKeys.add(manifestKey);
+
+                    const item = manifest[manifestKey] as
+                        | ManifestEntry
+                        | undefined;
+                    if (!item) {
+                        return;
+                    }
+
+                    if (item.css && item.css.length > 0) {
+                        item.css.forEach((cssFile: string) => {
+                            cssFiles.add(cssFile);
+                        });
+                    }
+
+                    if (item.imports && item.imports.length > 0) {
+                        item.imports.forEach((importKey: string) => {
+                            collectTransitiveCss(importKey, seenKeys, cssFiles);
+                        });
+                    }
+
+                    if (item.dynamicImports && item.dynamicImports.length > 0) {
+                        item.dynamicImports.forEach((importKey: string) => {
+                            collectTransitiveCss(importKey, seenKeys, cssFiles);
+                        });
+                    }
+                };
+
                 console.log("\nProcessing manifest for entry points...");
 
                 // Process each entry point
@@ -306,6 +342,19 @@ function postBuildPlugin(): Plugin {
                             dependencies.add("./" + cssFile);
                         });
                     }
+
+                    // Add CSS from transitive imports/chunks as well. Without this,
+                    // CSS imported in shared non-entry modules (for example BloomTabs)
+                    // may be omitted for some generated entry wrappers.
+                    const transitiveCssFiles = new Set<string>();
+                    collectTransitiveCss(
+                        entryKey,
+                        new Set<string>(),
+                        transitiveCssFiles,
+                    );
+                    transitiveCssFiles.forEach((cssFile: string) => {
+                        dependencies.add("./" + cssFile);
+                    });
 
                     // Add dynamic imports/chunks if any
                     if (
@@ -373,9 +422,13 @@ function postBuildPlugin(): Plugin {
                     if (cssDependencies.length > 0) {
                         finalContent += `// Function to load CSS files dynamically\n`;
                         finalContent += `function loadCSS(href) {\n`;
+                        finalContent += `    const absoluteHref = new URL(href, import.meta.url).toString();\n`;
+                        finalContent += `    if (document.querySelector(\`link[rel="stylesheet"][href="\${absoluteHref}"]\`)) {\n`;
+                        finalContent += `        return;\n`;
+                        finalContent += `    }\n`;
                         finalContent += `    const link = document.createElement('link');\n`;
                         finalContent += `    link.rel = 'stylesheet';\n`;
-                        finalContent += `    link.href = href;\n`;
+                        finalContent += `    link.href = absoluteHref;\n`;
                         finalContent += `    document.head.appendChild(link);\n`;
                         finalContent += `}\n\n`;
 
@@ -440,11 +493,18 @@ function reportBuildErrorPlugin(): Plugin {
 // Helper function to inject CSS into DOM
 function createCssInjector() {
     return `
+function stripCssSourceMapComments(cssContent) {
+    return cssContent
+        .split('\\n')
+        .filter((line) => !line.includes('sourceMappingURL='))
+        .join('\\n');
+}
+
 function injectCss(cssContent, source) {
     if (typeof window !== 'undefined' && window.document) {
         const style = document.createElement('style');
         style.setAttribute('data-source', source || 'inline');
-        style.textContent = cssContent;
+        style.textContent = stripCssSourceMapComments(cssContent);
         document.head.appendChild(style);
     }
 }`;
@@ -491,7 +551,7 @@ function transformLessImportsPlugin(): Plugin {
 ${injectedCss.map((call) => `(function() { ${call} })();`).join("\n")}
 `;
 
-            transformedCode = `${injectorFunction}\n${immediateInjection}\n${transformedCode}`;
+            transformedCode = `${transformedCode}\n${injectorFunction}\n${immediateInjection}`;
 
             return { code: transformedCode, map: null };
         },

@@ -1,0 +1,69 @@
+//- Common template for WorkspaceRoot, originally the root document of the edit tab, but now the root
+//- of the main document of Bloom's main window, which includes all three main tabs and the TopBar.
+//- Encapsulates what is common to production and Vite dev versions of the page, so that we can keep them in sync more easily.
+doctype html
+html
+	head
+		block headContent
+		style.
+			html, body, #left, #right { margin: 0; padding: 0; border: 0 none; height:100%}
+			iframe { border: 0 none;} /* apparently Gecko gives this a default 2 px wide. */
+			body, .pure-pusher { overflow:hidden }
+			body { position: relative; display: flex; flex-direction: column; }
+			#topBar { display: block; width: 100%; height: 72px; flex: 0 0 72px; position: relative; z-index: 3; }
+			#workspaceContentHost { position: relative; width: 100%; flex: 1 1 auto; min-height: 0; overflow: hidden; z-index: 1; }
+			#left { width:100%; box-sizing: border-box;}
+			div#pusherContainer { padding-right: 35px;height: 100%;}
+			#collectionTab { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
+			#publishTab { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
+			.pure-container { display: block; height: 100%; position: relative; z-index: 1; overflow: hidden; }
+			#workspaceContentHost .pure-toggle-label { position: absolute; top: 3px; }
+			#workspaceContentHost .pure-drawer { position: absolute; top: 0; bottom: 0; height: auto; }
+			#workspaceContentHost .pure-overlay { position: absolute; top: 0; bottom: 0; }
+			body.collection-mode #collectionTab { display: block; }
+			body.collection-mode #workspaceContentHost { background-color: #333333; }
+			body.publish-mode #publishTab { display: block; }
+			body.collection-mode .pure-container { visibility: hidden; pointer-events: none; }
+			body.publish-mode .pure-container { visibility: hidden; pointer-events: none; }
+			body.edit-mode .pure-container { visibility: visible; pointer-events: auto; }
+			/* These rules achieve a change in the width of the frame I added just inside the pure-pusher
+			(the main content of the pure-drawer system) when the check-box is checked. The second line
+			gives it more padding (to leave room for the toolbox) when the pure pusher container is
+			a sibling of the checked pure-toggle input. The first line makes it change smoothly
+			when the check box is clicked.
+			There's probably a more elegant way of making this a new 'effect' option for pure-drawer
+			but I wanted to keep the changes to that as simple as possible.
+			Padding works better than margin because it keeps the area 'under' the toolbox dark
+			so it is less noticeable when the two animations are not perfectly in sync.
+			*/
+			[data-effect='pure-effect-slide'] div#pusherContainer {transition-duration: 500ms;}
+			.pure-toggle[data-toggle='right']:checked ~ .pure-pusher-container div#pusherContainer { padding-right: 200px;}
+	body.collection-mode
+		iframe#topBar(width='100%', height='72', src='/bloom/fixed-simulated/topBar-memsim-Frame.html')
+		#workspaceContentHost
+			iframe#collectionTab(width='100%', height='100%', src='/bloom/fixed-simulated/collectionTab-memsim-Frame.html')
+			iframe#publishTab(width='100%', height='100%', src='/bloom/fixed-simulated/publishTab-memsim-Frame.html')
+			//- All the pure- stuff here is the required framework for pure-drawer to make the toolbox appear and disappear
+			//- based on the litle control in the top right. Note particularly that C# code is aware of the pure-toggle-right input,
+			//- and it has to come first because various css rules depend on things being a following-sibling.
+			div.pure-container(data-effect="pure-effect-slide")
+				input.pure-toggle(type="checkbox" id="pure-toggle-right" data-toggle="right")
+				label.pure-toggle-label(for="pure-toggle-right" data-toggle-label="right")
+					span.pure-toggle-icon
+				nav.pure-drawer(data-position="right")
+					#right
+						iframe#toolbox(width='100%', height='100%', src='/bloom/toolboxContent') .
+							| Your browser does not support iframes.
+				div.pure-pusher-container
+					div.pure-pusher
+						#pusherContainer
+							#left
+								div(style='width:200px; height:100%; display:inline-block; box-sizing: border-box;')
+									iframe#pageList(width='100%', height='100%', src='{simulatedPageListFile}') .
+										| Your browser does not support iframes.
+								div(style='width:calc(100% - 205px); padding-left: 5px; height:100%; display:inline-block; box-sizing: border-box;')
+									iframe#page(width='100%', height='100%', src='{simulatedPageFileInBookFolder}') .
+										| Your browser does not support iframes.
+					label.pure-overlay(for="pure-toggle-right" data-overlay="right")
+		div#modal-dialog-container
+		block endBodyScripts

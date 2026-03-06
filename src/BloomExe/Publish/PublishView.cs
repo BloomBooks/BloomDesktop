@@ -1,5 +1,4 @@
 using System;
-using System.Drawing;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.CollectionTab;
@@ -10,10 +9,11 @@ using Bloom.Publish.Video;
 using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
+using Bloom.Workspace;
 
 namespace Bloom.Publish
 {
-    public class PublishView : UserControl, IBloomTabArea
+    public class PublishView : IBloomTabArea, IDisposable
     {
         public readonly PublishModel _model;
         private BookUpload _bookTransferrer;
@@ -21,13 +21,18 @@ namespace Bloom.Publish
         private PublishAudioVideoAPI _publishToVideoApi;
         private PublishEpubApi _publishEpubApi;
         private BloomWebSocketServer _webSocketServer;
+        private readonly WorkspaceTabSelection _tabSelection;
+        private readonly IframeReactControl _iframeReactControl;
+        private bool _loadedIntoIframe;
+        private bool _isActive;
 
-        private web.ReactControl _reactControl;
+        internal WorkspaceView WorkspaceView { get; set; }
 
         public delegate PublishView Factory(); //autofac uses this
 
         public PublishView(
             PublishModel model,
+            WorkspaceTabSelection tabSelection,
             SelectedTabChangedEvent selectedTabChangedEvent,
             LocalizationChangedEvent localizationChangedEvent,
             BookUpload bookTransferrer,
@@ -44,29 +49,32 @@ namespace Bloom.Publish
             _model = model;
             _model.View = this;
             _webSocketServer = webSocketServer;
-
-            _reactControl = new ReactControl();
-            _reactControl.JavascriptBundleName = "publishTabPaneBundle";
-            _reactControl.BackColor = Palette.GeneralBackground;
-            _reactControl.Dock = System.Windows.Forms.DockStyle.Fill;
-            _reactControl.Location = new System.Drawing.Point(0, 0);
-            _reactControl.Name = "_reactControl";
-            _reactControl.Size = new System.Drawing.Size(773, 518);
-            _reactControl.TabIndex = 16;
-            Controls.Add(_reactControl);
-            _reactControl.SetLocalizationChangedEvent(localizationChangedEvent);
+            _tabSelection = tabSelection;
+            _iframeReactControl = new IframeReactControl();
+            localizationChangedEvent.Subscribe(unused =>
+            {
+                if (_loadedIntoIframe)
+                {
+                    ReloadIntoIframe();
+                }
+            });
 
             //NB: just triggering off "VisibilityChanged" was unreliable. So now we trigger
             //off the tab itself changing, either to us or away from us.
-            selectedTabChangedEvent.Subscribe(c =>
+            selectedTabChangedEvent.Subscribe(_ =>
             {
-                if (c.To == this)
+                if (_tabSelection.ActiveTab == WorkspaceTab.publish)
                 {
-                    Activate();
+                    if (!_isActive)
+                    {
+                        Activate();
+                        _isActive = true;
+                    }
                 }
-                else if (c.To != this)
+                else if (_isActive)
                 {
                     Deactivate();
+                    _isActive = false;
                 }
             });
 
@@ -87,22 +95,48 @@ namespace Bloom.Publish
             _webSocketServer.SendEvent("publish", "switchOutOfPublishTab");
         }
 
-        protected override void Dispose(bool disposing)
+        public void Dispose()
         {
-            if (disposing)
-            {
-                _reactControl?.Dispose();
-                _publishEpubApi?.EpubMaker?.Dispose();
-                _publishToBloomPubApi?.Dispose();
-            }
-            base.Dispose(disposing);
+            _iframeReactControl?.Dispose();
+            _publishEpubApi?.EpubMaker?.Dispose();
+            _publishToBloomPubApi?.Dispose();
+        }
+
+        internal void EnsureLoadedInMainBrowser()
+        {
+            ReloadIntoIframe();
+        }
+
+        internal Control GetHostControlForInvoke()
+        {
+            var hostForm = WorkspaceView?.FindForm();
+            if (hostForm != null)
+                return hostForm;
+
+            return WorkspaceView;
+        }
+
+        private void ReloadIntoIframe()
+        {
+            if (WorkspaceView?.MainBrowser == null)
+                return;
+
+            WorkspaceView.EnsureWorkspaceRootDocumentLoaded();
+            _ = _iframeReactControl.Load(
+                WorkspaceView.MainBrowser,
+                "publishTabPaneBundle",
+                null,
+                "publishTab"
+            );
+            _loadedIntoIframe = true;
         }
 
         private void Activate()
         {
             PublishHelper.InPublishTab = true;
-            BloomPubMaker.ControlForInvoke = ParentForm;
-            PublishEpubApi.ControlForInvoke = ParentForm;
+            var hostForm = GetHostControlForInvoke() as Form;
+            BloomPubMaker.ControlForInvoke = hostForm;
+            PublishEpubApi.ControlForInvoke = hostForm;
             LibraryPublishApi.Model = new BloomLibraryPublishModel(
                 _bookTransferrer,
                 _model.BookSelection.CurrentSelection,
@@ -123,14 +157,6 @@ namespace Bloom.Publish
         public string HelpTopicUrl
         {
             get { return "/Tasks/Publish_tasks/Publish_tasks_overview.htm"; }
-        }
-
-        // Temporary bridge while workspace menus are still WinForms menus.
-        // Remove when menus and tabs run in one browser UI.
-        internal event EventHandler BrowserClick
-        {
-            add { _reactControl.OnBrowserClick += value; }
-            remove { _reactControl.OnBrowserClick -= value; }
         }
     }
 }

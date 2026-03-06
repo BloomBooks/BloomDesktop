@@ -100,21 +100,6 @@ export const TopBar: React.FunctionComponent = () => {
         [],
     );
 
-    // Notify c# when user clicks in the top bar so WinForms menus opened from top bar controls
-    // can close when the click is outside those menus.
-    // Temporary: this is only needed while those menus are still WinForms menus.
-    // Remove this bridge when top bar and menus are all running in one browser UI.
-    React.useEffect(() => {
-        const notifyBrowserClicked = () => {
-            (window as any).chrome?.webview?.postMessage("browser-clicked");
-        };
-
-        window.addEventListener("click", notifyBrowserClicked);
-        return () => {
-            window.removeEventListener("click", notifyBrowserClicked);
-        };
-    }, []);
-
     return (
         /* ScopedCssBaseline injects MUI's base styles (it sets html/body to the theme typography,
            normalizes margins, etc.).
