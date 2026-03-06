@@ -1,7 +1,7 @@
 // This file exposes some utility functions that are needed in both iframes. The idea is
 // to make them available to import with a minimum of dependencies.
 
-import { getEditablePageBundleExports } from "../../editViewFrame";
+import { getEditablePageBundleExports } from "../../workspaceRoot";
 import { CanvasElementManager } from "../../js/CanvasElementManager";
 
 export const kCanvasElementClass = "bloom-canvas-element";

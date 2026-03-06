@@ -325,7 +325,7 @@ namespace Bloom.web.controllers
             }
 
             View.Browser.RunJavascriptAsync(
-                $"editTabBundle?.getEditablePageBundleExports()?.topBarButtonClick({data})"
+                $"workspaceBundle?.getEditablePageBundleExports()?.topBarButtonClick({data})"
             );
             request.PostSucceeded();
         }

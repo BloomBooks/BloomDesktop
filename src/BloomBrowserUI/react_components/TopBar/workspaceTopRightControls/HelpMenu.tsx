@@ -88,10 +88,10 @@ export const HelpMenu: React.FunctionComponent = () => {
     const showRegistrationDialogFromWorkspaceRoot = React.useCallback(() => {
         const topWindow = window.top;
         const showFromRoot =
-            topWindow && "editTabBundle" in topWindow
+            topWindow && "workspaceBundle" in topWindow
                 ? (
                       topWindow as {
-                          editTabBundle?: {
+                          workspaceBundle?: {
                               showRegistrationDialogFromWorkspaceRoot?:
                                   | (() => void)
                                   | undefined;
@@ -100,7 +100,7 @@ export const HelpMenu: React.FunctionComponent = () => {
                                   | undefined;
                           };
                       }
-                  ).editTabBundle
+                  ).workspaceBundle
                 : undefined;
         const showRegistration =
             showFromRoot?.showRegistrationDialogFromWorkspaceRoot;
@@ -120,10 +120,10 @@ export const HelpMenu: React.FunctionComponent = () => {
     const showAboutDialogFromWorkspaceRoot = React.useCallback(() => {
         const topWindow = window.top;
         const showFromRoot =
-            topWindow && "editTabBundle" in topWindow
+            topWindow && "workspaceBundle" in topWindow
                 ? (
                       topWindow as {
-                          editTabBundle?: {
+                          workspaceBundle?: {
                               showRegistrationDialogFromWorkspaceRoot?:
                                   | (() => void)
                                   | undefined;
@@ -132,7 +132,7 @@ export const HelpMenu: React.FunctionComponent = () => {
                                   | undefined;
                           };
                       }
-                  ).editTabBundle
+                  ).workspaceBundle
                 : undefined;
         const showAbout = showFromRoot?.showAboutDialogFromWorkspaceRoot;
         if (typeof showAbout === "function") {

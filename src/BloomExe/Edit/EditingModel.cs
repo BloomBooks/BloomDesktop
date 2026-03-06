@@ -1180,7 +1180,7 @@ namespace Bloom.Edit
                 );
                 anchor.SetAttribute(
                     "href",
-                    "javascript:(window.parent || window).editTabBundle.showCopyrightAndLicenseDialog();"
+                    "javascript:(window.parent || window).workspaceBundle.showCopyrightAndLicenseDialog();"
                 );
                 licenseBlock.InsertBefore(div, licenseBlock.FirstChild);
             }
@@ -1240,7 +1240,7 @@ namespace Bloom.Edit
                 // hint bubbles (especially; BL-12253) will be too constrained.
                 // Subtracting 5px from 100% ensures that we don't have a horizontal scrollbar and leaves a small margin
                 // between the main page and the toolbox.
-                // If this changes, adjust similar code in the TS SetZoom method, currently in editViewFrame.ts.
+                // If this changes, adjust similar code in the TS SetZoom method, currently in workspaceRoot.ts.
                 outerDiv.SetAttribute(
                     "style",
                     String.Format(
@@ -1555,7 +1555,7 @@ namespace Bloom.Edit
             // show the saving message to the user
             _webSocketServer.SendString("pageThumbnailList", "saving", "");
             // review do we really need to be checking to see if things are loaded? If they are not, then there is nothing to save, and this doesn't thow.
-            var script = $"editTabBundle.getEditablePageBundleExports().requestPageContent()";
+            var script = $"workspaceBundle.getEditablePageBundleExports().requestPageContent()";
             _view.Browser.RunJavascriptAsync(script);
         }
 
@@ -1687,7 +1687,7 @@ namespace Bloom.Edit
             // enough to get its dimensions, and that adjustment might not complete before the next Javascript is run from C#
             GetEditingBrowser()
                 .RunJavascriptFireAndForget(
-                    $"editTabBundle.getEditablePageBundleExports().changeImage({JsonConvert.SerializeObject(args)})"
+                    $"workspaceBundle.getEditablePageBundleExports().changeImage({JsonConvert.SerializeObject(args)})"
                 );
 
             /* We're Saving to the DOM here only if it's a cover page, because that lets us make the image transparent if it should be:

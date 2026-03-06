@@ -36,9 +36,9 @@ import "../../lib/jquery.qtip.js";
 import "../../lib/jquery.qtipSecondary.js";
 import "../../lib/long-press/jquery.longpress.js";
 import {
-    doWhenEditTabBundleLoaded,
+    doWhenWorkspaceBundleLoaded,
     getToolboxBundleExports,
-} from "./bloomFrames";
+} from "./workspaceFrames";
 import { showInvisibles, hideInvisibles } from "./showInvisibles";
 
 //promise may be needed to run tests with phantomjs
@@ -65,7 +65,7 @@ import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { setupBookLinkGrids } from "./linkGrid";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
-import { handleUndo } from "../editViewFrame";
+import { handleUndo } from "../workspaceRoot";
 import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
@@ -579,7 +579,7 @@ export function SetupElements(
             this.innerHTML = this.value;
         });
 
-    doWhenEditTabBundleLoaded((rootFrameExports) => {
+    doWhenWorkspaceBundleLoaded((rootFrameExports) => {
         rootFrameExports.doWhenToolboxLoaded((toolboxFrameExports) => {
             const toolbox = toolboxFrameExports.getTheOneToolbox();
             // toolbox might be undefined in unit testing?
@@ -1376,7 +1376,7 @@ export function getBodyContentForSavePage() {
 }
 
 // Called from C# by a RunJavaScript() in EditingView.CleanHtmlAndCopyToPageDom via
-// editTabBundle.getEditablePageBundleExports().
+// workspaceBundle.getEditablePageBundleExports().
 export const userStylesheetContent = () => {
     const ss = Array.from(document.styleSheets).find(
         (s) => s.title === "userModifiedStyles",
@@ -1419,7 +1419,7 @@ export function topBarButtonClick(button: { command: string }) {
 // We don't need to await them because nothing is using the result.
 // The buttons that implement clipboard operations are currently only in Edit mode, so
 // this is a reasonable place for this code. If we support them elsewhere, we'll have to
-// find a way to share the code (and call it when not part of the editTabBundle).
+// find a way to share the code (and call it when not part of the workspaceBundle).
 export const copySelection = () => {
     copyImpl();
 };

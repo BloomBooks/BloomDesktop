@@ -1258,7 +1258,9 @@ namespace Bloom.Workspace
 
         internal void SetWorkspaceMode(string mode)
         {
-            _mainBrowser?.RunJavascriptFireAndForget($"editTabBundle.setWorkspaceMode('{mode}');");
+            _mainBrowser?.RunJavascriptFireAndForget(
+                $"workspaceBundle.setWorkspaceMode('{mode}');"
+            );
         }
 
         public void ChangeTab(WorkspaceTab newTab)

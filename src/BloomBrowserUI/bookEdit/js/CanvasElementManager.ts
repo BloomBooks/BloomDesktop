@@ -87,9 +87,9 @@ import { FeatureStatus } from "../../react_components/featureStatus";
 import $ from "jquery";
 import { kCanvasToolId } from "../toolbox/toolIds";
 import {
-    doWhenEditTabBundleLoaded,
+    doWhenWorkspaceBundleLoaded,
     getToolboxBundleExports,
-} from "./bloomFrames";
+} from "./workspaceFrames";
 
 export interface ITextColorInfo {
     color: string;
@@ -7884,7 +7884,7 @@ export function showCanvasTool() {
         return;
     }
 
-    doWhenEditTabBundleLoaded((rootFrameExports) => {
+    doWhenWorkspaceBundleLoaded((rootFrameExports) => {
         rootFrameExports.doWhenToolboxLoaded((toolboxFrameExports) => {
             const loadedToolbox = toolboxFrameExports.getTheOneToolbox();
             if (!loadedToolbox) {

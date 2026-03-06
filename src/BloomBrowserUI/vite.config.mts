@@ -569,7 +569,7 @@ export default defineConfig(async ({ command }) => {
     const entryPoints: Record<string, string> = {
         // Special bundles that were previously built separately
         editablePageBundle: "./bookEdit/editablePage.ts",
-        editTabBundle: "./bookEdit/editViewFrame.ts",
+        workspaceBundle: "./bookEdit/workspaceRoot.ts",
         spreadsheetBundle: "./spreadsheet/spreadsheetBundleRoot.ts",
         toolboxBundle: "./bookEdit/toolbox/toolboxBootstrap.ts",
 

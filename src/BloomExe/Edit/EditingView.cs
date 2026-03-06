@@ -127,7 +127,7 @@ namespace Bloom.Edit
                     {
                         var url = _model.GetUrlForPageListFile();
                         _browser1.RunJavascriptFireAndForget(
-                            $"editTabBundle.switchThumbnailPage('{url}');"
+                            $"workspaceBundle.switchThumbnailPage('{url}');"
                         );
                     }
                 }
@@ -166,8 +166,6 @@ namespace Bloom.Edit
                 ColorMatrixFlag.Default,
                 ColorAdjustType.Bitmap
             );
-
-            // Edit top bar menus are now rendered in React/MUI.
 #endif
         }
 
@@ -340,10 +338,10 @@ namespace Bloom.Edit
                 var pageUrl = _model.GetUrlForCurrentPage();
                 var urlFile = Path.GetFileName(pageUrl); // this actually works with a leading http://.
                 Logger.WriteEvent(
-                    $"changing page via editTabBundle.switchContentPage('{urlFile}')"
+                    $"changing page via workspaceBundle.switchContentPage('{urlFile}')"
                 );
                 _browser1.RunJavascriptFireAndForget(
-                    "editTabBundle.switchContentPage('" + pageUrl + "');"
+                    "workspaceBundle.switchContentPage('" + pageUrl + "');"
                 );
             }
             else if (canReuseCurrentRoot)
@@ -359,10 +357,10 @@ namespace Bloom.Edit
                 );
 
                 _browser1.RunJavascriptFireAndForget(
-                    "editTabBundle.switchThumbnailPage('" + pageListUrl + "');"
+                    "workspaceBundle.switchThumbnailPage('" + pageListUrl + "');"
                 );
                 _browser1.RunJavascriptFireAndForget(
-                    "editTabBundle.switchContentPage('" + pageUrl + "');"
+                    "workspaceBundle.switchContentPage('" + pageUrl + "');"
                 );
             }
             else
@@ -1310,7 +1308,7 @@ namespace Bloom.Edit
             Model
                 .GetEditingBrowser()
                 .RunJavascriptFireAndForget(
-                    $"editTabBundle.getEditablePageBundleExports().removeImageId('{imageId}')"
+                    $"workspaceBundle.getEditablePageBundleExports().removeImageId('{imageId}')"
                 );
         }
 
@@ -1602,14 +1600,14 @@ namespace Bloom.Edit
         {
             PageTemplatesApi.ForPageLayout = false;
             //if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
-            RunJavascriptAsync("editTabBundle.showPageChooserDialog(false);");
+            RunJavascriptAsync("workspaceBundle.showPageChooserDialog(false);");
         }
 
         internal void ShowChangeLayoutDialog()
         {
             PageTemplatesApi.ForPageLayout = true;
             //if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
-            RunJavascriptAsync("editTabBundle.showPageChooserDialog(true);");
+            RunJavascriptAsync("workspaceBundle.showPageChooserDialog(true);");
         }
 
         public int Zoom => EditingView.ZoomSetting;
@@ -1682,7 +1680,7 @@ namespace Bloom.Edit
             // If we just put zoom/100.0 in the setZoom call, the implicit toString()
             // uses the regional settings and can produce e.g. 1,3 when we need 1.3
             var zoomFactor = (zoom / 100.0).ToString(CultureInfo.InvariantCulture);
-            RunJavascriptAsync($"editTabBundle.setZoom({zoomFactor});");
+            RunJavascriptAsync($"workspaceBundle.setZoom({zoomFactor});");
             Settings.Default.PageZoom = zoom.ToString(CultureInfo.InvariantCulture);
             Settings.Default.Save();
             // Note: July 29 2025 we removed code that handled zoom by reloading the page,
@@ -1722,7 +1720,7 @@ namespace Bloom.Edit
                     // Open the book settings dialog to the context-specific group.
                     var groupIndex = _model.CurrentPage.IsCoverPage ? 0 : 1;
                     RunJavascriptAsync(
-                        $"editTabBundle.showEditViewBookSettingsDialog({groupIndex});"
+                        $"workspaceBundle.showEditViewBookSettingsDialog({groupIndex});"
                     );
                     return _model.CurrentPage.Id;
                 },
