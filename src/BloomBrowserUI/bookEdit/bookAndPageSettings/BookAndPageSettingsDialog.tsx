@@ -60,8 +60,6 @@ export interface IBookSettings {
     firstPossiblyLegacyCss?: string;
 }
 
-type IBookSettingsDialogValues = IBookSettings & IPageSettings;
-
 // Stuff we get from the book/settings/overrides api.
 // The branding and xmatter objects contain the corresponding settings,
 // using the same keys as appearance.json. Currently the values are all
@@ -73,8 +71,8 @@ interface IOverrideInformation {
     xmatterName: string;
 }
 
-export const BookSettingsDialog: React.FunctionComponent<{
-    initiallySelectedGroupIndex?: number;
+export const BookAndPageSettingsDialog: React.FunctionComponent<{
+    initiallySelectedPageKey?: string;
 }> = (props) => {
     const { closeDialog, propsForBloomDialog } = useSetupBloomDialog({
         initiallyOpen: true,
@@ -415,8 +413,8 @@ export const BookSettingsDialog: React.FunctionComponent<{
 
                             applyPageSettings(parsedPageSettings);
                         }}
-                        initiallySelectedTopLevelPageIndex={
-                            props.initiallySelectedGroupIndex
+                        initiallySelectedTopLevelPageKey={
+                            props.initiallySelectedPageKey
                         }
                     >
                         <ConfigrArea
@@ -447,15 +445,15 @@ export const BookSettingsDialog: React.FunctionComponent<{
     );
 };
 
-export function showBookSettingsDialog(initiallySelectedGroupIndex?: number) {
+export function showBookSettingsDialog(initiallySelectedPageKey?: string) {
     // once Bloom's tab bar is also in react, it won't be possible
     // to open another copy of this without closing it first, but
     // for now, we need to prevent that.
     if (!isOpenAlready) {
         isOpenAlready = true;
         ShowEditViewDialog(
-            <BookSettingsDialog
-                initiallySelectedGroupIndex={initiallySelectedGroupIndex}
+            <BookAndPageSettingsDialog
+                initiallySelectedPageKey={initiallySelectedPageKey}
             />,
         );
     }
