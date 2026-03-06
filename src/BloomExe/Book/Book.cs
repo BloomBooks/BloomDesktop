@@ -86,9 +86,7 @@ namespace Bloom.Book
 
         // For moq'ing only; parameterless ctor required by Moq.
         public Book()
-            : this(false)
-        {
-        }
+            : this(false) { }
 
         // Allow specific subclasses (like ErrorBook) to bypass the unit-test guard.
         protected Book(bool allowNonTestCtor)
@@ -1088,13 +1086,15 @@ namespace Bloom.Book
         /// <summary>
         /// Fix errors that users have encountered.
         /// 1) duplication of language div elements inside of translationGroup divs.
-        /// 2) duplication of audio id values in the book.
+        /// 2) duplication of audio id values in content the book.
         /// 3) improper license change
+        /// 4) text content inside bloom-linebreak spans.
         /// </summary>
         /// <remarks>
         /// See https://issues.bloomlibrary.org/youtrack/issue/BL-6923.
         /// See https://issues.bloomlibrary.org/youtrack/issue/BL-9503 and several other issues.
         /// See https://issues.bloomlibrary.org/youtrack/issue/BL-11903.
+        /// See https://issues.bloomlibrary.org/youtrack/issue/BL-15955.
         /// </remarks>
         private void FixErrorsEncounteredByUsers(HtmlDom bookDOM)
         {
@@ -1157,6 +1157,8 @@ namespace Bloom.Book
             FixImproperAudioHighlightingOfPaddedSentences(bookDOM);
             // Fix bug reported in BL-14038: improper capitalization of language tags.
             FixImproperCapitalizationOfLanguageTags(bookDOM);
+            // Fix bug reported in BL-15955: move text/markup out of bloom-linebreak spans.
+            NormalizeBloomLinebreakSpansInBookDom(bookDOM);
         }
 
         /// <summary>
@@ -1264,6 +1266,42 @@ namespace Bloom.Book
                         lang,
                         tag
                     );
+                }
+            }
+        }
+
+        /// <summary>
+        /// We somehow ended up with a couple cases of book content text inside the bloom-linebreak spans which mark soft returns.
+        /// This causes a mess in TBT fragment splitting. Copilot suspects ckeditor caret normalization. We have added
+        /// some guards, but fix if the problem is from previous books or somehow gets past our guards.
+        /// See BL-15955.
+        /// </summary>
+        /// <param name="bookDOM"></param>
+        private static void NormalizeBloomLinebreakSpansInBookDom(HtmlDom bookDOM)
+        {
+            var lineBreakSpans = bookDOM
+                .SafeSelectNodes(
+                    "//span[contains(concat(' ', normalize-space(@class), ' '), ' bloom-linebreak ')]"
+                )
+                .Cast<SafeXmlElement>()
+                .ToArray();
+
+            foreach (var lineBreakSpan in lineBreakSpans)
+            {
+                lineBreakSpan.SetAttribute("contenteditable", "false");
+                if (!lineBreakSpan.HasChildNodes)
+                    continue;
+
+                var parent = lineBreakSpan.ParentNode;
+                if (parent == null)
+                    continue;
+
+                while (lineBreakSpan.FirstChild != null)
+                {
+                    Logger.WriteEvent(
+                        $"Found content inside a bloom-linebreak span: {lineBreakSpan.FirstChild?.OuterXml}. Moving it out."
+                    );
+                    parent.InsertBefore(lineBreakSpan.FirstChild, lineBreakSpan);
                 }
             }
         }
@@ -2173,7 +2211,9 @@ namespace Bloom.Book
                         {
                             var lang = line.Substring(kLangTag.Length, idxQuote - kLangTag.Length);
                             // Don't let empty language tag creep in (or stay in). (BL-15784)
-                            copyCurrentRule = !String.IsNullOrEmpty(lang) && !languagesWeAlreadyHave.Contains(lang);
+                            copyCurrentRule =
+                                !String.IsNullOrEmpty(lang)
+                                && !languagesWeAlreadyHave.Contains(lang);
                             languagesWeAlreadyHave.Add(lang); // don't copy if another css block has crept in.
                         }
                     }
