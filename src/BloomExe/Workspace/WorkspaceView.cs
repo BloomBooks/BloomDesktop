@@ -44,8 +44,6 @@ namespace Bloom.Workspace
         private Browser _mainBrowser;
         private PublishView _publishView;
         private CollectionTabView _collectionTabView;
-        private Control _previouslySelectedControl;
-        private Control _previouslyDisplayedControl;
         private IBloomTabArea _previouslySelectedTabArea;
         private readonly IframeReactControl _topBarIframeReactControl;
         private bool _topBarLoadedIntoIframe;
@@ -160,6 +158,10 @@ namespace Bloom.Workspace
             this._editingView = editingViewFactory();
             this._editingView.WorkspaceView = this;
             this._editingView.Dock = DockStyle.Fill;
+            if (!_containerPanel.Controls.Contains(this._editingView))
+            {
+                _containerPanel.Controls.Add(this._editingView);
+            }
             this._editingView.Model.EnableSwitchingTabs = (enabled) =>
             {
                 _tabsEnabled = enabled;
@@ -184,7 +186,7 @@ namespace Bloom.Workspace
             this._publishView = publishViewFactory();
             this._publishView.WorkspaceView = this;
 
-            SelectTab(_collectionTabView, _editingView, selectedControlForEvent: null);
+            SelectTab(_collectionTabView);
 
             SetupZoomModel();
             SetupTopBarIframeControl();
@@ -703,6 +705,19 @@ namespace Bloom.Workspace
             }
         }
 
+        public bool GetShowUnapprovedTranslationsForClient()
+        {
+            return Settings.Default.ShowUnapprovedLocalizations;
+        }
+
+        public void SetShowUnapprovedTranslationsForClient(bool showUnapproved)
+        {
+            if (Settings.Default.ShowUnapprovedLocalizations == showUnapproved)
+                return;
+
+            ToggleShowingOnlyApprovedTranslations();
+        }
+
         public void HandleHelpActionForClient(string method, string argument = null)
         {
             if (String.IsNullOrEmpty(method))
@@ -1080,16 +1095,16 @@ namespace Bloom.Workspace
 
         public void OpenCreateCollection()
         {
+            var previousTab = GetWorkspaceTab(_previouslySelectedTabArea);
             _selectedTabAboutToChangeEvent.Raise(
-                new TabChangedDetails() { From = _previouslySelectedControl, To = null }
+                new TabChangedDetails() { FromTab = previousTab, ToTab = null }
             );
 
             _selectedTabChangedEvent.Raise(
-                new TabChangedDetails() { From = _previouslySelectedControl, To = null }
+                new TabChangedDetails() { FromTab = previousTab, ToTab = null }
             );
 
-            var oldSelectedControl = _previouslySelectedControl;
-            _previouslySelectedControl = null;
+            var oldSelectedTab = previousTab;
 
             Invoke(
                 (Action)(
@@ -1103,16 +1118,14 @@ namespace Bloom.Workspace
                             // We want to resume whatever tab we were in.
                             // There is some overkill here...the old tab can only be the collection tab,
                             // and currently it doesn't care about these events. The critical thing is to
-                            // restore _previouslySelectedControl, which is required so we can remove it
-                            // if we subsequently switch to another tab. But it seemed best to be consistent.
+                            // restore tab identity in subsequent tab-change event payloads.
                             // If we're not shutting down, we're switching the previously selected tab back on.
                             _selectedTabAboutToChangeEvent.Raise(
-                                new TabChangedDetails() { From = null, To = oldSelectedControl }
+                                new TabChangedDetails() { FromTab = null, ToTab = oldSelectedTab }
                             );
                             _selectedTabChangedEvent.Raise(
-                                new TabChangedDetails() { From = null, To = oldSelectedControl }
+                                new TabChangedDetails() { FromTab = null, ToTab = oldSelectedTab }
                             );
-                            _previouslySelectedControl = oldSelectedControl;
                         }
                     }
                 )
@@ -1186,58 +1199,55 @@ namespace Bloom.Workspace
             );
         }
 
-        private void SelectTab(
-            IBloomTabArea view,
-            Control displayedView,
-            Control selectedControlForEvent
-        )
+        private static WorkspaceTab? GetWorkspaceTab(IBloomTabArea view)
+        {
+            if (view is EditingView)
+                return WorkspaceTab.edit;
+
+            if (view is CollectionTabView)
+                return WorkspaceTab.collection;
+
+            if (view is PublishView)
+                return WorkspaceTab.publish;
+
+            return null;
+        }
+
+        private void SelectTab(IBloomTabArea view)
         {
             // Already on the desired tab: nothing to do.  And possible problems if we do do something.
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-8382.
             if (view == _previouslySelectedTabArea)
                 return;
 
+            var previousTab = GetWorkspaceTab(_previouslySelectedTabArea);
+            var currentTab = GetWorkspaceTab(view);
+
             CurrentTabView = view;
             // Warn the user if we're starting to use too much memory.
             //MemoryManagement.CheckMemory(false, "switched tab in workspace", true);
 
-            if (_previouslyDisplayedControl != null && _previouslyDisplayedControl != displayedView)
+            if (_previouslySelectedTabArea is EditingView)
             {
-                _containerPanel.Controls.Remove(_previouslyDisplayedControl);
-                if (_previouslySelectedTabArea is EditingView)
-                {
-                    // I wish this was unnecessary; ideally, we'd get the notification to
-                    // stop monitoring from the stopMonitoring function in audioRecording.ts.
-                    // We should be able to achieve that when the tabs are embedded in a single
-                    // Browser control. For now, the shutdown of the EditingView seems to
-                    // preempt it, so we handle it here.
-                    _audioRecording.PauseMonitoringAudio(false);
-                }
-            }
-
-            displayedView.Dock = DockStyle.Fill;
-            if (!_containerPanel.Controls.Contains(displayedView))
-            {
-                _containerPanel.Controls.Add(displayedView);
+                // I wish this was unnecessary; ideally, we'd get the notification to
+                // stop monitoring from the stopMonitoring function in audioRecording.ts.
+                // We should be able to achieve that when the tabs are embedded in a single
+                // Browser control. For now, the shutdown of the EditingView seems to
+                // preempt it, so we handle it here.
+                _audioRecording.PauseMonitoringAudio(false);
             }
 
             _selectedTabAboutToChangeEvent.Raise(
                 new TabChangedDetails()
                 {
-                    From = _previouslySelectedControl,
-                    To = selectedControlForEvent,
+                    FromTab = previousTab,
+                    ToTab = currentTab,
                     PostponedWork = () =>
                     {
                         _selectedTabChangedEvent.Raise(
-                            new TabChangedDetails()
-                            {
-                                From = _previouslySelectedControl,
-                                To = selectedControlForEvent,
-                            }
+                            new TabChangedDetails() { FromTab = previousTab, ToTab = currentTab }
                         );
 
-                        _previouslySelectedControl = selectedControlForEvent;
-                        _previouslyDisplayedControl = displayedView;
                         _previouslySelectedTabArea = view;
                         _collectionApi.ResetUpdatingList();
 
@@ -1270,12 +1280,12 @@ namespace Bloom.Workspace
             {
                 case WorkspaceTab.edit:
                     SetWorkspaceMode("edit");
-                    SelectTab(_editingView, _editingView, _editingView);
+                    SelectTab(_editingView);
                     break;
                 case WorkspaceTab.collection:
                     _collectionTabView.EnsureLoadedInMainBrowser();
                     SetWorkspaceMode("collection");
-                    SelectTab(_collectionTabView, _editingView, null);
+                    SelectTab(_collectionTabView);
                     if (_returnToCollectionTabNotifier != null)
                     {
                         _returnToCollectionTabNotifier.CloseSafely();
@@ -1296,7 +1306,7 @@ namespace Bloom.Workspace
                 case WorkspaceTab.publish:
                     _publishView.EnsureLoadedInMainBrowser();
                     SetWorkspaceMode("publish");
-                    SelectTab(_publishView, _editingView, null);
+                    SelectTab(_publishView);
                     break;
             }
         }

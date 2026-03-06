@@ -370,7 +370,7 @@ namespace Bloom.Edit
         /// <param name="details"></param>
         private void OnTabAboutToChange(TabChangedDetails details)
         {
-            if (details.From == _view)
+            if (details.FromTab == Workspace.WorkspaceTab.edit)
             {
                 SaveThen(
                     () =>
@@ -426,7 +426,7 @@ namespace Bloom.Edit
         private void OnTabChanged(TabChangedDetails details)
         {
             _previouslySelectedPage = null;
-            Visible = details.To == _view;
+            Visible = details.ToTab == Workspace.WorkspaceTab.edit;
             _view.OnVisibleChanged(Visible);
         }
 

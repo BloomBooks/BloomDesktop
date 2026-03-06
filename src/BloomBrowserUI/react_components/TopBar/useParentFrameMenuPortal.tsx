@@ -1,6 +1,7 @@
 import * as React from "react";
 import createCache from "@emotion/cache";
 import { CacheProvider, type EmotionCache } from "@emotion/react";
+import { css } from "@emotion/react";
 import { createPortal } from "react-dom";
 
 // Manages the process of opening a menu (typically from TopBar) in the parent window,
@@ -124,6 +125,37 @@ export function useParentFrameMenuPortal() {
         [prepareAnchorAtButton, setMenuAnchor],
     );
 
+    const openMenuAtButtonWithItemsLoader = React.useCallback(
+        (
+            buttonId: string,
+            cacheKey: string,
+            existingItemCount: number,
+            loadItems: (onLoaded?: (itemCount: number) => void) => void,
+        ): boolean => {
+            const preparedAnchor = prepareAnchorAtButton(buttonId, cacheKey);
+            if (!preparedAnchor) {
+                return false;
+            }
+
+            if (existingItemCount > 0) {
+                setMenuAnchor(preparedAnchor);
+                loadItems();
+                return true;
+            }
+
+            loadItems((itemCount) => {
+                if (itemCount > 0) {
+                    setMenuAnchor(preparedAnchor);
+                } else {
+                    closeMenu();
+                }
+            });
+
+            return true;
+        },
+        [closeMenu, prepareAnchorAtButton, setMenuAnchor],
+    );
+
     const renderMenuInParentFrame = React.useCallback(
         (menu: React.ReactNode): React.ReactNode => {
             if (parentContainer && parentEmotionCache) {
@@ -139,6 +171,44 @@ export function useParentFrameMenuPortal() {
         [parentContainer, parentEmotionCache],
     );
 
+    const getRootMenuProps = React.useCallback(
+        (
+            onClose: () => void,
+            options?: {
+                minWidth?: number;
+                maxWidth?: number;
+            },
+        ) => {
+            const minWidth = options?.minWidth ?? 220;
+            const maxWidth = options?.maxWidth ?? 440;
+            return {
+                open: Boolean(anchorEl),
+                anchorEl,
+                onClose,
+                disablePortal: false,
+                keepMounted: false,
+                anchorOrigin: {
+                    vertical: "bottom" as const,
+                    horizontal: "left" as const,
+                },
+                transformOrigin: {
+                    vertical: "top" as const,
+                    horizontal: "left" as const,
+                },
+                container: parentContainer ?? undefined,
+                slotProps: {
+                    paper: {
+                        css: css`
+                            min-width: ${minWidth}px;
+                            max-width: ${maxWidth}px;
+                        `,
+                    },
+                },
+            };
+        },
+        [anchorEl, parentContainer],
+    );
+
     React.useEffect(() => closeMenu, [closeMenu]);
 
     return {
@@ -148,10 +218,12 @@ export function useParentFrameMenuPortal() {
         setMenuAnchor,
         prepareAnchorAtButton,
         openMenuAtButton,
+        openMenuAtButtonWithItemsLoader,
         suppressTooltipUntilPointerReset,
         clearTooltipSuppression,
         releaseTooltipSuppressionIfMenuClosed,
         menuContainer: parentContainer ?? undefined,
         renderMenuInParentFrame,
+        getRootMenuProps,
     };
 }

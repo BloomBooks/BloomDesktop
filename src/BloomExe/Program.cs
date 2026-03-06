@@ -905,6 +905,9 @@ namespace Bloom
 
         public static string BloomExePath => Application.ExecutablePath;
 
+        private static string BloomEntryAssemblyPath =>
+            Assembly.GetEntryAssembly()?.Location ?? BloomExePath;
+
         public static void RestartBloom(bool hardExit, string args = null)
         {
             try
@@ -921,6 +924,18 @@ namespace Bloom
                         args = "\"" + BloomExePath + "\" " + args;
                     if (_originalPreload != null)
                         Environment.SetEnvironmentVariable("LD_PRELOAD", _originalPreload);
+                }
+                else if (
+                    Path.GetFileNameWithoutExtension(program)
+                        .Equals("dotnet", StringComparison.OrdinalIgnoreCase)
+                )
+                {
+                    // In dev/debug launches, Application.ExecutablePath can be dotnet.exe.
+                    // Relaunching dotnet without the dll argument exits immediately.
+                    if (args == null)
+                        args = "\"" + BloomEntryAssemblyPath + "\"";
+                    else
+                        args = "\"" + BloomEntryAssemblyPath + "\" " + args;
                 }
                 if (args == null)
                     Process.Start(program);
