@@ -167,8 +167,9 @@ export const BookSettingsDialog: React.FunctionComponent<{
         IPageSettings | undefined
     >(undefined);
 
-    const [settingsToReturnLater, setSettingsToReturnLater] =
-        React.useState<unknown>(undefined);
+    const [settingsToReturnLater, setSettingsToReturnLater] = React.useState<
+        ConfigrValues | undefined
+    >(undefined);
     const dialogRef = React.useRef<HTMLDivElement>(null);
 
     const setDialogVisibleWhileColorPickerOpen = React.useCallback(
@@ -188,27 +189,8 @@ export const BookSettingsDialog: React.FunctionComponent<{
         [],
     );
 
-    const normalizeConfigrSettings = (
-        settingsValue: unknown,
-    ): IBookSettingsDialogValues | undefined => {
-        if (!settingsValue) {
-            return undefined;
-        }
-
-        const parsed =
-            typeof settingsValue === "string"
-                ? JSON.parse(settingsValue)
-                : settingsValue;
-
-        if (typeof parsed !== "object" || !parsed) {
-            throw new Error("Book settings returned from config-r are invalid");
-        }
-
-        return parsed as IBookSettingsDialogValues;
-    };
-
     const removePageSettingsFromConfigrSettings = (
-        settingsValue: IBookSettingsDialogValues,
+        settingsValue: ConfigrValues,
     ): IBookSettings => {
         const settingsWithoutPage = {
             ...settingsValue,
@@ -279,13 +261,15 @@ export const BookSettingsDialog: React.FunctionComponent<{
 
     React.useEffect(() => {
         if (settings?.appearance) {
-            const liveSettings =
-                normalizeConfigrSettings(settingsToReturnLater) ?? settings;
+            const liveAppearance =
+                (settingsToReturnLater?.["appearance"] as
+                    | IAppearanceSettings
+                    | undefined) ?? settings.appearance;
             // when we're in legacy, we're just going to disable all the appearance controls
             setAppearanceDisabled(
-                liveSettings?.appearance?.cssThemeName === "legacy-5-6",
+                liveAppearance?.cssThemeName === "legacy-5-6",
             );
-            setTheme(liveSettings?.appearance?.cssThemeName ?? "");
+            setTheme(liveAppearance?.cssThemeName ?? "");
         }
     }, [settings, settingsToReturnLater]);
 
@@ -317,7 +301,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
     }, [closeDialogAndClearOpenFlag]);
 
     function saveSettingsAndCloseDialog() {
-        const latestSettings = normalizeConfigrSettings(settingsToReturnLater);
+        const latestSettings = settingsToReturnLater;
         if (latestSettings) {
             applyPageSettings(
                 parsePageSettingsFromConfigrValue(latestSettings),
@@ -341,10 +325,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
         tierAllowsFullBleed,
         pageSizeSupportsFullBleed,
         settings,
-        settingsToReturnLater: settingsToReturnLater as
-            | string
-            | object
-            | undefined,
+        settingsToReturnLater,
         getAdditionalProps,
         firstPossiblyLegacyCss,
         theme,

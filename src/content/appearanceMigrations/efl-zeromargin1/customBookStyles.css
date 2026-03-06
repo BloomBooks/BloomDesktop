@@ -28,7 +28,7 @@
     --pageNumber-color: black;
     --pageNumber-background-width: 17px;
     --pageNumber-border-radius: 50%;
-    --pageNumber-background-color: transparent;
+    --pageNumber-background-color: #ffffff;
 
     font-family: "ABeeZee";
     z-index: 1000;

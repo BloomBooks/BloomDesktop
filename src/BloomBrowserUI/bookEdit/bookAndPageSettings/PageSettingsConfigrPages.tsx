@@ -188,11 +188,10 @@ export const applyPageSettings = (settings: IPageSettings): void => {
 export const parsePageSettingsFromConfigrValue = (
     value: unknown,
 ): IPageSettings => {
-    const parsed = typeof value === "string" ? JSON.parse(value) : value;
-    if (typeof parsed !== "object" || !parsed) {
+    if (typeof value !== "object" || !value) {
         throw new Error("Page settings are not an object");
     }
-    const parsedRecord = parsed as Record<string, unknown>;
+    const parsedRecord = value as Record<string, unknown>;
     const pageValues = parsedRecord["page"];
 
     if (typeof pageValues !== "object" || !pageValues) {
@@ -236,24 +235,30 @@ export const arePageSettingsEquivalent = (
     );
 };
 
-const PageBackgroundColorPickerForConfigr: React.FunctionComponent<{
+type IConfigrColorPickerControlProps = {
     value: string;
     disabled?: boolean;
     onChange: (value: string) => void;
-    onColorPickerVisibilityChanged?: (open: boolean) => void;
-}> = (props) => {
-    const backgroundColorLabel = useL10n(
-        "Background Color",
-        "Common.BackgroundColor",
-    );
+};
+
+const ConfigrColorPickerControl: React.FunctionComponent<
+    IConfigrColorPickerControlProps & {
+        localizedTitle: string;
+        transparency: boolean;
+        palette: BloomPalette;
+        emptyValueDisplayColor?: string;
+        onColorPickerVisibilityChanged?: (open: boolean) => void;
+    }
+> = (props) => {
+    const initialColor = props.value || props.emptyValueDisplayColor;
 
     return (
         <ColorDisplayButton
             disabled={props.disabled}
-            initialColor={props.value}
-            localizedTitle={backgroundColorLabel}
-            transparency={false}
-            palette={BloomPalette.PageColors}
+            initialColor={initialColor || ""}
+            localizedTitle={props.localizedTitle}
+            transparency={props.transparency}
+            palette={props.palette}
             width={75}
             onColorPickerVisibilityChanged={
                 props.onColorPickerVisibilityChanged
@@ -266,62 +271,44 @@ const PageBackgroundColorPickerForConfigr: React.FunctionComponent<{
     );
 };
 
-const PageNumberColorPickerForConfigr: React.FunctionComponent<{
-    value: string;
+const PageSettingsConfigrColorInput: React.FunctionComponent<{
+    label: string;
+    path: string;
+    localizedTitle: string;
+    transparency: boolean;
+    palette: BloomPalette;
+    emptyValueDisplayColor?: string;
     disabled?: boolean;
-    onChange: (value: string) => void;
     onColorPickerVisibilityChanged?: (open: boolean) => void;
 }> = (props) => {
-    const pageNumberColorLabel = useL10n(
-        "Page Number Color",
-        "PageSettings.PageNumberColor",
+    const colorControl = React.useCallback(
+        (pickerProps: IConfigrColorPickerControlProps) => (
+            <ConfigrColorPickerControl
+                {...pickerProps}
+                localizedTitle={props.localizedTitle}
+                transparency={props.transparency}
+                palette={props.palette}
+                emptyValueDisplayColor={props.emptyValueDisplayColor}
+                onColorPickerVisibilityChanged={
+                    props.onColorPickerVisibilityChanged
+                }
+            />
+        ),
+        [
+            props.emptyValueDisplayColor,
+            props.localizedTitle,
+            props.onColorPickerVisibilityChanged,
+            props.palette,
+            props.transparency,
+        ],
     );
 
     return (
-        <ColorDisplayButton
-            disabled={props.disabled}
-            initialColor={props.value}
-            localizedTitle={pageNumberColorLabel}
-            transparency={false}
-            palette={BloomPalette.Text}
-            width={75}
-            onColorPickerVisibilityChanged={
-                props.onColorPickerVisibilityChanged
-            }
-            onClose={(dialogResult: DialogResult, newColor: string) => {
-                if (dialogResult === DialogResult.OK) props.onChange(newColor);
-            }}
-            onChange={(newColor) => props.onChange(newColor)}
-        />
-    );
-};
-
-const PageNumberBackgroundColorPickerForConfigr: React.FunctionComponent<{
-    value: string;
-    disabled?: boolean;
-    onChange: (value: string) => void;
-    onColorPickerVisibilityChanged?: (open: boolean) => void;
-}> = (props) => {
-    const pageNumberBackgroundColorLabel = useL10n(
-        "Page Number Background Color",
-        "PageSettings.PageNumberBackgroundColor",
-    );
-
-    return (
-        <ColorDisplayButton
-            disabled={props.disabled}
-            initialColor={props.value || "transparent"}
-            localizedTitle={pageNumberBackgroundColorLabel}
-            transparency={true}
-            palette={BloomPalette.PageColors}
-            width={75}
-            onColorPickerVisibilityChanged={
-                props.onColorPickerVisibilityChanged
-            }
-            onClose={(dialogResult: DialogResult, newColor: string) => {
-                if (dialogResult === DialogResult.OK) props.onChange(newColor);
-            }}
-            onChange={(newColor) => props.onChange(newColor)}
+        <ConfigrCustomStringInput
+            label={props.label}
+            path={props.path}
+            control={colorControl}
+            disabled={props.disabled ?? false}
         />
     );
 };
@@ -343,73 +330,41 @@ const PageSettingsConfigrInputs: React.FunctionComponent<{
         "PageSettings.PageNumberBackgroundColor",
     );
 
-    const pageBackgroundColorControl = React.useCallback(
-        (pickerProps: {
-            value: string;
-            disabled?: boolean;
-            onChange: (value: string) => void;
-        }) => (
-            <PageBackgroundColorPickerForConfigr
-                {...pickerProps}
-                onColorPickerVisibilityChanged={
-                    props.onColorPickerVisibilityChanged
-                }
-            />
-        ),
-        [props.onColorPickerVisibilityChanged],
-    );
-
-    const pageNumberColorControl = React.useCallback(
-        (pickerProps: {
-            value: string;
-            disabled?: boolean;
-            onChange: (value: string) => void;
-        }) => (
-            <PageNumberColorPickerForConfigr
-                {...pickerProps}
-                onColorPickerVisibilityChanged={
-                    props.onColorPickerVisibilityChanged
-                }
-            />
-        ),
-        [props.onColorPickerVisibilityChanged],
-    );
-
-    const pageNumberBackgroundColorControl = React.useCallback(
-        (pickerProps: {
-            value: string;
-            disabled?: boolean;
-            onChange: (value: string) => void;
-        }) => (
-            <PageNumberBackgroundColorPickerForConfigr
-                {...pickerProps}
-                onColorPickerVisibilityChanged={
-                    props.onColorPickerVisibilityChanged
-                }
-            />
-        ),
-        [props.onColorPickerVisibilityChanged],
-    );
-
     return (
         <>
-            <ConfigrCustomStringInput
+            <PageSettingsConfigrColorInput
                 label={backgroundColorLabel}
                 path={"page.backgroundColor"}
-                control={pageBackgroundColorControl}
+                localizedTitle={backgroundColorLabel}
+                transparency={false}
+                palette={BloomPalette.PageColors}
                 disabled={props.disabled ?? false}
+                onColorPickerVisibilityChanged={
+                    props.onColorPickerVisibilityChanged
+                }
             />
-            <ConfigrCustomStringInput
+            <PageSettingsConfigrColorInput
                 label={pageNumberColorLabel}
                 path={"page.pageNumberColor"}
-                control={pageNumberColorControl}
+                localizedTitle={pageNumberColorLabel}
+                transparency={false}
+                palette={BloomPalette.Text}
                 disabled={props.disabled ?? false}
+                onColorPickerVisibilityChanged={
+                    props.onColorPickerVisibilityChanged
+                }
             />
-            <ConfigrCustomStringInput
+            <PageSettingsConfigrColorInput
                 label={pageNumberBackgroundColorLabel}
                 path={"page.pageNumberBackgroundColor"}
-                control={pageNumberBackgroundColorControl}
+                localizedTitle={pageNumberBackgroundColorLabel}
+                transparency={true}
+                palette={BloomPalette.PageColors}
+                emptyValueDisplayColor={"transparent"}
                 disabled={props.disabled ?? false}
+                onColorPickerVisibilityChanged={
+                    props.onColorPickerVisibilityChanged
+                }
             />
         </>
     );
