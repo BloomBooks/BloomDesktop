@@ -117,6 +117,17 @@ export class ReaderToolsModel {
         return theOneLocalizationManager.loadStringsPromise(keys, null);
     }
 
+    // Copilot made this function because, while we temporarily have a hidden accordion that is
+    // initialized to create the controls for our legacy tools, we might have multiple elements
+    // with the same ID. We thought that was causing problems where we were getting the wrong one.
+    // Howerver, it is very clear that the real react root is first in the document, and
+    // document.getElementById() always returns the first one, so we don't need to do this.
+    // But, just in case, that changes, we have a common function to get the toolbox element
+    // with a given ID. For now, it can just use getElementById.
+    private getToolElementById(id: string): HTMLElement | null {
+        return document.getElementById(id);
+    }
+
     public clearForTest() {
         this.stageNumber = 1;
         this.levelNumber = 1;
@@ -401,7 +412,7 @@ export class ReaderToolsModel {
     public updateStageNOfMDisplay() {
         this.updateStageNumberIfNeeded(); // May change the stage number
 
-        const stageParent = document.getElementById("stageNofM");
+        const stageParent = this.getToolElementById("stageNofM");
         if (!stageParent) {
             return;
         }
@@ -433,7 +444,7 @@ export class ReaderToolsModel {
     public updateLevelNOfMDisplay() {
         this.updateLevelNumberIfNeeded(); // May change the level number
 
-        const levelParent = document.getElementById("levelNofM");
+        const levelParent = this.getToolElementById("levelNofM");
         if (!levelParent) {
             return;
         }
@@ -564,7 +575,7 @@ export class ReaderToolsModel {
         this.updateLevelLimit("maxLettersPerWord", level.getMaxGlyphsPerWord());
 
         if (level.thingsToRemember.length) {
-            const list = document.getElementById("thingsToRemember");
+            const list = this.getToolElementById("thingsToRemember");
             if (list !== null) {
                 list.innerHTML = "";
 
@@ -602,14 +613,14 @@ export class ReaderToolsModel {
             : false;
 
         // this happens during unit testing
-        const mlwld = document.getElementById("make-letter-word-list-div");
+        const mlwld = this.getToolElementById("make-letter-word-list-div");
         if (mlwld) {
             mlwld.style.display = useAllowedWords ? "none" : "";
             this.setDisplayForHTMLElementById(
                 "letters-in-this-stage",
                 useAllowedWords,
             );
-            const ltrList = document.getElementById("letterList");
+            const ltrList = this.getToolElementById("letterList");
             if (ltrList && ltrList.parentElement) {
                 this.setDisplayForHTMLElement(
                     ltrList.parentElement,
@@ -633,7 +644,7 @@ export class ReaderToolsModel {
 
         if (!this.readyToDoMarkup()) return;
 
-        const wordList = document.getElementById("wordList");
+        const wordList = this.getToolElementById("wordList");
         if (wordList) wordList.innerHTML = "";
 
         const stages = this.synphony.getStages();
@@ -722,7 +733,7 @@ export class ReaderToolsModel {
         elementId: string,
         conditionForNone: boolean,
     ): void {
-        const elt = document.getElementById(elementId);
+        const elt = this.getToolElementById(elementId);
         if (!elt) return;
         this.setDisplayForHTMLElement(elt, conditionForNone);
     }
@@ -1025,7 +1036,7 @@ export class ReaderToolsModel {
     /**
      * Displays the correct markup for the current page.
      */
-    private doMarkup(createCkEditorBookMarks: boolean = true): void {
+    public doMarkup(createCkEditorBookMarks: boolean = true): void {
         if (!this.readyToDoMarkup()) return;
         if (this.currentMarkupType === MarkupType.None) return;
 
@@ -1251,16 +1262,24 @@ export class ReaderToolsModel {
     //   }
 
     public getTextOfWholeBook(): void {
-        get("readers/io/textOfContentPages", (result) => {
-            this.gettingTextOfWholeBook = false;
-            //result.data looks like {'0bbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'Jane saw spot', 'AAbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'words of this page', etc.}
-            this.pageIDToText = result.data as any[];
-            this.doMarkup();
-        });
+        get(
+            "readers/io/textOfContentPages",
+            (result) => {
+                this.gettingTextOfWholeBook = false;
+                //result.data looks like {'0bbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'Jane saw spot', 'AAbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'words of this page', etc.}
+                this.pageIDToText = result.data as any[];
+                this.doMarkup();
+            },
+            (_error) => {
+                this.gettingTextOfWholeBook = false;
+            },
+        );
     }
 
     public clearWholeBookCache() {
         this.pageIDToText = [];
+        this.gettingTextOfWholeBook = false;
+        this.bookStatistics = {};
     }
 
     private gettingTextOfWholeBook = false;
@@ -1294,6 +1313,7 @@ export class ReaderToolsModel {
             .toArray()
             .map((x) => x.innerText) // this has newlines between paragraph content, text has none
             .join(" ");
+
         const sentences = theOneLibSynphony
             .stringToSentences(pageText)
             .filter((x) => x.isSentence);
@@ -1563,7 +1583,7 @@ export class ReaderToolsModel {
     }
 
     public updateActualCount(actual: number, max: number, id: string): void {
-        $("#" + id).html(actual.toString());
+        this.updateElementContent(id, actual.toString());
         const acceptable = actual <= max || max === 0;
         // The two styles here must match ones defined in ReaderTools.htm or its stylesheet.
         // It's important NOT to use two names where one is a substring of the other (e.g., unacceptable
@@ -1578,7 +1598,7 @@ export class ReaderToolsModel {
         max: number,
         id: string,
     ): void {
-        $("#" + id).html(average.toFixed(1));
+        this.updateElementContent(id, average.toFixed(1));
         const acceptable = average <= max || max === 0;
         // The two styles here must match ones defined in ReaderTools.htm or its stylesheet.
         // It's important NOT to use two names where one is a substring of the other (e.g., unacceptable
@@ -1641,11 +1661,20 @@ export class ReaderToolsModel {
      * Unit testing should spy or otherwise replace these functions, since $ will not be usefully defined.
      */
     public updateElementContent(id: string, val: string): void {
+        const element = this.getToolElementById(id);
+        if (element) {
+            element.innerHTML = val;
+            return;
+        }
         $("#" + id).html(val);
     }
 
     public getElementAttribute(id: string, attrName: string): string {
-        return $("#" + id).attr(attrName);
+        const element = this.getToolElementById(id);
+        if (element) {
+            return element.getAttribute(attrName) || "";
+        }
+        return $("#" + id).attr(attrName) || "";
     }
 
     public setElementAttribute(
@@ -1653,6 +1682,11 @@ export class ReaderToolsModel {
         attrName: string,
         val: string,
     ): void {
+        const element = this.getToolElementById(id);
+        if (element) {
+            element.setAttribute(attrName, val);
+            return;
+        }
         $("#" + id).attr(attrName, val);
     }
 
@@ -1988,13 +2022,71 @@ export class ReaderToolsModel {
     }
 }
 
-// In case this code is loaded into more than one iframe, we want them to share a single instance.
-// So, we will put it in the top window, and let the first instance which executes this block create it.
-if (!(<any>top).theOneReaderToolsModel) {
-    (<any>top).theOneReaderToolsModel = new ReaderToolsModel();
-    (<any>top).theOneReaderToolsModel.initAsync(); // Start the initialization asynchronously, but don't wait for it.
+interface IReaderToolsModelHolder {
+    model: ReaderToolsModel;
+    ownerWindow: Window;
+    ownerDocument: Document;
 }
 
-export function getTheOneReaderToolsModel() {
-    return (<any>top).theOneReaderToolsModel;
+// This variable and the several functions here are designed to make sure we only have one
+// instance of ReaderToolsModel. We used to do this rather simplistically by storing it in
+// a global on the top window, but now that the top window belongs to the whole workspace,
+// it's possible for the window that actually made the RTM to get reloaded, and then the top
+// window's global will be stale. So we store the RTM in a holder object that also has
+// references to the window and document that created it, and we  make a new one if
+// the window or document is no longer valid.
+// There's proably a better way to do this, such as the inter-frame communication we do
+// to make sure there's only one CanvasElementManager,but we were looking for a minimal change.
+const kReaderToolsModelHolderKey = "__bloomReaderToolsModelHolder";
+
+function isStaleReaderToolsModelHolder(
+    holder: IReaderToolsModelHolder,
+): boolean {
+    if (
+        !holder ||
+        !holder.model ||
+        !holder.ownerWindow ||
+        !holder.ownerDocument
+    ) {
+        return true;
+    }
+
+    // If the owning iframe/document was reloaded or detached, recreate from the current realm.
+    if ((holder.ownerWindow as unknown as { closed?: boolean }).closed) {
+        return true;
+    }
+
+    if (!holder.ownerDocument.defaultView) {
+        return true;
+    }
+
+    return false;
+}
+
+function createReaderToolsModelHolder(): IReaderToolsModelHolder {
+    const model = new ReaderToolsModel();
+    model.initAsync(); // Start initialization asynchronously; callers can proceed.
+    return {
+        model,
+        ownerWindow: window,
+        ownerDocument: document,
+    };
+}
+
+export function getTheOneReaderToolsModel(): ReaderToolsModel {
+    const topWindow = top as unknown as {
+        [kReaderToolsModelHolderKey]?: IReaderToolsModelHolder;
+        theOneReaderToolsModel?: ReaderToolsModel;
+    };
+
+    let holder = topWindow[kReaderToolsModelHolderKey];
+
+    if (!holder || isStaleReaderToolsModelHolder(holder)) {
+        holder = createReaderToolsModelHolder();
+        topWindow[kReaderToolsModelHolderKey] = holder;
+    }
+
+    // Keep legacy global in sync for any remaining callers.
+    topWindow.theOneReaderToolsModel = holder.model;
+    return holder.model;
 }

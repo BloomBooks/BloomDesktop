@@ -51,7 +51,6 @@ namespace Bloom.Edit
         private ZoomModel _zoomModel;
         private PageListApi _pageListApi;
         private Browser _browser1 => WorkspaceView?.MainBrowser;
-        private bool _waitingForFirstEditModeInitialization;
 
         internal WorkspaceView WorkspaceView { get; set; }
 
@@ -250,10 +249,6 @@ namespace Bloom.Edit
                     _pageListView.Clear();
                 }
                 _model.OnBecomeVisible();
-                if (_waitingForFirstEditModeInitialization)
-                {
-                    _waitingForFirstEditModeInitialization = false;
-                }
                 Logger.WriteEvent("Entered Edit Tab");
                 Cursor = Cursors.Default;
             }

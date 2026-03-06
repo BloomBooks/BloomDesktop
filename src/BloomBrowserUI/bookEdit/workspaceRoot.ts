@@ -106,11 +106,9 @@ export function switchThumbnailPage(newSource: string) {
 
 export function switchContentPage(newSource: string) {
     try {
-        if (
-            this.getEditablePageBundleExports &&
-            this.getEditablePageBundleExports()?.pageUnloading
-        ) {
-            this.getEditablePageBundleExports().pageUnloading();
+        const editablePageBundle = getEditablePageBundleExports();
+        if (editablePageBundle?.pageUnloading) {
+            editablePageBundle.pageUnloading();
         }
     } catch (e) {
         // It's not too unlikely something goes wrong while trying to unload the previous
@@ -334,6 +332,7 @@ const updateWorkspaceUrlParam = (name: string, value: string): void => {
 const restoreIframeSrcFromUrlIfNeeded = (
     iframeId: string,
     paramName: string,
+    restoreAction?: (savedSrc: string) => void,
 ): void => {
     const iframe = document.getElementById(
         iframeId,
@@ -351,7 +350,11 @@ const restoreIframeSrcFromUrlIfNeeded = (
     const url = new URL(window.location.href);
     const savedSrc = url.searchParams.get(paramName);
     if (savedSrc) {
-        iframe.src = savedSrc;
+        if (restoreAction) {
+            restoreAction(savedSrc);
+        } else {
+            iframe.src = savedSrc;
+        }
     }
 };
 
@@ -360,7 +363,7 @@ const initializeWorkspaceModeFromUrl = (): void => {
     const mode = normalizeWorkspaceMode(url.searchParams.get("mode"));
     applyWorkspaceModeClass(mode);
     updateWorkspaceModeInUrl(mode);
-    restoreIframeSrcFromUrlIfNeeded("page", "pageSrc");
+    restoreIframeSrcFromUrlIfNeeded("page", "pageSrc", switchContentPage);
     restoreIframeSrcFromUrlIfNeeded("pageList", "pageListSrc");
 };
 
@@ -370,6 +373,11 @@ export function setWorkspaceMode(mode: string): void {
     const normalizedMode = normalizeWorkspaceMode(mode);
     applyWorkspaceModeClass(normalizedMode);
     updateWorkspaceModeInUrl(normalizedMode);
+
+    if (normalizedMode === "edit") {
+        restoreIframeSrcFromUrlIfNeeded("page", "pageSrc", switchContentPage);
+        restoreIframeSrcFromUrlIfNeeded("pageList", "pageListSrc");
+    }
 
     if (normalizedMode === "edit" && !hasActivatedEditMode) {
         hasActivatedEditMode = true;
