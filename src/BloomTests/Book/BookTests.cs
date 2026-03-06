@@ -375,6 +375,42 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void BringBookUpToDate_BloomLinebreakSpanContainsContent_MovesContentOutOfSpan()
+        {
+            SetDom(
+                @"
+                    <div class='bloom-page numberedPage' id='page1'>
+                        <div class='marginBox'>
+                            <div class='bloom-translationGroup'>
+                                <div class='bloom-editable' contenteditable='true' lang='en'>
+                                    <p>One<span class='bloom-linebreak'>Two<strong>Three</strong></span>Four</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>"
+            );
+
+            var book = CreateBook();
+
+            book.BringBookUpToDate(new NullProgress());
+
+            var paragraph = book.RawDom.SelectSingleNode(
+                "//div[contains(@class,'bloom-editable')]/p"
+            );
+            Assert.That(
+                paragraph.InnerXml,
+                Is.EqualTo(
+                    "OneTwo<strong>Three</strong><span class=\"bloom-linebreak\"></span>Four"
+                )
+            );
+            AssertThatXmlIn
+                .Dom(book.RawDom)
+                .HasNoMatchForXpath(
+                    "//span[contains(concat(' ', normalize-space(@class), ' '), ' bloom-linebreak ')]/*"
+                );
+        }
+
+        [Test]
         public void CreateBookOnDiskFromTemplate_NoPossiblyConflictingCss_MigratesToDefaultTheme()
         {
             var body =

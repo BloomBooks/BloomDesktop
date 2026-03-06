@@ -777,6 +777,23 @@ describe("talking book tests", () => {
             expect(spans[0]).toHaveText("Sentence 1.");
             expect(spans[1]).toHaveText("Sentence 2 2");
         });
+
+        it("moves text out of bloom-linebreak spans before sentence splitting", async () => {
+            const divHtml = $(
+                '<div class="bloom-editable" id="div1"><p>A<span class="bloom-linebreak">bad text</span>B.</p></div>'
+            );
+
+            await AudioRecording.elementToSentencesWithCleanup(divHtml);
+
+            const lineBreakSpan = divHtml
+                .get(0)
+                .querySelector("span.bloom-linebreak") as HTMLSpanElement;
+            expect(lineBreakSpan).toBeTruthy();
+            expect(lineBreakSpan.textContent).toBe("");
+            expect(lineBreakSpan.previousSibling?.textContent).toContain(
+                "bad text"
+            );
+        });
     });
 });
 
