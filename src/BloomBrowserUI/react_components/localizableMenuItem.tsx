@@ -230,15 +230,20 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<
         });
     }, [props.apiEndpoint]);
 
+    const updateChecked = (newCheckedState: boolean) => {
+        postBoolean(props.apiEndpoint, newCheckedState);
+        setChecked(newCheckedState);
+    };
+
     // The "div" wrapper is necessary to get the tooltip to work on a disabled item.
     return (
         <div title={props.disabled ? props.tooltipIfDisabled : undefined}>
             <MenuItem
                 key={props.l10nId}
-                onClick={() => {
+                onClick={(event) => {
                     const newCheckedState = !checked;
-                    postBoolean(props.apiEndpoint, newCheckedState);
-                    setChecked(newCheckedState);
+                    updateChecked(newCheckedState);
+                    props.onClick(event);
                 }}
                 dense={true}
                 css={css`
@@ -253,9 +258,10 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<
                     }
                     checkedIcon={<CheckBoxIcon htmlColor={menuItemColor} />}
                     checked={checked}
-                    onChange={(e) => {
-                        postBoolean(props.apiEndpoint, e.target.checked);
-                        setChecked(e.target.checked);
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        updateChecked(!checked);
+                        props.onClick(event);
                     }}
                     css={css`
                         width: ${kIconCheckboxAffordance}px !important;

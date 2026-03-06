@@ -110,6 +110,7 @@ namespace Bloom.Edit
             var settings = new Dictionary<string, object>
             {
                 { "current", request.CurrentBook.BookInfo.CurrentTool },
+                { "visibility", request.CurrentBook.BookInfo.ToolboxIsOpen ? "visible" : "" },
             };
 
             foreach (var tool in request.CurrentBook.BookInfo.Tools)

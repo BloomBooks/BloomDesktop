@@ -370,7 +370,7 @@ namespace Bloom.Edit
         /// <param name="details"></param>
         private void OnTabAboutToChange(TabChangedDetails details)
         {
-            if (details.From == _view)
+            if (details.FromTab == Workspace.WorkspaceTab.edit)
             {
                 SaveThen(
                     () =>
@@ -397,11 +397,14 @@ namespace Bloom.Edit
                         // So this is just the case where we're Navigating, either because we clicked on the Edit tab
                         // and then immediately something else, or clicked another tab during the fraction of a second
                         // while Bloom is navigating to a new page after doing some command. Abort the navigate, then go ahead.
-                        Guard.AssertThat(
-                            StateMachine.Navigating,
-                            "This branch should only be taken when navigating"
-                        );
-                        StateMachine.ToNoPage();
+                        // Earlier versions of Bloom had a Debug guard against reaching this state, but it happened
+                        // often enough to be annoying, and the recovery code here seems to work adequately.
+                        // In particlar, we seem to get here after a Javascript error has been reported, and raising
+                        // an exception here tends to interfere with reporting the error we really want to see.
+                        if (StateMachine.Navigating)
+                        {
+                            StateMachine.ToNoPage();
+                        }
                         _oldActiveForm = Form.ActiveForm;
                         Application.Idle += ReactivateFormOnIdle;
                         details.PostponedWork?.Invoke();
@@ -426,7 +429,7 @@ namespace Bloom.Edit
         private void OnTabChanged(TabChangedDetails details)
         {
             _previouslySelectedPage = null;
-            Visible = details.To == _view;
+            Visible = details.ToTab == Workspace.WorkspaceTab.edit;
             _view.OnVisibleChanged(Visible);
         }
 

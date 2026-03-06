@@ -37,6 +37,12 @@ namespace Bloom.web.controllers
                 HandleUiLanguageAction,
                 true
             );
+            apiHandler.RegisterBooleanEndpointHandler(
+                "workspace/showUnapprovedTranslations",
+                request => WorkspaceView.GetShowUnapprovedTranslationsForClient(),
+                (request, value) => WorkspaceView.SetShowUnapprovedTranslationsForClient(value),
+                true
+            );
             apiHandler.RegisterEndpointHandler("workspace/helpAction", HandleHelpAction, true);
             apiHandler.RegisterEndpointHandler(
                 "workspace/reportProblem",

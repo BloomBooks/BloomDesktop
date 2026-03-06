@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 import BloomButton from "../../react_components/bloomButton";
 import { get, getBloomApiPrefix, post, postJson } from "../../utils/bloomApi";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
 import {
@@ -13,10 +13,10 @@ import {
 import { ArrowDropDown } from "@mui/icons-material";
 import { BookSettingsButton } from "../../react_components/BookSettingsButton";
 import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
 import Checkbox from "@mui/material/Checkbox";
 import { useL10n } from "../../react_components/l10nHooks";
 import { useParentFrameMenuPortal } from "../../react_components/TopBar/useParentFrameMenuPortal";
+import { LocalizableMenuItem } from "../../react_components/localizableMenuItem";
 
 interface IDropdownData {
     contentLanguagesEnabled: boolean;
@@ -442,25 +442,42 @@ export const LayoutChoicesDropdown: React.FunctionComponent<{
     const [layoutChoiceMenuItems, setLayoutChoiceMenuItems] = useState<
         ITopBarMenuItem[]
     >([]);
+    const [fallbackLocalizedText, setFallbackLocalizedText] = useState("");
     const noOtherLayoutsText = useL10n(
         "There are no other options for this template.",
         "EditTab.NoOtherLayouts",
         "Show in the size/orientation chooser dropdown of the edit tab, if there was only a single choice",
     );
 
+    const loadLayoutChoiceData = useCallback(
+        (onLoaded?: (itemCount: number) => void) => {
+            get("editView/topBar/layoutChoiceData", (result) => {
+                const items = normalizeLayoutChoiceItems(
+                    result.data?.choices,
+                    result.data?.currentLayoutChoiceId,
+                    noOtherLayoutsText,
+                );
+                const currentChoice = items.find((item) => item.checked);
+                if (currentChoice?.label) {
+                    setFallbackLocalizedText(currentChoice.label);
+                }
+                onLoaded?.(items.length);
+                setLayoutChoiceMenuItems(items);
+            });
+        },
+        [noOtherLayoutsText],
+    );
+
     const loadMenuItems = (onLoaded?: (itemCount: number) => void) => {
-        get("editView/topBar/layoutChoiceData", (result) => {
-            const items = normalizeLayoutChoiceItems(
-                result.data?.choices,
-                result.data?.currentLayoutChoiceId,
-                noOtherLayoutsText,
-            );
-            onLoaded?.(items.length);
-            setLayoutChoiceMenuItems(items);
-        });
+        loadLayoutChoiceData(onLoaded);
     };
 
+    useEffect(() => {
+        loadLayoutChoiceData();
+    }, [loadLayoutChoiceData]);
+
     const onMenuItemClick = (item: ITopBarMenuItem) => {
+        setFallbackLocalizedText(item.label);
         postJson("editView/topBar/layoutChoiceChange", {
             layoutChoiceId: item.id,
         });
@@ -470,7 +487,7 @@ export const LayoutChoicesDropdown: React.FunctionComponent<{
     return (
         <EditingControlDropdown
             enabled={true}
-            localizedText={props.localizedText}
+            localizedText={props.localizedText || fallbackLocalizedText}
             tooltipL10nKey={"EditTab.PageSizeAndOrientation.Tooltip"}
             buttonId="layoutChoicesDropdownButton"
             menuItems={layoutChoiceMenuItems}
@@ -493,15 +510,13 @@ export const EditingControlDropdown: React.FunctionComponent<{
     showChecks: boolean;
 }> = (props) => {
     const {
-        anchorEl,
         suppressTooltip,
         closeMenu,
-        setMenuAnchor,
-        prepareAnchorAtButton,
+        openMenuAtButtonWithItemsLoader,
         suppressTooltipUntilPointerReset,
         clearTooltipSuppression,
         releaseTooltipSuppressionIfMenuClosed,
-        menuContainer,
+        getRootMenuProps,
         renderMenuInParentFrame,
     } = useParentFrameMenuPortal();
 
@@ -515,28 +530,15 @@ export const EditingControlDropdown: React.FunctionComponent<{
         }
         suppressTooltipUntilPointerReset();
 
-        const preparedAnchor = prepareAnchorAtButton(
+        const opened = openMenuAtButtonWithItemsLoader(
             props.buttonId,
             `${props.buttonId}-menu-parent`,
+            props.menuItems.length,
+            props.loadMenuItems,
         );
-        if (!preparedAnchor) {
+        if (!opened) {
             clearTooltipSuppression();
-            return;
         }
-
-        if (props.menuItems.length > 0) {
-            setMenuAnchor(preparedAnchor);
-            props.loadMenuItems();
-            return;
-        }
-
-        props.loadMenuItems((itemCount) => {
-            if (itemCount > 0) {
-                setMenuAnchor(preparedAnchor);
-            } else {
-                closeMenu();
-            }
-        });
     };
 
     const onMenuItemClick = (item: ITopBarMenuItem) => {
@@ -548,41 +550,28 @@ export const EditingControlDropdown: React.FunctionComponent<{
     };
 
     const menu = (
-        <Menu
-            open={Boolean(anchorEl)}
-            anchorEl={anchorEl}
-            onClose={onClose}
-            disablePortal={false}
-            keepMounted={false}
-            anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-            transformOrigin={{ vertical: "top", horizontal: "left" }}
-            container={menuContainer}
-            slotProps={{
-                paper: {
-                    sx: {
-                        minWidth: 220,
-                        maxWidth: 440,
-                    },
-                },
-            }}
-        >
+        <Menu {...getRootMenuProps(onClose)}>
             {props.menuItems.map((item) => (
-                <MenuItem
+                <LocalizableMenuItem
                     key={`${props.buttonId}-${item.id}-${item.label}`}
+                    english={item.label}
+                    l10nId={null}
                     onClick={() => onMenuItemClick(item)}
                     disabled={!item.enabled}
-                    dense
-                >
-                    {props.showChecks ? (
-                        <Checkbox
-                            checked={Boolean(item.checked)}
-                            size="small"
-                            disableRipple
-                            sx={{ padding: "0 6px 0 0" }}
-                        />
-                    ) : null}
-                    {item.label}
-                </MenuItem>
+                    icon={
+                        props.showChecks ? (
+                            <Checkbox
+                                checked={Boolean(item.checked)}
+                                size="small"
+                                disableRipple
+                                css={css`
+                                    padding: 0 6px 0 0;
+                                `}
+                            />
+                        ) : undefined
+                    }
+                    dontGiveAffordanceForCheckbox={!props.showChecks}
+                />
             ))}
         </Menu>
     );
