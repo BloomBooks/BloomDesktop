@@ -284,7 +284,6 @@ const LiveToolBodyHost: React.FunctionComponent<{ element: HTMLDivElement }> = (
         ></div>
     );
 };
-
 // Legacy toolbox HTML files contain wrappers and scripts; for React rendering we
 // only inject the first meaningful tool-body div.
 const extractFirstToolContentDivAsHtml = (rawHtml: string): string => {
@@ -407,38 +406,38 @@ export const ToolboxRoot: React.FunctionComponent = () => {
     // Some tool content elements may appear shortly after we build sections.
     // Keep trying unresolved live tools until their existing DOM is available.
     React.useEffect(() => {
-        const sectionsToUpgrade = sections
-            .filter(
-                (section) =>
-                    !!section.legacyToolBodyHtml &&
-                    !section.liveToolBodyElement &&
-                    !!getLiveToolBodyElement(section.id),
-            )
-            .map((section) => section.id);
-
-        if (sectionsToUpgrade.length === 0) {
-            return;
-        }
-
-        setSections((previousSections) =>
-            previousSections.map((section) => {
-                if (!sectionsToUpgrade.includes(section.id)) {
+        // To avoid unnecessary re-renders, only update sections when we actually find a new live element.
+        setSections((previousSections) => {
+            let changed = false;
+            const nextSections = previousSections.map((section) => {
+                // If it's not legacy, we don't need to 'hydrate' it (look for the body in the legacy accordion).
+                // If it already has a live element, we don't need to look for it again.
+                // So such sections just copy into the new array unchanged.
+                if (
+                    !section.legacyToolBodyHtml ||
+                    section.liveToolBodyElement
+                ) {
                     return section;
                 }
 
+                // If we still don't have a live element, keep the one that is waiting to be hydrated.
                 const liveToolBodyElement = getLiveToolBodyElement(section.id);
                 if (!liveToolBodyElement) {
                     return section;
                 }
 
+                changed = true;
                 hydratedToolIds.current.add(section.id);
                 return {
                     ...section,
                     liveToolBodyElement,
                     legacyToolBodyHtml: undefined,
                 };
-            }),
-        );
+            });
+
+            // If we didn't change anything, return the old array so React doesn't re-render unnecessarily.
+            return changed ? nextSections : previousSections;
+        });
     }, [sections]);
 
     // If a previously adopted live node is no longer connected, clear our reference
@@ -446,32 +445,33 @@ export const ToolboxRoot: React.FunctionComponent = () => {
     // Note: getLiveToolBodyElement() cannot rediscover the same detached element; it
     // only finds currently attached nodes in the legacy toolbox container.
     React.useEffect(() => {
-        const disconnectedToolIds = sections
-            .filter(
-                (section) =>
-                    !!section.liveToolBodyElement &&
-                    !section.liveToolBodyElement.isConnected,
-            )
-            .map((section) => section.id);
+        setSections((previousSections) => {
+            let changed = false;
+            const disconnectedToolIds: string[] = [];
+            // Similar logic so that only if we actually find a newly disconnected element
+            // do we return a different object and cause a re-render.
+            const nextSections = previousSections.map((section) => {
+                if (
+                    !section.liveToolBodyElement ||
+                    section.liveToolBodyElement.isConnected
+                ) {
+                    return section;
+                }
 
-        if (disconnectedToolIds.length === 0) {
-            return;
-        }
+                changed = true;
+                disconnectedToolIds.push(section.id);
+                return {
+                    ...section,
+                    liveToolBodyElement: undefined,
+                };
+            });
 
-        disconnectedToolIds.forEach((toolId) => {
-            hydratedToolIds.current.delete(toolId);
+            disconnectedToolIds.forEach((toolId) => {
+                hydratedToolIds.current.delete(toolId);
+            });
+
+            return changed ? nextSections : previousSections;
         });
-
-        setSections((previousSections) =>
-            previousSections.map((section) =>
-                disconnectedToolIds.includes(section.id)
-                    ? {
-                          ...section,
-                          liveToolBodyElement: undefined,
-                      }
-                    : section,
-            ),
-        );
     }, [sections]);
 
     // Keep unresolved sections hydrated over time because legacy tool roots are

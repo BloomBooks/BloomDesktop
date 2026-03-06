@@ -26,7 +26,12 @@ export const isLongPressEvaluating: string = "isLongPressEvaluating";
 const checkMarkString: string = "&#10004;";
 const checkLeaveOffTool: string = "Visualizer";
 
-let savedSettings: string;
+type ToolboxSettings = Record<string, string> & {
+    current?: string;
+    visibility?: string;
+};
+
+let savedSettings: ToolboxSettings = {};
 
 let keypressTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -50,7 +55,10 @@ export interface ITool {
     // Note, new implementations of updateMarkupAsync may need to implement something like cleanUpCkEditorHtml() in audioRecording.ts.
     updateMarkupAsync(): Promise<() => void>;
     isUpdateMarkupAsync(): boolean; // should return true if updateMarkupAsync should be called and awaited instead of updateMarkup.
-    newPageReady(); // called when a new page is displayed or tool is activated (called after showTool completes)
+    // called when a new page is displayed or tool is activated (called after showTool completes).
+    // To guard against certain race conditions, we currently call this again after 600ms. Tools should
+    // allow for this possibility and not repeat any work that was already done.
+    newPageReady();
     detachFromPage(); // called when a page is going away AND before hideTool
     id(): string; // without trailing "Tool"!
     hasRestoredSettings: boolean;
@@ -775,16 +783,67 @@ export function restoreToolboxSettings() {
 }
 
 export function applyToolboxStateToUpdatedPage() {
-    if (currentTool && toolbox.toolboxIsShowing()) {
-        doWhenPageReady(() => {
-            if (currentTool) {
-                currentTool.newPageReady();
-                // We used to call updateMarkup() here
-                // Now we don't because it would mess up the Talking Book Tool
-                // if you really need it, add call to updateMarkup to currentTool's implementation of newPageReady.
-            }
-        });
-    }
+    get("toolbox/settings", (result) => {
+        savedSettings = result.data;
+        const currentFromBook = ToolBox.addToolToString(
+            (savedSettings && savedSettings["current"]) || "",
+        );
+        const currentInToolbox = currentTool
+            ? ToolBox.addToolToString(currentTool.id())
+            : "";
+        const shouldBeVisible = !!(
+            savedSettings && savedSettings["visibility"]
+        );
+        const isVisible = toolbox.toolboxIsShowing();
+
+        // When switching books, sync visibility/current tool first.
+        if (
+            currentFromBook !== currentInToolbox ||
+            shouldBeVisible !== isVisible
+        ) {
+            restoreToolboxSettingsWhenPageReady(savedSettings);
+            return;
+        }
+
+        if (currentTool && toolbox.toolboxIsShowing()) {
+            doWhenPageReady(() => {
+                const activeTool = currentTool;
+                if (activeTool) {
+                    activeTool
+                        .beginRestoreSettings(
+                            savedSettings as unknown as string,
+                        )
+                        .then(() => {
+                            if (currentTool !== activeTool) {
+                                return;
+                            }
+
+                            // Re-run tool UI setup on page/book switches. Some tools
+                            // (for example reader toggle controls) are initialized in showTool().
+                            Promise.resolve(activeTool.showTool()).then(() => {
+                                if (currentTool === activeTool) {
+                                    activeTool.newPageReady();
+                                    scheduleDelayedNewPageReady(activeTool);
+                                }
+                            });
+                        });
+                    // We used to call updateMarkup() here
+                    // Now we don't because it would mess up the Talking Book Tool
+                    // if you really need it, add call to updateMarkup to currentTool's implementation of newPageReady.
+                }
+            });
+        }
+    });
+}
+
+function scheduleDelayedNewPageReady(tool: ITool): void {
+    window.setTimeout(() => {
+        if (currentTool !== tool || !toolbox.toolboxIsShowing()) {
+            return;
+        }
+
+        Promise.resolve(tool.newPageReady());
+    }, 600);
 }
 
 function doWhenPageReady(action: () => void) {
@@ -895,11 +954,16 @@ function doWhenCkEditorReadyCore(
     }
 }
 
-function restoreToolboxSettingsWhenPageReady(settings: string) {
+function restoreToolboxSettingsWhenPageReady(settings: ToolboxSettings) {
     doWhenPageReady(() => {
         // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
         const opts = settings;
         const currentTool = opts["current"] || "";
+        const shouldBeVisible = !!opts["visibility"];
+
+        if (toolbox.toolboxIsShowing() !== shouldBeVisible) {
+            toolbox.toggleToolbox();
+        }
 
         // Before we set stage/level, as it initializes them to 1.
         setCurrentTool(currentTool);
@@ -949,15 +1013,13 @@ function switchTool(newToolName: string): void {
 function activateTool(newTool: ITool) {
     if (newTool && toolbox.toolboxIsShowing()) {
         const toolElt = getToolElement(newTool);
-        // If we're activating this tool for the first time, restore its settings.
-        if (!newTool.hasRestoredSettings) {
-            newTool.hasRestoredSettings = true;
-            newTool.beginRestoreSettings(savedSettings).then(() => {
+        // Always re-restore settings so tool state tracks the current book.
+        newTool.hasRestoredSettings = true;
+        newTool
+            .beginRestoreSettings(savedSettings as unknown as string)
+            .then(() => {
                 activateToolInternalAsync(newTool, toolElt);
             });
-        } else {
-            activateToolInternalAsync(newTool, toolElt);
-        }
     }
 }
 
@@ -997,6 +1059,7 @@ async function activateToolInternalAsync(
     // Note: Allowed to begin some async work too, and we will await its result.
     // (This apparently solves the single flash mentioned in BL-10471.)
     await newTool.newPageReady();
+    scheduleDelayedNewPageReady(newTool);
 
     // Note: Begins some async work too, but currently no need to await its result.
     ToolBox.insertLangAttributesIntoToolboxElements();
@@ -1007,14 +1070,30 @@ async function activateToolInternalAsync(
  * of "currentTool" (the last tool displayed).
  */
 function setCurrentTool(toolID: string) {
+    // I'm downright grumpy about how this code sometimes uses names with "Tool" appended, sometimes doesn't.
+    // For now I'm just making functions work with either form.
+    toolID = ToolBox.addToolToString(toolID);
+
+    const adapter = getToolboxReactAdapter();
+    if (adapter) {
+        if (!toolboxReactActivationHooked) {
+            adapter.onActiveToolChanged((newToolName: string) => {
+                switchTool(newToolName);
+            });
+            toolboxReactActivationHooked = true;
+        }
+
+        if (toolID) {
+            adapter.setActiveToolByToolId(toolID);
+            switchTool(toolID);
+        }
+        return;
+    }
+
     // NOTE: tools without a "data-toolId" attribute (such as the More tool) cannot be the "currentTool."
     let idx = 0;
     const toolbox = $("#toolbox");
 
-    // I'm downright grumpy about how this code sometimes uses names with "Tool" appended, sometimes doesn't.
-    // For now I'm just making functions work with either form.
-
-    toolID = ToolBox.addToolToString(toolID);
     const accordionHeaders = toolbox.find("> h3");
     if (toolID) {
         let foundTool = false;
@@ -1040,19 +1119,6 @@ function setCurrentTool(toolID: string) {
     if (idx >= accordionHeaders.length - 1) {
         // don't pick the More... tool, pick whatever happens to be first.
         idx = 0;
-    }
-
-    const adapter = getToolboxReactAdapter();
-    if (adapter) {
-        if (!toolboxReactActivationHooked) {
-            adapter.onActiveToolChanged((newToolName: string) => {
-                switchTool(newToolName);
-            });
-            toolboxReactActivationHooked = true;
-        }
-        adapter.setActiveToolByToolId(toolID);
-        switchTool(toolID);
-        return;
     }
 
     // turn off animation

@@ -44,8 +44,6 @@ namespace Bloom.Workspace
         private Browser _mainBrowser;
         private PublishView _publishView;
         private CollectionTabView _collectionTabView;
-        private Control _previouslySelectedControl;
-        private Control _previouslyDisplayedControl;
         private IBloomTabArea _previouslySelectedTabArea;
         private readonly IframeReactControl _topBarIframeReactControl;
         private bool _topBarLoadedIntoIframe;
@@ -147,7 +145,7 @@ namespace Bloom.Workspace
             float scaleFactor = 1.1f; // determined experimentally
             this.Scale(new SizeF(scaleFactor, scaleFactor));
 
-            editBookCommand.Subscribe(OnEditBook);
+            editBookCommand.Subscribe(HandleEditBookCommand);
 
             Application.Idle += new EventHandler(Application_Idle);
             Text = _model.ProjectName;
@@ -160,6 +158,10 @@ namespace Bloom.Workspace
             this._editingView = editingViewFactory();
             this._editingView.WorkspaceView = this;
             this._editingView.Dock = DockStyle.Fill;
+            if (!_containerPanel.Controls.Contains(this._editingView))
+            {
+                _containerPanel.Controls.Add(this._editingView);
+            }
             this._editingView.Model.EnableSwitchingTabs = (enabled) =>
             {
                 _tabsEnabled = enabled;
@@ -184,7 +186,7 @@ namespace Bloom.Workspace
             this._publishView = publishViewFactory();
             this._publishView.WorkspaceView = this;
 
-            SelectTab(_collectionTabView, _editingView, selectedControlForEvent: null);
+            ApplyTabAreaSelection(_collectionTabView);
 
             SetupZoomModel();
             SetupTopBarIframeControl();
@@ -703,6 +705,19 @@ namespace Bloom.Workspace
             }
         }
 
+        public bool GetShowUnapprovedTranslationsForClient()
+        {
+            return Settings.Default.ShowUnapprovedLocalizations;
+        }
+
+        public void SetShowUnapprovedTranslationsForClient(bool showUnapproved)
+        {
+            if (Settings.Default.ShowUnapprovedLocalizations == showUnapproved)
+                return;
+
+            ToggleShowingOnlyApprovedTranslations();
+        }
+
         public void HandleHelpActionForClient(string method, string argument = null)
         {
             if (String.IsNullOrEmpty(method))
@@ -1050,7 +1065,7 @@ namespace Bloom.Workspace
             }
         }
 
-        private void OnEditBook(Book.Book book)
+        private void HandleEditBookCommand(Book.Book book)
         {
             ChangeTab(WorkspaceTab.edit);
         }
@@ -1080,16 +1095,16 @@ namespace Bloom.Workspace
 
         public void OpenCreateCollection()
         {
+            var previousTab = GetWorkspaceTab(_previouslySelectedTabArea);
             _selectedTabAboutToChangeEvent.Raise(
-                new TabChangedDetails() { From = _previouslySelectedControl, To = null }
+                new TabChangedDetails() { FromTab = previousTab, ToTab = null }
             );
 
             _selectedTabChangedEvent.Raise(
-                new TabChangedDetails() { From = _previouslySelectedControl, To = null }
+                new TabChangedDetails() { FromTab = previousTab, ToTab = null }
             );
 
-            var oldSelectedControl = _previouslySelectedControl;
-            _previouslySelectedControl = null;
+            var oldSelectedTab = previousTab;
 
             Invoke(
                 (Action)(
@@ -1103,16 +1118,14 @@ namespace Bloom.Workspace
                             // We want to resume whatever tab we were in.
                             // There is some overkill here...the old tab can only be the collection tab,
                             // and currently it doesn't care about these events. The critical thing is to
-                            // restore _previouslySelectedControl, which is required so we can remove it
-                            // if we subsequently switch to another tab. But it seemed best to be consistent.
+                            // restore tab identity in subsequent tab-change event payloads.
                             // If we're not shutting down, we're switching the previously selected tab back on.
                             _selectedTabAboutToChangeEvent.Raise(
-                                new TabChangedDetails() { From = null, To = oldSelectedControl }
+                                new TabChangedDetails() { FromTab = null, ToTab = oldSelectedTab }
                             );
                             _selectedTabChangedEvent.Raise(
-                                new TabChangedDetails() { From = null, To = oldSelectedControl }
+                                new TabChangedDetails() { FromTab = null, ToTab = oldSelectedTab }
                             );
-                            _previouslySelectedControl = oldSelectedControl;
                         }
                     }
                 )
@@ -1186,58 +1199,55 @@ namespace Bloom.Workspace
             );
         }
 
-        private void SelectTab(
-            IBloomTabArea view,
-            Control displayedView,
-            Control selectedControlForEvent
-        )
+        private static WorkspaceTab? GetWorkspaceTab(IBloomTabArea view)
+        {
+            if (view is EditingView)
+                return WorkspaceTab.edit;
+
+            if (view is CollectionTabView)
+                return WorkspaceTab.collection;
+
+            if (view is PublishView)
+                return WorkspaceTab.publish;
+
+            return null;
+        }
+
+        private void ApplyTabAreaSelection(IBloomTabArea view)
         {
             // Already on the desired tab: nothing to do.  And possible problems if we do do something.
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-8382.
             if (view == _previouslySelectedTabArea)
                 return;
 
+            var previousTab = GetWorkspaceTab(_previouslySelectedTabArea);
+            var currentTab = GetWorkspaceTab(view);
+
             CurrentTabView = view;
             // Warn the user if we're starting to use too much memory.
             //MemoryManagement.CheckMemory(false, "switched tab in workspace", true);
 
-            if (_previouslyDisplayedControl != null && _previouslyDisplayedControl != displayedView)
+            if (_previouslySelectedTabArea is EditingView)
             {
-                _containerPanel.Controls.Remove(_previouslyDisplayedControl);
-                if (_previouslySelectedTabArea is EditingView)
-                {
-                    // I wish this was unnecessary; ideally, we'd get the notification to
-                    // stop monitoring from the stopMonitoring function in audioRecording.ts.
-                    // We should be able to achieve that when the tabs are embedded in a single
-                    // Browser control. For now, the shutdown of the EditingView seems to
-                    // preempt it, so we handle it here.
-                    _audioRecording.PauseMonitoringAudio(false);
-                }
-            }
-
-            displayedView.Dock = DockStyle.Fill;
-            if (!_containerPanel.Controls.Contains(displayedView))
-            {
-                _containerPanel.Controls.Add(displayedView);
+                // I wish this was unnecessary; ideally, we'd get the notification to
+                // stop monitoring from the stopMonitoring function in audioRecording.ts.
+                // We should be able to achieve that when the tabs are embedded in a single
+                // Browser control. For now, the shutdown of the EditingView seems to
+                // preempt it, so we handle it here.
+                _audioRecording.PauseMonitoringAudio(false);
             }
 
             _selectedTabAboutToChangeEvent.Raise(
                 new TabChangedDetails()
                 {
-                    From = _previouslySelectedControl,
-                    To = selectedControlForEvent,
+                    FromTab = previousTab,
+                    ToTab = currentTab,
                     PostponedWork = () =>
                     {
                         _selectedTabChangedEvent.Raise(
-                            new TabChangedDetails()
-                            {
-                                From = _previouslySelectedControl,
-                                To = selectedControlForEvent,
-                            }
+                            new TabChangedDetails() { FromTab = previousTab, ToTab = currentTab }
                         );
 
-                        _previouslySelectedControl = selectedControlForEvent;
-                        _previouslyDisplayedControl = displayedView;
                         _previouslySelectedTabArea = view;
                         _collectionApi.ResetUpdatingList();
 
@@ -1256,48 +1266,103 @@ namespace Bloom.Workspace
 
         protected IBloomTabArea CurrentTabView { get; set; }
 
-        internal void SetWorkspaceMode(string mode)
+        private static string GetWorkspaceModeName(WorkspaceTab tab)
         {
-            _mainBrowser?.RunJavascriptFireAndForget(
-                $"workspaceBundle.setWorkspaceMode('{mode}');"
-            );
-        }
-
-        public void ChangeTab(WorkspaceTab newTab)
-        {
-            _tabSelection.ActiveTab = newTab;
-            switch (newTab)
+            switch (tab)
             {
                 case WorkspaceTab.edit:
-                    SetWorkspaceMode("edit");
-                    SelectTab(_editingView, _editingView, _editingView);
-                    break;
+                    return "edit";
+                case WorkspaceTab.collection:
+                    return "collection";
+                case WorkspaceTab.publish:
+                    return "publish";
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(tab), tab, null);
+            }
+        }
+
+        private IBloomTabArea GetTabArea(WorkspaceTab tab)
+        {
+            switch (tab)
+            {
+                case WorkspaceTab.edit:
+                    return _editingView;
+                case WorkspaceTab.collection:
+                    return _collectionTabView;
+                case WorkspaceTab.publish:
+                    return _publishView;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(tab), tab, null);
+            }
+        }
+
+        private void EnsureTabAreaLoaded(WorkspaceTab tab)
+        {
+            switch (tab)
+            {
                 case WorkspaceTab.collection:
                     _collectionTabView.EnsureLoadedInMainBrowser();
-                    SetWorkspaceMode("collection");
-                    SelectTab(_collectionTabView, _editingView, null);
-                    if (_returnToCollectionTabNotifier != null)
-                    {
-                        _returnToCollectionTabNotifier.CloseSafely();
-                        _returnToCollectionTabNotifier = null;
-                    }
-                    if (_collectionTabView != null)
-                    {
-                        if (Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded)
-                        {
-                            _collectionTabView.UpdateBloomLibraryStatus(
-                                Publish.BloomLibrary.BloomLibraryPublishModel.BookUploadedId
-                            );
-                            Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded = false;
-                            Publish.BloomLibrary.BloomLibraryPublishModel.BookUploadedId = null;
-                        }
-                    }
                     break;
                 case WorkspaceTab.publish:
                     _publishView.EnsureLoadedInMainBrowser();
-                    SetWorkspaceMode("publish");
-                    SelectTab(_publishView, _editingView, null);
                     break;
+                case WorkspaceTab.edit:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(tab), tab, null);
+            }
+        }
+
+        private void ApplyPostCollectionTabBehavior()
+        {
+            if (_returnToCollectionTabNotifier != null)
+            {
+                _returnToCollectionTabNotifier.CloseSafely();
+                _returnToCollectionTabNotifier = null;
+            }
+            if (_collectionTabView != null)
+            {
+                if (Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded)
+                {
+                    _collectionTabView.UpdateBloomLibraryStatus(
+                        Publish.BloomLibrary.BloomLibraryPublishModel.BookUploadedId
+                    );
+                    Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded = false;
+                    Publish.BloomLibrary.BloomLibraryPublishModel.BookUploadedId = null;
+                }
+            }
+        }
+
+        private void SyncWorkspaceRootModeToTab(WorkspaceTab tab)
+        {
+            _mainBrowser?.RunJavascriptFireAndForget(
+                $"workspaceBundle.setWorkspaceMode('{GetWorkspaceModeName(tab)}');"
+            );
+        }
+
+        /// <summary>
+        /// Changes the active tab in the workspace.
+        /// </summary>
+        /// <note>This requires that the workspace is already loaded,
+        /// which is normally the case since we start loading it very early in the application startup process,
+        /// and in that case we won't be changing tabs until some user does so, which can only be done using
+        /// controls that must be loaded into the workspace. When a page is refreshing, code may automatically
+        /// change the tab, but that can't happen until the code that does it is loaded! So I think we are
+        /// safe, but be aware of this issue if you are adding some new code that opens a different tab
+        /// at startup.
+        /// </note
+        /// <param name="newTab"></param>
+        public void ChangeTab(WorkspaceTab newTab)
+        {
+            _tabSelection.ActiveTab = newTab;
+
+            EnsureTabAreaLoaded(newTab);
+            SyncWorkspaceRootModeToTab(newTab);
+            ApplyTabAreaSelection(GetTabArea(newTab));
+
+            if (newTab == WorkspaceTab.collection)
+            {
+                ApplyPostCollectionTabBehavior();
             }
         }
 
