@@ -77,7 +77,7 @@ export interface IPageFrameExports {
 }
 
 // This exports the functions that should be accessible from other IFrames or from C#.
-// For example, editTabBundle.getEditablePageBundleExports().requestPageContent() can be called.
+// For example, workspaceBundle.getEditablePageBundleExports().requestPageContent() can be called.
 import {
     getBodyContentForSavePage,
     requestPageContent,

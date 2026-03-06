@@ -44,7 +44,7 @@ import {
 import {
     getEditablePageBundleExports,
     getToolboxBundleExports,
-} from "../../editViewFrame";
+} from "../../workspaceRoot";
 import { MenuItem, Select } from "@mui/material";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";

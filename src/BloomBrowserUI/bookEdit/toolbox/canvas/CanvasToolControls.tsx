@@ -5,7 +5,7 @@ import * as React from "react";
 import { useState, useEffect, useCallback, useRef } from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import "./canvasTool.less";
-import { getEditTabBundleExports } from "../../js/bloomFrames";
+import { getWorkspaceBundleExports } from "../../js/workspaceFrames";
 import {
     CanvasElementManager,
     ITextColorInfo,
@@ -167,7 +167,6 @@ const CanvasToolControls: React.FunctionComponent = () => {
         setCurrentBubbleState(bubble);
     }
 
-    // Callback to initialize bubbleEditing and get the initial bubbleSpec
     const getBubbleType = useCallback(
         (mgr: CanvasElementManager | undefined): CanvasElementType => {
             if (!mgr) {
@@ -184,6 +183,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
         [],
     );
 
+    // Callback to initialize bubbleEditing and get the initial bubbleSpec
     const bubbleSpecInitialization = useCallback(() => {
         const canvasElementManager = getCanvasElementManager();
         if (!canvasElementManager) {
@@ -632,9 +632,11 @@ const CanvasToolControls: React.FunctionComponent = () => {
             onDefaultClick: defaultTextColorClicked,
             //defaultColor???
         };
-        getEditTabBundleExports().showColorPickerDialog(colorPickerDialogProps);
+        getWorkspaceBundleExports().showColorPickerDialog(
+            colorPickerDialogProps,
+        );
         ToolBox.addWhenClosingToolTask(() => {
-            getEditTabBundleExports().hideColorPickerDialog();
+            getWorkspaceBundleExports().hideColorPickerDialog();
         });
     };
 
@@ -657,9 +659,11 @@ const CanvasToolControls: React.FunctionComponent = () => {
         // See https://issues.bloomlibrary.org/youtrack/issue/BL-9922.
         if (colorPickerDialogProps.initialColor.opacity === 0)
             colorPickerDialogProps.initialColor.opacity = 100;
-        getEditTabBundleExports().showColorPickerDialog(colorPickerDialogProps);
+        getWorkspaceBundleExports().showColorPickerDialog(
+            colorPickerDialogProps,
+        );
         ToolBox.addWhenClosingToolTask(() => {
-            getEditTabBundleExports().hideColorPickerDialog();
+            getWorkspaceBundleExports().hideColorPickerDialog();
         });
     };
 

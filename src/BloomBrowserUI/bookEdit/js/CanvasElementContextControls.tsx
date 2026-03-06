@@ -17,7 +17,7 @@ import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
 import { default as ArrowUpwardIcon } from "@mui/icons-material/ArrowUpward";
 import { default as ArrowDownwardIcon } from "@mui/icons-material/ArrowDownward";
 import { LinkIcon } from "./LinkIcon";
-import { showCopyrightAndLicenseDialog } from "../editViewFrame";
+import { showCopyrightAndLicenseDialog } from "../workspaceRoot";
 import {
     doImageCommand,
     getImageUrlFromImageContainer,

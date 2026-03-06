@@ -55,7 +55,7 @@ export interface IToolboxFrameExports {
     handleClickOutsideToolbox(): void;
 }
 
-// each of these exports shows up under this window's toolboxBundle object (see bloomFrames.ts)
+// each of these exports shows up under this window's toolboxBundle object (see workspaceFrames.ts)
 export { removeToolboxMarkup, showOrHideTool_click, setActiveDragActivityTab };
 export {
     showSetupDialog,

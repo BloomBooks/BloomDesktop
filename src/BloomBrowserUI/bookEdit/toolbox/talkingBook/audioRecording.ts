@@ -47,9 +47,9 @@ import {
     DialogResult,
 } from "../../../react_components/confirmDialog";
 import {
-    getEditTabBundleExports,
+    getWorkspaceBundleExports,
     getToolboxBundleExports,
-} from "../../js/bloomFrames";
+} from "../../js/workspaceFrames";
 import PlaybackOrderControls from "../../../react_components/playbackOrderControls";
 import Recordable from "./recordable";
 import { getMd5 } from "./md5Util";
@@ -258,7 +258,7 @@ export default class AudioRecording implements IAudioRecorder {
             .click(async (e) => {
                 const mediaPlayer = this.getMediaPlayer();
                 mediaPlayer.pause();
-                getEditTabBundleExports().showAdjustTimingsDialogFromEditViewFrame(
+                getWorkspaceBundleExports().showAdjustTimingsDialogFromWorkspaceRoot(
                     this.split,
                     this.editTimingsFileAsync,
                     this.applyTimingsFileAsync,
@@ -2337,7 +2337,7 @@ export default class AudioRecording implements IAudioRecorder {
 
     // Gets the "page" iframe. May return null if the iframe doesn't exist (e.g., in testing, or while loading).
     public getPageFrame(): HTMLIFrameElement | null {
-        // Enhance: Maybe should just use the version in bloomFrames.ts instead?
+        // Enhance: Maybe should just use the version in workspaceFrames.ts instead?
         //   (we could add an async version there that would return a promise which is fulfilled when the frame becomes available AND loaded.)
         return <HTMLIFrameElement | null>(
             parent?.window?.document?.getElementById("page")
@@ -4567,7 +4567,7 @@ export default class AudioRecording implements IAudioRecorder {
     };
     private handleImportRecordingClick(): void {
         if (this.doesRecordingExistForCurrentSelection()) {
-            getEditTabBundleExports().showConfirmDialog(
+            getWorkspaceBundleExports().showConfirmDialog(
                 this.confirmReplaceProps,
             );
         } else {

@@ -10,7 +10,7 @@ import {
 import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 import $ from "jquery";
 
-export interface IEditViewFrameExports {
+export interface IWorkspaceExports {
     showDialog(
         dialogContents: string | JQuery,
         options: JQueryUI.DialogOptions,
@@ -26,7 +26,7 @@ export interface IEditViewFrameExports {
     hideColorPickerDialog(): void;
     showCopyrightAndLicenseDialog(imageUrl?: string): void;
     showEditViewTopicChooserDialog(): void;
-    showAdjustTimingsDialogFromEditViewFrame(
+    showAdjustTimingsDialogFromWorkspaceRoot(
         // The split and applyTimingsFile calls both return a list of new timings,
         // such as we might find in data-audioRecordingEndTimes
         split: (timingFilePath: string) => Promise<string | undefined>,
@@ -46,14 +46,14 @@ export interface IEditViewFrameExports {
 }
 
 export function SayHello() {
-    alert("Hello!! from editViewFrame");
+    alert("Hello!! from workspaceRoot");
 }
 
 // These functions should be available for calling by non-module code (such as C# directly)
-// using the editTabBundle object (see more details in bloomFrames.ts)
-import { getToolboxBundleExports } from "./js/bloomFrames";
+// using the workspaceBundle object (see more details in workspaceFrames.ts)
+import { getToolboxBundleExports } from "./js/workspaceFrames";
 export { getToolboxBundleExports };
-import { getEditablePageBundleExports } from "./js/bloomFrames";
+import { getEditablePageBundleExports } from "./js/workspaceFrames";
 export { getEditablePageBundleExports };
 import { showPageChooserDialog } from "../pageChooser/PageChooserDialog";
 export { showPageChooserDialog };
@@ -75,11 +75,11 @@ import { FunctionComponentElement } from "react";
 import { showAdjustTimingsDialog } from "./toolbox/talkingBook/AdjustTimingsDialog";
 import { getPageIframeBody } from "../utils/shared";
 import { showRequiresSubscriptionDialogInEditView } from "../react_components/requiresSubscription";
-export { showAdjustTimingsDialog as showAdjustTimingsDialogFromEditViewFrame };
+export { showAdjustTimingsDialog as showAdjustTimingsDialogFromWorkspaceRoot };
 // Local alias so we have an in-scope identifier for legacy global exposure typing.
-const showAdjustTimingsDialogFromEditViewFrame = showAdjustTimingsDialog;
+const showAdjustTimingsDialogFromWorkspaceRoot = showAdjustTimingsDialog;
 
-//Called by c# using editTabBundle.handleUndo()
+//Called by c# using workspaceBundle.handleUndo()
 export function handleUndo(): void {
     // First see if origami is active and knows about something we can undo.
     const contentWindow = getEditablePageBundleExports();
@@ -198,7 +198,7 @@ export function doWhenToolboxLoaded(
     }
 }
 
-//Called by c# using editTabBundle.canUndo()
+//Called by c# using workspaceBundle.canUndo()
 export function canUndo(): string {
     // See comments on handleUndo()
     const contentWindow = getEditablePageBundleExports();
@@ -398,9 +398,8 @@ export function setZoom(zoom: number): void {
     }
 }
 
-// --- Global exposure (legacy compatibility) --------------------------------------
-// The old webpack build exposed these APIs via window["editTabBundle"].
-// Maintain that contract so existing C# and cross-frame code keeps working.
+// --- Global exposure --------------------------------------------------------------
+// Expose these APIs via window["workspaceBundle"] for C# and cross-frame code.
 // Keep this at the end so all exported bindings are defined.
 // Note: We purposely build the object explicitly (rather than spreading 'exports')
 // to avoid accidentally leaking unrelated internal symbols.
@@ -408,7 +407,7 @@ export function setZoom(zoom: number): void {
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore - allow indexing window
 // Minimal augmentation: declare a type for the bundle to help future maintenance.
-interface EditTabBundleApi {
+interface WorkspaceBundleApi {
     SayHello: typeof SayHello;
     handleUndo: typeof handleUndo;
     switchThumbnailPage: typeof switchThumbnailPage;
@@ -430,7 +429,7 @@ interface EditTabBundleApi {
     showRequiresSubscriptionDialog: typeof showRequiresSubscriptionDialog;
     showRegistrationDialogFromWorkspaceRoot: typeof showRegistrationDialogFromWorkspaceRoot;
     setWorkspaceMode: typeof setWorkspaceMode;
-    showAdjustTimingsDialogFromEditViewFrame: typeof showAdjustTimingsDialogFromEditViewFrame;
+    showAdjustTimingsDialogFromWorkspaceRoot: typeof showAdjustTimingsDialogFromWorkspaceRoot;
     setZoom: typeof setZoom;
     getToolboxBundleExports: typeof getToolboxBundleExports;
     getEditablePageBundleExports: typeof getEditablePageBundleExports;
@@ -442,11 +441,11 @@ interface EditTabBundleApi {
 
 declare global {
     interface Window {
-        editTabBundle: EditTabBundleApi;
+        workspaceBundle: WorkspaceBundleApi;
     }
 }
 
-window.editTabBundle = {
+window.workspaceBundle = {
     // simple exports
     SayHello,
     handleUndo,
@@ -469,8 +468,8 @@ window.editTabBundle = {
     showRequiresSubscriptionDialog,
     showRegistrationDialogFromWorkspaceRoot,
     setWorkspaceMode,
-    showAdjustTimingsDialogFromEditViewFrame:
-        showAdjustTimingsDialogFromEditViewFrame,
+    showAdjustTimingsDialogFromWorkspaceRoot:
+        showAdjustTimingsDialogFromWorkspaceRoot,
     setZoom,
     // re-exported cross-frame helpers
     getToolboxBundleExports,
