@@ -833,11 +833,34 @@ The buffer would be absent if the marginBox had a border or the page has a backg
         var(--totalBottomMargin) *
             var(--page-and-marginBox-are-same-color-multiplicand)
     );
-
     padding-bottom: calc(
         var(--topLevel-text-padding-bottom) -
             var(--amountOfVisualPaddingProvidedByBottomMargin)
     );
+}
+
+.mixinLeftTgInset {
+    --tgOuterInset-left: var(--fullBleed-textBoxInset-left);
+}
+
+.mixinRightTgInset {
+    --tgOuterInset-right: var(--fullBleed-textBoxInset-right);
+}
+
+.mixinTopTgInset {
+    --tgOuterInset-top: var(--fullBleed-textBoxInset-top);
+}
+
+.mixinBottomTgInset {
+    --tgOuterInset-bottom: var(--fullBleed-textBoxInset-bottom);
+}
+
+.mixinApplyTgInsetFrame {
+    margin-left: var(--tgOuterInset-left);
+    margin-top: var(--tgOuterInset-top);
+    box-sizing: border-box;
+    width: calc(100% - var(--tgOuterInset-left) - var(--tgOuterInset-right));
+    height: calc(100% - var(--tgOuterInset-top) - var(--tgOuterInset-bottom));
 }
 
 // Our style system uses margin-bottom to put space bewtween pararaphs.
@@ -862,10 +885,19 @@ The buffer would be absent if the marginBox had a border or the page has a backg
     // has been split
     & > .split-pane > .split-pane-component > .split-pane-component-inner {
         & > .bloom-translationGroup {
+            --tgOuterInset-left: 0mm;
+            --tgOuterInset-right: 0mm;
+            --tgOuterInset-top: 0mm;
+            --tgOuterInset-bottom: 0mm;
             .mixinLeftTgPadding;
             .mixinRightTgPadding;
             .mixinTopTgPadding;
             .mixinBottomTgPadding;
+            .mixinLeftTgInset;
+            .mixinRightTgInset;
+            .mixinTopTgInset;
+            .mixinBottomTgInset;
+            .mixinApplyTgInsetFrame;
         }
         // if the textbox has a special background color (only gray is offered for now),
         // then visually the margin doesn't matter. We need the padding.
@@ -883,6 +915,7 @@ The buffer would be absent if the marginBox had a border or the page has a backg
         > .split-pane-component-inner
         > .bloom-translationGroup {
         padding-top: var(--topLevel-text-padding-top);
+        --tgOuterInset-top: 0mm;
     }
     &
         > .split-pane.horizontal-percent
@@ -890,6 +923,7 @@ The buffer would be absent if the marginBox had a border or the page has a backg
         > .split-pane-component-inner
         > .bloom-translationGroup {
         padding-bottom: var(--topLevel-text-padding-bottom);
+        --tgOuterInset-bottom: 0mm;
     }
     &
         > .split-pane.vertical-percent
@@ -897,6 +931,7 @@ The buffer would be absent if the marginBox had a border or the page has a backg
         > .split-pane-component-inner
         > .bloom-translationGroup {
         padding-right: var(--topLevel-text-padding-right);
+        --tgOuterInset-right: 0mm;
     }
     &
         > .split-pane.vertical-percent
@@ -904,6 +939,7 @@ The buffer would be absent if the marginBox had a border or the page has a backg
         > .split-pane-component-inner
         > .bloom-translationGroup {
         padding-left: var(--topLevel-text-padding-left);
+        --tgOuterInset-left: 0mm;
     }
     // And now some special cases where we DO want it on blocks that are more deeply nested.
 
@@ -928,10 +964,18 @@ The buffer would be absent if the marginBox had a border or the page has a backg
         > .bloom-translationGroup
         //, ENHANCE: could put other patterns in here too that give you the same layout visually
     {
+        --tgOuterInset-left: 0mm;
+        --tgOuterInset-right: 0mm;
+        --tgOuterInset-top: 0mm;
+        --tgOuterInset-bottom: 0mm;
         padding-top: var(--topLevel-text-padding-top);
         .mixinLeftTgPadding;
         .mixinRightTgPadding;
         .mixinBottomTgPadding;
+        .mixinLeftTgInset;
+        .mixinRightTgInset;
+        .mixinBottomTgInset;
+        .mixinApplyTgInsetFrame;
     }
 
     // Start with image on top, split the image to have text above it. (visually the same as picture-in-middle)
@@ -942,10 +986,18 @@ The buffer would be absent if the marginBox had a border or the page has a backg
         > .split-pane-component.position-top
         > .split-pane-component-inner
         > .bloom-translationGroup {
+        --tgOuterInset-left: 0mm;
+        --tgOuterInset-right: 0mm;
+        --tgOuterInset-top: 0mm;
+        --tgOuterInset-bottom: 0mm;
         .mixinTopTgPadding;
         .mixinLeftTgPadding;
         .mixinRightTgPadding;
         padding-bottom: var(--topLevel-text-padding-bottom);
+        .mixinTopTgInset;
+        .mixinLeftTgInset;
+        .mixinRightTgInset;
+        .mixinApplyTgInsetFrame;
     }
 
     // This one handles the text box at the bottom left of a Big Video Diglot.
@@ -960,10 +1012,17 @@ The buffer would be absent if the marginBox had a border or the page has a backg
         > .split-pane-component.position-bottom
         > .split-pane-component-inner
         > .bloom-translationGroup {
+        --tgOuterInset-left: 0mm;
+        --tgOuterInset-right: 0mm;
+        --tgOuterInset-top: 0mm;
+        --tgOuterInset-bottom: 0mm;
         padding-top: var(--topLevel-text-padding-top);
         padding-right: var(--topLevel-text-padding-right);
         .mixinLeftTgPadding;
         .mixinBottomTgPadding;
+        .mixinLeftTgInset;
+        .mixinBottomTgInset;
+        .mixinApplyTgInsetFrame;
     }
     // This one handles the text box at the bottom right of a Big Picture Diglot.
     &
@@ -974,10 +1033,17 @@ The buffer would be absent if the marginBox had a border or the page has a backg
         > .split-pane-component.position-bottom
         > .split-pane-component-inner
         > .bloom-translationGroup {
+        --tgOuterInset-left: 0mm;
+        --tgOuterInset-right: 0mm;
+        --tgOuterInset-top: 0mm;
+        --tgOuterInset-bottom: 0mm;
         padding-top: var(--topLevel-text-padding-top);
         padding-left: var(--topLevel-text-padding-left);
         .mixinRightTgPadding;
         .mixinBottomTgPadding;
+        .mixinRightTgInset;
+        .mixinBottomTgInset;
+        .mixinApplyTgInsetFrame;
     }
     // This one handles the text box at the top right of a Big Picture Diglot Text Over Video.
     &
@@ -988,10 +1054,17 @@ The buffer would be absent if the marginBox had a border or the page has a backg
         > .split-pane-component.position-top
         > .split-pane-component-inner
         > .bloom-translationGroup {
+        --tgOuterInset-left: 0mm;
+        --tgOuterInset-right: 0mm;
+        --tgOuterInset-top: 0mm;
+        --tgOuterInset-bottom: 0mm;
         padding-bottom: var(--topLevel-text-padding-bottom);
         padding-left: var(--topLevel-text-padding-left);
         .mixinRightTgPadding;
         .mixinTopTgPadding;
+        .mixinRightTgInset;
+        .mixinTopTgInset;
+        .mixinApplyTgInsetFrame;
     }
 }
 
@@ -1009,4 +1082,10 @@ The buffer would be absent if the marginBox had a border or the page has a backg
     --topLevel-text-padding-bottom: var(--topLevel-text-padding);
     --topLevel-text-padding-right: var(--topLevel-text-padding);
     --topLevel-text-padding-left: var(--topLevel-text-padding);
+
+    // Optional edge-aware inset for top-level text boxes.
+    --fullBleed-textBoxInset-left: 0mm;
+    --fullBleed-textBoxInset-right: 0mm;
+    --fullBleed-textBoxInset-top: 0mm;
+    --fullBleed-textBoxInset-bottom: 0mm;
 }

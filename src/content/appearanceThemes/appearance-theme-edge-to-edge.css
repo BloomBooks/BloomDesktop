@@ -1,20 +1,38 @@
-/* replaces the pre-v6.0 "EFL Template 1" custom CSS: which had no margins, no page numbers.
-Note that hiding the page numbers is done by a setting in appearance.json, not here. */
+/* Edge-to-edge uses no margins on numbered content pages.
+Front and back matter keep a small margin for readability.
+Page-number visibility comes from appearance.json, not from this theme file. */
 
-[class*="Device"].bloom-frontMatter,
-[class*="Device"].bloom-backMatter {
+.bloom-frontMatter,
+.bloom-backMatter {
     --page-margin: 3mm;
 }
 
 /* This statement sets the margins on the numbered content pages */
 
-:not(.bloom-interactive-page).numberedPage.Device16x9Landscape,
-:not(.bloom-interactive-page).numberedPage.Device16x9Portrait {
+.numberedPage:not(.bloom-interactive-page) {
     --page-margin: 0mm;
 
     /* instead of a gap, we are using padding because the text should look centered between the image and edge of the screen */
     --page-verticalSplit-width: 0mm; /* we don't need this; removing it makes it simpler to just have the same spacing on left and right sides */
     --page-horizontalSplit-height: 0mm;
+
+    /* Keep side-positioned page numbers aligned with top-level text from the page edge. */
+    --pageNumber-side-left-inset: calc(
+        var(--fullBleed-textBoxInset-left, 0mm) +
+            var(--topLevel-text-padding-left, 0px)
+    );
+    --pageNumber-side-right-inset: calc(
+        var(--fullBleed-textBoxInset-right, 0mm) +
+            var(--topLevel-text-padding-right, 0px)
+    );
+}
+
+.bloom-fullBleed .numberedPage:not(.bloom-interactive-page) {
+    /* Keep top-level text boxes inside the trim/safe area when full bleed scales the page. */
+    --fullBleed-textBoxInset-left: 3mm;
+    --fullBleed-textBoxInset-right: 3mm;
+    --fullBleed-textBoxInset-top: 3mm;
+    --fullBleed-textBoxInset-bottom: 3mm;
 }
 
 /* The section below controls the page number and the white circle around it.  */
@@ -25,6 +43,28 @@ Note that hiding the page numbers is done by a setting in appearance.json, not h
     /* this rule will apply more generally than we'd prefer, but the common situation we're improving here
     is picture on top, text on the bottom, we need to make room for the page number */
     --pageNumber-extra-height: 12mm !important;
+}
+.numberedPage.side-left::after {
+    --pageNumber-left-margin: var(--pageNumber-side-left-inset);
+}
+.numberedPage.side-right::after {
+    --pageNumber-right-margin: var(--pageNumber-side-right-inset);
+}
+/* Full-bleed non-landscape layouts use the generic side-left/side-right badge selectors.
+Landscape layouts have additional overrides below for picture-side placement. */
+.bloom-fullBleed .numberedPage.side-left::after {
+    /* Full-bleed output adds trim overhang; offset the badge toward the trim box. */
+    --pageNumber-left-margin: calc(
+        var(--pageNumber-side-left-inset, 0mm) +
+            (var(--full-bleed-excess-width, 0mm) / 2)
+    );
+}
+.bloom-fullBleed .numberedPage.side-right::after {
+    /* Mirror the full-bleed offset for right-side page numbers. */
+    --pageNumber-right-margin: calc(
+        var(--pageNumber-side-right-inset, 0mm) +
+            (var(--full-bleed-excess-width, 0mm) / 2)
+    );
 }
 .bloom-fullBleed .Device16x9Landscape.numberedPage {
     /* On full-bleed pages we want the page number positioned based on the ideal place where
@@ -43,28 +83,28 @@ Note that hiding the page numbers is done by a setting in appearance.json, not h
     border-radius: 50%;
     --pageNumber-background-color: #ffffff;
     --pageNumber-background-width: 33px;
-    --pageNumber-always-left-margin: var(--page-margin-left);
+    --pageNumber-always-left-margin: var(--pageNumber-side-left-inset);
     --pageNumber-right-margin: deliberately-invalid; /* prevents right being set at all. unset does not work. Prevent centering for this layout */
 }
 .bloom-fullBleed
     .Device16x9Landscape.numberedPage.pictureOnRight.pictureOnRight::after {
     /* Adjust the page number position for full bleed pages (BL-15611) */
     --pageNumber-right-margin: calc(
-        var(--page-margin-right, 0mm) +
+        var(--pageNumber-side-right-inset, 0mm) +
             (var(--full-bleed-excess-width, 0mm) / 2)
     );
 }
 .Device16x9Landscape.numberedPage.pictureOnRight.pictureOnRight::after {
-    --pageNumber-right-margin: var(--page-margin-right);
+    --pageNumber-right-margin: var(--pageNumber-side-right-inset);
     --pageNumber-left-margin: deliberately-invalid; /* prevents left being set at all. unset does not work. Prevent centering for this layout */
     --pageNumber-always-left-margin: deliberately-invalid; /* prevents left being set at all. unset does not work. Prevent centering for this layout */
 }
 
 /* using "where:" so that the user's custom appearance can override the theme if specified */
-.numberedPage:where([class*="Device"]:not(.bloom-interactive-page)) {
+.numberedPage:where(:not(.bloom-interactive-page)) {
     --topLevel-text-padding: 0.5em;
 }
-[class*="Device"].numberedPage:not(.bloom-interactive-page) {
-    /* move so that page number doesn't it hide it if the text box is in the lower left */
+.numberedPage:not(.bloom-interactive-page) {
+    /* Keep the format button clear of the page-number badge in lower-left text layouts. */
     --formatButton-pageNumber-dodge: 20px;
 }
