@@ -5,6 +5,7 @@ import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import { get, post } from "../../utils/bloomApi";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { tryProcessHyperlink } from "./hyperlinks";
+import { EditableDivUtils } from "../js/editableDivUtils";
 
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.
@@ -99,6 +100,7 @@ export default class BloomField {
         const range = sel.getRangeAt(0);
         const spanToInsert = document.createElement("span");
         spanToInsert.className = "bloom-linebreak";
+        spanToInsert.setAttribute("contenteditable", "false");
         range.deleteContents(); // If the user has selected a range, we replace it with the line break.
         range.insertNode(spanToInsert);
         if (!spanToInsert.nextSibling?.textContent) {
@@ -109,6 +111,32 @@ export default class BloomField {
             spanToInsert.insertAdjacentText("afterend", "\u200C"); //&zwnj;
         }
         sel.collapseToEnd(); // moves the cursor to after the line break
+        this.EnsureCaretNotInsideLineBreakSpan();
+    }
+
+    private static getLineBreakSpanAncestor(
+        node: Node | null
+    ): HTMLElement | null {
+        const element = node instanceof Element ? node : node?.parentElement;
+        return (
+            (element?.closest("span.bloom-linebreak") as HTMLElement) ?? null
+        );
+    }
+
+    private static EnsureCaretNotInsideLineBreakSpan() {
+        const sel = window.getSelection();
+        if (!sel || !sel.isCollapsed || sel.rangeCount === 0) {
+            return;
+        }
+        const lineBreakSpan = this.getLineBreakSpanAncestor(sel.anchorNode);
+        if (!lineBreakSpan || !lineBreakSpan.parentNode) {
+            return;
+        }
+        const range = document.createRange();
+        range.setStartAfter(lineBreakSpan);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
     }
 
     public static fixPasteData(input: string): string {
@@ -173,6 +201,23 @@ export default class BloomField {
         return newDiv.innerHTML;
     }
 
+    public static normalizeBloomLineBreakSpans(input: string): string {
+        if (!input.includes("bloom-linebreak")) {
+            return input;
+        }
+
+        const newDiv = document.createElement("div");
+        newDiv.innerHTML = input;
+        const lineBreakSpans = newDiv.querySelectorAll("span.bloom-linebreak");
+        if (lineBreakSpans.length === 0) {
+            return input;
+        }
+
+        EditableDivUtils.normalizeBloomLineBreakSpansInElement(newDiv);
+
+        return newDiv.innerHTML;
+    }
+
     // This BloomField thing was done before ckeditor; ckeditor kinda expects to the only thing
     // taking responsibility for the field, so that creates problems. Eventually, we could probably
     // re-cast everything in this BloomField class as a plugin or at least callbacks to ckeditor.
@@ -209,6 +254,9 @@ export default class BloomField {
                 event.cancel();
             }
         });
+        ckeditor.on("selectionChange", () => {
+            this.EnsureCaretNotInsideLineBreakSpan();
+        });
         // ckeditor.on('afterPasteFromWord', event => {
         //     alert(event.data.dataValue);
         // });
@@ -225,6 +273,9 @@ export default class BloomField {
 
             event.data.dataValue = this.fixPasteData(event.data.dataValue);
             event.data.dataValue = this.removeUselessSpanMarkup(
+                event.data.dataValue
+            );
+            event.data.dataValue = this.normalizeBloomLineBreakSpans(
                 event.data.dataValue
             );
 
@@ -269,6 +320,7 @@ export default class BloomField {
         ckeditor.on("afterPaste", event => {
             // clean up possible unwanted paragraph inserted by paste event.
             $(".removeMe").remove();
+            this.EnsureCaretNotInsideLineBreakSpan();
         });
 
         // The focus and blur event handlers ensure that the qtip tooltip for the
