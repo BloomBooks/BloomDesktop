@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Net;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
@@ -107,7 +108,15 @@ namespace Bloom.web.controllers
             {
                 case HttpMethods.Get:
                     var imageUrl = request.Parameters["imageUrl"]; // might be null
-                    metadata = View.PrepareToEditImageMetadata(imageUrl);
+                    try
+                    {
+                        metadata = View.PrepareToEditImageMetadata(imageUrl);
+                    }
+                    catch (InvalidOperationException e)
+                    {
+                        request.Failed(HttpStatusCode.BadRequest, e.Message);
+                        return;
+                    }
                     if (metadata == null)
                     {
                         request.ReplyWithJson(String.Empty);
@@ -200,10 +209,8 @@ namespace Bloom.web.controllers
         private dynamic GetLicense(Metadata metadata)
         {
             dynamic creativeCommonsInfoJson = GetDefaultCreativeCommonsInfo();
-            if (metadata.License is CreativeCommonsLicenseInfo)
-                creativeCommonsInfoJson = GetCreativeCommonsInfo(
-                    (CreativeCommonsLicenseInfo)metadata.License
-                );
+            if (IsCreativeCommonsLicense(metadata.License))
+                creativeCommonsInfoJson = GetCreativeCommonsInfo(metadata.License);
             return new
             {
                 licenseType = GetLicenseType(metadata.License),
@@ -222,62 +229,71 @@ namespace Bloom.web.controllers
             };
         }
 
-        private dynamic GetCreativeCommonsInfo(CreativeCommonsLicenseInfo ccLicense)
+        private dynamic GetCreativeCommonsInfo(SIL.Core.ClearShare.LicenseInfo ccLicense)
         {
+            dynamic dynamicCcLicense = ccLicense;
             return new
             {
-                token = ccLicense.Token,
-                allowCommercial = ccLicense.CommercialUseAllowed ? "yes" : "no",
-                allowDerivatives = GetCcDerivativeRulesAsString(ccLicense.DerivativeRule),
-                intergovernmentalVersion = ccLicense.IntergovernmentalOrganizationQualifier,
+                token = dynamicCcLicense.Token,
+                allowCommercial = dynamicCcLicense.CommercialUseAllowed ? "yes" : "no",
+                allowDerivatives = GetCcDerivativeRulesAsString(dynamicCcLicense.DerivativeRule),
+                intergovernmentalVersion = dynamicCcLicense.IntergovernmentalOrganizationQualifier,
             };
         }
 
-        private static string GetCcDerivativeRulesAsString(
-            CreativeCommonsLicenseInfo.DerivativeRules rules
-        )
+        private static string GetCcDerivativeRulesAsString(object rules)
         {
-            switch (rules)
+            switch (rules?.ToString())
             {
-                case CreativeCommonsLicenseInfo.DerivativeRules.DerivativesWithShareAndShareAlike:
+                case "DerivativesWithShareAndShareAlike":
                     return "sharealike";
-                case CreativeCommonsLicenseInfo.DerivativeRules.Derivatives:
+                case "Derivatives":
                     return "yes";
-                case CreativeCommonsLicenseInfo.DerivativeRules.NoDerivatives:
+                case "NoDerivatives":
                     return "no";
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        private CreativeCommonsLicenseInfo.DerivativeRules GetCcDerivativeRule(string jsonValue)
+        private CreativeCommonsLicense.DerivativeRules GetCcDerivativeRule(string jsonValue)
         {
             switch (jsonValue)
             {
                 case "sharealike":
-                    return CreativeCommonsLicenseInfo
-                        .DerivativeRules
-                        .DerivativesWithShareAndShareAlike;
+                    return CreativeCommonsLicense.DerivativeRules.DerivativesWithShareAndShareAlike;
                 case "yes":
-                    return CreativeCommonsLicenseInfo.DerivativeRules.Derivatives;
+                    return CreativeCommonsLicense.DerivativeRules.Derivatives;
                 case "no":
-                    return CreativeCommonsLicenseInfo.DerivativeRules.NoDerivatives;
+                    return CreativeCommonsLicense.DerivativeRules.NoDerivatives;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        private string GetLicenseType(LicenseInfo licenseInfo)
+        private string GetLicenseType(SIL.Core.ClearShare.LicenseInfo licenseInfo)
         {
-            if (licenseInfo is CreativeCommonsLicenseInfo)
+            if (IsCreativeCommonsLicense(licenseInfo))
             {
-                if (licenseInfo.Url == CreativeCommonsLicenseInfo.CC0Url)
+                if (licenseInfo.Url == CreativeCommonsLicense.CC0Url)
                     return "publicDomain";
                 return "creativeCommons";
             }
-            if (licenseInfo is CustomLicenseInfo)
+            if (IsCustomLicense(licenseInfo))
                 return "custom";
             return "contact";
+        }
+
+        private static bool IsCreativeCommonsLicense(SIL.Core.ClearShare.LicenseInfo licenseInfo)
+        {
+            return licenseInfo is CreativeCommonsLicense
+                || licenseInfo?.GetType().Name == "CreativeCommonsLicenseInfo";
+        }
+
+        private static bool IsCustomLicense(SIL.Core.ClearShare.LicenseInfo licenseInfo)
+        {
+            return licenseInfo is CustomLicense
+                || licenseInfo?.GetType().Name == "CustomLicenseInfo";
         }
 
         private Metadata GetMetadataFromJson(ApiRequest request, bool forBook)

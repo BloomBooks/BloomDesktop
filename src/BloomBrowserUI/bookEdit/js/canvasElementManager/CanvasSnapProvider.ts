@@ -3,7 +3,7 @@
  * Provides functionality for snapping to a grid and locking movement to a single axis (horizontal or vertical).
  */
 
-import { Point, PointScaling } from "./point";
+import { Point, PointScaling } from "../point";
 
 // The size of the grid cells for snapping.
 const gridSize = 10;

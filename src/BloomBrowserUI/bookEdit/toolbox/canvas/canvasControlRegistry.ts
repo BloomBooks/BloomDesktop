@@ -1,0 +1,1519 @@
+// Canvas control registry and section map.
+//
+// This module defines:
+// - `controlRegistry`: each top-level control id mapped to concrete behavior
+//   (command actions, menu metadata, toolbar hints, or panel component mapping).
+// - `controlSections`: declarative section groupings used by menu and tool panel
+//   surfaces.
+//
+// How the declarative system composes:
+// - `canvasElementDefinitions.ts` picks section/order for each element type.
+// - `canvasControlHelpers.ts` resolves those declarations into renderable rows/buttons.
+// - `canvasAvailabilityPresets.ts` + per-element rules decide visibility/enabled state.
+// - `canvasPanelControls.tsx` supplies panel UI components referenced here.
+//
+// Note on sync vs async callbacks:
+// - Keep handlers synchronous when they only do immediate DOM/manager work
+//   (examples: `toggleDraggable`, `copyText`, `duplicate`, `setDestination`).
+// - Use async only when we must await asynchronous APIs
+//   (example: `chooseAudio` submenu "Choose..." awaits `showDialogToChooseSoundFileAsync`).
+//
+// UI invocation sites handle both forms through a shared safe runner so promise
+// rejections are not dropped when handlers are called from click events.
+
+import * as React from "react";
+import { default as ArrowDownwardIcon } from "@mui/icons-material/ArrowDownward";
+import { default as ArrowUpwardIcon } from "@mui/icons-material/ArrowUpward";
+import { default as CheckIcon } from "@mui/icons-material/Check";
+import { default as CircleIcon } from "@mui/icons-material/Circle";
+import { default as CopyIcon } from "@mui/icons-material/ContentCopy";
+import { default as PasteIcon } from "@mui/icons-material/ContentPaste";
+import { default as CopyrightIcon } from "@mui/icons-material/Copyright";
+import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
+import { default as SearchIcon } from "@mui/icons-material/Search";
+import { default as VolumeUpIcon } from "@mui/icons-material/VolumeUp";
+import { showCopyrightAndLicenseDialog } from "../../editViewFrame";
+import {
+    doImageCommand,
+    getImageFromContainer,
+    getImageUrlFromImageContainer,
+    isPlaceHolderImage,
+    kImageContainerClass,
+} from "../../js/bloomImages";
+import { doVideoCommand } from "../../js/bloomVideo";
+import {
+    copySelection,
+    GetEditor,
+    pasteClipboard,
+} from "../../js/bloomEditing";
+import { CogIcon } from "../../js/CogIcon";
+import { DuplicateIcon } from "../../js/DuplicateIcon";
+import { FillSpaceIcon } from "../../js/FillSpaceIcon";
+import { LinkIcon } from "../../js/LinkIcon";
+import { MissingMetadataIcon } from "../../js/MissingMetadataIcon";
+import { editLinkGrid } from "../../js/linkGrid";
+import {
+    copyAndPlaySoundAsync,
+    makeDuplicateOfDragBubble,
+    makeTargetForDraggable,
+    playSound,
+    showDialogToChooseSoundFileAsync,
+} from "../games/GameTool";
+import AudioRecording from "../talkingBook/audioRecording";
+import { showLinkTargetChooserDialog } from "../../../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
+import { kBloomBlue } from "../../../bloomMaterialUITheme";
+import { getString, postThatMightNavigate } from "../../../utils/bloomApi";
+import {
+    IControlContext,
+    IControlDefinition,
+    IControlRuntime,
+    IControlSection,
+    IControlMenuCommandRow,
+    SectionId,
+    TopLevelControlId,
+} from "./canvasControlTypes";
+import {
+    kBackgroundImageClass,
+    kBloomCanvasSelector,
+} from "./canvasElementConstants";
+import { getCanvasElementManager } from "./canvasElementUtils";
+import { isDraggable, kDraggableIdAttribute } from "./canvasElementDraggables";
+import { setGeneratedDraggableId } from "./CanvasElementItem";
+import {
+    BackgroundColorPanelControl,
+    BubbleStylePanelControl,
+    ImageFillModePanelControl,
+    OutlineColorPanelControl,
+    RoundedCornersPanelControl,
+    ShowTailPanelControl,
+    TextColorPanelControl,
+} from "./canvasPanelControls";
+
+const getImageContainer = (ctx: IControlContext): HTMLElement | undefined => {
+    const imageContainer = ctx.canvasElement.getElementsByClassName(
+        kImageContainerClass,
+    )[0] as HTMLElement | undefined;
+    if (imageContainer) {
+        return imageContainer;
+    }
+    return getImageFromContainer(ctx.canvasElement)
+        ? ctx.canvasElement
+        : undefined;
+};
+
+const getImage = (ctx: IControlContext): HTMLImageElement | undefined => {
+    const imageContainer = getImageContainer(ctx);
+    if (!imageContainer) {
+        return undefined;
+    }
+    return getImageFromContainer(imageContainer) ?? undefined;
+};
+
+const getVideoContainer = (ctx: IControlContext): HTMLElement | undefined => {
+    return ctx.canvasElement.getElementsByClassName(
+        "bloom-videoContainer",
+    )[0] as HTMLElement | undefined;
+};
+
+const getEditable = (ctx: IControlContext): HTMLElement | undefined => {
+    return ctx.canvasElement.getElementsByClassName(
+        "bloom-editable bloom-visibility-code-on",
+    )[0] as HTMLElement | undefined;
+};
+
+const hasRealImage = (img: HTMLImageElement | undefined): boolean => {
+    if (!img) {
+        return false;
+    }
+
+    if (isPlaceHolderImage(img.getAttribute("src"))) {
+        return false;
+    }
+
+    if (img.classList.contains("bloom-imageLoadError")) {
+        return false;
+    }
+
+    if (img.parentElement?.classList.contains("bloom-imageLoadError")) {
+        return false;
+    }
+
+    return true;
+};
+
+const fieldsControlledByAppearanceSystem = ["bookTitle"];
+
+const removeClassesByPrefix = (element: HTMLElement, prefix: string): void => {
+    Array.from(element.classList).forEach((className) => {
+        if (className.startsWith(prefix)) {
+            element.classList.remove(className);
+        }
+    });
+};
+
+const updateTranslationGroupLanguage = (
+    translationGroup: HTMLElement,
+    langCode: string,
+    langName: string,
+    dataDefaultLang: string,
+    classes: string[],
+    appearanceClasses: string[],
+): void => {
+    translationGroup.setAttribute("data-default-languages", dataDefaultLang);
+    const editables = Array.from(
+        translationGroup.getElementsByClassName("bloom-editable"),
+    ) as HTMLElement[];
+    if (editables.length === 0) {
+        return;
+    }
+
+    let editableInLang = editables.find(
+        (editableElement) => editableElement.getAttribute("lang") === langCode,
+    );
+    if (editableInLang) {
+        editables.splice(editables.indexOf(editableInLang), 1);
+    } else {
+        let editableToClone = editables.find(
+            (editableElement) => editableElement.getAttribute("lang") === "z",
+        );
+        if (!editableToClone) {
+            editableToClone = editables[0];
+        }
+        editableInLang = editableToClone.cloneNode(true) as HTMLElement;
+        editableInLang.innerHTML = "<p><br></p>";
+        editableInLang.setAttribute("lang", langCode);
+        editableInLang.setAttribute("data-languagetipcontent", langName);
+        translationGroup.appendChild(editableInLang);
+    }
+
+    removeClassesByPrefix(editableInLang, "bloom-content");
+    removeClassesByPrefix(editableInLang, "bloom-visibility-code-");
+    editableInLang.classList.add("bloom-visibility-code-on");
+    editables.forEach((editableElement) => {
+        removeClassesByPrefix(editableElement, "bloom-visibility-code-");
+        editableElement.classList.add("bloom-visibility-code-off");
+    });
+    classes.forEach((className) => editableInLang?.classList.add(className));
+
+    const dataBookValue = editableInLang.getAttribute("data-book");
+    if (
+        dataBookValue &&
+        fieldsControlledByAppearanceSystem.includes(dataBookValue)
+    ) {
+        appearanceClasses.forEach((className) =>
+            editableInLang?.classList.add(className),
+        );
+    }
+};
+
+const makeLanguageMenuItem = (ctx: IControlContext): IControlMenuCommandRow => {
+    const translationGroup = ctx.canvasElement.getElementsByClassName(
+        "bloom-translationGroup",
+    )[0] as HTMLElement | undefined;
+    const visibleEditable = translationGroup?.querySelector(
+        ".bloom-editable.bloom-visibility-code-on",
+    ) as HTMLElement | undefined;
+    const activeLangTag =
+        visibleEditable?.getAttribute("lang") ??
+        (
+            translationGroup?.getElementsByClassName("bloom-editable")[0] as
+                | HTMLElement
+                | undefined
+        )?.getAttribute("lang");
+    const { languageNameValues } = ctx;
+
+    const subMenuItems: IControlMenuCommandRow[] = [
+        {
+            id: "language",
+            englishLabel: languageNameValues.language1Name,
+            icon:
+                activeLangTag === languageNameValues.language1Tag
+                    ? React.createElement(CheckIcon, null)
+                    : undefined,
+            onSelect: (rowCtx) => {
+                if (!translationGroup) {
+                    return;
+                }
+                updateTranslationGroupLanguage(
+                    translationGroup,
+                    languageNameValues.language1Tag,
+                    languageNameValues.language1Name,
+                    "V",
+                    ["bloom-content1"],
+                    ["bloom-contentFirst"],
+                );
+                getCanvasElementManager()?.setActiveElement(
+                    rowCtx.canvasElement,
+                );
+            },
+        },
+    ];
+
+    if (
+        languageNameValues.language2Tag &&
+        languageNameValues.language2Tag !== languageNameValues.language1Tag
+    ) {
+        subMenuItems.push({
+            id: "language",
+            englishLabel: languageNameValues.language2Name,
+            icon:
+                activeLangTag === languageNameValues.language2Tag
+                    ? React.createElement(CheckIcon, null)
+                    : undefined,
+            onSelect: (rowCtx) => {
+                if (!translationGroup) {
+                    return;
+                }
+                updateTranslationGroupLanguage(
+                    translationGroup,
+                    languageNameValues.language2Tag,
+                    languageNameValues.language2Name,
+                    "N1",
+                    ["bloom-contentNational1"],
+                    ["bloom-contentSecond"],
+                );
+                getCanvasElementManager()?.setActiveElement(
+                    rowCtx.canvasElement,
+                );
+            },
+        });
+    }
+
+    if (
+        languageNameValues.language3Tag &&
+        languageNameValues.language3Tag !== languageNameValues.language1Tag &&
+        languageNameValues.language3Tag !== languageNameValues.language2Tag
+    ) {
+        subMenuItems.push({
+            id: "language",
+            englishLabel: languageNameValues.language3Name,
+            icon:
+                activeLangTag === languageNameValues.language3Tag
+                    ? React.createElement(CheckIcon, null)
+                    : undefined,
+            onSelect: (rowCtx) => {
+                if (!translationGroup) {
+                    return;
+                }
+                updateTranslationGroupLanguage(
+                    translationGroup,
+                    languageNameValues.language3Tag!,
+                    languageNameValues.language3Name!,
+                    "N2",
+                    ["bloom-contentNational2"],
+                    ["bloom-contentThird"],
+                );
+                getCanvasElementManager()?.setActiveElement(
+                    rowCtx.canvasElement,
+                );
+            },
+        });
+    }
+
+    return {
+        id: "language",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.Language",
+        englishLabel: "Language:",
+        onSelect: () => {},
+        subMenuItems,
+    };
+};
+
+const fieldTypeData: Array<{
+    dataBook: string;
+    dataDerived: string;
+    label: string;
+    readOnly: boolean;
+    editableClasses: string[];
+    classes: string[];
+    hint?: string;
+    functionOnHintClick?: string;
+}> = [
+    {
+        dataBook: "bookTitle",
+        dataDerived: "",
+        label: "Book Title",
+        readOnly: false,
+        editableClasses: ["Title-On-Cover-style", "bloom-padForOverflow"],
+        classes: ["bookTitle"],
+    },
+    {
+        dataBook: "smallCoverCredits",
+        dataDerived: "",
+        label: "Cover Credits",
+        readOnly: false,
+        editableClasses: ["smallCoverCredits", "Cover-Default-style"],
+        classes: [],
+    },
+    {
+        dataBook: "",
+        dataDerived: "languagesOfBook",
+        label: "Languages",
+        readOnly: true,
+        editableClasses: [],
+        classes: ["coverBottomLangName", "Cover-Default-style"],
+    },
+    {
+        dataBook: "",
+        dataDerived: "topic",
+        label: "Topic",
+        readOnly: true,
+        editableClasses: [],
+        classes: [
+            "coverBottomBookTopic",
+            "bloom-userCannotModifyStyles",
+            "bloom-alwaysShowBubble",
+            "Cover-Default-style",
+        ],
+        hint: "Click to choose topic",
+        functionOnHintClick: "showTopicChooser",
+    },
+];
+
+const clearFieldTypeClasses = (translationGroup: HTMLElement): void => {
+    fieldTypeData.forEach((fieldType) => {
+        fieldType.classes.forEach((className) => {
+            translationGroup.classList.remove(className);
+        });
+        Array.from(
+            translationGroup.getElementsByClassName("bloom-editable"),
+        ).forEach((editable) => {
+            (editable as HTMLElement).classList.remove(
+                ...fieldType.editableClasses,
+            );
+        });
+    });
+};
+
+const makeFieldTypeMenuItem = (
+    ctx: IControlContext,
+): IControlMenuCommandRow => {
+    const translationGroup = ctx.canvasElement.getElementsByClassName(
+        "bloom-translationGroup",
+    )[0] as HTMLElement | undefined;
+    const activeType = (
+        translationGroup?.getElementsByClassName(
+            "bloom-editable bloom-visibility-code-on",
+        )[0] as HTMLElement | undefined
+    )?.getAttribute("data-book");
+    const subMenuItems: IControlMenuCommandRow[] = [
+        {
+            id: "fieldType",
+            l10nId: "EditTab.Toolbox.DragActivity.None",
+            englishLabel: "None",
+            icon: !activeType
+                ? React.createElement(CheckIcon, null)
+                : undefined,
+            onSelect: () => {
+                if (!translationGroup) {
+                    return;
+                }
+                clearFieldTypeClasses(translationGroup);
+                Array.from(
+                    translationGroup.getElementsByClassName("bloom-editable"),
+                ).forEach((editable) => {
+                    const htmlEditable = editable as HTMLElement;
+                    htmlEditable.removeAttribute("data-book");
+                    htmlEditable.removeAttribute("data-derived");
+                });
+            },
+        },
+    ];
+
+    fieldTypeData.forEach((fieldType) => {
+        subMenuItems.push({
+            id: "fieldType",
+            englishLabel: fieldType.label,
+            icon:
+                activeType === fieldType.dataBook
+                    ? React.createElement(CheckIcon, null)
+                    : undefined,
+            onSelect: () => {
+                if (!translationGroup) {
+                    return;
+                }
+                clearFieldTypeClasses(translationGroup);
+                const editables = Array.from(
+                    translationGroup.getElementsByClassName("bloom-editable"),
+                ) as HTMLElement[];
+                if (fieldType.readOnly) {
+                    const readOnlyDiv = document.createElement("div");
+                    readOnlyDiv.setAttribute(
+                        "data-derived",
+                        fieldType.dataDerived,
+                    );
+                    if (fieldType.hint) {
+                        readOnlyDiv.setAttribute("data-hint", fieldType.hint);
+                    }
+                    if (fieldType.functionOnHintClick) {
+                        readOnlyDiv.setAttribute(
+                            "data-functiononhintclick",
+                            fieldType.functionOnHintClick,
+                        );
+                    }
+                    readOnlyDiv.classList.add(...fieldType.classes);
+                    translationGroup.parentElement?.insertBefore(
+                        readOnlyDiv,
+                        translationGroup,
+                    );
+                    translationGroup.remove();
+                    postThatMightNavigate(
+                        "common/saveChangesAndRethinkPageEvent",
+                    );
+                    return;
+                }
+
+                translationGroup.classList.add(...fieldType.classes);
+                editables.forEach((editable) => {
+                    editable.classList.add(...fieldType.editableClasses);
+                    editable.removeAttribute("data-derived");
+                    editable.setAttribute("data-book", fieldType.dataBook);
+                    if (
+                        editable.classList.contains(
+                            "bloom-visibility-code-on",
+                        ) &&
+                        fieldType.dataBook
+                    ) {
+                        getString(
+                            `editView/getDataBookValue?lang=${editable.getAttribute("lang")}&dataBook=${fieldType.dataBook}`,
+                            (content) => {
+                                const temp = document.createElement("div");
+                                temp.innerHTML = content || "";
+                                if (temp.textContent.trim() !== "") {
+                                    editable.innerHTML = content;
+                                }
+                            },
+                        );
+                    }
+                });
+            },
+        });
+    });
+
+    return {
+        id: "fieldType",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.FieldType",
+        englishLabel: "Field:",
+        onSelect: () => {},
+        subMenuItems,
+    };
+};
+
+const buildDynamicMenuItemFromControl = (
+    controlId: TopLevelControlId,
+    runtime: IControlRuntime,
+    overrides: Partial<IControlMenuCommandRow>,
+): IControlMenuCommandRow => {
+    const control = controlRegistry[controlId];
+    if (control.kind !== "command") {
+        throw new Error(
+            `Control '${controlId}' must be a command to build a menu row.`,
+        );
+    }
+
+    return {
+        id: control.id,
+        l10nId: control.l10nId,
+        englishLabel: control.englishLabel,
+        ...overrides,
+        onSelect:
+            overrides.onSelect ??
+            (async (rowCtx) => {
+                await control.action(rowCtx, runtime);
+            }),
+    };
+};
+
+const modifyClassNames = (
+    element: HTMLElement,
+    modification: (className: string) => string,
+): void => {
+    const classList = Array.from(element.classList);
+    const newClassList = classList
+        .map(modification)
+        .filter((className) => className !== "");
+    element.classList.remove(...classList);
+    element.classList.add(...newClassList);
+};
+
+const modifyAllDescendantsClassNames = (
+    element: HTMLElement,
+    modification: (className: string) => string,
+): void => {
+    const descendants = element.querySelectorAll("*");
+    descendants.forEach((descendant) => {
+        modifyClassNames(descendant as HTMLElement, modification);
+    });
+};
+
+const getCurrentDraggableTarget = (
+    ctx: IControlContext,
+): HTMLElement | undefined => {
+    const draggableId = ctx.canvasElement.getAttribute(kDraggableIdAttribute);
+    if (!draggableId || !ctx.page) {
+        return undefined;
+    }
+
+    return ctx.page.querySelector(`[data-target-of="${draggableId}"]`) as
+        | HTMLElement
+        | undefined;
+};
+
+// Draggability is represented both by data attributes and by style-family class names.
+// Keep both in sync so the element's appearance and game behavior stay consistent.
+const toggleDraggability = (ctx: IControlContext): void => {
+    const currentDraggableTarget = getCurrentDraggableTarget(ctx);
+
+    if (isDraggable(ctx.canvasElement)) {
+        if (currentDraggableTarget) {
+            currentDraggableTarget.ownerDocument
+                .getElementById("target-arrow")
+                ?.remove();
+            currentDraggableTarget.remove();
+        }
+        ctx.canvasElement.removeAttribute(kDraggableIdAttribute);
+        if (
+            ctx.canvasElement.getElementsByClassName("bloom-editable").length >
+            0
+        ) {
+            modifyAllDescendantsClassNames(ctx.canvasElement, (className) =>
+                className.replace(
+                    /GameDrag((?:Small|Medium|Large)(?:Start|Center))-style/,
+                    "GameText$1-style",
+                ),
+            );
+            ctx.canvasElement.classList.remove("draggable-text");
+        }
+        return;
+    }
+
+    setGeneratedDraggableId(ctx.canvasElement);
+    makeTargetForDraggable(ctx.canvasElement);
+    const imageContainer = ctx.canvasElement.getElementsByClassName(
+        kImageContainerClass,
+    )[0] as HTMLElement | undefined;
+    if (imageContainer) {
+        // Draggables must not also act as hyperlinks in player mode.
+        imageContainer.removeAttribute("data-href");
+    }
+
+    getCanvasElementManager()?.setActiveElement(ctx.canvasElement);
+    if (ctx.canvasElement.getElementsByClassName("bloom-editable").length > 0) {
+        modifyAllDescendantsClassNames(ctx.canvasElement, (className) =>
+            className.replace(
+                /GameText((?:Small|Medium|Large)(?:Start|Center))-style/,
+                "GameDrag$1-style",
+            ),
+        );
+        ctx.canvasElement.classList.add("draggable-text");
+    }
+};
+
+const togglePartOfRightAnswer = (ctx: IControlContext): void => {
+    const draggableId = ctx.canvasElement.getAttribute(kDraggableIdAttribute);
+    if (!draggableId) {
+        return;
+    }
+
+    const currentDraggableTarget = getCurrentDraggableTarget(ctx);
+    if (currentDraggableTarget) {
+        currentDraggableTarget.ownerDocument
+            .getElementById("target-arrow")
+            ?.remove();
+        currentDraggableTarget.remove();
+        return;
+    }
+
+    makeTargetForDraggable(ctx.canvasElement);
+};
+
+const makeChooseAudioMenuItemForText = (
+    ctx: IControlContext,
+    runtime: IControlRuntime,
+): IControlMenuCommandRow => {
+    const hasTextRecording = ctx.textHasAudio;
+    return {
+        id: "chooseAudio",
+        l10nId: hasTextRecording
+            ? "ARecording"
+            : "EditTab.Toolbox.DragActivity.None",
+        englishLabel: hasTextRecording ? "A Recording" : "None",
+        subLabelL10nId: "EditTab.Image.PlayWhenTouched",
+        featureName: "canvas",
+        icon: React.createElement(VolumeUpIcon, null),
+        onSelect: () => {},
+        subMenuItems: [
+            {
+                id: "useTalkingBookTool",
+                l10nId: "UseTalkingBookTool",
+                englishLabel: "Use Talking Book Tool",
+                onSelect: () => {
+                    runtime.closeMenu(false);
+                    AudioRecording.showTalkingBookTool();
+                },
+            },
+        ],
+    };
+};
+
+const makeChooseAudioMenuItemForImage = (
+    ctx: IControlContext,
+    runtime: IControlRuntime,
+): IControlMenuCommandRow => {
+    const currentSoundId =
+        ctx.canvasElement.getAttribute("data-sound") ?? "none";
+    const imageSoundLabel =
+        ctx.currentImageSoundLabel ?? currentSoundId.replace(/\.mp3$/, "");
+
+    return {
+        id: "chooseAudio",
+        l10nId: ctx.hasCurrentImageSound
+            ? undefined
+            : "EditTab.Toolbox.DragActivity.None",
+        englishLabel: imageSoundLabel === "none" ? "None" : imageSoundLabel,
+        subLabelL10nId: "EditTab.Image.PlayWhenTouched",
+        featureName: "canvas",
+        icon: React.createElement(VolumeUpIcon, null),
+        onSelect: () => {},
+        subMenuItems: [
+            {
+                id: "removeAudio",
+                l10nId: "EditTab.Toolbox.DragActivity.None",
+                englishLabel: "None",
+                featureName: "canvas",
+                onSelect: () => {
+                    ctx.canvasElement.removeAttribute("data-sound");
+                    runtime.closeMenu(false);
+                },
+            },
+            {
+                id: "playCurrentAudio",
+                l10nId: "ARecording",
+                englishLabel: imageSoundLabel,
+                featureName: "canvas",
+                availability: {
+                    visible: (itemCtx) => itemCtx.hasCurrentImageSound,
+                },
+                onSelect: () => {
+                    if (ctx.page && currentSoundId !== "none") {
+                        playSound(currentSoundId, ctx.page);
+                    }
+                    runtime.closeMenu(false);
+                },
+            },
+            {
+                id: "chooseAudio",
+                l10nId: "EditTab.Toolbox.DragActivity.ChooseSound",
+                englishLabel: "Choose...",
+                featureName: "canvas",
+                helpRowL10nId: "EditTab.Toolbox.DragActivity.ChooseSound.Help",
+                helpRowEnglish:
+                    'You can use elevenlabs.io to create sound effects if your book is non-commercial. Make sure to give credit to "elevenlabs.io".',
+                helpRowSeparatorAbove: true,
+                onSelect: async () => {
+                    runtime.closeMenu(true);
+                    const selectedSound =
+                        (await showDialogToChooseSoundFileAsync()) as unknown;
+                    if (typeof selectedSound !== "string" || !ctx.page) {
+                        return;
+                    }
+
+                    ctx.canvasElement.setAttribute("data-sound", selectedSound);
+                    void copyAndPlaySoundAsync(selectedSound, ctx.page, false);
+                },
+            },
+        ],
+    };
+};
+
+export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
+    chooseImage: {
+        kind: "command",
+        id: "chooseImage",
+        l10nId: "EditTab.Image.ChooseImage",
+        englishLabel: "Choose image from your computer...",
+        icon: SearchIcon,
+        action: (ctx, runtime) => {
+            const img = getImage(ctx);
+            if (!img) {
+                return;
+            }
+
+            runtime.closeMenu(true);
+            doImageCommand(img, "change");
+        },
+    },
+    pasteImage: {
+        kind: "command",
+        id: "pasteImage",
+        l10nId: "EditTab.Image.PasteImage",
+        englishLabel: "Paste image",
+        icon: PasteIcon,
+        menu: {
+            shortcutDisplay: "Ctrl+V",
+        },
+        action: (ctx) => {
+            const img = getImage(ctx);
+            if (!img) {
+                return;
+            }
+
+            doImageCommand(img, "paste");
+        },
+    },
+    copyImage: {
+        kind: "command",
+        id: "copyImage",
+        l10nId: "EditTab.Image.CopyImage",
+        englishLabel: "Copy image",
+        icon: CopyIcon,
+        menu: {
+            shortcutDisplay: "Ctrl+C",
+        },
+        action: (ctx) => {
+            const img = getImage(ctx);
+            if (!img) {
+                return;
+            }
+
+            doImageCommand(img, "copy");
+        },
+    },
+    missingMetadata: {
+        kind: "command",
+        id: "missingMetadata",
+        l10nId: "EditTab.Image.EditMetadataOverlay",
+        englishLabel: "Set Image Information...",
+        icon: MissingMetadataIcon,
+        menu: {
+            icon: React.createElement(CopyrightIcon, null),
+            subLabelL10nId: "EditTab.Image.EditMetadataOverlayMore",
+        },
+        action: (ctx, runtime) => {
+            const imageContainer = getImageContainer(ctx);
+            if (!imageContainer) {
+                return;
+            }
+
+            runtime.closeMenu(true);
+            showCopyrightAndLicenseDialog(
+                getImageUrlFromImageContainer(imageContainer),
+            );
+        },
+    },
+    resetImage: {
+        kind: "command",
+        id: "resetImage",
+        l10nId: "EditTab.Image.Reset",
+        englishLabel: "Reset Image",
+        iconScale: 0.9,
+        icon: React.createElement("img", {
+            src: "/bloom/images/reset image black.svg",
+            alt: "",
+            className: "canvas-context-menu-monochrome-icon",
+        }),
+        action: () => {
+            getCanvasElementManager()?.resetCropping();
+        },
+    },
+    expandToFillSpace: {
+        kind: "command",
+        id: "expandToFillSpace",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.FillSpace",
+        englishLabel: "Fit Space",
+        icon: FillSpaceIcon,
+        menu: {
+            iconScale: 0.8,
+            icon: React.createElement("img", {
+                src: "/bloom/images/fill image black.svg",
+                alt: "",
+                className: "canvas-context-menu-monochrome-icon",
+            }),
+        },
+        action: () => {
+            getCanvasElementManager()?.expandImageToFillSpace();
+        },
+    },
+    imageFieldType: {
+        kind: "command",
+        id: "imageFieldType",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.FieldType",
+        englishLabel: "Field:",
+        action: () => {},
+        menu: {
+            buildMenuItem: (ctx) => {
+                const img = getImage(ctx);
+                const isCoverImage =
+                    img?.getAttribute("data-book") === "coverImage";
+
+                return {
+                    id: "imageFieldType",
+                    l10nId: "EditTab.Toolbox.ComicTool.Options.FieldType",
+                    englishLabel: "Field:",
+                    onSelect: () => {},
+                    subMenuItems: [
+                        {
+                            id: "imageFieldType",
+                            l10nId: "EditTab.Toolbox.ComicTool.Options.CoverImage",
+                            englishLabel: "Cover Image",
+                            icon: isCoverImage
+                                ? React.createElement(CheckIcon, null)
+                                : undefined,
+                            onSelect: (rowCtx) => {
+                                const rowImage = getImage(rowCtx);
+                                if (!rowImage) {
+                                    return;
+                                }
+
+                                if (isCoverImage) {
+                                    rowImage.removeAttribute("data-book");
+                                    return;
+                                }
+
+                                const page = rowCtx.canvasElement.closest(
+                                    ".bloom-page",
+                                ) as HTMLElement | null;
+                                if (!page) {
+                                    return;
+                                }
+
+                                Array.from(
+                                    page.querySelectorAll(
+                                        'img[data-book="coverImage"]',
+                                    ),
+                                ).forEach((existingCoverImage) => {
+                                    if (existingCoverImage !== rowImage) {
+                                        existingCoverImage.removeAttribute(
+                                            "data-book",
+                                        );
+                                    }
+                                });
+                                rowImage.setAttribute(
+                                    "data-book",
+                                    "coverImage",
+                                );
+                            },
+                        },
+                    ],
+                };
+            },
+        },
+    },
+    becomeBackground: {
+        kind: "command",
+        id: "becomeBackground",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.BecomeBackground",
+        englishLabel: "Become Background",
+        action: (ctx) => {
+            const img = getImage(ctx);
+            if (!img) {
+                return;
+            }
+
+            const bloomCanvas = ctx.canvasElement.closest(
+                kBloomCanvasSelector,
+            ) as HTMLElement | null;
+            if (!bloomCanvas) {
+                return;
+            }
+
+            const canvasElementManager = getCanvasElementManager();
+            if (!canvasElementManager) {
+                return;
+            }
+
+            // Ensure a background canvas element exists before we try to swap.
+            canvasElementManager.turnOnCanvasElementEditing();
+
+            const bgImageCe = bloomCanvas.getElementsByClassName(
+                kBackgroundImageClass,
+            )[0] as HTMLElement | undefined;
+            if (!bgImageCe) {
+                return;
+            }
+
+            const bgImg = bgImageCe
+                .getElementsByClassName(kImageContainerClass)[0]
+                ?.getElementsByTagName("img")[0] as
+                | HTMLImageElement
+                | undefined;
+            if (!bgImg) {
+                return;
+            }
+
+            const haveRealBgImage = hasRealImage(bgImg);
+            const currentImageSource = img.getAttribute("src") || "";
+            const currentCopyright = img.getAttribute("data-copyright");
+            const currentCreator = img.getAttribute("data-creator");
+            const currentLicense = img.getAttribute("data-license");
+            const currentDataBook = img.getAttribute("data-book");
+            const backgroundDataBook = bgImg.getAttribute("data-book");
+
+            if (haveRealBgImage) {
+                img.setAttribute("src", bgImg.getAttribute("src") || "");
+                img.setAttribute(
+                    "data-copyright",
+                    bgImg.getAttribute("data-copyright") || "",
+                );
+                img.setAttribute(
+                    "data-creator",
+                    bgImg.getAttribute("data-creator") || "",
+                );
+                img.setAttribute(
+                    "data-license",
+                    bgImg.getAttribute("data-license") || "",
+                );
+                if (backgroundDataBook) {
+                    img.setAttribute("data-book", backgroundDataBook);
+                } else {
+                    img.removeAttribute("data-book");
+                }
+                canvasElementManager.updateCanvasElementForChangedImage(img);
+            }
+
+            bgImg.src = currentImageSource;
+            bgImg.setAttribute("data-copyright", currentCopyright || "");
+            bgImg.setAttribute("data-creator", currentCreator || "");
+            bgImg.setAttribute("data-license", currentLicense || "");
+            if (currentDataBook) {
+                if (currentDataBook === "coverImage" && ctx.page) {
+                    Array.from(
+                        ctx.page.querySelectorAll(
+                            'img[data-book="coverImage"]',
+                        ),
+                    ).forEach((existingCoverImage) => {
+                        if (existingCoverImage !== bgImg) {
+                            existingCoverImage.removeAttribute("data-book");
+                        }
+                    });
+                }
+                bgImg.setAttribute("data-book", currentDataBook);
+                img.removeAttribute("data-book");
+            }
+
+            if (!haveRealBgImage) {
+                canvasElementManager.deleteCurrentCanvasElement();
+            }
+
+            canvasElementManager.updateCanvasElementForChangedImage(bgImg);
+        },
+    },
+    imageFillMode: {
+        kind: "panel",
+        id: "imageFillMode",
+        l10nId: "EditTab.Toolbox.CanvasTool.ImageFit",
+        englishLabel: "Image Fit",
+        canvasToolsControl: ImageFillModePanelControl,
+    },
+    chooseVideo: {
+        kind: "command",
+        id: "chooseVideo",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.ChooseVideo",
+        englishLabel: "Choose Video from your Computer...",
+        icon: SearchIcon,
+        action: (ctx, runtime) => {
+            const videoContainer = getVideoContainer(ctx);
+            if (!videoContainer) {
+                return;
+            }
+
+            runtime.closeMenu(true);
+            doVideoCommand(videoContainer, "choose");
+        },
+    },
+    recordVideo: {
+        kind: "command",
+        id: "recordVideo",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.RecordYourself",
+        englishLabel: "Record yourself...",
+        icon: CircleIcon,
+        toolbar: {
+            iconScale: 0.8,
+        },
+        menu: {
+            icon: React.createElement(CircleIcon, {
+                fontSize: "small",
+            }),
+        },
+        action: (ctx, runtime) => {
+            const videoContainer = getVideoContainer(ctx);
+            if (!videoContainer) {
+                return;
+            }
+
+            runtime.closeMenu(true);
+            doVideoCommand(videoContainer, "record");
+        },
+    },
+    playVideoEarlier: {
+        kind: "command",
+        id: "playVideoEarlier",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.PlayEarlier",
+        englishLabel: "Play Earlier",
+        icon: ArrowUpwardIcon,
+        action: (ctx) => {
+            const videoContainer = getVideoContainer(ctx);
+            if (!videoContainer) {
+                return;
+            }
+
+            doVideoCommand(videoContainer, "playEarlier");
+        },
+    },
+    playVideoLater: {
+        kind: "command",
+        id: "playVideoLater",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.PlayLater",
+        englishLabel: "Play Later",
+        icon: ArrowDownwardIcon,
+        action: (ctx) => {
+            const videoContainer = getVideoContainer(ctx);
+            if (!videoContainer) {
+                return;
+            }
+
+            doVideoCommand(videoContainer, "playLater");
+        },
+    },
+    format: {
+        kind: "command",
+        id: "format",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.Format",
+        englishLabel: "Format",
+        icon: CogIcon,
+        toolbar: {
+            iconScale: 0.8,
+        },
+        action: (ctx) => {
+            const editable = getEditable(ctx);
+            if (!editable) {
+                return;
+            }
+
+            GetEditor().runFormatDialog(editable);
+        },
+    },
+    copyText: {
+        kind: "command",
+        id: "copyText",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.CopyText",
+        englishLabel: "Copy Text",
+        icon: CopyIcon,
+        action: () => {
+            copySelection();
+        },
+    },
+    pasteText: {
+        kind: "command",
+        id: "pasteText",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.PasteText",
+        englishLabel: "Paste Text",
+        icon: PasteIcon,
+        action: () => {
+            pasteClipboard(false);
+        },
+    },
+    autoHeight: {
+        kind: "command",
+        id: "autoHeight",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.AutoHeight",
+        englishLabel: "Auto Height",
+        icon: CheckIcon,
+        menu: {
+            buildMenuItem: (ctx, runtime) =>
+                buildDynamicMenuItemFromControl("autoHeight", runtime, {
+                    icon: React.createElement(CheckIcon, {
+                        style: {
+                            visibility: ctx.canvasElement.classList.contains(
+                                "bloom-noAutoHeight",
+                            )
+                                ? "hidden"
+                                : "visible",
+                        },
+                    }),
+                }),
+        },
+        action: (ctx) => {
+            ctx.canvasElement.classList.toggle("bloom-noAutoHeight");
+            getCanvasElementManager()?.updateAutoHeight();
+        },
+    },
+    language: {
+        kind: "command",
+        id: "language",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.Language",
+        englishLabel: "Language:",
+        action: () => {},
+        menu: {
+            buildMenuItem: (ctx) => makeLanguageMenuItem(ctx),
+        },
+    },
+    fieldType: {
+        kind: "command",
+        id: "fieldType",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.FieldType",
+        englishLabel: "Field:",
+        action: () => {},
+        menu: {
+            buildMenuItem: (ctx) => makeFieldTypeMenuItem(ctx),
+        },
+    },
+    fillBackground: {
+        kind: "command",
+        id: "fillBackground",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.FillBackground",
+        englishLabel: "Fill Background",
+        icon: CheckIcon,
+        menu: {
+            buildMenuItem: (ctx, runtime) =>
+                buildDynamicMenuItemFromControl("fillBackground", runtime, {
+                    icon: ctx.rectangleHasBackground
+                        ? React.createElement(CheckIcon, null)
+                        : undefined,
+                }),
+        },
+        action: (ctx) => {
+            const rectangle = ctx.canvasElement.getElementsByClassName(
+                "bloom-rectangle",
+            )[0] as HTMLElement | undefined;
+            rectangle?.classList.toggle("bloom-theme-background");
+        },
+    },
+    addChildBubble: {
+        kind: "command",
+        id: "addChildBubble",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.AddChildBubble",
+        englishLabel: "Add Child Bubble",
+        action: () => {
+            getCanvasElementManager()?.addChildCanvasElement?.();
+        },
+    },
+    bubbleStyle: {
+        kind: "panel",
+        id: "bubbleStyle",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.Style",
+        englishLabel: "Style",
+        canvasToolsControl: BubbleStylePanelControl,
+    },
+    showTail: {
+        kind: "panel",
+        id: "showTail",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.ShowTail",
+        englishLabel: "Show Tail",
+        canvasToolsControl: ShowTailPanelControl,
+    },
+    roundedCorners: {
+        kind: "panel",
+        id: "roundedCorners",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.RoundedCorners",
+        englishLabel: "Rounded Corners",
+        canvasToolsControl: RoundedCornersPanelControl,
+    },
+    textColor: {
+        kind: "panel",
+        id: "textColor",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.TextColor",
+        englishLabel: "Text Color",
+        canvasToolsControl: TextColorPanelControl,
+    },
+    backgroundColor: {
+        kind: "panel",
+        id: "backgroundColor",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.BackgroundColor",
+        englishLabel: "Background Color",
+        canvasToolsControl: BackgroundColorPanelControl,
+    },
+    outlineColor: {
+        kind: "panel",
+        id: "outlineColor",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.OutlineColor",
+        englishLabel: "Outline Color",
+        canvasToolsControl: OutlineColorPanelControl,
+    },
+    setDestination: {
+        kind: "command",
+        id: "setDestination",
+        featureName: "canvas",
+        l10nId: "EditTab.Toolbox.CanvasTool.SetDest",
+        englishLabel: "Set Destination",
+        icon: LinkIcon,
+        toolbar: {
+            iconScale: 0.8,
+        },
+        action: (ctx, runtime) => {
+            runtime.closeMenu(true);
+
+            // For navigation canvas elements we keep the destination on the canvas
+            // element itself (not on any nested image container).
+            const currentUrl =
+                ctx.canvasElement.getAttribute("data-href") ?? "";
+            showLinkTargetChooserDialog(currentUrl, (newUrl) => {
+                if (newUrl) {
+                    ctx.canvasElement.setAttribute("data-href", newUrl);
+                } else {
+                    ctx.canvasElement.removeAttribute("data-href");
+                }
+            });
+        },
+    },
+    linkGridChooseBooks: {
+        kind: "command",
+        id: "linkGridChooseBooks",
+        l10nId: "EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks",
+        englishLabel: "Choose books...",
+        icon: CogIcon,
+        toolbar: {
+            render: (ctx, _runtime) => {
+                const linkGrid = ctx.canvasElement.getElementsByClassName(
+                    "bloom-link-grid",
+                )[0] as HTMLElement | undefined;
+                if (!linkGrid) {
+                    return null;
+                }
+
+                // This toolbar node is built with React.createElement (not JSX).
+                // Use plain style objects here: passing Emotion's css prop through
+                // createElement would serialize to a literal DOM attribute.
+                return React.createElement(
+                    React.Fragment,
+                    null,
+                    React.createElement(
+                        "button",
+                        {
+                            style: {
+                                borderColor: "transparent",
+                                backgroundColor: "transparent",
+                                verticalAlign: "middle",
+                                width: "22px",
+                            },
+                            onClick: () => {
+                                editLinkGrid(linkGrid);
+                            },
+                        },
+                        React.createElement(CogIcon, {
+                            color: "primary",
+                            style: {
+                                fontSize: "1.04rem",
+                            },
+                        }),
+                    ),
+                    React.createElement(
+                        "span",
+                        {
+                            style: {
+                                // UX requirement: match the primary-blue affordance
+                                // used by other clickable toolbar text.
+                                color: kBloomBlue,
+                                fontSize: "10px",
+                                marginLeft: "4px",
+                                cursor: "pointer",
+                            },
+                            onClick: () => {
+                                editLinkGrid(linkGrid);
+                            },
+                        },
+                        "Choose books...",
+                    ),
+                );
+            },
+        },
+        action: (ctx, runtime) => {
+            const linkGrid = ctx.canvasElement.getElementsByClassName(
+                "bloom-link-grid",
+            )[0] as HTMLElement | undefined;
+            if (!linkGrid) {
+                return;
+            }
+
+            runtime.closeMenu(true);
+            editLinkGrid(linkGrid);
+        },
+    },
+    duplicate: {
+        kind: "command",
+        id: "duplicate",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.Duplicate",
+        englishLabel: "Duplicate",
+        icon: DuplicateIcon,
+        menu: {
+            shortcutDisplay: "Ctrl+D",
+        },
+        action: () => {
+            makeDuplicateOfDragBubble();
+        },
+    },
+    delete: {
+        kind: "command",
+        id: "delete",
+        l10nId: "Common.Delete",
+        englishLabel: "Delete",
+        icon: DeleteIcon,
+        menu: {
+            iconScale: 1.2,
+        },
+        action: () => {
+            getCanvasElementManager()?.deleteCurrentCanvasElement?.();
+        },
+    },
+    toggleDraggable: {
+        kind: "command",
+        id: "toggleDraggable",
+        l10nId: "EditTab.Toolbox.DragActivity.Draggability",
+        englishLabel: "Draggable",
+        icon: CheckIcon,
+        menu: {
+            buildMenuItem: (ctx, runtime) =>
+                buildDynamicMenuItemFromControl("toggleDraggable", runtime, {
+                    subLabelL10nId:
+                        "EditTab.Toolbox.DragActivity.DraggabilityMore",
+                    icon: React.createElement(CheckIcon, {
+                        style: {
+                            visibility: isDraggable(ctx.canvasElement)
+                                ? "visible"
+                                : "hidden",
+                        },
+                    }),
+                }),
+        },
+        action: (ctx) => {
+            toggleDraggability(ctx);
+        },
+    },
+    togglePartOfRightAnswer: {
+        kind: "command",
+        id: "togglePartOfRightAnswer",
+        l10nId: "EditTab.Toolbox.DragActivity.PartOfRightAnswer",
+        englishLabel: "Part of the right answer",
+        icon: CheckIcon,
+        menu: {
+            buildMenuItem: (ctx, runtime) =>
+                buildDynamicMenuItemFromControl(
+                    "togglePartOfRightAnswer",
+                    runtime,
+                    {
+                        subLabelL10nId:
+                            "EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2",
+                        icon: React.createElement(CheckIcon, {
+                            style: {
+                                visibility: ctx.hasDraggableTarget
+                                    ? "visible"
+                                    : "hidden",
+                            },
+                        }),
+                    },
+                ),
+        },
+        action: (ctx) => {
+            togglePartOfRightAnswer(ctx);
+        },
+    },
+    chooseAudio: {
+        kind: "command",
+        id: "chooseAudio",
+        featureName: "canvas",
+        l10nId: "EditTab.Toolbox.DragActivity.ChooseSound",
+        englishLabel: "Choose...",
+        icon: VolumeUpIcon,
+        action: () => {},
+        menu: {
+            buildMenuItem: (ctx, runtime) => {
+                if (ctx.hasText) {
+                    return makeChooseAudioMenuItemForText(ctx, runtime);
+                }
+                return makeChooseAudioMenuItemForImage(ctx, runtime);
+            },
+        },
+    },
+};
+
+export const controlSections: Record<SectionId, IControlSection> = {
+    gameDraggable: {
+        id: "gameDraggable",
+        controlsBySurface: {
+            menu: ["toggleDraggable", "togglePartOfRightAnswer"],
+        },
+    },
+    image: {
+        id: "image",
+        controlsBySurface: {
+            menu: [
+                "missingMetadata",
+                "chooseImage",
+                "pasteImage",
+                "copyImage",
+                "resetImage",
+                "expandToFillSpace",
+                "becomeBackground",
+                "imageFieldType",
+            ],
+        },
+    },
+    imagePanel: {
+        id: "imagePanel",
+        controlsBySurface: {
+            toolPanel: ["imageFillMode"],
+        },
+    },
+    video: {
+        id: "video",
+        controlsBySurface: {
+            menu: [
+                "chooseVideo",
+                "recordVideo",
+                "playVideoEarlier",
+                "playVideoLater",
+            ],
+        },
+    },
+    audio: {
+        id: "audio",
+        controlsBySurface: {
+            menu: ["chooseAudio"],
+        },
+    },
+    linkGrid: {
+        id: "linkGrid",
+        controlsBySurface: {
+            menu: ["linkGridChooseBooks"],
+        },
+    },
+    url: {
+        id: "url",
+        controlsBySurface: {
+            menu: ["setDestination"],
+        },
+    },
+    bubble: {
+        id: "bubble",
+        controlsBySurface: {
+            menu: ["addChildBubble"],
+            toolPanel: ["bubbleStyle", "showTail", "roundedCorners"],
+        },
+    },
+    outline: {
+        id: "outline",
+        controlsBySurface: {
+            toolPanel: ["outlineColor"],
+        },
+    },
+    text: {
+        id: "text",
+        controlsBySurface: {
+            menu: [
+                "format",
+                "copyText",
+                "pasteText",
+                "autoHeight",
+                "language",
+                "fieldType",
+            ],
+            toolPanel: ["textColor", "backgroundColor"],
+        },
+    },
+    wholeElement: {
+        id: "wholeElement",
+        controlsBySurface: {
+            menu: ["duplicate", "delete"],
+        },
+    },
+};

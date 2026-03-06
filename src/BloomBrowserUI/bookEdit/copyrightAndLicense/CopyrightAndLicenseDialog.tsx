@@ -29,6 +29,7 @@ import { useL10n } from "../../react_components/l10nHooks";
 import { CopyrightPanel, ICopyrightInfo } from "./CopyrightPanel";
 import { ILicenseInfo, LicensePanel } from "./LicensePanel";
 import { LicenseBadge } from "./LicenseBadge";
+import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 
 export interface ICopyrightAndLicenseData {
     derivativeInfo?: IDerivativeInfo;
@@ -264,6 +265,16 @@ export function showCopyrightAndLicenseInfoOrDialog(imageUrl?: string) {
             }
         },
         (err) => {
+            const responseData = err.response?.data;
+            const serverMessage =
+                (typeof responseData === "string" ? responseData : undefined) ||
+                err.response?.statusText;
+            const message =
+                serverMessage ||
+                "Bloom could not open image copyright and license information.";
+            BloomMessageBoxSupport.CreateAndShowSimpleMessageBoxWithLocalizedText(
+                message,
+            );
             console.error(err);
         },
     );

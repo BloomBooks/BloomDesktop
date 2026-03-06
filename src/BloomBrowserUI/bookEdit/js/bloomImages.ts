@@ -10,14 +10,11 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 
 import {
     kBackgroundImageClass,
-    theOneCanvasElementManager,
-    updateCanvasElementClass,
-} from "./CanvasElementManager";
-import {
-    kCanvasElementSelector,
     kBloomCanvasClass,
     kBloomCanvasSelector,
-} from "../toolbox/canvas/canvasElementUtils";
+    kCanvasElementSelector,
+} from "../toolbox/canvas/canvasElementConstants";
+import { updateCanvasElementClass } from "../toolbox/canvas/canvasElementDomUtils";
 
 import { farthest } from "../../utils/elementUtils";
 import { EditableDivUtils } from "./editableDivUtils";
@@ -25,6 +22,7 @@ import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { kPlaybackOrderContainerClass } from "../toolbox/talkingBook/audioRecording";
 import { showCopyrightAndLicenseDialog } from "../editViewFrame";
 import { getCanvasElementManager } from "../toolbox/canvas/canvasElementUtils";
+import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import $ from "jquery";
 
 // This appears to be constant even on higher dpi screens.
@@ -174,6 +172,66 @@ export function HandleImageError(event: Event) {
     // console.error("Image failed to load:", target.src);
 }
 
+function getPasteImageApiErrorMessage(
+    responseOrError: unknown,
+): string | undefined {
+    const getMessageFromValue = (value: unknown): string | undefined => {
+        if (typeof value === "string" && value.trim().length > 0) {
+            return value;
+        }
+
+        if (!value || typeof value !== "object") {
+            return undefined;
+        }
+
+        const valueRecord = value as Record<string, unknown>;
+        const candidateKeys = ["message", "Message", "error", "Error", "text"];
+        for (const key of candidateKeys) {
+            const keyValue = valueRecord[key];
+            if (typeof keyValue === "string" && keyValue.trim().length > 0) {
+                return keyValue;
+            }
+        }
+
+        return undefined;
+    };
+
+    const errorLike = responseOrError as {
+        data?: unknown;
+        response?: { data?: unknown };
+        request?: { responseText?: unknown };
+        responseText?: unknown;
+    };
+
+    const messageCandidates = [
+        errorLike.response?.data,
+        errorLike.data,
+        errorLike.request?.responseText,
+        errorLike.responseText,
+    ];
+
+    for (const candidate of messageCandidates) {
+        const message = getMessageFromValue(candidate);
+        if (message) {
+            return message;
+        }
+    }
+
+    return undefined;
+}
+
+function handlePasteImageApiError(responseOrError: unknown): void {
+    const message =
+        getPasteImageApiErrorMessage(responseOrError) ??
+        theOneLocalizationManager.getText(
+            "EditTab.NoImageFoundOnClipboard",
+            "Before you can paste an image, copy one onto your 'clipboard', from another program.",
+        );
+    BloomMessageBoxSupport.CreateAndShowSimpleMessageBoxWithLocalizedText(
+        message,
+    );
+}
+
 export function doImageCommand(
     img: HTMLElement | undefined,
     command: "copy" | "paste" | "change",
@@ -207,11 +265,19 @@ export function doImageCommand(
     // paths, we don't support metadata, they can't be cropped,...)
     const imageIsGif = topDiv?.classList.contains("bloom-gif") ?? false;
 
-    postJson("editView/" + command + "Image", {
+    const endpoint = "editView/" + command + "Image";
+    const payload = {
         imageId,
         imageSrc,
         imageIsGif,
-    });
+    };
+
+    if (command === "paste") {
+        postJson(endpoint, payload, undefined, handlePasteImageApiError);
+        return;
+    }
+
+    postJson(endpoint, payload);
 }
 
 export function handleMouseEnterBloomCanvas(bloomCanvas: HTMLElement): void {
@@ -415,7 +481,7 @@ function DisableImageTooltip(container: HTMLElement | undefined | null) {
     }
 
     // If the canvas element manager hasn't been set up at all we can at least clear the current one.
-    const bloomCanvas = container.closest(kBloomCanvasClass) as HTMLElement; // this is the one we want to clear the title on, if any
+    const bloomCanvas = container.closest(kBloomCanvasSelector) as HTMLElement; // this is the one we want to clear the title on, if any
 
     if (bloomCanvas) {
         bloomCanvas.title = "";
@@ -821,18 +887,17 @@ export function SetupResizableElement(element) {
         // caption centered, but currently we are NOT centering it. However, it makes sense
         // to resize the picture and its captions together anyway. We at least want the text
         // boxes to stay the same size as the bloom-canvas.)
+        const canvasElementManager = getCanvasElementManager();
         const img = $(bloomCanvas).find("img");
         $(element).resizable({
             handles: "nw, ne, sw, se",
             containment: "parent",
             alsoResize: bloomCanvas,
             start(e, ui) {
-                theOneCanvasElementManager.suspendComicEditing(
-                    "forJqueryResize",
-                );
+                canvasElementManager?.suspendComicEditing("forJqueryResize");
             },
             stop(e, ui) {
-                theOneCanvasElementManager.resumeComicEditing();
+                canvasElementManager?.resumeComicEditing();
             },
         });
     }

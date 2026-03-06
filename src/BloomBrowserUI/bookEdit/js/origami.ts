@@ -5,7 +5,7 @@ import { kBloomCanvasClass } from "../toolbox/canvas/canvasElementUtils";
 import "../../lib/split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
 import { post, postThatMightNavigate } from "../../utils/bloomApi";
-import { theOneCanvasElementManager } from "./CanvasElementManager";
+import { theOneCanvasElementManager } from "./canvasElementManager/CanvasElementManager";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import $ from "jquery";
 import { splitPane } from "../../lib/split-pane/split-pane";
@@ -67,11 +67,6 @@ export function setupOrigami() {
 export function cleanupOrigami() {
     // Otherwise, we get a new one each time the page is loaded
     $(".split-pane-resize-shim").remove();
-}
-function isEmpty(el) {
-    const temp = $.trim(el[0].textContent);
-    //alert("-" + temp + "- equals empty string: " + (temp == "").toString());
-    return temp === "";
 }
 function setupLayoutMode() {
     theOneCanvasElementManager.suspendComicEditing("forTool");
@@ -217,7 +212,7 @@ function adjustModifiedChild(resizedElt: HTMLElement | undefined) {
     }
 }
 
-const origamiUndoStack: any[] = [];
+const origamiUndoStack: Array<{ original: JQuery<HTMLElement> }> = [];
 let origamiUndoIndex = 0; // of item that should be redone next, if any
 
 // Add a point to which the user can return using 'undo'. Call this before making any change that
