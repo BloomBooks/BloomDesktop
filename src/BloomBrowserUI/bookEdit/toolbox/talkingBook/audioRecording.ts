@@ -4129,6 +4129,11 @@ export default class AudioRecording implements IAudioRecorder {
     public static elementToSentencesWithCleanup(
         element: JQuery
     ): TextFragment[] {
+        const copyElt = element.get(0);
+        // We should never keep text inside bloom-linebreak spans. If present, move it out so
+        // sentence splitting doesn't propagate bloom-linebreak markup onto sentence spans.
+        EditableDivUtils.normalizeBloomLineBreakSpansInElement(copyElt);
+
         // review: possibly this cleanup should be part of stringToSentences(),
         // remove any em, strong, b, i, u, sup elements that are empty.
         // Don't remove spans here, some of them (with attributes) are important even if empty
@@ -4142,7 +4147,6 @@ export default class AudioRecording implements IAudioRecorder {
             .remove();
         // unwrap any span elements that have no attributes and so change nothing
         // This will get rid of at least some empty spans, and it reduces clutter.
-        const copyElt = element.get(0);
         for (const span of Array.from(copyElt.getElementsByTagName("span"))) {
             if (span.attributes.length === 0) {
                 // This span has no attributes, so it doesn't change anything.
