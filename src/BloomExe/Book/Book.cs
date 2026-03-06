@@ -5343,6 +5343,13 @@ namespace Bloom.Book
         public void UpdateSupportFiles()
         {
             Storage.UpdateSupportFiles();
+            BookStorage.UpdateQrCode(
+                OurHtmlDom,
+                CollectionSettings.ShowBlorgLanguageQrCode,
+                Language1Tag,
+                CollectionSettings,
+                FolderPath
+            );
         }
 
         private bool IsPageProtectedFromRemoval(SafeXmlElement pageElement)
@@ -5986,7 +5993,7 @@ namespace Bloom.Book
             // that removing it causes. If you find a reason we need it, please document thoroughly.
             //BookInfo.Save();
             // Should not be needed when deleting customBookStyles.css, but definitely when we change theme.
-            Storage.UpdateSupportFiles();
+            UpdateSupportFiles();
             // temporary while we're in transition between storing cover color in the HTML and in the bookInfo
             var color = BookInfo.AppearanceSettings.GetStringPropertyValueOrDefault(
                 "cover-background-color",

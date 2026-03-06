@@ -45,6 +45,8 @@ namespace Bloom.Collection
         // "Internal" so CollectionSettingsApi can update these.
         internal readonly string[] PendingFontSelections = new[] { "", "", "" };
         internal string PendingNumberingStyle { get; set; }
+        internal bool PendingShowBlorgLanguageQrCode;
+        internal string PendingBadgeQrCodeLabel;
         internal string PendingXmatter { get; set; }
         internal string PendingAdministrators { get; set; }
 
@@ -87,6 +89,8 @@ namespace Bloom.Collection
                 ? _collectionSettings.AllLanguages[2].FontName
                 : "";
             PendingNumberingStyle = _collectionSettings.PageNumberStyle;
+            PendingShowBlorgLanguageQrCode = _collectionSettings.ShowBlorgLanguageQrCode;
+            PendingBadgeQrCodeLabel = _collectionSettings.BadgeQrCodeLabelLocalized;
             PendingXmatter = _collectionSettings.XMatterPackName;
             PendingAdministrators = _collectionSettings.AdministratorsDisplayString;
             CollectionSettingsApi.DialogBeingEdited = this;
@@ -391,6 +395,15 @@ namespace Bloom.Collection
             _collectionSettings.District = _districtText.Text.Trim();
 
             _collectionSettings.PageNumberStyle = PendingNumberingStyle; // non-localized key
+            _collectionSettings.ShowBlorgLanguageQrCode = PendingShowBlorgLanguageQrCode;
+            if (PendingBadgeQrCodeLabel != _collectionSettings.BadgeQrCodeLabelLocalized)
+            {
+                // Update the BadgeQrCodeLabel value only if the user has actually changed it.
+                // The default value displayed for BadgeQrCodeLabel is based on the current UI language,
+                // so if the user changes the UI language and then opens the Collection Settings dialog,
+                // we don't want to have the default BadgeQrCodeLabel frozen to the original UI language.
+                _collectionSettings.BadgeQrCodeLabel = PendingBadgeQrCodeLabel;
+            }
 
             if (_pendingSubscription != null)
             {
