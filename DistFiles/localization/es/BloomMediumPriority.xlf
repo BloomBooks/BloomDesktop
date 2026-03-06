@@ -804,9 +804,9 @@
         <target xml:lang="es-ES" state="final">Bloqueado por {0} material de las páginas de inicio y final</target>
         <note>BookSettings.LockedByXMatter</note>
       </trans-unit>
-      <trans-unit id="BookAndPageSettings.Title" sil:dynamic="true" approved="yes">
+      <trans-unit id="BookAndPageSettings.Title" sil:dynamic="true">
         <source xml:lang="en">Book and Page Settings</source>
-        <target xml:lang="es-ES" state="final">Configuración del libro</target>
+        <target xml:lang="es-ES" state="needs-translation">Configuración del libro</target>
         <note>BookAndPageSettings.Title</note>
       </trans-unit>
       <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true" approved="yes">
