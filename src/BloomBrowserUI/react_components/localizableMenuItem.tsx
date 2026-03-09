@@ -4,7 +4,6 @@ import * as React from "react";
 import { Fragment, ReactNode, useEffect, useState } from "react";
 import { useL10n } from "./l10nHooks";
 import {
-    Checkbox,
     ListItemIcon,
     ListItemText,
     MenuItem,
@@ -13,8 +12,7 @@ import {
 } from "@mui/material";
 import { OverridableStringUnion } from "@mui/types";
 import NestedMenuItem from "mui-nested-menu-item";
-import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
-import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import CheckIcon from "@mui/icons-material/Check";
 import { getBoolean, post, postBoolean } from "../utils/bloomApi";
 import { kBloomDisabledOpacity } from "../utils/colorUtils";
 import { kUiFontStack } from "../bloomMaterialUITheme";
@@ -73,10 +71,12 @@ export interface ILocalizableMenuItemProps
     labelCss?: SerializedStyles;
 }
 
-interface ILocalizableCheckboxMenuItemProps
+interface ILocalizableCheckableMenuItemProps
     extends IBaseLocalizableMenuItemProps {
-    onClick: React.MouseEventHandler;
-    apiEndpoint: string;
+    onClick?: React.MouseEventHandler;
+    apiEndpoint?: string;
+    checked?: boolean;
+    value?: string;
 }
 
 export const divider: ILocalizableMenuItemProps = {
@@ -171,11 +171,6 @@ export const LocalizableMenuItem: React.FunctionComponent<
             <MenuItem
                 key={props.l10nId}
                 onClick={menuClickHandler}
-                // dense={true}
-                // css={css`
-                //     padding: 0 6px !important; // eliminate top and bottom padding to make even denser
-                //     font-size: 14pt;
-                // `}
                 disabled={props.disabled}
                 className={props.className}
             >
@@ -208,8 +203,13 @@ export const LocalizableMenuItem: React.FunctionComponent<
     );
 };
 
-export const LocalizableCheckboxMenuItem: React.FunctionComponent<
-    ILocalizableCheckboxMenuItemProps
+// Expected usage:
+// - Pass apiEndpoint for the normal self-managed mode where the component loads and saves its checked state.
+// - Pass checked for a controlled mode where the parent is the source of truth.
+// - This renders like other Bloom menu items: a checkmark when selected, otherwise empty space.
+// - Do not normally pass both. If both are provided, checked wins and apiEndpoint is ignored for state.
+export const LocalizableCheckableMenuItem: React.FunctionComponent<
+    ILocalizableCheckableMenuItemProps
 > = (props) => {
     const variant = props.variant ?? "h6";
     const typographyProps:
@@ -223,48 +223,65 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<
         undefined,
         props.l10nParam0,
     );
-    const [checked, setChecked] = useState(false);
+    const isControlled = props.checked !== undefined;
+    const [internalChecked, setInternalChecked] = useState(false);
+    const checked = props.checked ?? internalChecked;
+
+    if (props.apiEndpoint && isControlled) {
+        console.error(
+            "LocalizableCheckableMenuItem: props.checked takes precedence over apiEndpoint when both are provided.",
+        );
+    }
+
+    // Load the initial checked state from the API when this item is unmanaged,
+    // because that state lives outside React and must be synchronized on mount.
     useEffect(() => {
+        if (!props.apiEndpoint || isControlled) {
+            return;
+        }
         getBoolean(props.apiEndpoint, (value) => {
-            setChecked(value);
+            setInternalChecked(value);
         });
-    }, [props.apiEndpoint]);
+    }, [props.apiEndpoint, isControlled]);
+
+    const canToggle = !!props.apiEndpoint && !isControlled;
+    const handleToggle = (newCheckedState: boolean) => {
+        if (props.apiEndpoint) {
+            postBoolean(props.apiEndpoint, newCheckedState);
+            if (!isControlled) {
+                setInternalChecked(newCheckedState);
+            }
+        }
+    };
 
     // The "div" wrapper is necessary to get the tooltip to work on a disabled item.
     return (
         <div title={props.disabled ? props.tooltipIfDisabled : undefined}>
             <MenuItem
                 key={props.l10nId}
-                onClick={() => {
-                    const newCheckedState = !checked;
-                    postBoolean(props.apiEndpoint, newCheckedState);
-                    setChecked(newCheckedState);
+                value={props.value}
+                onClick={(event) => {
+                    if (canToggle) {
+                        handleToggle(!checked);
+                    }
+                    props.onClick?.(event);
                 }}
-                dense={true}
-                css={css`
-                    padding: 0 6px !important; // eliminate top and bottom padding to make even denser
-                    font-size: 14pt;
-                `}
                 disabled={props.disabled}
             >
-                <Checkbox
-                    icon={
-                        <CheckBoxOutlineBlankIcon htmlColor={menuItemColor} />
-                    }
-                    checkedIcon={<CheckBoxIcon htmlColor={menuItemColor} />}
-                    checked={checked}
-                    onChange={(e) => {
-                        postBoolean(props.apiEndpoint, e.target.checked);
-                        setChecked(e.target.checked);
-                    }}
+                <ListItemIcon
                     css={css`
                         width: ${kIconCheckboxAffordance}px !important;
-                        padding: 0 !important;
-                        font-size: 1.1rem !important;
-                        margin-left: -2px !important; // adjust checkbox over a bit
-                        margin-right: 2px !important;
+                        min-width: unset !important;
                     `}
-                />
+                >
+                    <CheckIcon
+                        css={css`
+                            color: ${menuItemColor};
+                            font-size: 1.3rem;
+                            visibility: ${checked ? "visible" : "hidden"};
+                        `}
+                    />
+                </ListItemIcon>
                 <ListItemText
                     css={css`
                         .MuiTypography-${variant} {
