@@ -8,28 +8,19 @@ Internally, Bloom is a hybrid. It started as a C#/WinForms app with an embedded 
 
 #### Install Dependencies
 
-1. Install C# dependencies
+1. Install [volta](https://docs.volta.sh/guide/getting-started) globally on your computer. This will provide you with the correct node and yarn. You may need to restart your computer for the installation to take effect.
+
+2. Install other dependencies:
 
 ```bash
-./build/getDependencies-windows.sh
+./init.sh
 ```
 
-2. Install [volta](https://docs.volta.sh/guide/getting-started) globally on your computer. This will provide you with the correct node and yarn. You may need to restart your computer for the installation to take effect.
+#### Build the front-end (browser) part
 
-3. Install browser code dependencies:
+In `/src/BloomBrowserUI`, run `yarn dev` for a hot-reloading dev server. Alternatively, you can run `yarn build` to generate the needed files once.
 
-```bash
-cd src/content
-yarn
-cd ../BloomBrowserUI
-yarn
-```
-
-#### Build the browser part
-
-1. In `/src/BloomBrowserUI`, run `yarn build`.
-
-#### Build the .NET part
+#### Build the back-end (.NET) part
 
 ##### In VS Code:
 
