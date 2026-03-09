@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { OverridableStringUnion } from "@mui/types";
 import NestedMenuItem from "mui-nested-menu-item";
+import CheckIcon from "@mui/icons-material/Check";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import { getBoolean, post, postBoolean } from "../utils/bloomApi";
@@ -71,6 +72,18 @@ export interface ILocalizableMenuItemProps
     // and min-height to control the spacing of the menu item, and display:block to
     // override MUI's inline-flex and allow the item to size vertically to its content.
     labelCss?: SerializedStyles;
+    value?: string | number | readonly string[];
+}
+
+export interface ILocalizableSelectableMenuItemProps
+    extends IBaseLocalizableMenuItemProps {
+    selected: boolean;
+    onClick?: React.MouseEventHandler;
+    addEllipsis?: boolean;
+    subscriptionTooltipOverride?: string;
+    className?: string;
+    labelCss?: SerializedStyles;
+    value?: string | number | readonly string[];
 }
 
 interface ILocalizableCheckboxMenuItemProps
@@ -171,13 +184,9 @@ export const LocalizableMenuItem: React.FunctionComponent<
             <MenuItem
                 key={props.l10nId}
                 onClick={menuClickHandler}
-                // dense={true}
-                // css={css`
-                //     padding: 0 6px !important; // eliminate top and bottom padding to make even denser
-                //     font-size: 14pt;
-                // `}
                 disabled={props.disabled}
                 className={props.className}
+                value={props.value}
             >
                 <React.Fragment>
                     {iconElement}
@@ -205,6 +214,44 @@ export const LocalizableMenuItem: React.FunctionComponent<
                 </React.Fragment>
             </MenuItem>
         </div>
+    );
+};
+
+export const LocalizableSelectableMenuItem: React.FunctionComponent<
+    ILocalizableSelectableMenuItemProps
+> = (props) => {
+    return (
+        <LocalizableMenuItem
+            english={props.english}
+            l10nId={props.l10nId}
+            l10nParam0={props.l10nParam0}
+            disabled={props.disabled}
+            tooltipIfDisabled={props.tooltipIfDisabled}
+            tooltip={props.tooltip}
+            variant={props.variant}
+            subLabel={props.subLabel}
+            generatedSubLabel={props.generatedSubLabel}
+            subLabelL10nId={props.subLabelL10nId}
+            featureName={props.featureName}
+            onClick={props.onClick ?? (() => {})}
+            addEllipsis={props.addEllipsis}
+            dontGiveAffordanceForCheckbox={false}
+            subscriptionTooltipOverride={props.subscriptionTooltipOverride}
+            className={props.className}
+            isDivider={false}
+            labelCss={props.labelCss}
+            icon={
+                props.selected ? (
+                    <CheckIcon
+                        css={css`
+                            color: ${menuItemColor};
+                            font-size: 1.3rem;
+                        `}
+                    />
+                ) : undefined
+            }
+            value={props.value}
+        />
     );
 };
 
@@ -240,11 +287,6 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<
                     postBoolean(props.apiEndpoint, newCheckedState);
                     setChecked(newCheckedState);
                 }}
-                dense={true}
-                css={css`
-                    padding: 0 6px !important; // eliminate top and bottom padding to make even denser
-                    font-size: 14pt;
-                `}
                 disabled={props.disabled}
             >
                 <Checkbox

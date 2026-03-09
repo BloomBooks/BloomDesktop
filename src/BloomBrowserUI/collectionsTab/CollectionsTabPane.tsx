@@ -13,13 +13,8 @@ import useEventListener from "@use-it/event-listener";
 import { BookSelectionManager } from "./bookSelectionManager";
 import ShowAfterDelay from "../react_components/showAfterDelay";
 import { forceCheck as convertAnyVisibleLazyLoads } from "react-lazyload";
-import { IconButton, Divider, Menu } from "@mui/material";
+import { IconButton, Menu } from "@mui/material";
 import GreyTriangleMenuIcon from "../react_components/icons/GreyTriangleMenuIcon";
-import {
-    LocalizableCheckboxMenuItem,
-    LocalizableMenuItem,
-    LocalizableNestedMenuItem,
-} from "../react_components/localizableMenuItem";
 import { TeamCollectionDialogLauncher } from "../teamCollection/TeamCollectionDialog";
 import { SpreadsheetExportDialogLauncher } from "./spreadsheet/SpreadsheetExportDialog";
 import { RegistrationDialogEventLauncher } from "../react_components/registration/registrationDialogLauncher";
@@ -42,7 +37,6 @@ import {
     showMakeReaderTemplateBloomPackDialog,
 } from "../react_components/makeReaderTemplateBloomPackDialog";
 import { AboutDialogLauncher } from "../react_components/aboutDialog";
-import { RegistrationDialogLauncher } from "../react_components/registration/registrationDialog";
 
 const kResizerSize = 10;
 
