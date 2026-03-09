@@ -13,6 +13,12 @@
 // Keep preset objects behavior-focused and side-effect free.
 import { AvailabilityRulesMap } from "./canvasControlTypes";
 
+export const arrangeAvailabilityRules: AvailabilityRulesMap = {
+    layerMenu: {
+        visible: (ctx) => !ctx.isBackgroundImage,
+    },
+};
+
 export const imageAvailabilityRules: AvailabilityRulesMap = {
     chooseImage: {
         visible: (ctx) => ctx.hasImage,

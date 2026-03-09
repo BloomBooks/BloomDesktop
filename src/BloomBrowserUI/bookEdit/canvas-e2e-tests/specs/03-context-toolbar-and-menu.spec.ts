@@ -11,11 +11,12 @@ import {
     getCanvasElementCount,
     openContextMenuFromToolbar,
     clickContextMenuItem,
+    selectCanvasElementAtIndex,
 } from "../helpers/canvasActions";
 import {
     expectCanvasElementCountToIncrease,
-    expectAnyCanvasElementActive,
     expectContextControlsVisible,
+    expectContextMenuItemEnabled,
     expectContextMenuItemVisible,
     expectContextMenuItemNotPresent,
 } from "../helpers/canvasAssertions";
@@ -27,6 +28,14 @@ import {
     mainPaletteRows,
     navigationPaletteRows,
 } from "../helpers/canvasMatrix";
+
+const hoverLayerSubmenu = async (canvasTestContext: ICanvasTestContext) => {
+    const layerMenuItem = canvasTestContext.pageFrame
+        .locator(`${canvasSelectors.page.contextMenuListVisible} li:has-text("Layer")`)
+        .first();
+    await expect(layerMenuItem).toBeVisible();
+    await layerMenuItem.hover();
+};
 
 const waitForCountBelow = async (
     canvasTestContext: ICanvasTestContext,
@@ -109,6 +118,75 @@ test("C2: speech context menu contains Duplicate and Delete", async ({
     await expectContextMenuItemVisible(canvasTestContext, "Delete");
     await canvasTestContext.page.keyboard.press("Escape");
 });
+
+test("C2: Layer submenu appears for speech and disables edge commands appropriately", async ({
+    canvasTestContext,
+}) => {
+    const firstCreatedIndex = await getCanvasElementCount(canvasTestContext);
+
+    await createAndExpectCountIncrease(canvasTestContext, "speech");
+    await createAndExpectCountIncrease(canvasTestContext, "speech");
+
+    await selectCanvasElementAtIndex(canvasTestContext, firstCreatedIndex);
+    await openContextMenuFromToolbar(canvasTestContext);
+    await hoverLayerSubmenu(canvasTestContext);
+
+    await expectContextMenuItemVisible(canvasTestContext, "Layer");
+    await expectContextMenuItemVisible(canvasTestContext, "Bring Forward");
+    await expectContextMenuItemVisible(canvasTestContext, "Bring to Front");
+    await expectContextMenuItemVisible(canvasTestContext, "Send Backwards");
+    await expectContextMenuItemVisible(canvasTestContext, "Send to Back");
+    await expectContextMenuItemEnabled(
+        canvasTestContext,
+        "Bring Forward",
+        true,
+    );
+    await expectContextMenuItemEnabled(
+        canvasTestContext,
+        "Bring to Front",
+        true,
+    );
+    await expectContextMenuItemEnabled(
+        canvasTestContext,
+        "Send Backwards",
+        false,
+    );
+    await expectContextMenuItemEnabled(
+        canvasTestContext,
+        "Send to Back",
+        false,
+    );
+
+    await canvasTestContext.page.keyboard.press("Escape");
+
+    await selectCanvasElementAtIndex(canvasTestContext, firstCreatedIndex + 1);
+    await openContextMenuFromToolbar(canvasTestContext);
+    await hoverLayerSubmenu(canvasTestContext);
+
+    await expectContextMenuItemEnabled(
+        canvasTestContext,
+        "Bring Forward",
+        false,
+    );
+    await expectContextMenuItemEnabled(
+        canvasTestContext,
+        "Bring to Front",
+        false,
+    );
+    await expectContextMenuItemEnabled(
+        canvasTestContext,
+        "Send Backwards",
+        true,
+    );
+    await expectContextMenuItemEnabled(
+        canvasTestContext,
+        "Send to Back",
+        true,
+    );
+
+    await canvasTestContext.page.keyboard.press("Escape");
+});
+
 
 test("C2: navigation image button shows Set Destination and not Set Up Hyperlink", async ({
     canvasTestContext,

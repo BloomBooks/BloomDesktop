@@ -38,3 +38,19 @@ export const putBubbleBefore = (
     bubble.persistBubbleSpec();
     Comical.update(canvasElement.parentElement as HTMLElement);
 };
+
+export const syncBubbleLevelsToDomOrder = (
+    canvasElementElements: HTMLElement[],
+): void => {
+    if (canvasElementElements.length === 0) {
+        return;
+    }
+
+    canvasElementElements.forEach((canvasElement, index) => {
+        const bubble = new Bubble(canvasElement);
+        bubble.getBubbleSpec().level = index + 1;
+        bubble.persistBubbleSpec();
+    });
+
+    Comical.update(canvasElementElements[0].parentElement as HTMLElement);
+};

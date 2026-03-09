@@ -2153,6 +2153,26 @@
         <note>If "Canvas Tool" is hard to translate, "Floating Object Tool" is an alternate.</note>
         <note>This tool allows users to insert speech bubbles or callouts, which are pieces of text connected by a line, arrow, or other graphic to a part of a picture. These may be used to give dialogue or to give more information about a specific part of the picture.</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Arrange.Layer" translate="no">
+        <source xml:lang="en">Layer</source>
+        <note>ID: EditTab.Toolbox.CanvasTool.Arrange.Layer</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Arrange.BringForward" translate="no">
+        <source xml:lang="en">Bring Forward</source>
+        <note>ID: EditTab.Toolbox.CanvasTool.Arrange.BringForward</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Arrange.SendBackward" translate="no">
+        <source xml:lang="en">Send Backwards</source>
+        <note>ID: EditTab.Toolbox.CanvasTool.Arrange.SendBackward</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Arrange.BringToFront" translate="no">
+        <source xml:lang="en">Bring to Front</source>
+        <note>ID: EditTab.Toolbox.CanvasTool.Arrange.BringToFront</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Arrange.SendToBack" translate="no">
+        <source xml:lang="en">Send to Back</source>
+        <note>ID: EditTab.Toolbox.CanvasTool.Arrange.SendToBack</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true">
         <source xml:lang="en">Drag any of these elements onto the image:</source>
         <note>ID: EditTab.Toolbox.ComicTool.DragInstructions</note>

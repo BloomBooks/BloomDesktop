@@ -11,8 +11,33 @@ const kArrowMoveByKey: Record<string, { dx: number; dy: number }> = {
     ArrowRight: { dx: 1, dy: 0 },
 };
 
+const hasPrimaryModifier = (
+    event: KeyboardEvent,
+    requiresAlt: boolean,
+): boolean => {
+    return (
+        (event.ctrlKey || event.metaKey) &&
+        event.altKey === requiresAlt &&
+        !event.shiftKey
+    );
+};
+
+const isArrangeShortcut = (
+    event: KeyboardEvent,
+    code: string,
+    requiresAlt: boolean,
+): boolean => {
+    return (
+        hasPrimaryModifier(event, requiresAlt) && event.code === code
+    );
+};
+
 export interface ICanvasElementKeyboardActions {
     deleteCurrentCanvasElement: () => void;
+    bringForward: () => void;
+    sendBackward: () => void;
+    bringToFront: () => void;
+    sendToBack: () => void;
     moveActiveCanvasElement: (
         dx: number,
         dy: number,
@@ -67,6 +92,26 @@ export class CanvasElementKeyboardProvider {
             activeElement &&
             activeElement.classList.contains(kBackgroundImageClass)
         ) {
+            return;
+        }
+        if (isArrangeShortcut(event, "BracketRight", true)) {
+            this.actions.bringToFront();
+            event.preventDefault();
+            return;
+        }
+        if (isArrangeShortcut(event, "BracketLeft", true)) {
+            this.actions.sendToBack();
+            event.preventDefault();
+            return;
+        }
+        if (isArrangeShortcut(event, "BracketRight", false)) {
+            this.actions.bringForward();
+            event.preventDefault();
+            return;
+        }
+        if (isArrangeShortcut(event, "BracketLeft", false)) {
+            this.actions.sendBackward();
+            event.preventDefault();
             return;
         }
         if (event.key === "Delete" || event.key === "Backspace") {

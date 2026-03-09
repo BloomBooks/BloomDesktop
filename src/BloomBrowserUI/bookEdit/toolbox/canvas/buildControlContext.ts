@@ -12,6 +12,7 @@ import { kDraggableIdAttribute } from "./canvasElementDraggables";
 import {
     kBackgroundImageClass,
     kBloomButtonClass,
+    kCanvasElementClass,
 } from "./canvasElementConstants";
 import { getCanvasElementManager } from "./canvasElementUtils";
 import { inferCanvasElementType } from "./canvasElementTypeInference";
@@ -71,6 +72,18 @@ export const buildControlContext = (
     const elementType: CanvasElementType = isKnownType
         ? inferredCanvasElementType
         : "none";
+
+    const reorderableCanvasElements = Array.from(
+        canvasElement.parentElement?.children ?? [],
+    ).filter(
+        (child): child is HTMLElement =>
+            child instanceof HTMLElement &&
+            child.classList.contains(kCanvasElementClass) &&
+            !child.classList.contains(kBackgroundImageClass),
+    );
+    const reorderableCanvasElementIndex = reorderableCanvasElements.indexOf(
+        canvasElement,
+    );
 
     const imgContainer = canvasElement.getElementsByClassName(
         kImageContainerClass,
@@ -138,6 +151,11 @@ export const buildControlContext = (
         canvasElement,
         page,
         elementType,
+        hasPreviousReorderableCanvasElement:
+            reorderableCanvasElementIndex > 0,
+        hasNextReorderableCanvasElement:
+            reorderableCanvasElementIndex >= 0 &&
+            reorderableCanvasElementIndex < reorderableCanvasElements.length - 1,
         hasImage,
         hasRealImage: hasRealImage(img),
         hasVideo,

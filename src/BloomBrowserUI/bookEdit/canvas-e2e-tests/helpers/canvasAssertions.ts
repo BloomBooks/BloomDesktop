@@ -222,6 +222,41 @@ export const expectContextMenuItemNotPresent = async (
     ).toHaveCount(0);
 };
 
+export const expectContextMenuItemEnabled = async (
+    canvasContext: ICanvasTestContext,
+    label: string,
+    enabled: boolean,
+): Promise<void> => {
+    const item = canvasContext.pageFrame
+        .locator(
+            `${canvasSelectors.page.contextMenuListVisible} li:has-text("${label}")`,
+        )
+        .first();
+
+    await expect(
+        item,
+        `Expected context menu item "${label}" to be visible`,
+    ).toBeVisible();
+
+    await expect
+        .poll(
+            async () => {
+                return item.evaluate((htmlElement) => {
+                    return (
+                        htmlElement.getAttribute("aria-disabled") ===
+                            "true" ||
+                        htmlElement.classList.contains("Mui-disabled")
+                    );
+                });
+            },
+            {
+                message: `Expected context menu item "${label}" to be ${enabled ? "enabled" : "disabled"}`,
+                timeout: 5000,
+            },
+        )
+        .toBe(!enabled);
+};
+
 // ── Canvas class state ──────────────────────────────────────────────────
 
 export const expectCanvasHasElementClass = async (

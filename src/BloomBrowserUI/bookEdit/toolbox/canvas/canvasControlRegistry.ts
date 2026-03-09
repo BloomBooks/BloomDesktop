@@ -30,7 +30,10 @@ import { default as CopyIcon } from "@mui/icons-material/ContentCopy";
 import { default as PasteIcon } from "@mui/icons-material/ContentPaste";
 import { default as CopyrightIcon } from "@mui/icons-material/Copyright";
 import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
+import { default as LayersIcon } from "@mui/icons-material/Layers";
 import { default as SearchIcon } from "@mui/icons-material/Search";
+import { default as VerticalAlignBottomIcon } from "@mui/icons-material/VerticalAlignBottom";
+import { default as VerticalAlignTopIcon } from "@mui/icons-material/VerticalAlignTop";
 import { default as VolumeUpIcon } from "@mui/icons-material/VolumeUp";
 import { showCopyrightAndLicenseDialog } from "../../editViewFrame";
 import {
@@ -524,6 +527,61 @@ const buildDynamicMenuItemFromControl = (
     };
 };
 
+const makeLayerMenuItem = (
+    _ctx: IControlContext,
+    runtime: IControlRuntime,
+): IControlMenuCommandRow => {
+    return {
+        id: "layerMenu",
+        l10nId: "EditTab.Toolbox.CanvasTool.Arrange.Layer",
+        englishLabel: "Layer",
+        icon: React.createElement(LayersIcon, null),
+        onSelect: () => {},
+        subMenuItems: [
+            buildDynamicMenuItemFromControl("bringForward", runtime, {
+                icon: React.createElement(ArrowUpwardIcon, null),
+                shortcut: {
+                    id: "bringForward.defaultShortcut",
+                    display: "Ctrl+]",
+                },
+                availability: {
+                    enabled: (ctx) => ctx.hasNextReorderableCanvasElement,
+                },
+            }),
+            buildDynamicMenuItemFromControl("bringToFront", runtime, {
+                icon: React.createElement(VerticalAlignTopIcon, null),
+                shortcut: {
+                    id: "bringToFront.defaultShortcut",
+                    display: "Ctrl+Alt+]",
+                },
+                availability: {
+                    enabled: (ctx) => ctx.hasNextReorderableCanvasElement,
+                },
+            }),
+            buildDynamicMenuItemFromControl("sendBackward", runtime, {
+                icon: React.createElement(ArrowDownwardIcon, null),
+                shortcut: {
+                    id: "sendBackward.defaultShortcut",
+                    display: "Ctrl+[",
+                },
+                availability: {
+                    enabled: (ctx) => ctx.hasPreviousReorderableCanvasElement,
+                },
+            }),
+            buildDynamicMenuItemFromControl("sendToBack", runtime, {
+                icon: React.createElement(VerticalAlignBottomIcon, null),
+                shortcut: {
+                    id: "sendToBack.defaultShortcut",
+                    display: "Ctrl+Alt+[",
+                },
+                availability: {
+                    enabled: (ctx) => ctx.hasPreviousReorderableCanvasElement,
+                },
+            }),
+        ],
+    };
+};
+
 const modifyClassNames = (
     element: HTMLElement,
     modification: (className: string) => string,
@@ -727,6 +785,69 @@ const makeChooseAudioMenuItemForImage = (
 };
 
 export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
+    layerMenu: {
+        kind: "command",
+        id: "layerMenu",
+        l10nId: "EditTab.Toolbox.CanvasTool.Arrange.Layer",
+        englishLabel: "Layer",
+        icon: LayersIcon,
+        action: () => {},
+        menu: {
+            buildMenuItem: (ctx, runtime) => makeLayerMenuItem(ctx, runtime),
+        },
+    },
+    bringForward: {
+        kind: "command",
+        id: "bringForward",
+        l10nId: "EditTab.Toolbox.CanvasTool.Arrange.BringForward",
+        englishLabel: "Bring Forward",
+        icon: ArrowUpwardIcon,
+        menu: {
+            shortcutDisplay: "Ctrl+]",
+        },
+        action: () => {
+            getCanvasElementManager()?.bringForward?.();
+        },
+    },
+    sendBackward: {
+        kind: "command",
+        id: "sendBackward",
+        l10nId: "EditTab.Toolbox.CanvasTool.Arrange.SendBackward",
+        englishLabel: "Send Backwards",
+        icon: ArrowDownwardIcon,
+        menu: {
+            shortcutDisplay: "Ctrl+[",
+        },
+        action: () => {
+            getCanvasElementManager()?.sendBackward?.();
+        },
+    },
+    bringToFront: {
+        kind: "command",
+        id: "bringToFront",
+        l10nId: "EditTab.Toolbox.CanvasTool.Arrange.BringToFront",
+        englishLabel: "Bring to Front",
+        icon: VerticalAlignTopIcon,
+        menu: {
+            shortcutDisplay: "Ctrl+Alt+]",
+        },
+        action: () => {
+            getCanvasElementManager()?.bringToFront?.();
+        },
+    },
+    sendToBack: {
+        kind: "command",
+        id: "sendToBack",
+        l10nId: "EditTab.Toolbox.CanvasTool.Arrange.SendToBack",
+        englishLabel: "Send to Back",
+        icon: VerticalAlignBottomIcon,
+        menu: {
+            shortcutDisplay: "Ctrl+Alt+[",
+        },
+        action: () => {
+            getCanvasElementManager()?.sendToBack?.();
+        },
+    },
     chooseImage: {
         kind: "command",
         id: "chooseImage",
@@ -1427,6 +1548,12 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
 };
 
 export const controlSections: Record<SectionId, IControlSection> = {
+    arrange: {
+        id: "arrange",
+        controlsBySurface: {
+            menu: ["layerMenu"],
+        },
+    },
     gameDraggable: {
         id: "gameDraggable",
         controlsBySurface: {

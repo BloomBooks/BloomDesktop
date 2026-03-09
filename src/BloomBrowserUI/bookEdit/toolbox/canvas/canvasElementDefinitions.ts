@@ -20,6 +20,7 @@ import {
     AvailabilityRulesMap,
 } from "./canvasControlTypes";
 import {
+    arrangeAvailabilityRules,
     audioAvailabilityRules,
     bubbleAvailabilityRules,
     imageAvailabilityRules,
@@ -43,7 +44,13 @@ export const imageCanvasElementDefinition: ICanvasElementDefinition = {
     // also as game pieces created from the Game tool.
     // `gameDraggable` is intentionally listed here so game pages can surface
     // draggable commands; availability rules/context keep it hidden on non-game pages.
-    menuSections: ["image", "audio", "gameDraggable", "wholeElement"],
+    menuSections: [
+        "image",
+        "audio",
+        "gameDraggable",
+        "arrange",
+        "wholeElement",
+    ],
     toolbar: [
         "missingMetadata",
         "chooseImage",
@@ -55,6 +62,7 @@ export const imageCanvasElementDefinition: ICanvasElementDefinition = {
     ],
     toolPanel: [],
     availabilityRules: mergeRules(
+        arrangeAvailabilityRules,
         imageAvailabilityRules,
         audioAvailabilityRules,
         wholeElementAvailabilityRules,
@@ -67,10 +75,11 @@ export const videoCanvasElementDefinition: ICanvasElementDefinition = {
     // and as game pieces on game pages.
     // `gameDraggable` is game-only in practice; non-game pages resolve this
     // section to no visible rows via runtime availability.
-    menuSections: ["video", "gameDraggable", "wholeElement"],
+    menuSections: ["video", "gameDraggable", "arrange", "wholeElement"],
     toolbar: ["chooseVideo", "recordVideo", "spacer", "duplicate", "delete"],
     toolPanel: [],
     availabilityRules: mergeRules(
+        arrangeAvailabilityRules,
         videoAvailabilityRules,
         wholeElementAvailabilityRules,
     ),
@@ -82,10 +91,11 @@ export const soundCanvasElementDefinition: ICanvasElementDefinition = {
     // can also participate in game layouts.
     // `gameDraggable` is included for game contexts and intentionally resolves
     // to no rows on non-game pages.
-    menuSections: ["audio", "gameDraggable", "wholeElement"],
+    menuSections: ["audio", "gameDraggable", "arrange", "wholeElement"],
     toolbar: ["duplicate", "delete"],
     toolPanel: [],
     availabilityRules: mergeRules(
+        arrangeAvailabilityRules,
         audioAvailabilityRules,
         wholeElementAvailabilityRules,
     ),
@@ -95,10 +105,11 @@ export const rectangleCanvasElementDefinition: ICanvasElementDefinition = {
     type: "rectangle",
     // Shared definition: rectangle bubbles are used in standard canvas pages and
     // can also appear as fixed game pieces.
-    menuSections: ["audio", "bubble", "text", "wholeElement"],
+    menuSections: ["audio", "bubble", "text", "arrange", "wholeElement"],
     toolbar: ["format", "spacer", "duplicate", "delete"],
     toolPanel: ["bubble", "text", "outline"],
     availabilityRules: mergeRules(
+        arrangeAvailabilityRules,
         audioAvailabilityRules,
         bubbleAvailabilityRules,
         textAvailabilityRules,
@@ -112,10 +123,18 @@ export const speechCanvasElementDefinition: ICanvasElementDefinition = {
     // are also a primary game piece type.
     // `gameDraggable` is listed so game pages can expose drag-specific commands;
     // it remains hidden outside game context.
-    menuSections: ["audio", "bubble", "gameDraggable", "text", "wholeElement"],
+    menuSections: [
+        "audio",
+        "bubble",
+        "gameDraggable",
+        "text",
+        "arrange",
+        "wholeElement",
+    ],
     toolbar: ["format", "spacer", "duplicate", "delete"],
     toolPanel: ["bubble", "text", "outline"],
     availabilityRules: mergeRules(
+        arrangeAvailabilityRules,
         audioAvailabilityRules,
         bubbleAvailabilityRules,
         textAvailabilityRules,
@@ -129,10 +148,18 @@ export const captionCanvasElementDefinition: ICanvasElementDefinition = {
     // and can also be used as game pieces.
     // `gameDraggable` is included for game behavior and is not shown on
     // non-game pages because availability gates it.
-    menuSections: ["audio", "bubble", "gameDraggable", "text", "wholeElement"],
+    menuSections: [
+        "audio",
+        "bubble",
+        "gameDraggable",
+        "text",
+        "arrange",
+        "wholeElement",
+    ],
     toolbar: ["format", "spacer", "duplicate", "delete"],
     toolPanel: ["bubble", "text", "outline"],
     availabilityRules: mergeRules(
+        arrangeAvailabilityRules,
         audioAvailabilityRules,
         bubbleAvailabilityRules,
         textAvailabilityRules,
@@ -142,17 +169,18 @@ export const captionCanvasElementDefinition: ICanvasElementDefinition = {
 
 export const bookLinkGridDefinition: ICanvasElementDefinition = {
     type: "book-link-grid",
-    menuSections: ["linkGrid", "wholeElement"],
+    menuSections: ["linkGrid", "arrange", "wholeElement"],
     toolbar: ["linkGridChooseBooks", "spacer", "duplicate", "delete"],
     toolPanel: ["text"],
     availabilityRules: {
+        ...arrangeAvailabilityRules,
         textColor: "exclude",
     },
 };
 
 export const navigationImageButtonDefinition: ICanvasElementDefinition = {
     type: "navigation-image-button",
-    menuSections: ["url", "image", "wholeElement"],
+    menuSections: ["url", "image", "arrange", "wholeElement"],
     toolbar: [
         "setDestination",
         "chooseImage",
@@ -164,6 +192,7 @@ export const navigationImageButtonDefinition: ICanvasElementDefinition = {
     toolPanel: ["text", "imagePanel"],
     availabilityRules: {
         ...mergeRules(
+            arrangeAvailabilityRules,
             imageAvailabilityRules,
             textAvailabilityRules,
             wholeElementAvailabilityRules,
@@ -199,7 +228,7 @@ export const navigationImageButtonDefinition: ICanvasElementDefinition = {
 export const navigationImageWithLabelButtonDefinition: ICanvasElementDefinition =
     {
         type: "navigation-image-with-label-button",
-        menuSections: ["url", "image", "text", "wholeElement"],
+        menuSections: ["url", "image", "text", "arrange", "wholeElement"],
         toolbar: [
             "setDestination",
             "chooseImage",
@@ -211,6 +240,7 @@ export const navigationImageWithLabelButtonDefinition: ICanvasElementDefinition 
         toolPanel: ["text", "imagePanel"],
         availabilityRules: {
             ...mergeRules(
+                arrangeAvailabilityRules,
                 imageAvailabilityRules,
                 textAvailabilityRules,
                 wholeElementAvailabilityRules,
@@ -245,11 +275,15 @@ export const navigationImageWithLabelButtonDefinition: ICanvasElementDefinition 
 
 export const navigationLabelButtonDefinition: ICanvasElementDefinition = {
     type: "navigation-label-button",
-    menuSections: ["url", "text", "wholeElement"],
+    menuSections: ["url", "text", "arrange", "wholeElement"],
     toolbar: ["setDestination", "spacer", "duplicate", "delete"],
     toolPanel: ["text"],
     availabilityRules: {
-        ...mergeRules(textAvailabilityRules, wholeElementAvailabilityRules),
+        ...mergeRules(
+            arrangeAvailabilityRules,
+            textAvailabilityRules,
+            wholeElementAvailabilityRules,
+        ),
         setDestination: {
             visible: true,
         },
@@ -261,10 +295,13 @@ export const navigationLabelButtonDefinition: ICanvasElementDefinition = {
 
 export const noneCanvasElementDefinition: ICanvasElementDefinition = {
     type: "none",
-    menuSections: ["wholeElement"],
+    menuSections: ["arrange", "wholeElement"],
     toolbar: ["duplicate", "delete"],
     toolPanel: [],
-    availabilityRules: mergeRules(wholeElementAvailabilityRules),
+    availabilityRules: mergeRules(
+        arrangeAvailabilityRules,
+        wholeElementAvailabilityRules,
+    ),
 };
 
 export const canvasElementDefinitions: Record<

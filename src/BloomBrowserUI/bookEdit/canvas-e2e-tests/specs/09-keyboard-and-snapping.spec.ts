@@ -10,6 +10,7 @@ import {
     getCanvasElementCount,
     getActiveCanvasElement,
     keyboardNudge,
+    selectCanvasElementAtIndex,
 } from "../helpers/canvasActions";
 import {
     expectCanvasElementCountToIncrease,
@@ -54,6 +55,35 @@ const createImageElement = async (canvasTestContext) => {
 
     await expectAnyCanvasElementActive(canvasTestContext);
     return createdElement;
+};
+
+const pressArrangeShortcut = async (
+    canvasTestContext,
+    direction: "forward" | "backward" | "front" | "back",
+): Promise<void> => {
+    await canvasTestContext.page.keyboard.down("Control");
+    if (direction === "front" || direction === "back") {
+        await canvasTestContext.page.keyboard.down("Alt");
+    }
+
+    await canvasTestContext.page.keyboard.press(
+        direction === "forward" || direction === "front" ? "]" : "[",
+    );
+
+    if (direction === "front" || direction === "back") {
+        await canvasTestContext.page.keyboard.up("Alt");
+    }
+    await canvasTestContext.page.keyboard.up("Control");
+};
+
+const getActiveCanvasElementIndex = async (canvasTestContext): Promise<number> => {
+    return canvasTestContext.pageFrame.evaluate((selector) => {
+        return Array.from(document.querySelectorAll(selector)).findIndex(
+            (element) =>
+                (element as HTMLElement).getAttribute("data-bloom-active") ===
+                "true",
+        );
+    }, canvasSelectors.page.canvasElements);
 };
 
 // ── E1: Arrow key moves element by grid step ────────────────────────────
@@ -129,6 +159,42 @@ test("E4: position is grid-snapped after arrow key movement", async ({
     await keyboardNudge(canvasTestContext, "ArrowDown");
 
     await expectPositionGridSnapped(active, 10);
+});
+
+test("E5: arrange shortcuts reorder the active canvas element", async ({
+    canvasTestContext,
+}) => {
+    const firstCreatedIndex = await getCanvasElementCount(canvasTestContext);
+
+    await createSpeechElement(canvasTestContext);
+    await createSpeechElement(canvasTestContext);
+    await createSpeechElement(canvasTestContext);
+
+    await selectCanvasElementAtIndex(canvasTestContext, firstCreatedIndex + 1);
+
+    await expect
+        .poll(async () => getActiveCanvasElementIndex(canvasTestContext))
+        .toBe(firstCreatedIndex + 1);
+
+    await pressArrangeShortcut(canvasTestContext, "forward");
+    await expect
+        .poll(async () => getActiveCanvasElementIndex(canvasTestContext))
+        .toBe(firstCreatedIndex + 2);
+
+    await pressArrangeShortcut(canvasTestContext, "backward");
+    await expect
+        .poll(async () => getActiveCanvasElementIndex(canvasTestContext))
+        .toBe(firstCreatedIndex + 1);
+
+    await pressArrangeShortcut(canvasTestContext, "back");
+    await expect
+        .poll(async () => getActiveCanvasElementIndex(canvasTestContext))
+        .toBe(firstCreatedIndex);
+
+    await pressArrangeShortcut(canvasTestContext, "front");
+    await expect
+        .poll(async () => getActiveCanvasElementIndex(canvasTestContext))
+        .toBe(firstCreatedIndex + 2);
 });
 
 // ── E3: Shift constrains drag axis ──────────────────────────────────

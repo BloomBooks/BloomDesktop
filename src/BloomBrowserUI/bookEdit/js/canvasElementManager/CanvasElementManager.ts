@@ -88,6 +88,7 @@ import {
     inPlayMode as inPlayModeFromPositioning,
     setCanvasElementPosition as setCanvasElementPositionFromPositioning,
 } from "./CanvasElementPositioning";
+import { syncBubbleLevelsToDomOrder } from "./CanvasElementBubbleLevelUtils";
 import type { ITextColorInfo } from "./CanvasElementSharedTypes";
 export type { ITextColorInfo } from "./CanvasElementSharedTypes";
 import { CanvasElementFactories } from "./CanvasElementFactories";
@@ -322,6 +323,10 @@ export class CanvasElementManager {
             {
                 deleteCurrentCanvasElement:
                     this.deleteCurrentCanvasElement.bind(this),
+                bringForward: this.bringForward.bind(this),
+                sendBackward: this.sendBackward.bind(this),
+                bringToFront: this.bringToFront.bind(this),
+                sendToBack: this.sendToBack.bind(this),
                 moveActiveCanvasElement:
                     this.moveActiveCanvasElement.bind(this),
                 getActiveCanvasElement: this.getActiveElement.bind(this),
@@ -3149,6 +3154,63 @@ export class CanvasElementManager {
         return inPlayModeFromPositioning(someElt);
     }
 
+    private getDirectCanvasElements(bloomCanvas: HTMLElement): HTMLElement[] {
+        return Array.from(bloomCanvas.children).filter(
+            (child): child is HTMLElement =>
+                child instanceof HTMLElement &&
+                child.classList.contains(kCanvasElementClass),
+        );
+    }
+
+    private getReorderableCanvasElements(bloomCanvas: HTMLElement): HTMLElement[] {
+        return this.getDirectCanvasElements(bloomCanvas).filter(
+            (element) => !element.classList.contains(kBackgroundImageClass),
+        );
+    }
+
+    private reorderActiveCanvasElement(
+        reorder: (
+            activeElement: HTMLElement,
+            bloomCanvas: HTMLElement,
+            reorderableElements: HTMLElement[],
+            activeIndex: number,
+        ) => boolean,
+    ): void {
+        const activeElement = this.getActiveElement();
+        if (
+            !activeElement ||
+            activeElement.classList.contains(kBackgroundImageClass)
+        ) {
+            return;
+        }
+
+        const bloomCanvas = activeElement.parentElement;
+        if (!(bloomCanvas instanceof HTMLElement)) {
+            return;
+        }
+
+        const reorderableElements = this.getReorderableCanvasElements(
+            bloomCanvas,
+        );
+        const activeIndex = reorderableElements.indexOf(activeElement);
+        if (activeIndex < 0) {
+            return;
+        }
+
+        const didReorder = reorder(
+            activeElement,
+            bloomCanvas,
+            reorderableElements,
+            activeIndex,
+        );
+        if (!didReorder) {
+            return;
+        }
+
+        syncBubbleLevelsToDomOrder(this.getDirectCanvasElements(bloomCanvas));
+        this.alignControlFrameWithActiveElement();
+    }
+
     public deleteCurrentCanvasElement(): void {
         // "this" might be a menu item that was clicked.  Calling explicitly again fixes that.  See BL-13928.
         if (this !== theOneCanvasElementManager) {
@@ -3159,6 +3221,84 @@ export class CanvasElementManager {
         if (active) {
             this.deleteCanvasElement(active);
         }
+    }
+
+    public bringForward(): void {
+        if (this !== theOneCanvasElementManager) {
+            theOneCanvasElementManager.bringForward();
+            return;
+        }
+
+        this.reorderActiveCanvasElement(
+            (activeElement, bloomCanvas, elements, index) => {
+                if (index >= elements.length - 1) {
+                    return false;
+                }
+
+                bloomCanvas.insertBefore(
+                    activeElement,
+                    elements[index + 1].nextSibling,
+                );
+                return true;
+            },
+        );
+    }
+
+    public sendBackward(): void {
+        if (this !== theOneCanvasElementManager) {
+            theOneCanvasElementManager.sendBackward();
+            return;
+        }
+
+        this.reorderActiveCanvasElement(
+            (activeElement, bloomCanvas, elements, index) => {
+                if (index <= 0) {
+                    return false;
+                }
+
+                bloomCanvas.insertBefore(activeElement, elements[index - 1]);
+                return true;
+            },
+        );
+    }
+
+    public bringToFront(): void {
+        if (this !== theOneCanvasElementManager) {
+            theOneCanvasElementManager.bringToFront();
+            return;
+        }
+
+        this.reorderActiveCanvasElement(
+            (activeElement, bloomCanvas, elements, index) => {
+                if (index >= elements.length - 1) {
+                    return false;
+                }
+
+                bloomCanvas.insertBefore(
+                    activeElement,
+                    elements[elements.length - 1].nextSibling,
+                );
+                return true;
+            },
+        );
+    }
+
+    public sendToBack(): void {
+        if (this !== theOneCanvasElementManager) {
+            theOneCanvasElementManager.sendToBack();
+            return;
+        }
+
+        this.reorderActiveCanvasElement(
+            (activeElement, bloomCanvas, elements, index) => {
+                if (index <= 0) {
+                    return false;
+                }
+
+                bloomCanvas.insertBefore(activeElement, elements[0]);
+                return true;
+            },
+        );
     }
 
     public duplicateCanvasElement(): HTMLElement | undefined {

@@ -40,6 +40,11 @@ export type ImageFillMode =
 
 // note: "controls" here include menus, toolbars, and tool panels.
 export type ControlId =
+    | "layerMenu"
+    | "bringForward"
+    | "sendBackward"
+    | "bringToFront"
+    | "sendToBack"
     | "chooseImage"
     | "pasteImage"
     | "copyImage"
@@ -84,6 +89,7 @@ export type TopLevelControlId = Exclude<
 >;
 
 export type SectionId =
+    | "arrange"
     | "gameDraggable"
     | "image"
     | "imagePanel"
@@ -100,6 +106,8 @@ export interface IControlContext {
     canvasElement: HTMLElement;
     page: HTMLElement | null;
     elementType: CanvasElementType;
+    hasPreviousReorderableCanvasElement: boolean;
+    hasNextReorderableCanvasElement: boolean;
     hasImage: boolean;
     hasRealImage: boolean;
     hasVideo: boolean;
