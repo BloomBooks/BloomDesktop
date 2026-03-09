@@ -4,7 +4,7 @@ import { Button, Divider, Menu } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
     LocalizableMenuItem,
-    LocalizableCheckboxMenuItem,
+    LocalizableCheckableMenuItem,
     LocalizableNestedMenuItem,
 } from "../localizableMenuItem";
 
@@ -74,7 +74,7 @@ const normalMenuItem = (
 );
 
 const checkboxMenuItem = (
-    <LocalizableCheckboxMenuItem
+    <LocalizableCheckableMenuItem
         english="Decodable Reader"
         l10nId="TemplateBooks.BookName.Decodable Reader"
         apiEndpoint="some/api/endpoint"

@@ -2,7 +2,7 @@ import { Divider } from "@mui/material";
 import * as React from "react";
 import { postString } from "../utils/bloomApi";
 import {
-    LocalizableCheckboxMenuItem,
+    LocalizableCheckableMenuItem,
     LocalizableMenuItem,
     LocalizableNestedMenuItem,
 } from "../react_components/localizableMenuItem";
@@ -93,7 +93,7 @@ export const makeMenuItems = (
             }
             if (spec.checkbox) {
                 return (
-                    <LocalizableCheckboxMenuItem
+                    <LocalizableCheckableMenuItem
                         key={index}
                         english={spec.label}
                         l10nId={spec.l10nId!}
@@ -104,7 +104,7 @@ export const makeMenuItems = (
                         apiEndpoint={spec.command!}
                         disabled={disabled}
                         tooltipIfDisabled={tooltipIfCannotSaveBook}
-                    ></LocalizableCheckboxMenuItem>
+                    ></LocalizableCheckableMenuItem>
                 );
             }
             // It should be possible to use spec.onClick || () => handleBookCommand(spec.command!) inline,
