@@ -95,6 +95,7 @@ export const CustomPageLayoutMenu: React.FunctionComponent<{
                         selected={props.isCustom}
                         value="custom"
                         disabled={props.disableCustomPage}
+                        featureName="CustomXMatterPage"
                     />
                 </Select>
             </div>
