@@ -5,7 +5,7 @@
 //   and section membership, using these interfaces.
 // - `canvasControlAvailabilityPresets.ts` defines reusable visibility/enabled policy fragments
 //   typed against `AvailabilityRulesMap` and `IControlContext`.
-// - `canvasElementDefinitions.ts` is the declarative map from canvas element type to
+// - `canvasElementControlRegistry.ts` is the declarative map from canvas element type to
 //   toolbar/menu/tool-panel layout and availability rules.
 // - `canvasPanelControls.tsx` implements panel control components that satisfy
 //   `ICanvasToolsPanelState` + `IControlContext` contracts defined here.

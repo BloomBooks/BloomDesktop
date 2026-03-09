@@ -23,8 +23,8 @@ import { kBloomDisabledOpacity } from "../../../utils/colorUtils";
 import { useApiObject } from "../../../utils/bloomApi";
 import AudioRecording from "../../toolbox/talkingBook/audioRecording";
 import { getAudioSentencesOfVisibleEditables } from "bloom-player";
-import { canvasElementDefinitions as controlCanvasElementDefinitions } from "../../toolbox/canvas/canvasElementDefinitions";
-import { buildControlContext } from "../../toolbox/canvas/buildControlContext";
+import { canvasElementControlRegistry } from "../../toolbox/canvas/canvasElementControlRegistry";
+import { buildCanvasElementControlRegistryContext } from "../../toolbox/canvas/buildCanvasElementControlRegistryContext";
 import {
     IControlContext,
     ILanguageNameValues,
@@ -403,14 +403,14 @@ const CanvasElementContextControls: React.FunctionComponent<{
     };
 
     const controlContext: IControlContext = {
-        ...buildControlContext(props.canvasElement),
+        ...buildCanvasElementControlRegistryContext(props.canvasElement),
         textHasAudio,
         languageNameValues,
     };
 
     const definition =
-        controlCanvasElementDefinitions[controlContext.elementType] ??
-        controlCanvasElementDefinitions.none;
+        canvasElementControlRegistry[controlContext.elementType] ??
+        canvasElementControlRegistry.none;
 
     menuOptions = joinMenuSectionsWithSingleDividers(
         getMenuSections(definition, controlContext, controlRuntime).map(

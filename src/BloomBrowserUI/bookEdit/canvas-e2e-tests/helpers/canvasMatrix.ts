@@ -4,13 +4,13 @@
 // supports draggable-toggle behavior.
 //
 // This matrix is the single source of truth for contract/registry tests. Keep
-// it in sync with `canvasElementDefinitions.ts` and `CanvasToolControls.tsx`.
+// it in sync with `canvasElementControlRegistry.ts` and `CanvasToolControls.tsx`.
 
 import type {
     CanvasPaletteItemKey,
     CanvasToolboxControlKey,
 } from "./canvasSelectors";
-import { canvasElementDefinitions } from "../../toolbox/canvas/canvasElementDefinitions";
+import { canvasElementControlRegistry } from "../../toolbox/canvas/canvasElementControlRegistry";
 import type {
     SectionId,
     TopLevelControlId,
@@ -46,7 +46,7 @@ const makeMatrixRow = (props: {
     requiresNavigationExpand: boolean;
     menuCommandLabels: string[];
 }): ICanvasMatrixRow => {
-    const definition = canvasElementDefinitions[props.expectedType];
+    const definition = canvasElementControlRegistry[props.expectedType];
     return {
         paletteItem: props.paletteItem,
         expectedType: props.expectedType,

@@ -1,6 +1,6 @@
 // Spec 10 – Type inference and registry contract (Areas J1-J3)
 //
-// Covers: canvasElementTypeInference.ts, canvasElementDefinitions.ts,
+// Covers: canvasElementTypeInference.ts, canvasElementControlRegistry.ts,
 //         CanvasElementContextControls.tsx.
 
 import { test, expect } from "../fixtures/canvasTest";

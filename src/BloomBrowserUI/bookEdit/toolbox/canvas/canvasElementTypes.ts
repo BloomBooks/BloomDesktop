@@ -1,6 +1,6 @@
 // The canonical set of supported canvas element types.
 //
-// This type is used by the declarative canvasElementDefinitions registry and by
+// This type is used by the declarative canvasElementControlRegistry and by
 // legacy inference/migration code.
 
 export type CanvasElementType =

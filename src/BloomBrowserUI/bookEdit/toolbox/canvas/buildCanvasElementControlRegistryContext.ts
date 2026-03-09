@@ -15,7 +15,7 @@ import {
 } from "./canvasElementConstants";
 import { getCanvasElementManager } from "./canvasElementUtils";
 import { inferCanvasElementType } from "./canvasElementTypeInference";
-import { canvasElementDefinitions } from "./canvasElementDefinitions";
+import { canvasElementControlRegistry } from "./canvasElementControlRegistry";
 import { CanvasElementType } from "./canvasElementTypes";
 import { IControlContext } from "./canvasControlTypes";
 
@@ -39,9 +39,9 @@ const hasRealImage = (img: HTMLImageElement | undefined): boolean => {
     return true;
 };
 
-// Builds the runtime context used to resolve which canvas controls should be
-// shown/enabled for the currently selected canvas element.
-export const buildControlContext = (
+// Builds the registry evaluation context used to resolve which canvas controls
+// should be shown/enabled for the currently selected canvas element.
+export const buildCanvasElementControlRegistryContext = (
     canvasElement: HTMLElement,
 ): IControlContext => {
     const closestPage = canvasElement.closest(".bloom-page");
@@ -50,7 +50,7 @@ export const buildControlContext = (
     const inferredCanvasElementType = inferCanvasElementType(canvasElement);
     const isKnownType =
         !!inferredCanvasElementType &&
-        inferredCanvasElementType in canvasElementDefinitions;
+        inferredCanvasElementType in canvasElementControlRegistry;
 
     // Fail soft for unknown/undefined inferred types. We need this because
     // type is inferred from DOM (not persisted), and mixed-version content can
@@ -63,7 +63,7 @@ export const buildControlContext = (
         );
     } else if (!isKnownType) {
         console.warn(
-            `Canvas element type '${inferredCanvasElementType}' is not registered in canvasElementDefinitions. Falling back to 'none'.`,
+            `Canvas element type '${inferredCanvasElementType}' is not registered in canvasElementControlRegistry. Falling back to 'none'.`,
         );
     }
 

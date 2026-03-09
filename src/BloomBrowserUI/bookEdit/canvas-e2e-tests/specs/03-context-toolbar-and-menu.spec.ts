@@ -1,6 +1,6 @@
 // Spec 03 – Context toolbar and menu commands (Areas C1-C7)
 //
-// Covers: CanvasElementContextControls.tsx, canvasElementDefinitions.ts,
+// Covers: CanvasElementContextControls.tsx, canvasElementControlRegistry.ts,
 //         canvasElementTypeInference.ts.
 
 import { test, expect } from "../fixtures/canvasTest";

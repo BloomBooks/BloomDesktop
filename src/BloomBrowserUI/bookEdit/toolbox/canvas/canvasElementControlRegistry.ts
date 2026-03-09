@@ -1,4 +1,4 @@
-// Declarative canvas element definitions.
+// Declarative canvas element control registry.
 //
 // This file is the per-element source of truth for which controls appear on each
 // surface:
@@ -10,7 +10,7 @@
 // Supporting modules:
 // - `canvasControlRegistry.ts` provides concrete control implementations and section maps.
 // - `canvasControlAvailabilityPresets.ts` provides shared policy fragments composed here.
-// - `canvasControlHelpers.ts` resolves these definitions into concrete UI rows/buttons.
+// - `canvasControlHelpers.ts` resolves this registry into concrete UI rows/buttons.
 //
 // Design intent: keep each element definition explicit and readable so reviewers can
 // understand behavior from this file without chasing constructor indirection.
@@ -267,7 +267,7 @@ export const noneCanvasElementDefinition: ICanvasElementDefinition = {
     availabilityRules: mergeRules(wholeElementAvailabilityRules),
 };
 
-export const canvasElementDefinitions: Record<
+export const canvasElementControlRegistry: Record<
     CanvasElementType,
     ICanvasElementDefinition
 > = {

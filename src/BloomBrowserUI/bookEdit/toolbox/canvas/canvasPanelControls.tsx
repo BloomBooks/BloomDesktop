@@ -10,7 +10,7 @@
 //
 // How this fits with the declarative system:
 // - `canvasControlRegistry.ts` references these components for panel-type controls.
-// - `canvasElementDefinitions.ts` chooses which panel sections are shown per element.
+// - `canvasElementControlRegistry.ts` chooses which panel sections are shown per element.
 // - `canvasControlHelpers.ts` resolves section/control composition at runtime.
 
 import { ThemeProvider } from "@emotion/react";

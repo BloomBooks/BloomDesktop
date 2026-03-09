@@ -7,9 +7,9 @@
 //   surfaces.
 //
 // How the declarative system composes:
-// - `canvasElementDefinitions.ts` picks section/order for each element type.
+// - `canvasElementControlRegistry.ts` picks section/order for each element type.
 // - `canvasControlHelpers.ts` resolves those declarations into renderable rows/buttons.
-// - `canvasAvailabilityPresets.ts` + per-element rules decide visibility/enabled state.
+// - `canvasControlAvailabilityPresets.ts` + per-element rules decide visibility/enabled state.
 // - `canvasPanelControls.tsx` supplies panel UI components referenced here.
 //
 // Note on sync vs async callbacks:
