@@ -17,6 +17,7 @@ namespace Bloom.SubscriptionAndFeatures
         Motion,
         Music,
         FullPageCoverImage, // The whole front cover is one full-bleed image
+        CustomXMatterPage,
 
         WholeTextBoxAudio,
 
@@ -173,6 +174,15 @@ namespace Bloom.SubscriptionAndFeatures
                 PreventPublishingInOriginalBooks = PreventionMethod.DisabledByModifyingDom,
                 ClassesToRemoveToDisable = "cover-is-image no-margin-page",
                 L10NId = "BookSettings.CoverIsImage",
+            },
+            new FeatureInfo
+            {
+                Feature = FeatureName.CustomXMatterPage,
+                SubscriptionTier = SubscriptionTier.Pro,
+                ExistsInPageXPath = "self::div[contains(@class,'bloom-customLayout')]",
+                PreventPublishingInDerivativeBooks = PreventionMethod.DisabledByModifyingDom,
+                PreventPublishingInOriginalBooks = PreventionMethod.DisabledByModifyingDom,
+                ClassesToRemoveToDisable = "bloom-customLayout",
             },
             // ----------------------------------------
             // LocalCommunity Tier Features
