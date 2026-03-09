@@ -1,71 +1,63 @@
 import * as React from "react";
-import type { SelectChangeEvent } from "@mui/material/Select";
 import { css, ThemeProvider } from "@emotion/react";
-import { Select, MenuItem, ListItemIcon } from "@mui/material";
+import { Select } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
-import { useL10n } from "../../../react_components/l10nHooks";
 import { toolboxMenuPopupTheme } from "../../../bloomMaterialUITheme";
 import { kBloomPurple } from "../../../utils/colorUtils";
 import { Span } from "../../../react_components/l10nComponents";
+import { LocalizableMenuItem } from "../../../react_components/localizableMenuItem";
+
+const kCustomXMatterPageFeatureName = "CustomXMatterPage";
 
 export const CustomPageLayoutMenu: React.FunctionComponent<{
     isCustom: boolean;
     disableCustomPage?: boolean;
     setCustom: (value: "standard" | "custom" | "customStartOver") => void;
 }> = (props) => {
-    const standardLabel = useL10n("Standard", "EditTab.CustomCover.Standard");
-    const customLabel = useL10n("Custom", "EditTab.CustomCover.Custom");
-
-    const handleChange = (event: SelectChangeEvent<string>) => {
-        let selection = event.target.value as
-            | "standard"
-            | "custom"
-            | "customStartOver";
-        // If custom is selected with shift+ctrl held, trigger startOver behavior
-        // TypeScript thinks the argument should be a SelectChangeEvent in order to pass
-        // the function as the onChange handler for a Select, but in fact it always
-        // comes in as a PointerEvent which has the keyboard modifier info we need.
-        const nativeEvent = (event as unknown as { nativeEvent?: PointerEvent })
-            .nativeEvent;
-        const pointerEvent = nativeEvent ?? (event as unknown as PointerEvent);
-        if (
-            selection === "custom" &&
-            // We MUST not try to go directly from a custom layout to a 'startover',
-            // because if we're already in custom mode, we don't have available the
-            // page content in standard layout that we need to work from.
-            !props.isCustom &&
-            "shiftKey" in pointerEvent &&
-            "ctrlKey" in pointerEvent &&
-            pointerEvent.shiftKey &&
-            pointerEvent.ctrlKey
-        ) {
-            selection = "customStartOver";
-        }
-        props.setCustom(selection);
-    };
-
     const renderMenuItem = (
         value: "standard" | "custom",
-        label: string,
+        english: string,
+        l10nId: string,
         checked: boolean,
         disabled?: boolean,
+        featureName?: string,
     ) => {
+        const onClick = (event: React.MouseEvent) => {
+            let selection: "standard" | "custom" | "customStartOver" = value;
+            if (
+                value === "custom" &&
+                !props.isCustom &&
+                event.shiftKey &&
+                event.ctrlKey
+            ) {
+                selection = "customStartOver";
+            }
+            // Don't toggle if the user clicked the already-active option.
+            if (
+                (selection === "standard" && !props.isCustom) ||
+                (selection === "custom" && props.isCustom)
+            ) {
+                return;
+            }
+            props.setCustom(selection);
+        };
+
         return (
-            <MenuItem value={value} disabled={disabled}>
-                <ListItemIcon
-                    css={css`
-                        min-width: 32px;
-                    `}
-                >
+            <LocalizableMenuItem
+                english={english}
+                l10nId={l10nId}
+                onClick={onClick}
+                disabled={disabled}
+                featureName={featureName}
+                icon={
                     <CheckIcon
                         fontSize="small"
                         css={css`
                             visibility: ${checked ? "visible" : "hidden"};
                         `}
                     />
-                </ListItemIcon>
-                {label}
-            </MenuItem>
+                }
+            />
         );
     };
 
@@ -103,16 +95,22 @@ export const CustomPageLayoutMenu: React.FunctionComponent<{
                     `}
                     size="small"
                     value={props.isCustom ? "custom" : "standard"}
-                    onChange={handleChange}
                     displayEmpty
                     renderValue={() => ""}
                 >
-                    {renderMenuItem("standard", standardLabel, !props.isCustom)}
+                    {renderMenuItem(
+                        "standard",
+                        "Standard",
+                        "EditTab.CustomCover.Standard",
+                        !props.isCustom,
+                    )}
                     {renderMenuItem(
                         "custom",
-                        customLabel,
+                        "Custom",
+                        "EditTab.CustomCover.Custom",
                         props.isCustom,
                         props.disableCustomPage,
+                        kCustomXMatterPageFeatureName,
                     )}
                 </Select>
             </div>
