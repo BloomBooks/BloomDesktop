@@ -38,5 +38,5 @@ Bloom Edit Tab uses multiple iframes.
 - Keep tests short and scenario-focused.
 - Put repeated behavior in shared helpers under `bookEdit/canvas-e2e-tests/helpers`.
 - Keep selector definitions centralized.
-- Do not use fragile time-based waiting without explicit user approval, recorded in a comment int the code.
+- Do not use fragile time-based waiting without explicit user approval, recorded in a comment in the code.
 - Prefer one robust helper over repeated in-spec frame/query logic.

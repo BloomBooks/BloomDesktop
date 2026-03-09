@@ -1905,7 +1905,7 @@
         <note>ID: EditTab.Image.CutImage</note>
         <note>Obsolete as of Bloom 6.3</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.EditMetadata.MenuHelp" sil:dynamic="true">
+      <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true">
         <source xml:lang="en">Edit image credits, copyright, &amp; license</source>
         <note>ID: EditTab.Image.EditMetadata</note>
         <note xml:lang="en">OLD TEXT (before 3.9): Edit Image Credits, Copyright, and License</note>
@@ -2219,7 +2219,7 @@
         <note>Tooltip for the bubble Duplicate icon</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.FieldType" translate ="no">
-        <source xml:lang="en">Field:</source>
+        <source xml:lang="en">Field Type:</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.FieldType</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillBackground" sil:dynamic="true" translate ="no">

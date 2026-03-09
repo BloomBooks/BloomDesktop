@@ -322,7 +322,7 @@ namespace Bloom.Book
             AddTranslationToDictionaryUsingKey(d, "EditTab.Image.ChangeImage", "Change image");
             AddTranslationToDictionaryUsingKey(
                 d,
-                "EditTab.Image.EditMetadata.MenuHelp",
+                "EditTab.Image.EditMetadata",
                 "Edit image credits, copyright, & license"
             );
             AddTranslationToDictionaryUsingKey(d, "EditTab.Image.CopyImage", "Copy image");
