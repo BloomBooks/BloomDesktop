@@ -6,9 +6,11 @@ using System.Text;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SIL.Code;
 using SIL.IO;
 using SIL.Progress;
@@ -58,6 +60,68 @@ namespace Bloom.web.controllers
                     }
                     else if (request.HttpMethod == HttpMethods.Post)
                     {
+                        request.PostSucceeded();
+                    }
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "advancedProgramSettings",
+                request =>
+                {
+                    if (request.HttpMethod == HttpMethods.Get)
+                    {
+                        var dialog = DialogBeingEdited;
+                        if (dialog == null)
+                        {
+                            request.ReplyWithJson("{}");
+                            return;
+                        }
+
+                        request.ReplyWithJson(
+                            new
+                            {
+                                autoUpdate = dialog.PendingAutomaticallyUpdate,
+                                showExperimentalBookSources = dialog.PendingShowExperimentalBookSources,
+                                allowTeamCollection = dialog.PendingAllowTeamCollection,
+                                allowTeamCollectionEnabled = dialog.PendingAllowTeamCollectionEnabled,
+                                showAutoUpdate = dialog.ShowAutomaticallyUpdateOption,
+                                showExperimentalBookSourcesOption = dialog.ShowExperimentalBookSourcesOption,
+                                showQrCode = dialog.PendingShowBlorgLanguageQrCode,
+                                qrcodeCaption = dialog.PendingBadgeQrCodeLabel,
+                            }
+                        );
+                    }
+                    else
+                    {
+                        var dialog = DialogBeingEdited;
+                        if (dialog != null)
+                        {
+                            var data = JObject.Parse(request.RequiredPostJson());
+
+                            var autoUpdateToken = data["autoUpdate"];
+                            if (autoUpdateToken != null)
+                                dialog.PendingAutomaticallyUpdate = autoUpdateToken.Value<bool>();
+
+                            var showExperimentalBookSourcesToken = data[
+                                "showExperimentalBookSources"
+                            ];
+                            if (showExperimentalBookSourcesToken != null)
+                                dialog.PendingShowExperimentalBookSources =
+                                    showExperimentalBookSourcesToken.Value<bool>();
+
+                            var allowTeamCollectionToken = data["allowTeamCollection"];
+                            if (allowTeamCollectionToken != null)
+                                dialog.PendingAllowTeamCollection =
+                                    allowTeamCollectionToken.Value<bool>();
+                            var showQrCodeToken = data["showQrCode"];
+                            if (showQrCodeToken != null)
+                                dialog.PendingShowBlorgLanguageQrCode =
+                                    showQrCodeToken.Value<bool>();
+                            var qrcodeCaptionToken = data["qrcodeCaption"];
+                            if (qrcodeCaptionToken != null)
+                                dialog.PendingBadgeQrCodeLabel = qrcodeCaptionToken.Value<string>();
+                        }
                         request.PostSucceeded();
                     }
                 },
@@ -180,58 +244,6 @@ namespace Bloom.web.controllers
                         // We are receiving a pending numbering style change
                         var newNumberingStyle = request.RequiredPostString();
                         UpdatePendingNumberingStyle(newNumberingStyle);
-                        request.PostSucceeded();
-                    }
-                },
-                true
-            );
-            apiHandler.RegisterBooleanEndpointHandler(
-                kApiUrlPart + "showBlorgLanguageQrCode",
-                request =>
-                    (DialogBeingEdited == null)
-                        ? _collectionSettings.ShowBlorgLanguageQrCode
-                        : DialogBeingEdited.PendingShowBlorgLanguageQrCode,
-                (request, val) =>
-                {
-                    if (DialogBeingEdited != null)
-                    {
-                        DialogBeingEdited.PendingShowBlorgLanguageQrCode = val;
-                        // We don't really need a change as drastic as a restart,
-                        // but I don't expect this to change often, and somehow the
-                        // badge needs to get updated.
-                        if (val != _collectionSettings.ShowBlorgLanguageQrCode)
-                            DialogBeingEdited.ChangeThatRequiresRestart();
-                    }
-                },
-                true
-            );
-            apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "badgeQrCodeLabel",
-                request =>
-                {
-                    if (request.HttpMethod == HttpMethods.Get)
-                    {
-                        request.ReplyWithText(
-                            DialogBeingEdited == null
-                                ? _collectionSettings.BadgeQrCodeLabelLocalized
-                                : DialogBeingEdited.PendingBadgeQrCodeLabel
-                        );
-                    }
-                    else // post
-                    {
-                        var val = request.GetPostStringOrNull();
-                        if (val == null)
-                            val = ""; // RequiredPostString won't allow us to just pass an empty string, but we want to allow it.
-
-                        if (DialogBeingEdited != null)
-                        {
-                            DialogBeingEdited.PendingBadgeQrCodeLabel = val;
-                            // We don't really need a change as drastic as a restart,
-                            // but I don't expect this to change often, and somehow the
-                            // badge needs to get updated.
-                            if (val != _collectionSettings.BadgeQrCodeLabelLocalized)
-                                DialogBeingEdited.ChangeThatRequiresRestart();
-                        }
                         request.PostSucceeded();
                     }
                 },

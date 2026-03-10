@@ -42,6 +42,39 @@ namespace Bloom.Collection
             get { return _pendingBookshelf; }
         }
 
+        internal bool PendingAutomaticallyUpdate
+        {
+            get { return _automaticallyUpdate.Checked; }
+            set { _automaticallyUpdate.Checked = value; }
+        }
+
+        internal bool PendingShowExperimentalBookSources
+        {
+            get { return _showExperimentalBookSources.Checked; }
+            set { _showExperimentalBookSources.Checked = value; }
+        }
+
+        internal bool PendingAllowTeamCollection
+        {
+            get { return _allowTeamCollection.Checked; }
+            set { _allowTeamCollection.Checked = value; }
+        }
+
+        internal bool PendingAllowTeamCollectionEnabled
+        {
+            get { return _allowTeamCollection.Enabled; }
+        }
+
+        internal bool ShowAutomaticallyUpdateOption
+        {
+            get { return _automaticallyUpdate.Visible; }
+        }
+
+        internal bool ShowExperimentalBookSourcesOption
+        {
+            get { return _showExperimentalBookSources.Visible; }
+        }
+
         // "Internal" so CollectionSettingsApi can update these.
         internal readonly string[] PendingFontSelections = new[] { "", "", "" };
         internal string PendingNumberingStyle { get; set; }
@@ -799,10 +832,17 @@ namespace Bloom.Collection
 
         private void UpdateTeamCollectionAllowed()
         {
+            var wasTeamCollectionsEnabled = ExperimentalFeatures.IsFeatureEnabled(
+                ExperimentalFeatures.kTeamCollections
+            );
+
             ExperimentalFeatures.SetValue(
                 ExperimentalFeatures.kTeamCollections,
                 _allowTeamCollection.Checked
             );
+
+            if (wasTeamCollectionsEnabled != _allowTeamCollection.Checked)
+                ChangeThatRequiresRestart();
         }
     }
 }

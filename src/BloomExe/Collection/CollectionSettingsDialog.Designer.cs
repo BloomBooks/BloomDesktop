@@ -65,6 +65,7 @@ namespace Bloom.Collection
 			this._teamCollectionTab = new System.Windows.Forms.TabPage();
 			this.teamCollectionSettingsReactControl = new Bloom.web.ReactControl();
 			this.tabPage4 = new System.Windows.Forms.TabPage();
+			this.advancedProgramSettingsReactControl = new web.ReactControl();
 			this._automaticallyUpdate = new System.Windows.Forms.CheckBox();
 			this.label2 = new System.Windows.Forms.Label();
 			this._showExperimentalBookSources = new System.Windows.Forms.CheckBox();
@@ -547,11 +548,7 @@ namespace Bloom.Collection
             //
             // tabPage4
             //
-            this.tabPage4.Controls.Add(this._automaticallyUpdate);
-            this.tabPage4.Controls.Add(this.label2);
-            this.tabPage4.Controls.Add(this._showExperimentalBookSources);
-			this.tabPage4.Controls.Add(this._enterpriseRequiredForTeamCollection);
-			this.tabPage4.Controls.Add(this._allowTeamCollection);
+            this.tabPage4.Controls.Add(this.advancedProgramSettingsReactControl);
 			this._L10NSharpExtender.SetLocalizableToolTip(this.tabPage4, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.tabPage4, null);
 			this._L10NSharpExtender.SetLocalizingId(this.tabPage4, "CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel");
@@ -561,6 +558,22 @@ namespace Bloom.Collection
             this.tabPage4.Size = new System.Drawing.Size(642, 452);
             this.tabPage4.TabIndex = 5;
             this.tabPage4.Text = "Advanced Program Settings";
+			this.tabPage4.UseVisualStyleBackColor = false;
+			this.tabPage4.BackColor = SystemColors.Control;
+			//
+			// advancedProgramSettingsReactControl
+			//
+			this.advancedProgramSettingsReactControl.BackColor = SystemColors.Control;
+			this.advancedProgramSettingsReactControl.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.advancedProgramSettingsReactControl.JavascriptBundleName = "advancedProgramSettingsBundle";
+			this._L10NSharpExtender.SetLocalizableToolTip(this.advancedProgramSettingsReactControl, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.advancedProgramSettingsReactControl, null);
+			this._L10NSharpExtender.SetLocalizingId(this.advancedProgramSettingsReactControl, "ReactControl");
+			this.advancedProgramSettingsReactControl.Location = new System.Drawing.Point(3, 3);
+			this.advancedProgramSettingsReactControl.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+			this.advancedProgramSettingsReactControl.Name = "advancedProgramSettingsReactControl";
+			this.advancedProgramSettingsReactControl.Size = new System.Drawing.Size(636, 446);
+			this.advancedProgramSettingsReactControl.TabIndex = 0;
             //
             // _automaticallyUpdate
             //
@@ -758,6 +771,7 @@ namespace Bloom.Collection
 		private System.Windows.Forms.Label _restartReminder;
 		private L10NSharp.Windows.Forms.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.TabPage tabPage4;
+		private web.ReactControl advancedProgramSettingsReactControl;
 		private System.Windows.Forms.ToolTip toolTip1;
         protected System.Windows.Forms.Label _language1Name;
         private System.Windows.Forms.TextBox _bloomCollectionName;
