@@ -2,6 +2,94 @@ import { describe, it, expect } from "vitest";
 import { EditableDivUtils } from "./editableDivUtils";
 
 describe("EditableDivUtils Tests", () => {
+    it("normalizeBloomLineBreakSpansInElement preserves a simple linebreak span", () => {
+        const div = document.createElement("div");
+        div.innerHTML =
+            "<p>A<span id='lb' class='bloom-linebreak'></span>B</p>";
+
+        const before = div.querySelector("#lb") as HTMLSpanElement;
+        expect(before).toBeTruthy();
+        expect(before.innerHTML).toBe("");
+
+        EditableDivUtils.normalizeBloomLineBreakSpansInElement(div);
+
+        const after = div.querySelector("#lb") as HTMLSpanElement;
+        expect(after).toBeTruthy();
+        expect(after.innerHTML).toBe("");
+        expect(div.textContent).toBe("AB");
+    });
+
+    it("normalizeBloomLineBreakSpansInElement does nothing when no linebreak spans exist", () => {
+        const div = document.createElement("div");
+        div.innerHTML = "<p>A<em>normal</em>B</p>";
+
+        const beforeHtml = div.innerHTML;
+        expect(div.querySelectorAll("span.bloom-linebreak").length).toBe(0);
+
+        EditableDivUtils.normalizeBloomLineBreakSpansInElement(div);
+
+        expect(div.querySelectorAll("span.bloom-linebreak").length).toBe(0);
+        expect(div.innerHTML).toBe(beforeHtml);
+    });
+
+    it("normalizeBloomLineBreakSpansInElement moves text out of a simple linebreak span", () => {
+        const div = document.createElement("div");
+        div.innerHTML =
+            "<p>A<span id='lb' class='bloom-linebreak'>bad text</span>B</p>";
+
+        const before = div.querySelector("#lb") as HTMLSpanElement;
+        expect(before).toBeTruthy();
+        expect(before.innerHTML).toBe("bad text");
+
+        EditableDivUtils.normalizeBloomLineBreakSpansInElement(div);
+
+        const after = div.querySelector("#lb") as HTMLSpanElement;
+        expect(after).toBeTruthy();
+        expect(after.innerHTML).toBe("");
+        expect(after.previousSibling?.textContent).toContain("bad text");
+        expect(div.textContent).toBe("Abad textB");
+    });
+
+    it("normalizeBloomLineBreakSpansInElement moves markup out of a simple linebreak span", () => {
+        const div = document.createElement("div");
+        div.innerHTML =
+            "<p>A<span id='lb' class='bloom-linebreak'><em>bad</em> text</span>B</p>";
+
+        const before = div.querySelector("#lb") as HTMLSpanElement;
+        expect(before).toBeTruthy();
+        expect(before.querySelector("em")?.textContent).toBe("bad");
+
+        EditableDivUtils.normalizeBloomLineBreakSpansInElement(div);
+
+        const after = div.querySelector("#lb") as HTMLSpanElement;
+        expect(after).toBeTruthy();
+        expect(after.innerHTML).toBe("");
+        expect(after.querySelector("em")).toBeNull();
+        expect(div.querySelector("em")?.textContent).toBe("bad");
+        expect(div.textContent).toBe("Abad textB");
+    });
+
+    it("normalizeBloomLineBreakSpansInElement moves content before nested linebreak spans", () => {
+        const div = document.createElement("div");
+        div.innerHTML =
+            "<p>A<span id='outer' class='bloom-linebreak'><span id='inner' class='bloom-linebreak'>nested text</span></span>B</p>";
+
+        expect(div.querySelector("#inner")?.innerHTML).toContain("nested text");
+        EditableDivUtils.normalizeBloomLineBreakSpansInElement(div);
+
+        const outer = div.querySelector("#outer") as HTMLSpanElement;
+        const inner = div.querySelector("#inner") as HTMLSpanElement;
+        expect(outer).toBeTruthy();
+        expect(inner).toBeTruthy();
+
+        expect(outer.innerHTML).toBe("");
+        expect(inner.innerHTML).toBe("");
+
+        expect(outer.previousSibling).toBe(inner);
+        expect(inner.previousSibling?.textContent).toContain("nested text");
+        expect(div.textContent).toBe("Anested textB");
+    });
+
     it("fixUpEmptyishParagraphs does not modify paragraphs with content", () => {
         const testCases = [
             "<p>A</p>",
