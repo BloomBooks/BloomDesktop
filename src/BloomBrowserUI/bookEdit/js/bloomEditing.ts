@@ -750,7 +750,12 @@ export function SetupElements(
                 const currentPageId = document
                     .getElementsByClassName("bloom-page")[0]
                     ?.getAttribute("id");
-                if (currentPageId === (window.top as any).lastPageId) {
+                const topWindow = window.top as
+                    | (Window & {
+                          lastPageId?: string;
+                      })
+                    | null;
+                if (currentPageId === topWindow?.lastPageId) {
                     elementToFocus = Array.from(
                         document.getElementsByClassName(kCanvasElementClass),
                     ).find((e) =>
@@ -758,7 +763,9 @@ export function SetupElements(
                     ) as HTMLElement;
                 } else {
                     // remember this page!
-                    (window.top as any).lastPageId = currentPageId;
+                    if (topWindow) {
+                        topWindow.lastPageId = currentPageId ?? undefined;
+                    }
                 }
             }
             // If we don't have some specific reason to focus on a particular canvas element, we

@@ -181,6 +181,7 @@ export const buildCanvasElementControlRegistryContext = (
             !!currentDraggableId &&
             !!page?.querySelector(`[data-target-of=\"${currentDraggableId}\"]`),
         textHasAudio: false,
+        hasClipboardText: false,
         isCustomPage: page?.classList.contains("bloom-customLayout") ?? false,
         languageNameValues: {
             language1Name: "",

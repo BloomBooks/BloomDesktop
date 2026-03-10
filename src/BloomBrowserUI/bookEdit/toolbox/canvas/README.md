@@ -6,7 +6,7 @@ At a high level:
 
 - The **page iframe** owns the editing engine (`CanvasElementManager`).
 - The **React UI** (`CanvasElementContextControls`) renders the context menu + mini-toolbar for the currently-selected canvas element.
-- A small, dependency-light **registry** (`canvasElementControlRegistry`) describes which menu sections and toolbar buttons each element type supports.
+- A small, dependency-light **registry** (`canvasElementControlRegistry`) describes which menu sections and toolbar buttons each canvas element type supports.
 - Element “type” is determined by **DOM inference** (`inferCanvasElementType`).
 
 Important constraint (current product-cycle requirement):
@@ -86,7 +86,7 @@ The `orderedMenuSections` list in `CanvasElementContextControls.tsx` is the auth
 
 The mini-toolbar is driven by `toolbarButtons` in `canvasElementControlRegistry.ts`.
 
-- `toolbarButtons` is the **sole source of truth** for which toolbar controls exist for a given element type, and the order they appear.
+- `toolbarButtons` is the **sole source of truth** for which toolbar controls exist for a given canvas element type, and the order they appear.
 - The list supports explicit spacing using the special token `"spacer"`.
 - `CanvasElementContextControls.tsx` still performs runtime capability checks (e.g. only show `missingMetadata` when metadata is missing).
 
@@ -94,7 +94,7 @@ The mini-toolbar is driven by `toolbarButtons` in `canvasElementControlRegistry.
 
 ### How to add a new canvas element *type*
 
-Example: you want a new element type `sticker`.
+Example: you want a new canvas element type `sticker`.
 
 1. Add the type to `CanvasElementType` in `canvasElementTypes.ts`.
 
@@ -122,7 +122,7 @@ The toolbar visibility is controlled in two layers:
 
 1. **Registry-level definition**
   - Edit the element’s `toolbarButtons` in `canvasElementControlRegistry.ts`.
-   - This list defines **all** mini-toolbar controls (and their order) for that element type.
+  - This list defines **all** mini-toolbar controls (and their order) for that canvas element type.
    - Insert `"spacer"` entries where you want visual separation.
 
 2. **Runtime capability checks in `CanvasElementContextControls.tsx`**

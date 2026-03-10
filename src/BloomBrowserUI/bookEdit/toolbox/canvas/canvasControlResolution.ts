@@ -5,6 +5,7 @@ import {
     IControlAvailability,
     IControlContext,
     IControlDefinition,
+    ICommandControlDefinition,
     IControlMenuCommandRow,
     IControlMenuRow,
     IControlRule,
@@ -14,6 +15,11 @@ import {
     TopLevelControlId,
 } from "./canvasControlTypes";
 import { controlRegistry, controlSections } from "./canvasControlRegistry";
+
+type ResolvedToolbarItem = {
+    control: ICommandControlDefinition;
+    enabled: boolean;
+};
 
 const defaultRuntime: IControlRuntime = {
     closeMenu: () => {},
@@ -109,9 +115,11 @@ const iconToNode = (
 };
 
 const normalizeToolbarItems = (
-    items: Array<IResolvedControl | { id: "spacer" }>,
-): Array<IResolvedControl | { id: "spacer" }> => {
-    const normalized: Array<IResolvedControl | { id: "spacer" }> = [];
+    items: Array<ResolvedToolbarItem | { id: "spacer" }>,
+): Array<ResolvedToolbarItem | { id: "spacer" }> => {
+    // Normalize means removing leading spacers, trailing spacers, and any run
+    // of adjacent spacers so filtered toolbars never render empty gaps.
+    const normalized: Array<ResolvedToolbarItem | { id: "spacer" }> = [];
 
     items.forEach((item) => {
         if ("id" in item && item.id === "spacer") {
@@ -170,14 +178,53 @@ const applyRowAvailability = (
     };
 };
 
+const buildDefaultMenuRow = (
+    control: ICommandControlDefinition,
+): IControlMenuCommandRow => ({
+    id: control.id,
+    l10nId: control.l10nId,
+    englishLabel: control.englishLabel,
+    helpRowL10nId: control.helpRowL10nId,
+    helpRowEnglish: control.helpRowEnglish,
+    helpRowSeparatorAbove: control.helpRowSeparatorAbove,
+    subLabelL10nId: control.menu?.subLabelL10nId,
+    icon: iconToNode(control, "menu"),
+    iconScale: control.menu?.iconScale ?? control.iconScale,
+    featureName: control.featureName,
+    shortcut: control.menu?.shortcutDisplay
+        ? {
+              id: `${control.id}.defaultShortcut`,
+              display: control.menu.shortcutDisplay,
+          }
+        : undefined,
+    onSelect: async (rowCtx: IControlContext, rowRuntime: IControlRuntime) => {
+        await control.action(rowCtx, rowRuntime);
+    },
+});
+
+const applyDefaultMenuRowFields = (
+    defaultRow: IControlMenuCommandRow,
+    row: IControlMenuCommandRow,
+): IControlMenuCommandRow => ({
+    ...defaultRow,
+    ...row,
+    icon: row.icon ?? defaultRow.icon,
+    iconScale: row.iconScale ?? defaultRow.iconScale,
+    featureName: row.featureName ?? defaultRow.featureName,
+    helpRowL10nId: row.helpRowL10nId ?? defaultRow.helpRowL10nId,
+    helpRowEnglish: row.helpRowEnglish ?? defaultRow.helpRowEnglish,
+    helpRowSeparatorAbove:
+        row.helpRowSeparatorAbove ?? defaultRow.helpRowSeparatorAbove,
+});
+
 // Resolves a canvas element definition into toolbar controls, applying
 // visibility/enabled rules and normalizing spacer placement.
 export const getToolbarItems = (
     definition: ICanvasElementDefinition,
     ctx: IControlContext,
     runtime: IControlRuntime = defaultRuntime,
-): Array<IResolvedControl | { id: "spacer" }> => {
-    const items: Array<IResolvedControl | { id: "spacer" }> = [];
+): Array<ResolvedToolbarItem | { id: "spacer" }> => {
+    const items: Array<ResolvedToolbarItem | { id: "spacer" }> = [];
 
     definition.toolbar.forEach((toolbarItem) => {
         if (toolbarItem === "spacer") {
@@ -186,6 +233,12 @@ export const getToolbarItems = (
         }
 
         const control = controlRegistry[toolbarItem];
+        if (control.kind !== "command") {
+            throw new Error(
+                `Toolbar control ${toolbarItem} must resolve to a command control.`,
+            );
+        }
+
         const effectiveRule = getEffectiveRule(
             definition,
             toolbarItem,
@@ -199,23 +252,6 @@ export const getToolbarItems = (
         items.push({
             control,
             enabled,
-            menuRow:
-                control.kind === "command"
-                    ? {
-                          id: control.id,
-                          l10nId: control.l10nId,
-                          englishLabel: control.englishLabel,
-                          icon: iconToNode(control, "toolbar"),
-                          disabled: !enabled,
-                          featureName: control.featureName,
-                          onSelect: async (rowCtx, rowRuntime) => {
-                              await control.action(
-                                  rowCtx,
-                                  rowRuntime ?? runtime,
-                              );
-                          },
-                      }
-                    : undefined,
         });
     });
 
@@ -256,35 +292,9 @@ export const getMenuSections = (
                 ctx,
                 true,
             );
-            const builtRow = control.menu?.buildMenuItem
-                ? control.menu.buildMenuItem(ctx, runtime)
-                : {
-                      // This is the default mapping from a command control
-                      // definition to one menu row. Optional help-row metadata
-                      // rides along and is rendered by the menu layer.
-                      id: control.id,
-                      l10nId: control.l10nId,
-                      englishLabel: control.englishLabel,
-                      helpRowL10nId: control.helpRowL10nId,
-                      helpRowEnglish: control.helpRowEnglish,
-                      helpRowSeparatorAbove: control.helpRowSeparatorAbove,
-                      subLabelL10nId: control.menu?.subLabelL10nId,
-                      icon: iconToNode(control, "menu"),
-                      iconScale: control.menu?.iconScale ?? control.iconScale,
-                      featureName: control.featureName,
-                      shortcut: control.menu?.shortcutDisplay
-                          ? {
-                                id: `${control.id}.defaultShortcut`,
-                                display: control.menu.shortcutDisplay,
-                            }
-                          : undefined,
-                      onSelect: async (
-                          rowCtx: IControlContext,
-                          rowRuntime: IControlRuntime,
-                      ) => {
-                          await control.action(rowCtx, rowRuntime);
-                      },
-                  };
+            const defaultMenuRow = buildDefaultMenuRow(control);
+            const builtRow =
+                control.menu?.buildMenuItem?.(ctx, runtime) ?? defaultMenuRow;
 
             const rowWithAvailability = applyRowAvailability(
                 builtRow,
@@ -295,24 +305,10 @@ export const getMenuSections = (
                 return;
             }
 
-            const menuRow: IControlMenuCommandRow = {
-                ...rowWithAvailability,
-                icon: rowWithAvailability.icon ?? iconToNode(control, "menu"),
-                iconScale:
-                    rowWithAvailability.iconScale ??
-                    control.menu?.iconScale ??
-                    control.iconScale,
-                featureName:
-                    rowWithAvailability.featureName ?? control.featureName,
-                helpRowL10nId:
-                    rowWithAvailability.helpRowL10nId ?? control.helpRowL10nId,
-                helpRowEnglish:
-                    rowWithAvailability.helpRowEnglish ??
-                    control.helpRowEnglish,
-                helpRowSeparatorAbove:
-                    rowWithAvailability.helpRowSeparatorAbove ??
-                    control.helpRowSeparatorAbove,
-            };
+            const menuRow = applyDefaultMenuRowFields(
+                defaultMenuRow,
+                rowWithAvailability,
+            );
 
             resolvedControls.push({
                 control,

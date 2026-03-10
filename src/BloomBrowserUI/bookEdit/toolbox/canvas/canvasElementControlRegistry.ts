@@ -9,8 +9,8 @@
 //
 // Supporting modules:
 // - `canvasControlRegistry.ts` provides concrete control implementations and section maps.
-// - `canvasControlAvailabilityPresets.ts` provides shared policy fragments composed here.
-// - `canvasControlHelpers.ts` resolves this registry into concrete UI rows/buttons.
+// - `canvasControlAvailabilityRules.ts` provides shared policy fragments composed here.
+// - `canvasControlResolution.ts` resolves this registry into concrete UI rows/buttons.
 //
 // Design intent: keep each element definition explicit and readable so reviewers can
 // understand behavior from this file without chasing constructor indirection.
@@ -26,7 +26,7 @@ import {
     textAvailabilityRules,
     videoAvailabilityRules,
     wholeElementAvailabilityRules,
-} from "./canvasControlAvailabilityPresets";
+} from "./canvasControlAvailabilityRules";
 
 const mergeRules = (...rules: AvailabilityRulesMap[]): AvailabilityRulesMap => {
     return rules.reduce<AvailabilityRulesMap>((result, rule) => {
@@ -91,20 +91,21 @@ export const soundCanvasElementDefinition: ICanvasElementDefinition = {
     ),
 };
 
-export const rectangleCanvasElementDefinition: ICanvasElementDefinition = {
-    type: "rectangle",
-    // Shared definition: rectangle bubbles are used in standard canvas pages and
-    // can also appear as fixed game pieces.
-    menuSections: ["audio", "bubble", "text", "wholeElement"],
-    toolbar: ["format", "spacer", "duplicate", "delete"],
-    toolPanel: ["bubble", "text", "outline"],
-    availabilityRules: mergeRules(
-        audioAvailabilityRules,
-        bubbleAvailabilityRules,
-        textAvailabilityRules,
-        wholeElementAvailabilityRules,
-    ),
-};
+export const rectangleBubbleCanvasElementDefinition: ICanvasElementDefinition =
+    {
+        type: "rectangle",
+        // Shared definition: rectangular bubble elements are used in standard canvas
+        // pages and can also appear as fixed game pieces.
+        menuSections: ["audio", "bubble", "text", "wholeElement"],
+        toolbar: ["format", "spacer", "duplicate", "delete"],
+        toolPanel: ["bubble", "text", "outline"],
+        availabilityRules: mergeRules(
+            audioAvailabilityRules,
+            bubbleAvailabilityRules,
+            textAvailabilityRules,
+            wholeElementAvailabilityRules,
+        ),
+    };
 
 export const speechCanvasElementDefinition: ICanvasElementDefinition = {
     type: "speech",
@@ -274,7 +275,7 @@ export const canvasElementControlRegistry: Record<
     image: imageCanvasElementDefinition,
     video: videoCanvasElementDefinition,
     sound: soundCanvasElementDefinition,
-    rectangle: rectangleCanvasElementDefinition,
+    rectangle: rectangleBubbleCanvasElementDefinition,
     speech: speechCanvasElementDefinition,
     caption: captionCanvasElementDefinition,
     "book-link-grid": bookLinkGridDefinition,

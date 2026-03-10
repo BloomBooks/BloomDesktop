@@ -3,7 +3,7 @@
 // How this file fits with the other canvas-control modules:
 // - `canvasControlRegistry.ts` defines the concrete controls (action/menu/panel metadata)
 //   and section membership, using these interfaces.
-// - `canvasControlAvailabilityPresets.ts` defines reusable visibility/enabled policy fragments
+// - `canvasControlAvailabilityRules.ts` defines reusable visibility/enabled policy fragments
 //   typed against `AvailabilityRulesMap` and `IControlContext`.
 // - `canvasElementControlRegistry.ts` is the declarative map from canvas element type to
 //   toolbar/menu/tool-panel layout and availability rules.
@@ -83,6 +83,17 @@ export type TopLevelControlId = Exclude<
     "removeAudio" | "playCurrentAudio" | "useTalkingBookTool"
 >;
 
+export type PanelControlId =
+    | "imageFillMode"
+    | "bubbleStyle"
+    | "showTail"
+    | "roundedCorners"
+    | "textColor"
+    | "backgroundColor"
+    | "outlineColor";
+
+export type CommandControlId = Exclude<TopLevelControlId, PanelControlId>;
+
 export type SectionId =
     | "gameDraggable"
     | "image"
@@ -124,6 +135,7 @@ export interface IControlContext {
     hasDraggableId: boolean;
     hasDraggableTarget: boolean;
     textHasAudio: boolean | undefined;
+    hasClipboardText: boolean;
     isCustomPage: boolean;
     languageNameValues: ILanguageNameValues;
 }
@@ -283,7 +295,7 @@ export interface ICanvasToolsPanelState {
 export interface ICanvasElementDefinition {
     type: CanvasElementType;
     menuSections: SectionId[];
-    toolbar: Array<TopLevelControlId | "spacer">;
+    toolbar: Array<CommandControlId | "spacer">;
     toolPanel: SectionId[];
     availabilityRules: Partial<
         Record<TopLevelControlId, IControlRule | "exclude">

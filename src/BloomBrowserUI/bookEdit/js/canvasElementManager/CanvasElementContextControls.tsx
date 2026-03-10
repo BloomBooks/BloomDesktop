@@ -20,7 +20,7 @@ import { kBackgroundImageClass } from "../../toolbox/canvas/canvasElementConstan
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { kBloomDisabledOpacity } from "../../../utils/colorUtils";
-import { useApiObject } from "../../../utils/bloomApi";
+import { getAsync, useApiObject } from "../../../utils/bloomApi";
 import AudioRecording from "../../toolbox/talkingBook/audioRecording";
 import { getAudioSentencesOfVisibleEditables } from "bloom-player";
 import { canvasElementControlRegistry } from "../../toolbox/canvas/canvasElementControlRegistry";
@@ -34,7 +34,7 @@ import {
 import {
     getMenuSections,
     getToolbarItems,
-} from "../../toolbox/canvas/canvasControlHelpers";
+} from "../../toolbox/canvas/canvasControlResolution";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -120,6 +120,8 @@ const CanvasElementContextControls: React.FunctionComponent<{
         isSpacer?: boolean;
     }
 
+    // Collapse duplicate spacers and trim any spacer left at either edge after
+    // controls are filtered or remapped for the current canvas element state.
     const normalizeToolbarItems = (items: IToolbarItem[]): IToolbarItem[] => {
         const normalized: IToolbarItem[] = [];
         items.forEach((item) => {
@@ -143,6 +145,10 @@ const CanvasElementContextControls: React.FunctionComponent<{
     };
 
     const [textHasAudio, setTextHasAudio] = useState(true);
+    const [hasClipboardText, setHasClipboardText] = useState(false);
+
+    // Refresh the text-audio state when the menu opens so submenu labels and
+    // commands reflect the current recording state.
     useEffect(() => {
         if (!props.menuOpen || !props.canvasElement || !hasText) return;
 
@@ -161,6 +167,44 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 );
             });
         // Need to include menuOpen so we can re-evaluate if the user has added or removed audio.
+    }, [props.canvasElement, props.menuOpen, hasText]);
+
+    // Query the host clipboard when the menu opens so Paste Text availability
+    // reflects whether there is currently text to paste.
+    useEffect(() => {
+        if (!props.menuOpen || !props.canvasElement || !hasText) {
+            return;
+        }
+
+        let isCurrent = true;
+        setHasClipboardText(false);
+
+        getAsync("common/clipboardText")
+            .then((response) => {
+                if (!isCurrent) {
+                    return;
+                }
+
+                const clipboardText =
+                    typeof response.data === "string"
+                        ? response.data
+                        : (response.data?.data ?? "");
+                setHasClipboardText(clipboardText.length > 0);
+            })
+            .catch((error) => {
+                if (!isCurrent) {
+                    return;
+                }
+
+                console.error(
+                    "Error checking clipboard text availability:",
+                    error,
+                );
+            });
+
+        return () => {
+            isCurrent = false;
+        };
     }, [props.canvasElement, props.menuOpen, hasText]);
 
     if (!page) {
@@ -279,6 +323,10 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 featureName: row.featureName,
                 subscriptionTooltipOverride: row.subscriptionTooltipOverride,
                 onClick: () => {
+                    // Ordinary leaf commands close centrally here. Registry
+                    // handlers only call runtime.closeMenu(...) for special
+                    // cases such as dialog launches or submenu-specific focus
+                    // behavior.
                     if (!convertedSubMenu) {
                         controlRuntime.closeMenu();
                     }
@@ -405,6 +453,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const controlContext: IControlContext = {
         ...buildCanvasElementControlRegistryContext(props.canvasElement),
         textHasAudio,
+        hasClipboardText,
         languageNameValues,
     };
 
@@ -587,12 +636,9 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                                     <LocalizableMenuItem
                                                         key={subOption.l10nId}
                                                         {...subOption}
-                                                        onClick={(e) => {
-                                                            setMenuOpen(false);
-                                                            subOption.onClick(
-                                                                e,
-                                                            );
-                                                        }}
+                                                        onClick={
+                                                            subOption.onClick
+                                                        }
                                                         css={css`
                                                             max-width: ${maxMenuWidth}px;
                                                             white-space: wrap;
@@ -614,10 +660,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                 <LocalizableMenuItem
                                     key={option.l10nId}
                                     {...option}
-                                    onClick={(e) => {
-                                        setMenuOpen(false);
-                                        option.onClick(e);
-                                    }}
+                                    onClick={option.onClick}
                                     variant="body1"
                                 />
                             );

@@ -60,19 +60,7 @@ import $ from "jquery";
 import { kCanvasToolId } from "../../toolbox/toolIds";
 import { showCanvasTool } from "./CanvasElementManagerPublicFunctions";
 import { shouldHideToolsOverImages } from "../editablePageUtils";
-import {
-    convertPointFromViewportToElementFrame as convertPointFromViewportToElementFrameFromGeometry,
-    getCombinedBorderWidths as getCombinedBorderWidthsFromGeometry,
-    getCombinedBordersAndPaddings as getCombinedBordersAndPaddingsFromGeometry,
-    getCombinedPaddings as getCombinedPaddingsFromGeometry,
-    getLeftAndTopBorderWidths as getLeftAndTopBorderWidthsFromGeometry,
-    getLeftAndTopPaddings as getLeftAndTopPaddingsFromGeometry,
-    getPadding as getPaddingFromGeometry,
-    getRightAndBottomBorderWidths as getRightAndBottomBorderWidthsFromGeometry,
-    getRightAndBottomPaddings as getRightAndBottomPaddingsFromGeometry,
-    getScrollAmount as getScrollAmountFromGeometry,
-    extractNumber as extractNumberFromGeometry,
-} from "./CanvasElementGeometry";
+import * as Geometry from "./CanvasElementGeometry";
 import {
     adjustCanvasElementsForCurrentLanguage as adjustCanvasElementsForCurrentLanguageFromAlternates,
     adjustCanvasElementAlternates as adjustCanvasElementAlternatesFromAlternates,
@@ -2151,99 +2139,6 @@ export class CanvasElementManager {
     // This is the canvas element, if any, that is currently in that state.
     public theCanvasElementWeAreTextEditing: HTMLElement | undefined;
 
-    // Gets the coordinates of the specified event relative to the specified element.
-    private static convertPointFromViewportToElementFrame(
-        pointRelativeToViewport: Point, // The current point, relative to the top-left of the viewport
-        element: Element, // The element to reference for the new origin
-    ): Point {
-        return convertPointFromViewportToElementFrameFromGeometry(
-            pointRelativeToViewport,
-            element,
-        );
-    }
-
-    // Gets an element's border width/height of an element
-    //   The x coordinate of the point represents the left border width
-    //   The y coordinate of the point represents the top border height
-    private static getLeftAndTopBorderWidths(element: Element): Point {
-        return getLeftAndTopBorderWidthsFromGeometry(element);
-    }
-
-    // Gets an element's border width/height of an element
-    //   The x coordinate of the point represents the right border width
-    //   The y coordinate of the point represents the bottom border height
-    private static getRightAndBottomBorderWidths(
-        element: Element,
-        styleInfo?: CSSStyleDeclaration,
-    ): Point {
-        return getRightAndBottomBorderWidthsFromGeometry(element, styleInfo);
-    }
-
-    // Gets an element's border width/height
-    //   The x coordinate of the point represents the sum of the left and right border width
-    //   The y coordinate of the point represents the sum of the top and bottom border width
-    private static getCombinedBorderWidths(
-        element: Element,
-        styleInfo?: CSSStyleDeclaration,
-    ): Point {
-        return getCombinedBorderWidthsFromGeometry(element, styleInfo);
-    }
-
-    // Given a CSSStyleDeclearation, retrieves the requested padding and converts it to a number
-    private static getPadding(
-        side: string,
-        styleInfo: CSSStyleDeclaration,
-    ): number {
-        return getPaddingFromGeometry(side, styleInfo);
-    }
-
-    // Gets the padding of an element
-    //   The x coordinate of the point represents the left padding
-    //   The y coordinate of the point represents the bottom padding
-    private static getLeftAndTopPaddings(
-        element: Element, // The element to check
-        styleInfo?: CSSStyleDeclaration, // Optional. If you have it handy, you can pass in the computed style of the element. Otherwise, it will be determined for you
-    ): Point {
-        return getLeftAndTopPaddingsFromGeometry(element, styleInfo);
-    }
-
-    // Gets the padding of an element
-    //   The x coordinate of the point represents the left padding
-    //   The y coordinate of the point represents the bottom padding
-    private static getRightAndBottomPaddings(
-        element: Element, // The element to check
-        styleInfo?: CSSStyleDeclaration, // Optional. If you have it handy, you can pass in the computed style of the element. Otherwise, it will be determined for you
-    ): Point {
-        return getRightAndBottomPaddingsFromGeometry(element, styleInfo);
-    }
-
-    // Gets the padding of an element
-    // The x coordinate of the point represents the sum of the left and right padding
-    // The y coordinate of the point represents the sum of the top and bottom padding
-    private static getCombinedPaddings(
-        element: Element,
-        styleInfo?: CSSStyleDeclaration,
-    ): Point {
-        return getCombinedPaddingsFromGeometry(element, styleInfo);
-    }
-
-    // Gets the sum of an element's borders and paddings
-    // The x coordinate of the point represents the sum of the left and right
-    // The y coordinate of the point represents the sum of the top and bottom
-    private static getCombinedBordersAndPaddings(element: Element): Point {
-        return getCombinedBordersAndPaddingsFromGeometry(element);
-    }
-
-    // Returns the amount the element has been scrolled, as a Point
-    private static getScrollAmount(element: Element): Point {
-        return getScrollAmountFromGeometry(element);
-    }
-
-    // Removes the units from a string like "10px"
-    public static extractNumber(text: string | undefined | null): number {
-        return extractNumberFromGeometry(text);
-    }
-
     // Returns a string representing which style of resize to use
     // This is based on where the mouse event is relative to the center of the element
     //
@@ -3067,10 +2962,11 @@ export class CanvasElementManager {
                 PointScaling.Scaled,
                 "convertTextboxPositionToAbsolute()",
             );
-            const reframedPoint = this.convertPointFromViewportToElementFrame(
-                wrapperBoxPos,
-                bloomCanvas,
-            );
+            const reframedPoint =
+                Geometry.convertPointFromViewportToElementFrame(
+                    wrapperBoxPos,
+                    bloomCanvas,
+                );
             unscaledRelativeLeft = reframedPoint.getUnscaledX();
             unscaledRelativeTop = reframedPoint.getUnscaledY();
         } else {

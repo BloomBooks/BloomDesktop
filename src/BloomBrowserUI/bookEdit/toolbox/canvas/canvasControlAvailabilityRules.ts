@@ -1,7 +1,7 @@
-// Reusable availability policy fragments for canvas controls.
+// Reusable availability rule fragments for canvas controls.
 //
 // This module centralizes `visible`/`enabled` rules that are reused by multiple
-// element definitions. `canvasElementControlRegistry.ts` composes these presets per
+// element definitions. `canvasElementControlRegistry.ts` composes these rules per
 // canvas element type to keep element declarations concise and declarative.
 //
 // Runtime flow:
@@ -10,7 +10,7 @@
 // 3) `canvasControlRegistry.ts` provides the concrete command/panel implementations
 //    that are filtered by these rules.
 //
-// Keep preset objects behavior-focused and side-effect free.
+// Keep rule objects behavior-focused and side-effect free.
 import { AvailabilityRulesMap } from "./canvasControlTypes";
 
 export const imageAvailabilityRules: AvailabilityRulesMap = {
@@ -51,7 +51,6 @@ export const imageAvailabilityRules: AvailabilityRulesMap = {
     },
     becomeBackground: {
         visible: (ctx) =>
-            ctx.isCustomPage &&
             ctx.hasImage &&
             ctx.hasRealImage &&
             !ctx.isNavigationButton &&
@@ -87,10 +86,14 @@ export const textAvailabilityRules: AvailabilityRulesMap = {
         visible: (ctx) => ctx.hasText,
     },
     copyText: {
+        // Keep this available whenever the element has text. The command
+        // intentionally falls back to copying the whole active element when
+        // there is no range selection.
         visible: (ctx) => ctx.hasText,
     },
     pasteText: {
         visible: (ctx) => ctx.hasText,
+        enabled: (ctx) => ctx.hasClipboardText,
     },
     autoHeight: {
         visible: (ctx) => ctx.hasText && !ctx.isButton,

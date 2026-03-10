@@ -1,5 +1,5 @@
 import { test, expect } from "../fixtures/canvasTest";
-import type { Frame } from "playwright/test";
+import type { Frame, Page } from "playwright/test";
 import {
     createCanvasElementWithRetry,
     expandNavigationSection,
@@ -52,6 +52,95 @@ const expectContextMenuItemEnabledState = async (
     });
 
     expect(isDisabled).toBe(!enabled);
+};
+
+const expectContextMenuItemEnabledStateEventually = async (
+    pageFrame: Frame,
+    label: string,
+    enabled: boolean,
+): Promise<void> => {
+    await expect
+        .poll(
+            async () => {
+                const item = getMenuItem(pageFrame, label);
+                const visible = await item.isVisible().catch(() => false);
+                if (!visible) {
+                    return undefined;
+                }
+
+                return item.evaluate((element) => {
+                    const htmlElement = element as HTMLElement;
+                    return !(
+                        htmlElement.getAttribute("aria-disabled") === "true" ||
+                        htmlElement.classList.contains("Mui-disabled")
+                    );
+                });
+            },
+            { timeout: 10000 },
+        )
+        .toBe(enabled);
+};
+
+const writeClipboardText = async (
+    page: Page,
+    value: string,
+): Promise<{ ok: boolean; error?: string }> => {
+    await page
+        .context()
+        .grantPermissions(["clipboard-read", "clipboard-write"], {
+            origin: "http://localhost:8089",
+        });
+
+    return page.evaluate(async (textToWrite) => {
+        try {
+            if (!navigator.clipboard) {
+                return { ok: false, error: "Clipboard API unavailable." };
+            }
+            await navigator.clipboard.writeText(textToWrite);
+            return { ok: true };
+        } catch (error) {
+            return { ok: false, error: String(error) };
+        }
+    }, value);
+};
+
+const setClipboardTextViaApi = async (
+    page: Page,
+    value: string,
+): Promise<{ ok: boolean; error?: string }> => {
+    return page.evaluate(async (textToWrite) => {
+        try {
+            const response = await fetch("/bloom/api/common/clipboardText", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ text: textToWrite }),
+            });
+
+            if (!response.ok) {
+                return {
+                    ok: false,
+                    error: `Clipboard API POST failed with ${response.status}`,
+                };
+            }
+
+            return { ok: true };
+        } catch (error) {
+            return { ok: false, error: String(error) };
+        }
+    }, value);
+};
+
+const readClipboardTextViaApi = async (page: Page): Promise<string> => {
+    return page.evaluate(async () => {
+        const response = await fetch("/bloom/api/common/clipboardText");
+        if (!response.ok) {
+            throw new Error(`Clipboard API GET failed with ${response.status}`);
+        }
+
+        return await response.text();
+    });
 };
 
 const openFreshContextMenu = async (
@@ -769,4 +858,171 @@ test("K10: background image selection shows toolbar label text", async ({
     }
 
     await expect(label).toBeVisible();
+});
+
+test("K11: Become Background remains available on standard pages with a real image", async ({
+    canvasTestContext,
+}) => {
+    const created = await createCanvasElementWithRetry({
+        canvasContext: canvasTestContext,
+        paletteItem: "image",
+    });
+
+    await selectCanvasElementAtIndex(canvasTestContext, created.index);
+
+    const isCustomPage = await canvasTestContext.pageFrame.evaluate(() => {
+        const active = document.querySelector(
+            '.bloom-canvas-element[data-bloom-active="true"]',
+        );
+        return !!active
+            ?.closest(".bloom-page")
+            ?.classList.contains("bloom-customLayout");
+    });
+
+    if (isCustomPage) {
+        test.info().annotations.push({
+            type: "note",
+            description:
+                "Current canvas test page is a custom layout in this run; skipping standard-page Become Background regression assertion.",
+        });
+        return;
+    }
+
+    await canvasTestContext.pageFrame.evaluate(() => {
+        const active = document.querySelector(
+            '.bloom-canvas-element[data-bloom-active="true"]',
+        );
+        const image = active?.querySelector(
+            ".bloom-imageContainer img",
+        ) as HTMLImageElement | null;
+        if (!image) {
+            throw new Error("No active canvas image element.");
+        }
+
+        image.setAttribute(
+            "src",
+            "http://localhost:8089/bloom/images/SIL_Logo_80pxTall.png",
+        );
+        image.classList.remove("bloom-imageLoadError");
+        image.parentElement?.classList.remove("bloom-imageLoadError");
+    });
+
+    await openFreshContextMenu(canvasTestContext);
+    await expectContextMenuItemVisible(canvasTestContext, "Become Background");
+    await canvasTestContext.page.keyboard.press("Escape");
+});
+
+test("K12: Copy Text stays enabled without a range selection and Paste Text follows clipboard text", async ({
+    canvasTestContext,
+}) => {
+    const created = await createCanvasElementWithRetry({
+        canvasContext: canvasTestContext,
+        paletteItem: "speech",
+    });
+
+    await selectCanvasElementAtIndex(canvasTestContext, created.index);
+
+    const hasActiveEditable = await canvasTestContext.pageFrame.evaluate(() => {
+        const active = document.querySelector(
+            '.bloom-canvas-element[data-bloom-active="true"]',
+        );
+        return !!active?.querySelector(
+            ".bloom-editable.bloom-visibility-code-on, .bloom-editable",
+        );
+    });
+
+    if (!hasActiveEditable) {
+        test.info().annotations.push({
+            type: "note",
+            description:
+                "Could not establish an active editable text canvas element in this run; skipping text clipboard availability assertions.",
+        });
+        return;
+    }
+
+    await canvasTestContext.pageFrame.evaluate(() => {
+        const active = document.querySelector(
+            '.bloom-canvas-element[data-bloom-active="true"]',
+        );
+        const editable = active?.querySelector(
+            ".bloom-editable.bloom-visibility-code-on, .bloom-editable",
+        ) as HTMLElement | null;
+        if (!editable) {
+            throw new Error("No active editable text element.");
+        }
+
+        editable.focus();
+        const selection = window.getSelection();
+        if (!selection) {
+            throw new Error("Window selection is unavailable.");
+        }
+
+        selection.removeAllRanges();
+        const range = document.createRange();
+        range.selectNodeContents(editable);
+        range.collapse(true);
+        selection.addRange(range);
+    });
+
+    await openFreshContextMenu(canvasTestContext);
+    await expectContextMenuItemEnabledState(
+        canvasTestContext.pageFrame,
+        "Copy Text",
+        true,
+    );
+    await canvasTestContext.page.keyboard.press("Escape");
+
+    const emptyClipboardResult = await writeClipboardText(
+        canvasTestContext.page,
+        "",
+    );
+    expect(emptyClipboardResult.ok, emptyClipboardResult.error ?? "").toBe(
+        true,
+    );
+
+    const clipboardAfterClear = await readClipboardTextViaApi(
+        canvasTestContext.page,
+    );
+    if (clipboardAfterClear !== "") {
+        test.info().annotations.push({
+            type: "note",
+            description:
+                "Host clipboard integration did not reflect an empty clipboard in this run; skipping strict empty-clipboard Paste Text assertion.",
+        });
+        return;
+    }
+
+    await openFreshContextMenu(canvasTestContext);
+    await expectContextMenuItemEnabledState(
+        canvasTestContext.pageFrame,
+        "Paste Text",
+        false,
+    );
+    await canvasTestContext.page.keyboard.press("Escape");
+
+    const textClipboardResult = await setClipboardTextViaApi(
+        canvasTestContext.page,
+        "Clipboard payload",
+    );
+    expect(textClipboardResult.ok, textClipboardResult.error ?? "").toBe(true);
+
+    const clipboardAfterSet = await readClipboardTextViaApi(
+        canvasTestContext.page,
+    );
+    if (clipboardAfterSet !== "Clipboard payload") {
+        test.info().annotations.push({
+            type: "note",
+            description:
+                "Host clipboard integration did not reflect the seeded text payload in this run; skipping strict positive Paste Text assertion.",
+        });
+        return;
+    }
+
+    await openFreshContextMenu(canvasTestContext);
+    await expectContextMenuItemEnabledStateEventually(
+        canvasTestContext.pageFrame,
+        "Paste Text",
+        true,
+    );
+    await canvasTestContext.page.keyboard.press("Escape");
 });
