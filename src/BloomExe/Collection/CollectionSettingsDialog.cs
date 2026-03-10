@@ -42,6 +42,15 @@ namespace Bloom.Collection
             get { return _pendingBookshelf; }
         }
 
+        internal bool PendingAutomaticallyUpdate;
+        internal bool ShowAutomaticallyUpdateOption = true;
+
+        internal bool PendingShowExperimentalBookSources;
+        internal bool ShowExperimentalBookSourcesOption = false;
+
+        internal bool PendingAllowTeamCollection;
+        internal bool AllowTeamCollectionOptionEnabled = false;
+
         // "Internal" so CollectionSettingsApi can update these.
         internal readonly string[] PendingFontSelections = new[] { "", "", "" };
         internal string PendingNumberingStyle { get; set; }
@@ -101,10 +110,10 @@ namespace Bloom.Collection
             _currentCollectionIsTeamCollection =
                 tcManager.CurrentCollectionEvenIfDisconnected != null;
 
-            _showExperimentalBookSources.Checked = ExperimentalFeatures.IsFeatureEnabled(
+            PendingShowExperimentalBookSources = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kExperimentalSourceBooks
             );
-            _allowTeamCollection.Checked = ExperimentalFeatures.IsFeatureEnabled(
+            PendingAllowTeamCollection = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kTeamCollections
             );
 
@@ -122,9 +131,8 @@ namespace Bloom.Collection
                 _tab.Controls.Remove(this._teamCollectionTab);
             }
             // Don't allow the user to disable the Team Collection feature if we're currently in a Team Collection.
-            _allowTeamCollection.Enabled = !(
-                _allowTeamCollection.Checked
-                && tcManager.CurrentCollectionEvenIfDisconnected != null
+            AllowTeamCollectionOptionEnabled = !(
+                PendingAllowTeamCollection && tcManager.CurrentCollectionEvenIfDisconnected != null
             );
 
             // AutoUpdate applies only to Windows: see https://silbloom.myjetbrains.com/youtrack/issue/BL-2317.
@@ -133,9 +141,9 @@ namespace Bloom.Collection
                 SIL.PlatformUtilities.Platform.IsWindows
                 && Environment.OSVersion.Version.Major >= 10
             )
-                _automaticallyUpdate.Checked = Settings.Default.AutoUpdate;
+                PendingAutomaticallyUpdate = Settings.Default.AutoUpdate;
             else
-                _automaticallyUpdate.Hide();
+                ShowAutomaticallyUpdateOption = false;
 
             // Without this, PendingDefaultBookshelf stays null unless the user changes it.
             // The result is the bookshelf selection gets cleared when other collection settings are saved. See BL-10093.
@@ -386,7 +394,7 @@ namespace Bloom.Collection
             CollectionSettingsApi.DialogBeingEdited = null;
 
             Settings.Default.AutoUpdate =
-                _automaticallyUpdate.Checked && Environment.OSVersion.Version.Major >= 10;
+                PendingAutomaticallyUpdate && Environment.OSVersion.Version.Major >= 10;
             UpdateExperimentalBookSources();
             UpdateTeamCollectionAllowed();
 
@@ -738,16 +746,11 @@ namespace Bloom.Collection
             ChangeThatRequiresRestart();
         }
 
-        private void _showExperimentalBookSources_CheckedChanged(object sender, EventArgs e)
-        {
-            ChangeThatRequiresRestart();
-        }
-
         private void UpdateExperimentalBookSources()
         {
             ExperimentalFeatures.SetValue(
                 ExperimentalFeatures.kExperimentalSourceBooks,
-                _showExperimentalBookSources.Checked
+                PendingShowExperimentalBookSources
             );
         }
 
@@ -792,17 +795,19 @@ namespace Bloom.Collection
             ChangeThatRequiresRestart();
         }
 
-        private void _allowTeamCollection_CheckedChanged(object sender, EventArgs e)
-        {
-            ChangeThatRequiresRestart();
-        }
-
         private void UpdateTeamCollectionAllowed()
         {
+            var wasTeamCollectionsEnabled = ExperimentalFeatures.IsFeatureEnabled(
+                ExperimentalFeatures.kTeamCollections
+            );
+
             ExperimentalFeatures.SetValue(
                 ExperimentalFeatures.kTeamCollections,
-                _allowTeamCollection.Checked
+                PendingAllowTeamCollection
             );
+
+            if (wasTeamCollectionsEnabled != PendingAllowTeamCollection)
+                ChangeThatRequiresRestart();
         }
     }
 }
