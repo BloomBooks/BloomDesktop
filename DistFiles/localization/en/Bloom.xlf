@@ -511,22 +511,31 @@
         <source xml:lang="en">Upper-Armenian</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.QrCodeBadgeLabelCaption" translate="no">
-        <source xml:lang="en">Label for QR code badge</source>
-        <note>ID: CollectionSettingsDialog.BookMakingTab.QrCodeBadgeLabelCaption</note>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Program" translate="no">
+        <source xml:lang="en">Program</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Program</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.QrCodeBadgeText" translate="no">
-        <source xml:lang="en">Get more books in the {0} language on BloomLibrary.org.</source>
-        <note>ID: CollectionSettingsDialog.BookMakingTab.QrCodeBadgeText</note>
-        <note>{0} will be replaced by a language name</note>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodes" translate="no">
+        <source xml:lang="en">QR Codes</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.QrCodes</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.QrCodeLabel" translate="no">
-        <source xml:lang="en">QR code in Bloom badge</source>
-        <note>ID: CollectionSettingsDialog.BookMakingTab.QrCodeLabel</note>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.ShowQrCodes" translate="no">
+        <source xml:lang="en">Show QR Codes</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.ShowQrCodes</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.QrCodeShowLanguage" translate="no">
-        <source xml:lang="en">Show QR code for current language books</source>
-        <note>ID: CollectionSettingsDialog.BookMakingTab.QrCodeShowLanguage</note>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.ShowQrCodes.Description" translate="no">
+        <source xml:lang="en">Scanning the code or clicking the badge will take the user to the collection of books in this collection's primary language. Note, if you want to use this but your branding does not show it, contact us.</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.ShowQrCodes.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption" translate="no">
+        <source xml:lang="en">Caption</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Caption</note>
+        <note>The string labeled as Caption here is used in the QR Code badge to let the user know what the badge is used for.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption.Description" translate="no">
+        <source xml:lang="en">If your caption contains "{0}", Bloom will fill this in with the name of the language.</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Caption.Description</note>
+        <note>{0} must not be translated but appear verbatim.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink">
         <source xml:lang="en">Special Script Settings</source>
