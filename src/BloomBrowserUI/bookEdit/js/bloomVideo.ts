@@ -335,7 +335,7 @@ export function handlePlayClick(ev: MouseEvent, forcePlay?: boolean) {
     // If we're in a canvas element, we don't want this handler to play the video,
     // becuse the click might be a drag on the canvas element. We'll let CanvasElementManager
     // decide and call playVideo if appropriate. That is, if we're not in Play mode,
-    // where dragging is not applicable, or being called FROM the CanvasElementManager.
+    // where dragging is not applicable (except for draggables, whose clicks are handled by dragActivityRuntime from BloomPlayer), or being called FROM the CanvasElementManager.
     if (
         !forcePlay &&
         video.closest(kCanvasElementSelector) &&
@@ -396,7 +396,7 @@ const handleVideoClick = (ev: MouseEvent) => {
     // If we're not in Play mode, we don't need these behaviors.
     // At least I don't think so. Outside Play mode, clicking on canvas elements is mainly about moving
     // them, but we have a visible Play button in case you want to play one. In BP (and Play mode), you
-    // can't move them (unless one day we make them something you can drag to a target), so it
+    // can't move them (except for draggables, whose clicks are handled by dragActivityRuntime from BloomPlayer), so it
     // makes sense that a click anywhere on the video would play it; there's nothing else useful
     // to do in response.
     if (!video.closest(".drag-activity-play")) {
