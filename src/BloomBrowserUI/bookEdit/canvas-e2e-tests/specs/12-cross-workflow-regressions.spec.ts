@@ -34,21 +34,19 @@ import {
     type CanvasPaletteItemKey,
 } from "../helpers/canvasSelectors";
 
-const setActiveCanvasElementByIndexViaManager = async (
+const setActiveCanvasElementByIndexViaPageBundleOrUi = async (
     canvasContext: ICanvasPageContext,
     index: number,
 ): Promise<void> => {
-    const selectedViaManager = await setActiveCanvasElementByIndexViaPageBundle(
-        canvasContext,
-        index,
-    );
+    const selectedViaPageBundle =
+        await setActiveCanvasElementByIndexViaPageBundle(canvasContext, index);
 
-    if (!selectedViaManager) {
+    if (!selectedViaPageBundle) {
         await selectCanvasElementAtIndex(canvasContext, index);
     }
 };
 
-const setActivePatriarchBubbleViaManager = async (
+const setActivePatriarchBubbleViaPageBundleOrUi = async (
     canvasContext: ICanvasPageContext,
 ): Promise<void> => {
     // TODO: Replace this page-bundle selection helper with a fully UI-driven
@@ -490,7 +488,7 @@ const chooseColorSwatchInDialog = async (
     await clickDialogOkIfVisible(page);
 };
 
-const setActiveElementBackgroundColorViaManager = async (
+const setActiveElementBackgroundColorViaPageBundle = async (
     canvasContext: ICanvasPageContext,
     color: string,
     opacity: number,
@@ -600,7 +598,7 @@ test("Workflow 02: add-child bubble lifecycle survives middle-child delete and p
     await createElementAndReturnIndex(canvasTestContext, "speech");
 
     for (let index = 0; index < 3; index++) {
-        await setActivePatriarchBubbleViaManager(canvasTestContext);
+        await setActivePatriarchBubbleViaPageBundleOrUi(canvasTestContext);
 
         const before = await getCanvasElementCount(canvasTestContext);
         const added = await clickContextMenuItemIfEnabled(
@@ -625,7 +623,7 @@ test("Workflow 02: add-child bubble lifecycle survives middle-child delete and p
         "wf02-child-2",
     );
     expect(middleChildIndex).toBeGreaterThanOrEqual(0);
-    await setActiveCanvasElementByIndexViaManager(
+    await setActiveCanvasElementByIndexViaPageBundleOrUi(
         canvasTestContext,
         middleChildIndex,
     );
@@ -647,7 +645,7 @@ test("Workflow 02: add-child bubble lifecycle survives middle-child delete and p
             childToken,
         );
         if (childIndex >= 0) {
-            await setActiveCanvasElementByIndexViaManager(
+            await setActiveCanvasElementByIndexViaPageBundleOrUi(
                 canvasTestContext,
                 childIndex,
             );
@@ -655,7 +653,7 @@ test("Workflow 02: add-child bubble lifecycle survives middle-child delete and p
         }
     }
 
-    await setActivePatriarchBubbleViaManager(canvasTestContext);
+    await setActivePatriarchBubbleViaPageBundleOrUi(canvasTestContext);
 
     const beforeReAdd = await getCanvasElementCount(canvasTestContext);
     const childAddedAgain = await clickContextMenuItemIfEnabled(
@@ -665,7 +663,7 @@ test("Workflow 02: add-child bubble lifecycle survives middle-child delete and p
     expect(childAddedAgain).toBe(true);
     await expectCanvasElementCountToIncrease(canvasTestContext, beforeReAdd);
 
-    await setActivePatriarchBubbleViaManager(canvasTestContext);
+    await setActivePatriarchBubbleViaPageBundleOrUi(canvasTestContext);
     const beforeParentDelete = await getCanvasElementCount(canvasTestContext);
     const parentDeleted = await clickContextMenuItemIfEnabled(
         canvasTestContext,
@@ -789,7 +787,7 @@ test("Workflow 04: copy/paste text transfers payload only without changing targe
         targetIndex,
     );
 
-    await setActiveCanvasElementByIndexViaManager(
+    await setActiveCanvasElementByIndexViaPageBundleOrUi(
         canvasTestContext,
         sourceIndex,
     );
@@ -824,7 +822,7 @@ test("Workflow 04: copy/paste text transfers payload only without changing targe
         expect(wroteFallback.ok, wroteFallback.error ?? "").toBe(true);
     }
 
-    await setActiveCanvasElementByIndexViaManager(
+    await setActiveCanvasElementByIndexViaPageBundleOrUi(
         canvasTestContext,
         targetIndex,
     );
@@ -861,7 +859,7 @@ test("Workflow 04: copy/paste text transfers payload only without changing targe
         );
 
     if (!targetHasSourceTextAfterMenuPaste) {
-        await setActiveCanvasElementByIndexViaManager(
+        await setActiveCanvasElementByIndexViaPageBundleOrUi(
             canvasTestContext,
             targetIndex,
         );
@@ -955,7 +953,7 @@ test("Workflow 06: set image information command is visible without invocation a
         canvasTestContext,
         "image",
     );
-    await setActiveCanvasElementByIndexViaManager(
+    await setActiveCanvasElementByIndexViaPageBundleOrUi(
         canvasTestContext,
         imageIndex,
     );
@@ -993,7 +991,7 @@ test("Workflow 07: video choose/record commands are present without invoking nat
         "Record yourself...",
     ];
     for (const command of commands) {
-        await setActiveCanvasElementByIndexViaManager(
+        await setActiveCanvasElementByIndexViaPageBundleOrUi(
             canvasTestContext,
             videoIndex,
         );
@@ -1002,7 +1000,7 @@ test("Workflow 07: video choose/record commands are present without invoking nat
             contextMenuItemLocator(canvasTestContext.pageFrame, command),
         ).toBeVisible();
         await canvasTestContext.page.keyboard.press("Escape");
-        await setActiveCanvasElementByIndexViaManager(
+        await setActiveCanvasElementByIndexViaPageBundleOrUi(
             canvasTestContext,
             videoIndex,
         );
@@ -1060,7 +1058,7 @@ test("Workflow 08: play-earlier and play-later reorder video elements in DOM ord
         );
 
         for (const index of candidates) {
-            await setActiveCanvasElementByIndexViaManager(
+            await setActiveCanvasElementByIndexViaPageBundleOrUi(
                 canvasTestContext,
                 index,
             );
@@ -1183,7 +1181,7 @@ test("Workflow 10: duplicate creates independent copies for each type that suppo
         }
 
         const duplicateIndex = beforeDuplicateCount;
-        await setActiveCanvasElementByIndexViaManager(
+        await setActiveCanvasElementByIndexViaPageBundleOrUi(
             canvasTestContext,
             duplicateIndex,
         );
@@ -1201,7 +1199,7 @@ test("Workflow 10: duplicate creates independent copies for each type that suppo
                 duplicateMarkerText,
             );
 
-            await setActiveCanvasElementByIndexViaManager(
+            await setActiveCanvasElementByIndexViaPageBundleOrUi(
                 canvasTestContext,
                 createdIndex,
             );
@@ -1239,7 +1237,7 @@ test("Workflow 11: delete command leaves a valid active-selection handoff for ea
             { x: 270, y: 170 },
         );
 
-        await setActiveCanvasElementByIndexViaManager(
+        await setActiveCanvasElementByIndexViaPageBundleOrUi(
             canvasTestContext,
             firstIndex,
         );
@@ -1270,7 +1268,7 @@ test("Workflow 11: delete command leaves a valid active-selection handoff for ea
                 secondIndex - 1,
                 afterDeleteCount - 1,
             );
-            await setActiveCanvasElementByIndexViaManager(
+            await setActiveCanvasElementByIndexViaPageBundleOrUi(
                 canvasTestContext,
                 remainingIndex,
             );
@@ -1428,7 +1426,7 @@ test("Workflow 15: background color transition between opaque and transparent up
 
     // TODO: Replace this manager-level transparent-color setup with a stable
     // color-dialog interaction once transparent is reliably selectable by test.
-    await setActiveElementBackgroundColorViaManager(
+    await setActiveElementBackgroundColorViaPageBundle(
         canvasTestContext,
         "transparent",
         0,
@@ -1517,7 +1515,7 @@ test("Workflow 17: book-link-grid choose-books command remains available and rep
     if (existingGridIndex < 0) {
         await createElementAndReturnIndex(canvasTestContext, "book-link-grid");
     } else {
-        await setActiveCanvasElementByIndexViaManager(
+        await setActiveCanvasElementByIndexViaPageBundleOrUi(
             canvasTestContext,
             existingGridIndex,
         );
@@ -1535,7 +1533,7 @@ test("Workflow 17: book-link-grid choose-books command remains available and rep
 
         const gridIndex = await getBookLinkGridIndex();
         if (gridIndex >= 0) {
-            await setActiveCanvasElementByIndexViaManager(
+            await setActiveCanvasElementByIndexViaPageBundleOrUi(
                 canvasTestContext,
                 gridIndex,
             );
@@ -1607,7 +1605,7 @@ test("Workflow 18: mixed workflow across speech/image/video/navigation remains s
         "image",
         { x: 240, y: 120 },
     );
-    await setActiveCanvasElementByIndexViaManager(
+    await setActiveCanvasElementByIndexViaPageBundleOrUi(
         canvasTestContext,
         imageIndex,
     );
@@ -1625,19 +1623,19 @@ test("Workflow 18: mixed workflow across speech/image/video/navigation remains s
         { x: 180, y: 250 },
     );
 
-    await setActiveCanvasElementByIndexViaManager(
+    await setActiveCanvasElementByIndexViaPageBundleOrUi(
         canvasTestContext,
         speechIndex,
     );
     await clickContextMenuItemIfEnabled(canvasTestContext, "Format");
 
-    await setActiveCanvasElementByIndexViaManager(
+    await setActiveCanvasElementByIndexViaPageBundleOrUi(
         canvasTestContext,
         imageIndex,
     );
     await clickContextMenuItemIfEnabled(canvasTestContext, "Copy image");
 
-    await setActiveCanvasElementByIndexViaManager(
+    await setActiveCanvasElementByIndexViaPageBundleOrUi(
         canvasTestContext,
         videoIndex,
     );
@@ -1657,7 +1655,10 @@ test("Workflow 18: mixed workflow across speech/image/video/navigation remains s
     }
     await canvasTestContext.page.keyboard.press("Escape");
 
-    await setActiveCanvasElementByIndexViaManager(canvasTestContext, navIndex);
+    await setActiveCanvasElementByIndexViaPageBundleOrUi(
+        canvasTestContext,
+        navIndex,
+    );
     await clickContextMenuItemIfEnabled(canvasTestContext, "Set Destination");
 
     await keyboardNudge(canvasTestContext, "ArrowRight");
@@ -1686,7 +1687,10 @@ test("Workflow 18: mixed workflow across speech/image/video/navigation remains s
 
     const remainingCount = await getCanvasElementCount(canvasTestContext);
     if (remainingCount > 0) {
-        await setActiveCanvasElementByIndexViaManager(canvasTestContext, 0);
+        await setActiveCanvasElementByIndexViaPageBundleOrUi(
+            canvasTestContext,
+            0,
+        );
     }
     await expectAnyCanvasElementActive(canvasTestContext);
     await expectContextControlsVisible(canvasTestContext);

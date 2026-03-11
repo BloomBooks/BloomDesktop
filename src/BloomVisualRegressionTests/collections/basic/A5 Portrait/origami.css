@@ -27,6 +27,28 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
     z-index: 1;
 }
 
+/* nicescroll looks for position:absolute to find where to place its elements.
+ * For "Just Text" pages, the .split-pane > .split-pane-component element layers
+ * are omitted, so we need to add a rule to set position:absolute on the
+ * .split-pane-component-inner element.
+ * This prevents the strange behavior reported in BL-15093.
+ * Note that position:absolute causes padding of the parent to be ignored, so we
+ * have to set the top, left, right, and bottom to what would be the padding value
+ * in order to get the correct layout.  We also really want to restrict this rule
+ * to only "Just Text" pages. The ":has()" pseudo-class does that since the "Just
+ * a Picture" page will not have an immediate child with the .bloom-translationGroup
+ * class.  (BL-15611, BL-15720)
+ */
+.marginBox > .split-pane-component-inner:has(> .bloom-translationGroup) {
+    position: absolute;
+    top: var(--marginBox-padding);
+    left: var(--marginBox-padding);
+    right: var(--marginBox-padding);
+    bottom: var(--marginBox-padding);
+    width: initial;
+    height: initial;
+}
+
 .split-pane.fixed-top > .split-pane-component:first-child,
 .split-pane.fixed-bottom > .split-pane-component:first-child,
 .split-pane.horizontal-percent > .split-pane-component:first-child {
@@ -42,6 +64,8 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
     left: 0;
     cursor: ns-resize;
     z-index: 2;
+
+    /* JohnT mod: this extra padding makes it impossible to grab the crop control right above the split.
     padding-bottom: 5px; /* this actually enlarges the target area for the user trying to find the splitter, without changing the layout of the page (because the position is absolute)*/
 }
 
@@ -97,108 +121,108 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
 }
 
 .split-pane > .split-pane-component {
-  overflow: hidden !important;
+    overflow: hidden !important;
 }
 .split-pane.vertical-percent > .split-pane-component.position-left {
-  right: 50%;
-  margin-right: 3px;
+    right: 50%;
+    margin-right: var(--side-by-side-gap);
 }
 .split-pane.vertical-percent > .split-pane-component.position-right {
-  width: 50%;
+    width: 50%;
 }
 .split-pane.horizontal-percent > .split-pane-component.position-top {
-  bottom: 50%;
-  margin-bottom: 3px;
+    bottom: 50%;
+    margin-bottom: var(--top-bottom-gap);
 }
 .split-pane.horizontal-percent > .split-pane-component.position-bottom {
-  height: 50%;
+    height: 50%;
 }
 .split-pane-divider {
-  visibility: hidden;
+    visibility: hidden;
 }
 .split-pane.vertical-percent > .vertical-divider {
-  right: 50%;
-  border-right: 3px dashed transparent;
+    right: 50%;
+    border-right: 3px dashed transparent;
 }
 .split-pane.horizontal-percent > .horizontal-divider {
-  bottom: 50%;
-  border-bottom: 3px dashed transparent;
+    bottom: 50%;
+    border-bottom: 3px dashed transparent;
 }
 .origami-controls {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 20000;
-  height: 99%;
-  width: 99%;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 20000;
+    height: 99%;
+    width: 99%;
 }
 .origami-controls .close {
-  font-weight: bold;
+    font-weight: bold;
 }
 .origami-controls .button,
 .origami-controls .origami-controls .button:visited {
-  display: inline-block;
-  text-decoration: none;
-  position: relative;
-  height: 20px;
-  width: 20px;
-  text-align: center;
-  color: #d2d2d2;
-  background-color: transparent;
-  line-height: 1em;
-  font-size: 18px;
+    display: inline-block;
+    text-decoration: none;
+    position: relative;
+    height: 20px;
+    width: 20px;
+    text-align: center;
+    color: #d2d2d2;
+    background-color: transparent;
+    line-height: 1em;
+    font-size: 18px;
 }
 .origami-controls .close-button-wrapper {
-  float: left;
-  padding: 5px;
-  position: absolute;
-  right: 0;
-  top: 0;
+    float: left;
+    padding: 5px;
+    position: absolute;
+    right: 0;
+    top: 0;
 }
 .origami-controls .vertical-adders {
-  left: 0;
-  position: absolute;
-  top: 10%;
+    left: 0;
+    position: absolute;
+    top: 10%;
 }
 .origami-controls .vertical-adders .button {
-  position: absolute;
-  left: 10px;
+    position: absolute;
+    left: 10px;
 }
 .origami-controls .vertical-adders .button.add-top {
-  top: 10px;
+    top: 10px;
 }
 .origami-controls .vertical-adders .button.add-bottom {
-  bottom: 10px;
+    bottom: 10px;
 }
 .origami-controls .vertical-adders .separator {
-  border-bottom: 3px #d2d2d2 dashed;
-  width: 100%;
-  position: absolute;
-  top: 50%;
+    border-bottom: 3px #d2d2d2 dashed;
+    width: 100%;
+    position: absolute;
+    top: 50%;
 }
 .origami-controls .horizontal-adders {
-  bottom: 0;
-  right: 10%;
-  position: absolute;
+    bottom: 0;
+    right: 10%;
+    position: absolute;
 }
 .origami-controls .horizontal-adders .button {
-  position: absolute;
-  bottom: 10px;
+    position: absolute;
+    bottom: 10px;
 }
 .origami-controls .horizontal-adders .button.add-left {
-  left: 10px;
+    left: 10px;
 }
 .origami-controls .horizontal-adders .button.add-right {
-  right: 10px;
+    right: 10px;
 }
 .origami-controls .horizontal-adders .separator {
-  border-right: 3px #d2d2d2 dashed;
-  height: 100%;
-  position: absolute;
-  left: 50%;
+    border-right: 3px #d2d2d2 dashed;
+    height: 100%;
+    position: absolute;
+    left: 50%;
 }
 .origami-controls .horizontal-adders > div {
-  float: left;
+    float: left;
 }
 /* I wasn't convinced this was helpful... may return to it
 .adders{
@@ -207,94 +231,113 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
 }*/
 .origami-controls .vertical-adders,
 .origami-controls .horizontal-adders {
-  /*   -background-color: lightgrey;rgba(0,0,0,.1) ;*/
+    /*   -background-color: lightgrey;rgba(0,0,0,.1) ;*/
 }
 .split-pane-component-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  padding: 0px;
-  box-sizing: border-box;
-  transition-property: font-size;
-  transition-duration: 0.5s;
-  font-size: 12pt;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 0px;
+    box-sizing: border-box;
+    transition-property: font-size;
+    transition-duration: 0.5s;
+    font-size: 12pt;
 }
 .container-selector-links {
-  display: none;
+    display: none;
 }
 .container-textBox-id {
-  display: none;
+    display: none;
 }
 .selector-links {
-  top: 45%;
-  text-align: center;
+    top: 45%;
+    text-align: center;
 }
 .selector-links a {
-  z-index: 50000;
+    z-index: 50000;
 }
 .selector-links div {
-  display: inline;
+    display: inline;
+}
+.split-pane-component-inner {
+    container-type: size;
+    container-name: split-pane-component-inner;
 }
 .split-pane-component-inner .vertical-adders {
-  display: none;
+    display: none;
 }
 .split-pane-component-inner .horizontal-adders {
-  display: none;
+    display: none;
 }
-.split-pane-component-inner[min-width~="60px"] .horizontal-adders {
-  width: 70px;
-  height: 50px;
+@container split-pane-component-inner (min-width: 60px) {
+    .horizontal-adders {
+        width: 70px;
+        height: 50px;
+    }
 }
-.split-pane-component-inner[min-height~="60px"] .vertical-adders {
-  width: 50px;
-  height: 70px;
+@container split-pane-component-inner (min-height: 60px) {
+    .vertical-adders {
+        width: 50px;
+        height: 70px;
+    }
 }
-.split-pane-component-inner[min-width~="150px"][min-height~="150px"] .textBox-identifier {
-  transition-property: font-size;
-  transition-duration: 0.5s;
-  font-size: 24pt;
+@container split-pane-component-inner (min-width: 150px) and (min-height: 150px) {
+    .textBox-identifier {
+        transition-property: font-size;
+        transition-duration: 0.5s;
+        font-size: 24pt;
+    }
 }
-.split-pane-component-inner[min-height~="250px"] .vertical-adders {
-  height: 100px;
+@container split-pane-component-inner (min-height: 250px) {
+    .vertical-adders {
+        height: 100px;
+    }
+    .horizontal-adders {
+        height: 100px;
+    }
 }
-.split-pane-component-inner[min-height~="250px"] .horizontal-adders {
-  height: 100px;
-}
-.split-pane-component-inner[min-width~="250px"] .vertical-adders {
-  width: 100px;
-}
-.split-pane-component-inner[min-width~="250px"] .horizontal-adders {
-  width: 100px;
+@container split-pane-component-inner (min-width: 250px) {
+    .vertical-adders {
+        width: 100px;
+    }
+    .horizontal-adders {
+        width: 100px;
+    }
 }
 .origami-layout-mode {
-  /*the commented line below would also add it to an empty bloom-content1 for re-entry to layout mode*/
-  /*but that would be problematic/confusing in a multilingual context*/
-  /*.origami-layout-mode .split-pane-component-inner .bloom-editable.bloom-content1:empty:before,*/
-  /* not setting z-index in the upper layer allows the adder buttons to be visible and active when the */
-  /* cursor is over the "Text Box" text, but not when it is over the .formatButton gearbox icon. (BL-9176) */
+    /*the commented line below would also add it to an empty bloom-content1 for re-entry to layout mode*/
+    /*but that would be problematic/confusing in a multilingual context*/
+    /*.origami-layout-mode .split-pane-component-inner .bloom-editable.bloom-content1:empty:before,*/
+    /* not setting z-index in the upper layer allows the adder buttons to be visible and active when the */
+    /* cursor is over the "Text Box" text, but not when it is over the .formatButton gearbox icon. (BL-9176) */
 }
 .origami-layout-mode .bloom-editable p {
-  color: #ececec !important;
+    color: #ececec !important;
 }
 .origami-layout-mode .bloom-editable p span {
-  background-color: unset !important;
+    background-color: unset !important;
 }
 .origami-layout-mode .origami-ui .adders {
-  display: none;
+    display: none;
 }
 .origami-layout-mode .split-pane-component-inner .textBox-identifier {
-  /*content: "Text Box";*/
-  color: #7e7e7e;
-  white-space: normal;
-  transition-property: font-size;
-  transition-duration: 0.5s;
-  text-align: center;
-  width: 100%;
-  position: absolute;
-  top: 45%;
+    /*content: "Text Box";*/
+    color: #7e7e7e;
+    white-space: normal;
+    transition-property: font-size;
+    transition-duration: 0.5s;
+    text-align: center;
+    width: 100%;
+    position: absolute;
+    top: 45%;
 }
-.origami-layout-mode .split-pane-component-inner .textBox-identifier .formatButton {
-  z-index: 60000;
-  padding-left: 10px;
-  display: inline-flex;
+.origami-layout-mode
+    .split-pane-component-inner
+    .textBox-identifier
+    .formatButton {
+    z-index: 60000;
+    padding-left: 10px;
+    display: inline-flex;
 }
+/*# sourceMappingURL=origami.css.map */
+/*# sourceMappingURL=origami.css.map */

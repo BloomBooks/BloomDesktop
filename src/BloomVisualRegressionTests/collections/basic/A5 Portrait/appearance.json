@@ -1,0 +1,16 @@
+{
+    "cssThemeName": "default",
+    "coverIsImage": false,
+    "fullBleed": false,
+    "pageNumber-position": "automatic",
+    "cover-creditsRow-show": true,
+    "cover-title-L1-show": true,
+    "cover-title-L2-show": true,
+    "cover-title-L3-show": false,
+    "cover-topic-show": true,
+    "cover-languageName-show": true,
+    "pageNumber-show": true,
+    "pageNumber-left-margin-override": "unset",
+    "pageNumber-right-margin-override": "unset",
+    "cover-background-color": "#c6c6c6"
+}

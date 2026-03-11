@@ -78,7 +78,7 @@ const setActiveCanvasElementByIndex = async (
     canvasTestContext,
     index: number,
 ): Promise<void> => {
-    const selectedViaManager = await canvasTestContext.pageFrame.evaluate(
+    const selectedViaPageBundle = await canvasTestContext.pageFrame.evaluate(
         (elementIndex) => {
             const bundle = (window as IEditablePageBundleWindow)
                 .editablePageBundle;
@@ -91,7 +91,7 @@ const setActiveCanvasElementByIndex = async (
         index,
     );
 
-    if (!selectedViaManager) {
+    if (!selectedViaPageBundle) {
         await selectCanvasElementAtIndex(canvasTestContext, index);
     }
 };
