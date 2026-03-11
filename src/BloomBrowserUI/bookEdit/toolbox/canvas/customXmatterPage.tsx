@@ -160,14 +160,27 @@ export function convertXmatterPageToCustom(page: HTMLElement): void {
             newCe.appendChild(ceContent);
             // Before we move the tg, measure its size and make newCe match
             // Review: do we need to add allowance for borders/margins/padding?
-            newCe.style.width = baseSizeOn.clientWidth + "px";
-            newCe.style.height = baseSizeOn.clientHeight + "px";
+            const baseComputedStyle = window.getComputedStyle(baseSizeOn);
+            const marginLeft =
+                Number.parseFloat(baseComputedStyle.marginLeft) || 0;
+            const marginRight =
+                Number.parseFloat(baseComputedStyle.marginRight) || 0;
+            const marginTop =
+                Number.parseFloat(baseComputedStyle.marginTop) || 0;
+            const marginBottom =
+                Number.parseFloat(baseComputedStyle.marginBottom) || 0;
+            newCe.style.width =
+                baseSizeOn.clientWidth + marginLeft + marginRight + "px";
+            newCe.style.height =
+                baseSizeOn.clientHeight + marginTop + marginBottom + "px";
             // set its top and left to where it currently is relative to the page
             const pageRect = page.getBoundingClientRect();
             const tgRect = baseSizeOn.getBoundingClientRect();
             const scale = EditableDivUtils.getPageScale();
-            newCe.style.left = (tgRect.left - pageRect.left) / scale + "px";
-            newCe.style.top = (tgRect.top - pageRect.top) / scale + "px";
+            newCe.style.left =
+                (tgRect.left - pageRect.left) / scale - marginLeft + "px";
+            newCe.style.top =
+                (tgRect.top - pageRect.top) / scale - marginTop + "px";
         }
     }
     const mainCanvas = document.createElement("div");
