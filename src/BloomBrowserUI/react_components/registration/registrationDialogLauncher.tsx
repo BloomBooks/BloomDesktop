@@ -14,7 +14,7 @@ import {
     useEventLaunchedBloomDialog,
 } from "../BloomDialog/BloomDialogPlumbing";
 import { RegistrationDialog } from "./registrationDialog";
-import { getEditTabBundleExports } from "../../bookEdit/js/bloomFrames";
+import { getWorkspaceBundleExports } from "../../bookEdit/js/workspaceFrames";
 import { postBoolean } from "../../utils/bloomApi";
 
 export interface IRegistrationDialogProps {
@@ -95,7 +95,8 @@ export function showRegistrationDialog(
 export function showRegistrationDialogForEditTab(
     registrationDialogProps: IRegistrationDialogProps = {},
 ) {
-    const modalContainer = getEditTabBundleExports().getModalDialogContainer();
+    const modalContainer =
+        getWorkspaceBundleExports().getModalDialogContainer();
     if (!registrationDialogProps.dialogEnvironment) {
         registrationDialogProps.dialogEnvironment = {
             dialogFrameProvidedExternally: false,

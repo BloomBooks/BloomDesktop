@@ -6,7 +6,7 @@
         In order to make the contents of that bundle and the context of that frame accessible from the
         outside, Webpack is set so that the first line of each of these "entry point" files
         is something like
-        var editTabBundle = {.....}
+        var workspaceBundle = {.....}
 
         So this module just hides all that and allows code in any frame to access the exports on any other frame.
         Not to make it simpler (because it's already simple... see how few lines are here...) but in order
@@ -14,46 +14,55 @@
 */
 
 import { IPageFrameExports } from "../editablePage";
-import { IEditViewFrameExports } from "../editViewFrame";
+import { IWorkspaceExports } from "../workspaceRoot";
 import { IToolboxFrameExports } from "../toolbox/toolboxBootstrap";
 
-interface WindowWithExports extends Window {
-    editTabBundle: any;
-}
 export function getToolboxBundleExports(): IToolboxFrameExports | null {
-    return (getFrame("toolbox") as any)
-        ?.toolboxBundle as IToolboxFrameExports | null;
+    const frameWindow = getFrame("toolbox") as
+        | (Window & { [key: string]: unknown })
+        | null;
+    return (
+        (frameWindow?.["toolboxBundle"] as unknown as IToolboxFrameExports) ??
+        null
+    );
 }
 export function getEditablePageBundleExports(): IPageFrameExports | null {
-    return (getFrame("page") as any)
-        ?.editablePageBundle as IPageFrameExports | null;
+    const frameWindow = getFrame("page") as
+        | (Window & { [key: string]: unknown })
+        | null;
+    return (
+        (frameWindow?.["editablePageBundle"] as unknown as IPageFrameExports) ??
+        null
+    );
 }
-export function getEditTabBundleExports(): IEditViewFrameExports {
-    const rootWindow = getRootWindow();
-    if (!rootWindow["editTabBundle"]) {
+export function getWorkspaceBundleExports(): IWorkspaceExports {
+    const rootWindow = getRootWindow() as Window & { [key: string]: unknown };
+    const workspaceBundle = rootWindow["workspaceBundle"];
+    if (!workspaceBundle) {
         // Tempting to do an alert here. But if the browser control has not yet been added
         // to its parent, we won't see it, and the loading code will be frozen waiting for
         // a response to the alert. Hopefully the error will show up somewhere.
         throw new Error(
-            "no editTabBundle! Did editing code get compiled into the wrong bundle?",
+            "no workspace bundle exports! Did editing code get compiled into the wrong bundle?",
         );
     }
-    return (<any>getRootWindow()).editTabBundle as IEditViewFrameExports;
+    return workspaceBundle as IWorkspaceExports;
 }
 
-// Do this task when the edit tab bundle is loaded. If it isn't loaded already, we set a timeout and do it when we can.
-// There is a similar doWhenToolboxLoaded in editViewFrame.ts.
-export function doWhenEditTabBundleLoaded(
-    task: (editViewFrameExports: IEditViewFrameExports) => any,
+// Do this task when the workspace bundle is loaded. If it isn't loaded already, we set a timeout and do it when we can.
+// There is a similar doWhenToolboxLoaded in workspaceRoot.ts.
+export function doWhenWorkspaceBundleLoaded(
+    task: (workspaceExports: IWorkspaceExports) => unknown,
 ): void {
-    const bundle = getRootWindow().editTabBundle as IEditViewFrameExports;
+    const rootWindow = getRootWindow() as Window & { [key: string]: unknown };
+    const bundle = rootWindow.workspaceBundle as IWorkspaceExports;
     if (bundle) {
         task(bundle);
         return;
     }
 
     window.setTimeout(() => {
-        doWhenEditTabBundleLoaded(task);
+        doWhenWorkspaceBundleLoaded(task);
     }, 10);
 }
 
@@ -62,11 +71,11 @@ function getRootWindow(): Window {
     return window.parent || window;
 }
 
-function getFrame(id: string): WindowWithExports | null {
+function getFrame(id: string): Window | null {
     const element = getRootWindow().document.getElementById(id);
     if (!element) {
         return null;
     }
 
-    return (<HTMLIFrameElement>element).contentWindow as WindowWithExports;
+    return (<HTMLIFrameElement>element).contentWindow;
 }

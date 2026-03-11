@@ -1,4 +1,4 @@
-﻿/// <reference path="../../toolbox.ts" />
+/// <reference path="../../toolbox.ts" />
 import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import {
     beginInitializeLeveledReaderTool,
@@ -80,6 +80,7 @@ export class LeveledReaderToolboxTool implements ITool {
         getTheOneReaderToolsModel().setMarkupType(
             isToggleOff(isForLeveled) ? 0 : 2,
         );
+        getTheOneReaderToolsModel().updateControlContents();
         // usually updateMarkup will do this, unless we are coming from showTool
         getTheOneReaderToolsModel().doMarkup();
     }

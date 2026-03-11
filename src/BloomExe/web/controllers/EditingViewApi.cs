@@ -85,8 +85,23 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                "editView/topBarDropdownClicked",
-                HandleTopBarDropdownClicked,
+                "editView/topBar/contentLanguageUsage",
+                HandleGetContentLanguageUsage,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/topBar/contentLanguageUsageChange",
+                HandleContentLanguageUsageChange,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/topBar/layoutChoiceData",
+                HandleGetLayoutChoiceData,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/topBar/layoutChoiceChange",
+                HandleLayoutChoiceChange,
                 true
             );
             apiHandler.RegisterEndpointHandler(
@@ -310,7 +325,7 @@ namespace Bloom.web.controllers
             }
 
             View.Browser.RunJavascriptAsync(
-                $"editTabBundle?.getEditablePageBundleExports()?.topBarButtonClick({data})"
+                $"workspaceBundle?.getEditablePageBundleExports()?.topBarButtonClick({data})"
             );
             request.PostSucceeded();
         }
@@ -321,19 +336,34 @@ namespace Bloom.web.controllers
             request.PostSucceeded();
         }
 
-        private void HandleTopBarDropdownClicked(ApiRequest request)
+        private void HandleGetContentLanguageUsage(ApiRequest request)
         {
-            dynamic data = DynamicJson.Parse(request.RequiredPostJson());
+            request.ReplyWithJson(View.GetContentLanguageUsageForClient());
+        }
+
+        private void HandleContentLanguageUsageChange(ApiRequest request)
+        {
+            dynamic data = request.RequiredPostDynamic();
+            var languageTag = (string)data.languageTag;
+            var isUsedForContent = Convert.ToBoolean(data.isUsedForContent);
+
             View.Browser.Focus();
-            switch (data.command)
-            {
-                case "contentLanguages":
-                    View.ContentLanguagesDropdownClicked();
-                    break;
-                case "layoutChoices":
-                    View.LayoutChoicesDropdownClicked();
-                    break;
-            }
+            View.HandleContentLanguageUsageChangeForClient(languageTag, isUsedForContent);
+            request.PostSucceeded();
+        }
+
+        private void HandleGetLayoutChoiceData(ApiRequest request)
+        {
+            request.ReplyWithJson(View.GetLayoutChoicesMenuForClient());
+        }
+
+        private void HandleLayoutChoiceChange(ApiRequest request)
+        {
+            dynamic data = request.RequiredPostDynamic();
+            var layoutClassName = (string)data.layoutChoiceId;
+
+            View.Browser.Focus();
+            View.HandleLayoutChoicesMenuActionForClient(layoutClassName);
             request.PostSucceeded();
         }
 

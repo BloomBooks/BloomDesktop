@@ -10,7 +10,7 @@ import {
 import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 import $ from "jquery";
 
-export interface IEditViewFrameExports {
+export interface IWorkspaceExports {
     showDialog(
         dialogContents: string | JQuery,
         options: JQueryUI.DialogOptions,
@@ -26,7 +26,7 @@ export interface IEditViewFrameExports {
     hideColorPickerDialog(): void;
     showCopyrightAndLicenseDialog(imageUrl?: string): void;
     showEditViewTopicChooserDialog(): void;
-    showAdjustTimingsDialogFromEditViewFrame(
+    showAdjustTimingsDialogFromWorkspaceRoot(
         // The split and applyTimingsFile calls both return a list of new timings,
         // such as we might find in data-audioRecordingEndTimes
         split: (timingFilePath: string) => Promise<string | undefined>,
@@ -37,21 +37,23 @@ export interface IEditViewFrameExports {
         closing: (canceled: boolean) => void,
     );
     showRequiresSubscriptionDialog(featureName: string): void;
-    showRegistrationDialogInEditTab(
+    showRegistrationDialogFromWorkspaceRoot(
         mayChangeEmail?: boolean,
         emailRequiredForTeamCollection?: boolean,
     ): void;
+    showAboutDialogFromWorkspaceRoot(): void;
+    setWorkspaceMode(mode: string): void;
 }
 
 export function SayHello() {
-    alert("Hello!! from editViewFrame");
+    alert("Hello!! from workspaceRoot");
 }
 
 // These functions should be available for calling by non-module code (such as C# directly)
-// using the editTabBundle object (see more details in bloomFrames.ts)
-import { getToolboxBundleExports } from "./js/bloomFrames";
+// using the workspaceBundle object (see more details in workspaceFrames.ts)
+import { getToolboxBundleExports } from "./js/workspaceFrames";
 export { getToolboxBundleExports };
-import { getEditablePageBundleExports } from "./js/bloomFrames";
+import { getEditablePageBundleExports } from "./js/workspaceFrames";
 export { getEditablePageBundleExports };
 import { showPageChooserDialog } from "../pageChooser/PageChooserDialog";
 export { showPageChooserDialog };
@@ -73,11 +75,11 @@ import { FunctionComponentElement } from "react";
 import { showAdjustTimingsDialog } from "./toolbox/talkingBook/AdjustTimingsDialog";
 import { getPageIframeBody } from "../utils/shared";
 import { showRequiresSubscriptionDialogInEditView } from "../react_components/requiresSubscription";
-export { showAdjustTimingsDialog as showAdjustTimingsDialogFromEditViewFrame };
+export { showAdjustTimingsDialog as showAdjustTimingsDialogFromWorkspaceRoot };
 // Local alias so we have an in-scope identifier for legacy global exposure typing.
-const showAdjustTimingsDialogFromEditViewFrame = showAdjustTimingsDialog;
+const showAdjustTimingsDialogFromWorkspaceRoot = showAdjustTimingsDialog;
 
-//Called by c# using editTabBundle.handleUndo()
+//Called by c# using workspaceBundle.handleUndo()
 export function handleUndo(): void {
     // First see if origami is active and knows about something we can undo.
     const contentWindow = getEditablePageBundleExports();
@@ -99,15 +101,14 @@ export function handleUndo(): void {
 export function switchThumbnailPage(newSource: string) {
     const iframe = <HTMLIFrameElement>document.getElementById("pageList");
     iframe.src = newSource;
+    updateWorkspaceUrlParam("pageListSrc", newSource);
 }
 
 export function switchContentPage(newSource: string) {
     try {
-        if (
-            this.getEditablePageBundleExports &&
-            this.getEditablePageBundleExports()?.pageUnloading
-        ) {
-            this.getEditablePageBundleExports().pageUnloading();
+        const editablePageBundle = getEditablePageBundleExports();
+        if (editablePageBundle?.pageUnloading) {
+            editablePageBundle.pageUnloading();
         }
     } catch (e) {
         // It's not too unlikely something goes wrong while trying to unload the previous
@@ -135,11 +136,14 @@ export function switchContentPage(newSource: string) {
     const handler = () => {
         handlerCalled = true;
         iframe.removeEventListener("load", handler);
-        getToolboxBundleExports()!.applyToolboxStateToPage();
+        doWhenToolboxLoaded((toolboxFrameExports: IToolboxFrameExports) => {
+            toolboxFrameExports.applyToolboxStateToPage();
+        });
     };
     iframe.removeEventListener("load", handler);
     iframe.addEventListener("load", handler);
     iframe.src = newSource;
+    updateWorkspaceUrlParam("pageSrc", newSource);
     // When we don't already have a video (either a new page, or it has been deleted),
     // and record a new one, we switchContentPage to make the new video show up.
     // And for no known reason, the load event never fires. There may possibly be
@@ -192,7 +196,7 @@ export function doWhenToolboxLoaded(
     }
 }
 
-//Called by c# using editTabBundle.canUndo()
+//Called by c# using workspaceBundle.canUndo()
 export function canUndo(): string {
     // See comments on handleUndo()
     const contentWindow = getEditablePageBundleExports();
@@ -270,7 +274,7 @@ export function showEditViewBookSettingsDialog(
     showBookSettingsDialog(initiallySelectedGroupIndex);
 }
 
-export function showAboutDialogInEditTab() {
+export function showAboutDialogFromWorkspaceRoot() {
     showAboutDialog();
 }
 
@@ -278,8 +282,109 @@ export function showRequiresSubscriptionDialog(featureName: string): void {
     showRequiresSubscriptionDialogInEditView(featureName);
 }
 
-export function showRegistrationDialogInEditTab() {
+export function showRegistrationDialogFromWorkspaceRoot() {
     showRegistrationDialogForEditTab();
+}
+
+let hasActivatedEditMode = false;
+
+// In various contexts if we don't have an explicit mode, we default to collection mode.
+const normalizeWorkspaceMode = (mode: string | null | undefined): string => {
+    if (mode === "publish") {
+        return "publish";
+    }
+    return mode === "edit" ? "edit" : "collection";
+};
+
+// Apply to the body a class indicating which mode we're in...collection, edit, or publish.
+// This is used to control which elements are visible in the workspace.
+const applyWorkspaceModeClass = (mode: string): void => {
+    const classesToRemove: string[] = [];
+    document.body.classList.forEach((className) => {
+        if (className.endsWith("-mode")) {
+            classesToRemove.push(className);
+        }
+    });
+
+    classesToRemove.forEach((className) =>
+        document.body.classList.remove(className),
+    );
+    document.body.classList.add(`${mode}-mode`);
+};
+
+// We manage a param in the root url so that if the main browser is refreshed, it can reopen
+// in the same tab.
+const updateWorkspaceModeInUrl = (mode: string): void => {
+    const normalizedMode = normalizeWorkspaceMode(mode);
+    updateWorkspaceUrlParam("mode", normalizedMode);
+};
+
+const updateWorkspaceUrlParam = (name: string, value: string): void => {
+    const url = new URL(window.location.href);
+    url.searchParams.set(name, value);
+    window.history.replaceState(window.history.state, "", url.toString());
+};
+
+// When an iframe is not in use, we set its src to about:blank. This at least frees up memory,
+// and may help with other issues caused by having a stale page in the edit iframe while
+// activity in the collection tab has moved us to another book, and similar problems.
+// This function is used to restore the proper src of an iframe when we switch to its tab.
+const restoreIframeSrcFromUrlIfNeeded = (
+    iframeId: string,
+    paramName: string,
+    restoreAction?: (savedSrc: string) => void,
+): void => {
+    const iframe = document.getElementById(
+        iframeId,
+    ) as HTMLIFrameElement | null;
+    if (!iframe) {
+        return;
+    }
+
+    const currentSrc = iframe.getAttribute("src") || "";
+    const needsRestore = currentSrc === "" || currentSrc === "about:blank";
+    if (!needsRestore) {
+        return;
+    }
+
+    const url = new URL(window.location.href);
+    const savedSrc = url.searchParams.get(paramName);
+    if (savedSrc) {
+        if (restoreAction) {
+            restoreAction(savedSrc);
+        } else {
+            iframe.src = savedSrc;
+        }
+    }
+};
+
+const initializeWorkspaceModeFromUrl = (): void => {
+    const url = new URL(window.location.href);
+    const mode = normalizeWorkspaceMode(url.searchParams.get("mode"));
+    applyWorkspaceModeClass(mode);
+    updateWorkspaceModeInUrl(mode);
+    restoreIframeSrcFromUrlIfNeeded("page", "pageSrc", switchContentPage);
+    restoreIframeSrcFromUrlIfNeeded("pageList", "pageListSrc");
+};
+
+initializeWorkspaceModeFromUrl();
+
+export function setWorkspaceMode(mode: string): void {
+    const normalizedMode = normalizeWorkspaceMode(mode);
+    applyWorkspaceModeClass(normalizedMode);
+    updateWorkspaceModeInUrl(normalizedMode);
+
+    if (normalizedMode === "edit") {
+        restoreIframeSrcFromUrlIfNeeded("page", "pageSrc", switchContentPage);
+        restoreIframeSrcFromUrlIfNeeded("pageList", "pageListSrc");
+    }
+
+    if (normalizedMode === "edit" && !hasActivatedEditMode) {
+        hasActivatedEditMode = true;
+        window.dispatchEvent(
+            new CustomEvent("bloom-edit-mode-first-activated"),
+        );
+    }
 }
 
 // Adjusts the zoom scaling element created in C# SetupPageZoom; keep in sync with that code.
@@ -301,9 +406,8 @@ export function setZoom(zoom: number): void {
     }
 }
 
-// --- Global exposure (legacy compatibility) --------------------------------------
-// The old webpack build exposed these APIs via window["editTabBundle"].
-// Maintain that contract so existing C# and cross-frame code keeps working.
+// --- Global exposure --------------------------------------------------------------
+// Expose these APIs via window["workspaceBundle"] for C# and cross-frame code.
 // Keep this at the end so all exported bindings are defined.
 // Note: We purposely build the object explicitly (rather than spreading 'exports')
 // to avoid accidentally leaking unrelated internal symbols.
@@ -311,7 +415,7 @@ export function setZoom(zoom: number): void {
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore - allow indexing window
 // Minimal augmentation: declare a type for the bundle to help future maintenance.
-interface EditTabBundleApi {
+interface WorkspaceBundleApi {
     SayHello: typeof SayHello;
     handleUndo: typeof handleUndo;
     switchThumbnailPage: typeof switchThumbnailPage;
@@ -329,10 +433,11 @@ interface EditTabBundleApi {
     showCopyrightAndLicenseDialog: typeof showCopyrightAndLicenseDialog;
     showEditViewTopicChooserDialog: typeof showEditViewTopicChooserDialog;
     showEditViewBookSettingsDialog: typeof showEditViewBookSettingsDialog;
-    showAboutDialogInEditTab: typeof showAboutDialogInEditTab;
+    showAboutDialogFromWorkspaceRoot: typeof showAboutDialogFromWorkspaceRoot;
     showRequiresSubscriptionDialog: typeof showRequiresSubscriptionDialog;
-    showRegistrationDialogInEditTab: typeof showRegistrationDialogInEditTab;
-    showAdjustTimingsDialogFromEditViewFrame: typeof showAdjustTimingsDialogFromEditViewFrame;
+    showRegistrationDialogFromWorkspaceRoot: typeof showRegistrationDialogFromWorkspaceRoot;
+    setWorkspaceMode: typeof setWorkspaceMode;
+    showAdjustTimingsDialogFromWorkspaceRoot: typeof showAdjustTimingsDialogFromWorkspaceRoot;
     setZoom: typeof setZoom;
     getToolboxBundleExports: typeof getToolboxBundleExports;
     getEditablePageBundleExports: typeof getEditablePageBundleExports;
@@ -344,11 +449,11 @@ interface EditTabBundleApi {
 
 declare global {
     interface Window {
-        editTabBundle: EditTabBundleApi;
+        workspaceBundle: WorkspaceBundleApi;
     }
 }
 
-window.editTabBundle = {
+window.workspaceBundle = {
     // simple exports
     SayHello,
     handleUndo,
@@ -367,11 +472,12 @@ window.editTabBundle = {
     showCopyrightAndLicenseDialog,
     showEditViewTopicChooserDialog,
     showEditViewBookSettingsDialog,
-    showAboutDialogInEditTab,
+    showAboutDialogFromWorkspaceRoot,
     showRequiresSubscriptionDialog,
-    showRegistrationDialogInEditTab,
-    showAdjustTimingsDialogFromEditViewFrame:
-        showAdjustTimingsDialogFromEditViewFrame,
+    showRegistrationDialogFromWorkspaceRoot,
+    setWorkspaceMode,
+    showAdjustTimingsDialogFromWorkspaceRoot:
+        showAdjustTimingsDialogFromWorkspaceRoot,
     setZoom,
     // re-exported cross-frame helpers
     getToolboxBundleExports,

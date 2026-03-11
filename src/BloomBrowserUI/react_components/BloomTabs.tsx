@@ -1,6 +1,7 @@
-import { css, SerializedStyles } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { TabsProps, Tabs } from "react-tabs";
+import "react-tabs/style/react-tabs.css";
 interface IProps extends TabsProps {
     color: string; // text, borders
     // text and bottom border for selected tab
