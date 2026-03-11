@@ -44,6 +44,10 @@ export const PageThumbnail: React.FunctionComponent<{
     // a fast desktop for a complex page...mainly because of XhtmlToHtml conversion.
     // So we do it lazily after setting up the initial framework of pages.
     const requestPage = useCallback(() => {
+        if (props.page.key === "placeholder") {
+            pendingPageRequestCount--;
+            return;
+        }
         // We don't want a lot of page requests running at the same time.
         // There are various limits on simultaneous requests, including
         // the number of threads in the BloomServer and the number of active

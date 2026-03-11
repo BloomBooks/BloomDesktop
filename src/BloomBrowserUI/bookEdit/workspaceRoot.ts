@@ -21,6 +21,7 @@ export interface IWorkspaceExports {
         task: (toolboxFrameExports: IToolboxFrameExports) => unknown,
     );
     getModalDialogContainer(): HTMLElement | null;
+    ShowEditViewDialog(dialog: FunctionComponentElement<unknown>): void;
     showConfirmDialog(props: IConfirmDialogProps): void;
     showColorPickerDialog(props: IColorPickerDialogProps): void;
     hideColorPickerDialog(): void;

@@ -21,7 +21,7 @@ import {
     useApiStringState,
 } from "../../utils/bloomApi";
 import { useL10n } from "../../react_components/l10nHooks";
-import { ShowEditViewDialog } from "../editViewFrame";
+import { getWorkspaceBundleExports } from "../js/workspaceFrames";
 import { ElementAttributeSnapshot } from "../../utils/ElementAttributeSnapshot";
 import { useGetFeatureStatus } from "../../react_components/featureStatus";
 import {
@@ -451,10 +451,15 @@ export function showBookSettingsDialog(initiallySelectedPageKey?: string) {
     // for now, we need to prevent that.
     if (!isOpenAlready) {
         isOpenAlready = true;
-        ShowEditViewDialog(
-            <BookAndPageSettingsDialog
-                initiallySelectedPageKey={initiallySelectedPageKey}
-            />,
-        );
+        try {
+            getWorkspaceBundleExports().ShowEditViewDialog(
+                <BookAndPageSettingsDialog
+                    initiallySelectedPageKey={initiallySelectedPageKey}
+                />,
+            );
+        } catch (error) {
+            isOpenAlready = false;
+            throw error;
+        }
     }
 }

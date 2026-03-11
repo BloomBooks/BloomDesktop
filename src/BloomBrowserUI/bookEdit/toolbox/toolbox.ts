@@ -704,6 +704,10 @@ function getActiveToolIdFromCurrentToolboxUi(): string | undefined {
     return activeHeader?.getAttribute("data-toolId") || undefined;
 }
 
+function isAccordionInitialized(toolboxElement: JQuery): boolean {
+    return toolboxElement.hasClass("ui-accordion");
+}
+
 // This primarily calls the detachFromPage method of the current tool, if any.
 // It also tries to find the current toolbox instance (in the right iframe, wherever it is called),
 // and runs any cleanup tasks that have been registered for when closing the tool.
@@ -1093,6 +1097,10 @@ function setCurrentTool(toolID: string) {
     // NOTE: tools without a "data-toolId" attribute (such as the More tool) cannot be the "currentTool."
     let idx = 0;
     const toolbox = $("#toolbox");
+    if (!isAccordionInitialized(toolbox)) {
+        window.setTimeout(() => setCurrentTool(toolID), 0);
+        return;
+    }
 
     const accordionHeaders = toolbox.find("> h3");
     if (toolID) {

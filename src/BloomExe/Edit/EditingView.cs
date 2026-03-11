@@ -1715,7 +1715,7 @@ namespace Bloom.Edit
                     // Open the book settings dialog to the context-specific page.
                     var pageKey = _model.CurrentPage.IsCoverPage ? "cover" : "contentPages";
                     RunJavascriptAsync(
-                        $"editTabBundle.showEditViewBookSettingsDialog('{pageKey}');"
+                        $"workspaceBundle.showEditViewBookSettingsDialog('{pageKey}');"
                     );
                     return _model.CurrentPage.Id;
                 },
@@ -1728,7 +1728,7 @@ namespace Bloom.Edit
             _model.SaveThen(
                 () =>
                 {
-                    RunJavascriptAsync("editTabBundle.showEditViewPageSettingsDialog();");
+                    RunJavascriptAsync("workspaceBundle.showEditViewPageSettingsDialog();");
                     return _model.CurrentPage.Id;
                 },
                 () => { } // wrong state, do nothing
