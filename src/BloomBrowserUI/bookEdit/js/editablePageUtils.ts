@@ -1,4 +1,4 @@
-import { getToolboxBundleExports } from "./bloomFrames";
+import { getToolboxBundleExports } from "./workspaceFrames";
 import { kMotionToolId } from "../toolbox/toolIds";
 
 // Utility functions likely to be useful in multiple places in the editable page context.

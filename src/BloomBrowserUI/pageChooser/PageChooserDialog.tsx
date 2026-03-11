@@ -12,10 +12,10 @@ import {
 } from "../react_components/BloomDialog/BloomDialog";
 import { useL10n } from "../react_components/l10nHooks";
 import { getBloomApiPrefix } from "../utils/bloomApi";
-import { getToolboxBundleExports } from "../bookEdit/js/bloomFrames";
+import { getToolboxBundleExports } from "../bookEdit/js/workspaceFrames";
 import SelectedTemplatePageControls from "./selectedTemplatePageControls";
 import TemplateBookPages from "./TemplateBookPages";
-import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
+import { ShowEditViewDialog } from "../bookEdit/workspaceRoot";
 import axios from "axios";
 import { getFeatureStatusAsync } from "../react_components/featureStatus";
 import {
@@ -80,7 +80,7 @@ export const getTemplatePageImageSource = (
     );
 };
 
-// To test the AddPage/ChangeLayout dialog in devtools, type 'editTabBundle.showPageChooserDialog(false)' in
+// To test the AddPage/ChangeLayout dialog in devtools, type 'workspaceBundle.showPageChooserDialog(false)' in
 // the Console. Substitute 'true' for the ChangeLayout dialog.
 
 // latest version of the expected JSON initialization string (from PageTemplatesApi.HandleTemplatesRequest)

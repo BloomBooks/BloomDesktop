@@ -449,10 +449,10 @@ export default class BloomHintBubbles {
                 if (functionCall === "showCopyrightAndLicenseDialog") {
                     if (!BloomHintBubbles.canChangeBookLicense()) return;
                     functionCall =
-                        "javascript:(window.parent || window).editTabBundle.showCopyrightAndLicenseDialog();";
+                        "javascript:(window.parent || window).workspaceBundle.showCopyrightAndLicenseDialog();";
                 } else if (functionCall === "showTopicChooser") {
                     functionCall =
-                        "javascript:(window.parent || window).editTabBundle.showEditViewTopicChooserDialog();";
+                        "javascript:(window.parent || window).workspaceBundle.showEditViewTopicChooserDialog();";
                     additionalQtipClasses = "topic-chooser-hint-bubble";
                 }
                 shouldShowAlways = true;

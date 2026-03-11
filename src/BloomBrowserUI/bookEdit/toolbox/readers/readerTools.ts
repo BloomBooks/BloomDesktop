@@ -35,6 +35,61 @@ interface textMarkup extends JQueryStatic {
 window.addEventListener("message", processDLRMessage, false);
 
 let readerToolsInitialized: boolean = false;
+let lastReaderToolSettingsContent: string | undefined;
+const maxReaderSettingsLoadAttempts = 5;
+
+// I'm not sure how copilot came to add this normalization. It claims that it is
+// useful defensiveness against some uncertainty about whether Axios will return
+// a string or an object.
+function normalizeReaderSettings(rawSettings: unknown): ReaderSettings {
+    if (typeof rawSettings === "string") {
+        return JSON.parse(rawSettings) as ReaderSettings;
+    }
+    return rawSettings as ReaderSettings;
+}
+
+function tryNormalizeReaderSettings(
+    rawSettings: unknown,
+): ReaderSettings | undefined {
+    try {
+        const settings = normalizeReaderSettings(rawSettings);
+        if (!settings) {
+            return undefined;
+        }
+        return settings;
+    } catch {
+        return undefined;
+    }
+}
+
+function loadReaderSettingsWithRetry(
+    attemptsRemaining: number,
+    onLoaded: (settings: ReaderSettings) => void,
+    onFailed: () => void,
+): void {
+    get("readers/io/readerToolSettings", (settingsFileContent) => {
+        const normalizedSettings = tryNormalizeReaderSettings(
+            settingsFileContent.data,
+        );
+        if (normalizedSettings) {
+            onLoaded(normalizedSettings);
+            return;
+        }
+
+        if (attemptsRemaining > 1) {
+            window.setTimeout(() => {
+                loadReaderSettingsWithRetry(
+                    attemptsRemaining - 1,
+                    onLoaded,
+                    onFailed,
+                );
+            }, 150);
+            return;
+        }
+
+        onFailed();
+    });
+}
 
 function getSetupDialogWindow(): Window | null {
     return (<HTMLIFrameElement>(
@@ -226,18 +281,50 @@ export function beginInitializeLeveledReaderTool(): JQueryPromise<void> {
 export function beginLoadSynphonySettings(): JQueryPromise<void> {
     // make sure synphony is initialized
     const result = $.Deferred<void>();
+    get("collection/defaultFont", (result) => setDefaultFont(result.data));
     if (readerToolsInitialized) {
-        result.resolve();
+        // If we already initialized the reader tools, we still need to read the current data,
+        // since now that we're using a single browser window for the whole workspace,
+        // we could change books without reloading the window, and there is some dependence
+        // of the data on the current book. So we read it one more time, and do some cleanup
+        // if it is different from what we had before.
+        loadReaderSettingsWithRetry(
+            maxReaderSettingsLoadAttempts,
+            (normalizedSettings) => {
+                const newSettingsContent = JSON.stringify(normalizedSettings);
+                const shouldRefresh =
+                    newSettingsContent !== lastReaderToolSettingsContent;
+                if (!shouldRefresh) {
+                    result.resolve();
+                    return;
+                }
+                beginRefreshEverything(normalizedSettings).then(() => {
+                    lastReaderToolSettingsContent = newSettingsContent;
+                    result.resolve();
+                });
+            },
+            () => {
+                readerToolsInitialized = false;
+                result.resolve();
+            },
+        );
         return result;
     }
     readerToolsInitialized = true;
 
-    get("collection/defaultFont", (result) => setDefaultFont(result.data));
-    get("readers/io/readerToolSettings", (settingsFileContent) => {
-        initializeSynphony(settingsFileContent.data);
-        //console.log("done synphony init");
-        result.resolve();
-    });
+    loadReaderSettingsWithRetry(
+        maxReaderSettingsLoadAttempts,
+        (normalizedSettings) => {
+            lastReaderToolSettingsContent = JSON.stringify(normalizedSettings);
+            initializeSynphony(normalizedSettings);
+            //console.log("done synphony init");
+            result.resolve();
+        },
+        () => {
+            readerToolsInitialized = false;
+            result.resolve();
+        },
+    );
     return result;
 }
 
@@ -248,7 +335,9 @@ export function beginLoadSynphonySettings(): JQueryPromise<void> {
  * @param settingsFileContent The content of the standard JSON) file that stores the Synphony settings for the collection.
  * @global {getTheOneReaderToolsModel()) ReaderToolsModel
  */
-function initializeSynphony(settingsFileContent: string): void {
+function initializeSynphony(
+    settingsFileContent: ReaderSettings | string,
+): void {
     const synphony = new ReadersSynphonyWrapper();
     synphony.loadSettings(settingsFileContent);
     getTheOneReaderToolsModel().setSynphony(synphony);
@@ -460,6 +549,16 @@ export function resizeWordList(startTimeout: boolean = true): void {
     if (div.length === 0) return; // if not found, the tool was closed
 
     const wordList: JQuery = div.find("#wordList");
+    const wordListParent = wordList.parent();
+    const wordListParentElement = wordListParent.get(0);
+    if (
+        !wordListParentElement ||
+        !wordListParentElement.isConnected ||
+        !wordListParentElement.ownerDocument?.defaultView
+    ) {
+        return;
+    }
+
     const currentHeight: number = div.height();
     const currentWidth: number = wordList.width();
 
@@ -477,7 +576,12 @@ export function resizeWordList(startTimeout: boolean = true): void {
         readerToolsModel.previousHeight = currentHeight;
         readerToolsModel.previousWidth = currentWidth;
 
-        const top = wordList.parent().position().top;
+        const parentPosition = wordListParent.position();
+        if (!parentPosition) {
+            return;
+        }
+
+        const top = parentPosition.top;
 
         const synphony = readerToolsModel.synphony;
         if (synphony.source) {
@@ -504,7 +608,7 @@ export function resizeWordList(startTimeout: boolean = true): void {
 
             if (ht < 50) ht = 50;
 
-            wordList.parent().css("height", Math.floor(ht) + "px");
+            wordListParent.css("height", Math.floor(ht) + "px");
         }
     }
 
@@ -515,13 +619,19 @@ export function resizeWordList(startTimeout: boolean = true): void {
 }
 
 export function createToggle(isForLeveled: boolean) {
+    const container = document.getElementById(
+        `${isForLeveled ? "leveled" : "decodable"}-reader-tool-toggle-react-container`,
+    );
+    if (!container) {
+        return;
+    }
+
+    // ReaderToolSwitch uses defaultChecked. Remount so it picks up current page
+    // reader classes whenever we switch books/pages and reactivate the tool.
+    ReactDOM.unmountComponentAtNode(container);
     ReactDOM.render(
         React.createElement(ReaderToolSwitch, { isForLeveled }),
-        document.getElementById(
-            `${
-                isForLeveled ? "leveled" : "decodable"
-            }-reader-tool-toggle-react-container`,
-        ),
+        container,
     );
 }
 

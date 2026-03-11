@@ -729,7 +729,7 @@ namespace Bloom
 
             // This implementation is specific to our Edit tab. This is currently the only place
             // we show the paste button that uses this command, but we will have to generalize somehow if
-            // that changes. I'm not sure whether the checks for existence of editTabBundle etc are needed.
+            // that changes. I'm not sure whether the checks for existence of workspaceBundle etc are needed.
             // I deliberately use RunJavaScriptAsync here without awaiting it, because nothing requires the
             // result (we only care about the side effects on the document)
             _pasteCommand.Implementer = () =>
@@ -746,7 +746,7 @@ namespace Bloom
                 clipboardImage?.Dispose();
 
                 RunJavascriptAsync(
-                    $"editTabBundle?.getEditablePageBundleExports()?.pasteClipboard({haveClipboardImage})"
+                    $"workspaceBundle?.getEditablePageBundleExports()?.pasteClipboard({haveClipboardImage})"
                 );
             };
         }
@@ -821,7 +821,7 @@ namespace Bloom
             try
             {
                 _currentlyRunningCanUndo = true;
-                return "yes" == await GetStringFromJavascriptAsync("editTabBundle?.canUndo?.()");
+                return "yes" == await GetStringFromJavascriptAsync("workspaceBundle?.canUndo?.()");
             }
             finally
             {

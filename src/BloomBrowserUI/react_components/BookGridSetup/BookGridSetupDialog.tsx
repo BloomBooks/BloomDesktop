@@ -12,7 +12,7 @@ import {
     DialogOkButton,
 } from "../BloomDialog/commonDialogComponents";
 import { useWatchApiData, useApiString } from "../../utils/bloomApi";
-import { ShowEditViewDialog } from "../../bookEdit/editViewFrame";
+import { ShowEditViewDialog } from "../../bookEdit/workspaceRoot";
 import { BookGridSetup } from "./BookGridSetup";
 import { css } from "@emotion/react";
 import { BookInfoForLinks, Link } from "./BookLinkTypes";

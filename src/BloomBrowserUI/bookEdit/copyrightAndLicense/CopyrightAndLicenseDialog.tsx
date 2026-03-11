@@ -286,7 +286,7 @@ function getApiUrlSuffix(isForBook: boolean): string {
         : "copyrightAndLicense/imageCopyrightAndLicense";
 }
 
-// It would be simpler to just use getEditTabBundleExports().getModalDialogContainer()
+// It would be simpler to just use getWorkspaceBundleExports().getModalDialogContainer()
 // but we were getting strange interactions between this component and others which use that container.
 // We were also having trouble rendering this component more than once for two different book pages.
 // So we just always use our own, new, unique container.

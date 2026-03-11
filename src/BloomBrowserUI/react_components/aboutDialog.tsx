@@ -12,7 +12,7 @@ import { useL10n } from "./l10nHooks";
 import { getBloomApiPrefix, postString, useApiString } from "../utils/bloomApi";
 import { Div } from "./l10nComponents";
 import { kBloomBlue } from "../bloomMaterialUITheme";
-import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
+import { ShowEditViewDialog } from "../bookEdit/workspaceRoot";
 
 export const AboutDialogLauncher: React.FunctionComponent = () => {
     const { showDialog, closeDialog, propsForBloomDialog } =

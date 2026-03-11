@@ -31,18 +31,31 @@ namespace Bloom.web.controllers
                 true
             );
 
+            apiHandler.RegisterEndpointHandler("workspace/uiLanguages", HandleGetUiLanguages, true);
             apiHandler.RegisterEndpointHandler(
-                "workspace/topRight/openLanguageMenu",
-                HandleOpenLanguageMenu,
+                "workspace/uiLanguageAction",
+                HandleUiLanguageAction,
+                true
+            );
+            apiHandler.RegisterBooleanEndpointHandler(
+                "workspace/showUnapprovedTranslations",
+                request => WorkspaceView.GetShowUnapprovedTranslationsForClient(),
+                (request, value) => WorkspaceView.SetShowUnapprovedTranslationsForClient(value),
+                true
+            );
+            apiHandler.RegisterEndpointHandler("workspace/helpAction", HandleHelpAction, true);
+            apiHandler.RegisterEndpointHandler(
+                "workspace/reportProblem",
+                HandleReportProblem,
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                "workspace/topRight/openHelpMenu",
-                HandleOpenHelpMenu,
+                "workspace/checkForUpdates",
+                HandleCheckForUpdates,
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                "workspace/topRight/uiLanguageLabel",
+                "workspace/uiLanguageLabel",
                 HandleGetUiLanguageLabel,
                 true
             );
@@ -91,15 +104,38 @@ namespace Bloom.web.controllers
             request.ReplyWithJson(WorkspaceView.GetCurrentUiLanguageLabel());
         }
 
-        private void HandleOpenLanguageMenu(ApiRequest request)
+        private void HandleGetUiLanguages(ApiRequest request)
         {
-            WorkspaceView.ShowUiLanguageMenu();
+            request.ReplyWithJson(WorkspaceView.GetAvailableUiLanguageNamesForClient());
+        }
+
+        private void HandleUiLanguageAction(ApiRequest request)
+        {
+            dynamic data = request.RequiredPostDynamic();
+            var action = (string)data.action;
+            var languageName = (string)data.languageName;
+            WorkspaceView.HandleUiLanguageActionForClient(action, languageName);
             request.PostSucceeded();
         }
 
-        private void HandleOpenHelpMenu(ApiRequest request)
+        private void HandleHelpAction(ApiRequest request)
         {
-            WorkspaceView.ShowHelpMenu();
+            dynamic data = request.RequiredPostDynamic();
+            var method = (string)data.method;
+            var argument = (string)data.argument;
+            WorkspaceView.HandleHelpActionForClient(method, argument);
+            request.PostSucceeded();
+        }
+
+        private void HandleReportProblem(ApiRequest request)
+        {
+            WorkspaceView.ReportProblem();
+            request.PostSucceeded();
+        }
+
+        private void HandleCheckForUpdates(ApiRequest request)
+        {
+            WorkspaceView.CheckForUpdates();
             request.PostSucceeded();
         }
 

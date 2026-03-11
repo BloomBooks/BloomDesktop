@@ -56,7 +56,6 @@ namespace Bloom.Edit
 
         #endregion
 
-        private Browser _browser1;
 		private System.Windows.Forms.Timer _editButtonsUpdateTimer;
 	}
 }

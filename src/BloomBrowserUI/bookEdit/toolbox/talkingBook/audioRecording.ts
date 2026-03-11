@@ -47,9 +47,9 @@ import {
     DialogResult,
 } from "../../../react_components/confirmDialog";
 import {
-    getEditTabBundleExports,
+    getWorkspaceBundleExports,
     getToolboxBundleExports,
-} from "../../js/bloomFrames";
+} from "../../js/workspaceFrames";
 import PlaybackOrderControls from "../../../react_components/playbackOrderControls";
 import Recordable from "./recordable";
 import { getMd5 } from "./md5Util";
@@ -258,7 +258,7 @@ export default class AudioRecording implements IAudioRecorder {
             .click(async (e) => {
                 const mediaPlayer = this.getMediaPlayer();
                 mediaPlayer.pause();
-                getEditTabBundleExports().showAdjustTimingsDialogFromEditViewFrame(
+                getWorkspaceBundleExports().showAdjustTimingsDialogFromWorkspaceRoot(
                     this.split,
                     this.editTimingsFileAsync,
                     this.applyTimingsFileAsync,
@@ -2337,7 +2337,7 @@ export default class AudioRecording implements IAudioRecorder {
 
     // Gets the "page" iframe. May return null if the iframe doesn't exist (e.g., in testing, or while loading).
     public getPageFrame(): HTMLIFrameElement | null {
-        // Enhance: Maybe should just use the version in bloomFrames.ts instead?
+        // Enhance: Maybe should just use the version in workspaceFrames.ts instead?
         //   (we could add an async version there that would return a promise which is fulfilled when the frame becomes available AND loaded.)
         return <HTMLIFrameElement | null>(
             parent?.window?.document?.getElementById("page")
@@ -4163,6 +4163,11 @@ export default class AudioRecording implements IAudioRecorder {
     public static elementToSentencesWithCleanup(
         element: JQuery,
     ): TextFragment[] {
+        const copyElt = element.get(0);
+        // We should never keep text inside bloom-linebreak spans. If present, move it out so
+        // sentence splitting doesn't propagate bloom-linebreak markup onto sentence spans.
+        EditableDivUtils.normalizeBloomLineBreakSpansInElement(copyElt);
+
         // review: possibly this cleanup should be part of stringToSentences(),
         // remove any em, strong, b, i, u, sup elements that are empty.
         // Don't remove spans here, some of them (with attributes) are important even if empty
@@ -4176,7 +4181,6 @@ export default class AudioRecording implements IAudioRecorder {
             .remove();
         // unwrap any span elements that have no attributes and so change nothing
         // This will get rid of at least some empty spans, and it reduces clutter
-        const copyElt = element.get(0);
         for (const span of Array.from(copyElt.getElementsByTagName("span"))) {
             if (span.attributes.length === 0) {
                 // This span has no attributes, so it doesn't change anything.
@@ -4567,7 +4571,7 @@ export default class AudioRecording implements IAudioRecorder {
     };
     private handleImportRecordingClick(): void {
         if (this.doesRecordingExistForCurrentSelection()) {
-            getEditTabBundleExports().showConfirmDialog(
+            getWorkspaceBundleExports().showConfirmDialog(
                 this.confirmReplaceProps,
             );
         } else {

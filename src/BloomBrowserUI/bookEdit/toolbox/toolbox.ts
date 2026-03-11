@@ -26,7 +26,12 @@ export const isLongPressEvaluating: string = "isLongPressEvaluating";
 const checkMarkString: string = "&#10004;";
 const checkLeaveOffTool: string = "Visualizer";
 
-let savedSettings: string;
+type ToolboxSettings = Record<string, string> & {
+    current?: string;
+    visibility?: string;
+};
+
+let savedSettings: ToolboxSettings = {};
 
 let keypressTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -50,7 +55,10 @@ export interface ITool {
     // Note, new implementations of updateMarkupAsync may need to implement something like cleanUpCkEditorHtml() in audioRecording.ts.
     updateMarkupAsync(): Promise<() => void>;
     isUpdateMarkupAsync(): boolean; // should return true if updateMarkupAsync should be called and awaited instead of updateMarkup.
-    newPageReady(); // called when a new page is displayed or tool is activated (called after showTool completes)
+    // called when a new page is displayed or tool is activated (called after showTool completes).
+    // To guard against certain race conditions, we currently call this again after 600ms. Tools should
+    // allow for this possibility and not repeat any work that was already done.
+    newPageReady();
     detachFromPage(); // called when a page is going away AND before hideTool
     id(): string; // without trailing "Tool"!
     hasRestoredSettings: boolean;
@@ -80,6 +88,19 @@ export interface IReactTool {
     // For tools that require a subscription. This will trigger an indicator communicating that this
     // featureName requires a subscription.
     featureName?: string;
+}
+
+// The toolbox is progressively migrating to React. Recently, in toolboxRoot.tsx, we made
+// the root of the whole toolbox a React component. The code here has not been fully
+// integrated into the new approach, along with several tools that are not yet React.
+// This interface, which is exported by the React component, allows the legacy code
+// to interact with the React component, e.g., to set the active tool,
+// or to be notified when the active tool changes.
+interface IToolboxReactAdapter {
+    isEnabled(): boolean;
+    setActiveToolByToolId(toolId: string): void;
+    getActiveToolId(): string | undefined;
+    onActiveToolChanged(callback: (toolId: string) => void): void;
 }
 
 // Class that represents the whole toolbox. Gradually we will move more functionality in here.
@@ -556,16 +577,32 @@ export class ToolBox {
             return;
         }
         const toolboxElt = $("#toolbox");
-        const activeHeader = toolboxElt
-            .find("> h3.ui-accordion-header-active")
-            .get(0) as HTMLElement | undefined;
+        const activeToolId = getActiveToolIdFromCurrentToolboxUi();
         const checkBoxId = toolId + "Check";
         beginAddTool(checkBoxId, toolIdWithTool, false, () => {
+            const adapter = getToolboxReactAdapter();
+            if (adapter) {
+                if (activeToolId) {
+                    adapter.setActiveToolByToolId(activeToolId);
+                }
+                return;
+            }
+
             toolboxElt.accordion("refresh");
-            if (activeHeader) {
-                const activeIndex = toolboxElt.find("> h3").index(activeHeader);
-                if (activeIndex >= 0) {
-                    toolboxElt.accordion("option", "active", activeIndex);
+            if (activeToolId) {
+                const activeHeader = toolboxElt
+                    .find("> h3")
+                    .filter(function () {
+                        return $(this).attr("data-toolId") === activeToolId;
+                    })
+                    .first();
+                if (activeHeader.length > 0) {
+                    const activeIndex = toolboxElt
+                        .find("> h3")
+                        .index(activeHeader);
+                    if (activeIndex >= 0) {
+                        toolboxElt.accordion("option", "active", activeIndex);
+                    }
                 }
             }
         });
@@ -629,6 +666,43 @@ export function getTheOneToolbox() {
 // into this array in order to interact with the overall toolbox code.
 const masterToolList: ITool[] = [];
 let currentTool: ITool | undefined = undefined;
+let toolboxReactActivationHooked = false;
+
+// The AI decided to create this react adapter object and save in in a window variable.
+// It gets set in a useEffect in the React component that is the root of the toolbox.
+// This function retrieves it. Once the toolbox has started up, it should always
+// successfully return a valid adapter object. AI has built fallback code that tries to
+// do various things in other ways when it is not available. Most of that fallback code
+// is probably already redundant, but it's hard to be sure which. I'm inclined to leave
+// it until we get all the tools migrated to React; then we can do a lot of simplification
+// and probably get rid the adapter and fallbacks entirely; instead, each component
+// will belong to its own accordion section and will be able to manage its own state
+// and lifecycle.
+function getToolboxReactAdapter(): IToolboxReactAdapter | undefined {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const adapter = (window as any).toolboxReactAdapter as
+        | IToolboxReactAdapter
+        | undefined;
+    if (!adapter) {
+        return undefined;
+    }
+    if (!adapter.isEnabled()) {
+        return undefined;
+    }
+    return adapter;
+}
+
+function getActiveToolIdFromCurrentToolboxUi(): string | undefined {
+    const adapter = getToolboxReactAdapter();
+    if (adapter) {
+        return adapter.getActiveToolId();
+    }
+
+    const activeHeader = $("#toolbox")
+        .find("> h3.ui-accordion-header-active")
+        .get(0) as HTMLElement | undefined;
+    return activeHeader?.getAttribute("data-toolId") || undefined;
+}
 
 // This primarily calls the detachFromPage method of the current tool, if any.
 // It also tries to find the current toolbox instance (in the right iframe, wherever it is called),
@@ -683,6 +757,11 @@ function showOrHideTool(chkboxId: string, tool: string, turnOn: boolean) {
                 return $(this).attr("data-toolId") === tool;
             })
             .remove();
+        window.dispatchEvent(
+            new CustomEvent("toolbox-tool-removed", {
+                detail: { toolId: tool },
+            }),
+        );
     }
     resizeToolbox();
 }
@@ -704,16 +783,67 @@ export function restoreToolboxSettings() {
 }
 
 export function applyToolboxStateToUpdatedPage() {
-    if (currentTool && toolbox.toolboxIsShowing()) {
-        doWhenPageReady(() => {
-            if (currentTool) {
-                currentTool.newPageReady();
-                // We used to call updateMarkup() here
-                // Now we don't because it would mess up the Talking Book Tool
-                // if you really need it, add call to updateMarkup to currentTool's implementation of newPageReady.
-            }
-        });
-    }
+    get("toolbox/settings", (result) => {
+        savedSettings = result.data;
+        const currentFromBook = ToolBox.addToolToString(
+            (savedSettings && savedSettings["current"]) || "",
+        );
+        const currentInToolbox = currentTool
+            ? ToolBox.addToolToString(currentTool.id())
+            : "";
+        const shouldBeVisible = !!(
+            savedSettings && savedSettings["visibility"]
+        );
+        const isVisible = toolbox.toolboxIsShowing();
+
+        // When switching books, sync visibility/current tool first.
+        if (
+            currentFromBook !== currentInToolbox ||
+            shouldBeVisible !== isVisible
+        ) {
+            restoreToolboxSettingsWhenPageReady(savedSettings);
+            return;
+        }
+
+        if (currentTool && toolbox.toolboxIsShowing()) {
+            doWhenPageReady(() => {
+                const activeTool = currentTool;
+                if (activeTool) {
+                    activeTool
+                        .beginRestoreSettings(
+                            savedSettings as unknown as string,
+                        )
+                        .then(() => {
+                            if (currentTool !== activeTool) {
+                                return;
+                            }
+
+                            // Re-run tool UI setup on page/book switches. Some tools
+                            // (for example reader toggle controls) are initialized in showTool().
+                            Promise.resolve(activeTool.showTool()).then(() => {
+                                if (currentTool === activeTool) {
+                                    activeTool.newPageReady();
+                                    scheduleDelayedNewPageReady(activeTool);
+                                }
+                            });
+                        });
+                    // We used to call updateMarkup() here
+                    // Now we don't because it would mess up the Talking Book Tool
+                    // if you really need it, add call to updateMarkup to currentTool's implementation of newPageReady.
+                }
+            });
+        }
+    });
+}
+
+function scheduleDelayedNewPageReady(tool: ITool): void {
+    window.setTimeout(() => {
+        if (currentTool !== tool || !toolbox.toolboxIsShowing()) {
+            return;
+        }
+
+        Promise.resolve(tool.newPageReady());
+    }, 600);
 }
 
 function doWhenPageReady(action: () => void) {
@@ -824,11 +954,16 @@ function doWhenCkEditorReadyCore(
     }
 }
 
-function restoreToolboxSettingsWhenPageReady(settings: string) {
+function restoreToolboxSettingsWhenPageReady(settings: ToolboxSettings) {
     doWhenPageReady(() => {
         // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
         const opts = settings;
         const currentTool = opts["current"] || "";
+        const shouldBeVisible = !!opts["visibility"];
+
+        if (toolbox.toolboxIsShowing() !== shouldBeVisible) {
+            toolbox.toggleToolbox();
+        }
 
         // Before we set stage/level, as it initializes them to 1.
         setCurrentTool(currentTool);
@@ -878,15 +1013,13 @@ function switchTool(newToolName: string): void {
 function activateTool(newTool: ITool) {
     if (newTool && toolbox.toolboxIsShowing()) {
         const toolElt = getToolElement(newTool);
-        // If we're activating this tool for the first time, restore its settings.
-        if (!newTool.hasRestoredSettings) {
-            newTool.hasRestoredSettings = true;
-            newTool.beginRestoreSettings(savedSettings).then(() => {
+        // Always re-restore settings so tool state tracks the current book.
+        newTool.hasRestoredSettings = true;
+        newTool
+            .beginRestoreSettings(savedSettings as unknown as string)
+            .then(() => {
                 activateToolInternalAsync(newTool, toolElt);
             });
-        } else {
-            activateToolInternalAsync(newTool, toolElt);
-        }
     }
 }
 
@@ -926,6 +1059,7 @@ async function activateToolInternalAsync(
     // Note: Allowed to begin some async work too, and we will await its result.
     // (This apparently solves the single flash mentioned in BL-10471.)
     await newTool.newPageReady();
+    scheduleDelayedNewPageReady(newTool);
 
     // Note: Begins some async work too, but currently no need to await its result.
     ToolBox.insertLangAttributesIntoToolboxElements();
@@ -936,14 +1070,30 @@ async function activateToolInternalAsync(
  * of "currentTool" (the last tool displayed).
  */
 function setCurrentTool(toolID: string) {
+    // I'm downright grumpy about how this code sometimes uses names with "Tool" appended, sometimes doesn't.
+    // For now I'm just making functions work with either form.
+    toolID = ToolBox.addToolToString(toolID);
+
+    const adapter = getToolboxReactAdapter();
+    if (adapter) {
+        if (!toolboxReactActivationHooked) {
+            adapter.onActiveToolChanged((newToolName: string) => {
+                switchTool(newToolName);
+            });
+            toolboxReactActivationHooked = true;
+        }
+
+        if (toolID) {
+            adapter.setActiveToolByToolId(toolID);
+            switchTool(toolID);
+        }
+        return;
+    }
+
     // NOTE: tools without a "data-toolId" attribute (such as the More tool) cannot be the "currentTool."
     let idx = 0;
     const toolbox = $("#toolbox");
 
-    // I'm downright grumpy about how this code sometimes uses names with "Tool" appended, sometimes doesn't.
-    // For now I'm just making functions work with either form.
-
-    toolID = ToolBox.addToolToString(toolID);
     const accordionHeaders = toolbox.find("> h3");
     if (toolID) {
         let foundTool = false;
@@ -1035,8 +1185,6 @@ function beginAddTool(
             "readers/decodableReader/decodableReaderToolboxTool.html",
         leveledReaderTool:
             "readers/leveledReader/leveledReaderToolboxTool.html",
-        toolboxSettingsTool:
-            "toolboxSettingsTool/toolboxSettingsToolboxTool.html",
         settingsTool: "settings/Settings.html",
         // none for music: done in React
     };
@@ -1476,7 +1624,9 @@ function resizeToolbox() {
     // Set toolbox container height to fit in new window size
     // Then toolbox Resize() will adjust it to fit the container
     root.height(windowHeight - 25); // 25 is the top: value set for div.toolboxRoot in toolbox.less
-    $("#toolbox").accordion("refresh");
+    if (!getToolboxReactAdapter()) {
+        $("#toolbox").accordion("refresh");
+    }
 }
 
 /**
@@ -1621,11 +1771,29 @@ function loadToolboxTool(
 
     // if requested, open the tool that was just inserted
     if (openTool && toolbox.toolboxIsShowing()) {
-        toolboxElt.accordion("refresh");
-        const id = header.attr("id");
-        const toolNumber = parseInt(id.substring(id.lastIndexOf("-") + 1), 10);
-        toolboxElt.accordion("option", "active", toolNumber); // must pass as integer
+        const adapter = getToolboxReactAdapter();
+        if (adapter) {
+            const toolId = header.attr("data-toolId");
+            if (toolId) {
+                adapter.setActiveToolByToolId(toolId);
+                switchTool(toolId);
+            }
+        } else {
+            toolboxElt.accordion("refresh");
+            const id = header.attr("id");
+            const toolNumber = parseInt(
+                id.substring(id.lastIndexOf("-") + 1),
+                10,
+            );
+            toolboxElt.accordion("option", "active", toolNumber); // must pass as integer
+        }
     }
+
+    window.dispatchEvent(
+        new CustomEvent("toolbox-tool-added", {
+            detail: { toolId: toolId },
+        }),
+    );
 }
 
 function showToolboxChanged(wasShowing: boolean): void {

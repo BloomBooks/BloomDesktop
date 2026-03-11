@@ -370,7 +370,7 @@ namespace Bloom.Edit
         /// <param name="details"></param>
         private void OnTabAboutToChange(TabChangedDetails details)
         {
-            if (details.From == _view)
+            if (details.FromTab == Workspace.WorkspaceTab.edit)
             {
                 SaveThen(
                     () =>
@@ -397,11 +397,14 @@ namespace Bloom.Edit
                         // So this is just the case where we're Navigating, either because we clicked on the Edit tab
                         // and then immediately something else, or clicked another tab during the fraction of a second
                         // while Bloom is navigating to a new page after doing some command. Abort the navigate, then go ahead.
-                        Guard.AssertThat(
-                            StateMachine.Navigating,
-                            "This branch should only be taken when navigating"
-                        );
-                        StateMachine.ToNoPage();
+                        // Earlier versions of Bloom had a Debug guard against reaching this state, but it happened
+                        // often enough to be annoying, and the recovery code here seems to work adequately.
+                        // In particlar, we seem to get here after a Javascript error has been reported, and raising
+                        // an exception here tends to interfere with reporting the error we really want to see.
+                        if (StateMachine.Navigating)
+                        {
+                            StateMachine.ToNoPage();
+                        }
                         _oldActiveForm = Form.ActiveForm;
                         Application.Idle += ReactivateFormOnIdle;
                         details.PostponedWork?.Invoke();
@@ -426,7 +429,7 @@ namespace Bloom.Edit
         private void OnTabChanged(TabChangedDetails details)
         {
             _previouslySelectedPage = null;
-            Visible = details.To == _view;
+            Visible = details.ToTab == Workspace.WorkspaceTab.edit;
             _view.OnVisibleChanged(Visible);
         }
 
@@ -1180,7 +1183,7 @@ namespace Bloom.Edit
                 );
                 anchor.SetAttribute(
                     "href",
-                    "javascript:(window.parent || window).editTabBundle.showCopyrightAndLicenseDialog();"
+                    "javascript:(window.parent || window).workspaceBundle.showCopyrightAndLicenseDialog();"
                 );
                 licenseBlock.InsertBefore(div, licenseBlock.FirstChild);
             }
@@ -1240,7 +1243,7 @@ namespace Bloom.Edit
                 // hint bubbles (especially; BL-12253) will be too constrained.
                 // Subtracting 5px from 100% ensures that we don't have a horizontal scrollbar and leaves a small margin
                 // between the main page and the toolbox.
-                // If this changes, adjust similar code in the TS SetZoom method, currently in editViewFrame.ts.
+                // If this changes, adjust similar code in the TS SetZoom method, currently in workspaceRoot.ts.
                 outerDiv.SetAttribute(
                     "style",
                     String.Format(
@@ -1323,7 +1326,7 @@ namespace Bloom.Edit
                 OptimizeForLinux(pageListDom);
 
             pageListDom = CurrentBook.GetHtmlDomForPageList(pageListDom);
-            var url =_view.Browser.CreateSimulatedFile(
+            var url = _view.Browser.CreateSimulatedFile(
                 pageListDom,
                 false,
                 InMemoryHtmlFileSource.Pagelist
@@ -1352,8 +1355,8 @@ namespace Bloom.Edit
                     BloomFileLocator.BrowserRoot,
                     "bookEdit",
                     ReactControl.ShouldUseViteDev()
-                        ? "EditViewFrame.vite-dev.html"
-                        : "EditViewFrame.html"
+                        ? "WorkspaceRoot.vite-dev.html"
+                        : "WorkspaceRoot.html"
                 )
             );
             // {simulatedPageFileInBookFolder} is placed in the template file where we want the source file for the 'page' iframe.
@@ -1377,40 +1380,6 @@ namespace Bloom.Edit
             }
 
             return dom;
-        }
-
-        /// <summary>
-        /// View calls this once the main document has completed loading.
-        /// But this is not really reliable.
-        /// Also see comments in EditingView.StartNavigationToEditPage.
-        /// TODO really need a more reliable way of determining when the document really is complete
-        /// </summary>
-        internal void DocumentCompleted()
-        {
-            Application.Idle += OnIdleAfterDocumentSupposedlyCompleted;
-        }
-
-        /// <summary>
-        /// For some reason, we need to call this code OnIdle.
-        /// We couldn't figure out the timing any other way.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void OnIdleAfterDocumentSupposedlyCompleted(object sender, EventArgs e)
-        {
-            Application.Idle -= OnIdleAfterDocumentSupposedlyCompleted;
-
-            //Work-around for BL-422: https://jira.sil.org/browse/BL-422
-            if (_currentlyDisplayedBook == null)
-            {
-                Debug.Fail(
-                    "Debug Only: BL-422 reproduction (currentlyDisplayedBook was null in OnIdleAfterDocumentSupposedlyCompleted)."
-                );
-                Logger.WriteEvent(
-                    "BL-422 happened just now (currentlyDisplayedBook was null in OnIdleAfterDocumentSupposedlyCompleted)."
-                );
-                return;
-            }
         }
 
         internal void SaveToolboxSettings(string data)
@@ -1531,16 +1500,10 @@ namespace Bloom.Edit
 
         private bool CannotSavePage()
         {
-            var returnVal =
-                _bookSelection == null
+            return _bookSelection == null
                 || CurrentBook == null
                 || _pageSelection.CurrentSelection == null
                 || _currentlyDisplayedBook == null;
-
-            if (returnVal)
-                _view.HidePageAndShowWaitCursor(false);
-
-            return returnVal;
         }
 
         // We set this true for the interval between starting to navigate to a new
@@ -1595,7 +1558,7 @@ namespace Bloom.Edit
             // show the saving message to the user
             _webSocketServer.SendString("pageThumbnailList", "saving", "");
             // review do we really need to be checking to see if things are loaded? If they are not, then there is nothing to save, and this doesn't thow.
-            var script = $"editTabBundle.getEditablePageBundleExports().requestPageContent()";
+            var script = $"workspaceBundle.getEditablePageBundleExports().requestPageContent()";
             _view.Browser.RunJavascriptAsync(script);
         }
 
@@ -1727,7 +1690,7 @@ namespace Bloom.Edit
             // enough to get its dimensions, and that adjustment might not complete before the next Javascript is run from C#
             GetEditingBrowser()
                 .RunJavascriptFireAndForget(
-                    $"editTabBundle.getEditablePageBundleExports().changeImage({JsonConvert.SerializeObject(args)})"
+                    $"workspaceBundle.getEditablePageBundleExports().changeImage({JsonConvert.SerializeObject(args)})"
                 );
 
             /* We're Saving to the DOM here only if it's a cover page, because that lets us make the image transparent if it should be:

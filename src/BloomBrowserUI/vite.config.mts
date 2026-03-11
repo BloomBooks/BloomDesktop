@@ -13,12 +13,12 @@ import { glob } from "glob";
 import react from "@vitejs/plugin-react";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 import * as fs from "fs";
-import less from "less";
 import MarkdownIt from "markdown-it";
 import markdownItContainer from "markdown-it-container";
 import markdownItAttrs from "markdown-it-attrs";
 import { playwright } from "@vitest/browser-playwright";
 import { compilePugFiles } from "./scripts/compilePug.mjs";
+import { compileLessFiles } from "./scripts/compileLess.mjs";
 
 // Custom plugin to compile Pug files to HTML
 // There are a couple of npm packages for pug, but as of October 2025, they are experimental
@@ -38,73 +38,14 @@ function compilePugPlugin(): Plugin {
 
 // Custom plugin to compile LESS files to CSS
 // Similar to pug plugin - compiles standalone LESS files to CSS with sourcemaps
+// Handles both BloomBrowserUI and content LESS files
 // Claude sonnet 4.5 came up with this.
 function compileLessPlugin(): Plugin {
     return {
         name: "compile-less",
         apply: "build",
         async closeBundle() {
-            // Find LESS files in BloomBrowserUI
-            const lessFiles = glob.sync("./**/*.less", {
-                ignore: ["**/node_modules/**"],
-            });
-
-            console.log(`\nCompiling ${lessFiles.length} LESS files...`);
-
-            const outputBase = path.resolve(__dirname, "../../output/browser");
-
-            for (const file of lessFiles) {
-                // Normalize path separators
-                const normalizedFile = file.replace(/\\/g, "/");
-
-                // Convert to output path: "./bookEdit/css/editMode.less" -> "bookEdit/css/editMode.css"
-                const relativePath = normalizedFile
-                    .replace("./", "")
-                    .replace(".less", ".css");
-
-                const outputFile = path.join(outputBase, relativePath);
-                const outputDir = path.dirname(outputFile);
-
-                // Ensure output directory exists
-                if (!fs.existsSync(outputDir)) {
-                    fs.mkdirSync(outputDir, { recursive: true });
-                }
-
-                try {
-                    // Read LESS file
-                    const lessContent = fs.readFileSync(file, "utf8");
-
-                    // Compile LESS to CSS with sourcemap
-                    const result = await less.render(lessContent, {
-                        filename: file,
-                        sourceMap: {
-                            sourceMapFileInline: false,
-                            outputSourceFiles: true,
-                            sourceMapURL: path.basename(outputFile) + ".map",
-                        },
-                    });
-
-                    // Write CSS file with sourcemap reference
-                    let cssOutput = result.css;
-                    if (result.map) {
-                        cssOutput += `\n/*# sourceMappingURL=${path.basename(outputFile)}.map */`;
-                    }
-                    fs.writeFileSync(outputFile, cssOutput);
-
-                    // Write sourcemap if generated
-                    if (result.map) {
-                        const mapFile = outputFile + ".map";
-                        fs.writeFileSync(mapFile, result.map);
-                    }
-
-                    console.log(`  ✓ ${file} → ${relativePath}`);
-                } catch (error) {
-                    console.error(`  ✗ Error compiling ${file}:`, error);
-                    throw error; // Exit build on LESS compilation error
-                }
-            }
-
-            console.log(`LESS compilation complete!\n`);
+            await compileLessFiles();
         },
     };
 }
@@ -269,6 +210,42 @@ function postBuildPlugin(): Plugin {
                 );
                 const manifest = JSON.parse(manifestContent);
 
+                const collectTransitiveCss = (
+                    manifestKey: string,
+                    seenKeys: Set<string>,
+                    cssFiles: Set<string>,
+                ) => {
+                    if (seenKeys.has(manifestKey)) {
+                        return;
+                    }
+                    seenKeys.add(manifestKey);
+
+                    const item = manifest[manifestKey] as
+                        | ManifestEntry
+                        | undefined;
+                    if (!item) {
+                        return;
+                    }
+
+                    if (item.css && item.css.length > 0) {
+                        item.css.forEach((cssFile: string) => {
+                            cssFiles.add(cssFile);
+                        });
+                    }
+
+                    if (item.imports && item.imports.length > 0) {
+                        item.imports.forEach((importKey: string) => {
+                            collectTransitiveCss(importKey, seenKeys, cssFiles);
+                        });
+                    }
+
+                    if (item.dynamicImports && item.dynamicImports.length > 0) {
+                        item.dynamicImports.forEach((importKey: string) => {
+                            collectTransitiveCss(importKey, seenKeys, cssFiles);
+                        });
+                    }
+                };
+
                 console.log("\nProcessing manifest for entry points...");
 
                 // Process each entry point
@@ -306,6 +283,19 @@ function postBuildPlugin(): Plugin {
                             dependencies.add("./" + cssFile);
                         });
                     }
+
+                    // Add CSS from transitive imports/chunks as well. Without this,
+                    // CSS imported in shared non-entry modules (for example BloomTabs)
+                    // may be omitted for some generated entry wrappers.
+                    const transitiveCssFiles = new Set<string>();
+                    collectTransitiveCss(
+                        entryKey,
+                        new Set<string>(),
+                        transitiveCssFiles,
+                    );
+                    transitiveCssFiles.forEach((cssFile: string) => {
+                        dependencies.add("./" + cssFile);
+                    });
 
                     // Add dynamic imports/chunks if any
                     if (
@@ -373,9 +363,13 @@ function postBuildPlugin(): Plugin {
                     if (cssDependencies.length > 0) {
                         finalContent += `// Function to load CSS files dynamically\n`;
                         finalContent += `function loadCSS(href) {\n`;
+                        finalContent += `    const absoluteHref = new URL(href, import.meta.url).toString();\n`;
+                        finalContent += `    if (document.querySelector(\`link[rel="stylesheet"][href="\${absoluteHref}"]\`)) {\n`;
+                        finalContent += `        return;\n`;
+                        finalContent += `    }\n`;
                         finalContent += `    const link = document.createElement('link');\n`;
                         finalContent += `    link.rel = 'stylesheet';\n`;
-                        finalContent += `    link.href = href;\n`;
+                        finalContent += `    link.href = absoluteHref;\n`;
                         finalContent += `    document.head.appendChild(link);\n`;
                         finalContent += `}\n\n`;
 
@@ -440,11 +434,18 @@ function reportBuildErrorPlugin(): Plugin {
 // Helper function to inject CSS into DOM
 function createCssInjector() {
     return `
+function stripCssSourceMapComments(cssContent) {
+    return cssContent
+        .split('\\n')
+        .filter((line) => !line.includes('sourceMappingURL='))
+        .join('\\n');
+}
+
 function injectCss(cssContent, source) {
     if (typeof window !== 'undefined' && window.document) {
         const style = document.createElement('style');
         style.setAttribute('data-source', source || 'inline');
-        style.textContent = cssContent;
+        style.textContent = stripCssSourceMapComments(cssContent);
         document.head.appendChild(style);
     }
 }`;
@@ -491,7 +492,7 @@ function transformLessImportsPlugin(): Plugin {
 ${injectedCss.map((call) => `(function() { ${call} })();`).join("\n")}
 `;
 
-            transformedCode = `${injectorFunction}\n${immediateInjection}\n${transformedCode}`;
+            transformedCode = `${transformedCode}\n${injectorFunction}\n${immediateInjection}`;
 
             return { code: transformedCode, map: null };
         },
@@ -501,6 +502,12 @@ ${injectedCss.map((call) => `(function() { ${call} })();`).join("\n")}
 // config, Node can still load ESM-only plugins (like @vitejs/plugin-react) via
 // native dynamic import instead of require().
 export default defineConfig(async ({ command }) => {
+    const parsedPort = Number.parseInt(process.env.PORT ?? "", 10);
+    const devServerPort =
+        Number.isInteger(parsedPort) && parsedPort > 0 && parsedPort <= 65535
+            ? parsedPort
+            : 5173;
+
     // ENTRY POINTS CONFIGURATION
     // Define all JavaScript/TypeScript entry points - these are the "root" files that
     // Vite will build into separate bundles. Each entry becomes a standalone .js file
@@ -509,7 +516,7 @@ export default defineConfig(async ({ command }) => {
     const entryPoints: Record<string, string> = {
         // Special bundles that were previously built separately
         editablePageBundle: "./bookEdit/editablePage.ts",
-        editTabBundle: "./bookEdit/editViewFrame.ts",
+        workspaceBundle: "./bookEdit/workspaceRoot.ts",
         spreadsheetBundle: "./spreadsheet/spreadsheetBundleRoot.ts",
         toolboxBundle: "./bookEdit/toolbox/toolboxBootstrap.ts",
 
@@ -523,7 +530,7 @@ export default defineConfig(async ({ command }) => {
         pageControlsBundle:
             "./bookEdit/pageThumbnailList/pageControls/pageControls.tsx",
         accessibilityCheckBundle:
-            "./publish/accessibilityCheck/accessibilityCheckScreen.tsx",
+            "./publish/accessibilityCheck/accessibilityCheckScreen.entry.tsx",
         subscriptionSettingsBundle: "./collection/subscriptionSettingsTab.tsx",
         performanceLogBundle: "./performance/PerformanceLogPage.tsx",
         appBundle: "./app/App.tsx",
@@ -561,7 +568,7 @@ export default defineConfig(async ({ command }) => {
         plugins: [
             // React plugin: Enables JSX, Fast Refresh, and React-specific optimizations
             react({
-                reactRefreshHost: `http://localhost:${process.env.PORT || 5173}`,
+                reactRefreshHost: `http://localhost:${devServerPort}`,
                 babel: {
                     parserOpts: {
                         // This enables decorators like @mobxReact.observer.
@@ -633,12 +640,13 @@ export default defineConfig(async ({ command }) => {
         // DEV SERVER CONFIGURATION
         // Controls the local development server behavior
         server: {
-            port: 5173, // Default Vite port
+            port: devServerPort,
             strictPort: true, // Fail if port is already in use (don't try other ports)
             hmr: {
                 protocol: "ws",
                 host: "localhost", // The host where your Vite server is running
-                port: 5173, // The port where your Vite server is running
+                port: devServerPort,
+                clientPort: devServerPort,
                 overlay: true,
             },
         },

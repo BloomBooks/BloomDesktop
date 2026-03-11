@@ -365,12 +365,20 @@ namespace Bloom.Api
                 );
                 if (request.HttpMethod == HttpMethods.Post)
                 {
-                    var postString = request.GetPostStringOrNull();
-                    if (!string.IsNullOrEmpty(postString))
-                        handlerException.Data.Add("Post String", postString);
-                    var postJson = request.GetPostJsonOrNull();
-                    if (!string.IsNullOrEmpty(postJson))
-                        handlerException.Data.Add("Post JSON", postJson);
+                    var contentType =
+                        request.RequestContentType?.ToLowerInvariant() ?? string.Empty;
+                    if (contentType.Contains("application/json"))
+                    {
+                        var postJson = request.GetPostJsonOrNull();
+                        if (!string.IsNullOrEmpty(postJson))
+                            handlerException.Data.Add("Post JSON", postJson);
+                    }
+                    else
+                    {
+                        var postString = request.GetPostStringOrNull();
+                        if (!string.IsNullOrEmpty(postString))
+                            handlerException.Data.Add("Post String", postString);
+                    }
                 }
                 ExceptionDispatchInfo.Capture(handlerException).Throw();
             }

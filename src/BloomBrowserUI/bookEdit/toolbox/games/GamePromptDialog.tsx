@@ -22,7 +22,7 @@ import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import { saveStateOfCanvasElementAsCurrentLangAlternate } from "../../js/canvasElementManager/CanvasElementAlternates";
 import { getAllDraggables } from "../canvas/canvasElementDraggables";
 import { Bubble } from "comicaljs";
-import { getToolboxBundleExports } from "../../js/bloomFrames";
+import { getToolboxBundleExports } from "../../js/workspaceFrames";
 import {
     BloomDialog,
     DialogBottomButtons,

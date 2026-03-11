@@ -384,7 +384,14 @@ namespace BloomTests.Spreadsheet
             </div>
 			<div class=""split-pane-component position-top"">
                 <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
-                    <div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{2}""><img src=""placeHolder.png"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>{4}</div>
+                    <div class=""bloom-canvas bloom-has-canvas-element bloom-leadingElement"" data-test-id=""ic{2}"">
+						<div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
+							<div class=""bloom-imageContainer"">
+								<img src=""placeHolder.png"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
+							</div>
+						</div>
+						{4}
+					</div>
                 </div>
             </div>
         </div>
@@ -432,11 +439,16 @@ namespace BloomTests.Spreadsheet
             </div>
 			<div class=""split-pane-component position-top"">
                 <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
-                    <div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{2}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+                    <div class=""bloom-canvas bloom-has-canvas-element bloom-leadingElement"" data-test-id=""ic{2}"">
+						<div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
+							<div class=""bloom-imageContainer"">
+								<img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
+							</div>
+						</div>
+					</div>
                 </div>
             </div>
-			<div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
-                <div class=""split-pane-component position-top"">
+			<div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">\n                <div class=""split-pane-component position-top"">
                     <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
                         <div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"" data-test-id=""tg{3}"">
                            <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
@@ -451,7 +463,13 @@ namespace BloomTests.Spreadsheet
             </div>
 			<div class=""split-pane-component position-top"">
                 <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
-                    <div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{4}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+                    <div class=""bloom-canvas bloom-has-canvas-element bloom-leadingElement"" data-test-id=""ic{4}"">
+						<div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
+							<div class=""bloom-imageContainer"">
+								<img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
+							</div>
+						</div>
+					</div>
                 </div>
             </div>
         </div>
@@ -513,7 +531,13 @@ namespace BloomTests.Spreadsheet
         static string BloomCanvas(int icNumber)
         {
             return String.Format(
-                @"<div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{0}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>",
+                @"<div class=""bloom-canvas bloom-has-canvas-element bloom-leadingElement"" data-test-id=""ic{0}"">
+            <div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
+                <div class=""bloom-imageContainer"">
+                    <img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
+                </div>
+            </div>
+        </div>",
                 icNumber
             );
         }
@@ -1085,6 +1109,8 @@ namespace BloomTests.Spreadsheet
         [TestCase(4, "ic4", "man.png")]
         [TestCase(5, "ic5", "placeHolder.png")] // Todo: should be placeholder
         [TestCase(5, "ic6", "shirt.png")]
+        [TestCase(11, "ic7", "Mars%204.png")]
+        [TestCase(13, "ic7", "shirt1.png")]
         public void GotImageSourceOnPageN(int n, string tag, string text)
         {
             AssertThatXmlIn
@@ -1122,13 +1148,13 @@ namespace BloomTests.Spreadsheet
             "LakePendOreille.jpg",
             "Copyright © 2012, Stephen McConnel"
         )]
-        [TestCase(10, "this is something extra on a new page before 8", "Mars%204.png", "")]
         [TestCase(
-            11,
-            "this is something extra after all the original pages",
-            "shirt1.png",
-            "CC0 Public Domain Dedication http://creativecommons.org/publicdomain/zero/1.0/"
+            10,
+            "this is something extra on a new page before 8",
+            "levels.png",
+            "Copyright © 2021, USAID \"Okuu keremet!\""
         )]
+        [TestCase(12, "this is something extra after all the original pages", "man1.png", "")]
         public void PageAddedWithTextAndPicture(int n, string text, string src, string copyright)
         {
             AssertThatXmlIn
@@ -1158,7 +1184,7 @@ namespace BloomTests.Spreadsheet
         }
 
         [TestCase(9, "This will go on a new page before 8")]
-        [TestCase(12, "This will go on a new just-text page at the end")]
+        [TestCase(14, "This will go on a new just-text page at the end")]
         public void PageAddedWithText(int n, string text)
         {
             AssertThatXmlIn
@@ -1260,6 +1286,7 @@ namespace BloomTests.Spreadsheet
             Assert.That(_warnings.Count, Is.EqualTo(1));
         }
 
+        [TestCase("by copying the last page")]
         [TestCase("Adding page 7 using a Just a Picture")]
         [TestCase("Updating page 3")]
         [TestCase("was not found")]
@@ -1382,7 +1409,7 @@ namespace BloomTests.Spreadsheet
             _bookFolder?.Dispose();
         }
 
-        [TestCase(1, "man.png")]
+        [TestCase(2, "man.png")]
         public void PageAddedWithPicture(int n, string src)
         {
             AssertThatXmlIn
@@ -1394,16 +1421,16 @@ namespace BloomTests.Spreadsheet
             // This is the ID for the standard "Just a picture" page
             Assert.That(
                 _contentPages[n].GetAttribute("data-pagelineage"),
-                Does.Contain(Bloom.Book.Book.PictureOnLeftGuid)
+                Does.Contain(Bloom.Book.Book.JustPictureGuid)
             );
             Assert.That(
                 _contentPages[n].GetAttribute("id"),
-                Is.Not.EqualTo(Bloom.Book.Book.PictureOnLeftGuid)
+                Is.Not.EqualTo(Bloom.Book.Book.JustPictureGuid)
             );
             Assert.That(_contentPages[n].GetAttribute("class"), Does.Contain("A4Landscape"));
         }
 
-        [TestCase(1, "this is page 2", "man.png")]
+        [TestCase(1, "this is page 2", "lady24b.png")]
         public void PageAddedWithTextAndPicture(int n, string text, string src)
         {
             AssertThatXmlIn
@@ -1697,7 +1724,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[@data-test-id='{tag}']/img[@src='{text}']",
+                    $".//div[@data-test-id='{tag}']//img[@src='{text}']",
                     1
                 );
         }
@@ -1823,7 +1850,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[@data-test-id='{tag}']/img[@src='{text}']",
+                    $".//div[@data-test-id='{tag}']//img[@src='{text}']",
                     1
                 );
         }

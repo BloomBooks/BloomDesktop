@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ShowEditViewDialog } from "../../bookEdit/editViewFrame";
+import { ShowEditViewDialog } from "../../bookEdit/workspaceRoot";
 import { LinkTargetChooserDialog } from "./LinkTargetChooserDialog";
 
 export const showLinkTargetChooserDialog = (

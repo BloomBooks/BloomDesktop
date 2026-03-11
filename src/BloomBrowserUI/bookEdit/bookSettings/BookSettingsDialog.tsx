@@ -36,7 +36,7 @@ import {
     useApiObject,
     useApiStringState,
 } from "../../utils/bloomApi";
-import { ShowEditViewDialog } from "../editViewFrame";
+import { ShowEditViewDialog } from "../workspaceRoot";
 import { useL10n } from "../../react_components/l10nHooks";
 import { Div, P } from "../../react_components/l10nComponents";
 import { NoteBox, WarningBox } from "../../react_components/boxes";

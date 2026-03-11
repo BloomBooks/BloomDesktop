@@ -14,7 +14,7 @@ import { getAsync, postString } from "../../../utils/bloomApi";
 import { Bubble, BubbleSpec } from "comicaljs";
 import { recomputeSourceBubblesForPage } from "../../js/bloomEditing";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
-import { getToolboxBundleExports } from "../../js/bloomFrames";
+import { getToolboxBundleExports } from "../../js/workspaceFrames";
 import { ILanguageNameValues } from "../../bookSettings/FieldVisibilityGroup";
 
 /* Summary of how custom covers work

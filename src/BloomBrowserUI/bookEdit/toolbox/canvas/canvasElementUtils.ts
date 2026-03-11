@@ -1,11 +1,11 @@
 // Cross-frame bridge utilities for canvas element code.
 //
-// This module intentionally imports bloomFrames so Toolbox code can reach the page-frame
+// This module intentionally imports workspaceFrames so Toolbox code can reach the page-frame
 // CanvasElementManager via bundle exports.
 //
 // Prefer importing DOM selector constants from canvasElementConstants instead of this file.
 
-import { getEditablePageBundleExports } from "../../js/bloomFrames";
+import { getEditablePageBundleExports } from "../../js/workspaceFrames";
 import type { CanvasElementManager } from "../../js/canvasElementManager/CanvasElementManager";
 import {
     kBloomButtonClass,

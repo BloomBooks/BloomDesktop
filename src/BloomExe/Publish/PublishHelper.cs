@@ -373,7 +373,7 @@ namespace Bloom.Publish
                 div.RemoveAttribute("role"); // this isn't an editable textbox in an ebook
                 div.RemoveAttribute("aria-label"); // don't want this without a role
                 div.RemoveAttribute("spellcheck"); // too late for spell checking in an ebook
-                div.RemoveAttribute("content-editable"); // too late for editing in an ebook
+                div.RemoveAttribute("contenteditable"); // too late for editing in an ebook
             }
 
             // Clean up img elements (BL-6035/BL-6036 and BL-7218)
@@ -1056,21 +1056,23 @@ namespace Bloom.Publish
             // Must come after ReallyCropImages, because any cropping for background images is
             // destroyed by SimplifyBackgroundImages.
             SimplifyBackgroundImages(modifiedBook.RawDom);
-            // We don't need a data-div in a publication; save some space.
-            // Also, with custom pages, a single entry in the data-div can look a lot like part of
-            // a page. Code that is looking for all the elements of a certain kind, or with a
-            // certain class or attribute, may find one there and do something unintended.  (For example,
-            // it might include an image in the bloom-pub that isn't really in use because there is a src
-            // attribute using it in a copy of custom page data, even though custom page is turned off.
-            // Or it might find what it thinks is a duplicate there and try to fix it.)
-            // We've guarded against the common cases of this by renaming things like bloom-editable
-            // and bloom-translationGroup in saved versions of custom pages, but getting
-            // rid of the data-div altogether prevents any possibility of publication code
-            // finding things there.
-            var dataDiv = modifiedBook.RawDom.SelectSingleNode("//div[@id='bloomDataDiv']");
+            // Keep bloomDataDiv for metadata Bloom Player uses, but remove entries that contain
+            // custom-page content that can look like real page elements.
+            var dataDiv =
+                modifiedBook.RawDom.SelectSingleNode("//div[@id='bloomDataDiv']") as SafeXmlElement;
             if (dataDiv != null)
             {
-                dataDiv.ParentElement.RemoveChild(dataDiv);
+                var childrenToRemove = dataDiv
+                    .ChildNodes.OfType<SafeXmlElement>()
+                    .Where(child =>
+                        child.ChildNodes.OfType<SafeXmlElement>().FirstOrDefault()?.HasClass("bloom-canvas")
+                        ?? false
+                    )
+                    .ToArray();
+                foreach (var child in childrenToRemove)
+                {
+                    dataDiv.RemoveChild(child);
+                }
             }
             modifiedBook.Save(true);
             modifiedBook.UpdateSupportFiles();

@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -40,15 +41,16 @@ namespace Bloom.Workspace
         private readonly LocalizationChangedEvent _localizationChangedEvent;
         private readonly CollectionSettings _collectionSettings;
         private EditingView _editingView;
+        private Browser _mainBrowser;
         private PublishView _publishView;
         private CollectionTabView _collectionTabView;
-        private Control _previouslySelectedControl;
+        private IBloomTabArea _previouslySelectedTabArea;
+        private readonly IframeReactControl _topBarIframeReactControl;
+        private bool _topBarLoadedIntoIframe;
         public event EventHandler ReopenCurrentProject;
         public static float DPIOfThisAccount;
         private ZoomModel _zoomModel;
         private bool _tabsEnabled = true;
-        private readonly ContextMenuStrip _uiLanguageContextMenu = new ContextMenuStrip();
-        private readonly ContextMenuStrip _helpContextMenu = new ContextMenuStrip();
 
         public delegate WorkspaceView Factory();
 
@@ -61,10 +63,11 @@ namespace Bloom.Workspace
         private CollectionApi _collectionApi;
         private AudioRecording _audioRecording;
         private CollectionSettingsApi _collectionSettingsApi;
+        private bool _workspaceRootDocumentLoaded;
 
         private NewCollectionWizardApi _newCollectionWizardApi;
 
-        internal ReactControl TopBarReactControl => _topBarReactControl;
+        internal Browser MainBrowser => _mainBrowser;
 
         //autofac uses this
 
@@ -114,6 +117,7 @@ namespace Bloom.Workspace
             _newCollectionWizardApi = newCollectionWizardApi;
 
             _collectionSettings = collectionSettings;
+            _topBarIframeReactControl = new IframeReactControl();
             // This provides the common API with a hook it can use to reload
             // the project. Another option would be to make Autofac pass a WorkspaceView
             // to the CommonApi constructor so it could raise the event more
@@ -141,9 +145,7 @@ namespace Bloom.Workspace
             float scaleFactor = 1.1f; // determined experimentally
             this.Scale(new SizeF(scaleFactor, scaleFactor));
 
-            _checkForNewVersionMenuItem.Visible = Platform.IsWindows;
-
-            editBookCommand.Subscribe(OnEditBook);
+            editBookCommand.Subscribe(HandleEditBookCommand);
 
             Application.Idle += new EventHandler(Application_Idle);
             Text = _model.ProjectName;
@@ -154,42 +156,40 @@ namespace Bloom.Workspace
             // and that is done by the EditingView constructor.
             //
             this._editingView = editingViewFactory();
+            this._editingView.WorkspaceView = this;
             this._editingView.Dock = DockStyle.Fill;
+            if (!_containerPanel.Controls.Contains(this._editingView))
+            {
+                _containerPanel.Controls.Add(this._editingView);
+            }
             this._editingView.Model.EnableSwitchingTabs = (enabled) =>
             {
                 _tabsEnabled = enabled;
                 SendTopBarState();
             };
 
+            if (!Program.RunningHarvesterMode)
+            {
+                _mainBrowser = BrowserMaker.MakeBrowser();
+                InitializeMainBrowser();
+                _editingView.AttachMainBrowser(_mainBrowser);
+                _editingView.InitializeMainBrowserForEditMode();
+            }
+
             _collectionTabView = collectionsTabViewFactory();
-            _collectionTabView.Dock = DockStyle.Fill;
-            _collectionTabView.BackColor = System.Drawing.Color.FromArgb(
-                ((int)(((byte)(87)))),
-                ((int)(((byte)(87)))),
-                ((int)(((byte)(87))))
-            );
+            _collectionTabView.WorkspaceView = this;
             _tabSelection.ActiveTab = WorkspaceTab.collection;
 
             //
             // _pdfView
             //
             this._publishView = publishViewFactory();
-            this._publishView.Dock = DockStyle.Fill;
+            this._publishView.WorkspaceView = this;
 
-            // Temporary: while Help/UI language menus are WinForms menus and tabs run in separate browsers,
-            // listen for browser clicks from each main browser so those WinForms menus can close.
-            // Remove once menus are in the single browser UI.
-            if (_editingView.Browser != null)
-                _editingView.Browser.OnBrowserClick += HandleAnyBrowserClick;
-            if (_collectionTabView != null)
-                _collectionTabView.BrowserClick += HandleAnyBrowserClick;
-            if (_publishView != null)
-                _publishView.BrowserClick += HandleAnyBrowserClick;
-
-            SelectTab(_collectionTabView);
+            ApplyTabAreaSelection(_collectionTabView);
 
             SetupZoomModel();
-            SetupTopBarReactControl();
+            SetupTopBarIframeControl();
             SendZoomInfo();
             CommonApi.WorkspaceView = this;
 
@@ -251,6 +251,53 @@ namespace Bloom.Workspace
         private void ReadyToShowCollections()
         {
             _collectionTabView.ReadyToShowCollections();
+        }
+
+        internal void EnsureWorkspaceRootDocumentLoaded()
+        {
+            if (_workspaceRootDocumentLoaded || _mainBrowser == null)
+                return;
+
+            _mainBrowser.Navigate(
+                GetWorkspaceRootDocument(),
+                setAsCurrentPageForDebugging: true,
+                source: InMemoryHtmlFileSource.Frame
+            );
+            _workspaceRootDocumentLoaded = true;
+        }
+
+        private HtmlDom GetWorkspaceRootDocument()
+        {
+            var path = FileLocationUtilities.GetFileDistributedWithApplication(
+                Path.Combine(
+                    BloomFileLocator.BrowserRoot,
+                    "bookEdit",
+                    ReactControl.ShouldUseViteDev()
+                        ? "WorkspaceRoot.vite-dev.html"
+                        : "WorkspaceRoot.html"
+                )
+            );
+
+            var frameText = RobustFile
+                .ReadAllText(path, Encoding.UTF8)
+                .Replace("{simulatedPageFileInBookFolder}", "about:blank")
+                .Replace("{simulatedPageListFile}", "about:blank");
+
+            return new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));
+        }
+
+        private void InitializeMainBrowser()
+        {
+            _mainBrowser.BackColor = System.Drawing.Color.DarkGray;
+            _mainBrowser.ContextMenuProvider = null;
+            _mainBrowser.ReplaceContextMenu = null;
+            _mainBrowser.ControlKeyEvent = null;
+            _mainBrowser.Dock = DockStyle.Fill;
+            _mainBrowser.Location = new Point(0, 0);
+            _mainBrowser.Margin = new Padding(5);
+            _mainBrowser.Name = "_mainBrowser";
+            _mainBrowser.Size = new Size(826, 561);
+            _mainBrowser.TabIndex = 1;
         }
 
         /// <summary>
@@ -493,26 +540,33 @@ namespace Bloom.Workspace
             SendZoomInfo();
         }
 
-        private void SetupTopBarReactControl()
+        private void SetupTopBarIframeControl()
         {
-            _topBarReactControl.SetLocalizationChangedEvent(_localizationChangedEvent);
-            _topBarReactControl.ReplaceContextMenu = () =>
+            _localizationChangedEvent.Subscribe(unused =>
             {
-                Shell.GetShellOrNull()?.ShowContextMenuAt(MousePosition);
-            };
-            // Temporary: top bar is currently hosted as a separate browser from other tabs.
-            // Remove once menus and top bar run in one browser UI.
-            _topBarReactControl.OnBrowserClick += HandleAnyBrowserClick;
+                if (_topBarLoadedIntoIframe)
+                {
+                    ReloadTopBarIntoIframe();
+                }
+            });
+
+            ReloadTopBarIntoIframe();
         }
 
-        // Temporary helper used to close WinForms menus from browser click notifications.
-        // Remove once menus are rendered in the single browser UI.
-        private void HandleAnyBrowserClick(object sender, EventArgs e)
+        private void ReloadTopBarIntoIframe()
         {
-            if (_uiLanguageContextMenu.Visible)
-                _uiLanguageContextMenu.Close();
-            if (_helpContextMenu.Visible)
-                _helpContextMenu.Close();
+            if (_mainBrowser == null)
+                return;
+
+            EnsureWorkspaceRootDocumentLoaded();
+            _ = _topBarIframeReactControl.Load(
+                _mainBrowser,
+                "topBarBundle",
+                null,
+                "topBar",
+                Color.FromArgb(29, 148, 164)
+            );
+            _topBarLoadedIntoIframe = true;
         }
 
         public dynamic GetTabInfoForClient()
@@ -615,66 +669,104 @@ namespace Bloom.Workspace
             return items;
         }
 
-        public void ShowUiLanguageMenu()
+        public object GetAvailableUiLanguageNamesForClient()
         {
-            SetupUiLanguageMenu();
-            ShowContextMenu(_uiLanguageContextMenu);
+            var languageItems = GetLanguageItems(onlyActiveItem: false);
+            return languageItems.Select(item => item.MenuText).ToList();
         }
 
-        public void ShowHelpMenu()
+        public void HandleUiLanguageActionForClient(string action, string languageName = null)
         {
-            BuildHelpContextMenu();
-            ShowContextMenu(_helpContextMenu);
-        }
+            if (String.IsNullOrEmpty(action))
+                return;
 
-        private void BuildHelpContextMenu()
-        {
-            _helpContextMenu.Items.Clear();
-            _helpContextMenu.Items.AddRange(
-                new ToolStripItem[]
-                {
-                    _documentationMenuItem,
-                    _bloomDocsMenuItem,
-                    _trainingVideosMenuItem,
-                    _buildingReaderTemplatesMenuItem,
-                    _usingReaderTemplatesMenuItem,
-                    _toolStripSeparator1,
-                    _askAQuestionMenuItem,
-                    _requestAFeatureMenuItem,
-                    _reportAProblemMenuItem,
-                    _divider1,
-                    _releaseNotesMenuItem,
-                    _checkForNewVersionMenuItem,
-                    _registrationMenuItem,
-                    _divider2,
-                    _webSiteMenuItem,
-                    _aboutBloomMenuItem,
-                }
-            );
-        }
-
-        private void ShowContextMenu(ContextMenuStrip menu)
-        {
-            // Align the menu's right edge with the window's right edge.
-            // Ensures it stays on the same monitor.
-            // But also, it provides more consistency than having it shift left/right
-            // depending on where the mouse is.
-            var host = FindForm();
-            var windowRight = host?.Bounds.Right ?? MousePosition.X;
-            var menuWidth = menu.Width > 0 ? menu.Width : menu.GetPreferredSize(Size.Empty).Width;
-            var x = windowRight - menuWidth;
-            var y = MousePosition.Y + 8;
-
-            var timer = new System.Windows.Forms.Timer { Interval = 10 };
-            timer.Tick += (s, a) =>
+            if (action == "setLanguage")
             {
-                menu.Left = x;
-                menu.Top = y;
-                menu.Show(x, y);
-                timer.Stop();
-                timer.Dispose();
-            };
-            timer.Start();
+                if (String.IsNullOrEmpty(languageName))
+                    return;
+                var langTag = GetLanguageItems(onlyActiveItem: false)
+                    .FirstOrDefault(item => item.MenuText == languageName)
+                    ?.LangTag;
+                if (String.IsNullOrEmpty(langTag))
+                    return;
+                SetUiLanguage(langTag);
+                return;
+            }
+
+            if (action == "toggleShowUnapprovedTranslations")
+            {
+                ToggleShowingOnlyApprovedTranslations();
+                return;
+            }
+
+            if (action == "helpTranslate")
+            {
+                ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.LocalizingSystem, null));
+            }
+        }
+
+        public bool GetShowUnapprovedTranslationsForClient()
+        {
+            return Settings.Default.ShowUnapprovedLocalizations;
+        }
+
+        public void SetShowUnapprovedTranslationsForClient(bool showUnapproved)
+        {
+            if (Settings.Default.ShowUnapprovedLocalizations == showUnapproved)
+                return;
+
+            ToggleShowingOnlyApprovedTranslations();
+        }
+
+        public void HandleHelpActionForClient(string method, string argument = null)
+        {
+            if (String.IsNullOrEmpty(method))
+                return;
+
+            var resolvedArgument = ResolveHelpActionArgument(argument);
+
+            switch (method)
+            {
+                case "showHelp":
+                    HelpLauncher.Show(this, CurrentTabView.HelpTopicUrl);
+                    break;
+                case "safeStart":
+                    if (String.IsNullOrEmpty(resolvedArgument))
+                        return;
+                    SIL.Program.Process.SafeStart(resolvedArgument);
+                    break;
+                case "safeStartInFront":
+                    if (String.IsNullOrEmpty(resolvedArgument))
+                        return;
+                    ProcessExtra.SafeStartInFront(resolvedArgument);
+                    break;
+                case "showTrainingVideos":
+                    ShowTrainingVideos();
+                    break;
+            }
+        }
+
+        private static string ResolveHelpActionArgument(string argument)
+        {
+            if (String.IsNullOrEmpty(argument))
+                return argument;
+
+            const string urlTypePrefix = "urlType:";
+            if (argument.StartsWith(urlTypePrefix, StringComparison.Ordinal))
+            {
+                var urlTypeString = argument.Substring(urlTypePrefix.Length);
+                if (Enum.TryParse(urlTypeString, true, out UrlType urlType))
+                    return UrlLookup.LookupUrl(urlType, null);
+            }
+
+            const string infoPagePrefix = "infoPage:";
+            if (argument.StartsWith(infoPagePrefix, StringComparison.Ordinal))
+            {
+                var fileName = argument.Substring(infoPagePrefix.Length);
+                return BloomFileLocator.GetBrowserFile(false, "infoPages", fileName);
+            }
+
+            return argument;
         }
 
         private void SendZoomInfo()
@@ -697,38 +789,6 @@ namespace Bloom.Workspace
                     () => RestartBloom()
                 );
             }
-        }
-
-        ToolStripMenuItem _showAllTranslationsItem;
-
-        private void SetupUiLanguageMenu()
-        {
-            var items = GetLanguageItems(onlyActiveItem: false);
-            var tooltipFormat = GetUiLanguageTooltipFormat();
-            var current = GetAndNormalizeCurrentUiLanguage();
-            _uiLanguageContextMenu.Items.Clear();
-            AddUiLanguageMenuItems(
-                _uiLanguageContextMenu.Items,
-                items,
-                current,
-                tooltipFormat,
-                checkCurrentItem: true,
-                (langItem) => SetUiLanguage(langItem.LangTag),
-                onCurrentItemAdded: null
-            );
-
-            _uiLanguageContextMenu.Items.Add(new ToolStripSeparator());
-            _showAllTranslationsItem = new ToolStripMenuItem(
-                GetShowUnapprovedTranslationsMenuText()
-            )
-            {
-                Checked = Settings.Default.ShowUnapprovedLocalizations,
-            };
-            _showAllTranslationsItem.Click += (sender, args) =>
-                ToggleShowingOnlyApprovedTranslations();
-            _uiLanguageContextMenu.Items.Add(_showAllTranslationsItem);
-
-            AddHelpTranslateMenuItem(_uiLanguageContextMenu.Items);
         }
 
         private static string GetUiLanguageTooltipFormat()
@@ -800,7 +860,6 @@ namespace Bloom.Workspace
             LocalizationManager.ReturnOnlyApprovedStrings = !Settings
                 .Default
                 .ShowUnapprovedLocalizations;
-            SetupUiLanguageMenu();
             FinishUiLanguageMenuItemClick(); // apply newly revealed/hidden localizations
             // until L10nSharp changes to allow dynamic response to setting change
             Settings.Default.Save();
@@ -927,7 +986,6 @@ namespace Bloom.Workspace
 
         private void FinishUiLanguageMenuItemClick()
         {
-            _showAllTranslationsItem.Text = GetShowUnapprovedTranslationsMenuText();
             _localizationChangedEvent.Raise(null);
         }
 
@@ -1007,7 +1065,7 @@ namespace Bloom.Workspace
             }
         }
 
-        private void OnEditBook(Book.Book book)
+        private void HandleEditBookCommand(Book.Book book)
         {
             ChangeTab(WorkspaceTab.edit);
         }
@@ -1037,16 +1095,16 @@ namespace Bloom.Workspace
 
         public void OpenCreateCollection()
         {
+            var previousTab = GetWorkspaceTab(_previouslySelectedTabArea);
             _selectedTabAboutToChangeEvent.Raise(
-                new TabChangedDetails() { From = _previouslySelectedControl, To = null }
+                new TabChangedDetails() { FromTab = previousTab, ToTab = null }
             );
 
             _selectedTabChangedEvent.Raise(
-                new TabChangedDetails() { From = _previouslySelectedControl, To = null }
+                new TabChangedDetails() { FromTab = previousTab, ToTab = null }
             );
 
-            var oldSelectedControl = _previouslySelectedControl;
-            _previouslySelectedControl = null;
+            var oldSelectedTab = previousTab;
 
             Invoke(
                 (Action)(
@@ -1060,16 +1118,14 @@ namespace Bloom.Workspace
                             // We want to resume whatever tab we were in.
                             // There is some overkill here...the old tab can only be the collection tab,
                             // and currently it doesn't care about these events. The critical thing is to
-                            // restore _previouslySelectedControl, which is required so we can remove it
-                            // if we subsequently switch to another tab. But it seemed best to be consistent.
+                            // restore tab identity in subsequent tab-change event payloads.
                             // If we're not shutting down, we're switching the previously selected tab back on.
                             _selectedTabAboutToChangeEvent.Raise(
-                                new TabChangedDetails() { From = null, To = oldSelectedControl }
+                                new TabChangedDetails() { FromTab = null, ToTab = oldSelectedTab }
                             );
                             _selectedTabChangedEvent.Raise(
-                                new TabChangedDetails() { From = null, To = oldSelectedControl }
+                                new TabChangedDetails() { FromTab = null, ToTab = oldSelectedTab }
                             );
-                            _previouslySelectedControl = oldSelectedControl;
                         }
                     }
                 )
@@ -1143,46 +1199,56 @@ namespace Bloom.Workspace
             );
         }
 
-        private void SelectTab(Control view)
+        private static WorkspaceTab? GetWorkspaceTab(IBloomTabArea view)
+        {
+            if (view is EditingView)
+                return WorkspaceTab.edit;
+
+            if (view is CollectionTabView)
+                return WorkspaceTab.collection;
+
+            if (view is PublishView)
+                return WorkspaceTab.publish;
+
+            return null;
+        }
+
+        private void ApplyTabAreaSelection(IBloomTabArea view)
         {
             // Already on the desired tab: nothing to do.  And possible problems if we do do something.
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-8382.
-            if (view == _previouslySelectedControl)
+            if (view == _previouslySelectedTabArea)
                 return;
 
-            CurrentTabView = view as IBloomTabArea;
+            var previousTab = GetWorkspaceTab(_previouslySelectedTabArea);
+            var currentTab = GetWorkspaceTab(view);
+
+            CurrentTabView = view;
             // Warn the user if we're starting to use too much memory.
             //MemoryManagement.CheckMemory(false, "switched tab in workspace", true);
 
-            if (_previouslySelectedControl != null)
+            if (_previouslySelectedTabArea is EditingView)
             {
-                _containerPanel.Controls.Remove(_previouslySelectedControl);
-                if (_previouslySelectedControl is EditingView)
-                {
-                    // I wish this was unnecessary; ideally, we'd get the notification to
-                    // stop monitoring from the stopMonitoring function in audioRecording.ts.
-                    // We should be able to achieve that when the tabs are embedded in a single
-                    // Browser control. For now, the shutdown of the EditingView seems to
-                    // preempt it, so we handle it here.
-                    _audioRecording.PauseMonitoringAudio(false);
-                }
+                // I wish this was unnecessary; ideally, we'd get the notification to
+                // stop monitoring from the stopMonitoring function in audioRecording.ts.
+                // We should be able to achieve that when the tabs are embedded in a single
+                // Browser control. For now, the shutdown of the EditingView seems to
+                // preempt it, so we handle it here.
+                _audioRecording.PauseMonitoringAudio(false);
             }
-
-            view.Dock = DockStyle.Fill;
-            _containerPanel.Controls.Add(view);
 
             _selectedTabAboutToChangeEvent.Raise(
                 new TabChangedDetails()
                 {
-                    From = _previouslySelectedControl,
-                    To = view,
+                    FromTab = previousTab,
+                    ToTab = currentTab,
                     PostponedWork = () =>
                     {
                         _selectedTabChangedEvent.Raise(
-                            new TabChangedDetails() { From = _previouslySelectedControl, To = view }
+                            new TabChangedDetails() { FromTab = previousTab, ToTab = currentTab }
                         );
 
-                        _previouslySelectedControl = view;
+                        _previouslySelectedTabArea = view;
                         _collectionApi.ResetUpdatingList();
 
                         var zoomManager = CurrentTabView as IZoomManager;
@@ -1200,75 +1266,104 @@ namespace Bloom.Workspace
 
         protected IBloomTabArea CurrentTabView { get; set; }
 
-        public void ChangeTab(WorkspaceTab newTab)
+        private static string GetWorkspaceModeName(WorkspaceTab tab)
         {
-            _tabSelection.ActiveTab = newTab;
-            switch (newTab)
+            switch (tab)
             {
                 case WorkspaceTab.edit:
-                    SelectTab(_editingView);
-                    break;
+                    return "edit";
                 case WorkspaceTab.collection:
-                    SelectTab(_collectionTabView);
-                    if (_returnToCollectionTabNotifier != null)
-                    {
-                        _returnToCollectionTabNotifier.CloseSafely();
-                        _returnToCollectionTabNotifier = null;
-                    }
-                    if (_collectionTabView != null)
-                    {
-                        if (Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded)
-                        {
-                            _collectionTabView.UpdateBloomLibraryStatus(
-                                Publish.BloomLibrary.BloomLibraryPublishModel.BookUploadedId
-                            );
-                            Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded = false;
-                            Publish.BloomLibrary.BloomLibraryPublishModel.BookUploadedId = null;
-                        }
-                    }
-                    break;
+                    return "collection";
                 case WorkspaceTab.publish:
-                    SelectTab(_publishView);
-                    break;
+                    return "publish";
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(tab), tab, null);
             }
         }
 
-        private void OnAboutBoxClick(object sender, EventArgs e)
+        private IBloomTabArea GetTabArea(WorkspaceTab tab)
         {
-            if (InEditMode)
-                _editingView.ShowAboutDialog();
-            else
-                _webSocketServer.LaunchDialog("AboutDialog");
+            switch (tab)
+            {
+                case WorkspaceTab.edit:
+                    return _editingView;
+                case WorkspaceTab.collection:
+                    return _collectionTabView;
+                case WorkspaceTab.publish:
+                    return _publishView;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(tab), tab, null);
+            }
         }
 
-        private void _documentationMenuItem_Click(object sender, EventArgs e)
+        private void EnsureTabAreaLoaded(WorkspaceTab tab)
         {
-            HelpLauncher.Show(this, CurrentTabView.HelpTopicUrl);
+            switch (tab)
+            {
+                case WorkspaceTab.collection:
+                    _collectionTabView.EnsureLoadedInMainBrowser();
+                    break;
+                case WorkspaceTab.publish:
+                    _publishView.EnsureLoadedInMainBrowser();
+                    break;
+                case WorkspaceTab.edit:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(tab), tab, null);
+            }
         }
 
-        private void _bloom_docs_Click(object sender, EventArgs e)
+        private void ApplyPostCollectionTabBehavior()
         {
-            SIL.Program.Process.SafeStart("https://docs.bloomlibrary.org");
+            if (_returnToCollectionTabNotifier != null)
+            {
+                _returnToCollectionTabNotifier.CloseSafely();
+                _returnToCollectionTabNotifier = null;
+            }
+            if (_collectionTabView != null)
+            {
+                if (Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded)
+                {
+                    _collectionTabView.UpdateBloomLibraryStatus(
+                        Publish.BloomLibrary.BloomLibraryPublishModel.BookUploadedId
+                    );
+                    Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded = false;
+                    Publish.BloomLibrary.BloomLibraryPublishModel.BookUploadedId = null;
+                }
+            }
         }
 
-        private void _webSiteMenuItem_Click(object sender, EventArgs e)
+        private void SyncWorkspaceRootModeToTab(WorkspaceTab tab)
         {
-            ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.LibrarySite, null));
+            _mainBrowser?.RunJavascriptFireAndForget(
+                $"workspaceBundle.setWorkspaceMode('{GetWorkspaceModeName(tab)}');"
+            );
         }
 
-        private void _releaseNotesMenuItem_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Changes the active tab in the workspace.
+        /// </summary>
+        /// <note>This requires that the workspace is already loaded,
+        /// which is normally the case since we start loading it very early in the application startup process,
+        /// and in that case we won't be changing tabs until some user does so, which can only be done using
+        /// controls that must be loaded into the workspace. When a page is refreshing, code may automatically
+        /// change the tab, but that can't happen until the code that does it is loaded! So I think we are
+        /// safe, but be aware of this issue if you are adding some new code that opens a different tab
+        /// at startup.
+        /// </note
+        /// <param name="newTab"></param>
+        public void ChangeTab(WorkspaceTab newTab)
         {
-            SIL.Program.Process.SafeStart("https://docs.bloomlibrary.org/Release-Notes");
-        }
+            _tabSelection.ActiveTab = newTab;
 
-        private void _requestAFeatureMenuItem_Click(object sender, EventArgs e)
-        {
-            ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.UserSuggestions, null));
-        }
+            EnsureTabAreaLoaded(newTab);
+            SyncWorkspaceRootModeToTab(newTab);
+            ApplyTabAreaSelection(GetTabArea(newTab));
 
-        private void _askAQuestionMenuItem_Click(object sender, EventArgs e)
-        {
-            ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.Support, null));
+            if (newTab == WorkspaceTab.collection)
+            {
+                ApplyPostCollectionTabBehavior();
+            }
         }
 
         // Currently not used, but I'm leaving the method in case we want to put it
@@ -1384,22 +1479,6 @@ namespace Bloom.Workspace
             }
         }
 
-        private void OnRegistrationMenuItem_Click(object sender, EventArgs e)
-        {
-            ShowRegistrationDialog();
-        }
-
-        public void ShowRegistrationDialog()
-        {
-            if (InEditMode)
-                _editingView.ShowRegistrationDialog();
-            else
-            {
-                dynamic messageBundle = new DynamicJson();
-                _webSocketServer.LaunchDialog("RegistrationDialog", messageBundle);
-            }
-        }
-
         private void CheckDPISettings()
         {
             Graphics g = this.CreateGraphics();
@@ -1430,10 +1509,10 @@ namespace Bloom.Workspace
 
         public void CheckForUpdates()
         {
-            Invoke((Action)(() => _checkForNewVersionMenuItem_Click(this, new EventArgs())));
+            Invoke((Action)(() => CheckForUpdatesImpl()));
         }
 
-        private void _checkForNewVersionMenuItem_Click(object sender, EventArgs e)
+        private void CheckForUpdatesImpl()
         {
             if (Debugger.IsAttached)
             {
@@ -1485,17 +1564,7 @@ namespace Bloom.Workspace
             );
         }
 
-        private void buildingReaderTemplatesMenuItem_Click(object sender, EventArgs e)
-        {
-            OpenInfoFile("Building and Distributing Reader Templates in Bloom.pdf");
-        }
-
-        private void usingReaderTemplatesMenuItem_Click(object sender, EventArgs e)
-        {
-            OpenInfoFile("Using Bloom Reader Templates.pdf");
-        }
-
-        private void _reportAProblemMenuItem_Click(object sender, EventArgs e)
+        public void ReportProblem()
         {
             // Screen shots were showing the menu still open on Linux, so delay a bit by starting the
             // dialog on the next idle loop.  Also allow one repaint event to be handled immediately.
@@ -1556,7 +1625,7 @@ namespace Bloom.Workspace
             SendTopBarState();
         }
 
-        private void _trainingVideosMenuItem_Click(object sender, EventArgs e)
+        private void ShowTrainingVideos()
         {
             //note: markdown processors pass raw html through unchanged.  Bloom's localization process
             // is designed to produce HTML files, not Markdown files.

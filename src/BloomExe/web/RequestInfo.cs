@@ -461,8 +461,13 @@ namespace Bloom.Api
 
         public string GetPostString(bool unescape = true)
         {
+            var contentType = _actualContext.Request.ContentType;
             Debug.Assert(
-                _actualContext.Request.ContentType.ToLowerInvariant().Contains("text/plain"),
+                contentType != null,
+                "The backend expected this post to have content-type text/plain but its ContentType is null."
+            );
+            Debug.Assert(
+                contentType != null && contentType.ToLowerInvariant().Contains("text/plain"),
                 "The backend expected this post to have content-type text/plain."
             );
             return GetPostStringInner(unescape);

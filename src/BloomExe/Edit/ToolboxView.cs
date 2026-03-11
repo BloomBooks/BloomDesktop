@@ -38,7 +38,7 @@ namespace Bloom.Edit
     ///		which specifies the icon for your tool. (And create the icon in the BloomBrowserUI/images folder).
     /// - Usually you will add a line to GetToolboxServerDirectories() in this file
     /// - Add two lines like this to src\BloomBrowserUI\bookEdit\toolbox\settings\Settings.pug
-    ///		.checkbox.clear#musicCheck(data-tool='musicTool', onclick='editTabBundle.showOrHideTool_click(this);')
+    ///		.checkbox.clear#musicCheck(data-tool='musicTool', onclick='workspaceBundle.showOrHideTool_click(this);')
     ///		.checkbox-label(data-i18n='EditTab.Toolbox.Music.Heading') Music Tool
     /// </summary>
     public class ToolboxView
@@ -110,6 +110,7 @@ namespace Bloom.Edit
             var settings = new Dictionary<string, object>
             {
                 { "current", request.CurrentBook.BookInfo.CurrentTool },
+                { "visibility", request.CurrentBook.BookInfo.ToolboxIsOpen ? "visible" : "" },
             };
 
             foreach (var tool in request.CurrentBook.BookInfo.Tools)
