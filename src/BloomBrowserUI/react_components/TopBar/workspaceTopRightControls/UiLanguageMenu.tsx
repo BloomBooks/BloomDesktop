@@ -28,14 +28,14 @@ interface IMenuItem {
 }
 
 const compactMenuItemCss = css`
-    padding-top: 1px !important;
-    padding-bottom: 1px !important;
-    min-height: 28px;
+    padding-top: 3px !important;
+    padding-bottom: 3px !important;
+    min-height: 32px;
 `;
 
 const compactLabelCss = css`
     font-size: 0.9rem;
-    line-height: 1.15;
+    line-height: 1.3;
 `;
 
 const compactDividerCss = css`
