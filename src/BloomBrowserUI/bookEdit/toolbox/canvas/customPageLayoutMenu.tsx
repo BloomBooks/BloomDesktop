@@ -1,20 +1,23 @@
 import * as React from "react";
 import type { SelectChangeEvent } from "@mui/material/Select";
 import { css, ThemeProvider } from "@emotion/react";
-import { Select, MenuItem, ListItemIcon } from "@mui/material";
-import CheckIcon from "@mui/icons-material/Check";
-import { useL10n } from "../../../react_components/l10nHooks";
+import { Select } from "@mui/material";
 import { toolboxMenuPopupTheme } from "../../../bloomMaterialUITheme";
 import { kBloomPurple } from "../../../utils/colorUtils";
-import { Span } from "../../../react_components/l10nComponents";
+import { useL10n } from "../../../react_components/l10nHooks";
+import { LocalizableSelectableMenuItem } from "../../../react_components/localizableMenuItem";
 
 export const CustomPageLayoutMenu: React.FunctionComponent<{
     isCustom: boolean;
     disableCustomPage?: boolean;
     setCustom: (value: "standard" | "custom" | "customStartOver") => void;
 }> = (props) => {
-    const standardLabel = useL10n("Standard", "EditTab.CustomCover.Standard");
-    const customLabel = useL10n("Custom", "EditTab.CustomCover.Custom");
+    const selectedLayoutLabel = useL10n(
+        props.isCustom ? "Custom Layout" : "Standard Layout",
+        props.isCustom
+            ? "EditTab.CustomCover.CustomLayout"
+            : "EditTab.CustomCover.StandardLayout",
+    );
 
     const handleChange = (event: SelectChangeEvent<string>) => {
         let selection = event.target.value as
@@ -44,31 +47,6 @@ export const CustomPageLayoutMenu: React.FunctionComponent<{
         props.setCustom(selection);
     };
 
-    const renderMenuItem = (
-        value: "standard" | "custom",
-        label: string,
-        checked: boolean,
-        disabled?: boolean,
-    ) => {
-        return (
-            <MenuItem value={value} disabled={disabled}>
-                <ListItemIcon
-                    css={css`
-                        min-width: 32px;
-                    `}
-                >
-                    <CheckIcon
-                        fontSize="small"
-                        css={css`
-                            visibility: ${checked ? "visible" : "hidden"};
-                        `}
-                    />
-                </ListItemIcon>
-                {label}
-            </MenuItem>
-        );
-    };
-
     return (
         <ThemeProvider theme={toolboxMenuPopupTheme}>
             <div
@@ -77,9 +55,7 @@ export const CustomPageLayoutMenu: React.FunctionComponent<{
                     color: ${kBloomPurple};
                 `}
             >
-                <Span l10nKey="EditTab.CustomCover.CoverLayout">
-                    Cover Layout:
-                </Span>
+                {selectedLayoutLabel}
                 <Select
                     css={css`
                         color: ${kBloomPurple};
@@ -107,13 +83,19 @@ export const CustomPageLayoutMenu: React.FunctionComponent<{
                     displayEmpty
                     renderValue={() => ""}
                 >
-                    {renderMenuItem("standard", standardLabel, !props.isCustom)}
-                    {renderMenuItem(
-                        "custom",
-                        customLabel,
-                        props.isCustom,
-                        props.disableCustomPage,
-                    )}
+                    <LocalizableSelectableMenuItem
+                        english="Standard"
+                        l10nId="EditTab.CustomCover.Standard"
+                        selected={!props.isCustom}
+                        value="standard"
+                    />
+                    <LocalizableSelectableMenuItem
+                        english="Custom"
+                        l10nId="EditTab.CustomCover.Custom"
+                        selected={props.isCustom}
+                        value="custom"
+                        disabled={props.disableCustomPage}
+                    />
                 </Select>
             </div>
         </ThemeProvider>
