@@ -1093,6 +1093,11 @@
         <target xml:lang="sw" state="needs-translation">Unnumbered Page</target>
         <note>ID: BookSettings.Fonts.UnnumberedPage</note>
       </trans-unit>
+      <trans-unit id="PageLayout.CustomXMatterPage" translate="no">
+        <source xml:lang="en">Customized Front and Back Matter Page Layout</source>
+        <target xml:lang="sw" state="needs-translation">Customized Front and Back Matter Page Layout</target>
+        <note>ID: PageLayout.CustomXMatterPage</note>
+      </trans-unit>
       <trans-unit id="AppearanceTheme.default" sil:dynamic="true">
         <source xml:lang="en">Default</source>
         <target xml:lang="sw" state="needs-translation">Default</target>
