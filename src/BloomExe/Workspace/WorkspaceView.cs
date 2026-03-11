@@ -1316,11 +1316,6 @@ namespace Bloom.Workspace
 
         private void ApplyPostCollectionTabBehavior()
         {
-            if (_returnToCollectionTabNotifier != null)
-            {
-                _returnToCollectionTabNotifier.CloseSafely();
-                _returnToCollectionTabNotifier = null;
-            }
             if (_collectionTabView != null)
             {
                 if (Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded)
@@ -1372,8 +1367,8 @@ namespace Bloom.Workspace
         /// change the tab, but that can't happen until the code that does it is loaded! So I think we are
         /// safe, but be aware of this issue if you are adding some new code that opens a different tab
         /// at startup.
-        /// </note
-        /// <param name="newTab"></param>
+        /// </note>
+        /// <param name="newTab">The tab to activate.</param>
         public void ChangeTab(WorkspaceTab newTab)
         {
             _tabSelection.ActiveTab = newTab;

@@ -3,39 +3,10 @@ import * as React from "react";
 import WebSocketManager, {
     IBloomWebSocketEvent,
 } from "../utils/WebSocketManager";
-import { ToastInfo, Toast, ToastInfoAction, ToastSeverity } from "./Toast";
+import { ToastInfo, Toast } from "./Toast";
+import { useToastDebugEvents } from "./toastUtils";
 
 type ToastShowEvent = IBloomWebSocketEvent & ToastInfo;
-type DebugToastInput =
-    | {
-          text: string;
-          l10nId?: string;
-          severity?: ToastSeverity;
-          durationSeconds?: number;
-          action?: ToastInfoAction;
-          toastId?: string;
-      }
-    | {
-          l10nId: string;
-          text?: string;
-          severity?: ToastSeverity;
-          durationSeconds?: number;
-          action?: ToastInfoAction;
-          toastId?: string;
-      };
-
-const kToastDebugShowEvent = "bloom-toast-debug-show";
-const kToastDebugClearEvent = "bloom-toast-debug-clear";
-
-const ensureToastId = (toast: DebugToastInput): ToastInfo => {
-    return {
-        ...toast,
-        severity: toast.severity ?? "notice",
-        toastId:
-            toast.toastId ??
-            `debug-toast-${Date.now().toString()}-${Math.random().toString(36).slice(2)}`,
-    };
-};
 
 const getMessageIdentity = (toast: ToastInfo): string => {
     return toast.l10nId ?? toast.text!;
@@ -53,10 +24,9 @@ export const ToastHost: React.FunctionComponent<{
             incomingToasts.forEach((incomingToast) => {
                 const isDuplicate = nextToasts.some(
                     (toast) =>
-                        toast.toastId === incomingToast.toastId ||
-                        (!!getMessageIdentity(incomingToast) &&
-                            getMessageIdentity(incomingToast) ===
-                                getMessageIdentity(toast)),
+                        !!getMessageIdentity(incomingToast) &&
+                        getMessageIdentity(incomingToast) ===
+                            getMessageIdentity(toast),
                 );
 
                 if (!isDuplicate) {
@@ -68,9 +38,13 @@ export const ToastHost: React.FunctionComponent<{
         });
     }, []);
 
-    const removeToast = React.useCallback((toastId: string) => {
+    const removeToast = React.useCallback((toastToRemove: ToastInfo) => {
         setToasts((currentToasts) =>
-            currentToasts.filter((toast) => toast.toastId !== toastId),
+            currentToasts.filter(
+                (toast) =>
+                    getMessageIdentity(toast) !==
+                    getMessageIdentity(toastToRemove),
+            ),
         );
     }, []);
 
@@ -82,7 +56,7 @@ export const ToastHost: React.FunctionComponent<{
 
             if (toast.action.url) {
                 window.location.href = toast.action.url;
-                removeToast(toast.toastId);
+                removeToast(toast);
                 return;
             }
 
@@ -90,16 +64,20 @@ export const ToastHost: React.FunctionComponent<{
                 void postJsonAsync("toast/performAction", {
                     callbackId: toast.action.callbackId,
                 }).then(() => {
-                    removeToast(toast.toastId);
+                    removeToast(toast);
                 });
 
                 return;
             }
 
-            removeToast(toast.toastId);
+            removeToast(toast);
         },
         [removeToast],
     );
+
+    const clearToasts = React.useCallback(() => {
+        setToasts([]);
+    }, []);
 
     // Subscribe once to backend websocket toast show events so the host can render toasts.
     React.useEffect(() => {
@@ -113,32 +91,8 @@ export const ToastHost: React.FunctionComponent<{
         return () => WebSocketManager.removeListener("toast", listener);
     }, [enqueueToasts]);
 
-    // Subscribe to root-window debug events so developers can inject and clear toasts
-    // without needing to hit every backend scenario manually.
-    React.useEffect(() => {
-        const handleDebugShow = (event: Event) => {
-            const customEvent = event as CustomEvent<
-                DebugToastInput | DebugToastInput[]
-            >;
-            const requestedToasts = Array.isArray(customEvent.detail)
-                ? customEvent.detail
-                : [customEvent.detail];
-
-            enqueueToasts(requestedToasts.map(ensureToastId));
-        };
-
-        const handleDebugClear = () => {
-            setToasts([]);
-        };
-
-        window.addEventListener(kToastDebugShowEvent, handleDebugShow);
-        window.addEventListener(kToastDebugClearEvent, handleDebugClear);
-
-        return () => {
-            window.removeEventListener(kToastDebugShowEvent, handleDebugShow);
-            window.removeEventListener(kToastDebugClearEvent, handleDebugClear);
-        };
-    }, [enqueueToasts]);
+    // A utility to help developers test toasts without needing to trigger them from the backend.
+    useToastDebugEvents(enqueueToasts, clearToasts);
 
     // Dismiss selected dedupe-key toasts when container UI state says they are no longer relevant.
     React.useEffect(() => {
@@ -163,7 +117,7 @@ export const ToastHost: React.FunctionComponent<{
         <>
             {toasts.map((toast, index) => (
                 <Toast
-                    key={toast.toastId}
+                    key={getMessageIdentity(toast)}
                     toast={toast}
                     index={index}
                     onClose={removeToast}
@@ -172,9 +126,4 @@ export const ToastHost: React.FunctionComponent<{
             ))}
         </>
     );
-};
-
-export const toastDebugEvents = {
-    clear: kToastDebugClearEvent,
-    show: kToastDebugShowEvent,
 };
