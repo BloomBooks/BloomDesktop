@@ -12,7 +12,10 @@ import { EditableDivUtils } from "../../js/editableDivUtils";
 import { kBloomCanvasClass, kCanvasElementClass } from "./canvasElementUtils";
 import { getAsync, postString } from "../../../utils/bloomApi";
 import { Bubble, BubbleSpec } from "comicaljs";
-import { recomputeSourceBubblesForPage } from "../../js/bloomEditing";
+import {
+    recomputeSourceBubblesForPage,
+    wrapWithRequestPageContentDelay,
+} from "../../js/bloomEditing";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import { getToolboxBundleExports } from "../../js/workspaceFrames";
 import { ILanguageNameValues } from "../../bookSettings/FieldVisibilityGroup";
@@ -57,17 +60,21 @@ import { isLegacyThemeCssLoaded } from "../../bookSettings/appearanceThemeUtils"
     visibility of different languages.
 */
 
-export function convertXmatterPageToCustom(page: HTMLElement): void {
+export async function convertXmatterPageToCustom(
+    page: HTMLElement,
+): Promise<void> {
+    const marginBox = page.getElementsByClassName(
+        "marginBox",
+    )[0] as HTMLElement;
+    if (!marginBox) return; // paranoia and lint
+
+    const languageNameValues = await getLanguageNameValues();
+
     theOneCanvasElementManager?.turnOffCanvasElementEditing();
     // we need to get rid of the old ones before we switch things around,
     // since the remove code makes use of the existing divs that the
     // source bubbles are connected to.
     BloomSourceBubbles.removeSourceBubbles(page);
-
-    const marginBox = page.getElementsByClassName(
-        "marginBox",
-    )[0] as HTMLElement;
-    if (!marginBox) return; // paranoia and lint
 
     const contentElements = Array.from(
         marginBox.querySelectorAll("[data-book], [data-derived]"),
@@ -125,9 +132,11 @@ export function convertXmatterPageToCustom(page: HTMLElement): void {
                         e.classList.remove("bloom-visibility-code-on");
                     }
                 }
-                // We don't need to await this. We just want it done before the next time
-                // we save the page, and the async result should arrive almost instantly.
-                setDataDefault(ceContent as HTMLElement, lang || "");
+                setDataDefault(
+                    ceContent as HTMLElement,
+                    lang || "",
+                    languageNameValues,
+                );
 
                 // Don't let the appearance system mess with which languages are visible here.
                 ceContent.removeAttribute("data-visibility-variable");
@@ -212,17 +221,20 @@ export function convertXmatterPageToCustom(page: HTMLElement): void {
     finishReactivatingPage(page);
 }
 
-async function setDataDefault(
+async function getLanguageNameValues(): Promise<ILanguageNameValues> {
+    return (await getAsync("settings/languageNames"))
+        .data as ILanguageNameValues;
+}
+
+function setDataDefault(
     ceContent: HTMLElement,
     lang: string,
-): Promise<void> {
+    languageNameValues: ILanguageNameValues,
+): void {
     // We also want it to stay that way when C# code later updates visibility codes.
     // This is based on a setting in the TG. Using these generic codes means that if
     // the collection languages change, or we make a derivative, the right language
     // should still be made visible in each box.
-    // settings/languageNames
-    const languageNameValues = (await getAsync("settings/languageNames"))
-        .data as ILanguageNameValues;
     if (languageNameValues.language1Tag === lang) {
         ceContent.setAttribute("data-default-languages", "V");
     } else if (languageNameValues.language2Tag === lang) {
@@ -414,32 +426,43 @@ function renderPageLayoutMenu(page: HTMLElement, container: HTMLElement): void {
         <CustomPageLayoutMenu
             isCustom={isCustomPage}
             disableCustomPage={usingLegacyTheme}
-            setCustom={(selection) => {
+            setCustom={async (selection) => {
                 if (usingLegacyTheme && selection !== "standard") {
                     return;
                 }
                 if (selection === "customStartOver") {
-                    convertXmatterPageToCustom(page);
+                    await wrapWithRequestPageContentDelay(
+                        () => convertXmatterPageToCustom(page),
+                        "customPageLayout-convertStartOver",
+                    );
                     renderPageLayoutMenu(page, container);
                     return;
                 }
-                postString(
+                const response = await postString(
                     "editView/toggleCustomPageLayout",
                     page.getAttribute("id")!,
-                ).then((response) => {
-                    if (
-                        selection === "custom" &&
-                        response &&
-                        // C# returns the string "false" if we don't have any saved state for custom mode,
-                        // but currently something in axios converts that to a boolean false.
-                        // I'm not sure that might not change one day, so we check for both.
-                        (response.data === "false" || response.data === false)
-                    ) {
-                        // making a custom cover for the first time
-                        convertXmatterPageToCustom(page);
-                        renderPageLayoutMenu(page, container);
-                    }
-                });
+                );
+                if (
+                    selection === "custom" &&
+                    response &&
+                    // C# returns the string "false" if we don't have any saved state for custom mode,
+                    // but currently something in axios converts that to a boolean false.
+                    // I'm not sure that might not change one day, so we check for both.
+                    (response.data === "false" || response.data === false)
+                ) {
+                    // making a custom cover for the first time
+                    await wrapWithRequestPageContentDelay(
+                        () => convertXmatterPageToCustom(page),
+                        "customPageLayout-convertFirstTime",
+                    );
+                    // Persist the newly created custom layout state so a later toggle back
+                    // to standard has matching server-side state to work from.
+                    await postString(
+                        "editView/jumpToPage",
+                        page.getAttribute("id")!,
+                    );
+                    renderPageLayoutMenu(page, container);
+                }
             }}
         />,
         container,
