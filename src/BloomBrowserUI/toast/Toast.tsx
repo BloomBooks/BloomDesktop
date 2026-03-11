@@ -15,8 +15,8 @@ type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Omit<T, Keys> &
         [K in Keys]-?: Required<Pick<T, K>> & Partial<Omit<T, K>>;
     }[Keys];
 
+// Keep in sync with ToastAction in ToastService.cs.
 type ToastActionInfoBase = {
-    // Keep property names and semantics in sync with ToastAction in ToastService.cs.
     label?: string;
     l10nId?: string;
     url?: string;
@@ -28,9 +28,9 @@ export type ToastInfoAction = RequireAtLeastOne<
     "label" | "l10nId"
 >;
 
+// Keep in sync with ShowToast() in ToastService.cs.
 type ToastInfoBase = {
-    toastId: string;
-    severity: ToastSeverity;
+    severity?: ToastSeverity;
     text?: string;
     l10nId?: string;
     durationSeconds?: number;
@@ -75,10 +75,11 @@ const getSeverityColor = (severity: ToastSeverity, theme: Theme): string => {
 export const Toast: React.FunctionComponent<{
     toast: ToastInfo;
     index: number;
-    onClose: (toastId: string) => void;
+    onClose: (toast: ToastInfo) => void;
     onAction: (toast: ToastInfo) => void;
 }> = (props) => {
     const theme = useTheme();
+    const severity = props.toast.severity ?? "notice";
     const localizedMessageFromL10n = useL10n2({
         key: props.toast.l10nId || "",
     });
@@ -108,7 +109,7 @@ export const Toast: React.FunctionComponent<{
                 if (reason === "clickaway") {
                     return;
                 }
-                props.onClose(props.toast.toastId);
+                props.onClose(props.toast);
             }}
             css={css`
                 && {
@@ -118,10 +119,8 @@ export const Toast: React.FunctionComponent<{
             `}
         >
             <div
-                role={props.toast.severity === "notice" ? "status" : "alert"}
-                aria-live={
-                    props.toast.severity === "notice" ? "polite" : "assertive"
-                }
+                role={severity === "notice" ? "status" : "alert"}
+                aria-live={severity === "notice" ? "polite" : "assertive"}
                 aria-atomic={true}
                 css={css`
                     display: flex;
@@ -144,12 +143,12 @@ export const Toast: React.FunctionComponent<{
             >
                 <span
                     css={css`
-                        color: ${getSeverityColor(props.toast.severity, theme)};
+                        color: ${getSeverityColor(severity, theme)};
                         display: inline-flex;
                         align-items: center;
                     `}
                 >
-                    {getSeverityIcon(props.toast.severity)}
+                    {getSeverityIcon(severity)}
                 </span>
                 <div
                     css={css`
@@ -210,7 +209,7 @@ export const Toast: React.FunctionComponent<{
                     `}
                     onClick={(event) => {
                         event.stopPropagation();
-                        props.onClose(props.toast.toastId);
+                        props.onClose(props.toast);
                     }}
                 >
                     <CloseIcon fontSize="small" />

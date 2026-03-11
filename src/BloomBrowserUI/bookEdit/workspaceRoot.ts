@@ -73,7 +73,8 @@ import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
 import * as ReactDOM from "react-dom";
 import * as React from "react";
 import { FunctionComponentElement } from "react";
-import { ToastHost, toastDebugEvents } from "../toast/ToastHost";
+import { ToastHost } from "../toast/ToastHost";
+import { ToastDebugInput, toastDebugEvents } from "../toast/toastUtils";
 
 import { showAdjustTimingsDialog } from "./toolbox/talkingBook/AdjustTimingsDialog";
 import { getPageIframeBody } from "../utils/shared";
@@ -485,35 +486,7 @@ declare global {
     interface Window {
         workspaceBundle: WorkspaceBundleApi;
         bloomToastTest?: (scenario?: string) => void;
-        bloomToastShow?: (
-            toast:
-                | {
-                      severity?: "error" | "warning" | "notice";
-                      text?: string;
-                      l10nId?: string;
-                      durationSeconds?: number;
-                      action?: {
-                          label?: string;
-                          l10nId?: string;
-                          url?: string;
-                          callbackId?: string;
-                      };
-                      toastId?: string;
-                  }
-                | Array<{
-                      severity?: "error" | "warning" | "notice";
-                      text?: string;
-                      l10nId?: string;
-                      durationSeconds?: number;
-                      action?: {
-                          label?: string;
-                          l10nId?: string;
-                          url?: string;
-                          callbackId?: string;
-                      };
-                      toastId?: string;
-                  }>,
-        ) => void;
+        bloomToastShow?: (toast: ToastDebugInput) => void;
         bloomToastClear?: () => void;
     }
 }

@@ -25,7 +25,6 @@ namespace Bloom.web
         public string L10nId { get; set; }
         public string Url { get; set; }
         public Action Callback { get; set; }
-        public int? CallbackTimeoutSeconds { get; set; }
     }
 
     /// <summary>
@@ -48,20 +47,17 @@ namespace Bloom.web
         private static readonly ConcurrentDictionary<string, CallbackRecord> s_callbackActions =
             new ConcurrentDictionary<string, CallbackRecord>();
 
-        public static string ShowToast(
+        public static void ShowToast(
             string severity = ToastSeverity.Notice,
             string text = null,
             string l10nId = null,
             int? durationSeconds = null,
-            ToastAction action = null,
-            string toastId = null
+            ToastAction action = null
         )
         {
             CleanupExpiredCallbacks();
-            var resolvedToastId = toastId ?? Guid.NewGuid().ToString("N");
 
             dynamic bundle = new DynamicJson();
-            bundle.toastId = resolvedToastId;
             bundle.severity = severity;
 
             if (!string.IsNullOrWhiteSpace(text))
@@ -80,18 +76,14 @@ namespace Bloom.web
 
                 if (action.Callback != null)
                 {
-                    var callbackTimeoutSeconds =
-                        action.CallbackTimeoutSeconds
-                        ?? (
-                            durationSeconds.HasValue
-                                ? Math.Max(600, durationSeconds.Value + 120)
-                                : 7 * 24 * 60 * 60
-                        );
+                    var expiresUtc = durationSeconds.HasValue
+                        ? DateTime.UtcNow.AddSeconds(Math.Max(600, durationSeconds.Value + 120))
+                        : DateTime.MaxValue;
                     callbackId = Guid.NewGuid().ToString("N");
                     s_callbackActions[callbackId] = new CallbackRecord
                     {
                         Action = action.Callback,
-                        ExpiresUtc = DateTime.UtcNow.AddSeconds(callbackTimeoutSeconds),
+                        ExpiresUtc = expiresUtc,
                     };
                 }
 
@@ -113,7 +105,6 @@ namespace Bloom.web
             }
 
             BloomWebSocketServer.Instance?.SendBundle(kToastClientContext, kToastShowEvent, bundle);
-            return resolvedToastId;
         }
 
         public static bool PerformAction(string callbackId)
