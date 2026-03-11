@@ -1488,7 +1488,7 @@ namespace Bloom.Edit
             // changing pages makes the browser invisible while the change is happening, so
             // that's what we have to check to prevent spurious javascript errors.
             // Note that this method is called by a timer (probably about 110msec cycle).
-            if (!_browser1.Visible)
+            if (_browser1 == null || !_browser1.Visible)
                 return;
             _browser1.UpdateEditButtonsAsync();
 
