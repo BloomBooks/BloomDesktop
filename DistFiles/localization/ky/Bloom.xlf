@@ -1544,15 +1544,20 @@
         <target xml:lang="ky" state="needs-translation">Standard</target>
         <note>ID: EditTab.CustomCover.Standard</note>
       </trans-unit>
-      <trans-unit id="EditTab.CustomCover.CoverLayout" translate="no">
-        <source xml:lang="en">Cover Layout:</source>
-        <target xml:lang="ky" state="needs-translation">Cover Layout:</target>
-        <note>ID: EditTab.CustomCover.CoverLayout</note>
+      <trans-unit id="EditTab.CustomCover.StandardLayout" translate="no">
+        <source xml:lang="en">Standard Layout</source>
+        <target xml:lang="ky" state="needs-translation">Standard Layout</target>
+        <note>ID: EditTab.CustomCover.StandardLayout</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.Custom" translate="no">
         <source xml:lang="en">Custom</source>
         <target xml:lang="ky" state="needs-translation">Custom</target>
         <note>ID: EditTab.CustomCover.Custom</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomCover.CustomLayout" translate="no">
+        <source xml:lang="en">Custom Layout</source>
+        <target xml:lang="ky" state="needs-translation">Custom Layout</target>
+        <note>ID: EditTab.CustomCover.CustomLayout</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.ChangeLayout" sil:dynamic="true">
         <source xml:lang="en">Change Layout</source>
