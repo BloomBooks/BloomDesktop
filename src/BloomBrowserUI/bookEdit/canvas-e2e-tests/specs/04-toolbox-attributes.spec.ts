@@ -34,11 +34,7 @@ import type { CanvasPaletteItemKey } from "../helpers/canvasSelectors";
 
 type IEditablePageBundleWindow = Window & {
     editablePageBundle?: {
-        getTheOneCanvasElementManager?: () =>
-            | {
-                  setActiveElement: (element: HTMLElement | undefined) => void;
-              }
-            | undefined;
+        e2eSetActiveCanvasElementByIndex?: (index: number) => boolean;
     };
 };
 
@@ -83,29 +79,16 @@ const setActiveCanvasElementByIndex = async (
     index: number,
 ): Promise<void> => {
     const selectedViaManager = await canvasTestContext.pageFrame.evaluate(
-        ({ selector, elementIndex }) => {
+        (elementIndex) => {
             const bundle = (window as IEditablePageBundleWindow)
                 .editablePageBundle;
-            const manager = bundle?.getTheOneCanvasElementManager?.();
-            if (!manager) {
+            if (!bundle?.e2eSetActiveCanvasElementByIndex) {
                 return false;
             }
 
-            const elements = Array.from(
-                document.querySelectorAll(selector),
-            ) as HTMLElement[];
-            const element = elements[elementIndex];
-            if (!element) {
-                return false;
-            }
-
-            manager.setActiveElement(element);
-            return true;
+            return bundle.e2eSetActiveCanvasElementByIndex(elementIndex);
         },
-        {
-            selector: canvasSelectors.page.canvasElements,
-            elementIndex: index,
-        },
+        index,
     );
 
     if (!selectedViaManager) {

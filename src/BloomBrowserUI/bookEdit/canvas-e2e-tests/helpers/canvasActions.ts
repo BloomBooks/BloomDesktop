@@ -15,19 +15,35 @@ type BoundingBox = {
     height: number;
 };
 
-type ICanvasElementManagerForEval = {
-    setActiveElement: (element: HTMLElement | undefined) => void;
-    deleteCurrentCanvasElement: () => void;
-    duplicateCanvasElement: () => void;
-};
-
 type IEditablePageBundleWindow = Window & {
     editablePageBundle?: {
-        getTheOneCanvasElementManager?: () =>
-            | ICanvasElementManagerForEval
-            | undefined;
+        e2eSetActiveCanvasElementByIndex?: (index: number) => boolean;
+        e2eSetActivePatriarchBubbleOrFirstCanvasElement?: () => boolean;
+        e2eDeleteLastCanvasElement?: () => void;
+        e2eDuplicateActiveCanvasElement?: () => void;
+        e2eDeleteActiveCanvasElement?: () => void;
+        e2eClearActiveCanvasElement?: () => void;
+        e2eSetActiveCanvasElementBackgroundColor?: (
+            color: string,
+            opacity: number,
+        ) => void;
+        e2eGetActiveCanvasElementStyleSummary?: () => {
+            textColor: string;
+            outerBorderColor: string;
+            backgroundColors: string[];
+        };
+        e2eResetActiveCanvasElementCropping?: () => void;
+        e2eCanExpandActiveCanvasElementToFillSpace?: () => boolean;
+        e2eOverrideCanExpandToFillSpace?: (value: boolean) => boolean;
+        e2eClearCanExpandToFillSpaceOverride?: () => void;
     };
 };
+
+export interface IActiveCanvasElementStyleSummary {
+    textColor: string;
+    outerBorderColor: string;
+    backgroundColors: string[];
+}
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -193,29 +209,19 @@ const waitForCanvasElementCountBelow = async (
     return false;
 };
 
-const deleteLastCanvasElementViaManager = async (
+const deleteLastCanvasElementViaPageBundle = async (
     canvasContext: ICanvasTestContext,
 ): Promise<void> => {
-    // TODO: Replace manager-based teardown deletion with pure UI deletion once
+    // TODO: Replace this E2E bundle deletion shortcut with pure UI deletion once
     // overlay-canvas pointer interception is resolved for shared-mode cleanup.
-    await canvasContext.pageFrame.evaluate((selector: string) => {
+    await canvasContext.pageFrame.evaluate(() => {
         const bundle = (window as IEditablePageBundleWindow).editablePageBundle;
-        const manager = bundle?.getTheOneCanvasElementManager?.();
-        if (!manager) {
-            throw new Error("CanvasElementManager is not available.");
+        if (!bundle?.e2eDeleteLastCanvasElement) {
+            throw new Error("Canvas E2E page API is not available.");
         }
 
-        const elements = Array.from(
-            document.querySelectorAll(selector),
-        ) as HTMLElement[];
-        if (elements.length === 0) {
-            return;
-        }
-
-        const lastElement = elements[elements.length - 1];
-        manager.setActiveElement(lastElement);
-        manager.deleteCurrentCanvasElement();
-    }, canvasSelectors.page.canvasElements);
+        bundle.e2eDeleteLastCanvasElement();
+    });
 };
 
 /**
@@ -234,7 +240,7 @@ export const removeCanvasElementsDownToCount = async (
             return;
         }
 
-        await deleteLastCanvasElementViaManager(canvasContext);
+        await deleteLastCanvasElementViaPageBundle(canvasContext);
 
         if (await waitForCanvasElementCountBelow(canvasContext, beforeCount)) {
             continue;
@@ -250,48 +256,166 @@ export const removeCanvasElementsDownToCount = async (
     );
 };
 
-export const duplicateActiveCanvasElementViaManager = async (
+export const duplicateActiveCanvasElementViaPageBundle = async (
     canvasContext: ICanvasTestContext,
 ): Promise<void> => {
-    // TODO: Replace this manager shortcut with a pure UI duplicate path once
+    // TODO: Replace this E2E bundle shortcut with a pure UI duplicate path once
     // shared-mode selection/click interception is fully stabilized.
     await canvasContext.pageFrame.evaluate(() => {
         const bundle = (window as IEditablePageBundleWindow).editablePageBundle;
-        const manager = bundle?.getTheOneCanvasElementManager?.();
-        if (!manager) {
-            throw new Error("CanvasElementManager is not available.");
+        if (!bundle?.e2eDuplicateActiveCanvasElement) {
+            throw new Error("Canvas E2E page API is not available.");
         }
-        manager.duplicateCanvasElement();
+
+        bundle.e2eDuplicateActiveCanvasElement();
     });
 };
 
-export const deleteActiveCanvasElementViaManager = async (
+export const deleteActiveCanvasElementViaPageBundle = async (
     canvasContext: ICanvasTestContext,
 ): Promise<void> => {
-    // TODO: Replace this manager shortcut with a pure UI delete path once
+    // TODO: Replace this E2E bundle shortcut with a pure UI delete path once
     // shared-mode selection/click interception is fully stabilized.
     await canvasContext.pageFrame.evaluate(() => {
         const bundle = (window as IEditablePageBundleWindow).editablePageBundle;
-        const manager = bundle?.getTheOneCanvasElementManager?.();
-        if (!manager) {
-            throw new Error("CanvasElementManager is not available.");
+        if (!bundle?.e2eDeleteActiveCanvasElement) {
+            throw new Error("Canvas E2E page API is not available.");
         }
-        manager.deleteCurrentCanvasElement();
+
+        bundle.e2eDeleteActiveCanvasElement();
     });
 };
 
-export const clearActiveCanvasElementViaManager = async (
+export const clearActiveCanvasElementViaPageBundle = async (
     canvasContext: ICanvasTestContext,
 ): Promise<void> => {
-    // TODO: Replace manager-based deselection with a UI path once we have a
+    // TODO: Replace this E2E bundle deselection shortcut with a UI path once we have a
     // stable click-target for clearing selection in shared mode.
     await canvasContext.pageFrame.evaluate(() => {
         const bundle = (window as IEditablePageBundleWindow).editablePageBundle;
-        const manager = bundle?.getTheOneCanvasElementManager?.();
-        if (!manager) {
-            throw new Error("CanvasElementManager is not available.");
+        if (!bundle?.e2eClearActiveCanvasElement) {
+            throw new Error("Canvas E2E page API is not available.");
         }
-        manager.setActiveElement(undefined);
+
+        bundle.e2eClearActiveCanvasElement();
+    });
+};
+
+export const setActiveCanvasElementByIndexViaPageBundle = async (
+    canvasContext: ICanvasTestContext,
+    index: number,
+): Promise<boolean> => {
+    return canvasContext.pageFrame.evaluate((elementIndex) => {
+        const bundle = (window as IEditablePageBundleWindow).editablePageBundle;
+        if (!bundle?.e2eSetActiveCanvasElementByIndex) {
+            throw new Error("Canvas E2E page API is not available.");
+        }
+
+        return bundle.e2eSetActiveCanvasElementByIndex(elementIndex);
+    }, index);
+};
+
+export const setActivePatriarchBubbleViaPageBundle = async (
+    canvasContext: ICanvasTestContext,
+): Promise<boolean> => {
+    return canvasContext.pageFrame.evaluate(() => {
+        const bundle = (window as IEditablePageBundleWindow).editablePageBundle;
+        if (!bundle?.e2eSetActivePatriarchBubbleOrFirstCanvasElement) {
+            throw new Error("Canvas E2E page API is not available.");
+        }
+
+        return bundle.e2eSetActivePatriarchBubbleOrFirstCanvasElement();
+    });
+};
+
+export const setActiveCanvasElementBackgroundColorViaPageBundle = async (
+    canvasContext: ICanvasTestContext,
+    color: string,
+    opacity: number,
+): Promise<void> => {
+    await canvasContext.pageFrame.evaluate(
+        ({ nextColor, nextOpacity }) => {
+            const bundle = (window as IEditablePageBundleWindow)
+                .editablePageBundle;
+            if (!bundle?.e2eSetActiveCanvasElementBackgroundColor) {
+                throw new Error("Canvas E2E page API is not available.");
+            }
+
+            bundle.e2eSetActiveCanvasElementBackgroundColor(
+                nextColor,
+                nextOpacity,
+            );
+        },
+        {
+            nextColor: color,
+            nextOpacity: opacity,
+        },
+    );
+};
+
+export const getActiveCanvasElementStyleSummaryViaPageBundle = async (
+    canvasContext: ICanvasTestContext,
+): Promise<IActiveCanvasElementStyleSummary> => {
+    return canvasContext.pageFrame.evaluate(() => {
+        const bundle = (window as IEditablePageBundleWindow).editablePageBundle;
+        if (!bundle?.e2eGetActiveCanvasElementStyleSummary) {
+            throw new Error("Canvas E2E page API is not available.");
+        }
+
+        return bundle.e2eGetActiveCanvasElementStyleSummary();
+    });
+};
+
+export const resetActiveCanvasElementCroppingViaPageBundle = async (
+    canvasContext: ICanvasTestContext,
+): Promise<void> => {
+    await canvasContext.pageFrame.evaluate(() => {
+        const bundle = (window as IEditablePageBundleWindow).editablePageBundle;
+        if (!bundle?.e2eResetActiveCanvasElementCropping) {
+            throw new Error("Canvas E2E page API is not available.");
+        }
+
+        bundle.e2eResetActiveCanvasElementCropping();
+    });
+};
+
+export const getCanExpandToFillSpaceViaPageBundle = async (
+    canvasContext: ICanvasTestContext,
+): Promise<boolean> => {
+    return canvasContext.pageFrame.evaluate(() => {
+        const bundle = (window as IEditablePageBundleWindow).editablePageBundle;
+        if (!bundle?.e2eCanExpandActiveCanvasElementToFillSpace) {
+            throw new Error("Canvas E2E page API is not available.");
+        }
+
+        return bundle.e2eCanExpandActiveCanvasElementToFillSpace();
+    });
+};
+
+export const overrideCanExpandToFillSpaceViaPageBundle = async (
+    canvasContext: ICanvasTestContext,
+    value: boolean,
+): Promise<boolean> => {
+    return canvasContext.pageFrame.evaluate((nextValue) => {
+        const bundle = (window as IEditablePageBundleWindow).editablePageBundle;
+        if (!bundle?.e2eOverrideCanExpandToFillSpace) {
+            throw new Error("Canvas E2E page API is not available.");
+        }
+
+        return bundle.e2eOverrideCanExpandToFillSpace(nextValue);
+    }, value);
+};
+
+export const clearCanExpandToFillSpaceOverrideViaPageBundle = async (
+    canvasContext: ICanvasTestContext,
+): Promise<void> => {
+    await canvasContext.pageFrame.evaluate(() => {
+        const bundle = (window as IEditablePageBundleWindow).editablePageBundle;
+        if (!bundle?.e2eClearCanExpandToFillSpaceOverride) {
+            throw new Error("Canvas E2E page API is not available.");
+        }
+
+        bundle.e2eClearCanExpandToFillSpaceOverride();
     });
 };
 

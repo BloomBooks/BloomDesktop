@@ -447,7 +447,7 @@ export default class BloomSourceBubbles {
                 BloomHintBubbles.addHintBubbles(
                     group.get(0),
                     [group.get(0)],
-                    [divForBubble.get(0)],
+                    [divForBubble],
                 );
                 BloomSourceBubbles.MakeSourceBubblesIntoQtips(
                     group.get(0),

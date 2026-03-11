@@ -9,9 +9,14 @@ import {
     dismissCanvasDialogsIfPresent,
     dragPaletteItemToCanvas,
     expandNavigationSection,
+    getActiveCanvasElementStyleSummaryViaPageBundle,
     getCanvasElementCount,
     keyboardNudge,
     openContextMenuFromToolbar,
+    resetActiveCanvasElementCroppingViaPageBundle,
+    setActiveCanvasElementBackgroundColorViaPageBundle,
+    setActiveCanvasElementByIndexViaPageBundle,
+    setActivePatriarchBubbleViaPageBundle,
     selectCanvasElementAtIndex,
     setRoundedCorners,
     setOutlineColorDropdown,
@@ -30,62 +35,23 @@ import {
     type CanvasPaletteItemKey,
 } from "../helpers/canvasSelectors";
 
-type IEditablePageBundleWindow = Window & {
-    editablePageBundle?: {
-        getTheOneCanvasElementManager?: () =>
-            | {
-                  getPatriarchBubbleOfActiveElement?: () => {
-                      content?: HTMLElement;
-                  };
-                  setActiveElement: (element: HTMLElement | undefined) => void;
-                  setBackgroundColor?: (
-                      colors: string[],
-                      opacity: number,
-                  ) => void;
-                  getTextColorInformation?: () => { color?: string };
-                  getSelectedItemBubbleSpec?: () => {
-                      outerBorderColor?: string;
-                      backgroundColors?: string[];
-                  };
-                  resetCropping?: () => void;
-              }
-            | undefined;
-    };
-};
-
 const setActiveCanvasElementByIndexViaManager = async (
     canvasContext: ICanvasPageContext,
     index: number,
 ): Promise<void> => {
-    await selectCanvasElementAtIndex(canvasContext, index);
+    const selectedViaPageBundle =
+        await setActiveCanvasElementByIndexViaPageBundle(canvasContext, index);
+    if (!selectedViaPageBundle) {
+        await selectCanvasElementAtIndex(canvasContext, index);
+    }
 };
 
 const setActivePatriarchBubbleViaManager = async (
     canvasContext: ICanvasPageContext,
 ): Promise<void> => {
-    // TODO: Replace this manager-level selection helper with a fully UI-driven
+    // TODO: Replace this page-bundle selection helper with a fully UI-driven
     // patriarch-bubble selection flow once child-bubble targeting is robust in e2e.
-    const success = await canvasContext.pageFrame.evaluate((selector) => {
-        const bundle = (window as IEditablePageBundleWindow).editablePageBundle;
-        const manager = bundle?.getTheOneCanvasElementManager?.();
-        if (!manager) {
-            return false;
-        }
-
-        const patriarchBubble = manager.getPatriarchBubbleOfActiveElement?.();
-        const patriarchContent = patriarchBubble?.content;
-        if (!patriarchContent) {
-            const firstCanvasElement = document.querySelector(selector);
-            if (!firstCanvasElement) {
-                return false;
-            }
-            manager.setActiveElement(firstCanvasElement);
-            return true;
-        }
-
-        manager.setActiveElement(patriarchContent);
-        return true;
-    }, canvasSelectors.page.canvasElements);
+    const success = await setActivePatriarchBubbleViaPageBundle(canvasContext);
 
     expect(success).toBe(true);
 };
@@ -552,20 +518,10 @@ const setActiveElementBackgroundColorViaManager = async (
     color: string,
     opacity: number,
 ): Promise<void> => {
-    await canvasContext.pageFrame.evaluate(
-        ({ nextColor, nextOpacity }) => {
-            const bundle = (window as IEditablePageBundleWindow)
-                .editablePageBundle;
-            const manager = bundle?.getTheOneCanvasElementManager?.();
-            if (!manager) {
-                throw new Error("CanvasElementManager is not available.");
-            }
-            manager.setBackgroundColor([nextColor], nextOpacity);
-        },
-        {
-            nextColor: color,
-            nextOpacity: opacity,
-        },
+    await setActiveCanvasElementBackgroundColorViaPageBundle(
+        canvasContext,
+        color,
+        opacity,
     );
 };
 
@@ -576,22 +532,7 @@ const getActiveElementStyleSummary = async (
     outerBorderColor: string;
     backgroundColors: string[];
 }> => {
-    return canvasContext.pageFrame.evaluate(() => {
-        const bundle = (window as IEditablePageBundleWindow).editablePageBundle;
-        const manager = bundle?.getTheOneCanvasElementManager?.();
-        if (!manager) {
-            throw new Error("CanvasElementManager is not available.");
-        }
-
-        const textColorInfo = manager.getTextColorInformation?.();
-        const bubbleSpec = manager.getSelectedItemBubbleSpec?.();
-
-        return {
-            textColor: textColorInfo?.color ?? "",
-            outerBorderColor: bubbleSpec?.outerBorderColor ?? "",
-            backgroundColors: bubbleSpec?.backgroundColors ?? [],
-        };
-    });
+    return getActiveCanvasElementStyleSummaryViaPageBundle(canvasContext);
 };
 
 // TODO BL-15770: Re-enable after navigation command sweep count transitions are
@@ -1003,12 +944,7 @@ test("Workflow 05: image paste/copy/reset command chain updates image state and 
         "Reset Image",
     );
     if (!reset) {
-        await canvasTestContext.pageFrame.evaluate(() => {
-            const bundle = (window as IEditablePageBundleWindow)
-                .editablePageBundle;
-            const manager = bundle?.getTheOneCanvasElementManager?.();
-            manager?.resetCropping?.();
-        });
+        await resetActiveCanvasElementCroppingViaPageBundle(canvasTestContext);
     }
 
     const afterReset = await getActiveImageState(canvasTestContext);

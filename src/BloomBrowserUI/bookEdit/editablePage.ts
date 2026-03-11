@@ -15,6 +15,7 @@ import {
     CanvasElementManager,
 } from "./js/canvasElementManager/CanvasElementManager";
 import { renderDragActivityTabControl } from "./toolbox/games/DragActivityTabControl";
+import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants";
 
 function getPageId(): string {
     const page = document.querySelector(".bloom-page");
@@ -70,6 +71,26 @@ export interface IPageFrameExports {
 
     addRequestPageContentDelay(id: string): void;
     removeRequestPageContentDelay(id: string): void;
+
+    e2eSetActiveCanvasElementByIndex(index: number): boolean;
+    e2eSetActivePatriarchBubbleOrFirstCanvasElement(): boolean;
+    e2eDeleteLastCanvasElement(): void;
+    e2eDuplicateActiveCanvasElement(): void;
+    e2eDeleteActiveCanvasElement(): void;
+    e2eClearActiveCanvasElement(): void;
+    e2eSetActiveCanvasElementBackgroundColor(
+        color: string,
+        opacity: number,
+    ): void;
+    e2eGetActiveCanvasElementStyleSummary(): {
+        textColor: string;
+        outerBorderColor: string;
+        backgroundColors: string[];
+    };
+    e2eResetActiveCanvasElementCropping(): void;
+    e2eCanExpandActiveCanvasElementToFillSpace(): boolean;
+    e2eOverrideCanExpandToFillSpace(value: boolean): boolean;
+    e2eClearCanExpandToFillSpaceOverride(): void;
 
     SayHello(): void;
     renderDragActivityTabControl(currentTab: number): void;
@@ -140,6 +161,128 @@ const styleSheets = [
 
 function getTheOneCanvasElementManager(): CanvasElementManager {
     return theOneCanvasElementManager;
+}
+
+function getCanvasElementManagerForE2e(): CanvasElementManager {
+    if (!theOneCanvasElementManager) {
+        throw new Error("CanvasElementManager is not available.");
+    }
+
+    return theOneCanvasElementManager;
+}
+
+function getCanvasElementsForE2e(): HTMLElement[] {
+    return Array.from(
+        document.querySelectorAll(kCanvasElementSelector),
+    ) as HTMLElement[];
+}
+
+let originalCanExpandToFillSpaceForE2e: (() => boolean) | undefined;
+
+function e2eSetActiveCanvasElementByIndex(index: number): boolean {
+    const element = getCanvasElementsForE2e()[index];
+    if (!element) {
+        return false;
+    }
+
+    getCanvasElementManagerForE2e().setActiveElement(element);
+    return true;
+}
+
+function e2eSetActivePatriarchBubbleOrFirstCanvasElement(): boolean {
+    const manager = getCanvasElementManagerForE2e();
+    const patriarchBubble = manager.getPatriarchBubbleOfActiveElement?.();
+    const patriarchContent = patriarchBubble?.content as
+        | HTMLElement
+        | undefined;
+    if (patriarchContent) {
+        manager.setActiveElement(patriarchContent);
+        return true;
+    }
+
+    const firstCanvasElement = getCanvasElementsForE2e()[0];
+    if (!firstCanvasElement) {
+        return false;
+    }
+
+    manager.setActiveElement(firstCanvasElement);
+    return true;
+}
+
+function e2eDeleteLastCanvasElement(): void {
+    const elements = getCanvasElementsForE2e();
+    const lastElement = elements[elements.length - 1];
+    if (!lastElement) {
+        return;
+    }
+
+    const manager = getCanvasElementManagerForE2e();
+    manager.setActiveElement(lastElement);
+    manager.deleteCurrentCanvasElement();
+}
+
+function e2eDuplicateActiveCanvasElement(): void {
+    getCanvasElementManagerForE2e().duplicateCanvasElement();
+}
+
+function e2eDeleteActiveCanvasElement(): void {
+    getCanvasElementManagerForE2e().deleteCurrentCanvasElement();
+}
+
+function e2eClearActiveCanvasElement(): void {
+    getCanvasElementManagerForE2e().setActiveElement(undefined);
+}
+
+function e2eSetActiveCanvasElementBackgroundColor(
+    color: string,
+    opacity: number,
+): void {
+    getCanvasElementManagerForE2e().setBackgroundColor([color], opacity);
+}
+
+function e2eGetActiveCanvasElementStyleSummary(): {
+    textColor: string;
+    outerBorderColor: string;
+    backgroundColors: string[];
+} {
+    const manager = getCanvasElementManagerForE2e();
+    const textColorInfo = manager.getTextColorInformation?.();
+    const bubbleSpec = manager.getSelectedItemBubbleSpec?.();
+
+    return {
+        textColor: textColorInfo?.color ?? "",
+        outerBorderColor: bubbleSpec?.outerBorderColor ?? "",
+        backgroundColors: bubbleSpec?.backgroundColors ?? [],
+    };
+}
+
+function e2eResetActiveCanvasElementCropping(): void {
+    getCanvasElementManagerForE2e().resetCropping?.();
+}
+
+function e2eCanExpandActiveCanvasElementToFillSpace(): boolean {
+    return getCanvasElementManagerForE2e().canExpandToFillSpace();
+}
+
+function e2eOverrideCanExpandToFillSpace(value: boolean): boolean {
+    const manager = getCanvasElementManagerForE2e();
+    if (!originalCanExpandToFillSpaceForE2e) {
+        originalCanExpandToFillSpaceForE2e =
+            manager.canExpandToFillSpace.bind(manager);
+    }
+
+    manager.canExpandToFillSpace = () => value;
+    return true;
+}
+
+function e2eClearCanExpandToFillSpaceOverride(): void {
+    if (!originalCanExpandToFillSpaceForE2e) {
+        return;
+    }
+
+    const manager = getCanvasElementManagerForE2e();
+    manager.canExpandToFillSpace = originalCanExpandToFillSpaceForE2e;
+    originalCanExpandToFillSpaceForE2e = undefined;
 }
 
 // This is using an implementation secret of a particular version of ckeditor; but it seems to
@@ -240,6 +383,18 @@ interface EditablePageBundleApi {
     ckeditorUndo: typeof ckeditorUndo;
     addRequestPageContentDelay: typeof addRequestPageContentDelay;
     removeRequestPageContentDelay: typeof removeRequestPageContentDelay;
+    e2eSetActiveCanvasElementByIndex: typeof e2eSetActiveCanvasElementByIndex;
+    e2eSetActivePatriarchBubbleOrFirstCanvasElement: typeof e2eSetActivePatriarchBubbleOrFirstCanvasElement;
+    e2eDeleteLastCanvasElement: typeof e2eDeleteLastCanvasElement;
+    e2eDuplicateActiveCanvasElement: typeof e2eDuplicateActiveCanvasElement;
+    e2eDeleteActiveCanvasElement: typeof e2eDeleteActiveCanvasElement;
+    e2eClearActiveCanvasElement: typeof e2eClearActiveCanvasElement;
+    e2eSetActiveCanvasElementBackgroundColor: typeof e2eSetActiveCanvasElementBackgroundColor;
+    e2eGetActiveCanvasElementStyleSummary: typeof e2eGetActiveCanvasElementStyleSummary;
+    e2eResetActiveCanvasElementCropping: typeof e2eResetActiveCanvasElementCropping;
+    e2eCanExpandActiveCanvasElementToFillSpace: typeof e2eCanExpandActiveCanvasElementToFillSpace;
+    e2eOverrideCanExpandToFillSpace: typeof e2eOverrideCanExpandToFillSpace;
+    e2eClearCanExpandToFillSpaceOverride: typeof e2eClearCanExpandToFillSpaceOverride;
     SayHello: typeof SayHello;
     renderDragActivityTabControl: typeof renderDragActivityTabControl;
     showGamePromptDialog: typeof showGamePromptDialog;
@@ -272,6 +427,18 @@ window.editablePageBundle = {
     ckeditorUndo,
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
+    e2eSetActiveCanvasElementByIndex,
+    e2eSetActivePatriarchBubbleOrFirstCanvasElement,
+    e2eDeleteLastCanvasElement,
+    e2eDuplicateActiveCanvasElement,
+    e2eDeleteActiveCanvasElement,
+    e2eClearActiveCanvasElement,
+    e2eSetActiveCanvasElementBackgroundColor,
+    e2eGetActiveCanvasElementStyleSummary,
+    e2eResetActiveCanvasElementCropping,
+    e2eCanExpandActiveCanvasElementToFillSpace,
+    e2eOverrideCanExpandToFillSpace,
+    e2eClearCanExpandToFillSpaceOverride,
     SayHello,
     renderDragActivityTabControl,
     showGamePromptDialog,

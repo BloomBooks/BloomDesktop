@@ -1,11 +1,13 @@
 import { test, expect } from "../fixtures/canvasTest";
 import type { Frame } from "playwright/test";
 import {
+    clearCanExpandToFillSpaceOverrideViaPageBundle,
     createCanvasElementWithRetry,
     dismissCanvasDialogsIfPresent,
     expandNavigationSection,
     getActiveCanvasElement,
     openContextMenuFromToolbar,
+    overrideCanExpandToFillSpaceViaPageBundle,
     selectCanvasElementAtIndex,
     type ICanvasPageContext,
 } from "../helpers/canvasActions";
@@ -14,11 +16,6 @@ import {
     expectContextMenuItemVisible,
 } from "../helpers/canvasAssertions";
 import { canvasSelectors } from "../helpers/canvasSelectors";
-
-type ICanvasManagerWithExpandOverride = {
-    canExpandToFillSpace?: () => boolean;
-    __e2eOriginalCanExpandToFillSpace?: () => boolean;
-};
 
 const getMenuItem = (pageFrame: Frame, label: string) => {
     return pageFrame
@@ -123,26 +120,10 @@ const withTemporaryManagerCanExpandValue = async (
     canExpandValue: boolean,
     action: () => Promise<void>,
 ): Promise<void> => {
-    const overrideApplied = await canvasContext.pageFrame.evaluate((value) => {
-        const manager = (
-            window as unknown as {
-                editablePageBundle?: {
-                    getTheOneCanvasElementManager?: () =>
-                        | ICanvasManagerWithExpandOverride
-                        | undefined;
-                };
-            }
-        ).editablePageBundle?.getTheOneCanvasElementManager?.();
-
-        if (!manager?.canExpandToFillSpace) {
-            return false;
-        }
-
-        manager.__e2eOriginalCanExpandToFillSpace =
-            manager.canExpandToFillSpace;
-        manager.canExpandToFillSpace = () => value;
-        return true;
-    }, canExpandValue);
+    const overrideApplied = await overrideCanExpandToFillSpaceViaPageBundle(
+        canvasContext,
+        canExpandValue,
+    );
 
     if (!overrideApplied) {
         test.info().annotations.push({
@@ -156,26 +137,7 @@ const withTemporaryManagerCanExpandValue = async (
     try {
         await action();
     } finally {
-        await canvasContext.pageFrame.evaluate(() => {
-            const manager = (
-                window as unknown as {
-                    editablePageBundle?: {
-                        getTheOneCanvasElementManager?: () =>
-                            | ICanvasManagerWithExpandOverride
-                            | undefined;
-                    };
-                }
-            ).editablePageBundle?.getTheOneCanvasElementManager?.();
-
-            if (
-                manager?.__e2eOriginalCanExpandToFillSpace &&
-                manager.canExpandToFillSpace
-            ) {
-                manager.canExpandToFillSpace =
-                    manager.__e2eOriginalCanExpandToFillSpace;
-                delete manager.__e2eOriginalCanExpandToFillSpace;
-            }
-        });
+        await clearCanExpandToFillSpaceOverrideViaPageBundle(canvasContext);
     }
 };
 

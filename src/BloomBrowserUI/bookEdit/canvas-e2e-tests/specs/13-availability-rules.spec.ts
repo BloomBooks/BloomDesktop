@@ -3,6 +3,7 @@ import type { Frame, Page } from "playwright/test";
 import {
     createCanvasElementWithRetry,
     expandNavigationSection,
+    getCanExpandToFillSpaceViaPageBundle,
     openContextMenuFromToolbar,
     selectCanvasElementAtIndex,
     setStyleDropdown,
@@ -519,39 +520,33 @@ test("K5: background-image availability controls include Fit Space and backgroun
         return;
     }
 
-    const expected = await canvasTestContext.pageFrame.evaluate(() => {
-        const bundle = (
-            window as unknown as {
-                editablePageBundle?: {
-                    getTheOneCanvasElementManager?: () => {
-                        canExpandToFillSpace?: () => boolean;
-                    };
-                };
-            }
-        ).editablePageBundle;
+    const canExpand =
+        await getCanExpandToFillSpaceViaPageBundle(canvasTestContext);
+    const expected = await canvasTestContext.pageFrame.evaluate(
+        (canExpandNow) => {
+            const active = document.querySelector(
+                '.bloom-canvas-element[data-bloom-active="true"]',
+            );
+            const image = active?.querySelector(
+                ".bloom-imageContainer img",
+            ) as HTMLImageElement | null;
+            const src = image?.getAttribute("src") ?? "";
+            const hasRealImage =
+                !!image &&
+                src.length > 0 &&
+                !/placeholder/i.test(src) &&
+                !image.classList.contains("bloom-imageLoadError") &&
+                !image.parentElement?.classList.contains(
+                    "bloom-imageLoadError",
+                );
 
-        const manager = bundle?.getTheOneCanvasElementManager?.();
-        const canExpand = manager?.canExpandToFillSpace?.() ?? false;
-
-        const active = document.querySelector(
-            '.bloom-canvas-element[data-bloom-active="true"]',
-        );
-        const image = active?.querySelector(
-            ".bloom-imageContainer img",
-        ) as HTMLImageElement | null;
-        const src = image?.getAttribute("src") ?? "";
-        const hasRealImage =
-            !!image &&
-            src.length > 0 &&
-            !/placeholder/i.test(src) &&
-            !image.classList.contains("bloom-imageLoadError") &&
-            !image.parentElement?.classList.contains("bloom-imageLoadError");
-
-        return {
-            canExpand,
-            hasRealImage,
-        };
-    });
+            return {
+                canExpand: canExpandNow,
+                hasRealImage,
+            };
+        },
+        canExpand,
+    );
 
     await openFreshContextMenu(canvasTestContext);
     const fitSpaceItem = getMenuItemWithAnyLabel(canvasTestContext.pageFrame, [

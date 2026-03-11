@@ -868,12 +868,10 @@ export class CanvasElementManager {
         const bubble =
             BloomSourceBubbles.ProduceSourceBubbles(translationGroup);
         const divsThatHaveSourceBubbles: HTMLElement[] = [];
-        const bubbleDivs: Element[] = [];
-        const bubbleJqs: JQuery[] = [];
+        const bubbleDivs: JQuery[] = [];
         if (bubble.length !== 0) {
             divsThatHaveSourceBubbles.push(translationGroup);
-            bubbleDivs.push(bubble.get(0));
-            bubbleJqs.push(bubble);
+            bubbleDivs.push(bubble);
         }
         BloomHintBubbles.addHintBubbles(
             translationGroup.parentElement!,
@@ -887,7 +885,7 @@ export class CanvasElementManager {
         if (divsThatHaveSourceBubbles.length > 0) {
             BloomSourceBubbles.MakeSourceBubblesIntoQtips(
                 divsThatHaveSourceBubbles[0],
-                bubbleJqs[0],
+                bubbleDivs[0],
             );
             BloomSourceBubbles.setupSizeChangedHandling(
                 divsThatHaveSourceBubbles,

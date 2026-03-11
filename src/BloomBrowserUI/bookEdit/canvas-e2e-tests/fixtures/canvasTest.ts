@@ -6,7 +6,7 @@ import {
     type TestInfo,
 } from "playwright/test";
 import {
-    clearActiveCanvasElementViaManager,
+    clearActiveCanvasElementViaPageBundle,
     dismissCanvasDialogsIfPresent,
     getCanvasElementCount,
     openCanvasToolOnCurrentPage,
@@ -196,9 +196,9 @@ export const test = base.extend<ICanvasFixtures, ICanvasWorkerFixtures>({
                 canvasContext,
                 sharedCanvasBaselineCount,
             );
-            // TODO: Replace this manager-based deselection call with a stable
+            // TODO: Replace this E2E bundle deselection call with a stable
             // UI deselection gesture once shared-mode click interception is resolved.
-            await clearActiveCanvasElementViaManager(canvasContext);
+            await clearActiveCanvasElementViaPageBundle(canvasContext);
             await dismissCanvasDialogsIfPresent(canvasContext);
         },
         {
