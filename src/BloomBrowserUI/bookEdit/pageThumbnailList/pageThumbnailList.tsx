@@ -511,7 +511,7 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
                             l10nId={item.l10nId}
                             disabled={!item.enabled}
                             onClick={() => onContextMenuItemClick(item.id)}
-                            dontGiveAffordanceForCheckbox={true}
+                            hasLeadingIconSpace={false}
                             css={css`
                                 display: block !important;
                                 min-height: 24px !important;
