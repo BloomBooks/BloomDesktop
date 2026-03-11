@@ -570,7 +570,7 @@ export const EditingControlDropdown: React.FunctionComponent<{
                             />
                         ) : undefined
                     }
-                    dontGiveAffordanceForCheckbox={!props.showChecks}
+                    hasLeadingIconSpace={props.showChecks}
                 />
             ))}
         </Menu>

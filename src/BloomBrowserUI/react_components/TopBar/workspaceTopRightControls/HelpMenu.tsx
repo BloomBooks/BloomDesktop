@@ -1,6 +1,10 @@
 import * as React from "react";
 import { BloomTooltip } from "../../BloomToolTip";
 import { ArrowDropDown, HelpOutline } from "@mui/icons-material";
+import QuestionAnswerOutlinedIcon from "@mui/icons-material/QuestionAnswerOutlined";
+import LightbulbOutlinedIcon from "@mui/icons-material/LightbulbOutlined";
+import LaunchIcon from "@mui/icons-material/Launch";
+import SentimentVeryDissatisfiedIcon from "@mui/icons-material/SentimentVeryDissatisfied";
 import { postJson, useApiString } from "../../../utils/bloomApi";
 import { TopRightMenuButton, topRightMenuArrowCss } from "./TopRightMenuButton";
 import { useL10n } from "../../l10nHooks";
@@ -13,6 +17,7 @@ import { LocalizableMenuItem } from "../../localizableMenuItem";
 interface IMenuItem {
     id?: string;
     label?: string;
+    icon?: React.ReactNode;
     enabled?: boolean;
     separator?: boolean;
     onClick?: () => void;
@@ -134,11 +139,13 @@ export const HelpMenu: React.FunctionComponent = () => {
             {
                 id: "documentation",
                 label: documentationText,
+                icon: <HelpOutline fontSize="small" />,
                 onClick: () => postHelpAction("showHelp"),
             },
             {
                 id: "onlineHelp",
                 label: onlineHelpText,
+                icon: <HelpOutline fontSize="small" />,
                 onClick: () =>
                     postHelpAction(
                         "safeStartInFront",
@@ -172,12 +179,14 @@ export const HelpMenu: React.FunctionComponent = () => {
             {
                 id: "askQuestion",
                 label: askQuestionText,
+                icon: <QuestionAnswerOutlinedIcon fontSize="small" />,
                 onClick: () =>
                     postHelpAction("safeStartInFront", "urlType:Support"),
             },
             {
                 id: "requestFeature",
                 label: requestFeatureText,
+                icon: <LightbulbOutlinedIcon fontSize="small" />,
                 onClick: () =>
                     postHelpAction(
                         "safeStartInFront",
@@ -187,6 +196,7 @@ export const HelpMenu: React.FunctionComponent = () => {
             {
                 id: "reportProblem",
                 label: reportProblemText,
+                icon: <SentimentVeryDissatisfiedIcon fontSize="small" />,
                 onClick: () => postJson("workspace/reportProblem", {}),
             },
             { id: "separator-2", separator: true },
@@ -213,6 +223,7 @@ export const HelpMenu: React.FunctionComponent = () => {
             {
                 id: "website",
                 label: websiteText,
+                icon: <LaunchIcon fontSize="small" />,
                 onClick: () =>
                     postHelpAction("safeStartInFront", "urlType:LibrarySite"),
             },
@@ -281,9 +292,10 @@ export const HelpMenu: React.FunctionComponent = () => {
                         key={`${item.id ?? item.label ?? index}`}
                         english={item.label ?? ""}
                         l10nId={null}
+                        icon={item.icon}
                         onClick={() => handleMenuItemClick(item)}
                         disabled={item.enabled === false}
-                        dontGiveAffordanceForCheckbox={true}
+                        hasLeadingIconSpace={true}
                     />
                 );
             })}
