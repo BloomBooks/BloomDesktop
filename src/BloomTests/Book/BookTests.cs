@@ -337,9 +337,15 @@ namespace BloomTests.Book
                 Assert.That(img.GetOptionalStringAttribute("alt", null), Is.Not.Null);
 
                 string expectedAltText = "";
-                if (img.GetAttribute("src") == "imageWithCustomAlt.svg")
+                var src = img.GetAttribute("src");
+                switch (src)
                 {
-                    expectedAltText = "Custom Alt";
+                    case "imageWithCustomAlt.svg":
+                        expectedAltText = "Custom Alt";
+                        break;
+                    case "lang-qr-code.png":
+                        expectedAltText = "QR code linking to book online";
+                        break;
                 }
                 Assert.That(img.GetAttribute("alt"), Is.EqualTo(expectedAltText));
             }
