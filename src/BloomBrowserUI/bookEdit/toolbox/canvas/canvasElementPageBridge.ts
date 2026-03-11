@@ -1,8 +1,9 @@
-// Cross-frame bridge utilities for canvas element code.
+// Cross-frame bridge from Toolbox code to the page-frame canvas element manager.
 //
-// This module intentionally imports workspaceFrames so Toolbox code can reach the page-frame
-// CanvasElementManager via bundle exports.
+// This module intentionally imports workspaceFrames so Toolbox code can reach the
+// page bundle's CanvasElementManager via bundle exports.
 //
+// This is intentionally a bridge module, not a general-purpose utils bucket.
 // Prefer importing DOM selector constants from canvasElementConstants instead of this file.
 
 import { getEditablePageBundleExports } from "../../js/workspaceFrames";

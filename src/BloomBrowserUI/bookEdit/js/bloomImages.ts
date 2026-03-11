@@ -21,7 +21,7 @@ import { EditableDivUtils } from "./editableDivUtils";
 import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { kPlaybackOrderContainerClass } from "../toolbox/talkingBook/audioRecording";
 import { showCopyrightAndLicenseDialog } from "../workspaceRoot";
-import { getCanvasElementManager } from "../toolbox/canvas/canvasElementUtils";
+import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import $ from "jquery";
 

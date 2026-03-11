@@ -46,9 +46,10 @@ Important constraint (current product-cycle requirement):
   - Draggable-related helpers (used by game tools).
 
 ### Cross-frame bridge to the page editor engine
-- `canvasElementUtils.ts`
+- `canvasElementPageBridge.ts`
   - `getCanvasElementManager()` fetches the page-frame manager via bundle exports.
   - This file intentionally imports `bloomFrames` and is therefore *not* dependency-light.
+  - It is specifically a Toolbox-to-page bridge module, not a catch-all utils file.
   - Prefer importing selectors/constants from `canvasElementConstants.ts` instead.
 
 ## How the context menu + mini-toolbar are built
@@ -164,7 +165,7 @@ Because the menu joiner adds exactly one divider between non-empty sections, a â
 This system is designed to avoid accidental runtime import cycles:
 
 - Keep `canvasElementConstants.ts`, `canvasElementDomUtils.ts`, `canvasElementDraggables.ts`, and `canvasElementTypeInference.ts` dependency-light.
-- Keep cross-frame access to the page-frame manager in `canvasElementUtils.ts` (bridge module).
+- Keep cross-frame access to the page-frame manager in `canvasElementPageBridge.ts` (bridge module).
 
 ## Where the page-side editing logic lives
 
@@ -176,4 +177,4 @@ Related helpers (split out of the original large manager file) live under:
 
 Public entry points that other code can call without pulling in the whole manager live in:
 
-- `../../js/canvasElementManager/CanvasElementManagerPublicFunctions.ts`
+- `../../js/canvasElementManager/CanvasElementToolboxBridge.ts`

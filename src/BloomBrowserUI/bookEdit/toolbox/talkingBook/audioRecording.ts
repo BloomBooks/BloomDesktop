@@ -61,7 +61,7 @@ import {
     showImageDescriptions,
 } from "../imageDescription/imageDescriptionUtils";
 import { IAudioRecorder } from "./IAudioRecorder";
-import { getCanvasElementManager } from "../canvas/canvasElementUtils";
+import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { RecordingMode } from "./recordingMode";
 import {
     FeatureStatus,

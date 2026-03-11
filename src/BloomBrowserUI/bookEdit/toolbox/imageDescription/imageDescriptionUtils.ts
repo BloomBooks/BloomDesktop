@@ -1,4 +1,4 @@
-import { getCanvasElementManager } from "../canvas/canvasElementUtils";
+import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
 
 // This file is intended to expose some image description functions that other parts of the

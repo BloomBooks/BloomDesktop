@@ -83,7 +83,7 @@ import {
     kBackgroundImageClass,
     kBloomCanvasSelector,
 } from "./canvasElementConstants";
-import { getCanvasElementManager } from "./canvasElementUtils";
+import { getCanvasElementManager } from "./canvasElementPageBridge";
 import { isDraggable, kDraggableIdAttribute } from "./canvasElementDraggables";
 import { setGeneratedDraggableId } from "./CanvasElementItem";
 import {

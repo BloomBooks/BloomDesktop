@@ -6,7 +6,7 @@
 import * as React from "react";
 import { default as CheckIcon } from "@mui/icons-material/Check";
 import { getString, postThatMightNavigate } from "../../../utils/bloomApi";
-import { getCanvasElementManager } from "./canvasElementUtils";
+import { getCanvasElementManager } from "./canvasElementPageBridge";
 import { IControlContext, IControlMenuCommandRow } from "./canvasControlTypes";
 
 const fieldsControlledByAppearanceSystem = ["bookTitle"];

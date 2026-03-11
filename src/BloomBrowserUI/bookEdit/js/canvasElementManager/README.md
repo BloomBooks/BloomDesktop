@@ -8,9 +8,10 @@
   - Wires providers/controllers and preserves public surface used elsewhere.
 
 ### Public entry points used by other modules
-- `CanvasElementManagerPublicFunctions.ts`
+- `CanvasElementToolboxBridge.ts`
   - Lightweight exports intended for external callers.
   - Keeps external consumers from needing full manager import when possible.
+  - Owns the page-bundle to toolbox-bundle bridge helpers.
 
 ### UI/context controls
 - `CanvasElementContextControls.tsx`
@@ -29,7 +30,8 @@
 - `CanvasElementHandleDragInteractions.ts`
 - `CanvasElementEditingSuspension.ts`
 - `CanvasElementDraggableIntegration.ts`
-- `CanvasElementCanvasResizeAdjustments.ts`
+- `CanvasElementResizeAdjustments.ts`
+  - Stateless resize helpers used by the manager/background image flow.
 - `CanvasElementBackgroundImageManager.ts`
 - `CanvasElementAlternates.ts`
 - `CanvasElementGeometry.ts`

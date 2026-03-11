@@ -15,7 +15,7 @@ import {
 } from "../../../react_components/localizableMenuItem";
 import Menu from "@mui/material/Menu";
 import { Divider } from "@mui/material";
-import { getCanvasElementManager } from "../../toolbox/canvas/canvasElementUtils";
+import { getCanvasElementManager } from "../../toolbox/canvas/canvasElementPageBridge";
 import { kBackgroundImageClass } from "../../toolbox/canvas/canvasElementConstants";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { useL10n } from "../../../react_components/l10nHooks";

@@ -1,7 +1,7 @@
 // Spec 07 – Background image and canvas resize adjustments (Areas H1-H4)
 //
 // Covers: CanvasElementBackgroundImageManager.ts,
-//         CanvasElementCanvasResizeAdjustments.ts,
+//         CanvasElementResizeAdjustments.ts,
 //         CanvasElementEditingSuspension.ts.
 
 import { test, expect } from "../fixtures/canvasTest";

@@ -34,7 +34,7 @@ import {
     DialogOkButton,
 } from "../../../react_components/BloomDialog/commonDialogComponents";
 import { splitIntoGraphemes } from "../../../utils/textUtils";
-import { getCanvasElementManager } from "../canvas/canvasElementUtils";
+import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { kBloomCanvasSelector } from "../canvas/canvasElementConstants";
 
 export const GamePromptDialog: React.FunctionComponent<

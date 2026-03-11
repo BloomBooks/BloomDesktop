@@ -48,7 +48,7 @@ import {
     kImageFitModeAttribute,
     kImageFitModeContainValue,
     kImageFitModeCoverValue,
-} from "./canvasElementUtils";
+} from "./canvasElementPageBridge";
 import { deselectVideoContainers } from "../../js/videoUtils";
 import { ToolBox } from "../toolbox";
 import BloomSelect from "../../../react_components/bloomSelect";

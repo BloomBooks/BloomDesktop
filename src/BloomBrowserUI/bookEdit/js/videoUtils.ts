@@ -3,7 +3,7 @@
 
 import { getPageIframeBody } from "../../utils/shared";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
-import { getCanvasElementManager } from "../toolbox/canvas/canvasElementUtils";
+import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
 
 export const kVideoContainerClass = "bloom-videoContainer";
 

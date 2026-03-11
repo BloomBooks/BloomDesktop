@@ -58,7 +58,7 @@ import PlaceholderProvider from "../PlaceholderProvider";
 import { copyContentToTarget } from "bloom-player";
 import $ from "jquery";
 import { kCanvasToolId } from "../../toolbox/toolIds";
-import { showCanvasTool } from "./CanvasElementManagerPublicFunctions";
+import { showCanvasTool } from "./CanvasElementToolboxBridge";
 import { shouldHideToolsOverImages } from "../editablePageUtils";
 import * as Geometry from "./CanvasElementGeometry";
 import * as Alternates from "./CanvasElementAlternates";
@@ -73,7 +73,7 @@ import { CanvasElementPointerInteractions } from "./CanvasElementPointerInteract
 import { CanvasElementHandleDragInteractions } from "./CanvasElementHandleDragInteractions";
 import { CanvasElementDraggableIntegration } from "./CanvasElementDraggableIntegration";
 import { CanvasElementEditingSuspension } from "./CanvasElementEditingSuspension";
-import { CanvasElementCanvasResizeAdjustments } from "./CanvasElementCanvasResizeAdjustments";
+import { adjustCanvasElementChildrenIfSizeChanged } from "./CanvasElementResizeAdjustments";
 import { CanvasElementBackgroundImageManager } from "./CanvasElementBackgroundImageManager";
 
 const kComicalGeneratedClass: string = "comical-generated";
@@ -120,7 +120,6 @@ export class CanvasElementManager {
     private handleDragInteractions: CanvasElementHandleDragInteractions;
     private draggableIntegration: CanvasElementDraggableIntegration;
     private editingSuspension: CanvasElementEditingSuspension;
-    private canvasResizeAdjustments: CanvasElementCanvasResizeAdjustments;
     private backgroundImageManager: CanvasElementBackgroundImageManager;
 
     // Used by stopMoving() to clear cursor style after a drag.
@@ -147,13 +146,6 @@ export class CanvasElementManager {
                 this.turnOnCanvasElementEditing.bind(this),
             setupControlFrame: this.setupControlFrame.bind(this),
         });
-        this.canvasResizeAdjustments = new CanvasElementCanvasResizeAdjustments(
-            {
-                adjustBackgroundImageSize:
-                    this.adjustBackgroundImageSize.bind(this),
-                pxToNumber: CanvasElementManager.pxToNumber,
-            },
-        );
         this.backgroundImageManager = new CanvasElementBackgroundImageManager({
             getAllBloomCanvasesOnPage:
                 this.getAllBloomCanvasesOnPage.bind(this),
@@ -3109,7 +3101,11 @@ export class CanvasElementManager {
     }
 
     public AdjustChildrenIfSizeChanged(bloomCanvas: HTMLElement): void {
-        this.canvasResizeAdjustments.adjustChildrenIfSizeChanged(bloomCanvas);
+        adjustCanvasElementChildrenIfSizeChanged(
+            bloomCanvas,
+            this.adjustBackgroundImageSize.bind(this),
+            pxToNumberFromCssUtils,
+        );
     }
 
     public static adjustCanvasElementAlternates(
@@ -3163,7 +3159,7 @@ export class CanvasElementManager {
 
 // Note: do NOT use this directly in toolbox code; it will import its own copy of
 // CanvasElementManager and not use the proper one from the page iframe. Instead, use
-// the CanvasElementUtils.getCanvasElementManager().
+// the canvasElementPageBridge.getCanvasElementManager().
 export let theOneCanvasElementManager: CanvasElementManager;
 
 export function initializeCanvasElementManager() {
@@ -3174,7 +3170,7 @@ export function initializeCanvasElementManager() {
 export {
     canvasElementDescription,
     showCanvasTool,
-} from "./CanvasElementManagerPublicFunctions";
+} from "./CanvasElementToolboxBridge";
 
 function SetupClickToShowCanvasTool(canvas: Element) {
     // When the user clicks the canvas background, we want to ensure the Canvas tool is available.

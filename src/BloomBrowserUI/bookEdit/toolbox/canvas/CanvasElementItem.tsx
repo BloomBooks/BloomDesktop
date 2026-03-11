@@ -13,7 +13,7 @@ import theOneLocalizationManager from "../../../lib/localizationManager/localiza
 import { SignLanguageIcon } from "../../../react_components/icons/SignLanguageIcon";
 import { GifIcon } from "../../../react_components/icons/GifIcon";
 import { Point } from "../../js/point";
-import { getCanvasElementManager } from "./canvasElementUtils";
+import { getCanvasElementManager } from "./canvasElementPageBridge";
 import { getTarget } from "bloom-player";
 import { doesContainingPageHaveSameSizeMode } from "../games/gameUtilities";
 import { AudioIcon } from "../../../react_components/icons/AudioIcon";

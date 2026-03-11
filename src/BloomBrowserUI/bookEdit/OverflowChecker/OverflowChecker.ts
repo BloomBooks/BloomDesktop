@@ -10,7 +10,7 @@ import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
 import $ from "jquery";
-import { kBloomButtonClass } from "../toolbox/canvas/canvasElementUtils";
+import { kBloomButtonClass } from "../toolbox/canvas/canvasElementPageBridge";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;

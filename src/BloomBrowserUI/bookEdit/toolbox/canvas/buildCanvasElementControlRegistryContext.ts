@@ -13,7 +13,7 @@ import {
     kBackgroundImageClass,
     kBloomButtonClass,
 } from "./canvasElementConstants";
-import { getCanvasElementManager } from "./canvasElementUtils";
+import { getCanvasElementManager } from "./canvasElementPageBridge";
 import { inferCanvasElementType } from "./canvasElementTypeInference";
 import { canvasElementControlRegistry } from "./canvasElementControlRegistry";
 import { CanvasElementType } from "./canvasElementTypes";

@@ -16,7 +16,7 @@ import {
     hideImageDescriptions,
     showImageDescriptions,
 } from "./imageDescriptionUtils";
-import { getCanvasElementManager } from "../canvas/canvasElementUtils";
+import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
 interface IImageDescriptionState {
     enabled: boolean;

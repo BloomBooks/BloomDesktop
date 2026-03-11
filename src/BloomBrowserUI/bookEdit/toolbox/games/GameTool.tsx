@@ -58,7 +58,7 @@ import {
     isDraggable,
     kDraggableIdAttribute,
 } from "../canvas/canvasElementDraggables";
-import { getCanvasElementManager } from "../canvas/canvasElementUtils";
+import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { kCanvasElementSelector } from "../canvas/canvasElementConstants";
 import { ThemeChooser } from "./ThemeChooser";
 import { SoundSelect } from "./SoundSelect";

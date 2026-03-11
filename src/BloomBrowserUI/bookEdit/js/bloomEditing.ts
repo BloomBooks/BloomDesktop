@@ -24,7 +24,7 @@ import {
     initializeCanvasElementManager,
     theOneCanvasElementManager,
 } from "./canvasElementManager/CanvasElementManager";
-import { getCanvasElementManager } from "../toolbox/canvas/canvasElementUtils";
+import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
 import {
     kCanvasElementClass,
     kCanvasElementSelector,

@@ -9,7 +9,10 @@ import {
     theOneCanvasElementManager,
 } from "../../js/canvasElementManager/CanvasElementManager";
 import { EditableDivUtils } from "../../js/editableDivUtils";
-import { kBloomCanvasClass, kCanvasElementClass } from "./canvasElementUtils";
+import {
+    kBloomCanvasClass,
+    kCanvasElementClass,
+} from "./canvasElementPageBridge";
 import { getAsync, postString } from "../../../utils/bloomApi";
 import { Bubble, BubbleSpec } from "comicaljs";
 import { recomputeSourceBubblesForPage } from "../../js/bloomEditing";

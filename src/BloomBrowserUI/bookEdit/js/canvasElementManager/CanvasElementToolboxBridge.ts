@@ -1,8 +1,7 @@
-// Small public helpers that other modules can call without importing the full
-// CanvasElementManager class.
-//
-// This file exists to keep CanvasElementManager.ts smaller and to reduce coupling
-// between the page bundle and toolbox UI code.
+// Small bridge helpers for page-bundle code that needs to interact with the
+// toolbox bundle without importing the full CanvasElementManager class.
+// This replaces the old public-functions module with a name that makes the
+// page-to-toolbox bridge direction explicit.
 
 import { kCanvasToolId } from "../../toolbox/toolIds";
 import {
@@ -13,9 +12,9 @@ import { kImageContainerClass } from "../bloomImages";
 
 // This is just for debugging. It produces a string that describes the canvas element, generally
 // well enough to identify it in console.log.
-export const canvasElementDescription = (
+export function canvasElementDescription(
     e: Element | null | undefined,
-): string => {
+): string {
     const elt = e as HTMLElement;
     if (!elt) {
         return "no canvas element";
@@ -37,9 +36,9 @@ export const canvasElementDescription = (
     }
     // Enhance: look for videoContainer similarly
     return result + "with text " + elt.innerText;
-};
+}
 
-export const showCanvasTool = () => {
+export function showCanvasTool() {
     const handleToolbox = (toolbox: {
         toolboxIsShowing: () => boolean;
         activateToolFromId: (toolId: string) => void;
@@ -69,4 +68,4 @@ export const showCanvasTool = () => {
             handleToolbox(loadedToolbox);
         });
     });
-};
+}
