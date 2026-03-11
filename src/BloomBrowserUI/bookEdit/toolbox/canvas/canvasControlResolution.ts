@@ -1,6 +1,6 @@
 import * as React from "react";
 import {
-    ICanvasElementDefinition,
+    ICanvasElementControlConfiguration,
     ICanvasToolsPanelState,
     IControlAvailability,
     IControlContext,
@@ -64,18 +64,18 @@ const toRenderedIcon = (icon: React.ReactNode | undefined): React.ReactNode => {
 };
 
 const getRuleForControl = (
-    definition: ICanvasElementDefinition,
+    configuration: ICanvasElementControlConfiguration,
     controlId: TopLevelControlId,
 ): IControlRule | "exclude" | undefined => {
-    return definition.availabilityRules[controlId];
+    return configuration.availabilityRules[controlId];
 };
 
 const getEffectiveRule = (
-    definition: ICanvasElementDefinition,
+    configuration: ICanvasElementControlConfiguration,
     controlId: TopLevelControlId,
     surface: "toolbar" | "menu" | "toolPanel",
 ): IControlSurfaceRule => {
-    const rule = getRuleForControl(definition, controlId);
+    const rule = getRuleForControl(configuration, controlId);
     if (rule === "exclude") {
         return {
             visible: false,
@@ -217,16 +217,16 @@ const applyDefaultMenuRowFields = (
         row.helpRowSeparatorAbove ?? defaultRow.helpRowSeparatorAbove,
 });
 
-// Resolves a canvas element definition into toolbar controls, applying
+// Resolves a canvas-element control configuration into toolbar controls, applying
 // visibility/enabled rules and normalizing spacer placement.
 export const getToolbarItems = (
-    definition: ICanvasElementDefinition,
+    configuration: ICanvasElementControlConfiguration,
     ctx: IControlContext,
-    runtime: IControlRuntime = defaultRuntime,
+    _runtime: IControlRuntime = defaultRuntime,
 ): Array<ResolvedToolbarItem | { id: "spacer" }> => {
     const items: Array<ResolvedToolbarItem | { id: "spacer" }> = [];
 
-    definition.toolbar.forEach((toolbarItem) => {
+    configuration.toolbar.forEach((toolbarItem) => {
         if (toolbarItem === "spacer") {
             items.push({ id: "spacer" });
             return;
@@ -240,7 +240,7 @@ export const getToolbarItems = (
         }
 
         const effectiveRule = getEffectiveRule(
-            definition,
+            configuration,
             toolbarItem,
             "toolbar",
         );
@@ -261,13 +261,13 @@ export const getToolbarItems = (
 // Resolves section-based menu controls into concrete menu rows for the current
 // context, including nested availability and disabled-state propagation.
 export const getMenuSections = (
-    definition: ICanvasElementDefinition,
+    configuration: ICanvasElementControlConfiguration,
     ctx: IControlContext,
     runtime: IControlRuntime = defaultRuntime,
 ): IResolvedControl[][] => {
     const sections: IResolvedControl[][] = [];
 
-    definition.menuSections.forEach((sectionId) => {
+    configuration.menuSections.forEach((sectionId) => {
         const section = controlSections[sectionId];
         const sectionControls = section.controlsBySurface.menu ?? [];
         const resolvedControls: IResolvedControl[] = [];
@@ -279,7 +279,7 @@ export const getMenuSections = (
             }
 
             const effectiveRule = getEffectiveRule(
-                definition,
+                configuration,
                 controlId,
                 "menu",
             );
@@ -328,7 +328,7 @@ export const getMenuSections = (
 // Resolves the tool-panel controls that should render for the current canvas
 // element context.
 export const getToolPanelControls = (
-    definition: ICanvasElementDefinition,
+    configuration: ICanvasElementControlConfiguration,
     ctx: IControlContext,
 ): Array<{
     controlId: TopLevelControlId;
@@ -347,7 +347,7 @@ export const getToolPanelControls = (
         ctx: IControlContext;
     }> = [];
 
-    definition.toolPanel.forEach((sectionId) => {
+    configuration.toolPanel.forEach((sectionId) => {
         const section = controlSections[sectionId];
         const sectionControls = section.controlsBySurface.toolPanel ?? [];
         sectionControls.forEach((controlId) => {
@@ -357,7 +357,7 @@ export const getToolPanelControls = (
             }
 
             const effectiveRule = getEffectiveRule(
-                definition,
+                configuration,
                 controlId,
                 "toolPanel",
             );

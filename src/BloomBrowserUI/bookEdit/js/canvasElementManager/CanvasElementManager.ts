@@ -61,21 +61,8 @@ import { kCanvasToolId } from "../../toolbox/toolIds";
 import { showCanvasTool } from "./CanvasElementManagerPublicFunctions";
 import { shouldHideToolsOverImages } from "../editablePageUtils";
 import * as Geometry from "./CanvasElementGeometry";
-import {
-    adjustCanvasElementsForCurrentLanguage as adjustCanvasElementsForCurrentLanguageFromAlternates,
-    adjustCanvasElementAlternates as adjustCanvasElementAlternatesFromAlternates,
-    adjustCenterOfTextBox as adjustCenterOfTextBoxFromAlternates,
-    getLabeledNumberInPx as getLabeledNumberInPxFromAlternates,
-    saveCurrentCanvasElementStateAsCurrentLangAlternate as saveCurrentCanvasElementStateAsCurrentLangAlternateFromAlternates,
-    saveStateOfCanvasElementAsCurrentLangAlternate,
-} from "./CanvasElementAlternates";
-import {
-    getBloomCanvas as getBloomCanvasFromPositioning,
-    getChildPositionFromParentCanvasElement as getChildPositionFromParentCanvasElementFromPositioning,
-    getInteriorWidthHeight as getInteriorWidthHeightFromPositioning,
-    inPlayMode as inPlayModeFromPositioning,
-    setCanvasElementPosition as setCanvasElementPositionFromPositioning,
-} from "./CanvasElementPositioning";
+import * as Alternates from "./CanvasElementAlternates";
+import * as Positioning from "./CanvasElementPositioning";
 import type { ITextColorInfo } from "./CanvasElementSharedTypes";
 export type { ITextColorInfo } from "./CanvasElementSharedTypes";
 import { CanvasElementFactories } from "./CanvasElementFactories";
@@ -898,14 +885,14 @@ export class CanvasElementManager {
     // which is continuing to use the term bubble, so I think it's appropriate to still use that
     // name here.)
     adjustCanvasElementsForCurrentLanguage(container: HTMLElement) {
-        adjustCanvasElementsForCurrentLanguageFromAlternates(container);
+        Alternates.adjustCanvasElementsForCurrentLanguage(container);
     }
 
     public static saveStateOfCanvasElementAsCurrentLangAlternate(
         canvasElement: HTMLElement,
         canvasElementLangIn?: string,
     ) {
-        saveStateOfCanvasElementAsCurrentLangAlternate(
+        Alternates.saveStateOfCanvasElementAsCurrentLangAlternate(
             canvasElement,
             canvasElementLangIn,
         );
@@ -917,7 +904,7 @@ export class CanvasElementManager {
     saveCurrentCanvasElementStateAsCurrentLangAlternate(
         container: HTMLElement,
     ) {
-        saveCurrentCanvasElementStateAsCurrentLangAlternateFromAlternates(
+        Alternates.saveCurrentCanvasElementStateAsCurrentLangAlternate(
             container,
         );
     }
@@ -3007,7 +2994,7 @@ export class CanvasElementManager {
         unscaledRelativeLeft: number,
         unscaledRelativeTop: number,
     ) {
-        setCanvasElementPositionFromPositioning(
+        Positioning.setCanvasElementPosition(
             canvasElement,
             unscaledRelativeLeft,
             unscaledRelativeTop,
@@ -3020,14 +3007,14 @@ export class CanvasElementManager {
     // This differs from getBoundingClientRect().width because that function includes the border and padding of the element in the width.
     // This function returns the interior content's width/height (unrounded), without any margin, border, or padding
     private static getInteriorWidthHeight(element: HTMLElement): Point {
-        return getInteriorWidthHeightFromPositioning(element);
+        return Positioning.getInteriorWidthHeight(element);
     }
 
     // Lots of places we need to find the bloom-canvas that a particular element resides in.
     // Method is static because several of the callers are static.
     // Return null if element isn't in a bloom-canvas at all.
     private static getBloomCanvas(element: Element): HTMLElement | null {
-        return getBloomCanvasFromPositioning(element);
+        return Positioning.getBloomCanvas(element);
     }
 
     // When showing a tail for a canvas element style that doesn't have one by default, we get one here.
@@ -3040,7 +3027,7 @@ export class CanvasElementManager {
     }
 
     private static inPlayMode(someElt: Element) {
-        return inPlayModeFromPositioning(someElt);
+        return Positioning.inPlayMode(someElt);
     }
 
     public deleteCurrentCanvasElement(): void {
@@ -3103,7 +3090,7 @@ export class CanvasElementManager {
         parentElement: HTMLElement,
         parentBubbleSpec: BubbleSpec | undefined,
     ): number[] {
-        return getChildPositionFromParentCanvasElementFromPositioning(
+        return Positioning.getChildPositionFromParentCanvasElement(
             parentElement,
             parentBubbleSpec,
         );
@@ -3133,7 +3120,7 @@ export class CanvasElementManager {
         newLeft: number,
         newTop: number,
     ) {
-        adjustCanvasElementAlternatesFromAlternates(
+        Alternates.adjustCanvasElementAlternates(
             canvasElement,
             scale,
             oldLeft,
@@ -3157,7 +3144,7 @@ export class CanvasElementManager {
         newC: number,
         oldRange: number,
     ): string {
-        return adjustCenterOfTextBoxFromAlternates(
+        return Alternates.adjustCenterOfTextBox(
             label,
             style,
             scale,
@@ -3170,7 +3157,7 @@ export class CanvasElementManager {
     // Typical source is something like "left: 224px; top: 79.6px; width: 66px; height: 30px;"
     // We want to pass "top" and get 79.6.
     public static getLabeledNumberInPx(label: string, source: string): number {
-        return getLabeledNumberInPxFromAlternates(label, source);
+        return Alternates.getLabeledNumberInPx(label, source);
     }
 }
 

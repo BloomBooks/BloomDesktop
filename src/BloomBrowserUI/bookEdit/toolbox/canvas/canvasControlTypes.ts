@@ -292,7 +292,7 @@ export interface ICanvasToolsPanelState {
     selectedItemSpec: BubbleSpec | undefined;
 }
 
-export interface ICanvasElementDefinition {
+export interface ICanvasElementControlConfiguration {
     type: CanvasElementType;
     menuSections: SectionId[];
     toolbar: Array<CommandControlId | "spacer">;
@@ -303,7 +303,7 @@ export interface ICanvasElementDefinition {
 }
 
 export type AvailabilityRulesMap =
-    ICanvasElementDefinition["availabilityRules"];
+    ICanvasElementControlConfiguration["availabilityRules"];
 
 export interface IResolvedControl {
     control: IControlDefinition;

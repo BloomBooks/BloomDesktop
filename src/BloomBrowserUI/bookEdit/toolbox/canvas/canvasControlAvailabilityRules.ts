@@ -1,8 +1,9 @@
 // Reusable availability rule fragments for canvas controls.
 //
 // This module centralizes `visible`/`enabled` rules that are reused by multiple
-// element definitions. `canvasElementControlRegistry.ts` composes these rules per
-// canvas element type to keep element declarations concise and declarative.
+// canvas-element control configurations. `canvasElementControlRegistry.ts`
+// composes these rules per canvas element type to keep each configuration
+// concise and declarative.
 //
 // Runtime flow:
 // 1) `buildCanvasElementControlRegistryContext()` computes `IControlContext` facts.

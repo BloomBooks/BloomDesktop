@@ -12,11 +12,12 @@
 // - `canvasControlAvailabilityRules.ts` provides shared policy fragments composed here.
 // - `canvasControlResolution.ts` resolves this registry into concrete UI rows/buttons.
 //
-// Design intent: keep each element definition explicit and readable so reviewers can
-// understand behavior from this file without chasing constructor indirection.
+// Design intent: keep each element type's control configuration explicit and
+// readable, while leaving the concrete command/panel implementations in
+// `canvasControlRegistry.ts`.
 import { CanvasElementType } from "./canvasElementTypes";
 import {
-    ICanvasElementDefinition,
+    ICanvasElementControlConfiguration,
     AvailabilityRulesMap,
 } from "./canvasControlTypes";
 import {
@@ -37,7 +38,7 @@ const mergeRules = (...rules: AvailabilityRulesMap[]): AvailabilityRulesMap => {
     }, {});
 };
 
-export const imageCanvasElementDefinition: ICanvasElementDefinition = {
+export const imageCanvasElementControls: ICanvasElementControlConfiguration = {
     type: "image",
     // Shared definition: image elements can appear on standard canvas pages and
     // also as game pieces created from the Game tool.
@@ -61,7 +62,7 @@ export const imageCanvasElementDefinition: ICanvasElementDefinition = {
     ),
 };
 
-export const videoCanvasElementDefinition: ICanvasElementDefinition = {
+export const videoCanvasElementControls: ICanvasElementControlConfiguration = {
     type: "video",
     // Shared definition: video elements are used both in normal canvas editing
     // and as game pieces on game pages.
@@ -76,7 +77,7 @@ export const videoCanvasElementDefinition: ICanvasElementDefinition = {
     ),
 };
 
-export const soundCanvasElementDefinition: ICanvasElementDefinition = {
+export const soundCanvasElementControls: ICanvasElementControlConfiguration = {
     type: "sound",
     // Shared definition: sound elements are used in regular canvas content and
     // can also participate in game layouts.
@@ -91,7 +92,7 @@ export const soundCanvasElementDefinition: ICanvasElementDefinition = {
     ),
 };
 
-export const rectangleBubbleCanvasElementDefinition: ICanvasElementDefinition =
+export const rectangleBubbleCanvasElementControls: ICanvasElementControlConfiguration =
     {
         type: "rectangle",
         // Shared definition: rectangular bubble elements are used in standard canvas
@@ -107,7 +108,7 @@ export const rectangleBubbleCanvasElementDefinition: ICanvasElementDefinition =
         ),
     };
 
-export const speechCanvasElementDefinition: ICanvasElementDefinition = {
+export const speechCanvasElementControls: ICanvasElementControlConfiguration = {
     type: "speech",
     // Shared definition: speech bubbles are used in normal canvas pages and
     // are also a primary game piece type.
@@ -124,24 +125,31 @@ export const speechCanvasElementDefinition: ICanvasElementDefinition = {
     ),
 };
 
-export const captionCanvasElementDefinition: ICanvasElementDefinition = {
-    type: "caption",
-    // Shared definition: caption elements are used in regular canvas editing
-    // and can also be used as game pieces.
-    // `gameDraggable` is included for game behavior and is not shown on
-    // non-game pages because availability gates it.
-    menuSections: ["audio", "bubble", "gameDraggable", "text", "wholeElement"],
-    toolbar: ["format", "spacer", "duplicate", "delete"],
-    toolPanel: ["bubble", "text", "outline"],
-    availabilityRules: mergeRules(
-        audioAvailabilityRules,
-        bubbleAvailabilityRules,
-        textAvailabilityRules,
-        wholeElementAvailabilityRules,
-    ),
-};
+export const captionCanvasElementControls: ICanvasElementControlConfiguration =
+    {
+        type: "caption",
+        // Shared definition: caption elements are used in regular canvas editing
+        // and can also be used as game pieces.
+        // `gameDraggable` is included for game behavior and is not shown on
+        // non-game pages because availability gates it.
+        menuSections: [
+            "audio",
+            "bubble",
+            "gameDraggable",
+            "text",
+            "wholeElement",
+        ],
+        toolbar: ["format", "spacer", "duplicate", "delete"],
+        toolPanel: ["bubble", "text", "outline"],
+        availabilityRules: mergeRules(
+            audioAvailabilityRules,
+            bubbleAvailabilityRules,
+            textAvailabilityRules,
+            wholeElementAvailabilityRules,
+        ),
+    };
 
-export const bookLinkGridDefinition: ICanvasElementDefinition = {
+export const bookLinkGridControls: ICanvasElementControlConfiguration = {
     type: "book-link-grid",
     menuSections: ["linkGrid", "wholeElement"],
     toolbar: ["linkGridChooseBooks", "spacer", "duplicate", "delete"],
@@ -151,53 +159,54 @@ export const bookLinkGridDefinition: ICanvasElementDefinition = {
     },
 };
 
-export const navigationImageButtonDefinition: ICanvasElementDefinition = {
-    type: "navigation-image-button",
-    menuSections: ["url", "image", "wholeElement"],
-    toolbar: [
-        "setDestination",
-        "chooseImage",
-        "pasteImage",
-        "spacer",
-        "duplicate",
-        "delete",
-    ],
-    toolPanel: ["text", "imagePanel"],
-    availabilityRules: {
-        ...mergeRules(
-            imageAvailabilityRules,
-            textAvailabilityRules,
-            wholeElementAvailabilityRules,
-        ),
-        setDestination: {
-            visible: true,
-        },
-        imageFillMode: {
-            visible: (ctx) => ctx.hasImage,
-        },
-        textColor: {
-            visible: (ctx) => ctx.hasText,
-        },
-        backgroundColor: {
-            visible: true,
-        },
-        missingMetadata: {
-            // Keep metadata editing in the menu for navigation buttons,
-            // but do not show it as a toolbar icon.
-            surfacePolicy: {
-                toolbar: {
-                    visible: false,
-                },
-                menu: {
-                    visible: (ctx) => ctx.hasImage && ctx.canModifyImage,
-                    enabled: (ctx) => ctx.hasRealImage,
+export const navigationImageButtonControls: ICanvasElementControlConfiguration =
+    {
+        type: "navigation-image-button",
+        menuSections: ["url", "image", "wholeElement"],
+        toolbar: [
+            "setDestination",
+            "chooseImage",
+            "pasteImage",
+            "spacer",
+            "duplicate",
+            "delete",
+        ],
+        toolPanel: ["text", "imagePanel"],
+        availabilityRules: {
+            ...mergeRules(
+                imageAvailabilityRules,
+                textAvailabilityRules,
+                wholeElementAvailabilityRules,
+            ),
+            setDestination: {
+                visible: true,
+            },
+            imageFillMode: {
+                visible: (ctx) => ctx.hasImage,
+            },
+            textColor: {
+                visible: (ctx) => ctx.hasText,
+            },
+            backgroundColor: {
+                visible: true,
+            },
+            missingMetadata: {
+                // Keep metadata editing in the menu for navigation buttons,
+                // but do not show it as a toolbar icon.
+                surfacePolicy: {
+                    toolbar: {
+                        visible: false,
+                    },
+                    menu: {
+                        visible: (ctx) => ctx.hasImage && ctx.canModifyImage,
+                        enabled: (ctx) => ctx.hasRealImage,
+                    },
                 },
             },
         },
-    },
-};
+    };
 
-export const navigationImageWithLabelButtonDefinition: ICanvasElementDefinition =
+export const navigationImageWithLabelButtonControls: ICanvasElementControlConfiguration =
     {
         type: "navigation-image-with-label-button",
         menuSections: ["url", "image", "text", "wholeElement"],
@@ -244,23 +253,24 @@ export const navigationImageWithLabelButtonDefinition: ICanvasElementDefinition 
         },
     };
 
-export const navigationLabelButtonDefinition: ICanvasElementDefinition = {
-    type: "navigation-label-button",
-    menuSections: ["url", "text", "wholeElement"],
-    toolbar: ["setDestination", "spacer", "duplicate", "delete"],
-    toolPanel: ["text"],
-    availabilityRules: {
-        ...mergeRules(textAvailabilityRules, wholeElementAvailabilityRules),
-        setDestination: {
-            visible: true,
+export const navigationLabelButtonControls: ICanvasElementControlConfiguration =
+    {
+        type: "navigation-label-button",
+        menuSections: ["url", "text", "wholeElement"],
+        toolbar: ["setDestination", "spacer", "duplicate", "delete"],
+        toolPanel: ["text"],
+        availabilityRules: {
+            ...mergeRules(textAvailabilityRules, wholeElementAvailabilityRules),
+            setDestination: {
+                visible: true,
+            },
+            backgroundColor: {
+                visible: true,
+            },
         },
-        backgroundColor: {
-            visible: true,
-        },
-    },
-};
+    };
 
-export const noneCanvasElementDefinition: ICanvasElementDefinition = {
+export const noneCanvasElementControls: ICanvasElementControlConfiguration = {
     type: "none",
     menuSections: ["wholeElement"],
     toolbar: ["duplicate", "delete"],
@@ -270,18 +280,18 @@ export const noneCanvasElementDefinition: ICanvasElementDefinition = {
 
 export const canvasElementControlRegistry: Record<
     CanvasElementType,
-    ICanvasElementDefinition
+    ICanvasElementControlConfiguration
 > = {
-    image: imageCanvasElementDefinition,
-    video: videoCanvasElementDefinition,
-    sound: soundCanvasElementDefinition,
-    rectangle: rectangleBubbleCanvasElementDefinition,
-    speech: speechCanvasElementDefinition,
-    caption: captionCanvasElementDefinition,
-    "book-link-grid": bookLinkGridDefinition,
-    "navigation-image-button": navigationImageButtonDefinition,
+    image: imageCanvasElementControls,
+    video: videoCanvasElementControls,
+    sound: soundCanvasElementControls,
+    rectangle: rectangleBubbleCanvasElementControls,
+    speech: speechCanvasElementControls,
+    caption: captionCanvasElementControls,
+    "book-link-grid": bookLinkGridControls,
+    "navigation-image-button": navigationImageButtonControls,
     "navigation-image-with-label-button":
-        navigationImageWithLabelButtonDefinition,
-    "navigation-label-button": navigationLabelButtonDefinition,
-    none: noneCanvasElementDefinition,
+        navigationImageWithLabelButtonControls,
+    "navigation-label-button": navigationLabelButtonControls,
+    none: noneCanvasElementControls,
 };

@@ -6,7 +6,8 @@ At a high level:
 
 - The **page iframe** owns the editing engine (`CanvasElementManager`).
 - The **React UI** (`CanvasElementContextControls`) renders the context menu + mini-toolbar for the currently-selected canvas element.
-- A small, dependency-light **registry** (`canvasElementControlRegistry`) describes which menu sections and toolbar buttons each canvas element type supports.
+- A small, dependency-light **registry** (`canvasElementControlRegistry`) maps each canvas element type to the menu sections, toolbar buttons, tool-panel sections, and availability overrides it supports.
+- The concrete command behavior, labels, icons, hints, and panel components live in `canvasControlRegistry.ts`.
 - Element “type” is determined by **DOM inference** (`inferCanvasElementType`).
 
 Important constraint (current product-cycle requirement):
@@ -17,8 +18,12 @@ Important constraint (current product-cycle requirement):
 
 ### The registry
 - `canvasElementControlRegistry.ts`
-  - The central registry: `canvasElementControlRegistry: Record<CanvasElementType, ICanvasElementDefinition>`
-  - Each entry lists `menuSections` and `toolbarButtons` which are used to decide what menu sections and mini-toolbar buttons are allowed.
+  - The central registry: `canvasElementControlRegistry: Record<CanvasElementType, ICanvasElementControlConfiguration>`
+  - Each entry lists the allowed `menuSections`, `toolbar`, `toolPanel`, and any per-control availability overrides.
+
+- `canvasControlRegistry.ts`
+  - The concrete command/panel registry.
+  - Each control entry provides the implementation, labels, icons, hints, and any menu-row construction.
 
 - `canvasElementTypes.ts`
   - The canonical union type `CanvasElementType`.
@@ -27,7 +32,7 @@ Important constraint (current product-cycle requirement):
 - `canvasElementTypeInference.ts`
   - `inferCanvasElementType(canvasElement: HTMLElement): CanvasElementType | undefined`
   - Inference based on existing DOM structure/classes.
-  - `CanvasElementContextControls` throws if inference returns `undefined` or an unregistered type (fail fast).
+  - `CanvasElementContextControls` falls back to `none` if inference returns `undefined` or an unregistered type, so mixed-version content degrades safely.
   - **Keep this file dependency-light** because it is imported across bundle boundaries.
 
 ### Shared DOM constants & helpers (dependency-light)

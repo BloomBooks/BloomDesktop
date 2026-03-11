@@ -232,6 +232,7 @@ namespace Bloom.web.controllers
         private dynamic GetCreativeCommonsInfo(SIL.Core.ClearShare.LicenseInfo ccLicense)
         {
             dynamic dynamicCcLicense = ccLicense;
+
             return new
             {
                 token = dynamicCcLicense.Token,
