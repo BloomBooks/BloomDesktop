@@ -596,6 +596,26 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Kiarmenia ya juu</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.QrCodeBadgeLabelCaption" translate="no">
+        <source xml:lang="en">Label for QR code badge</source>
+        <target xml:lang="sw" state="needs-translation">Label for QR code badge</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.QrCodeBadgeLabelCaption</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.QrCodeBadgeText" translate="no">
+        <source xml:lang="en">Get more books in the {0} language on BloomLibrary.org.</source>
+        <target xml:lang="sw" state="needs-translation">Get more books in the {0} language on BloomLibrary.org.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.QrCodeBadgeText</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.QrCodeLabel" translate="no">
+        <source xml:lang="en">QR code in Bloom badge</source>
+        <target xml:lang="sw" state="needs-translation">QR code in Bloom badge</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.QrCodeLabel</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.QrCodeShowLanguage" translate="no">
+        <source xml:lang="en">Show QR code for current language books</source>
+        <target xml:lang="sw" state="needs-translation">Show QR code for current language books</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.QrCodeShowLanguage</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink" approved="yes">
         <source xml:lang="en">Special Script Settings</source>
         <target xml:lang="sw" state="final">Mipangilio ya Kipekee ya Hati</target>
