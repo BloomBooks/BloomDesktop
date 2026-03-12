@@ -16,6 +16,7 @@
 ### UI/context controls
 - `CanvasElementContextControls.tsx`
 - `CanvasElementSelectionUi.ts`
+  - Stateless control-frame and context-menu positioning helpers used directly by the manager.
 
 ### Input/guide/snap providers
 - `CanvasElementKeyboardProvider.ts`
@@ -34,6 +35,7 @@
 - `CanvasElementResizeAdjustments.ts`
   - Stateless resize helpers used by the manager/background image flow.
 - `CanvasElementBackgroundImageManager.ts`
+  - Background image conversion and sizing helpers used directly by the manager.
 - `CanvasElementAlternates.ts`
 - `CanvasElementGeometry.ts`
 - `CanvasElementPositioning.ts`

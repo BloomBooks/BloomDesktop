@@ -68,7 +68,15 @@ export type { ITextColorInfo } from "./CanvasElementSharedTypes";
 import { CanvasElementFactories } from "./CanvasElementFactories";
 import { CanvasElementClipboard } from "./CanvasElementClipboard";
 import { CanvasElementDuplication } from "./CanvasElementDuplication";
-import { CanvasElementSelectionUi } from "./CanvasElementSelectionUi";
+import {
+    alignControlFrameWithActiveElement as alignCanvasElementControlFrameWithActiveElement,
+    adjustContextControlPosition as adjustCanvasElementContextControlPosition,
+    checkActiveElementIsVisible as ensureActiveCanvasElementIsVisible,
+    getHandleTitlesAsync as getCanvasElementHandleTitlesAsync,
+    removeControlFrame as removeCanvasElementControlFrame,
+    restoreFocus as restoreCanvasElementFocus,
+    setupControlFrame as setupCanvasElementControlFrame,
+} from "./CanvasElementSelectionUi";
 import { CanvasElementPointerInteractions } from "./CanvasElementPointerInteractions";
 import { CanvasElementHandleDragInteractions } from "./CanvasElementHandleDragInteractions";
 import {
@@ -78,7 +86,12 @@ import {
 } from "./CanvasElementDraggableIntegration";
 import { CanvasElementEditingSuspension } from "./CanvasElementEditingSuspension";
 import { adjustCanvasElementChildrenIfSizeChanged } from "./CanvasElementResizeAdjustments";
-import { CanvasElementBackgroundImageManager } from "./CanvasElementBackgroundImageManager";
+import {
+    adjustBackgroundImageSize as adjustCanvasBackgroundImageSize,
+    handleResizeAdjustments as handleBackgroundResizeAdjustments,
+    setupBackgroundImageAttributes,
+    type BackgroundImageManagerState,
+} from "./CanvasElementBackgroundImageManager";
 
 const kComicalGeneratedClass: string = "comical-generated";
 
@@ -119,11 +132,13 @@ export class CanvasElementManager {
     private factories: CanvasElementFactories;
     private clipboard: CanvasElementClipboard;
     private duplication: CanvasElementDuplication;
-    private selectionUi: CanvasElementSelectionUi;
     private pointerInteractions: CanvasElementPointerInteractions;
     private handleDragInteractions: CanvasElementHandleDragInteractions;
     private editingSuspension: CanvasElementEditingSuspension;
-    private backgroundImageManager: CanvasElementBackgroundImageManager;
+    private backgroundImageManagerState: BackgroundImageManagerState = {
+        bgImageLoadListeners: new WeakMap(),
+    };
+    private thingToFocusAfterSettingColor: HTMLElement | undefined;
 
     // Used by stopMoving() to clear cursor style after a drag.
     private lastMoveContainer: HTMLElement;
@@ -145,15 +160,6 @@ export class CanvasElementManager {
                 this.turnOnCanvasElementEditing.bind(this),
             setupControlFrame: this.setupControlFrame.bind(this),
         });
-        this.backgroundImageManager = new CanvasElementBackgroundImageManager({
-            getAllBloomCanvasesOnPage:
-                this.getAllBloomCanvasesOnPage.bind(this),
-            adjustChildrenIfSizeChanged:
-                this.AdjustChildrenIfSizeChanged.bind(this),
-            getActiveElement: () => this.activeElement,
-            alignControlFrameWithActiveElement:
-                this.alignControlFrameWithActiveElement,
-        });
         this.factories = new CanvasElementFactories({
             snapProvider: this.snapProvider,
             getBloomCanvasFromMouse: this.getBloomCanvasFromMouse.bind(this),
@@ -163,10 +169,7 @@ export class CanvasElementManager {
             },
             doNotifyChange: this.doNotifyChange.bind(this),
             showCorrespondingTextBox: this.showCorrespondingTextBox.bind(this),
-            handleResizeAdjustments:
-                this.backgroundImageManager.handleResizeAdjustments.bind(
-                    this.backgroundImageManager,
-                ),
+            handleResizeAdjustments: this.handleResizeAdjustments.bind(this),
             refreshCanvasElementEditing:
                 this.refreshCanvasElementEditing.bind(this),
             setActiveElement: this.setActiveElement.bind(this),
@@ -240,21 +243,6 @@ export class CanvasElementManager {
             this.snapProvider,
             this.guideProvider,
         );
-
-        this.selectionUi = new CanvasElementSelectionUi({
-            getActiveElement: () => this.activeElement,
-            setActiveElement: this.setActiveElement.bind(this),
-            adjustContainerAspectRatio:
-                this.adjustContainerAspectRatio.bind(this),
-            startResizeDrag: this.handleDragInteractions.startResizeDrag,
-            startSideControlDrag:
-                this.handleDragInteractions.startSideControlDrag,
-            startMoveCrop: this.handleDragInteractions.startMoveCrop,
-            adjustMoveCropHandleVisibility: (removeCropAttrsIfNotNeeded) =>
-                this.handleDragInteractions.adjustMoveCropHandleVisibility(
-                    removeCropAttrsIfNotNeeded,
-                ),
-        });
 
         this.pointerInteractions = new CanvasElementPointerInteractions(
             {
@@ -666,13 +654,16 @@ export class CanvasElementManager {
             return; // Already on. No work needs to be done
         }
         this.isCanvasElementEditingOn = true;
-        this.backgroundImageManager.handleResizeAdjustments();
+        this.handleResizeAdjustments();
 
         const bloomCanvases: HTMLElement[] = this.getAllBloomCanvasesOnPage();
 
         bloomCanvases.forEach((bloomCanvas) => {
-            this.backgroundImageManager.setupBackgroundImageAttributes(
+            setupBackgroundImageAttributes(
+                this.backgroundImageManagerState,
                 bloomCanvas,
+                () => this.activeElement,
+                this.alignControlFrameWithActiveElement,
             );
             this.adjustCanvasElementsForCurrentLanguage(bloomCanvas);
             this.ensureCanvasElementsIntersectParent(bloomCanvas);
@@ -1292,13 +1283,22 @@ export class CanvasElementManager {
     // Remove the canvas element control frame if it exists (when no canvas element is active)
     // Also remove the menu if it's still open.  See BL-13852.
     public removeControlFrame(): void {
-        this.selectionUi.removeControlFrame();
+        removeCanvasElementControlFrame(this.activeElement);
     }
 
     // Set up the control frame for the active canvas element. This includes creating it if it
     // doesn't exist, and positioning it correctly.
     public setupControlFrame(): void {
-        this.selectionUi.setupControlFrame();
+        setupCanvasElementControlFrame({
+            getActiveElement: () => this.activeElement,
+            setActiveElement: (element) => this.setActiveElement(element),
+            adjustContainerAspectRatio:
+                this.adjustContainerAspectRatio.bind(this),
+            startResizeDrag: this.handleDragInteractions.startResizeDrag,
+            startSideControlDrag:
+                this.handleDragInteractions.startSideControlDrag,
+            startMoveCrop: this.handleDragInteractions.startMoveCrop,
+        });
     }
 
     private minWidth = 30; // @MinTextBoxWidth in canvasTool.less
@@ -1670,7 +1670,7 @@ export class CanvasElementManager {
         force: boolean = false,
         attribute: string = "title",
     ) {
-        return this.selectionUi.getHandleTitlesAsync(
+        return getCanvasElementHandleTitlesAsync(
             controlFrame,
             className,
             l10nId,
@@ -1681,16 +1681,23 @@ export class CanvasElementManager {
 
     // Align the control frame with the active canvas element.
     private alignControlFrameWithActiveElement = () => {
-        this.selectionUi.alignControlFrameWithActiveElement();
+        alignCanvasElementControlFrameWithActiveElement(
+            this.activeElement,
+            (removeCropAttrsIfNotNeeded) =>
+                this.handleDragInteractions.adjustMoveCropHandleVisibility(
+                    removeCropAttrsIfNotNeeded,
+                ),
+        );
     };
 
     adjustContextControlPosition(
         controlFrame: HTMLElement | null,
         controlsAbove: boolean,
     ) {
-        this.selectionUi.adjustContextControlPosition(
+        adjustCanvasElementContextControlPosition(
             controlFrame,
             controlsAbove,
+            this.activeElement,
         );
     }
 
@@ -1715,7 +1722,7 @@ export class CanvasElementManager {
                 this.setTextColorInternal(hexOrRgbColor, bubble.content),
             );
         }
-        this.selectionUi.restoreFocus();
+        restoreCanvasElementFocus(this.thingToFocusAfterSettingColor);
     }
 
     private setTextColorInternal(hexOrRgbColor: string, element: HTMLElement) {
@@ -1846,11 +1853,11 @@ export class CanvasElementManager {
         });
         // reset active element
         this.setActiveElement(originalActiveElement);
-        this.selectionUi.restoreFocus();
+        restoreCanvasElementFocus(this.thingToFocusAfterSettingColor);
     }
 
     public setThingToFocusAfterSettingColor(x: HTMLElement): void {
-        this.selectionUi.setThingToFocusAfterSettingColor(x);
+        this.thingToFocusAfterSettingColor = x;
     }
 
     public getBackgroundColorArray(familySpec: BubbleSpec): string[] {
@@ -2804,7 +2811,9 @@ export class CanvasElementManager {
     }
 
     public checkActiveElementIsVisible() {
-        this.selectionUi.checkActiveElementIsVisible();
+        ensureActiveCanvasElementIsVisible(this.activeElement, (element) =>
+            this.setActiveElement(element),
+        );
     }
 
     public resumeComicEditing() {
@@ -2816,7 +2825,16 @@ export class CanvasElementManager {
         theOneCanvasElementManager.resumeComicEditing();
         // this is automatic for changes that happen while we're dragging,
         // but dragging gets stopped by mouse up, so we need to do it here.
-        theOneCanvasElementManager.backgroundImageManager.handleResizeAdjustments();
+        theOneCanvasElementManager.handleResizeAdjustments();
+    }
+    private handleResizeAdjustments(): void {
+        handleBackgroundResizeAdjustments(
+            this.backgroundImageManagerState,
+            this.getAllBloomCanvasesOnPage(),
+            this.AdjustChildrenIfSizeChanged.bind(this),
+            () => this.activeElement,
+            this.alignControlFrameWithActiveElement,
+        );
     }
 
     public removeDetachedTargets() {
@@ -3091,10 +3109,13 @@ export class CanvasElementManager {
         bgCanvasElement: HTMLElement,
         useSizeOfNewImage: boolean,
     ) {
-        this.backgroundImageManager.adjustBackgroundImageSize(
+        return adjustCanvasBackgroundImageSize(
+            this.backgroundImageManagerState,
             bloomCanvas,
             bgCanvasElement,
             useSizeOfNewImage,
+            () => this.activeElement,
+            this.alignControlFrameWithActiveElement,
         );
     }
 

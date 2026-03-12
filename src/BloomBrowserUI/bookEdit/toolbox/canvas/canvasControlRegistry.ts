@@ -39,7 +39,7 @@ import { default as CopyrightIcon } from "@mui/icons-material/Copyright";
 import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
 import { default as SearchIcon } from "@mui/icons-material/Search";
 import { default as VolumeUpIcon } from "@mui/icons-material/VolumeUp";
-import { showCopyrightAndLicenseDialog } from "../../editViewFrame";
+import { showCopyrightAndLicenseDialog } from "../../workspaceRoot";
 import {
     doImageCommand,
     getImageFromCanvasElement,
