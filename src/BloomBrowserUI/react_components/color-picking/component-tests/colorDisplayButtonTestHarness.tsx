@@ -5,6 +5,7 @@ import { BloomPalette } from "../bloomPalette";
 
 export const ColorDisplayButtonTestHarness: React.FunctionComponent<{
     initialColor?: string;
+    transparency?: boolean;
     deferOnChangeUntilComplete?: boolean;
 }> = (props) => {
     const [changeCount, setChangeCount] = useState(0);
@@ -20,7 +21,7 @@ export const ColorDisplayButtonTestHarness: React.FunctionComponent<{
                 disabled={false}
                 initialColor={props.initialColor ?? "#111111"}
                 localizedTitle="Background Color"
-                transparency={false}
+                transparency={props.transparency ?? false}
                 palette={BloomPalette.CoverBackground}
                 width={75}
                 deferOnChangeUntilComplete={

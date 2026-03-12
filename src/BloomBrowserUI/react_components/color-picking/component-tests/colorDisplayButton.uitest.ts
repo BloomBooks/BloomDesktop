@@ -34,6 +34,35 @@ test.describe("ColorDisplayButton + ColorPickerDialog", () => {
         await expect(hexInput).not.toHaveValue("#111111");
     });
 
+    test("transparent selection keeps transparency background visible", async ({
+        page,
+    }) => {
+        await setTestComponent(
+            page,
+            "../color-picking/component-tests/colorDisplayButtonTestHarness",
+            "ColorDisplayButtonTestHarness",
+            {
+                initialColor: "transparent",
+                transparency: true,
+            },
+        );
+
+        const transparencyBackground = page.getByTestId(
+            "color-display-button-transparency-background",
+        );
+        await expect(transparencyBackground).toBeVisible({ timeout: 5000 });
+
+        const backgroundImage = await transparencyBackground.evaluate(
+            (element) => getComputedStyle(element).backgroundImage,
+        );
+        expect(backgroundImage).not.toBe("none");
+
+        await expect(page.getByTestId("color-display-button-swatch")).toHaveCSS(
+            "background-color",
+            "rgba(0, 0, 0, 0)",
+        );
+    });
+
     test("deferred change waits until drag completes and cancel restores", async ({
         page,
     }) => {
