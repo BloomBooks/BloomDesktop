@@ -18,6 +18,7 @@ interface IColorPickerProps {
     transparency?: boolean;
     noGradientSwatches?: boolean;
     onChange: (color: IColorInfo) => void;
+    onChangeComplete?: (color: IColorInfo) => void;
     currentColor: IColorInfo;
     swatchColors: IColorInfo[];
     includeDefault?: boolean;
@@ -128,11 +129,6 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
         props.eyedropperBackdropSelector ?? defaultEyedropperBackdropSelector;
     const hasNativeEyedropper = !!getEyeDropperConstructor();
 
-    // Use a content-based key so we detect when the color content changes,
-    // even if the object reference is the same (e.g., eyedropper mutations).
-    const currentColorKey =
-        props.currentColor.colors.join("|") + "|" + props.currentColor.opacity;
-
     // Track mount state so we don't update state after unmount, and to ensure any temporary
     // backdrop overrides are removed if the component unmounts while the eyedropper is active.
     useEffect(() => {
@@ -148,23 +144,38 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
         "EditTab.DirectFormatting.labelForDefaultColor",
     );
 
-    const changeColor = (swatchColor: IColorInfo) => {
-        const clonedColor: IColorInfo = {
-            ...swatchColor,
-            colors: [...swatchColor.colors],
+    const cloneColor = (color: IColorInfo): IColorInfo => {
+        return {
+            ...color,
+            colors: [...color.colors],
         };
+    };
+
+    const changeColor = (
+        swatchColor: IColorInfo,
+        options?: { complete?: boolean },
+    ) => {
+        const clonedColor = cloneColor(swatchColor);
         props.onChange(clonedColor);
+        if (options?.complete) {
+            props.onChangeComplete?.(clonedColor);
+        }
     };
 
     // Handler for when the user clicks on a swatch at the bottom of the picker.
     const handleSwatchClick = (swatchColor: IColorInfo) => () => {
-        changeColor(swatchColor);
+        changeColor(swatchColor, { complete: true });
     };
 
     // Handler for when the user clicks/drags in the BloomSketchPicker (Saturation, Hue and Alpha).
     const handlePickerChange = (color: ColorResult) => {
         const newColor = getColorInfoFromColorResult(color, "");
         changeColor(newColor);
+    };
+
+    const handlePickerChangeComplete = (color: ColorResult) => {
+        const newColor = getColorInfoFromColorResult(color, "");
+        props.onChangeComplete?.(cloneColor(newColor));
     };
 
     // Handler for when the user changes the hex code value (including pasting).
@@ -181,7 +192,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
             colors: [colorOnly],
             opacity: newOpacity,
         };
-        changeColor(newColor);
+        changeColor(newColor, { complete: true });
     };
 
     const getColorInfoFromColorResult = (
@@ -232,6 +243,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
             if (result?.sRGBHex) {
                 changeColor(
                     getColorInfoFromSpecialNameOrColorString(result.sRGBHex),
+                    { complete: true },
                 );
             }
         } catch {
@@ -281,12 +293,13 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
                 overflow-x: hidden;
             `}
         >
+            {/* Keep the picker mounted during drags; remounting here breaks slider pointer capture. */}
             <BloomSketchPicker
-                key={currentColorKey}
                 noAlphaSlider={!props.transparency}
                 // if the current color choice happens to be a gradient, this will be 'white'.
                 color={getRgbaOfCurrentColor()}
                 onChange={handlePickerChange}
+                onChangeComplete={handlePickerChangeComplete}
                 currentOpacity={props.currentColor.opacity}
             />
             <div

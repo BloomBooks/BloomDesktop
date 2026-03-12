@@ -77,6 +77,7 @@ export interface IColorPickerDialogProps {
     palette: BloomPalette;
     isForCanvasElement?: boolean;
     onChange: (color: IColorInfo) => void;
+    onChangeComplete?: (color: IColorInfo) => void;
     onDefaultClick?: () => void;
     onInputFocus: (input: HTMLElement) => void;
     includeDefault?: boolean;
@@ -305,6 +306,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
         setOpen(false);
         if (result === DialogResult.Cancel) {
             props.onChange(props.initialColor);
+            props.onChangeComplete?.(props.initialColor);
             setCurrentColor(props.initialColor);
         } else {
             if (!isColorInCurrentSwatchColorArray(currentColor)) {
@@ -331,6 +333,14 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
         };
         setCurrentColor(clonedColor);
         props.onChange(clonedColor);
+    };
+
+    const handleOnChangeComplete = (color: IColorInfo) => {
+        const clonedColor: IColorInfo = {
+            ...color,
+            colors: [...color.colors],
+        };
+        props.onChangeComplete?.(clonedColor);
     };
 
     const dialogOpen = props.open === undefined ? open : props.open;
@@ -405,6 +415,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
                     <DialogMiddle>
                         <ColorPicker
                             onChange={handleOnChange}
+                            onChangeComplete={handleOnChangeComplete}
                             currentColor={currentColor}
                             swatchColors={swatchColorArray}
                             transparency={props.transparency}
@@ -513,6 +524,7 @@ export interface IColorDisplayButtonProps {
     transparency: boolean;
     width?: number;
     disabled?: boolean;
+    deferOnChangeUntilComplete?: boolean;
     onClose: (result: DialogResult, newColor: string) => void;
     onChange?: (newColor: string) => void;
     onColorPickerVisibilityChanged?: (open: boolean) => void;
@@ -523,6 +535,8 @@ export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = (
     props,
 ) => {
     const onColorPickerVisibilityChanged = props.onColorPickerVisibilityChanged;
+    const deferOnChangeUntilComplete = props.deferOnChangeUntilComplete;
+    const onChange = props.onChange;
     const [dialogOpen, setDialogOpen] = useState(false);
     const [colorAtDialogOpen, setColorAtDialogOpen] = useState(
         props.initialColor,
@@ -538,6 +552,28 @@ export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = (
                 dialogOpen ? colorAtDialogOpen : props.initialColor,
             ),
         [props.initialColor, dialogOpen, colorAtDialogOpen],
+    );
+
+    const handleDialogChange = React.useCallback(
+        (color: IColorInfo) => {
+            const newColor = getColorStringFromColorInfo(color);
+            setCurrentButtonColor(newColor);
+            if (!deferOnChangeUntilComplete && onChange) {
+                onChange(newColor);
+            }
+        },
+        [deferOnChangeUntilComplete, onChange],
+    );
+
+    const handleDialogChangeComplete = React.useCallback(
+        (color: IColorInfo) => {
+            const newColor = getColorStringFromColorInfo(color);
+            setCurrentButtonColor(newColor);
+            if (onChange) {
+                onChange(newColor);
+            }
+        },
+        [onChange],
     );
 
     useEffect(() => {
@@ -611,13 +647,12 @@ export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = (
                 palette={props.palette}
                 initialColor={initialColorInfo}
                 onInputFocus={() => {}}
-                onChange={(color: IColorInfo) => {
-                    const newColor = getColorStringFromColorInfo(color);
-                    setCurrentButtonColor(newColor);
-                    if (props.onChange) {
-                        props.onChange(newColor);
-                    }
-                }}
+                onChange={handleDialogChange}
+                onChangeComplete={
+                    deferOnChangeUntilComplete
+                        ? handleDialogChangeComplete
+                        : undefined
+                }
             />
         </div>
     );

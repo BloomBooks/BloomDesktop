@@ -687,6 +687,7 @@ const CoverColorPickerForConfigr: React.FunctionComponent<{
             transparency={false}
             palette={BloomPalette.CoverBackground}
             width={75}
+            deferOnChangeUntilComplete={true}
             onColorPickerVisibilityChanged={
                 props.onColorPickerVisibilityChanged
             }
