@@ -5,9 +5,9 @@
 
 import { kCanvasToolId } from "../../toolbox/toolIds";
 import {
-    doWhenEditTabBundleLoaded,
+    doWhenWorkspaceBundleLoaded,
     getToolboxBundleExports,
-} from "../bloomFrames";
+} from "../workspaceFrames";
 import { kImageContainerClass } from "../bloomImages";
 
 // This is just for debugging. It produces a string that describes the canvas element, generally
@@ -59,8 +59,8 @@ export function showCanvasTool() {
         return;
     }
 
-    doWhenEditTabBundleLoaded((rootFrameExports) => {
-        rootFrameExports.doWhenToolboxLoaded((toolboxFrameExports) => {
+    doWhenWorkspaceBundleLoaded((workspaceExports) => {
+        workspaceExports.doWhenToolboxLoaded((toolboxFrameExports) => {
             const loadedToolbox = toolboxFrameExports.getTheOneToolbox();
             if (!loadedToolbox) {
                 return;
