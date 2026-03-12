@@ -1740,4 +1740,3 @@ namespace Bloom.Workspace
         public float FractionTranslated;
     }
 }
-

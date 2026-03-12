@@ -1,6 +1,10 @@
 import type { Frame, Page } from "playwright/test";
 
-const currentPageUrl = "http://localhost:8089/bloom/CURRENTPAGE";
+const defaultCurrentPageUrl = "http://localhost:8089/bloom/CURRENTPAGE";
+
+const getCanvasTestPageUrl = (): string => {
+    return process.env.BLOOM_CANVAS_E2E_URL ?? defaultCurrentPageUrl;
+};
 
 const waitForFrame = async (
     page: Page,
@@ -23,7 +27,7 @@ const waitForFrame = async (
 };
 
 export const gotoCurrentPage = async (page: Page): Promise<void> => {
-    await page.goto(currentPageUrl, { waitUntil: "domcontentloaded" });
+    await page.goto(getCanvasTestPageUrl(), { waitUntil: "domcontentloaded" });
 };
 
 export const getToolboxFrame = async (page: Page): Promise<Frame> => {

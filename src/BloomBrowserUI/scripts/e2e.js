@@ -30,6 +30,12 @@ const parseCanvasModeArgs = (args) => {
     };
 };
 
+const defaultCanvasUrl = "http://localhost:8089/bloom/CURRENTPAGE";
+
+const getCanvasUrl = () => {
+    return process.env.BLOOM_CANVAS_E2E_URL || defaultCanvasUrl;
+};
+
 const { canvasMode, filteredArgs: passthroughArgs } =
     parseCanvasModeArgs(rawPassthroughArgs);
 
@@ -60,7 +66,7 @@ const printUsage = () => {
 };
 
 const assertCurrentPageAvailable = async () => {
-    const url = "http://localhost:8089/bloom/CURRENTPAGE";
+    const url = getCanvasUrl();
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3000);
 
@@ -74,7 +80,7 @@ const assertCurrentPageAvailable = async () => {
         }
     } catch (error) {
         console.error(
-            `Cannot reach ${url}. Start Bloom so CURRENTPAGE is available, then rerun \'yarn e2e canvas\'.`,
+            `Cannot reach ${url}. Start Bloom so the canvas test page is available, then rerun \'yarn e2e canvas\'.`,
         );
         console.error(error instanceof Error ? error.message : String(error));
         process.exit(1);
