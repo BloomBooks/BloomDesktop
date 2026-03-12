@@ -30,6 +30,7 @@
 - `CanvasElementHandleDragInteractions.ts`
 - `CanvasElementEditingSuspension.ts`
 - `CanvasElementDraggableIntegration.ts`
+  - Stateless draggable ordering/target helpers used directly by the manager.
 - `CanvasElementResizeAdjustments.ts`
   - Stateless resize helpers used by the manager/background image flow.
 - `CanvasElementBackgroundImageManager.ts`

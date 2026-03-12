@@ -7,6 +7,7 @@ import {
     kBackgroundImageClass,
     kCanvasElementClass,
 } from "../../toolbox/canvas/canvasElementConstants";
+import { pxToNumber } from "../../toolbox/canvas/canvasElementCssUtils";
 import { adjustCanvasElementAlternates } from "./CanvasElementAlternates";
 
 function updateBloomCanvasSizeData(bloomCanvas: HTMLElement): void {
@@ -27,7 +28,6 @@ export function adjustCanvasElementChildrenIfSizeChanged(
         bgCanvasElement: HTMLElement,
         useSizeOfNewImage: boolean,
     ) => void,
-    pxToNumber: (source: string) => number,
 ): void {
     // Phase 1: detect whether the bloom-canvas size changed from the last
     // recorded baseline.

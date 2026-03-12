@@ -71,7 +71,11 @@ import { CanvasElementDuplication } from "./CanvasElementDuplication";
 import { CanvasElementSelectionUi } from "./CanvasElementSelectionUi";
 import { CanvasElementPointerInteractions } from "./CanvasElementPointerInteractions";
 import { CanvasElementHandleDragInteractions } from "./CanvasElementHandleDragInteractions";
-import { CanvasElementDraggableIntegration } from "./CanvasElementDraggableIntegration";
+import {
+    adjustCanvasElementOrdering,
+    adjustDraggableTarget,
+    removeDetachedTargets,
+} from "./CanvasElementDraggableIntegration";
 import { CanvasElementEditingSuspension } from "./CanvasElementEditingSuspension";
 import { adjustCanvasElementChildrenIfSizeChanged } from "./CanvasElementResizeAdjustments";
 import { CanvasElementBackgroundImageManager } from "./CanvasElementBackgroundImageManager";
@@ -118,7 +122,6 @@ export class CanvasElementManager {
     private selectionUi: CanvasElementSelectionUi;
     private pointerInteractions: CanvasElementPointerInteractions;
     private handleDragInteractions: CanvasElementHandleDragInteractions;
-    private draggableIntegration: CanvasElementDraggableIntegration;
     private editingSuspension: CanvasElementEditingSuspension;
     private backgroundImageManager: CanvasElementBackgroundImageManager;
 
@@ -128,10 +131,6 @@ export class CanvasElementManager {
     public constructor() {
         this.snapProvider = new CanvasSnapProvider();
         this.guideProvider = new CanvasGuideProvider();
-        this.draggableIntegration = new CanvasElementDraggableIntegration({
-            getAllBloomCanvasesOnPage:
-                this.getAllBloomCanvasesOnPage.bind(this),
-        });
         this.editingSuspension = new CanvasElementEditingSuspension({
             getIsCanvasElementEditingOn: () => this.isCanvasElementEditingOn,
             getAllBloomCanvasesOnPage:
@@ -154,7 +153,6 @@ export class CanvasElementManager {
             getActiveElement: () => this.activeElement,
             alignControlFrameWithActiveElement:
                 this.alignControlFrameWithActiveElement,
-            pxToNumber: CanvasElementManager.pxToNumber,
         });
         this.factories = new CanvasElementFactories({
             snapProvider: this.snapProvider,
@@ -2286,7 +2284,7 @@ export class CanvasElementManager {
     // since the former controls which one is treated as being clicked when there is overlap,
     // while the latter determines which is on top.
     public adjustCanvasElementOrdering = () => {
-        this.draggableIntegration.adjustCanvasElementOrdering();
+        adjustCanvasElementOrdering(this.getAllBloomCanvasesOnPage());
     };
 
     // Adds a new canvas element as a child of the specified {parentElement}
@@ -2731,7 +2729,7 @@ export class CanvasElementManager {
     }
 
     private adjustTarget(draggable: HTMLElement | undefined) {
-        this.draggableIntegration.adjustTarget(draggable);
+        adjustDraggableTarget(draggable);
     }
 
     // This used to be called from a right-click context menu, but now it only gets called
@@ -2822,7 +2820,7 @@ export class CanvasElementManager {
     }
 
     public removeDetachedTargets() {
-        this.draggableIntegration.removeDetachedTargets();
+        removeDetachedTargets();
     }
 
     public initializeCanvasElementEditing(): void {
@@ -3104,7 +3102,6 @@ export class CanvasElementManager {
         adjustCanvasElementChildrenIfSizeChanged(
             bloomCanvas,
             this.adjustBackgroundImageSize.bind(this),
-            pxToNumberFromCssUtils,
         );
     }
 

@@ -16,13 +16,13 @@ import {
     kCanvasElementClass,
     kHasCanvasElementClass,
 } from "../../toolbox/canvas/canvasElementConstants";
+import { pxToNumber } from "../../toolbox/canvas/canvasElementCssUtils";
 
 export interface ICanvasElementBackgroundImageManagerHost {
     getAllBloomCanvasesOnPage: () => HTMLElement[];
     adjustChildrenIfSizeChanged: (bloomCanvas: HTMLElement) => void;
     getActiveElement: () => HTMLElement | undefined;
     alignControlFrameWithActiveElement: () => void;
-    pxToNumber: (px: string, fallback?: number) => number;
 }
 
 export class CanvasElementBackgroundImageManager {
@@ -400,18 +400,18 @@ export class CanvasElementBackgroundImageManager {
             // there is established cropping. Use the cropped size to determine the
             // aspect ratio.
             imgAspectRatio =
-                this.host.pxToNumber(bgCanvasElement.style.width) /
-                this.host.pxToNumber(bgCanvasElement.style.height);
+                pxToNumber(bgCanvasElement.style.width) /
+                pxToNumber(bgCanvasElement.style.height);
         } else {
             // not cropped, so we can use the natural dimensions
             imgAspectRatio = img.naturalWidth / img.naturalHeight;
         }
 
-        const oldCeWidth = this.host.pxToNumber(
+        const oldCeWidth = pxToNumber(
             bgCanvasElement.style.width,
             bgCanvasElement.clientWidth,
         );
-        const oldCeHeight = this.host.pxToNumber(
+        const oldCeHeight = pxToNumber(
             bgCanvasElement.style.height,
             bgCanvasElement.clientHeight,
         );
@@ -423,8 +423,7 @@ export class CanvasElementBackgroundImageManager {
         if (fitCoverMode) {
             // In case it is NOT already cropped, its size will be 100%, so we must capture
             // this before we change the parent.
-            const oldImgWidth =
-                this.host.pxToNumber(img.style.width) || img.clientWidth;
+            const oldImgWidth = pxToNumber(img.style.width) || img.clientWidth;
             // make the canvas element fill the container
             bgCanvasElement.style.width = bloomCanvasWidth + "px";
             bgCanvasElement.style.height = bloomCanvasHeight + "px";
@@ -435,8 +434,8 @@ export class CanvasElementBackgroundImageManager {
             // This is the height it would be if not cropped.
             const oldImgHeight =
                 (oldImgWidth * img.naturalHeight) / img.naturalWidth;
-            const oldImgLeft = this.host.pxToNumber(img.style.left) || 0;
-            const oldImgTop = this.host.pxToNumber(img.style.top) || 0; // negative
+            const oldImgLeft = pxToNumber(img.style.left) || 0;
+            const oldImgTop = pxToNumber(img.style.top) || 0; // negative
             // crop the image (or adjust its cropping) to fill the container
             if (matchWidthOfContainer) {
                 // image is taller than a perfect fit, so it will fill the width and be cropped
@@ -508,31 +507,28 @@ export class CanvasElementBackgroundImageManager {
                 // Note that style.width can have fractional values, while clientWidth is always
                 // rounded to an integer value. So we want to use style.width values (if possible)
                 // for greater accuracy in scaling. (BL-15464)
-                const newCeWidth = this.host.pxToNumber(
+                const newCeWidth = pxToNumber(
                     bgCanvasElement.style.width,
                     bgCanvasElement.clientWidth,
                 );
                 const scale = newCeWidth / oldCeWidth;
-                img.style.width =
-                    this.host.pxToNumber(img.style.width) * scale + "px";
-                img.style.left =
-                    this.host.pxToNumber(img.style.left) * scale + "px";
-                img.style.top =
-                    this.host.pxToNumber(img.style.top) * scale + "px";
+                img.style.width = pxToNumber(img.style.width) * scale + "px";
+                img.style.left = pxToNumber(img.style.left) * scale + "px";
+                img.style.top = pxToNumber(img.style.top) * scale + "px";
             }
         }
         // Ensure that the missing image message is displayed without being cropped.
         // See BL-14241.
         if (failedImage && img && img.style && img.style.width.length > 0) {
-            const imgLeft = this.host.pxToNumber(img.style.left);
-            const imgTop = this.host.pxToNumber(img.style.top);
+            const imgLeft = pxToNumber(img.style.left);
+            const imgTop = pxToNumber(img.style.top);
             if (imgLeft < 0 || imgTop < 0) {
                 // The failed image was cropped. Remove the cropping to facilitate displaying the error state.
                 img.setAttribute(
                     "data-style",
                     `left:${img.style.left}; width:${img.style.width}; top:${img.style.top};`,
                 );
-                const imgWidth = this.host.pxToNumber(img.style.width);
+                const imgWidth = pxToNumber(img.style.width);
                 console.warn(
                     `Missing image: resetting left from ${imgLeft} to 0, top from ${imgTop} to 0, and width from ${imgWidth} to ${
                         imgWidth + imgLeft

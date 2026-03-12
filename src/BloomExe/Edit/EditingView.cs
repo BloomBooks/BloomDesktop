@@ -327,10 +327,12 @@ namespace Bloom.Edit
             _model.SaveStateForFullSaveDecision();
 
             var canReuseCurrentRoot = !_changingUiLanguage && !ShouldDoFullReload();
+            var pageUrl = _model.GetUrlForCurrentPage();
+            var pageListUrl = _model.GetUrlForPageListFile();
+            _model.UpdateCurrentPageDebugView(pageUrl, pageListUrl);
             if (_model.AreToolboxAndOuterFrameCurrent() && canReuseCurrentRoot)
             {
                 // Keep the top document and toolbox iframe, just navigate the page iframe to the new page.
-                var pageUrl = _model.GetUrlForCurrentPage();
                 var urlFile = Path.GetFileName(pageUrl); // this actually works with a leading http://.
                 Logger.WriteEvent(
                     $"changing page via workspaceBundle.switchContentPage('{urlFile}')"
@@ -344,8 +346,6 @@ namespace Bloom.Edit
                 // The workspace root is always loaded (after initial startup),
                 // so don't navigate the top document again. Just initialize edit-frame content.
                 _model.SetupServerWithCurrentBookToolboxContents();
-                var pageListUrl = _model.GetUrlForPageListFile();
-                var pageUrl = _model.GetUrlForCurrentPage();
 
                 _browser1.RunJavascriptFireAndForget(
                     "(function(){ const toolbox = document.getElementById('toolbox'); if (toolbox && toolbox.contentWindow) { toolbox.contentWindow.location.reload(); } })();"
@@ -362,7 +362,7 @@ namespace Bloom.Edit
             {
                 // Set everything up and navigate the top browser to a new root document.
                 _model.SetupServerWithCurrentBookToolboxContents();
-                var dom = _model.GetXmlDocumentForEditScreenWebPage();
+                var dom = _model.GetXmlDocumentForEditScreenWebPage(pageUrl, pageListUrl);
                 _browser1.Navigate(
                     dom,
                     setAsCurrentPageForDebugging: true,
