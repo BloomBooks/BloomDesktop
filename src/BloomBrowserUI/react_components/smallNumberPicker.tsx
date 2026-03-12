@@ -8,28 +8,56 @@ export interface INumberChooserProps {
     maxLimit: number; // a valid result cannot be greater than this
     minLimit?: number; // a valid result cannot be less than this
     handleChange: (newNumber: number) => void;
+    onValidityChange?: (isValid: boolean) => void;
     tooltip?: string; // caller should localize
 }
 
+/**
+ * Small numeric input intended for choosing positive integers only.
+ * Current behavior is digit-only entry with min/max validation.
+ */
 export const SmallNumberPicker: React.FunctionComponent<INumberChooserProps> = (
     props: INumberChooserProps,
 ) => {
     const initialValue = props.minLimit === undefined ? 1 : props.minLimit;
-    const [chosenNumber, setChosenNumber] = useState(initialValue);
+    const [displayValue, setDisplayValue] = useState(initialValue.toString());
+
+    const isWithinLimits = (value: number): boolean => {
+        if (value > props.maxLimit) {
+            return false;
+        }
+        if (props.minLimit !== undefined && value < props.minLimit) {
+            return false;
+        }
+        return true;
+    };
 
     const handleNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const newString = event.target.value;
-        const newNum = parseInt(newString);
-        if (
-            !newNum ||
-            newNum > props.maxLimit ||
-            (props.minLimit && newNum < props.minLimit)
-        ) {
-            setChosenNumber(initialValue);
-            props.handleChange(initialValue);
-        } else {
-            setChosenNumber(newNum);
+
+        // Keep the field digit-only by ignoring any non-digit input.
+        if (!/^\d*$/.test(newString)) {
+            return;
+        }
+
+        if (newString === "") {
+            setDisplayValue("");
+            props.onValidityChange?.(false);
+            return;
+        }
+
+        const newNum = parseInt(newString, 10);
+        if (!Number.isNaN(newNum) && newNum > props.maxLimit) {
+            return;
+        }
+
+        setDisplayValue(newString);
+
+        if (!Number.isNaN(newNum) && isWithinLimits(newNum)) {
             props.handleChange(newNum);
+            props.onValidityChange?.(true);
+        } else {
+            props.onValidityChange?.(false);
         }
     };
 
@@ -42,7 +70,7 @@ export const SmallNumberPicker: React.FunctionComponent<INumberChooserProps> = (
             <div data-tip={props.tooltip}>
                 <TextField
                     onChange={handleNumberChange}
-                    value={chosenNumber}
+                    value={displayValue}
                     variant="standard"
                 />
             </div>

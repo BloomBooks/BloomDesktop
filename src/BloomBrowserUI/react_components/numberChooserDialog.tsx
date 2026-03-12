@@ -29,10 +29,14 @@ export interface INumberChooserDialogProps {
 export const NumberChooserDialog: React.FunctionComponent<
     INumberChooserDialogProps
 > = (props) => {
-    const { showDialog, closeDialog, propsForBloomDialog } =
-        useSetupBloomDialog(props.dialogEnvironment);
+    const {
+        showDialog: _showDialog,
+        closeDialog,
+        propsForBloomDialog,
+    } = useSetupBloomDialog(props.dialogEnvironment);
 
     const [numberChosen, setNumberChosen] = useState(props.min);
+    const [isNumberValid, setIsNumberValid] = useState(true);
 
     return (
         <BloomDialog {...propsForBloomDialog}>
@@ -56,6 +60,7 @@ export const NumberChooserDialog: React.FunctionComponent<
                             minLimit={props.min}
                             maxLimit={props.max}
                             handleChange={setNumberChosen}
+                            onValidityChange={setIsNumberValid}
                         />
                     </div>
                 </div>
@@ -64,7 +69,7 @@ export const NumberChooserDialog: React.FunctionComponent<
                 <BloomButton
                     l10nKey="Common.OK"
                     hasText={true}
-                    enabled={true}
+                    enabled={isNumberValid}
                     variant={"contained"}
                     onClick={() => {
                         props.onClick(numberChosen);

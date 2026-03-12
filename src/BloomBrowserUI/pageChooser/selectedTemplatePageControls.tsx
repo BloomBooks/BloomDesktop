@@ -57,6 +57,7 @@ export const SelectedTemplatePageControls: React.FunctionComponent<
     const minimumPagesToAdd = 1;
     const maximumPagesToAdd = 99;
     const [numberToAdd, setNumberToAdd] = useState<number>(minimumPagesToAdd);
+    const [isNumberToAddValid, setIsNumberToAddValid] = useState(true);
 
     const captionKey = "TemplateBooks.PageLabel." + props.caption;
     const descriptionKey = "TemplateBooks.PageDescription." + props.caption;
@@ -73,7 +74,10 @@ export const SelectedTemplatePageControls: React.FunctionComponent<
     };
 
     const isAddOrChoosePageButtonEnabled = (): boolean => {
-        return !props.forChangeLayout || !props.willLoseData || continueChecked;
+        const canProceedWithLayoutChoice =
+            !props.forChangeLayout || !props.willLoseData || continueChecked;
+        const hasValidAddCount = !!props.forChangeLayout || isNumberToAddValid;
+        return canProceedWithLayoutChoice && hasValidAddCount;
     };
 
     const numberOfPagesTooltip = useL10n(
@@ -254,11 +258,6 @@ export const SelectedTemplatePageControls: React.FunctionComponent<
                                 width: 200px;
                                 font-weight: bold !important;
                                 font-size: 10pt !important;
-
-                                &:disabled {
-                                    color: ${kBloomBuff};
-                                    border: medium solid ${kBloomBuff};
-                                }
                             `}
                             l10nKey={buttonKey}
                             hasText={true}
@@ -295,6 +294,7 @@ export const SelectedTemplatePageControls: React.FunctionComponent<
                                     minLimit={minimumPagesToAdd}
                                     maxLimit={maximumPagesToAdd}
                                     handleChange={setNumberToAdd}
+                                    onValidityChange={setIsNumberToAddValid}
                                     tooltip={numberOfPagesTooltip}
                                 />
                             </div>
