@@ -41,6 +41,7 @@
     --pageNumber-background-color: transparent;
     /* color: value in .numberedPage:after to display the page number */
     --pageNumber-color: black;
+    --pageNumber-outline-color: white;
     /* border-radius: value in .numberedPage:after to display the page number */
     --pageNumber-border-radius: 0px;
     /* left: value in .numberedPage.side-left:after to display the page number */

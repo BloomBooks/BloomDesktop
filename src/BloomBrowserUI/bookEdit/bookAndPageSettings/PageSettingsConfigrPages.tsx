@@ -17,6 +17,7 @@ export type IPageSettings = {
     page: {
         backgroundColor: string;
         pageNumberColor: string;
+        pageNumberOutlineColor: string;
         pageNumberBackgroundColor: string;
     };
 };
@@ -33,6 +34,8 @@ export const getCurrentPageElement = (): HTMLElement => {
     return page;
 };
 
+const kTransparentCssValue = "transparent";
+
 const normalizeToHexOrEmpty = (color: string): string => {
     const trimmed = color.trim();
     if (!trimmed) {
@@ -47,6 +50,28 @@ const normalizeToHexOrEmpty = (color: string): string => {
     // Treat fully transparent as "not set".
     if (parsed.getAlpha() === 0) {
         return "";
+    }
+
+    if (parsed.getAlpha() < 1) {
+        return parsed.toHex8String().toUpperCase();
+    }
+
+    return parsed.toHexString().toUpperCase();
+};
+
+const normalizeToHexOrTransparentOrEmpty = (color: string): string => {
+    const trimmed = color.trim();
+    if (!trimmed) {
+        return "";
+    }
+
+    const parsed = tinycolor(trimmed);
+    if (!parsed.isValid()) {
+        return trimmed;
+    }
+
+    if (parsed.getAlpha() === 0) {
+        return kTransparentCssValue;
     }
 
     if (parsed.getAlpha() < 1) {
@@ -115,6 +140,19 @@ const setOrRemoveCustomProperty = (
     }
 };
 
+const setOrRemoveCustomPropertyAllowTransparent = (
+    style: CSSStyleDeclaration,
+    propertyName: string,
+    value: string,
+): void => {
+    const normalized = normalizeToHexOrTransparentOrEmpty(value);
+    if (normalized) {
+        style.setProperty(propertyName, normalized);
+    } else {
+        style.removeProperty(propertyName);
+    }
+};
+
 const setCurrentPageBackgroundColor = (color: string): void => {
     const page = getCurrentPageElement();
     setOrRemoveCustomProperty(page.style, "--page-background-color", color);
@@ -144,25 +182,45 @@ const setPageNumberColor = (color: string): void => {
     setOrRemoveCustomProperty(page.style, "--pageNumber-color", color);
 };
 
+const getPageNumberOutlineColor = (): string => {
+    const page = getCurrentPageElement();
+
+    const inline = normalizeToHexOrTransparentOrEmpty(
+        page.style.getPropertyValue("--pageNumber-outline-color"),
+    );
+    if (inline) return inline;
+
+    const computed = normalizeToHexOrTransparentOrEmpty(
+        getComputedStyleForPage(page).getPropertyValue(
+            "--pageNumber-outline-color",
+        ),
+    );
+    return computed || "#FFFFFF";
+};
+
+const setPageNumberOutlineColor = (color: string): void => {
+    const page = getCurrentPageElement();
+    setOrRemoveCustomPropertyAllowTransparent(
+        page.style,
+        "--pageNumber-outline-color",
+        color,
+    );
+};
+
 const getPageNumberBackgroundColor = (): string => {
     const page = getCurrentPageElement();
 
-    const inline = normalizeToHexOrEmpty(
+    const inline = normalizeToHexOrTransparentOrEmpty(
         page.style.getPropertyValue("--pageNumber-background-color"),
     );
     if (inline) return inline;
 
-    const computed = normalizeToHexOrEmpty(
-        getComputedStyleForPage(page).getPropertyValue(
-            "--pageNumber-background-color",
-        ),
-    );
-    return computed || "";
+    return kTransparentCssValue;
 };
 
 const setPageNumberBackgroundColor = (color: string): void => {
     const page = getCurrentPageElement();
-    setOrRemoveCustomProperty(
+    setOrRemoveCustomPropertyAllowTransparent(
         page.style,
         "--pageNumber-background-color",
         color,
@@ -174,6 +232,7 @@ export const getCurrentPageSettings = (): IPageSettings => {
         page: {
             backgroundColor: getCurrentPageBackgroundColor(),
             pageNumberColor: getPageNumberColor(),
+            pageNumberOutlineColor: getPageNumberOutlineColor(),
             pageNumberBackgroundColor: getPageNumberBackgroundColor(),
         },
     };
@@ -182,6 +241,7 @@ export const getCurrentPageSettings = (): IPageSettings => {
 export const applyPageSettings = (settings: IPageSettings): void => {
     setCurrentPageBackgroundColor(settings.page.backgroundColor);
     setPageNumberColor(settings.page.pageNumberColor);
+    setPageNumberOutlineColor(settings.page.pageNumberOutlineColor);
     setPageNumberBackgroundColor(settings.page.pageNumberBackgroundColor);
 };
 
@@ -202,11 +262,13 @@ export const parsePageSettingsFromConfigrValue = (
 
     const backgroundColor = pageRecord["backgroundColor"];
     const pageNumberColor = pageRecord["pageNumberColor"];
+    const pageNumberOutlineColor = pageRecord["pageNumberOutlineColor"];
     const pageNumberBackgroundColor = pageRecord["pageNumberBackgroundColor"];
 
     if (
         typeof backgroundColor !== "string" ||
         typeof pageNumberColor !== "string" ||
+        typeof pageNumberOutlineColor !== "string" ||
         typeof pageNumberBackgroundColor !== "string"
     ) {
         throw new Error("Page settings are missing one or more color values");
@@ -216,6 +278,7 @@ export const parsePageSettingsFromConfigrValue = (
         page: {
             backgroundColor,
             pageNumberColor,
+            pageNumberOutlineColor,
             pageNumberBackgroundColor,
         },
     };
@@ -230,8 +293,18 @@ export const arePageSettingsEquivalent = (
             normalizeToHexOrEmpty(second.page.backgroundColor) &&
         normalizeToHexOrEmpty(first.page.pageNumberColor) ===
             normalizeToHexOrEmpty(second.page.pageNumberColor) &&
-        normalizeToHexOrEmpty(first.page.pageNumberBackgroundColor) ===
-            normalizeToHexOrEmpty(second.page.pageNumberBackgroundColor)
+        normalizeToHexOrTransparentOrEmpty(
+            first.page.pageNumberOutlineColor,
+        ) ===
+            normalizeToHexOrTransparentOrEmpty(
+                second.page.pageNumberOutlineColor,
+            ) &&
+        normalizeToHexOrTransparentOrEmpty(
+            first.page.pageNumberBackgroundColor,
+        ) ===
+            normalizeToHexOrTransparentOrEmpty(
+                second.page.pageNumberBackgroundColor,
+            )
     );
 };
 
@@ -260,6 +333,7 @@ const ConfigrColorPickerControl: React.FunctionComponent<
             transparency={props.transparency}
             palette={props.palette}
             width={75}
+            deferOnChangeUntilComplete={true}
             onColorPickerVisibilityChanged={
                 props.onColorPickerVisibilityChanged
             }
@@ -274,6 +348,7 @@ const ConfigrColorPickerControl: React.FunctionComponent<
 const PageSettingsConfigrColorInput: React.FunctionComponent<{
     label: string;
     path: string;
+    description?: string;
     localizedTitle: string;
     transparency: boolean;
     palette: BloomPalette;
@@ -307,13 +382,14 @@ const PageSettingsConfigrColorInput: React.FunctionComponent<{
         <ConfigrCustomStringInput
             label={props.label}
             path={props.path}
+            description={props.description}
             control={colorControl}
             disabled={props.disabled ?? false}
         />
     );
 };
 
-const PageSettingsConfigrInputs: React.FunctionComponent<{
+const PageConfigrInputs: React.FunctionComponent<{
     disabled?: boolean;
     onColorPickerVisibilityChanged?: (open: boolean) => void;
 }> = (props) => {
@@ -321,54 +397,91 @@ const PageSettingsConfigrInputs: React.FunctionComponent<{
         "Background Color",
         "Common.BackgroundColor",
     );
-    const pageNumberColorLabel = useL10n(
-        "Page Number Color",
-        "PageSettings.PageNumberColor",
-    );
-    const pageNumberBackgroundColorLabel = useL10n(
-        "Page Number Background Color",
-        "PageSettings.PageNumberBackgroundColor",
-    );
 
     return (
-        <>
-            <PageSettingsConfigrColorInput
-                label={backgroundColorLabel}
-                path={"page.backgroundColor"}
-                localizedTitle={backgroundColorLabel}
-                transparency={false}
-                palette={BloomPalette.PageColors}
-                disabled={props.disabled ?? false}
-                onColorPickerVisibilityChanged={
-                    props.onColorPickerVisibilityChanged
-                }
-            />
-            <PageSettingsConfigrColorInput
-                label={pageNumberColorLabel}
-                path={"page.pageNumberColor"}
-                localizedTitle={pageNumberColorLabel}
-                transparency={false}
-                palette={BloomPalette.Text}
-                disabled={props.disabled ?? false}
-                onColorPickerVisibilityChanged={
-                    props.onColorPickerVisibilityChanged
-                }
-            />
-            <PageSettingsConfigrColorInput
-                label={pageNumberBackgroundColorLabel}
-                path={"page.pageNumberBackgroundColor"}
-                localizedTitle={pageNumberBackgroundColorLabel}
-                transparency={true}
-                palette={BloomPalette.PageColors}
-                emptyValueDisplayColor={"transparent"}
-                disabled={props.disabled ?? false}
-                onColorPickerVisibilityChanged={
-                    props.onColorPickerVisibilityChanged
-                }
-            />
-        </>
+        <PageSettingsConfigrColorInput
+            label={backgroundColorLabel}
+            path={"page.backgroundColor"}
+            localizedTitle={backgroundColorLabel}
+            transparency={false}
+            palette={BloomPalette.PageColors}
+            disabled={props.disabled ?? false}
+            onColorPickerVisibilityChanged={
+                props.onColorPickerVisibilityChanged
+            }
+        />
     );
 };
+
+/*
+ * BL-15642: hide the page number color group for now.
+ * We could add this back in the future, perhaps as a book settings feature
+ * instead of a page settings feature.
+ */
+// const PageNumberConfigrInputs: React.FunctionComponent<{
+//     disabled?: boolean;
+//     onColorPickerVisibilityChanged?: (open: boolean) => void;
+// }> = (props) => {
+//     const colorLabel = useL10n("Color", "Common.Color");
+//     const outlineColorLabel = useL10n(
+//         "Outline Color",
+//         "PageSettings.OutlineColor",
+//     );
+//     const outlineColorDescription = useL10n(
+//         "Use an outline color when the page number needs more contrast against the page.",
+//         "PageSettings.PageNumberOutlineColor.Description",
+//     );
+//     const backgroundColorLabel = useL10n(
+//         "Background Color",
+//         "Common.BackgroundColor",
+//     );
+//     const backgroundColorDescription = useL10n(
+//         "Use a page number background color when the theme puts the number inside a shape, for example a circle, and you want to specify the color of that shape.",
+//         "PageSettings.PageNumberBackgroundColor.Description",
+//     );
+//
+//     return (
+//         <>
+//             <PageSettingsConfigrColorInput
+//                 label={colorLabel}
+//                 path={"page.pageNumberColor"}
+//                 localizedTitle={colorLabel}
+//                 transparency={false}
+//                 palette={BloomPalette.Text}
+//                 disabled={props.disabled ?? false}
+//                 onColorPickerVisibilityChanged={
+//                     props.onColorPickerVisibilityChanged
+//                 }
+//             />
+//             <PageSettingsConfigrColorInput
+//                 label={outlineColorLabel}
+//                 path={"page.pageNumberOutlineColor"}
+//                 description={outlineColorDescription}
+//                 localizedTitle={outlineColorLabel}
+//                 transparency={true}
+//                 palette={BloomPalette.Text}
+//                 emptyValueDisplayColor={kTransparentCssValue}
+//                 disabled={props.disabled ?? false}
+//                 onColorPickerVisibilityChanged={
+//                     props.onColorPickerVisibilityChanged
+//                 }
+//             />
+//             <PageSettingsConfigrColorInput
+//                 label={backgroundColorLabel}
+//                 path={"page.pageNumberBackgroundColor"}
+//                 description={backgroundColorDescription}
+//                 localizedTitle={backgroundColorLabel}
+//                 transparency={true}
+//                 palette={BloomPalette.PageColors}
+//                 emptyValueDisplayColor={kTransparentCssValue}
+//                 disabled={props.disabled ?? false}
+//                 onColorPickerVisibilityChanged={
+//                     props.onColorPickerVisibilityChanged
+//                 }
+//             />
+//         </>
+//     );
+// };
 
 export type IPageSettingsAreaDefinition = {
     label: string;
@@ -394,13 +507,18 @@ export const usePageSettingsAreaDefinition = (props: {
         pages: [
             <ConfigrPage key="colors" label={colorsPageLabel} pageKey="colors">
                 <ConfigrGroup label={""}>
-                    <PageSettingsConfigrInputs
+                    <PageConfigrInputs
                         disabled={false}
                         onColorPickerVisibilityChanged={
                             props.onColorPickerVisibilityChanged
                         }
                     />
                 </ConfigrGroup>
+                {/*
+                    BL-15642: hide the page number color group for now.
+                    We could add this back in the future, perhaps as a book
+                    settings feature instead of a page settings feature.
+                */}
             </ConfigrPage>,
         ],
     };

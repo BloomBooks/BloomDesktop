@@ -156,6 +156,8 @@ public class AppearanceSettings
         new CssStringVariableDef("page-split-vertical-gap", "margins"),
         new CssStringVariableDef("pageNumber-always-left-margin", "page-number"),
         new CssStringVariableDef("pageNumber-background-color", "page-number"),
+        new CssStringVariableDef("pageNumber-color", "page-number"),
+        new CssStringVariableDef("pageNumber-outline-color", "page-number"),
         new CssStringVariableDef("pageNumber-background-width", "page-number"),
         new CssStringVariableDef("pageNumber-border-radius", "page-number"),
         new CssStringVariableDef("pageNumber-bottom", "page-number"),
