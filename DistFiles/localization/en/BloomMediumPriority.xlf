@@ -757,11 +757,6 @@
         <note>ID: BookAndPageSettings.Colors</note>
         <note>Label for the page-level Colors page within the combined Book and Page Settings dialog.</note>
       </trans-unit>
-      <trans-unit id="BookAndPageSettings.PageNumberGroup" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Page Number</source>
-        <note>ID: BookAndPageSettings.PageNumberGroup</note>
-        <note>Group label for the page-level page number color settings in the combined Book and Page Settings dialog.</note>
-      </trans-unit>
       <trans-unit id="PageSettings.Title" sil:dynamic="true" translate="no">
         <source xml:lang="en">Page Settings</source>
         <note>ID: PageSettings.Title</note>
@@ -771,21 +766,6 @@
         <source xml:lang="en">Open Page Settings...</source>
         <note>ID: PageSettings.OpenTooltip</note>
         <note>Tooltip shown when hovering over the Page Settings button above a custom page.</note>
-      </trans-unit>
-      <trans-unit id="PageSettings.OutlineColor" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Outline Color</source>
-        <note>ID: PageSettings.OutlineColor</note>
-        <note>Label for the page-level page number outline color setting.</note>
-      </trans-unit>
-      <trans-unit id="PageSettings.PageNumberOutlineColor.Description" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Use an outline color when the page number needs more contrast against the page.</source>
-        <note>ID: PageSettings.PageNumberOutlineColor.Description</note>
-        <note>Help text shown below the page-level page number outline color setting in the combined Book and Page Settings dialog.</note>
-      </trans-unit>
-      <trans-unit id="PageSettings.PageNumberBackgroundColor.Description" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Use a page number background color when the theme puts the number inside a shape, for example a circle, and you want to specify the color of that shape.</source>
-        <note>ID: PageSettings.PageNumberBackgroundColor.Description</note>
-        <note>Help text shown below the page-level page number background color setting in the combined Book and Page Settings dialog.</note>
       </trans-unit>
       <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true">
         <source xml:lang="en">Max Image Size</source>
