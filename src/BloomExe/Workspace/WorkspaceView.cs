@@ -1335,6 +1335,7 @@ namespace Bloom.Workspace
 
         private void SyncWorkspaceRootModeToTab(WorkspaceTab tab)
         {
+            BloomServer.SetCurrentWorkspaceModeForDebugging(GetWorkspaceModeName(tab));
             _mainBrowser?.RunJavascriptFireAndForget(
                 $"workspaceBundle.setWorkspaceMode('{GetWorkspaceModeName(tab)}');"
             );
