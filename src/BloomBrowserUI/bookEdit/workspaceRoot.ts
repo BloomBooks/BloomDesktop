@@ -66,6 +66,10 @@ export { showRegistrationDialogForEditTab as showRegistrationDialog };
 import { showAboutDialog } from "../react_components/aboutDialog";
 export { showAboutDialog };
 import { reportError } from "../lib/errorHandler";
+import { get } from "../utils/bloomApi";
+import WebSocketManager, {
+    IBloomWebSocketEvent,
+} from "../utils/WebSocketManager";
 import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
 import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
@@ -288,6 +292,18 @@ export function showRegistrationDialogFromWorkspaceRoot() {
 
 let hasActivatedEditMode = false;
 
+interface IWorkspaceTabInfo {
+    tabStates?: {
+        collection?: string;
+        edit?: string;
+        publish?: string;
+    };
+    editFrameSources?: {
+        pageSrc?: string;
+        pageListSrc?: string;
+    };
+}
+
 // In various contexts if we don't have an explicit mode, we default to collection mode.
 const normalizeWorkspaceMode = (mode: string | null | undefined): string => {
     if (mode === "publish") {
@@ -325,15 +341,15 @@ const updateWorkspaceUrlParam = (name: string, value: string): void => {
     window.history.replaceState(window.history.state, "", url.toString());
 };
 
-// When an iframe is not in use, we set its src to about:blank. This at least frees up memory,
-// and may help with other issues caused by having a stale page in the edit iframe while
-// activity in the collection tab has moved us to another book, and similar problems.
-// This function is used to restore the proper src of an iframe when we switch to its tab.
-const restoreIframeSrcFromUrlIfNeeded = (
+const restoreIframeSrcIfNeeded = (
     iframeId: string,
-    paramName: string,
+    savedSrc: string | undefined,
     restoreAction?: (savedSrc: string) => void,
 ): void => {
+    if (!savedSrc) {
+        return;
+    }
+
     const iframe = document.getElementById(
         iframeId,
     ) as HTMLIFrameElement | null;
@@ -347,15 +363,151 @@ const restoreIframeSrcFromUrlIfNeeded = (
         return;
     }
 
-    const url = new URL(window.location.href);
-    const savedSrc = url.searchParams.get(paramName);
-    if (savedSrc) {
-        if (restoreAction) {
-            restoreAction(savedSrc);
-        } else {
-            iframe.src = savedSrc;
+    if (restoreAction) {
+        restoreAction(savedSrc);
+    } else {
+        iframe.src = savedSrc;
+    }
+};
+
+const syncIframeSrcToExpected = (
+    iframeId: string,
+    expectedSrc: string | undefined,
+    applySrc: (src: string) => void,
+): void => {
+    if (!expectedSrc) {
+        return;
+    }
+
+    const iframe = document.getElementById(
+        iframeId,
+    ) as HTMLIFrameElement | null;
+    if (!iframe) {
+        return;
+    }
+
+    const currentSrc = iframe.getAttribute("src") || "";
+    if (currentSrc === expectedSrc) {
+        return;
+    }
+
+    applySrc(expectedSrc);
+};
+
+const getActiveWorkspaceModeFromTabInfo = (
+    tabInfo: IWorkspaceTabInfo | undefined,
+): string | undefined => {
+    const tabStates = tabInfo?.tabStates;
+    if (!tabStates) {
+        return undefined;
+    }
+
+    const activeTab = (
+        Object.keys(tabStates) as Array<
+            keyof NonNullable<IWorkspaceTabInfo["tabStates"]>
+        >
+    ).find((tabId) => tabStates[tabId] === "active");
+
+    return activeTab ? normalizeWorkspaceMode(activeTab) : undefined;
+};
+
+const syncWorkspaceModeToTabInfo = (
+    tabInfo: IWorkspaceTabInfo | undefined,
+): void => {
+    const activeMode = getActiveWorkspaceModeFromTabInfo(tabInfo);
+    if (!activeMode) {
+        return;
+    }
+
+    syncEditFrameSourcesToTabInfo(tabInfo, activeMode);
+
+    if (document.body.classList.contains(`${activeMode}-mode`)) {
+        return;
+    }
+
+    setWorkspaceMode(activeMode);
+};
+
+const syncEditFrameSourcesToTabInfo = (
+    tabInfo: IWorkspaceTabInfo | undefined,
+    activeMode: string,
+): void => {
+    const pageSrc = tabInfo?.editFrameSources?.pageSrc;
+    const pageListSrc = tabInfo?.editFrameSources?.pageListSrc;
+
+    if (pageSrc) {
+        updateWorkspaceUrlParam("pageSrc", pageSrc);
+    }
+
+    if (pageListSrc) {
+        updateWorkspaceUrlParam("pageListSrc", pageListSrc);
+    }
+
+    if (activeMode !== "edit") {
+        return;
+    }
+
+    syncIframeSrcToExpected("page", pageSrc, switchContentPage);
+    syncIframeSrcToExpected("pageList", pageListSrc, switchThumbnailPage);
+};
+
+const parseWorkspaceTabInfo = (
+    data: unknown,
+): IWorkspaceTabInfo | undefined => {
+    if (typeof data === "string") {
+        try {
+            return JSON.parse(data) as IWorkspaceTabInfo;
+        } catch {
+            return undefined;
         }
     }
+
+    if (typeof data === "object" && data !== null) {
+        return data as IWorkspaceTabInfo;
+    }
+
+    return undefined;
+};
+
+const initializeWorkspaceModeSynchronization = (): void => {
+    get("workspace/tabs", (result) => {
+        const tabInfo = parseWorkspaceTabInfo(result.data);
+        syncWorkspaceModeToTabInfo(tabInfo);
+    });
+
+    if (window.workspaceRootTabsSyncListener) {
+        WebSocketManager.removeListener(
+            "workspace",
+            window.workspaceRootTabsSyncListener,
+        );
+    }
+
+    const tabsListener = (event: IBloomWebSocketEvent): void => {
+        if (event.id !== "tabs") {
+            return;
+        }
+
+        syncWorkspaceModeToTabInfo(
+            event as IBloomWebSocketEvent & IWorkspaceTabInfo,
+        );
+    };
+
+    window.workspaceRootTabsSyncListener = tabsListener;
+    WebSocketManager.addListener("workspace", tabsListener, "workspaceRoot");
+};
+
+// When an iframe is not in use, we set its src to about:blank. This at least frees up memory,
+// and may help with other issues caused by having a stale page in the edit iframe while
+// activity in the collection tab has moved us to another book, and similar problems.
+// This function is used to restore the proper src of an iframe when we switch to its tab.
+const restoreIframeSrcFromUrlIfNeeded = (
+    iframeId: string,
+    paramName: string,
+    restoreAction?: (savedSrc: string) => void,
+): void => {
+    const url = new URL(window.location.href);
+    const savedSrc = url.searchParams.get(paramName);
+    restoreIframeSrcIfNeeded(iframeId, savedSrc ?? undefined, restoreAction);
 };
 
 const initializeWorkspaceModeFromUrl = (): void => {
@@ -364,10 +516,15 @@ const initializeWorkspaceModeFromUrl = (): void => {
     applyWorkspaceModeClass(mode);
     updateWorkspaceModeInUrl(mode);
     restoreIframeSrcFromUrlIfNeeded("page", "pageSrc", switchContentPage);
-    restoreIframeSrcFromUrlIfNeeded("pageList", "pageListSrc");
+    restoreIframeSrcFromUrlIfNeeded(
+        "pageList",
+        "pageListSrc",
+        switchThumbnailPage,
+    );
 };
 
 initializeWorkspaceModeFromUrl();
+initializeWorkspaceModeSynchronization();
 
 export function setWorkspaceMode(mode: string): void {
     const normalizedMode = normalizeWorkspaceMode(mode);
@@ -376,7 +533,11 @@ export function setWorkspaceMode(mode: string): void {
 
     if (normalizedMode === "edit") {
         restoreIframeSrcFromUrlIfNeeded("page", "pageSrc", switchContentPage);
-        restoreIframeSrcFromUrlIfNeeded("pageList", "pageListSrc");
+        restoreIframeSrcFromUrlIfNeeded(
+            "pageList",
+            "pageListSrc",
+            switchThumbnailPage,
+        );
     }
 
     if (normalizedMode === "edit" && !hasActivatedEditMode) {
@@ -415,6 +576,12 @@ export function setZoom(zoom: number): void {
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore - allow indexing window
 // Minimal augmentation: declare a type for the bundle to help future maintenance.
+declare global {
+    interface Window {
+        workspaceRootTabsSyncListener?: (event: IBloomWebSocketEvent) => void;
+    }
+}
+
 interface WorkspaceBundleApi {
     SayHello: typeof SayHello;
     handleUndo: typeof handleUndo;

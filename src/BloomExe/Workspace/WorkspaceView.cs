@@ -569,17 +569,57 @@ namespace Bloom.Workspace
             _topBarLoadedIntoIframe = true;
         }
 
-        public dynamic GetTabInfoForClient()
+        public object GetTabInfoForClient()
+        {
+            return new
+            {
+                tabStates = GetTabStatesForClient(),
+                editFrameSources = GetEditFrameSourcesForClient(),
+            };
+        }
+
+        private dynamic GetTabInfoForWebSocket()
         {
             dynamic tabInfo = new DynamicJson();
+            tabInfo.tabStates = GetTabStatesForClient();
 
+            var editFrameSources = GetEditFrameSourcesForClient();
+            if (editFrameSources != null)
+            {
+                tabInfo.editFrameSources = editFrameSources;
+            }
+
+            return tabInfo;
+        }
+
+        private object GetTabStatesForClient()
+        {
             var activeTabId = TabToId(_tabSelection.ActiveTab);
 
-            tabInfo.tabStates = new DynamicJson();
-            tabInfo.tabStates.collection = GetTabStateForUi("collection", activeTabId);
-            tabInfo.tabStates.edit = GetTabStateForUi("edit", activeTabId);
-            tabInfo.tabStates.publish = GetTabStateForUi("publish", activeTabId);
-            return tabInfo;
+            return new
+            {
+                collection = GetTabStateForUi("collection", activeTabId),
+                edit = GetTabStateForUi("edit", activeTabId),
+                publish = GetTabStateForUi("publish", activeTabId),
+            };
+        }
+
+        private object GetEditFrameSourcesForClient()
+        {
+            if (
+                _editingView?.Model == null
+                || !_editingView.Model.HaveCurrentEditableBook
+                || _editingView.Model.CurrentPage == null
+            )
+            {
+                return null;
+            }
+
+            return new
+            {
+                pageSrc = _editingView.Model.GetUrlForCurrentPage(),
+                pageListSrc = _editingView.Model.GetUrlForPageListFile(),
+            };
         }
 
         private string GetTabStateForUi(string tabId, string activeTabId)
@@ -617,7 +657,7 @@ namespace Bloom.Workspace
 
         private void SendTopBarState()
         {
-            _webSocketServer?.SendBundle("workspace", "tabs", GetTabInfoForClient());
+            _webSocketServer?.SendBundle("workspace", "tabs", GetTabInfoForWebSocket());
         }
 
         public dynamic GetZoomInfo()
