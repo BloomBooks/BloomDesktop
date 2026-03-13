@@ -17,9 +17,9 @@ import { ScopedCssBaseline } from "@mui/material";
 
 export type WorkspaceTabId = "collection" | "edit" | "publish";
 
-type WorkspaceTabState = "active" | "enabled" | "disabled" | "hidden";
+export type WorkspaceTabState = "active" | "enabled" | "disabled" | "hidden";
 
-type TabStates = Record<WorkspaceTabId, WorkspaceTabState>;
+export type TabStates = Record<WorkspaceTabId, WorkspaceTabState>;
 
 interface ITabDefinition {
     id: WorkspaceTabId;
@@ -49,31 +49,32 @@ const tabDefinitions: Array<ITabDefinition> = [
     },
 ];
 
-export const TopBar: React.FunctionComponent = () => {
-    const defaultState = React.useMemo(
-        () => ({
-            tabStates: {
-                collection: "active",
-                edit: "hidden",
-                publish: "hidden",
-            } as TabStates,
-        }),
-        [],
+export const getActiveWorkspaceTab = (tabStates: TabStates): WorkspaceTabId => {
+    return (
+        tabDefinitions.find((t) => tabStates[t.id] === "active")?.id ??
+        "collection"
     );
+};
 
+export const defaultWorkspaceTabState: { tabStates: TabStates } = {
+    tabStates: {
+        collection: "active",
+        edit: "hidden",
+        publish: "hidden",
+    },
+};
+
+export const TopBar: React.FunctionComponent = () => {
     const state = useWatchApiObject<{ tabStates: TabStates }>(
         "workspace/tabs",
-        defaultState,
+        defaultWorkspaceTabState,
         "workspace",
         "tabs",
     );
 
-    const tabStates = state.tabStates ?? defaultState.tabStates;
+    const tabStates = state.tabStates ?? defaultWorkspaceTabState.tabStates;
     const activeTab = React.useMemo((): WorkspaceTabId => {
-        return (
-            tabDefinitions.find((t) => tabStates[t.id] === "active")?.id ??
-            "collection"
-        );
+        return getActiveWorkspaceTab(tabStates);
     }, [tabStates]);
 
     const handleSelectTab = React.useCallback(
