@@ -337,6 +337,11 @@ namespace Bloom.Publish.PDF
         // that calls PublishModel.LoadBook.
         public void MakePdf()
         {
+            // Crop marks are automatic when print bleed is enabled.
+            // This applies to both Simple and booklet outputs.
+            _publishModel.ShowCropMarks =
+                (CurrentBook?.FullBleed ?? false) && (CurrentBook?.UserPrefs.FullBleed ?? false);
+
             var message = CheckForLicenseWarning();
             if (!String.IsNullOrEmpty(message))
             {

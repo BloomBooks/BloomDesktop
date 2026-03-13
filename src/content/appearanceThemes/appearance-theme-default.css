@@ -45,6 +45,11 @@
     --pageNumber-left-margin: auto;
     --pageNumber-extra-height: 0mm;
 
+    /* Theme-adjustable insets used by explicit Left/Right page-number positioning. */
+    --pageNumber-side-left-inset: var(--page-margin-left);
+    --pageNumber-side-right-inset: var(--page-margin-right);
+    --pageNumber-full-bleed-extra-margin: 0mm;
+
     /* Themes should set to 0 if the marginBox is a different color than the page background. This affects the text padding.
       Note that we could eventually figure this out in code, and probably need to once we provide a UI for
       setting the marginBox border or page background color. */
