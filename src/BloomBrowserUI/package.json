@@ -12,6 +12,8 @@
     "scripts": {
         "exe": "node ../../scripts/watchBloomExe.mjs",
         "dev": "node ./scripts/dev.mjs",
+        "// 'go': starts yarn dev on a random Vite port, waits for it to settle, then launches Bloom with that --vite-port": " ",
+        "go": "node ./scripts/go.mjs",
         "// Watching: yarn dev starts vite + file watchers (LESS, pug, static assets, and key content folders)": " ",
         "// COMMENTS: make the action a space rather than empty string so `yarn run` can list the scripts": " ",
         "test": "vitest run",

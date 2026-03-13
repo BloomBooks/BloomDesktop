@@ -42,5 +42,32 @@ namespace BloomTests
             Assert.That(errorMessage, Does.Contain("must not overlap the reserved HTTP block"));
             Assert.That(remainingArgs, Is.Empty);
         }
+
+        [Test]
+        public void ParseStartupPortArguments_RejectsDuplicatePortArguments()
+        {
+            var remainingArgs = Program.ParseStartupPortArguments(
+                new[] { "--http-port", "19089", "--http-port", "19091" },
+                out var errorMessage
+            );
+
+            Assert.That(errorMessage, Is.EqualTo("Bloom only accepts one --http-port argument."));
+            Assert.That(remainingArgs, Is.Empty);
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_RejectsOutOfRangePorts()
+        {
+            var remainingArgs = Program.ParseStartupPortArguments(
+                new[] { "--vite-port", "70000" },
+                out var errorMessage
+            );
+
+            Assert.That(
+                errorMessage,
+                Is.EqualTo("Bloom requires --vite-port to be an integer from 1 to 65535.")
+            );
+            Assert.That(remainingArgs, Is.Empty);
+        }
     }
 }

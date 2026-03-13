@@ -6,6 +6,8 @@ import {
     getWindowsProcessSnapshot,
     killProcessIds,
     normalizeBloomInstanceInfo,
+    requireOptionValue,
+    requireTcpPortOption,
 } from "./bloomProcessCommon.mjs";
 
 const parseArgs = () => {
@@ -39,13 +41,19 @@ const parseArgs = () => {
         }
 
         if (arg === "--http-port") {
-            options.httpPort = args[i + 1];
+            options.httpPort = requireTcpPortOption(
+                "--http-port",
+                requireOptionValue(args, i, "--http-port"),
+            );
             i++;
             continue;
         }
 
         if (arg.startsWith("--http-port=")) {
-            options.httpPort = arg.slice("--http-port=".length);
+            options.httpPort = requireTcpPortOption(
+                "--http-port",
+                arg.slice("--http-port=".length),
+            );
             continue;
         }
 
@@ -87,7 +95,7 @@ if (options.httpPort) {
     if (instanceInfo.reachable && instanceInfo.json) {
         targetedInstance = normalizeBloomInstanceInfo(
             instanceInfo.json,
-            Number(options.httpPort),
+            options.httpPort,
         );
         if (targetedInstance.processId) {
             processIds.add(targetedInstance.processId);
@@ -163,7 +171,7 @@ const result = {
     onlyMismatched: options.onlyMismatched,
     exactTargetRequested,
     exactTargetResolutionError,
-    requestedHttpPort: options.httpPort ? Number(options.httpPort) : undefined,
+    requestedHttpPort: options.httpPort,
     targetedInstance,
     requestedProcessIds,
     killedProcessIds,

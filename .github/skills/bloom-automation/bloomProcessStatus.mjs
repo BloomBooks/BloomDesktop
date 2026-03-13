@@ -7,6 +7,8 @@ import {
     getDefaultRepoRoot,
     getWindowsProcessSnapshot,
     normalizeBloomInstanceInfo,
+    requireOptionValue,
+    requireTcpPortOption,
 } from "./bloomProcessCommon.mjs";
 
 const parseArgs = () => {
@@ -39,24 +41,36 @@ const parseArgs = () => {
         }
 
         if (arg === "--http-port") {
-            options.httpPort = args[i + 1];
+            options.httpPort = requireTcpPortOption(
+                "--http-port",
+                requireOptionValue(args, i, "--http-port"),
+            );
             i++;
             continue;
         }
 
         if (arg.startsWith("--http-port=")) {
-            options.httpPort = arg.slice("--http-port=".length);
+            options.httpPort = requireTcpPortOption(
+                "--http-port",
+                arg.slice("--http-port=".length),
+            );
             continue;
         }
 
         if (arg === "--cdp-port") {
-            options.cdpPort = args[i + 1];
+            options.cdpPort = requireTcpPortOption(
+                "--cdp-port",
+                requireOptionValue(args, i, "--cdp-port"),
+            );
             i++;
             continue;
         }
 
         if (arg.startsWith("--cdp-port=")) {
-            options.cdpPort = arg.slice("--cdp-port=".length);
+            options.cdpPort = requireTcpPortOption(
+                "--cdp-port",
+                arg.slice("--cdp-port=".length),
+            );
         }
     }
 
@@ -71,11 +85,11 @@ const runningBloomInstances = options.runningBloom
 
 let selectedRunningBloomInstance;
 if (options.httpPort) {
-    const instanceInfo = await fetchBloomInstanceInfo(Number(options.httpPort));
+    const instanceInfo = await fetchBloomInstanceInfo(options.httpPort);
     if (instanceInfo.reachable && instanceInfo.json) {
         selectedRunningBloomInstance = normalizeBloomInstanceInfo(
             instanceInfo.json,
-            Number(options.httpPort),
+            options.httpPort,
         );
     }
 } else if (options.runningBloom) {
@@ -111,12 +125,12 @@ if (selectedRunningBloomInstance?.processId) {
 const workspaceTabsUrl = selectedRunningBloomInstance
     ? selectedRunningBloomInstance.workspaceTabsUrl
     : options.httpPort
-      ? `http://localhost:${Number(options.httpPort)}/bloom/api/workspace/tabs`
+      ? `http://localhost:${options.httpPort}/bloom/api/workspace/tabs`
       : "http://localhost:8089/bloom/api/workspace/tabs";
 const cdpVersionUrl = selectedRunningBloomInstance?.cdpOrigin
     ? `${selectedRunningBloomInstance.cdpOrigin}/json/version`
     : options.cdpPort
-      ? `http://localhost:${Number(options.cdpPort)}/json/version`
+      ? `http://localhost:${options.cdpPort}/json/version`
       : "http://localhost:9222/json/version";
 const workspaceTabs = await fetchJsonEndpoint(workspaceTabsUrl);
 const cdpVersion = await fetchJsonEndpoint(cdpVersionUrl);
@@ -128,8 +142,8 @@ const result = {
           ? "running-bloom"
           : "current-worktree",
     expectedRepoRoot: processState.expectedRepoRoot,
-    requestedHttpPort: options.httpPort ? Number(options.httpPort) : undefined,
-    requestedCdpPort: options.cdpPort ? Number(options.cdpPort) : undefined,
+    requestedHttpPort: options.httpPort,
+    requestedCdpPort: options.cdpPort,
     isRunning: selectedRunningBloomInstance
         ? true
         : processState.bloomProcesses.length > 0,

@@ -15,6 +15,8 @@ import { fileURLToPath } from "node:url";
 const standardBloomStartingHttpPort = 8089;
 const standardBloomPortIncrement = 2;
 const standardBloomPortCount = 10;
+// Automation launches reserve a predictable block so concurrent Blooms can avoid
+// each other's HTTP, websocket, and CDP endpoints.
 const automationBloomStartingHttpPort = 18089;
 const automationBloomPortBlockSize = 10;
 const automationBloomPortBlockCount = 200;
@@ -30,6 +32,42 @@ const toBloomApiBaseUrl = (port) => `${toLocalOrigin(port)}/bloom/api`;
 const toPositiveInteger = (value) => {
     const parsed = Number(value);
     return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
+};
+
+export const toTcpPort = (value) => {
+    if (value === undefined || value === null) {
+        return undefined;
+    }
+
+    const normalized = String(value).trim();
+    if (!/^\d+$/.test(normalized)) {
+        return undefined;
+    }
+
+    const parsed = Number(normalized);
+    return Number.isInteger(parsed) && parsed > 0 && parsed <= 65535
+        ? parsed
+        : undefined;
+};
+
+export const requireTcpPortOption = (optionName, value) => {
+    const port = toTcpPort(value);
+    if (!port) {
+        throw new Error(
+            `${optionName} must be an integer from 1 to 65535. Received: ${value}`,
+        );
+    }
+
+    return port;
+};
+
+export const requireOptionValue = (args, index, optionName) => {
+    const value = args[index + 1];
+    if (!value || value.startsWith("--")) {
+        throw new Error(`${optionName} requires a value.`);
+    }
+
+    return value;
 };
 
 export const getStandardBloomHttpPorts = () =>
@@ -190,11 +228,11 @@ export const acquireBloomPortLease = async (requestedPorts = {}) => {
     const explicitHttpPort =
         requestedPorts.httpPort === undefined
             ? undefined
-            : toPositiveInteger(requestedPorts.httpPort);
+            : toTcpPort(requestedPorts.httpPort);
     const explicitCdpPort =
         requestedPorts.cdpPort === undefined
             ? undefined
-            : toPositiveInteger(requestedPorts.cdpPort);
+            : toTcpPort(requestedPorts.cdpPort);
 
     if (requestedPorts.httpPort !== undefined && !explicitHttpPort) {
         throw new Error("--http-port must be an integer from 1 to 65535.");
@@ -300,8 +338,8 @@ export const extractRepoRoot = (text) => {
 };
 
 export const normalizeBloomInstanceInfo = (info, discoveredViaPort) => {
-    const httpPort = toPositiveInteger(info?.httpPort) ?? discoveredViaPort;
-    const cdpPort = toPositiveInteger(info?.cdpPort);
+    const httpPort = toTcpPort(info?.httpPort) ?? discoveredViaPort;
+    const cdpPort = toTcpPort(info?.cdpPort);
 
     return {
         ...info,

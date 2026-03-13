@@ -5,6 +5,8 @@ import {
     findRunningStandardBloomInstance,
     getDefaultRepoRoot,
     normalizeBloomInstanceInfo,
+    requireOptionValue,
+    requireTcpPortOption,
 } from "./bloomProcessCommon.mjs";
 
 const parseArgs = () => {
@@ -27,24 +29,36 @@ const parseArgs = () => {
         }
 
         if (arg === "--http-port") {
-            options.httpPort = args[index + 1] || options.httpPort;
+            options.httpPort = requireTcpPortOption(
+                "--http-port",
+                requireOptionValue(args, index, "--http-port"),
+            );
             index++;
             continue;
         }
 
         if (arg.startsWith("--http-port=")) {
-            options.httpPort = arg.slice("--http-port=".length);
+            options.httpPort = requireTcpPortOption(
+                "--http-port",
+                arg.slice("--http-port=".length),
+            );
             continue;
         }
 
         if (arg === "--cdp-port") {
-            options.cdpPort = args[index + 1] || options.cdpPort;
+            options.cdpPort = requireTcpPortOption(
+                "--cdp-port",
+                requireOptionValue(args, index, "--cdp-port"),
+            );
             index++;
             continue;
         }
 
         if (arg.startsWith("--cdp-port=")) {
-            options.cdpPort = arg.slice("--cdp-port=".length);
+            options.cdpPort = requireTcpPortOption(
+                "--cdp-port",
+                arg.slice("--cdp-port=".length),
+            );
             continue;
         }
 
@@ -165,17 +179,19 @@ const waitForActiveWorkspaceTab = async (workspaceTabsUrl, tab, timeoutMs) => {
 
 const resolveInstance = async (options) => {
     if (options.httpPort) {
-        const httpPort = Number(options.httpPort);
-        const response = await fetchBloomInstanceInfo(httpPort);
+        const response = await fetchBloomInstanceInfo(options.httpPort);
         if (!response.reachable || !response.json) {
             throw new Error(
-                `No Bloom instance reported common/instanceInfo on http://localhost:${httpPort}.`,
+                `No Bloom instance reported common/instanceInfo on http://localhost:${options.httpPort}.`,
             );
         }
 
-        const instance = normalizeBloomInstanceInfo(response.json, httpPort);
+        const instance = normalizeBloomInstanceInfo(
+            response.json,
+            options.httpPort,
+        );
         if (options.cdpPort) {
-            instance.cdpPort = Number(options.cdpPort);
+            instance.cdpPort = options.cdpPort;
             instance.cdpOrigin = `http://localhost:${instance.cdpPort}`;
         }
 
@@ -191,7 +207,7 @@ const resolveInstance = async (options) => {
         }
 
         if (options.cdpPort) {
-            instance.cdpPort = Number(options.cdpPort);
+            instance.cdpPort = options.cdpPort;
             instance.cdpOrigin = `http://localhost:${instance.cdpPort}`;
         }
 

@@ -2,6 +2,8 @@ import {
     fetchBloomInstanceInfo,
     findRunningStandardBloomInstance,
     normalizeBloomInstanceInfo,
+    requireOptionValue,
+    requireTcpPortOption,
 } from "./bloomProcessCommon.mjs";
 
 const parseArgs = () => {
@@ -35,13 +37,19 @@ const parseArgs = () => {
         }
 
         if (arg === "--http-port") {
-            options.httpPort = args[i + 1] || options.httpPort;
+            options.httpPort = requireTcpPortOption(
+                "--http-port",
+                requireOptionValue(args, i, "--http-port"),
+            );
             i++;
             continue;
         }
 
         if (arg.startsWith("--http-port=")) {
-            options.httpPort = arg.slice("--http-port=".length);
+            options.httpPort = requireTcpPortOption(
+                "--http-port",
+                arg.slice("--http-port=".length),
+            );
             continue;
         }
 
@@ -57,8 +65,19 @@ const parseArgs = () => {
         }
 
         if (arg === "--port") {
-            options.port = args[i + 1] || options.port;
+            options.port = requireTcpPortOption(
+                "--port",
+                requireOptionValue(args, i, "--port"),
+            );
             i++;
+            continue;
+        }
+
+        if (arg.startsWith("--port=")) {
+            options.port = requireTcpPortOption(
+                "--port",
+                arg.slice("--port=".length),
+            );
             continue;
         }
 
@@ -163,7 +182,7 @@ const main = async () => {
         try {
             if (options.httpPort) {
                 const instanceInfo = await fetchBloomInstanceInfo(
-                    Number(options.httpPort),
+                    options.httpPort,
                 );
                 if (!instanceInfo.reachable || !instanceInfo.json) {
                     throw new Error(
@@ -173,7 +192,7 @@ const main = async () => {
 
                 selectedInstance = normalizeBloomInstanceInfo(
                     instanceInfo.json,
-                    Number(options.httpPort),
+                    options.httpPort,
                 );
                 if (!selectedInstance.cdpOrigin) {
                     throw new Error(

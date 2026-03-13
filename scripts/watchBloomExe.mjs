@@ -5,6 +5,8 @@ import { fileURLToPath } from "node:url";
 import {
     acquireBloomPortLease,
     formatBloomPortPlan,
+    requireOptionValue,
+    requireTcpPortOption,
     releaseBloomPortLease,
     waitForBloomInstanceInfo,
 } from "../.github/skills/bloom-automation/bloomProcessCommon.mjs";
@@ -18,36 +20,66 @@ const parseArgs = () => {
         ),
         httpPort: undefined,
         cdpPort: undefined,
+        vitePort: undefined,
     };
 
     for (let i = 0; i < args.length; i++) {
         const arg = args[i];
 
         if (arg === "--repo-root") {
-            options.repoRoot = args[i + 1] || options.repoRoot;
+            options.repoRoot = requireOptionValue(args, i, "--repo-root");
             i++;
             continue;
         }
 
         if (arg === "--http-port") {
-            options.httpPort = args[i + 1];
+            options.httpPort = requireTcpPortOption(
+                "--http-port",
+                requireOptionValue(args, i, "--http-port"),
+            );
             i++;
             continue;
         }
 
         if (arg.startsWith("--http-port=")) {
-            options.httpPort = arg.slice("--http-port=".length);
+            options.httpPort = requireTcpPortOption(
+                "--http-port",
+                arg.slice("--http-port=".length),
+            );
             continue;
         }
 
         if (arg === "--cdp-port") {
-            options.cdpPort = args[i + 1];
+            options.cdpPort = requireTcpPortOption(
+                "--cdp-port",
+                requireOptionValue(args, i, "--cdp-port"),
+            );
             i++;
             continue;
         }
 
         if (arg.startsWith("--cdp-port=")) {
-            options.cdpPort = arg.slice("--cdp-port=".length);
+            options.cdpPort = requireTcpPortOption(
+                "--cdp-port",
+                arg.slice("--cdp-port=".length),
+            );
+            continue;
+        }
+
+        if (arg === "--vite-port") {
+            options.vitePort = requireTcpPortOption(
+                "--vite-port",
+                requireOptionValue(args, i, "--vite-port"),
+            );
+            i++;
+            continue;
+        }
+
+        if (arg.startsWith("--vite-port=")) {
+            options.vitePort = requireTcpPortOption(
+                "--vite-port",
+                arg.slice("--vite-port=".length),
+            );
         }
     }
 
@@ -93,7 +125,15 @@ const dotnetArgs = [
     worktreeLabel,
 ];
 
+if (options.vitePort) {
+    dotnetArgs.push("--vite-port", String(options.vitePort));
+}
+
 console.log(`Bloom launch ports: ${formatBloomPortPlan(portPlan)}`);
+
+if (options.vitePort) {
+    console.log(`Bloom Vite dev port: ${options.vitePort}`);
+}
 
 const child = spawn("dotnet", dotnetArgs, {
     stdio: "inherit",
