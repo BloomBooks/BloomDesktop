@@ -56,6 +56,9 @@ export const SmallNumberPickerStory: Story = {
             console.log("We handled change!");
             console.log(`  result was ${newNumber}`);
         };
+        const onValidityChange = (isValid: boolean) => {
+            console.log(`Input validity changed: ${isValid}`);
+        };
         const min = 1;
         const max = 15;
 
@@ -78,6 +81,7 @@ export const SmallNumberPickerStory: Story = {
                                 minLimit={min}
                                 maxLimit={max}
                                 handleChange={onHandleChange}
+                                onValidityChange={onValidityChange}
                                 tooltip={numberOfPagesTooltip}
                             />
                         </div>
