@@ -532,6 +532,7 @@ export default defineConfig(async ({ command }) => {
         accessibilityCheckBundle:
             "./publish/accessibilityCheck/accessibilityCheckScreen.entry.tsx",
         subscriptionSettingsBundle: "./collection/subscriptionSettingsTab.tsx",
+        advancedSettingsBundle: "./collection/AdvancedSettingsPanel.entry.tsx",
         performanceLogBundle: "./performance/PerformanceLogPage.tsx",
         appBundle: "./app/App.tsx",
         problemReportBundle: "./problemDialog/ProblemDialog.tsx",

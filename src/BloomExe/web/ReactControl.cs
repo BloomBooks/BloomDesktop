@@ -228,6 +228,7 @@ namespace Bloom.web
             var bundleToViteModulePathMap = new Dictionary<string, string>
             {
                 { "collectionsTabPaneBundle", "/collectionsTab/CollectionsTabPane.entry.tsx" },
+                { "advancedSettingsBundle", "/collection/AdvancedSettingsPanel.entry.tsx" },
                 { "bookMakingSettingsBundle", "/collection/bookMakingSettingsControl.entry.tsx" },
                 {
                     "autoUpdateSoftwareDlgBundle",
