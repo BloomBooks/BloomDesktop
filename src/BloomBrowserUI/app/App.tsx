@@ -1,47 +1,70 @@
-// We started needing the following triple-slash directive (<reference types=...)
-// with Emotion 11; I don't understand why.
-// Without it, the system doesn't resolve the type for the css prop.
-// This migration guide describes it, but I don't understand why we aren't the "normal" case:
-// https://emotion.sh/docs/emotion-11#css-prop-types
-/// <reference types="@emotion/react/types/css-prop" />
-
-import Button from "@mui/material/Button";
 import * as React from "react";
+import { css } from "@emotion/react";
 import "App.less";
 import { CollectionsTabPane } from "../collectionsTab/CollectionsTabPane";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
-import { kBloomBlue, kPanelBackground } from "../bloomMaterialUITheme";
+import {
+    TopBar,
+    TabStates,
+    WorkspaceTabId,
+} from "../react_components/TopBar/TopBar";
+import { PublishTabPane } from "../publish/PublishTab/PublishTabPane";
+import { kPanelBackground } from "../bloomMaterialUITheme";
+import { useWatchApiObject } from "../utils/bloomApi";
 
 // invoke this with http://localhost:8089". Doesn't do much yet... someday will be the root of our UI.
 
-export const App: React.FunctionComponent = (props) => {
-    return (
-        <div style={{ backgroundColor: kPanelBackground, height: "100%" }}>
-            <div style={{ backgroundColor: kBloomBlue, paddingTop: "3px" }}>
-                <Tabs />
-            </div>
-            <CollectionsTabPane />
-        </div>
+export const App: React.FunctionComponent = () => {
+    const defaultState = React.useMemo(
+        () => ({
+            tabStates: {
+                collection: "active",
+                edit: "hidden",
+                publish: "hidden",
+            } as TabStates,
+        }),
+        [],
     );
-};
-const Tabs: React.FunctionComponent = (props) => {
+
+    const state = useWatchApiObject<{ tabStates: TabStates }>(
+        "workspace/tabs",
+        defaultState,
+        "workspace",
+        "tabs",
+    );
+
+    const tabStates = state.tabStates ?? defaultState.tabStates;
+    const activeTab = React.useMemo((): WorkspaceTabId => {
+        return (
+            Object.entries(tabStates).find((entry) => entry[1] === "active")?.[0] ??
+            "collection"
+        ) as WorkspaceTabId;
+    }, [tabStates]);
+
+    const renderActiveTab = () => {
+        if (activeTab === "collection") {
+            return <CollectionsTabPane />;
+        }
+
+        if (activeTab === "publish") {
+            return <PublishTabPane />;
+        }
+
+        return <>This is just a placeholder for the edit tab for now.</>;
+    };
+
     return (
-        <ul id="main-tabs" style={{ height: "77px" }}>
-            <li>
-                <Button
-                    className={"selected"}
-                    startIcon={<img src="../images/CollectionsTab.svg" />}
-                >
-                    Collections
-                </Button>
-                <Button startIcon={<img src="../images/EditTab.svg" />}>
-                    Edit
-                </Button>
-                <Button startIcon={<img src="../images/PublishTab.svg" />}>
-                    Publish
-                </Button>
-            </li>
-        </ul>
+        <div
+            css={css`
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                background: ${kPanelBackground};
+            `}
+        >
+            <TopBar />
+            {renderActiveTab()}
+        </div>
     );
 };
 

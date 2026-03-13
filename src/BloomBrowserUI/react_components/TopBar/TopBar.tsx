@@ -17,9 +17,9 @@ import { ScopedCssBaseline } from "@mui/material";
 
 export type WorkspaceTabId = "collection" | "edit" | "publish";
 
-type WorkspaceTabState = "active" | "enabled" | "disabled" | "hidden";
+export type WorkspaceTabState = "active" | "enabled" | "disabled" | "hidden";
 
-type TabStates = Record<WorkspaceTabId, WorkspaceTabState>;
+export type TabStates = Record<WorkspaceTabId, WorkspaceTabState>;
 
 interface ITabDefinition {
     id: WorkspaceTabId;
