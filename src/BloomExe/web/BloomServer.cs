@@ -2134,22 +2134,12 @@ namespace Bloom.Api
 
         private string GetHtmlForRootOfBloomUI()
         {
-            return $@"<!DOCTYPE html>
-				<html>
-				<head>
-					<meta charset = 'UTF-8' />
-					<script src = '/appBundle.js' type='module'></script>
-					<script>
-						window.onload = () => {{
-							const rootDiv = document.getElementById('reactRoot');
-							window.wireUpRootComponentFromWinforms(rootDiv);
-						}};
-					</script>
-				</head>
-				<body>
-					<div id='reactRoot'>Component should replace this</div >
-				</body>
-				</html>";
+            return ReactControl.GetHtmlForReactBundle(
+                "appBundle",
+                null,
+                System.Drawing.Color.White,
+                false
+            );
         }
 
         /// <summary>
