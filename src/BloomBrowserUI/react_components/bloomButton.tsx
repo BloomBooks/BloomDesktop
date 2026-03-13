@@ -75,10 +75,13 @@ export default class BloomButton extends LocalizableElement<
             l10nComment,
             clickApiEndpoint,
             mightNavigate,
+            transparent,
             enabledImageFile,
             disabledImageFile,
             hasText,
             iconBeforeText,
+            l10nTipEnglishEnabled,
+            l10nTipEnglishDisabled,
             temporarilyDisableI18nWarning,
             alreadyLocalized,
             ...propsToPass

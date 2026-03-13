@@ -1886,6 +1886,44 @@ namespace Bloom.Book
         public const string musicAttrName = "data-backgroundaudio";
         public const string musicVolumeName = musicAttrName + "volume";
 
+        private static readonly string[] kPageStylePropertiesToPersist =
+        {
+            "--page-background-color",
+            "--marginBox-background-color",
+            "--pageNumber-color",
+            "--pageNumber-outline-color",
+            "--pageNumber-background-color",
+        };
+
+        private static string GetPersistedPageStyleValue(SafeXmlElement editedPageDiv)
+        {
+            var style = editedPageDiv.GetAttribute("style");
+            if (string.IsNullOrWhiteSpace(style))
+                return string.Empty;
+
+            var persistedStyleSegments = style
+                .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(segment => segment.Trim())
+                .Where(segment => !string.IsNullOrEmpty(segment))
+                .Where(segment =>
+                {
+                    var colonIndex = segment.IndexOf(':');
+                    if (colonIndex <= 0)
+                        return false;
+
+                    var propertyName = segment.Substring(0, colonIndex).Trim();
+                    return kPageStylePropertiesToPersist.Contains(
+                        propertyName,
+                        StringComparer.OrdinalIgnoreCase
+                    );
+                })
+                .ToArray();
+
+            return persistedStyleSegments.Any()
+                ? string.Join("; ", persistedStyleSegments)
+                : string.Empty;
+        }
+
         public static void ProcessPageAfterEditing(
             SafeXmlElement destinationPageDiv,
             SafeXmlElement edittedPageDiv
@@ -1920,6 +1958,14 @@ namespace Bloom.Book
             //back to the html in keeping with our goal of having the page look right if you were to just open the
             //html file in a browser.
             destinationPageDiv.SetAttribute("lang", edittedPageDiv.GetAttribute("lang"));
+
+            // Save only the page color custom properties we manage in Page Settings.
+            // If all are missing, remove any previously-saved page-level custom properties.
+            var style = GetPersistedPageStyleValue(edittedPageDiv);
+            if (string.IsNullOrEmpty(style))
+                destinationPageDiv.RemoveAttribute("style");
+            else
+                destinationPageDiv.SetAttribute("style", style);
 
             // Copy the two background audio attributes which can be set using the music toolbox.
             // Ensuring that volume is missing unless the main attribute is non-empty is

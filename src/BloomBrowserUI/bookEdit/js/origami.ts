@@ -1,5 +1,3 @@
-// not yet: neither bloomEditing nor this is yet a module import {SetupImage} from './bloomEditing';
-///<reference path="../../lib/split-pane/split-pane.d.ts" />
 import { SetupImage } from "./bloomImages";
 import { kBloomCanvasClass } from "../toolbox/canvas/canvasElementUtils";
 import "../../lib/split-pane/split-pane.js";
@@ -23,45 +21,89 @@ export function setupOrigami() {
             const isCanvasFeatureEnabled: boolean =
                 canvasFeatureStatus?.enabled || false;
             const customPages = document.getElementsByClassName("customPage");
-            if (customPages.length > 0) {
-                const width = customPages[0].clientWidth;
-                const origamiControl = getAbovePageControlContainer()
-                    .append(
-                        createTypeSelectors(
-                            isWidgetFeatureEnabled,
-                            isCanvasFeatureEnabled,
-                        ),
-                    )
-                    .append(createTextBoxIdentifier());
+            const bloomPage = document.getElementsByClassName(
+                "bloom-page",
+            )[0] as HTMLElement | undefined;
+            const pageWidth = bloomPage?.clientWidth;
+            if (pageWidth !== undefined) {
+                const showOrigamiControls = customPages.length > 0;
+                const pageControlContainer =
+                    getAbovePageControlContainer(showOrigamiControls);
+
+                if (showOrigamiControls) {
+                    pageControlContainer
+                        .append(
+                            createTypeSelectors(
+                                isWidgetFeatureEnabled,
+                                isCanvasFeatureEnabled,
+                            ),
+                        )
+                        .append(createTextBoxIdentifier());
+                }
+
                 // The order of this is not important in most ways, since it is positioned absolutely.
                 // However, we position the page label, also absolutely, in the same screen area, and
                 // we want it on top of origami control, so that in template pages the user can edit it.
                 // The page label is part of the page, so we want the page to come after the origami control.
                 // (Could also do this with z-order, but I prefer to do what I can by ordering elements,
                 // and save z-order for when it is really needed.)
-                $("#page-scaling-container").prepend(origamiControl);
+                $("#page-scaling-container").prepend(pageControlContainer);
                 // The container width is set to 100% in the CSS, but we need to
                 // limit it to no more than the actual width of the page.
                 const toggleContainer = $(".above-page-control-container").get(
                     0,
                 );
-                toggleContainer.style.maxWidth = width + "px";
+                if (toggleContainer instanceof HTMLElement) {
+                    toggleContainer.style.maxWidth = pageWidth + "px";
+                }
             }
             // I'm not clear why the rest of this needs to wait until we have
             // the two results, but none of the controls shows up if we leave it all
             // outside the bloomApi functions.
             $(".origami-toggle .onoffswitch").change(layoutToggleClickHandler);
+            $(".page-settings-button").click(pageSettingsButtonClickHandler);
 
             if ($(".customPage .marginBox.origami-layout-mode").length) {
                 setupLayoutMode();
                 $("#myonoffswitch").prop("checked", true);
             }
 
-            $(".customPage, .above-page-control-container")
-                .find("*[data-i18n]")
-                .localize();
+            const localizableElements = $(
+                ".customPage, .above-page-control-container",
+            ).find("*[data-i18n]");
+            // In some dev/runtime paths the jQuery localize plugin is not loaded.
+            try {
+                if (typeof localizableElements.localize === "function") {
+                    localizableElements.localize();
+                }
+            } catch (error) {
+                console.warn(
+                    "Origami localization failed; continuing with default labels.",
+                    error,
+                );
+            }
+
+            ensurePageSettingsButtonHasIcon();
         });
     });
+}
+
+function ensurePageSettingsButtonHasIcon() {
+    $(".page-settings-button").each((_index, element) => {
+        const button = $(element);
+        const labelText = $.trim(button.text()) || "Page Settings";
+        button.empty();
+        button.append($(getPageSettingsButtonIconHtml()));
+        button.append(
+            $("<span class='page-settings-button-label'></span>").text(
+                labelText,
+            ),
+        );
+    });
+}
+
+function getPageSettingsButtonIconHtml(): string {
+    return `<svg class='page-settings-button-icon' aria-hidden='true' style='width:19px;height:19px;flex-shrink:0;' viewBox="0 0 24 24" fill="currentColor"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>`;
 }
 
 export function cleanupOrigami() {
@@ -338,7 +380,7 @@ function getSplitPaneComponentInner() {
     return spci;
 }
 
-function getAbovePageControlContainer(): JQuery {
+function getAbovePageControlContainer(showOrigamiControls: boolean): JQuery {
     // for dragActivities we don't want the origami control, but we still make the
     // wrapper so that the dragActivity can put a different control in it.
     // Note: We also have to disable the Choose Different layout option in
@@ -348,11 +390,25 @@ function getAbovePageControlContainer(): JQuery {
             .getElementsByClassName("bloom-page")[0]
             ?.getAttribute("data-tool-id") === "game"
     ) {
-        return $("<div class='above-page-control-container bloom-ui'></div>");
+        return $(
+            `<div class='above-page-control-container bloom-ui'>\
+${getPageSettingsButtonHtml()}\
+</div>`,
+        );
     }
+
+    if (!showOrigamiControls) {
+        return $(
+            `<div class='above-page-control-container bloom-ui'>\
+${getPageSettingsButtonHtml()}\
+</div>`,
+        );
+    }
+
     return $(
-        "\
+        `\
 <div class='above-page-control-container bloom-ui'> \
+${getPageSettingsButtonHtml()}\
 <div class='origami-toggle bloom-ui'> \
     <div data-i18n='EditTab.CustomPage.ChangeLayout'>Change Layout</div> \
     <div class='onoffswitch'> \
@@ -363,8 +419,17 @@ function getAbovePageControlContainer(): JQuery {
         </label> \
     </div> \
 </div> \
-</div>",
+</div>`,
     );
+}
+
+function getPageSettingsButtonHtml(): string {
+    return `<button class='page-settings-button' title='Open Page Settings...'>${getPageSettingsButtonIconHtml()}<span class='page-settings-button-label' data-i18n='PageSettings.Title'>Page Settings</span></button>`;
+}
+
+function pageSettingsButtonClickHandler(e: Event) {
+    e.preventDefault();
+    post("editView/showPageSettingsDialog");
 }
 
 function getButtons() {

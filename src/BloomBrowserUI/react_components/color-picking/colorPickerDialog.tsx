@@ -1,7 +1,7 @@
-import { css } from "@emotion/react";
+import { css, Global } from "@emotion/react";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getWorkspaceBundleExports } from "../../bookEdit/js/workspaceFrames";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { lightTheme } from "../../bloomMaterialUITheme";
@@ -27,6 +27,46 @@ import {
     DialogOkButton,
 } from "../BloomDialog/commonDialogComponents";
 
+// These helpers don't depend on component state/props; keeping them outside avoids hook-deps issues.
+const willSwatchColorBeFilteredOut = (
+    color: IColorInfo,
+    transparency?: boolean,
+    noGradientSwatches?: boolean,
+): boolean => {
+    if (!transparency && color.opacity !== 1) {
+        return true;
+    }
+    if (noGradientSwatches && color.colors.length > 1) {
+        return true;
+    }
+    return false;
+};
+
+const colorCompareFunc =
+    (colorA: IColorInfo) =>
+    (colorB: IColorInfo): boolean => {
+        if (colorB.colors.length !== colorA.colors.length) {
+            return false; // One is a gradient and the other is not.
+        }
+        if (colorA.colors.length > 1) {
+            // In the case of both being gradients, check the second color first.
+            const gradientAColor2 = tinycolor(colorA.colors[1]);
+            const gradientBColor2 = tinycolor(colorB.colors[1]);
+            if (gradientAColor2.toHex() !== gradientBColor2.toHex()) {
+                return false;
+            }
+        }
+        const gradientAColor1 = tinycolor(colorA.colors[0]);
+        const gradientBColor1 = tinycolor(colorB.colors[0]);
+        return (
+            gradientAColor1.toHex() === gradientBColor1.toHex() &&
+            colorA.opacity === colorB.opacity
+        );
+    };
+
+const isColorInThisArray = (color: IColorInfo, arrayOfColors: IColorInfo[]) =>
+    !!arrayOfColors.find(colorCompareFunc(color));
+
 export interface IColorPickerDialogProps {
     open?: boolean;
     close?: (result: DialogResult) => void;
@@ -37,6 +77,7 @@ export interface IColorPickerDialogProps {
     palette: BloomPalette;
     isForCanvasElement?: boolean;
     onChange: (color: IColorInfo) => void;
+    onChangeComplete?: (color: IColorInfo) => void;
     onDefaultClick?: () => void;
     onInputFocus: (input: HTMLElement) => void;
     includeDefault?: boolean;
@@ -51,6 +92,13 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
         props.open === undefined ? true : props.open,
     );
     const [currentColor, setCurrentColor] = useState(props.initialColor);
+    const [eyedropperActive, setEyedropperActive] = useState(false);
+
+    // Use a content-based key so we don't treat a new object reference with the
+    // same values as a meaningful change (important for callers that compute
+    // initialColor inline).
+    const initialColorKey =
+        props.initialColor.colors.join("|") + "|" + props.initialColor.opacity;
 
     const [swatchColorArray, setSwatchColorArray] = useState(
         getDefaultColorsFromPalette(props.palette),
@@ -59,19 +107,105 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
     externalSetOpen = setOpen;
     const dlgRef = useRef<HTMLDivElement>(null);
 
-    function addCustomColors(endpoint: string): void {
-        get(endpoint, (result) => {
-            const jsonArray = result.data;
-            if (!jsonArray.map) {
-                return; // this means the conversion string -> JSON didn't work. Bad JSON?
-            }
-            const customColors = convertJsonColorArrayToColorInfos(jsonArray);
-            addNewColorsToArrayIfNecessary(customColors);
-        });
-    }
+    // We come to here on opening to add colors already in the book and we come here on closing to see
+    // if our new current color needs to be added to our array.
+    // Enhance: What if the number of distinct colors already used in the book that we get back, plus the number
+    // of other default colors is more than will fit in our array (current 21)? When we get colors from the book,
+    // we should maybe start with the current page, to give them a better chance of being included in the picker.
+    const addNewColorsToArrayIfNecessary = useCallback(
+        (newColors: IColorInfo[]) => {
+            // Every time we reference the current swatchColorArray inside
+            // this setter, we must use previousSwatchColorArray.
+            // Otherwise, we add to a stale array.
+            setSwatchColorArray((previousSwatchColorArray) => {
+                const newColorsAdded: IColorInfo[] = [];
+                const lengthBefore = previousSwatchColorArray.length;
+                let numberToDelete = 0;
+                // CustomColorPicker is going to filter these colors out anyway.
+                let numberToSkip = previousSwatchColorArray.filter((color) =>
+                    willSwatchColorBeFilteredOut(
+                        color,
+                        props.transparency,
+                        props.noGradientSwatches,
+                    ),
+                ).length;
+                newColors.forEach((newColor) => {
+                    if (
+                        isColorInThisArray(newColor, previousSwatchColorArray)
+                    ) {
+                        return; // This one is already in our array of swatch colors
+                    }
+                    if (isColorInThisArray(newColor, newColorsAdded)) {
+                        return; // We don't need to add the same color more than once!
+                    }
+                    // At first I wanted to do this filtering outside the loop, but some of them might be pre-filtered
+                    // by the above two conditions.
+                    if (
+                        willSwatchColorBeFilteredOut(
+                            newColor,
+                            props.transparency,
+                            props.noGradientSwatches,
+                        )
+                    ) {
+                        numberToSkip++;
+                    }
+                    if (
+                        lengthBefore + newColorsAdded.length + 1 >
+                        MAX_SWATCHES + numberToSkip
+                    ) {
+                        numberToDelete++;
+                    }
+                    newColorsAdded.unshift(newColor); // add newColor to the beginning of the array.
+                });
+                const newSwatchColorArray = previousSwatchColorArray.slice(); // Get a new array copy of the old (a different reference)
+                if (numberToDelete > 0) {
+                    // Remove 'numberToDelete' swatches from oldest custom swatches
+                    const defaultNumber = getDefaultColorsFromPalette(
+                        props.palette,
+                    ).length;
+                    const indexToRemove =
+                        previousSwatchColorArray.length -
+                        defaultNumber -
+                        numberToDelete;
+                    if (indexToRemove >= 0) {
+                        newSwatchColorArray.splice(
+                            indexToRemove,
+                            numberToDelete,
+                        );
+                    } else {
+                        const excess = indexToRemove * -1; // index went negative; excess is absolute value
+                        newSwatchColorArray.splice(0, numberToDelete - excess);
+                        newColorsAdded.splice(
+                            newColorsAdded.length - excess,
+                            excess,
+                        );
+                    }
+                }
+                const result = newColorsAdded.concat(newSwatchColorArray);
+                //console.log(result);
+                return result;
+            });
+        },
+        [props.noGradientSwatches, props.palette, props.transparency],
+    );
 
+    // When the dialog is (re)opened, initialize swatches and currentColor.
+    // We depend on initialColorKey rather than props.initialColor to avoid resetting the UI
+    // if a caller passes a new object reference with the same color values on each render.
     useEffect(() => {
         if (props.open || open) {
+            const addCustomColors = (endpoint: string): void => {
+                get(endpoint, (result) => {
+                    const jsonArray = result.data;
+                    if (!jsonArray.map) {
+                        return; // this means the conversion string -> JSON didn't work. Bad JSON?
+                    }
+                    const customColors =
+                        convertJsonColorArrayToColorInfos(jsonArray);
+                    addNewColorsToArrayIfNecessary(customColors);
+                });
+            };
+
             setSwatchColorArray(getDefaultColorsFromPalette(props.palette));
             addCustomColors(
                 `settings/getCustomPaletteColors?palette=${props.palette}`,
@@ -85,13 +219,28 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
                 addCustomColors("editView/getColorsUsedInBookCanvasElements");
             setCurrentColor(props.initialColor);
         }
-    }, [open, props.open]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [
+        open,
+        props.open,
+        props.palette,
+        props.isForCanvasElement,
+        initialColorKey,
+        addNewColorsToArrayIfNecessary,
+    ]);
+
+    // Keep the focus callback current even though we attach DOM listeners only once.
+    const onInputFocusRef = useRef(props.onInputFocus);
+    useEffect(() => {
+        onInputFocusRef.current = props.onInputFocus;
+    }, [props.onInputFocus]);
 
     const focusFunc = (ev: FocusEvent) => {
-        props.onInputFocus(ev.currentTarget as HTMLElement);
+        onInputFocusRef.current(ev.currentTarget as HTMLElement);
     };
 
-    React.useEffect(() => {
+    // Install focus listeners on inputs so the client can restore focus when canvas updates steal it.
+    useEffect(() => {
         const parent = dlgRef.current;
         if (!parent) {
             return;
@@ -128,7 +277,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
                 input.removeEventListener("focus", focusFunc),
             );
         };
-    }, [dlgRef.current]);
+    }, []);
 
     const convertJsonColorArrayToColorInfos = (
         jsonArray: IColorInfo[],
@@ -157,6 +306,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
         setOpen(false);
         if (result === DialogResult.Cancel) {
             props.onChange(props.initialColor);
+            props.onChangeComplete?.(props.initialColor);
             setCurrentColor(props.initialColor);
         } else {
             if (!isColorInCurrentSwatchColorArray(currentColor)) {
@@ -173,119 +323,50 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
         }
     };
 
-    // We come to here on opening to add colors already in the book and we come here on closing to see
-    // if our new current color needs to be added to our array.
-    // Enhance: What if the number of distinct colors already used in the book that we get back, plus the number
-    // of other default colors is more than will fit in our array (current 21)? When we get colors from the book,
-    // we should maybe start with the current page, to give them a better chance of being included in the picker.
-    const addNewColorsToArrayIfNecessary = (newColors: IColorInfo[]) => {
-        // Every time we reference the current swatchColorArray inside
-        // this setter, we must use previousSwatchColorArray.
-        // Otherwise, we add to a stale array.
-        setSwatchColorArray((previousSwatchColorArray) => {
-            const newColorsAdded: IColorInfo[] = [];
-            const lengthBefore = previousSwatchColorArray.length;
-            let numberToDelete = 0;
-            // CustomColorPicker is going to filter these colors out anyway.
-            let numberToSkip = previousSwatchColorArray.filter((color) =>
-                willSwatchColorBeFilteredOut(color),
-            ).length;
-            newColors.forEach((newColor) => {
-                if (isColorInThisArray(newColor, previousSwatchColorArray)) {
-                    return; // This one is already in our array of swatch colors
-                }
-                if (isColorInThisArray(newColor, newColorsAdded)) {
-                    return; // We don't need to add the same color more than once!
-                }
-                // At first I wanted to do this filtering outside the loop, but some of them might be pre-filtered
-                // by the above two conditions.
-                if (willSwatchColorBeFilteredOut(newColor)) {
-                    numberToSkip++;
-                }
-                if (
-                    lengthBefore + newColorsAdded.length + 1 >
-                    MAX_SWATCHES + numberToSkip
-                ) {
-                    numberToDelete++;
-                }
-                newColorsAdded.unshift(newColor); // add newColor to the beginning of the array.
-            });
-            const newSwatchColorArray = swatchColorArray.slice(); // Get a new array copy of the old (a different reference)
-            if (numberToDelete > 0) {
-                // Remove 'numberToDelete' swatches from oldest custom swatches
-                const defaultNumber = getDefaultColorsFromPalette(
-                    props.palette,
-                ).length;
-                const indexToRemove =
-                    swatchColorArray.length - defaultNumber - numberToDelete;
-                if (indexToRemove >= 0) {
-                    newSwatchColorArray.splice(indexToRemove, numberToDelete);
-                } else {
-                    const excess = indexToRemove * -1; // index went negative; excess is absolute value
-                    newSwatchColorArray.splice(0, numberToDelete - excess);
-                    newColorsAdded.splice(
-                        newColorsAdded.length - excess,
-                        excess,
-                    );
-                }
-            }
-            const result = newColorsAdded.concat(previousSwatchColorArray);
-            //console.log(result);
-            return result;
-        });
-    };
-
     const isColorInCurrentSwatchColorArray = (color: IColorInfo): boolean =>
         isColorInThisArray(color, swatchColorArray);
 
-    const willSwatchColorBeFilteredOut = (color: IColorInfo): boolean => {
-        if (!props.transparency && color.opacity !== 1) {
-            return true;
-        }
-        if (props.noGradientSwatches && color.colors.length > 1) {
-            return true;
-        }
-        return false;
-    };
-
-    // Use a compare function to see if the color in question matches on already in this list or not.
-    const isColorInThisArray = (
-        color: IColorInfo,
-        arrayOfColors: IColorInfo[],
-    ): boolean => !!arrayOfColors.find(colorCompareFunc(color));
-
-    // Function for comparing a color with an array of colors to see if the color is already
-    // in the array. We pass this function to .find().
-    const colorCompareFunc =
-        (colorA: IColorInfo) =>
-        (colorB: IColorInfo): boolean => {
-            if (colorB.colors.length !== colorA.colors.length) {
-                return false; // One is a gradient and the other is not.
-            }
-            if (colorA.colors.length > 1) {
-                // In the case of both being gradients, check the second color first.
-                const gradientAColor2 = tinycolor(colorA.colors[1]);
-                const gradientBColor2 = tinycolor(colorB.colors[1]);
-                if (gradientAColor2.toHex() !== gradientBColor2.toHex()) {
-                    return false;
-                }
-            }
-            const gradientAColor1 = tinycolor(colorA.colors[0]);
-            const gradientBColor1 = tinycolor(colorB.colors[0]);
-            return (
-                gradientAColor1.toHex() === gradientBColor1.toHex() &&
-                colorA.opacity === colorB.opacity
-            );
-        };
-
     const handleOnChange = (color: IColorInfo) => {
-        setCurrentColor(color);
-        props.onChange(color);
+        const clonedColor: IColorInfo = {
+            ...color,
+            colors: [...color.colors],
+        };
+        setCurrentColor(clonedColor);
+        props.onChange(clonedColor);
     };
+
+    const handleOnChangeComplete = (color: IColorInfo) => {
+        const clonedColor: IColorInfo = {
+            ...color,
+            colors: [...color.colors],
+        };
+        props.onChangeComplete?.(clonedColor);
+    };
+
+    const dialogOpen = props.open === undefined ? open : props.open;
+
+    // The MUI backdrop is rendered outside the dialog tree, so we use a body class
+    // to suppress it while the color picker is open.
+    useEffect(() => {
+        if (!dialogOpen) {
+            return;
+        }
+        document.body.classList.add("bloom-hide-color-picker-backdrop");
+        return () => {
+            document.body.classList.remove("bloom-hide-color-picker-backdrop");
+        };
+    }, [dialogOpen]);
 
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={lightTheme}>
+                <Global
+                    styles={css`
+                        .bloom-hide-color-picker-backdrop .MuiBackdrop-root {
+                            background-color: transparent !important;
+                        }
+                    `}
+                />
                 <BloomDialog
                     className="bloomModalDialog"
                     css={css`
@@ -302,14 +383,24 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
                             padding: 10px 14px 10px 10px; // maintain same spacing all around dialog content and between header/footer
                         }
                     `}
-                    open={props.open === undefined ? open : props.open}
+                    hideBackdrop={true}
+                    BackdropProps={{
+                        invisible: true,
+                    }}
+                    slotProps={{
+                        backdrop: {
+                            invisible: true,
+                        },
+                    }}
+                    open={dialogOpen}
                     ref={dlgRef}
                     onClose={(
                         _event,
                         reason: "backdropClick" | "escapeKeyDown",
                     ) => {
-                        if (reason === "backdropClick")
-                            onClose(DialogResult.OK);
+                        if (eyedropperActive) {
+                            return;
+                        }
                         if (reason === "escapeKeyDown")
                             onClose(DialogResult.Cancel);
                     }}
@@ -324,12 +415,14 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
                     <DialogMiddle>
                         <ColorPicker
                             onChange={handleOnChange}
+                            onChangeComplete={handleOnChangeComplete}
                             currentColor={currentColor}
                             swatchColors={swatchColorArray}
                             transparency={props.transparency}
                             noGradientSwatches={props.noGradientSwatches}
                             includeDefault={props.includeDefault}
                             onDefaultClick={props.onDefaultClick}
+                            onEyedropperActiveChange={setEyedropperActive}
                             //defaultColor={props.defaultColor}
                         />
                     </DialogMiddle>
@@ -366,13 +459,7 @@ export const showColorPickerDialog = (
 };
 
 export const hideColorPickerDialog = () => {
-    // I'm not sure if this can be falsy, but whereas in the method above we're calling it
-    // immediately after we render the dialog, which sets it, this gets called long after
-    // when the tool is closed. Just in case it somehow gets cleared, now or in some future
-    // version of the code, I decided to leave in the check that CoPilot proposed.
-    if (externalSetOpen) {
-        externalSetOpen(false);
-    }
+    externalSetOpen(false);
 };
 
 const doRender = (
@@ -412,10 +499,19 @@ export const showSimpleColorPickerDialog = (
             props.initialColor,
         ),
         palette: props.palette,
-        onChange: (color: IColorInfo) => props.onChange(color.colors[0]),
+        onChange: (color: IColorInfo) =>
+            props.onChange(getColorStringFromColorInfo(color)),
         onInputFocus: props.onInputFocus,
     };
     showColorPickerDialog(fullProps, props.container);
+};
+
+const getColorStringFromColorInfo = (color: IColorInfo): string => {
+    const firstColor = color.colors[0];
+    if (color.opacity === 1) {
+        return firstColor;
+    }
+    return getRgbaColorStringFromColorAndOpacity(firstColor, color.opacity);
 };
 
 export interface IColorDisplayButtonProps {
@@ -428,18 +524,57 @@ export interface IColorDisplayButtonProps {
     transparency: boolean;
     width?: number;
     disabled?: boolean;
+    deferOnChangeUntilComplete?: boolean;
     onClose: (result: DialogResult, newColor: string) => void;
+    onChange?: (newColor: string) => void;
+    onColorPickerVisibilityChanged?: (open: boolean) => void;
     palette: BloomPalette;
 }
 
 export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = (
     props,
 ) => {
+    const onColorPickerVisibilityChanged = props.onColorPickerVisibilityChanged;
+    const deferOnChangeUntilComplete = props.deferOnChangeUntilComplete;
+    const onChange = props.onChange;
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [colorAtDialogOpen, setColorAtDialogOpen] = useState(
+        props.initialColor,
+    );
     const [currentButtonColor, setCurrentButtonColor] = useState(
         props.initialColor,
     );
     const widthString = props.width ? `width: ${props.width}px;` : "";
+
+    const initialColorInfo = React.useMemo(
+        () =>
+            getColorInfoFromSpecialNameOrColorString(
+                dialogOpen ? colorAtDialogOpen : props.initialColor,
+            ),
+        [props.initialColor, dialogOpen, colorAtDialogOpen],
+    );
+
+    const handleDialogChange = React.useCallback(
+        (color: IColorInfo) => {
+            const newColor = getColorStringFromColorInfo(color);
+            setCurrentButtonColor(newColor);
+            if (!deferOnChangeUntilComplete && onChange) {
+                onChange(newColor);
+            }
+        },
+        [deferOnChangeUntilComplete, onChange],
+    );
+
+    const handleDialogChangeComplete = React.useCallback(
+        (color: IColorInfo) => {
+            const newColor = getColorStringFromColorInfo(color);
+            setCurrentButtonColor(newColor);
+            if (onChange) {
+                onChange(newColor);
+            }
+        },
+        [onChange],
+    );
 
     useEffect(() => {
         if (currentButtonColor !== props.initialColor) {
@@ -452,50 +587,113 @@ export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = (
         // other than a new props value changes it. )
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.initialColor]);
+
+    useEffect(() => {
+        return () => {
+            if (onColorPickerVisibilityChanged) {
+                onColorPickerVisibilityChanged(false);
+            }
+        };
+    }, [onColorPickerVisibilityChanged]);
+
     return (
         <div>
             <div
                 css={css`
                     border: solid 1px black;
-                    background-color: white;
                     padding: 2px;
-                    height: 19px;
                     opacity: ${props.disabled ? 0.2 : 1};
                     ${widthString}
                 `}
             >
                 <div
                     css={css`
-                        background-color: ${currentButtonColor};
+                        position: relative;
                         height: 19px;
+                        overflow: hidden;
                         ${widthString}
                     `}
-                    onClick={() => {
-                        if (props.disabled) return;
-                        setDialogOpen(true);
-                    }}
-                />
+                >
+                    <div
+                        data-testid="color-display-button-transparency-background"
+                        css={css`
+                            position: absolute;
+                            inset: 0;
+                            background-color: white;
+                            background-image:
+                                linear-gradient(
+                                    45deg,
+                                    #d0d0d0 25%,
+                                    transparent 25%
+                                ),
+                                linear-gradient(
+                                    -45deg,
+                                    #d0d0d0 25%,
+                                    transparent 25%
+                                ),
+                                linear-gradient(
+                                    45deg,
+                                    transparent 75%,
+                                    #d0d0d0 75%
+                                ),
+                                linear-gradient(
+                                    -45deg,
+                                    transparent 75%,
+                                    #d0d0d0 75%
+                                );
+                            background-position:
+                                0 0,
+                                0 5px,
+                                5px -5px,
+                                -5px 0;
+                            background-size: 10px 10px;
+                        `}
+                    />
+                    <div
+                        data-testid="color-display-button-swatch"
+                        css={css`
+                            position: absolute;
+                            inset: 0;
+                            background-color: ${currentButtonColor};
+                        `}
+                        onClick={() => {
+                            if (props.disabled) return;
+                            if (onColorPickerVisibilityChanged) {
+                                onColorPickerVisibilityChanged(true);
+                            }
+                            setColorAtDialogOpen(props.initialColor);
+                            setDialogOpen(true);
+                        }}
+                    />
+                </div>
             </div>
             <ColorPickerDialog
                 open={dialogOpen}
                 close={(result: DialogResult) => {
                     setDialogOpen(false);
+                    if (onColorPickerVisibilityChanged) {
+                        onColorPickerVisibilityChanged(false);
+                    }
+                    if (result === DialogResult.Cancel) {
+                        setCurrentButtonColor(colorAtDialogOpen);
+                    }
                     props.onClose(
                         result,
                         result === DialogResult.OK
                             ? currentButtonColor
-                            : props.initialColor,
+                            : colorAtDialogOpen,
                     );
                 }}
                 localizedTitle={props.localizedTitle}
                 transparency={props.transparency}
                 palette={props.palette}
-                initialColor={getColorInfoFromSpecialNameOrColorString(
-                    props.initialColor,
-                )}
+                initialColor={initialColorInfo}
                 onInputFocus={() => {}}
-                onChange={(color: IColorInfo) =>
-                    setCurrentButtonColor(color.colors[0])
+                onChange={handleDialogChange}
+                onChangeComplete={
+                    deferOnChangeUntilComplete
+                        ? handleDialogChangeComplete
+                        : undefined
                 }
             />
         </div>

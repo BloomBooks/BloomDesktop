@@ -132,6 +132,11 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler(
+                "editView/showPageSettingsDialog",
+                HandleShowPageSettingsDialog,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
                 "editView/toggleCustomPageLayout",
                 HandleToggleCustomCover,
                 true
@@ -203,6 +208,12 @@ namespace Bloom.web.controllers
         {
             request.PostSucceeded();
             View.SaveAndOpenBookSettingsDialog();
+        }
+
+        private void HandleShowPageSettingsDialog(ApiRequest request)
+        {
+            request.PostSucceeded();
+            View.SaveAndOpenPageSettingsDialog();
         }
 
         /// <summary>

@@ -12,8 +12,8 @@ import {
     MessageUsingMigratedThemeInsteadOfIncompatibleCss,
     MessageUsingLegacyThemeWithIncompatibleCss,
     MessageIgnoringIncompatibleCssCanDelete,
-} from "../bookEdit/bookSettings/BookSettingsDialog";
-import { isLegacyThemeName } from "../bookEdit/bookSettings/appearanceThemeUtils";
+} from "../bookEdit/bookAndPageSettings/BookSettingsConfigrPages";
+import { isLegacyThemeName } from "../bookEdit/bookAndPageSettings/appearanceThemeUtils";
 
 export const BookInfoIndicator: React.FunctionComponent<{
     bookId: string;

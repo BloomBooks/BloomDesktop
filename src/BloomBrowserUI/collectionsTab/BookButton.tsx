@@ -28,7 +28,7 @@ import { makeMenuItems, MenuItemSpec } from "./menuHelpers";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useL10n } from "../react_components/l10nHooks";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { showBookSettingsDialog } from "../bookEdit/bookSettings/BookSettingsDialog";
+import { showBookSettingsDialog } from "../bookEdit/bookAndPageSettings/BookAndPageSettingsDialog";
 import { BookOnBlorgBadge } from "../react_components/BookOnBlorgBadge";
 
 export const bookButtonHeight = 120;
