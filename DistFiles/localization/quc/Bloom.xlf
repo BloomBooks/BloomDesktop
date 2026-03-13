@@ -596,6 +596,26 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
         <target xml:lang="quc" state="final">Aj Armenio (Ajxik)</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.QrCodeBadgeLabelCaption" translate="no">
+        <source xml:lang="en">Label for QR code badge</source>
+        <target xml:lang="quc" state="needs-translation">Label for QR code badge</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.QrCodeBadgeLabelCaption</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.QrCodeBadgeText" translate="no">
+        <source xml:lang="en">Get more books in the {0} language on BloomLibrary.org.</source>
+        <target xml:lang="quc" state="needs-translation">Get more books in the {0} language on BloomLibrary.org.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.QrCodeBadgeText</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.QrCodeLabel" translate="no">
+        <source xml:lang="en">QR code in Bloom badge</source>
+        <target xml:lang="quc" state="needs-translation">QR code in Bloom badge</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.QrCodeLabel</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.QrCodeShowLanguage" translate="no">
+        <source xml:lang="en">Show QR code for current language books</source>
+        <target xml:lang="quc" state="needs-translation">Show QR code for current language books</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.QrCodeShowLanguage</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink" approved="yes">
         <source xml:lang="en">Special Script Settings</source>
         <target xml:lang="quc" state="final">Suk'umanem rech taq le Ka'yib'al nim uq'ij</target>
@@ -1539,6 +1559,26 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
         <source xml:lang="en">Copy Page</source>
         <target xml:lang="quc" state="final">Resaxik uwach uxaq wuj</target>
         <note>ID: EditTab.CopyPage</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomCover.Standard" translate="no">
+        <source xml:lang="en">Standard</source>
+        <target xml:lang="quc" state="needs-translation">Standard</target>
+        <note>ID: EditTab.CustomCover.Standard</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomCover.StandardLayout" translate="no">
+        <source xml:lang="en">Standard Layout</source>
+        <target xml:lang="quc" state="needs-translation">Standard Layout</target>
+        <note>ID: EditTab.CustomCover.StandardLayout</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomCover.Custom" translate="no">
+        <source xml:lang="en">Custom</source>
+        <target xml:lang="quc" state="needs-translation">Custom</target>
+        <note>ID: EditTab.CustomCover.Custom</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomCover.CustomLayout" translate="no">
+        <source xml:lang="en">Custom Layout</source>
+        <target xml:lang="quc" state="needs-translation">Custom Layout</target>
+        <note>ID: EditTab.CustomCover.CustomLayout</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.ChangeLayout" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change Layout</source>
@@ -2501,6 +2541,11 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="translated">Ojer retz'ab'ali</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BecomeBackground" translate="no">
+        <source xml:lang="en">Become background</source>
+        <target xml:lang="quc" state="needs-translation">Become background</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.BecomeBackground</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ChooseVideo" sil:dynamic="true">
         <source xml:lang="en">Choose video from your computer...</source>
         <target xml:lang="quc" state="needs-translation">Choose video from your computer...</target>
@@ -2511,10 +2556,20 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="needs-translation">Copy text</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.CopyText</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.CoverImage" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Cover Image</source>
+        <target xml:lang="quc" state="needs-translation">Cover Image</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.CoverImage</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Duplicate" sil:dynamic="true">
         <source xml:lang="en">Duplicate</source>
         <target xml:lang="quc" state="translated">Kab’chal</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FieldType" translate="no">
+        <source xml:lang="en">Field Type:</source>
+        <target xml:lang="quc" state="needs-translation">Field Type:</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.FieldType</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillBackground" sil:dynamic="true" translate="no">
         <source xml:lang="en">Fill Background</source>
@@ -2540,6 +2595,11 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <source xml:lang="en">Outer Outline Color</source>
         <target xml:lang="quc" state="translated">Uka’yib’al chirij</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Language" translate="no">
+        <source xml:lang="en">Language:</source>
+        <target xml:lang="quc" state="needs-translation">Language:</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Language</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None" sil:dynamic="true">
         <source xml:lang="en">None</source>
