@@ -1,3 +1,4 @@
+import { css } from "@emotion/react";
 import * as React from "react";
 import { useState } from "react";
 import TextField from "@mui/material/TextField";
@@ -11,38 +12,69 @@ export interface INumberChooserProps {
     tooltip?: string; // caller should localize
 }
 
+/**
+ * Small numeric input intended for choosing positive integers only.
+ */
 export const SmallNumberPicker: React.FunctionComponent<INumberChooserProps> = (
     props: INumberChooserProps,
 ) => {
-    const initialValue = props.minLimit === undefined ? 1 : props.minLimit;
-    const [chosenNumber, setChosenNumber] = useState(initialValue);
+    console.log("minLimit", props.minLimit);
+    const initialValue = props.minLimit ?? 1;
+    const [displayValue, setDisplayValue] = useState(initialValue.toString());
+    const [lastValidValue, setLastValidValue] = useState(initialValue);
 
     const handleNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const newString = event.target.value;
-        const newNum = parseInt(newString);
-        if (
-            !newNum ||
-            newNum > props.maxLimit ||
-            (props.minLimit && newNum < props.minLimit)
-        ) {
-            setChosenNumber(initialValue);
-            props.handleChange(initialValue);
-        } else {
-            setChosenNumber(newNum);
-            props.handleChange(newNum);
+        const newNum = event.target.valueAsNumber;
+
+        // Don't allow typing in invalid input; immediately snap back
+        if (!event.target.validity.valid || newString === "e") {
+            return;
+        }
+
+        setDisplayValue(newString);
+        // We want to allow empty string so the user can clear the input before entering a new number
+        if (newString === "") {
+            return;
+        }
+
+        setLastValidValue(newNum);
+        console.log("handle change", newNum);
+        props.handleChange(newNum);
+    };
+
+    // If the user clicks away with the input empty, restore the last valid value
+    const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+        const input = event.target;
+        if (input.value === "") {
+            setDisplayValue(lastValidValue.toString());
         }
     };
 
-    // We would love to set the TextField "type" to "number", but this introduces up/down arrows that we
-    // can't get rid of in Firefox and have the input still perform as a number input. This means we have to
-    // use a "text" style input and handle max and min and letter input in code. Any invalid input sets the
-    // input value back to the 'minLimit'.
     return (
         <div className="smallNumberPicker">
             <div data-tip={props.tooltip}>
                 <TextField
+                    css={css`
+                        // Don't display the little up/down arrows for number input
+                        input[type="number"] {
+                            -moz-appearance: textfield;
+                        }
+                        input[type="number"]::-webkit-outer-spin-button,
+                        input[type="number"]::-webkit-inner-spin-button {
+                            -webkit-appearance: none;
+                            margin: 0;
+                        }
+                    `}
+                    onBlur={handleBlur}
                     onChange={handleNumberChange}
-                    value={chosenNumber}
+                    value={displayValue}
+                    type="number"
+                    inputProps={{
+                        min: props.minLimit,
+                        max: props.maxLimit,
+                        step: 1,
+                    }}
                     variant="standard"
                 />
             </div>
