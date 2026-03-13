@@ -586,7 +586,7 @@ namespace Bloom.Book
                 );
                 HtmlDom.AddScriptFile(
                     dom.RawDom,
-                    "http://localhost:5173/bookEdit/editablePage.ts",
+                    ReactControl.GetViteDevUrl("/bookEdit/editablePage.ts"),
                     true
                 );
             }

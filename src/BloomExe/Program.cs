@@ -106,6 +106,8 @@ namespace Bloom
         public static bool RunningSecondInstance { get; private set; }
         internal static int? StartupHttpPort { get; private set; }
         internal static int? StartupCdpPort { get; private set; }
+        internal static int? StartupVitePort { get; private set; }
+        internal static string StartupLabel { get; private set; }
         internal static bool StartupUsesExplicitPorts =>
             StartupHttpPort.HasValue && StartupCdpPort.HasValue;
 
@@ -272,6 +274,17 @@ namespace Bloom
                 }
                 WebView2Browser.CleanupWebView2UserFolders();
                 return mainTask.Result; // we're done; this is safe once there is nothing being awaited.
+            }
+
+            if (!ValidateStartupVitePort(out var startupViteErrorMessage))
+            {
+                MessageBox.Show(
+                    startupViteErrorMessage,
+                    "Bloom",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+                return 1;
             }
 
             try
@@ -710,6 +723,8 @@ namespace Bloom
             errorMessage = null;
             StartupHttpPort = null;
             StartupCdpPort = null;
+            StartupVitePort = null;
+            StartupLabel = null;
 
             var remainingArgs = new List<string>();
 
@@ -761,6 +776,52 @@ namespace Bloom
                     continue;
                 }
 
+                if (
+                    TryParseStartupPortArgument(
+                        args,
+                        ref i,
+                        "--vite-port",
+                        out var vitePort,
+                        out errorMessage
+                    )
+                )
+                {
+                    if (errorMessage != null)
+                        return Array.Empty<string>();
+
+                    if (StartupVitePort.HasValue)
+                    {
+                        errorMessage = "Bloom only accepts one --vite-port argument.";
+                        return Array.Empty<string>();
+                    }
+
+                    StartupVitePort = vitePort;
+                    continue;
+                }
+
+                if (
+                    TryParseStartupStringArgument(
+                        args,
+                        ref i,
+                        "--label",
+                        out var label,
+                        out errorMessage
+                    )
+                )
+                {
+                    if (errorMessage != null)
+                        return Array.Empty<string>();
+
+                    if (StartupLabel != null)
+                    {
+                        errorMessage = "Bloom only accepts one --label argument.";
+                        return Array.Empty<string>();
+                    }
+
+                    StartupLabel = string.IsNullOrWhiteSpace(label) ? null : label.Trim();
+                    continue;
+                }
+
                 remainingArgs.Add(args[i]);
             }
 
@@ -777,6 +838,39 @@ namespace Bloom
             }
 
             return remainingArgs.ToArray();
+        }
+
+        private static bool TryParseStartupStringArgument(
+            string[] args,
+            ref int index,
+            string optionName,
+            out string value,
+            out string errorMessage
+        )
+        {
+            value = null;
+            errorMessage = null;
+            var current = args[index];
+
+            if (current == optionName)
+            {
+                if (index + 1 >= args.Length)
+                {
+                    errorMessage = $"Bloom requires a value after {optionName}.";
+                    return true;
+                }
+
+                value = args[++index];
+                return true;
+            }
+
+            if (current.StartsWith(optionName + "=", StringComparison.Ordinal))
+            {
+                value = current.Substring(optionName.Length + 1);
+                return true;
+            }
+
+            return false;
         }
 
         private static bool TryParseStartupPortArgument(
@@ -821,6 +915,21 @@ namespace Bloom
             }
 
             return true;
+        }
+
+        private static bool ValidateStartupVitePort(out string errorMessage)
+        {
+            errorMessage = null;
+
+            if (!StartupVitePort.HasValue)
+                return true;
+
+            if (ReactControl.IsViteDevServerRunning(StartupVitePort.Value))
+                return true;
+
+            errorMessage =
+                $"Bloom was started with --vite-port {StartupVitePort.Value}, but no Vite dev server was reachable at {ReactControl.GetViteDevOrigin(StartupVitePort.Value)}/@vite/client.";
+            return false;
         }
 
         private static bool IsWebviewMissingOrTooOld()

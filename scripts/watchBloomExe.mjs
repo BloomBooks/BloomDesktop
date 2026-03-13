@@ -1,30 +1,27 @@
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
     acquireBloomPortLease,
     formatBloomPortPlan,
-    getDefaultRepoRoot,
     releaseBloomPortLease,
     waitForBloomInstanceInfo,
-} from "./bloomProcessCommon.mjs";
+} from "../.github/skills/bloom-automation/bloomProcessCommon.mjs";
 
 const parseArgs = () => {
     const args = process.argv.slice(2);
     const options = {
-        watch: false,
-        repoRoot: getDefaultRepoRoot(),
+        repoRoot: path.resolve(
+            path.dirname(fileURLToPath(import.meta.url)),
+            "..",
+        ),
         httpPort: undefined,
         cdpPort: undefined,
     };
 
     for (let i = 0; i < args.length; i++) {
         const arg = args[i];
-
-        if (arg === "--watch") {
-            options.watch = true;
-            continue;
-        }
 
         if (arg === "--repo-root") {
             options.repoRoot = args[i + 1] || options.repoRoot;
@@ -61,12 +58,14 @@ const options = parseArgs();
 const launchTimeoutMs = 120000;
 const bloomMonitorPollMs = 500;
 const shortLivedBloomMs = 5000;
+const launchesUnderWatch = true;
 const projectPath = path.join(
     options.repoRoot,
     "src",
     "BloomExe",
     "BloomExe.csproj",
 );
+const worktreeLabel = "/" + path.basename(path.resolve(options.repoRoot)) + "/";
 
 if (!existsSync(projectPath)) {
     console.error(
@@ -80,28 +79,19 @@ const lease = await acquireBloomPortLease({
     cdpPort: options.cdpPort,
 });
 const portPlan = lease.portPlan;
-const dotnetArgs = options.watch
-    ? [
-          "watch",
-          "run",
-          "--project",
-          projectPath,
-          "--",
-          "--http-port",
-          String(portPlan.httpPort),
-          "--cdp-port",
-          String(portPlan.cdpPort),
-      ]
-    : [
-          "run",
-          "--project",
-          projectPath,
-          "--",
-          "--http-port",
-          String(portPlan.httpPort),
-          "--cdp-port",
-          String(portPlan.cdpPort),
-      ];
+const dotnetArgs = [
+    "watch",
+    "run",
+    "--project",
+    projectPath,
+    "--",
+    "--http-port",
+    String(portPlan.httpPort),
+    "--cdp-port",
+    String(portPlan.cdpPort),
+    "--label",
+    worktreeLabel,
+];
 
 console.log(`Bloom launch ports: ${formatBloomPortPlan(portPlan)}`);
 
@@ -112,7 +102,7 @@ const child = spawn("dotnet", dotnetArgs, {
 
 console.log(`dotnet PID: ${child.pid}`);
 console.log(
-    "bloomRun.mjs tracks the launched Bloom instance until it exits. Treat the 'Bloom ready.' line as the launch success signal and keep this terminal open while you target the reported HTTP port.",
+    "watchBloomExe.mjs tracks the launched Bloom instance until it exits. Treat the 'Bloom ready.' line as the launch success signal and keep this terminal open while you target the reported HTTP port.",
 );
 
 let childExited = false;
@@ -158,18 +148,33 @@ const exitForFinishedLaunch = (exitCode = 0) => {
 };
 
 const startBloomMonitor = () => {
-    if (options.watch || bloomMonitor || !bloomProcessId) {
+    if (bloomMonitor || !bloomProcessId) {
         return;
     }
 
     bloomMonitor = setInterval(() => {
         if (isProcessRunning(bloomProcessId)) {
+            if (
+                launchesUnderWatch &&
+                bloomReadyAt &&
+                Date.now() - bloomReadyAt >= shortLivedBloomMs
+            ) {
+                stopBloomMonitor();
+            }
             return;
         }
 
         const runtimeMs = bloomReadyAt ? Date.now() - bloomReadyAt : undefined;
         const exitedTooSoon =
             runtimeMs !== undefined && runtimeMs < shortLivedBloomMs;
+
+        if (launchesUnderWatch && !exitedTooSoon) {
+            console.log(
+                `Bloom PID ${bloomProcessId} exited after ${runtimeMs} ms while dotnet watch remains active.`,
+            );
+            stopBloomMonitor();
+            return;
+        }
 
         if (exitedTooSoon) {
             console.error(
@@ -211,7 +216,7 @@ waitForBloomInstanceInfo(portPlan.httpPort, launchTimeoutMs)
             `Bloom ready. HTTP ${instanceInfo.httpPort}, websocket ${instanceInfo.webSocketPort || portPlan.webSocketPort}, CDP ${instanceInfo.cdpPort || portPlan.cdpPort}, Bloom PID ${instanceInfo.processId}.`,
         );
 
-        if (childExited && !options.watch) {
+        if (childExited && !launchesUnderWatch) {
             console.log(
                 `dotnet exited, but Bloom PID ${instanceInfo.processId} is still running. Continuing to monitor that Bloom process and hold the port lease.`,
             );
@@ -237,7 +242,11 @@ child.on("exit", (code, signal) => {
     childExitCode = code ?? 0;
     childExitSignal = signal ?? undefined;
 
-    if (bloomProcessId && isProcessRunning(bloomProcessId) && !options.watch) {
+    if (
+        bloomProcessId &&
+        isProcessRunning(bloomProcessId) &&
+        !launchesUnderWatch
+    ) {
         console.log(
             `dotnet exited${code !== null ? ` with code ${code}` : ""}, but Bloom PID ${bloomProcessId} is still running. Waiting for Bloom to exit before releasing the port lease.`,
         );

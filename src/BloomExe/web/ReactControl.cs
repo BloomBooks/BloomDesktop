@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Net.Http;
 using System.Windows.Forms;
 using Bloom.Utils;
 using Newtonsoft.Json;
@@ -24,6 +25,8 @@ namespace Bloom.web
 
     public partial class ReactControl : UserControl
     {
+        private const int kDefaultViteDevPort = 5173;
+        private const string kDefaultViteDevOrigin = "http://localhost:5173";
         private string _javascriptBundleName;
 
         // props to provide to the react component
@@ -292,7 +295,8 @@ namespace Bloom.web
 
             if (useViteDev)
             {
-                return $@"<!DOCTYPE html>
+                return ReplaceViteDevOrigin(
+                    $@"<!DOCTYPE html>
                 <html style='height:100%'>
                 <head>
                     <title>ReactControl (Vite {javascriptBundleName})</title>
@@ -423,7 +427,8 @@ namespace Bloom.web
                     </script>
                 </head>
                 {body}
-                </html>";
+                </html>"
+                );
             }
             else
             {
@@ -453,6 +458,12 @@ namespace Bloom.web
         // if extraCheck is passed it must return true for us to use vite.
         public static bool ShouldUseViteDev(Func<bool> extraCheck = null)
         {
+            if (extraCheck != null && !extraCheck())
+                return false;
+
+            if (Program.StartupVitePort.HasValue)
+                return true;
+
             // Should we load relevant assets from the Vite Dev server?
             // To save time, only consider it if this is a dev build.
             // This also guards against trying to load assets from the vite server
@@ -460,12 +471,110 @@ namespace Bloom.web
             // problem if a dev is trying to run dev builds of two versions at once.
             if (!ApplicationUpdateSupport.IsDev)
                 return false;
-            if (extraCheck != null && !extraCheck())
-                return false;
             // If still an option, see if localhost:5173 is running. This is quite slow when it is not.
             // The original version used 400ms, which meant a 1200ms delay; but if it's going to succeed,
             // it typically does so in 2ms. I compromised on 40.
-            return IsLocalPortOpen(5173, 40);
+            return IsLocalPortOpen(kDefaultViteDevPort, 40);
+        }
+
+        public static int GetViteDevPort()
+        {
+            return Program.StartupVitePort ?? kDefaultViteDevPort;
+        }
+
+        public static bool TryGetActiveViteDevPort(out int vitePort)
+        {
+            if (Program.StartupVitePort.HasValue)
+            {
+                vitePort = Program.StartupVitePort.Value;
+                return true;
+            }
+
+            if (ApplicationUpdateSupport.IsDev && IsLocalPortOpen(kDefaultViteDevPort, 40))
+            {
+                vitePort = kDefaultViteDevPort;
+                return true;
+            }
+
+            vitePort = 0;
+            return false;
+        }
+
+        public static string GetViteDevOrigin(int? port = null)
+        {
+            return $"http://localhost:{port ?? GetViteDevPort()}";
+        }
+
+        public static string GetViteDevUrl(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                throw new ArgumentNullException(nameof(path));
+
+            return GetViteDevOrigin() + (path.StartsWith("/") ? path : "/" + path);
+        }
+
+        public static string ReplaceViteDevOrigin(string html)
+        {
+            if (string.IsNullOrEmpty(html) || !Program.StartupVitePort.HasValue)
+                return html;
+
+            return html.Replace(kDefaultViteDevOrigin, GetViteDevOrigin());
+        }
+
+        public static bool IsViteDevServerRunning(int port, int timeoutMs = 400)
+        {
+            foreach (
+                var origin in new[]
+                {
+                    $"http://127.0.0.1:{port}",
+                    $"http://[::1]:{port}",
+                    GetViteDevOrigin(port),
+                }
+            )
+            {
+                if (TryFetchViteClient(origin, timeoutMs))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool TryFetchViteClient(string origin, int timeoutMs)
+        {
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromMilliseconds(timeoutMs);
+                    using (
+                        var response = client
+                            .GetAsync(origin + "/@vite/client")
+                            .GetAwaiter()
+                            .GetResult()
+                    )
+                    {
+                        if (!response.IsSuccessStatusCode)
+                            return false;
+
+                        var mediaType = response.Content.Headers.ContentType?.MediaType;
+                        var text = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                        return (
+                                mediaType?.Contains(
+                                    "javascript",
+                                    StringComparison.OrdinalIgnoreCase
+                                ) ?? false
+                            )
+                            && (
+                                text.Contains("createHotContext", StringComparison.Ordinal)
+                                || text.Contains("__vite", StringComparison.Ordinal)
+                            );
+                    }
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public static bool IsLocalPortOpen(int port, int timeoutMs = 400)

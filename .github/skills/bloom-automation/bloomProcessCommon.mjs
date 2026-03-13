@@ -205,7 +205,9 @@ export const acquireBloomPortLease = async (requestedPorts = {}) => {
     }
 
     if (explicitCdpPort && !explicitHttpPort) {
-        throw new Error("--cdp-port requires --http-port in bloomRun.mjs.");
+        throw new Error(
+            "--cdp-port requires --http-port in scripts/watchBloomExe.mjs.",
+        );
     }
 
     const explicitPlan = explicitHttpPort

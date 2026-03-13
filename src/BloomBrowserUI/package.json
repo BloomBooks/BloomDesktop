@@ -10,6 +10,7 @@
         "node": ">=22.12.0"
     },
     "scripts": {
+        "exe": "node ../../scripts/watchBloomExe.mjs",
         "dev": "node ./scripts/dev.mjs",
         "// Watching: yarn dev starts vite + file watchers (LESS, pug, static assets, and key content folders)": " ",
         "// COMMENTS: make the action a space rather than empty string so `yarn run` can list the scripts": " ",

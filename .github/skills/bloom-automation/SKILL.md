@@ -19,7 +19,7 @@ Use the real embedded WebView2 inside Bloom.exe as the automation target. Determ
 - You need Playwright tests to hit the actual exe instead of `http://localhost:8089/bloom/CURRENTPAGE` in a separate browser tab.
 
 ## Default Assumptions
-- Current repo root is derived automatically from the script location.
+- Current repo root is derived automatically by the checked-in helper.
 - Bloom project path is `src/BloomExe/BloomExe.csproj`.
 - The helper launch script chooses an explicit port block by default instead of relying on Bloom's standard search. It allocates HTTP bases from `18089`, `18099`, `18109`, ... and reserves `http`, `http+1`, and `http+2`, with CDP on `http+3`.
 - Running Bloom reports its actual HTTP and CDP ports through `http://localhost:<port>/bloom/api/common/instanceInfo`.
@@ -35,7 +35,7 @@ repo_root="$(git rev-parse --show-toplevel)"
 
 Terminal:
 - In this VS Code workspace, the shared bash terminal keeps whatever cwd the previous command left behind.
-- Prefer running the helper through `$repo_root/.github/skills/...` so the command does not depend on the current working directory.
+- Prefer running the helper through `$repo_root/.github/skills/...` or `$repo_root/scripts/...` so the command does not depend on the current working directory.
 
 Important:
 - Agents using this skill MUST use the checked-in helper scripts below, not package.json aliases and not ad hoc `wmic` commands.
@@ -57,7 +57,7 @@ node "$repo_root/.github/skills/bloom-automation/bloomProcessStatus.mjs" --http-
 Reports Bloom.exe processes, detected repo roots, attributable `dotnet watch` parents, ambiguous watchers, and whether the workspace API and CDP endpoint are reachable.
 
 Use `--running-bloom` when the user explicitly wants the already-running Bloom instead of a worktree-owned instance. This scans Bloom's standard HTTP port range, asks any running Bloom for `common/instanceInfo`, and reports the ports that instance says it is using.
-Use `--http-port <port>` when you launched Bloom through `bloomRun.mjs` and want the exact instance that owns that HTTP port. This is the preferred multi-instance workflow because it gives you the precise Bloom PID and CDP port even when several Blooms from the same worktree are running.
+Use `--http-port <port>` when you launched Bloom through `watchBloomExe.mjs` and want the exact instance that owns that HTTP port. This is the preferred multi-instance workflow because it gives you the precise Bloom PID and CDP port even when several Blooms from the same worktree are running.
 ### Kill Bloom
 
 ```bash
@@ -75,15 +75,14 @@ Important: if Bloom was started with `dotnet watch run`, killing only `Bloom.exe
 ### Start Bloom
 
 ```bash
-node "$repo_root/.github/skills/bloom-automation/bloomRun.mjs"
-node "$repo_root/.github/skills/bloom-automation/bloomRun.mjs" --watch
-node "$repo_root/.github/skills/bloom-automation/bloomRun.mjs" --http-port 18089 --cdp-port 18092
+node "$repo_root/scripts/watchBloomExe.mjs"
+node "$repo_root/scripts/watchBloomExe.mjs" --http-port 18089 --cdp-port 18092
 ```
 
-Use `--watch` when you expect to iterate. These helpers compute the repo root, acquire a lock on a non-overlapping port block, pass explicit `--http-port` and `--cdp-port` arguments to Bloom, and print the `dotnet` PID immediately plus the Bloom PID once `common/instanceInfo` becomes reachable.
-`bloomRun.mjs` is intentionally long-lived: for normal launches it keeps running until the launched Bloom instance exits, even if `dotnet run` returns earlier after spawning `Bloom.exe`. If Bloom reports ready and then dies shortly afterward, the helper now reports that as a failed launch instead of silently succeeding.
+These helpers always launch through `dotnet watch run`, compute the repo root, acquire a lock on a non-overlapping port block, pass explicit `--http-port` and `--cdp-port` arguments to Bloom, and print the `dotnet` PID immediately plus the Bloom PID once `common/instanceInfo` becomes reachable.
+`watchBloomExe.mjs` is intentionally long-lived: for normal launches it keeps running under `dotnet watch run` until the launch session ends. If Bloom reports ready and then dies shortly afterward, the helper reports that as a failed launch instead of silently succeeding.
 
-Agent workflow for `bloomRun.mjs`:
+Agent workflow for `watchBloomExe.mjs`:
 - Start it in a background terminal.
 - Do not wait for the command to finish. A successful launch is the `Bloom ready. HTTP ..., websocket ..., CDP ..., Bloom PID ...` line, not process exit.
 - If the helper later reports that the Bloom PID exited shortly after reporting ready, treat that as a failed launch and do not target that HTTP port.
@@ -140,7 +139,7 @@ Notes:
 
 ## Core Workflow
 1. Run `node .github/skills/bloom-automation/bloomProcessStatus.mjs --json` if you need to know whether an ordinary current-worktree instance is already running.
-2. If you need a fresh automation-owned instance, start it with `node .github/skills/bloom-automation/bloomRun.mjs --watch` or `node .github/skills/bloom-automation/bloomRun.mjs`.
+2. If you need a fresh automation-owned instance, start it with `node scripts/watchBloomExe.mjs`.
 3. Copy the printed HTTP and CDP ports. If you need the exact PID later, run `node .github/skills/bloom-automation/bloomProcessStatus.mjs --http-port <httpPort> --json`.
 4. If you instead want to reuse a current-worktree instance that Bloom found by itself, only then use repo-root matching and `--only-mismatched` cleanup.
 5. Run `node .github/skills/bloom-automation/webview2Targets.mjs --http-port <httpPort> --json --wait` to discover the live WebView2 target for that exact instance when you need debugging detail.
@@ -173,10 +172,9 @@ Use this when the user says to reuse the already-running Bloom.
 
 ### Start with the helper, not raw watch commands
 - Start it from the current worktree.
-- Prefer `node .github/skills/bloom-automation/bloomRun.mjs --watch` if you expect to iterate.
-- Prefer `node .github/skills/bloom-automation/bloomRun.mjs` if you only need a single verification run.
+- Use `node scripts/watchBloomExe.mjs` for fresh automation-owned launches.
 - Treat the printed HTTP port as the identity of that instance. Use `bloomProcessStatus.mjs --http-port <port>`, `webview2Targets.mjs --http-port <port>`, and `killBloomProcess.mjs --http-port <port>` to target it precisely.
-- Never wait for `bloomRun.mjs` to exit as a readiness signal. It is a long-lived launcher. Wait for the `Bloom ready.` line in the background terminal output instead, and treat a later `Bloom PID ... exited shortly after reporting ready` message as a failed launch.
+- Never wait for `watchBloomExe.mjs` to exit as a readiness signal. It is a long-lived launcher. Wait for the `Bloom ready.` line in the background terminal output instead, and treat a later `Bloom PID ... exited shortly after reporting ready` message as a failed launch.
 
 ### Reuse the running Bloom when the user asks for it
 - Run `node .github/skills/bloom-automation/bloomProcessStatus.mjs --running-bloom --json`.
@@ -217,13 +215,13 @@ These tests attach to the real Bloom.exe target over CDP and verify tab switchin
 
 ## Notes
 - Prefer the Node helpers over PowerShell. The Node scripts use `wmic`, `taskkill`, and `dotnet` directly because the PowerShell path proved too brittle.
-- Prefer the checked-in Node helper commands over raw Windows shell commands. Subagents should normally run `node .github/skills/bloom-automation/bloomProcessStatus.mjs --json`, `node .github/skills/bloom-automation/killBloomProcess.mjs --only-mismatched`, `node .github/skills/bloom-automation/bloomRun.mjs`, `node .github/skills/bloom-automation/webview2Targets.mjs --json --wait`, and `node .github/skills/bloom-automation/switchWorkspaceTab.mjs --running-bloom --tab edit`, not ad hoc `wmic` commands.
-- `bloomRun.mjs` keeps a lightweight lease file for the chosen HTTP block while it is running so concurrent agents do not both choose the same automation ports.
+- Prefer the checked-in Node helper commands over raw Windows shell commands. Subagents should normally run `node .github/skills/bloom-automation/bloomProcessStatus.mjs --json`, `node .github/skills/bloom-automation/killBloomProcess.mjs --only-mismatched`, `node scripts/watchBloomExe.mjs`, `node .github/skills/bloom-automation/webview2Targets.mjs --json --wait`, and `node .github/skills/bloom-automation/switchWorkspaceTab.mjs --running-bloom --tab edit`, not ad hoc `wmic` commands.
+- `watchBloomExe.mjs` keeps a lightweight lease file for the chosen HTTP block while it is running so concurrent agents do not both choose the same automation ports.
 - For agent-driven launches, the background terminal is part of the control plane. Leave it running and poll its output for `Bloom ready.` instead of waiting for command completion. The helper may keep running after `dotnet` exits because it is tracking the actual Bloom process.
 - Exact-target cleanup is intentionally strict: `killBloomProcess.mjs --http-port <port>` should only kill the instance that actually reports that HTTP port, and should fail without killing anything if that target cannot be resolved.
 - When reporting work, include the helper commands you used so reviewers can confirm the workflow stayed on the supported path.
 - Wrong-worktree detection is authoritative when a real `Bloom.exe` child exists or when `dotnet watch` was started with an absolute `--project` path.
-- A standalone `dotnet watch` started with a relative project path may not expose enough information to attribute it to a worktree. For current-worktree automation, start Bloom through `node .github/skills/bloom-automation/bloomRun.mjs --watch`, which always uses an absolute path. For the already-running Bloom workflow, use `--running-bloom` instead of trying to infer a worktree.
+- A standalone `dotnet watch` started with a relative project path may not expose enough information to attribute it to a worktree. For current-worktree automation, start Bloom through `node scripts/watchBloomExe.mjs`, which always uses an absolute path. For the already-running Bloom workflow, use `--running-bloom` instead of trying to infer a worktree.
 - When more than one Bloom is running from the same worktree, repo-root matching is not enough. Use the explicit HTTP port workflow.
 
 ## Completion Checks

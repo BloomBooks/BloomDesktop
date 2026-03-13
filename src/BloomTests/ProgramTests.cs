@@ -15,6 +15,9 @@ namespace BloomTests
                     "--http-port",
                     "19089",
                     "--cdp-port=19092",
+                    "--vite-port",
+                    "15173",
+                    "--label=my-cool-feature",
                     @"C:\Temp\Example.bloomcollection",
                 },
                 out var errorMessage
@@ -23,6 +26,8 @@ namespace BloomTests
             Assert.That(errorMessage, Is.Null);
             Assert.That(Program.StartupHttpPort, Is.EqualTo(19089));
             Assert.That(Program.StartupCdpPort, Is.EqualTo(19092));
+            Assert.That(Program.StartupVitePort, Is.EqualTo(15173));
+            Assert.That(Program.StartupLabel, Is.EqualTo("my-cool-feature"));
             Assert.That(remainingArgs, Is.EqualTo(new[] { @"C:\Temp\Example.bloomcollection" }));
         }
 
