@@ -76,6 +76,12 @@ export function convertXmatterPageToCustom(page: HTMLElement): void {
     const newCeImages: HTMLElement[] = [];
 
     for (const elem of contentElements) {
+        // If something was completely hidden on the source page (typically by a book setting),
+        // making it appear on the custom page would be unexpected. This searches a few levels up,
+        // since the data-book element is sometimes inside an element that gets hidden.
+        if (EditableDivUtils.isInDisplayNone(elem)) {
+            continue;
+        }
         if (elem instanceof HTMLImageElement) {
             // The main cover image. We will clone it, but it will no longer be
             // a background image.

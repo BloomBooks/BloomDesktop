@@ -529,13 +529,18 @@ export class EditableDivUtils {
             );
             elemToCheck = parentEditable || elem;
         }
-        // elemToCheck is typically a bloom-editable. Originally, we were just looking to consider
+        // elemToCheck is typically a bloom-editable. Originally, this check was used to consider
         // which languages were hidden. But with drag-activity, there are cases where a containing
-        // text-over-picture element is hidden. That's two levels above the bloom-editable.
-        // Looking up four levels should be enough, and may make this computationally less
-        // expensive than looking all the way up to the document. (I think getComputedStyle is
-        // quite slow.)
-        for (let i = 0; i < 4; i++) {
+        // text-over-picture element is hidden. Checking a small number of ancestors is usually
+        // enough, and less expensive than looking all the way up to the document.
+        // (I think getComputedStyle is quite slow.)
+        return EditableDivUtils.isInDisplayNone(elemToCheck);
+    }
+
+    public static isInDisplayNone(elem: Element, maxLevelsToCheck = 4) {
+        let elemToCheck: Element | null = elem;
+
+        for (let i = 0; i < maxLevelsToCheck; i++) {
             const style = window.getComputedStyle(elemToCheck);
             if (style.display === "none") {
                 return true;
