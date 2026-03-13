@@ -15,7 +15,7 @@ import { selectVideoContainer } from "./videoUtils";
 import { getPlayIcon } from "../img/playIcon";
 import { getPauseIcon } from "../img/pauseIcon";
 import { getReplayIcon } from "../img/replayIcon";
-import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementUtils";
+import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementPageBridge";
 import $ from "jquery";
 
 export function SetupVideoEditing(container) {
@@ -92,7 +92,7 @@ function videoPlayingEventHandler(e: Event) {
     currentVideoElement = video;
     let end: number = getVideoEndSeconds(video);
     const untrimmedEndPoint: number = 0.0;
-    if (end == untrimmedEndPoint) {
+    if (end === untrimmedEndPoint) {
         // We can't just set the endpoint to equal the duration of the video here, because
         // we will be testing that the current playback time is greater than the endpoint.
         // Since we test for the end of the video every 1/10th of a second, set the endpoint

@@ -1,7 +1,10 @@
 // This file is a work-in-progress, trying to isolate game-related functionality that
 // is needed both in the toolbox and in the content page.
 
-import { getAllDraggables, isDraggable } from "../../js/CanvasElementManager";
+import {
+    getAllDraggables,
+    isDraggable,
+} from "../canvas/canvasElementDraggables";
 
 export function doesContainingPageHaveSameSizeMode(
     refElt: HTMLElement,

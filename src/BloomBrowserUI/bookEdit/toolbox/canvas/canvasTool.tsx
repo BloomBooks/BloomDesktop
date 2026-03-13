@@ -2,9 +2,9 @@ import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import * as ReactDOM from "react-dom";
 import { kCanvasToolId } from "../toolIds";
 import { EnableAllImageEditing } from "../../js/bloomImages";
-import { getCanvasElementManager } from "./canvasElementUtils";
+import { getCanvasElementManager } from "./canvasElementPageBridge";
 import $ from "jquery";
-import type { CanvasElementManager } from "../../js/CanvasElementManager";
+import type { CanvasElementManager } from "../../js/canvasElementManager/CanvasElementManager";
 import CanvasToolControls from "./CanvasToolControls";
 
 // Possibly wants to be CanvasElementTool, but we may think of a better UI name and want to use that instead, so leaving for now.

@@ -1065,7 +1065,10 @@ namespace Bloom.Publish
                 var childrenToRemove = dataDiv
                     .ChildNodes.OfType<SafeXmlElement>()
                     .Where(child =>
-                        child.ChildNodes.OfType<SafeXmlElement>().FirstOrDefault()?.HasClass("bloom-canvas")
+                        child
+                            .ChildNodes.OfType<SafeXmlElement>()
+                            .FirstOrDefault()
+                            ?.HasClass("bloom-canvas")
                         ?? false
                     )
                     .ToArray();

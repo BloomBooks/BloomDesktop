@@ -8,6 +8,7 @@ import {
     ListItemIcon,
     ListItemText,
     MenuItem,
+    Typography,
     TypographyProps,
     TypographyPropsVariantOverrides,
 } from "@mui/material";
@@ -46,6 +47,7 @@ interface IBaseLocalizableMenuItemProps {
     subLabelL10nId?: string;
     tooltip?: string;
     featureName?: string;
+    shortcutDisplay?: string;
 }
 
 export interface INestedMenuItemProps extends IBaseLocalizableMenuItemProps {
@@ -100,6 +102,7 @@ export const divider: ILocalizableMenuItemProps = {
 
 const kIconCheckboxAffordance = 28;
 const kEnterpriseStickerAffordance = 28;
+const kShortcutAffordance = 44;
 const menuItemColor = "black";
 
 export const LocalizableMenuItem: React.FunctionComponent<
@@ -127,6 +130,10 @@ export const LocalizableMenuItem: React.FunctionComponent<
             css={css`
                 width: ${kIconCheckboxAffordance}px !important; // overrides MUI default that leaves way too much space
                 min-width: unset !important;
+                color: ${menuItemColor} !important;
+                svg {
+                    color: inherit !important;
+                }
 
                 // We can't use the disabled prop because it prevents the click from opening settings.
                 // So we just make it look disabled (using the same setting as Mui-disabled).
@@ -171,6 +178,31 @@ export const LocalizableMenuItem: React.FunctionComponent<
         />
     );
 
+    const shortcutElement = props.shortcutDisplay ? (
+        <Typography
+            variant="caption"
+            css={css`
+                color: rgb(94, 94, 94);
+                font-family: ${kUiFontStack};
+                font-size: 14px;
+                font-weight: 500;
+                min-width: ${kShortcutAffordance}px;
+                text-align: right;
+                margin-left: 10px;
+                opacity: ${enabled ? undefined : kBloomDisabledOpacity};
+            `}
+        >
+            {props.shortcutDisplay}
+        </Typography>
+    ) : (
+        <div
+            css={css`
+                min-width: ${kShortcutAffordance}px;
+                margin-left: 10px;
+            `}
+        />
+    );
+
     const localizedSubLabel = useL10n("", props.subLabelL10nId ?? null);
     const subLabel =
         props.subLabel ?? props.generatedSubLabel ?? localizedSubLabel;
@@ -211,6 +243,7 @@ export const LocalizableMenuItem: React.FunctionComponent<
                         primary={label + ellipsis}
                         secondary={subLabel !== "" ? subLabel : null} // null is needed to not leave an empty row
                     ></ListItemText>
+                    {shortcutElement}
                     {subscriptionElement}
                 </React.Fragment>
             </MenuItem>
@@ -366,6 +399,9 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<
                     font-family: ${kUiFontStack};
                     font-size: 1rem !important; // Don't think this takes effect, MUI has a rule that applies to child.
                     color: ${menuItemColor} !important;
+                    svg {
+                        color: ${menuItemColor} !important;
+                    }
                     // probably need this back if we return to dense layout
                     //padding: 4px 6px 0 6px !important; // adjust for denser layout
                     justify-content: space-between !important; // move sub-menu arrow to right

@@ -1348,11 +1348,7 @@ namespace Bloom.Edit
             pageListDom.RawDom.GetElementsByTagName("head")[0].AppendChild(style);
         }
 
-        /// <summary>
-        /// Return the top-level document that should be displayed in the browser for the current page.
-        /// </summary>
-        /// <returns></returns>
-        public HtmlDom GetXmlDocumentForEditScreenWebPage()
+        private HtmlDom GetXmlDocumentForEditScreenWebPage(string pageUrl, string pageListUrl)
         {
             var path = FileLocationUtilities.GetFileDistributedWithApplication(
                 Path.Combine(
@@ -1369,8 +1365,8 @@ namespace Bloom.Edit
             // See BloomServer.MakeInMemoryHtmlFileInBookFolder() for more details.
             var frameText = RobustFile
                 .ReadAllText(path, Encoding.UTF8)
-                .Replace("{simulatedPageFileInBookFolder}", GetUrlForCurrentPage())
-                .Replace("{simulatedPageListFile}", GetUrlForPageListFile());
+                .Replace("{simulatedPageFileInBookFolder}", pageUrl)
+                .Replace("{simulatedPageListFile}", pageListUrl);
             var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));
 
             if (_currentlyDisplayedBook.BookInfo.ToolboxIsOpen)
@@ -1384,6 +1380,31 @@ namespace Bloom.Edit
             }
 
             return dom;
+        }
+
+        /// <summary>
+        /// Return the top-level document that should be displayed in the browser for the current page.
+        /// </summary>
+        /// <returns></returns>
+        public HtmlDom GetXmlDocumentForEditScreenWebPage()
+        {
+            return GetXmlDocumentForEditScreenWebPage(
+                GetUrlForCurrentPage(),
+                GetUrlForPageListFile()
+            );
+        }
+
+        internal HtmlDom GetXmlDocumentForEditScreenWebPage(string pageUrl, string pageListUrl)
+        {
+            return GetXmlDocumentForEditScreenWebPage(pageUrl, pageListUrl);
+        }
+
+        internal void UpdateCurrentPageDebugView(string pageUrl, string pageListUrl)
+        {
+            BloomServer.SetCurrentPageForDebuggingHtml(
+                GetXmlDocumentForEditScreenWebPage(pageUrl, pageListUrl)
+                    .getHtmlStringDisplayOnly()
+            );
         }
 
         internal void SaveToolboxSettings(string data)
