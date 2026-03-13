@@ -951,9 +951,7 @@ namespace Bloom.Workspace
             {
                 using (var server = new BloomWebSocketServer())
                 {
-                    server.Init(
-                        (BloomServer.portForHttp + 1).ToString(CultureInfo.InvariantCulture)
-                    );
+                    server.Init(BloomServer.WebSocketPort.ToString(CultureInfo.InvariantCulture));
                     server.SendString("app", "uiLanguageChanged", langTag);
                 }
             }

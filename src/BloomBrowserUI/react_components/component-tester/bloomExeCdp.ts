@@ -1,7 +1,20 @@
 import { Browser, Frame, Page, chromium } from "./playwrightTest";
 
 type WorkspaceTabId = "collection" | "edit" | "publish";
-const cdpEndpoints = ["http://127.0.0.1:9222", "http://localhost:9222"];
+const configuredCdpPort = process.env.BLOOM_CDP_PORT;
+const configuredHttpPort = process.env.BLOOM_HTTP_PORT;
+const configuredCdpOrigin = process.env.BLOOM_CDP_ORIGIN;
+const cdpEndpoints = configuredCdpOrigin
+    ? [configuredCdpOrigin]
+    : configuredCdpPort
+      ? [
+            `http://127.0.0.1:${configuredCdpPort}`,
+            `http://localhost:${configuredCdpPort}`,
+        ]
+      : ["http://127.0.0.1:9222", "http://localhost:9222"];
+const workspaceTabsUrl =
+    process.env.BLOOM_WORKSPACE_TABS_URL ||
+    `http://localhost:${configuredHttpPort || "8089"}/bloom/api/workspace/tabs`;
 
 export const connectToBloomExe = async (): Promise<{
     browser: Browser;
@@ -63,12 +76,10 @@ export const getBloomTopBarFrame = async (page: Page): Promise<Frame> => {
 export const getWorkspaceTabs = async (): Promise<{
     tabStates: Record<WorkspaceTabId, string>;
 }> => {
-    const response = await fetch(
-        "http://localhost:8089/bloom/api/workspace/tabs",
-    );
+    const response = await fetch(workspaceTabsUrl);
     if (!response.ok) {
         throw new Error(
-            `workspace/tabs failed: ${response.status} ${response.statusText}`,
+            `workspace/tabs failed: ${response.status} ${response.statusText} for ${workspaceTabsUrl}`,
         );
     }
 

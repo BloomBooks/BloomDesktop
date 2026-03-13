@@ -26,12 +26,15 @@ namespace Bloom
 {
     public partial class WebView2Browser : Browser
     {
-        public static int? RemoteDebuggingPort =>
+        private static int? kDefaultRemoteDebuggingPort =>
 #if DEBUG
             9222;
 #else
             null;
 #endif
+
+        public static int? RemoteDebuggingPort =>
+            Program.StartupCdpPort ?? kDefaultRemoteDebuggingPort;
 
         public static string AlternativeWebView2Path;
         private bool _readyToNavigate;

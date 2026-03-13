@@ -1,4 +1,8 @@
-import { findRunningStandardBloomInstance } from "./bloomProcessCommon.mjs";
+import {
+    fetchBloomInstanceInfo,
+    findRunningStandardBloomInstance,
+    normalizeBloomInstanceInfo,
+} from "./bloomProcessCommon.mjs";
 
 const parseArgs = () => {
     const args = process.argv.slice(2);
@@ -8,6 +12,7 @@ const parseArgs = () => {
         json: false,
         all: false,
         runningBloom: false,
+        httpPort: undefined,
         wait: false,
         timeoutMs: 15000,
     };
@@ -26,6 +31,17 @@ const parseArgs = () => {
 
         if (arg === "--running-bloom") {
             options.runningBloom = true;
+            continue;
+        }
+
+        if (arg === "--http-port") {
+            options.httpPort = args[i + 1] || options.httpPort;
+            i++;
+            continue;
+        }
+
+        if (arg.startsWith("--http-port=")) {
+            options.httpPort = arg.slice("--http-port=".length);
             continue;
         }
 
@@ -140,11 +156,33 @@ const main = async () => {
     let filteredTargets = [];
     let origin = `http://${options.host}:${options.port}`;
     let runningBloomInstance;
+    let selectedInstance;
     let lastError;
 
     while (true) {
         try {
-            if (options.runningBloom) {
+            if (options.httpPort) {
+                const instanceInfo = await fetchBloomInstanceInfo(
+                    Number(options.httpPort),
+                );
+                if (!instanceInfo.reachable || !instanceInfo.json) {
+                    throw new Error(
+                        `No Bloom instance reported common/instanceInfo on http://localhost:${options.httpPort}.`,
+                    );
+                }
+
+                selectedInstance = normalizeBloomInstanceInfo(
+                    instanceInfo.json,
+                    Number(options.httpPort),
+                );
+                if (!selectedInstance.cdpOrigin) {
+                    throw new Error(
+                        "The selected Bloom instance did not report a CDP endpoint.",
+                    );
+                }
+
+                origin = selectedInstance.cdpOrigin;
+            } else if (options.runningBloom) {
                 runningBloomInstance = await findRunningStandardBloomInstance();
                 if (!runningBloomInstance) {
                     throw new Error(
@@ -208,7 +246,7 @@ const main = async () => {
         version,
         targets: filteredTargets,
         primaryTarget: filteredTargets[0],
-        runningBloomInstance,
+        runningBloomInstance: selectedInstance || runningBloomInstance,
         error: lastError instanceof Error ? lastError.message : undefined,
     };
 

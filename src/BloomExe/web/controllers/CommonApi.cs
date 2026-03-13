@@ -245,6 +245,7 @@ namespace Bloom.web.controllers
                     executablePath,
                     executableDirectory = Path.GetDirectoryName(executablePath),
                     httpPort = BloomServer.portForHttp,
+                    webSocketPort = BloomServer.WebSocketPort,
                     serverUrl = BloomServer.ServerUrl,
                     serverUrlWithBloomPrefix = BloomServer.ServerUrlWithBloomPrefixEndingInSlash,
                     workspaceTabsUrl = BloomServer.ServerUrlWithBloomPrefixEndingInSlash
