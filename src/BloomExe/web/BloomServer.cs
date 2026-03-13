@@ -221,10 +221,42 @@ namespace Bloom.Api
             _fileLocator = null;
         }
 
+        // I wish the server didn't have this knowledge about the current state of the workspace,
+        // but have not yet found a way to make things like CURRENTPAGE.htm work without them.
+        // In the long run, the CurrentPage and all similar URLs should probably have enough information
+        // (path to book folder) to determine their state without relying on this knowledge being injected,
+        // into the server, but that will be a big change.
         private static string _keyToCurrentPage;
+        private static string _currentEditPageUrlForDebugging;
+        private static string _currentPageListUrlForDebugging;
+        private static string _currentWorkspaceModeForDebugging = "collection";
 
         public string CurrentPageContent { get; set; }
         public string ToolboxContent { get; set; }
+
+        public static void SetCurrentWorkspaceModeForDebugging(string mode)
+        {
+            if (string.IsNullOrWhiteSpace(mode))
+                return;
+
+            _currentWorkspaceModeForDebugging = mode;
+        }
+
+        public static void SetCurrentEditPageUrlForDebugging(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+                return;
+
+            _currentEditPageUrlForDebugging = url;
+        }
+
+        public static void SetCurrentPageListUrlForDebugging(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+                return;
+
+            _currentPageListUrlForDebugging = url;
+        }
 
         private static string SanitizeFixedSimulatedId(string id)
         {
@@ -604,8 +636,61 @@ namespace Bloom.Api
             if (ProcessImageFileRequest(request))
                 return true;
 
-            if (localPath.Contains("CURRENTPAGE")) //useful when debugging. E.g. http://localhost:8089/bloom/CURRENTPAGE.htm will always show the page we're on.
+            if (localPath.Contains("CURRENTPAGE"))
             {
+                // This is a 'magic' URL that is useful in e2e tests and when debugging.
+                // E.g. http://localhost:8089/bloom/CURRENTPAGE.htm will always show what the workspace is
+                // currently showing in the main window, exactly like the 'open in Edge' command.
+                // We do a redirect rather than trying to figure out exactly what the current root page
+                // content should be because we need at least the mode param to make the startup code
+                // put us in the right mode (collection, book, or page), and we already have code
+                // that handles params for the current page and page list iframe sources,
+                // so we may as well take advantage of it. This also means that CURRENTPAGE and
+                // open-in-edge work the same way (in fact the URL we produce here is exactly the
+                // same as the one open-in-edge produces).
+                if (string.IsNullOrWhiteSpace(_keyToCurrentPage))
+                {
+                    request.ResponseContentType = "text/html";
+                    request.WriteCompleteOutput(
+                        "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Bloom Not Initialized</title></head><body>Bloom is not sufficiently initialized to use CURRENTPAGE</body></html>"
+                    );
+                    return true;
+                }
+
+                var query = request.GetQueryParameters();
+                if (string.IsNullOrWhiteSpace(query?.Get("mode")))
+                {
+                    var existingQuery = string.Empty;
+                    var rawUrlQueryStart = request.RawUrl.IndexOf("?", StringComparison.Ordinal);
+                    if (rawUrlQueryStart >= 0)
+                    {
+                        existingQuery = request.RawUrl.Substring(rawUrlQueryStart);
+                    }
+
+                    var redirectBaseUrl = !string.IsNullOrWhiteSpace(_keyToCurrentPage)
+                        ? _keyToCurrentPage.ToLocalhost()
+                        : request.RawUrl;
+
+                    var redirectUrl = redirectBaseUrl + existingQuery;
+                    var separator = redirectUrl.Contains("?", StringComparison.Ordinal) ? "&" : "?";
+                    redirectUrl += separator + "mode=" + _currentWorkspaceModeForDebugging;
+
+                    if (!string.IsNullOrWhiteSpace(_currentPageListUrlForDebugging))
+                    {
+                        redirectUrl +=
+                            "&pageListSrc=" + Uri.EscapeDataString(_currentPageListUrlForDebugging);
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(_currentEditPageUrlForDebugging))
+                    {
+                        redirectUrl +=
+                            "&pageSrc=" + Uri.EscapeDataString(_currentEditPageUrlForDebugging);
+                    }
+
+                    request.WriteRedirect(redirectUrl, permanent: false);
+                    return true;
+                }
+
                 localPath = _keyToCurrentPage;
             }
             if (localPath.ToLower().Contains("current-bloompub-url")) //useful when debugging. E.g. http://localhost:8089/bloom/current-bloompub-url will always show the page we're on.

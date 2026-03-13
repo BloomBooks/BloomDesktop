@@ -1270,10 +1270,12 @@ namespace Bloom.Edit
 
         public string GetUrlForCurrentPage()
         {
-            return BloomServer.UrlForCurrentBookPageEncodedForIframeSrc(
+            var url = BloomServer.UrlForCurrentBookPageEncodedForIframeSrc(
                 _bookSelection.CurrentSelection.FolderPath,
                 _pageSelection.CurrentSelection.Id
             );
+            BloomServer.SetCurrentEditPageUrlForDebugging(url);
+            return url;
         }
 
         /// <summary>
@@ -1332,7 +1334,9 @@ namespace Bloom.Edit
                 InMemoryHtmlFileSource.Pagelist
             );
             var urlPath = UrlPathString.CreateFromUnencodedString(url);
-            return urlPath.UrlEncodedForHttpPath;
+            var encodedUrl = urlPath.UrlEncodedForHttpPath;
+            BloomServer.SetCurrentPageListUrlForDebugging(encodedUrl);
+            return encodedUrl;
         }
 
         private static void OptimizeForLinux(HtmlDom pageListDom)

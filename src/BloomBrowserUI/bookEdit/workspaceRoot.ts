@@ -299,6 +299,10 @@ const normalizeWorkspaceMode = (mode: string | null | undefined): string => {
 // Apply to the body a class indicating which mode we're in...collection, edit, or publish.
 // This is used to control which elements are visible in the workspace.
 const applyWorkspaceModeClass = (mode: string): void => {
+    if (!document.body) {
+        return;
+    }
+
     const classesToRemove: string[] = [];
     document.body.classList.forEach((className) => {
         if (className.endsWith("-mode")) {
@@ -325,6 +329,24 @@ const updateWorkspaceUrlParam = (name: string, value: string): void => {
     window.history.replaceState(window.history.state, "", url.toString());
 };
 
+// Currently, unfortunately, functions from workspaceRoot.ts are imported into code used by other bundles,
+// and as a result, immediately-executed code in this file may run in the context of those other bundles,
+// which we don't want. So we use this test to restrict workspace initialization code to the top window.
+// (We also set a flag in the pug file to help with this. I'm not sure why, or even if, it is always
+// necessary, but it was quite difficult to make sure the workspace initialization happens reliably
+// but only in the right context, so I decided to keep it.)
+const isTopLevelWindow = (): boolean => {
+    try {
+        return window.top === window;
+    } catch {
+        return false;
+    }
+};
+
+const shouldAutoInitializeWorkspaceRoot = (): boolean => {
+    return isTopLevelWindow() && window.bloomIsWorkspaceRoot === true;
+};
+
 // When an iframe is not in use, we set its src to about:blank. This at least frees up memory,
 // and may help with other issues caused by having a stale page in the edit iframe while
 // activity in the collection tab has moved us to another book, and similar problems.
@@ -333,18 +355,18 @@ const restoreIframeSrcFromUrlIfNeeded = (
     iframeId: string,
     paramName: string,
     restoreAction?: (savedSrc: string) => void,
-): void => {
+): boolean => {
     const iframe = document.getElementById(
         iframeId,
     ) as HTMLIFrameElement | null;
     if (!iframe) {
-        return;
+        return false;
     }
 
     const currentSrc = iframe.getAttribute("src") || "";
     const needsRestore = currentSrc === "" || currentSrc === "about:blank";
     if (!needsRestore) {
-        return;
+        return true;
     }
 
     const url = new URL(window.location.href);
@@ -356,20 +378,127 @@ const restoreIframeSrcFromUrlIfNeeded = (
             iframe.src = savedSrc;
         }
     }
+
+    return true;
 };
 
 const initializeWorkspaceModeFromUrl = (): void => {
+    if (!document.body) {
+        return;
+    }
+
     const url = new URL(window.location.href);
     const mode = normalizeWorkspaceMode(url.searchParams.get("mode"));
     applyWorkspaceModeClass(mode);
-    updateWorkspaceModeInUrl(mode);
-    restoreIframeSrcFromUrlIfNeeded("page", "pageSrc", switchContentPage);
-    restoreIframeSrcFromUrlIfNeeded("pageList", "pageListSrc");
+
+    const pageIframeReady = restoreIframeSrcFromUrlIfNeeded(
+        "page",
+        "pageSrc",
+        switchContentPage,
+    );
+    const pageListIframeReady = restoreIframeSrcFromUrlIfNeeded(
+        "pageList",
+        "pageListSrc",
+    );
+
+    // Chrome can run this bundle before iframe elements exist; retry once when the
+    // document has fully loaded so mode/page restoration is deterministic.
+    if (mode === "edit" && (!pageIframeReady || !pageListIframeReady)) {
+        window.addEventListener(
+            "load",
+            () => {
+                restoreIframeSrcFromUrlIfNeeded(
+                    "page",
+                    "pageSrc",
+                    switchContentPage,
+                );
+                restoreIframeSrcFromUrlIfNeeded("pageList", "pageListSrc");
+            },
+            { once: true },
+        );
+    }
 };
 
-initializeWorkspaceModeFromUrl();
+// When the main window comes up from the "open in edge" command or by using
+// CURRENTPAGE.htm or after using Refresh, params in the URL tell us what mode to be
+// in and where to find the page and pagelist, if relevant. It has proved difficult
+// (more so in Chrome than Edge, for some unknown reason) to get this initialization
+// to happen reliably, so we try a number of times.
+const initializeWorkspaceModeFromUrlWithRetries = (): void => {
+    let attempts = 0;
+    const maxAttempts = 40;
+
+    const runAttempt = (): void => {
+        initializeWorkspaceModeFromUrl();
+
+        const url = new URL(window.location.href);
+        const mode = normalizeWorkspaceMode(url.searchParams.get("mode"));
+        const isEditMode = mode === "edit";
+
+        const hasBody = !!document.body;
+        const pageIframe = document.getElementById(
+            "page",
+        ) as HTMLIFrameElement | null;
+        const pageListIframe = document.getElementById(
+            "pageList",
+        ) as HTMLIFrameElement | null;
+        const pageSrc = pageIframe?.getAttribute("src") || "";
+        const pageListSrc = pageListIframe?.getAttribute("src") || "";
+        const hasEditModeClass =
+            !!document.body?.classList.contains("edit-mode");
+
+        const modeIsReady = !isEditMode || hasEditModeClass;
+        const pageIsReady =
+            !isEditMode || (pageSrc !== "" && pageSrc !== "about:blank");
+        const pageListIsReady =
+            !isEditMode ||
+            (pageListSrc !== "" && pageListSrc !== "about:blank");
+
+        const fullyReady =
+            hasBody && modeIsReady && pageIsReady && pageListIsReady;
+        if (fullyReady || attempts >= maxAttempts) {
+            return;
+        }
+
+        attempts += 1;
+        window.setTimeout(runAttempt, 100);
+    };
+
+    runAttempt();
+};
+
+let workspaceModeInitializationStarted = false;
+
+const tryStartWorkspaceModeInitialization = (): void => {
+    if (workspaceModeInitializationStarted) {
+        return;
+    }
+
+    if (!shouldAutoInitializeWorkspaceRoot()) {
+        return;
+    }
+
+    workspaceModeInitializationStarted = true;
+    initializeWorkspaceModeFromUrlWithRetries();
+};
+
+tryStartWorkspaceModeInitialization();
+document.addEventListener(
+    "DOMContentLoaded",
+    tryStartWorkspaceModeInitialization,
+    {
+        once: true,
+    },
+);
+window.addEventListener("load", tryStartWorkspaceModeInitialization, {
+    once: true,
+});
 
 export function setWorkspaceMode(mode: string): void {
+    if (!isTopLevelWindow()) {
+        return;
+    }
+
     const normalizedMode = normalizeWorkspaceMode(mode);
     applyWorkspaceModeClass(normalizedMode);
     updateWorkspaceModeInUrl(normalizedMode);
@@ -450,6 +579,7 @@ interface WorkspaceBundleApi {
 declare global {
     interface Window {
         workspaceBundle: WorkspaceBundleApi;
+        bloomIsWorkspaceRoot?: boolean;
     }
 }
 
