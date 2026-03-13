@@ -648,6 +648,15 @@ namespace Bloom.Api
                 // so we may as well take advantage of it. This also means that CURRENTPAGE and
                 // open-in-edge work the same way (in fact the URL we produce here is exactly the
                 // same as the one open-in-edge produces).
+                if (string.IsNullOrWhiteSpace(_keyToCurrentPage))
+                {
+                    request.ResponseContentType = "text/html";
+                    request.WriteCompleteOutput(
+                        "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Bloom Not Initialized</title></head><body>Bloom is not sufficiently initialized to use CURRENTPAGE</body></html>"
+                    );
+                    return true;
+                }
+
                 var query = request.GetQueryParameters();
                 if (string.IsNullOrWhiteSpace(query?.Get("mode")))
                 {
