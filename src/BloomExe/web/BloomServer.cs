@@ -1467,7 +1467,7 @@ namespace Bloom.Api
             const int kStartingPort = 8089;
             const int kNumberOfPortsToTry = 10;
             bool success = false;
-            const int kNumberOfPortsWeNeed = 2; //one for http, one for peakLevel webSocket
+            const int kNumberOfPortsWeNeed = ReservedPortBlockLength;
 
             //Note: while this will find a port for the http, it does not actually know if the accompanying
             //ports are available. It just assume they are.

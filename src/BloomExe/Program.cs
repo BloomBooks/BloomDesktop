@@ -109,7 +109,19 @@ namespace Bloom
         internal static int? StartupVitePort { get; private set; }
         internal static string StartupLabel { get; private set; }
         internal static bool StartupUsesExplicitPorts =>
-            StartupHttpPort.HasValue && StartupCdpPort.HasValue;
+            StartupHttpPort.HasValue || StartupCdpPort.HasValue || StartupVitePort.HasValue;
+
+        internal static string StartupRequestedPortSummary =>
+            string.Join(
+                ", ",
+                new[]
+                    {
+                        StartupHttpPort.HasValue ? $"httpPort={StartupHttpPort.Value}" : null,
+                        StartupCdpPort.HasValue ? $"cdpPort={StartupCdpPort.Value}" : null,
+                        StartupVitePort.HasValue ? $"vitePort={StartupVitePort.Value}" : null,
+                    }
+                    .Where(value => value != null)
+            );
 
         [STAThread]
         [HandleProcessCorruptedStateExceptions]
@@ -540,10 +552,10 @@ namespace Bloom
                     {
                         if (StartupUsesExplicitPorts)
                         {
-                            // Explicit HTTP/CDP ports are the intentional multi-instance path.
+                            // Explicit startup ports are the intentional multi-instance path.
                             // Since this is a developer-only situation, we won't worry about the possibility of multiple instances writing on the same collection settings or whatever.
                             Logger.WriteEvent(
-                                $"Bypassing Bloom's single-instance token because explicit ports were requested. httpPort={StartupHttpPort.Value}, cdpPort={StartupCdpPort.Value}"
+                                $"Bypassing Bloom's single-instance token because explicit ports were requested. {StartupRequestedPortSummary}"
                             );
                         }
                         else if ((Control.ModifierKeys & Keys.Control) == Keys.Control)

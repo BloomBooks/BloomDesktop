@@ -131,25 +131,28 @@ const tryAcquireBloomPortLeaseFile = (portPlan) => {
     for (let attempt = 0; attempt < 2; attempt++) {
         try {
             const fd = openSync(leasePath, "wx");
-            writeFileSync(
-                fd,
-                JSON.stringify(
-                    {
-                        ownerPid: process.pid,
-                        httpPort: portPlan.httpPort,
-                        cdpPort: portPlan.cdpPort,
-                        createdAt: new Date().toISOString(),
-                    },
-                    null,
-                    2,
-                ),
-            );
-            closeSync(fd);
-            return {
-                path: leasePath,
-                ownerPid: process.pid,
-                portPlan,
-            };
+            try {
+                writeFileSync(
+                    fd,
+                    JSON.stringify(
+                        {
+                            ownerPid: process.pid,
+                            httpPort: portPlan.httpPort,
+                            cdpPort: portPlan.cdpPort,
+                            createdAt: new Date().toISOString(),
+                        },
+                        null,
+                        2,
+                    ),
+                );
+                return {
+                    path: leasePath,
+                    ownerPid: process.pid,
+                    portPlan,
+                };
+            } finally {
+                closeSync(fd);
+            }
         } catch (error) {
             if (error?.code !== "EEXIST") {
                 throw error;

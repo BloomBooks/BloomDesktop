@@ -32,6 +32,28 @@ namespace BloomTests
         }
 
         [Test]
+        public void ParseStartupPortArguments_UsesAnyExplicitPortToBypassSingleInstance()
+        {
+            Program.ParseStartupPortArguments(new[] { "--http-port", "19089" }, out var httpErrorMessage);
+
+            Assert.That(httpErrorMessage, Is.Null);
+            Assert.That(Program.StartupUsesExplicitPorts, Is.True);
+            Assert.That(Program.StartupRequestedPortSummary, Is.EqualTo("httpPort=19089"));
+
+            Program.ParseStartupPortArguments(new[] { "--cdp-port", "19092" }, out var cdpErrorMessage);
+
+            Assert.That(cdpErrorMessage, Is.Null);
+            Assert.That(Program.StartupUsesExplicitPorts, Is.True);
+            Assert.That(Program.StartupRequestedPortSummary, Is.EqualTo("cdpPort=19092"));
+
+            Program.ParseStartupPortArguments(new[] { "--vite-port", "15173" }, out var viteErrorMessage);
+
+            Assert.That(viteErrorMessage, Is.Null);
+            Assert.That(Program.StartupUsesExplicitPorts, Is.True);
+            Assert.That(Program.StartupRequestedPortSummary, Is.EqualTo("vitePort=15173"));
+        }
+
+        [Test]
         public void ParseStartupPortArguments_RejectsCdpPortInsideReservedHttpBlock()
         {
             var remainingArgs = Program.ParseStartupPortArguments(
