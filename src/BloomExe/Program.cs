@@ -115,12 +115,11 @@ namespace Bloom
             string.Join(
                 ", ",
                 new[]
-                    {
-                        StartupHttpPort.HasValue ? $"httpPort={StartupHttpPort.Value}" : null,
-                        StartupCdpPort.HasValue ? $"cdpPort={StartupCdpPort.Value}" : null,
-                        StartupVitePort.HasValue ? $"vitePort={StartupVitePort.Value}" : null,
-                    }
-                    .Where(value => value != null)
+                {
+                    StartupHttpPort.HasValue ? $"httpPort={StartupHttpPort.Value}" : null,
+                    StartupCdpPort.HasValue ? $"cdpPort={StartupCdpPort.Value}" : null,
+                    StartupVitePort.HasValue ? $"vitePort={StartupVitePort.Value}" : null,
+                }.Where(value => value != null)
             );
 
         [STAThread]
