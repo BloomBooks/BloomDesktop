@@ -36,18 +36,6 @@
                 "${workspaceFolder}/Bloom.sln"
             ],
             "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "bloom-exe-run",
-            "type": "shell",
-            "command": "dotnet",
-            "args": [
-                "run",
-                "--project",
-                "${workspaceFolder}/src/BloomExe/BloomExe.csproj"
-            ],
-            "isBackground": true,
-            "group": "build"
         }
     ]
 }
