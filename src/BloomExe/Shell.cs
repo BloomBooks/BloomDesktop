@@ -12,6 +12,7 @@ using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using Bloom.Utils;
+using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.Workspace;
 using SIL.Extensions;
@@ -249,23 +250,64 @@ namespace Bloom
 
         public void SetWindowText(string bookName)
         {
-            // Let's only mark the window text for Alpha and Beta releases. It looks odd to have that in
-            // release builds, and doesn't add much since we can treat Release builds as the unmarked case.
-            // Note that developer builds now have a special "channel" marking as well to differentiate them
-            // from true Release builds in screen shots.
-            var formattedText = string.Format(
-                "{0} - Bloom {1}",
-                _workspaceView.Text,
-                GetShortVersionInfo()
-            );
-            var channel = ApplicationUpdateSupport.ChannelName;
-            if (channel.ToLowerInvariant() != "release")
-                formattedText = string.Format("{0} {1}", formattedText, channel);
-            if (bookName != null)
+            string formattedText;
+            if (!string.IsNullOrWhiteSpace(Program.StartupLabel))
             {
-                formattedText = string.Format("{0} - {1}", bookName, formattedText);
+                formattedText = string.Format("Bloom {0}", Program.StartupLabel);
             }
+            else
+            {
+                // Let's only mark the window text for Alpha and Beta releases. It looks odd to have that in
+                // release builds, and doesn't add much since we can treat Release builds as the unmarked case.
+                // Note that developer builds now have a special "channel" marking as well to differentiate them
+                // from true Release builds in screen shots.
+                formattedText = string.Format(
+                    "{0} - Bloom {1}",
+                    _workspaceView.Text,
+                    GetShortVersionInfo()
+                );
+                var channel = ApplicationUpdateSupport.ChannelName;
+                if (channel.ToLowerInvariant() != "release")
+                    formattedText = string.Format("{0} {1}", formattedText, channel);
+                if (bookName != null)
+                {
+                    formattedText = string.Format("{0} - {1}", bookName, formattedText);
+                }
+            }
+
+            var portSummary = new[]
+            {
+                GetHttpPortTitlePart(),
+                GetAutomationPortTitlePart(),
+                GetVitePortTitlePart(),
+            }.Where(part => !string.IsNullOrEmpty(part));
+            var portSummaryText = string.Join(" ", portSummary);
+            if (!string.IsNullOrEmpty(portSummaryText))
+            {
+                formattedText = string.Format("{0} - {1}", formattedText, portSummaryText);
+            }
+
             Text = formattedText;
+        }
+
+        private static string GetHttpPortTitlePart()
+        {
+            var httpPort =
+                BloomServer.portForHttp > 0 ? BloomServer.portForHttp : Program.StartupHttpPort;
+            return httpPort.HasValue ? $"http:{httpPort.Value}" : null;
+        }
+
+        private static string GetAutomationPortTitlePart()
+        {
+            var cdpPort = WebView2Browser.RemoteDebuggingPort;
+            return cdpPort.HasValue ? $"automation:{cdpPort.Value}" : null;
+        }
+
+        private static string GetVitePortTitlePart()
+        {
+            return ReactControl.TryGetActiveViteDevPort(out var vitePort)
+                ? $"vite:{vitePort}"
+                : null;
         }
 
         public static string GetShortVersionInfo()

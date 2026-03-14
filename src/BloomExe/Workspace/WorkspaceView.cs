@@ -278,8 +278,8 @@ namespace Bloom.Workspace
                 )
             );
 
-            var frameText = RobustFile
-                .ReadAllText(path, Encoding.UTF8)
+            var frameText = ReactControl
+                .ReplaceViteDevOrigin(RobustFile.ReadAllText(path, Encoding.UTF8))
                 .Replace("{simulatedPageFileInBookFolder}", "about:blank")
                 .Replace("{simulatedPageListFile}", "about:blank");
 
@@ -951,9 +951,7 @@ namespace Bloom.Workspace
             {
                 using (var server = new BloomWebSocketServer())
                 {
-                    server.Init(
-                        (BloomServer.portForHttp + 1).ToString(CultureInfo.InvariantCulture)
-                    );
+                    server.Init(BloomServer.WebSocketPort.ToString(CultureInfo.InvariantCulture));
                     server.SendString("app", "uiLanguageChanged", langTag);
                 }
             }

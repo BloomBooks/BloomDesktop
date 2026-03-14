@@ -9,6 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Security.Policy;
 using System.Text;
 using System.Threading;
@@ -56,10 +57,19 @@ namespace Bloom.Api
     public class BloomServer : IBloomServer, IDisposable
     {
         public static int portForHttp;
+        public const int WebSocketPortOffset = 1;
+        public const int ReservedPortBlockLength = 3;
+
+        public static int WebSocketPort => GetWebSocketPort(portForHttp);
 
         public static string ServerUrl
         {
             get { return "http://localhost:" + portForHttp.ToString(CultureInfo.InvariantCulture); }
+        }
+
+        public static int GetWebSocketPort(int httpPort)
+        {
+            return httpPort + WebSocketPortOffset;
         }
 
         /// <summary>
@@ -1457,7 +1467,7 @@ namespace Bloom.Api
             const int kStartingPort = 8089;
             const int kNumberOfPortsToTry = 10;
             bool success = false;
-            const int kNumberOfPortsWeNeed = 2; //one for http, one for peakLevel webSocket
+            const int kNumberOfPortsWeNeed = ReservedPortBlockLength;
 
             //Note: while this will find a port for the http, it does not actually know if the accompanying
             //ports are available. It just assume they are.
@@ -1468,10 +1478,22 @@ namespace Bloom.Api
             // Another thing to check on is https://github.com/bryceg/Owin.WebSocket/pull/20 which
             // would give us an owin-compliant version of the fleck websocket server, and we could
             // switch to using an owin-compliant http server like NancyFx.
-            for (var i = 0; !success && i < kNumberOfPortsToTry; i++)
+            if (Program.StartupHttpPort.HasValue)
             {
-                BloomServer.portForHttp = kStartingPort + (i * kNumberOfPortsWeNeed);
-                success = AttemptToOpenPort();
+                BloomServer.portForHttp = Program.StartupHttpPort.Value;
+                success =
+                    AreReservedCompanionPortsAvailable(BloomServer.portForHttp)
+                    && AttemptToOpenPort();
+            }
+            else
+            {
+                for (var i = 0; !success && i < kNumberOfPortsToTry; i++)
+                {
+                    BloomServer.portForHttp = kStartingPort + (i * kNumberOfPortsWeNeed);
+                    success =
+                        AreReservedCompanionPortsAvailable(BloomServer.portForHttp)
+                        && AttemptToOpenPort();
+                }
             }
 
             if (!success)
@@ -1494,6 +1516,40 @@ namespace Bloom.Api
         }
 
         private static int MinWorkerThreads => Math.Max(Environment.ProcessorCount, 2);
+
+        private static bool AreReservedCompanionPortsAvailable(int httpPort)
+        {
+            return GetReservedCompanionPorts(httpPort).All(IsLoopbackPortAvailable);
+        }
+
+        private static IEnumerable<int> GetReservedCompanionPorts(int httpPort)
+        {
+            for (var offset = WebSocketPortOffset; offset < ReservedPortBlockLength; offset++)
+            {
+                yield return httpPort + offset;
+            }
+        }
+
+        private static bool IsLoopbackPortAvailable(int port)
+        {
+            TcpListener listener = null;
+
+            try
+            {
+                listener = new TcpListener(IPAddress.Loopback, port);
+                listener.Start();
+                return true;
+            }
+            catch (SocketException error)
+            {
+                Logger.WriteMinorEvent($"Port {port} is unavailable: {error.Message}");
+                return false;
+            }
+            finally
+            {
+                listener?.Stop();
+            }
+        }
 
         /// <summary>
         /// Tries to start listening on the currently proposed server url

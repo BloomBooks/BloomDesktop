@@ -26,6 +26,16 @@ namespace Bloom
 {
     public partial class WebView2Browser : Browser
     {
+        private static int? kDefaultRemoteDebuggingPort =>
+#if DEBUG
+            9222;
+#else
+            null;
+#endif
+
+        public static int? RemoteDebuggingPort =>
+            Program.StartupCdpPort ?? kDefaultRemoteDebuggingPort;
+
         public static string AlternativeWebView2Path;
         private bool _readyToNavigate;
         private PasteCommand _pasteCommand;
@@ -286,9 +296,10 @@ namespace Bloom
             {
                 additionalBrowserArgs += " --accept-lang=" + _uiLanguageOfThisRun;
             }
-            #region DEBUG
-            additionalBrowserArgs += " --remote-debugging-port=9222 "; // allow external inspector connect
-            #endregion
+            if (RemoteDebuggingPort.HasValue)
+            {
+                additionalBrowserArgs += $" --remote-debugging-port={RemoteDebuggingPort.Value} "; // allow external inspector connect
+            }
 
             var op = new CoreWebView2EnvironmentOptions(additionalBrowserArgs);
 

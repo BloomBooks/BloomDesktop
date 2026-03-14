@@ -1297,6 +1297,8 @@ namespace Bloom.Edit
             var _baseHtml = RobustFile
                 .ReadAllText(frame, Encoding.UTF8)
                 .Replace("DarkGray", backColor);
+            if (useViteDev)
+                _baseHtml = ReactControl.ReplaceViteDevOrigin(_baseHtml);
             var pages = CurrentBook.GetPages().ToList();
             var sizeClass =
                 pages.Count > 1
@@ -1367,8 +1369,8 @@ namespace Bloom.Edit
             // We don't really make a file for the page, the contents are just saved in our local server.
             // But we give it a url that makes it seem to be in the book folder so local urls work.
             // See BloomServer.MakeInMemoryHtmlFileInBookFolder() for more details.
-            var frameText = RobustFile
-                .ReadAllText(path, Encoding.UTF8)
+            var frameText = ReactControl
+                .ReplaceViteDevOrigin(RobustFile.ReadAllText(path, Encoding.UTF8))
                 .Replace("{simulatedPageFileInBookFolder}", GetUrlForCurrentPage())
                 .Replace("{simulatedPageListFile}", GetUrlForPageListFile());
             var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));

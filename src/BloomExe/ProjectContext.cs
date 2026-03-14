@@ -386,7 +386,7 @@ namespace Bloom
 
             _scope
                 .Resolve<BloomWebSocketServer>()
-                .Init((BloomServer.portForHttp + 1).ToString(CultureInfo.InvariantCulture));
+                .Init(BloomServer.WebSocketPort.ToString(CultureInfo.InvariantCulture));
             HelpLauncher.RegisterWithApiHandler(server.ApiHandler);
             ExternalLinkController.RegisterWithApiHandler(server.ApiHandler);
             ToolboxView.RegisterWithApiHandler(server.ApiHandler);

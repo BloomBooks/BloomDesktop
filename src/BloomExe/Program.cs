@@ -104,6 +104,23 @@ namespace Bloom
         public static SynchronizationContext MainContext { get; private set; }
 
         public static bool RunningSecondInstance { get; private set; }
+        internal static int? StartupHttpPort { get; private set; }
+        internal static int? StartupCdpPort { get; private set; }
+        internal static int? StartupVitePort { get; private set; }
+        internal static string StartupLabel { get; private set; }
+        internal static bool StartupUsesExplicitPorts =>
+            StartupHttpPort.HasValue || StartupCdpPort.HasValue || StartupVitePort.HasValue;
+
+        internal static string StartupRequestedPortSummary =>
+            string.Join(
+                ", ",
+                new[]
+                {
+                    StartupHttpPort.HasValue ? $"httpPort={StartupHttpPort.Value}" : null,
+                    StartupCdpPort.HasValue ? $"cdpPort={StartupCdpPort.Value}" : null,
+                    StartupVitePort.HasValue ? $"vitePort={StartupVitePort.Value}" : null,
+                }.Where(value => value != null)
+            );
 
         [STAThread]
         [HandleProcessCorruptedStateExceptions]
@@ -147,6 +164,18 @@ namespace Bloom
             // every startup path calls it.
             SetUpLocalization();
 
+            var args = ParseStartupPortArguments(args1, out var startupPortErrorMessage);
+            if (startupPortErrorMessage != null)
+            {
+                MessageBox.Show(
+                    startupPortErrorMessage,
+                    "Bloom",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+                return 1;
+            }
+
             // Old comment: Firefox60 uses Gtk3, so we need to as well.  (BL-10469)
             // Aug 2023, we've moved away from GeckoFx/Firefox to wv2, but I don't know if this is still needed or not...
             // Steve says he thinks Gtk3 is still better but that it likely only matters for Linux,
@@ -160,7 +189,7 @@ namespace Bloom
             // The following is how we will do things from now on, and things can be moved
             // into this as time allows. See CommandLineOptions.cs.
             if (
-                args1.Length > 0
+                args.Length > 0
                 && new[]
                 {
                     "--help",
@@ -173,7 +202,7 @@ namespace Bloom
                     "spreadsheetExport",
                     "spreadsheetImport",
                     "sendFontAnalytics",
-                }.Contains(args1[0])
+                }.Contains(args[0])
             ) //restrict using the commandline parser to cases were it should work
             {
 #if !__MonoCS__
@@ -184,7 +213,7 @@ namespace Bloom
 
                 var mainTask = CommandLine
                     .Parser.Default.ParseArguments(
-                        args1,
+                        args,
                         new[]
                         {
                             typeof(HydrateParameters),
@@ -258,10 +287,19 @@ namespace Bloom
                 return mainTask.Result; // we're done; this is safe once there is nothing being awaited.
             }
 
+            if (!ValidateStartupVitePort(out var startupViteErrorMessage))
+            {
+                MessageBox.Show(
+                    startupViteErrorMessage,
+                    "Bloom",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+                return 1;
+            }
+
             try
             {
-                var args = args1;
-
                 if (SIL.PlatformUtilities.Platform.IsWindows)
                 {
                     OldVersionCheck();
@@ -511,7 +549,15 @@ namespace Bloom
                     }
                     else
                     {
-                        if ((Control.ModifierKeys & Keys.Control) == Keys.Control)
+                        if (StartupUsesExplicitPorts)
+                        {
+                            // Explicit startup ports are the intentional multi-instance path.
+                            // Since this is a developer-only situation, we won't worry about the possibility of multiple instances writing on the same collection settings or whatever.
+                            Logger.WriteEvent(
+                                $"Bypassing Bloom's single-instance token because explicit ports were requested. {StartupRequestedPortSummary}"
+                            );
+                        }
+                        else if ((Control.ModifierKeys & Keys.Control) == Keys.Control)
                         {
                             // control key is held down so allow second instance to run; note that we're deliberately in this state
                             if (UniqueToken.AcquireTokenQuietly(_mutexId))
@@ -683,6 +729,220 @@ namespace Bloom
         {
             if (_gotUniqueToken)
                 UniqueToken.ReleaseToken();
+        }
+
+        internal static string[] ParseStartupPortArguments(string[] args, out string errorMessage)
+        {
+            errorMessage = null;
+            StartupHttpPort = null;
+            StartupCdpPort = null;
+            StartupVitePort = null;
+            StartupLabel = null;
+
+            var remainingArgs = new List<string>();
+
+            for (var i = 0; i < args.Length; i++)
+            {
+                if (
+                    TryParseStartupPortArgument(
+                        args,
+                        ref i,
+                        "--http-port",
+                        out var httpPort,
+                        out errorMessage
+                    )
+                )
+                {
+                    if (errorMessage != null)
+                        return Array.Empty<string>();
+
+                    if (StartupHttpPort.HasValue)
+                    {
+                        errorMessage = "Bloom only accepts one --http-port argument.";
+                        return Array.Empty<string>();
+                    }
+
+                    StartupHttpPort = httpPort;
+                    continue;
+                }
+
+                if (
+                    TryParseStartupPortArgument(
+                        args,
+                        ref i,
+                        "--cdp-port",
+                        out var cdpPort,
+                        out errorMessage
+                    )
+                )
+                {
+                    if (errorMessage != null)
+                        return Array.Empty<string>();
+
+                    if (StartupCdpPort.HasValue)
+                    {
+                        errorMessage = "Bloom only accepts one --cdp-port argument.";
+                        return Array.Empty<string>();
+                    }
+
+                    StartupCdpPort = cdpPort;
+                    continue;
+                }
+
+                if (
+                    TryParseStartupPortArgument(
+                        args,
+                        ref i,
+                        "--vite-port",
+                        out var vitePort,
+                        out errorMessage
+                    )
+                )
+                {
+                    if (errorMessage != null)
+                        return Array.Empty<string>();
+
+                    if (StartupVitePort.HasValue)
+                    {
+                        errorMessage = "Bloom only accepts one --vite-port argument.";
+                        return Array.Empty<string>();
+                    }
+
+                    StartupVitePort = vitePort;
+                    continue;
+                }
+
+                if (
+                    TryParseStartupStringArgument(
+                        args,
+                        ref i,
+                        "--label",
+                        out var label,
+                        out errorMessage
+                    )
+                )
+                {
+                    if (errorMessage != null)
+                        return Array.Empty<string>();
+
+                    if (StartupLabel != null)
+                    {
+                        errorMessage = "Bloom only accepts one --label argument.";
+                        return Array.Empty<string>();
+                    }
+
+                    StartupLabel = string.IsNullOrWhiteSpace(label) ? null : label.Trim();
+                    continue;
+                }
+
+                remainingArgs.Add(args[i]);
+            }
+
+            if (
+                StartupHttpPort.HasValue
+                && StartupCdpPort.HasValue
+                && StartupCdpPort.Value >= StartupHttpPort.Value
+                && StartupCdpPort.Value <= StartupHttpPort.Value + 2
+            )
+            {
+                errorMessage =
+                    "Bloom's --cdp-port must not overlap the reserved HTTP block (http, http+1, http+2).";
+                return Array.Empty<string>();
+            }
+
+            return remainingArgs.ToArray();
+        }
+
+        private static bool TryParseStartupStringArgument(
+            string[] args,
+            ref int index,
+            string optionName,
+            out string value,
+            out string errorMessage
+        )
+        {
+            value = null;
+            errorMessage = null;
+            var current = args[index];
+
+            if (current == optionName)
+            {
+                if (index + 1 >= args.Length)
+                {
+                    errorMessage = $"Bloom requires a value after {optionName}.";
+                    return true;
+                }
+
+                value = args[++index];
+                return true;
+            }
+
+            if (current.StartsWith(optionName + "=", StringComparison.Ordinal))
+            {
+                value = current.Substring(optionName.Length + 1);
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool TryParseStartupPortArgument(
+            string[] args,
+            ref int index,
+            string optionName,
+            out int port,
+            out string errorMessage
+        )
+        {
+            port = 0;
+            errorMessage = null;
+            var current = args[index];
+            string value = null;
+
+            if (current == optionName)
+            {
+                if (index + 1 >= args.Length)
+                {
+                    errorMessage = $"Bloom requires a numeric value after {optionName}.";
+                    return true;
+                }
+
+                value = args[++index];
+            }
+            else if (current.StartsWith(optionName + "=", StringComparison.Ordinal))
+            {
+                value = current.Substring(optionName.Length + 1);
+            }
+            else
+            {
+                return false;
+            }
+
+            if (
+                !int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out port)
+                || port < 1
+                || port > 65535
+            )
+            {
+                errorMessage = $"Bloom requires {optionName} to be an integer from 1 to 65535.";
+            }
+
+            return true;
+        }
+
+        private static bool ValidateStartupVitePort(out string errorMessage)
+        {
+            errorMessage = null;
+
+            if (!StartupVitePort.HasValue)
+                return true;
+
+            if (ReactControl.IsViteDevServerRunning(StartupVitePort.Value))
+                return true;
+
+            errorMessage =
+                $"Bloom was started with --vite-port {StartupVitePort.Value}, but no Vite dev server was reachable at {ReactControl.GetViteDevOrigin(StartupVitePort.Value)}/@vite/client.";
+            return false;
         }
 
         private static bool IsWebviewMissingOrTooOld()
