@@ -6,8 +6,6 @@ Internally, Bloom is a hybrid. It started as a C#/WinForms app with an embedded 
 
 # Building
 
-#### Install Dependencies
-
 1. Install [volta](https://docs.volta.sh/guide/getting-started) globally on your computer. This will provide you with the correct node and yarn. You may need to restart your computer for the installation to take effect.
 
 2. Install other dependencies:
@@ -16,27 +14,17 @@ Internally, Bloom is a hybrid. It started as a C#/WinForms app with an embedded 
 ./init.sh
 ```
 
-#### Build the front-end (browser) part
+3. Run a hot-reloading server for the front end and a "watch" run of the back end.
+```bash
+./go.sh
+```
 
-In `/src/BloomBrowserUI`, run `yarn dev` for a hot-reloading dev server. Alternatively, you can run `yarn build` to generate the needed files once.
-
-#### Build the back-end (.NET) part
-
-##### In VS Code:
-
-Make sure you have the C# Devkit extensions installed. Run and Debug through the gui or F5.
-
-##### In Visual Studio:
-
-1. Open Bloom.sln in Visual Studio
-2. Build the "WebView2PdfMaker" project
-3. Run the "BloomExe" project
 
 # Developing
 
 ### Go Dark
 
-We don't want developer and tester runs (and crashes) polluting our statistics. On Windows, add the environment variable "feedback" with value "off".
+We don't want developer and tester runs (and crashes) polluting our statistics. Add the environment variable "feedback" with value "off".
 
 ### Set up formatting
 

@@ -1,3 +1,5 @@
+/* eslint-env node */
+/* global AbortSignal, clearTimeout, console, fetch, process, setTimeout */
 import { spawn } from "node:child_process";
 import net from "node:net";
 import path from "node:path";
@@ -9,6 +11,7 @@ const browserUIRoot = path.resolve(__dirname, "..");
 const repoRoot = path.resolve(browserUIRoot, "..", "..");
 const devScriptPath = path.join(browserUIRoot, "scripts", "dev.mjs");
 const exeScriptPath = path.join(repoRoot, "scripts", "watchBloomExe.mjs");
+process.env.feedback = "off";
 const startupQuietMs = 1500;
 const viteHealthTimeoutMs = 15000;
 const viteHealthPollMs = 250;
@@ -299,7 +302,9 @@ const terminateChild = (child) =>
 
             try {
                 child.kill("SIGTERM");
-            } catch {}
+            } catch (error) {
+                void error;
+            }
 
             setTimeout(finish, 250);
         }, gracefulShutdownMs);
