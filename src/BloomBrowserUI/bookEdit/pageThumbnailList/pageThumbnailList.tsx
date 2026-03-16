@@ -489,6 +489,11 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
                 }}
                 onLayoutChange={onLayoutChange}
                 onDragStop={onDragStop}
+                // override react-grid-layout sticking a fixed height on us.  It can occasionally be wrong and
+                // cause a scroll bar to appear when it shouldn't.  (BL-16021)
+                css={css`
+                    height: 100% !important;
+                `}
             >
                 {pages}
             </Responsive>

@@ -108,6 +108,69 @@ namespace Bloom.Book
                 }
                 // otherwise leave it null, first attempt to use will create a default one
             }
+            else
+            {
+                // The comic tool became the overlay tool and then the canvas tool. We don't want to lose the settings for existing books.
+                if (_metadata.CurrentTool == "overlayTool" || _metadata.CurrentTool == "comicTool")
+                    _metadata.CurrentTool = "canvasTool";
+                if (_metadata.ToolStates != null)
+                {
+                    // It's possible that both a comic tool and an overlay tool have been stored.
+                    // In that case, we want to convert both to canvas tools, but then remove duplicates,
+                    // keeping one that is enabled if possible.
+                    var canvasToolCount = 0;
+                    foreach (var state in _metadata.ToolStates)
+                    {
+                        if (state.ToolId == "canvas")
+                        {
+                            canvasToolCount++;
+                        }
+                        else if (state.ToolId == "overlay" || state.ToolId == "comic")
+                        {
+                            state.SetToolId("canvas");
+                            canvasToolCount++;
+                        }
+                    }
+                    if (canvasToolCount > 1)
+                    {
+                        // We ended up with multiple entries for the canvas tool, and need to
+                        // remove duplicates. We want to keep one that is enabled, if possible,
+                        // and if there are multiple enabled, just keep the first one.
+                        var seenCanvasTool = false;
+                        var toolsWithFirstEnabledCanvas = _metadata.ToolStates.Where(state =>
+                        {
+                            if (state.ToolId != "canvas")
+                                return true;
+                            if (state.Enabled && !seenCanvasTool)
+                            {
+                                seenCanvasTool = true;
+                                return true;
+                            }
+                            return false;
+                        });
+                        if (seenCanvasTool)
+                        {
+                            // If there were any enabled canvas tools, just keep the first enabled one.
+                            _metadata.ToolStates = toolsWithFirstEnabledCanvas.ToList();
+                        }
+                        else
+                        {
+                            // If there were no enabled canvas tools, just keep the first one we see.
+                            _metadata.ToolStates = _metadata
+                                .ToolStates.Where(s =>
+                                {
+                                    if (s.ToolId != "canvas")
+                                        return true;
+                                    if (seenCanvasTool)
+                                        return false;
+                                    seenCanvasTool = true;
+                                    return true;
+                                })
+                                .ToList();
+                        }
+                    }
+                }
+            }
 
             PublishSettings = PublishSettings.FromFolder(FolderPath);
             AppearanceSettings.UpdateFromFolder(FolderPath);
