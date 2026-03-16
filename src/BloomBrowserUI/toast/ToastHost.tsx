@@ -56,7 +56,6 @@ export const ToastHost: React.FunctionComponent<{
 
             if (toast.action.url) {
                 window.location.href = toast.action.url;
-                removeToast(toast);
                 return;
             }
 

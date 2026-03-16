@@ -191,7 +191,6 @@ export const Toast: React.FunctionComponent<{
                 </div>
                 <button
                     type="button"
-                    aria-label="Close toast"
                     css={css`
                         margin: 0;
                         padding: 0;

@@ -1,12 +1,7 @@
 using System;
 using System.Windows.Forms;
 using Bloom.Api;
-using Bloom.MiscUI;
-using Bloom.web;
 using Bloom.Workspace;
-using Newtonsoft.Json;
-using SIL.Reporting;
-using ApplicationException = System.ApplicationException;
 
 namespace Bloom.web.controllers
 {
@@ -196,7 +191,7 @@ namespace Bloom.web.controllers
 
         private void HandlePerformToastAction(ApiRequest request)
         {
-            var requestData = DynamicJson.Parse(request.RequiredPostJson());
+            var requestData = request.RequiredPostDynamic();
             var callbackId = (string)requestData.callbackId;
             if (!ToastService.PerformAction(callbackId))
             {
@@ -210,7 +205,7 @@ namespace Bloom.web.controllers
         // Just a debugging/development testing utility
         private void HandleToastTest(ApiRequest request)
         {
-            var requestData = DynamicJson.Parse(request.RequiredPostJson());
+            var requestData = request.RequiredPostDynamic();
             var scenario = (string)requestData.scenario ?? "all";
 
             switch (scenario)
