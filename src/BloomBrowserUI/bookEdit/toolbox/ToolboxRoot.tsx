@@ -13,6 +13,7 @@ import {
     kBloomPanelBackground,
     kBloomUnselectedTabBackground,
 } from "../../utils/colorUtils";
+import { getMasterToolList } from "./toolbox";
 
 // React host for the toolbox sidebar.
 //
@@ -391,6 +392,13 @@ export const ToolboxRoot: React.FunctionComponent = () => {
             .get<string>("/bloom/api/toolbox/enabledTools")
             .then(async (response) => {
                 const parsedIds = parseEnabledToolIds(response.data);
+                const masterList = getMasterToolList();
+                for (let i = parsedIds.length - 1; i >= 0; i--) {
+                    const toolId = parsedIds[i];
+                    if (!masterList.some((tool) => tool.id() === toolId)) {
+                        parsedIds.splice(i, 1);
+                    }
+                }
                 const builtSections =
                     buildSectionsFromEnabledToolIds(parsedIds);
                 setSections(builtSections);
