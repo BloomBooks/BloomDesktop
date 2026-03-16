@@ -31,18 +31,16 @@ namespace BloomTests.web
         {
             var callbackActions = GetCallbackActionsDictionary();
             var tryGetValueArgs = new object[] { callbackId, null };
-            var found = (bool)callbackActions
-                .GetType()
-                .GetMethod("TryGetValue")
-                ?.Invoke(callbackActions, tryGetValueArgs);
+            var found = (bool)
+                callbackActions
+                    .GetType()
+                    .GetMethod("TryGetValue")
+                    ?.Invoke(callbackActions, tryGetValueArgs);
 
             Assert.That(found, Is.True, $"Expected callback '{callbackId}' to be registered.");
 
             var callbackRecord = tryGetValueArgs[1];
-            return (Action)callbackRecord
-                .GetType()
-                .GetProperty("Action")
-                ?.GetValue(callbackRecord);
+            return (Action)callbackRecord.GetType().GetProperty("Action")?.GetValue(callbackRecord);
         }
 
         [SetUp]
