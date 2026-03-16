@@ -1038,6 +1038,21 @@ namespace Bloom.Book
         {
             if (progress == null)
                 progress = new NullProgress();
+            var customLayoutPages = OurHtmlDom
+                .SafeSelectNodes(
+                    "//div[contains(@class,'bloom-page') and contains(@class,'bloom-customLayout')]"
+                )
+                .Cast<SafeXmlElement>()
+                .ToList();
+            if (
+                customLayoutPages.Count > 0
+                && CollectionSettings.Subscription.Tier == SubscriptionTier.Basic
+            )
+            {
+                foreach (var page in customLayoutPages)
+                    page.RemoveClass("bloom-customLayout");
+                UpToDate = false; // force a full update
+            }
             if (UpToDate)
                 return;
             if (!IsSaveable)
