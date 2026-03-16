@@ -73,6 +73,7 @@ import {
 } from "../toolbox/canvas/canvasElementUtils";
 import { getString, post, useApiObject } from "../../utils/bloomApi";
 import { ILanguageNameValues } from "../bookSettings/FieldVisibilityGroup";
+import OverflowChecker from "../OverflowChecker/OverflowChecker";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -938,6 +939,16 @@ const CanvasElementContextControls: React.FunctionComponent<{
 // So until I get a better idea, I'm just putting in a hard-coded list.
 const fieldsControlledByAppearanceSystem = ["bookTitle"];
 
+function adjustAutoSizeForVisibleEditableInTranslationGroup(tg: HTMLElement) {
+    const visibleEditable = tg.getElementsByClassName(
+        "bloom-editable bloom-visibility-code-on",
+    )[0] as HTMLElement;
+    if (!visibleEditable) {
+        return;
+    }
+    OverflowChecker.AdjustSizeOrMarkOverflow(visibleEditable);
+}
+
 function makeLanguageMenuItem(
     ce: HTMLElement,
     menuOptions: IMenuItemWithSubmenu[],
@@ -1018,6 +1029,7 @@ function makeLanguageMenuItem(
             // Ensure visibility code is  off for others.
             editable.classList.remove("bloom-visibility-code-on");
         }
+        adjustAutoSizeForVisibleEditableInTranslationGroup(tg);
         setMenuOpen(false);
     };
 
@@ -1197,6 +1209,7 @@ function makeFieldTypeMenuItem(
                 )) {
                     editable.removeAttribute("data-book");
                 }
+                adjustAutoSizeForVisibleEditableInTranslationGroup(tg);
                 setMenuOpen(false);
             },
             icon: !activeType && <CheckIcon css={getMenuIconCss()} />,
@@ -1256,10 +1269,14 @@ function makeFieldTypeMenuItem(
                                     temp.innerHTML = content || "";
                                     if (temp.textContent.trim() !== "")
                                         editable.innerHTML = content;
+                                    adjustAutoSizeForVisibleEditableInTranslationGroup(
+                                        tg,
+                                    );
                                 },
                             );
                         }
                     }
+                    adjustAutoSizeForVisibleEditableInTranslationGroup(tg);
                 }
                 setMenuOpen(false);
             },
