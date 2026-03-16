@@ -569,6 +569,12 @@ namespace Bloom.Book
             {
                 if (MetaData.ToolStates == null)
                     MetaData.ToolStates = new List<ToolboxToolState>();
+                // The comic tool became the overlay tool and then the canvas tool.  We don't want to lose the settings for existing books.
+                foreach (var state in MetaData.ToolStates)
+                {
+                    if (state.ToolId == "overlay" || state.ToolId == "comic")
+                        state.SetToolId("canvas");
+                }
                 return MetaData.ToolStates;
             }
             set { MetaData.ToolStates = value; }
@@ -576,7 +582,13 @@ namespace Bloom.Book
 
         public string CurrentTool
         {
-            get { return MetaData.CurrentTool; }
+            get
+            {
+                // The comic tool became the overlay tool and then the canvas tool.  We don't want to lose the settings for existing books.
+                if (MetaData.CurrentTool == "overlayTool" || MetaData.CurrentTool == "comicTool")
+                    MetaData.CurrentTool = "canvasTool";
+                return MetaData.CurrentTool;
+            }
             set { MetaData.CurrentTool = value; }
         }
 
