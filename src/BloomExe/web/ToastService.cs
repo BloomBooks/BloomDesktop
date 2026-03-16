@@ -52,7 +52,8 @@ namespace Bloom.web
             string text = null,
             string l10nId = null,
             int? durationSeconds = null,
-            ToastAction action = null
+            ToastAction action = null,
+            string toastId = null
         )
         {
             CleanupExpiredCallbacks();
@@ -79,7 +80,9 @@ namespace Bloom.web
                     var expiresUtc = durationSeconds.HasValue
                         ? DateTime.UtcNow.AddSeconds(Math.Max(600, durationSeconds.Value + 120))
                         : DateTime.MaxValue;
-                    callbackId = Guid.NewGuid().ToString("N");
+                    callbackId = string.IsNullOrWhiteSpace(toastId)
+                        ? Guid.NewGuid().ToString("N")
+                        : $"toast:{toastId}";
                     s_callbackActions[callbackId] = new CallbackRecord
                     {
                         Action = action.Callback,

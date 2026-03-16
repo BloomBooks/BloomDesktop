@@ -508,7 +508,8 @@ namespace Bloom.Workspace
             ToastService.ShowToast(
                 ToastSeverity.Error,
                 text: "The Team Collection has a newer version of this book. Return to the Collection Tab for more information.",
-                action: new ToastAction { Callback = () => ChangeTab(WorkspaceTab.collection) }
+                action: new ToastAction { Callback = () => ChangeTab(WorkspaceTab.collection) },
+                toastId: "team-collection-clobber"
             );
         }
 
