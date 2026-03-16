@@ -443,6 +443,18 @@ const initializeWorkspaceModeFromUrl = (): void => {
 const initializeWorkspaceModeFromUrlWithRetries = (): void => {
     let attempts = 0;
     const maxAttempts = 100;
+    let failureShown = false;
+
+    const showInitializationFailure = (): void => {
+        if (failureShown) {
+            return;
+        }
+        failureShown = true;
+
+        // Make startup failure unmistakable when root initialization never reaches a ready state.
+        document.documentElement.innerHTML =
+            "<head><meta charset='utf-8'></head><body>failed to init workspace after 100 attempts</body>";
+    };
 
     const runAttempt = (): void => {
         initializeWorkspaceModeFromUrl();
@@ -472,7 +484,12 @@ const initializeWorkspaceModeFromUrlWithRetries = (): void => {
 
         const fullyReady =
             hasBody && modeIsReady && pageIsReady && pageListIsReady;
-        if (fullyReady || attempts >= maxAttempts) {
+        if (fullyReady) {
+            return;
+        }
+
+        if (attempts >= maxAttempts) {
+            showInitializationFailure();
             return;
         }
 
