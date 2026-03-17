@@ -71,6 +71,7 @@ import {
     kBloomButtonClass,
     kBloomCanvasSelector,
 } from "../toolbox/canvas/canvasElementUtils";
+import { wrapWithRequestPageContentDelay } from "./bloomEditing";
 import { getString, post, useApiObject } from "../../utils/bloomApi";
 import { ILanguageNameValues } from "../bookSettings/FieldVisibilityGroup";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
@@ -949,6 +950,56 @@ function adjustAutoSizeForVisibleEditableInTranslationGroup(tg: HTMLElement) {
     OverflowChecker.AdjustSizeOrMarkOverflow(visibleEditable);
 }
 
+function setEditableContentFromKnownDataBookValueIfAny(
+    editable: HTMLElement,
+    dataBook: string | null,
+    tg: HTMLElement,
+) {
+    if (!dataBook) {
+        return;
+    }
+    wrapWithRequestPageContentDelay(
+        () =>
+            new Promise<void>((resolve) => {
+                getString(
+                    `editView/getDataBookValue?lang=${editable.getAttribute("lang")}&dataBook=${dataBook}`,
+                    (content) => {
+                        // content comes from a source that looked empty, we don't want to overwrite something the user may
+                        // already have typed here.
+                        // But it may well have something in it, because we usually have an empty paragraph to start with.
+                        // To test whether it looks empty, we put the text into a newly created element and then
+                        // see whether it's textContent is empty.
+                        // The logic of overwriting something which the user has typed here is that if we keep what's here,
+                        // then the user may never know that there was already something in that field. But if we overwrite, then
+                        // the user can always correct it back to what he just typed.
+                        const temp = document.createElement("div");
+                        temp.innerHTML = content || "";
+                        if (temp.textContent.trim() !== "")
+                            editable.innerHTML = content;
+                        adjustAutoSizeForVisibleEditableInTranslationGroup(tg);
+                        resolve();
+                    },
+                );
+            }),
+        "setCanvasFieldValueFromDataBook",
+    );
+}
+
+function applyAppearanceClassForEditable(editable: HTMLElement) {
+    editable.classList.remove(
+        "bloom-contentFirst",
+        "bloom-contentSecond",
+        "bloom-contentThird",
+    );
+    if (editable.classList.contains("bloom-content1")) {
+        editable.classList.add("bloom-contentFirst");
+    } else if (editable.classList.contains("bloom-contentNational1")) {
+        editable.classList.add("bloom-contentSecond");
+    } else if (editable.classList.contains("bloom-contentNational2")) {
+        editable.classList.add("bloom-contentThird");
+    }
+}
+
 function makeLanguageMenuItem(
     ce: HTMLElement,
     menuOptions: IMenuItemWithSubmenu[],
@@ -973,7 +1024,7 @@ function makeLanguageMenuItem(
         tg.setAttribute("data-default-languages", dataDefaultLang);
         const editables = Array.from(
             tg.getElementsByClassName("bloom-editable"),
-        );
+        ) as HTMLElement[];
         if (editables.length === 0) return; // not able to handle this yet.
         let editableInLang = editables.find(
             (e) => e.getAttribute("lang") === langCode,
@@ -1023,6 +1074,12 @@ function makeLanguageMenuItem(
                 editableInLang.classList.add(c);
             }
         }
+
+        setEditableContentFromKnownDataBookValueIfAny(
+            editableInLang,
+            dataBookValue,
+            tg,
+        );
 
         // and conversely remove them from the others
         for (const editable of editables) {
@@ -1195,6 +1252,37 @@ function makeFieldTypeMenuItem(
         }
     };
 
+    const removeConflictingStyleClasses = (
+        fieldType: {
+            editableClasses: string[];
+            classes: string[];
+        },
+        editables: HTMLElement[],
+    ) => {
+        const newStyleClasses = new Set(
+            [...fieldType.classes, ...fieldType.editableClasses].filter((c) =>
+                c.endsWith("-style"),
+            ),
+        );
+        if (newStyleClasses.size === 0) {
+            return;
+        }
+
+        const stripStyleClasses = (element: HTMLElement) => {
+            Array.from(element.classList).forEach((className) => {
+                if (
+                    className.endsWith("-style") &&
+                    !newStyleClasses.has(className)
+                ) {
+                    element.classList.remove(className);
+                }
+            });
+        };
+
+        stripStyleClasses(tg);
+        editables.forEach((editable) => stripStyleClasses(editable));
+    };
+
     const activeType = tg
         .getElementsByClassName("bloom-editable bloom-visibility-code-on")[0]
         ?.getAttribute("data-book");
@@ -1223,7 +1311,7 @@ function makeFieldTypeMenuItem(
                 clearFieldTypeClasses();
                 const editables = Array.from(
                     tg.getElementsByClassName("bloom-editable"),
-                );
+                ) as HTMLElement[];
                 if (fieldType.readOnly) {
                     const readOnlyDiv = document.createElement("div");
                     readOnlyDiv.setAttribute(
@@ -1245,34 +1333,27 @@ function makeFieldTypeMenuItem(
                     // Reload the page to get the derived content loaded.
                     post("common/saveChangesAndRethinkPageEvent", () => {});
                 } else {
+                    removeConflictingStyleClasses(fieldType, editables);
                     tg.classList.add(...fieldType.classes);
                     for (const editable of editables) {
                         editable.classList.add(...fieldType.editableClasses);
                         editable.setAttribute("data-book", fieldType.dataBook);
                         if (
+                            fieldsControlledByAppearanceSystem.includes(
+                                fieldType.dataBook,
+                            )
+                        ) {
+                            applyAppearanceClassForEditable(editable);
+                        }
+                        if (
                             editable.classList.contains(
                                 "bloom-visibility-code-on",
                             )
                         ) {
-                            getString(
-                                `editView/getDataBookValue?lang=${editable.getAttribute("lang")}&dataBook=${fieldType.dataBook}`,
-                                (content) => {
-                                    // content comes from a source that looked empty, we don't want to overwrite something the user may
-                                    // already have typed here.
-                                    // But it may well have something in it, because we usually have an empty paragraph to start with.
-                                    // To test whether it looks empty, we put the text into a newly created element and then
-                                    // see whether it's textContent is empty.
-                                    // The logic of overwriting something which the user has typed here is that if we keep what's here,
-                                    // then the user may never know that there was already something in that field. But if we overwrite, then
-                                    // the user can always correct it back to what he just typed.
-                                    const temp = document.createElement("div");
-                                    temp.innerHTML = content || "";
-                                    if (temp.textContent.trim() !== "")
-                                        editable.innerHTML = content;
-                                    adjustAutoSizeForVisibleEditableInTranslationGroup(
-                                        tg,
-                                    );
-                                },
+                            setEditableContentFromKnownDataBookValueIfAny(
+                                editable,
+                                fieldType.dataBook,
+                                tg,
                             );
                         }
                     }
