@@ -204,9 +204,17 @@ namespace Bloom.Api
                     var tag2 = _bookSelection.CurrentSelection.CollectionSettings.Language2Tag;
                     _editingView.SetActiveLanguages(showL1, tag1 == tag2 ? showL3 : showL2, showL3);
                     // Todo: save the content languages
+                    var oldTheme = _bookSelection.CurrentSelection.BookInfo.AppearanceSettings.CssThemeName;
                     _bookSelection.CurrentSelection.BookInfo.AppearanceSettings.UpdateFromDynamic(
                         newAppearance
                     );
+                    var newTheme = _bookSelection.CurrentSelection.BookInfo.AppearanceSettings.CssThemeName;
+                    if (newTheme != oldTheme)
+                    {
+                        // Flag that the theme changed in a way that we need to update the pagelist html. (BL-16005)
+                        if (newTheme == "legacy-5-6" || oldTheme == "legacy-5-6")
+                            _editingView.ThemeChanged = true;
+                    }
 
                     _bookSelection.CurrentSelection.SettingsUpdated();
 

@@ -313,6 +313,7 @@ namespace Bloom.Edit
         }
 
         private bool _changingUiLanguage = false; // review: should this be part of the state machine state?
+        internal bool ThemeChanged; // Set when changing theme in a way that requires rebuilding the pagelist html. (BL-16005)
 
         /// <summary>
         /// This is the View part of what happens when the state machine determines that we should navigate
@@ -327,7 +328,7 @@ namespace Bloom.Edit
             _model.SaveStateForFullSaveDecision();
 
             var canReuseCurrentRoot = !_changingUiLanguage && !ShouldDoFullReload();
-            if (_model.AreToolboxAndOuterFrameCurrent() && canReuseCurrentRoot)
+            if (_model.AreToolboxAndOuterFrameCurrent() && canReuseCurrentRoot && !ThemeChanged)
             {
                 // Keep the top document and toolbox iframe, just navigate the page iframe to the new page.
                 var pageUrl = _model.GetUrlForCurrentPage();
@@ -341,6 +342,7 @@ namespace Bloom.Edit
             }
             else if (canReuseCurrentRoot)
             {
+                ThemeChanged = false;
                 // The workspace root is always loaded (after initial startup),
                 // so don't navigate the top document again. Just initialize edit-frame content.
                 _model.SetupServerWithCurrentBookToolboxContents();
