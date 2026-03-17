@@ -661,6 +661,9 @@ const toolbox = new ToolBox();
 export function getTheOneToolbox() {
     return toolbox;
 }
+export function getMasterToolList() {
+    return masterToolList;
+}
 
 // Array of ITool objects, typically one for each tool. The code for each tool inserts an appropriate ITool
 // into this array in order to interact with the overall toolbox code.
