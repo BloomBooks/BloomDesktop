@@ -183,9 +183,35 @@ namespace Bloom.web.controllers
                         pageElt.RemoveClass("bloom-customLayout");
                     else
                         pageElt.AddClass("bloom-customLayout");
+                    // We must capture these from the saved page before typically replacing that with a different
+                    // page element.
+                    var backgroundAudio = pageElt.GetAttribute(HtmlDom.musicAttrName);
+                    var backgroundAudioVolume = pageElt.GetAttribute(HtmlDom.musicVolumeName);
                     // Bring everything up to date consistent with the new
                     // state. Might be enough just do the BookData update.
                     book.EnsureUpToDateMemory(new NullProgress());
+
+                    var updatedPageElt = book.GetPage(pageId)?.GetDivNodeForThisPage();
+                    if (updatedPageElt != null)
+                    {
+                        if (string.IsNullOrEmpty(backgroundAudio))
+                            updatedPageElt.RemoveAttribute(HtmlDom.musicAttrName);
+                        else
+                            updatedPageElt.SetAttribute(HtmlDom.musicAttrName, backgroundAudio);
+
+                        if (string.IsNullOrEmpty(backgroundAudioVolume))
+                            updatedPageElt.RemoveAttribute(HtmlDom.musicVolumeName);
+                        else
+                            updatedPageElt.SetAttribute(
+                                HtmlDom.musicVolumeName,
+                                backgroundAudioVolume
+                            );
+
+                        // Keep the same invariant we enforce elsewhere.
+                        if (string.IsNullOrEmpty(backgroundAudio))
+                            updatedPageElt.RemoveAttribute(HtmlDom.musicVolumeName);
+                    }
+
                     return pageId;
                 },
                 () => { }
