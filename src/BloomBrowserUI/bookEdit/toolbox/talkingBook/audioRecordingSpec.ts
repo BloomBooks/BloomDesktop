@@ -11,6 +11,70 @@ import { RecordingMode } from "./recordingMode";
 import axios from "axios";
 import $ from "jquery";
 import { mockReplies } from "../../../utils/bloomApi";
+import { splitHighlightNames } from "./audioTextHighlightManager";
+
+class FakeHighlight {
+    public ranges: Range[];
+
+    public constructor(...ranges: Range[]) {
+        this.ranges = ranges;
+    }
+}
+
+type FakeHighlightRegistry = Map<string, FakeHighlight>;
+type TestCssWithHighlights = {
+    highlights?: FakeHighlightRegistry;
+};
+
+const installCustomHighlightPolyfill = (targetWindow: Window) => {
+    const targetWindowWithCss = targetWindow as Window & {
+        CSS?: TestCssWithHighlights;
+    };
+    if (!targetWindowWithCss.CSS) {
+        targetWindowWithCss.CSS = {};
+    }
+
+    const cssWithHighlights = targetWindowWithCss.CSS;
+    cssWithHighlights.highlights = new Map<string, FakeHighlight>();
+    (
+        targetWindow as Window & {
+            Highlight?: typeof FakeHighlight;
+        }
+    ).Highlight = FakeHighlight;
+};
+
+const getPageWindow = (): Window | undefined => {
+    const iframe = parent.window.document.getElementById(
+        "page",
+    ) as HTMLIFrameElement | null;
+    return iframe?.contentWindow ?? undefined;
+};
+
+const getCustomHighlightsRegistry = (): FakeHighlightRegistry => {
+    const targetWindow = getPageWindow() ?? globalThis.window;
+    const cssWithHighlights = (
+        targetWindow as Window & {
+            CSS?: TestCssWithHighlights;
+        }
+    ).CSS;
+    if (!cssWithHighlights?.highlights) {
+        throw new Error(
+            "Expected CSS.highlights test polyfill to be installed",
+        );
+    }
+
+    return cssWithHighlights.highlights;
+};
+
+const getSplitHighlightTexts = (): string[][] => {
+    const registry = getCustomHighlightsRegistry();
+    return splitHighlightNames.map((name) => {
+        const highlight = registry.get(name);
+        return highlight
+            ? highlight.ranges.map((range) => range.toString())
+            : [];
+    });
+};
 
 // Notes:
 // For any async tests:
@@ -30,13 +94,21 @@ import { mockReplies } from "../../../utils/bloomApi";
 
 describe("audio recording tests", () => {
     beforeAll(async () => {
+        installCustomHighlightPolyfill(globalThis.window);
+
         await setupForAudioRecordingTests();
+
+        const pageWindow = getPageWindow();
+        if (pageWindow) {
+            installCustomHighlightPolyfill(pageWindow);
+        }
     });
 
     afterEach(() => {
         // Clean up any pending timers to prevent "parent is not defined" errors
         // when tests finish before timers fire
         theOneAudioRecorder?.clearTimeouts();
+        getCustomHighlightsRegistry().clear();
     });
 
     // In an earlier version of our API, checkForAnyRecording was designed to fail (404) if there was no recording.
@@ -2057,6 +2129,63 @@ describe("audio recording tests", () => {
                 // Verification
                 expect(box1.outerHTML).toBe(originalHtml);
             });
+        });
+    });
+
+    describe("- custom split highlights", () => {
+        it("registers the split highlight color groups for the current text box", () => {
+            SetupIFrameFromHtml(
+                '<div id="page1"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable audio-sentence ui-audioCurrent bloom-postAudioSplit" data-audiorecordingmode="TextBox" data-audiorecordingendtimes="1.0 2.0 3.0"><p><span id="span1" class="bloom-highlightSegment">One.</span><span id="span2" class="bloom-highlightSegment">Two.</span><span id="span3" class="bloom-highlightSegment">Three.</span><span id="span4" class="bloom-highlightSegment">Four.</span></p></div></div></div>',
+            );
+
+            const recording = new AudioRecording();
+            recording.markAudioSplit();
+
+            expect(getSplitHighlightTexts()).toEqual([
+                ["One.", "Four."],
+                ["Two."],
+                ["Three."],
+            ]);
+        });
+
+        it("clears split highlights while playback moves to an individual segment", async () => {
+            SetupIFrameFromHtml(
+                '<div id="page1"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable audio-sentence ui-audioCurrent bloom-postAudioSplit" data-audiorecordingmode="TextBox" data-audiorecordingendtimes="1.0 2.0"><p><span id="span1" class="bloom-highlightSegment">One.</span><span id="span2" class="bloom-highlightSegment">Two.</span></p></div></div></div>',
+            );
+
+            const recording = new AudioRecording();
+            recording.markAudioSplit();
+
+            const setHighlightToAsync = (
+                recording as unknown as {
+                    setHighlightToAsync(args: {
+                        newElement: Element;
+                        shouldScrollToElement: boolean;
+                    }): Promise<void>;
+                }
+            ).setHighlightToAsync.bind(recording);
+
+            await setHighlightToAsync({
+                newElement: getFrameElementById("page", "span1")!,
+                shouldScrollToElement: false,
+            });
+
+            expect(getSplitHighlightTexts()).toEqual([[], [], []]);
+        });
+
+        it("uses only ui-enableHighlight descendants when a segment disables its own background", () => {
+            SetupIFrameFromHtml(
+                '<div id="page1"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable audio-sentence ui-audioCurrent bloom-postAudioSplit" data-audiorecordingmode="TextBox" data-audiorecordingendtimes="1.0 2.0"><p><span id="span1" class="bloom-highlightSegment">One.</span><span id="span2" class="bloom-highlightSegment ui-disableHighlight"><span class="ui-enableHighlight">Two</span>&nbsp;&nbsp; <span class="ui-enableHighlight">Three</span></span></p></div></div></div>',
+            );
+
+            const recording = new AudioRecording();
+            recording.markAudioSplit();
+
+            expect(getSplitHighlightTexts()).toEqual([
+                ["One."],
+                ["Two", "Three"],
+                [],
+            ]);
         });
     });
 });

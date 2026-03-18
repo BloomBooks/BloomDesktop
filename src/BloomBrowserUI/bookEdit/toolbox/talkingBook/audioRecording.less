@@ -76,24 +76,25 @@ div.ui-audioCurrent p {
     position: unset; // BL-11633, works around Chromium bug
 }
 
+::highlight(bloom-audio-split-1) {
+    background-color: #bfedf3;
+}
+
+::highlight(bloom-audio-split-2) {
+    background-color: #7fdae6;
+}
+
+::highlight(bloom-audio-split-3) {
+    background-color: #29c2d6;
+}
+
 .ui-audioCurrent.bloom-postAudioSplit[data-audiorecordingmode="TextBox"]:not(
         .ui-suppressHighlight
     ):not(.ui-disableHighlight) {
     // Special highlighting after the Split button completes to show it completed.
-    // Note: This highlighting is expected to persist across sessions, but to be hidden (displayed with the yellow color) while each segment is playing.
-    //       This is accomplished because this rule temporarily drops out of effect when .ui-audioCurrent is moved to the span as that segment plays.
-    //       (The rule requires a span BELOW the .ui-audioCurrent, so it drops out of effect the span IS the .ui-audioCurrent).
-    span:nth-child(3n + 1 of .bloom-highlightSegment) {
-        background-color: #bfedf3;
-    }
-
-    span:nth-child(3n + 2 of .bloom-highlightSegment) {
-        background-color: #7fdae6;
-    }
-
-    span:nth-child(3n + 3 of .bloom-highlightSegment) {
-        background-color: #29c2d6;
-    }
+    // The actual colors are now applied with named ::highlight() rules populated from TS.
+    // Note: This highlighting is expected to persist across sessions, but to be hidden
+    // (displayed with the yellow color) while each segment is playing.
 
     span {
         position: unset; // BL-11633, works around Chromium bug
