@@ -32,7 +32,7 @@ namespace BloomTests.web.controllers
                 null,
                 (request, b) =>
                 {
-                    CurrentBook.SetIsDecodable(b);
+                    CurrentBook?.SetIsDecodable(b);
                 },
                 true
             );
@@ -41,33 +41,40 @@ namespace BloomTests.web.controllers
                 null,
                 (request, b) =>
                 {
-                    CurrentBook.SetIsLeveled(b);
+                    CurrentBook?.SetIsLeveled(b);
                 },
                 true
             );
         }
 
-        private Bloom.Book.Book CurrentBook => _bookSelection.CurrentSelection;
+        private Bloom.Book.Book CurrentBook => _bookSelection?.CurrentSelection;
 
         public void HandleEnabledToolsRequest(ApiRequest request)
         {
-            lock (request)
-            {
+            var book = CurrentBook;
+            // CurrentBook can legitimately be null for this call (BL-16017)
+            if (book?.BookInfo?.Tools == null)
+                request.ReplyWithText("");
+            else
                 request.ReplyWithText(
                     string.Join(
                         ",",
-                        CurrentBook.BookInfo.Tools.Where(t => t.Enabled).Select(t => t.ToolId)
+                        book.BookInfo.Tools.Where(t => t.Enabled).Select(t => t.ToolId)
                     )
                 );
-            }
         }
 
         public void HandleFileExistsRequest(ApiRequest request)
         {
-            lock (request)
+            var fileName = request.RequiredParam("filename");
+            var folderPath = CurrentBook?.FolderPath;
+            if (folderPath == null)
             {
-                var fileName = request.RequiredParam("filename");
-                var path = Path.Combine(_bookSelection.CurrentSelection.FolderPath, fileName);
+                request.ReplyWithText("false");
+            }
+            else
+            {
+                var path = Path.Combine(folderPath, fileName);
                 request.ReplyWithText(RobustFile.Exists(path) ? "true" : "false");
             }
         }
