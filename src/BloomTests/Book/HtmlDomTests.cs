@@ -1267,26 +1267,36 @@ namespace BloomTests.Book
             Assert.That(
                 updatedCssRules,
                 Does.Contain(
-                    ".Bubble-style span.ui-audioCurrent { background-color: transparent; color: rgb(0, 255, 255); }"
+                    ".Bubble-style span.ui-audioCurrent { --bloom-audio-highlight-background: transparent; --bloom-audio-highlight-color: rgb(0, 255, 255); background-color: transparent; color: rgb(0, 255, 255); }"
                 )
             );
             Assert.That(
                 updatedCssRules,
                 Does.Contain(
-                    ".Title-On-Cover-style span.ui-audioCurrent { background-color: rgb(254, 191, 0); }"
+                    ".Title-On-Cover-style span.ui-audioCurrent { --bloom-audio-highlight-background: rgb(254, 191, 0); background-color: rgb(254, 191, 0); }"
                 )
             );
             Assert.That(
                 updatedCssRules,
                 Does.Contain(
-                    ".Bubble-style span.ui-audioCurrent > span.ui-enableHighlight { background-color: transparent; color: rgb(0, 255, 255); }"
+                    ".Bubble-style span.ui-audioCurrent > span.ui-enableHighlight { --bloom-audio-highlight-background: transparent; --bloom-audio-highlight-color: rgb(0, 255, 255); background-color: transparent; color: rgb(0, 255, 255); }"
                 )
             );
             Assert.That(
                 updatedCssRules,
                 Does.Contain(
-                    ".Title-On-Cover-style span.ui-audioCurrent > span.ui-enableHighlight { background-color: rgb(254, 191, 0); }"
+                    ".Title-On-Cover-style span.ui-audioCurrent > span.ui-enableHighlight { --bloom-audio-highlight-background: rgb(254, 191, 0); background-color: rgb(254, 191, 0); }"
                 )
+            );
+            Assert.That(
+                updatedCssRules,
+                Does.Contain(
+                    "--bloom-audio-highlight-background: transparent; --bloom-audio-highlight-color: rgb(0, 255, 255);"
+                )
+            );
+            Assert.That(
+                updatedCssRules,
+                Does.Contain("--bloom-audio-highlight-background: rgb(254, 191, 0);")
             );
         }
 
@@ -1322,7 +1332,68 @@ namespace BloomTests.Book
             HtmlDom.AddMissingAudioHighlightRules(bookStyleNode);
             var updatedCssRules = bookStyleNode.InnerXml;
 
-            Assert.That(updatedCssRules, Is.EqualTo(originalCssRules));
+            Assert.That(updatedCssRules, Is.Not.EqualTo(originalCssRules));
+            Assert.That(
+                updatedCssRules,
+                Does.Contain(
+                    ".Bubble-style span.ui-audioCurrent { --bloom-audio-highlight-background: transparent; --bloom-audio-highlight-color: rgb(0, 255, 255); background-color: transparent; color: rgb(0, 255, 255); }"
+                )
+            );
+            Assert.That(
+                updatedCssRules,
+                Does.Contain(
+                    ".Bubble-style span.ui-audioCurrent > span.ui-enableHighlight { --bloom-audio-highlight-background: transparent; --bloom-audio-highlight-color: rgb(0, 255, 255); background-color: transparent; color: rgb(0, 255, 255); }"
+                )
+            );
+            Assert.That(
+                updatedCssRules,
+                Does.Contain(
+                    ".Bubble-style.ui-audioCurrent p { --bloom-audio-highlight-background: transparent; --bloom-audio-highlight-color: rgb(0, 255, 255); background-color: transparent; color: rgb(0, 255, 255); }"
+                )
+            );
+        }
+
+        [Test]
+        public void AddMissingAudioHighlightRules_AddsCssVariablesWhenOnlyThatPartIsMissing()
+        {
+            var bookDom = new HtmlDom(
+                @"<html>
+  <head>
+    <style type='text/css' title='userModifiedStyles'>
+    /*<![CDATA[*/
+    .Title-On-Cover-style span.ui-audioCurrent { background-color: rgb(254, 191, 0); }
+    .Title-On-Cover-style span.ui-audioCurrent > span.ui-enableHighlight { background-color: rgb(254, 191, 0); }
+    .Title-On-Cover-style.ui-audioCurrent p { background-color: rgb(254, 191, 0); }/*]]>*/
+    </style>
+  </head>
+  <body>
+    <div class='Title-On-Cover-style'></div>
+   </body>
+</html>"
+            );
+            var bookStyleNode = HtmlDom.GetUserModifiedStyleElement(bookDom.Head);
+
+            HtmlDom.AddMissingAudioHighlightRules(bookStyleNode);
+            var updatedCssRules = bookStyleNode.InnerXml;
+
+            Assert.That(
+                updatedCssRules,
+                Does.Contain(
+                    ".Title-On-Cover-style span.ui-audioCurrent { --bloom-audio-highlight-background: rgb(254, 191, 0); background-color: rgb(254, 191, 0); }"
+                )
+            );
+            Assert.That(
+                updatedCssRules,
+                Does.Contain(
+                    ".Title-On-Cover-style span.ui-audioCurrent > span.ui-enableHighlight { --bloom-audio-highlight-background: rgb(254, 191, 0); background-color: rgb(254, 191, 0); }"
+                )
+            );
+            Assert.That(
+                updatedCssRules,
+                Does.Contain(
+                    ".Title-On-Cover-style.ui-audioCurrent p { --bloom-audio-highlight-background: rgb(254, 191, 0); background-color: rgb(254, 191, 0); }"
+                )
+            );
         }
 
         [Test]

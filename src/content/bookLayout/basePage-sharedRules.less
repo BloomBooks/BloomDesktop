@@ -28,6 +28,10 @@ body {
 span.ui-audioCurrent,
 div.ui-audioCurrent p,
 .ui-audioCurrent .ui-enableHighlight {
+    // These variables mirror the default audio highlight colors so edit-mode custom highlights
+    // and older consumers can share one source of truth.
+    --bloom-audio-highlight-background: #febf00;
+    --bloom-audio-highlight-text-color: black;
     background-color: #febf00;
     color: black;
 }

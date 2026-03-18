@@ -676,10 +676,21 @@ export default class StyleEditor {
         if (!rule) {
             return; // paranoia
         }
+        // Keep the original properties for older render paths, but also expose the colors via
+        // CSS variables so custom highlights can read the same user-configured values.
+        rule.style.setProperty(
+            "--bloom-audio-highlight-background",
+            hiliteBgColor,
+        );
         rule.style.setProperty("background-color", hiliteBgColor);
         if (hiliteTextColor) {
+            rule.style.setProperty(
+                "--bloom-audio-highlight-text-color",
+                hiliteTextColor,
+            );
             rule.style.setProperty("color", hiliteTextColor);
         } else {
+            rule.style.removeProperty("--bloom-audio-highlight-text-color");
             rule.style.removeProperty("color");
         }
     }

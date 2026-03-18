@@ -3803,6 +3803,41 @@ namespace Bloom.Book
                     userStyleKeyDict.Add(newKey, value);
                     updatedRule = true;
                 }
+
+                // Custom highlights now read audio colors through CSS variables, so backfill those
+                // into saved user rules instead of assuming every book will be reopened in the Format dialog.
+                var updatedSentenceRule = AddAudioHighlightCssVariables(userStyleKeyDict[key]);
+                if (updatedSentenceRule != userStyleKeyDict[key])
+                {
+                    userStyleKeyDict[key] = updatedSentenceRule;
+                    updatedRule = true;
+                }
+
+                var paragraphRuleKey = key.Replace(" span.ui-audioCurrent", ".ui-audioCurrent p");
+                if (userStyleKeyDict.ContainsKey(paragraphRuleKey))
+                {
+                    var updatedParagraphRule = AddAudioHighlightCssVariables(
+                        userStyleKeyDict[paragraphRuleKey]
+                    );
+                    if (updatedParagraphRule != userStyleKeyDict[paragraphRuleKey])
+                    {
+                        userStyleKeyDict[paragraphRuleKey] = updatedParagraphRule;
+                        updatedRule = true;
+                    }
+                }
+
+                var paddedSentenceRuleKey = key + " > span.ui-enableHighlight";
+                if (userStyleKeyDict.ContainsKey(paddedSentenceRuleKey))
+                {
+                    var updatedPaddedSentenceRule = AddAudioHighlightCssVariables(
+                        userStyleKeyDict[paddedSentenceRuleKey]
+                    );
+                    if (updatedPaddedSentenceRule != userStyleKeyDict[paddedSentenceRuleKey])
+                    {
+                        userStyleKeyDict[paddedSentenceRuleKey] = updatedPaddedSentenceRule;
+                        updatedRule = true;
+                    }
+                }
             }
             if (updatedRule)
             {
@@ -3810,6 +3845,33 @@ namespace Bloom.Book
                 var rawCSS = GetCompleteFilteredUserStylesInnerText(userStyleKeyDict);
                 userStylesNode.InnerXml = WrapUserStyleInCdata(rawCSS);
             }
+        }
+
+        private static string AddAudioHighlightCssVariables(string ruleValue)
+        {
+            const string highlightBackgroundVariable = "--bloom-audio-highlight-background";
+            const string highlightColorVariable = "--bloom-audio-highlight-text-color";
+
+            // Leave rules alone once the variables exist so we do not churn user CSS on every load.
+            if (ruleValue.Contains(highlightBackgroundVariable))
+                return ruleValue;
+
+            var backgroundColorMatch = Regex.Match(ruleValue, @"background-color\s*:\s*([^;}]*)");
+            if (!backgroundColorMatch.Success)
+                return ruleValue;
+
+            var colorMatch = Regex.Match(ruleValue, @"(?<!-)color\s*:\s*([^;}]*)");
+            var insertAt = ruleValue.IndexOf('{');
+            if (insertAt < 0)
+                return ruleValue;
+
+            var insertedDeclarations =
+                $" {highlightBackgroundVariable}: {backgroundColorMatch.Groups[1].Value.Trim()};";
+            if (colorMatch.Success)
+                insertedDeclarations +=
+                    $" {highlightColorVariable}: {colorMatch.Groups[1].Value.Trim()};";
+
+            return ruleValue.Insert(insertAt + 1, insertedDeclarations);
         }
 
         public bool HasClassOnBody(string className)

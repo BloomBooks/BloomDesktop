@@ -320,6 +320,41 @@ describe("StyleEditor", () => {
         if (rule != null) expect(ParseRuleForFontSize(rule.cssText)).toBe(20);
     });
 
+    it("putAudioHiliteRulesInDom stores audio highlight css variables", () => {
+        const editor = new StyleEditor(
+            "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
+        );
+
+        editor.putAudioHiliteRulesInDom(
+            "foo-style",
+            "rgb(1, 2, 3)",
+            "rgb(4, 5, 6)",
+        );
+
+        const sentenceRule = GetRuleMatchingSelector(
+            "foo-style span.ui-audioCurrent",
+        );
+        const paddedSentenceRule = GetRuleMatchingSelector(
+            "foo-style span.ui-audioCurrent > span.ui-enableHighlight",
+        );
+        const paragraphRule = GetRuleMatchingSelector(
+            "foo-style.ui-audioCurrent p",
+        );
+
+        expect(sentenceRule?.cssText).toContain(
+            "--bloom-audio-highlight-background: rgb(4, 5, 6)",
+        );
+        expect(sentenceRule?.cssText).toContain(
+            "--bloom-audio-highlight-color: rgb(1, 2, 3)",
+        );
+        expect(paddedSentenceRule?.cssText).toContain(
+            "--bloom-audio-highlight-background: rgb(4, 5, 6)",
+        );
+        expect(paragraphRule?.cssText).toContain(
+            "--bloom-audio-highlight-background: rgb(4, 5, 6)",
+        );
+    });
+
     // Skipped because currently we're running in jsdom. Making use of the existing rule depends on
     // getComputedStyle, which jsdom does not support. ChatGpt thinks it also depends on actual
     // dom element sizes, which jsdom also does not support. Attempts to polyfill proved difficult.
