@@ -121,7 +121,6 @@ namespace Bloom.Publish
             if (WorkspaceView?.MainBrowser == null)
                 return;
 
-            WorkspaceView.EnsureWorkspaceRootDocumentLoaded();
             _ = _iframeReactControl.Load(
                 WorkspaceView.MainBrowser,
                 "publishTabPaneBundle",

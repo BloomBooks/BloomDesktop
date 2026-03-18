@@ -220,6 +220,10 @@ namespace Bloom.Workspace
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
+
+            // Convenient place to call this, after the workspace is installed in its parent form.
+            _editingView?.HookupHostFormEvents();
+
             // If we're loading a team collection, we need to do that...with its progress dialog...
             // before anything else, and we'll need to close the splash screen to make room for
             // that dialog.
@@ -264,13 +268,37 @@ namespace Bloom.Workspace
             _collectionTabView.ReadyToShowCollections();
         }
 
-        internal void EnsureWorkspaceRootDocumentLoaded()
+        internal void ReloadWorkspaceRootDocument()
         {
-            // The workspace root is now hosted by appBundle in ReactControl.
+            _workspaceReactControl?.Reload();
         }
 
         private static ReactControlAdditionalHtml GetWorkspaceAdditionalHtml()
         {
+            const string pureDrawerCssLink =
+                "<link rel='stylesheet' href='/bloom/lib/pure-drawer.css' type='text/css'>";
+
+            const string workspaceInitializationFailureScript =
+                @"<script>
+window.showWorkspaceInitializationFailure = function(message) {
+    const docEl = document.documentElement;
+    while (docEl.firstChild) {
+        docEl.removeChild(docEl.firstChild);
+    }
+
+    const head = document.createElement('head');
+    const meta = document.createElement('meta');
+    meta.setAttribute('charset', 'utf-8');
+    head.appendChild(meta);
+
+    const body = document.createElement('body');
+    body.textContent = message || 'loading failed';
+
+    docEl.appendChild(head);
+    docEl.appendChild(body);
+};
+</script>";
+
             return new ReactControlAdditionalHtml
             {
                 HeadHtml =
@@ -279,108 +307,17 @@ namespace Bloom.Workspace
 <link rel='stylesheet' href='/bloom/bookEdit/toolbox/toolbox.css' type='text/css'>
 <link rel='stylesheet' href='/bloom/bookEdit/html/font-awesome/css/font-awesome.min.css' type='text/css'>
 <link rel='stylesheet' href='/bloom/bookEdit/css/bloomDialog.css' type='text/css'>
-<link rel='stylesheet' href='/bloom/lib/pure-drawer.css' type='text/css'>
+"
+                    + pureDrawerCssLink
+                    + @"
 <link rel='stylesheet' href='/bloom/lib/long-press/longpress.css' type='text/css'>
 <script src='/bloom/jquery.min.js'></script>
-<script>
-window.showWorkspaceInitializationFailure = function(message) {
-    const docEl = document.documentElement;
-    while (docEl.firstChild) {
-        docEl.removeChild(docEl.firstChild);
-    }
-
-    const head = document.createElement('head');
-    const meta = document.createElement('meta');
-    meta.setAttribute('charset', 'utf-8');
-    head.appendChild(meta);
-
-    const body = document.createElement('body');
-    body.textContent = message || 'loading failed';
-
-    docEl.appendChild(head);
-    docEl.appendChild(body);
-};
-</script>
-<script>window.bloomIsWorkspaceRoot = true;</script>
-<script src='/bloom/workspaceBundle.js' type='module'></script>",
-                BodyEndHtml =
-                    @"<script>
-document.addEventListener('DOMContentLoaded', function() {
-    let attempts = 0;
-    const maxAttempts = 100;
-    let failureShown = false;
-
-    const showInitializationFailure = function() {
-        if (failureShown) {
-            return;
-        }
-        failureShown = true;
-        window.showWorkspaceInitializationFailure('failed to load workspace bundle after 100 attempts');
-    };
-
-    const run = function() {
-        const hasStart = !!window.workspaceBundle?.startWorkspaceModeInitialization;
-        if (hasStart) {
-            window.workspaceBundle.startWorkspaceModeInitialization();
-            return;
-        }
-
-        attempts += 1;
-        if (attempts !== maxAttempts) {
-            window.setTimeout(run, 100);
-        } else {
-            showInitializationFailure();
-        }
-    };
-
-    run();
-}, { once: true });
-</script>",
+"
+                    + workspaceInitializationFailureScript,
+                BodyEndHtml = "",
                 ViteDevHeadHtml =
-                    @"<link rel='stylesheet' href='/bloom/lib/pure-drawer.css' type='text/css'>
-<script>
-window.showWorkspaceInitializationFailure = function(message) {
-    const docEl = document.documentElement;
-    while (docEl.firstChild) {
-        docEl.removeChild(docEl.firstChild);
-    }
-
-    const head = document.createElement('head');
-    const meta = document.createElement('meta');
-    meta.setAttribute('charset', 'utf-8');
-    head.appendChild(meta);
-
-    const body = document.createElement('body');
-    body.textContent = message || 'loading failed';
-
-    docEl.appendChild(head);
-    docEl.appendChild(body);
-};
-</script>
-<script>window.bloomIsWorkspaceRoot = true;</script>",
-                ViteDevBodyEndHtml =
-                    @"<script type='module'>
-async function initializeWorkspaceRootForVite() {
-    try {
-        await import('http://localhost:5173/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js');
-        await import('http://localhost:5173/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css');
-        await import('http://localhost:5173/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css');
-        await import('http://localhost:5173/bookEdit/toolbox/toolbox.less');
-        await import('http://localhost:5173/bookEdit/html/font-awesome/css/font-awesome.min.css');
-        await import('http://localhost:5173/bookEdit/css/bloomDialog.less');
-        await import('http://localhost:5173/lib/long-press/longpress.css');
-        await import('/bloom/jquery.min.js');
-
-        const workspaceRootModule = await import('http://localhost:5173/bookEdit/workspaceRoot.ts');
-        workspaceRootModule.startWorkspaceModeInitialization();
-    } catch (e) {
-        console.error('Failed to initialize Vite dev WorkspaceRoot:', e);
-        window.showWorkspaceInitializationFailure('failed to initialize workspace root');
-    }
-}
-
-initializeWorkspaceRootForVite();
-</script>",
+                    pureDrawerCssLink + "\n" + workspaceInitializationFailureScript + "\n",
+                ViteDevBodyEndHtml = "",
             };
         }
 
@@ -405,28 +342,31 @@ initializeWorkspaceRootForVite();
 
         private void MaybeOpenMainBrowserDevTools()
         {
-            const int maxAttempts = 100;
-            var attempts = 0;
-            var timer = new Timer { Interval = 100 };
-            timer.Tick += (unused, args) =>
-            {
-                attempts++;
-                var coreWebView = (_mainBrowser as WebView2Browser)?.InternalBrowser?.CoreWebView2;
-                if (coreWebView != null)
-                {
-                    timer.Stop();
-                    timer.Dispose();
-                    coreWebView.OpenDevToolsWindow();
-                    return;
-                }
+            // This code is useful if you get in a really weird state where you can't get dev tools open,
+            // or to save time if you are starting up frequently and always want them. It causes dev tools
+            // to open on the main workspace browser as soon as Bloom starts.
+            // const int maxAttempts = 100;
+            // var attempts = 0;
+            // var timer = new Timer { Interval = 100 };
+            // timer.Tick += (unused, args) =>
+            // {
+            //     attempts++;
+            //     var coreWebView = (_mainBrowser as WebView2Browser)?.InternalBrowser?.CoreWebView2;
+            //     if (coreWebView != null)
+            //     {
+            //         timer.Stop();
+            //         timer.Dispose();
+            //         coreWebView.OpenDevToolsWindow();
+            //         return;
+            //     }
 
-                if (attempts >= maxAttempts)
-                {
-                    timer.Stop();
-                    timer.Dispose();
-                }
-            };
-            timer.Start();
+            //     if (attempts >= maxAttempts)
+            //     {
+            //         timer.Stop();
+            //         timer.Dispose();
+            //     }
+            // };
+            // timer.Start();
         }
 
         /// <summary>
@@ -687,7 +627,6 @@ initializeWorkspaceRootForVite();
             if (_mainBrowser == null)
                 return;
 
-            EnsureWorkspaceRootDocumentLoaded();
             _ = _topBarIframeReactControl.Load(
                 _mainBrowser,
                 "topBarBundle",
@@ -1395,21 +1334,6 @@ initializeWorkspaceRootForVite();
 
         protected IBloomTabArea CurrentTabView { get; set; }
 
-        private static string GetWorkspaceModeName(WorkspaceTab tab)
-        {
-            switch (tab)
-            {
-                case WorkspaceTab.edit:
-                    return "edit";
-                case WorkspaceTab.collection:
-                    return "collection";
-                case WorkspaceTab.publish:
-                    return "publish";
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(tab), tab, null);
-            }
-        }
-
         private IBloomTabArea GetTabArea(WorkspaceTab tab)
         {
             switch (tab)
@@ -1462,12 +1386,6 @@ initializeWorkspaceRootForVite();
             }
         }
 
-        private void SyncWorkspaceRootModeToTab(WorkspaceTab tab)
-        {
-            var mode = GetWorkspaceModeName(tab);
-            BloomServer.SetCurrentWorkspaceModeForDebugging(mode);
-        }
-
         /// <summary>
         /// Changes the active tab in the workspace.
         /// </summary>
@@ -1485,7 +1403,6 @@ initializeWorkspaceRootForVite();
             _tabSelection.ActiveTab = newTab;
 
             EnsureTabAreaLoaded(newTab);
-            SyncWorkspaceRootModeToTab(newTab);
             ApplyTabAreaSelection(GetTabArea(newTab));
 
             if (newTab == WorkspaceTab.collection)

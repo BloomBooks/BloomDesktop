@@ -15,7 +15,6 @@ import { BookSettingsButton } from "../../react_components/BookSettingsButton";
 import Menu from "@mui/material/Menu";
 import Checkbox from "@mui/material/Checkbox";
 import { useL10n } from "../../react_components/l10nHooks";
-import { useParentFrameMenuPortal } from "../../react_components/TopBar/useParentFrameMenuPortal";
 import { LocalizableMenuItem } from "../../react_components/localizableMenuItem";
 
 interface IDropdownData {
@@ -509,35 +508,46 @@ export const EditingControlDropdown: React.FunctionComponent<{
     onMenuItemClick: (item: ITopBarMenuItem) => void;
     showChecks: boolean;
 }> = (props) => {
-    const {
-        suppressTooltip,
-        closeMenu,
-        openMenuAtButtonWithItemsLoader,
-        suppressTooltipUntilPointerReset,
-        clearTooltipSuppression,
-        releaseTooltipSuppressionIfMenuClosed,
-        getRootMenuProps,
-        renderMenuInParentFrame,
-    } = useParentFrameMenuPortal();
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    const [suppressTooltip, setSuppressTooltip] = useState(false);
 
     const onClose = () => {
-        closeMenu();
+        setAnchorEl(null);
+        setSuppressTooltip(false);
     };
 
     const onOpen = () => {
         if (!props.enabled) {
             return;
         }
-        suppressTooltipUntilPointerReset();
+        setSuppressTooltip(true);
 
-        const opened = openMenuAtButtonWithItemsLoader(
+        const anchor = document.getElementById(
             props.buttonId,
-            `${props.buttonId}-menu-parent`,
-            props.menuItems.length,
-            props.loadMenuItems,
-        );
-        if (!opened) {
-            clearTooltipSuppression();
+        ) as HTMLElement | null;
+        if (!anchor) {
+            setSuppressTooltip(false);
+            return;
+        }
+        if (props.menuItems.length > 0) {
+            setAnchorEl(anchor);
+            props.loadMenuItems();
+            return;
+        }
+
+        props.loadMenuItems((itemCount) => {
+            if (itemCount > 0) {
+                setAnchorEl(anchor);
+            } else {
+                setAnchorEl(null);
+                setSuppressTooltip(false);
+            }
+        });
+    };
+
+    const releaseTooltipSuppressionIfMenuClosed = () => {
+        if (!anchorEl) {
+            setSuppressTooltip(false);
         }
     };
 
@@ -550,7 +560,29 @@ export const EditingControlDropdown: React.FunctionComponent<{
     };
 
     const menu = (
-        <Menu {...getRootMenuProps(onClose)}>
+        <Menu
+            open={Boolean(anchorEl)}
+            anchorEl={anchorEl}
+            onClose={onClose}
+            disablePortal={false}
+            keepMounted={false}
+            anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "left",
+            }}
+            transformOrigin={{
+                vertical: "top",
+                horizontal: "left",
+            }}
+            slotProps={{
+                paper: {
+                    css: css`
+                        min-width: 220px;
+                        max-width: 440px;
+                    `,
+                },
+            }}
+        >
             {props.menuItems.map((item) => (
                 <LocalizableMenuItem
                     key={`${props.buttonId}-${item.id}-${item.label}`}
@@ -594,7 +626,7 @@ export const EditingControlDropdown: React.FunctionComponent<{
             <>
                 <BloomButton
                     id={props.buttonId}
-                    onClick={() => onOpen()}
+                    onClick={onOpen}
                     onMouseEnter={releaseTooltipSuppressionIfMenuClosed}
                     onMouseLeave={releaseTooltipSuppressionIfMenuClosed}
                     enabled={props.enabled}
@@ -626,7 +658,7 @@ export const EditingControlDropdown: React.FunctionComponent<{
                 >
                     {props.localizedText}
                 </BloomButton>
-                {renderMenuInParentFrame(menu)}
+                {menu}
             </>
         </BloomTooltip>
     );

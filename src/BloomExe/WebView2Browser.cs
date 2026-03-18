@@ -189,6 +189,9 @@ namespace Bloom
 
                 _webview.CoreWebView2.Settings.IsStatusBarEnabled = false;
                 _webview.CoreWebView2.Settings.IsWebMessageEnabled = true;
+                // Bloom handles zoom itself (for example ctrl+wheel in edit page). Disable
+                // WebView2's built-in browser zoom to avoid double-zooming the workspace.
+                _webview.CoreWebView2.Settings.IsZoomControlEnabled = false;
                 // Disable swipe navigation, which is a problem on trackpads (and touch screens). See BL-12405.
                 _webview.CoreWebView2.Settings.IsSwipeNavigationEnabled = false;
 
