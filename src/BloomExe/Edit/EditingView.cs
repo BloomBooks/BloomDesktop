@@ -33,7 +33,7 @@ using TempFile = SIL.IO.TempFile;
 
 namespace Bloom.Edit
 {
-    public partial class EditingView : UserControl, IBloomTabArea, IZoomManager
+    public class EditingView : IBloomTabArea, IZoomManager, IDisposable
     {
         private readonly EditingModel _model;
         private PageListController _pageListView;
@@ -50,9 +50,50 @@ namespace Bloom.Edit
         private BloomWebSocketServer _webSocketServer;
         private ZoomModel _zoomModel;
         private PageListApi _pageListApi;
+        private Timer _editButtonsUpdateTimer;
         private Browser _browser1 => WorkspaceView?.MainBrowser;
+        private WorkspaceView _workspaceView;
+        private Form _hostFormForEvents;
 
-        internal WorkspaceView WorkspaceView { get; set; }
+        internal WorkspaceView WorkspaceView
+        {
+            get => _workspaceView;
+            set
+            {
+                _workspaceView = value;
+                _editButtonsUpdateTimer.Enabled = _workspaceView != null;
+                HookupHostFormEvents();
+            }
+        }
+
+        public Cursor Cursor
+        {
+            get => _workspaceView?.Cursor ?? _browser1?.Cursor ?? Cursors.Default;
+            set
+            {
+                if (_workspaceView != null)
+                    _workspaceView.Cursor = value;
+                if (_browser1 != null)
+                    _browser1.Cursor = value;
+            }
+        }
+
+        public bool IsDisposed => _browser1?.IsDisposed ?? false;
+        public bool IsHandleCreated => _browser1?.IsHandleCreated ?? false;
+        public bool InvokeRequired => _browser1?.InvokeRequired ?? false;
+
+        public object Invoke(Delegate method)
+        {
+            if (_browser1 == null)
+                throw new InvalidOperationException("Main browser is not available.");
+
+            return _browser1.Invoke(method);
+        }
+
+        public void Refresh()
+        {
+            _browser1?.Refresh();
+        }
 
         public delegate EditingView Factory(); //autofac uses this
 
@@ -82,7 +123,8 @@ namespace Bloom.Edit
             _controlKeyEvent = controlKeyEvent;
             _webSocketServer = model.EditModelSocketServer;
             _pageListApi = pageListApi;
-            InitializeComponent();
+            _editButtonsUpdateTimer = new Timer();
+            _editButtonsUpdateTimer.Tick += _editButtonsUpdateTimer_Tick;
 
             //SetupThumbnailLists();
             _model.SetView(this);
@@ -213,10 +255,52 @@ namespace Bloom.Edit
             if (!_visible) //else you get a totally non-responsive Bloom, if you come back to a Bloom that isn't in the Edit tab
                 return;
 
+            if (_browser1 == null)
+                return;
+
             Debug.WriteLine("EditTab.ParentForm_Activated(): Selecting Browser");
             _browser1.SelectBrowser();
 
-            _editButtonsUpdateTimer.Enabled = Parent != null;
+            _editButtonsUpdateTimer.Enabled = WorkspaceView != null;
+        }
+
+        void ParentForm_Deactivate(object sender, EventArgs e)
+        {
+            _editButtonsUpdateTimer.Enabled = false;
+            // Save when we leave the main window, even just switching to the epub a11y check window.
+            // See https://silbloom.myjetbrains.com/youtrack/issue/BL-6228. This control can lose/regain
+            // focus erratically on Linux, so we don't want this save on its LostFocus event.
+            // But we do NOT want to Save right this instant. Deactivate happens a lot, especially while
+            // debugging. There's some evidence (BL-6303, BL-6296) that COM message pumping can
+            // cause the Deactivate event to be handled at apparently random moments, in the middle
+            // of doing something else. We might be trying to Save when the system isn't in a valid
+            // state, e.g., in the middle of refreshing everything because the user edited the title
+            // and the HTML file and containing folder changed name. Instead, arrange to Save when
+            // next idle.
+            // However, saving while not active runs into issues like BL-6299. Apparently running
+            // Javascript (which is also done elsewhere in SaveNow()) while the main window is
+            // inactive is quite disastrous in GeckoFx45, to the point of access violations that
+            // stop the program with a green screen. Pending decisions about possible UI changes or
+            // other ways of fixing this, we're just disabling it. One hope is that GeckoFx60,
+            // which is supposed to have a "headless" capability, may fix this.
+            //Application.Idle += SaveWhenIdle;
+        }
+
+        private void HookupHostFormEvents()
+        {
+            var hostForm = _workspaceView?.FindForm();
+            if (hostForm == null || hostForm == _hostFormForEvents)
+                return;
+
+            if (_hostFormForEvents != null)
+            {
+                _hostFormForEvents.Activated -= ParentForm_Activated;
+                _hostFormForEvents.Deactivate -= ParentForm_Deactivate;
+            }
+
+            _hostFormForEvents = hostForm;
+            _hostFormForEvents.Activated += ParentForm_Activated;
+            _hostFormForEvents.Deactivate += ParentForm_Deactivate;
         }
 
         public void CheckFontAvailability()
@@ -360,14 +444,9 @@ namespace Bloom.Edit
             }
             else
             {
-                // Set everything up and navigate the top browser to a new root document.
+                // Set everything up and reload the workspace root document.
                 _model.SetupServerWithCurrentBookToolboxContents();
-                var dom = _model.GetXmlDocumentForEditScreenWebPage();
-                _browser1.Navigate(
-                    dom,
-                    setAsCurrentPageForDebugging: true,
-                    source: InMemoryHtmlFileSource.Frame
-                );
+                WorkspaceView.ReloadWorkspaceRootDocument();
             }
             SetModalState(false); // ensure _pageListView is enabled (BL-9712).
 #if MEMORYCHECK
@@ -406,7 +485,7 @@ namespace Bloom.Edit
         private bool UseBackgroundGC()
         {
             // Note that ModifierKeys does not seem to work on Linux.
-            return ((ModifierKeys & Keys.Alt) == Keys.Alt)
+            return ((Control.ModifierKeys & Keys.Alt) == Keys.Alt)
                 || RobustFile.Exists("/tmp/UseBackgroundGC");
         }
 
@@ -543,7 +622,7 @@ namespace Bloom.Edit
                 dlg.Width = 500;
                 dlg.Height = 700;
 
-                dlg.ShowDialog(this);
+                dlg.ShowDialog(_workspaceView);
             }
         }
 
@@ -1505,12 +1584,6 @@ namespace Bloom.Edit
             _webSocketServer.SendBundle("editTopBarControls", "updateEditButtons", eventBundle);
         }
 
-        protected override void OnParentChanged(EventArgs e)
-        {
-            base.OnParentChanged(e);
-            _editButtonsUpdateTimer.Enabled = Parent != null;
-        }
-
         private void _editButtonsUpdateTimer_Tick(object sender, EventArgs e)
         {
             UpdateEditButtons();
@@ -1540,46 +1613,21 @@ namespace Bloom.Edit
             _browser1.Navigate("about:blank", false);
         }
 
-        protected override void OnLoad(EventArgs e)
+        public void Dispose()
         {
-            base.OnLoad(e);
-
-            //Why the check for null? In bl-283, user had been in settings dialog, which caused a closing down, but something
-            //then did a callback to this view, such that ParentForm was null, and this died
-            //This assert was driving me crazy (which is a short trip). I'd hit it every time I quit Bloom, but this things are fine. Debug.Assert(ParentForm != null);
-            if (ParentForm != null)
+            if (_hostFormForEvents != null)
             {
-                ParentForm.Activated += new EventHandler(ParentForm_Activated);
-                ParentForm.Deactivate += (sender, e1) =>
-                {
-                    _editButtonsUpdateTimer.Enabled = false;
-                    // Save when we leave the main window, even just switching to the epub a11y check window.
-                    // See https://silbloom.myjetbrains.com/youtrack/issue/BL-6228. This control can lose/regain
-                    // focus erratically on Linux, so we don't want this save on its LostFocus event.
-                    // But we do NOT want to Save right this instant. Deactivate happens a lot, especially while
-                    // debugging. There's some evidence (BL-6303, BL-6296) that COM message pumping can
-                    // cause the Deactivate event to be handled at apparently random moments, in the middle
-                    // of doing something else. We might be trying to Save when the system isn't in a valid
-                    // state, e.g., in the middle of refreshing everything because the user edited the title
-                    // and the HTML file and containing folder changed name. Instead, arrange to Save when
-                    // next idle.
-                    // However, saving while not active runs into issues like BL-6299. Apparently running
-                    // Javascript (which is also done elsewhere in SaveNow()) while the main window is
-                    // inactive is quite disastrous in GeckoFx45, to the point of access violations that
-                    // stop the program with a green screen. Pending decisions about possible UI changes or
-                    // other ways of fixing this, we're just disabling it. One hope is that GeckoFx60,
-                    // which is supposed to have a "headless" capability, may fix this.
-                    //Application.Idle += SaveWhenIdle;
-                };
+                _hostFormForEvents.Activated -= ParentForm_Activated;
+                _hostFormForEvents.Deactivate -= ParentForm_Deactivate;
+                _hostFormForEvents = null;
             }
-            // This prevents the built-in ctrl-mousewheel zooming as well as ctrl-+ and ctrl--.
-            // They are a problem because the toolbox zooms too, which causes various problems including
-            // BL-13846 (can't drag new canvas elements onto the page).
-            // We enable these mouse actions for the main document iframe by handling the events
-            // in Javascript and calling our zoom functions through an API.
-            var settings = (Browser as WebView2Browser)?.InternalBrowser?.CoreWebView2?.Settings;
-            if (settings != null)
-                settings.IsZoomControlEnabled = false;
+
+            if (_editButtonsUpdateTimer != null)
+            {
+                _editButtonsUpdateTimer.Stop();
+                _editButtonsUpdateTimer.Dispose();
+                _editButtonsUpdateTimer = null;
+            }
         }
 
         public string HelpTopicUrl => "/Tasks/Edit_tasks/Edit_tasks_overview.htm";

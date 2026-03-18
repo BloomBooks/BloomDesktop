@@ -230,7 +230,6 @@ namespace Bloom.Api
         private static volatile string _keyToWorkspaceRootForDebugging;
         private static volatile string _currentEditPageUrlForDebugging;
         private static volatile string _currentPageListUrlForDebugging;
-        private static volatile string _currentWorkspaceModeForDebugging = "collection";
         private static readonly string _jsAssetVersion = GetJsAssetVersion();
 
         /// <summary>
@@ -250,14 +249,6 @@ namespace Bloom.Api
 
         public string CurrentPageContent { get; set; }
         public string ToolboxContent { get; set; }
-
-        public static void SetCurrentWorkspaceModeForDebugging(string mode)
-        {
-            if (string.IsNullOrWhiteSpace(mode))
-                return;
-
-            _currentWorkspaceModeForDebugging = mode;
-        }
 
         public static void SetCurrentEditPageUrlForDebugging(string url)
         {
@@ -744,22 +735,28 @@ namespace Bloom.Api
                 var redirectBaseUrl = redirectBaseKey.ToLocalhost();
 
                 var redirectUrl = redirectBaseUrl + existingQuery;
-                if (string.IsNullOrWhiteSpace(query?.Get("mode")))
+                if (
+                    string.IsNullOrWhiteSpace(query?.Get("pageListSrc"))
+                    && !string.IsNullOrWhiteSpace(_currentPageListUrlForDebugging)
+                )
                 {
                     var separator = redirectUrl.Contains("?", StringComparison.Ordinal) ? "&" : "?";
-                    redirectUrl += separator + "mode=" + _currentWorkspaceModeForDebugging;
+                    redirectUrl +=
+                        separator
+                        + "pageListSrc="
+                        + Uri.EscapeDataString(_currentPageListUrlForDebugging);
+                }
 
-                    if (!string.IsNullOrWhiteSpace(_currentPageListUrlForDebugging))
-                    {
-                        redirectUrl +=
-                            "&pageListSrc=" + Uri.EscapeDataString(_currentPageListUrlForDebugging);
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(_currentEditPageUrlForDebugging))
-                    {
-                        redirectUrl +=
-                            "&pageSrc=" + Uri.EscapeDataString(_currentEditPageUrlForDebugging);
-                    }
+                if (
+                    string.IsNullOrWhiteSpace(query?.Get("pageSrc"))
+                    && !string.IsNullOrWhiteSpace(_currentEditPageUrlForDebugging)
+                )
+                {
+                    var separator = redirectUrl.Contains("?", StringComparison.Ordinal) ? "&" : "?";
+                    redirectUrl +=
+                        separator
+                        + "pageSrc="
+                        + Uri.EscapeDataString(_currentEditPageUrlForDebugging);
                 }
 
                 request.WriteRedirect(redirectUrl, permanent: false);
