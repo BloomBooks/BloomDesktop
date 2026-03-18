@@ -12,7 +12,6 @@ import { useL10n } from "../../l10nHooks";
 import Menu from "@mui/material/Menu";
 import Checkbox from "@mui/material/Checkbox";
 import Divider from "@mui/material/Divider";
-import { useParentFrameMenuPortal } from "../useParentFrameMenuPortal";
 import { LocalizableMenuItem } from "../../localizableMenuItem";
 
 interface IMenuItem {
@@ -60,12 +59,7 @@ export const UiLanguageMenu: React.FunctionComponent = () => {
         "Help us translate Bloom (web)",
         "CollectionTab.UILanguageMenu.HelpTranslate",
     );
-    const {
-        closeMenu,
-        openMenuAtButtonWithItemsLoader,
-        getRootMenuProps,
-        renderMenuInParentFrame,
-    } = useParentFrameMenuPortal();
+    const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
     const [showUnapprovedTranslations, setShowUnapprovedTranslations] =
         useApiBoolean("workspace/showUnapprovedTranslations", false);
     const [menuItems, setMenuItems] = React.useState<IMenuItem[]>([]);
@@ -105,17 +99,30 @@ export const UiLanguageMenu: React.FunctionComponent = () => {
     );
 
     const onClose = React.useCallback(() => {
-        closeMenu();
-    }, [closeMenu]);
+        setAnchorEl(null);
+    }, []);
 
     const onOpen = React.useCallback(() => {
-        openMenuAtButtonWithItemsLoader(
+        const anchor = document.getElementById(
             "uiLanguageMenuButton",
-            "ui-language-menu-parent",
-            menuItems.length,
-            loadMenuItems,
-        );
-    }, [loadMenuItems, menuItems.length, openMenuAtButtonWithItemsLoader]);
+        ) as HTMLElement | null;
+        if (!anchor) {
+            return;
+        }
+        if (menuItems.length > 0) {
+            setAnchorEl(anchor);
+            loadMenuItems();
+            return;
+        }
+
+        loadMenuItems((itemCount) => {
+            if (itemCount > 0) {
+                setAnchorEl(anchor);
+            } else {
+                setAnchorEl(null);
+            }
+        });
+    }, [loadMenuItems, menuItems.length]);
 
     const handleMenuItemClick = React.useCallback(
         (item: IMenuItem) => {
@@ -139,7 +146,29 @@ export const UiLanguageMenu: React.FunctionComponent = () => {
     );
 
     const menu = (
-        <Menu {...getRootMenuProps(onClose)}>
+        <Menu
+            open={Boolean(anchorEl)}
+            anchorEl={anchorEl}
+            onClose={onClose}
+            disablePortal={false}
+            keepMounted={false}
+            anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "left",
+            }}
+            transformOrigin={{
+                vertical: "top",
+                horizontal: "left",
+            }}
+            slotProps={{
+                paper: {
+                    css: css`
+                        min-width: 220px;
+                        max-width: 440px;
+                    `,
+                },
+            }}
+        >
             {menuItems.map((item, index) => {
                 if (item.separator) {
                     return (
@@ -195,7 +224,7 @@ export const UiLanguageMenu: React.FunctionComponent = () => {
                 onClick={onOpen}
                 endIcon={<ArrowDropDown css={topRightMenuArrowCss} />}
             />
-            {renderMenuInParentFrame(menu)}
+            {menu}
         </>
     );
 };
