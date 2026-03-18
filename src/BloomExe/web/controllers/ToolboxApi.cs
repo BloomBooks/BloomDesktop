@@ -53,12 +53,17 @@ namespace BloomTests.web.controllers
         {
             lock (request)
             {
-                request.ReplyWithText(
-                    string.Join(
-                        ",",
-                        CurrentBook.BookInfo.Tools.Where(t => t.Enabled).Select(t => t.ToolId)
-                    )
-                );
+                var book = CurrentBook;
+                // CurrentBook can legitimately be null (BL-16017)
+                if (book?.BookInfo?.Tools == null)
+                    request.ReplyWithText("");
+                else
+                    request.ReplyWithText(
+                        string.Join(
+                            ",",
+                            book.BookInfo.Tools.Where(t => t.Enabled).Select(t => t.ToolId)
+                        )
+                    );
             }
         }
 
