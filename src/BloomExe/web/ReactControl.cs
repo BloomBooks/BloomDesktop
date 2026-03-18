@@ -259,7 +259,6 @@ namespace Bloom.web
 
             var bundleToViteModulePathMap = new Dictionary<string, string>
             {
-                { "collectionsTabPaneBundle", "/collectionsTab/CollectionsTabPane.entry.tsx" },
                 { "advancedSettingsBundle", "/collection/AdvancedSettingsPanel.entry.tsx" },
                 { "bookMakingSettingsBundle", "/collection/bookMakingSettingsControl.entry.tsx" },
                 {
@@ -287,7 +286,6 @@ namespace Bloom.web
                 },
                 { "problemReportBundle", "/problemDialog/ProblemDialog.entry.tsx" },
                 { "progressDialogBundle", "/react_components/Progress/ProgressDialog.entry.tsx" },
-                { "publishTabPaneBundle", "/publish/PublishTab/PublishTabPane.entry.tsx" },
                 { "registrationDialogBundle", "/react_components/registrationDialog.entry.tsx" },
                 { "subscriptionSettingsBundle", "/collection/subscriptionSettingsTab.entry.tsx" },
                 {
@@ -298,7 +296,6 @@ namespace Bloom.web
                     "accessibilityCheckBundle",
                     "/publish/accessibilityCheck/accessibilityCheckScreen.entry.tsx"
                 },
-                { "topBarBundle", "/react_components/TopBar/TopBar.entry.tsx" },
                 { "appBundle", "/app/App.entry.tsx" },
             };
             string viteModulePath = null;
