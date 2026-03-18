@@ -5,7 +5,6 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -42,6 +41,7 @@ namespace Bloom.Workspace
         private readonly CollectionSettings _collectionSettings;
         private EditingView _editingView;
         private Browser _mainBrowser;
+        private ReactControl _workspaceReactControl;
         private PublishView _publishView;
         private CollectionTabView _collectionTabView;
         private IBloomTabArea _previouslySelectedTabArea;
@@ -63,8 +63,6 @@ namespace Bloom.Workspace
         private CollectionApi _collectionApi;
         private AudioRecording _audioRecording;
         private CollectionSettingsApi _collectionSettingsApi;
-        private bool _workspaceRootDocumentLoaded;
-
         private NewCollectionWizardApi _newCollectionWizardApi;
 
         internal Browser MainBrowser => _mainBrowser;
@@ -157,11 +155,6 @@ namespace Bloom.Workspace
             //
             this._editingView = editingViewFactory();
             this._editingView.WorkspaceView = this;
-            this._editingView.Dock = DockStyle.Fill;
-            if (!_containerPanel.Controls.Contains(this._editingView))
-            {
-                _containerPanel.Controls.Add(this._editingView);
-            }
             this._editingView.Model.EnableSwitchingTabs = (enabled) =>
             {
                 _tabsEnabled = enabled;
@@ -170,10 +163,28 @@ namespace Bloom.Workspace
 
             if (!Program.RunningHarvesterMode)
             {
-                _mainBrowser = BrowserMaker.MakeBrowser();
-                InitializeMainBrowser();
-                _editingView.AttachMainBrowser(_mainBrowser);
-                _editingView.InitializeMainBrowserForEditMode();
+                var workspaceAdditionalHtml = GetWorkspaceAdditionalHtml();
+                _workspaceReactControl = new ReactControl
+                {
+                    JavascriptBundleName = "appBundle",
+                    BackColor = Palette.GeneralBackground,
+                    Dock = DockStyle.Fill,
+                    AdditionalHtml = workspaceAdditionalHtml,
+                };
+
+                RegisterWorkspaceRootForDebugging(workspaceAdditionalHtml);
+
+                _workspaceReactControl.BrowserCreated += (unused, args) =>
+                {
+                    _mainBrowser = _workspaceReactControl.Browser;
+                    _editingView.AttachMainBrowser(_mainBrowser);
+                    _editingView.InitializeMainBrowserForEditMode();
+                    MaybeOpenMainBrowserDevTools();
+                };
+                if (!_containerPanel.Controls.Contains(_workspaceReactControl))
+                {
+                    _containerPanel.Controls.Add(_workspaceReactControl);
+                }
             }
 
             _collectionTabView = collectionsTabViewFactory();
@@ -255,53 +266,167 @@ namespace Bloom.Workspace
 
         internal void EnsureWorkspaceRootDocumentLoaded()
         {
-            if (_workspaceRootDocumentLoaded || _mainBrowser == null)
-                return;
+            // The workspace root is now hosted by appBundle in ReactControl.
+        }
 
-            // Use a stable simulated id so external-browser URLs can always target the
-            // same workspace root document instead of a transient per-navigation URL.
-            var workspaceRootUrl = BloomServer.PutFixedSimulatedDomForId(
+        private static ReactControlAdditionalHtml GetWorkspaceAdditionalHtml()
+        {
+            return new ReactControlAdditionalHtml
+            {
+                HeadHtml =
+                    @"<link rel='stylesheet' href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css' type='text/css'>
+<link rel='stylesheet' href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css' type='text/css'>
+<link rel='stylesheet' href='/bloom/bookEdit/toolbox/toolbox.css' type='text/css'>
+<link rel='stylesheet' href='/bloom/bookEdit/html/font-awesome/css/font-awesome.min.css' type='text/css'>
+<link rel='stylesheet' href='/bloom/bookEdit/css/bloomDialog.css' type='text/css'>
+<link rel='stylesheet' href='/bloom/lib/pure-drawer.css' type='text/css'>
+<link rel='stylesheet' href='/bloom/lib/long-press/longpress.css' type='text/css'>
+<script src='/bloom/jquery.min.js'></script>
+<script>
+window.showWorkspaceInitializationFailure = function(message) {
+    const docEl = document.documentElement;
+    while (docEl.firstChild) {
+        docEl.removeChild(docEl.firstChild);
+    }
+
+    const head = document.createElement('head');
+    const meta = document.createElement('meta');
+    meta.setAttribute('charset', 'utf-8');
+    head.appendChild(meta);
+
+    const body = document.createElement('body');
+    body.textContent = message || 'loading failed';
+
+    docEl.appendChild(head);
+    docEl.appendChild(body);
+};
+</script>
+<script>window.bloomIsWorkspaceRoot = true;</script>
+<script src='/bloom/workspaceBundle.js' type='module'></script>",
+                BodyEndHtml =
+                    @"<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let attempts = 0;
+    const maxAttempts = 100;
+    let failureShown = false;
+
+    const showInitializationFailure = function() {
+        if (failureShown) {
+            return;
+        }
+        failureShown = true;
+        window.showWorkspaceInitializationFailure('failed to load workspace bundle after 100 attempts');
+    };
+
+    const run = function() {
+        const hasStart = !!window.workspaceBundle?.startWorkspaceModeInitialization;
+        if (hasStart) {
+            window.workspaceBundle.startWorkspaceModeInitialization();
+            return;
+        }
+
+        attempts += 1;
+        if (attempts !== maxAttempts) {
+            window.setTimeout(run, 100);
+        } else {
+            showInitializationFailure();
+        }
+    };
+
+    run();
+}, { once: true });
+</script>",
+                ViteDevHeadHtml =
+                    @"<link rel='stylesheet' href='/bloom/lib/pure-drawer.css' type='text/css'>
+<script>
+window.showWorkspaceInitializationFailure = function(message) {
+    const docEl = document.documentElement;
+    while (docEl.firstChild) {
+        docEl.removeChild(docEl.firstChild);
+    }
+
+    const head = document.createElement('head');
+    const meta = document.createElement('meta');
+    meta.setAttribute('charset', 'utf-8');
+    head.appendChild(meta);
+
+    const body = document.createElement('body');
+    body.textContent = message || 'loading failed';
+
+    docEl.appendChild(head);
+    docEl.appendChild(body);
+};
+</script>
+<script>window.bloomIsWorkspaceRoot = true;</script>",
+                ViteDevBodyEndHtml =
+                    @"<script type='module'>
+async function initializeWorkspaceRootForVite() {
+    try {
+        await import('http://localhost:5173/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js');
+        await import('http://localhost:5173/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css');
+        await import('http://localhost:5173/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css');
+        await import('http://localhost:5173/bookEdit/toolbox/toolbox.less');
+        await import('http://localhost:5173/bookEdit/html/font-awesome/css/font-awesome.min.css');
+        await import('http://localhost:5173/bookEdit/css/bloomDialog.less');
+        await import('http://localhost:5173/lib/long-press/longpress.css');
+        await import('/bloom/jquery.min.js');
+
+        const workspaceRootModule = await import('http://localhost:5173/bookEdit/workspaceRoot.ts');
+        workspaceRootModule.startWorkspaceModeInitialization();
+    } catch (e) {
+        console.error('Failed to initialize Vite dev WorkspaceRoot:', e);
+        window.showWorkspaceInitializationFailure('failed to initialize workspace root');
+    }
+}
+
+initializeWorkspaceRootForVite();
+</script>",
+            };
+        }
+
+        private static void RegisterWorkspaceRootForDebugging(
+            ReactControlAdditionalHtml workspaceAdditionalHtml
+        )
+        {
+            var html = ReactControl.GetHtmlForReactBundle(
+                "appBundle",
+                null,
+                Palette.GeneralBackground,
+                hideVerticalOverflow: false,
+                additionalHtml: workspaceAdditionalHtml
+            );
+            var workspaceRootUrl = BloomServer.PutFixedSimulatedHtmlForId(
                 "workspaceRoot",
-                GetWorkspaceRootDocument(),
+                html,
                 InMemoryHtmlFileSource.Frame
             );
             BloomServer.SetWorkspaceRootUrlForDebugging(workspaceRootUrl);
-            _mainBrowser.Navigate(workspaceRootUrl, cleanupFileAfterNavigating: false);
-            _workspaceRootDocumentLoaded = true;
         }
 
-        private HtmlDom GetWorkspaceRootDocument()
+        private void MaybeOpenMainBrowserDevTools()
         {
-            var path = FileLocationUtilities.GetFileDistributedWithApplication(
-                Path.Combine(
-                    BloomFileLocator.BrowserRoot,
-                    "bookEdit",
-                    ReactControl.ShouldUseViteDev()
-                        ? "WorkspaceRoot.vite-dev.html"
-                        : "WorkspaceRoot.html"
-                )
-            );
+            const int maxAttempts = 100;
+            var attempts = 0;
+            var timer = new Timer { Interval = 100 };
+            timer.Tick += (unused, args) =>
+            {
+                attempts++;
+                var coreWebView = (_mainBrowser as WebView2Browser)?.InternalBrowser?.CoreWebView2;
+                if (coreWebView != null)
+                {
+                    timer.Stop();
+                    timer.Dispose();
+                    coreWebView.OpenDevToolsWindow();
+                    return;
+                }
 
-            var frameText = RobustFile
-                .ReadAllText(path, Encoding.UTF8)
-                .Replace("{simulatedPageFileInBookFolder}", "about:blank")
-                .Replace("{simulatedPageListFile}", "about:blank");
-
-            return new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));
-        }
-
-        private void InitializeMainBrowser()
-        {
-            _mainBrowser.BackColor = System.Drawing.Color.DarkGray;
-            _mainBrowser.ContextMenuProvider = null;
-            _mainBrowser.ReplaceContextMenu = null;
-            _mainBrowser.ControlKeyEvent = null;
-            _mainBrowser.Dock = DockStyle.Fill;
-            _mainBrowser.Location = new Point(0, 0);
-            _mainBrowser.Margin = new Padding(5);
-            _mainBrowser.Name = "_mainBrowser";
-            _mainBrowser.Size = new Size(826, 561);
-            _mainBrowser.TabIndex = 1;
+                if (attempts >= maxAttempts)
+                {
+                    timer.Stop();
+                    timer.Dispose();
+                }
+            };
+            timer.Start();
         }
 
         /// <summary>
@@ -1341,28 +1466,6 @@ namespace Bloom.Workspace
         {
             var mode = GetWorkspaceModeName(tab);
             BloomServer.SetCurrentWorkspaceModeForDebugging(mode);
-
-            // There was some indication at one point that this could execute in a frame other than the workspace root.
-            // I don't see how this is possible but, just in case, decided to keep this defensive code.
-            // Target window.top explicitly so tab changes always update the root workspace bundle.
-            _mainBrowser?.RunJavascriptFireAndForget(
-                $@"(function() {{
-                    const root = (window.top && window.top.window) ? window.top : window;
-                    const fallback = window;
-                    const modeToSet = '{mode}';
-                    const rootBundle = root.workspaceBundle;
-                    const fallbackBundle = fallback.workspaceBundle;
-
-                    if (rootBundle && typeof rootBundle.setWorkspaceMode === 'function') {{
-                        rootBundle.setWorkspaceMode(modeToSet);
-                        return;
-                    }}
-
-                    if (fallbackBundle && typeof fallbackBundle.setWorkspaceMode === 'function') {{
-                        fallbackBundle.setWorkspaceMode(modeToSet);
-                    }}
-                }})();"
-            );
         }
 
         /// <summary>

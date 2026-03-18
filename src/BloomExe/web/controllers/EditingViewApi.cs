@@ -141,6 +141,19 @@ namespace Bloom.web.controllers
                 HandleGetDataBookValue,
                 true
             );
+            apiHandler.RegisterEndpointHandler(
+                "editView/frameSources",
+                HandleGetFrameSources,
+                true
+            );
+        }
+
+        private void HandleGetFrameSources(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Get)
+                throw new ArgumentException("editView/frameSources only supports GET");
+
+            request.ReplyWithJson(View.GetEditFrameSourcesForClient());
         }
 
         private void HandleGetDataBookValue(ApiRequest request)

@@ -175,8 +175,7 @@ namespace Bloom.Edit
             if (browser == null)
                 throw new ArgumentNullException(nameof(browser));
 
-            if (!Controls.Contains(browser))
-                Controls.Add(browser);
+            // The workspace browser is now hosted by ReactControl; EditingView only configures it.
         }
 
         internal void InitializeMainBrowserForEditMode()
@@ -1704,6 +1703,26 @@ namespace Bloom.Edit
         internal void SetZoomModel(ZoomModel zoomModel)
         {
             _zoomModel = zoomModel;
+        }
+
+        public object GetEditFrameSourcesForClient()
+        {
+            dynamic result = new DynamicJson();
+            result.toolboxSrc = "/bloom/toolboxContent";
+            result.toolboxIsShowing = true;
+
+            if (!_model.HaveCurrentEditableBook)
+            {
+                result.pageListSrc = "about:blank";
+                result.pageSrc = "about:blank";
+                return result;
+            }
+
+            _model.SetupServerWithCurrentBookToolboxContents();
+            result.pageListSrc = _model.GetUrlForPageListFile();
+            result.pageSrc = _model.GetUrlForCurrentPage();
+            result.toolboxIsShowing = _model.CurrentBook.BookInfo.ToolboxIsOpen;
+            return result;
         }
 
         // intended for use only by the EditingModel

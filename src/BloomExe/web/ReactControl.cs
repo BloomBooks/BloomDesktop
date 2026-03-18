@@ -10,6 +10,28 @@ using SIL.Windows.Forms.Extensions;
 
 namespace Bloom.web
 {
+    public class ReactControlAdditionalHtml
+    {
+        public string HeadHtml;
+        public string BodyEndHtml;
+        public string ViteDevHeadHtml;
+        public string ViteDevBodyEndHtml;
+
+        public string GetHeadHtml(bool useViteDev)
+        {
+            if (useViteDev && !string.IsNullOrEmpty(ViteDevHeadHtml))
+                return ViteDevHeadHtml;
+            return HeadHtml;
+        }
+
+        public string GetBodyEndHtml(bool useViteDev)
+        {
+            if (useViteDev && !string.IsNullOrEmpty(ViteDevBodyEndHtml))
+                return ViteDevBodyEndHtml;
+            return BodyEndHtml;
+        }
+    }
+
     /// <summary>
     /// Hosts a Web Browser rooted by the named React component
     /// </summary>
@@ -51,6 +73,11 @@ namespace Bloom.web
         public bool UseEditContextMenu;
         public bool HideVerticalOverflow;
         public event EventHandler OnBrowserClick;
+        public event EventHandler BrowserCreated;
+
+        public Browser Browser => _browser;
+
+        public ReactControlAdditionalHtml AdditionalHtml;
 
         public Action ReplaceContextMenu { get; set; }
 
@@ -83,6 +110,7 @@ namespace Bloom.web
             // rectangle in the upper left corner...
             //_browser = new GeckoFxBrowser
             _browser = BrowserMaker.MakeBrowser();
+            BrowserCreated?.Invoke(this, EventArgs.Empty);
             if (ReplaceContextMenu != null)
                 _browser.ReplaceContextMenu = ReplaceContextMenu;
             var browserControl = _browser;
@@ -173,7 +201,8 @@ namespace Bloom.web
                 Props,
                 BackColor,
                 HideVerticalOverflow,
-                detach: true
+                detach: true,
+                additionalHtml: AdditionalHtml
             );
         }
 
@@ -182,7 +211,8 @@ namespace Bloom.web
             object propsObject,
             Color backColor,
             bool hideVerticalOverflow,
-            bool detach
+            bool detach,
+            ReactControlAdditionalHtml additionalHtml = null
         )
         {
             var tempFile = TempFile.WithExtension("htm");
@@ -193,7 +223,8 @@ namespace Bloom.web
                 javascriptBundleName,
                 propsObject,
                 backColor,
-                hideVerticalOverflow
+                hideVerticalOverflow,
+                additionalHtml
             );
             RobustFile.WriteAllText(tempFile.Path, html);
             return tempFile;
@@ -203,7 +234,8 @@ namespace Bloom.web
             string javascriptBundleName,
             object propsObject,
             Color backColor,
-            bool hideVerticalOverflow
+            bool hideVerticalOverflow,
+            ReactControlAdditionalHtml additionalHtml = null
         )
         {
             var props = propsObject == null ? "{}" : JsonConvert.SerializeObject(propsObject);
@@ -274,6 +306,8 @@ namespace Bloom.web
                 bundleToViteModulePathMap.TryGetValue(javascriptBundleName, out viteModulePath)
                 && viteModulePath != null
             );
+            var additionalHeadHtml = additionalHtml?.GetHeadHtml(useViteDev) ?? string.Empty;
+            var additionalBodyEndHtml = additionalHtml?.GetBodyEndHtml(useViteDev) ?? string.Empty;
 
             var body =
                 $@"
@@ -423,8 +457,10 @@ namespace Bloom.web
 
                         main();
                     </script>
+                    {additionalHeadHtml}
                 </head>
                 {body}
+                {additionalBodyEndHtml}
                 </html>";
             }
             else
@@ -436,6 +472,7 @@ namespace Bloom.web
 				<head>
                     <title>ReactControl ({javascriptBundleName})</title>
 					<meta charset = 'UTF-8' />
+                    {additionalHeadHtml}
                     <script src = '/{bundleNameWithExtension}'  type='module'></script>
 					<script>
 						window.onload = () => {{
@@ -445,6 +482,7 @@ namespace Bloom.web
 					</script>
 				</head>
 				{body}
+                {additionalBodyEndHtml}
                 </html>";
             }
         }

@@ -13,6 +13,7 @@ import {
 import { PublishTabPane } from "../publish/PublishTab/PublishTabPane";
 import { kPanelBackground } from "../bloomMaterialUITheme";
 import { useWatchApiObject } from "../utils/bloomApi";
+import { EditTabPane } from "./EditTabPane";
 
 export const App: React.FunctionComponent = () => {
     // Eventually the source of truth of what tab is active will be on the
@@ -40,7 +41,7 @@ export const App: React.FunctionComponent = () => {
             return <PublishTabPane />;
         }
 
-        return <>This is just a placeholder for the edit tab for now.</>;
+        return <EditTabPane active={true} />;
     };
 
     return (
@@ -54,6 +55,7 @@ export const App: React.FunctionComponent = () => {
         >
             <TopBar />
             {renderActiveTab()}
+            <div id="modal-dialog-container" />
         </div>
     );
 };
