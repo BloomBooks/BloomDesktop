@@ -151,6 +151,56 @@ namespace Bloom.Api
                 },
                 false
             );
+            apiHandler.RegisterBooleanEndpointHandler(
+                kAppUrlPrefix + "alwaysMeasurePerformance",
+                request => GetShell()?.GetAlwaysMeasurePerformance() ?? false,
+                (request, value) => GetShell()?.SetAlwaysMeasurePerformance(value),
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "isMeddlingWithNewFiles",
+                request =>
+                {
+                    GetShell()?.SetIsMeddlingWithNewFiles(request.RequiredPostBooleanAsJson());
+                    request.PostSucceeded();
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "resizeWindow",
+                request =>
+                {
+                    var data = request.RequiredPostDynamic();
+                    var width = Convert.ToInt32(data.width);
+                    var height = Convert.ToInt32(data.height);
+                    GetShell()?.ResizeWindow(width, height);
+                    request.PostSucceeded();
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "startMeasuringPerformance",
+                request =>
+                {
+                    GetShell()?.StartMeasuringPerformance();
+                    request.PostSucceeded();
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "showPerformancePage",
+                request =>
+                {
+                    GetShell()?.ShowPerformancePage();
+                    request.PostSucceeded();
+                },
+                true
+            );
+        }
+
+        private Shell GetShell()
+        {
+            return Shell.GetShellOrOtherOpenForm() as Shell;
         }
 
         private void HandleMakeFromSelectedBook(ApiRequest request)
