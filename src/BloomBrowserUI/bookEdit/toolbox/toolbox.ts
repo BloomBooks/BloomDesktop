@@ -1092,10 +1092,17 @@ function setCurrentTool(toolID: string) {
             toolboxReactActivationHooked = true;
         }
 
+        if (!toolID) {
+            toolID =
+                ($("#toolbox").find("> h3").first().attr("data-toolId") as
+                    | string
+                    | undefined) ?? "";
+        }
+
         if (toolID) {
             adapter.setActiveToolByToolId(toolID);
-            switchTool(toolID);
         }
+        switchTool(toolID);
         return;
     }
 
@@ -1836,6 +1843,10 @@ function showToolboxChanged(wasShowing: boolean): void {
             // somehow, we hard code that in this situation we default to
             // the talking book tool.
             newToolName = "talkingBookTool";
+        }
+        const adapter = getToolboxReactAdapter();
+        if (adapter) {
+            adapter.setActiveToolByToolId(newToolName);
         }
         switchTool(newToolName);
     }
