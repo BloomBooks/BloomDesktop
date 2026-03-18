@@ -151,6 +151,97 @@ namespace Bloom.Api
                 },
                 false
             );
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "currentlyMeasuringPerformance",
+                request =>
+                {
+                    request.ReplyWithBoolean(
+                        GetShellValue(shell => shell.GetCurrentlyMeasuringPerformance())
+                    );
+                },
+                true
+            );
+            apiHandler.RegisterBooleanEndpointHandler(
+                kAppUrlPrefix + "alwaysMeasurePerformance",
+                request => GetShellValue(shell => shell.GetAlwaysMeasurePerformance()),
+                HandleSetAlwaysMeasurePerformance,
+                true
+            );
+            apiHandler.RegisterBooleanEndpointHandler(
+                kAppUrlPrefix + "isMeddlingWithNewFiles",
+                request => GetShellValue(shell => shell.GetIsMeddlingWithNewFiles()),
+                HandleSetIsMeddlingWithNewFiles,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "resizeWindow",
+                request =>
+                {
+                    var data = request.RequiredPostDynamic();
+                    var width = Convert.ToInt32(data.width);
+                    var height = Convert.ToInt32(data.height);
+                    InvokeOnShell(shell => shell.ResizeWindow(width, height));
+                    request.PostSucceeded();
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "startMeasuringPerformance",
+                request =>
+                {
+                    InvokeOnShell(shell => shell.StartMeasuringPerformance());
+                    request.PostSucceeded();
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "showPerformancePage",
+                request =>
+                {
+                    InvokeOnShell(shell => shell.ShowPerformancePage());
+                    request.PostSucceeded();
+                },
+                true
+            );
+        }
+
+        private static T GetShellValue<T>(Func<Shell, T> getter)
+        {
+            if (Shell.GetShellOrOtherOpenForm() is Shell shell)
+            {
+                if (shell.InvokeRequired)
+                {
+                    return (T)shell.Invoke(getter, shell);
+                }
+
+                return getter(shell);
+            }
+
+            return default(T);
+        }
+
+        private static void InvokeOnShell(Action<Shell> action)
+        {
+            if (Shell.GetShellOrOtherOpenForm() is Shell shell)
+            {
+                if (shell.InvokeRequired)
+                {
+                    shell.Invoke(action, shell);
+                    return;
+                }
+
+                action(shell);
+            }
+        }
+
+        private void HandleSetAlwaysMeasurePerformance(ApiRequest request, bool value)
+        {
+            InvokeOnShell(shell => shell.SetAlwaysMeasurePerformance(value));
+        }
+
+        private void HandleSetIsMeddlingWithNewFiles(ApiRequest request, bool value)
+        {
+            InvokeOnShell(shell => shell.SetIsMeddlingWithNewFiles(value));
         }
 
         private void HandleMakeFromSelectedBook(ApiRequest request)

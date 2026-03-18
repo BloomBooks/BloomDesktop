@@ -296,24 +296,9 @@ namespace Bloom
             Debug.WriteLine("Shell Deactivated");
         }
 
-        private void On800x600Click(object sender, EventArgs e)
+        public void ResizeWindow(int width, int height)
         {
-            Size = new Size(800, 600);
-        }
-
-        private void On1024x600Click(object sender, EventArgs e)
-        {
-            Size = new Size(1024, 600);
-        }
-
-        private void On1024x768(object sender, EventArgs e)
-        {
-            Size = new Size(1024, 768);
-        }
-
-        private void On1024x586(object sender, EventArgs e)
-        {
-            Size = new Size(1024, 586);
+            Size = new Size(width, height);
         }
 
         public static void ComeToFront()
@@ -398,7 +383,6 @@ namespace Bloom
                 if (FileMeddlerManager.IsMeddling)
                 {
                     FileMeddlerManager.Start(_collectionSettings?.FolderPath);
-                    this.meddleWithNewFilesToolStripMenuItem.Text = "Stop Meddling with New Files";
                 }
             }
             catch (Exception error)
@@ -454,15 +438,14 @@ namespace Bloom
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
-        private void startMeasuringPerformanceToolStripMenuItem_Click(object sender, EventArgs e)
+        public void StartMeasuringPerformance()
         {
             PerformanceMeasurement.Global.StartMeasuring();
             UpdatePerformanceMeasurementStatus();
-            // open in a browser
-            this.showPerformancePageToolStripMenuItem_Click(sender, e);
+            ShowPerformancePage();
         }
 
-        private void showPerformancePageToolStripMenuItem_Click(object sender, EventArgs e)
+        public void ShowPerformancePage()
         {
             ProcessExtra.SafeStartInFront(
                 BloomServer.ServerUrlWithBloomPrefixEndingInSlash
@@ -470,30 +453,38 @@ namespace Bloom
             );
         }
 
-        private void alwaysMeasureToolStripMenuItem_Click(object sender, EventArgs e)
+        public bool GetAlwaysMeasurePerformance() => Settings.Default.AlwaysMeasurePerformance;
+
+        public void SetAlwaysMeasurePerformance(bool value)
         {
-            Settings.Default.AlwaysMeasurePerformance = !Settings.Default.AlwaysMeasurePerformance;
+            Settings.Default.AlwaysMeasurePerformance = value;
             UpdatePerformanceMeasurementStatus();
         }
 
-        private void meddleWithNewFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        public bool GetCurrentlyMeasuringPerformance() =>
+            PerformanceMeasurement.Global.CurrentlyMeasuring;
+
+        public bool GetIsMeddlingWithNewFiles() => FileMeddlerManager.IsMeddling;
+
+        public void SetIsMeddlingWithNewFiles(bool value)
         {
-            if (FileMeddlerManager.IsMeddling)
+            if (value == FileMeddlerManager.IsMeddling)
             {
-                FileMeddlerManager.Stop();
-                meddleWithNewFilesToolStripMenuItem.Text = "Meddle with New Files";
+                return;
+            }
+
+            if (value)
+            {
+                FileMeddlerManager.Start(_collectionSettings?.FolderPath);
             }
             else
             {
-                FileMeddlerManager.Start(_collectionSettings?.FolderPath);
-                meddleWithNewFilesToolStripMenuItem.Text = "Stop Meddling with New Files";
+                FileMeddlerManager.Stop();
             }
         }
 
         private void UpdatePerformanceMeasurementStatus()
         {
-            alwaysMeasureToolStripMenuItem.Checked = Settings.Default.AlwaysMeasurePerformance;
-
             if (
                 Settings.Default.AlwaysMeasurePerformance
                 && !PerformanceMeasurement.Global.CurrentlyMeasuring
@@ -501,26 +492,6 @@ namespace Bloom
             {
                 PerformanceMeasurement.Global.StartMeasuring();
             }
-
-            this.startMeasuringPerformanceToolStripMenuItem.Enabled = !PerformanceMeasurement
-                .Global
-                .CurrentlyMeasuring;
-            this.showPerformancePageToolStripMenuItem.Enabled = PerformanceMeasurement
-                .Global
-                .CurrentlyMeasuring;
-
-            if (PerformanceMeasurement.Global.CurrentlyMeasuring)
-            {
-                startMeasuringPerformanceToolStripMenuItem.Text = "Currently Measuring Performance";
-            }
-
-            // if we're always measuring, don't offer to start/stop
-            //this.startMeasuringPerformanceToolStripMenuItem.Enabled = !Settings.Default.AlwaysMeasurePerformance;
-        }
-
-        public void ShowContextMenuAt(Point screenPoint)
-        {
-            _contextMenu?.Show(screenPoint);
         }
     }
 }
