@@ -788,8 +788,11 @@ export function restoreToolboxSettings() {
 export function applyToolboxStateToUpdatedPage() {
     get("toolbox/settings", (result) => {
         savedSettings = result.data;
+        // savedSettings["current"] is always set to the last active tool for the book,
+        // except for new books where it is null. In that case, the default value
+        // should be talkingBookTool.  (BL-16026)
         const currentFromBook = ToolBox.addToolToString(
-            (savedSettings && savedSettings["current"]) || "",
+            (savedSettings && savedSettings["current"]) || "talkingBookTool",
         );
         const currentInToolbox = currentTool
             ? ToolBox.addToolToString(currentTool.id())
@@ -961,7 +964,10 @@ function restoreToolboxSettingsWhenPageReady(settings: ToolboxSettings) {
     doWhenPageReady(() => {
         // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
         const opts = settings;
-        const currentTool = opts["current"] || "";
+        // currentTool is always set except for new books. For new books, it is undefined and we want
+        // to treat that the same as if it were set to "talkingBookTool" so that the tool will display
+        // the first time the user opens the toolbox. (BL-16026)
+        const currentTool = opts["current"] || "talkingBookTool";
         const shouldBeVisible = !!opts["visibility"];
 
         if (toolbox.toolboxIsShowing() !== shouldBeVisible) {
