@@ -6,7 +6,6 @@ using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.BloomPub;
 using Bloom.Publish.Epub;
 using Bloom.Publish.Video;
-using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
@@ -22,8 +21,6 @@ namespace Bloom.Publish
         private PublishEpubApi _publishEpubApi;
         private BloomWebSocketServer _webSocketServer;
         private readonly WorkspaceTabSelection _tabSelection;
-        private readonly IframeReactControl _iframeReactControl;
-        private bool _loadedIntoIframe;
         private bool _isActive;
 
         internal WorkspaceView WorkspaceView { get; set; }
@@ -50,14 +47,6 @@ namespace Bloom.Publish
             _model.View = this;
             _webSocketServer = webSocketServer;
             _tabSelection = tabSelection;
-            _iframeReactControl = new IframeReactControl();
-            localizationChangedEvent.Subscribe(unused =>
-            {
-                if (_loadedIntoIframe)
-                {
-                    ReloadIntoIframe();
-                }
-            });
 
             //NB: just triggering off "VisibilityChanged" was unreliable. So now we trigger
             //off the tab itself changing, either to us or away from us.
@@ -97,14 +86,8 @@ namespace Bloom.Publish
 
         public void Dispose()
         {
-            _iframeReactControl?.Dispose();
             _publishEpubApi?.EpubMaker?.Dispose();
             _publishToBloomPubApi?.Dispose();
-        }
-
-        internal void EnsureLoadedInMainBrowser()
-        {
-            ReloadIntoIframe();
         }
 
         internal Control GetHostControlForInvoke()
@@ -114,21 +97,6 @@ namespace Bloom.Publish
                 return hostForm;
 
             return WorkspaceView;
-        }
-
-        private void ReloadIntoIframe()
-        {
-            if (WorkspaceView?.MainBrowser == null)
-                return;
-
-            WorkspaceView.EnsureWorkspaceRootDocumentLoaded();
-            _ = _iframeReactControl.Load(
-                WorkspaceView.MainBrowser,
-                "publishTabPaneBundle",
-                null,
-                "publishTab"
-            );
-            _loadedIntoIframe = true;
         }
 
         private void Activate()

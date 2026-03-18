@@ -39,8 +39,8 @@ namespace Bloom.web.controllers
             );
             apiHandler.RegisterBooleanEndpointHandler(
                 "workspace/showUnapprovedTranslations",
-                request => WorkspaceView.GetShowUnapprovedTranslationsForClient(),
-                (request, value) => WorkspaceView.SetShowUnapprovedTranslationsForClient(value),
+                request => WorkspaceView.GetShowUnapprovedTranslations(),
+                (request, value) => WorkspaceView.SetShowUnapprovedTranslations(value),
                 true
             );
             apiHandler.RegisterEndpointHandler("workspace/helpAction", HandleHelpAction, true);
@@ -106,7 +106,7 @@ namespace Bloom.web.controllers
 
         private void HandleGetUiLanguages(ApiRequest request)
         {
-            request.ReplyWithJson(WorkspaceView.GetAvailableUiLanguageNamesForClient());
+            request.ReplyWithJson(WorkspaceView.GetAvailableUiLanguageNames());
         }
 
         private void HandleUiLanguageAction(ApiRequest request)
@@ -114,7 +114,7 @@ namespace Bloom.web.controllers
             dynamic data = request.RequiredPostDynamic();
             var action = (string)data.action;
             var languageName = (string)data.languageName;
-            WorkspaceView.HandleUiLanguageActionForClient(action, languageName);
+            WorkspaceView.HandleUiLanguageAction(action, languageName);
             request.PostSucceeded();
         }
 
@@ -123,7 +123,7 @@ namespace Bloom.web.controllers
             dynamic data = request.RequiredPostDynamic();
             var method = (string)data.method;
             var argument = (string)data.argument;
-            WorkspaceView.HandleHelpActionForClient(method, argument);
+            WorkspaceView.HandleHelpAction(method, argument);
             request.PostSucceeded();
         }
 
@@ -180,7 +180,7 @@ namespace Bloom.web.controllers
             if (request.HttpMethod != HttpMethods.Get)
                 throw new ArgumentException("workspace/tabs only supports GET");
 
-            request.ReplyWithJson(WorkspaceView.GetTabInfoForClient());
+            request.ReplyWithJson(WorkspaceView.GetTabInfo());
         }
     }
 }
