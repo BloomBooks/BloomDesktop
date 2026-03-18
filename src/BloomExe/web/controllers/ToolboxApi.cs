@@ -53,12 +53,15 @@ namespace BloomTests.web.controllers
         {
             lock (request)
             {
-                request.ReplyWithText(
-                    string.Join(
-                        ",",
-                        CurrentBook.BookInfo.Tools.Where(t => t.Enabled).Select(t => t.ToolId)
-                    )
-                );
+                if (CurrentBook?.BookInfo?.Tools != null)
+                    request.ReplyWithText(
+                        string.Join(
+                            ",",
+                            CurrentBook.BookInfo.Tools.Where(t => t.Enabled).Select(t => t.ToolId)
+                        )
+                    );
+                else
+                    request.ReplyWithText("");
             }
         }
 
