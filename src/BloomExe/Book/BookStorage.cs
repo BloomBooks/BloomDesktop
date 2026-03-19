@@ -1844,9 +1844,9 @@ namespace Bloom.Book
                 Debug.Fail("(debug mode only): could not rename the folder");
             }
 
-            RaiseBookRenamedEvent(fromToPair);
-
             OnFolderPathChanged();
+
+            RaiseBookRenamedEvent(fromToPair);
         }
 
         // Move a file, possibly only changing the case of the name.
@@ -1914,9 +1914,8 @@ namespace Bloom.Book
             string restoredPath = Path.Combine(Path.GetDirectoryName(FolderPath), restoredName);
             var fromToPair = new KeyValuePair<string, string>(FolderPath, restoredPath);
             FolderPath = restoredPath;
-            RaiseBookRenamedEvent(fromToPair);
-
             OnFolderPathChanged();
+            RaiseBookRenamedEvent(fromToPair);
         }
 
         private void RaiseBookRenamedEvent(KeyValuePair<string, string> fromToPair)
