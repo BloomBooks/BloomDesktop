@@ -1,5 +1,5 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
-import { get } from "../../utils/bloomApi";
+import { get, postString } from "../../utils/bloomApi";
 import $ from "jquery";
 
 interface qtipInterface extends JQuery {
@@ -9,6 +9,24 @@ interface qtipInterface extends JQuery {
 // If the current selection is an insertion point in editableDiv (which MUST be a div!), return the index of the selection,
 // as a character offset within the text of editableDiv. If the selection is not in editableDiv, return -1.
 export class EditableDivUtils {
+    public static normalizeBloomLineBreakSpansInElement(root: Element): void {
+        Array.from(root.querySelectorAll("span.bloom-linebreak")).forEach(
+            (span) => {
+                if (span.hasChildNodes()) {
+                    const fragment = document.createDocumentFragment();
+                    while (span.firstChild) {
+                        postString(
+                            "common/logger/writeEvent",
+                            `Found content inside a bloom-linebreak span: ${span.firstChild.textContent}. Moving it out.`,
+                        );
+                        fragment.appendChild(span.firstChild);
+                    }
+                    span.parentNode?.insertBefore(fragment, span);
+                }
+            },
+        );
+    }
+
     public static getElementSelectionIndex(editableDiv: HTMLElement): number {
         const page: HTMLIFrameElement | null = <HTMLIFrameElement | null>(
             parent.window.document.getElementById("page")
