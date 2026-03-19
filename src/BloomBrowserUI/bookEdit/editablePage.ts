@@ -8,6 +8,7 @@
 import $ from "jquery";
 import { bootstrap } from "./js/bloomEditing";
 import { EditableDivUtils } from "./js/editableDivUtils";
+import "../lib/long-press/jquery.longpress.js";
 import "../lib/jquery.i18n.custom"; // side-effect: adds .localize() to $.fn (kept via sideEffects allow-list)
 import "errorHandler";
 import {

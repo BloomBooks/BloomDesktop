@@ -11,7 +11,7 @@
  */
 import jQuery from "jquery";
 import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
-import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
+import { isLongPressEvaluating } from "../../bookEdit/longPressShared";
 import "./jquery.mousewheel.js";
 
 (function ($, window, undefined) {
@@ -363,8 +363,8 @@ import "./jquery.mousewheel.js";
             typeof e.deltaY === "number"
                 ? e.deltaY
                 : typeof e.wheelDelta === "number"
-                ? -e.wheelDelta
-                : 0;
+                  ? -e.wheelDelta
+                  : 0;
 
         if (dy > 0) {
             activateNextLetter();
@@ -600,7 +600,7 @@ import "./jquery.mousewheel.js";
 
         //popup = $('<div id="longpress" class="long-press-popup"><ul />' + this.options.instructions + '</div>');
 
-        popup = window.top.$(
+        popup = $(
             '<div id="longpress" class="long-press-popup"><ul />' +
                 this.options.instructions +
                 "</div>",

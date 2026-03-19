@@ -33,6 +33,7 @@ namespace Bloom
         private UndoCommand _undoCommand;
         private CutCommand _cutCommand;
         private bool _inDisposeMethod;
+        private bool _isBuiltInBrowserZoomEnabled = true;
 
         // All our existing code assumes we can just construct a browser. And it seems to work.
         // But in some newer code involving awaits and multiple browsers in unit tests, we
@@ -189,9 +190,7 @@ namespace Bloom
 
                 _webview.CoreWebView2.Settings.IsStatusBarEnabled = false;
                 _webview.CoreWebView2.Settings.IsWebMessageEnabled = true;
-                // Bloom handles zoom itself (for example ctrl+wheel in edit page). Disable
-                // WebView2's built-in browser zoom to avoid double-zooming the workspace.
-                _webview.CoreWebView2.Settings.IsZoomControlEnabled = false;
+                _webview.CoreWebView2.Settings.IsZoomControlEnabled = _isBuiltInBrowserZoomEnabled;
                 // Disable swipe navigation, which is a problem on trackpads (and touch screens). See BL-12405.
                 _webview.CoreWebView2.Settings.IsSwipeNavigationEnabled = false;
 
@@ -206,6 +205,15 @@ namespace Bloom
                 };
                 _readyToNavigate = true;
             };
+        }
+
+        public override void SetBuiltInBrowserZoomEnabled(bool enabled)
+        {
+            _isBuiltInBrowserZoomEnabled = enabled;
+            if (_webview?.CoreWebView2 != null)
+            {
+                _webview.CoreWebView2.Settings.IsZoomControlEnabled = enabled;
+            }
         }
 
         private void ContextMenuRequested(

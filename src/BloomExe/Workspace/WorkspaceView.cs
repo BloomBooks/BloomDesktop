@@ -173,7 +173,7 @@ namespace Bloom.Workspace
                 _workspaceReactControl.BrowserCreated += (unused, args) =>
                 {
                     _mainBrowser = _workspaceReactControl.Browser;
-                    _editingView.AttachMainBrowser(_mainBrowser);
+                    _mainBrowser?.SetBuiltInBrowserZoomEnabled(false);
                     _editingView.InitializeMainBrowserForEditMode();
                     MaybeOpenMainBrowserDevTools();
                 };
@@ -267,8 +267,17 @@ namespace Bloom.Workspace
 
         private static ReactControlAdditionalHtml GetWorkspaceAdditionalHtml()
         {
-            const string pureDrawerCssLink =
-                "<link rel='stylesheet' href='/bloom/lib/pure-drawer.css' type='text/css'>";
+            const string workspaceCssLinks =
+                @"<link rel='stylesheet' href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css' type='text/css'>
+                <link rel='stylesheet' href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css' type='text/css'>
+                <link rel='stylesheet' href='/bloom/bookEdit/toolbox/toolbox.css' type='text/css'>
+                <link rel='stylesheet' href='/bloom/bookEdit/html/font-awesome/css/font-awesome.min.css' type='text/css'>
+                <link rel='stylesheet' href='/bloom/bookEdit/css/bloomDialog.css' type='text/css'>
+                <link rel='stylesheet' href='/bloom/lib/pure-drawer.css' type='text/css'>
+                <link rel='stylesheet' href='/bloom/lib/long-press/longpress.css' type='text/css'>";
+
+            const string workspaceProdOnlyScriptTags =
+                @"<script src='/bloom/jquery.min.js'></script>";
 
             const string workspaceInitializationFailureScript =
                 @"<script>
@@ -294,21 +303,14 @@ window.showWorkspaceInitializationFailure = function(message) {
             return new ReactControlAdditionalHtml
             {
                 HeadHtml =
-                    @"<link rel='stylesheet' href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css' type='text/css'>
-<link rel='stylesheet' href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css' type='text/css'>
-<link rel='stylesheet' href='/bloom/bookEdit/toolbox/toolbox.css' type='text/css'>
-<link rel='stylesheet' href='/bloom/bookEdit/html/font-awesome/css/font-awesome.min.css' type='text/css'>
-<link rel='stylesheet' href='/bloom/bookEdit/css/bloomDialog.css' type='text/css'>
-"
-                    + pureDrawerCssLink
-                    + @"
-<link rel='stylesheet' href='/bloom/lib/long-press/longpress.css' type='text/css'>
-<script src='/bloom/jquery.min.js'></script>
-"
+                    workspaceCssLinks
+                    + "\n"
+                    + workspaceProdOnlyScriptTags
+                    + "\n"
                     + workspaceInitializationFailureScript,
                 BodyEndHtml = "",
                 ViteDevHeadHtml =
-                    pureDrawerCssLink + "\n" + workspaceInitializationFailureScript + "\n",
+                    workspaceCssLinks + "\n" + workspaceInitializationFailureScript + "\n",
                 ViteDevBodyEndHtml = "",
             };
         }
@@ -1358,6 +1360,7 @@ window.showWorkspaceInitializationFailure = function(message) {
 
         private void WorkspaceView_Load(object sender, EventArgs e)
         {
+            _mainBrowser?.SetBuiltInBrowserZoomEnabled(false);
             CheckDPISettings();
             ShowAutoUpdateDialogIfNeeded();
             ShowForumInvitationDialogIfNeeded();

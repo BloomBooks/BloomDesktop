@@ -89,6 +89,10 @@ namespace Bloom
 
         public abstract void SelectBrowser();
 
+        // Most browser hosts should leave built-in browser zoom enabled.
+        // WorkspaceView can disable it when it needs to control zoom itself.
+        public virtual void SetBuiltInBrowserZoomEnabled(bool enabled) { }
+
         protected void RaiseBrowserReady()
         {
             EventHandler handler = BrowserReady;

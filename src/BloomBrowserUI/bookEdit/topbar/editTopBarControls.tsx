@@ -16,6 +16,7 @@ import Menu from "@mui/material/Menu";
 import Checkbox from "@mui/material/Checkbox";
 import { useL10n } from "../../react_components/l10nHooks";
 import { LocalizableMenuItem } from "../../react_components/localizableMenuItem";
+import { callOnBlur } from "../../utils/menuCloseOnBlur";
 
 interface IDropdownData {
     contentLanguagesEnabled: boolean;
@@ -49,10 +50,15 @@ interface IEditingDropdownMenuBehaviorProps {
     loadMenuItems: (onLoaded?: (itemCount: number) => void) => void;
 }
 
-const useEditingDropdownMenuBehavior = (
+function useEditingDropdownMenuBehavior(
     props: IEditingDropdownMenuBehaviorProps,
-) => {
+) {
     const [anchorEl, setAnchorEl] = useState<HTMLElement>();
+
+    const openMenuAtAnchor = (anchorElement: HTMLElement) => {
+        setAnchorEl(anchorElement);
+        callOnBlur(() => setAnchorEl(undefined));
+    };
 
     const onClose = () => {
         setAnchorEl(undefined);
@@ -69,14 +75,14 @@ const useEditingDropdownMenuBehavior = (
         }
 
         if (props.menuItems.length > 0) {
-            setAnchorEl(anchorElement);
+            openMenuAtAnchor(anchorElement);
             props.loadMenuItems();
             return;
         }
 
         props.loadMenuItems((itemCount) => {
             if (itemCount > 0) {
-                setAnchorEl(anchorElement);
+                openMenuAtAnchor(anchorElement);
             } else {
                 setAnchorEl(undefined);
             }
@@ -88,7 +94,7 @@ const useEditingDropdownMenuBehavior = (
         onClose,
         onOpen,
     };
-};
+}
 
 const normalizeContentLanguageUsageItems = (
     languages: unknown,
