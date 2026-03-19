@@ -1844,9 +1844,9 @@ namespace Bloom.Book
                 Debug.Fail("(debug mode only): could not rename the folder");
             }
 
-            RaiseBookRenamedEvent(fromToPair);
-
             OnFolderPathChanged();
+
+            RaiseBookRenamedEvent(fromToPair);
         }
 
         // Move a file, possibly only changing the case of the name.
