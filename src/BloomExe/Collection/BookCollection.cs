@@ -24,7 +24,11 @@ namespace Bloom.Collection
             SourceCollection,
         }
 
-        public delegate BookCollection Factory(string path, CollectionType collectionType); //autofac uses this
+        public delegate BookCollection Factory(
+            string path,
+            CollectionType collectionType,
+            CollectionSettings collectionSettings = null
+        ); //autofac uses this
 
         public EventHandler CollectionChanged;
 
@@ -36,6 +40,8 @@ namespace Bloom.Collection
         private Timer _folderChangeDebounceTimer;
         private static HashSet<string> _changingFolders = new HashSet<string>();
         private BloomWebSocketServer _webSocketServer;
+
+        private CollectionSettings _collectionSettings;
 
         public static event EventHandler CollectionCreated;
 
@@ -53,6 +59,7 @@ namespace Bloom.Collection
             CollectionType collectionType,
             BookSelection bookSelection,
             TeamCollectionManager tcm = null,
+            CollectionSettings collectionSettings = null,
             BloomWebSocketServer webSocketServer = null
         )
         {
@@ -60,6 +67,7 @@ namespace Bloom.Collection
             _bookSelection = bookSelection;
             _tcManager = tcm;
             _webSocketServer = webSocketServer;
+            _collectionSettings = collectionSettings;
 
             Type = collectionType;
 
@@ -325,22 +333,25 @@ namespace Bloom.Collection
 
         public void UpdateBookInfo(BookInfo info)
         {
-            var oldIndex = _bookInfos.FindIndex(i => i.Id == info.Id);
-            IComparer<string> comp = new NaturalSortComparer<string>();
-            var newKey = Path.GetFileName(info.FolderPath);
-            if (oldIndex >= 0)
+            lock (_bookInfoLock)
             {
-                // optimize: very often the new one will belong at the same index,
-                // if that's the case we could just replace.
-                _bookInfos.RemoveAt(oldIndex);
-            }
+                var oldIndex = _bookInfos.FindIndex(i => i.Id == info.Id);
+                IComparer<string> comp = new NaturalSortComparer<string>();
+                var newKey = Path.GetFileName(info.FolderPath);
+                if (oldIndex >= 0)
+                {
+                    // optimize: very often the new one will belong at the same index,
+                    // if that's the case we could just replace.
+                    _bookInfos.RemoveAt(oldIndex);
+                }
 
-            int newIndex = _bookInfos.FindIndex(x =>
-                comp.Compare(newKey, Path.GetFileName(x.FolderPath)) <= 0
-            );
-            if (newIndex < 0)
-                newIndex = _bookInfos.Count;
-            _bookInfos.Insert(newIndex, info);
+                int newIndex = _bookInfos.FindIndex(x =>
+                    comp.Compare(newKey, Path.GetFileName(x.FolderPath)) <= 0
+                );
+                if (newIndex < 0)
+                    newIndex = _bookInfos.Count;
+                _bookInfos.Insert(newIndex, info);
+            }
             NotifyCollectionChanged();
         }
 
@@ -412,7 +423,45 @@ namespace Bloom.Collection
                     )
                         ? _bookSelection.CurrentSelection.BookInfo
                         : new BookInfo(folderPath, editable, sc);
-
+                if (bookInfo.FileNameLocked)
+                {
+                    // The user has explicitly chosen a name to use for the book, distinct from its titles.
+                    bookInfo.ThumbnailLabel = Path.GetFileName(folderPath);
+                }
+                else
+                {
+                    bookInfo.ThumbnailLabel = bookInfo.Title;
+                }
+                if (
+                    bookInfo.IsInEditableCollection
+                    && !bookInfo.FileNameLocked
+                    && String.IsNullOrEmpty(bookInfo.Title)
+                )
+                {
+                    if (
+                        folderPath == _bookSelection.CurrentSelection?.FolderPath
+                        && _bookSelection.CurrentSelection.BookInfo.SaveContext == sc
+                    )
+                    {
+                        bookInfo.ThumbnailLabel = _bookSelection
+                            .CurrentSelection
+                            .TitleBestForUserDisplay;
+                    }
+                    else
+                    {
+                        var htmlPath = BookStorage.FindBookHtmlInFolder(folderPath);
+                        if (!String.IsNullOrEmpty(htmlPath) && RobustFile.Exists(htmlPath))
+                        {
+                            var dom = HtmlDom.CreateFromHtmlFile(htmlPath);
+                            var bookData = new BookData(dom, _collectionSettings, null);
+                            bookInfo.ThumbnailLabel = Book.Book.GetBestTitleForDisplay(
+                                bookData.GetMultiTextVariableOrEmpty("bookTitle"),
+                                bookData.GetBasicBookLanguageCodes().ToList(),
+                                bookInfo.IsInEditableCollection
+                            );
+                        }
+                    }
+                }
                 _bookInfos.Add(bookInfo);
             }
             catch (Exception e)
