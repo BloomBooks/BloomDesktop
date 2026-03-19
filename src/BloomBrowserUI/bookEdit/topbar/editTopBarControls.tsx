@@ -30,6 +30,66 @@ interface ITopBarMenuItem {
     checked?: boolean;
 }
 
+interface IEditingControlDropdownProps {
+    enabled: boolean;
+    localizedText: string;
+    tooltipL10nKey: string;
+    disabledTooltipL10nKey?: string;
+    buttonId: string;
+    menuItems: ITopBarMenuItem[];
+    loadMenuItems: (onLoaded?: (itemCount: number) => void) => void;
+    onMenuItemClick: (item: ITopBarMenuItem) => void;
+    showChecks: boolean;
+}
+
+interface IEditingDropdownMenuBehaviorProps {
+    enabled: boolean;
+    buttonId: string;
+    menuItems: ITopBarMenuItem[];
+    loadMenuItems: (onLoaded?: (itemCount: number) => void) => void;
+}
+
+const useEditingDropdownMenuBehavior = (
+    props: IEditingDropdownMenuBehaviorProps,
+) => {
+    const [anchorEl, setAnchorEl] = useState<HTMLElement>();
+
+    const onClose = () => {
+        setAnchorEl(undefined);
+    };
+
+    const onOpen = () => {
+        if (!props.enabled) {
+            return;
+        }
+
+        const anchorElement = document.getElementById(props.buttonId);
+        if (!anchorElement) {
+            return;
+        }
+
+        if (props.menuItems.length > 0) {
+            setAnchorEl(anchorElement);
+            props.loadMenuItems();
+            return;
+        }
+
+        props.loadMenuItems((itemCount) => {
+            if (itemCount > 0) {
+                setAnchorEl(anchorElement);
+            } else {
+                setAnchorEl(undefined);
+            }
+        });
+    };
+
+    return {
+        anchorEl,
+        onClose,
+        onOpen,
+    };
+};
+
 const normalizeContentLanguageUsageItems = (
     languages: unknown,
 ): ITopBarMenuItem[] => {
@@ -497,59 +557,15 @@ export const LayoutChoicesDropdown: React.FunctionComponent<{
     );
 };
 
-export const EditingControlDropdown: React.FunctionComponent<{
-    enabled: boolean;
-    localizedText: string;
-    tooltipL10nKey: string;
-    disabledTooltipL10nKey?: string;
-    buttonId: string;
-    menuItems: ITopBarMenuItem[];
-    loadMenuItems: (onLoaded?: (itemCount: number) => void) => void;
-    onMenuItemClick: (item: ITopBarMenuItem) => void;
-    showChecks: boolean;
-}> = (props) => {
-    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const [suppressTooltip, setSuppressTooltip] = useState(false);
-
-    const onClose = () => {
-        setAnchorEl(null);
-        setSuppressTooltip(false);
-    };
-
-    const onOpen = () => {
-        if (!props.enabled) {
-            return;
-        }
-        setSuppressTooltip(true);
-
-        const anchor = document.getElementById(
-            props.buttonId,
-        ) as HTMLElement | null;
-        if (!anchor) {
-            setSuppressTooltip(false);
-            return;
-        }
-        if (props.menuItems.length > 0) {
-            setAnchorEl(anchor);
-            props.loadMenuItems();
-            return;
-        }
-
-        props.loadMenuItems((itemCount) => {
-            if (itemCount > 0) {
-                setAnchorEl(anchor);
-            } else {
-                setAnchorEl(null);
-                setSuppressTooltip(false);
-            }
-        });
-    };
-
-    const releaseTooltipSuppressionIfMenuClosed = () => {
-        if (!anchorEl) {
-            setSuppressTooltip(false);
-        }
-    };
+export const EditingControlDropdown: React.FunctionComponent<
+    IEditingControlDropdownProps
+> = (props) => {
+    const { anchorEl, onClose, onOpen } = useEditingDropdownMenuBehavior({
+        enabled: props.enabled,
+        buttonId: props.buttonId,
+        menuItems: props.menuItems,
+        loadMenuItems: props.loadMenuItems,
+    });
 
     const onMenuItemClick = (item: ITopBarMenuItem) => {
         if (!item.enabled) {
@@ -610,9 +626,7 @@ export const EditingControlDropdown: React.FunctionComponent<{
 
     return (
         <BloomTooltip
-            tip={
-                suppressTooltip ? undefined : { l10nKey: props.tooltipL10nKey }
-            }
+            tip={{ l10nKey: props.tooltipL10nKey }}
             tipWhenDisabled={
                 props.disabledTooltipL10nKey
                     ? { l10nKey: props.disabledTooltipL10nKey }
@@ -627,8 +641,6 @@ export const EditingControlDropdown: React.FunctionComponent<{
                 <BloomButton
                     id={props.buttonId}
                     onClick={onOpen}
-                    onMouseEnter={releaseTooltipSuppressionIfMenuClosed}
-                    onMouseLeave={releaseTooltipSuppressionIfMenuClosed}
                     enabled={props.enabled}
                     l10nKey={props.buttonId}
                     alreadyLocalized={true}
