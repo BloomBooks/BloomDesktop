@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Api;
+using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Utils;
 using L10NSharp;
@@ -340,6 +341,8 @@ namespace Bloom.Book
         /// This one knows nothing of what language the user speaks... currently using that requires actually reading in the html, which is beyond what this class can do
         /// </summary>
         public string QuickTitleUserDisplay => FolderName;
+
+        public string ThumbnailLabel;
 
         public bool TryGetPremadeThumbnail(out Image image)
         {
@@ -852,28 +855,92 @@ namespace Bloom.Book
             bool ignoreFolderName = false
         )
         {
+            return GetBestDisplayTitle(null, null, langCodes, ignoreFolderName);
+        }
+
+        internal string GetBestDisplayTitle(
+            CollectionSettings settings, // may be null
+            Book book, // may be null, but if we have it, we can use it to get the title without having to read the html again
+            List<string> langCodes = null,
+            bool ignoreFolderName = false
+        )
+        {
             if (!ignoreFolderName && FileNameLocked)
+            {
+                // The user has explicitly chosen a name to use for the book, distinct from its titles.
                 return FolderName;
-            try
-            {
-                // JSON parsing requires newlines to be double quoted with backslashes inside string values.
-                var jsonString =
-                    AllTitles == null ? "{}" : AllTitles.Replace("\r", "\\r").Replace("\n", "\\n");
-                dynamic titles = DynamicJson.Parse(jsonString);
-                IEnumerable<string> langs = titles.GetDynamicMemberNames();
-                var multiText = new MultiTextBase();
-                // I have no idea why "item" gets included...it's never a language id, so never in the json...
-                // but sometimes it does, and then titles["item"] throws, and this method does not
-                // behave as expected.
-                foreach (var lang in langs.Where((l) => l != "item"))
-                    multiText[lang] = titles[lang].Trim();
-                return Book.GetBestTitleForDisplay(multiText, langCodes, IsInEditableCollection);
             }
-            catch (Exception e)
+            if (IsInEditableCollection && String.IsNullOrEmpty(Title))
             {
-                Console.WriteLine(e);
+                if (!string.IsNullOrEmpty(FolderPath))
+                {
+                    // Use the loaded book if we have it to get the best title.
+                    if (FolderPath == book?.FolderPath && book.BookInfo.SaveContext == SaveContext)
+                    {
+                        if (langCodes == null)
+                            langCodes = book.BookData.GetBasicBookLanguageCodes().ToList();
+                        var best = Book.GetBestTitleForDisplay(
+                            book.BookData.GetMultiTextVariableOrEmpty("bookTitle"),
+                            langCodes,
+                            IsInEditableCollection
+                        );
+                        if (!string.IsNullOrEmpty(best))
+                            return best;
+                    }
+                    else
+                    {
+                        // If we can create a BookData, we can get the title from there.
+                        var htmlPath = BookStorage.FindBookHtmlInFolder(FolderPath);
+                        if (
+                            !string.IsNullOrEmpty(htmlPath)
+                            && RobustFile.Exists(htmlPath)
+                            && settings != null
+                        )
+                        {
+                            var dom = HtmlDom.CreateFromHtmlFile(htmlPath);
+                            var bookData = new BookData(dom, settings, null);
+                            if (langCodes == null)
+                                langCodes = bookData.GetBasicBookLanguageCodes().ToList();
+                            var best = Book.GetBestTitleForDisplay(
+                                bookData.GetMultiTextVariableOrEmpty("bookTitle"),
+                                langCodes,
+                                IsInEditableCollection
+                            );
+                            if (!string.IsNullOrEmpty(best))
+                                return best;
+                        }
+                    }
+                    // If we still don't have a title, try to get one from the metadata.
+                    try
+                    {
+                        // JSON parsing requires newlines to be double quoted with backslashes inside string values.
+                        var jsonString =
+                            AllTitles == null
+                                ? "{}"
+                                : AllTitles.Replace("\r", "\\r").Replace("\n", "\\n");
+                        dynamic titles = DynamicJson.Parse(jsonString);
+                        IEnumerable<string> langs = titles.GetDynamicMemberNames();
+                        var multiText = new MultiTextBase();
+                        // I have no idea why "item" gets included...it's never a language id, so never in the json...
+                        // but sometimes it does, and then titles["item"] throws, and this method does not
+                        // behave as expected.
+                        foreach (var lang in langs.Where((l) => l != "item"))
+                            multiText[lang] = titles[lang].Trim();
+                        if (langCodes == null)
+                            langCodes = langs.Where((l) => l != "item").ToList();
+                        return Book.GetBestTitleForDisplay(
+                            multiText,
+                            langCodes,
+                            IsInEditableCollection
+                        );
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
+                }
             }
-            return Title;
+            return Title; // Title may be empty, but we have no better option at this point.
         }
 
         private static void SafelyAddToIdSet(
