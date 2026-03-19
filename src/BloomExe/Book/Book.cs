@@ -328,15 +328,7 @@ namespace Bloom.Book
         /// </remarks>
         public virtual string NameBestForUserDisplay
         {
-            get
-            {
-                if (BookInfo.FileNameLocked)
-                {
-                    // The user has explicitly chosen a name to use for the book, distinct from its titles.
-                    return Path.GetFileName(FolderPath);
-                }
-                return TitleBestForUserDisplay;
-            }
+            get { return BookInfo.GetBestDisplayTitle(CollectionSettings, this); }
         }
 
         /// <summary>
