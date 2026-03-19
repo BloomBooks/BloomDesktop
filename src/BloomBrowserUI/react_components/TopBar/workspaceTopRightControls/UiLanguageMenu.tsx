@@ -13,6 +13,7 @@ import Menu from "@mui/material/Menu";
 import Checkbox from "@mui/material/Checkbox";
 import Divider from "@mui/material/Divider";
 import { LocalizableMenuItem } from "../../localizableMenuItem";
+import { openMenuAndCloseOnFocusLost } from "./menuCloseOnFocusLost";
 
 interface IMenuItem {
     action?:
@@ -59,7 +60,7 @@ export const UiLanguageMenu: React.FunctionComponent = () => {
         "Help us translate Bloom (web)",
         "CollectionTab.UILanguageMenu.HelpTranslate",
     );
-    const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
+    const [anchorEl, setAnchorEl] = React.useState<HTMLElement>();
     const [showUnapprovedTranslations, setShowUnapprovedTranslations] =
         useApiBoolean("workspace/showUnapprovedTranslations", false);
     const [menuItems, setMenuItems] = React.useState<IMenuItem[]>([]);
@@ -99,7 +100,7 @@ export const UiLanguageMenu: React.FunctionComponent = () => {
     );
 
     const onClose = React.useCallback(() => {
-        setAnchorEl(null);
+        setAnchorEl(undefined);
     }, []);
 
     const onOpen = React.useCallback(() => {
@@ -110,19 +111,19 @@ export const UiLanguageMenu: React.FunctionComponent = () => {
             return;
         }
         if (menuItems.length > 0) {
-            setAnchorEl(anchor);
+            openMenuAndCloseOnFocusLost(anchor, setAnchorEl, onClose);
             loadMenuItems();
             return;
         }
 
         loadMenuItems((itemCount) => {
             if (itemCount > 0) {
-                setAnchorEl(anchor);
+                openMenuAndCloseOnFocusLost(anchor, setAnchorEl, onClose);
             } else {
-                setAnchorEl(null);
+                setAnchorEl(undefined);
             }
         });
-    }, [loadMenuItems, menuItems.length]);
+    }, [loadMenuItems, menuItems.length, onClose]);
 
     const handleMenuItemClick = React.useCallback(
         (item: IMenuItem) => {

@@ -13,6 +13,7 @@ import Menu from "@mui/material/Menu";
 import Divider from "@mui/material/Divider";
 import { showAboutDialog } from "../../aboutDialog";
 import { LocalizableMenuItem } from "../../localizableMenuItem";
+import { openMenuAndCloseOnFocusLost } from "./menuCloseOnFocusLost";
 
 interface IMenuItem {
     id?: string;
@@ -76,7 +77,7 @@ export const HelpMenu: React.FunctionComponent = () => {
 
     const showIconOnly =
         helpText === "?" || ["en", "fr", "de", "es"].includes(uiLanguage);
-    const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
+    const [anchorEl, setAnchorEl] = React.useState<HTMLElement>();
     const [suppressTooltip, setSuppressTooltip] = React.useState(false);
 
     const showRegistrationDialogFromWorkspaceRoot = React.useCallback(() => {
@@ -245,7 +246,7 @@ export const HelpMenu: React.FunctionComponent = () => {
     );
 
     const onClose = React.useCallback(() => {
-        setAnchorEl(null);
+        setAnchorEl(undefined);
         setSuppressTooltip(false);
     }, []);
 
@@ -258,8 +259,8 @@ export const HelpMenu: React.FunctionComponent = () => {
             return;
         }
         setSuppressTooltip(true);
-        setAnchorEl(button);
-    }, []);
+        openMenuAndCloseOnFocusLost(button, setAnchorEl, onClose);
+    }, [onClose]);
 
     const releaseTooltipSuppressionIfMenuClosed = React.useCallback(() => {
         if (!anchorEl) {

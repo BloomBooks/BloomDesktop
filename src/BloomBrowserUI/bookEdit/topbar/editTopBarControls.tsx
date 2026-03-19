@@ -16,6 +16,7 @@ import Menu from "@mui/material/Menu";
 import Checkbox from "@mui/material/Checkbox";
 import { useL10n } from "../../react_components/l10nHooks";
 import { LocalizableMenuItem } from "../../react_components/localizableMenuItem";
+import { callWhenFocusLost } from "../toolbox/toolbox";
 
 interface IDropdownData {
     contentLanguagesEnabled: boolean;
@@ -54,6 +55,11 @@ const useEditingDropdownMenuBehavior = (
 ) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement>();
 
+    const openMenuAtAnchor = (anchorElement: HTMLElement) => {
+        setAnchorEl(anchorElement);
+        callWhenFocusLost(() => setAnchorEl(undefined));
+    };
+
     const onClose = () => {
         setAnchorEl(undefined);
     };
@@ -69,14 +75,14 @@ const useEditingDropdownMenuBehavior = (
         }
 
         if (props.menuItems.length > 0) {
-            setAnchorEl(anchorElement);
+            openMenuAtAnchor(anchorElement);
             props.loadMenuItems();
             return;
         }
 
         props.loadMenuItems((itemCount) => {
             if (itemCount > 0) {
-                setAnchorEl(anchorElement);
+                openMenuAtAnchor(anchorElement);
             } else {
                 setAnchorEl(undefined);
             }

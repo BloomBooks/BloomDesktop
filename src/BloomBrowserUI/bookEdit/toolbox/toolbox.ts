@@ -14,10 +14,10 @@ import {
     getPageIframeBody,
 } from "../../utils/shared";
 import { GameTool } from "./games/GameTool";
+import { isLongPressEvaluating } from "../longPressShared";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import { showRequiresSubscriptionDialogInAnyView } from "../../react_components/requiresSubscription";
-
-export const isLongPressEvaluating: string = "isLongPressEvaluating";
+export { isLongPressEvaluating };
 
 /**
  * The html code for a check mark character
@@ -1101,8 +1101,8 @@ function setCurrentTool(toolID: string) {
 
         if (toolID) {
             adapter.setActiveToolByToolId(toolID);
+            switchTool(toolID);
         }
-        switchTool(toolID);
         return;
     }
 

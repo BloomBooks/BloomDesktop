@@ -211,14 +211,6 @@ namespace Bloom.Edit
 
         public EditingModel Model => _model;
 
-        internal void AttachMainBrowser(Browser browser)
-        {
-            if (browser == null)
-                throw new ArgumentNullException(nameof(browser));
-
-            // The workspace browser is now hosted by ReactControl; EditingView only configures it.
-        }
-
         internal void InitializeMainBrowserForEditMode()
         {
             if (Program.RunningHarvesterMode || _mainBrowser == null)
