@@ -15,6 +15,7 @@ import { PublishTabPane } from "../publish/PublishTab/PublishTabPane";
 import { kPanelBackground } from "../bloomMaterialUITheme";
 import { useWatchApiObject } from "../utils/bloomApi";
 import { EditTabPane } from "./EditTabPane";
+import { ToastHost } from "../toast/ToastHost";
 
 export const App: React.FunctionComponent = () => {
     // Eventually the source of truth of what tab is active will be on the
@@ -60,6 +61,9 @@ export const App: React.FunctionComponent = () => {
             `}
         >
             <TopBar />
+            <div style={{ position: "relative", zIndex: 4 }}>
+                <ToastHost />
+            </div>
             {renderActiveTab()}
             <div id="modal-dialog-container" />
         </div>

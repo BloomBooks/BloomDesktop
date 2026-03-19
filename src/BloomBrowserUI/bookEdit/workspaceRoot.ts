@@ -73,9 +73,7 @@ import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
 import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
 import * as ReactDOM from "react-dom";
-import * as React from "react";
 import { FunctionComponentElement } from "react";
-import { ToastHost } from "../toast/ToastHost";
 import { ToastDebugInput, toastDebugEvents } from "../toast/toastUtils";
 
 import { showAdjustTimingsDialog } from "./toolbox/talkingBook/AdjustTimingsDialog";
@@ -300,15 +298,6 @@ const updateWorkspaceUrlParam = (name: string, value: string): void => {
     window.history.replaceState(window.history.state, "", url.toString());
 };
 
-const mountWorkspaceToastHost = (): void => {
-    const root = document.getElementById("workspace-toast-host-root");
-    if (!root) {
-        return;
-    }
-
-    ReactDOM.render(React.createElement(ToastHost), root);
-};
-
 const installToastDebugHooks = (): void => {
     // These globals are mainly devtools helpers today, but they use general names because
     // browser-side code may eventually call into the same toast entry points directly.
@@ -335,10 +324,9 @@ const initializeWorkspaceRootDocument = (): void => {
     }
 
     workspaceRootDocumentInitialized = true;
-    mountWorkspaceToastHost();
     installToastDebugHooks();
 };
-    initializeWorkspaceRootDocument();
+initializeWorkspaceRootDocument();
 // Adjusts the zoom scaling element created in C# SetupPageZoom; keep in sync with that code.
 // Called directly from C# code, in EditingView.SetZoom().
 // Argument is a raw number (e.g., 0.5 for 50% zoom, 1.0 for 100% zoom).
