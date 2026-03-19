@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -13,6 +14,7 @@ using Bloom.ToPalaso;
 using Bloom.web;
 using Bloom.Workspace;
 using L10NSharp;
+using Newtonsoft.Json;
 using SIL.Reporting;
 
 namespace Bloom.CollectionTab
@@ -132,8 +134,36 @@ namespace Bloom.CollectionTab
 
         private void UpdateForBookChanges(Book.Book book)
         {
+            if (book.BookData.GetVariableOrNull("bookTitle", book.Language1Tag) == null)
+            {
+                book.BookInfo.Title = "";
+                if (book.BookInfo.AllTitles != null)
+                {
+                    var titleDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(
+                        book.BookInfo.AllTitles
+                    );
+                    if (titleDict.ContainsKey(book.Language1Tag))
+                    {
+                        titleDict.Remove(book.Language1Tag);
+                        book.BookInfo.AllTitles = JsonConvert.SerializeObject(titleDict);
+                    }
+                }
+                book.BookInfo.ThumbnailLabel = book.TitleBestForUserDisplay;
+                book.BookInfo.Save();
+            }
             _model.UpdateThumbnailAsync(book);
-            _model.UpdateLabelOfBookInEditableCollection(book);
+            // Delay the label update slightly to give the collection book pane
+            // time to settle down and be ready for it.  Do it a few times to
+            // make sure it gets through.
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(200);
+                _model.UpdateLabelOfBookInEditableCollection(book);
+                await Task.Delay(300);
+                _model.UpdateLabelOfBookInEditableCollection(book);
+                await Task.Delay(400);
+                _model.UpdateLabelOfBookInEditableCollection(book);
+            });
             // This message causes the preview to update.
             _webSocketServer.SendEvent("bookContent", "reload");
             _bookChangesPending = false;

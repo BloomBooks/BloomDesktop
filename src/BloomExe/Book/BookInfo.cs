@@ -341,6 +341,8 @@ namespace Bloom.Book
         /// </summary>
         public string QuickTitleUserDisplay => FolderName;
 
+        public string ThumbnailLabel;
+
         public bool TryGetPremadeThumbnail(out Image image)
         {
             string path = Path.Combine(FolderPath, "thumbnail.png");

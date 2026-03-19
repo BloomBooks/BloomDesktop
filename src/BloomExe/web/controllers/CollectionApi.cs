@@ -618,6 +618,13 @@ namespace Bloom.web.controllers
                             ignoreFolderName: true
                         );
                     }
+                    else if (
+                        String.IsNullOrEmpty(info.Title)
+                        && !String.IsNullOrEmpty(info.ThumbnailLabel)
+                    )
+                    {
+                        title = info.ThumbnailLabel;
+                    }
                     return new
                     {
                         id = info.Id,

@@ -24,7 +24,11 @@ namespace Bloom.Collection
             SourceCollection,
         }
 
-        public delegate BookCollection Factory(string path, CollectionType collectionType); //autofac uses this
+        public delegate BookCollection Factory(
+            string path,
+            CollectionType collectionType,
+            CollectionSettings settings = null
+        ); //autofac uses this
 
         public EventHandler CollectionChanged;
 
@@ -36,6 +40,8 @@ namespace Bloom.Collection
         private Timer _folderChangeDebounceTimer;
         private static HashSet<string> _changingFolders = new HashSet<string>();
         private BloomWebSocketServer _webSocketServer;
+
+        private CollectionSettings _collectionSettings;
 
         public static event EventHandler CollectionCreated;
 
@@ -53,6 +59,7 @@ namespace Bloom.Collection
             CollectionType collectionType,
             BookSelection bookSelection,
             TeamCollectionManager tcm = null,
+            CollectionSettings collectionSettings = null,
             BloomWebSocketServer webSocketServer = null
         )
         {
@@ -60,6 +67,7 @@ namespace Bloom.Collection
             _bookSelection = bookSelection;
             _tcManager = tcm;
             _webSocketServer = webSocketServer;
+            _collectionSettings = collectionSettings;
 
             Type = collectionType;
 
@@ -412,7 +420,45 @@ namespace Bloom.Collection
                     )
                         ? _bookSelection.CurrentSelection.BookInfo
                         : new BookInfo(folderPath, editable, sc);
-
+                if (bookInfo.FileNameLocked)
+                {
+                    // The user has explicitly chosen a name to use for the book, distinct from its titles.
+                    bookInfo.ThumbnailLabel = Path.GetFileName(folderPath);
+                }
+                else
+                {
+                    bookInfo.ThumbnailLabel = bookInfo.Title;
+                }
+                if (
+                    bookInfo.IsInEditableCollection
+                    && !bookInfo.FileNameLocked
+                    && String.IsNullOrEmpty(bookInfo.Title)
+                )
+                {
+                    if (
+                        folderPath == _bookSelection.CurrentSelection?.FolderPath
+                        && _bookSelection.CurrentSelection.BookInfo.SaveContext == sc
+                    )
+                    {
+                        bookInfo.ThumbnailLabel = _bookSelection
+                            .CurrentSelection
+                            .TitleBestForUserDisplay;
+                    }
+                    else
+                    {
+                        var htmlPath = BookStorage.FindBookHtmlInFolder(folderPath);
+                        if (!String.IsNullOrEmpty(htmlPath) && RobustFile.Exists(htmlPath))
+                        {
+                            var dom = HtmlDom.CreateFromHtmlFile(htmlPath);
+                            var bookData = new BookData(dom, _collectionSettings, null);
+                            bookInfo.ThumbnailLabel = Book.Book.GetBestTitleForDisplay(
+                                bookData.GetMultiTextVariableOrEmpty("bookTitle"),
+                                bookData.GetBasicBookLanguageCodes().ToList(),
+                                bookInfo.IsInEditableCollection
+                            );
+                        }
+                    }
+                }
                 _bookInfos.Add(bookInfo);
             }
             catch (Exception e)
