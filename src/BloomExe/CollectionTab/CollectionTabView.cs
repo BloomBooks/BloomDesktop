@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -11,6 +12,7 @@ using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.Workspace;
 using L10NSharp;
+using Newtonsoft.Json;
 using SIL.Reporting;
 
 namespace Bloom.CollectionTab
@@ -24,6 +26,7 @@ namespace Bloom.CollectionTab
         private TeamCollectionManager _tcManager;
         private bool _isDisposed;
         private bool _bookChangesPending = false; // bookchanged event while tab not visible
+        private Book.Book _bookForPendingLabelUpdate = null; // book needing label update when UI ready
 
         internal WorkspaceView WorkspaceView { get; set; }
 
@@ -124,8 +127,27 @@ namespace Bloom.CollectionTab
 
         private void UpdateForBookChanges(Book.Book book)
         {
+            if (book.BookData.GetVariableOrNull("bookTitle", book.Language1Tag) == null)
+            {
+                book.BookInfo.Title = "";
+                if (!String.IsNullOrEmpty(book.BookInfo.AllTitles))
+                {
+                    var titleDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(
+                        book.BookInfo.AllTitles
+                    );
+                    if (titleDict != null && titleDict.ContainsKey(book.Language1Tag))
+                    {
+                        titleDict.Remove(book.Language1Tag);
+                        book.BookInfo.AllTitles = JsonConvert.SerializeObject(titleDict);
+                    }
+                }
+                book.BookInfo.ThumbnailLabel = book.TitleBestForUserDisplay;
+                book.BookInfo.Save();
+            }
             _model.UpdateThumbnailAsync(book);
-            _model.UpdateLabelOfBookInEditableCollection(book);
+            // Queue the label update to be sent when the collection pane signals it's ready.
+            _bookForPendingLabelUpdate = book;
+
             // This message causes the preview to update.
             _webSocketServer.SendEvent("bookContent", "reload");
             _bookChangesPending = false;
@@ -310,6 +332,20 @@ namespace Bloom.CollectionTab
             Task.Run(() =>
                 _model.TheOneEditableCollection.UpdateBloomLibraryStatusOfBooks(bookInfos)
             );
+        }
+
+        /// <summary>
+        /// Called by the frontend when the collection pane has finished loading
+        /// and is ready to receive book label updates.  This will realphabetize
+        /// a renamed book.
+        /// </summary>
+        internal void ProcessPendingBookLabelUpdate()
+        {
+            if (_bookForPendingLabelUpdate != null)
+            {
+                _model.UpdateLabelOfBookInEditableCollection(_bookForPendingLabelUpdate);
+                _bookForPendingLabelUpdate = null;
+            }
         }
 
         public void Dispose()

@@ -55,7 +55,8 @@ namespace BloomTests.TestDoubles.CollectionTab
 
         public static BookCollection BookCollectionFactory(
             string path,
-            BookCollection.CollectionType collectionType
+            BookCollection.CollectionType collectionType,
+            CollectionSettings settings = null
         )
         {
             return new BookCollection(path, collectionType, null);

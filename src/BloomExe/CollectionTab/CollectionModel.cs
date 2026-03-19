@@ -360,7 +360,8 @@ namespace Bloom.CollectionTab
             {
                 editableCollection = _bookCollectionFactory(
                     _pathToCollection,
-                    BookCollection.CollectionType.TheOneEditableCollection
+                    BookCollection.CollectionType.TheOneEditableCollection,
+                    _collectionSettings
                 );
                 if (_bookCollectionHolder != null)
                     _bookCollectionHolder.TheOneEditableCollection = editableCollection;
