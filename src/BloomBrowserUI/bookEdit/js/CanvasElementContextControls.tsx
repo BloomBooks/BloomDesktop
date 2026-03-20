@@ -73,6 +73,7 @@ import {
 } from "../toolbox/canvas/canvasElementUtils";
 import { getString, post, useApiObject } from "../../utils/bloomApi";
 import { ILanguageNameValues } from "../bookSettings/FieldVisibilityGroup";
+import StyleEditor from "../StyleEditor/StyleEditor";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -83,6 +84,24 @@ interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
 // Eventually we may need a way to distinguish buttons used for navigation from other buttons.
 function isNavigationButton(canvasElement: HTMLElement) {
     return canvasElement.classList.contains(kBloomButtonClass);
+}
+
+function getFormatTargetElement(
+    canvasElement: HTMLElement,
+): HTMLElement | undefined {
+    const editable = canvasElement.getElementsByClassName(
+        "bloom-editable bloom-visibility-code-on",
+    )[0] as HTMLElement | undefined;
+    if (editable) {
+        return editable;
+    }
+
+    const candidates = Array.from(
+        canvasElement.querySelectorAll("[class]"),
+    ) as HTMLElement[];
+    return candidates.find((candidate) =>
+        StyleEditor.shouldAllowNonEditableStyleDialogTarget(candidate),
+    );
 }
 
 // This is the controls bar that appears beneath a canvas element when it is selected. It contains buttons
@@ -356,6 +375,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const editableTextElement = props.canvasElement.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on",
     )[0] as HTMLElement;
+    const formatTargetElement = getFormatTargetElement(props.canvasElement);
 
     if (isNavButton) {
         menuOptions.splice(0, 0, {
@@ -456,6 +476,13 @@ const CanvasElementContextControls: React.FunctionComponent<{
             languageNameValues,
             noneLabel,
         );
+    } else if (formatTargetElement && !isNavButton) {
+        menuOptions.push({
+            l10nId: "EditTab.Toolbox.ComicTool.Options.Format",
+            english: "Format",
+            onClick: () => GetEditor().runFormatDialog(formatTargetElement),
+            icon: <CogIcon css={getMenuIconCss()} />,
+        });
     }
 
     const runMetadataDialog = () => {
@@ -617,7 +644,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                             )}
                         </Fragment>
                     )}
-                    {editableTextElement && !isNavButton && (
+                    {formatTargetElement && !isNavButton && (
                         <ButtonWithTooltip
                             tipL10nKey="EditTab.Toolbox.ComicTool.Options.Format"
                             icon={CogIcon}
@@ -625,7 +652,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                             onClick={() => {
                                 if (!props.canvasElement) return;
                                 GetEditor().runFormatDialog(
-                                    editableTextElement,
+                                    formatTargetElement,
                                 );
                             }}
                         />
