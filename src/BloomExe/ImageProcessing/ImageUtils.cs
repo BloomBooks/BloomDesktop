@@ -2225,6 +2225,9 @@ namespace Bloom.ImageProcessing
                 {
                     // This is a duplicate. We can use the same cropped image file.
                     img.SetAttribute("src", fileName);
+                    // With that src, it's already cropped, so remove the style to avoid
+                    // applying the cropping again to the already-cropped image.
+                    img.RemoveAttribute("style");
                     continue;
                 }
 
