@@ -33,7 +33,7 @@ using TempFile = SIL.IO.TempFile;
 
 namespace Bloom.Edit
 {
-    public partial class EditingView : UserControl, IBloomTabArea, IZoomManager
+    public class EditingView : IBloomTabArea, IZoomManager, IDisposable
     {
         private readonly EditingModel _model;
         private PageListController _pageListView;
@@ -50,9 +50,49 @@ namespace Bloom.Edit
         private BloomWebSocketServer _webSocketServer;
         private ZoomModel _zoomModel;
         private PageListApi _pageListApi;
-        private Browser _browser1 => WorkspaceView?.MainBrowser;
+        private Timer _editButtonsUpdateTimer;
+        private Browser _mainBrowser => WorkspaceView?.MainBrowser;
+        private WorkspaceView _workspaceView;
+        private Form _hostFormForEvents;
 
-        internal WorkspaceView WorkspaceView { get; set; }
+        internal WorkspaceView WorkspaceView
+        {
+            get => _workspaceView;
+            set
+            {
+                _workspaceView = value;
+                _editButtonsUpdateTimer.Enabled = _workspaceView != null;
+            }
+        }
+
+        public Cursor Cursor
+        {
+            get => _workspaceView?.Cursor ?? _mainBrowser?.Cursor ?? Cursors.Default;
+            set
+            {
+                if (_workspaceView != null)
+                    _workspaceView.Cursor = value;
+                if (_mainBrowser != null)
+                    _mainBrowser.Cursor = value;
+            }
+        }
+
+        public bool IsDisposed => _mainBrowser?.IsDisposed ?? false;
+        public bool IsHandleCreated => _mainBrowser?.IsHandleCreated ?? false;
+        public bool InvokeRequired => _mainBrowser?.InvokeRequired ?? false;
+
+        public object Invoke(Delegate method)
+        {
+            if (_mainBrowser == null)
+                throw new InvalidOperationException("Main browser is not available.");
+
+            return _mainBrowser.Invoke(method);
+        }
+
+        public void Refresh()
+        {
+            _mainBrowser?.Refresh();
+        }
 
         public delegate EditingView Factory(); //autofac uses this
 
@@ -82,7 +122,8 @@ namespace Bloom.Edit
             _controlKeyEvent = controlKeyEvent;
             _webSocketServer = model.EditModelSocketServer;
             _pageListApi = pageListApi;
-            InitializeComponent();
+            _editButtonsUpdateTimer = new Timer();
+            _editButtonsUpdateTimer.Tick += _editButtonsUpdateTimer_Tick;
 
             //SetupThumbnailLists();
             _model.SetView(this);
@@ -125,7 +166,7 @@ namespace Bloom.Edit
                     if (_model.CurrentBook != null)
                     {
                         var url = _model.GetUrlForPageListFile();
-                        _browser1.RunJavascriptFireAndForget(
+                        _mainBrowser.RunJavascriptFireAndForget(
                             $"workspaceBundle.switchThumbnailPage('{url}');"
                         );
                     }
@@ -170,22 +211,13 @@ namespace Bloom.Edit
 
         public EditingModel Model => _model;
 
-        internal void AttachMainBrowser(Browser browser)
-        {
-            if (browser == null)
-                throw new ArgumentNullException(nameof(browser));
-
-            if (!Controls.Contains(browser))
-                Controls.Add(browser);
-        }
-
         internal void InitializeMainBrowserForEditMode()
         {
-            if (Program.RunningHarvesterMode || _browser1 == null)
+            if (Program.RunningHarvesterMode || _mainBrowser == null)
                 return;
 
-            _browser1.SetEditingCommands(_cutCommand, _copyCommand, _pasteCommand, _undoCommand);
-            _browser1.ControlKeyEvent = _controlKeyEvent;
+            _mainBrowser.SetEditingCommands(_cutCommand, _copyCommand, _pasteCommand, _undoCommand);
+            _mainBrowser.ControlKeyEvent = _controlKeyEvent;
         }
 
         private void HandleControlKeyEvent(object keyData)
@@ -214,10 +246,54 @@ namespace Bloom.Edit
             if (!_visible) //else you get a totally non-responsive Bloom, if you come back to a Bloom that isn't in the Edit tab
                 return;
 
-            Debug.WriteLine("EditTab.ParentForm_Activated(): Selecting Browser");
-            _browser1.SelectBrowser();
+            if (_mainBrowser == null)
+                return;
 
-            _editButtonsUpdateTimer.Enabled = Parent != null;
+            Debug.WriteLine("EditTab.ParentForm_Activated(): Selecting Browser");
+            _mainBrowser.SelectBrowser();
+
+            _editButtonsUpdateTimer.Enabled = WorkspaceView != null;
+        }
+
+        void ParentForm_Deactivate(object sender, EventArgs e)
+        {
+            _editButtonsUpdateTimer.Enabled = false;
+            // Save when we leave the main window, even just switching to the epub a11y check window.
+            // See https://silbloom.myjetbrains.com/youtrack/issue/BL-6228. This control can lose/regain
+            // focus erratically on Linux, so we don't want this save on its LostFocus event.
+            // But we do NOT want to Save right this instant. Deactivate happens a lot, especially while
+            // debugging. There's some evidence (BL-6303, BL-6296) that COM message pumping can
+            // cause the Deactivate event to be handled at apparently random moments, in the middle
+            // of doing something else. We might be trying to Save when the system isn't in a valid
+            // state, e.g., in the middle of refreshing everything because the user edited the title
+            // and the HTML file and containing folder changed name. Instead, arrange to Save when
+            // next idle.
+            // However, saving while not active runs into issues like BL-6299. Apparently running
+            // Javascript (which is also done elsewhere in SaveNow()) while the main window is
+            // inactive is quite disastrous in GeckoFx45, to the point of access violations that
+            // stop the program with a green screen. Pending decisions about possible UI changes or
+            // other ways of fixing this, we're just disabling it. One hope is that GeckoFx60,
+            // which is supposed to have a "headless" capability, may fix this.
+            //Application.Idle += SaveWhenIdle;
+        }
+
+        /// <summary> Currently called when the WorkspaceView loads. Must be called after the WorkspaceView
+        /// is set and installed in its form. </summary>
+        internal void HookupHostFormEvents()
+        {
+            var hostForm = _workspaceView?.FindForm();
+            if (hostForm == null || hostForm == _hostFormForEvents)
+                return;
+
+            if (_hostFormForEvents != null)
+            {
+                _hostFormForEvents.Activated -= ParentForm_Activated;
+                _hostFormForEvents.Deactivate -= ParentForm_Deactivate;
+            }
+
+            _hostFormForEvents = hostForm;
+            _hostFormForEvents.Activated += ParentForm_Activated;
+            _hostFormForEvents.Deactivate += ParentForm_Deactivate;
         }
 
         public void CheckFontAvailability()
@@ -336,7 +412,7 @@ namespace Bloom.Edit
                 Logger.WriteEvent(
                     $"changing page via workspaceBundle.switchContentPage('{urlFile}')"
                 );
-                _browser1.RunJavascriptFireAndForget(
+                _mainBrowser.RunJavascriptFireAndForget(
                     "workspaceBundle.switchContentPage('" + pageUrl + "');"
                 );
             }
@@ -348,27 +424,22 @@ namespace Bloom.Edit
                 var pageListUrl = _model.GetUrlForPageListFile();
                 var pageUrl = _model.GetUrlForCurrentPage();
 
-                _browser1.RunJavascriptFireAndForget(
+                _mainBrowser.RunJavascriptFireAndForget(
                     "(function(){ const toolbox = document.getElementById('toolbox'); if (toolbox && toolbox.contentWindow) { toolbox.contentWindow.location.reload(); } })();"
                 );
 
-                _browser1.RunJavascriptFireAndForget(
+                _mainBrowser.RunJavascriptFireAndForget(
                     "workspaceBundle.switchThumbnailPage('" + pageListUrl + "');"
                 );
-                _browser1.RunJavascriptFireAndForget(
+                _mainBrowser.RunJavascriptFireAndForget(
                     "workspaceBundle.switchContentPage('" + pageUrl + "');"
                 );
             }
             else
             {
-                // Set everything up and navigate the top browser to a new root document.
+                // Set everything up and reload the workspace root document.
                 _model.SetupServerWithCurrentBookToolboxContents();
-                var dom = _model.GetXmlDocumentForEditScreenWebPage();
-                _browser1.Navigate(
-                    dom,
-                    setAsCurrentPageForDebugging: true,
-                    source: InMemoryHtmlFileSource.Frame
-                );
+                WorkspaceView.ReloadWorkspaceRootDocument();
             }
             SetModalState(false); // ensure _pageListView is enabled (BL-9712).
 #if MEMORYCHECK
@@ -407,7 +478,7 @@ namespace Bloom.Edit
         private bool UseBackgroundGC()
         {
             // Note that ModifierKeys does not seem to work on Linux.
-            return ((ModifierKeys & Keys.Alt) == Keys.Alt)
+            return ((Control.ModifierKeys & Keys.Alt) == Keys.Alt)
                 || RobustFile.Exists("/tmp/UseBackgroundGC");
         }
 
@@ -423,12 +494,12 @@ namespace Bloom.Edit
 
         internal async Task<string> GetStringFromJavascriptAsync(string script)
         {
-            return await _browser1.GetStringFromJavascriptAsync(script);
+            return await _mainBrowser.GetStringFromJavascriptAsync(script);
         }
 
         internal async Task RunJavascriptAsync(string script)
         {
-            await _browser1.RunJavascriptAsync(script);
+            await _mainBrowser.RunJavascriptAsync(script);
             return;
         }
 
@@ -544,7 +615,7 @@ namespace Bloom.Edit
                 dlg.Width = 500;
                 dlg.Height = 700;
 
-                dlg.ShowDialog(this);
+                dlg.ShowDialog(_workspaceView);
             }
         }
 
@@ -1366,7 +1437,7 @@ namespace Bloom.Edit
             return eventBundle.message;
         }
 
-        public object GetContentLanguageUsageForClient()
+        public object GetContentLanguageUsage()
         {
             var contentLanguages = _model.ContentLanguages.ToList();
             var languages = contentLanguages
@@ -1389,10 +1460,7 @@ namespace Bloom.Edit
             return new { languages };
         }
 
-        public void HandleContentLanguageUsageChangeForClient(
-            string languageTag,
-            bool isUsedForContent
-        )
+        public void HandleContentLanguageUsageChange(string languageTag, bool isUsedForContent)
         {
             var contentLanguages = _model.ContentLanguages.ToList();
             var matchingLanguages = contentLanguages
@@ -1417,7 +1485,7 @@ namespace Bloom.Edit
             _model.ContentLanguagesSelectionChanged();
         }
 
-        public object GetLayoutChoiceDataForClient()
+        public object GetLayoutChoiceData()
         {
             var layout = _model.GetCurrentLayout();
             var layoutChoices = _model.GetSizeAndOrientationChoices().ToList();
@@ -1432,7 +1500,7 @@ namespace Bloom.Edit
             return new { choices, currentLayoutChoiceId = layout.SizeAndOrientation.ClassName };
         }
 
-        public void HandleLayoutChoiceChangeForClient(string layoutClassName)
+        public void HandleLayoutChoiceChange(string layoutClassName)
         {
             if (String.IsNullOrWhiteSpace(layoutClassName))
                 return;
@@ -1446,14 +1514,14 @@ namespace Bloom.Edit
             _model.SetLayout(choice);
         }
 
-        public object GetLayoutChoicesMenuForClient()
+        public object GetLayoutChoicesMenu()
         {
-            return GetLayoutChoiceDataForClient();
+            return GetLayoutChoiceData();
         }
 
-        public void HandleLayoutChoicesMenuActionForClient(string layoutClassName)
+        public void HandleLayoutChoicesMenuAction(string layoutClassName)
         {
-            HandleLayoutChoiceChangeForClient(layoutClassName);
+            HandleLayoutChoiceChange(layoutClassName);
         }
 
         public void SetActiveLanguages(bool L1, bool L2, bool L3)
@@ -1490,9 +1558,9 @@ namespace Bloom.Edit
             // changing pages makes the browser invisible while the change is happening, so
             // that's what we have to check to prevent spurious javascript errors.
             // Note that this method is called by a timer (probably about 110msec cycle).
-            if (_browser1 == null || !_browser1.Visible)
+            if (_mainBrowser == null || !_mainBrowser.Visible)
                 return;
-            _browser1.UpdateEditButtonsAsync();
+            _mainBrowser.UpdateEditButtonsAsync();
 
             // update javascript with the new information
             dynamic eventBundle = new DynamicJson();
@@ -1504,12 +1572,6 @@ namespace Bloom.Edit
                 undo = _undoCommand?.Enabled ?? false,
             };
             _webSocketServer.SendBundle("editTopBarControls", "updateEditButtons", eventBundle);
-        }
-
-        protected override void OnParentChanged(EventArgs e)
-        {
-            base.OnParentChanged(e);
-            _editButtonsUpdateTimer.Enabled = Parent != null;
         }
 
         private void _editButtonsUpdateTimer_Tick(object sender, EventArgs e)
@@ -1538,49 +1600,24 @@ namespace Bloom.Edit
         public void ClearOutDisplay()
         {
             _pageListView.Clear();
-            _browser1.Navigate("about:blank", false);
+            _mainBrowser.Navigate("about:blank", false);
         }
 
-        protected override void OnLoad(EventArgs e)
+        public void Dispose()
         {
-            base.OnLoad(e);
-
-            //Why the check for null? In bl-283, user had been in settings dialog, which caused a closing down, but something
-            //then did a callback to this view, such that ParentForm was null, and this died
-            //This assert was driving me crazy (which is a short trip). I'd hit it every time I quit Bloom, but this things are fine. Debug.Assert(ParentForm != null);
-            if (ParentForm != null)
+            if (_hostFormForEvents != null)
             {
-                ParentForm.Activated += new EventHandler(ParentForm_Activated);
-                ParentForm.Deactivate += (sender, e1) =>
-                {
-                    _editButtonsUpdateTimer.Enabled = false;
-                    // Save when we leave the main window, even just switching to the epub a11y check window.
-                    // See https://silbloom.myjetbrains.com/youtrack/issue/BL-6228. This control can lose/regain
-                    // focus erratically on Linux, so we don't want this save on its LostFocus event.
-                    // But we do NOT want to Save right this instant. Deactivate happens a lot, especially while
-                    // debugging. There's some evidence (BL-6303, BL-6296) that COM message pumping can
-                    // cause the Deactivate event to be handled at apparently random moments, in the middle
-                    // of doing something else. We might be trying to Save when the system isn't in a valid
-                    // state, e.g., in the middle of refreshing everything because the user edited the title
-                    // and the HTML file and containing folder changed name. Instead, arrange to Save when
-                    // next idle.
-                    // However, saving while not active runs into issues like BL-6299. Apparently running
-                    // Javascript (which is also done elsewhere in SaveNow()) while the main window is
-                    // inactive is quite disastrous in GeckoFx45, to the point of access violations that
-                    // stop the program with a green screen. Pending decisions about possible UI changes or
-                    // other ways of fixing this, we're just disabling it. One hope is that GeckoFx60,
-                    // which is supposed to have a "headless" capability, may fix this.
-                    //Application.Idle += SaveWhenIdle;
-                };
+                _hostFormForEvents.Activated -= ParentForm_Activated;
+                _hostFormForEvents.Deactivate -= ParentForm_Deactivate;
+                _hostFormForEvents = null;
             }
-            // This prevents the built-in ctrl-mousewheel zooming as well as ctrl-+ and ctrl--.
-            // They are a problem because the toolbox zooms too, which causes various problems including
-            // BL-13846 (can't drag new canvas elements onto the page).
-            // We enable these mouse actions for the main document iframe by handling the events
-            // in Javascript and calling our zoom functions through an API.
-            var settings = (Browser as WebView2Browser)?.InternalBrowser?.CoreWebView2?.Settings;
-            if (settings != null)
-                settings.IsZoomControlEnabled = false;
+
+            if (_editButtonsUpdateTimer != null)
+            {
+                _editButtonsUpdateTimer.Stop();
+                _editButtonsUpdateTimer.Dispose();
+                _editButtonsUpdateTimer = null;
+            }
         }
 
         public string HelpTopicUrl => "/Tasks/Edit_tasks/Edit_tasks_overview.htm";
@@ -1706,8 +1743,28 @@ namespace Bloom.Edit
             _zoomModel = zoomModel;
         }
 
+        public object GetEditFrameSources()
+        {
+            dynamic result = new DynamicJson();
+            result.toolboxSrc = "/bloom/toolboxContent";
+            result.toolboxIsShowing = true;
+
+            if (!_model.HaveCurrentEditableBook)
+            {
+                result.pageListSrc = "about:blank";
+                result.pageSrc = "about:blank";
+                return result;
+            }
+
+            _model.SetupServerWithCurrentBookToolboxContents();
+            result.pageListSrc = _model.GetUrlForPageListFile();
+            result.pageSrc = _model.GetUrlForCurrentPage();
+            result.toolboxIsShowing = _model.CurrentBook.BookInfo.ToolboxIsOpen;
+            return result;
+        }
+
         // intended for use only by the EditingModel
-        internal Browser Browser => _browser1;
+        internal Browser Browser => _mainBrowser;
 
         public void SaveAndOpenBookSettingsDialog()
         {

@@ -141,6 +141,19 @@ namespace Bloom.web.controllers
                 HandleGetDataBookValue,
                 true
             );
+            apiHandler.RegisterEndpointHandler(
+                "editView/frameSources",
+                HandleGetFrameSources,
+                true
+            );
+        }
+
+        private void HandleGetFrameSources(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Get)
+                throw new ArgumentException("editView/frameSources only supports GET");
+
+            request.ReplyWithJson(View.GetEditFrameSources());
         }
 
         private void HandleGetDataBookValue(ApiRequest request)
@@ -364,7 +377,7 @@ namespace Bloom.web.controllers
 
         private void HandleGetContentLanguageUsage(ApiRequest request)
         {
-            request.ReplyWithJson(View.GetContentLanguageUsageForClient());
+            request.ReplyWithJson(View.GetContentLanguageUsage());
         }
 
         private void HandleContentLanguageUsageChange(ApiRequest request)
@@ -374,13 +387,13 @@ namespace Bloom.web.controllers
             var isUsedForContent = Convert.ToBoolean(data.isUsedForContent);
 
             View.Browser.Focus();
-            View.HandleContentLanguageUsageChangeForClient(languageTag, isUsedForContent);
+            View.HandleContentLanguageUsageChange(languageTag, isUsedForContent);
             request.PostSucceeded();
         }
 
         private void HandleGetLayoutChoiceData(ApiRequest request)
         {
-            request.ReplyWithJson(View.GetLayoutChoicesMenuForClient());
+            request.ReplyWithJson(View.GetLayoutChoicesMenu());
         }
 
         private void HandleLayoutChoiceChange(ApiRequest request)
@@ -389,7 +402,7 @@ namespace Bloom.web.controllers
             var layoutClassName = (string)data.layoutChoiceId;
 
             View.Browser.Focus();
-            View.HandleLayoutChoicesMenuActionForClient(layoutClassName);
+            View.HandleLayoutChoicesMenuAction(layoutClassName);
             request.PostSucceeded();
         }
 

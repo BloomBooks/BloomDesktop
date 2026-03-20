@@ -19,6 +19,12 @@ namespace Bloom.Workspace
 		{
 			if (disposing)
 			{
+				_editingView?.Dispose();
+				_editingView = null;
+
+				_workspaceReactControl?.Dispose();
+				_workspaceReactControl = null;
+
 				_collectionTabView?.Dispose();
 				_collectionTabView = null;
 

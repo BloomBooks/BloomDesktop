@@ -1,4 +1,5 @@
 import * as React from "react";
+import { css } from "@emotion/react";
 import { BloomTooltip } from "../../BloomToolTip";
 import { ArrowDropDown, HelpOutline } from "@mui/icons-material";
 import QuestionAnswerOutlinedIcon from "@mui/icons-material/QuestionAnswerOutlined";
@@ -11,8 +12,8 @@ import { useL10n } from "../../l10nHooks";
 import Menu from "@mui/material/Menu";
 import Divider from "@mui/material/Divider";
 import { showAboutDialog } from "../../aboutDialog";
-import { useParentFrameMenuPortal } from "../useParentFrameMenuPortal";
 import { LocalizableMenuItem } from "../../localizableMenuItem";
+import { callOnBlur } from "../../../utils/menuCloseOnBlur";
 
 interface IMenuItem {
     id?: string;
@@ -76,17 +77,8 @@ export const HelpMenu: React.FunctionComponent = () => {
 
     const showIconOnly =
         helpText === "?" || ["en", "fr", "de", "es"].includes(uiLanguage);
-
-    const {
-        suppressTooltip,
-        closeMenu,
-        openMenuAtButton,
-        suppressTooltipUntilPointerReset,
-        clearTooltipSuppression,
-        releaseTooltipSuppressionIfMenuClosed,
-        getRootMenuProps,
-        renderMenuInParentFrame,
-    } = useParentFrameMenuPortal();
+    const [anchorEl, setAnchorEl] = React.useState<HTMLElement>();
+    const [suppressTooltip, setSuppressTooltip] = React.useState(false);
 
     const showRegistrationDialogFromWorkspaceRoot = React.useCallback(() => {
         (
@@ -254,20 +246,28 @@ export const HelpMenu: React.FunctionComponent = () => {
     );
 
     const onClose = React.useCallback(() => {
-        closeMenu();
-    }, [closeMenu]);
+        setAnchorEl(undefined);
+        setSuppressTooltip(false);
+    }, []);
 
     const onOpen = React.useCallback(() => {
-        suppressTooltipUntilPointerReset();
-        const anchor = openMenuAtButton("helpMenuButton", "help-menu-parent");
-        if (!anchor) {
-            clearTooltipSuppression();
+        const button = document.getElementById(
+            "helpMenuButton",
+        ) as HTMLElement | null;
+        if (!button) {
+            setSuppressTooltip(false);
+            return;
         }
-    }, [
-        clearTooltipSuppression,
-        openMenuAtButton,
-        suppressTooltipUntilPointerReset,
-    ]);
+        setSuppressTooltip(true);
+        setAnchorEl(button);
+        callOnBlur(onClose);
+    }, [onClose]);
+
+    const releaseTooltipSuppressionIfMenuClosed = React.useCallback(() => {
+        if (!anchorEl) {
+            setSuppressTooltip(false);
+        }
+    }, [anchorEl]);
 
     const handleMenuItemClick = React.useCallback(
         (item: IMenuItem) => {
@@ -281,7 +281,29 @@ export const HelpMenu: React.FunctionComponent = () => {
     );
 
     const menu = (
-        <Menu {...getRootMenuProps(onClose)}>
+        <Menu
+            open={Boolean(anchorEl)}
+            anchorEl={anchorEl}
+            onClose={onClose}
+            disablePortal={false}
+            keepMounted={false}
+            anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "left",
+            }}
+            transformOrigin={{
+                vertical: "top",
+                horizontal: "left",
+            }}
+            slotProps={{
+                paper: {
+                    css: css`
+                        min-width: 220px;
+                        max-width: 440px;
+                    `,
+                },
+            }}
+        >
             {menuItems.map((item, index) => {
                 if (item.separator) {
                     return <Divider key={`separator-${index}`} />;
@@ -319,7 +341,7 @@ export const HelpMenu: React.FunctionComponent = () => {
         return (
             <>
                 {button}
-                {renderMenuInParentFrame(menu)}
+                {menu}
             </>
         );
     }
@@ -335,7 +357,7 @@ export const HelpMenu: React.FunctionComponent = () => {
             >
                 {button}
             </BloomTooltip>
-            {renderMenuInParentFrame(menu)}
+            {menu}
         </>
     );
 };
