@@ -1052,6 +1052,28 @@ namespace Bloom.Book
             }
             _pagesCache = null;
 
+            // Ensure that custom xmatter layout pages are not used if the subscription tier doesn't allow them.
+            // EnsureUpToDateMemory() handles the additional DOM manipulations needed to restore the standard layout.
+            var customLayoutPages = OurHtmlDom
+                .SafeSelectNodes(
+                    "//div[contains(@class,'bloom-page') and contains(@class,'bloom-customLayout')]"
+                )
+                .Cast<SafeXmlElement>()
+                .ToList();
+            if (
+                customLayoutPages.Count > 0
+                && !FeatureStatus
+                    .GetFeatureStatus(
+                        CollectionSettings.Subscription,
+                        FeatureName.CustomXMatterPage
+                    )
+                    .Enabled
+            )
+            {
+                foreach (var page in customLayoutPages)
+                    page.RemoveClass("bloom-customLayout");
+            }
+
             EnsureUpToDateMemory(progress);
             UpdateSupportFiles();
 
