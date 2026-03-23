@@ -1764,6 +1764,8 @@ namespace Bloom.Book
         /// </summary>
         public void EnsureUpToDateMemory(IProgress progress)
         {
+            Storage.CaptureInitialStateForMigration();
+
             string oldMetaData = "";
             if (RobustFile.Exists(BookInfo.MetaDataPath))
             {
@@ -1852,6 +1854,7 @@ namespace Bloom.Book
             // but it takes almost no time when the book IS already up-to-date.
             // These methods work with the same book metadata to determine what migration has
             // already been done, so they must be called in exactly this order.
+            Storage.RestoreStuffBeforeMigration();
             Storage.MigrateMaintenanceLevels();
             Storage.MigrateToMediaLevel1ShrinkLargeImages();
             Storage.MigrateToLevel2RemoveTransparentComicalSvgs();
@@ -1866,6 +1869,7 @@ namespace Bloom.Book
             // Migration 11 does not exist.
             Storage.MigrateToLevel12PageNumberPosition();
             Storage.MigrateToLevel13SplitPaneMarginBoxes();
+            Storage.MigrateToLevel14CoverIsImageToCustomLayout(_bookData);
 
             Storage.DoBackMigrations();
 
@@ -2562,8 +2566,7 @@ namespace Bloom.Book
                 layout,
                 BookInfo.UseDeviceXMatter,
                 _bookData.MetadataLanguage1Tag,
-                oldIds,
-                CoverIsImage
+                oldIds
             );
             foreach (
                 var page in bookDOM
@@ -4125,15 +4128,6 @@ namespace Bloom.Book
             }
         }
 
-        public bool CoverIsImage =>
-            BookInfo.AppearanceSettings.CoverIsImage
-            && FeatureStatus
-                .GetFeatureStatus(
-                    CollectionSettings.Subscription,
-                    FeatureName.FullPageCoverImage,
-                    this
-                )
-                .Enabled;
         public bool FullBleed =>
             PageSizeSupportsFullBleed()
             && BookInfo.AppearanceSettings.FullBleed

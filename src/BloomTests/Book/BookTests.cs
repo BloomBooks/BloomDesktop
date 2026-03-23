@@ -2461,6 +2461,44 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void BringBookUpToDate_Level14Migration_SavesCustomOutsideFrontCoverToDataDiv()
+        {
+            _bookDom = new HtmlDom(
+                @"
+				<html>
+					<head>
+						<meta name='xmatter' content='Factory' />
+						<meta name='maintenanceLevel' content='13' />
+					</head>
+					<body>
+						<div id='bloomDataDiv'></div>
+                        <div class='bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover cover-is-image A5Portrait side-right'
+							data-page='required singleton'
+							data-export='front-matter-cover'
+							data-xmatter-page='frontCover'
+                            data-custom-layout-id='customOutsideFrontCover'
+							id='frontCover-id'>
+							<div class='marginBox'>
+								<div class='migrated-marker'>preserve me</div>
+							</div>
+						</div>
+					</body>
+				</html>"
+            );
+
+            var book = CreateBook();
+
+            book.BringBookUpToDate(new NullProgress());
+
+            AssertThatXmlIn
+                .Dom(book.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customOutsideFrontCover' and @lang='*']//div[contains(@class,'migrated-marker') and text()='preserve me']",
+                    1
+                );
+        }
+
+        [Test]
         public void BringBookUpToDate_RepairQuestionsPages_DoesNotMessUpGoodPages()
         {
             const string xpathQuestionsPrefix = "//div[contains(@class,'questions')]";
