@@ -370,7 +370,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
     return (
         <div
             css={css`
-                height: 100vh; // I don't understand why 100% doesn't do it (nor why 100vh over-does it)
+                height: 100%;
                 background-color: ${kPanelBackground};
                 color: white;
 
@@ -390,6 +390,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
 
                 .SplitPane {
                     position: relative !important; // we may find this messes things up... but the "absolute" positioning default is ridiculous.
+                    height: 100%;
 
                     .Pane.horizontal {
                         overflow-y: auto;
