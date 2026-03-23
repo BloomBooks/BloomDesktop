@@ -5,6 +5,7 @@ import { getBloomApiPrefix, post } from "../../../utils/bloomApi";
 import { kBloomYellow } from "../../../bloomMaterialUITheme";
 import { kBloomGray } from "../../../utils/colorUtils";
 import { TeamCollectionStatus } from "../../../teamCollection/TeamCollectionStatus";
+import { useL10n2 } from "../../l10nHooks";
 
 const bloomApiPrefix = getBloomApiPrefix(false);
 
@@ -42,6 +43,11 @@ const statusIcons: Partial<Record<TeamCollectionStatus, string>> = {
 export const TeamCollectionButton: React.FunctionComponent<{
     status: TeamCollectionStatus;
 }> = (props) => {
+    // The eventual "right" solution here is probably to change
+    // the map to use l10nIds rather than the English strings, but only
+    // "Team Collection" has been internationalized thus far.
+    const nominalLabel = useL10n2({ key: "TeamCollection.TeamCollection" });
+
     const handleTeamCollectionClick = React.useCallback(() => {
         post("teamCollection/showStatusDialog");
     }, []);
@@ -51,7 +57,8 @@ export const TeamCollectionButton: React.FunctionComponent<{
     }
 
     const statusColor = statusColors[props.status] || "white";
-    const statusLabel = statusLabels[props.status] || "Team Collection";
+    let statusLabel = statusLabels[props.status] || "Team Collection";
+    if (statusLabel === statusLabels["Nominal"]) statusLabel = nominalLabel;
     const iconPath = statusIcons[props.status] || kTeamCollectionIcon;
     return (
         <div
@@ -74,6 +81,7 @@ export const TeamCollectionButton: React.FunctionComponent<{
                 iconPath={iconPath}
                 labelL10nKey=""
                 labelEnglish={statusLabel}
+                temporarilyDisableI18nWarning={true}
                 onClick={handleTeamCollectionClick}
                 backgroundColor={kBloomGray}
                 textColor={statusColor}
