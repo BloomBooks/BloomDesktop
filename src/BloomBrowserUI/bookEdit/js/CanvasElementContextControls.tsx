@@ -1778,6 +1778,33 @@ function addImageMenuOptions(
                     theOneCanvasElementManager.updateCanvasElementForChangedImage(
                         bgImg,
                     );
+
+                    // We want to make it active. However, if it used to be a placeholder, it was
+                    // previously hidden. This interferes with making the measurements to move the
+                    // control frame (at least), so we make a few attempts to activate it.
+                    // Don't make a long timeout here, because it could override some other
+                    // selection that the user quickly makes.
+                    const activateConvertedBackground = () => {
+                        requestAnimationFrame(() => {
+                            theOneCanvasElementManager.setActiveElement(
+                                bgImageCe,
+                            );
+                        });
+                    };
+                    activateConvertedBackground();
+                    if (!haveRealBgImage) {
+                        const fallbackHandle = setTimeout(() => {
+                            activateConvertedBackground();
+                        }, 120);
+                        bgImg.addEventListener(
+                            "load",
+                            () => {
+                                clearTimeout(fallbackHandle);
+                                activateConvertedBackground();
+                            },
+                            { once: true },
+                        );
+                    }
                     setMenuOpen(false);
                 },
             });
