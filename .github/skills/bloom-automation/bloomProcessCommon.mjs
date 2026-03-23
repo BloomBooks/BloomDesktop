@@ -13,7 +13,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const standardBloomStartingHttpPort = 8089;
-const standardBloomPortIncrement = 2;
+const standardBloomReservedPortBlockLength = 3;
 const standardBloomPortCount = 10;
 // Automation launches reserve a predictable block so concurrent Blooms can avoid
 // each other's HTTP, websocket, and CDP endpoints.
@@ -74,7 +74,8 @@ export const getStandardBloomHttpPorts = () =>
     Array.from(
         { length: standardBloomPortCount },
         (_, index) =>
-            standardBloomStartingHttpPort + index * standardBloomPortIncrement,
+            standardBloomStartingHttpPort +
+            index * standardBloomReservedPortBlockLength,
     );
 
 export const getDefaultRepoRoot = () =>

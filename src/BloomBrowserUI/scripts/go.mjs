@@ -125,13 +125,34 @@ const createPrefixedWriter = (prefix, target, onText) => {
     let buffered = "";
 
     const flushLines = (text) => {
-        buffered += text.replace(/\r/g, "\n");
-        const lines = buffered.split("\n");
-        buffered = lines.pop() ?? "";
+        buffered += text;
+        let lineStart = 0;
 
-        for (const line of lines) {
-            target.write(`${prefix}${line}\n`);
+        for (let index = 0; index < buffered.length; index++) {
+            const current = buffered[index];
+            if (current === "\n") {
+                target.write(`${prefix}${buffered.slice(lineStart, index)}\n`);
+                lineStart = index + 1;
+                continue;
+            }
+
+            if (current !== "\r") {
+                continue;
+            }
+
+            if (index === buffered.length - 1) {
+                break;
+            }
+
+            target.write(`${prefix}${buffered.slice(lineStart, index)}\n`);
+            if (buffered[index + 1] === "\n") {
+                index++;
+            }
+
+            lineStart = index + 1;
         }
+
+        buffered = buffered.slice(lineStart);
     };
 
     return {
@@ -141,11 +162,15 @@ const createPrefixedWriter = (prefix, target, onText) => {
             flushLines(text);
         },
         flush: () => {
-            if (!buffered) {
+            const remainingLine = buffered.endsWith("\r")
+                ? buffered.slice(0, -1)
+                : buffered;
+            if (!remainingLine) {
+                buffered = "";
                 return;
             }
 
-            target.write(`${prefix}${buffered}\n`);
+            target.write(`${prefix}${remainingLine}\n`);
             buffered = "";
         },
     };
