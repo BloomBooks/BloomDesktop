@@ -11,7 +11,7 @@ export const TopBarControls: React.FunctionComponent<{
     return (
         <div
             css={css`
-                flex: 1;
+                flex: 1 0 auto;
                 display: flex;
                 justify-content: space-between;
                 padding-top: 2px;
