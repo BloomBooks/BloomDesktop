@@ -18,6 +18,15 @@ import { EditTabPane } from "./EditTabPane";
 import { ToastHost } from "../toast/ToastHost";
 
 export const App: React.FunctionComponent = () => {
+    // Give the browser an initial focus target that does not draw attention,
+    // while still allowing normal keyboard navigation to move into the top bar. (BL-16061)
+    const focusAppRootOnMount = React.useCallback(
+        (element: HTMLDivElement | null) => {
+            element?.focus({ preventScroll: true });
+        },
+        [],
+    );
+
     // Eventually the source of truth of what tab is active will be on the
     // typescript side. But for now, App.tsx is just a development-only tool
     // which moves us a little closer to a single top-level React component.
@@ -53,6 +62,8 @@ export const App: React.FunctionComponent = () => {
 
     return (
         <div
+            ref={focusAppRootOnMount}
+            tabIndex={-1}
             css={css`
                 display: flex;
                 flex-direction: column;
