@@ -2220,7 +2220,7 @@ These are similar but already have game-theme classes
                 new Newtonsoft.Json.Linq.JObject { ["coverIsImage"] = true }
             );
 
-            storage.MigrateToLevel14CoverIsImageToCustomLayout();
+            storage.MigrateToLevel14CoverIsImageToCustomLayout(null);
 
             var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
             Assert.That(maintLevel, Is.EqualTo("14"));
@@ -2252,7 +2252,7 @@ These are similar but already have game-theme classes
                 new Newtonsoft.Json.Linq.JObject { ["coverIsImage"] = true }
             );
 
-            storage.MigrateToLevel14CoverIsImageToCustomLayout();
+            storage.MigrateToLevel14CoverIsImageToCustomLayout(null);
 
             Assert.That(
                 storage
@@ -2265,6 +2265,37 @@ These are similar but already have game-theme classes
             var appearanceProperties = (System.Collections.Generic.IDictionary<string, object>)
                 storage.BookInfo.AppearanceSettings.TestOnlyPropertiesAccess;
             Assert.That(appearanceProperties.ContainsKey("coverIsImage"), Is.False);
+        }
+
+        [Test]
+        public void MigrateToLevel14CoverIsImageToCustomLayout_WhenSettingIsFalse_RemovesPropertyWithoutConvertingCover()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head>
+<meta name='maintenanceLevel' content='13'></meta>
+</head><body>
+<div class='bloom-page cover cover-is-image outsideFrontCover'></div>
+</body></html>"
+            );
+
+            storage.BookInfo.AppearanceSettings.UpdateFromDynamic(
+                new Newtonsoft.Json.Linq.JObject { ["coverIsImage"] = false }
+            );
+
+            storage.MigrateToLevel14CoverIsImageToCustomLayout(null);
+
+            Assert.That(
+                storage.Dom.SafeSelectNodes("//div[contains(@class,'cover-is-image')]").Count,
+                Is.EqualTo(1)
+            );
+            Assert.That(
+                storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-customLayout')]").Count,
+                Is.EqualTo(0)
+            );
+            var appearanceProperties = (System.Collections.Generic.IDictionary<string, object>)
+                storage.BookInfo.AppearanceSettings.TestOnlyPropertiesAccess;
+            Assert.That(appearanceProperties.ContainsKey("coverIsImage"), Is.False);
+            Assert.That(storage.Dom.GetMetaValue("maintenanceLevel", "0"), Is.EqualTo("14"));
         }
 
         [Test]

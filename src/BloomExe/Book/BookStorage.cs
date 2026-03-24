@@ -118,7 +118,7 @@ namespace Bloom.Book
         void MigrateToLevel10GameHeader();
         void MigrateToLevel12PageNumberPosition(); // Level 11 was skipped.
         void MigrateToLevel13SplitPaneMarginBoxes();
-        void MigrateToLevel14CoverIsImageToCustomLayout(BookData bookData = null);
+        void MigrateToLevel14CoverIsImageToCustomLayout(BookData bookData);
 
         void DoBackMigrations();
 
@@ -4573,14 +4573,17 @@ namespace Bloom.Book
             Dom.UpdateMetaElement("maintenanceLevel", "13");
         }
 
-        public void MigrateToLevel14CoverIsImageToCustomLayout(BookData bookData = null)
+        public void MigrateToLevel14CoverIsImageToCustomLayout(BookData bookData)
         {
             if (GetMaintenanceLevel() >= 14)
                 return;
 
-            var hadLegacyCoverSetting = BookInfo.AppearanceSettings.Properties.Remove(
-                "coverIsImage"
-            );
+            var hadLegacyCoverSetting =
+                BookInfo.AppearanceSettings.TryGetBooleanPropertyValue(
+                    "coverIsImage",
+                    out var legacyCoverSettingValue
+                ) && legacyCoverSettingValue;
+            BookInfo.AppearanceSettings.Properties.Remove("coverIsImage");
 
             if (hadLegacyCoverSetting)
             {
