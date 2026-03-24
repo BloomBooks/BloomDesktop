@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -23,14 +21,12 @@ using Bloom.web;
 using Bloom.web.controllers;
 using L10NSharp;
 using L10NSharp.Windows.Forms;
-using Messir.Windows.Forms;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Reporting;
 using SIL.Unicode;
 using SIL.Windows.Forms.ReleaseNotes;
-using SIL.Windows.Forms.SettingProtection;
 using SIL.WritingSystems;
 
 namespace Bloom.Workspace
@@ -43,44 +39,38 @@ namespace Bloom.Workspace
         private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
         private readonly LocalizationChangedEvent _localizationChangedEvent;
         private readonly CollectionSettings _collectionSettings;
-        private bool _viewInitialized;
-        private int _originalToolStripPanelWidth;
-        private int _originalToolSpecificPanelHorizPos;
-        private int _originalUiMenuWidth;
-        private int _stage1SpaceSaved;
-        private int _stage2SpaceSaved;
-        private string _originalHelpText;
-        private Image _originalHelpImage;
-        private string _originalUiLanguageSelection;
         private EditingView _editingView;
+        private Browser _mainBrowser;
+        private ReactControl _workspaceReactControl;
         private PublishView _publishView;
         private CollectionTabView _collectionTabView;
-        private Control _previouslySelectedControl;
+        private IBloomTabArea _previouslySelectedTabArea;
         public event EventHandler ReopenCurrentProject;
         public static float DPIOfThisAccount;
-        private ZoomControl _zoomControl;
+        private ZoomModel _zoomModel;
+        private bool _tabsEnabled = true;
 
         public delegate WorkspaceView Factory();
 
         private TeamCollectionManager _tcManager;
         private BookSelection _bookSelection;
-        private ToastNotifier _returnToCollectionTabNotifier;
         private BloomWebSocketServer _webSocketServer;
         private BookServer _bookServer;
         private WorkspaceTabSelection _tabSelection;
         private CollectionApi _collectionApi;
         private AudioRecording _audioRecording;
         private CollectionSettingsApi _collectionSettingsApi;
-
         private NewCollectionWizardApi _newCollectionWizardApi;
+
+        internal Browser MainBrowser => _mainBrowser;
 
         //autofac uses this
 
         public WorkspaceView(
             WorkspaceModel model,
-            CollectionTabView.Factory reactCollectionsTabsViewFactory,
+            CollectionTabView.Factory collectionsTabViewFactory,
             EditingView.Factory editingViewFactory,
-            PublishView.Factory pdfViewFactory,
+            PublishView.Factory publishViewFactory,
             CollectionSettingsDialog.Factory settingsDialogFactory,
             EditBookCommand editBookCommand,
             SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
@@ -114,7 +104,6 @@ namespace Bloom.Workspace
             _bookServer = bookServer;
             _tabSelection = tabSelection;
             _audioRecording = audioRecording;
-            collectionApi.WorkspaceView = this; // avoids an Autofac exception that appears if collectionApi constructor takes a WorkspaceView
             _collectionApi = collectionApi;
             appApi.WorkspaceView = this; // it needs to know, and there's some circularity involved in having factory pass it in
             workspaceApi.WorkspaceView = this; // and yet one more
@@ -150,27 +139,7 @@ namespace Bloom.Workspace
             float scaleFactor = 1.1f; // determined experimentally
             this.Scale(new SizeF(scaleFactor, scaleFactor));
 
-            _checkForNewVersionMenuItem.Visible = Platform.IsWindows;
-
-            _toolStrip.Renderer = new NoBorderToolStripRenderer();
-
-            //we have a number of buttons which don't make sense for the remote (therefore vulnerable) low-end user
-            //_settingsLauncherHelper.CustomSettingsControl = _toolStrip;
-            //NB: these aren't really settings, but we're using that feature to simplify this menu down to what makes sense for the easily-confused user
-            _settingsLauncherHelper.ManageComponent(_requestAFeatureMenuItem);
-            _settingsLauncherHelper.ManageComponent(_webSiteMenuItem);
-            _settingsLauncherHelper.ManageComponent(_releaseNotesMenuItem);
-            _settingsLauncherHelper.ManageComponent(_divider2);
-
-            OnSettingsProtectionChanged(this, null); //initial setup
-            SettingsProtectionSettings.Default.PropertyChanged += new PropertyChangedEventHandler(
-                OnSettingsProtectionChanged
-            );
-
-            _uiLanguageMenu.Visible = true;
-            _settingsLauncherHelper.ManageComponent(_uiLanguageMenu);
-
-            editBookCommand.Subscribe(OnEditBook);
+            editBookCommand.Subscribe(HandleEditBookCommand);
 
             Application.Idle += new EventHandler(Application_Idle);
             Text = _model.ProjectName;
@@ -181,54 +150,53 @@ namespace Bloom.Workspace
             // and that is done by the EditingView constructor.
             //
             this._editingView = editingViewFactory();
-            this._editingView.Dock = DockStyle.Fill;
-            this._editingView.Model.EnableSwitchingTabs = (enabled) => _tabStrip.Enabled = enabled;
+            this._editingView.WorkspaceView = this;
+            this._editingView.Model.EnableSwitchingTabs = (enabled) =>
+            {
+                _tabsEnabled = enabled;
+                SendTopBarState();
+            };
 
-            _collectionTabView = reactCollectionsTabsViewFactory();
-            _collectionTabView.ManageSettings(_settingsLauncherHelper);
-            _collectionTabView.Dock = DockStyle.Fill;
-            _collectionTabView.BackColor = System.Drawing.Color.FromArgb(
-                ((int)(((byte)(87)))),
-                ((int)(((byte)(87)))),
-                ((int)(((byte)(87))))
-            );
-            _reactCollectionTab.Tag = _collectionTabView;
-            _tabStrip.SelectedTab = _reactCollectionTab;
+            if (!Program.RunningHarvesterMode)
+            {
+                var workspaceAdditionalHtml = GetWorkspaceAdditionalHtml();
+                _workspaceReactControl = new ReactControl
+                {
+                    JavascriptBundleName = "appBundle",
+                    BackColor = Palette.GeneralBackground,
+                    Dock = DockStyle.Fill,
+                    AdditionalHtml = workspaceAdditionalHtml,
+                };
+
+                RegisterWorkspaceRootForDebugging(workspaceAdditionalHtml);
+
+                _workspaceReactControl.BrowserCreated += (unused, args) =>
+                {
+                    _mainBrowser = _workspaceReactControl.Browser;
+                    _mainBrowser?.SetBuiltInBrowserZoomEnabled(false);
+                    _editingView.InitializeMainBrowserForEditMode();
+                    MaybeOpenMainBrowserDevTools();
+                };
+                if (!_containerPanel.Controls.Contains(_workspaceReactControl))
+                {
+                    _containerPanel.Controls.Add(_workspaceReactControl);
+                }
+            }
+
+            _collectionTabView = collectionsTabViewFactory();
+            _collectionTabView.WorkspaceView = this;
+            _tabSelection.ActiveTab = WorkspaceTab.collection;
 
             //
             // _pdfView
             //
-            this._publishView = pdfViewFactory();
-            this._publishView.Dock = DockStyle.Fill;
+            this._publishView = publishViewFactory();
+            this._publishView.WorkspaceView = this;
 
-            _publishTab.Tag = _publishView;
-            _editTab.Tag = _editingView;
+            ApplyTabAreaSelection(_collectionTabView);
 
-            SetTabVisibility(_publishTab, false);
-            SetTabVisibility(_editTab, false);
-
-            this._reactCollectionTab.Text = _collectionTabView.CollectionTabLabel;
-            _tabStrip.SelectedTab = _reactCollectionTab;
-            SelectPage(_collectionTabView);
-
-            if (Platform.IsMono)
-            {
-                // Without this adjustment, we lose some controls on smaller resolutions.
-                AdjustToolPanelLocation(true);
-                // in mono auto-size causes the height of the tab strip to be too short
-                _tabStrip.AutoSize = false;
-            }
-
-            _toolStrip.SizeChanged += ToolStripOnSizeChanged;
-
-            _uiLanguageMenu.DropDownOpening += (sender, args) =>
-            {
-                SetupUiLanguageMenu();
-            };
-            SetupUiLanguageMenu(true);
-            SetupZoomControl();
-            AdjustButtonTextsForLocale();
-            _viewInitialized = false;
+            SetupZoomModel();
+            SendZoomInfo();
             CommonApi.WorkspaceView = this;
 
             // We put this on the high priority list because the notification it sends
@@ -247,13 +215,17 @@ namespace Bloom.Workspace
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
+
+            // Convenient place to call this, after the workspace is installed in its parent form.
+            _editingView?.HookupHostFormEvents();
+
             // If we're loading a team collection, we need to do that...with its progress dialog...
             // before anything else, and we'll need to close the splash screen to make room for
             // that dialog.
             // Note, this not put into _startupActions...it should never be disabled.
             if (_tcManager?.CurrentCollectionEvenIfDisconnected == null)
             {
-                ReadyToShowCollections();
+                _collectionTabView.ReadyToShowCollections();
             }
             else
             {
@@ -262,7 +234,9 @@ namespace Bloom.Workspace
                     {
                         // Don't do anything else after this as part of this idle task.
                         // See the comment near the end of HandleTeamStuffBeforeGetBookCollections.
-                        _model.HandleTeamStuffBeforeGetBookCollections(ReadyToShowCollections);
+                        _model.HandleTeamStuffBeforeGetBookCollections(
+                            _collectionTabView.ReadyToShowCollections
+                        );
                     },
                     shouldHideSplashScreen: true
                 );
@@ -286,9 +260,107 @@ namespace Bloom.Workspace
             ); // possibility of error message boxes (BL-12155)
         }
 
-        private void ReadyToShowCollections()
+        internal void ReloadWorkspaceRootDocument()
         {
-            _collectionTabView.ReadyToShowCollections();
+            _workspaceReactControl?.Reload();
+        }
+
+        private static ReactControlAdditionalHtml GetWorkspaceAdditionalHtml()
+        {
+            const string workspaceCssLinks =
+                @"<link rel='stylesheet' href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css' type='text/css'>
+                <link rel='stylesheet' href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css' type='text/css'>
+                <link rel='stylesheet' href='/bloom/bookEdit/toolbox/toolbox.css' type='text/css'>
+                <link rel='stylesheet' href='/bloom/bookEdit/html/font-awesome/css/font-awesome.min.css' type='text/css'>
+                <link rel='stylesheet' href='/bloom/bookEdit/css/bloomDialog.css' type='text/css'>
+                <link rel='stylesheet' href='/bloom/lib/pure-drawer.css' type='text/css'>
+                <link rel='stylesheet' href='/bloom/lib/long-press/longpress.css' type='text/css'>";
+
+            const string workspaceProdOnlyScriptTags =
+                @"<script src='/bloom/jquery.min.js'></script>";
+
+            const string workspaceInitializationFailureScript =
+                @"<script>
+window.showWorkspaceInitializationFailure = function(message) {
+    const docEl = document.documentElement;
+    while (docEl.firstChild) {
+        docEl.removeChild(docEl.firstChild);
+    }
+
+    const head = document.createElement('head');
+    const meta = document.createElement('meta');
+    meta.setAttribute('charset', 'utf-8');
+    head.appendChild(meta);
+
+    const body = document.createElement('body');
+    body.textContent = message || 'loading failed';
+
+    docEl.appendChild(head);
+    docEl.appendChild(body);
+};
+</script>";
+
+            return new ReactControlAdditionalHtml
+            {
+                HeadHtml =
+                    workspaceCssLinks
+                    + "\n"
+                    + workspaceProdOnlyScriptTags
+                    + "\n"
+                    + workspaceInitializationFailureScript,
+                BodyEndHtml = "",
+                ViteDevHeadHtml =
+                    workspaceCssLinks + "\n" + workspaceInitializationFailureScript + "\n",
+                ViteDevBodyEndHtml = "",
+            };
+        }
+
+        private static void RegisterWorkspaceRootForDebugging(
+            ReactControlAdditionalHtml workspaceAdditionalHtml
+        )
+        {
+            var html = ReactControl.GetHtmlForReactBundle(
+                "appBundle",
+                null,
+                Palette.GeneralBackground,
+                hideVerticalOverflow: false,
+                additionalHtml: workspaceAdditionalHtml
+            );
+            var workspaceRootUrl = BloomServer.PutFixedSimulatedHtmlForId(
+                "workspaceRoot",
+                html,
+                InMemoryHtmlFileSource.Frame
+            );
+            BloomServer.SetWorkspaceRootUrlForDebugging(workspaceRootUrl);
+        }
+
+        private void MaybeOpenMainBrowserDevTools()
+        {
+            // This code is useful if you get in a really weird state where you can't get dev tools open,
+            // or to save time if you are starting up frequently and always want them. It causes dev tools
+            // to open on the main workspace browser as soon as Bloom starts.
+            // const int maxAttempts = 100;
+            // var attempts = 0;
+            // var timer = new Timer { Interval = 100 };
+            // timer.Tick += (unused, args) =>
+            // {
+            //     attempts++;
+            //     var coreWebView = (_mainBrowser as WebView2Browser)?.InternalBrowser?.CoreWebView2;
+            //     if (coreWebView != null)
+            //     {
+            //         timer.Stop();
+            //         timer.Dispose();
+            //         coreWebView.OpenDevToolsWindow();
+            //         return;
+            //     }
+
+            //     if (attempts >= maxAttempts)
+            //     {
+            //         timer.Stop();
+            //         timer.Dispose();
+            //     }
+            // };
+            // timer.Start();
         }
 
         /// <summary>
@@ -475,10 +547,8 @@ namespace Bloom.Workspace
             );
             if (bookName != Path.GetFileName(_bookSelection.CurrentSelection?.FolderPath))
                 return; // change is not to the book we're interested in.
-            if (_tabStrip.SelectedTab == _reactCollectionTab)
+            if (_tabSelection.ActiveTab == WorkspaceTab.collection)
                 return; // this toast is all about returning to the collection tab
-            if (_returnToCollectionTabNotifier != null)
-                return; // notification already up
             if (_tcManager.CurrentCollection == null)
                 return;
             if (_tcManager.CurrentCollection.HasClobberProblem(bookName))
@@ -488,120 +558,248 @@ namespace Bloom.Workspace
                     this,
                     false,
                     true,
-                    () =>
-                    {
-                        var msg = LocalizationManager.GetString(
-                            "TeamCollection.ClobberProblem",
-                            "The Team Collection has a newer version of this book. Return to the Collection Tab for more information."
-                        );
-                        _returnToCollectionTabNotifier = new ToastNotifier();
-                        _returnToCollectionTabNotifier.Image.Image = Resources.Error32x32;
-                        _returnToCollectionTabNotifier.ToastClicked += (sender, _) =>
-                        {
-                            _returnToCollectionTabNotifier.CloseSafely();
-                            _tabStrip.SelectedTab = _reactCollectionTab;
-                        };
-                        _returnToCollectionTabNotifier.Show(msg, "", -1);
-                    }
+                    ShowTeamCollectionClobberToast
                 );
             }
         }
 
-        private void SetupZoomControl()
+        internal void ShowTeamCollectionClobberToast()
         {
-            _zoomControl = new ZoomControl();
-            _zoomWrapper = new ToolStripControlHost(_zoomControl);
-            // We're using a ToolStrip to display these three controls in the top right, and it does a nice job
-            // of stretching the width to match localization. But height and spacing we must control exactly,
-            // or it goes into an overflow mode that is very ugly.
-            _zoomWrapper.Margin = Padding.Empty;
+            ToastService.ShowToast(
+                ToastSeverity.Error,
+                text: "The Team Collection has a newer version of this book. Return to the Collection Tab for more information.",
+                action: new ToastAction { Callback = () => ChangeTab(WorkspaceTab.collection) },
+                toastId: "team-collection-clobber"
+            );
+        }
+
+        private void SetupZoomModel()
+        {
+            _zoomModel = new ZoomModel();
+            _zoomModel.ZoomChanged += OnZoomChanged;
             // Provide access for javascript to adjust this control via the EditingView and EditingModel.
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-5584.
-            _editingView.SetZoomControl(_zoomControl);
+            _editingView.SetZoomModel(_zoomModel);
         }
 
-        private int TabButtonSectionWidth
+        public void SetZoom(int zoom)
         {
-            get { return _tabStrip.Items.Cast<TabStripButton>().Sum(tab => tab.Width) + 10; }
+            if (_zoomModel == null)
+                return;
+
+            _zoomModel.Zoom = zoom;
         }
 
-        /// <summary>
-        /// Adjusts the tool panel location to allow more (or optionally less) space
-        /// for the tab buttons.
-        /// </summary>
-        void AdjustToolPanelLocation(bool allowNarrowing)
+        private void OnZoomChanged(object sender, EventArgs e)
         {
-            var widthOfTabButtons = TabButtonSectionWidth;
-            var location = _toolSpecificPanel.Location;
-            if (widthOfTabButtons > location.X || allowNarrowing)
+            if (CurrentTabView is IZoomManager zoomManager)
+                zoomManager.SetZoom(_zoomModel.Zoom);
+            SendZoomInfo();
+        }
+
+        public dynamic GetTabInfo()
+        {
+            dynamic tabInfo = new DynamicJson();
+
+            var activeTabId = TabToId(_tabSelection.ActiveTab);
+
+            tabInfo.tabStates = new DynamicJson();
+            tabInfo.tabStates.collection = GetTabStateForUi("collection", activeTabId);
+            tabInfo.tabStates.edit = GetTabStateForUi("edit", activeTabId);
+            tabInfo.tabStates.publish = GetTabStateForUi("publish", activeTabId);
+            return tabInfo;
+        }
+
+        private string GetTabStateForUi(string tabId, string activeTabId)
+        {
+            // Even if !_tabsEnabled, we want the current tab to look active.
+            // Clicking on the active tab doesn't do anything anyway.
+            if (tabId == activeTabId)
+                return "active";
+
+            if (tabId == "edit" && !_model.ShowEditTab)
+                return "hidden";
+
+            if (tabId == "publish" && !_model.ShowPublishTab)
+                return "hidden";
+
+            var disabled = !_tabsEnabled || (tabId == "edit" && _model.EditTabLocked);
+
+            return disabled ? "disabled" : "enabled";
+        }
+
+        private static string TabToId(WorkspaceTab tab)
+        {
+            switch (tab)
             {
-                location.X = widthOfTabButtons;
-                _toolSpecificPanel.Location = location;
+                case WorkspaceTab.collection:
+                    return "collection";
+                case WorkspaceTab.edit:
+                    return "edit";
+                case WorkspaceTab.publish:
+                    return "publish";
+                default:
+                    return "collection";
             }
         }
 
-        /// <summary>
-        /// Adjust the tool panel location when the chosen localization changes.
-        /// See https://jira.sil.org/browse/BL-1212 for what can happen if we
-        /// don't adjust.  At the moment, we only widen, we never narrow the
-        /// overall area allotted to the tab buttons.  Button widths adjust
-        /// themselves automatically to their Text width.  There doesn't seem
-        /// to be a built-in mechanism to limit the width to a given maximum
-        /// so we implement such an operation ourselves.
-        /// </summary>
-        void HandleTabTextChanged(object sender, EventArgs e)
+        private void SendTopBarState()
         {
-            var btn = sender as TabStripButton;
-            if (btn != null)
+            _webSocketServer?.SendBundle("workspace", "tabs", GetTabInfo());
+        }
+
+        public dynamic GetZoomInfo()
+        {
+            var zoomManager = CurrentTabView as IZoomManager;
+            var zoomEnabled = zoomManager != null;
+            var zoomValue = zoomEnabled ? zoomManager.Zoom : (_zoomModel?.Zoom ?? 100);
+            dynamic zoomInfo = new DynamicJson();
+            zoomInfo.zoom = zoomValue;
+            zoomInfo.zoomEnabled = zoomEnabled;
+            zoomInfo.minZoom = ZoomModel.kMinimumZoom;
+            zoomInfo.maxZoom = ZoomModel.kMaximumZoom;
+            return zoomInfo;
+        }
+
+        public string GetCurrentUiLanguageLabel()
+        {
+            var lang = Settings.Default.UserInterfaceLanguage;
+            if (String.IsNullOrEmpty(lang))
+                lang = "en";
+            var item = CreateLanguageItem(lang);
+            return GetShortenedLanguageName(item.MenuText);
+        }
+
+        private static List<LanguageItem> GetLanguageItems(bool onlyActiveItem)
+        {
+            var items = new List<LanguageItem>();
+            if (onlyActiveItem)
             {
-                const string kEllipsis = "\u2026";
-                // Preserve the original string as the tooltip.
-                if (!btn.Text.EndsWith(kEllipsis))
-                    btn.ToolTipText = btn.Text;
-                // Ensure the button width is no more than 110 pixels.
-                if (btn.Width > 110)
+                if (String.IsNullOrEmpty(Settings.Default.UserInterfaceLanguage))
+                    Settings.Default.UserInterfaceLanguage = "en"; // See BL-13545.
+                items.Add(CreateLanguageItem(Settings.Default.UserInterfaceLanguage));
+            }
+            else
+            {
+                foreach (var lang in LocalizationManager.GetAvailableLocalizedLanguages())
                 {
-                    using (Graphics g = btn.Owner.CreateGraphics())
-                    {
-                        btn.Text = ShortenStringToFit(btn.Text, 110, btn.Width, btn.Font, g);
-                    }
+                    var approved = FractionApproved(lang);
+                    if (Settings.Default.ShowUnapprovedLocalizations)
+                        approved = FractionTranslated(lang);
+                    var alpha = ApplicationUpdateSupport.IsDevOrAlpha;
+                    if ((alpha && approved < 0.01F) || (!alpha && approved < 0.25F))
+                        continue;
+                    items.Add(CreateLanguageItem(lang));
                 }
             }
-            AdjustToolPanelLocation(false);
+
+            items.Sort(compareLangItems);
+            return items;
         }
 
-        /// <summary>
-        /// Ensure that the TabStripItem or Control or Whatever is no wider than desired by
-        /// truncating the Text as needed, with an ellipsis appended to show truncation has
-        /// occurred.
-        /// </summary>
-        /// <returns>the possibly shortened string</returns>
-        /// <param name="text">the string to shorten if necessary</param>
-        /// <param name="maxWidth">the maximum item width allowed</param>
-        /// <param name="originalWidth">the original item width (with the original string)</param>
-        /// <param name="font">the font to use</param>
-        /// <param name="g">the relevant Graphics object for drawing/measuring</param>
-        /// <remarks>Would this be a good library method somewhere?  Where?</remarks>
-        public static string ShortenStringToFit(
-            string text,
-            int maxWidth,
-            int originalWidth,
-            Font font,
-            Graphics g
-        )
+        public object GetAvailableUiLanguageNames()
         {
-            const string kEllipsis = "\u2026";
-            var txtWidth = TextRenderer.MeasureText(g, text, font).Width;
-            var padding = originalWidth - txtWidth;
-            while (txtWidth + padding > maxWidth)
+            var languageItems = GetLanguageItems(onlyActiveItem: false);
+            return languageItems.Select(item => item.MenuText).ToList();
+        }
+
+        public void HandleUiLanguageAction(string action, string languageName = null)
+        {
+            if (String.IsNullOrEmpty(action))
+                return;
+
+            if (action == "setLanguage")
             {
-                var len = text.Length - 2;
-                if (len <= 0)
-                    break; // I can't conceive this happening, but I'm also paranoid.
-                text = text.Substring(0, len) + kEllipsis; // trim, add ellipsis
-                txtWidth = TextRenderer.MeasureText(g, text, font).Width;
+                if (String.IsNullOrEmpty(languageName))
+                    return;
+                var langTag = GetLanguageItems(onlyActiveItem: false)
+                    .FirstOrDefault(item => item.MenuText == languageName)
+                    ?.LangTag;
+                if (String.IsNullOrEmpty(langTag))
+                    return;
+                SetUiLanguage(langTag);
+                return;
             }
-            return text;
+
+            if (action == "toggleShowUnapprovedTranslations")
+            {
+                ToggleShowingOnlyApprovedTranslations();
+                return;
+            }
+
+            if (action == "helpTranslate")
+            {
+                ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.LocalizingSystem, null));
+            }
+        }
+
+        public bool GetShowUnapprovedTranslations()
+        {
+            return Settings.Default.ShowUnapprovedLocalizations;
+        }
+
+        public void SetShowUnapprovedTranslations(bool showUnapproved)
+        {
+            if (Settings.Default.ShowUnapprovedLocalizations == showUnapproved)
+                return;
+
+            ToggleShowingOnlyApprovedTranslations();
+        }
+
+        public void HandleHelpAction(string method, string argument = null)
+        {
+            if (String.IsNullOrEmpty(method))
+                return;
+
+            var resolvedArgument = ResolveHelpActionArgument(argument);
+
+            switch (method)
+            {
+                case "showHelp":
+                    HelpLauncher.Show(this, CurrentTabView.HelpTopicUrl);
+                    break;
+                case "safeStart":
+                    if (String.IsNullOrEmpty(resolvedArgument))
+                        return;
+                    SIL.Program.Process.SafeStart(resolvedArgument);
+                    break;
+                case "safeStartInFront":
+                    if (String.IsNullOrEmpty(resolvedArgument))
+                        return;
+                    ProcessExtra.SafeStartInFront(resolvedArgument);
+                    break;
+                case "showTrainingVideos":
+                    ShowTrainingVideos();
+                    break;
+            }
+        }
+
+        private static string ResolveHelpActionArgument(string argument)
+        {
+            if (String.IsNullOrEmpty(argument))
+                return argument;
+
+            const string urlTypePrefix = "urlType:";
+            if (argument.StartsWith(urlTypePrefix, StringComparison.Ordinal))
+            {
+                var urlTypeString = argument.Substring(urlTypePrefix.Length);
+                if (Enum.TryParse(urlTypeString, true, out UrlType urlType))
+                    return UrlLookup.LookupUrl(urlType, null);
+            }
+
+            const string infoPagePrefix = "infoPage:";
+            if (argument.StartsWith(infoPagePrefix, StringComparison.Ordinal))
+            {
+                var fileName = argument.Substring(infoPagePrefix.Length);
+                return BloomFileLocator.GetBrowserFile(false, "infoPages", fileName);
+            }
+
+            return argument;
+        }
+
+        private void SendZoomInfo()
+        {
+            _webSocketServer?.SendBundle("workspaceTopRightControls", "zoom", GetZoomInfo());
         }
 
         private void _applicationUpdateCheckTimer_Tick(object sender, EventArgs e)
@@ -621,43 +819,65 @@ namespace Bloom.Workspace
             }
         }
 
-        void OnSettingsProtectionChanged(object sender, PropertyChangedEventArgs e)
+        private static string GetUiLanguageTooltipFormat()
         {
-            //when we need to use Ctrl+Shift to display stuff, we don't want it also firing up the localization dialog (which shouldn't be done by a user under settings protection anyhow)
-
-            // Commented out due to BL-5111
-            //LocalizationManager.EnableClickingOnControlToBringUpLocalizationDialog = !SettingsProtectionSettings.Default.NormallyHidden;
+            return LocalizationManager.GetString(
+                "CollectionTab.UILanguageMenu.ItemTooltip",
+                "{0}% translated",
+                "Shown when hovering over an item in the UI Language menu.  The {0} marker is filled in by a number between 1 and 100."
+            );
         }
 
-        ToolStripMenuItem _showAllTranslationsItem;
-
-        private void SetupUiLanguageMenu(bool onlyActiveItem = false)
+        private static string GetAndNormalizeCurrentUiLanguage()
         {
-            SetupUiLanguageMenuCommon(
-                _uiLanguageMenu,
-                FinishUiLanguageMenuItemClick,
-                onlyActiveItem
+            var current = Settings.Default.UserInterfaceLanguage;
+            if (String.IsNullOrEmpty(current))
+                current = "en";
+            Settings.Default.UserInterfaceLanguage = current;
+            return current;
+        }
+
+        private static void AddUiLanguageMenuItems(
+            ToolStripItemCollection target,
+            IEnumerable<LanguageItem> items,
+            string current,
+            string tooltipFormat,
+            bool checkCurrentItem,
+            Action<LanguageItem> onSelect,
+            Action<LanguageItem> onCurrentItemAdded
+        )
+        {
+            foreach (var langItem in items)
+            {
+                var translationFraction = Settings.Default.ShowUnapprovedLocalizations
+                    ? langItem.FractionTranslated
+                    : langItem.FractionApproved;
+                var toolTip = String.Format(tooltipFormat, (int)(translationFraction * 100.0F));
+                var item = new ToolStripMenuItem(langItem.MenuText)
+                {
+                    Checked = checkCurrentItem && langItem.LangTag == current,
+                    Tag = langItem,
+                    ToolTipText = toolTip,
+                };
+                item.Click += (sender, args) => onSelect(langItem);
+                target.Add(item);
+                if (langItem.LangTag == current)
+                    onCurrentItemAdded?.Invoke(langItem);
+            }
+        }
+
+        private static void AddHelpTranslateMenuItem(ToolStripItemCollection target)
+        {
+            target.Add(new ToolStripSeparator());
+            var message = LocalizationManager.GetString(
+                "CollectionTab.UILanguageMenu.HelpTranslate",
+                "Help us translate Bloom (web)",
+                "The final item in the UI Language menu. When clicked, it opens Bloom's page in the Crowdin web-based translation system."
             );
-
-            // REVIEW: should this be part of SetupUiLanguageMenuCommon()?  should it be added only for alpha and beta?
-            _uiLanguageMenu.DropDownItems.Add("-");
-            _showAllTranslationsItem = new ToolStripMenuItem();
-            _showAllTranslationsItem.Text = GetShowUnapprovedTranslationsMenuText();
-            _showAllTranslationsItem.Checked = Settings.Default.ShowUnapprovedLocalizations;
-            _showAllTranslationsItem.Click += (sender, args) =>
-                ToggleShowingOnlyApprovedTranslations();
-            _uiLanguageMenu.DropDownItems.Add(_showAllTranslationsItem);
-
-            _uiLanguageMenu.DropDown.Closing += DropDown_Closing;
-            _helpMenu.DropDown.Closing += DropDown_Closing;
-            _uiLanguageMenu.DropDown.Opening += DropDown_Opening;
-            _helpMenu.DropDown.Opening += DropDown_Opening;
-            // one side-effect of the above is if the _uiLanguageMenu dropdown is open, a click on the _helpMenu won't close it
-            // (and vice versa)
-            _helpMenu.Click += (sender, args) =>
-                _uiLanguageMenu.DropDown.Close(ToolStripDropDownCloseReason.ItemClicked);
-            _uiLanguageMenu.Click += (sender, e) =>
-                _helpMenu.DropDown.Close(ToolStripDropDownCloseReason.ItemClicked);
+            var helpItem = target.Add(message);
+            helpItem.Image = Resources.weblink;
+            helpItem.Click += (sender, args) =>
+                ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.LocalizingSystem, null));
         }
 
         private void ToggleShowingOnlyApprovedTranslations()
@@ -668,66 +888,10 @@ namespace Bloom.Workspace
             LocalizationManager.ReturnOnlyApprovedStrings = !Settings
                 .Default
                 .ShowUnapprovedLocalizations;
-            SetupUiLanguageMenu();
             FinishUiLanguageMenuItemClick(); // apply newly revealed/hidden localizations
             // until L10nSharp changes to allow dynamic response to setting change
             Settings.Default.Save();
             Program.RestartBloom(false);
-        }
-
-        private bool _ignoreNextAppFocusChange;
-
-        /// <summary>
-        /// Prevent undesirable closing of dropdown menus.  This is worth losing some desired
-        /// closings, especially for Linux/Gnome in which the menus refuse to stay open at all
-        /// without this fix.
-        /// </summary>
-        /// <remarks>
-        /// See https://silbloom.myjetbrains.com/youtrack/issue/BL-5471.
-        /// See https://silbloom.myjetbrains.com/youtrack/issue/BL-6107.
-        /// The exact behavior seems rather system dependent.
-        /// </remarks>
-        private void DropDown_Closing(object sender, ToolStripDropDownClosingEventArgs e)
-        {
-            // ReSharper disable once SwitchStatementMissingSomeCases
-            switch (e.CloseReason)
-            {
-                case ToolStripDropDownCloseReason.AppFocusChange:
-                    // this is usually just hovering over the help menu on Windows.
-                    // there is always one spurious focus change on Linux/Gnome.
-                    e.Cancel = _ignoreNextAppFocusChange;
-                    break;
-                case ToolStripDropDownCloseReason.AppClicked:
-                // "reason" is AppClicked, but is it legit?
-                // Every other time we get AppClicked even if we are just hovering over the help menu.
-                case ToolStripDropDownCloseReason.Keyboard:
-                    // If "reason" is Keyboard, that seems to be generated just by moving the mouse over the
-                    // adjacent (visible) button on Linux.
-                    var mousePos = _helpMenu.Owner.PointToClient(MousePosition);
-                    var bounds =
-                        (sender == _helpMenu.DropDown) ? _uiLanguageMenu.Bounds : _helpMenu.Bounds;
-                    if (bounds.Contains(mousePos))
-                    {
-                        // probably a false positive
-                        e.Cancel =
-                            e.CloseReason == ToolStripDropDownCloseReason.AppClicked
-                            || Platform.IsLinux;
-                    }
-                    break;
-                default: // includes ItemClicked, CloseCalled
-                    break;
-            }
-            _ignoreNextAppFocusChange = Platform.IsWindows; // preserve the fix for BL-5476.
-            Debug.WriteLine(
-                "DEBUG WorkspaceView.DropDown_Closing: reason={0}, cancel={1}",
-                e.CloseReason.ToString(),
-                e.Cancel
-            );
-        }
-
-        void DropDown_Opening(object sender, CancelEventArgs e)
-        {
-            _ignoreNextAppFocusChange = true;
         }
 
         /// <summary>
@@ -739,64 +903,26 @@ namespace Bloom.Workspace
             bool onlyActiveItem = false
         )
         {
-            var items = new List<LanguageItem>();
-            if (onlyActiveItem)
-            {
-                if (String.IsNullOrEmpty(Settings.Default.UserInterfaceLanguage))
-                    Settings.Default.UserInterfaceLanguage = "en"; // See BL-13545.
-                items.Add(CreateLanguageItem(Settings.Default.UserInterfaceLanguage));
-            }
-            else
-            {
-                foreach (var lang in LocalizationManager.GetAvailableLocalizedLanguages())
-                {
-                    // Require that at least 1% of the strings have been translated and approved for alphas,
-                    // or 25% translated and approved for betas and release.
-                    var approved = FractionApproved(lang);
-                    if (Settings.Default.ShowUnapprovedLocalizations)
-                        approved = FractionTranslated(lang);
-                    var alpha = ApplicationUpdateSupport.IsDevOrAlpha;
-                    if ((alpha && approved < 0.01F) || (!alpha && approved < 0.25F))
-                        continue;
-                    items.Add(CreateLanguageItem(lang));
-                }
-            }
-
-            items.Sort(compareLangItems);
-
-            var tooltipFormat = LocalizationManager.GetString(
-                "CollectionTab.UILanguageMenu.ItemTooltip",
-                "{0}% translated",
-                "Shown when hovering over an item in the UI Language menu.  The {0} marker is filled in by a number between 1 and 100."
-            );
+            var items = GetLanguageItems(onlyActiveItem);
+            var tooltipFormat = GetUiLanguageTooltipFormat();
+            var current = GetAndNormalizeCurrentUiLanguage();
             uiMenuControl.DropDownItems.Clear();
-            foreach (var langItem in items)
-            {
-                var item = uiMenuControl.DropDownItems.Add(langItem.MenuText);
-                item.Tag = langItem;
-                var fraction = langItem.FractionApproved;
-                if (Settings.Default.ShowUnapprovedLocalizations)
-                    fraction = langItem.FractionTranslated;
-                item.ToolTipText = String.Format(tooltipFormat, (int)(fraction * 100.0F));
-                item.Click += (sender, args) =>
+            AddUiLanguageMenuItems(
+                uiMenuControl.DropDownItems,
+                items,
+                current,
+                tooltipFormat,
+                checkCurrentItem: false,
+                (langItem) =>
                     UiLanguageMenuItemClickHandler(
                         uiMenuControl,
-                        sender as ToolStripItem,
+                        langItem.LangTag,
                         finishClickAction
-                    );
-                if (langItem.LangTag == Settings.Default.UserInterfaceLanguage)
-                    UpdateMenuTextToShorterNameOfSelection(uiMenuControl, langItem.MenuText);
-            }
-            uiMenuControl.DropDownItems.Add("-"); // adds ToolStripSeparator
-            var message = LocalizationManager.GetString(
-                "CollectionTab.UILanguageMenu.HelpTranslate",
-                "Help us translate Bloom (web)",
-                "The final item in the UI Language menu. When clicked, it opens Bloom's page in the Crowdin web-based translation system."
+                    ),
+                onCurrentItemAdded: (langItem) =>
+                    uiMenuControl.Text = GetShortenedLanguageName(langItem.MenuText)
             );
-            var helpItem = uiMenuControl.DropDownItems.Add(message);
-            helpItem.Image = Resources.weblink;
-            helpItem.Click += (sender, args) =>
-                ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.LocalizingSystem, null));
+            AddHelpTranslateMenuItem(uiMenuControl.DropDownItems);
         }
 
         private static int compareLangItems(LanguageItem a, LanguageItem b)
@@ -814,17 +940,11 @@ namespace Bloom.Workspace
             );
         }
 
-        private static void UiLanguageMenuItemClickHandler(
-            ToolStripDropDownButton toolStripButton,
-            ToolStripItem item,
-            Action finishClickAction
-        )
+        private static void ApplyUiLanguageChange(string langTag)
         {
-            var tag = (LanguageItem)item.Tag;
-
             try
             {
-                LocalizationManagerWinforms.SetUILanguage(tag.LangTag, true);
+                LocalizationManagerWinforms.SetUILanguage(langTag, true);
             }
             catch (Exception e)
             {
@@ -838,7 +958,7 @@ namespace Bloom.Workspace
                 );
                 try
                 {
-                    LocalizationManagerWinforms.SetUILanguage(tag.LangTag, false);
+                    LocalizationManagerWinforms.SetUILanguage(langTag, false);
                 }
                 catch (Exception e2)
                 {
@@ -847,11 +967,9 @@ namespace Bloom.Workspace
                 }
             }
             // TODO-WV2: Can we set the browser language in WV2?  Do we need to?
-            Settings.Default.UserInterfaceLanguage = tag.LangTag;
+            Settings.Default.UserInterfaceLanguage = langTag;
             Settings.Default.UserInterfaceLanguageSetExplicitly = true;
             Settings.Default.Save();
-            item.Select();
-            UpdateMenuTextToShorterNameOfSelection(toolStripButton, item.Text);
 
             // Currently needed for the language chooser to update its localization
             // BloomWebSocketServer.Instance is set only while loading a collection.
@@ -864,23 +982,38 @@ namespace Bloom.Workspace
                     server.Init(
                         (BloomServer.portForHttp + 1).ToString(CultureInfo.InvariantCulture)
                     );
-                    server.SendString("app", "uiLanguageChanged", tag.LangTag);
+                    server.SendString("app", "uiLanguageChanged", langTag);
                 }
             }
             else
             {
-                BloomWebSocketServer.Instance.SendString("app", "uiLanguageChanged", tag.LangTag);
+                BloomWebSocketServer.Instance.SendString("app", "uiLanguageChanged", langTag);
             }
+        }
 
+        private static void UiLanguageMenuItemClickHandler(
+            ToolStripDropDownButton toolStripButton,
+            string langTag,
+            Action finishClickAction
+        )
+        {
+            ApplyUiLanguageChange(langTag);
+            if (toolStripButton != null)
+            {
+                var menuText = CreateLanguageItem(langTag).MenuText;
+                toolStripButton.Text = GetShortenedLanguageName(menuText);
+            }
             finishClickAction?.Invoke();
+        }
+
+        public void SetUiLanguage(string langTag)
+        {
+            ApplyUiLanguageChange(langTag);
+            FinishUiLanguageMenuItemClick();
         }
 
         private void FinishUiLanguageMenuItemClick()
         {
-            // these lines deal with having a smaller workspace window and minimizing the button texts for smaller windows
-            SaveOriginalButtonTexts();
-            AdjustButtonTextsForLocale();
-            _showAllTranslationsItem.Text = GetShowUnapprovedTranslationsMenuText();
             _localizationChangedEvent.Raise(null);
         }
 
@@ -941,41 +1074,33 @@ namespace Bloom.Workspace
             return (float)translatedCount / (float)totalCount;
         }
 
-        public static void UpdateMenuTextToShorterNameOfSelection(
-            ToolStripDropDownButton toolStripButton,
-            string itemText
-        )
+        public static string GetShortenedLanguageName(string itemText)
         {
             var idxChinese = itemText.IndexOf(" (Chinese");
             if (idxChinese > 0)
             {
-                toolStripButton.Text = itemText.Substring(0, idxChinese);
+                return itemText.Substring(0, idxChinese);
             }
             else
             {
                 var idxCountry = itemText.IndexOf(" (");
                 if (idxCountry > 0)
-                    toolStripButton.Text = itemText.Substring(0, idxCountry);
+                    return itemText.Substring(0, idxCountry);
                 else
                 {
-                    toolStripButton.Text = itemText;
+                    return itemText;
                 }
             }
         }
 
-        private void OnEditBook(Book.Book book)
+        private void HandleEditBookCommand(Book.Book book)
         {
-            _tabStrip.SelectedTab = _editTab;
+            ChangeTab(WorkspaceTab.edit);
         }
 
-        public bool InEditMode => _tabStrip.SelectedTab == _editTab;
+        public bool InEditMode => _tabSelection.ActiveTab == WorkspaceTab.edit;
 
-        public bool InCollectionTab => _tabStrip.SelectedTab == _reactCollectionTab;
-
-        internal bool IsInTabStrip(Point pt)
-        {
-            return _tabStrip != null && _tabStrip.DisplayRectangle.Contains(pt);
-        }
+        public bool InCollectionTab => _tabSelection.ActiveTab == WorkspaceTab.collection;
 
         private void Application_Idle(object sender, EventArgs e)
         {
@@ -984,73 +1109,55 @@ namespace Bloom.Workspace
 
         private void OnUpdateDisplay(object sender, EventArgs e)
         {
-            SetTabVisibility(_editTab, _model.ShowEditTab);
-            SetTabVisibility(_publishTab, _model.ShowPublishTab);
-            _editTab.Enabled = !_model.EditTabLocked;
+            SendTopBarState();
         }
 
         // Called early in checkin, will be re-updated by OnUpdateDisplay later in checkin,
         // but we need to disable it right away when losing permission to edit.
         public void DisableEditTab()
         {
-            _editTab.Enabled = false;
+            SendTopBarState();
             // This disables the Edit button.
             SendBookSelectionChanged(forceNotSaveable: true);
         }
 
-        private void SetTabVisibility(TabStripButton tab, bool visible)
-        {
-            tab.Visible = visible;
-        }
-
         public void OpenCreateCollection()
         {
-            _settingsLauncherHelper.LaunchSettingsIfAppropriate(() =>
-            {
-                _selectedTabAboutToChangeEvent.Raise(
-                    new TabChangedDetails() { From = _previouslySelectedControl, To = null }
-                );
+            var previousTab = GetWorkspaceTab(_previouslySelectedTabArea);
+            _selectedTabAboutToChangeEvent.Raise(
+                new TabChangedDetails() { FromTab = previousTab, ToTab = null }
+            );
 
-                _selectedTabChangedEvent.Raise(
-                    new TabChangedDetails() { From = _previouslySelectedControl, To = null }
-                );
+            _selectedTabChangedEvent.Raise(
+                new TabChangedDetails() { FromTab = previousTab, ToTab = null }
+            );
 
-                var oldSelectedControl = _previouslySelectedControl;
-                _previouslySelectedControl = null;
+            var oldSelectedTab = previousTab;
 
-                Invoke(
-                    (Action)(
-                        () =>
+            Invoke(
+                (Action)(
+                    () =>
+                    {
+                        var didOpen = Program.ChooseACollection(
+                            Shell.GetShellOrOtherOpenForm() as Shell
+                        );
+                        if (!didOpen)
                         {
-                            var didOpen = Program.ChooseACollection(
-                                Shell.GetShellOrOtherOpenForm() as Shell
+                            // We want to resume whatever tab we were in.
+                            // There is some overkill here...the old tab can only be the collection tab,
+                            // and currently it doesn't care about these events. The critical thing is to
+                            // restore tab identity in subsequent tab-change event payloads.
+                            // If we're not shutting down, we're switching the previously selected tab back on.
+                            _selectedTabAboutToChangeEvent.Raise(
+                                new TabChangedDetails() { FromTab = null, ToTab = oldSelectedTab }
                             );
-                            if (!didOpen)
-                            {
-                                // We want to resume whatever tab we were in.
-                                // There is some overkill here...the old tab can only be the collection tab,
-                                // and currently it doesn't care about these events. The critical thing is to
-                                // restore _previouslySelectedControl, which is required so we can remove it
-                                // if we subsequently switch to another tab. But it seemed best to be consistent.
-                                // If we're not shutting down, we're switching the previously selected tab back on.
-                                _selectedTabAboutToChangeEvent.Raise(
-                                    new TabChangedDetails() { From = null, To = oldSelectedControl }
-                                );
-                                _selectedTabChangedEvent.Raise(
-                                    new TabChangedDetails() { From = null, To = oldSelectedControl }
-                                );
-                                _previouslySelectedControl = oldSelectedControl;
-                            }
+                            _selectedTabChangedEvent.Raise(
+                                new TabChangedDetails() { FromTab = null, ToTab = oldSelectedTab }
+                            );
                         }
-                    )
-                );
-                return DialogResult.OK;
-            });
-        }
-
-        internal void OnLegacySettingsButton_Click(object sender, EventArgs e)
-        {
-            OpenLegacySettingsDialog();
+                    }
+                )
+            );
         }
 
         private CollectionSettingsDialog _currentlyOpenSettingsDialog;
@@ -1067,7 +1174,7 @@ namespace Bloom.Workspace
                     this,
                     true,
                     false,
-                    (() => OpenLegacySettingsDialog(tab))
+                    () => OpenLegacySettingsDialog(tab, forFixingEnterpriseSubscription)
                 );
             }
             else
@@ -1078,25 +1185,24 @@ namespace Bloom.Workspace
                     return;
                 }
 
-                DialogResult result = _settingsLauncherHelper.LaunchSettingsIfAppropriate(() =>
+                DialogResult result = DialogResult.Cancel;
+                if (!_tcManager.OkToEditCollectionSettings)
                 {
-                    if (!_tcManager.OkToEditCollectionSettings)
-                    {
-                        BloomMessageBox.ShowInfo(MustBeAdminMessage(_collectionSettings));
-                        return DialogResult.Cancel;
-                    }
+                    BloomMessageBox.ShowInfo(MustBeAdminMessage(_collectionSettings));
+                }
+                else
+                {
                     _collectionSettingsApi.PrepareToShowDialog();
                     using (var dlg = _settingsDialogFactory())
                     {
                         dlg.FixingEnterpriseSubscriptionCode = forFixingEnterpriseSubscription;
                         _currentlyOpenSettingsDialog = dlg;
                         dlg.SetDesiredTab(tab);
-                        var temp = dlg.ShowDialog(this);
+                        result = dlg.ShowDialog(this);
                         _currentlyOpenSettingsDialog = null;
                         CollectionSettingsApi.DialogClosed();
-                        return temp;
                     }
-                });
+                }
                 if (result == DialogResult.Yes)
                 {
                     Invoke(ReopenCurrentProject);
@@ -1114,139 +1220,101 @@ namespace Bloom.Workspace
             StartupScreenManager.AddStartupAction(
                 () =>
                 {
-                    OpenLegacySettingsDialog("enterprise", forFixingEnterpriseSubscription: true);
+                    OpenLegacySettingsDialog("subscription", forFixingEnterpriseSubscription: true);
                 },
                 shouldHideSplashScreen: true,
                 lowPriority: true
             );
         }
 
-        private void SelectPage(Control view)
+        private static WorkspaceTab? GetWorkspaceTab(IBloomTabArea view)
         {
-            // Already on the desired page: nothing to do.  And possible problems if we do do something.
+            if (view is EditingView)
+                return WorkspaceTab.edit;
+
+            if (view is CollectionTabView)
+                return WorkspaceTab.collection;
+
+            if (view is PublishView)
+                return WorkspaceTab.publish;
+
+            return null;
+        }
+
+        private void ApplyTabAreaSelection(IBloomTabArea view)
+        {
+            // Already on the desired tab: nothing to do.  And possible problems if we do do something.
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-8382.
-            if (view == _previouslySelectedControl)
+            if (view == _previouslySelectedTabArea)
                 return;
 
-            CurrentTabView = view as IBloomTabArea;
+            var previousTab = GetWorkspaceTab(_previouslySelectedTabArea);
+            var currentTab = GetWorkspaceTab(view);
+
+            CurrentTabView = view;
             // Warn the user if we're starting to use too much memory.
             //MemoryManagement.CheckMemory(false, "switched tab in workspace", true);
 
-            if (_previouslySelectedControl != null)
+            if (_previouslySelectedTabArea is EditingView)
             {
-                _containerPanel.Controls.Remove(_previouslySelectedControl);
-                if (_previouslySelectedControl is EditingView)
-                {
-                    // I wish this was unnecessary; ideally, we'd get the notification to
-                    // stop monitoring from the stopMonitoring function in audioRecording.ts.
-                    // We should be able to achieve that when the tabs are embedded in a single
-                    // Browser control. For now, the shutdown of the EditingView seems to
-                    // preempt it, so we handle it here.
-                    _audioRecording.PauseMonitoringAudio(false);
-                }
-            }
-
-            view.Dock = DockStyle.Fill;
-            _containerPanel.Controls.Add(view);
-
-            _toolSpecificPanel.Controls.Clear();
-
-            _panelHoldingToolStrip.BackColor = CurrentTabView.TopBarControl.BackColor =
-                _tabStrip.BackColor;
-
-            if (Platform.IsMono)
-            {
-                BackgroundColorsForLinux(CurrentTabView);
-            }
-
-            if (CurrentTabView != null) //can remove when we get rid of info view
-            {
-                CurrentTabView.PlaceTopBarControl();
-                _toolSpecificPanel.Controls.Add(CurrentTabView.TopBarControl);
-                CurrentTabView.TopBarControl.Dock = DockStyle.Fill;
+                // I wish this was unnecessary; ideally, we'd get the notification to
+                // stop monitoring from the stopMonitoring function in audioRecording.ts.
+                // We should be able to achieve that when the tabs are embedded in a single
+                // Browser control. For now, the shutdown of the EditingView seems to
+                // preempt it, so we handle it here.
+                _audioRecording.PauseMonitoringAudio(false);
             }
 
             _selectedTabAboutToChangeEvent.Raise(
                 new TabChangedDetails()
                 {
-                    From = _previouslySelectedControl,
-                    To = view,
+                    FromTab = previousTab,
+                    ToTab = currentTab,
                     PostponedWork = () =>
                     {
                         _selectedTabChangedEvent.Raise(
-                            new TabChangedDetails() { From = _previouslySelectedControl, To = view }
+                            new TabChangedDetails() { FromTab = previousTab, ToTab = currentTab }
                         );
 
-                        _previouslySelectedControl = view;
+                        _previouslySelectedTabArea = view;
                         _collectionApi.ResetUpdatingList();
 
                         var zoomManager = CurrentTabView as IZoomManager;
                         if (zoomManager != null)
                         {
-                            if (!_toolStrip.Items.Contains(_zoomWrapper))
-                                _toolStrip.Items.Add(_zoomWrapper);
-                            _zoomControl.Zoom = zoomManager.Zoom;
-                            _zoomControl.ZoomChanged += (sender, args) =>
-                                zoomManager.SetZoom(_zoomControl.Zoom);
+                            _zoomModel.Zoom = zoomManager.Zoom;
                         }
-                        else
-                        {
-                            if (_toolStrip.Items.Contains(_zoomWrapper))
-                                _toolStrip.Items.Remove(_zoomWrapper);
-                        }
+                        SendZoomInfo();
+                        SendTopBarState();
                         // TODO-WV2: Can we clear the cache in WV2?  Do we need to?
                     },
                 }
             );
         }
 
-        private void BackgroundColorsForLinux(IBloomTabArea currentTabView)
-        {
-            if (currentTabView.ToolStripBackground == null)
-            {
-                var bmp = new Bitmap(_toolStrip.Width, _toolStrip.Height);
-                using (var g = Graphics.FromImage(bmp))
-                {
-                    using (var b = new SolidBrush(_panelHoldingToolStrip.BackColor))
-                    {
-                        g.FillRectangle(b, 0, 0, bmp.Width, bmp.Height);
-                    }
-                }
-                currentTabView.ToolStripBackground = bmp;
-            }
-
-            _toolStrip.BackgroundImage = currentTabView.ToolStripBackground;
-        }
-
         protected IBloomTabArea CurrentTabView { get; set; }
 
-        private void _tabStrip_SelectedTabChanged(object sender, SelectedTabChangedEventArgs e)
+        private IBloomTabArea GetTabArea(WorkspaceTab tab)
         {
-            if (_tabStrip.SelectedTab == _editTab)
-                _tabSelection.ActiveTab = WorkspaceTab.edit;
-            else if (_tabStrip.SelectedTab == _publishTab)
-                _tabSelection.ActiveTab = WorkspaceTab.publish;
-            else
-                _tabSelection.ActiveTab = WorkspaceTab.collection;
-            if (
-                _returnToCollectionTabNotifier != null
-                && _tabStrip.SelectedTab == _reactCollectionTab
-            )
+            switch (tab)
             {
-                _returnToCollectionTabNotifier.CloseSafely();
-                _returnToCollectionTabNotifier = null;
+                case WorkspaceTab.edit:
+                    return _editingView;
+                case WorkspaceTab.collection:
+                    return _collectionTabView;
+                case WorkspaceTab.publish:
+                    return _publishView;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(tab), tab, null);
             }
-            TabStripButton btn = (TabStripButton)e.SelectedTab;
-            _tabStrip.BackColor = btn.BarColor;
-            _toolSpecificPanel.BackColor = _panelHoldingToolStrip.BackColor = _tabStrip.BackColor;
-            //Logger.WriteEvent("Selecting Tab Page: " + e.SelectedTab.Name);
-            SelectPage((Control)e.SelectedTab.Tag);
-            AdjustTabStripDisplayForScreenSize();
-            if (_tabSelection.ActiveTab == WorkspaceTab.collection && _collectionTabView != null)
+        }
+
+        private void ApplyPostCollectionTabBehavior()
+        {
+            if (_collectionTabView != null)
             {
                 if (Publish.BloomLibrary.BloomLibraryPublishModel.BookUploaded)
                 {
-                    // update bloom library status for the either the selected book or the entire collection.
                     _collectionTabView.UpdateBloomLibraryStatus(
                         Publish.BloomLibrary.BloomLibraryPublishModel.BookUploadedId
                     );
@@ -1256,63 +1324,27 @@ namespace Bloom.Workspace
             }
         }
 
+        /// <summary>
+        /// Changes the active tab in the workspace.
+        /// </summary>
+        /// <note>This requires that the workspace is already loaded,
+        /// which is normally the case since we start loading it very early in the application startup process,
+        /// and in that case we won't be changing tabs until some user does so, which can only be done using
+        /// controls that must be loaded into the workspace. When a page is refreshing, code may automatically
+        /// change the tab, but that can't happen until the code that does it is loaded! So I think we are
+        /// safe, but be aware of this issue if you are adding some new code that opens a different tab
+        /// at startup.
+        /// </note>
+        /// <param name="newTab">The tab to activate.</param>
         public void ChangeTab(WorkspaceTab newTab)
         {
-            switch (newTab)
+            _tabSelection.ActiveTab = newTab;
+            ApplyTabAreaSelection(GetTabArea(newTab));
+
+            if (newTab == WorkspaceTab.collection)
             {
-                case WorkspaceTab.edit:
-                    _tabStrip.SelectedTab = _editTab;
-                    break;
-                case WorkspaceTab.collection:
-                    _tabStrip.SelectedTab = _reactCollectionTab;
-                    break;
-                case WorkspaceTab.publish:
-                    _tabStrip.SelectedTab = _publishTab;
-                    break;
+                ApplyPostCollectionTabBehavior();
             }
-        }
-
-        private void _tabStrip_BackColorChanged(object sender, EventArgs e)
-        {
-            //_topBarButtonTable.BackColor = _toolSpecificPanel.BackColor =  _tabStrip.BackColor;
-        }
-
-        private void OnAboutBoxClick(object sender, EventArgs e)
-        {
-            if (_tabStrip.SelectedTab == _editTab)
-                _editingView.ShowAboutDialog();
-            else
-                _webSocketServer.LaunchDialog("AboutDialog");
-        }
-
-        private void toolStripMenuItem3_Click(object sender, EventArgs e)
-        {
-            HelpLauncher.Show(this, CurrentTabView.HelpTopicUrl);
-        }
-
-        private void _bloom_docs_Click(object sender, EventArgs e)
-        {
-            SIL.Program.Process.SafeStart("https://docs.bloomlibrary.org");
-        }
-
-        private void _webSiteMenuItem_Click(object sender, EventArgs e)
-        {
-            ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.LibrarySite, null));
-        }
-
-        private void _releaseNotesMenuItem_Click(object sender, EventArgs e)
-        {
-            SIL.Program.Process.SafeStart("https://docs.bloomlibrary.org/Release-Notes");
-        }
-
-        private void _requestAFeatureMenuItem_Click(object sender, EventArgs e)
-        {
-            ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.UserSuggestions, null));
-        }
-
-        private void _askAQuestionMenuItem_Click(object sender, EventArgs e)
-        {
-            ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.Support, null));
         }
 
         // Currently not used, but I'm leaving the method in case we want to put it
@@ -1326,23 +1358,15 @@ namespace Bloom.Workspace
             catch (Exception) { }
         }
 
-        private void WorkspaceView_Resize(object sender, EventArgs e)
-        {
-            if (this.ParentForm != null && this.ParentForm.WindowState != FormWindowState.Minimized)
-            {
-                AdjustTabStripDisplayForScreenSize();
-            }
-        }
-
         private void WorkspaceView_Load(object sender, EventArgs e)
         {
+            _mainBrowser?.SetBuiltInBrowserZoomEnabled(false);
             CheckDPISettings();
-            _originalToolStripPanelWidth = 0;
-            _viewInitialized = true;
             ShowAutoUpdateDialogIfNeeded();
             ShowForumInvitationDialogIfNeeded();
             // Whether we showed the dialog or not we'll check for a new version in 1 minute.
             _applicationUpdateCheckTimer.Enabled = true;
+            SendTopBarState();
         }
 
         private const int kCurrentAutoUpdateVersion = 1;
@@ -1437,22 +1461,6 @@ namespace Bloom.Workspace
             }
         }
 
-        private void OnRegistrationMenuItem_Click(object sender, EventArgs e)
-        {
-            ShowRegistrationDialog();
-        }
-
-        public void ShowRegistrationDialog()
-        {
-            if (_tabStrip.SelectedTab == _editTab)
-                _editingView.ShowRegistrationDialog();
-            else
-            {
-                dynamic messageBundle = new DynamicJson();
-                _webSocketServer.LaunchDialog("RegistrationDialog", messageBundle);
-            }
-        }
-
         private void CheckDPISettings()
         {
             Graphics g = this.CreateGraphics();
@@ -1483,10 +1491,10 @@ namespace Bloom.Workspace
 
         public void CheckForUpdates()
         {
-            Invoke((Action)(() => _checkForNewVersionMenuItem_Click(this, new EventArgs())));
+            Invoke((Action)(() => CheckForUpdatesImpl()));
         }
 
-        private void _checkForNewVersionMenuItem_Click(object sender, EventArgs e)
+        private void CheckForUpdatesImpl()
         {
             if (Debugger.IsAttached)
             {
@@ -1538,17 +1546,7 @@ namespace Bloom.Workspace
             );
         }
 
-        private void buildingReaderTemplatesMenuItem_Click(object sender, EventArgs e)
-        {
-            OpenInfoFile("Building and Distributing Reader Templates in Bloom.pdf");
-        }
-
-        private void usingReaderTemplatesMenuItem_Click(object sender, EventArgs e)
-        {
-            OpenInfoFile("Using Bloom Reader Templates.pdf");
-        }
-
-        private void _reportAProblemMenuItem_Click(object sender, EventArgs e)
+        public void ReportProblem()
         {
             // Screen shots were showing the menu still open on Linux, so delay a bit by starting the
             // dialog on the next idle loop.  Also allow one repaint event to be handled immediately.
@@ -1565,7 +1563,7 @@ namespace Bloom.Workspace
             // Try to ensure latest changes in book are included in report.  (BL-10480)
             try
             {
-                if (_editTab.IsSelected)
+                if (InEditMode)
                 {
                     _editingView.Model.SaveThen(
                         () =>
@@ -1603,14 +1601,13 @@ namespace Bloom.Workspace
             ProblemReportApi.ShowProblemDialog(this, null);
         }
 
-        public void SetStateOfNonPublishTabs(bool enable)
+        public void SetTabsEnabled(bool enable)
         {
-            if (_reactCollectionTab != null)
-                _reactCollectionTab.Enabled = enable;
-            _editTab.Enabled = enable;
+            _tabsEnabled = enable;
+            SendTopBarState();
         }
 
-        private void _trainingVideosMenuItem_Click(object sender, EventArgs e)
+        private void ShowTrainingVideos()
         {
             //note: markdown processors pass raw html through unchanged.  Bloom's localization process
             // is designed to produce HTML files, not Markdown files.
@@ -1629,250 +1626,6 @@ namespace Bloom.Workspace
                 dlg.ShowDialog();
             }
         }
-
-        #region Responsive Toolbar
-
-        enum Shrinkage
-        {
-            FullSize,
-            Stage1,
-            Stage2,
-            Stage3,
-        }
-
-        private Shrinkage _currentShrinkage = Shrinkage.FullSize;
-        private ToolStripControlHost _zoomWrapper;
-
-        private const int MinToolStripMargin = 3;
-
-        // The width of the toolstrip panel in stage 1 is typically its original width, which leaves a bit of margin
-        // left of the toolstrip. If a long language name requires more width than typical, make it at least wide
-        // enough to hold the language name. In the latter case, stage 2 won't do anything, and we will move right
-        // on to stage 3 if stage 1 isn't enough.
-        private int Stage_1WidthOfToolStringPanel =>
-            Math.Max(_originalToolStripPanelWidth, _toolStrip.Width + MinToolStripMargin);
-
-        // The width at which we switch to stage 1: the actual space needed for the controls in the top panel,
-        // when each is in its widest form and the preferred extra space is between the tab controls and the TopBarControl.
-        // Since this is meant to be BEFORE we push the _toolSpecificPanel up against the tabs, we use its location
-        // rather than the with of the tabs.
-        private int STAGE_1 =>
-            _originalToolSpecificPanelHorizPos
-            + (CurrentTabView?.WidthToReserveForTopBarControl ?? 0)
-            + Stage_1WidthOfToolStringPanel;
-
-        private int STAGE_2
-        {
-            get { return STAGE_1 - _stage1SpaceSaved; }
-        }
-        private int STAGE_3
-        {
-            get { return STAGE_2 - _stage2SpaceSaved; }
-        }
-
-        // The tabstrip typically changes size when a different language is selected.
-
-        private void ToolStripOnSizeChanged(object o, EventArgs eventArgs)
-        {
-            AdjustTabStripDisplayForScreenSize();
-        }
-
-        private void AdjustTabStripDisplayForScreenSize()
-        {
-            if (!_viewInitialized)
-                return;
-
-            if (_originalToolStripPanelWidth == 0)
-            {
-                SaveOriginalWidthValues();
-                SaveOriginalButtonTexts();
-            }
-
-            // First, set the width of _panelHoldingToolstrip, the control holding the language menu,  help menu,
-            // and possibly zoom control. It must be wide enough to display its content. In stages Full and 1,
-            // it is also not less than original width.
-            int desiredToolStripPanelWidth = Math.Max(
-                _toolStrip.Width + MinToolStripMargin,
-                _currentShrinkage <= Shrinkage.Stage1 ? _originalToolStripPanelWidth : 0
-            );
-            if (desiredToolStripPanelWidth != _panelHoldingToolStrip.Width)
-            {
-                _panelHoldingToolStrip.Width = desiredToolStripPanelWidth;
-                AlignTopRightPanels();
-            }
-
-            switch (_currentShrinkage)
-            {
-                default:
-                    // Shrinkage.FullSize
-                    if (Width < STAGE_1)
-                    {
-                        // shrink to stage 1
-                        _currentShrinkage = Shrinkage.Stage1;
-                        ShrinkToStage1();
-
-                        // It is possible that we are jumping from FullScreen to a 'remembered'
-                        // smaller screen size, so test for all of them!
-                        if (Width < STAGE_2)
-                        {
-                            _currentShrinkage = Shrinkage.Stage2;
-                            ShrinkToStage2();
-
-                            if (Width < STAGE_3)
-                            {
-                                _currentShrinkage = Shrinkage.Stage3;
-                                ShrinkToStage3();
-                            }
-                        }
-                    }
-                    break;
-                case Shrinkage.Stage1:
-                    if (Width >= STAGE_1)
-                    {
-                        // grow back to unshrunk
-                        _currentShrinkage = Shrinkage.FullSize;
-                        GrowToFullSize();
-                        break;
-                    }
-                    if (Width < STAGE_2)
-                    {
-                        // shrink to stage 2
-                        _currentShrinkage = Shrinkage.Stage2;
-                        ShrinkToStage2();
-                    }
-                    break;
-                case Shrinkage.Stage2:
-                    if (Width >= STAGE_2)
-                    {
-                        // grow back to stage 1
-                        _currentShrinkage = Shrinkage.Stage1;
-                        GrowToStage1();
-                        break;
-                    }
-                    if (Width < STAGE_3)
-                    {
-                        // shrink to stage 3
-                        _currentShrinkage = Shrinkage.Stage3;
-                        ShrinkToStage3();
-                    }
-                    break;
-                case Shrinkage.Stage3:
-                    if (Width >= STAGE_3)
-                    {
-                        // grow back to stage 2
-                        _currentShrinkage = Shrinkage.Stage2;
-                        GrowToStage2();
-                    }
-                    break;
-            }
-        }
-
-        private void SaveOriginalWidthValues()
-        {
-            _originalToolStripPanelWidth = _panelHoldingToolStrip.Width;
-            _originalToolSpecificPanelHorizPos = _toolSpecificPanel.Location.X;
-            _originalUiMenuWidth = _uiLanguageMenu.Width;
-            _stage1SpaceSaved = 0;
-            _stage2SpaceSaved = 0;
-        }
-
-        private void SaveOriginalButtonTexts()
-        {
-            _originalHelpText = _helpMenu.Text;
-            _originalUiLanguageSelection = _uiLanguageMenu.Text;
-        }
-
-        // Stage 1 removes the space we initially leave in edit and publish views to the left of the
-        // tool-specific buttons. (It has no visible effect in collection view, where the tool-specific buttons
-        // are right-aligned.)
-        private void ShrinkToStage1()
-        {
-            // Calculate right edge of tabs and move _toolSpecificPanel over to it
-            var rightEdge = _publishTab.Bounds.Right + 5;
-            if (_originalToolSpecificPanelHorizPos <= rightEdge)
-                return;
-            _stage1SpaceSaved = _originalToolSpecificPanelHorizPos - rightEdge;
-            var currentToolPanelVert = _toolSpecificPanel.Location.Y;
-            _toolSpecificPanel.Location = new Point(rightEdge, currentToolPanelVert);
-            AlignTopRightPanels();
-        }
-
-        /// <summary>
-        /// Keep the _panelHoldingToolStrip in the top right and the _toolSpecificPanel's right edge aligned with it.
-        /// Normally during resize this happens automatically since both are anchored Right. But when we fiddle with
-        /// the width or position of one of them we need to straighten things out.
-        /// </summary>
-        void AlignTopRightPanels()
-        {
-            _panelHoldingToolStrip.Left = this.Width - _panelHoldingToolStrip.Width; // align this panel on the right.
-            _toolSpecificPanel.Width = _panelHoldingToolStrip.Left - _toolSpecificPanel.Left;
-        }
-
-        private void GrowToFullSize()
-        {
-            // revert _toolSpecificPanel to its original location
-            _toolSpecificPanel.Location = new Point(
-                _originalToolSpecificPanelHorizPos,
-                _toolSpecificPanel.Location.Y
-            );
-            AlignTopRightPanels();
-            _stage1SpaceSaved = 0;
-        }
-
-        /// <summary>
-        /// Adjust buttons for the current Locale. In particular the Help button may be an icon or a translation.
-        /// </summary>
-        void AdjustButtonTextsForLocale()
-        {
-            if (_originalHelpImage == null)
-                _originalHelpImage = _helpMenu.Image;
-            var helpText = LocalizationManager.GetString("HelpMenu.Help Menu", "?");
-            if (
-                helpText == "?"
-                || new[] { "en", "fr", "de", "es" }.Contains(LocalizationManager.UILanguageId)
-            )
-            {
-                _helpMenu.Text = "";
-                _helpMenu.Image = _originalHelpImage;
-            }
-            else
-            {
-                _helpMenu.Text = helpText;
-                _helpMenu.Image = null;
-            }
-        }
-
-        // Currently stage 2 removes the space between the right-hand toolstrip and the tool-specific controls,
-        // by shrinking _panelHoldingToolStrip.
-        private void ShrinkToStage2()
-        {
-            _panelHoldingToolStrip.Width = _toolStrip.Width + MinToolStripMargin;
-            AlignTopRightPanels();
-            _stage2SpaceSaved = _originalToolStripPanelWidth - _panelHoldingToolStrip.Width;
-        }
-
-        private void GrowToStage1()
-        {
-            _panelHoldingToolStrip.Width = _originalToolStripPanelWidth;
-            AlignTopRightPanels();
-            _stage2SpaceSaved = 0;
-        }
-
-        // Stage 3 hides the right-hand toolstrip altogether.
-        private void ShrinkToStage3()
-        {
-            // Extreme measures for really small screens
-            _panelHoldingToolStrip.Visible = false;
-            _toolSpecificPanel.Width = Width - _toolSpecificPanel.Left;
-        }
-
-        private void GrowToStage2()
-        {
-            _panelHoldingToolStrip.Visible = true;
-            AlignTopRightPanels();
-        }
-
-        #endregion
     }
 
     public class NoBorderToolStripRenderer : ToolStripProfessionalRenderer
@@ -1967,31 +1720,5 @@ namespace Bloom.Workspace
         public string MenuText;
         public float FractionApproved;
         public float FractionTranslated;
-    }
-
-    /// <summary>
-    /// This class follows a recommendation at
-    /// https://support.microsoft.com/en-us/help/953934/deeply-nested-controls-do-not-resize-properly-when-their-parents-are-r
-    /// It works around a bug that causes a "deeply nested" panel with a docked child to
-    /// fail to adjust the position of the docked child when the parent resizes.
-    /// </summary>
-    public class NestedDockedChildPanel : Panel
-    {
-        // This fix is Windows/.Net specific.  It prevents Bloom from displaying the main window at all in Linux/Mono.
-#if !__MonoCS__
-        protected override void OnSizeChanged(EventArgs e)
-        {
-            if (this.Handle != null)
-            {
-                this.BeginInvoke(
-                    (MethodInvoker)
-                        delegate
-                        {
-                            base.OnSizeChanged(e);
-                        }
-                );
-            }
-        }
-#endif
     }
 }

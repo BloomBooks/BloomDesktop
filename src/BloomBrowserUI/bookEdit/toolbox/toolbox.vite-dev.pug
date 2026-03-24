@@ -1,0 +1,123 @@
+extends toolbox.mixins.pug
+
+block headContent
+	meta(charset='utf-8')
+	//- This bit of 'magic' is needed to get React Fast Refresh working with Vite Dev.
+	script(type='module').
+		import RefreshRuntime from "http://localhost:5173/@react-refresh";
+		RefreshRuntime.injectIntoGlobalHook(window);
+		//- Avoiding arrow functions here because our HTML to XML converter mangles wedge characters
+		window.$RefreshReg$ = function () {};
+		window.$RefreshSig$ = function () {return function (type) {return type;};};
+		window.__vite_plugin_react_preamble_installed__ = true;
+	script(type='module' src='http://localhost:5173/@vite/client')
+	//- This file is generated on the fly when requested by the bloom server, so doesn't involve vite's dev server.
+	link(rel='stylesheet', href='/bloom/writingSystemDisplayForUI.css')
+
+block endBodyScripts
+	script(type='module').
+		async function main()  {
+		try  {
+		async function loadScriptWithCacheBust(url, label) {
+			await new Promise(function(resolve, reject) {
+				const script = document.createElement('script');
+				script.src = url + '?t=' + Date.now().toString();
+				script.async = true;
+				script.onload = resolve;
+				script.onerror = function() {
+					reject(new Error(label + ' script fallback failed to load: ' + script.src));
+				};
+				document.head.appendChild(script);
+			});
+		}
+
+		async function importWithFallback(primaryUrl, label, directFallbackUrl, globalNameForScriptFallback) {
+			try {
+				return await import(primaryUrl);
+			} catch (primaryError) {
+				console.warn(label + ' primary import failed, retrying with cache-busted /@id URL', primaryError);
+
+				if (primaryUrl.indexOf('/@id/') !== -1) {
+					try {
+						const retryUrl = primaryUrl + '?t=' + Date.now().toString();
+						return await import(retryUrl);
+					} catch (retryError) {
+						console.warn(label + ' cache-busted /@id retry failed', retryError);
+					}
+				}
+
+				if (directFallbackUrl) {
+					if (globalNameForScriptFallback) {
+						await loadScriptWithCacheBust(directFallbackUrl, label);
+						const globalValue = window[globalNameForScriptFallback];
+						if (!globalValue) {
+							throw new Error(label + ' script fallback loaded but did not set window.' + globalNameForScriptFallback);
+						}
+						return { default: globalValue };
+					}
+
+					const directUrl = directFallbackUrl + '?t=' + Date.now().toString();
+					return await import(directUrl);
+				}
+
+				throw primaryError;
+			}
+		}
+
+		//- Assign globals expected by legacy libs.
+		const jQueryModule = await importWithFallback(
+			'http://localhost:5173/@id/jquery',
+			'jQuery',
+			'http://localhost:5173/node_modules/jquery/dist/jquery.min.js',
+			'jQuery'
+		);
+		const jQuery = jQueryModule?.default ? jQueryModule.default : jQueryModule;
+		// Some builds export default, others export the function itself. Normalize.
+		let jq = jQuery?.fn ? jQuery : (jQuery?.default ? jQuery.default : jQuery);
+		if (!jq) {
+			jq = window.jQuery || window.$;
+		}
+		if (!jq) {
+			throw new Error('Unable to initialize jQuery for toolbox Vite page');
+		}
+		window.$ = jq;
+		window.jQuery = jq;
+		console.log('jQuery ready via Vite prebundle');
+
+		const xRegExpModule = await importWithFallback(
+			'http://localhost:5173/@id/xregexp',
+			'XRegExp',
+			'http://localhost:5173/node_modules/xregexp/xregexp-all.js',
+			'XRegExp'
+		);
+		const XRegExp = xRegExpModule?.default ? xRegExpModule.default : xRegExpModule;
+		window.XRegExp = XRegExp.default || XRegExp;
+		console.log('XRegExp ready via Vite prebundle');
+
+		const _mod = await importWithFallback(
+			'http://localhost:5173/@id/underscore',
+			'Underscore',
+			'http://localhost:5173/node_modules/underscore/underscore-esm.js'
+		);
+		window._ = _mod.default || _mod;
+		console.log('Underscore ready via Vite prebundle');
+
+		//- Note, the list of files is duplicated in a different format in toolbox.pug.
+		await import("http://localhost:5173/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css");
+		await import("http://localhost:5173/bookEdit/html/font-awesome/css/font-awesome.min.css");
+		await import("http://localhost:5173/bookEdit/toolbox/toolbox.less");
+		await import("http://localhost:5173/bookEdit/toolbox/readerTools.less");
+		await import("http://localhost:5173/bookEdit/toolbox/talkingBook/audioRecording.less");
+		await import("http://localhost:5173/bookEdit/toolbox/motion/motion.less");
+		await import("http://localhost:5173/bookEdit/toolbox/music/music.less");
+		await import("http://localhost:5173/bookEdit/css/rc-slider-bloom.less");
+		await import("http://localhost:5173/lib/jquery.qtip.css");
+
+		// Finally, load the app entry.
+		await import('http://localhost:5173/bookEdit/toolbox/toolboxBootstrap.ts');
+		} catch (e)  {
+		console.error('Failed to initialize Vite dev page:', e);
+		}
+		}
+
+		main();

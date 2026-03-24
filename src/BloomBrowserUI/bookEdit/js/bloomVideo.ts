@@ -4,7 +4,7 @@ import { post, postThatMightNavigate } from "../../utils/bloomApi";
 // It sets things up for the button (plural eventually) to appear when hovering over the video.
 // Currently the button actions are entirely in C#.
 
-import { getToolboxBundleExports } from "./bloomFrames";
+import { getToolboxBundleExports } from "./workspaceFrames";
 import { shouldHideToolsOverImages } from "./editablePageUtils";
 import {
     SignLanguageToolControls,

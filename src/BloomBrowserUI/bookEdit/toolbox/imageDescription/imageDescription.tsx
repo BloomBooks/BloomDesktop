@@ -5,12 +5,12 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { post } from "../../../utils/bloomApi";
 import { ToolBox } from "../toolbox";
-import { getEditablePageBundleExports } from "../../js/bloomFrames";
+import { getEditablePageBundleExports } from "../../js/workspaceFrames";
 import "./imageDescription.less";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { Label } from "../../../react_components/l10nComponents";
 import { Link } from "../../../react_components/link";
-import { ToolBottomHelpLink } from "../../../react_components/helpLink";
+import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
 import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
 import {
     hideImageDescriptions,

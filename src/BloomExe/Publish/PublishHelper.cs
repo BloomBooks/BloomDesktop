@@ -1056,7 +1056,25 @@ namespace Bloom.Publish
             // Must come after ReallyCropImages, because any cropping for background images is
             // destroyed by SimplifyBackgroundImages.
             SimplifyBackgroundImages(modifiedBook.RawDom);
-            modifiedBook.Save();
+            // Keep bloomDataDiv for metadata Bloom Player uses, but remove entries that contain
+            // custom-page content that can look like real page elements.
+            var dataDiv =
+                modifiedBook.RawDom.SelectSingleNode("//div[@id='bloomDataDiv']") as SafeXmlElement;
+            if (dataDiv != null)
+            {
+                var childrenToRemove = dataDiv
+                    .ChildNodes.OfType<SafeXmlElement>()
+                    .Where(child =>
+                        child.ChildNodes.OfType<SafeXmlElement>().FirstOrDefault()?.HasClass("bloom-canvas")
+                        ?? false
+                    )
+                    .ToArray();
+                foreach (var child in childrenToRemove)
+                {
+                    dataDiv.RemoveChild(child);
+                }
+            }
+            modifiedBook.Save(true);
             modifiedBook.UpdateSupportFiles();
             return modifiedBook;
         }
@@ -1157,26 +1175,6 @@ namespace Bloom.Publish
                 )
                 {
                     bloomCanvas.RemoveClass("bloom-has-canvas-element");
-                }
-            }
-
-            // We need to clear out these attributes from the data-div, or a later call to update things will try to restore
-            // the background image representation of any cover image.
-            var dataDiv = dom.SelectSingleNode("//div[@id='bloomDataDiv']");
-            var bgImgDataAttrs = HtmlDom.BackgroundImgTupleNames;
-            if (dataDiv != null)
-            {
-                foreach (
-                    var elt in dataDiv
-                        .SafeSelectNodes($".//div[@{bgImgDataAttrs[0]}]")
-                        .Cast<SafeXmlElement>()
-                )
-                {
-                    foreach (var attr in bgImgDataAttrs)
-                    {
-                        if (elt.HasAttribute(attr))
-                            elt.RemoveAttribute(attr);
-                    }
                 }
             }
         }

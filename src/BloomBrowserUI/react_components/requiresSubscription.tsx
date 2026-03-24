@@ -34,9 +34,9 @@ import {
     useGetFeatureStatus,
     useGetFeatureAvailabilityMessage,
 } from "./featureStatus";
-import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
+import { ShowEditViewDialog } from "../bookEdit/workspaceRoot";
 import { getPageIframeBody } from "../utils/shared";
-import { getEditTabBundleExports } from "../bookEdit/js/bloomFrames";
+import { getWorkspaceBundleExports } from "../bookEdit/js/workspaceFrames";
 
 const badgeUrl = `${getBloomApiPrefix(false)}images/bloom-enterprise-badge.svg`;
 
@@ -427,7 +427,7 @@ export function showRequiresSubscriptionDialogInAnyView(featureName: string) {
         // to just make the root element in that iframe; it seems to quietly
         // not work if we try to render a react component using code in a different
         // iframe than the element it is rendered into.)
-        getEditTabBundleExports().showRequiresSubscriptionDialog(featureName);
+        getWorkspaceBundleExports().showRequiresSubscriptionDialog(featureName);
     } else if (showRequiresSubscriptionDialogInternal === defaultShowfunction) {
         // no mounted component to show it, so we'll make one.
         showRequiresSubscriptionDialogInEditView(featureName);

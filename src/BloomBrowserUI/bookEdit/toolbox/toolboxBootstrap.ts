@@ -5,9 +5,9 @@ import {
     applyToolboxStateToUpdatedPage,
     removeToolboxMarkup,
     showOrHideTool_click,
-    handleClickOutsideToolbox,
     scheduleMarkupUpdateAfterPaste,
 } from "./toolbox";
+import { simulateBlurOnPageFrameMouseDown } from "../../utils/menuCloseOnBlur";
 import { getTheOneReaderToolsModel } from "./readers/readerToolsModel";
 import { ToolBox } from "./toolbox";
 import { DecodableReaderToolboxTool } from "./readers/decodableReader/decodableReaderToolboxTool";
@@ -30,6 +30,7 @@ import {
 import { activateLongPressFor } from "../js/bloomEditing";
 import { IAudioRecorder } from "./talkingBook/IAudioRecorder";
 import { theOneAudioRecorder } from "./talkingBook/audioRecording";
+import { renderToolboxRoot } from "./ToolboxRoot";
 
 export interface IToolboxFrameExports {
     addWordListChangedListener(
@@ -51,10 +52,10 @@ export interface IToolboxFrameExports {
     removeToolboxMarkup(): void;
     setActiveDragActivityTab(tab: number): void;
     getTheOneAudioRecorderForExportOnly(): IAudioRecorder;
-    handleClickOutsideToolbox(): void;
+    simulateBlurOnPageFrameMouseDown(): void;
 }
 
-// each of these exports shows up under this window's toolboxBundle object (see bloomFrames.ts)
+// each of these exports shows up under this window's toolboxBundle object (see workspaceFrames.ts)
 export { removeToolboxMarkup, showOrHideTool_click, setActiveDragActivityTab };
 export {
     showSetupDialog,
@@ -113,6 +114,7 @@ export function copyLeveledReaderStatsToClipboard() {
 }
 
 $(document).ready(() => {
+    renderToolboxRoot();
     getTheOneToolbox().initialize();
 });
 
@@ -130,37 +132,7 @@ ToolBox.registerTool(new ImageDescriptionAdapter());
 ToolBox.registerTool(new CanvasTool());
 ToolBox.registerTool(new GameTool());
 
-// Legacy global exposure: mimic old webpack window["toolboxBundle"] contract
-interface ToolboxBundleApi {
-    getTheOneToolbox: typeof getTheOneToolbox;
-    scheduleMarkupUpdateAfterPaste: typeof scheduleMarkupUpdateAfterPaste;
-    applyToolboxStateToPage: typeof applyToolboxStateToPage;
-    removeToolboxMarkup: typeof removeToolboxMarkup;
-    showOrHideTool_click: typeof showOrHideTool_click;
-    showSetupDialog: typeof import("./readers/readerSetup/readerSetupDialog").showSetupDialog;
-    initializeReaderSetupDialog: typeof import("./readers/readerSetup/readerSetupDialog").initializeReaderSetupDialog;
-    closeSetupDialog: typeof import("./readers/readerSetup/readerSetupDialog").closeSetupDialog;
-    addWordListChangedListener: typeof addWordListChangedListener;
-    beginSaveChangedSettings: typeof beginSaveChangedSettings;
-    makeLetterWordList: typeof makeLetterWordList;
-    activateLongPressFor: typeof activateLongPressFor;
-    TalkingBookTool: typeof TalkingBookTool;
-    canUndo: typeof canUndo;
-    undo: typeof undo;
-    applyToolboxStateToPageLegacy: typeof applyToolboxStateToPage; // alias if older code referenced different name
-    setActiveDragActivityTab: typeof setActiveDragActivityTab;
-    getTheOneAudioRecorderForExportOnly: typeof getTheOneAudioRecorderForExportOnly;
-    copyLeveledReaderStatsToClipboard: typeof copyLeveledReaderStatsToClipboard;
-    handleClickOutsideToolbox: typeof import("./toolbox").handleClickOutsideToolbox;
-}
-
-declare global {
-    interface Window {
-        toolboxBundle: ToolboxBundleApi;
-    }
-}
-
-window.toolboxBundle = {
+const toolboxBundle: ToolboxBundleApi = {
     getTheOneToolbox,
     scheduleMarkupUpdateAfterPaste,
     applyToolboxStateToPage,
@@ -180,5 +152,7 @@ window.toolboxBundle = {
     setActiveDragActivityTab,
     getTheOneAudioRecorderForExportOnly,
     copyLeveledReaderStatsToClipboard,
-    handleClickOutsideToolbox,
+    simulateBlurOnPageFrameMouseDown,
 };
+
+window.toolboxBundle = toolboxBundle;

@@ -33,6 +33,7 @@ namespace Bloom
         private UndoCommand _undoCommand;
         private CutCommand _cutCommand;
         private bool _inDisposeMethod;
+        private bool _isBuiltInBrowserZoomEnabled = true;
 
         // All our existing code assumes we can just construct a browser. And it seems to work.
         // But in some newer code involving awaits and multiple browsers in unit tests, we
@@ -189,6 +190,7 @@ namespace Bloom
 
                 _webview.CoreWebView2.Settings.IsStatusBarEnabled = false;
                 _webview.CoreWebView2.Settings.IsWebMessageEnabled = true;
+                _webview.CoreWebView2.Settings.IsZoomControlEnabled = _isBuiltInBrowserZoomEnabled;
                 // Disable swipe navigation, which is a problem on trackpads (and touch screens). See BL-12405.
                 _webview.CoreWebView2.Settings.IsSwipeNavigationEnabled = false;
 
@@ -205,6 +207,15 @@ namespace Bloom
             };
         }
 
+        public override void SetBuiltInBrowserZoomEnabled(bool enabled)
+        {
+            _isBuiltInBrowserZoomEnabled = enabled;
+            if (_webview?.CoreWebView2 != null)
+            {
+                _webview.CoreWebView2.Settings.IsZoomControlEnabled = enabled;
+            }
+        }
+
         private void ContextMenuRequested(
             object sender,
             CoreWebView2ContextMenuRequestedEventArgs e
@@ -212,9 +223,13 @@ namespace Bloom
         {
             if (ReplaceContextMenu != null)
             {
-                e.Handled = true;
-                ReplaceContextMenu();
-                return;
+                // If the user is holding down ctrl, we want to show the developer menu, so don't override.
+                if (!ModifierKeys.HasFlag(Keys.Control))
+                {
+                    e.Handled = true;
+                    ReplaceContextMenu();
+                    return;
+                }
             }
 
             var wantDebug = WantDebugMenuItems;
@@ -725,7 +740,7 @@ namespace Bloom
 
             // This implementation is specific to our Edit tab. This is currently the only place
             // we show the paste button that uses this command, but we will have to generalize somehow if
-            // that changes. I'm not sure whether the checks for existence of editTabBundle etc are needed.
+            // that changes. I'm not sure whether the checks for existence of workspaceBundle etc are needed.
             // I deliberately use RunJavaScriptAsync here without awaiting it, because nothing requires the
             // result (we only care about the side effects on the document)
             _pasteCommand.Implementer = () =>
@@ -742,7 +757,7 @@ namespace Bloom
                 clipboardImage?.Dispose();
 
                 RunJavascriptAsync(
-                    $"editTabBundle?.getEditablePageBundleExports()?.pasteClipboard({haveClipboardImage})"
+                    $"workspaceBundle?.getEditablePageBundleExports()?.pasteClipboard({haveClipboardImage})"
                 );
             };
         }
@@ -817,7 +832,7 @@ namespace Bloom
             try
             {
                 _currentlyRunningCanUndo = true;
-                return "yes" == await GetStringFromJavascriptAsync("editTabBundle?.canUndo?.()");
+                return "yes" == await GetStringFromJavascriptAsync("workspaceBundle?.canUndo?.()");
             }
             finally
             {

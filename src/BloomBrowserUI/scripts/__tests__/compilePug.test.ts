@@ -1,0 +1,112 @@
+import * as fs from "node:fs";
+import * as os from "node:os";
+import * as path from "node:path";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import pug from "pug";
+import { compilePugFiles } from "../compilePug.mjs";
+
+let tempDir: string;
+let browserUIRoot: string;
+let contentRoot: string;
+let outputBase: string;
+
+function makeDir(dirPath: string) {
+    fs.mkdirSync(dirPath, { recursive: true });
+}
+
+function writeFile(filePath: string, contents: string) {
+    makeDir(path.dirname(filePath));
+    fs.writeFileSync(filePath, contents);
+}
+
+beforeEach(() => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "compile-pug-"));
+    browserUIRoot = path.join(tempDir, "browserUI");
+    contentRoot = path.join(tempDir, "content");
+    outputBase = path.join(tempDir, "out");
+    makeDir(browserUIRoot);
+    makeDir(contentRoot);
+});
+
+afterEach(() => {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+});
+
+describe("compilePugFiles", () => {
+    it("recompiles dependents when an included pug file changes", async () => {
+        const partialPath = path.join(browserUIRoot, "partials", "partial.pug");
+        const mainPath = path.join(browserUIRoot, "pages", "main.pug");
+
+        writeFile(partialPath, "p Partial A\n");
+
+        writeFile(
+            mainPath,
+            [
+                "doctype html",
+                "html",
+                "  body",
+                "    include ../partials/partial.pug",
+                "",
+            ].join("\n"),
+        );
+
+        await compilePugFiles({ browserUIRoot, contentRoot, outputBase });
+
+        const outPath = path.join(outputBase, "pages", "main.html");
+        expect(fs.existsSync(outPath)).toBe(true);
+        const firstHtml = fs.readFileSync(outPath, "utf8");
+        expect(firstHtml).toContain("Partial A");
+
+        await new Promise((resolve) => setTimeout(resolve, 30));
+        writeFile(partialPath, "p Partial B\n");
+
+        await compilePugFiles({ browserUIRoot, contentRoot, outputBase });
+        const secondHtml = fs.readFileSync(outPath, "utf8");
+        expect(secondHtml).toContain("Partial B");
+        expect(secondHtml).not.toContain("Partial A");
+    });
+
+    it("skips expensive compilation when files are up to date", async () => {
+        const mainPath = path.join(browserUIRoot, "pages", "main.pug");
+        writeFile(mainPath, "p Hello\n");
+
+        await compilePugFiles({ browserUIRoot, contentRoot, outputBase });
+
+        const compileSpy = vi.spyOn(pug, "compileFile");
+        const result = await compilePugFiles({
+            browserUIRoot,
+            contentRoot,
+            outputBase,
+        });
+
+        expect(compileSpy).not.toHaveBeenCalled();
+        expect(result.compiled).toBe(0);
+        expect(result.skipped).toBeGreaterThan(0);
+
+        compileSpy.mockRestore();
+    });
+
+    it("writes content pug output under output base", async () => {
+        const contentPugPath = path.join(contentRoot, "dialogs", "info.pug");
+        writeFile(contentPugPath, "p From content\n");
+
+        await compilePugFiles({ browserUIRoot, contentRoot, outputBase });
+
+        const expectedOutputPath = path.join(
+            outputBase,
+            "dialogs",
+            "info.html",
+        );
+        const unexpectedContentHtmlPath = path.join(
+            contentRoot,
+            "dialogs",
+            "info.html",
+        );
+
+        expect(fs.existsSync(expectedOutputPath)).toBe(true);
+        expect(fs.readFileSync(expectedOutputPath, "utf8")).toContain(
+            "From content",
+        );
+        expect(fs.existsSync(unexpectedContentHtmlPath)).toBe(false);
+    });
+});

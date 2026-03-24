@@ -21,6 +21,9 @@ When working in the front-end, cd to src/BloomBrowserUI
 - Avoid removing existing comments.
 - Avoid adding a comment like "// add this line".
 
+- For functions, prefer typescript "function" syntax over const foo = () ==> functions.
+- When writing less, use new css features supported by our current version of webview2. E.g. "is()".
+
 - Style elements using the css macro from @emotion/react directly on the element being styled, using the css prop. E.g. `<div css={css`color:red`}>`
 
 - We rarely use `null` in typescript, preferring `undefined` for values that have not been set. E.g.

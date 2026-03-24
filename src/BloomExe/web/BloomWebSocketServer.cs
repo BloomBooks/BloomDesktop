@@ -37,7 +37,7 @@ namespace Bloom.Api
         // It would be nice to use something from .Net's System.Collections.Concurrent namespace, but none of the options
         // seem to fit our needs (i.e. remove a particular connection when it wants to close). To get around this, we will
         // lock the thread whenever we're changing or reading the collection.
-        private List<IWebSocketConnection> _allSockets;
+        private List<IWebSocketConnection> _allSockets = new List<IWebSocketConnection>();
 
         // I (gjm) prefer to use a private object for locking, rather than locking on the list itself.
         // See https://stackoverflow.com/questions/38653739/locking-on-the-object-that-is-being-synchronized-or-using-a-dedicated-lock-objec

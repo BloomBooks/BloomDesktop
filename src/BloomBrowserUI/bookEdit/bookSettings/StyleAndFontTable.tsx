@@ -13,6 +13,7 @@ import { ThemeProvider } from "@mui/material/styles";
 import { default as Warning } from "@mui/icons-material/Warning";
 import { IFontMetaData } from "../StyleEditor/fontSelectComponent";
 import { useL10n } from "../../react_components/l10nHooks";
+import { useMemo } from "react";
 
 // This interface must be kept in sync with the StyleAndFont class in BookSettingsApi.cs.
 export interface IStyleAndFont {
@@ -27,9 +28,19 @@ export interface IStyleAndFont {
 export const StyleAndFontTable: React.FunctionComponent<{
     closeDialog: () => void;
 }> = (props) => {
-    const rows: IStyleAndFont[] = useApiObject<IStyleAndFont[]>(
+    const rowsSource: IStyleAndFont[] = useApiObject<IStyleAndFont[]>(
         "stylesAndFonts/getDataRows",
         [],
+    );
+    // getDataRows tries to be very comprehensive about fonts used by anything in the document.
+    // However, we don't need to tell the user here about fonts that are menioned in style
+    // sheets but NOT otherwise used in the document, or even a default font set for a language
+    // that doesn't yet have any content in the book. In fact, the heading for this table claims
+    // that we tell the user where the font is used in the book. So if data using the font wasn't
+    // actually found on some page, we can't do that, so we will leave it out.
+    const rows = useMemo(
+        () => rowsSource.filter((row) => row.pageId),
+        [rowsSource],
     );
 
     function closeDialogAndJumpToPage(pageId: string) {
@@ -67,7 +78,13 @@ export const StyleAndFontTable: React.FunctionComponent<{
                 <TableBody>
                     {rows.map((row) => (
                         <StyleAndFontRow
+                            // lint wants it to have a key. But that won't be passed to the component,
+                            // which wants to use it as the key for the row. So we pass it as a separate prop also.
+                            // I'm not actually clear whether we need to set a key on the TR as well as on
+                            // the component, or if not, which one is actually needed. But it doesn't
+                            // cost much to do both.
                             key={row.styleName + row.languageName}
+                            keyArg={row.styleName + row.languageName}
                             row={row}
                             closeDialogAndJumpToPage={closeDialogAndJumpToPage}
                         />
@@ -79,39 +96,41 @@ export const StyleAndFontTable: React.FunctionComponent<{
 };
 
 const StyleAndFontRow: React.FunctionComponent<{
-    key: string;
+    keyArg: string;
     row: IStyleAndFont;
     closeDialogAndJumpToPage: (pageId: string) => void;
-}> = ({ key, row, closeDialogAndJumpToPage }) => {
+}> = (props) => {
     const fontNotInstalledMessage = useL10n(
         "Font is not installed on this computer",
         "BookSettings.Fonts.FontNotInstalled",
     );
     const fontMetaData: IFontMetaData | undefined = useFontMetaData(
-        row.fontName,
+        props.row.fontName,
     );
     return (
-        <TableRow key={key}>
+        <TableRow key={props.keyArg}>
             <TableCell component="th" scope="row" sx={{ border: 1 }}>
-                {row.styleName}
+                {props.row.styleName}
             </TableCell>
-            <TableCell sx={{ border: 1 }}>{row.languageName}</TableCell>
+            <TableCell sx={{ border: 1 }}>{props.row.languageName}</TableCell>
             <TableCell sx={{ border: 1 }}>
                 {fontMetaData ? (
                     <FontInfoFromMetadata fontMetaData={fontMetaData} />
                 ) : (
                     <FontInfo
-                        name={row.fontName}
+                        name={props.row.fontName}
                         warningMessage={fontNotInstalledMessage}
                     />
                 )}
             </TableCell>
             <TableCell sx={{ border: 1 }}>
                 <Link
-                    href={"#" + row.pageId}
-                    onClick={() => closeDialogAndJumpToPage(row.pageId)}
+                    href={"#" + props.row.pageId}
+                    onClick={() =>
+                        props.closeDialogAndJumpToPage(props.row.pageId)
+                    }
                 >
-                    {row.pageDescription}
+                    {props.row.pageDescription}
                 </Link>
             </TableCell>
         </TableRow>

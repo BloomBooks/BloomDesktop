@@ -2225,6 +2225,9 @@ namespace Bloom.ImageProcessing
                 {
                     // This is a duplicate. We can use the same cropped image file.
                     img.SetAttribute("src", fileName);
+                    // With that src, it's already cropped, so remove the style to avoid
+                    // applying the cropping again to the already-cropped image.
+                    img.RemoveAttribute("style");
                     continue;
                 }
 
@@ -2322,7 +2325,7 @@ namespace Bloom.ImageProcessing
             var croppedImagePath = MakeCroppedImage(img, imageSourceFolder, imageDestFolder);
             var src = img.GetAttribute("src");
             // a good default if we can't produce a cropped image for any reason.
-            // (The tests in MakeCroppedImage are a bit more robus than the ones we do before
+            // (The tests in MakeCroppedImage are a bit more robust than the ones we do before
             // deciding to call this method.) Capture this before we unencode, since it wants
             // to be a value we can put in a src attribute (if it doesn't get changed)
             // to lead to the file we may put at an unchanged file name.

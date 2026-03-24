@@ -1,20 +1,12 @@
 using System;
-using System;
-using System.Collections.Generic;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics;
-using System.IO;
 using System.IO;
 using System.Linq;
-using System.Linq;
-using System.Net;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Windows.Forms;
 using Amazon.Runtime;
 using Amazon.S3;
@@ -884,6 +876,9 @@ namespace Bloom.WebLibraryIntegration
                 PublishHelper.RemoveUnpublishableContent(page);
             PublishHelper.RemoveUnpublishableBookData(copiedBook.RawDom);
             PublishHelper.RemoveUnpublishableBookInfo(copiedBook.BookInfo);
+            // Don't pass forPublication true. Technically this is a copy being
+            // made for publication, but we're publishing it in a form that can
+            // be used for continued editing, so don't want any shortcuts.
             copiedBook.Save();
             copiedBook.UpdateSupportFiles();
             book = copiedBook;
@@ -1040,7 +1035,7 @@ namespace Bloom.WebLibraryIntegration
                     book.BookData.MetadataLanguage2Tag,
                     bookParams.IsForBulkUpload,
                     changeUploader,
-                    publishModel.View
+                    publishModel.View?.GetHostControlForInvoke()
                 );
 
                 Debug.Assert(

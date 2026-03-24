@@ -1,47 +1,89 @@
-// We started needing the following triple-slash directive (<reference types=...)
-// with Emotion 11; I don't understand why.
-// Without it, the system doesn't resolve the type for the css prop.
-// This migration guide describes it, but I don't understand why we aren't the "normal" case:
-// https://emotion.sh/docs/emotion-11#css-prop-types
-/// <reference types="@emotion/react/types/css-prop" />
-
-import Button from "@mui/material/Button";
 import * as React from "react";
+import { css } from "@emotion/react";
 import "App.less";
+import "../bookEdit/workspaceRoot";
 import { CollectionsTabPane } from "../collectionsTab/CollectionsTabPane";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
-import { kBloomBlue, kPanelBackground } from "../bloomMaterialUITheme";
+import {
+    defaultWorkspaceTabState,
+    getActiveWorkspaceTab,
+    TopBar,
+    TabStates,
+    WorkspaceTabId,
+} from "../react_components/TopBar/TopBar";
+import { PublishTabPane } from "../publish/PublishTab/PublishTabPane";
+import { kPanelBackground } from "../bloomMaterialUITheme";
+import { useWatchApiObject } from "../utils/bloomApi";
+import { EditTabPane } from "./EditTabPane";
+import { ToastHost } from "../toast/ToastHost";
 
-// invoke this with http://localhost:8089". Doesn't do much yet... someday will be the root of our UI.
-
-export const App: React.FunctionComponent = (props) => {
-    return (
-        <div style={{ backgroundColor: kPanelBackground, height: "100%" }}>
-            <div style={{ backgroundColor: kBloomBlue, paddingTop: "3px" }}>
-                <Tabs />
-            </div>
-            <CollectionsTabPane />
-        </div>
+export const App: React.FunctionComponent = () => {
+    // Give the browser an initial focus target that does not draw attention,
+    // while still allowing normal keyboard navigation to move into the top bar. (BL-16061)
+    const focusAppRootOnMount = React.useCallback(
+        (element: HTMLDivElement | null) => {
+            element?.focus({ preventScroll: true });
+        },
+        [],
     );
-};
-const Tabs: React.FunctionComponent = (props) => {
+
+    // Eventually the source of truth of what tab is active will be on the
+    // typescript side. But for now, App.tsx is just a development-only tool
+    // which moves us a little closer to a single top-level React component.
+    // For now, we just use the same mechanisms TopBar is using to keep tab state in sync.
+    // AI found a few reasons this switch is still not trivial:
+    // C# has non-UI tab switches that happen from backend workflows:
+    // Team collection toast click returns to collection tab in WorkspaceView.cs:606.
+    // Publish flow can force jump to edit tab in LibraryPublishApi.cs:517.
+    // Edit-book command switches to edit tab in WorkspaceView.cs:1164.
+    const state = useWatchApiObject<{ tabStates: TabStates }>(
+        "workspace/tabs",
+        defaultWorkspaceTabState,
+        "workspace",
+        "tabs",
+    );
+
+    const tabStates = state.tabStates ?? defaultWorkspaceTabState.tabStates;
+    const activeTab = React.useMemo((): WorkspaceTabId => {
+        return getActiveWorkspaceTab(tabStates);
+    }, [tabStates]);
+
+    const renderActiveTab = () => {
+        if (activeTab === "collection") {
+            return <CollectionsTabPane />;
+        }
+
+        if (activeTab === "publish") {
+            return <PublishTabPane />;
+        }
+
+        return <EditTabPane active={true} />;
+    };
+
     return (
-        <ul id="main-tabs" style={{ height: "77px" }}>
-            <li>
-                <Button
-                    className={"selected"}
-                    startIcon={<img src="../images/CollectionsTab.svg" />}
-                >
-                    Collections
-                </Button>
-                <Button startIcon={<img src="../images/EditTab.svg" />}>
-                    Edit
-                </Button>
-                <Button startIcon={<img src="../images/PublishTab.svg" />}>
-                    Publish
-                </Button>
-            </li>
-        </ul>
+        <div
+            ref={focusAppRootOnMount}
+            tabIndex={-1}
+            css={css`
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                background: ${kPanelBackground};
+            `}
+        >
+            <TopBar />
+            <div
+                css={css`
+                    flex: 1;
+                    min-height: 0;
+                    position: relative;
+                `}
+            >
+                {renderActiveTab()}
+            </div>
+            <div id="modal-dialog-container" />
+            <ToastHost />
+        </div>
     );
 };
 

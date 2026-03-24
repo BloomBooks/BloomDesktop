@@ -44,8 +44,12 @@ namespace BloomTests.Spreadsheet
                     <div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
                         <div class=""split-pane-component position-top"">
                             <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px"">
-                                <div class=""bloom-canvas bloom-leadingElement"" title=""Name: man.jpg Size: 178.00 kb Dots: 1041 x 781 For the current paper size: • The image container is 406 x 231 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 325 DPI. • An image with 1269 x 722 dots would fill this container at 300 DPI."">
-									<img src=""man.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
+                                <div class=""bloom-canvas bloom-leadingElement bloom-has-canvas-element"" title=""Name: man.jpg Size: 178.00 kb Dots: 1041 x 781 For the current paper size: • The image container is 406 x 231 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 325 DPI. • An image with 1269 x 722 dots would fill this container at 300 DPI."">
+									<div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
+										<div class=""bloom-imageContainer"">
+											<img src=""man.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
+										</div>
+									</div>
 									<div class=""bloom-translationGroup bloom-imageDescription bloom-trailingElement"" data-default-languages=""auto"">
 					                    <div class=""bloom-editable ImageDescriptionEdit-style"" lang=""z"" contenteditable=""true"" data-book=""coverImageDescription""></div>
 					                    <div class=""bloom-editable ImageDescriptionEdit-style bloom-content1 bloom-visibility-code-on"" lang=""en"" contenteditable=""true"" >A picture of a man</div>
@@ -76,8 +80,20 @@ namespace BloomTests.Spreadsheet
 
                 <div class=""split-pane-component position-bottom"" style=""height: 30.1471%;"">
                     <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px"">
-                        <div class=""bloom-canvas"" title=""Name: Mars 2.png Size: 130.10 kb Dots: 1041 x 447 For the current paper size: • The image container is 406 x 203 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 246 DPI. • An image with 1269 x 635 dots would fill this container at 300 DPI.""><img src=""Mars%202.png"" alt="""" data-copyright="""" data-creator="""" data-license=""cc-by""></img></div>
-						<div class=""bloom-canvas"" title=""Name:missing file.jpg Size: 130.10 kb Dots: 1041 x 447 For the current paper size: • The image container is 406 x 203 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 246 DPI. • An image with 1269 x 635 dots would fill this container at 300 DPI.""><img src=""missing%20file.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""cc-by""></img></div>
+                        <div class=""bloom-canvas bloom-has-canvas-element"" title=""Name: Mars 2.png Size: 130.10 kb Dots: 1041 x 447 For the current paper size: • The image container is 406 x 203 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 246 DPI. • An image with 1269 x 635 dots would fill this container at 300 DPI."">
+							<div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
+								<div class=""bloom-imageContainer"">
+									<img src=""Mars%202.png"" alt="""" data-copyright="""" data-creator="""" data-license=""cc-by""></img>
+								</div>
+							</div>
+						</div>
+						<div class=""bloom-canvas bloom-has-canvas-element"" title=""Name:missing file.jpg Size: 130.10 kb Dots: 1041 x 447 For the current paper size: • The image container is 406 x 203 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 246 DPI. • An image with 1269 x 635 dots would fill this container at 300 DPI."">
+							<div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
+								<div class=""bloom-imageContainer"">
+									<img src=""missing%20file.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""cc-by""></img>
+								</div>
+							</div>
+						</div>
                     </div>
                 </div>
             </div>
@@ -103,7 +119,13 @@ namespace BloomTests.Spreadsheet
             <div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
                 <div class=""split-pane-component position-top"" style=""bottom: 50%"">
                     <div class=""split-pane-component-inner"">
-                        <div class=""bloom-canvas bloom-leadingElement"" title=""Name: empty-file.jpg Size: 3.86 kb Dots: 225 x 225 For the current paper size: • The image container is 406 x 335 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 64 DPI. • An image with 1269 x 1047 dots would fill this container at 300 DPI.""><img src=""empty-file.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+                        <div class=""bloom-canvas bloom-leadingElement bloom-has-canvas-element"" title=""Name: empty-file.jpg Size: 3.86 kb Dots: 225 x 225 For the current paper size: • The image container is 406 x 335 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 64 DPI. • An image with 1269 x 1047 dots would fill this container at 300 DPI."">
+							<div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
+								<div class=""bloom-imageContainer"">
+									<img src=""empty-file.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
+								</div>
+							</div>
+						</div>
                     </div>
                 </div>
 
@@ -150,8 +172,29 @@ namespace BloomTests.Spreadsheet
         </div>
         <div class=""pageDescription"" lang=""en""></div>
         <div class=""marginBox"">
-			<div class=""bloom-canvas bloom-leadingElement"" title=""Name: lady24b.png Size: 3.86 kb Dots: 225 x 225 For the current paper size: • The image container is 406 x 335 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 64 DPI. • An image with 1269 x 1047 dots would fill this container at 300 DPI.""><img src=""lady24b.png"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
-			<div class=""bloom-canvas bloom-leadingElement"" title=""Name: placeHolder.png Size: 3.86 kb Dots: 225 x 225 For the current paper size: • The image container is 406 x 335 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 64 DPI. • An image with 1269 x 1047 dots would fill this container at 300 DPI.""><img src=""placeHolder.png""></img></div>
+			<div class=""bloom-canvas bloom-leadingElement bloom-has-canvas-element"" title=""Name: lady24b.png Size: 3.86 kb Dots: 225 x 225 For the current paper size: • The image container is 406 x 335 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 64 DPI. • An image with 1269 x 1047 dots would fill this container at 300 DPI."">
+				<div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
+					<div class=""bloom-imageContainer"">
+						<img src=""lady24b.png"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
+					</div>
+				</div>
+			</div>
+			<div class=""bloom-canvas bloom-leadingElement bloom-has-canvas-element"" title=""Name: placeHolder.png Size: 3.86 kb Dots: 225 x 225 For the current paper size: • The image container is 406 x 335 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ⚠ This image would print at 64 DPI. • An image with 1269 x 1047 dots would fill this container at 300 DPI."">
+				<div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
+					<div class=""bloom-imageContainer"">
+						<img src=""placeHolder.png""></img>
+					</div>
+				</div>
+			</div>
+        </div>
+    </div>
+    <div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-left bloom-monolingual"" data-page="""" id=""b6dcaece-11a0-49d3-80c7-a83b7a8d9b6f"" data-pagelineage=""eabed994-4cdf-4dd5-aa40-196528c2bc55"" data-page-number=""3"" lang="""">
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
+            Basic Text &amp; Picture
+        </div>
+        <div class=""pageDescription"" lang=""en""></div>
+        <div class=""marginBox"">
+            <div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{4}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
         </div>
     </div>
 </body>
@@ -203,6 +246,7 @@ namespace BloomTests.Spreadsheet
                     "Mars 2.png",
                     "lady24b.png",
                     "empty-file.jpg",
+                    "Othello 199.jpg",
                 }
             )
                 RobustFile.Copy(
@@ -306,7 +350,21 @@ namespace BloomTests.Spreadsheet
             Assert.That(File.Exists(Path.Combine(destImageFolder, "man.jpg")));
             Assert.That(File.Exists(Path.Combine(destImageFolder, "Mars 2.png")));
             Assert.That(File.Exists(Path.Combine(destImageFolder, "lady24b.png")));
+            Assert.That(File.Exists(Path.Combine(destImageFolder, "Othello 199.jpg")));
             Assert.That(File.Exists(Path.Combine(destImageFolder, "placeHolder.png")), Is.False);
+        }
+
+        [TestCase("fromExport")]
+        [TestCase("fromFile")]
+        public void ExportsLegacyImageStructure(string source)
+        {
+            SetupFor(source);
+            var legacyImagePath = Path.Combine("images", "Othello 199.jpg");
+            var legacyImageRow = _pageContentRows.FirstOrDefault(x =>
+                x.GetCell(InternalSpreadsheet.ImageSourceColumnLabel).Text == legacyImagePath
+            );
+            Assert.That(legacyImageRow, Is.Not.Null);
+            Assert.That(legacyImageRow.GetCell("[en]").Text, Is.EqualTo(""));
         }
 
         [TestCase("fromExport")]

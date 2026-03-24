@@ -85,8 +85,12 @@ export default class BloomButton extends LocalizableElement<
         } = this.props;
         return this.props.transparent ? (
             // I don't know how to make a material-ui button transparent at the moment,
-            /// so use a plain html one
-            <button {...commonProps}>{commonChildren}</button>
+            // so use a plain html one. (If you use propsTopass in this situation, be aware
+            // they will be passed to the button element, not the material-ui one,
+            // so some props may not work as expected.)
+            <button {...commonProps} {...propsToPass}>
+                {commonChildren}
+            </button>
         ) : (
             // if not transparent, then we can use Material-ui
             <Button

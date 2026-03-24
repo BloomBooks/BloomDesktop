@@ -25,7 +25,7 @@ import {
     theOneCanvasElementManager,
 } from "../../js/CanvasElementManager";
 import { Bubble } from "comicaljs";
-import { getToolboxBundleExports } from "../../editViewFrame";
+import { getToolboxBundleExports } from "../../workspaceRoot";
 import {
     BloomDialog,
     DialogBottomButtons,

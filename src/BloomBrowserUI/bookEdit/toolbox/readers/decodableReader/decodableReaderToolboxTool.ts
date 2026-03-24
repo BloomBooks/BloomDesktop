@@ -200,6 +200,7 @@ export class DecodableReaderToolboxTool implements ITool {
         getTheOneReaderToolsModel().setMarkupType(
             isToggleOff(isForLeveled) ? 0 : 1,
         );
+        getTheOneReaderToolsModel().updateControlContents();
         // usually updateMarkup will do this, unless we are coming from showTool
         getTheOneReaderToolsModel().doMarkup();
     }

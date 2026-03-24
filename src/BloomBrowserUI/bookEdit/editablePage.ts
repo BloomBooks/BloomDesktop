@@ -8,6 +8,7 @@
 import $ from "jquery";
 import { bootstrap } from "./js/bloomEditing";
 import { EditableDivUtils } from "./js/editableDivUtils";
+import "../lib/long-press/jquery.longpress.js";
 import "../lib/jquery.i18n.custom"; // side-effect: adds .localize() to $.fn (kept via sideEffects allow-list)
 import "errorHandler";
 import {
@@ -77,7 +78,7 @@ export interface IPageFrameExports {
 }
 
 // This exports the functions that should be accessible from other IFrames or from C#.
-// For example, editTabBundle.getEditablePageBundleExports().requestPageContent() can be called.
+// For example, workspaceBundle.getEditablePageBundleExports().requestPageContent() can be called.
 import {
     getBodyContentForSavePage,
     requestPageContent,

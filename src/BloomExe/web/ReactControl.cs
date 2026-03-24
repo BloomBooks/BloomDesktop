@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 using Bloom.Utils;
@@ -11,6 +10,28 @@ using SIL.Windows.Forms.Extensions;
 
 namespace Bloom.web
 {
+    public class ReactControlAdditionalHtml
+    {
+        public string HeadHtml;
+        public string BodyEndHtml;
+        public string ViteDevHeadHtml;
+        public string ViteDevBodyEndHtml;
+
+        public string GetHeadHtml(bool useViteDev)
+        {
+            if (useViteDev && !string.IsNullOrEmpty(ViteDevHeadHtml))
+                return ViteDevHeadHtml;
+            return HeadHtml;
+        }
+
+        public string GetBodyEndHtml(bool useViteDev)
+        {
+            if (useViteDev && !string.IsNullOrEmpty(ViteDevBodyEndHtml))
+                return ViteDevBodyEndHtml;
+            return BodyEndHtml;
+        }
+    }
+
     /// <summary>
     /// Hosts a Web Browser rooted by the named React component
     /// </summary>
@@ -52,8 +73,24 @@ namespace Bloom.web
         public bool UseEditContextMenu;
         public bool HideVerticalOverflow;
         public event EventHandler OnBrowserClick;
+        public event EventHandler BrowserCreated;
+
+        public Browser Browser => _browser;
+
+        public ReactControlAdditionalHtml AdditionalHtml;
+
+        public Action ReplaceContextMenu { get; set; }
 
         private Browser _browser;
+
+        protected override void OnBackColorChanged(EventArgs e)
+        {
+            base.OnBackColorChanged(e);
+            var htmlColor = MiscUtils.ColorToHtmlCode(BackColor);
+            _browser?.RunJavascriptFireAndForget(
+                $"document.body.style.backgroundColor = '{htmlColor}';"
+            );
+        }
 
         private void ReactControl_Load(object sender, System.EventArgs e)
         {
@@ -73,6 +110,9 @@ namespace Bloom.web
             // rectangle in the upper left corner...
             //_browser = new GeckoFxBrowser
             _browser = BrowserMaker.MakeBrowser();
+            BrowserCreated?.Invoke(this, EventArgs.Empty);
+            if (ReplaceContextMenu != null)
+                _browser.ReplaceContextMenu = ReplaceContextMenu;
             var browserControl = _browser;
 
             browserControl.Dock = DockStyle.Fill;
@@ -119,9 +159,9 @@ namespace Bloom.web
             // since the user can't see them to respond. Don't use alerts in the initialization code!
             _browser.DocumentCompleted += (unused, args) =>
             {
-                if (this.IsDisposed)
+                if (IsDisposed)
                     return;
-                Controls.Add((UserControl)_browser); //review this cast
+                Controls.Add(_browser);
 
                 // This allows us to bring up a react control/dialog with focus already set to a specific element.
                 // For example, for BloomMessageBox, we set the Cancel button to have focus so the user
@@ -156,17 +196,56 @@ namespace Bloom.web
 
         private TempFile MakeTempFile()
         {
+            return MakeTempFileForReactBundle(
+                _javascriptBundleName,
+                Props,
+                BackColor,
+                HideVerticalOverflow,
+                detach: true,
+                additionalHtml: AdditionalHtml
+            );
+        }
+
+        internal static TempFile MakeTempFileForReactBundle(
+            string javascriptBundleName,
+            object propsObject,
+            Color backColor,
+            bool hideVerticalOverflow,
+            bool detach,
+            ReactControlAdditionalHtml additionalHtml = null
+        )
+        {
             var tempFile = TempFile.WithExtension("htm");
-            tempFile.Detach(); // the browser control will clean it up
+            if (detach)
+                tempFile.Detach(); // caller is responsible for cleanup when detached
 
-            var props = Props == null ? "{}" : JsonConvert.SerializeObject(Props);
+            var html = GetHtmlForReactBundle(
+                javascriptBundleName,
+                propsObject,
+                backColor,
+                hideVerticalOverflow,
+                additionalHtml
+            );
+            RobustFile.WriteAllText(tempFile.Path, html);
+            return tempFile;
+        }
 
-            if (_javascriptBundleName == null)
+        internal static string GetHtmlForReactBundle(
+            string javascriptBundleName,
+            object propsObject,
+            Color backColor,
+            bool hideVerticalOverflow,
+            ReactControlAdditionalHtml additionalHtml = null
+        )
+        {
+            var props = propsObject == null ? "{}" : JsonConvert.SerializeObject(propsObject);
+
+            if (javascriptBundleName == null)
             {
                 throw new ArgumentNullException("React Control needs a _javascriptBundleName");
             }
 
-            var bundleNameWithExtension = _javascriptBundleName;
+            var bundleNameWithExtension = javascriptBundleName;
             if (!bundleNameWithExtension.EndsWith(".js"))
             {
                 bundleNameWithExtension += ".js";
@@ -174,13 +253,13 @@ namespace Bloom.web
 
             // We insert this as the initial background color of the HTML element
             // to prevent a flash of white while the React is rendering.
-            var backColor = MiscUtils.ColorToHtmlCode(BackColor);
+            var backColorCode = MiscUtils.ColorToHtmlCode(backColor);
 
-            var overflowY = HideVerticalOverflow ? " overflow-y: hidden;" : "";
+            var overflowY = hideVerticalOverflow ? " overflow-y: hidden;" : "";
 
             var bundleToViteModulePathMap = new Dictionary<string, string>
             {
-                { "collectionsTabPaneBundle", "/collectionsTab/CollectionsTabPane.entry.tsx" },
+                { "advancedSettingsBundle", "/collection/AdvancedSettingsPanel.entry.tsx" },
                 { "bookMakingSettingsBundle", "/collection/bookMakingSettingsControl.entry.tsx" },
                 {
                     "autoUpdateSoftwareDlgBundle",
@@ -194,7 +273,6 @@ namespace Bloom.web
                     "createTeamCollectionDialogBundle",
                     "/teamCollection/CreateTeamCollection.entry.tsx"
                 },
-                { "editTopBarControlsBundle", "/bookEdit/topbar/editTopBarControls.entry.tsx" },
                 { "duplicateManyDlgBundle", "/bookEdit/duplicateManyDialog.entry.tsx" },
                 {
                     "joinTeamCollectionDialogBundle",
@@ -208,7 +286,6 @@ namespace Bloom.web
                 },
                 { "problemReportBundle", "/problemDialog/ProblemDialog.entry.tsx" },
                 { "progressDialogBundle", "/react_components/Progress/ProgressDialog.entry.tsx" },
-                { "publishTabPaneBundle", "/publish/PublishTab/PublishTabPane.entry.tsx" },
                 { "registrationDialogBundle", "/react_components/registrationDialog.entry.tsx" },
                 { "subscriptionSettingsBundle", "/collection/subscriptionSettingsTab.entry.tsx" },
                 {
@@ -219,25 +296,19 @@ namespace Bloom.web
                     "accessibilityCheckBundle",
                     "/publish/accessibilityCheck/accessibilityCheckScreen.entry.tsx"
                 },
+                { "appBundle", "/app/App.entry.tsx" },
             };
-            // Should we load relevant assets from the Vite Dev server?
-            // To save time, only consider it if this is a dev build.
-            // This also guards against trying to load assets from the vite server
-            // if a developer runs some other version. Though, it could still be a
-            // problem if a dev is trying to run dev builds of two versions at once.
-            var useViteDev =
-                ApplicationUpdateSupport.IsDev
-                && bundleToViteModulePathMap.ContainsKey(_javascriptBundleName);
-            var viteModulePath = useViteDev
-                ? bundleToViteModulePathMap[_javascriptBundleName]
-                : null;
-            // If still an option, see if localhost:5173 is running. This is quite slow when it is not.
-            // The original version used 400ms, which meant a 1200ms delay; but if it's going to succeed,
-            // it typically does so in 2ms. I compromised on 40.
-            useViteDev &= IsLocalPortOpen(5173, 40);
+            string viteModulePath = null;
+            var useViteDev = ShouldUseViteDev(() =>
+                bundleToViteModulePathMap.TryGetValue(javascriptBundleName, out viteModulePath)
+                && viteModulePath != null
+            );
+            var additionalHeadHtml = additionalHtml?.GetHeadHtml(useViteDev) ?? string.Empty;
+            var additionalBodyEndHtml = additionalHtml?.GetBodyEndHtml(useViteDev) ?? string.Empty;
+
             var body =
                 $@"
-                <body style='margin:0; height:100%; display: flex; flex: 1; flex-direction: column; background-color:{backColor};{overflowY}'>
+                <body style='margin:0; height:100%; display: flex; flex: 1; flex-direction: column; background-color:{backColorCode};{overflowY}'>
                     <div id='reactRoot' style='height:100%'>
                     <div class='spinner-container' style='position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);'>
                         <svg class='spinner' width='40' height='40' viewBox='0 0 40 40' style='animation: spin 1s linear infinite;'>
@@ -252,20 +323,20 @@ namespace Bloom.web
                     </div>
                 </body>";
 
-            if (viteModulePath != null && useViteDev)
+            if (useViteDev)
             {
-                RobustFile.WriteAllText(
-                    tempFile.Path,
-                    $@"<!DOCTYPE html>
+                return $@"<!DOCTYPE html>
                 <html style='height:100%'>
                 <head>
-                    <title>ReactControl (Vite {_javascriptBundleName})</title>
+                    <title>ReactControl (Vite {javascriptBundleName})</title>
                     <meta charset='UTF-8' />
-                    <script>
+                    <script type='module'>
+                        import RefreshRuntime from ""http://localhost:5173/@react-refresh"";
+                        RefreshRuntime.injectIntoGlobalHook(window);
                         // Provide no-op React Fast Refresh globals so dev transforms don't crash in WebView.
-                        window.__vite_plugin_react_preamble_installed__ = true;
                         window.$RefreshSig$ = window.$RefreshSig$ || (function () {{ return function (type) {{ return type; }}; }});
                         window.$RefreshReg$ = window.$RefreshReg$ || function () {{}};
+                        window.__vite_plugin_react_preamble_installed__ = true;
                         window.__reactControlProps__ = {props};
                         // Shim Node-style globals for browser-only environment
                         if (typeof window.global === 'undefined') window.global = window;
@@ -291,20 +362,86 @@ namespace Bloom.web
 
                         async function main() {{
                             try {{
+                                async function loadScriptWithCacheBust(url, label) {{
+                                    await new Promise((resolve, reject) => {{
+                                        const script = document.createElement('script');
+                                        script.src = url + '?t=' + Date.now().toString();
+                                        script.async = true;
+                                        script.onload = resolve;
+                                        script.onerror = () => reject(new Error(label + ' script fallback failed to load: ' + script.src));
+                                        document.head.appendChild(script);
+                                    }});
+                                }}
+
+                                async function importWithFallback(primaryUrl, label, directFallbackUrl, globalNameForScriptFallback) {{
+                                    try {{
+                                        return await import(primaryUrl);
+                                    }} catch (primaryError) {{
+                                        console.warn(label + ' primary import failed, retrying with cache-busted /@id URL', primaryError);
+
+                                        if (primaryUrl.indexOf('/@id/') !== -1) {{
+                                            try {{
+                                                const retryUrl = primaryUrl + '?t=' + Date.now().toString();
+                                                return await import(retryUrl);
+                                            }} catch (retryError) {{
+                                                console.warn(label + ' cache-busted /@id retry failed', retryError);
+                                            }}
+                                        }}
+
+                                        if (directFallbackUrl) {{
+                                            if (globalNameForScriptFallback) {{
+                                                await loadScriptWithCacheBust(directFallbackUrl, label);
+                                                const globalValue = window[globalNameForScriptFallback];
+                                                if (!globalValue) {{
+                                                    throw new Error(label + ' script fallback loaded but did not set window.' + globalNameForScriptFallback);
+                                                }}
+                                                return {{ default: globalValue }};
+                                            }}
+
+                                            const directUrl = directFallbackUrl + '?t=' + Date.now().toString();
+                                            return await import(directUrl);
+                                        }}
+
+                                        throw primaryError;
+                                    }}
+                                }}
 
                                 // Import via bare specifiers (resolved by import map) and assign globals expected by legacy libs.
-                                const jQuery = (await import('jquery')).default;
-                                // Some builds export default, others export the function itself. Normalize.
-                                const jq = jQuery && jQuery.fn ? jQuery : (jQuery && jQuery.default ? jQuery.default : jQuery);
+                                const jQueryModule = await importWithFallback(
+                                    'http://localhost:5173/@id/jquery',
+                                    'jQuery',
+                                    'http://localhost:5173/node_modules/jquery/dist/jquery.min.js',
+                                    'jQuery'
+                                );
+                                const jQuery = jQueryModule && jQueryModule.default ? jQueryModule.default : jQueryModule;
+                                let jq = jQuery && jQuery.fn ? jQuery : (jQuery && jQuery.default ? jQuery.default : jQuery);
+
+                                if (!jq) {{
+                                    jq = window.jQuery || window.$;
+                                }}
+
+                                if (!jq) {{
+                                    throw new Error('Unable to initialize jQuery for Vite dev ReactControl');
+                                }}
+
                                 window.$ = jq;
                                 window.jQuery = jq;
-                                console.log('jQuery ready via Vite prebundle');
 
-                                const XRegExp = (await import('xregexp')).default || (await import('xregexp'));
+                                const xRegExpModule = await importWithFallback(
+                                    'http://localhost:5173/@id/xregexp',
+                                    'XRegExp',
+                                    'http://localhost:5173/node_modules/xregexp/xregexp-all.js',
+                                    'XRegExp'
+                                );
+                                const XRegExp = xRegExpModule && xRegExpModule.default ? xRegExpModule.default : xRegExpModule;
                                 window.XRegExp = XRegExp.default || XRegExp;
                                 console.log('XRegExp ready via Vite prebundle');
 
-                                const _mod = await import('underscore');
+                                const _mod = await importWithFallback(
+                                    'http://localhost:5173/@id/underscore',
+                                    'Underscore',
+                                    'http://localhost:5173/node_modules/underscore/underscore-esm.js'
+                                );
                                 window._ = _mod.default || _mod;
                                 console.log('Underscore ready via Vite prebundle');
 
@@ -317,22 +454,22 @@ namespace Bloom.web
 
                         main();
                     </script>
+                    {additionalHeadHtml}
                 </head>
                 {body}
-                </html>"
-                );
+                {additionalBodyEndHtml}
+                </html>";
             }
             else
             {
                 // The 'body' height: auto rule keeps a winforms tab that only contains a ReactControl
                 // from unnecessary scrolling.
-                RobustFile.WriteAllText(
-                    tempFile.Path,
-                    $@"<!DOCTYPE html>
+                return $@"<!DOCTYPE html>
 				<html style='height:100%'>
 				<head>
-					<title>ReactControl ({_javascriptBundleName})</title>
+                    <title>ReactControl ({javascriptBundleName})</title>
 					<meta charset = 'UTF-8' />
+                    {additionalHeadHtml}
                     <script src = '/{bundleNameWithExtension}'  type='module'></script>
 					<script>
 						window.onload = () => {{
@@ -342,13 +479,33 @@ namespace Bloom.web
 					</script>
 				</head>
 				{body}
-				</html>"
-                );
+                {additionalBodyEndHtml}
+                </html>";
             }
-            return tempFile;
         }
 
-        private static bool IsLocalPortOpen(int port, int timeoutMs = 400)
+        // Determines the basics of whether to load the vite dev versions of various things.
+        // True if we're running a dev build and the vite dev port is active.
+        // Some callers (including in this file) may impose additional conditions;
+        // if extraCheck is passed it must return true for us to use vite.
+        public static bool ShouldUseViteDev(Func<bool> extraCheck = null)
+        {
+            // Should we load relevant assets from the Vite Dev server?
+            // To save time, only consider it if this is a dev build.
+            // This also guards against trying to load assets from the vite server
+            // if a developer runs some other version. Though, it could still be a
+            // problem if a dev is trying to run dev builds of two versions at once.
+            if (!ApplicationUpdateSupport.IsDev)
+                return false;
+            if (extraCheck != null && !extraCheck())
+                return false;
+            // If still an option, see if localhost:5173 is running. This is quite slow when it is not.
+            // The original version used 400ms, which meant a 1200ms delay; but if it's going to succeed,
+            // it typically does so in 2ms. I compromised on 40.
+            return IsLocalPortOpen(5173, 40);
+        }
+
+        public static bool IsLocalPortOpen(int port, int timeoutMs = 400)
         {
             try
             {

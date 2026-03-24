@@ -87,16 +87,6 @@ namespace Bloom.Edit
                 .Measureable();
 
             apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "cleanup",
-                request =>
-                {
-                    SendCleanupState();
-                    request.PostSucceeded();
-                },
-                true
-            );
-
-            apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "zoomMinus",
                 request =>
                 {
@@ -135,13 +125,6 @@ namespace Bloom.Edit
                 },
                 true
             );
-        }
-
-        private void SendCleanupState()
-        {
-            var endState =
-                "{\"CanAddPages\":false,\"CanDeletePage\":false,\"CanDuplicatePage\":false,\"BookLockedState\":\"OriginalBookMode\"}";
-            _webSocketServer.SendString(kWebsocketContext, kWebsocketStateId, endState);
         }
 
         private void UpdateState()

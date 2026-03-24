@@ -1184,7 +1184,7 @@ function wordListChangedCallback() {
     requestWordsForSelectedStage();
 }
 
-import { getToolboxBundleExports } from "../../../js/bloomFrames";
+import { getToolboxBundleExports } from "../../../js/workspaceFrames";
 
 $(document).ready(() => {
     attachEventHandlers();

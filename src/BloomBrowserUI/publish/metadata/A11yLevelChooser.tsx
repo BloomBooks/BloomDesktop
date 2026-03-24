@@ -1,8 +1,6 @@
 import * as React from "react";
-import {
-    BloomReactSelect,
-    IOption,
-} from "../../react_components/bloomReactSelect";
+import { IOption } from "../../react_components/bloomSelectTypes";
+import { BloomReactSelect } from "../../react_components/bloomReactSelect";
 
 export interface IProps {
     // I don't know how to express exact types in Typescript here and it doesn't seem worth a lot of effort.

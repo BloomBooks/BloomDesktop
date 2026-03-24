@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows.Forms;
-using Bloom.MiscUI;
+using Bloom.web;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using Sentry;
@@ -314,65 +314,55 @@ namespace Bloom
             bool showDetailsOnRequest = false
         )
         {
-            // The form is used for the screen shot as well as for synchronizing, so get the shell if possible.
-            // See https://issues.bloomlibrary.org/youtrack/issue/BL-8348.
-            var formForSynchronizing = Shell.GetShellOrOtherOpenForm();
-            if (formForSynchronizing == null)
-                return; // can't safely show a toast, may be on wrong thread.
-
-            if (formForSynchronizing.InvokeRequired)
-            {
-                formForSynchronizing.BeginInvoke(
-                    new Action(() =>
-                    {
-                        ShowToast(
-                            shortUserLevelMessage,
-                            exception,
-                            fullDetailedMessage,
-                            showSendReport
-                        );
-                    })
-                );
-                return;
-            }
-            var toast = new ToastNotifier();
-            var callToAction = string.Empty;
+            ToastAction action = null;
             if (showSendReport)
             {
-                toast.ToastClicked += (s, e) =>
+                action = new ToastAction
                 {
-                    ProblemReportApi.ShowProblemDialog(
-                        formForSynchronizing,
-                        exception,
-                        fullDetailedMessage,
-                        "nonfatal",
-                        shortUserLevelMessage
-                    );
+                    Label = "Report",
+                    Callback = () =>
+                    {
+                        var formForSynchronizing = Shell.GetShellOrOtherOpenForm();
+                        ProblemReportApi.ShowProblemDialog(
+                            formForSynchronizing,
+                            exception,
+                            fullDetailedMessage,
+                            "nonfatal",
+                            shortUserLevelMessage
+                        );
+                    },
                 };
-                callToAction = "Report";
             }
             else if (showDetailsOnRequest)
             {
-                toast.ToastClicked += (s, e) =>
+                action = new ToastAction
                 {
-                    ErrorReport.NotifyUserOfProblem(
-                        new ShowAlwaysPolicy(),
-                        null,
-                        default(ErrorResult),
-                        "{0}",
-                        string.Join(
-                            Environment.NewLine, // handle Linux newlines on Windows (and vice-versa)
-                            fullDetailedMessage.Split(
-                                new[] { '\r', '\n' },
-                                StringSplitOptions.RemoveEmptyEntries
+                    Label = "Details",
+                    Callback = () =>
+                    {
+                        ErrorReport.NotifyUserOfProblem(
+                            new ShowAlwaysPolicy(),
+                            null,
+                            default(ErrorResult),
+                            "{0}",
+                            string.Join(
+                                Environment.NewLine, // handle Linux newlines on Windows (and vice-versa)
+                                fullDetailedMessage.Split(
+                                    new[] { '\r', '\n' },
+                                    StringSplitOptions.RemoveEmptyEntries
+                                )
                             )
-                        )
-                    );
+                        );
+                    },
                 };
-                callToAction = "Details";
             }
-            toast.Image.Image = ToastNotifier.WarningBitmap;
-            toast.Show(shortUserLevelMessage, callToAction, 15);
+
+            ToastService.ShowToast(
+                ToastSeverity.Warning,
+                text: shortUserLevelMessage,
+                durationSeconds: 15,
+                action: action
+            );
         }
 
         private static IEnumerable<string> Matches(ModalIf threshold)

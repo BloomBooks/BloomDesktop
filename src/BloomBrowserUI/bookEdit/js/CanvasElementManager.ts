@@ -87,9 +87,9 @@ import { FeatureStatus } from "../../react_components/featureStatus";
 import $ from "jquery";
 import { kCanvasToolId } from "../toolbox/toolIds";
 import {
-    doWhenEditTabBundleLoaded,
+    doWhenWorkspaceBundleLoaded,
     getToolboxBundleExports,
-} from "./bloomFrames";
+} from "./workspaceFrames";
 
 export interface ITextColorInfo {
     color: string;
@@ -537,6 +537,7 @@ export class CanvasElementManager {
         const bloomCanvases: HTMLElement[] = this.getAllBloomCanvasesOnPage();
 
         bloomCanvases.forEach((bloomCanvas) => {
+            this.setupBackgroundImageAttributes(bloomCanvas);
             this.adjustCanvasElementsForCurrentLanguage(bloomCanvas);
             this.ensureCanvasElementsIntersectParent(bloomCanvas);
             // image containers are already set by CSS to overflow:hidden, so they
@@ -3173,11 +3174,10 @@ export class CanvasElementManager {
             kCanvasElementSelector,
         ) as HTMLDivElement;
         topBox.style.color = "";
-        const editables = topBox.getElementsByClassName("bloom-editable");
-        for (let i = 0; i < editables.length; i++) {
-            const editableElement = editables[i] as HTMLElement;
-            editableElement.style.color = hexOrRgbColor;
-        }
+        const textColorTargets = this.getTextColorTargets(topBox);
+        textColorTargets.forEach((target) => {
+            target.style.color = hexOrRgbColor;
+        });
     }
 
     public getTextColorInformation(): ITextColorInfo {
@@ -3197,20 +3197,19 @@ export class CanvasElementManager {
             // bloom-editables. So if the canvas element div didn't have a color, check the inner
             // bloom-editables.
             if (textColor === "") {
-                const editables =
-                    topBox.getElementsByClassName("bloom-editable");
-                if (editables.length === 0) {
+                const textColorTargets = this.getTextColorTargets(topBox);
+                if (textColorTargets.length === 0) {
                     // Image on Image case comes here.
                     isDefaultStyleColor = true;
                     textColor = "black";
                 } else {
-                    const firstEditable = editables[0] as HTMLElement;
-                    const colorStyle = firstEditable.style.color;
+                    const firstTextTarget = textColorTargets[0];
+                    const colorStyle = firstTextTarget.style.color;
                     if (colorStyle) {
                         textColor = colorStyle;
                     } else {
                         textColor =
-                            this.getDefaultStyleTextColor(firstEditable);
+                            this.getDefaultStyleTextColor(firstTextTarget);
                         isDefaultStyleColor = true;
                     }
                 }
@@ -3219,11 +3218,28 @@ export class CanvasElementManager {
         return { color: textColor, isDefault: isDefaultStyleColor };
     }
 
+    private getTextColorTargets(topBox: HTMLElement): HTMLElement[] {
+        const editables = Array.from(
+            topBox.getElementsByClassName("bloom-editable"),
+        ) as HTMLElement[];
+        if (editables.length > 0) {
+            return editables;
+        }
+
+        const derivedTargets = Array.from(
+            topBox.querySelectorAll("[data-derived]"),
+        ) as HTMLElement[];
+        if (topBox.hasAttribute("data-derived")) {
+            derivedTargets.unshift(topBox);
+        }
+        return derivedTargets;
+    }
+
     // Returns the computed color of the text, which in the absence of a color style from the
     // Canvas element Tool will be from the Bubble-style (set in the StyleEditor).
     // An unfortunate, but greatly simplifying, use of JQuery.
-    public getDefaultStyleTextColor(firstEditable: HTMLElement): string {
-        return $(firstEditable).css("color");
+    public getDefaultStyleTextColor(textElement: HTMLElement): string {
+        return $(textElement).css("color");
     }
 
     // This gives us the patriarch (farthest ancestor) canvas element of a family of canvas elements.
@@ -3405,6 +3421,9 @@ export class CanvasElementManager {
 
     // Move all child canvas elements as necessary so they are at least partly inside their container
     // (by as much as we require when dragging them).
+    // Note: a similar algorithm that tries harder to get elements entirely on the page may be found
+    // in customXmatterPage.ensureDerivedFieldsFitOnCustomPage. If it proves more widely usable it
+    // should probably be moved.
     public ensureCanvasElementsIntersectParent(parentContainer: HTMLElement) {
         const canvasElements = Array.from(
             parentContainer.getElementsByClassName(kCanvasElementClass),
@@ -4809,24 +4828,6 @@ export class CanvasElementManager {
         );
     }
 
-    public addCanvasElementWithScreenCoords(
-        screenX: number,
-        screenY: number,
-        canvasElementType: CanvasElementType,
-        userDefinedStyleName?: string,
-        rightTopOffset?: string,
-    ): HTMLElement | undefined {
-        const clientX = screenX - window.screenX;
-        const clientY = screenY - window.screenY;
-        return this.addCanvasElement(
-            clientX,
-            clientY,
-            canvasElementType,
-            userDefinedStyleName,
-            rightTopOffset,
-        );
-    }
-
     private addCanvasElementFromOriginal(
         offsetX: number,
         offsetY: number,
@@ -4929,16 +4930,18 @@ export class CanvasElementManager {
             // Don't add a canvas element if we can't find the containing bloom-canvas.
             return undefined;
         }
-        // initial mouseX, mouseY coordinates are relative to viewport
-        const positionInViewport = new Point(
-            mouseX,
-            mouseY,
+        // initial mouseX, mouseY coordinates are relative to viewport. We want relative to bloom-canvas.
+        const rect = bloomCanvas[0].getBoundingClientRect();
+        const requestedPositionInCanvas = new Point(
+            mouseX - rect.left,
+            mouseY - rect.top,
             PointScaling.Scaled,
-            "Scaled Viewport coordinates",
+            "Scaled bloom-canvas coordinates",
         );
+        // Adjust so it's more certain to be IN the bloom-canvas.
         const positionInBloomCanvas = this.adjustRelativePointToBloomCanvas(
             bloomCanvas[0],
-            positionInViewport,
+            requestedPositionInCanvas,
         );
         if (canvasElementType === "video") {
             return this.addVideoCanvasElement(
@@ -6918,16 +6921,7 @@ export class CanvasElementManager {
             newImg.classList.remove("bloom-imageLoadError");
             newImgContainer.appendChild(newImg);
 
-            // Set level so Comical will consider the new canvas element to be under the existing ones.
-            const canvasElementElements = Array.from(
-                bloomCanvas.getElementsByClassName(kCanvasElementClass),
-            ) as HTMLElement[];
-            CanvasElementManager.putBubbleBefore(
-                bgCanvasElement,
-                canvasElementElements,
-                1,
-            );
-            bgCanvasElement.style.visibility = "none"; // hide it until we adjust its shape and position
+            bgCanvasElement.style.visibility = "hidden"; // hide it until we adjust its shape and position
             // consistent with level, we want it in front of the (new, placeholder) background image
             // and behind the other canvas elements.
             if (oldBgImage) {
@@ -6962,12 +6956,41 @@ export class CanvasElementManager {
             "src",
             oldBgImage?.getAttribute("src") ?? "placeHolder.png",
         );
-        this.adjustBackgroundImageSize(bloomCanvas, bgCanvasElement, true);
+        this.setupBackgroundImageAttributes(bloomCanvas, bgCanvasElement, true);
         bgCanvasElement.style.visibility = ""; // now we can show it, if it was new and hidden
         SetupMetadataButton(bloomCanvas);
         if (oldBgImage) {
             oldBgImage.remove();
         }
+    }
+
+    public setupBackgroundImageAttributes(
+        bloomCanvas: HTMLElement,
+        bgElement?: HTMLElement,
+        useSizeOfNewImage: boolean = false,
+    ) {
+        if (!bgElement) {
+            bgElement = bloomCanvas.getElementsByClassName(
+                kBackgroundImageClass,
+            )[0] as HTMLElement;
+        }
+        if (bgElement?.getAttribute("data-bubble")) {
+            return; // setup has already been done (data-bubble is added by putBubbleBefore)
+        }
+        // Newly added background image element has not yet been given its size
+        this.adjustBackgroundImageSize(
+            bloomCanvas,
+            bgElement,
+            useSizeOfNewImage,
+        );
+        // Set level so Comical will consider the new canvas element to be under the existing ones.
+        CanvasElementManager.putBubbleBefore(
+            bgElement,
+            Array.from(
+                bloomCanvas.getElementsByClassName(kCanvasElementClass),
+            ) as HTMLElement[],
+            1,
+        );
     }
 
     // Adjust the levels of all the bubbles of all the listed canvas elements so that
@@ -7861,7 +7884,7 @@ export function showCanvasTool() {
         return;
     }
 
-    doWhenEditTabBundleLoaded((rootFrameExports) => {
+    doWhenWorkspaceBundleLoaded((rootFrameExports) => {
         rootFrameExports.doWhenToolboxLoaded((toolboxFrameExports) => {
             const loadedToolbox = toolboxFrameExports.getTheOneToolbox();
             if (!loadedToolbox) {

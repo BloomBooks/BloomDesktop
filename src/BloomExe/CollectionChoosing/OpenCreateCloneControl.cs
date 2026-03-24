@@ -342,10 +342,7 @@ namespace Bloom.CollectionChoosing
                 if (tag.LangTag == Settings.Default.UserInterfaceLanguage)
                 {
                     item.Select();
-                    WorkspaceView.UpdateMenuTextToShorterNameOfSelection(
-                        _uiLanguageMenu,
-                        item.Text
-                    );
+                    _uiLanguageMenu.Text = WorkspaceView.GetShortenedLanguageName(item.Text);
                     return;
                 }
             }

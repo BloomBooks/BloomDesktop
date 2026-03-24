@@ -13,6 +13,7 @@ import {
     MessageUsingLegacyThemeWithIncompatibleCss,
     MessageIgnoringIncompatibleCssCanDelete,
 } from "../bookEdit/bookSettings/BookSettingsDialog";
+import { isLegacyThemeName } from "../bookEdit/bookSettings/appearanceThemeUtils";
 
 export const BookInfoIndicator: React.FunctionComponent<{
     bookId: string;
@@ -70,7 +71,7 @@ export const BookInfoIndicator: React.FunctionComponent<{
                 // The logic that shows one or none of these four messages is similar to that in BookSettingsDialog.
                 // See the comment there.
             }
-            {firstPossiblyConflictingCss && theme === "legacy-5-6" && (
+            {firstPossiblyConflictingCss && isLegacyThemeName(theme) && (
                 <div>
                     <WarningIcon
                         css={css`
@@ -90,7 +91,7 @@ export const BookInfoIndicator: React.FunctionComponent<{
                 </div>
             )}
             {firstPossiblyConflictingCss === "customBookStyles.css" &&
-                theme !== "legacy-5-6" && (
+                !isLegacyThemeName(theme) && (
                     <div>
                         <InfoIcon
                             css={css`
@@ -119,7 +120,7 @@ export const BookInfoIndicator: React.FunctionComponent<{
                 )}
             {firstPossiblyConflictingCss &&
                 firstPossiblyConflictingCss !== "customBookStyles.css" &&
-                theme !== "legacy-5-6" && (
+                !isLegacyThemeName(theme) && (
                     <span>
                         <InfoIcon
                             css={css`
@@ -146,7 +147,7 @@ export const BookInfoIndicator: React.FunctionComponent<{
         // we don't show if we don't have this because it is misleading to see info (instead of a warning) if we don't actually know
         !info.cssThemeName ? null : (
         <BloomTooltip enableClickInTooltip={true} tip={tip}>
-            {firstPossiblyConflictingCss && theme === "legacy-5-6" ? (
+            {firstPossiblyConflictingCss && isLegacyThemeName(theme) ? (
                 <WarningIcon color="warning" />
             ) : (
                 <InfoOutlinedIcon color="primary" />

@@ -8,7 +8,6 @@ import {
 } from "../../bloomMaterialUITheme";
 import { BloomTabs } from "../../react_components/BloomTabs";
 import { Tab, TabList, TabPanel } from "react-tabs";
-import "react-tabs/style/react-tabs.css";
 import { Div, H2, Span } from "../../react_components/l10nComponents";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
@@ -73,6 +72,19 @@ export const CheckoutNeededScreen: React.FunctionComponent<{
 
 export const PublishTabPane: React.FunctionComponent = () => {
     const kWaitForUserToChooseTabIndex = 5;
+
+    // Temporary: notify c# about clicks so WinForms menus can close.
+    // Remove this once menus move into the same browser UI.
+    React.useEffect(() => {
+        const notifyBrowserClicked = () => {
+            (window as any).chrome?.webview?.postMessage("browser-clicked");
+        };
+
+        window.addEventListener("click", notifyBrowserClicked);
+        return () => {
+            window.removeEventListener("click", notifyBrowserClicked);
+        };
+    }, []);
 
     const [publishTabReady, setPublishTabReady] = React.useState(false);
     const [publishTabInfo, setPublishTabInfo] = React.useState({

@@ -2,7 +2,7 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { useEffect, useRef, useState } from "react";
-import { getEditTabBundleExports } from "../../bookEdit/js/bloomFrames";
+import { getWorkspaceBundleExports } from "../../bookEdit/js/workspaceFrames";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import { get, postJson } from "../../utils/bloomApi";
@@ -381,7 +381,7 @@ const doRender = (
 ) => {
     let modalContainer;
     if (container) modalContainer = container;
-    else modalContainer = getEditTabBundleExports().getModalDialogContainer();
+    else modalContainer = getWorkspaceBundleExports().getModalDialogContainer();
     try {
         ReactDOM.render(<ColorPickerDialog {...props} />, modalContainer);
     } catch (error) {

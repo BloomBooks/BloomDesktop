@@ -31,101 +31,7 @@ namespace Bloom
         private void InitializeComponent()
         {
 			this.components = new System.ComponentModel.Container();
-			this._contextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
-			this._size1024x586 = new System.Windows.Forms.ToolStripMenuItem();
-			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
-			this._size800x600 = new System.Windows.Forms.ToolStripMenuItem();
-			this._size1024x600 = new System.Windows.Forms.ToolStripMenuItem();
-			this._size1024x768 = new System.Windows.Forms.ToolStripMenuItem();
-			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-			this.alwaysMeasureToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.startMeasuringPerformanceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.showPerformancePageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.meddleWithNewFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this._contextMenu.SuspendLayout();
 			this.SuspendLayout();
-			// 
-			// _contextMenu
-			// 
-			this._contextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._size1024x586,
-            this.toolStripMenuItem1,
-            this._size800x600,
-            this._size1024x600,
-            this._size1024x768,
-            this.toolStripSeparator1,
-            this.alwaysMeasureToolStripMenuItem,
-            this.startMeasuringPerformanceToolStripMenuItem,
-            this.showPerformancePageToolStripMenuItem,
-			this.meddleWithNewFilesToolStripMenuItem});
-			this._contextMenu.Name = "_contextMenu";
-			this._contextMenu.Size = new System.Drawing.Size(352, 192);
-			// 
-			// _size1024x586
-			// 
-			this._size1024x586.Name = "_size1024x586";
-			this._size1024x586.Size = new System.Drawing.Size(351, 22);
-			this._size1024x586.Text = "1024 x 586 Low-end netbook with windows Task bar";
-			this._size1024x586.Click += new System.EventHandler(this.On1024x586);
-			// 
-			// toolStripMenuItem1
-			// 
-			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-			this.toolStripMenuItem1.Size = new System.Drawing.Size(348, 6);
-			// 
-			// _size800x600
-			// 
-			this._size800x600.Name = "_size800x600";
-			this._size800x600.Size = new System.Drawing.Size(351, 22);
-			this._size800x600.Text = "800 x 600";
-			this._size800x600.Click += new System.EventHandler(this.On800x600Click);
-			// 
-			// _size1024x600
-			// 
-			this._size1024x600.Name = "_size1024x600";
-			this._size1024x600.Size = new System.Drawing.Size(351, 22);
-			this._size1024x600.Text = "1024 x 600";
-			this._size1024x600.Click += new System.EventHandler(this.On1024x600Click);
-			// 
-			// _size1024x768
-			// 
-			this._size1024x768.Name = "_size1024x768";
-			this._size1024x768.Size = new System.Drawing.Size(351, 22);
-			this._size1024x768.Text = "1024 x 768";
-			this._size1024x768.Click += new System.EventHandler(this.On1024x768);
-			// 
-			// toolStripSeparator1
-			// 
-			this.toolStripSeparator1.Name = "toolStripSeparator1";
-			this.toolStripSeparator1.Size = new System.Drawing.Size(348, 6);
-			// 
-			// alwaysMeasureToolStripMenuItem
-			// 
-			this.alwaysMeasureToolStripMenuItem.Name = "alwaysMeasureToolStripMenuItem";
-			this.alwaysMeasureToolStripMenuItem.Size = new System.Drawing.Size(351, 22);
-			this.alwaysMeasureToolStripMenuItem.Text = "Always Measure Performance";
-			this.alwaysMeasureToolStripMenuItem.Click += new System.EventHandler(this.alwaysMeasureToolStripMenuItem_Click);
-			// 
-			// startMeasuringPerformanceToolStripMenuItem
-			// 
-			this.startMeasuringPerformanceToolStripMenuItem.Name = "startMeasuringPerformanceToolStripMenuItem";
-			this.startMeasuringPerformanceToolStripMenuItem.Size = new System.Drawing.Size(351, 22);
-			this.startMeasuringPerformanceToolStripMenuItem.Text = "Start Measuring Performance";
-			this.startMeasuringPerformanceToolStripMenuItem.Click += new System.EventHandler(this.startMeasuringPerformanceToolStripMenuItem_Click);
-			// 
-			// showPerformancePageToolStripMenuItem
-			// 
-			this.showPerformancePageToolStripMenuItem.Name = "showPerformancePageToolStripMenuItem";
-			this.showPerformancePageToolStripMenuItem.Size = new System.Drawing.Size(351, 22);
-			this.showPerformancePageToolStripMenuItem.Text = "Show Performance Page";
-			this.showPerformancePageToolStripMenuItem.Click += new System.EventHandler(this.showPerformancePageToolStripMenuItem_Click);
-			// 
-			// meddleWithNewFilesToolStripMenuItem
-			// 
-			this.meddleWithNewFilesToolStripMenuItem.Name = "meddleWithNewFilesToolStripMenuItem";
-			this.meddleWithNewFilesToolStripMenuItem.Size = new System.Drawing.Size(351, 22);
-			this.meddleWithNewFilesToolStripMenuItem.Text = "Meddle with New Files";
-			this.meddleWithNewFilesToolStripMenuItem.Click += new System.EventHandler(this.meddleWithNewFilesToolStripMenuItem_Click);
 			// 
 			// Shell
 			// 
@@ -133,7 +39,6 @@ namespace Bloom
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this.ClientSize = new System.Drawing.Size(1012, 548);
-			this.ContextMenuStrip = this._contextMenu;
 			this.KeyPreview = true;
 			this.MinimumSize = new System.Drawing.Size(400, 300);
 			this.Name = "Shell";
@@ -144,23 +49,10 @@ namespace Bloom
 			this.Deactivate += new System.EventHandler(this.Shell_Deactivate);
 			this.Load += new System.EventHandler(this.Shell_Load);
 			this.ResizeEnd += new System.EventHandler(this.Shell_ResizeEnd);
-			this._contextMenu.ResumeLayout(false);
 			this.ResumeLayout(false);
 
         }
 
 		#endregion
-
-		private System.Windows.Forms.ContextMenuStrip _contextMenu;
-		private System.Windows.Forms.ToolStripMenuItem _size800x600;
-		private System.Windows.Forms.ToolStripMenuItem _size1024x600;
-		private System.Windows.Forms.ToolStripMenuItem _size1024x768;
-		private System.Windows.Forms.ToolStripMenuItem _size1024x586;
-		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
-		private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-		private System.Windows.Forms.ToolStripMenuItem startMeasuringPerformanceToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem showPerformancePageToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem alwaysMeasureToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem meddleWithNewFilesToolStripMenuItem;
 	}
 }

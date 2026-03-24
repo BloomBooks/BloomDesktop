@@ -57,7 +57,7 @@
 
             // This started causing breakpoints not be hit, at least by version 5.5 (new webpack?)
             // "sourceMapPathOverrides": {
-            //     "webpack://editTabBundle/./*": "${workspaceFolder}/*"
+            //     "webpack://workspaceBundle/./*": "${workspaceFolder}/*"
             // }
 
             // "trace": true, // when uncommented, this writes a log to %userprofile%\AppData\Local\Temp\vscode-chrome-debug.txt
@@ -104,7 +104,7 @@
             "webRoot": "${workspaceFolder}",
             "pathMappings": [
                 {
-                    "url": "webpack://editTabBundle",
+                    "url": "webpack://workspaceBundle",
                     "path": "${workspaceFolder}"
                 }
             ],
@@ -128,7 +128,7 @@
             "userDataDir": "${workspaceFolder}/output/chrome",
             "breakOnLoad": true,
             "sourceMapPathOverrides": {
-                "webpack://editTabBundle/./*": "${workspaceFolder}/*"
+                "webpack://workspaceBundle/./*": "${workspaceFolder}/*"
             }
             // "trace": true, // when uncommented, this writes a log to %userprofile%\AppData\Local\Temp\vscode-chrome-debug.txt
         },

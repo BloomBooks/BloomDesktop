@@ -61,13 +61,17 @@ namespace Bloom.Book
                 parentCollectionPath
             );
 
+            // Generate a new instance ID for the book before creating the folder
+            // so we can use it to create a unique folder name
+            var newBookInstanceId = Guid.NewGuid().ToString();
+
             // We use the "initial name" to make the initial copy, and it gives us something
             //to name the folder and file until such time as the user enters a title in for the book.
-            string initialBookName = GetInitialName(parentCollectionPath);
+            string initialBookName = GetInitialName(parentCollectionPath, newBookInstanceId);
             var newBookFolder = Path.Combine(parentCollectionPath, initialBookName);
             CopyFolder(sourceBookFolder, newBookFolder);
             BookStorage.RemoveLocalOnlyFiles(newBookFolder);
-            //if something bad happens from here on out, we need to delete that folder we just made
+                //if something bad happens from here on out, we need to delete that folder we just made
             try
             {
                 var oldNamedFile = Path.Combine(
@@ -89,7 +93,7 @@ namespace Bloom.Book
                 RobustFile.Move(oldNamedFile, newNamedFile);
 
                 //the destination may change here...
-                newBookFolder = SetupNewDocumentContents(sourceBookFolder, newBookFolder);
+                newBookFolder = SetupNewDocumentContents(sourceBookFolder, newBookFolder, newBookInstanceId);
 
                 if (OnNextRunSimulateFailureMakingBook)
                     throw new ApplicationException("Simulated failure for unit test");
@@ -162,7 +166,7 @@ namespace Bloom.Book
             return defaultValue;
         }
 
-        private string SetupNewDocumentContents(string sourceFolderPath, string initialPath)
+        private string SetupNewDocumentContents(string sourceFolderPath, string initialPath, string newBookInstanceId)
         {
             // This bookInfo is temporary, just used to make the (also temporary) BookStorage we
             // use here in this method. I don't think it actually matters what its save context is.
@@ -269,7 +273,7 @@ namespace Bloom.Book
 
             InjectXMatter(initialPath, storage, sizeAndOrientation);
 
-            SetLineageAndId(storage, sourceFolderPath);
+            SetLineageAndId(storage, sourceFolderPath, newBookInstanceId);
 
             if (makingTranslation)
             {
@@ -412,7 +416,7 @@ namespace Bloom.Book
             storage.Dom.RemoveMetaElement("xmatter-for-children");
         }
 
-        private void SetLineageAndId(BookStorage storage, string sourceFolderPath)
+        private void SetLineageAndId(BookStorage storage, string sourceFolderPath, string newBookInstanceId)
         {
             string parentId = null;
             string lineage = null;
@@ -439,7 +443,8 @@ namespace Bloom.Book
             {
                 storage.BookInfo.BookLineage = lineage + parentId;
             }
-            storage.BookInfo.Id = Guid.NewGuid().ToString();
+            // Use the pre-generated instance ID that was used to create the unique folder name
+            storage.BookInfo.Id = newBookInstanceId;
             storage.Dom.RemoveMetaElement("bloomBookLineage"); //old metadata
             storage.Dom.RemoveMetaElement("bookLineage"); // even older name
         }
@@ -680,10 +685,10 @@ namespace Bloom.Book
             }
         }
 
-        private string GetInitialName(string parentCollectionPath)
+        private string GetInitialName(string parentCollectionPath, string instanceId)
         {
             var name = BookStorage.SanitizeNameForFileSystem(UntitledBookName);
-            return BookStorage.GetUniqueFolderName(parentCollectionPath, name);
+            return BookStorage.GetUniqueBookFolderName(parentCollectionPath, name, instanceId);
         }
 
         public static string UntitledBookName

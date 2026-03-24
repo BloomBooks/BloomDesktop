@@ -1,16 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Web;
-using System.Xml;
 using Bloom.ImageProcessing;
 using Bloom.SafeXml;
-using Bloom.Utils;
 using L10NSharp;
+using SIL.Core.ClearShare;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
@@ -97,7 +93,7 @@ namespace Bloom.Book
                     // Simply set it to the default version.
                     if (!licenseUrl.EndsWith("/"))
                         licenseUrl += "/";
-                    licenseUrl += CreativeCommonsLicense.kDefaultVersion;
+                    licenseUrl += CreativeCommonsLicenseInfo.kDefaultVersion;
                     metadata.License = CreativeCommonsLicense.FromLicenseUrl(licenseUrl);
                 }
                 catch (Exception e)
@@ -161,7 +157,7 @@ namespace Bloom.Book
             metadata.License = new CreativeCommonsLicense(
                 true,
                 true,
-                CreativeCommonsLicense.DerivativeRules.Derivatives
+                CreativeCommonsLicenseInfo.DerivativeRules.Derivatives
             );
             return metadata;
         }
@@ -210,7 +206,7 @@ namespace Bloom.Book
             // CustomLicense returns "und" for the description language unless the description is empty.
             // For an empty description, it returns the localized form of the boilerplate text
             // "For permission to reuse, contact the copyright holder." with the appropriate language tag.
-            //if (!(languageUsedForDescription == "und" && metadata.License is CustomLicense))
+            //if (!(languageUsedForDescription == "und" && metadata.License is CustomLicenseInfo))
             //{
             //    LocalizationHelper.CheckForMissingLocalization(
             //        langPriorities.ToList(),
@@ -235,7 +231,7 @@ namespace Bloom.Book
             );
 
             // we could do away with licenseImage in the bloomDataDiv, since the name is always the same, but we keep it for backward compatibility
-            if (metadata.License is CreativeCommonsLicense)
+            if (metadata.License is CreativeCommonsLicenseInfo)
             {
                 dom.SetBookSetting("licenseImage", "*", "license.png");
             }
@@ -331,7 +327,7 @@ namespace Bloom.Book
             {
                 // For CC0, we store the "copyright", but don't display it in the text of the book.
                 var licenseUrl = dom.GetBookSetting("licenseUrl").GetExactAlternative("*");
-                if (licenseUrl == CreativeCommonsLicense.CC0Url)
+                if (licenseUrl == CreativeCommonsLicenseInfo.CC0Url)
                     source = new MultiTextBase();
             }
 
@@ -381,7 +377,7 @@ namespace Bloom.Book
         /// </summary>
         private static void UpdateBookLicenseIcon(Metadata metadata, string bookFolderPath)
         {
-            var licenseImage = metadata.License.GetImage();
+            var licenseImage = (metadata.License as ILicenseWithImage)?.GetImage();
             var imagePath = bookFolderPath.CombineForPath("license.png");
             // Don't try to overwrite the license image for a template book.  (See BL-3284.)
             if (
@@ -535,7 +531,7 @@ namespace Bloom.Book
         )
         {
             licenseOnly = licenseInfo.GetMinimalFormForCredits(languagePriorityIds, out _);
-            if (licenseInfo is CustomLicense)
+            if (licenseInfo is CustomLicenseInfo)
             {
                 // I can imagine being more fancy... something like "Licensed under custom license:", and get localizations
                 // for that... but sheesh, these are even now very rare in Bloom-land and should become more rare.

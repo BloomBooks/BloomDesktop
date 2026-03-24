@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.TeamCollection;
 using Bloom.Utils;
+using Bloom.Workspace;
 
 namespace Bloom
 {
@@ -62,8 +63,8 @@ namespace Bloom
 
     public class TabChangedDetails
     {
-        public Control From;
-        public Control To;
+        public WorkspaceTab? FromTab;
+        public WorkspaceTab? ToTab;
 
         // Must be executed by the subscriber when it is safe to do so, possibly after returning
         // from the event handler.
@@ -83,7 +84,7 @@ namespace Bloom
     }
 
     /// <summary>
-    /// Gives the first control in the tab
+    /// Indicates tab change completion
     /// </summary>
     public class SelectedTabChangedEvent : Event<TabChangedDetails>
     {

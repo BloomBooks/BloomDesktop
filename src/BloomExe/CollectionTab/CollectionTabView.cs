@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,26 +7,25 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.MiscUI;
-using Bloom.Properties;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
-using Bloom.web;
 using Bloom.Workspace;
 using L10NSharp;
 using SIL.Reporting;
-using SIL.Windows.Forms.SettingProtection;
 
 namespace Bloom.CollectionTab
 {
-    public partial class CollectionTabView : UserControl, IBloomTabArea
+    public class CollectionTabView : IBloomTabArea, IDisposable
     {
         private readonly CollectionModel _model;
         private WorkspaceTabSelection _tabSelection;
         private BookSelection _bookSelection;
         private BloomWebSocketServer _webSocketServer;
         private TeamCollectionManager _tcManager;
+        private bool _isDisposed;
         private bool _bookChangesPending = false; // bookchanged event while tab not visible
+
+        internal WorkspaceView WorkspaceView { get; set; }
 
         public delegate CollectionTabView Factory(); //autofac uses this
 
@@ -57,31 +55,16 @@ namespace Bloom.CollectionTab
 
             BookCollection.CollectionCreated += OnBookCollectionCreated;
 
-            InitializeComponent();
-            _reactControl.SetLocalizationChangedEvent(localizationChangedEvent); // after InitializeComponent, which creates it.
-            // JohnT: when changing 5.7 to 6.0, I changed this instead to 6.1. I believe it is a button
-            // to launch the new settings dialog, which we are not yet ready to release.
-            // The current settings dialog is the thing code calls the "LegacySettingsDialog" though a lot of its tabs are React.
-            _settingsButton.Visible = false; // Hide for now. We'll bring it back in 6.1.
-            BackColor = _reactControl.BackColor = Palette.GeneralBackground;
-            _toolStrip.Renderer = new NoBorderToolStripRenderer();
-            _toolStripLeft.Renderer = new NoBorderToolStripRenderer();
-
-            // When going down to Shrink Stage 3 (see WorkspaceView), we want the right-side toolstrip to take precedence
-            // (Settings, Other Collection).
-            // This essentially makes the TC Status button's zIndex less than the buttons on the right side.
-            _toolStripLeft.SendToBack();
+            localizationChangedEvent.Subscribe(unused =>
+            {
+                _webSocketServer.SendEvent("collection", "reload");
+            });
 
             //TODO splitContainer1.SplitterDistance = _collectionListView.PreferredWidth;
 
-            if (SIL.PlatformUtilities.Platform.IsMono)
-            {
-                BackgroundColorsForLinux();
-            }
-
             selectedTabChangedEvent.Subscribe(c =>
             {
-                if (c.To == this)
+                if (_tabSelection.ActiveTab == WorkspaceTab.collection)
                 {
                     Logger.WriteEvent("Entered Collections Tab");
                     if (_bookChangesPending && _bookSelection.CurrentSelection != null)
@@ -91,55 +74,18 @@ namespace Bloom.CollectionTab
             SetTeamCollectionStatus(tcManager);
             TeamCollectionManager.TeamCollectionStatusChanged += (sender, args) =>
             {
-                if (IsHandleCreated && !IsDisposed)
+                if (WorkspaceView != null && !_isDisposed)
                 {
                     SafeInvoke.InvokeIfPossible(
                         "update TC status",
-                        this,
+                        WorkspaceView,
                         false,
                         () => SetTeamCollectionStatus(tcManager)
                     );
                 }
             };
-            _tcStatusButton.Click += (sender, args) =>
-            {
-                // Reinstate this to see messages from before we started up.
-                // We think it might be too expensive to show a list as long as this might get.
-                // Instead, in the short term we may add a button to show the file.
-                // Later we may implement some efficient way to scroll through them.
-                // tcManager.CurrentCollection?.MessageLog?.LoadSavedMessages();
-
-                dynamic messageBundle = new DynamicJson();
-                messageBundle.showReloadButton = tcManager.MessageLog.ShouldShowReloadButton;
-                _webSocketServer.LaunchDialog("TeamCollectionDialog", messageBundle);
-                tcManager.CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(
-                    MessageAndMilestoneType.LogDisplayed
-                );
-            };
-
-            // We don't want this control initializing until team collections sync (if any) is done.
-            // That could change, but for now we're not trying to handle async changes arriving from
-            // the TC to the local collection, and as part of that, the collection tab doesn't expect
-            // the local collection to change because of TC stuff once it starts loading.
-            Controls.Remove(_reactControl);
             bookSelection.SelectionChanged += (sender, e) =>
                 BookSelectionChanged(bookSelection.CurrentSelection);
-        }
-
-        private bool _minimized;
-
-        protected override void OnSizeChanged(EventArgs e)
-        {
-            base.OnSizeChanged(e);
-            // To correct a weird SplitPane behavior in CollectionsTabPane, we need
-            // a notification when our window changes state from minimized to something else.
-            bool minimized = ParentForm?.WindowState == FormWindowState.Minimized;
-            if (!minimized && _minimized)
-            {
-                _webSocketServer.SendEvent("window", "restored");
-            }
-
-            _minimized = minimized;
         }
 
         private void BookSelectionChanged(Book.Book book)
@@ -192,7 +138,7 @@ namespace Bloom.CollectionTab
             {
                 c.FolderContentChanged += (sender, eventArgs) =>
                 {
-                    if (IsDisposed)
+                    if (_isDisposed)
                     {
                         Debug.Fail(
                             "FolderContentChanged handler invoked from a CollectionTabView that has already been disposed. Did the collection have cleanup such as StopWatchingDirectory() occur?"
@@ -269,24 +215,24 @@ namespace Bloom.CollectionTab
 
         public void ReadyToShowCollections()
         {
-            Invoke(
-                (Action)(
-                    () =>
-                    {
-                        // I'm not sure this is the best place to do this. The old LibraryListView had a comment:
-                        // "If we repair duplicates and there is a reason to toast (e.g. locked meta.json file),
-                        // The ongoing UI activity focuses Bloom over top of the toast after a brief flash.
-                        // For that reason, we add a new stage for tasks that need to happen after the UI is updated."
-                        // I don't fully understand that. In that view, it was done after we created the collection buttons.
-                        // My current inclination is that it's not a view responsibility at all.
-                        // However, until we get rid of the old collection tab, it's tricky to move it, so I've just
-                        // duplicated it here.
-                        // Doing it at this point seems to work fine.
-                        CheckForDuplicatesAndRepair();
-                        Controls.Add(_reactControl);
-                    }
-                )
-            );
+            void work()
+            {
+                // I'm not sure this is the best place to do this. The old LibraryListView had a comment:
+                // "If we repair duplicates and there is a reason to toast (e.g. locked meta.json file),
+                // The ongoing UI activity focuses Bloom over top of the toast after a brief flash.
+                // For that reason, we add a new stage for tasks that need to happen after the UI is updated."
+                // I don't fully understand that. In that view, it was done after we created the collection buttons.
+                // My current inclination is that it's not a view responsibility at all.
+                // However, until we get rid of the old collection tab, it's tricky to move it, so I've just
+                // duplicated it here.
+                // Doing it at this point seems to work fine.
+                CheckForDuplicatesAndRepair();
+            }
+
+            if (WorkspaceView != null && WorkspaceView.InvokeRequired)
+                WorkspaceView.Invoke((Action)work);
+            else
+                work();
         }
 
         private void CheckForDuplicatesAndRepair()
@@ -310,38 +256,6 @@ namespace Bloom.CollectionTab
             );
         }
 
-        internal void ManageSettings(SettingsProtectionHelper settingsLauncherHelper)
-        {
-            //we have a couple of buttons which don't make sense for the remote (therefore vulnerable) low-end user
-            settingsLauncherHelper.ManageComponent(_legacySettingsButton);
-            //comment out until 6.1 settingsLauncherHelper.ManageComponent(_settingsButton);
-
-            //NB: this isn't really a setting, but we're using that feature to simplify this menu down to what makes sense for the easily-confused user
-            settingsLauncherHelper.ManageComponent(_openCreateCollectionButton);
-        }
-
-        private void BackgroundColorsForLinux()
-        {
-            // Set the background image for Mono because the background color does not paint,
-            // and if we override the background paint handler, the default styling of the child
-            // controls is changed.
-
-            // We are getting an exception if none of the buttons are visible. The tabstrip is set
-            // to Dock.Top which results in the height being zero if no buttons are visible.
-            if ((_toolStrip.Height == 0) || (_toolStrip.Width == 0))
-                return;
-
-            var bmp = new Bitmap(_toolStrip.Width, _toolStrip.Height);
-            using (var g = Graphics.FromImage(bmp))
-            {
-                using (var b = new SolidBrush(_toolStrip.BackColor))
-                {
-                    g.FillRectangle(b, 0, 0, bmp.Width, bmp.Height);
-                }
-            }
-            _toolStrip.BackgroundImage = bmp;
-        }
-
         public string CollectionTabLabel
         {
             get
@@ -358,67 +272,22 @@ namespace Bloom.CollectionTab
             get { return "/Tasks/Collections_tab_tasks/Collections_tab_tasks_overview.htm"; }
         }
 
-        public Control TopBarControl
-        {
-            get { return _topBarControl; }
-        }
-
         /// <summary>
-        /// TopBarControl.Width is not right here, because the Team Collection status button only shows in team collections.
-        /// </summary>
-        public int WidthToReserveForTopBarControl =>
-            _openCreateCollectionButton.Width
-            + _settingsButton.Width
-            + _legacySettingsButton.Width
-            + (_tcStatusButton.Visible ? _tcStatusButton.Width : 0);
-
-        public void PlaceTopBarControl()
-        {
-            _topBarControl.Dock = DockStyle.Right;
-        }
-
-        public Bitmap ToolStripBackground { get; set; }
-
-        private WorkspaceView GetWorkspaceView()
-        {
-            Control ancestor = Parent;
-            while (ancestor != null && !(ancestor is WorkspaceView))
-                ancestor = ancestor.Parent;
-            return ancestor as WorkspaceView;
-        }
-
-        private void _legacySettingsButton_Click(object sender, EventArgs e)
-        {
-            GetWorkspaceView().OnLegacySettingsButton_Click(sender, e);
-        }
-
-        private void _settingsButton_Click(object sender, EventArgs e)
-        {
-            _webSocketServer.LaunchDialog("CollectionSettingsDialog");
-        }
-
-        private void _openCreateCollectionButton_Click(object sender, EventArgs e)
-        {
-            GetWorkspaceView().OpenCreateCollection();
-        }
-
-        /// <summary>
-        /// Set a new TC status image. Called at Idle time or startup, on the UI thread.
+        /// Update the TeamCollection button text/icon/color. Called at Idle time or startup, on the UI thread.
         /// N.B.: It also gets called if the user tries to do something and the TeamCollection suddenly
         /// recognizes it is in a disconnected state.
         /// </summary>
-        public void SetTeamCollectionStatus(TeamCollectionManager tcManager)
+        internal void SetTeamCollectionStatus(ITeamCollectionManager tcManager)
         {
-            _tcStatusButton.Update(tcManager.CollectionStatus);
+            var status = tcManager?.CollectionStatus ?? TeamCollectionStatus.None;
+            _webSocketServer.SendString("collection", "tcStatus", status.ToString());
+
             // This will cause the CollectionsTabBookPane to reload the status of the book
             // (and the collection itself), which will trickle down to the status panel.
-            if (tcManager.CollectionStatus == TeamCollectionStatus.Disconnected)
+            if (tcManager?.CollectionStatus == TeamCollectionStatus.Disconnected)
+            {
                 _webSocketServer.SendEvent("bookTeamCollectionStatus", "reload");
-        }
-
-        private void _tcStatusButton_Click(object sender, EventArgs e)
-        {
-            // probably will do GetWorkspaceView().OpenTCStatus();
+            }
         }
 
         /// <summary>
@@ -441,6 +310,29 @@ namespace Bloom.CollectionTab
             Task.Run(() =>
                 _model.TheOneEditableCollection.UpdateBloomLibraryStatusOfBooks(bookInfos)
             );
+        }
+
+        public void Dispose()
+        {
+            if (_isDisposed)
+                return;
+
+            _isDisposed = true;
+            BookCollection.CollectionCreated -= OnBookCollectionCreated;
+
+            try
+            {
+                var collections =
+                    _model?.GetBookCollections(true) ?? Enumerable.Empty<BookCollection>();
+                foreach (var collection in collections)
+                    collection?.StopWatchingDirectory();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("Caught exception in CollectionTabView.Dispose(): {0}", e);
+                if (!Program.RunningInConsoleMode)
+                    throw;
+            }
         }
     }
 }

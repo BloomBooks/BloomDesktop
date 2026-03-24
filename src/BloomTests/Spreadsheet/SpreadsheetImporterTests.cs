@@ -384,7 +384,14 @@ namespace BloomTests.Spreadsheet
             </div>
 			<div class=""split-pane-component position-top"">
                 <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
-                    <div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{2}""><img src=""placeHolder.png"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>{4}</div>
+                    <div class=""bloom-canvas bloom-has-canvas-element bloom-leadingElement"" data-test-id=""ic{2}"">
+						<div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
+							<div class=""bloom-imageContainer"">
+								<img src=""placeHolder.png"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
+							</div>
+						</div>
+						{4}
+					</div>
                 </div>
             </div>
         </div>
@@ -432,11 +439,16 @@ namespace BloomTests.Spreadsheet
             </div>
 			<div class=""split-pane-component position-top"">
                 <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
-                    <div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{2}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+                    <div class=""bloom-canvas bloom-has-canvas-element bloom-leadingElement"" data-test-id=""ic{2}"">
+						<div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
+							<div class=""bloom-imageContainer"">
+								<img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
+							</div>
+						</div>
+					</div>
                 </div>
             </div>
-			<div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
-                <div class=""split-pane-component position-top"">
+			<div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">\n                <div class=""split-pane-component position-top"">
                     <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
                         <div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"" data-test-id=""tg{3}"">
                            <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
@@ -451,7 +463,13 @@ namespace BloomTests.Spreadsheet
             </div>
 			<div class=""split-pane-component position-top"">
                 <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
-                    <div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{4}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+                    <div class=""bloom-canvas bloom-has-canvas-element bloom-leadingElement"" data-test-id=""ic{4}"">
+						<div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
+							<div class=""bloom-imageContainer"">
+								<img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
+							</div>
+						</div>
+					</div>
                 </div>
             </div>
         </div>
@@ -513,7 +531,13 @@ namespace BloomTests.Spreadsheet
         static string BloomCanvas(int icNumber)
         {
             return String.Format(
-                @"<div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{0}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>",
+                @"<div class=""bloom-canvas bloom-has-canvas-element bloom-leadingElement"" data-test-id=""ic{0}"">
+            <div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
+                <div class=""bloom-imageContainer"">
+                    <img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
+                </div>
+            </div>
+        </div>",
                 icNumber
             );
         }
@@ -684,6 +708,28 @@ namespace BloomTests.Spreadsheet
 		                    <div class=""bloom-editable ImageDescriptionEdit-style"" lang=""z"" contenteditable=""true"" data-book=""coverImageDescription""></div>
 		                </div>
 					</div>
+                </div>
+            </div>
+        </div>
+    </div>",
+                pageNumber,
+                icNumber
+            );
+        }
+
+        public static string PageWithLegacyImageStructure(int pageNumber, int icNumber)
+        {
+            return string.Format(
+                @"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
+            Basic Text &amp; Picture
+        </div>
+
+        <div class=""pageDescription"" lang=""en""></div>
+
+        <div class=""split-pane-component marginBox"" style="""">
+			<div class=""split-pane-component position-top"">
+                <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px""><div class=""bloom-canvas bloom-leadingElement"" title=""legacy image container"" data-test-id=""ic{1}""><img src=""placeHolder.png"" alt="""" data-copyright="""" data-creator="""" data-license="""" height=""100"" width=""200""></img></div>
                 </div>
             </div>
         </div>
@@ -1092,7 +1138,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[@data-test-id='{tag}']/img[@src='{text}']",
+                    $".//div[@data-test-id='{tag}']//img[@src='{text}']",
                     1
                 );
         }
@@ -1104,7 +1150,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[contains(@class, 'bloom-canvas')]/img[@src='{src}']",
+                    $".//div[contains(@class, 'bloom-canvas')]//img[@src='{src}']",
                     1
                 );
             // This is the ID for the standard "Just a picture" page
@@ -1136,7 +1182,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[contains(@class, 'bloom-canvas')]/img[@src='{src}']",
+                    $".//div[contains(@class, 'bloom-canvas')]//img[@src='{src}']",
                     1
                 );
             AssertThatXmlIn
@@ -1273,6 +1319,63 @@ namespace BloomTests.Spreadsheet
         }
     }
 
+    public class SpreadsheetImportIntoLegacyImagePageTests
+    {
+        private HtmlDom _dom;
+        private TemporaryFolder _bookFolder;
+
+        [OneTimeSetUp]
+        public async Task OneTimeSetUp()
+        {
+            var xml = string.Format(
+                SpreadsheetImageAndTextImportTests.templateDom,
+                SpreadsheetImageAndTextImportTests.coverPage
+                    + SpreadsheetImageAndTextImportTests.PageWithLegacyImageStructure(1, 1)
+                    + SpreadsheetImageAndTextImportTests.insideBackCoverPage
+                    + SpreadsheetImageAndTextImportTests.backCoverPage
+            );
+            _dom = new HtmlDom(xml, true);
+
+            var ss = new InternalSpreadsheet();
+            var columnForImage = ss.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
+
+            var contentRow = new ContentRow(ss);
+            contentRow.AddCell(InternalSpreadsheet.PageContentRowLabel);
+            contentRow.SetCell(columnForImage, "images/shirt.png");
+
+            _bookFolder = new TemporaryFolder("SpreadsheetImportIntoLegacyImagePageTests");
+            var spreadsheetFolder =
+                SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(
+                    "src/BloomTests/ImageProcessing"
+                );
+
+            var importer = new TestSpreadsheetImporter(
+                null,
+                _dom,
+                spreadsheetFolder,
+                _bookFolder.FolderPath
+            );
+            await importer.ImportAsync(ss);
+        }
+
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            _bookFolder?.Dispose();
+        }
+
+        [Test]
+        public void ImageImportedIntoLegacyCanvas()
+        {
+            AssertThatXmlIn
+                .Dom(_dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@data-test-id='ic1']/img[@src='shirt.png']",
+                    1
+                );
+        }
+    }
+
     /// <summary>
     /// There are some special cases we can only test with a DOM in which the last content page
     /// has neither text nor image elements.
@@ -1391,7 +1494,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[contains(@class, 'bloom-canvas')]/img[@src='{src}']",
+                    $".//div[contains(@class, 'bloom-canvas')]//img[@src='{src}']",
                     1
                 );
             // This is the ID for the standard "Just a picture" page
@@ -1412,7 +1515,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[contains(@class, 'bloom-canvas')]/img[@src='{src}']",
+                    $".//div[contains(@class, 'bloom-canvas')]//img[@src='{src}']",
                     1
                 );
             AssertThatXmlIn
@@ -1700,7 +1803,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[@data-test-id='{tag}']/img[@src='{text}']",
+                    $".//div[@data-test-id='{tag}']//img[@src='{text}']",
                     1
                 );
         }
@@ -1826,7 +1929,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[@data-test-id='{tag}']/img[@src='{text}']",
+                    $".//div[@data-test-id='{tag}']//img[@src='{text}']",
                     1
                 );
         }

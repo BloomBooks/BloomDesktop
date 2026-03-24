@@ -7,7 +7,7 @@ import {
     toolboxTheme,
 } from "../../../bloomMaterialUITheme";
 import * as ReactDOM from "react-dom";
-import { getToolboxBundleExports } from "../../js/bloomFrames";
+import { getToolboxBundleExports } from "../../js/workspaceFrames";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { default as PencilIcon } from "@mui/icons-material/Edit";
 import { showGamePromptDialog } from "../games/GameTool";

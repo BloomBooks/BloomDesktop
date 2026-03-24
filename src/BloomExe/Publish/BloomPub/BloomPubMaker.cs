@@ -499,6 +499,10 @@ namespace Bloom.Publish.BloomPub
                     modifiedBook.FolderPath,
                     cssLangsToKeep
                 );
+                UpdatePublicationLanguageMetadataInDataDiv(
+                    modifiedBook,
+                    settings.LanguagesToInclude
+                );
             }
             else if (
                 Program.RunningHarvesterMode
@@ -517,6 +521,7 @@ namespace Bloom.Publish.BloomPub
                     shouldPruneXmatter: true,
                     xmatterLangsToKeep
                 );
+                UpdatePublicationLanguageMetadataInDataDiv(modifiedBook, languagesToInclude);
             }
 
             // Do this after processing interactive pages, as they can satisfy the criteria for being 'blank'
@@ -611,18 +616,74 @@ namespace Bloom.Publish.BloomPub
             ConvertCoverLinkToRealPageId(modifiedBook);
 
             AddDistributionFile(modifiedBookFolderPath, creator, settings);
-            // Make sure the bookdata we save is consistent with any changes we made (for example,
-            // to attributes of xmatter pages, BL-14907). Such changes are typically not made to the DataDiv itself,
-            // so we need to suck in the data from the edited DOM WITHOUT the DataDiv.
-            var dataDiv = modifiedBook.OurHtmlDom.SelectSingleNode("//div[@id='bloomDataDiv']");
-            var parent = dataDiv.ParentElement;
-            var next = dataDiv.NextSibling;
-            parent.RemoveChild(dataDiv);
-            modifiedBook.BookData.SuckInDataFromEditedDom(modifiedBook.OurHtmlDom);
-            parent.InsertBefore(dataDiv, next);
-            modifiedBook.Save();
+            modifiedBook.Save(true);
 
             return modifiedBook;
+        }
+
+        private static void UpdatePublicationLanguageMetadataInDataDiv(
+            Book.Book modifiedBook,
+            IEnumerable<string> languagesToInclude
+        )
+        {
+            var languages = languagesToInclude
+                .Where(tag => !string.IsNullOrWhiteSpace(tag))
+                .Distinct()
+                .ToArray();
+            if (!languages.Any())
+                return;
+
+            var metadataLanguage = modifiedBook.BookData.MetadataLanguage1Tag;
+            var languageNames = languages.Select(tag =>
+                modifiedBook.CollectionSettings.GetLanguageName(tag, metadataLanguage)
+            );
+            SetDataBookValueInDataDiv(
+                modifiedBook.RawDom,
+                "languagesOfBook",
+                string.Join(", ", languageNames)
+            );
+            SetDataBookValueInDataDiv(modifiedBook.RawDom, "contentLanguage1", languages[0]);
+            // I'm not sure this is exactly right in every case...for example, I think sometimes
+            // we purposely have contentLangauge2 be the same as contentLanguage1,
+            // but setting these values at all is 'extra credit' because Bloom Player currently
+            // only uses contentLanguage1. It's not obvious to me what they really should be
+            // if the publication process has modified the original langauges of the book.
+            SetDataBookValueInDataDiv(
+                modifiedBook.RawDom,
+                "contentLanguage2",
+                languages.Length > 1 ? languages[1] : ""
+            );
+            SetDataBookValueInDataDiv(
+                modifiedBook.RawDom,
+                "contentLanguage3",
+                languages.Length > 2 ? languages[2] : ""
+            );
+        }
+
+        private static void SetDataBookValueInDataDiv(
+            SafeXmlDocument dom,
+            string dataBookKey,
+            string value
+        )
+        {
+            var dataDiv = dom.SelectSingleNode("//div[@id='bloomDataDiv']") as SafeXmlElement;
+            if (dataDiv == null)
+                return;
+
+            var dataNode = dataDiv
+                .SafeSelectNodes($"div[@data-book='{dataBookKey}']")
+                .Cast<SafeXmlElement>()
+                .FirstOrDefault();
+
+            if (dataNode == null)
+            {
+                dataNode = dom.CreateElement("div");
+                dataNode.SetAttribute("data-book", dataBookKey);
+                dataNode.SetAttribute("lang", "*");
+                dataDiv.AppendChild(dataNode);
+            }
+
+            dataNode.InnerText = value ?? "";
         }
 
         private static void ConvertCoverLinkToRealPageId(Book.Book book)
@@ -759,6 +820,8 @@ namespace Bloom.Publish.BloomPub
                 // are already removing them in PublishHelper.RemoveUnwantedContent.
                 string src = imgElt.GetAttribute("src");
                 if (ImageUtils.IsPlaceholderImageFilename(src))
+                    continue;
+                if (src.StartsWith("data:"))
                     continue;
                 var file = UrlPathString.CreateFromUrlEncodedString(src).PathOnly.NotEncoded;
                 if (!RobustFile.Exists(Path.Combine(folderPath, file)))

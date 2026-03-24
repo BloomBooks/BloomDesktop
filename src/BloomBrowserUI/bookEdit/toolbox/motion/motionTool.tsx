@@ -3,10 +3,10 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import $ from "jquery";
 import { Div } from "../../../react_components/l10nComponents";
-import { ToolBottomHelpLink } from "../../../react_components/helpLink";
+import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
 // These are for Motion:
 import { EditableDivUtils } from "../../js/editableDivUtils";
-import { getEditablePageBundleExports } from "../../js/bloomFrames";
+import { getEditablePageBundleExports } from "../../js/workspaceFrames";
 import AudioRecording from "../talkingBook/audioRecording";
 import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";

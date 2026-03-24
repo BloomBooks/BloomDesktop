@@ -16,6 +16,7 @@ namespace Bloom.TeamCollection
         TeamCollection CurrentCollection { get; }
         TeamCollection CurrentCollectionEvenIfDisconnected { get; }
         ITeamCollectionMessageLog MessageLog { get; }
+        TeamCollectionStatus CollectionStatus { get; }
         CollectionSettings Settings { get; }
         CollectionLock Lock { get; }
         bool CheckConnection();

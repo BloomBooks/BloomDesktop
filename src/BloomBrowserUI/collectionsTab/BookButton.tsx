@@ -24,7 +24,7 @@ import WebSocketManager, {
 } from "../utils/WebSocketManager";
 import { BookSelectionManager, useIsSelected } from "./bookSelectionManager";
 import { IBookInfo, ICollection } from "./BooksOfCollection";
-import { makeMenuItems, MenuItemSpec } from "./CollectionsTabPane";
+import { makeMenuItems, MenuItemSpec } from "./menuHelpers";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useL10n } from "../react_components/l10nHooks";
 import SettingsIcon from "@mui/icons-material/Settings";

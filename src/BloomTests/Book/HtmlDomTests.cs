@@ -236,6 +236,42 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void RemoveInlineStyleSubfield_WhenOtherStylesRemain_OnlyRemovesSpecifiedSubfield()
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml("<div style='display:block; color: red; font-size: 12px;' />");
+            var element = (SafeXmlElement)dom.FirstChild;
+
+            HtmlDom.RemoveInlineStyleSubfield(element, "display");
+
+            Assert.AreEqual("color: red; font-size: 12px", element.GetAttribute("style"));
+        }
+
+        [Test]
+        public void RemoveInlineStyleSubfield_WhenOnlySpecifiedSubfield_RemovesStyleAttribute()
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml("<div style='display: block;' />");
+            var element = (SafeXmlElement)dom.FirstChild;
+
+            HtmlDom.RemoveInlineStyleSubfield(element, "display");
+
+            Assert.IsFalse(element.HasAttribute("style"));
+        }
+
+        [Test]
+        public void RemoveInlineStyleSubfield_IsCaseInsensitive()
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml("<div style='DISPLAY:block; COLOR:red;' />");
+            var element = (SafeXmlElement)dom.FirstChild;
+
+            HtmlDom.RemoveInlineStyleSubfield(element, "display");
+
+            Assert.AreEqual("COLOR:red", element.GetAttribute("style"));
+        }
+
+        [Test]
         public void AddClass_AlreadyThere_LeavesAlone()
         {
             var dom = SafeXmlDocument.Create();

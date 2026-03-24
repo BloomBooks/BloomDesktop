@@ -501,12 +501,18 @@ function makeImageOrCanvasFieldClickHandler(
     const container = clickedElement.closest(".split-pane-component-inner");
     addUndoPoint();
     const bloomCanvas = $(
-        `<div class='bloom-canvas bloom-leadingElement'${
+        `<div class='bloom-canvas bloom-has-canvas-element bloom-leadingElement'${
             isCanvasClick ? ` data-tool-id='${kCanvasToolId}'` : ""
         }></div>`,
     );
+    const canvasElement = $(
+        "<div class='bloom-canvas-element bloom-backgroundImage' style='width:100%; height:100%;'></div>",
+    );
+    const imageContainer = $("<div class='bloom-imageContainer'></div>");
     const image = $("<img src='placeHolder.png'/>");
-    bloomCanvas.append(image);
+    imageContainer.append(image);
+    canvasElement.append(imageContainer);
+    bloomCanvas.append(canvasElement);
     SetupImage(image); // Must attach it first so event handler gets added to parent
     container.append(bloomCanvas);
     clickedElement.closest(".selector-links").remove();

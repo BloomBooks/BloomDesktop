@@ -182,8 +182,15 @@
                         data-book="bookTitle"
                     ></div>
                 </div>
-                <div class="bloom-canvas">
-                    <img data-book="coverImage" src="placeHolder.png" />
+                <div class="bloom-canvas bloom-has-canvas-element">
+                    <div
+                        class="bloom-canvas-element bloom-backgroundImage"
+                        style="width: 100%; height: 100%"
+                    >
+                        <div class="bloom-imageContainer">
+                            <img data-book="coverImage" src="placeHolder.png" />
+                        </div>
+                    </div>
                 </div>
                 <div class="bottomBlock"></div>
             </div>
@@ -213,12 +220,18 @@
 
             <div class="marginBox">
                 <div class="split-pane-component-inner">
-                    <div title="" class="bloom-canvas">
-                        <img
-                            class="bloom-imageObjectFit-cover"
-                            src="placeHolder.png"
-                            alt=""
-                        />
+                    <div class="bloom-canvas bloom-has-canvas-element">
+                        <div
+                            class="bloom-canvas-element bloom-backgroundImage"
+                            style="width: 100%; height: 100%"
+                        >
+                            <div class="bloom-imageContainer">
+                                <img
+                                    class="bloom-imageObjectFit-cover"
+                                    src="placeHolder.png"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -251,14 +264,19 @@
                 <div class="split-pane-component-inner">
                     <div
                         title="placeHolder.png 6.58 KB 341 x 335 52 DPI (should be 300-600) Bit Depth: 32"
-                        class="bloom-canvas"
+                        class="bloom-canvas bloom-has-canvas-element"
                     >
-                        <img
-                            class="bloom-imageObjectFit-cover"
-                            src="placeHolder.png"
-                            alt=""
-                        />
-
+                        <div
+                            class="bloom-canvas-element bloom-backgroundImage"
+                            style="width: 100%; height: 100%"
+                        >
+                            <div class="bloom-imageContainer">
+                                <img
+                                    class="bloom-imageObjectFit-cover"
+                                    src="placeHolder.png"
+                                />
+                            </div>
+                        </div>
                         <div
                             class="bloom-canvas-element ui-resizable ui-draggable bloom-allowAutoShrink"
                             style="

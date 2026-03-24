@@ -32,6 +32,7 @@ using CommandLine;
 using L10NSharp;
 using L10NSharp.Windows.Forms;
 using Sentry;
+using SIL.Core.Desktop.i18n;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.Miscellaneous;
@@ -1613,6 +1614,8 @@ namespace Bloom
                 if (uiLanguage != desiredLanguage)
                     Settings.Default.UserInterfaceLanguageSetExplicitly = true;
 
+                SIL.Localizer.Default = new L10NSharpLocalizer();
+
                 LocalizationManagerWinforms.Create(
                     uiLanguage,
                     "Palaso",
@@ -1662,7 +1665,6 @@ namespace Bloom
                     LocalizationManager.FallbackLanguageIds = new[] { "es", "en" };
                 }
 
-                // If this is removed, change code in WorkspaceView.OnSettingsProtectionChanged
                 LocalizationManager.EnableClickingOnControlToBringUpLocalizationDialog = false; // BL-5111
 
                 // It's now safe to read the localized strings.  See BL-13245.

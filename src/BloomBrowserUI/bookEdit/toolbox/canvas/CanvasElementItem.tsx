@@ -104,9 +104,9 @@ const ondragend = (
         }
     }
 
-    const canvasElement = canvasElementManager.addCanvasElementWithScreenCoords(
-        ev.screenX,
-        ev.screenY,
+    const canvasElement = canvasElementManager.addCanvasElement(
+        ev.clientX,
+        ev.clientY,
         canvasElementType,
         userDefinedStyleName,
         rightTopOffset,

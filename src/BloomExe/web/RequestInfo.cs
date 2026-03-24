@@ -378,6 +378,13 @@ namespace Bloom.Api
             if (RawUrl.EndsWith("no-cache=true"))
                 return false;
 
+            if (Path.GetExtension(path).Equals(".js", StringComparison.OrdinalIgnoreCase))
+            {
+                // Allow caching only when the URL is versioned (assetv=...),
+                // so caches are reused for this Bloom version but invalidated on upgrade.
+                return RawUrl.Contains("assetv=", StringComparison.OrdinalIgnoreCase);
+            }
+
             return _cacheableExtensions.Contains(Path.GetExtension(path));
         }
 
@@ -461,8 +468,13 @@ namespace Bloom.Api
 
         public string GetPostString(bool unescape = true)
         {
+            var contentType = _actualContext.Request.ContentType;
             Debug.Assert(
-                _actualContext.Request.ContentType.ToLowerInvariant().Contains("text/plain"),
+                contentType != null,
+                "The backend expected this post to have content-type text/plain but its ContentType is null."
+            );
+            Debug.Assert(
+                contentType != null && contentType.ToLowerInvariant().Contains("text/plain"),
                 "The backend expected this post to have content-type text/plain."
             );
             return GetPostStringInner(unescape);
@@ -613,8 +625,17 @@ namespace Bloom.Api
         public void WriteRedirect(string url, bool permanent)
         {
             _actualContext.Response.StatusCode = permanent ? 301 : 302;
+            // Encode only the path segment. If we encode the whole URL, query separators
+            // like '?' and '&' become %3F/%26 and the redirected URL no longer has params.
+            var queryIndex = url.IndexOf("?", StringComparison.Ordinal);
+            var pathPart = queryIndex >= 0 ? url.Substring(0, queryIndex) : url;
+            var queryPart = queryIndex >= 0 ? url.Substring(queryIndex) : string.Empty;
+
             // handle, e.g. http://localhost:8089/bloom/C:/foo/bar/ปก2.jpg
-            var encodedUrl = UrlPathString.CreateFromUnencodedString(url).UrlEncodedForHttpPath;
+            var encodedPath = UrlPathString
+                .CreateFromUnencodedString(pathPart)
+                .UrlEncodedForHttpPath;
+            var encodedUrl = encodedPath + queryPart;
             _actualContext.Response.Headers.Add("Location", encodedUrl);
             // This supports Bloom Player Storybook's "Live from Bloom Editor" feature, preventing CORS errors on the redirect.
             _actualContext.Response.AppendHeader("Access-Control-Allow-Origin", "*");

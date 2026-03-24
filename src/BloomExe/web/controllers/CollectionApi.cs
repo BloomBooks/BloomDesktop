@@ -44,11 +44,6 @@ namespace Bloom.web.controllers
 
         private object _thumbnailEventsLock = new object();
 
-        // public so that WorkspaceView can set it in constructor.
-        // We'd prefer to just let the WorkspaceView be a constructor arg passed to this by Autofac,
-        // but that throws an exception, probably there is some circularity.
-        public WorkspaceView WorkspaceView;
-
         public CollectionApi(
             CollectionSettings settings,
             CollectionModel collectionModel,
@@ -269,10 +264,11 @@ namespace Bloom.web.controllers
                 (request) =>
                 {
                     var collection = GetCollectionOfRequest(request);
-                    if (_collectionModel.DeleteBook(GetBookObjectFromPost(request), collection))
-                        request.PostSucceeded();
-                    else
-                        request.Failed();
+                    _collectionModel.DeleteBook(GetBookObjectFromPost(request), collection);
+                    // There are valid reasons for DeleteBook to return false (such as user cancel).
+                    // It shouldn't be considered a failure. Always report success.
+                    // A real exception will throw and cause the request to fail generally.
+                    request.PostSucceeded();
                 },
                 true
             );
