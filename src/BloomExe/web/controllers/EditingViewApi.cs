@@ -179,6 +179,29 @@ namespace Bloom.web.controllers
             var switchingToCustom = !pageElt.HasClass("bloom-customLayout");
             if (switchingToCustom)
             {
+                pageElt.SetAttribute("data-tool-id", "canvas");
+                book.BookInfo.CurrentTool = "canvasTool";
+                book.BookInfo.ToolboxIsOpen = true;
+                if (book.BookInfo.Tools == null)
+                    book.BookInfo.Tools = new List<ToolboxToolState>();
+                var needToAddTool = true;
+                for (var i = 0; i < book.BookInfo.Tools.Count; ++i)
+                {
+                    var tool = book.BookInfo.Tools[i];
+                    if (tool.ToolId == "canvas")
+                    {
+                        tool.Enabled = true;
+                        needToAddTool = false;
+                        break;
+                    }
+                }
+                if (needToAddTool)
+                {
+                    var tool = new ToolboxToolState();
+                    tool.SetToolId("canvas");
+                    tool.Enabled = true;
+                    book.BookInfo.Tools.Add(tool);
+                }
                 var customLayoutId = pageElt.GetAttribute("data-custom-layout-id");
                 var customLayoutData = book.BookData.GetVariableOrNull(customLayoutId, "*");
                 if (string.IsNullOrEmpty(customLayoutData.Xml))
@@ -186,6 +209,10 @@ namespace Bloom.web.controllers
                     request.ReplyWithText("false");
                     return;
                 }
+            }
+            else
+            {
+                pageElt.RemoveAttribute("data-tool-id");
             }
 
             request.ReplyWithText("true");

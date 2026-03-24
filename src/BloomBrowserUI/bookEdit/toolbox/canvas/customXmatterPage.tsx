@@ -6,6 +6,7 @@ import { CustomPageLayoutMenu } from "./customPageLayoutMenu";
 import {
     CanvasElementManager,
     kBackgroundImageClass,
+    showCanvasTool,
     theOneCanvasElementManager,
 } from "../../js/CanvasElementManager";
 import { EditableDivUtils } from "../../js/editableDivUtils";
@@ -60,9 +61,7 @@ import { isLegacyThemeCssLoaded } from "../../bookSettings/appearanceThemeUtils"
     visibility of different languages.
 */
 
-export async function convertXmatterPageToCustom(
-    page: HTMLElement,
-): Promise<void> {
+async function convertXmatterPageToCustom(page: HTMLElement): Promise<void> {
     const marginBox = page.getElementsByClassName(
         "marginBox",
     )[0] as HTMLElement;
@@ -436,12 +435,18 @@ function renderPageLayoutMenu(page: HTMLElement, container: HTMLElement): void {
                 if (usingLegacyTheme && selection !== "standard") {
                     return;
                 }
+                if (selection === "standard") {
+                    page.removeAttribute("data-tool-id");
+                } else {
+                    page.setAttribute("data-tool-id", "canvas");
+                }
                 if (selection === "customStartOver") {
                     await wrapWithRequestPageContentDelay(
                         () => convertXmatterPageToCustom(page),
                         "customPageLayout-convertStartOver",
                     );
                     renderPageLayoutMenu(page, container);
+                    showCanvasTool();
                     return;
                 }
                 const response = await postString(
@@ -468,6 +473,9 @@ function renderPageLayoutMenu(page: HTMLElement, container: HTMLElement): void {
                         page.getAttribute("id")!,
                     );
                     renderPageLayoutMenu(page, container);
+                    showCanvasTool();
+                } else if (selection === "custom" && response) {
+                    showCanvasTool();
                 }
             }}
         />,
