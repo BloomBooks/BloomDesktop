@@ -118,10 +118,14 @@ export const TopBar: React.FunctionComponent = () => {
                     padding-top: 2px;
                     display: flex;
                     align-items: flex-start;
-                    gap: 100px;
                 `}
             >
                 <BloomTabs tabStates={tabStates} selectTab={handleSelectTab} />
+                <div
+                    css={css`
+                        flex: 0 1 100px;
+                    `}
+                />
                 <TopBarControls activeTab={activeTab} />
                 <TopBarContextMenu targetRef={topBarRef} />
             </div>
