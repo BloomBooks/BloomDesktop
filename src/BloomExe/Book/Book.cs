@@ -4855,35 +4855,6 @@ namespace Bloom.Book
                 PageTemplateSource = Path.GetFileName(FolderPath);
             }
 
-            // This doesn't seem like the best place for this code.
-            // For example, it would probably be better to do immediately when saving book settings dialog.
-            // But this is the only place I could find to plumb things to actually get it to work.
-            // Other attempts to break into the complicated book save cycle were unsuccessful.
-            if (BookInfo.AppearanceSettings.PendingChangeRequiresXmatterUpdate)
-            {
-                // Yes, calling EnsureUpToDateMemory() is unfortunately overkill.
-                // And an unfortunate expansion of the use of this version of the method.
-                // It would be great if there was a way to just update the XMatter;
-                // in theory, that would be BringXmatterHtmlUpToDate().
-                // But just calling that leaves several things undone, including
-                // - calling either UpdateVariablesAndDataDivThroughDOM() or SynchronizeDataItemsThroughoutDOM()
-                //    (such that data-book values are lost)
-                // - calling UpdatePageNumberAndSideClassOfPages()
-                //    (such that side-right/left classes are lost)
-                // If we knew it was just those, we could call them here instead
-                // (we can even move this above the call to UpdateVariablesAndDataDivThroughDOM above).
-                // But there is a whole slew of things EnsureUpToDateMemory() does after calling BringXmatterHtmlUpToDate()
-                // and I wouldn't have any confidence that some of the rest of it is not needed here as well.
-                EnsureUpToDateMemory(new NullProgress());
-                // and since we may be changing xmatter, we should update supporting files, which includes
-                // xmatter css, if we can (the current case where we can't is updating a template we want
-                // to import pages from, which I don't think will come here at all, so it would be safe
-                // currently to call this unconditionally).
-                if (IsSaveable)
-                    UpdateSupportFiles();
-            }
-            BookInfo.AppearanceSettings.PendingChangeRequiresXmatterUpdate = false;
-
             try
             {
                 Storage.Save();

@@ -376,6 +376,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
         "bloom-editable bloom-visibility-code-on",
     )[0] as HTMLElement;
     const formatTargetElement = getFormatTargetElement(props.canvasElement);
+    const showFormatButton = !!formatTargetElement && !isNavButton;
 
     if (isNavButton) {
         menuOptions.splice(0, 0, {
@@ -644,7 +645,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                             )}
                         </Fragment>
                     )}
-                    {formatTargetElement && !isNavButton && (
+                    {showFormatButton && (
                         <ButtonWithTooltip
                             tipL10nKey="EditTab.Toolbox.ComicTool.Options.Format"
                             icon={CogIcon}
@@ -677,7 +678,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                         </Fragment>
                     )}
                     {(!(hasImage && isPlaceHolder) &&
-                        !editableTextElement &&
+                        !showFormatButton &&
                         !(hasVideo && !videoAlreadyChosen)) || (
                         // Add a spacer if there is any button before these
                         <div

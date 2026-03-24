@@ -198,16 +198,6 @@ public class AppearanceSettings
 
     private void SetProperty(KeyValuePair<string, object> property)
     {
-        if (
-            !Properties.ContainsKey(property.Key)
-            || !Properties[property.Key].Equals(property.Value)
-        )
-        {
-            var propDef = propertyDefinitions.FirstOrDefault(pd => pd.Name == property.Key);
-            if (propDef?.RequiresXmatterUpdate == true)
-                PendingChangeRequiresXmatterUpdate = true;
-        }
-
         Properties[property.Key] = property.Value;
     }
 
@@ -216,9 +206,6 @@ public class AppearanceSettings
         get { return _properties.fullBleed; }
         set { _properties.fullBleed = value; }
     }
-
-    // When this is set to true, we ensure that the xmatter is updated before saving the book.
-    public bool PendingChangeRequiresXmatterUpdate;
 
     /// <summary>
     /// Usually, this is simply the theme name, but if the book doesn't have one (that is, it was made by
@@ -1129,7 +1116,6 @@ public abstract class PropertyDef
 {
     public string Name;
     public dynamic DefaultValue;
-    public bool RequiresXmatterUpdate;
     public object ValueRequiredIfLegacyTheme;
 
     public void SetDefault(dynamic prop)
@@ -1150,14 +1136,12 @@ public class StringPropertyDef : PropertyDef
         string name,
         string overrideGroup,
         string defaultValue,
-        bool requiresXmatterUpdate = false,
         object valueRequiredIfLegacyTheme = null
     )
     {
         Name = name;
         DefaultValue = defaultValue;
         OverrideGroup = overrideGroup;
-        RequiresXmatterUpdate = requiresXmatterUpdate;
         ValueRequiredIfLegacyTheme = valueRequiredIfLegacyTheme;
     }
 }
@@ -1168,14 +1152,12 @@ public class BooleanPropertyDef : PropertyDef
         string name,
         string overrideGroup,
         bool defaultValue,
-        bool requiresXmatterUpdate = false,
         object valueRequiredIfLegacyTheme = null
     )
     {
         Name = name;
         OverrideGroup = overrideGroup;
         DefaultValue = defaultValue;
-        RequiresXmatterUpdate = requiresXmatterUpdate;
         ValueRequiredIfLegacyTheme = valueRequiredIfLegacyTheme;
     }
 }
