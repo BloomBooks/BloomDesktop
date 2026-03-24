@@ -394,6 +394,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 setMenuOpen,
                 languageNameValues,
                 noneLabel,
+                false,
             );
         }
     }
@@ -413,6 +414,9 @@ const CanvasElementContextControls: React.FunctionComponent<{
     }
 
     let deleteEnabled = true;
+    const lockedRequiredDerivedField = isSoleRequiredDerivedFieldOnPage(
+        props.canvasElement,
+    );
     if (isBackgroundImage) {
         const fillItem = {
             l10nId: "EditTab.Toolbox.ComicTool.Options.FillSpace",
@@ -439,6 +443,9 @@ const CanvasElementContextControls: React.FunctionComponent<{
         deleteEnabled = hasRealImage(img);
     } else if (isSpecialGameElementSelected || isLinkGrid) {
         deleteEnabled = false; // don't allow deleting the single drag item in a sentence drag game or link grids
+    }
+    if (lockedRequiredDerivedField) {
+        deleteEnabled = false;
     }
 
     // last one
@@ -475,6 +482,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
             setMenuOpen,
             languageNameValues,
             noneLabel,
+            lockedRequiredDerivedField,
         );
     } else if (formatTargetElement && !isNavButton) {
         menuOptions.push({
@@ -1130,6 +1138,7 @@ const fieldTypeData: Array<{
     dataDerived: string;
     label: string;
     readOnly: boolean;
+    required: boolean;
     editableClasses: string[];
     classes: string[];
     hint?: string;
@@ -1140,6 +1149,7 @@ const fieldTypeData: Array<{
         dataDerived: "",
         label: "Book Title",
         readOnly: false,
+        required: false,
         editableClasses: ["Title-On-Cover-style", "bloom-padForOverflow"],
         classes: ["bookTitle"],
     },
@@ -1148,14 +1158,119 @@ const fieldTypeData: Array<{
         dataDerived: "",
         label: "Cover Credits",
         readOnly: false,
+        required: false,
         editableClasses: ["smallCoverCredits", "Cover-Default-style"],
         classes: [],
+    },
+    {
+        dataBook: "originalContributions",
+        dataDerived: "",
+        label: "Original Contributions",
+        readOnly: false,
+        required: false,
+        editableClasses: [
+            "credits",
+            "bloom-copyFromOtherLanguageIfNecessary",
+            "Content-On-Title-Page-style",
+        ],
+        classes: [],
+    },
+    {
+        dataBook: "funding",
+        dataDerived: "",
+        label: "Funding",
+        readOnly: false,
+        required: false,
+        editableClasses: [
+            "funding",
+            "Content-On-Title-Page-style",
+            "bloom-copyFromOtherLanguageIfNecessary",
+        ],
+        classes: [],
+    },
+    {
+        dataBook: "versionAcknowledgments",
+        dataDerived: "",
+        label: "Version Acknowledgments",
+        readOnly: false,
+        required: false,
+        editableClasses: ["versionAcknowledgments", "Credits-Page-style"],
+        classes: [],
+    },
+    {
+        dataBook: "originalAcknowledgments",
+        dataDerived: "",
+        label: "Original Acknowledgments",
+        readOnly: false,
+        required: false,
+        editableClasses: [
+            "bloom-copyFromOtherLanguageIfNecessary",
+            "Credits-Page-style",
+        ],
+        classes: [],
+    },
+    {
+        dataBook: "ISBN",
+        dataDerived: "",
+        label: "ISBN",
+        readOnly: false,
+        required: false,
+        editableClasses: ["Credits-Page-style"],
+        classes: [],
+    },
+    {
+        dataBook: "",
+        dataDerived: "copyright",
+        label: "Copyright",
+        readOnly: true,
+        required: true,
+        editableClasses: [],
+        classes: ["copyright", "Credits-Page-style"],
+        hint: "Click to Edit Copyright & License",
+        functionOnHintClick: "showCopyrightAndLicenseDialog",
+    },
+    {
+        dataBook: "",
+        dataDerived: "licenseImage",
+        label: "License Image",
+        readOnly: true,
+        required: false,
+        editableClasses: [],
+        classes: ["licenseImage"],
+    },
+    {
+        dataBook: "",
+        dataDerived: "licenseUrl",
+        label: "License URL",
+        readOnly: true,
+        required: false,
+        editableClasses: [],
+        classes: ["licenseUrl"],
+    },
+    {
+        dataBook: "",
+        dataDerived: "licenseDescription",
+        label: "License Description",
+        readOnly: true,
+        required: true,
+        editableClasses: [],
+        classes: ["licenseDescription", "Credits-Page-style"],
+    },
+    {
+        dataBook: "",
+        dataDerived: "licenseNotes",
+        label: "License Notes",
+        readOnly: true,
+        required: false,
+        editableClasses: [],
+        classes: ["licenseNotes", "Credits-Page-style"],
     },
     {
         dataBook: "",
         dataDerived: "languagesOfBook",
         label: "Languages",
         readOnly: true,
+        required: false,
         editableClasses: [],
         classes: ["coverBottomLangName", "Cover-Default-style"],
     },
@@ -1164,6 +1279,7 @@ const fieldTypeData: Array<{
         dataDerived: "topic",
         label: "Topic",
         readOnly: true,
+        required: false,
         editableClasses: [],
         classes: [
             "coverBottomBookTopic",
@@ -1176,11 +1292,54 @@ const fieldTypeData: Array<{
     },
 ];
 
+function getCanvasElementFieldType(ce: HTMLElement): {
+    dataBook: string;
+    dataDerived: string;
+} {
+    const activeEditable = ce.getElementsByClassName(
+        "bloom-editable bloom-visibility-code-on",
+    )[0] as HTMLElement | undefined;
+    if (activeEditable?.getAttribute("data-book")) {
+        return {
+            dataBook: activeEditable.getAttribute("data-book") || "",
+            dataDerived: "",
+        };
+    }
+
+    const derivedElement = ce.querySelector("[data-derived]") as
+        | HTMLElement
+        | undefined;
+    return {
+        dataBook: "",
+        dataDerived: derivedElement?.getAttribute("data-derived") || "",
+    };
+}
+
+function isSoleRequiredDerivedFieldOnPage(ce: HTMLElement): boolean {
+    const page = ce.closest(".bloom-page") as HTMLElement | null;
+    if (!page) {
+        return false;
+    }
+
+    const { dataDerived } = getCanvasElementFieldType(ce);
+    if (!dataDerived) {
+        return false;
+    }
+
+    const fieldType = fieldTypeData.find((f) => f.dataDerived === dataDerived);
+    if (!fieldType?.required) {
+        return false;
+    }
+
+    return page.querySelectorAll(`[data-derived='${dataDerived}']`).length < 2;
+}
+
 function makeFieldTypeMenuItem(
     ce: HTMLElement,
     menuOptions: IMenuItemWithSubmenu[],
     setMenuOpen: (open: boolean) => void,
     noneLabel: string,
+    disabled = false,
 ) {
     // We only do this on custom pages, at least for now
     if (!ce.closest(".bloom-page")?.classList?.contains("bloom-customLayout"))
@@ -1210,9 +1369,7 @@ function makeFieldTypeMenuItem(
         }
     };
 
-    const activeType = tg
-        .getElementsByClassName("bloom-editable bloom-visibility-code-on")[0]
-        ?.getAttribute("data-book");
+    const activeFieldType = getCanvasElementFieldType(ce);
     const subMenu: ILocalizableMenuItemProps[] = [
         {
             l10nId: null,
@@ -1226,7 +1383,9 @@ function makeFieldTypeMenuItem(
                 }
                 setMenuOpen(false);
             },
-            icon: !activeType && <CheckIcon css={getMenuIconCss()} />,
+            icon: !activeFieldType.dataBook && !activeFieldType.dataDerived && (
+                <CheckIcon css={getMenuIconCss()} />
+            ),
         },
     ];
     for (const fieldType of fieldTypeData) {
@@ -1290,9 +1449,10 @@ function makeFieldTypeMenuItem(
                 }
                 setMenuOpen(false);
             },
-            icon: activeType === fieldType.dataBook && (
-                <CheckIcon css={getMenuIconCss()} />
-            ),
+            icon: activeFieldType.dataBook === fieldType.dataBook &&
+                activeFieldType.dataDerived === fieldType.dataDerived && (
+                    <CheckIcon css={getMenuIconCss()} />
+                ),
         });
     }
 
@@ -1300,6 +1460,7 @@ function makeFieldTypeMenuItem(
         l10nId: "EditTab.Toolbox.ComicTool.Options.FieldType",
         english: "Field Type:",
         subMenu: subMenu,
+        disabled,
         onClick: () => {},
     });
 }
@@ -1450,6 +1611,7 @@ function addTextMenuItems(
     setMenuOpen: (open: boolean) => void,
     languageNameValues: ILanguageNameValues,
     noneLabel: string,
+    disableFieldTypeMenu: boolean,
 ) {
     const autoHeight = !canvasElement.classList.contains("bloom-noAutoHeight");
     const toggleAutoHeight = () => {
@@ -1504,7 +1666,13 @@ function addTextMenuItems(
         setMenuOpen,
         languageNameValues,
     );
-    makeFieldTypeMenuItem(canvasElement, menuOptions, setMenuOpen, noneLabel);
+    makeFieldTypeMenuItem(
+        canvasElement,
+        menuOptions,
+        setMenuOpen,
+        noneLabel,
+        disableFieldTypeMenu,
+    );
 }
 
 function addVideoMenuItems(

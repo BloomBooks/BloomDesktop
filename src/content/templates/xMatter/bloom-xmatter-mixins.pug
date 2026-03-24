@@ -179,12 +179,12 @@ mixin factoryStandard-outsideFrontCover
 
 mixin factoryStandard-creditsInsideFrontCover
 	// Inside Front Cover CREDITS PAGE
-	+page-cover("Credits Page").credits(data-export='front-matter-credits', data-xmatter-page='credits')&attributes(attributes)#B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9
+	+page-cover("Credits Page").credits(data-export='front-matter-credits', data-xmatter-page='credits', data-custom-layout-id='customCreditsPage')&attributes(attributes)#B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9
 		+credits-contents
 
 mixin factoryStandard-credits-interiorPage
 	// CREDITS PAGE
-	+page-xmatter("Credits Page").bloom-frontMatter.credits(data-export='front-matter-credits', data-xmatter-page='credits')&attributes(attributes)#2CCC8F26-A797-4A5B-9BA7-E29823D2CB24
+	+page-xmatter("Credits Page").bloom-frontMatter.credits(data-export='front-matter-credits', data-xmatter-page='credits', data-custom-layout-id='customCreditsPage')&attributes(attributes)#2CCC8F26-A797-4A5B-9BA7-E29823D2CB24
 		+credits-contents
 
 mixin block-licenseAndCopyright
@@ -214,16 +214,16 @@ mixin credits-contents(includeIsbn = true)
 		+credits-page-branding-bottom
 
 mixin factoryStandard-titlePage
-	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page', data-xmatter-page='titlePage')&attributes(attributes)#5dcd48df-e9ab-4a07-afd4-6a24d0398381
+	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page', data-xmatter-page='titlePage', data-custom-layout-id='customTitlePage')&attributes(attributes)#5dcd48df-e9ab-4a07-afd4-6a24d0398381
 		+title-page-contents
 
 mixin standard-titlePage-inside-front-cover
-	+page-xmatter('Inside Front Cover').cover.coverColor.titlePage.bloom-frontMatter(data-export='front-matter-title-page', data-xmatter-page='titlePage')&attributes(attributes)#aacd48aa-aaab-4a07-afd4-6a24d03983aa
+	+page-xmatter('Inside Front Cover').cover.coverColor.titlePage.bloom-frontMatter(data-export='front-matter-title-page', data-xmatter-page='titlePage', data-custom-layout-id='customTitlePage')&attributes(attributes)#aacd48aa-aaab-4a07-afd4-6a24d03983aa
 		+title-page-contents
 
 mixin standard-creditsPage-back-cover
 	//re data-export: if we export this, we still want to export it as front matter
-	+page-xmatter('Inside Back Cover').cover.coverColor.credits.bloom-backMatter(data-export='front-matter-credits-page', data-xmatter-page='credits')&attributes(attributes)#bbcd48aa-bbab-4a07-afd4-6a24d03983bb
+	+page-xmatter('Inside Back Cover').cover.coverColor.credits.bloom-backMatter(data-export='front-matter-credits-page', data-xmatter-page='credits', data-custom-layout-id='customCreditsPage')&attributes(attributes)#bbcd48aa-bbab-4a07-afd4-6a24d03983bb
 		+credits-contents
 
 mixin standard-originalContributions

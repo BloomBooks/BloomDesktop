@@ -34,7 +34,7 @@ mixin mxb-titlePage
 
 mixin mxb-nationalSummaryCreditsPage-back-title-page
 	// Credits page back of Title page
-	+page-xmatter("Credits Page").bloom-frontMatter.credits(data-export='front-matter-credits', data-xmatter-page='credits')#69EF35AE-5BF1-49F1-89E7-2A932DAD932C
+	+page-xmatter("Credits Page").bloom-frontMatter.credits(data-export='front-matter-credits', data-xmatter-page='credits', data-custom-layout-id='customCreditsPage')#69EF35AE-5BF1-49F1-89E7-2A932DAD932C
 		+field-mono-meta("N1","insideCredits").NationalLanguage-style.bloom-copyFromOtherLanguageIfNecessary
 			label.bubble If your publication is not diglot, you can include a national language summary here, which is the back of the title page.
 		+field-prototypeDeclaredExplicity("N1")#localizedAcknowledgments
