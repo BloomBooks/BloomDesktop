@@ -1,5 +1,6 @@
 import { postJsonAsync } from "../utils/bloomApi";
 import * as React from "react";
+import { css } from "@emotion/react";
 import WebSocketManager, {
     IBloomWebSocketEvent,
 } from "../utils/WebSocketManager";
@@ -133,16 +134,23 @@ export const ToastHost: React.FunctionComponent<{
     // I.e. the bottom of each toast is equally spaced from the bottom of the next toast.
     // I also haven't tried to properly handle more toasts than can fit on the screen.
     return (
-        <ThemeProvider theme={lightTheme}>
-            {toasts.map((toast, index) => (
-                <Toast
-                    key={getMessageIdentity(toast)}
-                    toast={toast}
-                    index={index}
-                    onClose={removeToast}
-                    onAction={handleAction}
-                />
-            ))}
-        </ThemeProvider>
+        <div
+            css={css`
+                position: relative;
+                z-index: 4;
+            `}
+        >
+            <ThemeProvider theme={lightTheme}>
+                {toasts.map((toast, index) => (
+                    <Toast
+                        key={getMessageIdentity(toast)}
+                        toast={toast}
+                        index={index}
+                        onClose={removeToast}
+                        onAction={handleAction}
+                    />
+                ))}
+            </ThemeProvider>
+        </div>
     );
 };

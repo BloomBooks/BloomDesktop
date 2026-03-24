@@ -61,11 +61,17 @@ export const App: React.FunctionComponent = () => {
             `}
         >
             <TopBar />
-            <div style={{ position: "relative", zIndex: 4 }}>
-                <ToastHost />
+            <div
+                css={css`
+                    flex: 1;
+                    min-height: 0;
+                    position: relative;
+                `}
+            >
+                {renderActiveTab()}
             </div>
-            {renderActiveTab()}
             <div id="modal-dialog-container" />
+            <ToastHost />
         </div>
     );
 };
