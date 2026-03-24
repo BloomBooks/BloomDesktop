@@ -5403,12 +5403,18 @@ namespace Bloom.Book
         public void UpdateSupportFiles()
         {
             Storage.UpdateSupportFiles();
+            UpdateQrCodeHtmlForCurrentSettings();
+        }
+
+        internal void UpdateQrCodeHtmlForCurrentSettings(bool updateQrCodeFileEvenIfItExists = true)
+        {
             BookStorage.UpdateQrCode(
                 OurHtmlDom,
                 CollectionSettings.ShowBlorgLanguageQrCode,
                 Language1Tag,
                 CollectionSettings.BadgeQrCodeLabelLocalizedWithLang,
-                FolderPath
+                FolderPath,
+                updateQrCodeFileEvenIfItExists
             );
         }
 
