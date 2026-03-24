@@ -264,10 +264,11 @@ namespace Bloom.web.controllers
                 (request) =>
                 {
                     var collection = GetCollectionOfRequest(request);
-                    if (_collectionModel.DeleteBook(GetBookObjectFromPost(request), collection))
-                        request.PostSucceeded();
-                    else
-                        request.Failed();
+                    _collectionModel.DeleteBook(GetBookObjectFromPost(request), collection);
+                    // There are valid reasons for DeleteBook to return false (such as user cancel).
+                    // It shouldn't be considered a failure. Always report success.
+                    // A real exception will throw and cause the request to fail generally.
+                    request.PostSucceeded();
                 },
                 true
             );
