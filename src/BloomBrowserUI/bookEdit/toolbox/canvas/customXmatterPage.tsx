@@ -166,6 +166,9 @@ export async function convertXmatterPageToCustom(
                 // where to put its new canvas element.
                 ceContent = elem.cloneNode(true) as HTMLElement;
             }
+
+            preserveHintMetadata(elem as HTMLElement, ceContent as HTMLElement);
+
             // make a new canvas element to hold this. Not sure what problems it will
             // cause when it's NOT a TG, but we have at least topic and language name that
             // never are and are commonly on the front cover.
@@ -230,6 +233,77 @@ export async function convertXmatterPageToCustom(
 async function getLanguageNameValues(): Promise<ILanguageNameValues> {
     return (await getAsync("settings/languageNames"))
         .data as ILanguageNameValues;
+}
+
+function copyHintAttributes(source: Element, target: HTMLElement): void {
+    [
+        "data-hint",
+        "data-i18n",
+        "data-link-text",
+        "data-link-target",
+        "data-functiononhintclick",
+    ].forEach((attr) => {
+        const value = source.getAttribute(attr);
+        if (value && !target.hasAttribute(attr)) {
+            target.setAttribute(attr, value);
+        }
+    });
+}
+
+function preserveHintMetadata(
+    sourceElement: HTMLElement,
+    convertedElement: HTMLElement,
+): void {
+    // If we've already preserved label content or explicit hint metadata, leave it alone.
+    if (
+        convertedElement.querySelector("label.bubble") ||
+        convertedElement.hasAttribute("data-hint")
+    ) {
+        return;
+    }
+
+    const translationGroup = sourceElement.closest(
+        ".bloom-translationGroup",
+    ) as HTMLElement | null;
+    if (!translationGroup) {
+        copyHintAttributes(sourceElement, convertedElement);
+        if (
+            !convertedElement.hasAttribute("data-hint") &&
+            sourceElement.parentElement
+        ) {
+            copyHintAttributes(sourceElement.parentElement, convertedElement);
+        }
+        return;
+    }
+
+    copyHintAttributes(translationGroup, convertedElement);
+
+    const label = translationGroup.querySelector("label.bubble");
+    if (!label) {
+        if (
+            !convertedElement.hasAttribute("data-hint") &&
+            translationGroup.parentElement
+        ) {
+            copyHintAttributes(
+                translationGroup.parentElement,
+                convertedElement,
+            );
+        }
+        return;
+    }
+
+    const labelText = label.textContent?.trim();
+    if (labelText && !convertedElement.hasAttribute("data-hint")) {
+        convertedElement.setAttribute("data-hint", labelText);
+    }
+    copyHintAttributes(label, convertedElement);
+
+    if (
+        !convertedElement.hasAttribute("data-hint") &&
+        translationGroup.parentElement
+    ) {
+        copyHintAttributes(translationGroup.parentElement, convertedElement);
+    }
 }
 
 function setDataDefault(
