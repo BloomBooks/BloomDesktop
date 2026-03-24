@@ -6,6 +6,7 @@ import { CustomPageLayoutMenu } from "./customPageLayoutMenu";
 import {
     CanvasElementManager,
     kBackgroundImageClass,
+    showCanvasTool,
     theOneCanvasElementManager,
 } from "../../js/CanvasElementManager";
 import { EditableDivUtils } from "../../js/editableDivUtils";
@@ -60,9 +61,7 @@ import { isLegacyThemeCssLoaded } from "../../bookSettings/appearanceThemeUtils"
     visibility of different languages.
 */
 
-export async function convertXmatterPageToCustom(
-    page: HTMLElement,
-): Promise<void> {
+async function convertXmatterPageToCustom(page: HTMLElement): Promise<void> {
     const marginBox = page.getElementsByClassName(
         "marginBox",
     )[0] as HTMLElement;
@@ -257,6 +256,8 @@ function finishReactivatingPage(page: HTMLElement): void {
     theOneCanvasElementManager.turnOnCanvasElementEditing();
     ensureDerivedFieldsFitOnCustomPage(page);
     getToolboxBundleExports()?.applyToolboxStateToPage();
+    // Enable or show the canvas tool.
+    showCanvasTool();
 }
 
 // This function tries to make sure that all derived-field canvas elements fit on the page.
@@ -441,6 +442,10 @@ function renderPageLayoutMenu(page: HTMLElement, container: HTMLElement): void {
                         () => convertXmatterPageToCustom(page),
                         "customPageLayout-convertStartOver",
                     );
+                    // This is normally set in editView/toggleCustomPageLayout, but we're not calling that.
+                    // The attribute will be persisted only if some other change is made to the page, but that
+                    // may be good enough since the user is starting over and presumably will make some changes.
+                    page.setAttribute("data-tool-id", "canvas");
                     renderPageLayoutMenu(page, container);
                     return;
                 }
@@ -468,6 +473,8 @@ function renderPageLayoutMenu(page: HTMLElement, container: HTMLElement): void {
                         page.getAttribute("id")!,
                     );
                     renderPageLayoutMenu(page, container);
+                } else if (selection === "custom" && response) {
+                    showCanvasTool(); // otherwise called from convertXmatterPageToCustom()/finishReactivatingPage()
                 }
             }}
         />,
