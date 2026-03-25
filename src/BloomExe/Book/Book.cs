@@ -5791,7 +5791,7 @@ namespace Bloom.Book
             // Make sure we publish this feature consistent with the publication setting.
             BookInfo.MetaData.Feature_Motion = motion;
 
-            Save();
+            Save(true);
         }
 
         /// <summary>
