@@ -2789,7 +2789,8 @@ namespace Bloom.Book
             bool shouldHaveQrCode,
             string langCode,
             string badgeQrCodeLabelLocalizedWithLang,
-            string bookFolderPath
+            string bookFolderPath,
+            bool updateQrCodeFileEvenIfItExists = true
         )
         {
             var qrWrappers = dom.SafeSelectNodes(
@@ -2799,6 +2800,8 @@ namespace Bloom.Book
             var url = "https://bloomlibrary.org/language:" + langCode;
 
             string qrFileName = null;
+            const string kQrFileName = "lang-qr-code.png";
+            var qrFilePath = Path.Combine(bookFolderPath, kQrFileName);
 
             foreach (var qrWrapper in qrWrappers)
             {
@@ -2823,7 +2826,10 @@ namespace Bloom.Book
 
                 if (qrFileName == null)
                 {
-                    qrFileName = GenerateQrCodeImage(bookFolderPath, url);
+                    if (updateQrCodeFileEvenIfItExists || !RobustFile.Exists(qrFilePath))
+                        qrFileName = GenerateQrCodeImage(bookFolderPath, url);
+                    else
+                        qrFileName = kQrFileName;
                 }
 
                 AdjustHtmlForHavingQrCode(

@@ -203,6 +203,10 @@ namespace Bloom.web.controllers
                     // Bring everything up to date consistent with the new
                     // state. Might be enough just do the BookData update.
                     book.EnsureUpToDateMemory(new NullProgress());
+                    // Toggling between custom and standard layout can replace the xMatter page HTML,
+                    // so reapply branding QR-code HTML adjustments for the current book settings.
+                    // This should not need to regenerate the QR code file.
+                    book.UpdateQrCodeHtmlForCurrentSettings(updateQrCodeFileEvenIfItExists: false);
 
                     var updatedPageElt = book.GetPage(pageId)?.GetDivNodeForThisPage();
                     if (updatedPageElt != null)
