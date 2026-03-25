@@ -939,7 +939,7 @@ namespace Bloom.Spreadsheet
 
         private SafeXmlElement GetImgFromContainer(SafeXmlElement container)
         {
-            return container.ChildNodes.FirstOrDefault(x => x.Name == "img") as SafeXmlElement;
+            return container.SafeSelectNodes(".//img").Cast<SafeXmlElement>().FirstOrDefault();
         }
 
         private bool _foundCopyright;
