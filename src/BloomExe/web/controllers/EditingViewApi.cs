@@ -186,6 +186,11 @@ namespace Bloom.web.controllers
                     request.ReplyWithText("false");
                     return;
                 }
+                pageElt.SetAttribute("data-tool-id", "canvas");
+            }
+            else
+            {
+                pageElt.RemoveAttribute("data-tool-id");
             }
 
             request.ReplyWithText("true");
@@ -200,6 +205,7 @@ namespace Bloom.web.controllers
                     // page element.
                     var backgroundAudio = pageElt.GetAttribute(HtmlDom.musicAttrName);
                     var backgroundAudioVolume = pageElt.GetAttribute(HtmlDom.musicVolumeName);
+                    var dataToolId = pageElt.GetAttribute("data-tool-id");
                     // Bring everything up to date consistent with the new
                     // state. Might be enough just do the BookData update.
                     book.EnsureUpToDateMemory(new NullProgress());
@@ -227,6 +233,11 @@ namespace Bloom.web.controllers
                         // Keep the same invariant we enforce elsewhere.
                         if (string.IsNullOrEmpty(backgroundAudio))
                             updatedPageElt.RemoveAttribute(HtmlDom.musicVolumeName);
+
+                        if (string.IsNullOrEmpty(dataToolId))
+                            updatedPageElt.RemoveAttribute("data-tool-id");
+                        else
+                            updatedPageElt.SetAttribute("data-tool-id", dataToolId);
                     }
 
                     return pageId;
