@@ -1516,7 +1516,7 @@ namespace Bloom.ImageProcessing
                 MakeOpaque = false,
                 MakeTransparent = false,
                 JpegQuality = 0, // same as input
-                ProfilesToStrip = null,
+                ProfilesToStrip = "*", // original file may have overly large metadata
                 cropRectangle = cropRectangle,
             };
             var result = RunGraphicsMagick(sourcePath, destPath, options);
@@ -1527,8 +1527,31 @@ namespace Bloom.ImageProcessing
 
             var metadata = RobustFileIO.MetadataFromFile(sourcePath);
             if (metadata != null && metadata.ExceptionCaughtWhileLoading == null)
-                metadata.Write(destPath);
-
+            {
+                try
+                {
+                    // Restrict the metadata to what we really care about.  GraphicsMagick stripped all the
+                    // metadata when cropping the image, and we want to avoid putting back any metadata that
+                    // might be very large and that we don't care about.  (BL-16058)
+                    var newMeta = new Metadata
+                    {
+                        Creator = metadata.Creator,
+                        License = metadata.License,
+                        CopyrightNotice = metadata.CopyrightNotice,
+                        AttributionUrl = metadata.AttributionUrl,
+                        CollectionName = metadata.CollectionName,
+                        CollectionUri = metadata.CollectionUri,
+                    };
+                    newMeta.WriteIntellectualPropertyOnly(destPath);
+                }
+                catch (Exception e)
+                {
+                    Logger.WriteError(
+                        $"Error copying metadata from {sourcePath} to {destPath} after cropping image. ",
+                        e
+                    );
+                }
+            }
             return result;
         }
 
