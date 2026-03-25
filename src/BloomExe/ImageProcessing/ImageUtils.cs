@@ -1523,12 +1523,9 @@ namespace Bloom.ImageProcessing
             if (result.ExitCode != 0)
             {
                 LogGraphicsMagickFailure(result);
+                return result;
             }
-
-            var metadata = RobustFileIO.MetadataFromFile(sourcePath);
-            if (metadata != null && metadata.ExceptionCaughtWhileLoading == null)
-                metadata.Write(destPath);
-
+            TrimMetadataInImage(sourcePath, destPath);
             return result;
         }
 
@@ -2216,39 +2213,121 @@ namespace Bloom.ImageProcessing
                 var canvasElement = imgContainer?.ParentNode as SafeXmlElement;
                 var canvasElementStyle = canvasElement?.GetAttribute("style");
                 if (!SignifiesCropping(style) || canvasElementStyle == null)
-                    continue;
-                var canvasElementWidth = GetNumberFromPx("width", canvasElementStyle);
-                var canvasElementHeight = GetNumberFromPx("height", canvasElementStyle);
-
-                var key = $"{src}|{style}|{canvasElementWidth}|{canvasElementHeight}";
-                if (cropped.TryGetValue(key, out string fileName))
                 {
-                    // This is a duplicate. We can use the same cropped image file.
-                    img.SetAttribute("src", fileName);
-                    // With that src, it's already cropped, so remove the style to avoid
-                    // applying the cropping again to the already-cropped image.
-                    img.RemoveAttribute("style");
-                    continue;
+                    CropTheMetadata(
+                        imageSourceFolder,
+                        imageDestFolder,
+                        cropped,
+                        srcUsageCount,
+                        replacedOriginals,
+                        img,
+                        src,
+                        style
+                    );
                 }
-
-                var needNewName = uncroppedSrcNames.Contains(src) || srcUsageCount[src] > 1;
-
-                var croppedFileName = ReallyCropImage(
-                    img,
-                    imageSourceFolder,
-                    imageDestFolder,
-                    needNewName
-                );
-
-                // Track if we replaced an original file with a new one
-                if (croppedFileName != null && needNewName && croppedFileName != src)
+                else
                 {
-                    replacedOriginals.Add(src);
+                    CropTheImageAndMetadata(
+                        imageSourceFolder,
+                        imageDestFolder,
+                        uncroppedSrcNames,
+                        cropped,
+                        srcUsageCount,
+                        replacedOriginals,
+                        img,
+                        src,
+                        style,
+                        canvasElementStyle
+                    );
                 }
-
-                cropped[key] = croppedFileName;
             }
             DeleteOrphanedImageFiles(imageSourceFolder, imageDestFolder, images, replacedOriginals);
+        }
+
+        private static void CropTheMetadata(
+            string imageSourceFolder,
+            string imageDestFolder,
+            Dictionary<string, string> cropped,
+            Dictionary<string, int> srcUsageCount,
+            HashSet<string> replacedOriginals,
+            SafeXmlElement img,
+            string src,
+            string style
+        )
+        {
+            var key = $"{src}|{style}|0|0";
+            if (cropped.TryGetValue(key, out string fileName))
+            {
+                // This is a duplicate. We can use the same metadata-cropped image file.
+                img.SetAttribute("src", fileName);
+                return;
+            }
+
+            var needNewName = srcUsageCount[src] > 1;
+
+            var trimmedFileName = TrimMetadataInImage(
+                img,
+                imageSourceFolder,
+                imageDestFolder,
+                needNewName
+            );
+
+            // Track if we replaced an original file with a new one
+            if (trimmedFileName != null && needNewName && trimmedFileName != src)
+            {
+                replacedOriginals.Add(src);
+            }
+            if (trimmedFileName != null)
+                cropped[key] = trimmedFileName;
+            else
+                cropped[key] = src;
+        }
+
+        private static void CropTheImageAndMetadata(
+            string imageSourceFolder,
+            string imageDestFolder,
+            HashSet<string> uncroppedSrcNames,
+            Dictionary<string, string> cropped,
+            Dictionary<string, int> srcUsageCount,
+            HashSet<string> replacedOriginals,
+            SafeXmlElement img,
+            string src,
+            string style,
+            string canvasElementStyle
+        )
+        {
+            var canvasElementWidth = GetNumberFromPx("width", canvasElementStyle);
+            var canvasElementHeight = GetNumberFromPx("height", canvasElementStyle);
+
+            var key = $"{src}|{style}|{canvasElementWidth}|{canvasElementHeight}";
+            if (cropped.TryGetValue(key, out string fileName))
+            {
+                // This is a duplicate. We can use the same cropped image file.
+                img.SetAttribute("src", fileName);
+                // With that src, it's already cropped, so remove the style to avoid
+                // applying the cropping again to the already-cropped image.
+                img.RemoveAttribute("style");
+                return;
+            }
+
+            var needNewName = uncroppedSrcNames.Contains(src) || srcUsageCount[src] > 1;
+
+            var croppedFileName = ReallyCropImage(
+                img,
+                imageSourceFolder,
+                imageDestFolder,
+                needNewName
+            );
+
+            // Track if we replaced an original file with a new one
+            if (croppedFileName != null && needNewName && croppedFileName != src)
+            {
+                replacedOriginals.Add(src);
+            }
+            if (croppedFileName != null)
+                cropped[key] = croppedFileName;
+            else
+                cropped[key] = src;
         }
 
         private static void DeleteOrphanedImageFiles(
@@ -2313,6 +2392,103 @@ namespace Bloom.ImageProcessing
                 return false;
             var width = GetNumberFromPx("width", imgStyle);
             return width > 0;
+        }
+
+        private static string TrimMetadataInImage(string srcPath, string destPath)
+        {
+            // Try to reduce the metadata to just what we want for intellectual property and
+            // collection information.
+            var metadata = RobustFileIO.MetadataFromFile(srcPath);
+            if (metadata != null && metadata.ExceptionCaughtWhileLoading == null)
+            {
+                try
+                {
+                    // Remove all metadata from the source file as well and then restore the
+                    // minimal metadata we care about.  The existing metadata can sometimes
+                    // cause problems in the the TagSharp library.  (BL-16058)
+                    using (var tagFile = RobustFileIO.CreateTaglibFile(destPath))
+                    {
+                        tagFile.RemoveTags(TagTypes.AllTags);
+                        tagFile.Save();
+                    }
+                    var newMeta = new Metadata
+                    {
+                        Creator = metadata.Creator,
+                        License = metadata.License,
+                        CopyrightNotice = metadata.CopyrightNotice,
+                        AttributionUrl = metadata.AttributionUrl,
+                        CollectionName = metadata.CollectionName,
+                        CollectionUri = metadata.CollectionUri,
+                    };
+                    newMeta.WriteIntellectualPropertyOnly(destPath);
+                }
+                catch (Exception e)
+                {
+                    Logger.WriteError($"Error copying metadata from {srcPath} to {destPath}. ", e);
+                }
+            }
+            return destPath;
+        }
+
+        private static string TrimMetadataInImage(
+            SafeXmlElement img,
+            string imageSourceFolder,
+            string imageDestFolder,
+            bool needNewName
+        )
+        {
+            var src = img.GetAttribute("src");
+            var srcPath = UrlPathString.GetFullyDecodedPath(imageSourceFolder, ref src);
+            if (!RobustFile.Exists(srcPath))
+                return null;
+
+            var ext = Path.GetExtension(srcPath).ToLowerInvariant();
+            if (ext == ".svg")
+            {
+                // SVG files don't have metadata to trim.
+                return null;
+            }
+            var trimmedFilePath = Path.ChangeExtension(
+                Path.Combine(imageDestFolder, Guid.NewGuid().ToString()),
+                ext
+            );
+
+            // We need an output file even if it's an identical copy.
+            RobustFile.Copy(srcPath, trimmedFilePath, true);
+
+            TrimMetadataInImage(srcPath, trimmedFilePath);
+            // a good default if we can't produce a cropped image for any reason.
+            // (The tests in MakeCroppedImage are a bit more robust than the ones we do before
+            // deciding to call this method.) Capture this before we unencode, since it wants
+            // to be a value we can put in a src attribute (if it doesn't get changed)
+            // to lead to the file we may put at an unchanged file name.
+            var result = src;
+            // We don't need the path here, but this function may correct 'src' (e.g.,
+            // removing some url encoding to find the actual file). And if we're not
+            // using a new name, we want to exactly overwrite the original image file.
+            UrlPathString.GetFullyDecodedPath(imageSourceFolder, ref src);
+            if (needNewName)
+            {
+                // It's tempting to try to come up with a name based on the original image name,
+                // but it's quite tricky (with arbitrary characters possibly in the name)
+                // to be sure that the value we put in the src will actually lead the browser to
+                // the right file. I decided to just stick with the guid that MakeCroppedImage
+                // produces, which contains no characters that need to be encoded.
+
+                // All images with this name and crop should use this
+                result = Path.GetFileName(trimmedFilePath);
+                // Including the current image
+                img.SetAttribute("src", result);
+            }
+            else
+            {
+                var destPath = Path.Combine(imageDestFolder, src);
+                RobustFile.Move(trimmedFilePath, destPath, true);
+                // If it failed, it should have already logged the reason. I think all we can do
+                // is leave the image alone.
+            }
+            img.RemoveAttribute("style"); // so nothing can possibly think it needs more cropping
+            return result;
         }
 
         private static string ReallyCropImage(
