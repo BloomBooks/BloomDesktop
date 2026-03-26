@@ -252,11 +252,6 @@ namespace Bloom
             return BloomFileLocator.GetBrowserDirectory("templates", "xMatter", "project-specific");
         }
 
-        public static string GetCustomXMatterDirectory()
-        {
-            return BloomFileLocator.GetBrowserDirectory("templates", "customXMatter");
-        }
-
         public static string FactoryTemplateBookDirectory
         {
             get { return BloomFileLocator.GetBrowserDirectory("templates", "template books"); }
