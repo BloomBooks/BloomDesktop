@@ -324,7 +324,8 @@ namespace Bloom.Publish.Epub
                     tempBookPath,
                     _book.IsTemplateBook,
                     _omittedPageLabels,
-                    includeVideoAndActivities: false, // no activities in Epubs.
+                    includeFilesNeededForBloomPlayer: false, // no activities in Epubs.
+                    includeVideos: true,
                     // We could enhance this if we can figure out exactly what languages we will publish audio of.
                     // For now, I'm including them all in this initial copy. Later stages will filter to just
                     // what's visible.
