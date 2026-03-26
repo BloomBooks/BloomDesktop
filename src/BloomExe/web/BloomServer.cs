@@ -57,19 +57,15 @@ namespace Bloom.Api
     public class BloomServer : IBloomServer, IDisposable
     {
         public static int portForHttp;
-        public const int WebSocketPortOffset = 1;
-        public const int ReservedPortBlockLength = 3;
+        public const int kNumberOfConsecutivePortsToReserve = 3;
 
-        public static int WebSocketPort => GetWebSocketPort(portForHttp);
+        public static int WebSocketPort => portForHttp + 1;
+
+        public static int RemoteDebuggingPort => portForHttp + 2;
 
         public static string ServerUrl
         {
             get { return "http://localhost:" + portForHttp.ToString(CultureInfo.InvariantCulture); }
-        }
-
-        public static int GetWebSocketPort(int httpPort)
-        {
-            return httpPort + WebSocketPortOffset;
         }
 
         /// <summary>
@@ -1465,9 +1461,8 @@ namespace Bloom.Api
             if (_listener?.IsListening == true)
                 return;
             const int kStartingPort = 8089;
-            const int kNumberOfPortsToTry = 10;
+            const int kNumberOfPortsToTry = 20;
             bool success = false;
-            const int kNumberOfPortsWeNeed = ReservedPortBlockLength;
 
             //Note: while this will find a port for the http, it does not actually know if the accompanying
             //ports are available. It just assume they are.
@@ -1489,7 +1484,8 @@ namespace Bloom.Api
             {
                 for (var i = 0; !success && i < kNumberOfPortsToTry; i++)
                 {
-                    BloomServer.portForHttp = kStartingPort + (i * kNumberOfPortsWeNeed);
+                    BloomServer.portForHttp =
+                        kStartingPort + (i * kNumberOfConsecutivePortsToReserve);
                     success =
                         AreReservedCompanionPortsAvailable(BloomServer.portForHttp)
                         && AttemptToOpenPort();
@@ -1524,7 +1520,7 @@ namespace Bloom.Api
 
         private static IEnumerable<int> GetReservedCompanionPorts(int httpPort)
         {
-            for (var offset = WebSocketPortOffset; offset < ReservedPortBlockLength; offset++)
+            for (var offset = 1; offset < kNumberOfConsecutivePortsToReserve; offset++)
             {
                 yield return httpPort + offset;
             }

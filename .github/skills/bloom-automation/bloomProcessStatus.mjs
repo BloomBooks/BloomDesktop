@@ -18,7 +18,6 @@ const parseArgs = () => {
         runningBloom: false,
         repoRoot: getDefaultRepoRoot(),
         httpPort: undefined,
-        cdpPort: undefined,
     };
 
     for (let i = 0; i < args.length; i++) {
@@ -55,22 +54,6 @@ const parseArgs = () => {
                 arg.slice("--http-port=".length),
             );
             continue;
-        }
-
-        if (arg === "--cdp-port") {
-            options.cdpPort = requireTcpPortOption(
-                "--cdp-port",
-                requireOptionValue(args, i, "--cdp-port"),
-            );
-            i++;
-            continue;
-        }
-
-        if (arg.startsWith("--cdp-port=")) {
-            options.cdpPort = requireTcpPortOption(
-                "--cdp-port",
-                arg.slice("--cdp-port=".length),
-            );
         }
     }
 
@@ -129,9 +112,9 @@ const workspaceTabsUrl = selectedRunningBloomInstance
       : "http://localhost:8089/bloom/api/workspace/tabs";
 const cdpVersionUrl = selectedRunningBloomInstance?.cdpOrigin
     ? `${selectedRunningBloomInstance.cdpOrigin}/json/version`
-    : options.cdpPort
-      ? `http://localhost:${options.cdpPort}/json/version`
-      : "http://localhost:9222/json/version";
+    : options.httpPort
+      ? `http://localhost:${options.httpPort + 2}/json/version`
+      : "http://localhost:8091/json/version";
 const workspaceTabs = await fetchJsonEndpoint(workspaceTabsUrl);
 const cdpVersion = await fetchJsonEndpoint(cdpVersionUrl);
 
@@ -143,7 +126,6 @@ const result = {
           : "current-worktree",
     expectedRepoRoot: processState.expectedRepoRoot,
     requestedHttpPort: options.httpPort,
-    requestedCdpPort: options.cdpPort,
     isRunning: selectedRunningBloomInstance
         ? true
         : processState.bloomProcesses.length > 0,

@@ -4,6 +4,9 @@ type WorkspaceTabId = "collection" | "edit" | "publish";
 const configuredCdpPort = process.env.BLOOM_CDP_PORT;
 const configuredHttpPort = process.env.BLOOM_HTTP_PORT;
 const configuredCdpOrigin = process.env.BLOOM_CDP_ORIGIN;
+const derivedCdpPort = configuredHttpPort
+    ? String(Number.parseInt(configuredHttpPort, 10) + 2)
+    : undefined;
 const cdpEndpoints = configuredCdpOrigin
     ? [configuredCdpOrigin]
     : configuredCdpPort
@@ -11,7 +14,12 @@ const cdpEndpoints = configuredCdpOrigin
             `http://127.0.0.1:${configuredCdpPort}`,
             `http://localhost:${configuredCdpPort}`,
         ]
-      : ["http://127.0.0.1:9222", "http://localhost:9222"];
+      : derivedCdpPort
+        ? [
+              `http://127.0.0.1:${derivedCdpPort}`,
+              `http://localhost:${derivedCdpPort}`,
+          ]
+        : ["http://127.0.0.1:8091", "http://localhost:8091"];
 const workspaceTabsUrl =
     process.env.BLOOM_WORKSPACE_TABS_URL ||
     `http://localhost:${configuredHttpPort || "8089"}/bloom/api/workspace/tabs`;

@@ -105,11 +105,10 @@ namespace Bloom
 
         public static bool RunningSecondInstance { get; private set; }
         internal static int? StartupHttpPort { get; private set; }
-        internal static int? StartupCdpPort { get; private set; }
         internal static int? StartupVitePort { get; private set; }
         internal static string StartupLabel { get; private set; }
         internal static bool StartupUsesExplicitPorts =>
-            StartupHttpPort.HasValue || StartupCdpPort.HasValue || StartupVitePort.HasValue;
+            StartupHttpPort.HasValue || StartupVitePort.HasValue;
 
         internal static string StartupRequestedPortSummary =>
             string.Join(
@@ -117,7 +116,6 @@ namespace Bloom
                 new[]
                 {
                     StartupHttpPort.HasValue ? $"httpPort={StartupHttpPort.Value}" : null,
-                    StartupCdpPort.HasValue ? $"cdpPort={StartupCdpPort.Value}" : null,
                     StartupVitePort.HasValue ? $"vitePort={StartupVitePort.Value}" : null,
                 }.Where(value => value != null)
             );
@@ -735,7 +733,6 @@ namespace Bloom
         {
             errorMessage = null;
             StartupHttpPort = null;
-            StartupCdpPort = null;
             StartupVitePort = null;
             StartupLabel = null;
 
@@ -744,80 +741,29 @@ namespace Bloom
             for (var i = 0; i < args.Length; i++)
             {
                 if (
-                    TryParseStartupPortArgument(
+                    TryHandleStartupPortArgument(
                         args,
                         ref i,
                         "--http-port",
-                        out var httpPort,
+                        () => StartupHttpPort,
+                        value => StartupHttpPort = value,
                         out errorMessage
                     )
-                )
-                {
-                    if (errorMessage != null)
-                        return Array.Empty<string>();
-
-                    if (StartupHttpPort.HasValue)
-                    {
-                        errorMessage = "Bloom only accepts one --http-port argument.";
-                        return Array.Empty<string>();
-                    }
-
-                    StartupHttpPort = httpPort;
-                    continue;
-                }
-
-                if (
-                    TryParseStartupPortArgument(
-                        args,
-                        ref i,
-                        "--cdp-port",
-                        out var cdpPort,
-                        out errorMessage
-                    )
-                )
-                {
-                    if (errorMessage != null)
-                        return Array.Empty<string>();
-
-                    if (StartupCdpPort.HasValue)
-                    {
-                        errorMessage = "Bloom only accepts one --cdp-port argument.";
-                        return Array.Empty<string>();
-                    }
-
-                    StartupCdpPort = cdpPort;
-                    continue;
-                }
-
-                if (
-                    TryParseStartupPortArgument(
+                    || TryHandleStartupPortArgument(
                         args,
                         ref i,
                         "--vite-port",
-                        out var vitePort,
+                        () => StartupVitePort,
+                        value => StartupVitePort = value,
                         out errorMessage
                     )
-                )
-                {
-                    if (errorMessage != null)
-                        return Array.Empty<string>();
-
-                    if (StartupVitePort.HasValue)
-                    {
-                        errorMessage = "Bloom only accepts one --vite-port argument.";
-                        return Array.Empty<string>();
-                    }
-
-                    StartupVitePort = vitePort;
-                    continue;
-                }
-
-                if (
-                    TryParseStartupStringArgument(
+                    || TryHandleStartupStringArgument(
                         args,
                         ref i,
                         "--label",
-                        out var label,
+                        () => StartupLabel,
+                        value =>
+                            StartupLabel = string.IsNullOrWhiteSpace(value) ? null : value.Trim(),
                         out errorMessage
                     )
                 )
@@ -825,32 +771,87 @@ namespace Bloom
                     if (errorMessage != null)
                         return Array.Empty<string>();
 
-                    if (StartupLabel != null)
-                    {
-                        errorMessage = "Bloom only accepts one --label argument.";
-                        return Array.Empty<string>();
-                    }
-
-                    StartupLabel = string.IsNullOrWhiteSpace(label) ? null : label.Trim();
                     continue;
                 }
 
                 remainingArgs.Add(args[i]);
             }
 
+            return remainingArgs.ToArray();
+        }
+
+        private static bool TryHandleStartupPortArgument(
+            string[] args,
+            ref int index,
+            string optionName,
+            Func<int?> getValue,
+            Action<int> setValue,
+            out string errorMessage
+        )
+        {
+            errorMessage = null;
+
             if (
-                StartupHttpPort.HasValue
-                && StartupCdpPort.HasValue
-                && StartupCdpPort.Value >= StartupHttpPort.Value
-                && StartupCdpPort.Value <= StartupHttpPort.Value + 2
+                !TryParseStartupPortArgument(
+                    args,
+                    ref index,
+                    optionName,
+                    out var port,
+                    out errorMessage
+                )
             )
             {
-                errorMessage =
-                    "Bloom's --cdp-port must not overlap the reserved HTTP block (http, http+1, http+2).";
-                return Array.Empty<string>();
+                return false;
             }
 
-            return remainingArgs.ToArray();
+            if (errorMessage != null)
+                return true;
+
+            if (getValue().HasValue)
+            {
+                errorMessage = $"Bloom only accepts one {optionName} argument.";
+                return true;
+            }
+
+            setValue(port);
+            return true;
+        }
+
+        private static bool TryHandleStartupStringArgument(
+            string[] args,
+            ref int index,
+            string optionName,
+            Func<string> getValue,
+            Action<string> setValue,
+            out string errorMessage
+        )
+        {
+            errorMessage = null;
+
+            if (
+                !TryParseStartupStringArgument(
+                    args,
+                    ref index,
+                    optionName,
+                    out var value,
+                    out errorMessage
+                )
+            )
+            {
+                return false;
+            }
+
+            if (errorMessage != null)
+                return true;
+
+            if (getValue() != null)
+            {
+                errorMessage = $"Bloom only accepts one {optionName} argument.";
+                return true;
+            }
+
+            setValue(value);
+            return true;
         }
 
         private static bool TryParseStartupStringArgument(
@@ -873,17 +874,32 @@ namespace Bloom
                     return true;
                 }
 
-                value = args[++index];
+                value = args[index + 1];
+                if (ValueLooksLikeOption(value))
+                {
+                    errorMessage = $"Bloom requires a value after {optionName}.";
+                    return true;
+                }
+
+                index++;
                 return true;
             }
 
             if (current.StartsWith(optionName + "=", StringComparison.Ordinal))
             {
                 value = current.Substring(optionName.Length + 1);
+                if (ValueLooksLikeOption(value))
+                    errorMessage = $"Bloom requires a value after {optionName}.";
+
                 return true;
             }
 
             return false;
+        }
+
+        private static bool ValueLooksLikeOption(string value)
+        {
+            return value.StartsWith("--", StringComparison.Ordinal);
         }
 
         private static bool TryParseStartupPortArgument(

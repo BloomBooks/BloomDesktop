@@ -14,7 +14,6 @@ const parseArgs = () => {
     const options = {
         runningBloom: false,
         httpPort: undefined,
-        cdpPort: undefined,
         tab: undefined,
         json: false,
         timeoutMs: 10000,
@@ -41,23 +40,6 @@ const parseArgs = () => {
             options.httpPort = requireTcpPortOption(
                 "--http-port",
                 arg.slice("--http-port=".length),
-            );
-            continue;
-        }
-
-        if (arg === "--cdp-port") {
-            options.cdpPort = requireTcpPortOption(
-                "--cdp-port",
-                requireOptionValue(args, index, "--cdp-port"),
-            );
-            index++;
-            continue;
-        }
-
-        if (arg.startsWith("--cdp-port=")) {
-            options.cdpPort = requireTcpPortOption(
-                "--cdp-port",
-                arg.slice("--cdp-port=".length),
             );
             continue;
         }
@@ -95,7 +77,7 @@ const parseArgs = () => {
 
 const printHelp = () => {
     console.log(
-        "Usage: node .github/skills/bloom-automation/switchWorkspaceTab.mjs (--running-bloom | --http-port <port>) --tab <collection|edit|publish> [--cdp-port <port>] [--json] [--timeout-ms <ms>]",
+        "Usage: node .github/skills/bloom-automation/switchWorkspaceTab.mjs (--running-bloom | --http-port <port>) --tab <collection|edit|publish> [--json] [--timeout-ms <ms>]",
     );
 };
 
@@ -190,10 +172,6 @@ const resolveInstance = async (options) => {
             response.json,
             options.httpPort,
         );
-        if (options.cdpPort) {
-            instance.cdpPort = options.cdpPort;
-            instance.cdpOrigin = `http://localhost:${instance.cdpPort}`;
-        }
 
         return instance;
     }
@@ -204,11 +182,6 @@ const resolveInstance = async (options) => {
             throw new Error(
                 "No running Bloom instance was found on Bloom's standard HTTP port range.",
             );
-        }
-
-        if (options.cdpPort) {
-            instance.cdpPort = options.cdpPort;
-            instance.cdpOrigin = `http://localhost:${instance.cdpPort}`;
         }
 
         return instance;

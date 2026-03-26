@@ -21,9 +21,9 @@ Use the real embedded WebView2 inside Bloom.exe as the automation target. Determ
 ## Default Assumptions
 - Current repo root is derived automatically by the checked-in helper.
 - Bloom project path is `src/BloomExe/BloomExe.csproj`.
-- The helper launch script chooses an explicit port block by default instead of relying on Bloom's standard search. It allocates HTTP bases from `18089`, `18099`, `18109`, ... and reserves `http`, `http+1`, and `http+2`, with CDP on `http+3`.
+- The helper launch script chooses an explicit port block by default instead of relying on Bloom's standard search. It allocates HTTP bases from `18089`, `18099`, `18109`, ... and uses `http`, `http+1`, and `http+2`, with CDP on `http+2`.
 - Running Bloom reports its actual HTTP and CDP ports through `http://localhost:<port>/bloom/api/common/instanceInfo`.
-- Bloom's embedded WebView2 still defaults to CDP port `9222` in debug builds when no explicit `--cdp-port` argument is supplied.
+- Bloom's embedded WebView2 uses the reserved `http+2` port for CDP when Bloom's HTTP port is known.
 
 ## Commands
 
@@ -76,10 +76,10 @@ Important: if Bloom was started with `dotnet watch run`, killing only `Bloom.exe
 
 ```bash
 node "$repo_root/scripts/watchBloomExe.mjs"
-node "$repo_root/scripts/watchBloomExe.mjs" --http-port 18089 --cdp-port 18092
+node "$repo_root/scripts/watchBloomExe.mjs" --http-port 18089
 ```
 
-These helpers always launch through `dotnet watch run`, compute the repo root, acquire a lock on a non-overlapping port block, pass explicit `--http-port` and `--cdp-port` arguments to Bloom, and print the `dotnet` PID immediately plus the Bloom PID once `common/instanceInfo` becomes reachable.
+These helpers always launch through `dotnet watch run`, compute the repo root, acquire a lock on a non-overlapping port block, pass an explicit `--http-port` argument to Bloom, derive CDP from `http+2`, and print the `dotnet` PID immediately plus the Bloom PID once `common/instanceInfo` becomes reachable.
 `watchBloomExe.mjs` is intentionally long-lived: for normal launches it keeps running under `dotnet watch run` until the launch session ends. If Bloom reports ready and then dies shortly afterward, the helper reports that as a failed launch instead of silently succeeding.
 
 Agent workflow for `watchBloomExe.mjs`:
@@ -146,7 +146,7 @@ Notes:
 6. Use `node .github/skills/bloom-automation/switchWorkspaceTab.mjs --http-port <httpPort> --tab <collection|edit|publish>` for top bar interactions, or attach another confirmed client to the reported `cdpOrigin` if you need lower-level inspection.
 7. Manipulate the UI by clicking or typing in the attached browser context. Do not use Bloom API endpoints to simulate the user action itself.
 8. Use browser-native inspection for DOM, console, and network.
-9. If the task is test-related, run the exe-backed Playwright suite with `BLOOM_HTTP_PORT=<httpPort> BLOOM_CDP_PORT=<cdpPort> yarn playwright test --config playwright.bloom-exe.config.ts`.
+9. If the task is test-related, run the exe-backed Playwright suite with `BLOOM_HTTP_PORT=<httpPort> yarn playwright test --config playwright.bloom-exe.config.ts`.
 
 ## Running Bloom Workflow
 Use this when the user says to reuse the already-running Bloom.
@@ -189,8 +189,8 @@ Use this when the user says to reuse the already-running Bloom.
 - For multi-instance work, prefer `webview2Targets.mjs --http-port <port> --json --wait` and the matching `cdpOrigin` it reports.
 
 ### Verified two-instance smoke path
-- Launch one instance on `--http-port 18089 --cdp-port 18092`.
-- Launch a second instance on `--http-port 18099 --cdp-port 18102`.
+- Launch one instance on `--http-port 18089`.
+- Launch a second instance on `--http-port 18099`.
 - Target the first instance with `switchWorkspaceTab.mjs --http-port 18089 --tab edit`.
 - Target the second instance with `switchWorkspaceTab.mjs --http-port 18099 --tab publish`.
 - Use explicit ports throughout; do not mix `--running-bloom` with this workflow.
@@ -208,8 +208,8 @@ Reason: the current MCP wrappers in this environment control their own browser i
 
 ## Tests
 - Run from `src/BloomBrowserUI/react_components/component-tester`.
-- Use `BLOOM_HTTP_PORT=<httpPort> BLOOM_CDP_PORT=<cdpPort> yarn playwright test --config playwright.bloom-exe.config.ts`.
-- Run one file with `BLOOM_HTTP_PORT=<httpPort> BLOOM_CDP_PORT=<cdpPort> yarn playwright test --config playwright.bloom-exe.config.ts ../TopBar/component-tests/bloom-exe-tabs.uitest.ts`.
+- Use `BLOOM_HTTP_PORT=<httpPort> yarn playwright test --config playwright.bloom-exe.config.ts`.
+- Run one file with `BLOOM_HTTP_PORT=<httpPort> yarn playwright test --config playwright.bloom-exe.config.ts ../TopBar/component-tests/bloom-exe-tabs.uitest.ts`.
 
 These tests attach to the real Bloom.exe target over CDP and verify tab switching plus console and network observation.
 

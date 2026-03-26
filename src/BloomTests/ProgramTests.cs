@@ -14,7 +14,6 @@ namespace BloomTests
                 {
                     "--http-port",
                     "19089",
-                    "--cdp-port=19092",
                     "--vite-port",
                     "15173",
                     "--label=my-cool-feature",
@@ -25,10 +24,10 @@ namespace BloomTests
 
             Assert.That(errorMessage, Is.Null);
             Assert.That(Program.StartupHttpPort, Is.EqualTo(19089));
-            Assert.That(Program.StartupCdpPort, Is.EqualTo(19092));
             Assert.That(Program.StartupVitePort, Is.EqualTo(15173));
             Assert.That(Program.StartupLabel, Is.EqualTo("my-cool-feature"));
             Assert.That(remainingArgs, Is.EqualTo(new[] { @"C:\Temp\Example.bloomcollection" }));
+            Assert.That(WebView2Browser.RemoteDebuggingPort, Is.EqualTo(19091));
         }
 
         [Test]
@@ -42,15 +41,7 @@ namespace BloomTests
             Assert.That(httpErrorMessage, Is.Null);
             Assert.That(Program.StartupUsesExplicitPorts, Is.True);
             Assert.That(Program.StartupRequestedPortSummary, Is.EqualTo("httpPort=19089"));
-
-            Program.ParseStartupPortArguments(
-                new[] { "--cdp-port", "19092" },
-                out var cdpErrorMessage
-            );
-
-            Assert.That(cdpErrorMessage, Is.Null);
-            Assert.That(Program.StartupUsesExplicitPorts, Is.True);
-            Assert.That(Program.StartupRequestedPortSummary, Is.EqualTo("cdpPort=19092"));
+            Assert.That(WebView2Browser.RemoteDebuggingPort, Is.EqualTo(19091));
 
             Program.ParseStartupPortArguments(
                 new[] { "--vite-port", "15173" },
@@ -60,18 +51,6 @@ namespace BloomTests
             Assert.That(viteErrorMessage, Is.Null);
             Assert.That(Program.StartupUsesExplicitPorts, Is.True);
             Assert.That(Program.StartupRequestedPortSummary, Is.EqualTo("vitePort=15173"));
-        }
-
-        [Test]
-        public void ParseStartupPortArguments_RejectsCdpPortInsideReservedHttpBlock()
-        {
-            var remainingArgs = Program.ParseStartupPortArguments(
-                new[] { "--http-port", "19089", "--cdp-port", "19090" },
-                out var errorMessage
-            );
-
-            Assert.That(errorMessage, Does.Contain("must not overlap the reserved HTTP block"));
-            Assert.That(remainingArgs, Is.Empty);
         }
 
         [Test]
@@ -98,6 +77,32 @@ namespace BloomTests
                 errorMessage,
                 Is.EqualTo("Bloom requires --vite-port to be an integer from 1 to 65535.")
             );
+            Assert.That(remainingArgs, Is.Empty);
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_RejectsLabelThatConsumesAnotherOption()
+        {
+            var remainingArgs = Program.ParseStartupPortArguments(
+                new[] { "--label", "--help" },
+                out var errorMessage
+            );
+
+            Assert.That(errorMessage, Is.EqualTo("Bloom requires a value after --label."));
+            Assert.That(Program.StartupLabel, Is.Null);
+            Assert.That(remainingArgs, Is.Empty);
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_RejectsEqualsLabelThatLooksLikeAnotherOption()
+        {
+            var remainingArgs = Program.ParseStartupPortArguments(
+                new[] { "--label=--help" },
+                out var errorMessage
+            );
+
+            Assert.That(errorMessage, Is.EqualTo("Bloom requires a value after --label."));
+            Assert.That(Program.StartupLabel, Is.Null);
             Assert.That(remainingArgs, Is.Empty);
         }
     }

@@ -10,7 +10,7 @@ const parseArgs = () => {
     const args = process.argv.slice(2);
     const options = {
         host: "localhost",
-        port: "9222",
+        port: "8091",
         json: false,
         all: false,
         runningBloom: false,

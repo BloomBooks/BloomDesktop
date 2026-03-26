@@ -21,7 +21,7 @@ const automationBloomStartingHttpPort = 18089;
 const automationBloomPortBlockSize = 10;
 const automationBloomPortBlockCount = 200;
 const automationBloomReservedHttpOffsets = [0, 1, 2];
-const automationBloomCdpOffset = 3;
+const automationBloomCdpOffset = 2;
 const bloomPortLeaseDirectory = path.join(
     os.tmpdir(),
     "bloom-exe-cdp-automation-port-leases",
@@ -99,7 +99,7 @@ export const getBloomPortPlan = (
 });
 
 export const formatBloomPortPlan = (portPlan) =>
-    `HTTP ${portPlan.httpPort}, websocket ${portPlan.webSocketPort}, reserved ${portPlan.reservedHttpPorts[2]}, CDP ${portPlan.cdpPort}`;
+    `HTTP ${portPlan.httpPort}, websocket ${portPlan.webSocketPort}, CDP ${portPlan.cdpPort}`;
 
 const isProcessRunning = (pid) => {
     if (!Number.isInteger(pid) || pid <= 0) {
@@ -233,42 +233,20 @@ export const acquireBloomPortLease = async (requestedPorts = {}) => {
         requestedPorts.httpPort === undefined
             ? undefined
             : toTcpPort(requestedPorts.httpPort);
-    const explicitCdpPort =
-        requestedPorts.cdpPort === undefined
-            ? undefined
-            : toTcpPort(requestedPorts.cdpPort);
 
     if (requestedPorts.httpPort !== undefined && !explicitHttpPort) {
         throw new Error("--http-port must be an integer from 1 to 65535.");
     }
 
-    if (requestedPorts.cdpPort !== undefined && !explicitCdpPort) {
-        throw new Error("--cdp-port must be an integer from 1 to 65535.");
-    }
-
-    if (explicitCdpPort && !explicitHttpPort) {
+    if (requestedPorts.cdpPort !== undefined) {
         throw new Error(
-            "--cdp-port requires --http-port in scripts/watchBloomExe.mjs.",
+            "Bloom automation no longer accepts a separate CDP port argument. CDP now uses http+2.",
         );
     }
 
     const explicitPlan = explicitHttpPort
-        ? getBloomPortPlan(explicitHttpPort, explicitCdpPort)
+        ? getBloomPortPlan(explicitHttpPort)
         : undefined;
-    const lastReservedOffset =
-        automationBloomReservedHttpOffsets[
-            automationBloomReservedHttpOffsets.length - 1
-        ];
-
-    if (
-        explicitPlan &&
-        explicitPlan.cdpPort >= explicitPlan.httpPort &&
-        explicitPlan.cdpPort <= explicitPlan.httpPort + lastReservedOffset
-    ) {
-        throw new Error(
-            "--cdp-port must not overlap Bloom's reserved HTTP block (http, http+1, http+2).",
-        );
-    }
 
     const candidatePlans = explicitPlan
         ? [explicitPlan]
@@ -285,7 +263,7 @@ export const acquireBloomPortLease = async (requestedPorts = {}) => {
             continue;
         }
 
-        const portsToCheck = [...portPlan.reservedHttpPorts, portPlan.cdpPort];
+        const portsToCheck = [...portPlan.reservedHttpPorts];
         if (await areLoopbackPortsAvailable(portsToCheck)) {
             return lease;
         }

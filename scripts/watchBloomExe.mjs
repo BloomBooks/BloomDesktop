@@ -19,7 +19,6 @@ const parseArgs = () => {
             "..",
         ),
         httpPort: undefined,
-        cdpPort: undefined,
         vitePort: undefined,
     };
 
@@ -49,23 +48,6 @@ const parseArgs = () => {
             continue;
         }
 
-        if (arg === "--cdp-port") {
-            options.cdpPort = requireTcpPortOption(
-                "--cdp-port",
-                requireOptionValue(args, i, "--cdp-port"),
-            );
-            i++;
-            continue;
-        }
-
-        if (arg.startsWith("--cdp-port=")) {
-            options.cdpPort = requireTcpPortOption(
-                "--cdp-port",
-                arg.slice("--cdp-port=".length),
-            );
-            continue;
-        }
-
         if (arg === "--vite-port") {
             options.vitePort = requireTcpPortOption(
                 "--vite-port",
@@ -80,13 +62,28 @@ const parseArgs = () => {
                 "--vite-port",
                 arg.slice("--vite-port=".length),
             );
+            continue;
+        }
+
+        if (arg.startsWith("--")) {
+            throw new Error(
+                "Unsupported option. Supported options are --repo-root, --http-port, and --vite-port.",
+            );
         }
     }
 
     return options;
 };
 
-const options = parseArgs();
+let options;
+
+try {
+    options = parseArgs();
+} catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+}
+
 const launchTimeoutMs = 120000;
 const bloomMonitorPollMs = 500;
 const shortLivedBloomMs = 5000;
@@ -106,10 +103,17 @@ if (!existsSync(projectPath)) {
     process.exit(1);
 }
 
-const lease = await acquireBloomPortLease({
-    httpPort: options.httpPort,
-    cdpPort: options.cdpPort,
-});
+let lease;
+
+try {
+    lease = await acquireBloomPortLease({
+        httpPort: options.httpPort,
+    });
+} catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+}
+
 const portPlan = lease.portPlan;
 const dotnetArgs = [
     "watch",
@@ -119,8 +123,6 @@ const dotnetArgs = [
     "--",
     "--http-port",
     String(portPlan.httpPort),
-    "--cdp-port",
-    String(portPlan.cdpPort),
     "--label",
     worktreeLabel,
 ];
