@@ -166,6 +166,7 @@ namespace Bloom.Workspace
                     BackColor = Palette.GeneralBackground,
                     Dock = DockStyle.Fill,
                     AdditionalHtml = workspaceAdditionalHtml,
+                    TabStop = false, // Prevent unwanted focus indicator on first dom control (BL-16061)
                 };
 
                 RegisterWorkspaceRootForDebugging(workspaceAdditionalHtml);
