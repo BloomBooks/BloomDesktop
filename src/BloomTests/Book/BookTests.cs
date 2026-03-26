@@ -120,6 +120,38 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void UpdateDomFromEditedPage_XmatterFrontCoverHasBackgroundAudio_ForcesFullSave()
+        {
+            SetDom(
+                @"<div id='bloomDataDiv'></div>
+                <div class='bloom-page frontCover' id='frontCoverPage' data-xmatter-page='frontCover' data-backgroundaudio='SoundTrack0.mp3' data-backgroundaudiovolume='0.21'>
+                    <p><textarea lang='en'>cover</textarea></p>
+                </div>"
+            );
+            var book = CreateBook();
+            var editedPageDom = MakeDom(
+                @"<div class='bloom-page frontCover' id='frontCoverPage' data-xmatter-page='frontCover' data-backgroundaudio='SoundTrack0.mp3' data-backgroundaudiovolume='0.21'>
+                    <p><textarea lang='en'>cover</textarea></p>
+                </div>"
+            );
+
+            var reallyNeedFullSave = book.UpdateDomFromEditedPage(
+                editedPageDom,
+                out SafeXmlElement pageToSaveToDisk,
+                false
+            );
+
+            Assert.That(pageToSaveToDisk, Is.Not.Null);
+            Assert.That(reallyNeedFullSave, Is.True);
+            AssertThatXmlIn
+                .Dom(book.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-xmatter-page='frontCover' and @data-backgroundaudio='SoundTrack0.mp3' and @data-backgroundaudiovolume='0.21']",
+                    1
+                );
+        }
+
+        [Test]
         public void MigratesLegacyColorToAppearance()
         {
             SetDom(
@@ -2457,6 +2489,44 @@ namespace BloomTests.Book
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class, 'bloom-page') and @data-custom-layout-id='customOutsideFrontCover' and contains(concat(' ', normalize-space(@class), ' '), ' bloom-customLayout ')]",
                     0
+                );
+        }
+
+        [Test]
+        public void BringXmatterHtmlUpToDate_FrontCoverBackgroundAudioAttributes_ArePreserved()
+        {
+            _bookDom = new HtmlDom(
+                @"
+                <html>
+                    <head>
+                        <meta name='xmatter' content='Factory' />
+                    </head>
+                    <body>
+                        <div id='bloomDataDiv'></div>
+                        <div class='bloom-page cover coverColor bloom-frontMatter frontCover A5Portrait side-right'
+                            data-page='required singleton'
+                            data-export='front-matter-cover'
+                            data-xmatter-page='frontCover'
+                            data-backgroundAudio='SoundTrack0.mp3'
+                            data-backgroundAudioVolume='0.21'
+                            id='frontCover-id'>
+                            <div class='marginBox'>
+                                <div class='bloom-canvas'></div>
+                            </div>
+                        </div>
+                    </body>
+                </html>"
+            );
+
+            var book = CreateBook();
+
+            book.BringXmatterHtmlUpToDate(book.OurHtmlDom);
+
+            AssertThatXmlIn
+                .Dom(book.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class, 'bloom-page') and @data-xmatter-page='frontCover' and @data-backgroundAudio='SoundTrack0.mp3' and @data-backgroundAudioVolume='0.21']",
+                    1
                 );
         }
 
