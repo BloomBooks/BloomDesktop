@@ -74,6 +74,9 @@ namespace Bloom.Book
         /// </summary>
         private const string kDataXmatterPage = "data-xmatter-page";
 
+        private static readonly HashSet<string> _xmatterPageAttributesToPreserveSet =
+            new HashSet<string>(HtmlDom.PageAttributesToSaveAndPreserveInXmatter);
+
         private static readonly string[] _attributesToInactivate =
         {
             // key attributes used by the BookData class itself, that could function as a source
@@ -1662,18 +1665,11 @@ namespace Bloom.Book
                 new HashSet<KeyValuePair<string, string>>();
             foreach (var attribute in element.AttributePairs)
             {
-                if (attribute.Name != kDataXmatterPage && attribute.Name.StartsWith("data-"))
+                if (_xmatterPageAttributesToPreserveSet.Contains(attribute.Name))
                 {
-                    // xmatter pages are not numbered.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7303.
-                    // This will clean up books that have wrongly set backmatter page numbers.
-                    // NB: if we ever decide to allow specifying some xmatter pages to be numbered, we'll need to figure
-                    // out how to handle that information here and in HtmlDom.UpdatePageNumberAndSideClassOfPages().
-                    if (attribute.Name == "data-page-number")
-                        attributes.Add(new KeyValuePair<string, string>(attribute.Name, ""));
-                    else
-                        attributes.Add(
-                            new KeyValuePair<string, string>(attribute.Name, attribute.Value)
-                        );
+                    attributes.Add(
+                        new KeyValuePair<string, string>(attribute.Name, attribute.Value)
+                    );
                 }
             }
 

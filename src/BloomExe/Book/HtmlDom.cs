@@ -1886,6 +1886,29 @@ namespace Bloom.Book
         public const string musicAttrName = "data-backgroundaudio";
         public const string musicVolumeName = musicAttrName + "volume";
 
+        // Page-level attributes that should be copied from edited page to storage page
+        // but do not need to survive xmatter replacement.
+        public static readonly string[] PageAttributesToSaveOnly =
+        {
+            "data-correct-sound",
+            "data-wrong-sound",
+            "data-same-size",
+            "data-show-targets-during-play",
+            "data-show-answers-in-targets",
+            "data-missing-game-theme",
+        };
+
+        // Additional page-level attributes that should be saved after editing and also
+        // preserved across xmatter replacement.
+        public static readonly string[] PageAttributesToSaveAndPreserveInXmatter =
+        {
+            musicAttrName,
+            musicVolumeName,
+        };
+
+        private static readonly string[] _pageAttributesToSaveAfterEditing =
+            PageAttributesToSaveOnly.Concat(PageAttributesToSaveAndPreserveInXmatter).ToArray();
+
         public static void ProcessPageAfterEditing(
             SafeXmlElement destinationPageDiv,
             SafeXmlElement edittedPageDiv
@@ -1921,24 +1944,8 @@ namespace Bloom.Book
             //html file in a browser.
             destinationPageDiv.SetAttribute("lang", edittedPageDiv.GetAttribute("lang"));
 
-            // Copy the two background audio attributes which can be set using the music toolbox.
-            // Ensuring that volume is missing unless the main attribute is non-empty is
-            // currently redundant, everything should work if we just copied all attributes.
-            // (But, it IS important to DELETE any old versions of these attributes if the edited page div
-            // does NOT have them.)
-            // Review: should we copy all attributes? All data- attributes?
-            string[] attrsToCopy = new[]
-            {
-                musicAttrName,
-                musicVolumeName,
-                "data-correct-sound",
-                "data-wrong-sound",
-                "data-same-size",
-                "data-show-targets-during-play",
-                "data-show-answers-in-targets",
-                "data-missing-game-theme",
-            };
-            foreach (var attr in attrsToCopy)
+            // Copy user-editable page attributes from the edited page back to storage.
+            foreach (var attr in _pageAttributesToSaveAfterEditing)
             {
                 var value = edittedPageDiv.GetAttribute(attr);
                 if (string.IsNullOrEmpty(value))

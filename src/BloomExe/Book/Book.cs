@@ -2553,6 +2553,7 @@ namespace Bloom.Book
                 .Select(page => page.GetAttribute("data-custom-layout-id"))
                 .Where(id => !string.IsNullOrEmpty(id))
                 .ToHashSet();
+            var xmatterPageAttributesToPreserve = CaptureXmatterPageAttributesToPreserve(bookDOM);
             XMatterHelper.RemoveExistingXMatter(bookDOM, oldIds);
             // this says, if you can't figure out the page size, use the one we got before we removed the xmatter...
             // still requiring it to be a valid layout.
@@ -2577,10 +2578,88 @@ namespace Bloom.Book
                 if (customLayoutIds.Contains(customLayoutId))
                     page.AddClass("bloom-customLayout");
             }
+            RestoreXmatterPageAttributesToPreserve(bookDOM, xmatterPageAttributesToPreserve);
             var dataBookLangs = bookDOM.GatherDataBookLanguages();
             TranslationGroupManager.PrepareDataBookTranslationGroups(bookDOM.RawDom, dataBookLangs);
 
             helper.InjectDefaultUserStylesFromXMatter();
+        }
+
+        private static readonly HashSet<string> kXmatterPageAttributesToPreserve = new(
+            HtmlDom.PageAttributesToSaveAndPreserveInXmatter
+        );
+
+        private static Dictionary<
+            string,
+            Dictionary<string, string>
+        > CaptureXmatterPageAttributesToPreserve(HtmlDom bookDOM)
+        {
+            var preservedAttributesByXmatterPage =
+                new Dictionary<string, Dictionary<string, string>>();
+            foreach (
+                var page in bookDOM
+                    .SafeSelectNodes("//div[contains(@class, 'bloom-page') and @data-xmatter-page]")
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var xmatterPageKey = page.GetAttribute("data-xmatter-page").Trim();
+                if (string.IsNullOrEmpty(xmatterPageKey))
+                    continue;
+
+                if (
+                    !preservedAttributesByXmatterPage.TryGetValue(
+                        xmatterPageKey,
+                        out var attributes
+                    )
+                )
+                {
+                    attributes = new Dictionary<string, string>();
+                    preservedAttributesByXmatterPage.Add(xmatterPageKey, attributes);
+                }
+
+                foreach (var attributeName in kXmatterPageAttributesToPreserve)
+                {
+                    if (page.HasAttribute(attributeName) && !attributes.ContainsKey(attributeName))
+                    {
+                        attributes.Add(attributeName, page.GetAttribute(attributeName));
+                    }
+                }
+            }
+
+            return preservedAttributesByXmatterPage;
+        }
+
+        private static void RestoreXmatterPageAttributesToPreserve(
+            HtmlDom bookDOM,
+            Dictionary<string, Dictionary<string, string>> preservedAttributesByXmatterPage
+        )
+        {
+            if (preservedAttributesByXmatterPage.Count == 0)
+                return;
+
+            foreach (
+                var page in bookDOM
+                    .SafeSelectNodes("//div[contains(@class, 'bloom-page') and @data-xmatter-page]")
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var xmatterPageKey = page.GetAttribute("data-xmatter-page").Trim();
+                if (
+                    string.IsNullOrEmpty(xmatterPageKey)
+                    || !preservedAttributesByXmatterPage.TryGetValue(
+                        xmatterPageKey,
+                        out var attributes
+                    )
+                )
+                {
+                    continue;
+                }
+
+                foreach (var attribute in attributes)
+                {
+                    page.SetAttribute(attribute.Key, attribute.Value);
+                }
+            }
         }
 
         // Around May 2014 we added a class, .bloom-requireParagraphs, backed by javascript that makes geckofx
