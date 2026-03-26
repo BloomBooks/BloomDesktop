@@ -6716,5 +6716,86 @@ namespace BloomTests.Book
             Assert.That(coverImgPath, Is.Null);
             Assert.That(coverImgElt, Is.Null);
         }
+
+        [Test]
+        public void GetCoverImagePathAndElt_NoDesignatedFrontCoverImage_UsesAnyAvailableImageOnFrontCover()
+        {
+            SetDom(
+                @"
+<div id='bloomDataDiv'>
+	<div data-book='someOtherData' lang='*'>value</div>
+</div>
+<div class='bloom-page bloom-frontMatter outsideFrontCover'>
+	<div class='marginBox'>
+        <div class='bloom-canvas'>
+            <div class='bloom-imageContainer'>
+                <img src='front-cover.jpg' id='front-cover-image'/>
+            </div>
+		</div>
+	</div>
+</div>
+<div class='bloom-page'>
+	<div class='marginBox'>
+        <div class='bloom-canvas'>
+            <div class='bloom-imageContainer'>
+                <img src='inside.jpg' id='inside-image'/>
+            </div>
+		</div>
+	</div>
+</div>"
+            );
+            File.WriteAllText(Path.Combine(_storage.Object.FolderPath, "front-cover.jpg"), "test");
+            File.WriteAllText(Path.Combine(_storage.Object.FolderPath, "inside.jpg"), "test");
+
+            var book = CreateBook();
+            var coverImgPath = book.GetCoverImagePathAndElt(out SafeXmlElement coverImgElt);
+
+            Assert.That(
+                coverImgPath,
+                Is.EqualTo(Path.Combine(_storage.Object.FolderPath, "front-cover.jpg"))
+            );
+            Assert.That(coverImgElt.GetAttribute("id"), Is.EqualTo("front-cover-image"));
+        }
+
+        [Test]
+        public void GetCoverImagePathAndElt_DesignatedCoverIsPlaceholder_PrefersRealImage()
+        {
+            SetDom(
+                @"
+<div id='bloomDataDiv'>
+	<div data-book='someOtherData' lang='*'>value</div>
+</div>
+<div class='bloom-page bloom-frontMatter outsideFrontCover'>
+	<div class='marginBox'>
+        <div class='bloom-canvas'>
+            <div class='bloom-imageContainer'>
+                <img data-book='coverImage' src='placeHolder.png' id='cover-placeholder'/>
+                <img src='front-real.jpg' id='front-real-image'/>
+            </div>
+		</div>
+	</div>
+</div>
+<div class='bloom-page'>
+	<div class='marginBox'>
+        <div class='bloom-canvas'>
+            <div class='bloom-imageContainer'>
+                <img src='real-cover.jpg' id='inside-image'/>
+            </div>
+		</div>
+	</div>
+</div>"
+            );
+            File.WriteAllText(Path.Combine(_storage.Object.FolderPath, "front-real.jpg"), "test");
+            File.WriteAllText(Path.Combine(_storage.Object.FolderPath, "real-cover.jpg"), "test");
+
+            var book = CreateBook();
+            var coverImgPath = book.GetCoverImagePathAndElt(out SafeXmlElement coverImgElt);
+
+            Assert.That(
+                coverImgPath,
+                Is.EqualTo(Path.Combine(_storage.Object.FolderPath, "front-real.jpg"))
+            );
+            Assert.That(coverImgElt.GetAttribute("id"), Is.EqualTo("front-real-image"));
+        }
     }
 }
