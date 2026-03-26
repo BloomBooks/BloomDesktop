@@ -11,7 +11,7 @@ import {
 } from "../../js/CanvasElementManager";
 import { EditableDivUtils } from "../../js/editableDivUtils";
 import { kBloomCanvasClass, kCanvasElementClass } from "./canvasElementUtils";
-import { getAsync, postString } from "../../../utils/bloomApi";
+import { getAsync, postData, postString } from "../../../utils/bloomApi";
 import { Bubble, BubbleSpec } from "comicaljs";
 import {
     recomputeSourceBubblesForPage,
@@ -394,7 +394,7 @@ export function setupPageLayoutMenu(): void {
 
     const usingLegacyTheme = isLegacyThemeCssLoaded();
     if (usingLegacyTheme && page.classList.contains("bloom-customLayout")) {
-        postString("editView/toggleCustomPageLayout", page.getAttribute("id")!);
+        toggleCustomPageLayout(page.getAttribute("id")!, true);
         return;
     }
 
@@ -425,6 +425,17 @@ export function setupPageLayoutMenu(): void {
     }
 }
 
+function toggleCustomPageLayout(
+    pageId: string,
+    keepCustomLayoutDataWhenSwitchingToStandard: boolean,
+) {
+    return postData("editView/toggleCustomPageLayout", {
+        pageId,
+        keepCustomLayoutDataWhenSwitchingToStandard:
+            keepCustomLayoutDataWhenSwitchingToStandard ? "true" : "false",
+    });
+}
+
 function renderPageLayoutMenu(page: HTMLElement, container: HTMLElement): void {
     // Render a CustomPageLayoutMenu React component into this container
     const isCustomPage = page.classList.contains("bloom-customLayout");
@@ -433,25 +444,16 @@ function renderPageLayoutMenu(page: HTMLElement, container: HTMLElement): void {
         <CustomPageLayoutMenu
             isCustom={isCustomPage}
             disableCustomPage={usingLegacyTheme}
-            setCustom={async (selection) => {
+            setCustom={async (
+                selection,
+                keepCustomLayoutDataWhenSwitchingToStandard,
+            ) => {
                 if (usingLegacyTheme && selection !== "standard") {
                     return;
                 }
-                if (selection === "customStartOver") {
-                    await wrapWithRequestPageContentDelay(
-                        () => convertXmatterPageToCustom(page),
-                        "customPageLayout-convertStartOver",
-                    );
-                    // This is normally set in editView/toggleCustomPageLayout, but we're not calling that.
-                    // The attribute will be persisted only if some other change is made to the page, but that
-                    // may be good enough since the user is starting over and presumably will make some changes.
-                    page.setAttribute("data-tool-id", "canvas");
-                    renderPageLayoutMenu(page, container);
-                    return;
-                }
-                const response = await postString(
-                    "editView/toggleCustomPageLayout",
+                const response = await toggleCustomPageLayout(
                     page.getAttribute("id")!,
+                    keepCustomLayoutDataWhenSwitchingToStandard,
                 );
                 if (
                     selection === "custom" &&
