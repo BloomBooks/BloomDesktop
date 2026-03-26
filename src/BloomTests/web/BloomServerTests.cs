@@ -6,6 +6,8 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using Bloom;
 using Bloom.Api;
 using Bloom.Book;
@@ -140,6 +142,29 @@ namespace BloomTests.web
 
                 // Verify
                 Assert.IsTrue(transaction.ReplyImagePath.Contains(".pdf"));
+            }
+        }
+
+        [Test]
+        public void CanOpenConsecutivePorts_ReturnsFalseWhenAnyPortInRangeIsBlocked()
+        {
+            var startingPort = Enumerable
+                .Range(38089, 2000)
+                .FirstOrDefault(port => BloomServer.CanOpenConsecutivePorts(port, 2));
+
+            Assert.That(
+                startingPort,
+                Is.GreaterThan(0),
+                "Could not find a free consecutive port range for this test."
+            );
+
+            Assert.That(BloomServer.CanOpenConsecutivePorts(startingPort, 2), Is.True);
+
+            using (var blocker = new TcpListener(IPAddress.Loopback, startingPort + 1))
+            {
+                blocker.Start();
+
+                Assert.That(BloomServer.CanOpenConsecutivePorts(startingPort, 2), Is.False);
             }
         }
 
