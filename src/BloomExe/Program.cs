@@ -375,6 +375,25 @@ namespace Bloom
                     {
                         SetUpErrorHandling();
                         string newCollection = null;
+                        var missingTcPieces = FolderTeamCollection.MissingTcPieces(args[0]);
+                        if (!string.IsNullOrEmpty(missingTcPieces))
+                        {
+                            if (missingTcPieces.StartsWith("book folder"))
+                            {
+                                ErrorReport.NotifyUserOfProblem(
+                                    "You opened a file meant to help you join a team collection, but Bloom was not able to find a Team Collection folder for you to join. Please ask your colleague for help in getting a complete Team Collection folder sync'd to your computer. Then, inside that folder, open the \"joinCollection\" file."
+                                );
+                            }
+                            else
+                            {
+                                ErrorReport.NotifyUserOfProblem(
+                                    "You opened a file meant to help you join a team collection, but Bloom was not able to find all the parts of the Team Collection for you to join. Please ask your colleague for help in getting a complete Team Collection folder sync'd to your computer. Then, inside that folder, open the \"joinCollection\" file."
+                                );
+                            }
+
+                            return 1;
+                        }
+
                         // When we're spinning up a fake local collection in "projectName", we don't want
                         // any chance of copying FROM there to the repo.
                         TeamCollectionManager.ForceNextSyncToLocal = true;
