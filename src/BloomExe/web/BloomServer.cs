@@ -9,6 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Security.Policy;
 using System.Text;
 using System.Threading;
@@ -1542,9 +1543,9 @@ namespace Bloom.Api
             bool success = false;
             const int kNumberOfPortsWeNeed = 2; //one for http, one for peakLevel webSocket
 
-            //Note: while this will find a port for the http, it does not actually know if the accompanying
-            //ports are available. It just assume they are.
-            //So while it's an improvement, it's not yet as solid as we would like it
+            // Note: this now checks whether the following ports in the block are available,
+            // but it still does not reserve them until the corresponding services start.
+            // So while it's an improvement, it's not yet as solid as we would like it
             //to be.  The ultimate solution is to run the websocket and http on the same port.
             //This could be done using this proxy thing that internally routes to different ports:
             // https://github.com/lifeemotions/websocketproxy
@@ -1554,6 +1555,9 @@ namespace Bloom.Api
             for (var i = 0; !success && i < kNumberOfPortsToTry; i++)
             {
                 BloomServer.portForHttp = kStartingPort + (i * kNumberOfPortsWeNeed);
+                if (!CanOpenConsecutivePorts(portForHttp + 1, kNumberOfPortsWeNeed - 1))
+                    continue;
+
                 success = AttemptToOpenPort();
             }
 
@@ -1581,6 +1585,42 @@ namespace Bloom.Api
         /// <summary>
         /// Tries to start listening on the currently proposed server url
         /// </summary>
+        internal static bool CanOpenConsecutivePorts(int startingPort, int numberOfPortsWeNeed)
+        {
+            if (numberOfPortsWeNeed <= 0)
+                return true;
+
+            if (
+                startingPort < IPEndPoint.MinPort
+                || startingPort > IPEndPoint.MaxPort - numberOfPortsWeNeed + 1
+            )
+            {
+                return false;
+            }
+
+            var listeners = new List<TcpListener>();
+            try
+            {
+                for (var offset = 0; offset < numberOfPortsWeNeed; offset++)
+                {
+                    var listener = new TcpListener(IPAddress.Loopback, startingPort + offset);
+                    listener.Start();
+                    listeners.Add(listener);
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            finally
+            {
+                foreach (var listener in listeners)
+                    listener.Stop();
+            }
+        }
+
         private bool AttemptToOpenPort()
         {
             try
