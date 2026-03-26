@@ -52,8 +52,6 @@ const parseArgs = () => {
     const args = process.argv.slice(2);
     const options = {
         vitePort: undefined,
-        httpPort: undefined,
-        cdpPort: undefined,
     };
 
     for (let index = 0; index < args.length; index++) {
@@ -75,45 +73,19 @@ const parseArgs = () => {
             );
             continue;
         }
-
-        if (arg === "--http-port") {
-            options.httpPort = parseRequiredPortValue(
-                "--http-port",
-                requireOptionValue(args, index, "--http-port"),
-            );
-            index++;
-            continue;
-        }
-
-        if (arg.startsWith("--http-port=")) {
-            options.httpPort = parseRequiredPortValue(
-                "--http-port",
-                arg.slice("--http-port=".length),
-            );
-            continue;
-        }
-
-        if (arg === "--cdp-port") {
-            options.cdpPort = parseRequiredPortValue(
-                "--cdp-port",
-                requireOptionValue(args, index, "--cdp-port"),
-            );
-            index++;
-            continue;
-        }
-
-        if (arg.startsWith("--cdp-port=")) {
-            options.cdpPort = parseRequiredPortValue(
-                "--cdp-port",
-                arg.slice("--cdp-port=".length),
-            );
-        }
     }
 
     return options;
 };
 
-const options = parseArgs();
+let options;
+
+try {
+    options = parseArgs();
+} catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+}
 
 const children = [];
 let isShuttingDown = false;
@@ -544,14 +516,6 @@ const startBloomExe = (vitePort) => {
         "--vite-port",
         String(vitePort),
     ];
-
-    if (options.httpPort) {
-        args.push("--http-port", String(options.httpPort));
-    }
-
-    if (options.cdpPort) {
-        args.push("--cdp-port", String(options.cdpPort));
-    }
 
     const child = spawn(process.execPath, args, {
         cwd: browserUIRoot,

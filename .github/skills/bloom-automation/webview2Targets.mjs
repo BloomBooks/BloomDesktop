@@ -4,13 +4,14 @@ import {
     normalizeBloomInstanceInfo,
     requireOptionValue,
     requireTcpPortOption,
+    toLocalOrigin,
 } from "./bloomProcessCommon.mjs";
 
 const parseArgs = () => {
     const args = process.argv.slice(2);
     const options = {
         host: "localhost",
-        port: "9222",
+        port: undefined,
         json: false,
         all: false,
         runningBloom: false,
@@ -171,6 +172,12 @@ const main = async () => {
     const options = parseArgs();
     const deadline = Date.now() + options.timeoutMs;
 
+    if (!options.runningBloom && !options.httpPort && !options.port) {
+        throw new Error(
+            "Specify --running-bloom, --http-port <port>, or an explicit CDP --port <port>.",
+        );
+    }
+
     let version;
     let filteredTargets = [];
     let origin = `http://${options.host}:${options.port}`;
@@ -194,13 +201,13 @@ const main = async () => {
                     instanceInfo.json,
                     options.httpPort,
                 );
-                if (!selectedInstance.cdpOrigin) {
+                if (!selectedInstance.cdpPort) {
                     throw new Error(
                         "The selected Bloom instance did not report a CDP endpoint.",
                     );
                 }
 
-                origin = selectedInstance.cdpOrigin;
+                origin = toLocalOrigin(selectedInstance.cdpPort);
             } else if (options.runningBloom) {
                 runningBloomInstance = await findRunningStandardBloomInstance();
                 if (!runningBloomInstance) {
@@ -209,13 +216,13 @@ const main = async () => {
                     );
                 }
 
-                if (!runningBloomInstance.cdpOrigin) {
+                if (!runningBloomInstance.cdpPort) {
                     throw new Error(
                         "The running Bloom instance did not report a CDP endpoint.",
                     );
                 }
 
-                origin = runningBloomInstance.cdpOrigin;
+                origin = toLocalOrigin(runningBloomInstance.cdpPort);
             }
 
             const [currentVersion, targets] = await Promise.all([

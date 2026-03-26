@@ -30,6 +30,7 @@ using Bloom.web;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
+using Newtonsoft.Json;
 using SIL.Code;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -57,19 +58,15 @@ namespace Bloom.Api
     public class BloomServer : IBloomServer, IDisposable
     {
         public static int portForHttp;
-        public const int WebSocketPortOffset = 1;
-        public const int ReservedPortBlockLength = 3;
+        public const int kNumberOfConsecutivePortsToReserve = 3;
 
-        public static int WebSocketPort => GetWebSocketPort(portForHttp);
+        public static int WebSocketPort => portForHttp + 1;
+
+        public static int RemoteDebuggingPort => portForHttp + 2;
 
         public static string ServerUrl
         {
             get { return "http://localhost:" + portForHttp.ToString(CultureInfo.InvariantCulture); }
-        }
-
-        public static int GetWebSocketPort(int httpPort)
-        {
-            return httpPort + WebSocketPortOffset;
         }
 
         /// <summary>
@@ -1465,9 +1462,8 @@ namespace Bloom.Api
             if (_listener?.IsListening == true)
                 return;
             const int kStartingPort = 8089;
-            const int kNumberOfPortsToTry = 10;
+            const int kNumberOfPortsToTry = 20;
             bool success = false;
-            const int kNumberOfPortsWeNeed = ReservedPortBlockLength;
 
             //Note: while this will find a port for the http, it does not actually know if the accompanying
             //ports are available. It just assume they are.
@@ -1478,22 +1474,12 @@ namespace Bloom.Api
             // Another thing to check on is https://github.com/bryceg/Owin.WebSocket/pull/20 which
             // would give us an owin-compliant version of the fleck websocket server, and we could
             // switch to using an owin-compliant http server like NancyFx.
-            if (Program.StartupHttpPort.HasValue)
+            for (var i = 0; !success && i < kNumberOfPortsToTry; i++)
             {
-                BloomServer.portForHttp = Program.StartupHttpPort.Value;
+                BloomServer.portForHttp = kStartingPort + (i * kNumberOfConsecutivePortsToReserve);
                 success =
                     AreReservedCompanionPortsAvailable(BloomServer.portForHttp)
                     && AttemptToOpenPort();
-            }
-            else
-            {
-                for (var i = 0; !success && i < kNumberOfPortsToTry; i++)
-                {
-                    BloomServer.portForHttp = kStartingPort + (i * kNumberOfPortsWeNeed);
-                    success =
-                        AreReservedCompanionPortsAvailable(BloomServer.portForHttp)
-                        && AttemptToOpenPort();
-                }
             }
 
             if (!success)
@@ -1513,6 +1499,25 @@ namespace Bloom.Api
             }
 
             VerifyWeAreNowListening();
+            WriteAutomationStartupInfo();
+        }
+
+        private static void WriteAutomationStartupInfo()
+        {
+            if (!Program.StartupAutomation)
+                return;
+
+            Console.WriteLine(
+                "BLOOM_AUTOMATION_READY "
+                    + JsonConvert.SerializeObject(
+                        new
+                        {
+                            processId = Process.GetCurrentProcess().Id,
+                            httpPort = portForHttp,
+                            cdpPort = RemoteDebuggingPort,
+                        }
+                    )
+            );
         }
 
         private static int MinWorkerThreads => Math.Max(Environment.ProcessorCount, 2);
@@ -1524,7 +1529,7 @@ namespace Bloom.Api
 
         private static IEnumerable<int> GetReservedCompanionPorts(int httpPort)
         {
-            for (var offset = WebSocketPortOffset; offset < ReservedPortBlockLength; offset++)
+            for (var offset = 1; offset < kNumberOfConsecutivePortsToReserve; offset++)
             {
                 yield return httpPort + offset;
             }

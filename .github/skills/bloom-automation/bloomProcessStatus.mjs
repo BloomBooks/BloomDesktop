@@ -9,6 +9,8 @@ import {
     normalizeBloomInstanceInfo,
     requireOptionValue,
     requireTcpPortOption,
+    toLocalOrigin,
+    toWorkspaceTabsEndpoint,
 } from "./bloomProcessCommon.mjs";
 
 const parseArgs = () => {
@@ -18,7 +20,6 @@ const parseArgs = () => {
         runningBloom: false,
         repoRoot: getDefaultRepoRoot(),
         httpPort: undefined,
-        cdpPort: undefined,
     };
 
     for (let i = 0; i < args.length; i++) {
@@ -55,22 +56,6 @@ const parseArgs = () => {
                 arg.slice("--http-port=".length),
             );
             continue;
-        }
-
-        if (arg === "--cdp-port") {
-            options.cdpPort = requireTcpPortOption(
-                "--cdp-port",
-                requireOptionValue(args, i, "--cdp-port"),
-            );
-            i++;
-            continue;
-        }
-
-        if (arg.startsWith("--cdp-port=")) {
-            options.cdpPort = requireTcpPortOption(
-                "--cdp-port",
-                arg.slice("--cdp-port=".length),
-            );
         }
     }
 
@@ -122,18 +107,30 @@ if (selectedRunningBloomInstance?.processId) {
     }
 }
 
-const workspaceTabsUrl = selectedRunningBloomInstance
-    ? selectedRunningBloomInstance.workspaceTabsUrl
+const workspaceTabsEndpoint = selectedRunningBloomInstance?.httpPort
+    ? toWorkspaceTabsEndpoint(selectedRunningBloomInstance.httpPort)
     : options.httpPort
-      ? `http://localhost:${options.httpPort}/bloom/api/workspace/tabs`
-      : "http://localhost:8089/bloom/api/workspace/tabs";
-const cdpVersionUrl = selectedRunningBloomInstance?.cdpOrigin
-    ? `${selectedRunningBloomInstance.cdpOrigin}/json/version`
-    : options.cdpPort
-      ? `http://localhost:${options.cdpPort}/json/version`
-      : "http://localhost:9222/json/version";
-const workspaceTabs = await fetchJsonEndpoint(workspaceTabsUrl);
-const cdpVersion = await fetchJsonEndpoint(cdpVersionUrl);
+      ? toWorkspaceTabsEndpoint(options.httpPort)
+      : undefined;
+const cdpVersionEndpoint = selectedRunningBloomInstance?.cdpPort
+    ? `${toLocalOrigin(selectedRunningBloomInstance.cdpPort)}/json/version`
+    : undefined;
+const workspaceTabs = workspaceTabsEndpoint
+    ? await fetchJsonEndpoint(workspaceTabsEndpoint)
+    : {
+          reachable: false,
+          statusCode: undefined,
+          json: undefined,
+          error: "No workspace tabs endpoint was available.",
+      };
+const cdpVersion = cdpVersionEndpoint
+    ? await fetchJsonEndpoint(cdpVersionEndpoint)
+    : {
+          reachable: false,
+          statusCode: undefined,
+          json: undefined,
+          error: "No CDP endpoint was available.",
+      };
 
 const result = {
     mode: options.httpPort
@@ -143,7 +140,6 @@ const result = {
           : "current-worktree",
     expectedRepoRoot: processState.expectedRepoRoot,
     requestedHttpPort: options.httpPort,
-    requestedCdpPort: options.cdpPort,
     isRunning: selectedRunningBloomInstance
         ? true
         : processState.bloomProcesses.length > 0,

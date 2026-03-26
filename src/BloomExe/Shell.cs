@@ -275,26 +275,32 @@ namespace Bloom
                 }
             }
 
-            var portSummary = new[]
+            if (ShouldShowPortSummaryInWindowTitle())
             {
-                GetHttpPortTitlePart(),
-                GetAutomationPortTitlePart(),
-                GetVitePortTitlePart(),
-            }.Where(part => !string.IsNullOrEmpty(part));
-            var portSummaryText = string.Join(" ", portSummary);
-            if (!string.IsNullOrEmpty(portSummaryText))
-            {
-                formattedText = string.Format("{0} - {1}", formattedText, portSummaryText);
+                var portSummary = new[]
+                {
+                    GetHttpPortTitlePart(),
+                    GetAutomationPortTitlePart(),
+                    GetVitePortTitlePart(),
+                }.Where(part => !string.IsNullOrEmpty(part));
+                var portSummaryText = string.Join(" ", portSummary);
+                if (!string.IsNullOrEmpty(portSummaryText))
+                {
+                    formattedText = string.Format("{0} - {1}", formattedText, portSummaryText);
+                }
             }
 
             Text = formattedText;
         }
 
+        internal static bool ShouldShowPortSummaryInWindowTitle()
+        {
+            return Program.StartupAutomation;
+        }
+
         private static string GetHttpPortTitlePart()
         {
-            var httpPort =
-                BloomServer.portForHttp > 0 ? BloomServer.portForHttp : Program.StartupHttpPort;
-            return httpPort.HasValue ? $"http:{httpPort.Value}" : null;
+            return BloomServer.portForHttp > 0 ? $"http:{BloomServer.portForHttp}" : null;
         }
 
         private static string GetAutomationPortTitlePart()
