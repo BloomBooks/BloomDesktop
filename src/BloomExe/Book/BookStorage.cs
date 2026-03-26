@@ -2822,12 +2822,12 @@ namespace Bloom.Book
                     continue; // change both data-div and back page
                 }
 
-                anchor.SetAttribute("href", url);
+                anchor.SetAttribute("href", url + "?utm_source=badgeclick");
 
                 if (qrFileName == null)
                 {
                     if (updateQrCodeFileEvenIfItExists || !RobustFile.Exists(qrFilePath))
-                        qrFileName = GenerateQrCodeImage(bookFolderPath, url);
+                        qrFileName = GenerateQrCodeImage(bookFolderPath, url + "?utm_source=qr");
                     else
                         qrFileName = kQrFileName;
                 }
