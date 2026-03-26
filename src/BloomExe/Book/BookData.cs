@@ -1159,6 +1159,22 @@ namespace Bloom.Book
             }
         }
 
+        public void RemoveAllFormsAndDataDivChildrenForDataBook(string key)
+        {
+            // We don't really want to create it here if it doesn't exist. But it almost certaily does,
+            // so it's not worth a special case and refactoring the GetOrCreateDataDiv method.
+            var dataDiv = GetOrCreateDataDiv();
+            foreach (var node in dataDiv.SafeSelectNodes($"*[@data-book='{key}']"))
+            {
+                dataDiv.RemoveChild(node);
+            }
+
+            if (_dataset.TextVariables.ContainsKey(key))
+            {
+                _dataset.TextVariables.Remove(key);
+            }
+        }
+
         private SafeXmlElement GetOrCreateDataDiv()
         {
             if (_dataDiv != null)

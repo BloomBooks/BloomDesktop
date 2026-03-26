@@ -172,14 +172,24 @@ namespace Bloom.web.controllers
         /// </summary>
         private void HandleToggleCustomCover(ApiRequest request)
         {
-            var pageId = request.GetPostStringOrNull();
+            var requestJson = request.GetPostJsonOrNull();
+            var pageId =
+                requestJson == null
+                    ? request.GetPostStringOrNull()
+                    : request.RequiredPostString("pageId");
+            var keepCustomLayoutDataWhenSwitchingToStandard =
+                requestJson != null
+                && request.RequiredPostString("keepCustomLayoutDataWhenSwitchingToStandard")
+                    == "true";
             var book = View.Model.CurrentBook;
             var page = book.GetPage(pageId);
             var pageElt = page.GetDivNodeForThisPage();
             var switchingToCustom = !pageElt.HasClass("bloom-customLayout");
+            var shouldRemoveCustomLayoutDataWhenSwitchingToStandard =
+                !switchingToCustom && !keepCustomLayoutDataWhenSwitchingToStandard;
+            var customLayoutId = pageElt.GetAttribute("data-custom-layout-id");
             if (switchingToCustom)
             {
-                var customLayoutId = pageElt.GetAttribute("data-custom-layout-id");
                 var customLayoutData = book.BookData.GetVariableOrNull(customLayoutId, "*");
                 if (string.IsNullOrEmpty(customLayoutData.Xml))
                 {
@@ -213,6 +223,14 @@ namespace Bloom.web.controllers
                     // so reapply branding QR-code HTML adjustments for the current book settings.
                     // This should not need to regenerate the QR code file.
                     book.UpdateQrCodeHtmlForCurrentSettings(updateQrCodeFileEvenIfItExists: false);
+
+                    if (
+                        shouldRemoveCustomLayoutDataWhenSwitchingToStandard
+                        && !string.IsNullOrWhiteSpace(customLayoutId)
+                    )
+                    {
+                        book.BookData.RemoveAllFormsAndDataDivChildrenForDataBook(customLayoutId);
+                    }
 
                     var updatedPageElt = book.GetPage(pageId)?.GetDivNodeForThisPage();
                     if (updatedPageElt != null)
