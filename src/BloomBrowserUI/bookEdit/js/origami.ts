@@ -6,6 +6,8 @@ import { post, postThatMightNavigate } from "../../utils/bloomApi";
 import { theOneCanvasElementManager } from "./CanvasElementManager";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import $ from "jquery";
+import "../../lib/jquery.i18n.custom";
+import pageSettingsButtonIconSvg from "./pageSettingsButtonIcon.svg?raw";
 import { splitPane } from "../../lib/split-pane/split-pane";
 import { kCanvasToolId } from "../toolbox/toolIds";
 
@@ -68,42 +70,11 @@ export function setupOrigami() {
                 $("#myonoffswitch").prop("checked", true);
             }
 
-            const localizableElements = $(
-                ".customPage, .above-page-control-container",
-            ).find("*[data-i18n]");
-            // In some dev/runtime paths the jQuery localize plugin is not loaded.
-            try {
-                if (typeof localizableElements.localize === "function") {
-                    localizableElements.localize();
-                }
-            } catch (error) {
-                console.warn(
-                    "Origami localization failed; continuing with default labels.",
-                    error,
-                );
-            }
-
-            ensurePageSettingsButtonHasIcon();
+            $(".customPage, .above-page-control-container")
+                .find("*[data-i18n]")
+                .localize();
         });
     });
-}
-
-function ensurePageSettingsButtonHasIcon() {
-    $(".page-settings-button").each((_index, element) => {
-        const button = $(element);
-        const labelText = $.trim(button.text()) || "Page Settings";
-        button.empty();
-        button.append($(getPageSettingsButtonIconHtml()));
-        button.append(
-            $("<span class='page-settings-button-label'></span>").text(
-                labelText,
-            ),
-        );
-    });
-}
-
-function getPageSettingsButtonIconHtml(): string {
-    return `<svg class='page-settings-button-icon' aria-hidden='true' style='width:19px;height:19px;flex-shrink:0;' viewBox="0 0 24 24" fill="currentColor"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>`;
 }
 
 export function cleanupOrigami() {
@@ -394,16 +365,15 @@ function getAbovePageControlContainer(showOrigamiControls: boolean): JQuery {
 
     if (!showOrigamiControls) {
         return $(
-            `<div class='above-page-control-container bloom-ui'>\
-${getPageSettingsButtonHtml()}\
-</div>`,
-        );
+            "<div class='above-page-control-container bloom-ui'></div>",
+        ).append(createPageSettingsButton());
     }
 
-    return $(
-        `\
-<div class='above-page-control-container bloom-ui'> \
-${getPageSettingsButtonHtml()}\
+    return $("<div class='above-page-control-container bloom-ui'></div>")
+        .append(createPageSettingsButton())
+        .append(
+            $(
+                `\
 <div class='origami-toggle bloom-ui'> \
     <div data-i18n='EditTab.CustomPage.ChangeLayout'>Change Layout</div> \
     <div class='onoffswitch'> \
@@ -413,13 +383,29 @@ ${getPageSettingsButtonHtml()}\
             <span class='onoffswitch-switch'></span> \
         </label> \
     </div> \
-</div> \
 </div>`,
-    );
+            ),
+        );
 }
 
-function getPageSettingsButtonHtml(): string {
-    return `<button class='page-settings-button' title='Open Page Settings...'>${getPageSettingsButtonIconHtml()}<span class='page-settings-button-label' data-i18n='PageSettings.Title'>Page Settings</span></button>`;
+function createPageSettingsButton(): JQuery {
+    return $(
+        "<button class='page-settings-button' title='Open Page Settings...' data-i18n='[title]PageSettings.OpenTooltip'></button>",
+    )
+        .append(createPageSettingsButtonIcon())
+        .append(
+            $(
+                "<span class='page-settings-button-label' data-i18n='PageSettings.Title'>Page Settings</span>",
+            ),
+        );
+}
+
+function createPageSettingsButtonIcon(): SVGSVGElement {
+    const iconDocument = new DOMParser().parseFromString(
+        pageSettingsButtonIconSvg,
+        "image/svg+xml",
+    );
+    return iconDocument.documentElement as unknown as SVGSVGElement;
 }
 
 function pageSettingsButtonClickHandler(e: Event) {
