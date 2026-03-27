@@ -2700,6 +2700,11 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Rangi ya maandishi</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.TextColor</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.TextOutlineColor" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Text Outline Color</source>
+        <target xml:lang="sw" state="needs-translation">Text Outline Color</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.TextOutlineColor</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.TextBlock" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Text Block</source>
         <target xml:lang="sw" state="final">Kijisanduku cha maandishi</target>
