@@ -39,6 +39,7 @@ import {
     doWhenWorkspaceBundleLoaded,
     getToolboxBundleExports,
 } from "./workspaceFrames";
+import { shouldSuppressFunctionOnHintClick } from "./hintClickSuppression";
 import { showInvisibles, hideInvisibles } from "./showInvisibles";
 
 //promise may be needed to run tests with phantomjs
@@ -761,6 +762,7 @@ export function SetupElements(
         .find("div[data-derived='topic']")
         .click(function () {
             if ($(this).css("cursor") === "not-allowed") return;
+            if (shouldSuppressFunctionOnHintClick()) return;
             showTopicChooserDialog();
         });
 

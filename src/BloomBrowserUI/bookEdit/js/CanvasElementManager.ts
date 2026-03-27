@@ -90,6 +90,7 @@ import {
     doWhenWorkspaceBundleLoaded,
     getToolboxBundleExports,
 } from "./workspaceFrames";
+import { noteNonTrivialCanvasElementMove } from "./hintClickSuppression";
 
 export interface ITextColorInfo {
     color: string;
@@ -4183,6 +4184,9 @@ export class CanvasElementManager {
         this.mouseIsDown = false;
         this.snapProvider.endDrag();
         this.guideProvider.endDrag();
+        if (this.gotAMoveWhileMouseDown) {
+            noteNonTrivialCanvasElementMove();
+        }
         document.removeEventListener("mouseup", this.onMouseUp, {
             capture: true,
         });
