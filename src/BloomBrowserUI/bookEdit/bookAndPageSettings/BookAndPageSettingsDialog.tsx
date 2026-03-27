@@ -157,10 +157,6 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
         () => propsForBloomDialog.open,
     );
 
-    const [settings, setSettings] = React.useState<IBookSettings | undefined>(
-        undefined,
-    );
-
     const [pageSettings, setPageSettings] = React.useState<
         IPageSettings | undefined
     >(undefined);
@@ -212,74 +208,66 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
             } as unknown as ConfigrValues;
         }, [settings, pageSettings]);
 
-    const [appearanceDisabled, setAppearanceDisabled] = React.useState(false);
-
-    // We use state here to allow the dialog UI to update without permanently changing the settings
-    // and getting notified of those changes. The changes are persisted when the user clicks OK.
-    const [theme, setTheme] = React.useState("");
-    const [firstPossiblyLegacyCss, setFirstPossiblyLegacyCss] =
-        React.useState("");
-    const [migratedTheme, setMigratedTheme] = React.useState("");
+    const [deletedCustomBookStyles, setDeletedCustomBookStyles] =
+        React.useState(false);
 
     const initialPageAttributeSnapshot = React.useRef<
         ElementAttributeSnapshot | undefined
     >(undefined);
 
-    React.useEffect(() => {
+    const settings: IBookSettings | undefined = React.useMemo(() => {
         if (settingsString === "{}") {
-            return; // leave settings as undefined
+            return undefined;
         }
         if (typeof settingsString === "string") {
-            setSettings(JSON.parse(settingsString));
-        } else {
-            setSettings(settingsString);
+            return JSON.parse(settingsString) as IBookSettings;
         }
+        return settingsString as unknown as IBookSettings;
     }, [settingsString]);
 
+    // Capture the current page settings and original page attributes once when the dialog mounts
+    // so Cancel can restore the page accurately; this is safe here because the dialog is only
+    // opened for an already-loaded editable page and getCurrentPageElement() should exist then.
     React.useEffect(() => {
         setPageSettings(getCurrentPageSettings());
         initialPageAttributeSnapshot.current =
             ElementAttributeSnapshot.fromElement(getCurrentPageElement());
     }, []);
 
+    // If the dialog unmounts while a nested color picker is open, clear the shared visibility flag
+    // so the parent dialog does not stay hidden after this component is gone.
     React.useEffect(() => {
         return () => {
             setDialogVisibleWhileColorPickerOpen(false);
         };
     }, [setDialogVisibleWhileColorPickerOpen]);
 
-    React.useEffect(() => {
-        setFirstPossiblyLegacyCss(
-            appearanceUIOptions?.firstPossiblyLegacyCss ?? "",
-        );
-        setMigratedTheme(appearanceUIOptions?.migratedTheme ?? "");
-    }, [appearanceUIOptions]);
-
     const bookSettingsTitle = useL10n(
         "Book and Page Settings",
         "BookAndPageSettings.Title",
     );
 
-    React.useEffect(() => {
-        if (settings?.appearance) {
-            const liveAppearance =
-                (settingsToReturnLater?.["appearance"] as
-                    | IAppearanceSettings
-                    | undefined) ?? settings.appearance;
-            // when we're in legacy, we're just going to disable all the appearance controls
-            setAppearanceDisabled(
-                liveAppearance?.cssThemeName === "legacy-5-6",
-            );
-            setTheme(liveAppearance?.cssThemeName ?? "");
-        }
-    }, [settings, settingsToReturnLater]);
+    const firstPossiblyLegacyCss = deletedCustomBookStyles
+        ? ""
+        : (appearanceUIOptions?.firstPossiblyLegacyCss ?? "");
+    const migratedTheme = deletedCustomBookStyles
+        ? ""
+        : (appearanceUIOptions?.migratedTheme ?? "");
+    const liveAppearance =
+        (settingsToReturnLater?.["appearance"] as
+            | IAppearanceSettings
+            | undefined) ?? settings?.appearance;
+    const appearanceDisabled = liveAppearance?.cssThemeName === "legacy-5-6";
+
+    // We keep theme as a render-time value from the latest working settings so the dialog reflects
+    // Configr edits immediately without a second state synchronization layer.
+    const theme = liveAppearance?.cssThemeName ?? "";
 
     const deleteCustomBookStyles = () => {
         post(
             `book/settings/deleteCustomBookStyles?file=${firstPossiblyLegacyCss}`,
         );
-        setFirstPossiblyLegacyCss("");
-        setMigratedTheme("");
+        setDeletedCustomBookStyles(true);
     };
 
     const tierAllowsFullPageCoverImage =

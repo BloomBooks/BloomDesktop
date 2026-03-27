@@ -229,22 +229,20 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
         addNewColorsToArrayIfNecessary,
     ]);
 
-    // Keep the focus callback current even though we attach DOM listeners only once.
-    const onInputFocusRef = useRef(props.onInputFocus);
-    useEffect(() => {
-        onInputFocusRef.current = props.onInputFocus;
-    }, [props.onInputFocus]);
+    const onInputFocus = props.onInputFocus;
 
-    const focusFunc = (ev: FocusEvent) => {
-        onInputFocusRef.current(ev.currentTarget as HTMLElement);
-    };
-
-    // Install focus listeners on inputs so the client can restore focus when canvas updates steal it.
+    // Install focus listeners on inputs so the client can restore focus when canvas updates steal it;
+    // this effect is necessary because the inputs live in the rendered DOM, not in React props/state,
+    // and we want the listener to stay aligned with the latest onInputFocus callback.
     useEffect(() => {
         const parent = dlgRef.current;
         if (!parent) {
             return;
         }
+
+        const focusFunc = (ev: FocusEvent) => {
+            onInputFocus(ev.currentTarget as HTMLElement);
+        };
 
         // When we make incremental color changes while editing one of these inputs,
         // the process of applying the changed color to the canvas element moves the focus
@@ -277,7 +275,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
                 input.removeEventListener("focus", focusFunc),
             );
         };
-    }, []);
+    }, [onInputFocus]);
 
     const convertJsonColorArrayToColorInfos = (
         jsonArray: IColorInfo[],

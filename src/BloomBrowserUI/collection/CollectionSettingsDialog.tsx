@@ -28,10 +28,6 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         propsForBloomDialog,
     } = useEventLaunchedBloomDialog("CollectionSettingsDialog");
 
-    const [settings, setSettings] = React.useState<ConfigrValues | undefined>(
-        undefined,
-    );
-
     const [settingsString, setSettingsString] = React.useState<string>("{}");
     // Fetch collection settings when the dialog opens so we sync with host state.
     React.useEffect(() => {
@@ -41,20 +37,19 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             });
     }, [propsForBloomDialog.open]);
 
+    const settings = React.useMemo((): ConfigrValues | undefined => {
+        if (settingsString === "{}") {
+            return undefined;
+        }
+        if (typeof settingsString === "string") {
+            return JSON.parse(settingsString) as ConfigrValues;
+        }
+        return settingsString as unknown as ConfigrValues;
+    }, [settingsString]);
+
     const [settingsToReturnLater, setSettingsToReturnLater] = React.useState<
         ConfigrValues | undefined
     >(undefined);
-    // Parse the settings JSON for Configr's initial values once it arrives.
-    React.useEffect(() => {
-        if (settingsString === "{}") {
-            return; // leave settings as undefined
-        }
-        if (typeof settingsString === "string") {
-            setSettings(JSON.parse(settingsString) as ConfigrValues);
-        } else {
-            setSettings(settingsString as ConfigrValues);
-        }
-    }, [settingsString]);
 
     return (
         <BloomDialog
