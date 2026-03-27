@@ -1093,7 +1093,7 @@ export function bootstrap() {
     document.addEventListener(
         "mousedown",
         () => {
-            getToolboxBundleExports()?.handleClickOutsideToolbox();
+            getToolboxBundleExports()?.simulateBlurOnPageFrameMouseDown();
         },
         { capture: true },
     );
@@ -1142,6 +1142,11 @@ export function bootstrap() {
         .each((index: number, element: Element) => {
             attachToCkEditor(element);
         });
+
+    // CKEditor initialization can replace editable nodes in some environments,
+    // so re-attach longpress handlers after editors are wired up.
+    activateLongPressFor($("div.bloom-page").find(".bloom-editable"));
+
     if ($("div.bloom-page").length === 1) {
         addScrollbarsToPage($("div.bloom-page")[0]);
     }
@@ -1657,11 +1662,38 @@ async function pasteImpl(imageAvailable: boolean) {
 }
 
 export function activateLongPressFor(jQuerySetOfMatchedElements) {
+    const ensureLongPressPluginLoaded = async (): Promise<boolean> => {
+        if (typeof $.fn.longPress === "function") {
+            return true;
+        }
+
+        try {
+            await import("../../lib/long-press/jquery.longpress.js");
+        } catch (e) {
+            console.error("Failed to import longpress plugin:", e);
+            return false;
+        }
+
+        if (typeof $.fn.longPress !== "function") {
+            console.error(
+                "Longpress plugin import completed, but $.fn.longPress is still undefined.",
+            );
+            return false;
+        }
+
+        return true;
+    };
+
     // using axios directly because we already have a catch...though not obviously better than the Bloom Api one?
     axios
         .get("/bloom/api/keyboarding/useLongpress")
-        .then((response) => {
+        .then(async (response) => {
             if (response.data) {
+                const pluginIsLoaded = await ensureLongPressPluginLoaded();
+                if (!pluginIsLoaded) {
+                    return;
+                }
+
                 theOneLocalizationManager
                     .asyncGetText(
                         "BookEditor.CharacterMap.Instructions",

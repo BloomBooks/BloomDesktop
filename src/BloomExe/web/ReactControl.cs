@@ -10,6 +10,28 @@ using SIL.Windows.Forms.Extensions;
 
 namespace Bloom.web
 {
+    public class ReactControlAdditionalHtml
+    {
+        public string HeadHtml;
+        public string BodyEndHtml;
+        public string ViteDevHeadHtml;
+        public string ViteDevBodyEndHtml;
+
+        public string GetHeadHtml(bool useViteDev)
+        {
+            if (useViteDev && !string.IsNullOrEmpty(ViteDevHeadHtml))
+                return ViteDevHeadHtml;
+            return HeadHtml;
+        }
+
+        public string GetBodyEndHtml(bool useViteDev)
+        {
+            if (useViteDev && !string.IsNullOrEmpty(ViteDevBodyEndHtml))
+                return ViteDevBodyEndHtml;
+            return BodyEndHtml;
+        }
+    }
+
     /// <summary>
     /// Hosts a Web Browser rooted by the named React component
     /// </summary>
@@ -51,6 +73,11 @@ namespace Bloom.web
         public bool UseEditContextMenu;
         public bool HideVerticalOverflow;
         public event EventHandler OnBrowserClick;
+        public event EventHandler BrowserCreated;
+
+        public Browser Browser => _browser;
+
+        public ReactControlAdditionalHtml AdditionalHtml;
 
         public Action ReplaceContextMenu { get; set; }
 
@@ -83,6 +110,7 @@ namespace Bloom.web
             // rectangle in the upper left corner...
             //_browser = new GeckoFxBrowser
             _browser = BrowserMaker.MakeBrowser();
+            BrowserCreated?.Invoke(this, EventArgs.Empty);
             if (ReplaceContextMenu != null)
                 _browser.ReplaceContextMenu = ReplaceContextMenu;
             var browserControl = _browser;
@@ -173,7 +201,8 @@ namespace Bloom.web
                 Props,
                 BackColor,
                 HideVerticalOverflow,
-                detach: true
+                detach: true,
+                additionalHtml: AdditionalHtml
             );
         }
 
@@ -182,7 +211,8 @@ namespace Bloom.web
             object propsObject,
             Color backColor,
             bool hideVerticalOverflow,
-            bool detach
+            bool detach,
+            ReactControlAdditionalHtml additionalHtml = null
         )
         {
             var tempFile = TempFile.WithExtension("htm");
@@ -193,7 +223,8 @@ namespace Bloom.web
                 javascriptBundleName,
                 propsObject,
                 backColor,
-                hideVerticalOverflow
+                hideVerticalOverflow,
+                additionalHtml
             );
             RobustFile.WriteAllText(tempFile.Path, html);
             return tempFile;
@@ -203,7 +234,8 @@ namespace Bloom.web
             string javascriptBundleName,
             object propsObject,
             Color backColor,
-            bool hideVerticalOverflow
+            bool hideVerticalOverflow,
+            ReactControlAdditionalHtml additionalHtml = null
         )
         {
             var props = propsObject == null ? "{}" : JsonConvert.SerializeObject(propsObject);
@@ -227,7 +259,7 @@ namespace Bloom.web
 
             var bundleToViteModulePathMap = new Dictionary<string, string>
             {
-                { "collectionsTabPaneBundle", "/collectionsTab/CollectionsTabPane.entry.tsx" },
+                { "advancedSettingsBundle", "/collection/AdvancedSettingsPanel.entry.tsx" },
                 { "bookMakingSettingsBundle", "/collection/bookMakingSettingsControl.entry.tsx" },
                 {
                     "autoUpdateSoftwareDlgBundle",
@@ -254,7 +286,6 @@ namespace Bloom.web
                 },
                 { "problemReportBundle", "/problemDialog/ProblemDialog.entry.tsx" },
                 { "progressDialogBundle", "/react_components/Progress/ProgressDialog.entry.tsx" },
-                { "publishTabPaneBundle", "/publish/PublishTab/PublishTabPane.entry.tsx" },
                 { "registrationDialogBundle", "/react_components/registrationDialog.entry.tsx" },
                 { "subscriptionSettingsBundle", "/collection/subscriptionSettingsTab.entry.tsx" },
                 {
@@ -265,13 +296,15 @@ namespace Bloom.web
                     "accessibilityCheckBundle",
                     "/publish/accessibilityCheck/accessibilityCheckScreen.entry.tsx"
                 },
-                { "topBarBundle", "/react_components/TopBar/TopBar.entry.tsx" },
+                { "appBundle", "/app/App.entry.tsx" },
             };
             string viteModulePath = null;
             var useViteDev = ShouldUseViteDev(() =>
                 bundleToViteModulePathMap.TryGetValue(javascriptBundleName, out viteModulePath)
                 && viteModulePath != null
             );
+            var additionalHeadHtml = additionalHtml?.GetHeadHtml(useViteDev) ?? string.Empty;
+            var additionalBodyEndHtml = additionalHtml?.GetBodyEndHtml(useViteDev) ?? string.Empty;
 
             var body =
                 $@"
@@ -329,20 +362,86 @@ namespace Bloom.web
 
                         async function main() {{
                             try {{
+                                async function loadScriptWithCacheBust(url, label) {{
+                                    await new Promise((resolve, reject) => {{
+                                        const script = document.createElement('script');
+                                        script.src = url + '?t=' + Date.now().toString();
+                                        script.async = true;
+                                        script.onload = resolve;
+                                        script.onerror = () => reject(new Error(label + ' script fallback failed to load: ' + script.src));
+                                        document.head.appendChild(script);
+                                    }});
+                                }}
+
+                                async function importWithFallback(primaryUrl, label, directFallbackUrl, globalNameForScriptFallback) {{
+                                    try {{
+                                        return await import(primaryUrl);
+                                    }} catch (primaryError) {{
+                                        console.warn(label + ' primary import failed, retrying with cache-busted /@id URL', primaryError);
+
+                                        if (primaryUrl.indexOf('/@id/') !== -1) {{
+                                            try {{
+                                                const retryUrl = primaryUrl + '?t=' + Date.now().toString();
+                                                return await import(retryUrl);
+                                            }} catch (retryError) {{
+                                                console.warn(label + ' cache-busted /@id retry failed', retryError);
+                                            }}
+                                        }}
+
+                                        if (directFallbackUrl) {{
+                                            if (globalNameForScriptFallback) {{
+                                                await loadScriptWithCacheBust(directFallbackUrl, label);
+                                                const globalValue = window[globalNameForScriptFallback];
+                                                if (!globalValue) {{
+                                                    throw new Error(label + ' script fallback loaded but did not set window.' + globalNameForScriptFallback);
+                                                }}
+                                                return {{ default: globalValue }};
+                                            }}
+
+                                            const directUrl = directFallbackUrl + '?t=' + Date.now().toString();
+                                            return await import(directUrl);
+                                        }}
+
+                                        throw primaryError;
+                                    }}
+                                }}
 
                                 // Import via bare specifiers (resolved by import map) and assign globals expected by legacy libs.
-                                const jQuery = (await import('jquery')).default;
-                                // Some builds export default, others export the function itself. Normalize.
-                                const jq = jQuery && jQuery.fn ? jQuery : (jQuery && jQuery.default ? jQuery.default : jQuery);
+                                const jQueryModule = await importWithFallback(
+                                    'http://localhost:5173/@id/jquery',
+                                    'jQuery',
+                                    'http://localhost:5173/node_modules/jquery/dist/jquery.min.js',
+                                    'jQuery'
+                                );
+                                const jQuery = jQueryModule && jQueryModule.default ? jQueryModule.default : jQueryModule;
+                                let jq = jQuery && jQuery.fn ? jQuery : (jQuery && jQuery.default ? jQuery.default : jQuery);
+
+                                if (!jq) {{
+                                    jq = window.jQuery || window.$;
+                                }}
+
+                                if (!jq) {{
+                                    throw new Error('Unable to initialize jQuery for Vite dev ReactControl');
+                                }}
+
                                 window.$ = jq;
                                 window.jQuery = jq;
-                                console.log('jQuery ready via Vite prebundle');
 
-                                const XRegExp = (await import('xregexp')).default || (await import('xregexp'));
+                                const xRegExpModule = await importWithFallback(
+                                    'http://localhost:5173/@id/xregexp',
+                                    'XRegExp',
+                                    'http://localhost:5173/node_modules/xregexp/xregexp-all.js',
+                                    'XRegExp'
+                                );
+                                const XRegExp = xRegExpModule && xRegExpModule.default ? xRegExpModule.default : xRegExpModule;
                                 window.XRegExp = XRegExp.default || XRegExp;
                                 console.log('XRegExp ready via Vite prebundle');
 
-                                const _mod = await import('underscore');
+                                const _mod = await importWithFallback(
+                                    'http://localhost:5173/@id/underscore',
+                                    'Underscore',
+                                    'http://localhost:5173/node_modules/underscore/underscore-esm.js'
+                                );
                                 window._ = _mod.default || _mod;
                                 console.log('Underscore ready via Vite prebundle');
 
@@ -355,8 +454,10 @@ namespace Bloom.web
 
                         main();
                     </script>
+                    {additionalHeadHtml}
                 </head>
                 {body}
+                {additionalBodyEndHtml}
                 </html>";
             }
             else
@@ -368,6 +469,7 @@ namespace Bloom.web
 				<head>
                     <title>ReactControl ({javascriptBundleName})</title>
 					<meta charset = 'UTF-8' />
+                    {additionalHeadHtml}
                     <script src = '/{bundleNameWithExtension}'  type='module'></script>
 					<script>
 						window.onload = () => {{
@@ -377,6 +479,7 @@ namespace Bloom.web
 					</script>
 				</head>
 				{body}
+                {additionalBodyEndHtml}
                 </html>";
             }
         }

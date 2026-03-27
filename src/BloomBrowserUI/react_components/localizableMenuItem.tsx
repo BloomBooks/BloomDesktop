@@ -58,8 +58,7 @@ export interface ILocalizableMenuItemProps
     onClick: React.MouseEventHandler;
     icon?: ReactNode;
     addEllipsis?: boolean;
-
-    dontGiveAffordanceForCheckbox?: boolean;
+    hasLeadingIconSpace?: boolean; // defaults true. Should be true if any item in the menu has an icon.
     subscriptionTooltipOverride?: string;
     className?: string;
     isDivider?: boolean;
@@ -120,6 +119,8 @@ export const LocalizableMenuItem: React.FunctionComponent<
     );
     const featureStatus = useGetFeatureStatus(props.featureName);
     const enabled = featureStatus === undefined ? true : featureStatus.enabled;
+    // Make the default true.
+    const hasLeadingIconSpace = props.hasLeadingIconSpace ?? true;
 
     const iconElement = props.icon ? (
         <ListItemIcon
@@ -135,7 +136,7 @@ export const LocalizableMenuItem: React.FunctionComponent<
         >
             {props.icon}
         </ListItemIcon>
-    ) : props.dontGiveAffordanceForCheckbox ? (
+    ) : !hasLeadingIconSpace ? (
         <div />
     ) : (
         <div
@@ -233,7 +234,7 @@ export const LocalizableSelectableMenuItem: React.FunctionComponent<
         <LocalizableMenuItem
             {...props}
             onClick={props.onClick ?? (() => {})}
-            dontGiveAffordanceForCheckbox={false}
+            hasLeadingIconSpace={true}
             isDivider={false}
             icon={
                 props.selected ? (

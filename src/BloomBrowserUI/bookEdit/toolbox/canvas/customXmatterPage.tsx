@@ -6,13 +6,17 @@ import { CustomPageLayoutMenu } from "./customPageLayoutMenu";
 import {
     CanvasElementManager,
     kBackgroundImageClass,
+    showCanvasTool,
     theOneCanvasElementManager,
 } from "../../js/CanvasElementManager";
 import { EditableDivUtils } from "../../js/editableDivUtils";
 import { kBloomCanvasClass, kCanvasElementClass } from "./canvasElementUtils";
-import { getAsync, postString } from "../../../utils/bloomApi";
+import { getAsync, postData, postString } from "../../../utils/bloomApi";
 import { Bubble, BubbleSpec } from "comicaljs";
-import { recomputeSourceBubblesForPage } from "../../js/bloomEditing";
+import {
+    recomputeSourceBubblesForPage,
+    wrapWithRequestPageContentDelay,
+} from "../../js/bloomEditing";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import { getToolboxBundleExports } from "../../js/workspaceFrames";
 import { ILanguageNameValues } from "../../bookAndPageSettings/FieldVisibilityGroup";
@@ -57,17 +61,19 @@ import { isLegacyThemeCssLoaded } from "../../bookAndPageSettings/appearanceThem
     visibility of different languages.
 */
 
-export function convertXmatterPageToCustom(page: HTMLElement): void {
+async function convertXmatterPageToCustom(page: HTMLElement): Promise<void> {
+    const marginBox = page.getElementsByClassName(
+        "marginBox",
+    )[0] as HTMLElement;
+    if (!marginBox) return; // paranoia and lint
+
+    const languageNameValues = await getLanguageNameValues();
+
     theOneCanvasElementManager?.turnOffCanvasElementEditing();
     // we need to get rid of the old ones before we switch things around,
     // since the remove code makes use of the existing divs that the
     // source bubbles are connected to.
     BloomSourceBubbles.removeSourceBubbles(page);
-
-    const marginBox = page.getElementsByClassName(
-        "marginBox",
-    )[0] as HTMLElement;
-    if (!marginBox) return; // paranoia and lint
 
     const contentElements = Array.from(
         marginBox.querySelectorAll("[data-book], [data-derived]"),
@@ -76,6 +82,12 @@ export function convertXmatterPageToCustom(page: HTMLElement): void {
     const newCeImages: HTMLElement[] = [];
 
     for (const elem of contentElements) {
+        // If something was completely hidden on the source page (typically by a book setting),
+        // making it appear on the custom page would be unexpected. This searches a few levels up,
+        // since the data-book element is sometimes inside an element that gets hidden.
+        if (EditableDivUtils.isInDisplayNone(elem)) {
+            continue;
+        }
         if (elem instanceof HTMLImageElement) {
             // The main cover image. We will clone it, but it will no longer be
             // a background image.
@@ -125,9 +137,11 @@ export function convertXmatterPageToCustom(page: HTMLElement): void {
                         e.classList.remove("bloom-visibility-code-on");
                     }
                 }
-                // We don't need to await this. We just want it done before the next time
-                // we save the page, and the async result should arrive almost instantly.
-                setDataDefault(ceContent as HTMLElement, lang || "");
+                setDataDefault(
+                    ceContent as HTMLElement,
+                    lang || "",
+                    languageNameValues,
+                );
 
                 // Don't let the appearance system mess with which languages are visible here.
                 ceContent.removeAttribute("data-visibility-variable");
@@ -160,14 +174,27 @@ export function convertXmatterPageToCustom(page: HTMLElement): void {
             newCe.appendChild(ceContent);
             // Before we move the tg, measure its size and make newCe match
             // Review: do we need to add allowance for borders/margins/padding?
-            newCe.style.width = baseSizeOn.clientWidth + "px";
-            newCe.style.height = baseSizeOn.clientHeight + "px";
+            const baseComputedStyle = window.getComputedStyle(baseSizeOn);
+            const marginLeft =
+                Number.parseFloat(baseComputedStyle.marginLeft) || 0;
+            const marginRight =
+                Number.parseFloat(baseComputedStyle.marginRight) || 0;
+            const marginTop =
+                Number.parseFloat(baseComputedStyle.marginTop) || 0;
+            const marginBottom =
+                Number.parseFloat(baseComputedStyle.marginBottom) || 0;
+            newCe.style.width =
+                baseSizeOn.clientWidth + marginLeft + marginRight + "px";
+            newCe.style.height =
+                baseSizeOn.clientHeight + marginTop + marginBottom + "px";
             // set its top and left to where it currently is relative to the page
             const pageRect = page.getBoundingClientRect();
             const tgRect = baseSizeOn.getBoundingClientRect();
             const scale = EditableDivUtils.getPageScale();
-            newCe.style.left = (tgRect.left - pageRect.left) / scale + "px";
-            newCe.style.top = (tgRect.top - pageRect.top) / scale + "px";
+            newCe.style.left =
+                (tgRect.left - pageRect.left) / scale - marginLeft + "px";
+            newCe.style.top =
+                (tgRect.top - pageRect.top) / scale - marginTop + "px";
         }
     }
     const mainCanvas = document.createElement("div");
@@ -199,17 +226,20 @@ export function convertXmatterPageToCustom(page: HTMLElement): void {
     finishReactivatingPage(page);
 }
 
-async function setDataDefault(
+async function getLanguageNameValues(): Promise<ILanguageNameValues> {
+    return (await getAsync("settings/languageNames"))
+        .data as ILanguageNameValues;
+}
+
+function setDataDefault(
     ceContent: HTMLElement,
     lang: string,
-): Promise<void> {
+    languageNameValues: ILanguageNameValues,
+): void {
     // We also want it to stay that way when C# code later updates visibility codes.
     // This is based on a setting in the TG. Using these generic codes means that if
     // the collection languages change, or we make a derivative, the right language
     // should still be made visible in each box.
-    // settings/languageNames
-    const languageNameValues = (await getAsync("settings/languageNames"))
-        .data as ILanguageNameValues;
     if (languageNameValues.language1Tag === lang) {
         ceContent.setAttribute("data-default-languages", "V");
     } else if (languageNameValues.language2Tag === lang) {
@@ -226,6 +256,8 @@ function finishReactivatingPage(page: HTMLElement): void {
     theOneCanvasElementManager.turnOnCanvasElementEditing();
     ensureDerivedFieldsFitOnCustomPage(page);
     getToolboxBundleExports()?.applyToolboxStateToPage();
+    // Enable or show the canvas tool.
+    showCanvasTool();
 }
 
 // This function tries to make sure that all derived-field canvas elements fit on the page.
@@ -362,7 +394,7 @@ export function setupPageLayoutMenu(): void {
 
     const usingLegacyTheme = isLegacyThemeCssLoaded();
     if (usingLegacyTheme && page.classList.contains("bloom-customLayout")) {
-        postString("editView/toggleCustomPageLayout", page.getAttribute("id")!);
+        toggleCustomPageLayout(page.getAttribute("id")!, true);
         return;
     }
 
@@ -393,6 +425,17 @@ export function setupPageLayoutMenu(): void {
     }
 }
 
+function toggleCustomPageLayout(
+    pageId: string,
+    keepCustomLayoutDataWhenSwitchingToStandard: boolean,
+) {
+    return postData("editView/toggleCustomPageLayout", {
+        pageId,
+        keepCustomLayoutDataWhenSwitchingToStandard:
+            keepCustomLayoutDataWhenSwitchingToStandard ? "true" : "false",
+    });
+}
+
 function renderPageLayoutMenu(page: HTMLElement, container: HTMLElement): void {
     // Render a CustomPageLayoutMenu React component into this container
     const isCustomPage = page.classList.contains("bloom-customLayout");
@@ -401,32 +444,44 @@ function renderPageLayoutMenu(page: HTMLElement, container: HTMLElement): void {
         <CustomPageLayoutMenu
             isCustom={isCustomPage}
             disableCustomPage={usingLegacyTheme}
-            setCustom={(selection) => {
+            setCustom={async (
+                selection,
+                keepCustomLayoutDataWhenSwitchingToStandard,
+            ) => {
                 if (usingLegacyTheme && selection !== "standard") {
                     return;
                 }
-                if (selection === "customStartOver") {
-                    convertXmatterPageToCustom(page);
-                    renderPageLayoutMenu(page, container);
-                    return;
-                }
-                postString(
-                    "editView/toggleCustomPageLayout",
+                const response = await toggleCustomPageLayout(
                     page.getAttribute("id")!,
-                ).then((response) => {
-                    if (
-                        selection === "custom" &&
-                        response &&
-                        // C# returns the string "false" if we don't have any saved state for custom mode,
-                        // but currently something in axios converts that to a boolean false.
-                        // I'm not sure that might not change one day, so we check for both.
-                        (response.data === "false" || response.data === false)
-                    ) {
-                        // making a custom cover for the first time
-                        convertXmatterPageToCustom(page);
-                        renderPageLayoutMenu(page, container);
-                    }
-                });
+                    keepCustomLayoutDataWhenSwitchingToStandard,
+                );
+                if (
+                    selection === "custom" &&
+                    response &&
+                    // C# returns the string "false" if we don't have any saved state for custom mode,
+                    // but currently something in axios converts that to a boolean false.
+                    // I'm not sure that might not change one day, so we check for both.
+                    (response.data === "false" || response.data === false)
+                ) {
+                    // making a custom cover for the first time
+                    await wrapWithRequestPageContentDelay(
+                        () => convertXmatterPageToCustom(page),
+                        "customPageLayout-convertFirstTime",
+                    );
+                    // Set data-tool-id on the browser DOM so it persists when jumpToPage saves.
+                    // (The C# toggleCustomPageLayout set it on the C# DOM, but returned early
+                    // without SaveThen, so that change would be overwritten by the browser save.)
+                    page.setAttribute("data-tool-id", "canvas");
+                    // Persist the newly created custom layout state so a later toggle back
+                    // to standard has matching server-side state to work from.
+                    await postString(
+                        "editView/jumpToPage",
+                        page.getAttribute("id")!,
+                    );
+                    renderPageLayoutMenu(page, container);
+                } else if (selection === "custom" && response) {
+                    showCanvasTool(); // otherwise called from convertXmatterPageToCustom()/finishReactivatingPage()
+                }
             }}
         />,
         container,

@@ -6,9 +6,11 @@ using System.Text;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SIL.Code;
 using SIL.IO;
 using SIL.Progress;
@@ -58,6 +60,28 @@ namespace Bloom.web.controllers
                     }
                     else if (request.HttpMethod == HttpMethods.Post)
                     {
+                        request.PostSucceeded();
+                    }
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "advancedProgramSettings",
+                request =>
+                {
+                    if (request.HttpMethod == HttpMethods.Get)
+                    {
+                        request.ReplyWithJson(
+                            JsonConvert.SerializeObject(GetAdvancedSettingsData())
+                        );
+                    }
+                    else
+                    {
+                        var dialog = DialogBeingEdited;
+                        if (dialog != null)
+                        {
+                            StoreAdvancedSettingsData(request, dialog);
+                        }
                         request.PostSucceeded();
                     }
                 },
@@ -185,58 +209,6 @@ namespace Bloom.web.controllers
                 },
                 true
             );
-            apiHandler.RegisterBooleanEndpointHandler(
-                kApiUrlPart + "showBlorgLanguageQrCode",
-                request =>
-                    (DialogBeingEdited == null)
-                        ? _collectionSettings.ShowBlorgLanguageQrCode
-                        : DialogBeingEdited.PendingShowBlorgLanguageQrCode,
-                (request, val) =>
-                {
-                    if (DialogBeingEdited != null)
-                    {
-                        DialogBeingEdited.PendingShowBlorgLanguageQrCode = val;
-                        // We don't really need a change as drastic as a restart,
-                        // but I don't expect this to change often, and somehow the
-                        // badge needs to get updated.
-                        if (val != _collectionSettings.ShowBlorgLanguageQrCode)
-                            DialogBeingEdited.ChangeThatRequiresRestart();
-                    }
-                },
-                true
-            );
-            apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "badgeQrCodeLabel",
-                request =>
-                {
-                    if (request.HttpMethod == HttpMethods.Get)
-                    {
-                        request.ReplyWithText(
-                            DialogBeingEdited == null
-                                ? _collectionSettings.BadgeQrCodeLabelLocalized
-                                : DialogBeingEdited.PendingBadgeQrCodeLabel
-                        );
-                    }
-                    else // post
-                    {
-                        var val = request.GetPostStringOrNull();
-                        if (val == null)
-                            val = ""; // RequiredPostString won't allow us to just pass an empty string, but we want to allow it.
-
-                        if (DialogBeingEdited != null)
-                        {
-                            DialogBeingEdited.PendingBadgeQrCodeLabel = val;
-                            // We don't really need a change as drastic as a restart,
-                            // but I don't expect this to change often, and somehow the
-                            // badge needs to get updated.
-                            if (val != _collectionSettings.BadgeQrCodeLabelLocalized)
-                                DialogBeingEdited.ChangeThatRequiresRestart();
-                        }
-                        request.PostSucceeded();
-                    }
-                },
-                true
-            );
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "branding",
                 request =>
@@ -322,6 +294,85 @@ namespace Bloom.web.controllers
                 },
                 true
             );
+        }
+
+        private object GetAdvancedSettingsData()
+        {
+            var dialog = DialogBeingEdited;
+            var isAutoUpdateSupported =
+                dialog?.ShowAutomaticallyUpdateOption
+                ?? CollectionSettingsDialog.AutoUpdateSupportedOnThisPlatform;
+            return new
+            {
+                values = new
+                {
+                    autoUpdate = dialog?.PendingAutomaticallyUpdate
+                        ?? (isAutoUpdateSupported && Settings.Default.AutoUpdate),
+                    showExperimentalBookSources = dialog?.PendingShowExperimentalBookSources
+                        ?? ExperimentalFeatures.IsFeatureEnabled(
+                            ExperimentalFeatures.kExperimentalSourceBooks
+                        ),
+                    allowTeamCollection = dialog?.PendingAllowTeamCollection
+                        ?? ExperimentalFeatures.IsFeatureEnabled(
+                            ExperimentalFeatures.kTeamCollections
+                        ),
+                    showQrCode = dialog?.PendingShowQrCode
+                        ?? _collectionSettings.ShowBlorgLanguageQrCode,
+                    qrcodeCaption = dialog?.PendingBadgeQrCodeCaption
+                        ?? _collectionSettings.BadgeQrCodeLabelLocalized,
+                },
+                showAutoUpdate = isAutoUpdateSupported,
+                showExperimentalBookSourcesOption = dialog?.ShowExperimentalBookSourcesOption
+                    ?? false,
+                allowTeamCollectionEnabled = dialog?.AllowTeamCollectionOptionEnabled ?? true,
+            };
+        }
+
+        private void StoreAdvancedSettingsData(ApiRequest request, CollectionSettingsDialog dialog)
+        {
+            var data = JObject.Parse(request.RequiredPostJson());
+
+            var autoUpdateToken = data["autoUpdate"];
+            if (autoUpdateToken != null)
+                dialog.PendingAutomaticallyUpdate = autoUpdateToken.Value<bool>();
+
+            var showExperimentalBookSourcesToken = data["showExperimentalBookSources"];
+            if (showExperimentalBookSourcesToken != null)
+                dialog.PendingShowExperimentalBookSources =
+                    showExperimentalBookSourcesToken.Value<bool>();
+
+            var allowTeamCollectionToken = data["allowTeamCollection"];
+            if (allowTeamCollectionToken != null)
+            {
+                var allowTeamCollection = allowTeamCollectionToken.Value<bool>();
+                var previousValue = dialog.PendingAllowTeamCollection;
+                dialog.PendingAllowTeamCollection = allowTeamCollection;
+                if (allowTeamCollection != previousValue)
+                    dialog.ChangeThatRequiresRestart();
+            }
+
+            var showQrCodeToken = data["showQrCode"];
+            if (showQrCodeToken != null)
+            {
+                var showQrCode = showQrCodeToken.Value<bool>();
+                var previousValue = dialog.PendingShowQrCode;
+                dialog.PendingShowQrCode = showQrCode;
+                // We don't really need a change as drastic as a restart, but I don't expect
+                // this to change often and somehow the badge needs to get updated.
+                if (showQrCode != previousValue)
+                    dialog.ChangeThatRequiresRestart();
+            }
+            var qrcodeCaptionToken = data["qrcodeCaption"];
+            if (qrcodeCaptionToken != null)
+            {
+                var qrcodeCaption = qrcodeCaptionToken.Value<string>();
+                var previousValue = dialog.PendingBadgeQrCodeCaption;
+                dialog.PendingBadgeQrCodeCaption = qrcodeCaption;
+                // We don't really need a change as drastic as a restart, but I don't expect
+                // this to change often and somehow the badge needs to get updated.
+                if (qrcodeCaption != previousValue)
+                    dialog.ChangeThatRequiresRestart();
+            }
         }
 
         private void ResetBookshelf()

@@ -439,7 +439,7 @@ namespace Bloom.Collection
                 if (string.IsNullOrEmpty(BadgeQrCodeLabel))
                 {
                     pattern = LocalizationManager.GetString(
-                        "CollectionSettingsDialog.BookMakingTab.QrCodeBadgeText",
+                        "CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText",
                         "Get more books in the {0} language on BloomLibrary.org.",
                         "",
                         new string[] { Language1Tag, Language2Tag, Language3Tag, "en" },

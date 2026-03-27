@@ -1270,10 +1270,12 @@ namespace Bloom.Edit
 
         public string GetUrlForCurrentPage()
         {
-            return BloomServer.UrlForCurrentBookPageEncodedForIframeSrc(
+            var url = BloomServer.UrlForCurrentBookPageEncodedForIframeSrc(
                 _bookSelection.CurrentSelection.FolderPath,
                 _pageSelection.CurrentSelection.Id
             );
+            BloomServer.SetCurrentEditPageUrlForDebugging(url);
+            return url;
         }
 
         /// <summary>
@@ -1291,10 +1293,7 @@ namespace Bloom.Edit
                 "pageThumbnailList",
                 useViteDev ? "pageThumbnailList.vite-dev.html" : "pageThumbnailList.html"
             );
-            var backColor = MiscUtils.ColorToHtmlCode(_view.BackColor);
-            var _baseHtml = RobustFile
-                .ReadAllText(frame, Encoding.UTF8)
-                .Replace("DarkGray", backColor);
+            var _baseHtml = RobustFile.ReadAllText(frame, Encoding.UTF8);
             var pages = CurrentBook.GetPages().ToList();
             var sizeClass =
                 pages.Count > 1
@@ -1332,7 +1331,9 @@ namespace Bloom.Edit
                 InMemoryHtmlFileSource.Pagelist
             );
             var urlPath = UrlPathString.CreateFromUnencodedString(url);
-            return urlPath.UrlEncodedForHttpPath;
+            var encodedUrl = urlPath.UrlEncodedForHttpPath;
+            BloomServer.SetCurrentPageListUrlForDebugging(encodedUrl);
+            return encodedUrl;
         }
 
         private static void OptimizeForLinux(HtmlDom pageListDom)
@@ -1342,44 +1343,6 @@ namespace Bloom.Edit
             style.InnerXml =
                 "img { image-rendering: optimizeSpeed; image-rendering: crisp-edges; }";
             pageListDom.RawDom.GetElementsByTagName("head")[0].AppendChild(style);
-        }
-
-        /// <summary>
-        /// Return the top-level document that should be displayed in the browser for the current page.
-        /// </summary>
-        /// <returns></returns>
-        public HtmlDom GetXmlDocumentForEditScreenWebPage()
-        {
-            var path = FileLocationUtilities.GetFileDistributedWithApplication(
-                Path.Combine(
-                    BloomFileLocator.BrowserRoot,
-                    "bookEdit",
-                    ReactControl.ShouldUseViteDev()
-                        ? "WorkspaceRoot.vite-dev.html"
-                        : "WorkspaceRoot.html"
-                )
-            );
-            // {simulatedPageFileInBookFolder} is placed in the template file where we want the source file for the 'page' iframe.
-            // We don't really make a file for the page, the contents are just saved in our local server.
-            // But we give it a url that makes it seem to be in the book folder so local urls work.
-            // See BloomServer.MakeInMemoryHtmlFileInBookFolder() for more details.
-            var frameText = RobustFile
-                .ReadAllText(path, Encoding.UTF8)
-                .Replace("{simulatedPageFileInBookFolder}", GetUrlForCurrentPage())
-                .Replace("{simulatedPageListFile}", GetUrlForPageListFile());
-            var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));
-
-            if (_currentlyDisplayedBook.BookInfo.ToolboxIsOpen)
-            {
-                // Make the toolbox initially visible.
-                // What we have to do to accomplish this is pretty non-intuitive. It's a consequence of the way
-                // the pure-drawer CSS achieves the open/close effect. This input is a check-box, so clicking it
-                // changes the state of things in a way that all the other CSS can depend on.
-                var toolboxCheckBox = dom.SelectSingleNode("//input[@id='pure-toggle-right']");
-                toolboxCheckBox?.SetAttribute("checked", "true");
-            }
-
-            return dom;
         }
 
         internal void SaveToolboxSettings(string data)
@@ -1445,15 +1408,6 @@ namespace Bloom.Edit
         //				if (AddNewPageBasedOnTemplate(idOfFirstPageInTemplateBook))
         //					return;
         //			}
-        //			catch (Exception error)
-        //			{
-        //				Logger.WriteEvent(error.Message);
-        //				//this is not worth bothering the user about
-        //#if DEBUG
-        //				throw error;
-        //#endif
-        //			}
-        //			//there was some error figuring out a default page, let's just let the user choose what they want
         //			if(this._view!=null)
         //				this._view.ShowAddPageDialog();
         //		}

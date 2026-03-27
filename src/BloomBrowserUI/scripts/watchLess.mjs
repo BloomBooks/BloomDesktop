@@ -51,7 +51,11 @@ async function runWatcherFromCli() {
                 name: "bookLayout",
                 root: path.join(contentRoot, "bookLayout"),
                 outputBase: path.join(outputRoot, "bookLayout"),
-                entries: ["basePage.less", "canvasElement.less"],
+                entries: [
+                    "basePage.less",
+                    "canvasElement.less",
+                    "basePage-legacy-5-6.less",
+                ],
             },
         );
     }

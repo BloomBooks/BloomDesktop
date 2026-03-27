@@ -81,6 +81,7 @@ export interface IColorPickerDialogProps {
     onDefaultClick?: () => void;
     onInputFocus: (input: HTMLElement) => void;
     includeDefault?: boolean;
+    defaultButtonLabel?: string;
     //defaultColor?: IColorInfo; eventually we'll need this
 }
 
@@ -425,6 +426,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
                             includeDefault={props.includeDefault}
                             onDefaultClick={props.onDefaultClick}
                             onEyedropperActiveChange={setEyedropperActive}
+                            defaultButtonLabel={props.defaultButtonLabel}
                             //defaultColor={props.defaultColor}
                         />
                     </DialogMiddle>

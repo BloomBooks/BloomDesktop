@@ -146,6 +146,19 @@ namespace Bloom.web.controllers
                 HandleGetDataBookValue,
                 true
             );
+            apiHandler.RegisterEndpointHandler(
+                "editView/frameSources",
+                HandleGetFrameSources,
+                true
+            );
+        }
+
+        private void HandleGetFrameSources(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Get)
+                throw new ArgumentException("editView/frameSources only supports GET");
+
+            request.ReplyWithJson(View.GetEditFrameSources());
         }
 
         private void HandleGetDataBookValue(ApiRequest request)
@@ -164,20 +177,35 @@ namespace Bloom.web.controllers
         /// </summary>
         private void HandleToggleCustomCover(ApiRequest request)
         {
-            var pageId = request.GetPostStringOrNull();
+            var requestJson = request.GetPostJsonOrNull();
+            var pageId =
+                requestJson == null
+                    ? request.GetPostStringOrNull()
+                    : request.RequiredPostString("pageId");
+            var keepCustomLayoutDataWhenSwitchingToStandard =
+                requestJson != null
+                && request.RequiredPostString("keepCustomLayoutDataWhenSwitchingToStandard")
+                    == "true";
             var book = View.Model.CurrentBook;
             var page = book.GetPage(pageId);
             var pageElt = page.GetDivNodeForThisPage();
             var switchingToCustom = !pageElt.HasClass("bloom-customLayout");
+            var shouldRemoveCustomLayoutDataWhenSwitchingToStandard =
+                !switchingToCustom && !keepCustomLayoutDataWhenSwitchingToStandard;
+            var customLayoutId = pageElt.GetAttribute("data-custom-layout-id");
             if (switchingToCustom)
             {
-                var customLayoutId = pageElt.GetAttribute("data-custom-layout-id");
                 var customLayoutData = book.BookData.GetVariableOrNull(customLayoutId, "*");
                 if (string.IsNullOrEmpty(customLayoutData.Xml))
                 {
                     request.ReplyWithText("false");
                     return;
                 }
+                pageElt.SetAttribute("data-tool-id", "canvas");
+            }
+            else
+            {
+                pageElt.RemoveAttribute("data-tool-id");
             }
 
             request.ReplyWithText("true");
@@ -188,9 +216,53 @@ namespace Bloom.web.controllers
                         pageElt.RemoveClass("bloom-customLayout");
                     else
                         pageElt.AddClass("bloom-customLayout");
+                    // We must capture these from the saved page before typically replacing that with a different
+                    // page element.
+                    var backgroundAudio = pageElt.GetAttribute(HtmlDom.musicAttrName);
+                    var backgroundAudioVolume = pageElt.GetAttribute(HtmlDom.musicVolumeName);
+                    var dataToolId = pageElt.GetAttribute("data-tool-id");
                     // Bring everything up to date consistent with the new
                     // state. Might be enough just do the BookData update.
                     book.EnsureUpToDateMemory(new NullProgress());
+                    // Toggling between custom and standard layout can replace the xMatter page HTML,
+                    // so reapply branding QR-code HTML adjustments for the current book settings.
+                    // This should not need to regenerate the QR code file.
+                    book.UpdateQrCodeHtmlForCurrentSettings(updateQrCodeFileEvenIfItExists: false);
+
+                    if (
+                        shouldRemoveCustomLayoutDataWhenSwitchingToStandard
+                        && !string.IsNullOrWhiteSpace(customLayoutId)
+                    )
+                    {
+                        book.BookData.RemoveAllFormsAndDataDivChildrenForDataBook(customLayoutId);
+                    }
+
+                    var updatedPageElt = book.GetPage(pageId)?.GetDivNodeForThisPage();
+                    if (updatedPageElt != null)
+                    {
+                        if (string.IsNullOrEmpty(backgroundAudio))
+                            updatedPageElt.RemoveAttribute(HtmlDom.musicAttrName);
+                        else
+                            updatedPageElt.SetAttribute(HtmlDom.musicAttrName, backgroundAudio);
+
+                        if (string.IsNullOrEmpty(backgroundAudioVolume))
+                            updatedPageElt.RemoveAttribute(HtmlDom.musicVolumeName);
+                        else
+                            updatedPageElt.SetAttribute(
+                                HtmlDom.musicVolumeName,
+                                backgroundAudioVolume
+                            );
+
+                        // Keep the same invariant we enforce elsewhere.
+                        if (string.IsNullOrEmpty(backgroundAudio))
+                            updatedPageElt.RemoveAttribute(HtmlDom.musicVolumeName);
+
+                        if (string.IsNullOrEmpty(dataToolId))
+                            updatedPageElt.RemoveAttribute("data-tool-id");
+                        else
+                            updatedPageElt.SetAttribute("data-tool-id", dataToolId);
+                    }
+
                     return pageId;
                 },
                 () => { }
@@ -349,7 +421,7 @@ namespace Bloom.web.controllers
 
         private void HandleGetContentLanguageUsage(ApiRequest request)
         {
-            request.ReplyWithJson(View.GetContentLanguageUsageForClient());
+            request.ReplyWithJson(View.GetContentLanguageUsage());
         }
 
         private void HandleContentLanguageUsageChange(ApiRequest request)
@@ -359,13 +431,13 @@ namespace Bloom.web.controllers
             var isUsedForContent = Convert.ToBoolean(data.isUsedForContent);
 
             View.Browser.Focus();
-            View.HandleContentLanguageUsageChangeForClient(languageTag, isUsedForContent);
+            View.HandleContentLanguageUsageChange(languageTag, isUsedForContent);
             request.PostSucceeded();
         }
 
         private void HandleGetLayoutChoiceData(ApiRequest request)
         {
-            request.ReplyWithJson(View.GetLayoutChoicesMenuForClient());
+            request.ReplyWithJson(View.GetLayoutChoicesMenu());
         }
 
         private void HandleLayoutChoiceChange(ApiRequest request)
@@ -374,7 +446,7 @@ namespace Bloom.web.controllers
             var layoutClassName = (string)data.layoutChoiceId;
 
             View.Browser.Focus();
-            View.HandleLayoutChoicesMenuActionForClient(layoutClassName);
+            View.HandleLayoutChoicesMenuAction(layoutClassName);
             request.PostSucceeded();
         }
 

@@ -25,6 +25,7 @@ interface IColorPickerProps {
     onDefaultClick?: () => void;
     onEyedropperActiveChange?: (active: boolean) => void;
     eyedropperBackdropSelector?: string;
+    defaultButtonLabel?: string;
     //defaultColor?: IColorInfo;  will eventually need this
 }
 
@@ -143,6 +144,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
         "Default for style",
         "EditTab.DirectFormatting.labelForDefaultColor",
     );
+    const defaultButtonLabel = props.defaultButtonLabel ?? defaultStyleLabel;
 
     const cloneColor = (color: IColorInfo): IColorInfo => {
         return {
@@ -396,7 +398,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
                                 margin-left: 6px !important;
                             `}
                         >
-                            {defaultStyleLabel}
+                            {defaultButtonLabel}
                         </Typography>
                     </div>
                 )}

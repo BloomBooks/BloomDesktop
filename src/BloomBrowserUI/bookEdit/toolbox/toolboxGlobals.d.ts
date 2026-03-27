@@ -41,7 +41,7 @@ declare global {
         setActiveDragActivityTab: unknown;
         getTheOneAudioRecorderForExportOnly: unknown;
         copyLeveledReaderStatsToClipboard: unknown;
-        handleClickOutsideToolbox: unknown;
+        simulateBlurOnPageFrameMouseDown: unknown;
     }
 
     interface Window {

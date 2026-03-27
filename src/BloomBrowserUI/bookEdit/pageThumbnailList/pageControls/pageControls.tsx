@@ -1,4 +1,4 @@
-import { get, post } from "../../../utils/bloomApi";
+import { get } from "../../../utils/bloomApi";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import BloomButton from "../../../react_components/bloomButton";
@@ -69,9 +69,7 @@ class PageControls extends React.Component<unknown, IPageControlsState> {
     }
 
     public componentCleanup() {
-        post("edit/pageControls/cleanup", (result) => {
-            WebSocketManager.closeSocket(kPageControlsContext);
-        });
+        WebSocketManager.closeSocket(kPageControlsContext);
     }
 
     public updateStateForEvent(s: string): void {
