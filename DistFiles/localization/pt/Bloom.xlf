@@ -2699,6 +2699,11 @@
         <target xml:lang="pt-PT" state="final">Cor do Texto</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.TextColor</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.TextOutlineColor" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Text Outline Color</source>
+        <target xml:lang="pt-PT" state="needs-translation">Text Outline Color</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.TextOutlineColor</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.TextBlock" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Text Block</source>
         <target xml:lang="pt-PT" state="final">Bloco de Texto</target>
