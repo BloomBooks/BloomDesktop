@@ -381,8 +381,7 @@ function getSplitPaneComponentInner() {
 }
 
 function getAbovePageControlContainer(showOrigamiControls: boolean): JQuery {
-    // for dragActivities we don't want the origami control, but we still make the
-    // wrapper so that the dragActivity can put a different control in it.
+    // For dragActivities we reserve this wrapper for the game controls.
     // Note: We also have to disable the Choose Different layout option in
     // the right click menu, in PageListView.cs
     if (
@@ -390,11 +389,7 @@ function getAbovePageControlContainer(showOrigamiControls: boolean): JQuery {
             .getElementsByClassName("bloom-page")[0]
             ?.getAttribute("data-tool-id") === "game"
     ) {
-        return $(
-            `<div class='above-page-control-container bloom-ui'>\
-${getPageSettingsButtonHtml()}\
-</div>`,
-        );
+        return $("<div class='above-page-control-container bloom-ui'></div>");
     }
 
     if (!showOrigamiControls) {

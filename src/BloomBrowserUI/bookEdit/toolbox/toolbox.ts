@@ -1073,7 +1073,7 @@ async function activateToolInternalAsync(
  * This function attempts to activate the tool whose "data-toolId" attribute is equal to the value
  * of "currentTool" (the last tool displayed).
  */
-function setCurrentTool(toolID: string) {
+function setCurrentTool(toolID: string, retryCount = 0) {
     // I'm downright grumpy about how this code sometimes uses names with "Tool" appended, sometimes doesn't.
     // For now I'm just making functions work with either form.
     toolID = ToolBox.addToolToString(toolID);
@@ -1098,7 +1098,10 @@ function setCurrentTool(toolID: string) {
     let idx = 0;
     const toolbox = $("#toolbox");
     if (!isAccordionInitialized(toolbox)) {
-        window.setTimeout(() => setCurrentTool(toolID), 0);
+        if (retryCount >= 50) {
+            throw new Error("Toolbox accordion did not initialize.");
+        }
+        window.setTimeout(() => setCurrentTool(toolID, retryCount + 1), 0);
         return;
     }
 

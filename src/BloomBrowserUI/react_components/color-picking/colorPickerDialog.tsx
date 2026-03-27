@@ -345,8 +345,9 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
 
     const dialogOpen = props.open === undefined ? open : props.open;
 
-    // The MUI backdrop is rendered outside the dialog tree, so we use a body class
-    // to suppress it while the color picker is open.
+    // The color picker often opens from inside another dialog. MUI renders that
+    // outer backdrop outside the nested dialog tree, so we suppress it at the body
+    // level while keeping this dialog's own invisible backdrop for outside-click handling.
     useEffect(() => {
         if (!dialogOpen) {
             return;
@@ -383,7 +384,6 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
                             padding: 10px 14px 10px 10px; // maintain same spacing all around dialog content and between header/footer
                         }
                     `}
-                    hideBackdrop={true}
                     BackdropProps={{
                         invisible: true,
                     }}
@@ -399,6 +399,10 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
                         reason: "backdropClick" | "escapeKeyDown",
                     ) => {
                         if (eyedropperActive) {
+                            return;
+                        }
+                        if (reason === "backdropClick") {
+                            onClose(DialogResult.OK);
                             return;
                         }
                         if (reason === "escapeKeyDown")

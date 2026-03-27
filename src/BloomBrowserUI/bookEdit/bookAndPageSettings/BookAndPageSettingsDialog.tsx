@@ -168,6 +168,9 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
     const [settingsToReturnLater, setSettingsToReturnLater] = React.useState<
         ConfigrValues | undefined
     >(undefined);
+    const latestSettingsRef = React.useRef<ConfigrValues | undefined>(
+        undefined,
+    );
     const dialogRef = React.useRef<HTMLDivElement>(null);
 
     const setDialogVisibleWhileColorPickerOpen = React.useCallback(
@@ -285,6 +288,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
     const tierAllowsFullBleed = useGetFeatureStatus("PrintshopReady")?.enabled;
 
     const closeDialogAndClearOpenFlag = React.useCallback(() => {
+        latestSettingsRef.current = undefined;
         isOpenAlready = false;
         closeDialog();
     }, [closeDialog]);
@@ -299,7 +303,8 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
     }, [closeDialogAndClearOpenFlag]);
 
     function saveSettingsAndCloseDialog() {
-        const latestSettings = settingsToReturnLater;
+        const latestSettings =
+            latestSettingsRef.current ?? settingsToReturnLater;
         if (latestSettings) {
             applyPageSettings(
                 parsePageSettingsFromConfigrValue(latestSettings),
@@ -403,6 +408,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
                                 );
 
                             // Config-r may call onChange while rendering, so defer state updates.
+                            latestSettingsRef.current = s;
                             window.setTimeout(() => {
                                 setSettingsToReturnLater(s);
                             }, 0);
