@@ -35,39 +35,10 @@ When working in the front-end, cd to src/BloomBrowserUI
 
 
 ## About React useEffect
-Rule 1 — Use useEffect when synchronizing with external systems:
 
-Subscriptions, timers, or event listeners.
+See {repository root}/.github/skills/react-useeffect
 
-API calls or other asynchronous external operations.
-
-Updates to things outside React control (e.g., document.title, localStorage).
-
-Any side effect that cannot be computed during render.
-
-Rule 2 — Avoid useEffect when data can be derived or handled internally:
-
-State can be derived from props, context, or other state — compute in render.
-
-User interactions can be handled directly in event handlers.
-
-Local state reset/initialization can be handled by component keys or conditional rendering.
-
-Computed values can use useMemo or useCallback instead of syncing in an effect.
-
-Rule 3 — Validation heuristic:
-
-If removing the effect does not break external behavior, the effect is unnecessary.
-
-Implementation Tip for AI:
-
-Prefer pure render computation first.
-
-Add useEffect only when necessary for external side effects.
-
-Keep effects minimal and specific to their purpose; avoid overuse.
-
-Always include a comment before a useEffect explaining what it does and why it is necessary.
+If you read that and decide that a useEffect is warranted, you must add a comment justifying why it is necessary.
 
 ## UI Tests
 
