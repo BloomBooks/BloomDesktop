@@ -52,7 +52,6 @@ const parseArgs = () => {
     const args = process.argv.slice(2);
     const options = {
         vitePort: undefined,
-        httpPort: undefined,
     };
 
     for (let index = 0; index < args.length; index++) {
@@ -71,23 +70,6 @@ const parseArgs = () => {
             options.vitePort = parseRequiredPortValue(
                 "--vite-port",
                 arg.slice("--vite-port=".length),
-            );
-            continue;
-        }
-
-        if (arg === "--http-port") {
-            options.httpPort = parseRequiredPortValue(
-                "--http-port",
-                requireOptionValue(args, index, "--http-port"),
-            );
-            index++;
-            continue;
-        }
-
-        if (arg.startsWith("--http-port=")) {
-            options.httpPort = parseRequiredPortValue(
-                "--http-port",
-                arg.slice("--http-port=".length),
             );
             continue;
         }
@@ -534,10 +516,6 @@ const startBloomExe = (vitePort) => {
         "--vite-port",
         String(vitePort),
     ];
-
-    if (options.httpPort) {
-        args.push("--http-port", String(options.httpPort));
-    }
 
     const child = spawn(process.execPath, args, {
         cwd: browserUIRoot,

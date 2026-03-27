@@ -7,6 +7,8 @@ import {
     normalizeBloomInstanceInfo,
     requireOptionValue,
     requireTcpPortOption,
+    toLocalOrigin,
+    toWorkspaceTabsEndpoint,
 } from "./bloomProcessCommon.mjs";
 
 const parseArgs = () => {
@@ -131,22 +133,26 @@ const loadPlaywright = () => {
     }
 };
 
-const getWorkspaceTabs = async (workspaceTabsUrl) => {
-    const response = await fetch(workspaceTabsUrl);
+const getWorkspaceTabs = async (workspaceTabsEndpoint) => {
+    const response = await fetch(workspaceTabsEndpoint);
     if (!response.ok) {
         throw new Error(
-            `workspace/tabs failed: ${response.status} ${response.statusText} for ${workspaceTabsUrl}`,
+            `workspace/tabs failed: ${response.status} ${response.statusText} for ${workspaceTabsEndpoint}`,
         );
     }
 
     return response.json();
 };
 
-const waitForActiveWorkspaceTab = async (workspaceTabsUrl, tab, timeoutMs) => {
+const waitForActiveWorkspaceTab = async (
+    workspaceTabsEndpoint,
+    tab,
+    timeoutMs,
+) => {
     const deadline = Date.now() + timeoutMs;
 
     while (Date.now() < deadline) {
-        const tabs = await getWorkspaceTabs(workspaceTabsUrl);
+        const tabs = await getWorkspaceTabs(workspaceTabsEndpoint);
         if (tabs.tabStates?.[tab] === "active") {
             return tabs;
         }
@@ -209,20 +215,23 @@ const main = async () => {
     }
 
     const instance = await resolveInstance(options);
-    if (!instance.cdpOrigin) {
+    if (!instance.cdpPort) {
         throw new Error(
             "The selected Bloom instance did not report a CDP endpoint.",
         );
     }
 
+    const cdpEndpoint = toLocalOrigin(instance.cdpPort);
+    const workspaceTabsEndpoint = toWorkspaceTabsEndpoint(instance.httpPort);
+
     const { chromium } = loadPlaywright();
-    const browser = await chromium.connectOverCDP(instance.cdpOrigin);
+    const browser = await chromium.connectOverCDP(cdpEndpoint);
 
     try {
         const page = getBloomPage(browser);
         if (!page) {
             throw new Error(
-                `Could not find a Bloom WebView2 target on ${instance.cdpOrigin}.`,
+                `Could not find a Bloom WebView2 target on ${cdpEndpoint}.`,
             );
         }
 
@@ -242,7 +251,7 @@ const main = async () => {
         await topBarFrame.getByRole("tab", { name: getTabLabel(tab) }).click();
 
         const tabs = await waitForActiveWorkspaceTab(
-            instance.workspaceTabsUrl,
+            workspaceTabsEndpoint,
             tab,
             options.timeoutMs,
         );
@@ -255,8 +264,6 @@ const main = async () => {
                 processId: instance.processId,
                 httpPort: instance.httpPort,
                 cdpPort: instance.cdpPort,
-                cdpOrigin: instance.cdpOrigin,
-                workspaceTabsUrl: instance.workspaceTabsUrl,
             },
             selectedTab: tab,
             bodyClassName,

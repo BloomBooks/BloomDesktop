@@ -12,8 +12,7 @@ namespace BloomTests
             var remainingArgs = Program.ParseStartupPortArguments(
                 new[]
                 {
-                    "--http-port",
-                    "19089",
+                    "--automation",
                     "--vite-port",
                     "15173",
                     "--label=my-cool-feature",
@@ -23,45 +22,48 @@ namespace BloomTests
             );
 
             Assert.That(errorMessage, Is.Null);
-            Assert.That(Program.StartupHttpPort, Is.EqualTo(19089));
+            Assert.That(Program.StartupAutomation, Is.True);
             Assert.That(Program.StartupVitePort, Is.EqualTo(15173));
             Assert.That(Program.StartupLabel, Is.EqualTo("my-cool-feature"));
             Assert.That(remainingArgs, Is.EqualTo(new[] { @"C:\Temp\Example.bloomcollection" }));
-            Assert.That(WebView2Browser.RemoteDebuggingPort, Is.EqualTo(19091));
+            Assert.That(WebView2Browser.RemoteDebuggingPort, Is.Null);
         }
 
         [Test]
-        public void ParseStartupPortArguments_UsesAnyExplicitPortToBypassSingleInstance()
+        public void ParseStartupPortArguments_UsesAutomationFlagToBypassSingleInstance()
         {
             Program.ParseStartupPortArguments(
-                new[] { "--http-port", "19089" },
-                out var httpErrorMessage
+                new[] { "--automation" },
+                out var automationErrorMessage
             );
 
-            Assert.That(httpErrorMessage, Is.Null);
-            Assert.That(Program.StartupUsesExplicitPorts, Is.True);
-            Assert.That(Program.StartupRequestedPortSummary, Is.EqualTo("httpPort=19089"));
-            Assert.That(WebView2Browser.RemoteDebuggingPort, Is.EqualTo(19091));
+            Assert.That(automationErrorMessage, Is.Null);
+            Assert.That(Program.StartupAutomation, Is.True);
+            Assert.That(Program.StartupRequestedPortSummary, Is.EqualTo("automation=true"));
+        }
 
+        [Test]
+        public void ParseStartupPortArguments_VitePortAloneDoesNotEnableAutomation()
+        {
             Program.ParseStartupPortArguments(
                 new[] { "--vite-port", "15173" },
                 out var viteErrorMessage
             );
 
             Assert.That(viteErrorMessage, Is.Null);
-            Assert.That(Program.StartupUsesExplicitPorts, Is.True);
+            Assert.That(Program.StartupAutomation, Is.False);
             Assert.That(Program.StartupRequestedPortSummary, Is.EqualTo("vitePort=15173"));
         }
 
         [Test]
-        public void ParseStartupPortArguments_RejectsDuplicatePortArguments()
+        public void ParseStartupPortArguments_RejectsDuplicateAutomationArguments()
         {
             var remainingArgs = Program.ParseStartupPortArguments(
-                new[] { "--http-port", "19089", "--http-port", "19091" },
+                new[] { "--automation", "--automation" },
                 out var errorMessage
             );
 
-            Assert.That(errorMessage, Is.EqualTo("Bloom only accepts one --http-port argument."));
+            Assert.That(errorMessage, Is.EqualTo("Bloom only accepts one --automation argument."));
             Assert.That(remainingArgs, Is.Empty);
         }
 

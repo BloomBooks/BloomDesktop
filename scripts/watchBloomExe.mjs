@@ -3,13 +3,11 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-    acquireBloomPortLease,
-    formatBloomPortPlan,
     requireOptionValue,
     requireTcpPortOption,
-    releaseBloomPortLease,
-    waitForBloomInstanceInfo,
 } from "../.github/skills/bloom-automation/bloomProcessCommon.mjs";
+
+const automationReadyPrefix = "BLOOM_AUTOMATION_READY ";
 
 const parseArgs = () => {
     const args = process.argv.slice(2);
@@ -18,7 +16,6 @@ const parseArgs = () => {
             path.dirname(fileURLToPath(import.meta.url)),
             "..",
         ),
-        httpPort: undefined,
         vitePort: undefined,
     };
 
@@ -28,23 +25,6 @@ const parseArgs = () => {
         if (arg === "--repo-root") {
             options.repoRoot = requireOptionValue(args, i, "--repo-root");
             i++;
-            continue;
-        }
-
-        if (arg === "--http-port") {
-            options.httpPort = requireTcpPortOption(
-                "--http-port",
-                requireOptionValue(args, i, "--http-port"),
-            );
-            i++;
-            continue;
-        }
-
-        if (arg.startsWith("--http-port=")) {
-            options.httpPort = requireTcpPortOption(
-                "--http-port",
-                arg.slice("--http-port=".length),
-            );
             continue;
         }
 
@@ -67,7 +47,7 @@ const parseArgs = () => {
 
         if (arg.startsWith("--")) {
             throw new Error(
-                "Unsupported option. Supported options are --repo-root, --http-port, and --vite-port.",
+                "Unsupported option. Supported options are --repo-root and --vite-port.",
             );
         }
     }
@@ -103,26 +83,13 @@ if (!existsSync(projectPath)) {
     process.exit(1);
 }
 
-let lease;
-
-try {
-    lease = await acquireBloomPortLease({
-        httpPort: options.httpPort,
-    });
-} catch (error) {
-    console.error(error instanceof Error ? error.message : String(error));
-    process.exit(1);
-}
-
-const portPlan = lease.portPlan;
 const dotnetArgs = [
     "watch",
     "run",
     "--project",
     projectPath,
     "--",
-    "--http-port",
-    String(portPlan.httpPort),
+    "--automation",
     "--label",
     worktreeLabel,
 ];
@@ -131,29 +98,74 @@ if (options.vitePort) {
     dotnetArgs.push("--vite-port", String(options.vitePort));
 }
 
-console.log(`Bloom launch ports: ${formatBloomPortPlan(portPlan)}`);
-
 if (options.vitePort) {
     console.log(`Bloom Vite dev port: ${options.vitePort}`);
 }
 
+const createForwardingLineWriter = (target, onLine) => {
+    let buffered = "";
+
+    const emitBufferedLines = (text) => {
+        buffered += text;
+
+        while (buffered.length > 0) {
+            const crlfIndex = buffered.indexOf("\r\n");
+            const lfIndex = buffered.indexOf("\n");
+            const crIndex = buffered.indexOf("\r");
+            const newlineIndexes = [crlfIndex, lfIndex, crIndex].filter(
+                (index) => index >= 0,
+            );
+
+            if (newlineIndexes.length === 0) {
+                return;
+            }
+
+            const lineEnd = Math.min(...newlineIndexes);
+            const line = buffered.slice(0, lineEnd);
+            const separatorLength = buffered.startsWith("\r\n", lineEnd)
+                ? 2
+                : 1;
+
+            onLine?.(line);
+            buffered = buffered.slice(lineEnd + separatorLength);
+        }
+    };
+
+    return {
+        write: (chunk) => {
+            const text = chunk.toString();
+            target.write(text);
+            emitBufferedLines(text);
+        },
+        flush: () => {
+            if (!buffered) {
+                return;
+            }
+
+            onLine?.(buffered);
+            buffered = "";
+        },
+    };
+};
+
 const child = spawn("dotnet", dotnetArgs, {
-    stdio: "inherit",
+    stdio: ["ignore", "pipe", "pipe"],
     shell: false,
 });
 
 console.log(`dotnet PID: ${child.pid}`);
 console.log(
-    "watchBloomExe.mjs tracks the launched Bloom instance until it exits. Treat the 'Bloom ready.' line as the launch success signal and keep this terminal open while you target the reported HTTP port.",
+    "watchBloomExe.mjs tracks the launched Bloom instance until it exits. Treat the latest 'Bloom ready.' line as the launch success signal and keep this terminal open while you target the reported HTTP port.",
 );
 
 let childExited = false;
-let leaseReleased = false;
 let bloomProcessId;
 let bloomReadyAt;
 let bloomMonitor;
 let childExitCode = 0;
 let childExitSignal;
+let launchCompleted = false;
+let launchFailed = false;
 
 const isProcessRunning = (pid) => {
     if (!Number.isInteger(pid) || pid <= 0) {
@@ -179,7 +191,7 @@ const stopBloomMonitor = () => {
 
 const exitForFinishedLaunch = (exitCode = 0) => {
     stopBloomMonitor();
-    releaseLease();
+    clearTimeout(launchTimeout);
 
     if (childExitSignal) {
         process.kill(process.pid, childExitSignal);
@@ -230,52 +242,112 @@ const startBloomMonitor = () => {
     }, bloomMonitorPollMs);
 };
 
-const releaseLease = () => {
-    if (leaseReleased) {
+const normalizeAutomationInfo = (automationInfo) => {
+    const processId = Number(automationInfo?.processId);
+    const httpPort = Number(automationInfo?.httpPort);
+    const cdpPort = Number(automationInfo?.cdpPort);
+
+    if (!Number.isInteger(processId) || processId <= 0) {
+        throw new Error(
+            "automation startup info did not include a valid processId.",
+        );
+    }
+
+    if (!Number.isInteger(httpPort) || httpPort <= 0) {
+        throw new Error(
+            "automation startup info did not include a valid httpPort.",
+        );
+    }
+
+    if (!Number.isInteger(cdpPort) || cdpPort <= 0) {
+        throw new Error(
+            "automation startup info did not include a valid cdpPort.",
+        );
+    }
+
+    return {
+        processId,
+        httpPort,
+        cdpPort,
+    };
+};
+
+const reportAutomationReady = (rawAutomationInfo) => {
+    const automationInfo = normalizeAutomationInfo(rawAutomationInfo);
+
+    if (childExited && !isProcessRunning(automationInfo.processId)) {
+        console.error(
+            `Bloom reported ready on HTTP ${automationInfo.httpPort}, but Bloom PID ${automationInfo.processId} was already gone by the time the launcher checked it.`,
+        );
+        launchFailed = true;
+        exitForFinishedLaunch(childExitCode || 1);
         return;
     }
 
-    leaseReleased = true;
-    releaseBloomPortLease(lease);
+    launchCompleted = true;
+    clearTimeout(launchTimeout);
+    bloomProcessId = automationInfo.processId;
+    bloomReadyAt = Date.now();
+    stopBloomMonitor();
+
+    console.log(
+        `Bloom ready. HTTP ${automationInfo.httpPort}, CDP ${automationInfo.cdpPort}, Bloom PID ${automationInfo.processId}.`,
+    );
+
+    if (childExited && !launchesUnderWatch) {
+        console.log(
+            `dotnet exited, but Bloom PID ${automationInfo.processId} is still running. Continuing to monitor that Bloom process.`,
+        );
+    }
+
+    startBloomMonitor();
 };
 
-process.on("exit", releaseLease);
+const handleOutputLine = (line) => {
+    if (!line.startsWith(automationReadyPrefix)) {
+        return;
+    }
 
-waitForBloomInstanceInfo(portPlan.httpPort, launchTimeoutMs)
-    .then((instanceInfo) => {
-        if (childExited && !isProcessRunning(instanceInfo.processId)) {
-            console.error(
-                `Bloom reported ready on HTTP ${instanceInfo.httpPort}, but Bloom PID ${instanceInfo.processId} was already gone by the time the launcher checked it.`,
-            );
-            exitForFinishedLaunch(childExitCode || 1);
-            return;
-        }
-
-        bloomProcessId = instanceInfo.processId;
-        bloomReadyAt = Date.now();
-
-        console.log(
-            `Bloom ready. HTTP ${instanceInfo.httpPort}, websocket ${instanceInfo.webSocketPort || portPlan.webSocketPort}, CDP ${instanceInfo.cdpPort || portPlan.cdpPort}, Bloom PID ${instanceInfo.processId}.`,
+    try {
+        reportAutomationReady(
+            JSON.parse(line.slice(automationReadyPrefix.length)),
         );
+    } catch (error) {
+        console.error(
+            `Could not parse ${automationReadyPrefix.trim()} payload: ${error instanceof Error ? error.message : String(error)}`,
+        );
+    }
+};
 
-        if (childExited && !launchesUnderWatch) {
-            console.log(
-                `dotnet exited, but Bloom PID ${instanceInfo.processId} is still running. Continuing to monitor that Bloom process and hold the port lease.`,
-            );
-        }
+const stdoutWriter = createForwardingLineWriter(
+    process.stdout,
+    handleOutputLine,
+);
+const stderrWriter = createForwardingLineWriter(
+    process.stderr,
+    handleOutputLine,
+);
 
-        startBloomMonitor();
-    })
-    .catch((error) => {
-        console.error(error.message);
+child.stdout.on("data", stdoutWriter.write);
+child.stderr.on("data", stderrWriter.write);
+child.stdout.on("end", stdoutWriter.flush);
+child.stderr.on("end", stderrWriter.flush);
 
-        if (childExited) {
-            exitForFinishedLaunch(childExitCode || 1);
-        }
-    });
+const launchTimeout = setTimeout(() => {
+    if (launchCompleted || launchFailed) {
+        return;
+    }
+
+    launchFailed = true;
+    console.error(
+        `Bloom did not emit ${automationReadyPrefix.trim()} within ${launchTimeoutMs} ms.`,
+    );
+    exitForFinishedLaunch(childExitCode || 1);
+}, launchTimeoutMs);
 
 child.on("error", (error) => {
     console.error(`Failed to start dotnet: ${error.message}`);
+    launchFailed = true;
     exitForFinishedLaunch(1);
 });
 
@@ -290,7 +362,7 @@ child.on("exit", (code, signal) => {
         !launchesUnderWatch
     ) {
         console.log(
-            `dotnet exited${code !== null ? ` with code ${code}` : ""}, but Bloom PID ${bloomProcessId} is still running. Waiting for Bloom to exit before releasing the port lease.`,
+            `dotnet exited${code !== null ? ` with code ${code}` : ""}, but Bloom PID ${bloomProcessId} is still running. Waiting for Bloom to exit before this launcher exits.`,
         );
         startBloomMonitor();
         return;
@@ -298,7 +370,7 @@ child.on("exit", (code, signal) => {
 
     if (!bloomProcessId) {
         console.log(
-            `dotnet exited before Bloom reported ready on HTTP ${portPlan.httpPort}. Waiting briefly for Bloom to appear.`,
+            "dotnet exited before Bloom reported automation-ready startup info. Waiting briefly for Bloom to appear.",
         );
         return;
     }

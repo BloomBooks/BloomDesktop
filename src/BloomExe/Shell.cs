@@ -292,9 +292,7 @@ namespace Bloom
 
         private static string GetHttpPortTitlePart()
         {
-            var httpPort =
-                BloomServer.portForHttp > 0 ? BloomServer.portForHttp : Program.StartupHttpPort;
-            return httpPort.HasValue ? $"http:{httpPort.Value}" : null;
+            return BloomServer.portForHttp > 0 ? $"http:{BloomServer.portForHttp}" : null;
         }
 
         private static string GetAutomationPortTitlePart()

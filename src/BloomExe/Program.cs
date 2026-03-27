@@ -104,18 +104,16 @@ namespace Bloom
         public static SynchronizationContext MainContext { get; private set; }
 
         public static bool RunningSecondInstance { get; private set; }
-        internal static int? StartupHttpPort { get; private set; }
         internal static int? StartupVitePort { get; private set; }
         internal static string StartupLabel { get; private set; }
-        internal static bool StartupUsesExplicitPorts =>
-            StartupHttpPort.HasValue || StartupVitePort.HasValue;
+        internal static bool StartupAutomation { get; private set; }
 
         internal static string StartupRequestedPortSummary =>
             string.Join(
                 ", ",
                 new[]
                 {
-                    StartupHttpPort.HasValue ? $"httpPort={StartupHttpPort.Value}" : null,
+                    StartupAutomation ? "automation=true" : null,
                     StartupVitePort.HasValue ? $"vitePort={StartupVitePort.Value}" : null,
                 }.Where(value => value != null)
             );
@@ -547,12 +545,12 @@ namespace Bloom
                     }
                     else
                     {
-                        if (StartupUsesExplicitPorts)
+                        if (StartupAutomation)
                         {
-                            // Explicit startup ports are the intentional multi-instance path.
+                            // Automation startup is the intentional multi-instance path.
                             // Since this is a developer-only situation, we won't worry about the possibility of multiple instances writing on the same collection settings or whatever.
                             Logger.WriteEvent(
-                                $"Bypassing Bloom's single-instance token because explicit ports were requested. {StartupRequestedPortSummary}"
+                                $"Bypassing Bloom's single-instance token because automation startup was requested. {StartupRequestedPortSummary}"
                             );
                         }
                         else if ((Control.ModifierKeys & Keys.Control) == Keys.Control)
@@ -732,9 +730,9 @@ namespace Bloom
         internal static string[] ParseStartupPortArguments(string[] args, out string errorMessage)
         {
             errorMessage = null;
-            StartupHttpPort = null;
             StartupVitePort = null;
             StartupLabel = null;
+            StartupAutomation = false;
 
             var remainingArgs = new List<string>();
 
@@ -742,14 +740,6 @@ namespace Bloom
             {
                 if (
                     TryHandleStartupPortArgument(
-                        args,
-                        ref i,
-                        "--http-port",
-                        () => StartupHttpPort,
-                        value => StartupHttpPort = value,
-                        out errorMessage
-                    )
-                    || TryHandleStartupPortArgument(
                         args,
                         ref i,
                         "--vite-port",
@@ -766,6 +756,14 @@ namespace Bloom
                             StartupLabel = string.IsNullOrWhiteSpace(value) ? null : value.Trim(),
                         out errorMessage
                     )
+                    || TryHandleStartupFlagArgument(
+                        args,
+                        ref i,
+                        "--automation",
+                        () => StartupAutomation,
+                        value => StartupAutomation = value,
+                        out errorMessage
+                    )
                 )
                 {
                     if (errorMessage != null)
@@ -778,6 +776,30 @@ namespace Bloom
             }
 
             return remainingArgs.ToArray();
+        }
+
+        private static bool TryHandleStartupFlagArgument(
+            string[] args,
+            ref int index,
+            string optionName,
+            Func<bool> getValue,
+            Action<bool> setValue,
+            out string errorMessage
+        )
+        {
+            errorMessage = null;
+
+            if (!TryParseStartupFlagArgument(args, ref index, optionName))
+                return false;
+
+            if (getValue())
+            {
+                errorMessage = $"Bloom only accepts one {optionName} argument.";
+                return true;
+            }
+
+            setValue(true);
+            return true;
         }
 
         private static bool TryHandleStartupPortArgument(
@@ -895,6 +917,16 @@ namespace Bloom
             }
 
             return false;
+        }
+
+        private static bool TryParseStartupFlagArgument(
+            string[] args,
+            ref int index,
+            string optionName
+        )
+        {
+            var current = args[index];
+            return current == optionName;
         }
 
         private static bool ValueLooksLikeOption(string value)

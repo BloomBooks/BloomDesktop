@@ -30,6 +30,7 @@ using Bloom.web;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
+using Newtonsoft.Json;
 using SIL.Code;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -1473,23 +1474,12 @@ namespace Bloom.Api
             // Another thing to check on is https://github.com/bryceg/Owin.WebSocket/pull/20 which
             // would give us an owin-compliant version of the fleck websocket server, and we could
             // switch to using an owin-compliant http server like NancyFx.
-            if (Program.StartupHttpPort.HasValue)
+            for (var i = 0; !success && i < kNumberOfPortsToTry; i++)
             {
-                BloomServer.portForHttp = Program.StartupHttpPort.Value;
+                BloomServer.portForHttp = kStartingPort + (i * kNumberOfConsecutivePortsToReserve);
                 success =
                     AreReservedCompanionPortsAvailable(BloomServer.portForHttp)
                     && AttemptToOpenPort();
-            }
-            else
-            {
-                for (var i = 0; !success && i < kNumberOfPortsToTry; i++)
-                {
-                    BloomServer.portForHttp =
-                        kStartingPort + (i * kNumberOfConsecutivePortsToReserve);
-                    success =
-                        AreReservedCompanionPortsAvailable(BloomServer.portForHttp)
-                        && AttemptToOpenPort();
-                }
             }
 
             if (!success)
@@ -1509,6 +1499,25 @@ namespace Bloom.Api
             }
 
             VerifyWeAreNowListening();
+            WriteAutomationStartupInfo();
+        }
+
+        private static void WriteAutomationStartupInfo()
+        {
+            if (!Program.StartupAutomation)
+                return;
+
+            Console.WriteLine(
+                "BLOOM_AUTOMATION_READY "
+                    + JsonConvert.SerializeObject(
+                        new
+                        {
+                            processId = Process.GetCurrentProcess().Id,
+                            httpPort = portForHttp,
+                            cdpPort = RemoteDebuggingPort,
+                        }
+                    )
+            );
         }
 
         private static int MinWorkerThreads => Math.Max(Environment.ProcessorCount, 2);
