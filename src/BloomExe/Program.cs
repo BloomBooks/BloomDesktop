@@ -381,13 +381,13 @@ namespace Bloom
                             if (missingTcPieces.StartsWith("book folder"))
                             {
                                 ErrorReport.NotifyUserOfProblem(
-                                    "You opened a file meant to help you join a team collection, but Bloom was not able to find a Team Collection folder for you to join. Please ask your colleague for help in getting a complete Team Collection folder sync'd to your computer. Then, inside that folder, open the \"joinCollection\" file."
+                                    "You opened a file meant to help you join a Team Collection, but Bloom was not able to find a Team Collection folder for you to join. Please ask your colleague for help in getting a complete Team Collection folder synchronized *to your computer*. Then, inside that folder, open the \"joinCollection\" file."
                                 );
                             }
                             else
                             {
                                 ErrorReport.NotifyUserOfProblem(
-                                    "You opened a file meant to help you join a team collection, but Bloom was not able to find all the parts of the Team Collection for you to join. Please ask your colleague for help in getting a complete Team Collection folder sync'd to your computer. Then, inside that folder, open the \"joinCollection\" file."
+                                    "Some part of the Team Collection you tried to join is missing from your computer. Please ask your colleague for help in getting a *complete* Team Collection folder synchronized to your computer. Then, inside that folder, open the \"joinCollection\" file again."
                                 );
                             }
 
