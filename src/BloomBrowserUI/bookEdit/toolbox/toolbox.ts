@@ -14,10 +14,15 @@ import {
     getPageIframeBody,
 } from "../../utils/shared";
 import { GameTool } from "./games/GameTool";
+import { isLongPressEvaluating } from "../longPressShared";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import { showRequiresSubscriptionDialogInAnyView } from "../../react_components/requiresSubscription";
-
-export const isLongPressEvaluating: string = "isLongPressEvaluating";
+import {
+    callOnBlur,
+    setExtraFunctionToHandleBlurTasks,
+} from "../../utils/menuCloseOnBlur";
+export { isLongPressEvaluating };
+export { callOnBlur as registerMenuCloseOnBlur };
 
 /**
  * The html code for a check mark character
@@ -657,9 +662,13 @@ export class ToolBox {
 }
 
 const toolbox = new ToolBox();
+setExtraFunctionToHandleBlurTasks(ToolBox.addWhenClosingToolTask);
 
 export function getTheOneToolbox() {
     return toolbox;
+}
+export function getMasterToolList() {
+    return masterToolList;
 }
 
 // Array of ITool objects, typically one for each tool. The code for each tool inserts an appropriate ITool
@@ -785,8 +794,11 @@ export function restoreToolboxSettings() {
 export function applyToolboxStateToUpdatedPage() {
     get("toolbox/settings", (result) => {
         savedSettings = result.data;
+        // savedSettings["current"] is always set to the last active tool for the book,
+        // except for new books where it is null. In that case, the default value
+        // should be talkingBookTool.  (BL-16026)
         const currentFromBook = ToolBox.addToolToString(
-            (savedSettings && savedSettings["current"]) || "",
+            (savedSettings && savedSettings["current"]) || "talkingBookTool",
         );
         const currentInToolbox = currentTool
             ? ToolBox.addToolToString(currentTool.id())
@@ -958,7 +970,10 @@ function restoreToolboxSettingsWhenPageReady(settings: ToolboxSettings) {
     doWhenPageReady(() => {
         // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
         const opts = settings;
-        const currentTool = opts["current"] || "";
+        // currentTool is always set except for new books. For new books, it is undefined and we want
+        // to treat that the same as if it were set to "talkingBookTool" so that the tool will display
+        // the first time the user opens the toolbox. (BL-16026)
+        const currentTool = opts["current"] || "talkingBookTool";
         const shouldBeVisible = !!opts["visibility"];
 
         if (toolbox.toolboxIsShowing() !== shouldBeVisible) {
@@ -1081,6 +1096,13 @@ function setCurrentTool(toolID: string) {
                 switchTool(newToolName);
             });
             toolboxReactActivationHooked = true;
+        }
+
+        if (!toolID) {
+            toolID =
+                ($("#toolbox").find("> h3").first().attr("data-toolId") as
+                    | string
+                    | undefined) ?? "";
         }
 
         if (toolID) {
@@ -1828,37 +1850,10 @@ function showToolboxChanged(wasShowing: boolean): void {
             // the talking book tool.
             newToolName = "talkingBookTool";
         }
+        const adapter = getToolboxReactAdapter();
+        if (adapter) {
+            adapter.setActiveToolByToolId(newToolName);
+        }
         switchTool(newToolName);
     }
-}
-
-// The current use of this variable and the following two functions is to allow popup menus
-// to be closed when a click outside the toolbox occurs, or when the toolbox closes.
-// Only one such menu can be opened, so at this point we only need to register one function.
-// Most activity outside the toolbox, even outside Bloom altogether, causes its window
-// to lose focus, so we listen for that event.
-// However, some clicks in the document iframe...at least clicks on images...do not have
-// that effect, so we have an explict mousedown listener there that calls
-// handleClickOutsideToolbox().
-// The function is typically a React useState setter that is fairly harmless to call
-// multiple times, but to reduce renders we try to only call it once, though it is
-// possible that handleClickOutsideToolbox will be called both by the blur listener
-// and the iframe mousedown listener as a result of the same click.
-let losingFocusFunction: (() => void) | undefined;
-
-export function handleClickOutsideToolbox(): void {
-    losingFocusFunction?.();
-    losingFocusFunction = undefined;
-}
-
-export function callWhenFocusLost(fn: () => void): void {
-    losingFocusFunction = fn;
-    ToolBox.addWhenClosingToolTask(fn);
-    window.addEventListener(
-        "blur",
-        () => {
-            handleClickOutsideToolbox();
-        },
-        { once: true },
-    );
 }

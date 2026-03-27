@@ -33,6 +33,8 @@ export const NumberChooserDialog: React.FunctionComponent<
         useSetupBloomDialog(props.dialogEnvironment);
 
     const [numberChosen, setNumberChosen] = useState(props.min);
+    // The number picker snaps back to a valid value on blur if the user clicks away from the input with an invalid value, so isNumberPickerValid will usually be true
+    const [isNumberPickerValid, setIsNumberPickerValid] = useState(true);
 
     return (
         <BloomDialog {...propsForBloomDialog}>
@@ -56,6 +58,7 @@ export const NumberChooserDialog: React.FunctionComponent<
                             minLimit={props.min}
                             maxLimit={props.max}
                             handleChange={setNumberChosen}
+                            onValidityChange={setIsNumberPickerValid}
                         />
                     </div>
                 </div>
@@ -64,7 +67,7 @@ export const NumberChooserDialog: React.FunctionComponent<
                 <BloomButton
                     l10nKey="Common.OK"
                     hasText={true}
-                    enabled={true}
+                    enabled={isNumberPickerValid}
                     variant={"contained"}
                     onClick={() => {
                         props.onClick(numberChosen);

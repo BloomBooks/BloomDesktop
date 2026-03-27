@@ -188,6 +188,15 @@ namespace BloomTests.Spreadsheet
 			</div>
         </div>
     </div>
+    <div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-left bloom-monolingual"" data-page="""" id=""b6dcaece-11a0-49d3-80c7-a83b7a8d9b6f"" data-pagelineage=""eabed994-4cdf-4dd5-aa40-196528c2bc55"" data-page-number=""3"" lang="""">
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
+            Basic Text &amp; Picture
+        </div>
+        <div class=""pageDescription"" lang=""en""></div>
+        <div class=""marginBox"">
+            <div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{4}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+        </div>
+    </div>
 </body>
 </html>
 ";
@@ -237,6 +246,7 @@ namespace BloomTests.Spreadsheet
                     "Mars 2.png",
                     "lady24b.png",
                     "empty-file.jpg",
+                    "Othello 199.jpg",
                 }
             )
                 RobustFile.Copy(
@@ -340,7 +350,21 @@ namespace BloomTests.Spreadsheet
             Assert.That(File.Exists(Path.Combine(destImageFolder, "man.jpg")));
             Assert.That(File.Exists(Path.Combine(destImageFolder, "Mars 2.png")));
             Assert.That(File.Exists(Path.Combine(destImageFolder, "lady24b.png")));
+            Assert.That(File.Exists(Path.Combine(destImageFolder, "Othello 199.jpg")));
             Assert.That(File.Exists(Path.Combine(destImageFolder, "placeHolder.png")), Is.False);
+        }
+
+        [TestCase("fromExport")]
+        [TestCase("fromFile")]
+        public void ExportsLegacyImageStructure(string source)
+        {
+            SetupFor(source);
+            var legacyImagePath = Path.Combine("images", "Othello 199.jpg");
+            var legacyImageRow = _pageContentRows.FirstOrDefault(x =>
+                x.GetCell(InternalSpreadsheet.ImageSourceColumnLabel).Text == legacyImagePath
+            );
+            Assert.That(legacyImageRow, Is.Not.Null);
+            Assert.That(legacyImageRow.GetCell("[en]").Text, Is.EqualTo(""));
         }
 
         [TestCase("fromExport")]

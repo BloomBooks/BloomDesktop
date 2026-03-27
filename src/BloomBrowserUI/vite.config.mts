@@ -516,7 +516,6 @@ export default defineConfig(async ({ command }) => {
     const entryPoints: Record<string, string> = {
         // Special bundles that were previously built separately
         editablePageBundle: "./bookEdit/editablePage.ts",
-        workspaceBundle: "./bookEdit/workspaceRoot.ts",
         spreadsheetBundle: "./spreadsheet/spreadsheetBundleRoot.ts",
         toolboxBundle: "./bookEdit/toolbox/toolboxBootstrap.ts",
 
@@ -532,6 +531,7 @@ export default defineConfig(async ({ command }) => {
         accessibilityCheckBundle:
             "./publish/accessibilityCheck/accessibilityCheckScreen.entry.tsx",
         subscriptionSettingsBundle: "./collection/subscriptionSettingsTab.tsx",
+        advancedSettingsBundle: "./collection/AdvancedSettingsPanel.entry.tsx",
         performanceLogBundle: "./performance/PerformanceLogPage.tsx",
         appBundle: "./app/App.tsx",
         problemReportBundle: "./problemDialog/ProblemDialog.tsx",
@@ -551,14 +551,11 @@ export default defineConfig(async ({ command }) => {
         duplicateManyDlgBundle: "./bookEdit/duplicateManyDialog.tsx",
         copyrightAndLicenseBundle:
             "./bookEdit/copyrightAndLicense/CopyrightAndLicenseDialog.tsx",
-        collectionsTabPaneBundle: "./collectionsTab/CollectionsTabPane.tsx",
-        publishTabPaneBundle: "./publish/PublishTab/PublishTabPane.tsx",
         languageChooserBundle: "./collection/LanguageChooserDialog.tsx",
         newCollectionLanguageChooserBundle:
             "./collection/NewCollectionLanguageChooser.tsx",
         registrationDialogBundle:
             "./react_components/registration/registrationDialog.tsx",
-        topBarBundle: "./react_components/TopBar/TopBar.entry.tsx",
     };
 
     // MAIN VITE CONFIGURATION

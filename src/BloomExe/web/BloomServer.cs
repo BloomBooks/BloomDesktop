@@ -233,21 +233,29 @@ namespace Bloom.Api
         // In the long run, the CurrentPage and all similar URLs should probably have enough information
         // (path to book folder) to determine their state without relying on this knowledge being injected,
         // into the server, but that will be a big change.
-        private static string _keyToCurrentPage;
-        private static string _currentEditPageUrlForDebugging;
-        private static string _currentPageListUrlForDebugging;
-        private static string _currentWorkspaceModeForDebugging = "collection";
+        private static volatile string _keyToCurrentPage;
+        private static volatile string _keyToWorkspaceRootForDebugging;
+        private static volatile string _currentEditPageUrlForDebugging;
+        private static volatile string _currentPageListUrlForDebugging;
+        private static readonly string _jsAssetVersion = GetJsAssetVersion();
+
+        /// <summary>
+        /// We stick this as a param on JS asset URLs to force the browser to get a new version
+        /// after a rebuild. In debug mode, we use the current time so that we get a new version
+        /// on every run. In release mode, we use the assembly version so that we get a new version
+        /// whenever we ship a new release, but not on every run. (Vite dev uses another strategy
+        /// that is built-in to Vite.)
+        private static string GetJsAssetVersion()
+        {
+#if DEBUG
+            return DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
+#else
+            return typeof(BloomServer).Assembly.GetName().Version?.ToString() ?? "0";
+#endif
+        }
 
         public string CurrentPageContent { get; set; }
         public string ToolboxContent { get; set; }
-
-        public static void SetCurrentWorkspaceModeForDebugging(string mode)
-        {
-            if (string.IsNullOrWhiteSpace(mode))
-                return;
-
-            _currentWorkspaceModeForDebugging = mode;
-        }
 
         public static void SetCurrentEditPageUrlForDebugging(string url)
         {
@@ -263,6 +271,14 @@ namespace Bloom.Api
                 return;
 
             _currentPageListUrlForDebugging = url;
+        }
+
+        public static void SetWorkspaceRootUrlForDebugging(string urlOrPath)
+        {
+            if (string.IsNullOrWhiteSpace(urlOrPath))
+                return;
+
+            _keyToWorkspaceRootForDebugging = urlOrPath.FromLocalhost();
         }
 
         private static string SanitizeFixedSimulatedId(string id)
@@ -303,6 +319,30 @@ namespace Bloom.Api
             }
 
             return key.ToLocalhost();
+        }
+
+        internal static string PutFixedSimulatedDomForId(
+            string id,
+            HtmlDom dom,
+            InMemoryHtmlFileSource source = InMemoryHtmlFileSource.Frame
+        )
+        {
+            if (dom == null)
+                throw new ArgumentNullException(nameof(dom));
+
+            XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom.RawDom);
+
+            if (
+                source == InMemoryHtmlFileSource.Thumb
+                || source == InMemoryHtmlFileSource.Pagelist
+                || source == InMemoryHtmlFileSource.JustCheckingPage
+            )
+            {
+                ReplaceAnyVideoElementsWithPlaceholder(dom);
+            }
+
+            dom.Title = InMemoryHtmlFile.GetTitleForProcessExplorer(source) + " (InMemoryHtmlFile)";
+            return PutFixedSimulatedHtmlForId(id, dom.getHtmlStringDisplayOnly(), source);
         }
 
         public Book.Book CurrentBook => _bookSelection?.CurrentSelection;
@@ -521,6 +561,25 @@ namespace Bloom.Api
 
             var localPath = GetLocalPathWithoutQuery(request);
 
+            // In external browsers (especially Chrome), stale cached ES module chunks can be mixed
+            // with newer chunks after a rebuild, causing import/export mismatch errors.
+            // Route all JS requests through a process-versioned URL once per startup.
+            if (localPath.EndsWith(".js", StringComparison.OrdinalIgnoreCase))
+            {
+                var query = request.GetQueryParameters();
+                if (string.IsNullOrWhiteSpace(query?.Get("assetv")))
+                {
+                    var separator = request.RawUrl.Contains("?", StringComparison.Ordinal)
+                        ? "&"
+                        : "?";
+                    request.WriteRedirect(
+                        request.RawUrl + separator + "assetv=" + _jsAssetVersion,
+                        permanent: false
+                    );
+                    return true;
+                }
+            }
+
             // root of our UI from a web browser pointed at localhost:8089
             if (localPath == "")
             {
@@ -655,7 +714,12 @@ namespace Bloom.Api
                 // so we may as well take advantage of it. This also means that CURRENTPAGE and
                 // open-in-edge work the same way (in fact the URL we produce here is exactly the
                 // same as the one open-in-edge produces).
-                if (string.IsNullOrWhiteSpace(_keyToCurrentPage))
+                var hasCurrentPageKey = !string.IsNullOrWhiteSpace(_keyToCurrentPage);
+                var hasWorkspaceRootKey = !string.IsNullOrWhiteSpace(
+                    _keyToWorkspaceRootForDebugging
+                );
+
+                if (!hasCurrentPageKey && !hasWorkspaceRootKey)
                 {
                     request.ResponseContentType = "text/html";
                     request.WriteCompleteOutput(
@@ -665,40 +729,45 @@ namespace Bloom.Api
                 }
 
                 var query = request.GetQueryParameters();
-                if (string.IsNullOrWhiteSpace(query?.Get("mode")))
+                var existingQuery = string.Empty;
+                var rawUrlQueryStart = request.RawUrl.IndexOf("?", StringComparison.Ordinal);
+                if (rawUrlQueryStart >= 0)
                 {
-                    var existingQuery = string.Empty;
-                    var rawUrlQueryStart = request.RawUrl.IndexOf("?", StringComparison.Ordinal);
-                    if (rawUrlQueryStart >= 0)
-                    {
-                        existingQuery = request.RawUrl.Substring(rawUrlQueryStart);
-                    }
-
-                    var redirectBaseUrl = !string.IsNullOrWhiteSpace(_keyToCurrentPage)
-                        ? _keyToCurrentPage.ToLocalhost()
-                        : request.RawUrl;
-
-                    var redirectUrl = redirectBaseUrl + existingQuery;
-                    var separator = redirectUrl.Contains("?", StringComparison.Ordinal) ? "&" : "?";
-                    redirectUrl += separator + "mode=" + _currentWorkspaceModeForDebugging;
-
-                    if (!string.IsNullOrWhiteSpace(_currentPageListUrlForDebugging))
-                    {
-                        redirectUrl +=
-                            "&pageListSrc=" + Uri.EscapeDataString(_currentPageListUrlForDebugging);
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(_currentEditPageUrlForDebugging))
-                    {
-                        redirectUrl +=
-                            "&pageSrc=" + Uri.EscapeDataString(_currentEditPageUrlForDebugging);
-                    }
-
-                    request.WriteRedirect(redirectUrl, permanent: false);
-                    return true;
+                    existingQuery = request.RawUrl.Substring(rawUrlQueryStart);
                 }
 
-                localPath = _keyToCurrentPage;
+                var redirectBaseKey = hasWorkspaceRootKey
+                    ? _keyToWorkspaceRootForDebugging
+                    : _keyToCurrentPage;
+                var redirectBaseUrl = redirectBaseKey.ToLocalhost();
+
+                var redirectUrl = redirectBaseUrl + existingQuery;
+                if (
+                    string.IsNullOrWhiteSpace(query?.Get("pageListSrc"))
+                    && !string.IsNullOrWhiteSpace(_currentPageListUrlForDebugging)
+                )
+                {
+                    var separator = redirectUrl.Contains("?", StringComparison.Ordinal) ? "&" : "?";
+                    redirectUrl +=
+                        separator
+                        + "pageListSrc="
+                        + Uri.EscapeDataString(_currentPageListUrlForDebugging);
+                }
+
+                if (
+                    string.IsNullOrWhiteSpace(query?.Get("pageSrc"))
+                    && !string.IsNullOrWhiteSpace(_currentEditPageUrlForDebugging)
+                )
+                {
+                    var separator = redirectUrl.Contains("?", StringComparison.Ordinal) ? "&" : "?";
+                    redirectUrl +=
+                        separator
+                        + "pageSrc="
+                        + Uri.EscapeDataString(_currentEditPageUrlForDebugging);
+                }
+
+                request.WriteRedirect(redirectUrl, permanent: false);
+                return true;
             }
             if (localPath.ToLower().Contains("current-bloompub-url")) //useful when debugging. E.g. http://localhost:8089/bloom/current-bloompub-url will always show the page we're on.
             {
@@ -1069,6 +1138,20 @@ namespace Bloom.Api
         {
             if (localPath.Contains("favicon.ico")) // browsers ask for this
                 return BloomFileLocator.GetBrowserFile(false, "images", "favicon.ico");
+
+            // Prefer JS files that exist directly under BrowserRoot (typically output/browser).
+            // This avoids module-chunk collisions with generic names like "index.js" that may
+            // also exist in other searchable locations such as node_modules.
+            // Keep this narrow so we don't change long-standing lookup behavior for other types.
+            if (
+                !Path.IsPathRooted(modPath)
+                && Path.GetExtension(modPath).Equals(".js", StringComparison.OrdinalIgnoreCase)
+            )
+            {
+                var browserRelativePath = Path.Combine(BloomFileLocator.BrowserRoot, modPath);
+                if (RobustFileExistsWithCaseCheck(browserRelativePath))
+                    return browserRelativePath;
+            }
 
             // Is this request the full path to an image file? For most images, we just have the filename. However, in at
             // least one use case, the image we want isn't in the folder of the PDF we're looking at. That case is when
@@ -1465,9 +1548,9 @@ namespace Bloom.Api
             const int kNumberOfPortsToTry = 20;
             bool success = false;
 
-            //Note: while this will find a port for the http, it does not actually know if the accompanying
-            //ports are available. It just assume they are.
-            //So while it's an improvement, it's not yet as solid as we would like it
+            // Note: this now checks whether the following ports in the block are available,
+            // but it still does not reserve them until the corresponding services start.
+            // So while it's an improvement, it's not yet as solid as we would like it
             //to be.  The ultimate solution is to run the websocket and http on the same port.
             //This could be done using this proxy thing that internally routes to different ports:
             // https://github.com/lifeemotions/websocketproxy
@@ -1477,9 +1560,15 @@ namespace Bloom.Api
             for (var i = 0; !success && i < kNumberOfPortsToTry; i++)
             {
                 BloomServer.portForHttp = kStartingPort + (i * kNumberOfConsecutivePortsToReserve);
-                success =
-                    AreReservedCompanionPortsAvailable(BloomServer.portForHttp)
-                    && AttemptToOpenPort();
+                if (
+                    !CanOpenConsecutivePorts(
+                        portForHttp + 1,
+                        kNumberOfConsecutivePortsToReserve - 1
+                    )
+                )
+                    continue;
+
+                success = AttemptToOpenPort();
             }
 
             if (!success)
@@ -1559,6 +1648,42 @@ namespace Bloom.Api
         /// <summary>
         /// Tries to start listening on the currently proposed server url
         /// </summary>
+        internal static bool CanOpenConsecutivePorts(int startingPort, int numberOfPortsWeNeed)
+        {
+            if (numberOfPortsWeNeed <= 0)
+                return true;
+
+            if (
+                startingPort < IPEndPoint.MinPort
+                || startingPort > IPEndPoint.MaxPort - numberOfPortsWeNeed + 1
+            )
+            {
+                return false;
+            }
+
+            var listeners = new List<TcpListener>();
+            try
+            {
+                for (var offset = 0; offset < numberOfPortsWeNeed; offset++)
+                {
+                    var listener = new TcpListener(IPAddress.Loopback, startingPort + offset);
+                    listener.Start();
+                    listeners.Add(listener);
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            finally
+            {
+                foreach (var listener in listeners)
+                    listener.Stop();
+            }
+        }
+
         private bool AttemptToOpenPort()
         {
             try
@@ -2280,22 +2405,12 @@ namespace Bloom.Api
 
         private string GetHtmlForRootOfBloomUI()
         {
-            return $@"<!DOCTYPE html>
-				<html>
-				<head>
-					<meta charset = 'UTF-8' />
-					<script src = '/appBundle.js' type='module'></script>
-					<script>
-						window.onload = () => {{
-							const rootDiv = document.getElementById('reactRoot');
-							window.wireUpRootComponentFromWinforms(rootDiv);
-						}};
-					</script>
-				</head>
-				<body>
-					<div id='reactRoot'>Component should replace this</div >
-				</body>
-				</html>";
+            return ReactControl.GetHtmlForReactBundle(
+                "appBundle",
+                null,
+                System.Drawing.Color.White,
+                false
+            );
         }
 
         /// <summary>

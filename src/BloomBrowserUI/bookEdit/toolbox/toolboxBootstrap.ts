@@ -5,9 +5,9 @@ import {
     applyToolboxStateToUpdatedPage,
     removeToolboxMarkup,
     showOrHideTool_click,
-    handleClickOutsideToolbox,
     scheduleMarkupUpdateAfterPaste,
 } from "./toolbox";
+import { simulateBlurOnPageFrameMouseDown } from "../../utils/menuCloseOnBlur";
 import { getTheOneReaderToolsModel } from "./readers/readerToolsModel";
 import { ToolBox } from "./toolbox";
 import { DecodableReaderToolboxTool } from "./readers/decodableReader/decodableReaderToolboxTool";
@@ -52,7 +52,7 @@ export interface IToolboxFrameExports {
     removeToolboxMarkup(): void;
     setActiveDragActivityTab(tab: number): void;
     getTheOneAudioRecorderForExportOnly(): IAudioRecorder;
-    handleClickOutsideToolbox(): void;
+    simulateBlurOnPageFrameMouseDown(): void;
 }
 
 // each of these exports shows up under this window's toolboxBundle object (see workspaceFrames.ts)
@@ -152,7 +152,7 @@ const toolboxBundle: ToolboxBundleApi = {
     setActiveDragActivityTab,
     getTheOneAudioRecorderForExportOnly,
     copyLeveledReaderStatsToClipboard,
-    handleClickOutsideToolbox,
+    simulateBlurOnPageFrameMouseDown,
 };
 
 window.toolboxBundle = toolboxBundle;

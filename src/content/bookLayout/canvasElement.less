@@ -123,6 +123,14 @@
         //     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px @bloom-blue;
         // }
 
+        // There's a fair chance that ANY child of a canvas element wants to be above the canvas so
+        // it can be seen even if the canvas is not transparent at the relevant place. But I'm nervous
+        // about extending it from translation group to just anything. We do, however, want topic
+        // and language to be visible even if made into captions, so they need it too.
+        div[data-derived] {
+            z-index: @canvasElementZIndex;
+        }
+
         .bloom-translationGroup {
             background: transparent; // don't want to worry about what background the image has
             border: none;

@@ -717,6 +717,28 @@ namespace BloomTests.Spreadsheet
             );
         }
 
+        public static string PageWithLegacyImageStructure(int pageNumber, int icNumber)
+        {
+            return string.Format(
+                @"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
+            Basic Text &amp; Picture
+        </div>
+
+        <div class=""pageDescription"" lang=""en""></div>
+
+        <div class=""split-pane-component marginBox"" style="""">
+			<div class=""split-pane-component position-top"">
+                <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px""><div class=""bloom-canvas bloom-leadingElement"" title=""legacy image container"" data-test-id=""ic{1}""><img src=""placeHolder.png"" alt="""" data-copyright="""" data-creator="""" data-license="""" height=""100"" width=""200""></img></div>
+                </div>
+            </div>
+        </div>
+    </div>",
+                pageNumber,
+                icNumber
+            );
+        }
+
         public static string coverPage =
             @"<div class=""bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover A5Portrait side-right"" data-page=""required singleton"" data-export=""front-matter-cover"" id=""bc85989e-9503-4f4e-b12f-f83a4002937f"">
         <div class=""pageLabel"" lang=""en"">
@@ -1294,6 +1316,63 @@ namespace BloomTests.Spreadsheet
         public void GotProgressMessage(string message)
         {
             Assert.That(_progressSpy.Messages, Has.Some.Property("Item1").Contains(message));
+        }
+    }
+
+    public class SpreadsheetImportIntoLegacyImagePageTests
+    {
+        private HtmlDom _dom;
+        private TemporaryFolder _bookFolder;
+
+        [OneTimeSetUp]
+        public async Task OneTimeSetUp()
+        {
+            var xml = string.Format(
+                SpreadsheetImageAndTextImportTests.templateDom,
+                SpreadsheetImageAndTextImportTests.coverPage
+                    + SpreadsheetImageAndTextImportTests.PageWithLegacyImageStructure(1, 1)
+                    + SpreadsheetImageAndTextImportTests.insideBackCoverPage
+                    + SpreadsheetImageAndTextImportTests.backCoverPage
+            );
+            _dom = new HtmlDom(xml, true);
+
+            var ss = new InternalSpreadsheet();
+            var columnForImage = ss.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
+
+            var contentRow = new ContentRow(ss);
+            contentRow.AddCell(InternalSpreadsheet.PageContentRowLabel);
+            contentRow.SetCell(columnForImage, "images/shirt.png");
+
+            _bookFolder = new TemporaryFolder("SpreadsheetImportIntoLegacyImagePageTests");
+            var spreadsheetFolder =
+                SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(
+                    "src/BloomTests/ImageProcessing"
+                );
+
+            var importer = new TestSpreadsheetImporter(
+                null,
+                _dom,
+                spreadsheetFolder,
+                _bookFolder.FolderPath
+            );
+            await importer.ImportAsync(ss);
+        }
+
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            _bookFolder?.Dispose();
+        }
+
+        [Test]
+        public void ImageImportedIntoLegacyCanvas()
+        {
+            AssertThatXmlIn
+                .Dom(_dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@data-test-id='ic1']/img[@src='shirt.png']",
+                    1
+                );
         }
     }
 

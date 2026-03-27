@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,7 +9,6 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
-using Bloom.web;
 using Bloom.Workspace;
 using L10NSharp;
 using SIL.Reporting;
@@ -24,8 +22,6 @@ namespace Bloom.CollectionTab
         private BookSelection _bookSelection;
         private BloomWebSocketServer _webSocketServer;
         private TeamCollectionManager _tcManager;
-        private readonly IframeReactControl _iframeReactControl;
-        private bool _loadedIntoIframe;
         private bool _isDisposed;
         private bool _bookChangesPending = false; // bookchanged event while tab not visible
 
@@ -49,7 +45,6 @@ namespace Bloom.CollectionTab
             _bookSelection = bookSelection;
             _webSocketServer = webSocketServer;
             _tcManager = tcManager;
-            _iframeReactControl = new IframeReactControl();
 
             // Commented out because of BL-12890, while we think about that.
             //bookRefreshEvent.Subscribe(book => {
@@ -62,10 +57,7 @@ namespace Bloom.CollectionTab
 
             localizationChangedEvent.Subscribe(unused =>
             {
-                if (_loadedIntoIframe)
-                {
-                    ReloadIntoIframe();
-                }
+                _webSocketServer.SendEvent("collection", "reload");
             });
 
             //TODO splitContainer1.SplitterDistance = _collectionListView.PreferredWidth;
@@ -235,35 +227,12 @@ namespace Bloom.CollectionTab
                 // duplicated it here.
                 // Doing it at this point seems to work fine.
                 CheckForDuplicatesAndRepair();
-                ReloadIntoIframe();
             }
 
             if (WorkspaceView != null && WorkspaceView.InvokeRequired)
                 WorkspaceView.Invoke((Action)work);
             else
                 work();
-        }
-
-        internal void EnsureLoadedInMainBrowser()
-        {
-            ReloadIntoIframe();
-        }
-
-        private void ReloadIntoIframe()
-        {
-            if (WorkspaceView?.MainBrowser == null)
-                return;
-
-            WorkspaceView.EnsureWorkspaceRootDocumentLoaded();
-
-            _ = _iframeReactControl.Load(
-                WorkspaceView.MainBrowser,
-                "collectionsTabPaneBundle",
-                null,
-                "collectionTab",
-                Color.FromArgb(51, 51, 51)
-            );
-            _loadedIntoIframe = true;
         }
 
         private void CheckForDuplicatesAndRepair()
@@ -364,8 +333,6 @@ namespace Bloom.CollectionTab
                 if (!Program.RunningInConsoleMode)
                     throw;
             }
-
-            _iframeReactControl.Dispose();
         }
     }
 }

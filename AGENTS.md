@@ -17,7 +17,7 @@ The front-end uses yarn 1.22.22. Never ever use npm.
 - do not define a props data type unless it is huge
 - example: export const SomeComponent: React.FunctionComponent<{initiallySelectedGroupIndex: number;}> = (props) => {...}
 
-- Avoid removing existing comments.
+- Avoid removing existing comments unless your changes make them inaccurate/obsolete
 - Avoid adding a comment like "// add this line".
 
 - Style elements using the css macro from @emotion/react directly on the element being styled, using the css prop. E.g. `<div css={css`color:red`}>`

@@ -7,6 +7,7 @@ import {
     showColorPickerDialog as doShowColorPickerDialog,
     hideColorPickerDialog as doHideColorPickerDialog,
 } from "../react_components/color-picking/colorPickerDialog";
+import { postJson } from "../utils/bloomApi";
 import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 import $ from "jquery";
 
@@ -42,7 +43,6 @@ export interface IWorkspaceExports {
         emailRequiredForTeamCollection?: boolean,
     ): void;
     showAboutDialogFromWorkspaceRoot(): void;
-    setWorkspaceMode(mode: string): void;
 }
 
 export function SayHello() {
@@ -51,6 +51,9 @@ export function SayHello() {
 
 // These functions should be available for calling by non-module code (such as C# directly)
 // using the workspaceBundle object (see more details in workspaceFrames.ts)
+// (This file was briefly the root of the workspaceBundle, before that the root of the
+// edit pane root bundle, but now it is just included by the app bundle, since it no longer
+// has a private iframe.)
 import { getToolboxBundleExports } from "./js/workspaceFrames";
 export { getToolboxBundleExports };
 import { getEditablePageBundleExports } from "./js/workspaceFrames";
@@ -71,6 +74,7 @@ import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/Copyr
 import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
 import * as ReactDOM from "react-dom";
 import { FunctionComponentElement } from "react";
+import { ToastDebugInput, toastDebugEvents } from "../toast/toastUtils";
 
 import { showAdjustTimingsDialog } from "./toolbox/talkingBook/AdjustTimingsDialog";
 import { getPageIframeBody } from "../utils/shared";
@@ -176,8 +180,10 @@ export function closeDialog(id: string) {
 }
 
 export function toolboxIsShowing() {
-    return (<HTMLInputElement>$(document).find("#pure-toggle-right").get(0))
-        .checked;
+    const checkbox = $(document).find("#pure-toggle-right").get(0) as
+        | HTMLInputElement
+        | undefined;
+    return checkbox ? checkbox.checked : true;
 }
 
 // Do this task when the toolbox is loaded. If it isn't already, we set a timeout and do it when we can.
@@ -286,236 +292,41 @@ export function showRegistrationDialogFromWorkspaceRoot() {
     showRegistrationDialogForEditTab();
 }
 
-let hasActivatedEditMode = false;
-
-// In various contexts if we don't have an explicit mode, we default to collection mode.
-const normalizeWorkspaceMode = (mode: string | null | undefined): string => {
-    if (mode === "publish") {
-        return "publish";
-    }
-    return mode === "edit" ? "edit" : "collection";
-};
-
-// Apply to the body a class indicating which mode we're in...collection, edit, or publish.
-// This is used to control which elements are visible in the workspace.
-const applyWorkspaceModeClass = (mode: string): void => {
-    if (!document.body) {
-        return;
-    }
-
-    const classesToRemove: string[] = [];
-    document.body.classList.forEach((className) => {
-        if (className.endsWith("-mode")) {
-            classesToRemove.push(className);
-        }
-    });
-
-    classesToRemove.forEach((className) =>
-        document.body.classList.remove(className),
-    );
-    document.body.classList.add(`${mode}-mode`);
-};
-
-// We manage a param in the root url so that if the main browser is refreshed, it can reopen
-// in the same tab.
-const updateWorkspaceModeInUrl = (mode: string): void => {
-    const normalizedMode = normalizeWorkspaceMode(mode);
-    updateWorkspaceUrlParam("mode", normalizedMode);
-};
-
 const updateWorkspaceUrlParam = (name: string, value: string): void => {
     const url = new URL(window.location.href);
     url.searchParams.set(name, value);
     window.history.replaceState(window.history.state, "", url.toString());
 };
 
-// Currently, unfortunately, functions from workspaceRoot.ts are imported into code used by other bundles,
-// and as a result, immediately-executed code in this file may run in the context of those other bundles,
-// which we don't want. So we use this test to restrict workspace initialization code to the top window.
-// (We also set a flag in the pug file to help with this. I'm not sure why, or even if, it is always
-// necessary, but it was quite difficult to make sure the workspace initialization happens reliably
-// but only in the right context, so I decided to keep it.)
-const isTopLevelWindow = (): boolean => {
-    try {
-        return window.top === window;
-    } catch {
-        return false;
-    }
-};
-
-const shouldAutoInitializeWorkspaceRoot = (): boolean => {
-    return isTopLevelWindow() && window.bloomIsWorkspaceRoot === true;
-};
-
-// When an iframe is not in use, we set its src to about:blank. This at least frees up memory,
-// and may help with other issues caused by having a stale page in the edit iframe while
-// activity in the collection tab has moved us to another book, and similar problems.
-// This function is used to restore the proper src of an iframe when we switch to its tab.
-const restoreIframeSrcFromUrlIfNeeded = (
-    iframeId: string,
-    paramName: string,
-    restoreAction?: (savedSrc: string) => void,
-): boolean => {
-    const iframe = document.getElementById(
-        iframeId,
-    ) as HTMLIFrameElement | null;
-    if (!iframe) {
-        return false;
-    }
-
-    const currentSrc = iframe.getAttribute("src") || "";
-    const needsRestore = currentSrc === "" || currentSrc === "about:blank";
-    if (!needsRestore) {
-        return true;
-    }
-
-    const url = new URL(window.location.href);
-    const savedSrc = url.searchParams.get(paramName);
-    if (savedSrc) {
-        if (restoreAction) {
-            restoreAction(savedSrc);
-        } else {
-            iframe.src = savedSrc;
-        }
-    }
-
-    return true;
-};
-
-const initializeWorkspaceModeFromUrl = (): void => {
-    if (!document.body) {
-        return;
-    }
-
-    const url = new URL(window.location.href);
-    const mode = normalizeWorkspaceMode(url.searchParams.get("mode"));
-    applyWorkspaceModeClass(mode);
-
-    const pageIframeReady = restoreIframeSrcFromUrlIfNeeded(
-        "page",
-        "pageSrc",
-        switchContentPage,
-    );
-    const pageListIframeReady = restoreIframeSrcFromUrlIfNeeded(
-        "pageList",
-        "pageListSrc",
-    );
-
-    // Chrome can run this bundle before iframe elements exist; retry once when the
-    // document has fully loaded so mode/page restoration is deterministic.
-    if (mode === "edit" && (!pageIframeReady || !pageListIframeReady)) {
-        window.addEventListener(
-            "load",
-            () => {
-                restoreIframeSrcFromUrlIfNeeded(
-                    "page",
-                    "pageSrc",
-                    switchContentPage,
-                );
-                restoreIframeSrcFromUrlIfNeeded("pageList", "pageListSrc");
-            },
-            { once: true },
-        );
-    }
-};
-
-// When the main window comes up from the "open in edge" command or by using
-// CURRENTPAGE.htm or after using Refresh, params in the URL tell us what mode to be
-// in and where to find the page and pagelist, if relevant. It has proved difficult
-// (more so in Chrome than Edge, for some unknown reason) to get this initialization
-// to happen reliably, so we try a number of times.
-const initializeWorkspaceModeFromUrlWithRetries = (): void => {
-    let attempts = 0;
-    const maxAttempts = 40;
-
-    const runAttempt = (): void => {
-        initializeWorkspaceModeFromUrl();
-
-        const url = new URL(window.location.href);
-        const mode = normalizeWorkspaceMode(url.searchParams.get("mode"));
-        const isEditMode = mode === "edit";
-
-        const hasBody = !!document.body;
-        const pageIframe = document.getElementById(
-            "page",
-        ) as HTMLIFrameElement | null;
-        const pageListIframe = document.getElementById(
-            "pageList",
-        ) as HTMLIFrameElement | null;
-        const pageSrc = pageIframe?.getAttribute("src") || "";
-        const pageListSrc = pageListIframe?.getAttribute("src") || "";
-        const hasEditModeClass =
-            !!document.body?.classList.contains("edit-mode");
-
-        const modeIsReady = !isEditMode || hasEditModeClass;
-        const pageIsReady =
-            !isEditMode || (pageSrc !== "" && pageSrc !== "about:blank");
-        const pageListIsReady =
-            !isEditMode ||
-            (pageListSrc !== "" && pageListSrc !== "about:blank");
-
-        const fullyReady =
-            hasBody && modeIsReady && pageIsReady && pageListIsReady;
-        if (fullyReady || attempts >= maxAttempts) {
-            return;
-        }
-
-        attempts += 1;
-        window.setTimeout(runAttempt, 100);
+const installToastDebugHooks = (): void => {
+    // These globals are mainly devtools helpers today, but they use general names because
+    // browser-side code may eventually call into the same toast entry points directly.
+    window.showToastScenario = (scenario = "all") => {
+        postJson("toast/test", { scenario });
     };
-
-    runAttempt();
-};
-
-let workspaceModeInitializationStarted = false;
-
-const tryStartWorkspaceModeInitialization = (): void => {
-    if (workspaceModeInitializationStarted) {
-        return;
-    }
-
-    if (!shouldAutoInitializeWorkspaceRoot()) {
-        return;
-    }
-
-    workspaceModeInitializationStarted = true;
-    initializeWorkspaceModeFromUrlWithRetries();
-};
-
-tryStartWorkspaceModeInitialization();
-document.addEventListener(
-    "DOMContentLoaded",
-    tryStartWorkspaceModeInitialization,
-    {
-        once: true,
-    },
-);
-window.addEventListener("load", tryStartWorkspaceModeInitialization, {
-    once: true,
-});
-
-export function setWorkspaceMode(mode: string): void {
-    if (!isTopLevelWindow()) {
-        return;
-    }
-
-    const normalizedMode = normalizeWorkspaceMode(mode);
-    applyWorkspaceModeClass(normalizedMode);
-    updateWorkspaceModeInUrl(normalizedMode);
-
-    if (normalizedMode === "edit") {
-        restoreIframeSrcFromUrlIfNeeded("page", "pageSrc", switchContentPage);
-        restoreIframeSrcFromUrlIfNeeded("pageList", "pageListSrc");
-    }
-
-    if (normalizedMode === "edit" && !hasActivatedEditMode) {
-        hasActivatedEditMode = true;
+    window.showToast = (toast) => {
         window.dispatchEvent(
-            new CustomEvent("bloom-edit-mode-first-activated"),
+            new CustomEvent(toastDebugEvents.show, {
+                detail: toast,
+            }),
         );
-    }
-}
+    };
+    window.clearToasts = () => {
+        window.dispatchEvent(new CustomEvent(toastDebugEvents.clear));
+    };
+};
 
+let workspaceRootDocumentInitialized = false;
+
+const initializeWorkspaceRootDocument = (): void => {
+    if (workspaceRootDocumentInitialized) {
+        return;
+    }
+
+    workspaceRootDocumentInitialized = true;
+    installToastDebugHooks();
+};
+initializeWorkspaceRootDocument();
 // Adjusts the zoom scaling element created in C# SetupPageZoom; keep in sync with that code.
 // Called directly from C# code, in EditingView.SetZoom().
 // Argument is a raw number (e.g., 0.5 for 50% zoom, 1.0 for 100% zoom).
@@ -565,7 +376,6 @@ interface WorkspaceBundleApi {
     showAboutDialogFromWorkspaceRoot: typeof showAboutDialogFromWorkspaceRoot;
     showRequiresSubscriptionDialog: typeof showRequiresSubscriptionDialog;
     showRegistrationDialogFromWorkspaceRoot: typeof showRegistrationDialogFromWorkspaceRoot;
-    setWorkspaceMode: typeof setWorkspaceMode;
     showAdjustTimingsDialogFromWorkspaceRoot: typeof showAdjustTimingsDialogFromWorkspaceRoot;
     setZoom: typeof setZoom;
     getToolboxBundleExports: typeof getToolboxBundleExports;
@@ -579,7 +389,9 @@ interface WorkspaceBundleApi {
 declare global {
     interface Window {
         workspaceBundle: WorkspaceBundleApi;
-        bloomIsWorkspaceRoot?: boolean;
+        showToastScenario?: (scenario?: string) => void;
+        showToast?: (toast: ToastDebugInput) => void;
+        clearToasts?: () => void;
     }
 }
 
@@ -605,7 +417,6 @@ window.workspaceBundle = {
     showAboutDialogFromWorkspaceRoot,
     showRequiresSubscriptionDialog,
     showRegistrationDialogFromWorkspaceRoot,
-    setWorkspaceMode,
     showAdjustTimingsDialogFromWorkspaceRoot:
         showAdjustTimingsDialogFromWorkspaceRoot,
     setZoom,

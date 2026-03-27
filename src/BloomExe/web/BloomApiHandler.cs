@@ -302,7 +302,7 @@ namespace Bloom.Api
                 }
                 if (exactCount <= appLevelCount)
                 {
-                    // There is some history (BL-15716) of a request...specifically api/edit/pageControls/cleanup...
+                    // There is some history (BL-15716) of a request...specifically api/edit/pageControls/cleanup... (now removed in BL-15934)
                     // being sent during shutdown or while restarting, and not being found.
                     // We hope to have made this unlikely or impossible, but just in case,
                     // handle such failures gracefully. We don't launch browsers before registering handlers,

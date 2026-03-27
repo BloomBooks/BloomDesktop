@@ -13,6 +13,7 @@ import {
     kBloomPanelBackground,
     kBloomUnselectedTabBackground,
 } from "../../utils/colorUtils";
+import { getMasterToolList } from "./toolbox";
 
 // React host for the toolbox sidebar.
 //
@@ -338,20 +339,22 @@ export const ToolboxRoot: React.FunctionComponent = () => {
             return;
         }
 
+        hydratedToolIds.current.add(toolId);
+
         const liveToolBodyElement = getLiveToolBodyElement(toolId);
         if (liveToolBodyElement) {
             // Adopt the current live node from #toolbox so we don't create a duplicate
             // root for the same legacy tool.
-            hydratedToolIds.current.add(toolId);
             setSections((previousSections) =>
-                previousSections.map((section) =>
-                    section.id === toolId
-                        ? {
-                              ...section,
-                              liveToolBodyElement,
-                          }
-                        : section,
-                ),
+                previousSections.map((section) => {
+                    if (section.id !== toolId) {
+                        return section;
+                    }
+                    return {
+                        ...section,
+                        liveToolBodyElement,
+                    };
+                }),
             );
             return;
         }
@@ -364,18 +367,19 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                     label: "",
                     legacyToolHtmlSubPath,
                 });
-                hydratedToolIds.current.add(toolId);
                 setSections((previousSections) =>
-                    previousSections.map((section) =>
-                        section.id === toolId
-                            ? {
-                                  ...section,
-                                  legacyToolBodyHtml,
-                              }
-                            : section,
-                    ),
+                    previousSections.map((section) => {
+                        if (section.id !== toolId) {
+                            return section;
+                        }
+                        return {
+                            ...section,
+                            legacyToolBodyHtml,
+                        };
+                    }),
                 );
             } catch (error) {
+                hydratedToolIds.current.delete(toolId);
                 console.error(
                     `Failed to load legacy toolbox HTML for ${toolId}.`,
                     error,
@@ -383,6 +387,8 @@ export const ToolboxRoot: React.FunctionComponent = () => {
             }
             return;
         }
+
+        hydratedToolIds.current.delete(toolId);
     }, []);
 
     // Load enabled toolbox tools and begin hydrating each section body.
@@ -391,17 +397,36 @@ export const ToolboxRoot: React.FunctionComponent = () => {
             .get<string>("/bloom/api/toolbox/enabledTools")
             .then(async (response) => {
                 const parsedIds = parseEnabledToolIds(response.data);
+                const masterList = getMasterToolList();
+                for (let i = parsedIds.length - 1; i >= 0; i--) {
+                    const toolId = parsedIds[i];
+                    if (!masterList.some((tool) => tool.id() === toolId)) {
+                        parsedIds.splice(i, 1);
+                    }
+                }
                 const builtSections =
                     buildSectionsFromEnabledToolIds(parsedIds);
                 setSections(builtSections);
-                builtSections.forEach((section) => {
-                    void hydrateToolBody(section.id);
-                });
             })
             .catch((error) => {
                 throw error;
             });
     }, [hydrateToolBody]);
+
+    // Start hydration only after section state exists to avoid races where a tool
+    // can be marked hydrated before there is any section to receive its body.
+    React.useEffect(() => {
+        sections.forEach((section) => {
+            const hasBodyContent =
+                !!section.legacyToolBodyHtml || !!section.liveToolBodyElement;
+
+            if (hasBodyContent || hydratedToolIds.current.has(section.id)) {
+                return;
+            }
+
+            void hydrateToolBody(section.id);
+        });
+    }, [sections, hydrateToolBody]);
 
     // Some tool content elements may appear shortly after we build sections.
     // Keep trying unresolved live tools until their existing DOM is available.
@@ -484,6 +509,32 @@ export const ToolboxRoot: React.FunctionComponent = () => {
     React.useEffect(() => {
         const intervalId = window.setInterval(() => {
             sections.forEach((section) => {
+                if (
+                    section.legacyToolBodyHtml &&
+                    !section.liveToolBodyElement
+                ) {
+                    const liveToolBodyElement = getLiveToolBodyElement(
+                        section.id,
+                    );
+                    if (liveToolBodyElement) {
+                        hydratedToolIds.current.add(section.id);
+                        setSections((previousSections) =>
+                            previousSections.map((previousSection) => {
+                                if (previousSection.id !== section.id) {
+                                    return previousSection;
+                                }
+
+                                return {
+                                    ...previousSection,
+                                    liveToolBodyElement,
+                                    legacyToolBodyHtml: undefined,
+                                };
+                            }),
+                        );
+                        return;
+                    }
+                }
+
                 const hasBodyContent =
                     !!section.legacyToolBodyHtml ||
                     !!section.liveToolBodyElement;
@@ -531,8 +582,6 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                     makeSectionFromToolId(addedToolId),
                 ]);
             });
-
-            void hydrateToolBody(addedToolId);
         };
 
         const onToolRemoved = (event: Event) => {

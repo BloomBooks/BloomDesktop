@@ -19,6 +19,7 @@ interface IColorPickerProps {
     swatchColors: IColorInfo[];
     includeDefault?: boolean;
     onDefaultClick?: () => void;
+    defaultButtonLabel?: string;
     //defaultColor?: IColorInfo;  will eventually need this
 }
 
@@ -31,6 +32,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
         "Default for style",
         "EditTab.DirectFormatting.labelForDefaultColor",
     );
+    const defaultButtonLabel = props.defaultButtonLabel ?? defaultStyleLabel;
 
     const changeColor = (swatchColor: IColorInfo) => {
         setColorChoice(swatchColor);
@@ -201,7 +203,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
                                 margin-left: 6px !important;
                             `}
                         >
-                            {defaultStyleLabel}
+                            {defaultButtonLabel}
                         </Typography>
                     </div>
                 )}

@@ -378,6 +378,13 @@ namespace Bloom.Api
             if (RawUrl.EndsWith("no-cache=true"))
                 return false;
 
+            if (Path.GetExtension(path).Equals(".js", StringComparison.OrdinalIgnoreCase))
+            {
+                // Allow caching only when the URL is versioned (assetv=...),
+                // so caches are reused for this Bloom version but invalidated on upgrade.
+                return RawUrl.Contains("assetv=", StringComparison.OrdinalIgnoreCase);
+            }
+
             return _cacheableExtensions.Contains(Path.GetExtension(path));
         }
 

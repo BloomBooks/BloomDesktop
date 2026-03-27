@@ -994,7 +994,8 @@ namespace Bloom.Publish
             string tempFolderPath,
             bool isTemplateBook,
             Dictionary<string, int> omittedPageLabels = null,
-            bool includeVideoAndActivities = true,
+            bool includeFilesNeededForBloomPlayer = true,
+            bool includeVideos = true,
             string[] narrationLanguages = null,
             bool wantMusic = false,
             bool wantFontFaceDeclarations = true,
@@ -1003,8 +1004,8 @@ namespace Bloom.Publish
         {
             var filter = new BookFileFilter(bookFolderPath)
             {
-                IncludeFilesNeededForBloomPlayer = includeVideoAndActivities,
-                WantVideo = includeVideoAndActivities,
+                IncludeFilesNeededForBloomPlayer = includeFilesNeededForBloomPlayer,
+                WantVideo = includeVideos,
                 NarrationLanguages = narrationLanguages,
                 WantMusic = true,
             };
