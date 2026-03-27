@@ -2701,6 +2701,11 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="translated">Uka’yib’al wok z’ib’</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.TextColor</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.TextOutlineColor" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Text Outline Color</source>
+        <target xml:lang="quc" state="needs-translation">Text Outline Color</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.TextOutlineColor</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.TextBlock" sil:dynamic="true">
         <source xml:lang="en">Text Block</source>
         <target xml:lang="quc" state="translated">Q'at tanaj wok tz'ib'</target>
