@@ -6,6 +6,7 @@ import {
     requireOptionValue,
     requireTcpPortOption,
 } from "../.github/skills/bloom-automation/bloomProcessCommon.mjs";
+import { getHelpfulStartupLabel } from "./watchBloomExeLabel.mjs";
 
 const automationReadyPrefix = "BLOOM_AUTOMATION_READY ";
 
@@ -74,7 +75,6 @@ const projectPath = path.join(
     "BloomExe",
     "BloomExe.csproj",
 );
-const worktreeLabel = "/" + path.basename(path.resolve(options.repoRoot)) + "/";
 
 if (!existsSync(projectPath)) {
     console.error(
@@ -90,9 +90,13 @@ const dotnetArgs = [
     projectPath,
     "--",
     "--automation",
-    "--label",
-    worktreeLabel,
 ];
+
+const startupLabel = getHelpfulStartupLabel(options.repoRoot);
+
+if (startupLabel) {
+    dotnetArgs.push("--label", startupLabel);
+}
 
 if (options.vitePort) {
     dotnetArgs.push("--vite-port", String(options.vitePort));

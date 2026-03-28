@@ -56,6 +56,19 @@ namespace BloomTests
         }
 
         [Test]
+        public void ParseStartupPortArguments_LeavesLabelNullWithoutExplicitLabel()
+        {
+            var remainingArgs = Program.ParseStartupPortArguments(
+                new[] { @"C:\Temp\Example.bloomcollection" },
+                out var errorMessage
+            );
+
+            Assert.That(errorMessage, Is.Null);
+            Assert.That(Program.StartupLabel, Is.Null);
+            Assert.That(remainingArgs, Is.EqualTo(new[] { @"C:\Temp\Example.bloomcollection" }));
+        }
+
+        [Test]
         public void ParseStartupPortArguments_RejectsDuplicateAutomationArguments()
         {
             var remainingArgs = Program.ParseStartupPortArguments(
