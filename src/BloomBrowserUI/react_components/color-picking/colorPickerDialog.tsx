@@ -592,6 +592,8 @@ export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = (
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.initialColor]);
 
+    // Clean up the visibility-changed callback when the component unmounts so the parent
+    // dialog is not left permanently hidden if the color picker was open at unmount time.
     useEffect(() => {
         return () => {
             if (onColorPickerVisibilityChanged) {
