@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.web;
 using BloomTemp;
+using SIL.IO;
 
 namespace Bloom.Edit
 {
@@ -92,12 +94,16 @@ namespace Bloom.Edit
 
         public static string MakeToolboxContent(Book.Book book)
         {
+            var useViteDev = ReactControl.ShouldUseViteDev();
             var path = BloomFileLocator.GetBrowserFile(
                 false,
                 "bookEdit/toolbox",
-                ReactControl.ShouldUseViteDev() ? "toolbox.vite-dev.html" : "toolbox.html"
+                useViteDev ? "toolbox.vite-dev.html" : "toolbox.html"
             );
-            var domForToolbox = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
+            var html = RobustFile.ReadAllText(path, Encoding.UTF8);
+            if (useViteDev)
+                html = ReactControl.ReplaceViteDevOrigin(html);
+            var domForToolbox = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(html));
             XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(domForToolbox.RawDom);
             return domForToolbox.getHtmlStringDisplayOnly();
         }

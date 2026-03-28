@@ -103,14 +103,26 @@ namespace Bloom
 
         public static SynchronizationContext MainContext { get; private set; }
 
-        public static bool RunningSecondInstance { get; private set; }
+        internal static int? StartupVitePort { get; private set; }
+        internal static string StartupLabel { get; private set; }
+        internal static bool StartupAutomation { get; private set; }
+
+        internal static string StartupRequestedPortSummary =>
+            string.Join(
+                ", ",
+                new[]
+                {
+                    StartupAutomation ? "automation=true" : null,
+                    StartupVitePort.HasValue ? $"vitePort={StartupVitePort.Value}" : null,
+                }.Where(value => value != null)
+            );
 
         [STAThread]
         [HandleProcessCorruptedStateExceptions]
         static int Main(string[] args1)
         {
             // AttachConsole(-1);	// Enable this to allow Console.Out.WriteLine to be viewable (must run Bloom from terminal, AFAIK)
-            _gotUniqueToken = false;
+            _ownsSingleInstanceToken = false;
             _uiThreadId = Thread.CurrentThread.ManagedThreadId;
             Logger.Init();
             // Configure TempFile to create temp files with a "bloom" prefix so we can
@@ -147,6 +159,18 @@ namespace Bloom
             // every startup path calls it.
             SetUpLocalization();
 
+            var args = ParseStartupPortArguments(args1, out var startupPortErrorMessage);
+            if (startupPortErrorMessage != null)
+            {
+                MessageBox.Show(
+                    startupPortErrorMessage,
+                    "Bloom",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+                return 1;
+            }
+
             // Old comment: Firefox60 uses Gtk3, so we need to as well.  (BL-10469)
             // Aug 2023, we've moved away from GeckoFx/Firefox to wv2, but I don't know if this is still needed or not...
             // Steve says he thinks Gtk3 is still better but that it likely only matters for Linux,
@@ -160,7 +184,7 @@ namespace Bloom
             // The following is how we will do things from now on, and things can be moved
             // into this as time allows. See CommandLineOptions.cs.
             if (
-                args1.Length > 0
+                args.Length > 0
                 && new[]
                 {
                     "--help",
@@ -173,7 +197,7 @@ namespace Bloom
                     "spreadsheetExport",
                     "spreadsheetImport",
                     "sendFontAnalytics",
-                }.Contains(args1[0])
+                }.Contains(args[0])
             ) //restrict using the commandline parser to cases were it should work
             {
 #if !__MonoCS__
@@ -184,7 +208,7 @@ namespace Bloom
 
                 var mainTask = CommandLine
                     .Parser.Default.ParseArguments(
-                        args1,
+                        args,
                         new[]
                         {
                             typeof(HydrateParameters),
@@ -258,10 +282,19 @@ namespace Bloom
                 return mainTask.Result; // we're done; this is safe once there is nothing being awaited.
             }
 
+            if (!ValidateStartupVitePort(out var startupViteErrorMessage))
+            {
+                MessageBox.Show(
+                    startupViteErrorMessage,
+                    "Bloom",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+                return 1;
+            }
+
             try
             {
-                var args = args1;
-
                 if (SIL.PlatformUtilities.Platform.IsWindows)
                 {
                     OldVersionCheck();
@@ -434,7 +467,7 @@ namespace Bloom
                                             return 1;
                                         }
 
-                                        _gotUniqueToken = true;
+                                        _ownsSingleInstanceToken = true;
 
                                         if (
                                             projectContext.TeamCollectionManager.CurrentCollection
@@ -504,7 +537,7 @@ namespace Bloom
                         // and now we need to get the lock as usual before going on to load the new collection.
                         if (!UniqueToken.AcquireToken(_mutexId, "Bloom"))
                             return 1;
-                        _gotUniqueToken = true;
+                        _ownsSingleInstanceToken = true;
                     }
                     else if (IsBloomBookOrder(args))
                     {
@@ -512,44 +545,45 @@ namespace Bloom
 
                         if (UniqueToken.AcquireTokenQuietly(_mutexId))
                         {
-                            // No other instance isrunning. Start up normally (and show the book just downloaded).
-                            // See https://silbloom.myjetbrains.com/youtrack/issue/BL-3822
-                            _gotUniqueToken = true;
+                            // No other instance is running, so start normally and show the downloaded book.
+                            _ownsSingleInstanceToken = true;
                         }
-                        else if (forEdit)
-                        {
-                            RunningSecondInstance = true;
-                        }
-                        else
+                        else if (!forEdit)
                         {
                             // Another instance is running. For a normal download to "books from bloom library", this
                             // instance has served its purpose and can exit right away. If we've created a new collection
                             // for editing the book we downloaded, we will open it now even though we don't have the token.
+                            // That means this process is intentionally running without the single-instance cleanup responsibilities.
                             return 0;
                         }
                     }
                     else
                     {
-                        if ((Control.ModifierKeys & Keys.Control) == Keys.Control)
+                        if (StartupAutomation)
                         {
-                            // control key is held down so allow second instance to run; note that we're deliberately in this state
+                            // Automation startup is the intentional multi-instance path.
+                            // We accept shared-state conflicts here, but we still must not claim the single-instance token.
+                            // Without token ownership, this process must skip the global Bloom temp cleanup on exit.
+                            Logger.WriteEvent(
+                                $"Bypassing Bloom's single-instance token because automation startup was requested. {StartupRequestedPortSummary}"
+                            );
+                        }
+                        else if ((Control.ModifierKeys & Keys.Control) == Keys.Control)
+                        {
+                            // Control is held down, so allow an additional instance to run without taking the token.
                             if (UniqueToken.AcquireTokenQuietly(_mutexId))
                             {
-                                _gotUniqueToken = true;
-                            }
-                            else
-                            {
-                                RunningSecondInstance = true;
+                                _ownsSingleInstanceToken = true;
                             }
                         }
                         else if (UniqueToken.AcquireToken(_mutexId, "Bloom"))
                         {
                             // No other instance is running. We own the token and should release it on quitting.
-                            _gotUniqueToken = true;
+                            _ownsSingleInstanceToken = true;
                         }
                         else
                         {
-                            // We're trying to run a second instance. This is not allowed except for a few special cases,
+                            // We're trying to run an additional instance. This is not allowed except for a few special cases,
                             // such as (temporarily) when downloading a book from BloomLibrary, or when ctrl is held down. We'll just quit now.
                             // (UniqueToken.AcquireToken will have already notified the user of this situation.)
                             return 1;
@@ -685,7 +719,7 @@ namespace Bloom
                 // - we might delete something in use by the instance that has the token
                 // - we would delete the token itself (since _mutexid and NamePrefix happen to be the same),
                 // allowing a later duplicate process to start normally.
-                if (_gotUniqueToken)
+                if (_ownsSingleInstanceToken)
                     TempFile.CleanupTempFolder();
 #endif
             }
@@ -700,8 +734,274 @@ namespace Bloom
         /// </summary>
         public static void ReleaseBloomToken()
         {
-            if (_gotUniqueToken)
+            if (_ownsSingleInstanceToken)
                 UniqueToken.ReleaseToken();
+        }
+
+        internal static string[] ParseStartupPortArguments(string[] args, out string errorMessage)
+        {
+            errorMessage = null;
+            StartupVitePort = null;
+            StartupLabel = null;
+            StartupAutomation = false;
+
+            var remainingArgs = new List<string>();
+
+            for (var i = 0; i < args.Length; i++)
+            {
+                if (
+                    TryHandleStartupPortArgument(
+                        args,
+                        ref i,
+                        "--vite-port",
+                        () => StartupVitePort,
+                        value => StartupVitePort = value,
+                        out errorMessage
+                    )
+                    || TryHandleStartupStringArgument(
+                        args,
+                        ref i,
+                        "--label",
+                        () => StartupLabel,
+                        value =>
+                            StartupLabel = string.IsNullOrWhiteSpace(value) ? null : value.Trim(),
+                        out errorMessage
+                    )
+                    || TryHandleStartupFlagArgument(
+                        args,
+                        ref i,
+                        "--automation",
+                        () => StartupAutomation,
+                        value => StartupAutomation = value,
+                        out errorMessage
+                    )
+                )
+                {
+                    if (errorMessage != null)
+                        return Array.Empty<string>();
+
+                    continue;
+                }
+
+                remainingArgs.Add(args[i]);
+            }
+
+            return remainingArgs.ToArray();
+        }
+
+        private static bool TryHandleStartupFlagArgument(
+            string[] args,
+            ref int index,
+            string optionName,
+            Func<bool> getValue,
+            Action<bool> setValue,
+            out string errorMessage
+        )
+        {
+            errorMessage = null;
+
+            if (!TryParseStartupFlagArgument(args, ref index, optionName))
+                return false;
+
+            if (getValue())
+            {
+                errorMessage = $"Bloom only accepts one {optionName} argument.";
+                return true;
+            }
+
+            setValue(true);
+            return true;
+        }
+
+        private static bool TryHandleStartupPortArgument(
+            string[] args,
+            ref int index,
+            string optionName,
+            Func<int?> getValue,
+            Action<int> setValue,
+            out string errorMessage
+        )
+        {
+            errorMessage = null;
+
+            if (
+                !TryParseStartupPortArgument(
+                    args,
+                    ref index,
+                    optionName,
+                    out var port,
+                    out errorMessage
+                )
+            )
+            {
+                return false;
+            }
+
+            if (errorMessage != null)
+                return true;
+
+            if (getValue().HasValue)
+            {
+                errorMessage = $"Bloom only accepts one {optionName} argument.";
+                return true;
+            }
+
+            setValue(port);
+            return true;
+        }
+
+        private static bool TryHandleStartupStringArgument(
+            string[] args,
+            ref int index,
+            string optionName,
+            Func<string> getValue,
+            Action<string> setValue,
+            out string errorMessage
+        )
+        {
+            errorMessage = null;
+
+            if (
+                !TryParseStartupStringArgument(
+                    args,
+                    ref index,
+                    optionName,
+                    out var value,
+                    out errorMessage
+                )
+            )
+            {
+                return false;
+            }
+
+            if (errorMessage != null)
+                return true;
+
+            if (getValue() != null)
+            {
+                errorMessage = $"Bloom only accepts one {optionName} argument.";
+                return true;
+            }
+
+            setValue(value);
+            return true;
+        }
+
+        private static bool TryParseStartupStringArgument(
+            string[] args,
+            ref int index,
+            string optionName,
+            out string value,
+            out string errorMessage
+        )
+        {
+            value = null;
+            errorMessage = null;
+            var current = args[index];
+
+            if (current == optionName)
+            {
+                if (index + 1 >= args.Length)
+                {
+                    errorMessage = $"Bloom requires a value after {optionName}.";
+                    return true;
+                }
+
+                value = args[index + 1];
+                if (ValueLooksLikeOption(value))
+                {
+                    errorMessage = $"Bloom requires a value after {optionName}.";
+                    return true;
+                }
+
+                index++;
+                return true;
+            }
+
+            if (current.StartsWith(optionName + "=", StringComparison.Ordinal))
+            {
+                value = current.Substring(optionName.Length + 1);
+                if (ValueLooksLikeOption(value))
+                    errorMessage = $"Bloom requires a value after {optionName}.";
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool TryParseStartupFlagArgument(
+            string[] args,
+            ref int index,
+            string optionName
+        )
+        {
+            var current = args[index];
+            return current == optionName;
+        }
+
+        private static bool ValueLooksLikeOption(string value)
+        {
+            return value.StartsWith("--", StringComparison.Ordinal);
+        }
+
+        private static bool TryParseStartupPortArgument(
+            string[] args,
+            ref int index,
+            string optionName,
+            out int port,
+            out string errorMessage
+        )
+        {
+            port = 0;
+            errorMessage = null;
+            var current = args[index];
+            string value = null;
+
+            if (current == optionName)
+            {
+                if (index + 1 >= args.Length)
+                {
+                    errorMessage = $"Bloom requires a numeric value after {optionName}.";
+                    return true;
+                }
+
+                value = args[++index];
+            }
+            else if (current.StartsWith(optionName + "=", StringComparison.Ordinal))
+            {
+                value = current.Substring(optionName.Length + 1);
+            }
+            else
+            {
+                return false;
+            }
+
+            if (
+                !int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out port)
+                || port < 1
+                || port > 65535
+            )
+            {
+                errorMessage = $"Bloom requires {optionName} to be an integer from 1 to 65535.";
+            }
+
+            return true;
+        }
+
+        private static bool ValidateStartupVitePort(out string errorMessage)
+        {
+            errorMessage = null;
+
+            if (!StartupVitePort.HasValue)
+                return true;
+
+            if (ReactControl.IsViteDevServerRunning(StartupVitePort.Value))
+                return true;
+
+            errorMessage =
+                $"Bloom was started with --vite-port {StartupVitePort.Value}, but no Vite dev server was reachable at {ReactControl.GetViteDevOrigin(StartupVitePort.Value)}/@vite/client.";
+            return false;
         }
 
         private static bool IsWebviewMissingOrTooOld()
@@ -1803,7 +2103,8 @@ namespace Bloom
 
         private static bool _errorHandlingHasBeenSetUp;
         private static IDisposable _sentry;
-        private static bool _gotUniqueToken;
+        // Only the token owner may release it and run Bloom's global temp cleanup on exit.
+        private static bool _ownsSingleInstanceToken;
 
         /// ------------------------------------------------------------------------------------
         internal static void SetUpErrorHandling()

@@ -30,6 +30,7 @@ using Bloom.web;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
+using Newtonsoft.Json;
 using SIL.Code;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -57,6 +58,11 @@ namespace Bloom.Api
     public class BloomServer : IBloomServer, IDisposable
     {
         public static int portForHttp;
+        public const int kNumberOfConsecutivePortsToReserve = 3;
+
+        public static int WebSocketPort => portForHttp + 1;
+
+        public static int RemoteDebuggingPort => portForHttp + 2;
 
         public static string ServerUrl
         {
@@ -1539,9 +1545,8 @@ namespace Bloom.Api
             if (_listener?.IsListening == true)
                 return;
             const int kStartingPort = 8089;
-            const int kNumberOfPortsToTry = 10;
+            const int kNumberOfPortsToTry = 20;
             bool success = false;
-            const int kNumberOfPortsWeNeed = 2; //one for http, one for peakLevel webSocket
 
             // Note: this now checks whether the following ports in the block are available,
             // but it still does not reserve them until the corresponding services start.
@@ -1554,8 +1559,13 @@ namespace Bloom.Api
             // switch to using an owin-compliant http server like NancyFx.
             for (var i = 0; !success && i < kNumberOfPortsToTry; i++)
             {
-                BloomServer.portForHttp = kStartingPort + (i * kNumberOfPortsWeNeed);
-                if (!CanOpenConsecutivePorts(portForHttp + 1, kNumberOfPortsWeNeed - 1))
+                BloomServer.portForHttp = kStartingPort + (i * kNumberOfConsecutivePortsToReserve);
+                if (
+                    !CanOpenConsecutivePorts(
+                        portForHttp + 1,
+                        kNumberOfConsecutivePortsToReserve - 1
+                    )
+                )
                     continue;
 
                 success = AttemptToOpenPort();
@@ -1578,6 +1588,25 @@ namespace Bloom.Api
             }
 
             VerifyWeAreNowListening();
+            WriteAutomationStartupInfo();
+        }
+
+        private static void WriteAutomationStartupInfo()
+        {
+            if (!Program.StartupAutomation)
+                return;
+
+            Console.WriteLine(
+                "BLOOM_AUTOMATION_READY "
+                    + JsonConvert.SerializeObject(
+                        new
+                        {
+                            processId = Process.GetCurrentProcess().Id,
+                            httpPort = portForHttp,
+                            cdpPort = RemoteDebuggingPort,
+                        }
+                    )
+            );
         }
 
         private static int MinWorkerThreads => Math.Max(Environment.ProcessorCount, 2);
