@@ -163,6 +163,8 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
     const [pageSettings, setPageSettings] = React.useState<
         IPageSettings | undefined
     >(undefined);
+    const [currentPageIsXMatter, setCurrentPageIsXMatter] =
+        React.useState(false);
 
     const [settingsToReturnLater, setSettingsToReturnLater] = React.useState<
         ConfigrValues | undefined
@@ -232,9 +234,14 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
     // so Cancel can restore the page accurately; this is safe here because the dialog is only
     // opened for an already-loaded editable page and getCurrentPageElement() should exist then.
     React.useEffect(() => {
+        const currentPageElement = getCurrentPageElement();
         setPageSettings(getCurrentPageSettings());
         initialPageAttributeSnapshot.current =
-            ElementAttributeSnapshot.fromElement(getCurrentPageElement());
+            ElementAttributeSnapshot.fromElement(currentPageElement);
+        setCurrentPageIsXMatter(
+            currentPageElement.classList.contains("bloom-frontMatter") ||
+                currentPageElement.classList.contains("bloom-backMatter"),
+        );
     }, []);
 
     // If the dialog unmounts while a nested color picker is open, clear the shared visibility flag
@@ -339,6 +346,34 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
         onColorPickerVisibilityChanged: setDialogVisibleWhileColorPickerOpen,
     });
 
+    const initiallySelectedConfigrPageKey = currentPageIsXMatter
+        ? undefined
+        : props.initiallySelectedPageKey;
+
+    const configrAreas = [
+        <ConfigrArea
+            key={bookSettingsArea.pageKey}
+            label={bookSettingsArea.label}
+            pageKey={bookSettingsArea.pageKey}
+            content={bookSettingsArea.content}
+        >
+            {bookSettingsArea.pages}
+        </ConfigrArea>,
+    ];
+
+    if (!currentPageIsXMatter) {
+        configrAreas.push(
+            <ConfigrArea
+                key={pageSettingsArea.pageKey}
+                label={pageSettingsArea.label}
+                pageKey={pageSettingsArea.pageKey}
+                content={pageSettingsArea.content}
+            >
+                {pageSettingsArea.pages}
+            </ConfigrArea>,
+        );
+    }
+
     return (
         <BloomDialog
             css={css`
@@ -416,23 +451,10 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
                             applyPageSettings(parsedPageSettings);
                         }}
                         initiallySelectedTopLevelPageKey={
-                            props.initiallySelectedPageKey
+                            initiallySelectedConfigrPageKey
                         }
                     >
-                        <ConfigrArea
-                            label={bookSettingsArea.label}
-                            pageKey={bookSettingsArea.pageKey}
-                            content={bookSettingsArea.content}
-                        >
-                            {bookSettingsArea.pages}
-                        </ConfigrArea>
-                        <ConfigrArea
-                            label={pageSettingsArea.label}
-                            pageKey={pageSettingsArea.pageKey}
-                            content={pageSettingsArea.content}
-                        >
-                            {pageSettingsArea.pages}
-                        </ConfigrArea>
+                        {configrAreas}
                     </ConfigrPane>
                 )}
             </DialogMiddle>
