@@ -291,20 +291,22 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
     }, [closeDialogAndClearOpenFlag]);
 
     function saveSettingsAndCloseDialog() {
-        const latestSettings =
-            latestSettingsRef.current ?? settingsToReturnLater;
-        if (latestSettings) {
-            applyPageSettings(
-                parsePageSettingsFromConfigrValue(latestSettings),
-            );
+        try {
+            const latestSettings =
+                latestSettingsRef.current ?? settingsToReturnLater;
+            if (latestSettings) {
+                applyPageSettings(
+                    parsePageSettingsFromConfigrValue(latestSettings),
+                );
 
-            const settingsToPost =
-                removePageSettingsFromConfigrSettings(latestSettings);
-            // If nothing changed, we don't get any...and don't need to make this call.
-            postJson("book/settings", settingsToPost);
+                const settingsToPost =
+                    removePageSettingsFromConfigrSettings(latestSettings);
+                // If nothing changed, we don't get any...and don't need to make this call.
+                postJson("book/settings", settingsToPost);
+            }
+        } finally {
+            closeDialogAndClearOpenFlag();
         }
-
-        closeDialogAndClearOpenFlag();
         // todo: how do we make the pageThumbnailList reload? It's in a different browser, so
         // we can't use a global. It listens to websocket, but we currently can only listen,
         // we cannot send.
