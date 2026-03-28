@@ -794,7 +794,123 @@ namespace Bloom
                 remainingArgs.Add(args[i]);
             }
 
+            if (string.IsNullOrWhiteSpace(StartupLabel))
+                StartupLabel = GetDefaultStartupLabel();
+
             return remainingArgs.ToArray();
+        }
+
+        internal static string GetDefaultStartupLabel()
+        {
+            var repoRoot = TryFindGitRepoRoot(AppContext.BaseDirectory);
+            if (string.IsNullOrWhiteSpace(repoRoot))
+                return null;
+
+            var repoLabel = new DirectoryInfo(repoRoot).Name;
+            var branchName = TryGetGitOutput(repoRoot, "branch", "--show-current");
+            if (string.IsNullOrWhiteSpace(branchName))
+                return FormatStartupLabel(repoLabel, null, false);
+
+            return FormatStartupLabel(repoLabel, branchName, IsGitWorktree(repoRoot));
+        }
+
+        internal static string FormatStartupLabel(
+            string repoLabel,
+            string branchName,
+            bool isGitWorktree
+        )
+        {
+            if (string.IsNullOrWhiteSpace(repoLabel))
+                return null;
+
+            if (string.IsNullOrWhiteSpace(branchName))
+                return $"/{repoLabel}/";
+
+            if (!isGitWorktree)
+                return $"/{branchName}/";
+
+            return string.Equals(repoLabel, branchName, StringComparison.Ordinal)
+                ? $"/{repoLabel}/"
+                : $"/{repoLabel} ({branchName})/";
+        }
+
+        private static string TryFindGitRepoRoot(string startDirectory)
+        {
+            if (string.IsNullOrWhiteSpace(startDirectory))
+                return null;
+
+            for (
+                var current = new DirectoryInfo(Path.GetFullPath(startDirectory));
+                current != null;
+                current = current.Parent
+            )
+            {
+                var gitPath = Path.Combine(current.FullName, ".git");
+                if (Directory.Exists(gitPath) || File.Exists(gitPath))
+                    return current.FullName;
+            }
+
+            return null;
+        }
+
+        private static bool IsGitWorktree(string repoRoot)
+        {
+            var gitDir = TryGetGitOutput(repoRoot, "rev-parse", "--git-dir");
+            var commonDir = TryGetGitOutput(repoRoot, "rev-parse", "--git-common-dir");
+
+            if (string.IsNullOrWhiteSpace(gitDir) || string.IsNullOrWhiteSpace(commonDir))
+                return false;
+
+            return !string.Equals(
+                NormalizeGitPath(repoRoot, gitDir),
+                NormalizeGitPath(repoRoot, commonDir),
+                StringComparison.OrdinalIgnoreCase
+            );
+        }
+
+        private static string NormalizeGitPath(string repoRoot, string gitPath)
+        {
+            return Path.GetFullPath(
+                Path.IsPathRooted(gitPath) ? gitPath : Path.Combine(repoRoot, gitPath)
+            );
+        }
+
+        private static string TryGetGitOutput(string repoRoot, params string[] arguments)
+        {
+            try
+            {
+                var startInfo = new ProcessStartInfo("git")
+                {
+                    WorkingDirectory = repoRoot,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                    Arguments = string.Join(
+                        " ",
+                        arguments.Select(argument => QuoteProcessArgument(argument))
+                    ),
+                };
+
+                using (var process = Process.Start(startInfo))
+                {
+                    var output = process.StandardOutput.ReadToEnd().Trim();
+                    process.StandardError.ReadToEnd();
+                    process.WaitForExit();
+                    return process.ExitCode == 0 ? output : null;
+                }
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static string QuoteProcessArgument(string argument)
+        {
+            return argument.IndexOfAny(new[] { ' ', '\t', '"' }) >= 0
+                ? $"\"{argument.Replace("\\", "\\\\").Replace("\"", "\\\"")}\""
+                : argument;
         }
 
         private static bool TryHandleStartupFlagArgument(

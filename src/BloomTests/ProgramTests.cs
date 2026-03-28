@@ -107,5 +107,22 @@ namespace BloomTests
             Assert.That(Program.StartupLabel, Is.Null);
             Assert.That(remainingArgs, Is.Empty);
         }
+
+        [TestCase("BloomDesktop", null, false, "/BloomDesktop/")]
+        [TestCase("BloomDesktop", "testbranch", false, "/testbranch/")]
+        [TestCase("BL-16014-MultipleDevExes", "BL-16014-MultipleDevExes", true, "/BL-16014-MultipleDevExes/")]
+        [TestCase("BL-16014-MultipleDevExes", "testbranch", true, "/BL-16014-MultipleDevExes (testbranch)/")]
+        public void FormatStartupLabel_UsesRepoAndBranchAsExpected(
+            string repoLabel,
+            string branchName,
+            bool isGitWorktree,
+            string expectedLabel
+        )
+        {
+            Assert.That(
+                Program.FormatStartupLabel(repoLabel, branchName, isGitWorktree),
+                Is.EqualTo(expectedLabel)
+            );
+        }
     }
 }

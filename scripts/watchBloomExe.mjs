@@ -74,7 +74,6 @@ const projectPath = path.join(
     "BloomExe",
     "BloomExe.csproj",
 );
-const worktreeLabel = "/" + path.basename(path.resolve(options.repoRoot)) + "/";
 
 if (!existsSync(projectPath)) {
     console.error(
@@ -90,8 +89,6 @@ const dotnetArgs = [
     projectPath,
     "--",
     "--automation",
-    "--label",
-    worktreeLabel,
 ];
 
 if (options.vitePort) {
