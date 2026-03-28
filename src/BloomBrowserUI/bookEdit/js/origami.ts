@@ -2,77 +2,53 @@ import { SetupImage } from "./bloomImages";
 import { kBloomCanvasClass } from "../toolbox/canvas/canvasElementUtils";
 import "../../lib/split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
-import { post, postThatMightNavigate } from "../../utils/bloomApi";
+import { postThatMightNavigate } from "../../utils/bloomApi";
 import { theOneCanvasElementManager } from "./CanvasElementManager";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import $ from "jquery";
 import "../../lib/jquery.i18n.custom";
-import pageSettingsButtonIconSvg from "./pageSettingsButtonIcon.svg?raw";
 import { splitPane } from "../../lib/split-pane/split-pane";
 import { kCanvasToolId } from "../toolbox/toolIds";
+import { updateAbovePageControls } from "./AbovePageControls";
 
 $(() => {
     splitPane($("div.split-pane"));
 });
 
+let isWidgetFeatureEnabledForOrigami = false;
+let isCanvasFeatureEnabledForOrigami = false;
+
 export function setupOrigami() {
     getFeatureStatusAsync("widget").then((widgetFeatureStatus) => {
         getFeatureStatusAsync("canvas").then((canvasFeatureStatus) => {
-            const isWidgetFeatureEnabled: boolean =
+            isWidgetFeatureEnabledForOrigami =
                 widgetFeatureStatus?.enabled || false;
-            const isCanvasFeatureEnabled: boolean =
+            isCanvasFeatureEnabledForOrigami =
                 canvasFeatureStatus?.enabled || false;
             const customPages = document.getElementsByClassName("customPage");
             const bloomPage = document.getElementsByClassName(
                 "bloom-page",
             )[0] as HTMLElement | undefined;
-            const pageWidth = bloomPage?.clientWidth;
-            if (pageWidth !== undefined) {
-                const showOrigamiControls = customPages.length > 0;
-                const pageControlContainer =
-                    getAbovePageControlContainer(showOrigamiControls);
-
-                if (showOrigamiControls) {
-                    pageControlContainer
-                        .append(
-                            createTypeSelectors(
-                                isWidgetFeatureEnabled,
-                                isCanvasFeatureEnabled,
-                            ),
-                        )
-                        .append(createTextBoxIdentifier());
-                }
-
-                // The order of this is not important in most ways, since it is positioned absolutely.
-                // However, we position the page label, also absolutely, in the same screen area, and
-                // we want it on top of origami control, so that in template pages the user can edit it.
-                // The page label is part of the page, so we want the page to come after the origami control.
-                // (Could also do this with z-order, but I prefer to do what I can by ordering elements,
-                // and save z-order for when it is really needed.)
-                $("#page-scaling-container").prepend(pageControlContainer);
-                // The container width is set to 100% in the CSS, but we need to
-                // limit it to no more than the actual width of the page.
-                const toggleContainer = $(".above-page-control-container").get(
-                    0,
-                );
-                if (toggleContainer instanceof HTMLElement) {
-                    toggleContainer.style.maxWidth = pageWidth + "px";
-                }
+            if (bloomPage) {
+                const showChangeLayoutModeControls = customPages.length > 0;
+                updateAbovePageControls({
+                    isGamePage:
+                        bloomPage?.getAttribute("data-tool-id") === "game",
+                    showChangeLayoutModeToggle: showChangeLayoutModeControls,
+                    isChangeLayoutMode: $(".marginBox").hasClass(
+                        "origami-layout-mode",
+                    ),
+                    onChangeLayoutModeToggle: handleChangeLayoutModeToggle,
+                });
             }
             // I'm not clear why the rest of this needs to wait until we have
             // the two results, but none of the controls shows up if we leave it all
             // outside the bloomApi functions.
-            $(".origami-toggle .onoffswitch").change(layoutToggleClickHandler);
-            $(".page-settings-button").click(pageSettingsButtonClickHandler);
-
             if ($(".customPage .marginBox.origami-layout-mode").length) {
                 setupLayoutMode();
-                $("#myonoffswitch").prop("checked", true);
             }
 
-            $(".customPage, .above-page-control-container")
-                .find("*[data-i18n]")
-                .localize();
+            $(".customPage").find("*[data-i18n]").localize();
         });
     });
 }
@@ -80,11 +56,6 @@ export function setupOrigami() {
 export function cleanupOrigami() {
     // Otherwise, we get a new one each time the page is loaded
     $(".split-pane-resize-shim").remove();
-}
-function isEmpty(el) {
-    const temp = $.trim(el[0].textContent);
-    //alert("-" + temp + "- equals empty string: " + (temp == "").toString());
-    return temp === "";
 }
 function setupLayoutMode() {
     theOneCanvasElementManager.suspendComicEditing("forTool");
@@ -148,7 +119,7 @@ function doesSplitPaneComponentNeedTextBoxIdentifier(spci: JQuery) {
     return !spci.find(`${bloomContainerClasses} .selector-links`).length;
 }
 
-function layoutToggleClickHandler() {
+function changeLayoutModeToggleClickHandler() {
     const marginBox = $(".marginBox");
     if (!marginBox.hasClass("origami-layout-mode")) {
         marginBox.addClass("origami-layout-mode");
@@ -169,7 +140,7 @@ function layoutToggleClickHandler() {
         marginBox.removeClass("origami-layout-mode");
         marginBox.find(".textBox-identifier").remove();
         origamiUndoStack.length = origamiUndoIndex = 0;
-        // delay further processing to avoid messing up origami toggle transition
+        // delay further processing to avoid messing up the Change Layout mode toggle transition
         // 400ms CSS toggle transition + 50ms extra to give it time to finish up.
         const toggleTransitionLength = 450;
         setTimeout(() => {
@@ -177,6 +148,13 @@ function layoutToggleClickHandler() {
             postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
         }, toggleTransitionLength);
     }
+}
+
+function handleChangeLayoutModeToggle() {
+    changeLayoutModeToggleClickHandler();
+    updateAbovePageControls({
+        isChangeLayoutMode: $(".marginBox").hasClass("origami-layout-mode"),
+    });
 }
 
 function GetTextBoxPropertiesDialog() {
@@ -230,7 +208,11 @@ function adjustModifiedChild(resizedElt: HTMLElement | undefined) {
     }
 }
 
-const origamiUndoStack: any[] = [];
+interface IOrigamiUndoItem {
+    original: JQuery<HTMLElement>;
+}
+
+const origamiUndoStack: IOrigamiUndoItem[] = [];
 let origamiUndoIndex = 0; // of item that should be redone next, if any
 
 // Add a point to which the user can return using 'undo'. Call this before making any change that
@@ -351,68 +333,6 @@ function getSplitPaneComponentInner() {
     return spci;
 }
 
-function getAbovePageControlContainer(showOrigamiControls: boolean): JQuery {
-    // For dragActivities we reserve this wrapper for the game controls.
-    // Note: We also have to disable the Choose Different layout option in
-    // the right click menu, in PageListView.cs
-    if (
-        document
-            .getElementsByClassName("bloom-page")[0]
-            ?.getAttribute("data-tool-id") === "game"
-    ) {
-        return $("<div class='above-page-control-container bloom-ui'></div>");
-    }
-
-    if (!showOrigamiControls) {
-        return $(
-            "<div class='above-page-control-container bloom-ui'></div>",
-        ).append(createPageSettingsButton());
-    }
-
-    return $("<div class='above-page-control-container bloom-ui'></div>")
-        .append(createPageSettingsButton())
-        .append(
-            $(
-                `\
-<div class='origami-toggle bloom-ui'> \
-    <div data-i18n='EditTab.CustomPage.ChangeLayout'>Change Layout</div> \
-    <div class='onoffswitch'> \
-        <input type='checkbox' name='onoffswitch' class='onoffswitch-checkbox' id='myonoffswitch'> \
-        <label class='onoffswitch-label' for='myonoffswitch'> \
-            <span class='onoffswitch-inner'></span> \
-            <span class='onoffswitch-switch'></span> \
-        </label> \
-    </div> \
-</div>`,
-            ),
-        );
-}
-
-function createPageSettingsButton(): JQuery {
-    return $(
-        "<button class='page-settings-button' title='Open Page Settings...' data-i18n='[title]PageSettings.OpenTooltip'></button>",
-    )
-        .append(createPageSettingsButtonIcon())
-        .append(
-            $(
-                "<span class='page-settings-button-label' data-i18n='PageSettings.Title'>Page Settings</span>",
-            ),
-        );
-}
-
-function createPageSettingsButtonIcon(): SVGSVGElement {
-    const iconDocument = new DOMParser().parseFromString(
-        pageSettingsButtonIconSvg,
-        "image/svg+xml",
-    );
-    return iconDocument.documentElement as unknown as SVGSVGElement;
-}
-
-function pageSettingsButtonClickHandler(e: Event) {
-    e.preventDefault();
-    post("editView/showPageSettingsDialog");
-}
-
 function getButtons() {
     const buttons = $(
         "<div class='origami-controls bloom-ui origami-ui'></div>",
@@ -516,10 +436,15 @@ function createTextBoxIdentifier() {
     ).append(textBoxId);
 }
 function getTypeSelectors() {
-    return $(".container-selector-links > .selector-links").clone(true);
+    return createTypeSelectors(
+        isWidgetFeatureEnabledForOrigami,
+        isCanvasFeatureEnabledForOrigami,
+    )
+        .find(".selector-links")
+        .first();
 }
 function getTextBoxIdentifier() {
-    return $(".container-textBox-id > .textBox-identifier").clone();
+    return createTextBoxIdentifier().find(".textBox-identifier").first();
 }
 function makeTextFieldClickHandler(e) {
     e.preventDefault();

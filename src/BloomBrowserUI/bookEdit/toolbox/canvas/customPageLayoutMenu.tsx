@@ -1,7 +1,7 @@
 import * as React from "react";
-import type { SelectChangeEvent } from "@mui/material/Select";
 import { css, ThemeProvider } from "@emotion/react";
-import { Select } from "@mui/material";
+import { Button, Menu } from "@mui/material";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { toolboxMenuPopupTheme } from "../../../bloomMaterialUITheme";
 import { kBloomPurple } from "../../../utils/colorUtils";
 import { useL10n } from "../../../react_components/l10nHooks";
@@ -15,6 +15,7 @@ export const CustomPageLayoutMenu: React.FunctionComponent<{
         keepCustomLayoutDataWhenSwitchingToStandard: boolean,
     ) => void;
 }> = (props) => {
+    const [menuAnchor, setMenuAnchor] = React.useState<HTMLElement>();
     const selectedLayoutLabel = useL10n(
         props.isCustom ? "Custom Layout" : "Standard Layout",
         props.isCustom
@@ -22,20 +23,21 @@ export const CustomPageLayoutMenu: React.FunctionComponent<{
             : "EditTab.CustomCover.StandardLayout",
     );
 
-    const handleChange = (event: SelectChangeEvent<string>) => {
-        const selection = event.target.value as "standard" | "custom";
-        // TypeScript thinks the argument should be a SelectChangeEvent in order to pass
-        // the function as the onChange handler for a Select, but in fact it always
-        // comes in as a PointerEvent which has the keyboard modifier info we need.
-        const nativeEvent = (event as unknown as { nativeEvent?: PointerEvent })
-            .nativeEvent;
-        const pointerEvent = nativeEvent ?? (event as unknown as PointerEvent);
+    const handleOpenMenu = (event: React.MouseEvent<HTMLElement>) => {
+        setMenuAnchor(event.currentTarget);
+    };
+
+    const handleCloseMenu = () => {
+        setMenuAnchor(undefined);
+    };
+
+    const handleSelect = (
+        selection: "standard" | "custom",
+        event: React.MouseEvent<HTMLElement>,
+    ) => {
         const keepCustomLayoutDataWhenSwitchingToStandard =
-            selection === "standard" &&
-            "shiftKey" in pointerEvent &&
-            "ctrlKey" in pointerEvent &&
-            pointerEvent.shiftKey &&
-            pointerEvent.ctrlKey;
+            selection === "standard" && event.shiftKey && event.ctrlKey;
+        handleCloseMenu();
         props.setCustom(selection, keepCustomLayoutDataWhenSwitchingToStandard);
     };
 
@@ -44,53 +46,65 @@ export const CustomPageLayoutMenu: React.FunctionComponent<{
             <div
                 css={css`
                     display: flex;
-                    margin-left: auto;
-                    color: ${kBloomPurple};
+                    align-items: center;
                 `}
             >
-                {selectedLayoutLabel}
-                <Select
+                <Button
+                    className="above-page-control-typography"
                     css={css`
                         color: ${kBloomPurple};
-                        margin-left: 4px;
-                        min-width: 24px;
-                        .MuiSelect-icon {
+                        min-width: 0;
+                        padding: 0;
+                        text-transform: none;
+                        font-family: inherit;
+                        font-size: inherit;
+                        line-height: inherit;
+                        font-weight: inherit;
+
+                        &:hover {
+                            background-color: transparent;
+                        }
+
+                        .MuiButton-endIcon {
+                            margin-left: 2px;
+                            margin-right: 0;
                             color: ${kBloomPurple};
                         }
-                        .MuiSelect-select {
-                            padding: 2px 0 2px 4px;
-                        }
-                        &.Mui-focused .MuiOutlinedInput-notchedOutline {
-                            border: none;
-                        }
-                        .MuiOutlinedInput-notchedOutline {
-                            border: none;
-                        }
-                        &:hover .MuiOutlinedInput-notchedOutline {
-                            border: none;
-                        }
                     `}
-                    size="small"
-                    value={props.isCustom ? "custom" : "standard"}
-                    onChange={handleChange}
-                    displayEmpty
-                    renderValue={() => ""}
+                    disableRipple
+                    endIcon={<ArrowDropDownIcon />}
+                    onClick={handleOpenMenu}
+                >
+                    {selectedLayoutLabel}
+                </Button>
+                <Menu
+                    anchorEl={menuAnchor}
+                    open={!!menuAnchor}
+                    onClose={handleCloseMenu}
+                    anchorOrigin={{
+                        vertical: "bottom",
+                        horizontal: "right",
+                    }}
+                    transformOrigin={{
+                        vertical: "top",
+                        horizontal: "right",
+                    }}
                 >
                     <LocalizableSelectableMenuItem
                         english="Standard"
                         l10nId="EditTab.CustomCover.Standard"
                         selected={!props.isCustom}
-                        value="standard"
+                        onClick={(event) => handleSelect("standard", event)}
                     />
                     <LocalizableSelectableMenuItem
                         english="Custom"
                         l10nId="EditTab.CustomCover.Custom"
                         selected={props.isCustom}
-                        value="custom"
+                        onClick={(event) => handleSelect("custom", event)}
                         disabled={props.disableCustomPage}
                         featureName="CustomXMatterPage"
                     />
-                </Select>
+                </Menu>
             </div>
         </ThemeProvider>
     );

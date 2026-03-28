@@ -560,7 +560,7 @@ body.bloom-fullBleed {
     // to the code that tries to keep the background image and canvas elements aligned.
     .imageButton,
     .split-pane-divider,
-    .origami-toggle {
+    .change-layout-mode-toggle {
         display: none !important;
     }
 
@@ -1326,10 +1326,8 @@ body.hideAllCKEditors .cke_chrome {
 }
 
 // ----- Bloom Games ----
-// Tweak the position of the Start/Correct/Wrong/Play control
+// Width is handled here; top-strip alignment is controlled alongside the other above-page controls.
 #drag-activity-tab-control {
-    position: relative;
-    top: -8px;
     width: 100%;
 }
 

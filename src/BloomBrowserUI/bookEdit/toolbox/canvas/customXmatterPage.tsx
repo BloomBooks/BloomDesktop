@@ -1,8 +1,6 @@
 // This collectionSettings reference defines the function GetSettings(): ICollectionSettings
 // The actual function is injected by C#.
 /// <reference path="../../js/collectionSettings.d.ts"/>
-import * as ReactDOM from "react-dom";
-import { CustomPageLayoutMenu } from "./customPageLayoutMenu";
 import {
     CanvasElementManager,
     kBackgroundImageClass,
@@ -17,6 +15,7 @@ import {
     recomputeSourceBubblesForPage,
     wrapWithRequestPageContentDelay,
 } from "../../js/bloomEditing";
+import { updateAbovePageControls } from "../../js/AbovePageControls";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import { getToolboxBundleExports } from "../../js/workspaceFrames";
 import { ILanguageNameValues } from "../../bookAndPageSettings/FieldVisibilityGroup";
@@ -398,27 +397,7 @@ export function setupPageLayoutMenu(): void {
         return;
     }
 
-    // Create the container if needed (which it usually will be, because the cover
-    // is not a customPage and doesn't get one automatically). This duplicates
-    // (but without jquery) some code in origami.ts
-    let container: HTMLElement | undefined = document.getElementsByClassName(
-        "above-page-control-container",
-    )[0] as HTMLElement;
-    if (!container) {
-        container = document.createElement("div") as HTMLElement;
-        container.classList.add("above-page-control-container");
-        container.classList.add("bloom-ui");
-        container.style.maxWidth = page.clientWidth + "px";
-        // see commment in origami.ts about why we put it first.
-        // the code there puts it at the start of #page-scaling-container, but that
-        // is always the parent of .bloom-page, so this is equivalent.
-        page.parentElement?.insertBefore(
-            container,
-            page.parentElement.firstChild,
-        );
-    }
-
-    renderPageLayoutMenu(page as HTMLElement, container as HTMLElement);
+    renderPageLayoutMenu(page as HTMLElement);
 
     if (page.classList.contains("bloom-customLayout")) {
         ensureDerivedFieldsFitOnCustomPage(page as HTMLElement);
@@ -436,54 +415,54 @@ function toggleCustomPageLayout(
     });
 }
 
-function renderPageLayoutMenu(page: HTMLElement, container: HTMLElement): void {
-    // Render a CustomPageLayoutMenu React component into this container
+function renderPageLayoutMenu(page: HTMLElement): void {
     const isCustomPage = page.classList.contains("bloom-customLayout");
     const usingLegacyTheme = isLegacyThemeCssLoaded();
-    ReactDOM.render(
-        <CustomPageLayoutMenu
-            isCustom={isCustomPage}
-            disableCustomPage={usingLegacyTheme}
-            setCustom={async (
-                selection,
+    updateAbovePageControls({
+        showPageLayoutMenu: true,
+        isCustomPageLayout: isCustomPage,
+        disableCustomPage: usingLegacyTheme,
+        onSetCustom: async (
+            selection,
+            keepCustomLayoutDataWhenSwitchingToStandard,
+        ) => {
+            if (usingLegacyTheme && selection !== "standard") {
+                return;
+            }
+            const response = await toggleCustomPageLayout(
+                page.getAttribute("id")!,
                 keepCustomLayoutDataWhenSwitchingToStandard,
-            ) => {
-                if (usingLegacyTheme && selection !== "standard") {
-                    return;
-                }
-                const response = await toggleCustomPageLayout(
-                    page.getAttribute("id")!,
-                    keepCustomLayoutDataWhenSwitchingToStandard,
+            );
+            if (
+                selection === "custom" &&
+                response &&
+                // C# returns the string "false" if we don't have any saved state for custom mode,
+                // but currently something in axios converts that to a boolean false.
+                // I'm not sure that might not change one day, so we check for both.
+                (response.data === "false" || response.data === false)
+            ) {
+                // making a custom cover for the first time
+                await wrapWithRequestPageContentDelay(
+                    () => convertXmatterPageToCustom(page),
+                    "customPageLayout-convertFirstTime",
                 );
-                if (
-                    selection === "custom" &&
-                    response &&
-                    // C# returns the string "false" if we don't have any saved state for custom mode,
-                    // but currently something in axios converts that to a boolean false.
-                    // I'm not sure that might not change one day, so we check for both.
-                    (response.data === "false" || response.data === false)
-                ) {
-                    // making a custom cover for the first time
-                    await wrapWithRequestPageContentDelay(
-                        () => convertXmatterPageToCustom(page),
-                        "customPageLayout-convertFirstTime",
-                    );
-                    // Set data-tool-id on the browser DOM so it persists when jumpToPage saves.
-                    // (The C# toggleCustomPageLayout set it on the C# DOM, but returned early
-                    // without SaveThen, so that change would be overwritten by the browser save.)
-                    page.setAttribute("data-tool-id", "canvas");
-                    // Persist the newly created custom layout state so a later toggle back
-                    // to standard has matching server-side state to work from.
-                    await postString(
-                        "editView/jumpToPage",
-                        page.getAttribute("id")!,
-                    );
-                    renderPageLayoutMenu(page, container);
-                } else if (selection === "custom" && response) {
-                    showCanvasTool(); // otherwise called from convertXmatterPageToCustom()/finishReactivatingPage()
-                }
-            }}
-        />,
-        container,
-    );
+                // Set data-tool-id on the browser DOM so it persists when jumpToPage saves.
+                // (The C# toggleCustomPageLayout set it on the C# DOM, but returned early
+                // without SaveThen, so that change would be overwritten by the browser save.)
+                page.setAttribute("data-tool-id", "canvas");
+                // Persist the newly created custom layout state so a later toggle back
+                // to standard has matching server-side state to work from.
+                await postString(
+                    "editView/jumpToPage",
+                    page.getAttribute("id")!,
+                );
+                renderPageLayoutMenu(page);
+            } else if (selection === "custom" && response) {
+                showCanvasTool(); // otherwise called from convertXmatterPageToCustom()/finishReactivatingPage()
+                renderPageLayoutMenu(page);
+            } else if (response) {
+                renderPageLayoutMenu(page);
+            }
+        },
+    });
 }

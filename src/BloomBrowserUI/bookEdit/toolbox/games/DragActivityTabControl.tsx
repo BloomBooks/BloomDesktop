@@ -49,16 +49,15 @@ export const DragActivityTabControl: React.FunctionComponent<{
     return (
         <ThemeProvider theme={toolboxTheme}>
             <div
+                className="above-page-control-typography"
                 css={css`
+                    width: 100%;
                     display: flex;
-                    align-items: baseline;
+                    align-items: center;
                     // The mockup seems to have this a little dimmer than white, but I haven't found an existing constant
                     // that seems appropriate. This will do for a first approximation.
                     color: lightgray;
-                    font-family: ${toolboxTheme.typography.fontFamily};
-                    font-size: ${toolboxTheme.typography.fontSize}px;
-                    margin-top: 2px;
-                    padding: 8px 0px;
+                    height: 24px;
                 `}
             >
                 {promptButtonContent && (
@@ -90,6 +89,7 @@ export const DragActivityTabControl: React.FunctionComponent<{
                     css={css`
                         margin-right: 20px;
                     `}
+                    className="above-page-control-typography"
                 >
                     {setupMode}
                 </div>
@@ -106,8 +106,12 @@ export const DragActivityTabControl: React.FunctionComponent<{
 const buttonCss = css`
     color: white;
     width: auto; // override MUI's 100%
+    height: 24px;
     min-width: 32px; // override MUI's 64px
+    font-family: Roboto, NotoSans, sans-serif;
+    font-size: 9pt;
     font-weight: 400;
+    line-height: 16px;
     padding: 0px 6px;
     & .MuiButton-startIcon {
         top: -1px;
@@ -154,6 +158,8 @@ export const Tabs: React.FunctionComponent<{
             css={css`
                 display: flex;
                 background-color: ${kDarkestBackground};
+                align-items: center;
+                height: 24px;
             `}
             className={props.className}
         >
