@@ -196,6 +196,16 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
         return settingsWithoutPage as IBookSettings;
     };
 
+    const settings: IBookSettings | undefined = React.useMemo(() => {
+        if (settingsString === "{}") {
+            return undefined;
+        }
+        if (typeof settingsString === "string") {
+            return JSON.parse(settingsString) as IBookSettings;
+        }
+        return settingsString as unknown as IBookSettings;
+    }, [settingsString]);
+
     const configrInitialValues: ConfigrValues | undefined =
         React.useMemo(() => {
             if (!settings || !pageSettings) {
@@ -214,16 +224,6 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
     const initialPageAttributeSnapshot = React.useRef<
         ElementAttributeSnapshot | undefined
     >(undefined);
-
-    const settings: IBookSettings | undefined = React.useMemo(() => {
-        if (settingsString === "{}") {
-            return undefined;
-        }
-        if (typeof settingsString === "string") {
-            return JSON.parse(settingsString) as IBookSettings;
-        }
-        return settingsString as unknown as IBookSettings;
-    }, [settingsString]);
 
     // Capture the current page settings and original page attributes once when the dialog mounts
     // so Cancel can restore the page accurately; this is safe here because the dialog is only
