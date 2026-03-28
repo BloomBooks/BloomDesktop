@@ -103,7 +103,6 @@ namespace Bloom
 
         public static SynchronizationContext MainContext { get; private set; }
 
-        public static bool RunningSecondInstance { get; private set; }
         internal static int? StartupVitePort { get; private set; }
         internal static string StartupLabel { get; private set; }
         internal static bool StartupAutomation { get; private set; }
@@ -123,7 +122,7 @@ namespace Bloom
         static int Main(string[] args1)
         {
             // AttachConsole(-1);	// Enable this to allow Console.Out.WriteLine to be viewable (must run Bloom from terminal, AFAIK)
-            _gotUniqueToken = false;
+            _ownsSingleInstanceToken = false;
             _uiThreadId = Thread.CurrentThread.ManagedThreadId;
             Logger.Init();
             // Configure TempFile to create temp files with a "bloom" prefix so we can
@@ -468,7 +467,7 @@ namespace Bloom
                                             return 1;
                                         }
 
-                                        _gotUniqueToken = true;
+                                        _ownsSingleInstanceToken = true;
 
                                         if (
                                             projectContext.TeamCollectionManager.CurrentCollection
@@ -538,7 +537,7 @@ namespace Bloom
                         // and now we need to get the lock as usual before going on to load the new collection.
                         if (!UniqueToken.AcquireToken(_mutexId, "Bloom"))
                             return 1;
-                        _gotUniqueToken = true;
+                        _ownsSingleInstanceToken = true;
                     }
                     else if (IsBloomBookOrder(args))
                     {
@@ -546,19 +545,15 @@ namespace Bloom
 
                         if (UniqueToken.AcquireTokenQuietly(_mutexId))
                         {
-                            // No other instance isrunning. Start up normally (and show the book just downloaded).
-                            // See https://silbloom.myjetbrains.com/youtrack/issue/BL-3822
-                            _gotUniqueToken = true;
+                            // No other instance is running, so start normally and show the downloaded book.
+                            _ownsSingleInstanceToken = true;
                         }
-                        else if (forEdit)
-                        {
-                            RunningSecondInstance = true;
-                        }
-                        else
+                        else if (!forEdit)
                         {
                             // Another instance is running. For a normal download to "books from bloom library", this
                             // instance has served its purpose and can exit right away. If we've created a new collection
                             // for editing the book we downloaded, we will open it now even though we don't have the token.
+                            // That means this process is intentionally running without the single-instance cleanup responsibilities.
                             return 0;
                         }
                     }
@@ -567,31 +562,28 @@ namespace Bloom
                         if (StartupAutomation)
                         {
                             // Automation startup is the intentional multi-instance path.
-                            // Since this is a developer-only situation, we won't worry about the possibility of multiple instances writing on the same collection settings or whatever.
+                            // We accept shared-state conflicts here, but we still must not claim the single-instance token.
+                            // Without token ownership, this process must skip the global Bloom temp cleanup on exit.
                             Logger.WriteEvent(
                                 $"Bypassing Bloom's single-instance token because automation startup was requested. {StartupRequestedPortSummary}"
                             );
                         }
                         else if ((Control.ModifierKeys & Keys.Control) == Keys.Control)
                         {
-                            // control key is held down so allow second instance to run; note that we're deliberately in this state
+                            // Control is held down, so allow an additional instance to run without taking the token.
                             if (UniqueToken.AcquireTokenQuietly(_mutexId))
                             {
-                                _gotUniqueToken = true;
-                            }
-                            else
-                            {
-                                RunningSecondInstance = true;
+                                _ownsSingleInstanceToken = true;
                             }
                         }
                         else if (UniqueToken.AcquireToken(_mutexId, "Bloom"))
                         {
                             // No other instance is running. We own the token and should release it on quitting.
-                            _gotUniqueToken = true;
+                            _ownsSingleInstanceToken = true;
                         }
                         else
                         {
-                            // We're trying to run a second instance. This is not allowed except for a few special cases,
+                            // We're trying to run an additional instance. This is not allowed except for a few special cases,
                             // such as (temporarily) when downloading a book from BloomLibrary, or when ctrl is held down. We'll just quit now.
                             // (UniqueToken.AcquireToken will have already notified the user of this situation.)
                             return 1;
@@ -727,7 +719,7 @@ namespace Bloom
                 // - we might delete something in use by the instance that has the token
                 // - we would delete the token itself (since _mutexid and NamePrefix happen to be the same),
                 // allowing a later duplicate process to start normally.
-                if (_gotUniqueToken)
+                if (_ownsSingleInstanceToken)
                     TempFile.CleanupTempFolder();
 #endif
             }
@@ -742,7 +734,7 @@ namespace Bloom
         /// </summary>
         public static void ReleaseBloomToken()
         {
-            if (_gotUniqueToken)
+            if (_ownsSingleInstanceToken)
                 UniqueToken.ReleaseToken();
         }
 
@@ -2111,7 +2103,8 @@ namespace Bloom
 
         private static bool _errorHandlingHasBeenSetUp;
         private static IDisposable _sentry;
-        private static bool _gotUniqueToken;
+        // Only the token owner may release it and run Bloom's global temp cleanup on exit.
+        private static bool _ownsSingleInstanceToken;
 
         /// ------------------------------------------------------------------------------------
         internal static void SetUpErrorHandling()
