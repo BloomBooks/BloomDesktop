@@ -1611,40 +1611,6 @@ namespace Bloom.Api
 
         private static int MinWorkerThreads => Math.Max(Environment.ProcessorCount, 2);
 
-        private static bool AreReservedCompanionPortsAvailable(int httpPort)
-        {
-            return GetReservedCompanionPorts(httpPort).All(IsLoopbackPortAvailable);
-        }
-
-        private static IEnumerable<int> GetReservedCompanionPorts(int httpPort)
-        {
-            for (var offset = 1; offset < kNumberOfConsecutivePortsToReserve; offset++)
-            {
-                yield return httpPort + offset;
-            }
-        }
-
-        private static bool IsLoopbackPortAvailable(int port)
-        {
-            TcpListener listener = null;
-
-            try
-            {
-                listener = new TcpListener(IPAddress.Loopback, port);
-                listener.Start();
-                return true;
-            }
-            catch (SocketException error)
-            {
-                Logger.WriteMinorEvent($"Port {port} is unavailable: {error.Message}");
-                return false;
-            }
-            finally
-            {
-                listener?.Stop();
-            }
-        }
-
         /// <summary>
         /// Tries to start listening on the currently proposed server url
         /// </summary>
