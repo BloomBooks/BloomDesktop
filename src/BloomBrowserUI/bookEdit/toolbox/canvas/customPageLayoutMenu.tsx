@@ -44,6 +44,7 @@ export const CustomPageLayoutMenu: React.FunctionComponent<{
             <div
                 css={css`
                     display: flex;
+                    margin-left: auto;
                     color: ${kBloomPurple};
                 `}
             >

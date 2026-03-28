@@ -65,8 +65,8 @@ export interface IBookSettings {
 // using the same keys as appearance.json. Currently the values are all
 // booleans.
 interface IOverrideInformation {
-    branding: object;
-    xmatter: object;
+    branding: Record<string, unknown>;
+    xmatter: Record<string, unknown>;
     brandingName: string;
     xmatterName: string;
 }
@@ -130,9 +130,12 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
         overrideDescription?: string;
     } {
         // some properties will be overridden by branding and/or xmatter
-        const xmatterOverride: T | undefined =
-            overrideInformation?.xmatter?.[subPath];
-        const brandingOverride = overrideInformation?.branding?.[subPath];
+        const xmatterOverride = overrideInformation?.xmatter?.[subPath] as
+            | T
+            | undefined;
+        const brandingOverride = overrideInformation?.branding?.[subPath] as
+            | T
+            | undefined;
         const override = xmatterOverride ?? brandingOverride;
         // nb: xmatterOverride can be boolean, hence the need to spell out !==undefined
         let description =

@@ -18,6 +18,7 @@ import {
     DialogCancelButton,
     DialogOkButton,
 } from "../react_components/BloomDialog/commonDialogComponents";
+import { useL10n } from "../react_components/l10nHooks";
 import { get, postJson } from "../utils/bloomApi";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 
@@ -50,6 +51,10 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     const [settingsToReturnLater, setSettingsToReturnLater] = React.useState<
         ConfigrValues | undefined
     >(undefined);
+    const dialogTitle = useL10n(
+        "Collection Settings",
+        "CollectionSettingsDialog.Title",
+    );
 
     return (
         <BloomDialog
@@ -61,7 +66,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             draggable={false}
             maxWidth={false}
         >
-            <DialogTitle title="Collection Settings"></DialogTitle>
+            <DialogTitle title={dialogTitle}></DialogTitle>
             <DialogMiddle>
                 <div
                     css={css`
@@ -72,7 +77,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                 >
                     {settings && (
                         <ConfigrPane
-                            label={"Collection Settings"}
+                            label={dialogTitle}
                             showAppBar={false}
                             showSearch={true}
                             // showJson={true} // useful for debugging
