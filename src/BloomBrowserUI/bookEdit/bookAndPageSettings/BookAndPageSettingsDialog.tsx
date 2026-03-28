@@ -282,12 +282,15 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
     }, [closeDialog]);
 
     const cancelAndCloseDialog = React.useCallback(() => {
-        if (initialPageAttributeSnapshot.current) {
-            initialPageAttributeSnapshot.current.restoreToElement(
-                getCurrentPageElement(),
-            );
+        try {
+            if (initialPageAttributeSnapshot.current) {
+                initialPageAttributeSnapshot.current.restoreToElement(
+                    getCurrentPageElement(),
+                );
+            }
+        } finally {
+            closeDialogAndClearOpenFlag();
         }
-        closeDialogAndClearOpenFlag();
     }, [closeDialogAndClearOpenFlag]);
 
     function saveSettingsAndCloseDialog() {
