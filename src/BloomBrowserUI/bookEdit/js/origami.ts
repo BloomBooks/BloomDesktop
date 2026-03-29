@@ -25,6 +25,7 @@ export function setupOrigami() {
                 widgetFeatureStatus?.enabled || false;
             isCanvasFeatureEnabledForOrigami =
                 canvasFeatureStatus?.enabled || false;
+            replaceOrigamiTemplates();
             const customPages = document.getElementsByClassName("customPage");
             const bloomPage = document.getElementsByClassName(
                 "bloom-page",
@@ -57,6 +58,43 @@ export function cleanupOrigami() {
     // Otherwise, we get a new one each time the page is loaded
     $(".split-pane-resize-shim").remove();
 }
+
+function replaceOrigamiTemplates() {
+    $(".origami-template-container").remove();
+
+    const templateContainer = $(
+        "<div class='origami-template-container bloom-ui' style='display:none;'></div>",
+    );
+    templateContainer
+        .append(
+            createTypeSelectors(
+                isWidgetFeatureEnabledForOrigami,
+                isCanvasFeatureEnabledForOrigami,
+            ),
+        )
+        .append(createTextBoxIdentifier());
+
+    const pageScalingContainer = document.getElementById(
+        "page-scaling-container",
+    );
+    if (pageScalingContainer) {
+        $(pageScalingContainer).prepend(templateContainer);
+    } else {
+        $(".customPage").first().before(templateContainer);
+    }
+
+    templateContainer.find("*[data-i18n]").localize();
+}
+
+function getRequiredOrigamiTemplate(selector: string) {
+    const template = $(".origami-template-container").find(selector).first();
+    if (!template.length) {
+        throw new Error(`Missing origami template for ${selector}`);
+    }
+
+    return template;
+}
+
 function setupLayoutMode() {
     theOneCanvasElementManager.suspendComicEditing("forTool");
     $(".split-pane-component-inner").each(function (): boolean {
@@ -435,15 +473,14 @@ function createTextBoxIdentifier() {
     ).append(textBoxId);
 }
 function getTypeSelectors() {
-    return createTypeSelectors(
-        isWidgetFeatureEnabledForOrigami,
-        isCanvasFeatureEnabledForOrigami,
-    )
-        .find(".selector-links")
-        .first();
+    return getRequiredOrigamiTemplate(
+        ".container-selector-links > .selector-links",
+    ).clone(true);
 }
 function getTextBoxIdentifier() {
-    return createTextBoxIdentifier().find(".textBox-identifier").first();
+    return getRequiredOrigamiTemplate(
+        ".container-textBox-id > .textBox-identifier",
+    ).clone();
 }
 function makeTextFieldClickHandler(e) {
     e.preventDefault();
