@@ -127,6 +127,37 @@ const getCurrentPageBackgroundColor = (): string => {
     return computedBackground || "#FFFFFF";
 };
 
+const getEffectivePageBackgroundColor = (page: HTMLElement): string => {
+    const computedPage = getComputedStyleForPage(page);
+    const computedVariable = normalizeToHexOrEmpty(
+        computedPage.getPropertyValue("--page-background-color"),
+    );
+    if (computedVariable) return computedVariable;
+
+    const computedBackground = normalizeToHexOrEmpty(
+        computedPage.backgroundColor,
+    );
+    return computedBackground || "#FFFFFF";
+};
+
+const getEffectiveMarginBoxBackgroundColor = (page: HTMLElement): string => {
+    const computedPage = getComputedStyleForPage(page);
+    const computedMarginBoxVariable = normalizeToHexOrEmpty(
+        computedPage.getPropertyValue("--marginBox-background-color"),
+    );
+    if (computedMarginBoxVariable) return computedMarginBoxVariable;
+
+    const marginBox = page.querySelector(".marginBox") as HTMLElement | null;
+    if (marginBox) {
+        const computedMarginBoxBackground = normalizeToHexOrEmpty(
+            getComputedStyleForPage(marginBox).backgroundColor,
+        );
+        if (computedMarginBoxBackground) return computedMarginBoxBackground;
+    }
+
+    return getEffectivePageBackgroundColor(page);
+};
+
 const setOrRemoveCustomProperty = (
     style: CSSStyleDeclaration,
     propertyName: string,
@@ -155,12 +186,19 @@ const setOrRemoveCustomPropertyAllowTransparent = (
 
 const setCurrentPageBackgroundColor = (color: string): void => {
     const page = getCurrentPageElement();
-    setOrRemoveCustomProperty(page.style, "--page-background-color", color);
+    const effectivePageBackgroundColor = getEffectivePageBackgroundColor(page);
+    const effectiveMarginBoxBackgroundColor =
+        getEffectiveMarginBoxBackgroundColor(page);
+
     setOrRemoveCustomProperty(
         page.style,
         "--marginBox-background-color",
         color,
     );
+
+    if (effectivePageBackgroundColor === effectiveMarginBoxBackgroundColor) {
+        setOrRemoveCustomProperty(page.style, "--page-background-color", color);
+    }
 };
 
 const getPageNumberColor = (): string => {

@@ -1,6 +1,6 @@
 ---
 name: bloom-automation
-description: Use when an agent needs to determine if Bloom is already running, detect whether the running Bloom came from a different worktree, kill Bloom or dotnet-watch parents, start Bloom from the current worktree, attach to the embedded WebView2 over CDP, inspect DOM/console/network, or run Playwright tests against the actual exe instead of CURRENTPAGE.
+description: Use when an agent needs to determine if Bloom is already running, detect whether the running Bloom came from a different worktree, kill Bloom or dotnet-watch parents, start Bloom from the current worktree, attach to the embedded WebView2 over CDP, inspect DOM/console/network, use dev-browser to inspect or run e2e tests against the actual exe instead of CURRENTPAGE.
 argument-hint: "repo root or worktree, task such as status, restart, attach, run exe-backed tests"
 user-invocable: true
 ---
@@ -243,7 +243,6 @@ Report:
 - what browser-native evidence you collected: DOM state, console output, network request, tab state, or test results
 
 ## Example Prompts
-- `Use bloom-automation to determine whether Bloom is already running from this worktree and attach Playwright to the embedded browser.`
-- `Use bloom-automation to switch the already-running Bloom to the Edit tab.`
-- `Use bloom-automation to kill the wrong-worktree Bloom and start the current checkout with dotnet watch.`
-- `Use bloom-automation to run the exe-backed Playwright top bar smoke tests against the actual Bloom.exe window.`
+- `troubleshoot why the page is refreshing when we open page settings`
+
+## Debugging tips: use node or bash scripts. Avoid powershell. Use the "dev-browser" cli instead of playwright for interactive debugging/driving Bloom. Use "dev-browser --help" to see the available commands and options. If the user hasn't installe dev-browser, as them for permission to install it (https://github.com/SawyerHood/dev-browser).
