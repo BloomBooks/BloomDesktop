@@ -33,6 +33,7 @@ import {
     parsePageSettingsFromConfigrValue,
     usePageSettingsAreaDefinition,
 } from "./PageSettingsConfigrPages";
+import { isLegacyThemeName } from "./appearanceThemeUtils";
 import { useBookSettingsAreaDefinition } from "./BookSettingsConfigrPages";
 
 let isOpenAlready = false;
@@ -267,7 +268,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
         (settingsToReturnLater?.["appearance"] as
             | IAppearanceSettings
             | undefined) ?? settings?.appearance;
-    const appearanceDisabled = liveAppearance?.cssThemeName === "legacy-5-6";
+    const appearanceDisabled = isLegacyThemeName(liveAppearance?.cssThemeName);
 
     // We keep theme as a render-time value from the latest working settings so the dialog reflects
     // Configr edits immediately without a second state synchronization layer.

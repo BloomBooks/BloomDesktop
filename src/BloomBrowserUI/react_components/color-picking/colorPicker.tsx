@@ -23,9 +23,9 @@ interface IColorPickerProps {
     swatchColors: IColorInfo[];
     includeDefault?: boolean;
     onDefaultClick?: () => void;
-    defaultButtonLabel?: string;
     onEyedropperActiveChange?: (active: boolean) => void;
     eyedropperBackdropSelector?: string;
+    defaultButtonLabel?: string;
     //defaultColor?: IColorInfo;  will eventually need this
 }
 

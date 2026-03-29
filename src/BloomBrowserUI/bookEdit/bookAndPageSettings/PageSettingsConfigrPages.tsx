@@ -157,7 +157,6 @@ const getEffectiveMarginBoxBackgroundColor = (page: HTMLElement): string => {
 
     return getEffectivePageBackgroundColor(page);
 };
-
 const setOrRemoveCustomProperty = (
     style: CSSStyleDeclaration,
     propertyName: string,
@@ -189,7 +188,6 @@ const setCurrentPageBackgroundColor = (color: string): void => {
     const effectivePageBackgroundColor = getEffectivePageBackgroundColor(page);
     const effectiveMarginBoxBackgroundColor =
         getEffectiveMarginBoxBackgroundColor(page);
-
     setOrRemoveCustomProperty(
         page.style,
         "--marginBox-background-color",

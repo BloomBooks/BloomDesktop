@@ -73,8 +73,8 @@ import {
 } from "../toolbox/canvas/canvasElementUtils";
 import { wrapWithRequestPageContentDelay } from "./bloomEditing";
 import { get, post, useApiObject } from "../../utils/bloomApi";
-import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import { ILanguageNameValues } from "../bookAndPageSettings/FieldVisibilityGroup";
+import OverflowChecker from "../OverflowChecker/OverflowChecker";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];

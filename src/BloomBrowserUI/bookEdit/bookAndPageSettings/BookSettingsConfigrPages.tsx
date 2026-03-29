@@ -23,6 +23,7 @@ import {
     ColorDisplayButton,
     DialogResult,
 } from "../../react_components/color-picking/colorPickerDialog";
+import { isLegacyThemeName } from "./appearanceThemeUtils";
 import { FieldVisibilityGroup } from "./FieldVisibilityGroup";
 import { StyleAndFontTable } from "./StyleAndFontTable";
 
@@ -71,6 +72,7 @@ export type IConfigrAreaDefinition = {
 export const useBookSettingsAreaDefinition = (
     props: BookSettingsAreaProps,
 ): IConfigrAreaDefinition => {
+    const legacyTheme = isLegacyThemeName(props.theme);
     const bookAreaLabel = useL10n("Book", "BookAndPageSettings.BookArea");
     const bookAreaDescription = useL10n(
         "Book settings apply to all of the pages of the current book.",
@@ -317,18 +319,17 @@ export const useBookSettingsAreaDefinition = (
                     // I'm not seeing a clean way to reuse the logic. Some sort of higher-order component might work,
                     // but I don't think the logic is complex enough to be worth it, when only used in two places.
                 }
-                {props.firstPossiblyLegacyCss.length > 0 &&
-                    props.theme === "legacy-5-6" && (
-                        <ConfigrStatic>
-                            <WarningBox>
-                                <MessageUsingLegacyThemeWithIncompatibleCss
-                                    fileName={props.firstPossiblyLegacyCss}
-                                />
-                            </WarningBox>
-                        </ConfigrStatic>
-                    )}
+                {props.firstPossiblyLegacyCss.length > 0 && legacyTheme && (
+                    <ConfigrStatic>
+                        <WarningBox>
+                            <MessageUsingLegacyThemeWithIncompatibleCss
+                                fileName={props.firstPossiblyLegacyCss}
+                            />
+                        </WarningBox>
+                    </ConfigrStatic>
+                )}
                 {props.firstPossiblyLegacyCss === "customBookStyles.css" &&
-                    props.theme !== "legacy-5-6" && (
+                    !legacyTheme && (
                         <ConfigrStatic>
                             <NoteBox>
                                 <div>
@@ -385,7 +386,7 @@ export const useBookSettingsAreaDefinition = (
                     )}
                 {props.firstPossiblyLegacyCss.length > 0 &&
                     props.firstPossiblyLegacyCss !== "customBookStyles.css" &&
-                    props.theme !== "legacy-5-6" && (
+                    !legacyTheme && (
                         <ConfigrStatic>
                             <NoteBox>
                                 <MessageIgnoringIncompatibleCss

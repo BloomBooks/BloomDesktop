@@ -332,7 +332,6 @@ function getSplitPaneComponentInner() {
     spci.append(getButtons());
     return spci;
 }
-
 function getButtons() {
     const buttons = $(
         "<div class='origami-controls bloom-ui origami-ui'></div>",

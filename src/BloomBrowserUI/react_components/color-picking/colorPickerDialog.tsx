@@ -425,8 +425,8 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
                             noGradientSwatches={props.noGradientSwatches}
                             includeDefault={props.includeDefault}
                             onDefaultClick={props.onDefaultClick}
-                            defaultButtonLabel={props.defaultButtonLabel}
                             onEyedropperActiveChange={setEyedropperActive}
+                            defaultButtonLabel={props.defaultButtonLabel}
                             //defaultColor={props.defaultColor}
                         />
                     </DialogMiddle>
