@@ -1,9 +1,9 @@
 import { css } from "@emotion/react";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { post } from "../../utils/bloomApi";
 import { useL10n } from "../../react_components/l10nHooks";
 import { CustomPageLayoutMenu } from "../toolbox/canvas/customPageLayoutMenu";
+import { getWorkspaceBundleExports } from "./workspaceFrames";
 import { CogIcon } from "./CogIcon";
 
 interface IAbovePageControlsState {
@@ -167,7 +167,9 @@ const PageSettingsButton: React.FunctionComponent = () => {
         <button
             className="page-settings-button above-page-control-typography"
             title={title}
-            onClick={() => post("editView/showPageSettingsDialog")}
+            onClick={() =>
+                getWorkspaceBundleExports().showBookSettingsDialog("colors")
+            }
         >
             <CogIcon
                 className="page-settings-button-icon"

@@ -219,8 +219,9 @@ These tests attach to the real Bloom.exe target over CDP and verify tab switchin
 - Exact-target cleanup is intentionally strict: `killBloomProcess.mjs --http-port <port>` should only kill the instance that actually reports that HTTP port, and should fail without killing anything if that target cannot be resolved.
 - When reporting work, include the helper commands you used so reviewers can confirm the workflow stayed on the supported path.
 - Wrong-worktree detection is authoritative when a real `Bloom.exe` child exists or when `dotnet watch` was started with an absolute `--project` path.
-- A standalone `dotnet watch` started with a relative project path may not expose enough information to attribute it to a worktree. For current-worktree automation, start Bloom through `node scripts/watchBloomExe.mjs`, which always uses an absolute path. For the already-running Bloom workflow, use `--running-bloom` instead of trying to infer a worktree.
 - When more than one Bloom is running from the same worktree, repo-root matching is not enough. Use the explicit HTTP port workflow.
+- For ad hoc local debugging in this workspace, `dev-browser --connect http://localhost:<cdpPort>` can attach directly to the existing Bloom WebView2 target. Use it as a low-friction inspection client.
+- After attaching to Bloom's WebView2 target, if Bloom is on the Edit tab, the editable page content lives inside the iframe named `page`; the top-level document mostly hosts shell UI plus the root dialog container.
 
 ## Completion Checks
 - Bloom's status is known: not running, running from current worktree, or running from different worktree.

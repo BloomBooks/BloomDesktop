@@ -44,6 +44,7 @@ export interface IWorkspaceExports {
         emailRequiredForTeamCollection?: boolean,
     ): void;
     showAboutDialogFromWorkspaceRoot(): void;
+    showBookSettingsDialog(initiallySelectedPageKey?: string): void;
 }
 
 export function SayHello() {
@@ -275,18 +276,9 @@ export function showCopyrightAndLicenseDialog(imageUrl?: string) {
 export function showEditViewTopicChooserDialog() {
     showTopicChooserDialog();
 }
-export function showEditViewBookSettingsDialog(
-    initiallySelectedPageKey?: string,
-) {
-    showBookSettingsDialog(initiallySelectedPageKey);
-}
 
 export function showAboutDialogFromWorkspaceRoot() {
     showAboutDialog();
-}
-
-export function showEditViewPageSettingsDialog() {
-    showBookSettingsDialog("colors");
 }
 
 export function showAboutDialogInEditTab() {
@@ -381,9 +373,7 @@ interface WorkspaceBundleApi {
     hideColorPickerDialog: typeof hideColorPickerDialog;
     showCopyrightAndLicenseDialog: typeof showCopyrightAndLicenseDialog;
     showEditViewTopicChooserDialog: typeof showEditViewTopicChooserDialog;
-    showEditViewBookSettingsDialog: typeof showEditViewBookSettingsDialog;
     showAboutDialogFromWorkspaceRoot: typeof showAboutDialogFromWorkspaceRoot;
-    showEditViewPageSettingsDialog: typeof showEditViewPageSettingsDialog;
     showAboutDialogInEditTab: typeof showAboutDialogInEditTab;
     showRequiresSubscriptionDialog: typeof showRequiresSubscriptionDialog;
     showRegistrationDialogFromWorkspaceRoot: typeof showRegistrationDialogFromWorkspaceRoot;
@@ -424,9 +414,7 @@ window.workspaceBundle = {
     hideColorPickerDialog,
     showCopyrightAndLicenseDialog,
     showEditViewTopicChooserDialog,
-    showEditViewBookSettingsDialog,
     showAboutDialogFromWorkspaceRoot,
-    showEditViewPageSettingsDialog,
     showAboutDialogInEditTab,
     showRequiresSubscriptionDialog,
     showRegistrationDialogFromWorkspaceRoot,

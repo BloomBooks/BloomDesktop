@@ -1766,34 +1766,6 @@ namespace Bloom.Edit
         // intended for use only by the EditingModel
         internal Browser Browser => _mainBrowser;
 
-        public void SaveAndOpenBookSettingsDialog()
-        {
-            _model.SaveThen(
-                () =>
-                {
-                    // Open the book settings dialog to the context-specific page.
-                    var pageKey = _model.CurrentPage.IsCoverPage ? "cover" : "contentPages";
-                    RunJavascriptAsync(
-                        $"workspaceBundle.showEditViewBookSettingsDialog('{pageKey}');"
-                    );
-                    return _model.CurrentPage.Id;
-                },
-                () => { } // wrong state, do nothing
-            );
-        }
-
-        public void SaveAndOpenPageSettingsDialog()
-        {
-            _model.SaveThen(
-                () =>
-                {
-                    RunJavascriptAsync("workspaceBundle.showEditViewPageSettingsDialog();");
-                    return _model.CurrentPage.Id;
-                },
-                () => { } // wrong state, do nothing
-            );
-        }
-
         public async Task AddImageFromUrlAsync(string desiredFileNameWithoutExtension, string url)
         {
             using (var client = new System.Net.Http.HttpClient())

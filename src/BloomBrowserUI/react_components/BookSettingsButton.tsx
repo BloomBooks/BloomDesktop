@@ -1,7 +1,9 @@
 import { css } from "@emotion/react";
 import * as React from "react";
 import { TopBarButton } from "./TopBarButton";
-import { getBloomApiPrefix, post } from "../utils/bloomApi";
+import { getBloomApiPrefix } from "../utils/bloomApi";
+import { showBookSettingsDialog } from "../bookEdit/bookAndPageSettings/BookAndPageSettingsDialog";
+import { getCurrentPageElement } from "../bookEdit/bookAndPageSettings/PageSettingsConfigrPages";
 import {
     kBloomPurple,
     kDisabledTextOnPurple,
@@ -12,7 +14,10 @@ const bookSettingsIconPath = `${getBloomApiPrefix(false)}images/book-settings.pn
 
 export const BookSettingsButton: React.FunctionComponent = (props) => {
     const handleClick = React.useCallback(() => {
-        post("editView/showBookSettingsDialog");
+        const pageKey = getCurrentPageElement().classList.contains("cover")
+            ? "cover"
+            : "contentPages";
+        showBookSettingsDialog(pageKey);
     }, []);
 
     return (
