@@ -32,7 +32,7 @@ Use this skill when you're:
 
 ## How It Works
 
-This skill provides guidance through three key resources:
+This skill provides guidance through four key resources:
 
 1. **Quick Reference Table** - Fast lookup for common scenarios with DO/DON'T patterns
 2. **Decision Tree** - Visual flowchart to determine the right approach
