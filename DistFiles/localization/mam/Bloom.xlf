@@ -2154,6 +2154,11 @@
         <target xml:lang="mam" state="final">Q'onkub'a Klik tu'n tsak'et tb'i ttxuxnaq'tz.</target>
         <note>ID: EditTab.FrontMatter.TopicPrompt</note>
       </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.TopicPrompt2" translate="no">
+        <source xml:lang="en">Choose topic</source>
+        <target xml:lang="mam" state="needs-translation">Choose topic</target>
+        <note>ID: EditTab.FrontMatter.TopicPrompt2</note>
+      </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Acknowledgments for translated version, in {lang}</source>
         <target xml:lang="mam" state="final">Achb'il ti'j tu'mel o b'aj miltz'et toj {lang}</target>
