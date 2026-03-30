@@ -62,6 +62,43 @@ namespace BloomTests.Collection
         }
 
         [Test]
+        public void PrimaryLanguage_WithoutSignLanguage_UsesLanguage1()
+        {
+            var settings = new CollectionSettings();
+            settings.Language1Tag = "abc";
+            settings.Language1.SetName("Language One", true);
+            settings.BadgeQrCodeLabel = "Get more books in the {0} language on BloomLibrary.org.";
+
+            Assert.That(settings.PrimaryLangTagWithSignPrioritized, Is.EqualTo("abc"));
+            Assert.That(settings.PrimaryLanguageWithSignPrioritized, Is.EqualTo("Language One"));
+            Assert.That(
+                settings.BadgeQrCodeLabelLocalizedWithLang,
+                Is.EqualTo("Get more books in the Language One language on BloomLibrary.org.")
+            );
+        }
+
+        [Test]
+        public void PrimaryLanguage_WithSignLanguage_UsesSignLanguage()
+        {
+            var settings = new CollectionSettings();
+            settings.Language1Tag = "abc";
+            settings.Language1.SetName("Language One", true);
+            settings.SignLanguageTag = "sgn";
+            settings.SignLanguage.SetName("Sign Language Name", true);
+            settings.BadgeQrCodeLabel = "Get more books in the {0} language on BloomLibrary.org.";
+
+            Assert.That(settings.PrimaryLangTagWithSignPrioritized, Is.EqualTo("sgn"));
+            Assert.That(
+                settings.PrimaryLanguageWithSignPrioritized,
+                Is.EqualTo("Sign Language Name")
+            );
+            Assert.That(
+                settings.BadgeQrCodeLabelLocalizedWithLang,
+                Is.EqualTo("Get more books in the Sign Language Name language on BloomLibrary.org.")
+            );
+        }
+
+        [Test]
         public void PageNumberStyle_BadNameInFile()
         {
             var bloomCollectionFileContents =
