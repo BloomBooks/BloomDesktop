@@ -2155,6 +2155,11 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Bofya ili kuchagua mada</target>
         <note>ID: EditTab.FrontMatter.TopicPrompt</note>
       </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.TopicPrompt2" translate="no">
+        <source xml:lang="en">Choose topic</source>
+        <target xml:lang="sw" state="needs-translation">Choose topic</target>
+        <note>ID: EditTab.FrontMatter.TopicPrompt2</note>
+      </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Acknowledgments for translated version, in {lang}</source>
         <target xml:lang="sw" state="final">Utambulizi wa tafsiri, katika {lang}</target>
