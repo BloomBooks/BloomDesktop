@@ -678,7 +678,6 @@ const masterToolList: ITool[] = [];
 let currentTool: ITool | undefined = undefined;
 let toolboxReactActivationHooked = false;
 let jQueryAccordionActivationHooked = false;
-let latestJQueryAccordionActivationRequestId = 0;
 
 // The AI decided to create this react adapter object and save in in a window variable.
 // It gets set in a useEffect in the React component that is the root of the toolbox.
@@ -725,6 +724,8 @@ function ensureJQueryAccordionActivationHook(toolbox: JQuery): void {
         return;
     }
 
+    // Even if startup gives up waiting for the accordion, later user clicks still need
+    // to flow through switchTool() once the accordion finishes initializing.
     toolbox.onSafe("accordionactivate.toolbox", (event, ui) => {
         let newToolName = "";
         if (ui.newHeader.attr("data-toolId")) {
@@ -733,10 +734,6 @@ function ensureJQueryAccordionActivationHook(toolbox: JQuery): void {
         switchTool(newToolName);
     });
     jQueryAccordionActivationHooked = true;
-}
-
-function invalidatePendingJQueryAccordionActivationRetries(): void {
-    latestJQueryAccordionActivationRequestId++;
 }
 
 const initialAccordionInitializationRetryDelayInMilliseconds = 10;
@@ -1025,8 +1022,6 @@ export function removeToolboxMarkup() {
 }
 
 function switchTool(newToolName: string): void {
-    invalidatePendingJQueryAccordionActivationRetries();
-
     // Have Bloom remember which tool is active. (Might be none)
     postString("editView/saveToolboxSetting", "current\t" + newToolName);
     let newTool: ITool | null = null;
@@ -1120,7 +1115,6 @@ function setCurrentTool(
     toolID: string,
     retryCount = 0,
     waitStartTime = Date.now(),
-    requestId = ++latestJQueryAccordionActivationRequestId,
 ) {
     // I'm downright grumpy about how this code sometimes uses names with "Tool" appended, sometimes doesn't.
     // For now I'm just making functions work with either form.
@@ -1154,36 +1148,13 @@ function setCurrentTool(
     const toolbox = $("#toolbox");
     ensureJQueryAccordionActivationHook(toolbox);
 
-    if (requestId !== latestJQueryAccordionActivationRequestId) {
-        return;
-    }
-
     if (!isAccordionInitialized(toolbox)) {
         const elapsedTime = Date.now() - waitStartTime;
         if (elapsedTime >= maxMillisecondsToWaitForAccordionInitialization) {
-            const accordionHeaders = toolbox.find("> h3");
-            const requestedToolIsAvailable = !!(
-                toolID &&
-                accordionHeaders.filter(function () {
-                    return $(this).attr("data-toolId") === toolID;
-                }).length
-            );
-            const currentToolId = currentTool
-                ? ToolBox.addToolToString(currentTool.id())
-                : "";
-            const currentToolIsAvailable = !!(
-                currentToolId &&
-                accordionHeaders.filter(function () {
-                    return $(this).attr("data-toolId") === currentToolId;
-                }).length
-            );
-            const fallbackToolId = requestedToolIsAvailable
-                ? toolID
-                : currentToolIsAvailable
-                  ? currentToolId
-                  : ((accordionHeaders.first().attr("data-toolId") as
-                        | string
-                        | undefined) ?? "");
+            const fallbackToolId =
+                (toolbox.find("> h3").first().attr("data-toolId") as
+                    | string
+                    | undefined) ?? toolID;
             console.error(
                 `Toolbox accordion did not initialize within ${elapsedTime}ms while activating ${toolID || "the default tool"}. Falling back without waiting for the accordion UI.`,
             );
@@ -1197,14 +1168,10 @@ function setCurrentTool(
                 (retryCount + 1),
             maximumAccordionInitializationRetryDelayInMilliseconds,
         );
+        // A 0ms retry loop can burn through the whole retry budget before jQuery finishes
+        // initializing on a slow startup, so back off a little and cap the total wait time.
         window.setTimeout(
-            () =>
-                setCurrentTool(
-                    toolID,
-                    retryCount + 1,
-                    waitStartTime,
-                    requestId,
-                ),
+            () => setCurrentTool(toolID, retryCount + 1, waitStartTime),
             retryDelay,
         );
         return;
@@ -1879,12 +1846,10 @@ function loadToolboxTool(
         if (adapter) {
             const toolId = header.attr("data-toolId");
             if (toolId) {
-                invalidatePendingJQueryAccordionActivationRetries();
                 adapter.setActiveToolByToolId(toolId);
                 switchTool(toolId);
             }
         } else {
-            invalidatePendingJQueryAccordionActivationRetries();
             toolboxElt.accordion("refresh");
             const id = header.attr("id");
             const toolNumber = parseInt(
@@ -1916,7 +1881,6 @@ function showToolboxChanged(wasShowing: boolean): void {
                 `Toolbox deactivating: ${currentTool.id()}`,
             );
         } else {
-            invalidatePendingJQueryAccordionActivationRetries();
             activateTool(currentTool);
         }
     } else {
