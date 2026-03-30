@@ -2007,25 +2007,6 @@ export function setupDragActivityTabControl() {
     if (!isPageBloomGame(page)) {
         return;
     }
-    const tabControl = page.ownerDocument.createElement("div");
-    tabControl.setAttribute("id", kIdForDragActivityTabControl);
-    const abovePageControlContainer = page.ownerDocument.getElementsByClassName(
-        "above-page-control-container",
-    )[0];
-    if (!abovePageControlContainer) {
-        // if it's not already created, keep trying until it is.
-        setTimeout(setupDragActivityTabControl, 200);
-        return;
-    }
-    // We want the Game controls exactly when we don't
-    // want origami, so we use the control container we usually use for origami,
-    // a nice wrapper inside the page (so we can
-    // get the correct page alignment) and have already arranged to delete before saving the page.
-    abovePageControlContainer.appendChild(tabControl);
-    // Seems strange that we need to do this to call a function in the same file,
-    // but currently this code is also pulled into the page bundle, and called from
-    // its initialization code, and it's vital to be consistent about the bundle
-    // from which event handler functions are taken, so they can later be removed.
     getToolboxBundleExports()?.setActiveDragActivityTab(
         getActiveDragActivityTab(),
     );

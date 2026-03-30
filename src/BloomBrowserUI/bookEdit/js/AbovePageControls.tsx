@@ -3,6 +3,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { useL10n } from "../../react_components/l10nHooks";
 import { CustomPageLayoutMenu } from "../toolbox/canvas/customPageLayoutMenu";
+import { kIdForDragActivityTabControl } from "../toolbox/games/DragActivityTabControl";
 import { getWorkspaceBundleExports } from "./workspaceFrames";
 import { CogIcon } from "./CogIcon";
 
@@ -114,7 +115,32 @@ const AbovePageControls: React.FunctionComponent<IAbovePageControlsState> = (
     props,
 ) => {
     if (props.isGamePage) {
-        return <PageSettingsButton />;
+        return (
+            <div
+                css={css`
+                    width: 100%;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                `}
+            >
+                <div
+                    css={css`
+                        display: flex;
+                        align-items: center;
+                    `}
+                >
+                    <PageSettingsButton />
+                </div>
+                <div
+                    id={kIdForDragActivityTabControl}
+                    css={css`
+                        flex: 1 1 auto;
+                        min-width: 0;
+                    `}
+                />
+            </div>
+        );
     }
 
     return (
