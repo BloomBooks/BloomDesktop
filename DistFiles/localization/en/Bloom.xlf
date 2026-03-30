@@ -550,7 +550,7 @@
         <source xml:lang="en">Settings</source>
         <note>ID: CollectionSettingsDialog.CollectionSettingsWindowTitle</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.Title" translate="no">
+      <trans-unit id="CollectionSettingsDialog.Title">
         <source xml:lang="en">Collection Settings</source>
         <note>ID: CollectionSettingsDialog.Title</note>
       </trans-unit>
