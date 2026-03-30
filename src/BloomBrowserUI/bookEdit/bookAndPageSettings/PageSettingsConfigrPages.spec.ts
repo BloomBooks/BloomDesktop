@@ -25,6 +25,19 @@ describe("PageSettingsConfigrPages", () => {
         expect(settings.page.backgroundColor).toBe("#FFFFFF");
     });
 
+    it("uses the computed page number background color when there is no inline override", () => {
+        document.head.innerHTML = `<style>
+            .bloom-page {
+                --pageNumber-background-color: rgb(255, 255, 255);
+            }
+        </style>`;
+        const page = document.body.querySelector(".bloom-page") as HTMLElement;
+
+        const settings = getCurrentPageSettings();
+
+        expect(settings.page.pageNumberBackgroundColor).toBe("#FFFFFF");
+    });
+
     it("preserves the themed outer page background when applying a page background color", () => {
         const page = document.body.querySelector(".bloom-page") as HTMLElement;
         page.style.setProperty("--page-background-color", "#2e2e2e");

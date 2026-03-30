@@ -251,6 +251,13 @@ const getPageNumberBackgroundColor = (): string => {
     );
     if (inline) return inline;
 
+    const computed = normalizeToHexOrTransparentOrEmpty(
+        getComputedStyleForPage(page).getPropertyValue(
+            "--pageNumber-background-color",
+        ),
+    );
+    if (computed) return computed;
+
     return kTransparentCssValue;
 };
 
