@@ -11,6 +11,7 @@ import {
 
 describe("PageSettingsConfigrPages", () => {
     beforeEach(() => {
+        document.head.innerHTML = "";
         document.body.innerHTML =
             '<div class="bloom-page"><div class="marginBox"></div></div>';
     });
@@ -39,9 +40,14 @@ describe("PageSettingsConfigrPages", () => {
     });
 
     it("preserves the themed outer page background when applying a page background color", () => {
+        document.head.innerHTML = `<style>
+            .bloom-page {
+                --page-background-color: #2e2e2e;
+                --marginBox-background-color: #ffffff;
+                --page-and-marginBox-are-same-color-multiplicand: 0;
+            }
+        </style>`;
         const page = document.body.querySelector(".bloom-page") as HTMLElement;
-        page.style.setProperty("--page-background-color", "#2e2e2e");
-        page.style.setProperty("--marginBox-background-color", "#ffffff");
 
         applyPageSettings({
             page: {
@@ -55,15 +61,19 @@ describe("PageSettingsConfigrPages", () => {
         expect(
             page.style.getPropertyValue("--marginBox-background-color"),
         ).toBe("#ABCDEF");
-        expect(page.style.getPropertyValue("--page-background-color")).toBe(
-            "#2e2e2e",
-        );
+        expect(page.style.getPropertyValue("--page-background-color")).toBe("");
     });
 
     it("updates both page and margin box colors when the theme uses one flat background", () => {
+        document.head.innerHTML = `<style>
+            .bloom-page {
+                --page-background-color: #ffffff;
+                --marginBox-background-color: #ffffff;
+                --page-and-marginBox-are-same-color-multiplicand: 1;
+            }
+        </style>`;
         const page = document.body.querySelector(".bloom-page") as HTMLElement;
-        page.style.setProperty("--page-background-color", "#ffffff");
-        page.style.setProperty("--marginBox-background-color", "#ffffff");
+        page.style.setProperty("--marginBox-background-color", "#fedcba");
 
         applyPageSettings({
             page: {
