@@ -2251,9 +2251,9 @@
         <note>This checkbox indicates if a line tail should be shown or not.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style" sil:dynamic="true">
-        <source xml:lang="en">Style</source>
+        <source xml:lang="en">Element Type</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Style</note>
-        <note>Refers to the STYLE of bubble used by the callout</note>
+        <note>Refers to the type of bubble used by the callout</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Caption" sil:dynamic="true">
         <source xml:lang="en">Caption</source>

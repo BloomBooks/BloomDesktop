@@ -719,7 +719,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
                         <FormControl variant="standard">
                             <InputLabel htmlFor="canvasElement-style-dropdown">
                                 <Span l10nKey="EditTab.Toolbox.ComicTool.Options.Style">
-                                    Style
+                                    Element Type
                                 </Span>
                             </InputLabel>
                             <ThemeProvider theme={toolboxMenuPopupTheme}>
