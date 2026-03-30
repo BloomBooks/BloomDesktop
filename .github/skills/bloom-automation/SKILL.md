@@ -246,4 +246,5 @@ Report:
 ## Example Prompts
 - `troubleshoot why the page is refreshing when we open page settings`
 
-## Debugging tips: use node or bash scripts. Avoid powershell. Use the "dev-browser" cli instead of playwright for interactive debugging/driving Bloom. Use "dev-browser --help" to see the available commands and options. If the user hasn't installed dev-browser, ask them for permission to install it (https://github.com/SawyerHood/dev-browser).
+## Debugging tips
+Use node or bash scripts. Avoid powershell. Use the "dev-browser" cli instead of playwright for interactive debugging/driving Bloom. Use "dev-browser --help" to see the available commands and options. If the user hasn't installed dev-browser, ask them for permission to install it (https://github.com/SawyerHood/dev-browser).
