@@ -17,6 +17,21 @@ namespace Bloom.Book
     /// </summary>
     public class SizeAndOrientation
     {
+        private static readonly Lazy<
+            Dictionary<string, (double width, double height)>
+        > s_pageSizesInMillimeters = new(LoadPageSizesInMillimeters);
+
+        private class PageSizeLookupFile
+        {
+            public Dictionary<string, PageSizeLookupItem> sizes { get; set; }
+        }
+
+        private class PageSizeLookupItem
+        {
+            public double width { get; set; }
+            public double height { get; set; }
+        }
+
         public string PageSizeName;
 
         public bool IsLandScape { get; set; }
@@ -82,6 +97,84 @@ namespace Bloom.Book
                     PageSizeName,
                     IsLandScape
                 ) != null;
+        }
+
+        public static bool TryGetSizeInMillimeters(
+            string sizeName,
+            out (double width, double height) size
+        )
+        {
+            size = default;
+            if (string.IsNullOrWhiteSpace(sizeName))
+                return false;
+
+            return s_pageSizesInMillimeters.Value.TryGetValue(sizeName, out size);
+        }
+
+        public static bool TryGetPaperLayoutInMillimeters(
+            string paperSizeName,
+            bool landscape,
+            out (double width, double height) size
+        )
+        {
+            size = default;
+            if (string.IsNullOrWhiteSpace(paperSizeName) || IsNonPaperLayout(paperSizeName))
+                return false;
+
+            var requestedOrientation = landscape ? "Landscape" : "Portrait";
+            var requestedKey = $"{paperSizeName}{requestedOrientation}";
+            if (TryGetSizeInMillimeters(requestedKey, out size))
+                return true;
+
+            var oppositeOrientation = landscape ? "Portrait" : "Landscape";
+            var oppositeKey = $"{paperSizeName}{oppositeOrientation}";
+            if (!TryGetSizeInMillimeters(oppositeKey, out var oppositeSize))
+            {
+                if (!TryGetSizeInMillimeters(paperSizeName, out size))
+                    return false;
+
+                if (landscape && size.width < size.height)
+                    size = (size.height, size.width);
+                else if (!landscape && size.width > size.height)
+                    size = (size.height, size.width);
+                return true;
+            }
+
+            size = (oppositeSize.height, oppositeSize.width);
+            return true;
+        }
+
+        private static Dictionary<
+            string,
+            (double width, double height)
+        > LoadPageSizesInMillimeters()
+        {
+            var map = new Dictionary<string, (double width, double height)>(
+                StringComparer.OrdinalIgnoreCase
+            );
+            var path = FileLocationUtilities.GetFileDistributedWithApplication(
+                "pageSizesLookup.json"
+            );
+            var json = RobustFile.ReadAllText(path);
+            var parsed = JsonConvert.DeserializeObject<PageSizeLookupFile>(json);
+            if (parsed?.sizes == null)
+                throw new ApplicationException("Could not parse pageSizesLookup.json.");
+
+            foreach (var item in parsed.sizes)
+            {
+                if (string.IsNullOrWhiteSpace(item.Key) || item.Value == null)
+                    continue;
+
+                map[item.Key] = (item.Value.width, item.Value.height);
+            }
+
+            return map;
+        }
+
+        private static bool IsNonPaperLayout(string pageSizeName)
+        {
+            return pageSizeName.StartsWith("Device", StringComparison.OrdinalIgnoreCase)
+                || pageSizeName.StartsWith("PictureStory", StringComparison.OrdinalIgnoreCase);
         }
 
         public static void AddClassesForLayout(HtmlDom dom, Layout layout)

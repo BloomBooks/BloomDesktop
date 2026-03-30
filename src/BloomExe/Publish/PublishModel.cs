@@ -386,6 +386,8 @@ namespace Bloom.Publish
 
         private bool GetPrintingWithFullBleed()
         {
+            // Booklet layouts expect trim-sized source pages; full-bleed source pages can
+            // produce incorrect sizing in the imposed output.
             return _currentlyLoadedBook.FullBleed
                 && GetBookletLayoutMethod() == BookletLayoutMethod.NoBooklet
                 && _currentlyLoadedBook.UserPrefs.FullBleed;

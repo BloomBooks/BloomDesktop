@@ -865,7 +865,7 @@
         <note>BookSettings.FullBleed</note>
       </trans-unit>
       <trans-unit id="BookSettings.FullBleed.Description" sil:dynamic="true">
-        <source xml:lang="en">Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
+        <source xml:lang="en">Enable full bleed layout for printing. Use with the "Edge to Edge" theme. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
         <target xml:lang="fr" state="translated">Activez la mise en page à fond perdu pour l'impression. Cela active les indicateurs [Impression à fond perdu](https://en.wikipedia.org/wiki/Bleed_%28printing%29) sur toutes les mises en page. Pour plus d'informations, consultez [Mise en page à fond perdu](https://docs.bloomlibrary.org/full-bleed).</target>
         <note>BookSettings.FullBleed.Description</note>
       </trans-unit>
@@ -1102,9 +1102,9 @@
         <source xml:lang="en">Experimental Rounded Border</source>
         <note>AppearanceTheme.ebook-rounded-border-bottom-number</note>
       </trans-unit> -->
-      <trans-unit id="AppearanceTheme.zero-margin-ebook" sil:dynamic="true">
-        <source xml:lang="en">Zero Margin Ebook</source>
-        <target xml:lang="fr" state="needs-translation">Zero Margin Ebook</target>
+      <trans-unit id="AppearanceTheme.edge-to-edge" sil:dynamic="true">
+        <source xml:lang="en">Edge to Edge</source>
+        <target xml:lang="fr" state="needs-translation">Edge to Edge</target>
         <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
       </trans-unit>
       <trans-unit id="AppearanceTheme.narrow-margin-ebook" sil:dynamic="true">

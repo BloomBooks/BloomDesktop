@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Api;
+using Bloom.Book;
 using Bloom.ToPalaso;
 using Bloom.web;
 using L10NSharp;
@@ -256,10 +257,6 @@ namespace Bloom.Publish.PDF
 
         const double inchesToMM = 25.4;
 
-        const double A4PortraitHeight = 297; // mm
-        private const double A4PortraitWidth = 210; // mm
-        private const double A3PortraitWidth = A4PortraitHeight;
-        private const double A3PortraitHeight = A4PortraitWidth * 2d;
         const double bleedWidth = 3; // mm
         private const double bleedExtra = bleedWidth * 2;
 
@@ -349,48 +346,31 @@ namespace Bloom.Publish.PDF
             bool landscape
         )
         {
-            double height;
-            double width;
-            switch (paperSizeName.ToLowerInvariant())
-            {
-                case "a5":
-                    height = A4PortraitWidth + bleedExtra;
-                    // we floor because that actually gives us the 148mm that is official
-                    width = Math.Floor(A4PortraitHeight / 2) + bleedExtra;
-                    break;
-                case "a4":
-                    height = A4PortraitHeight + bleedExtra;
-                    width = A4PortraitWidth + bleedExtra;
-                    break;
-                case "a3":
-                    height = A3PortraitHeight + bleedExtra;
-                    width = A3PortraitWidth + bleedExtra;
-                    break;
-                case "uscomic":
-                    height = USComicPortraitHeight + bleedExtra;
-                    width = USComicPortraitWidth + bleedExtra;
-                    break;
-                case "halffolio":
-                    // added for consistency, but not tested.
-                    height = HalfFolioPortraitHeight + bleedExtra;
-                    width = HalfFolioPortraitWidth + bleedExtra;
-                    break;
-                case "size6x9":
-                    height = Size6x9PortraitHeight + bleedExtra;
-                    width = Size6x9PortraitWidth + bleedExtra;
-                    break;
-                default:
-                    return null; // Page size doesn't support full bleed
-            }
+            if (!TryGetTrimPageSizeInMillimeters(paperSizeName, landscape, out var trimSize))
+                return null;
 
-            if (landscape)
-            {
-                var temp = height;
-                height = width;
-                width = temp;
-            }
+            var width = trimSize.width + bleedExtra;
+            var height = trimSize.height + bleedExtra;
 
             return (height, width);
+        }
+
+        private static bool TryGetTrimPageSizeInMillimeters(
+            string paperSizeName,
+            bool landscape,
+            out (double width, double height) trimSize
+        )
+        {
+            trimSize = default;
+
+            if (string.IsNullOrWhiteSpace(paperSizeName))
+                return false;
+
+            return SizeAndOrientation.TryGetPaperLayoutInMillimeters(
+                paperSizeName,
+                landscape,
+                out trimSize
+            );
         }
 
         private static void ConfigureFullBleedPageSize(StringBuilder bldr, PdfMakingSpecs specs)
@@ -402,7 +382,7 @@ namespace Bloom.Publish.PDF
             if (dimensions == null)
             {
                 var exception = new ArgumentException(
-                    $"Full bleed printing of paper size '{specs.PaperSizeName}' is not yet implemented. Supported sizes are: A5, A4, A3, USComic, HalfFolio, and Size6x9."
+                    $"Full bleed printing of paper size '{specs.PaperSizeName}' is not supported for this layout."
                 );
                 exception.Data["argument"] = "specs.PaperSizeName";
                 throw exception;
@@ -423,7 +403,7 @@ namespace Bloom.Publish.PDF
         public bool LayoutPagesForRightToLeft; // true if RTL, false if LTR layout
         public bool SaveMemoryMode; // true if PDF file is to be produced using less memory (but more time)
         public bool BookIsFullBleed; // True if the book is laid out for full-bleed printing (and Enterprise is enabled)
-        public bool PrintWithFullBleed; // True if (BookIsFullBleed and) full bleed is requested in the PdfOptions menu and we're not making a booklet
+        public bool PrintWithFullBleed; // True if BookIsFullBleed and full bleed is requested in the PdfOptions menu
         public string ColorProfile; // the name of the ICC color profile file to use, empty string if none
         public int HtmlPageCount;
 

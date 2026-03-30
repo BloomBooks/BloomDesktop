@@ -82,7 +82,7 @@ Don't use timeouts in tests, that slows things down and is fragile. If a timeout
 
 ## Troubleshooting UI Problems
 
-Usually if you get stuck, the best thing to do is to get the component showing in a browser and use chrome-devtools-mcp to to check the DOM, the console, and if necessary a screenshot. You can add console messages that should show, then read the browser's console to test your assumptions. If you want access to chrome-devtools-mcp and don't have it, stop and ask me.
+Usually if you get stuck, the best thing to do is to get the component showing in a browser and use chrome-devtools-mcp to to check the DOM, the console, and if necessary a screenshot. You can add console messages that should show, then read the browser's console to test your assumptions. If you want access to chrome-devtools-mcp and don't have it, stop and ask me. When the backend is running, you can open http://localhost:8089/bloom/CURRENTPAGE to inspect and interact with the screen.
 
 ## Other notes
 

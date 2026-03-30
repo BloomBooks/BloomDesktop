@@ -1,0 +1,500 @@
+{
+    "sizes": {
+        "A5Portrait": {
+            "width": 148,
+            "height": 210
+        },
+        "A5": {
+            "width": 148,
+            "height": 210
+        },
+        "A5Landscape": {
+            "width": 210,
+            "height": 148
+        },
+        "B5Portrait": {
+            "width": 176,
+            "height": 250
+        },
+        "B5": {
+            "width": 176,
+            "height": 250
+        },
+        "A4Landscape": {
+            "width": 297,
+            "height": 210
+        },
+        "A4": {
+            "width": 210,
+            "height": 297
+        },
+        "A4Portrait": {
+            "width": 210,
+            "height": 297
+        },
+        "A3Landscape": {
+            "width": 420,
+            "height": 297
+        },
+        "A3": {
+            "width": 297,
+            "height": 420
+        },
+        "A3Portrait": {
+            "width": 297,
+            "height": 420
+        },
+        "A6Portrait": {
+            "width": 105,
+            "height": 148
+        },
+        "A6": {
+            "width": 105,
+            "height": 148
+        },
+        "A6Landscape": {
+            "width": 148,
+            "height": 105
+        },
+        "QuarterLetterPortrait": {
+            "width": 107.94999999999999,
+            "height": 139.7
+        },
+        "QuarterLetter": {
+            "width": 107.94999999999999,
+            "height": 139.7
+        },
+        "QuarterLetterLandscape": {
+            "width": 139.7,
+            "height": 107.94999999999999
+        },
+        "HalfLetterPortrait": {
+            "width": 139.7,
+            "height": 215.89999999999998
+        },
+        "HalfLetter": {
+            "width": 139.7,
+            "height": 215.89999999999998
+        },
+        "HalfLetterLandscape": {
+            "width": 215.89999999999998,
+            "height": 139.7
+        },
+        "LetterPortrait": {
+            "width": 215.89999999999998,
+            "height": 279.4
+        },
+        "Letter": {
+            "width": 215.89999999999998,
+            "height": 279.4
+        },
+        "LetterLandscape": {
+            "width": 279.4,
+            "height": 215.89999999999998
+        },
+        "HalfFolioPortrait": {
+            "width": 165.1,
+            "height": 215.89999999999998
+        },
+        "HalfFolio": {
+            "width": 165.1,
+            "height": 215.89999999999998
+        },
+        "HalfLegalPortrait": {
+            "width": 177.79999999999998,
+            "height": 215.89999999999998
+        },
+        "HalfLegal": {
+            "width": 177.79999999999998,
+            "height": 215.89999999999998
+        },
+        "HalfLegalLandscape": {
+            "width": 215.89999999999998,
+            "height": 177.79999999999998
+        },
+        "LegalPortrait": {
+            "width": 215.89999999999998,
+            "height": 355.59999999999997
+        },
+        "Legal": {
+            "width": 215.89999999999998,
+            "height": 355.59999999999997
+        },
+        "LegalLandscape": {
+            "width": 355.59999999999997,
+            "height": 215.89999999999998
+        },
+        "Cm13Landscape": {
+            "width": 130,
+            "height": 130
+        },
+        "Cm13": {
+            "width": 130,
+            "height": 130
+        },
+        "USComicPortrait": {
+            "width": 168.27499999999998,
+            "height": 260.34999999999997
+        },
+        "USComic": {
+            "width": 168.27499999999998,
+            "height": 260.34999999999997
+        },
+        "Size6x9Portrait": {
+            "width": 152.39999999999998,
+            "height": 228.6
+        },
+        "Size6x9": {
+            "width": 152.39999999999998,
+            "height": 228.6
+        },
+        "Size6x9Landscape": {
+            "width": 228.6,
+            "height": 152.39999999999998
+        },
+        "A0": {
+            "width": 841,
+            "height": 1189
+        },
+        "A1": {
+            "width": 594,
+            "height": 841
+        },
+        "A2": {
+            "width": 420,
+            "height": 594
+        },
+        "A7": {
+            "width": 74,
+            "height": 105
+        },
+        "A8": {
+            "width": 52,
+            "height": 74
+        },
+        "A9": {
+            "width": 37,
+            "height": 52
+        },
+        "A10": {
+            "width": 26,
+            "height": 37
+        },
+        "B0": {
+            "width": 1000,
+            "height": 1414
+        },
+        "B1": {
+            "width": 707,
+            "height": 1000
+        },
+        "B2": {
+            "width": 500,
+            "height": 707
+        },
+        "B3": {
+            "width": 353,
+            "height": 500
+        },
+        "B4": {
+            "width": 250,
+            "height": 353
+        },
+        "B6": {
+            "width": 125,
+            "height": 176
+        },
+        "B7": {
+            "width": 88,
+            "height": 125
+        },
+        "B8": {
+            "width": 62,
+            "height": 88
+        },
+        "B9": {
+            "width": 44,
+            "height": 62
+        },
+        "B10": {
+            "width": 31,
+            "height": 44
+        },
+        "Cm1": {
+            "width": 10,
+            "height": 10
+        },
+        "Cm2": {
+            "width": 20,
+            "height": 20
+        },
+        "Cm3": {
+            "width": 30,
+            "height": 30
+        },
+        "Cm4": {
+            "width": 40,
+            "height": 40
+        },
+        "Cm5": {
+            "width": 50,
+            "height": 50
+        },
+        "Cm6": {
+            "width": 60,
+            "height": 60
+        },
+        "Cm7": {
+            "width": 70,
+            "height": 70
+        },
+        "Cm8": {
+            "width": 80,
+            "height": 80
+        },
+        "Cm9": {
+            "width": 90,
+            "height": 90
+        },
+        "Cm10": {
+            "width": 100,
+            "height": 100
+        },
+        "Cm11": {
+            "width": 110,
+            "height": 110
+        },
+        "Cm12": {
+            "width": 120,
+            "height": 120
+        },
+        "Cm14": {
+            "width": 140,
+            "height": 140
+        },
+        "Cm15": {
+            "width": 150,
+            "height": 150
+        },
+        "Cm16": {
+            "width": 160,
+            "height": 160
+        },
+        "Cm17": {
+            "width": 170,
+            "height": 170
+        },
+        "Cm18": {
+            "width": 180,
+            "height": 180
+        },
+        "Cm19": {
+            "width": 190,
+            "height": 190
+        },
+        "Cm20": {
+            "width": 200,
+            "height": 200
+        },
+        "Cm21": {
+            "width": 210,
+            "height": 210
+        },
+        "Cm22": {
+            "width": 220,
+            "height": 220
+        },
+        "Cm23": {
+            "width": 230,
+            "height": 230
+        },
+        "Cm24": {
+            "width": 240,
+            "height": 240
+        },
+        "Cm25": {
+            "width": 250,
+            "height": 250
+        },
+        "Cm26": {
+            "width": 260,
+            "height": 260
+        },
+        "Cm27": {
+            "width": 270,
+            "height": 270
+        },
+        "Cm28": {
+            "width": 280,
+            "height": 280
+        },
+        "Cm29": {
+            "width": 290,
+            "height": 290
+        },
+        "Cm30": {
+            "width": 300,
+            "height": 300
+        },
+        "Cm31": {
+            "width": 310,
+            "height": 310
+        },
+        "Cm32": {
+            "width": 320,
+            "height": 320
+        },
+        "Cm33": {
+            "width": 330,
+            "height": 330
+        },
+        "Cm34": {
+            "width": 340,
+            "height": 340
+        },
+        "Cm35": {
+            "width": 350,
+            "height": 350
+        },
+        "Cm36": {
+            "width": 360,
+            "height": 360
+        },
+        "Cm37": {
+            "width": 370,
+            "height": 370
+        },
+        "Cm38": {
+            "width": 380,
+            "height": 380
+        },
+        "Cm39": {
+            "width": 390,
+            "height": 390
+        },
+        "Cm40": {
+            "width": 400,
+            "height": 400
+        },
+        "Cm41": {
+            "width": 410,
+            "height": 410
+        },
+        "Cm42": {
+            "width": 420,
+            "height": 420
+        },
+        "Cm43": {
+            "width": 430,
+            "height": 430
+        },
+        "Cm44": {
+            "width": 440,
+            "height": 440
+        },
+        "Cm45": {
+            "width": 450,
+            "height": 450
+        },
+        "Cm46": {
+            "width": 460,
+            "height": 460
+        },
+        "Cm47": {
+            "width": 470,
+            "height": 470
+        },
+        "Cm48": {
+            "width": 480,
+            "height": 480
+        },
+        "Cm49": {
+            "width": 490,
+            "height": 490
+        },
+        "Cm50": {
+            "width": 500,
+            "height": 500
+        },
+        "In1": {
+            "width": 25.4,
+            "height": 25.4
+        },
+        "In2": {
+            "width": 50.8,
+            "height": 50.8
+        },
+        "In3": {
+            "width": 76.19999999999999,
+            "height": 76.19999999999999
+        },
+        "In4": {
+            "width": 101.6,
+            "height": 101.6
+        },
+        "In5": {
+            "width": 127,
+            "height": 127
+        },
+        "In6": {
+            "width": 152.39999999999998,
+            "height": 152.39999999999998
+        },
+        "In7": {
+            "width": 177.79999999999998,
+            "height": 177.79999999999998
+        },
+        "In8": {
+            "width": 203.2,
+            "height": 203.2
+        },
+        "In9": {
+            "width": 228.6,
+            "height": 228.6
+        },
+        "In10": {
+            "width": 254,
+            "height": 254
+        },
+        "In11": {
+            "width": 279.4,
+            "height": 279.4
+        },
+        "In12": {
+            "width": 304.79999999999995,
+            "height": 304.79999999999995
+        },
+        "In13": {
+            "width": 330.2,
+            "height": 330.2
+        },
+        "In14": {
+            "width": 355.59999999999997,
+            "height": 355.59999999999997
+        },
+        "In15": {
+            "width": 381,
+            "height": 381
+        },
+        "In16": {
+            "width": 406.4,
+            "height": 406.4
+        },
+        "In17": {
+            "width": 431.79999999999995,
+            "height": 431.79999999999995
+        },
+        "In18": {
+            "width": 457.2,
+            "height": 457.2
+        },
+        "In19": {
+            "width": 482.59999999999997,
+            "height": 482.59999999999997
+        },
+        "In20": {
+            "width": 508,
+            "height": 508
+        }
+    }
+}
