@@ -6,11 +6,12 @@ import { CustomPageLayoutMenu } from "./customPageLayoutMenu";
 import {
     CanvasElementManager,
     kBackgroundImageClass,
+    showCanvasTool,
     theOneCanvasElementManager,
 } from "../../js/CanvasElementManager";
 import { EditableDivUtils } from "../../js/editableDivUtils";
 import { kBloomCanvasClass, kCanvasElementClass } from "./canvasElementUtils";
-import { getAsync, postString } from "../../../utils/bloomApi";
+import { getAsync, postData, postString } from "../../../utils/bloomApi";
 import { Bubble, BubbleSpec } from "comicaljs";
 import {
     recomputeSourceBubblesForPage,
@@ -60,9 +61,7 @@ import { isLegacyThemeCssLoaded } from "../../bookSettings/appearanceThemeUtils"
     visibility of different languages.
 */
 
-export async function convertXmatterPageToCustom(
-    page: HTMLElement,
-): Promise<void> {
+async function convertXmatterPageToCustom(page: HTMLElement): Promise<void> {
     const marginBox = page.getElementsByClassName(
         "marginBox",
     )[0] as HTMLElement;
@@ -257,6 +256,8 @@ function finishReactivatingPage(page: HTMLElement): void {
     theOneCanvasElementManager.turnOnCanvasElementEditing();
     ensureDerivedFieldsFitOnCustomPage(page);
     getToolboxBundleExports()?.applyToolboxStateToPage();
+    // Enable or show the canvas tool.
+    showCanvasTool();
 }
 
 // This function tries to make sure that all derived-field canvas elements fit on the page.
@@ -393,7 +394,7 @@ export function setupPageLayoutMenu(): void {
 
     const usingLegacyTheme = isLegacyThemeCssLoaded();
     if (usingLegacyTheme && page.classList.contains("bloom-customLayout")) {
-        postString("editView/toggleCustomPageLayout", page.getAttribute("id")!);
+        toggleCustomPageLayout(page.getAttribute("id")!, true);
         return;
     }
 
@@ -424,6 +425,17 @@ export function setupPageLayoutMenu(): void {
     }
 }
 
+function toggleCustomPageLayout(
+    pageId: string,
+    keepCustomLayoutDataWhenSwitchingToStandard: boolean,
+) {
+    return postData("editView/toggleCustomPageLayout", {
+        pageId,
+        keepCustomLayoutDataWhenSwitchingToStandard:
+            keepCustomLayoutDataWhenSwitchingToStandard ? "true" : "false",
+    });
+}
+
 function renderPageLayoutMenu(page: HTMLElement, container: HTMLElement): void {
     // Render a CustomPageLayoutMenu React component into this container
     const isCustomPage = page.classList.contains("bloom-customLayout");
@@ -432,21 +444,16 @@ function renderPageLayoutMenu(page: HTMLElement, container: HTMLElement): void {
         <CustomPageLayoutMenu
             isCustom={isCustomPage}
             disableCustomPage={usingLegacyTheme}
-            setCustom={async (selection) => {
+            setCustom={async (
+                selection,
+                keepCustomLayoutDataWhenSwitchingToStandard,
+            ) => {
                 if (usingLegacyTheme && selection !== "standard") {
                     return;
                 }
-                if (selection === "customStartOver") {
-                    await wrapWithRequestPageContentDelay(
-                        () => convertXmatterPageToCustom(page),
-                        "customPageLayout-convertStartOver",
-                    );
-                    renderPageLayoutMenu(page, container);
-                    return;
-                }
-                const response = await postString(
-                    "editView/toggleCustomPageLayout",
+                const response = await toggleCustomPageLayout(
                     page.getAttribute("id")!,
+                    keepCustomLayoutDataWhenSwitchingToStandard,
                 );
                 if (
                     selection === "custom" &&
@@ -461,6 +468,10 @@ function renderPageLayoutMenu(page: HTMLElement, container: HTMLElement): void {
                         () => convertXmatterPageToCustom(page),
                         "customPageLayout-convertFirstTime",
                     );
+                    // Set data-tool-id on the browser DOM so it persists when jumpToPage saves.
+                    // (The C# toggleCustomPageLayout set it on the C# DOM, but returned early
+                    // without SaveThen, so that change would be overwritten by the browser save.)
+                    page.setAttribute("data-tool-id", "canvas");
                     // Persist the newly created custom layout state so a later toggle back
                     // to standard has matching server-side state to work from.
                     await postString(
@@ -468,6 +479,8 @@ function renderPageLayoutMenu(page: HTMLElement, container: HTMLElement): void {
                         page.getAttribute("id")!,
                     );
                     renderPageLayoutMenu(page, container);
+                } else if (selection === "custom" && response) {
+                    showCanvasTool(); // otherwise called from convertXmatterPageToCustom()/finishReactivatingPage()
                 }
             }}
         />,

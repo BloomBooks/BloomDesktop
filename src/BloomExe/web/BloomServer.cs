@@ -9,6 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Security.Policy;
 using System.Text;
 using System.Threading;
@@ -29,6 +30,7 @@ using Bloom.web;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
+using Newtonsoft.Json;
 using SIL.Code;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -56,6 +58,11 @@ namespace Bloom.Api
     public class BloomServer : IBloomServer, IDisposable
     {
         public static int portForHttp;
+        public const int kNumberOfConsecutivePortsToReserve = 3;
+
+        public static int WebSocketPort => portForHttp + 1;
+
+        public static int RemoteDebuggingPort => portForHttp + 2;
 
         public static string ServerUrl
         {
@@ -1538,13 +1545,12 @@ namespace Bloom.Api
             if (_listener?.IsListening == true)
                 return;
             const int kStartingPort = 8089;
-            const int kNumberOfPortsToTry = 10;
+            const int kNumberOfPortsToTry = 20;
             bool success = false;
-            const int kNumberOfPortsWeNeed = 2; //one for http, one for peakLevel webSocket
 
-            //Note: while this will find a port for the http, it does not actually know if the accompanying
-            //ports are available. It just assume they are.
-            //So while it's an improvement, it's not yet as solid as we would like it
+            // Note: this now checks whether the following ports in the block are available,
+            // but it still does not reserve them until the corresponding services start.
+            // So while it's an improvement, it's not yet as solid as we would like it
             //to be.  The ultimate solution is to run the websocket and http on the same port.
             //This could be done using this proxy thing that internally routes to different ports:
             // https://github.com/lifeemotions/websocketproxy
@@ -1553,7 +1559,15 @@ namespace Bloom.Api
             // switch to using an owin-compliant http server like NancyFx.
             for (var i = 0; !success && i < kNumberOfPortsToTry; i++)
             {
-                BloomServer.portForHttp = kStartingPort + (i * kNumberOfPortsWeNeed);
+                BloomServer.portForHttp = kStartingPort + (i * kNumberOfConsecutivePortsToReserve);
+                if (
+                    !CanOpenConsecutivePorts(
+                        portForHttp + 1,
+                        kNumberOfConsecutivePortsToReserve - 1
+                    )
+                )
+                    continue;
+
                 success = AttemptToOpenPort();
             }
 
@@ -1574,6 +1588,25 @@ namespace Bloom.Api
             }
 
             VerifyWeAreNowListening();
+            WriteAutomationStartupInfo();
+        }
+
+        private static void WriteAutomationStartupInfo()
+        {
+            if (!Program.StartupAutomation)
+                return;
+
+            Console.WriteLine(
+                "BLOOM_AUTOMATION_READY "
+                    + JsonConvert.SerializeObject(
+                        new
+                        {
+                            processId = Process.GetCurrentProcess().Id,
+                            httpPort = portForHttp,
+                            cdpPort = RemoteDebuggingPort,
+                        }
+                    )
+            );
         }
 
         private static int MinWorkerThreads => Math.Max(Environment.ProcessorCount, 2);
@@ -1581,6 +1614,42 @@ namespace Bloom.Api
         /// <summary>
         /// Tries to start listening on the currently proposed server url
         /// </summary>
+        internal static bool CanOpenConsecutivePorts(int startingPort, int numberOfPortsWeNeed)
+        {
+            if (numberOfPortsWeNeed <= 0)
+                return true;
+
+            if (
+                startingPort < IPEndPoint.MinPort
+                || startingPort > IPEndPoint.MaxPort - numberOfPortsWeNeed + 1
+            )
+            {
+                return false;
+            }
+
+            var listeners = new List<TcpListener>();
+            try
+            {
+                for (var offset = 0; offset < numberOfPortsWeNeed; offset++)
+                {
+                    var listener = new TcpListener(IPAddress.Loopback, startingPort + offset);
+                    listener.Start();
+                    listeners.Add(listener);
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            finally
+            {
+                foreach (var listener in listeners)
+                    listener.Stop();
+            }
+        }
+
         private bool AttemptToOpenPort()
         {
             try

@@ -214,7 +214,6 @@ export const BloomTabs: React.FunctionComponent<{
                     margin: 0;
                     padding: 0;
                     gap: 1px;
-                    min-width: 300px;
                 `
             }
         >

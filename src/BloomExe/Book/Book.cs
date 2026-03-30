@@ -586,7 +586,7 @@ namespace Bloom.Book
                 );
                 HtmlDom.AddScriptFile(
                     dom.RawDom,
-                    "http://localhost:5173/bookEdit/editablePage.ts",
+                    ReactControl.GetViteDevUrl("/bookEdit/editablePage.ts"),
                     true
                 );
             }
@@ -5271,62 +5271,97 @@ namespace Bloom.Book
             if (outsideFrontCover == null)
                 return null;
 
-            var isCustomCover = outsideFrontCover
-                .GetAttribute("class")
-                .Contains("bloom-customLayout");
-
-            // Prefer an img in the outsideFrontCover. This is the current expected shape.
-            coverImgElt = outsideFrontCover
-                .SafeSelectNodes(".//img[@data-book='coverImage']")
+            // Prefer the designated cover image if it is present and not placeholder.
+            var designatedCoverImage = outsideFrontCover
+                .SafeSelectNodes(
+                    ".//img[@data-book='coverImage'] | .//div[@data-book='coverImage']"
+                )
                 .Cast<SafeXmlElement>()
                 .FirstOrDefault();
 
-            // Fall back to the obsolete background-image approach where data-book is on a div.
-            if (coverImgElt == null)
-            {
-                coverImgElt = outsideFrontCover
-                    .SafeSelectNodes(".//div[@data-book='coverImage']")
-                    .Cast<SafeXmlElement>()
-                    .FirstOrDefault();
-            }
+            SafeXmlElement bestPlaceholderElt = null;
+            string bestPlaceholderPath = null;
 
-            if (coverImgElt == null && isCustomCover)
+            if (designatedCoverImage != null)
             {
-                coverImgElt = outsideFrontCover
-                    .SafeSelectNodes(".//img")
-                    .Cast<SafeXmlElement>()
-                    .FirstOrDefault();
-            }
-
-            if (coverImgElt == null)
-                return null;
-            var coverImageUrl = HtmlDom.GetImageElementUrl(coverImgElt);
-            var coverImageFileName = coverImageUrl.PathOnly.NotEncoded;
-            if (string.IsNullOrEmpty(coverImageFileName))
-                return null;
-            // The fileName might be URL encoded.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3901.
-            var coverImagePath = UrlPathString.GetFullyDecodedPath(
-                StoragePageFolder,
-                ref coverImageFileName
-            );
-            // We no longer put placeHolder.png files in books (BL-15441) but we still need to detect when the placeholder
-            // is called for, so return coverImagePath unchanged when it is a placeholder. Callers of this method should handle this special-case value.
-            if (ImageUtils.IsPlaceholderImageFilename(coverImagePath))
-            {
-                return coverImagePath;
-            }
-            if (!RobustFile.Exists(coverImagePath))
-            {
-                // And the filename might be multiply-HTML encoded.
-                while (coverImagePath.Contains("&amp;"))
+                var designatedPath = GetImagePath(designatedCoverImage);
+                if (designatedPath != null)
                 {
-                    coverImagePath = HttpUtility.HtmlDecode(coverImagePath);
-                    if (RobustFile.Exists(coverImagePath))
-                        return coverImagePath;
+                    if (!ImageUtils.IsPlaceholderImageFilename(designatedPath))
+                    {
+                        coverImgElt = designatedCoverImage;
+                        return designatedPath;
+                    }
+
+                    bestPlaceholderElt = designatedCoverImage;
+                    bestPlaceholderPath = designatedPath;
                 }
-                return null;
             }
-            return coverImagePath;
+
+            foreach (
+                // we may not need to consider any options other than img, since anything that is old enough
+                // in format to use an obsolete image representation probably only has one image on the
+                // cover, properly designated with data-book. However, it's not much more work or complexity
+                // to handle the older cases here, too, and we do use this code in publish and preview situations,
+                // not only for editable books.
+                var candidate in outsideFrontCover
+                    .SafeSelectNodes(
+                        ".//img | .//div[contains(@class, 'bloom-imageContainer') or contains(@class, 'bloom-canvas')]"
+                    )
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                if (candidate == designatedCoverImage)
+                    continue;
+
+                var candidatePath = GetImagePath(candidate);
+                if (candidatePath == null)
+                    continue;
+
+                if (!ImageUtils.IsPlaceholderImageFilename(candidatePath))
+                {
+                    coverImgElt = candidate;
+                    return candidatePath;
+                }
+
+                if (bestPlaceholderPath == null)
+                {
+                    bestPlaceholderElt = candidate;
+                    bestPlaceholderPath = candidatePath;
+                }
+            }
+
+            coverImgElt = bestPlaceholderElt;
+            return bestPlaceholderPath;
+        }
+
+        private string GetImagePath(SafeXmlElement imageElement)
+        {
+            var imageUrl = HtmlDom.GetImageElementUrl(imageElement);
+            var imageFileName = imageUrl.PathOnly.NotEncoded;
+            if (string.IsNullOrEmpty(imageFileName))
+                return null;
+
+            // The fileName might be URL encoded.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3901.
+            var imagePath = UrlPathString.GetFullyDecodedPath(StoragePageFolder, ref imageFileName);
+
+            // We no longer put placeHolder.png files in books (BL-15441) but we still need to detect when the placeholder
+            // is called for, so return imagePath unchanged when it is a placeholder. Callers of this method should handle this special-case value.
+            if (ImageUtils.IsPlaceholderImageFilename(imagePath))
+                return imagePath;
+
+            if (RobustFile.Exists(imagePath))
+                return imagePath;
+
+            // And the filename might be multiply-HTML encoded.
+            while (imagePath.Contains("&amp;"))
+            {
+                imagePath = HttpUtility.HtmlDecode(imagePath);
+                if (RobustFile.Exists(imagePath))
+                    return imagePath;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -5403,12 +5438,18 @@ namespace Bloom.Book
         public void UpdateSupportFiles()
         {
             Storage.UpdateSupportFiles();
+            UpdateQrCodeHtmlForCurrentSettings();
+        }
+
+        internal void UpdateQrCodeHtmlForCurrentSettings(bool updateQrCodeFileEvenIfItExists = true)
+        {
             BookStorage.UpdateQrCode(
                 OurHtmlDom,
                 CollectionSettings.ShowBlorgLanguageQrCode,
-                Language1Tag,
+                CollectionSettings.PrimaryLangTagWithSignPrioritized,
                 CollectionSettings.BadgeQrCodeLabelLocalizedWithLang,
-                FolderPath
+                FolderPath,
+                updateQrCodeFileEvenIfItExists
             );
         }
 
@@ -5791,7 +5832,7 @@ namespace Bloom.Book
             // Make sure we publish this feature consistent with the publication setting.
             BookInfo.MetaData.Feature_Motion = motion;
 
-            Save();
+            Save(true);
         }
 
         /// <summary>

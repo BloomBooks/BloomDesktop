@@ -17,6 +17,7 @@ export interface IColorBarProps {
     onClick: () => void;
     colorInfo: IColorInfo;
     isDefault?: boolean;
+    alignTextLeft?: boolean;
 }
 // Displays a color bar menu item with optional localizable text.
 export const ColorBar: React.FunctionComponent<IColorBarProps> = (
@@ -62,12 +63,14 @@ export const ColorBar: React.FunctionComponent<IColorBarProps> = (
         borderColor: bloomToolboxWhite,
         borderRadius: 4,
         display: "flex",
-        justifyContent: props.isDefault ? "flex-start" : "center",
+        justifyContent:
+            props.isDefault || props.alignTextLeft ? "flex-start" : "center",
     };
 
     const textStyles: CSSProperties = {
         color: textColor,
         paddingTop: 4,
+        paddingLeft: props.alignTextLeft ? 10 : 0,
     };
 
     const defaultColor = [backgroundColorString];

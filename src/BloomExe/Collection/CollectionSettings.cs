@@ -421,7 +421,7 @@ namespace Bloom.Collection
                 var pattern = BadgeQrCodeLabelLocalized;
                 try
                 {
-                    return string.Format(pattern, Language1.Name);
+                    return string.Format(pattern, PrimaryLanguageWithSignPrioritized);
                 }
                 catch (FormatException)
                 {
@@ -430,6 +430,13 @@ namespace Bloom.Collection
                 }
             }
         }
+
+        // For the Books on Blorg Progress Bar and QR Code, if a Sign Language is defined, we use that.
+        public string PrimaryLangTagWithSignPrioritized =>
+            string.IsNullOrEmpty(SignLanguageTag) ? Language1Tag : SignLanguageTag;
+
+        public string PrimaryLanguageWithSignPrioritized =>
+            string.IsNullOrEmpty(SignLanguageTag) ? Language1.Name : SignLanguage.Name;
 
         public string BadgeQrCodeLabelLocalized
         {

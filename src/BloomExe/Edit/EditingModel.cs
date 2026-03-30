@@ -1293,7 +1293,12 @@ namespace Bloom.Edit
                 "pageThumbnailList",
                 useViteDev ? "pageThumbnailList.vite-dev.html" : "pageThumbnailList.html"
             );
-            var _baseHtml = RobustFile.ReadAllText(frame, Encoding.UTF8);
+            var backColor = MiscUtils.ColorToHtmlCode(Palette.SidePanelBackgroundColor);
+            var _baseHtml = RobustFile
+                .ReadAllText(frame, Encoding.UTF8)
+                .Replace("DarkGray", backColor);
+            if (useViteDev)
+                _baseHtml = ReactControl.ReplaceViteDevOrigin(_baseHtml);
             var pages = CurrentBook.GetPages().ToList();
             var sizeClass =
                 pages.Count > 1
@@ -1344,7 +1349,6 @@ namespace Bloom.Edit
                 "img { image-rendering: optimizeSpeed; image-rendering: crisp-edges; }";
             pageListDom.RawDom.GetElementsByTagName("head")[0].AppendChild(style);
         }
-
         internal void SaveToolboxSettings(string data)
         {
             // ref BL-9859, BL-9912, BL-9978
@@ -1406,11 +1410,17 @@ namespace Bloom.Edit
         //				}
         //				var idOfFirstPageInTemplateBook = CurrentBook.FindTemplateBook().GetPageByIndex(0).Id;
         //				if (AddNewPageBasedOnTemplate(idOfFirstPageInTemplateBook))
-        //					return;
-        //			}
-        //			if(this._view!=null)
-        //				this._view.ShowAddPageDialog();
-        //		}
+        /// <summary>
+        /// Save all the changes to the current page, then reload it (thus restoring any UI stuff that
+        /// was stripped out by the Save).
+        /// </summary>
+        internal void SavePageAndReloadIt(bool forceFullSave = false)
+        {
+            if (CannotSavePage())
+                return;
+            _nextSaveMustBeFull |= forceFullSave;
+            SaveThen(() => _pageSelection.CurrentSelection.Id, () => { });
+        }
 
         //invoked from TopicChooserDialog.tsx via API
         internal void SetTopic(string englishTopicAsKey)
@@ -1426,30 +1436,6 @@ namespace Bloom.Edit
         {
             SavePageAndReloadIt();
             request.PostSucceeded();
-        }
-
-        internal void RethinkPageAndReloadItAndReportIfItFails(bool forceFullSave = false)
-        {
-            try
-            {
-                SavePageAndReloadIt(forceFullSave);
-            }
-            catch (Exception e)
-            {
-                NonFatalProblem.Report(ModalIf.Beta, PassiveIf.Beta, e.Message, e.ToString());
-            }
-        }
-
-        /// <summary>
-        /// Save all the changes to the current page, then reload it (thus restoring any UI stuff that
-        /// was stripped out by the Save).
-        /// </summary>
-        internal void SavePageAndReloadIt(bool forceFullSave = false)
-        {
-            if (CannotSavePage())
-                return;
-            _nextSaveMustBeFull |= forceFullSave;
-            SaveThen(() => _pageSelection.CurrentSelection.Id, () => { });
         }
 
         private bool CannotSavePage()
