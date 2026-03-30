@@ -2323,6 +2323,12 @@
         <source xml:lang="en">Style</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Style</note>
         <note>Refers to the STYLE of bubble used by the callout</note>
+        <note>obsolete as of 6.3, replaced by following</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ElementType" sil:dynamic="true">
+        <source xml:lang="en">Element Type</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.ElementType</note>
+        <note>Refers to the type of bubble used by the callout</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Caption" sil:dynamic="true">
         <source xml:lang="en">Caption</source>
