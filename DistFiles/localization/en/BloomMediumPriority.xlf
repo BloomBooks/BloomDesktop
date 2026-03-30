@@ -753,11 +753,6 @@
         <note>ID: BookAndPageSettings.PageArea</note>
         <note>Area label for tabs/pages that affect only the current page.</note>
       </trans-unit>
-      <trans-unit id="BookAndPageSettings.PageArea.Description" sil:dynamic="true">
-        <source xml:lang="en">Page settings apply to the current page.</source>
-        <note>ID: BookAndPageSettings.PageArea.Description</note>
-        <note>Description text shown for the Page area in the combined Book and Page Settings dialog.</note>
-      </trans-unit>
       <trans-unit id="BookAndPageSettings.Colors" sil:dynamic="true">
         <source xml:lang="en">Colors</source>
         <note>ID: BookAndPageSettings.Colors</note>

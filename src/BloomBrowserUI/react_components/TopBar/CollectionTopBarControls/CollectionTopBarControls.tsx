@@ -70,8 +70,8 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
             >
                 <TopBarButton
                     iconPath={kSettingsIcon}
-                    labelL10nKey="CollectionSettingsDialog.Title"
-                    labelEnglish="Collection Settings"
+                    labelL10nKey="CollectionTab.SettingsButton"
+                    labelEnglish="Settings"
                     onClick={handleLegacySettingsClick}
                     backgroundColor={mainButtonBackground}
                     textColor={mainButtonTextColor}
