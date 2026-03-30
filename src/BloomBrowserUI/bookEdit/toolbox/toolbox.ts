@@ -585,6 +585,7 @@ export class ToolBox {
         const activeToolId = getActiveToolIdFromCurrentToolboxUi();
         const checkBoxId = toolId + "Check";
         beginAddTool(checkBoxId, toolIdWithTool, false, () => {
+            invalidatePendingJQueryAccordionActivationRetries();
             const adapter = getToolboxReactAdapter();
             if (adapter) {
                 if (activeToolId) {
@@ -676,6 +677,8 @@ export function getMasterToolList() {
 const masterToolList: ITool[] = [];
 let currentTool: ITool | undefined = undefined;
 let toolboxReactActivationHooked = false;
+let jQueryAccordionActivationHooked = false;
+let latestJQueryAccordionActivationRequestId = 0;
 
 // The AI decided to create this react adapter object and save in in a window variable.
 // It gets set in a useEffect in the React component that is the root of the toolbox.
@@ -716,6 +719,29 @@ function getActiveToolIdFromCurrentToolboxUi(): string | undefined {
 function isAccordionInitialized(toolboxElement: JQuery): boolean {
     return toolboxElement.hasClass("ui-accordion");
 }
+
+function ensureJQueryAccordionActivationHook(toolbox: JQuery): void {
+    if (jQueryAccordionActivationHooked) {
+        return;
+    }
+
+    toolbox.onSafe("accordionactivate.toolbox", (event, ui) => {
+        let newToolName = "";
+        if (ui.newHeader.attr("data-toolId")) {
+            newToolName = ui.newHeader.attr("data-toolId").toString();
+        }
+        switchTool(newToolName);
+    });
+    jQueryAccordionActivationHooked = true;
+}
+
+function invalidatePendingJQueryAccordionActivationRetries(): void {
+    latestJQueryAccordionActivationRequestId++;
+}
+
+const initialAccordionInitializationRetryDelayInMilliseconds = 10;
+const maximumAccordionInitializationRetryDelayInMilliseconds = 50;
+const maxMillisecondsToWaitForAccordionInitialization = 3000;
 
 // This primarily calls the detachFromPage method of the current tool, if any.
 // It also tries to find the current toolbox instance (in the right iframe, wherever it is called),
@@ -999,6 +1025,8 @@ export function removeToolboxMarkup() {
 }
 
 function switchTool(newToolName: string): void {
+    invalidatePendingJQueryAccordionActivationRetries();
+
     // Have Bloom remember which tool is active. (Might be none)
     postString("editView/saveToolboxSetting", "current\t" + newToolName);
     let newTool: ITool | null = null;
@@ -1088,7 +1116,12 @@ async function activateToolInternalAsync(
  * This function attempts to activate the tool whose "data-toolId" attribute is equal to the value
  * of "currentTool" (the last tool displayed).
  */
-function setCurrentTool(toolID: string, retryCount = 0) {
+function setCurrentTool(
+    toolID: string,
+    retryCount = 0,
+    waitStartTime = Date.now(),
+    requestId = ++latestJQueryAccordionActivationRequestId,
+) {
     // I'm downright grumpy about how this code sometimes uses names with "Tool" appended, sometimes doesn't.
     // For now I'm just making functions work with either form.
     toolID = ToolBox.addToolToString(toolID);
@@ -1119,11 +1152,61 @@ function setCurrentTool(toolID: string, retryCount = 0) {
     // NOTE: tools without a "data-toolId" attribute (such as the More tool) cannot be the "currentTool."
     let idx = 0;
     const toolbox = $("#toolbox");
+    ensureJQueryAccordionActivationHook(toolbox);
+
+    if (requestId !== latestJQueryAccordionActivationRequestId) {
+        return;
+    }
+
     if (!isAccordionInitialized(toolbox)) {
-        if (retryCount >= 50) {
-            throw new Error("Toolbox accordion did not initialize.");
+        const elapsedTime = Date.now() - waitStartTime;
+        if (elapsedTime >= maxMillisecondsToWaitForAccordionInitialization) {
+            const accordionHeaders = toolbox.find("> h3");
+            const requestedToolIsAvailable = !!(
+                toolID &&
+                accordionHeaders.filter(function () {
+                    return $(this).attr("data-toolId") === toolID;
+                }).length
+            );
+            const currentToolId = currentTool
+                ? ToolBox.addToolToString(currentTool.id())
+                : "";
+            const currentToolIsAvailable = !!(
+                currentToolId &&
+                accordionHeaders.filter(function () {
+                    return $(this).attr("data-toolId") === currentToolId;
+                }).length
+            );
+            const fallbackToolId = requestedToolIsAvailable
+                ? toolID
+                : currentToolIsAvailable
+                  ? currentToolId
+                  : ((accordionHeaders.first().attr("data-toolId") as
+                        | string
+                        | undefined) ?? "");
+            console.error(
+                `Toolbox accordion did not initialize within ${elapsedTime}ms while activating ${toolID || "the default tool"}. Falling back without waiting for the accordion UI.`,
+            );
+            if (fallbackToolId) {
+                switchTool(fallbackToolId);
+            }
+            return;
         }
-        window.setTimeout(() => setCurrentTool(toolID, retryCount + 1), 0);
+        const retryDelay = Math.min(
+            initialAccordionInitializationRetryDelayInMilliseconds *
+                (retryCount + 1),
+            maximumAccordionInitializationRetryDelayInMilliseconds,
+        );
+        window.setTimeout(
+            () =>
+                setCurrentTool(
+                    toolID,
+                    retryCount + 1,
+                    waitStartTime,
+                    requestId,
+                ),
+            retryDelay,
+        );
         return;
     }
 
@@ -1164,18 +1247,6 @@ function setCurrentTool(toolID: string, retryCount = 0) {
     // turn animation back on
     toolbox.accordion("option", "animate", ani);
 
-    // when a tool is activated, save its data-toolId so state can be restored when Bloom is restarted.
-    // We do this after we actually set the initial tool, because setting the intial tool may not CHANGE
-    // the active tool (if it's already the one we want, typically the first), so we can't rely on
-    // the activate event happening in the initial call. Instead, we make SURE to call it for the
-    // tool we are making active.
-    toolbox.onSafe("accordionactivate.toolbox", (event, ui) => {
-        let newToolName = "";
-        if (ui.newHeader.attr("data-toolId")) {
-            newToolName = ui.newHeader.attr("data-toolId").toString();
-        }
-        switchTool(newToolName);
-    });
     //alert("switching to " + currentTool + " which has index " + toolIndex);
     //setTimeout(e => switchTool(currentTool), 700);
     switchTool(toolID);
@@ -1808,10 +1879,12 @@ function loadToolboxTool(
         if (adapter) {
             const toolId = header.attr("data-toolId");
             if (toolId) {
+                invalidatePendingJQueryAccordionActivationRetries();
                 adapter.setActiveToolByToolId(toolId);
                 switchTool(toolId);
             }
         } else {
+            invalidatePendingJQueryAccordionActivationRetries();
             toolboxElt.accordion("refresh");
             const id = header.attr("id");
             const toolNumber = parseInt(
@@ -1843,6 +1916,7 @@ function showToolboxChanged(wasShowing: boolean): void {
                 `Toolbox deactivating: ${currentTool.id()}`,
             );
         } else {
+            invalidatePendingJQueryAccordionActivationRetries();
             activateTool(currentTool);
         }
     } else {
