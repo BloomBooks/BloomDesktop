@@ -2154,6 +2154,11 @@
         <target xml:lang="pbu" state="final">د عنوان د ټاکلو لپاره زور وکړئ</target>
         <note>ID: EditTab.FrontMatter.TopicPrompt</note>
       </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.TopicPrompt2" translate="no">
+        <source xml:lang="en">Choose topic</source>
+        <target xml:lang="pbu" state="needs-translation">Choose topic</target>
+        <note>ID: EditTab.FrontMatter.TopicPrompt2</note>
+      </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Acknowledgments for translated version, in {lang}</source>
         <target xml:lang="pbu" state="final">د ژباړل شوي ژبې لپاره تصدیق په ‏{lang}‏ کې</target>
