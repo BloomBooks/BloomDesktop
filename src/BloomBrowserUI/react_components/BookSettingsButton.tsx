@@ -12,11 +12,19 @@ import {
 
 const bookSettingsIconPath = `${getBloomApiPrefix(false)}images/book-settings.png`;
 
-export const BookSettingsButton: React.FunctionComponent = (props) => {
-    const handleClick = React.useCallback(() => {
-        const pageKey = getCurrentPageElement().classList.contains("cover")
+export const getInitialBookSettingsPageKey = (): string => {
+    try {
+        return getCurrentPageElement().classList.contains("cover")
             ? "cover"
             : "contentPages";
+    } catch {
+        return "contentPages";
+    }
+};
+
+export const BookSettingsButton: React.FunctionComponent = (props) => {
+    const handleClick = React.useCallback(() => {
+        const pageKey = getInitialBookSettingsPageKey();
         showBookSettingsDialog(pageKey);
     }, []);
 
