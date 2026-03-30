@@ -281,10 +281,6 @@ export function showAboutDialogFromWorkspaceRoot() {
     showAboutDialog();
 }
 
-export function showAboutDialogInEditTab() {
-    showAboutDialog();
-}
-
 export function showRequiresSubscriptionDialog(featureName: string): void {
     showRequiresSubscriptionDialogInEditView(featureName);
 }
@@ -374,7 +370,6 @@ interface WorkspaceBundleApi {
     showCopyrightAndLicenseDialog: typeof showCopyrightAndLicenseDialog;
     showEditViewTopicChooserDialog: typeof showEditViewTopicChooserDialog;
     showAboutDialogFromWorkspaceRoot: typeof showAboutDialogFromWorkspaceRoot;
-    showAboutDialogInEditTab: typeof showAboutDialogInEditTab;
     showRequiresSubscriptionDialog: typeof showRequiresSubscriptionDialog;
     showRegistrationDialogFromWorkspaceRoot: typeof showRegistrationDialogFromWorkspaceRoot;
     showAdjustTimingsDialogFromWorkspaceRoot: typeof showAdjustTimingsDialogFromWorkspaceRoot;
@@ -415,7 +410,6 @@ window.workspaceBundle = {
     showCopyrightAndLicenseDialog,
     showEditViewTopicChooserDialog,
     showAboutDialogFromWorkspaceRoot,
-    showAboutDialogInEditTab,
     showRequiresSubscriptionDialog,
     showRegistrationDialogFromWorkspaceRoot,
     showAdjustTimingsDialogFromWorkspaceRoot:
