@@ -85,7 +85,7 @@ export interface IColorPickerDialogProps {
     //defaultColor?: IColorInfo; eventually we'll need this
 }
 
-let externalSetOpen: React.Dispatch<React.SetStateAction<boolean>>;
+let externalSetOpen: React.Dispatch<React.SetStateAction<boolean>> = () => {};
 
 const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
     const MAX_SWATCHES = 21;
