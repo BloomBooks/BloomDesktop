@@ -7,8 +7,8 @@ import {
     DragActivityTabControl,
     kIdForDragActivityTabControl,
 } from "../toolbox/games/DragActivityTabControl";
-import { getWorkspaceBundleExports } from "./workspaceFrames";
 import { CogIcon } from "./CogIcon";
+import { getWorkspaceBundleExports } from "./workspaceFrames";
 
 interface IAbovePageControlsState {
     isGamePage: boolean;
@@ -147,7 +147,7 @@ const AbovePageControls: React.FunctionComponent<IAbovePageControlsState> = (
                         align-items: center;
                     `}
                 >
-                    <PageSettingsButton />
+                    {/* <PageSettingsButton /> */}
                 </div>
                 <div
                     id={kIdForDragActivityTabControl}
@@ -177,7 +177,7 @@ const AbovePageControls: React.FunctionComponent<IAbovePageControlsState> = (
                     align-items: center;
                 `}
             >
-                <PageSettingsButton />
+                {/* <PageSettingsButton /> */}
             </div>
             <div
                 css={css`

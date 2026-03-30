@@ -41,7 +41,7 @@ function renderSettingsPane(
                     </ConfigrStatic>
                 </ConfigrPage>
             </ConfigrArea>
-            <ConfigrArea key="pageArea" label="Page" pageKey="pageArea">
+            <ConfigrArea key="pageArea" label="Current Page" pageKey="pageArea">
                 <ConfigrPage key="colors" label="Colors" pageKey="colors">
                     <ConfigrStatic>
                         <div>Colors content</div>

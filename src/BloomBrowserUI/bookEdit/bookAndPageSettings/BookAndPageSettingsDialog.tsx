@@ -39,6 +39,7 @@ import { useBookSettingsAreaDefinition } from "./BookSettingsConfigrPages";
 let isOpenAlready = false;
 const kBookSettingsDialogWidthPx = 900;
 const kBookSettingsDialogHeightPx = 720;
+const kConfigrPaneClassName = "book-page-settings-configr-pane";
 
 type IPageStyle = { label: string; value: string };
 type IPageStyles = Array<IPageStyle>;
@@ -399,11 +400,19 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
                         margin-top: 0; // override the default that sees a lack of a title and adds a margin
                     }
                     overflow-y: hidden;
+                    min-height: 0;
 
-                    // HACK: TODO get the divs to all just maximize height until the available space is used or we don't need anymore height
+                    .${kConfigrPaneClassName} {
+                        height: 100%;
+                        min-height: 0;
+                    }
+
+                    // Let config-r consume the available dialog height in both the page form and
+                    // the area-description states so the button row stays pinned to the bottom.
                     form {
                         overflow-y: auto;
-                        height: 600px;
+                        height: 100%;
+                        min-height: 0;
                         width: 100%;
                         box-sizing: border-box;
                         #groups {
@@ -418,6 +427,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
             >
                 {configrInitialValues && (
                     <ConfigrPane
+                        className={kConfigrPaneClassName}
                         label={bookSettingsTitle}
                         initialValues={configrInitialValues}
                         themeOverrides={{

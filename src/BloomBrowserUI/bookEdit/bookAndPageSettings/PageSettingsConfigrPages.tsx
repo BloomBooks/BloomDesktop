@@ -536,7 +536,10 @@ export type IPageSettingsAreaDefinition = {
 export const usePageSettingsAreaDefinition = (props: {
     onColorPickerVisibilityChanged?: (open: boolean) => void;
 }): IPageSettingsAreaDefinition => {
-    const pageAreaLabel = useL10n("Page", "BookAndPageSettings.PageArea");
+    const pageAreaLabel = useL10n(
+        "Current Page",
+        "BookAndPageSettings.PageArea",
+    );
     const colorsPageLabel = useL10n("Colors", "BookAndPageSettings.Colors");
     const pageAreaDescription = useL10n(
         "Page settings apply to the current page.",
