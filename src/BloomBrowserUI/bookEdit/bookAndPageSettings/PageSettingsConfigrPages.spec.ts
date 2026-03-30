@@ -91,4 +91,62 @@ describe("PageSettingsConfigrPages", () => {
             "#ABCDEF",
         );
     });
+
+    it("uses the target default theme semantics during a theme change", () => {
+        document.head.innerHTML = `<style>
+            .bloom-page {
+                --page-background-color: #2e2e2e;
+                --marginBox-background-color: #ffffff;
+                --page-and-marginBox-are-same-color-multiplicand: 0;
+            }
+        </style>`;
+        const page = document.body.querySelector(".bloom-page") as HTMLElement;
+
+        applyPageSettings(
+            {
+                page: {
+                    backgroundColor: "#ABCDEF",
+                    pageNumberColor: "#000000",
+                    pageNumberOutlineColor: "transparent",
+                    pageNumberBackgroundColor: "transparent",
+                },
+            },
+            "default",
+        );
+
+        expect(
+            page.style.getPropertyValue("--marginBox-background-color"),
+        ).toBe("#ABCDEF");
+        expect(page.style.getPropertyValue("--page-background-color")).toBe(
+            "#ABCDEF",
+        );
+    });
+
+    it("uses the target rounded theme semantics during a theme change", () => {
+        document.head.innerHTML = `<style>
+            .bloom-page {
+                --page-background-color: #ffffff;
+                --marginBox-background-color: #ffffff;
+                --page-and-marginBox-are-same-color-multiplicand: 1;
+            }
+        </style>`;
+        const page = document.body.querySelector(".bloom-page") as HTMLElement;
+
+        applyPageSettings(
+            {
+                page: {
+                    backgroundColor: "#ABCDEF",
+                    pageNumberColor: "#000000",
+                    pageNumberOutlineColor: "transparent",
+                    pageNumberBackgroundColor: "transparent",
+                },
+            },
+            "rounded-border-ebook",
+        );
+
+        expect(
+            page.style.getPropertyValue("--marginBox-background-color"),
+        ).toBe("#ABCDEF");
+        expect(page.style.getPropertyValue("--page-background-color")).toBe("");
+    });
 });

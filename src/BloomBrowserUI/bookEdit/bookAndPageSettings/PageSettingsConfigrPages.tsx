@@ -35,6 +35,8 @@ export const getCurrentPageElement = (): HTMLElement => {
 };
 
 const kTransparentCssValue = "transparent";
+const kUnifiedBackgroundThemes = new Set(["default", "zero-margin-ebook"]);
+const kSeparatedBackgroundThemes = new Set(["rounded-border-ebook"]);
 
 const normalizeToHexOrEmpty = (color: string): string => {
     const trimmed = color.trim();
@@ -127,36 +129,32 @@ const getCurrentPageBackgroundColor = (): string => {
     return computedBackground || "#FFFFFF";
 };
 
-const getEffectivePageBackgroundColor = (page: HTMLElement): string => {
-    const computedPage = getComputedStyleForPage(page);
-    const computedVariable = normalizeToHexOrEmpty(
-        computedPage.getPropertyValue("--page-background-color"),
-    );
-    if (computedVariable) return computedVariable;
+const doesThemeUseUnifiedPageBackground = (
+    page: HTMLElement,
+    targetThemeName?: string,
+): boolean => {
+    if (targetThemeName) {
+        if (kUnifiedBackgroundThemes.has(targetThemeName)) {
+            return true;
+        }
 
-    const computedBackground = normalizeToHexOrEmpty(
-        computedPage.backgroundColor,
-    );
-    return computedBackground || "#FFFFFF";
-};
-
-const getEffectiveMarginBoxBackgroundColor = (page: HTMLElement): string => {
-    const computedPage = getComputedStyleForPage(page);
-    const computedMarginBoxVariable = normalizeToHexOrEmpty(
-        computedPage.getPropertyValue("--marginBox-background-color"),
-    );
-    if (computedMarginBoxVariable) return computedMarginBoxVariable;
-
-    const marginBox = page.querySelector(".marginBox") as HTMLElement | null;
-    if (marginBox) {
-        const computedMarginBoxBackground = normalizeToHexOrEmpty(
-            getComputedStyleForPage(marginBox).backgroundColor,
-        );
-        if (computedMarginBoxBackground) return computedMarginBoxBackground;
+        if (kSeparatedBackgroundThemes.has(targetThemeName)) {
+            return false;
+        }
     }
 
-    return getEffectivePageBackgroundColor(page);
+    const computedPage = getComputedStyleForPage(page);
+    const multiplicand = Number.parseFloat(
+        computedPage
+            .getPropertyValue(
+                "--page-and-marginBox-are-same-color-multiplicand",
+            )
+            .trim(),
+    );
+
+    return Number.isNaN(multiplicand) || multiplicand > 0;
 };
+
 const setOrRemoveCustomProperty = (
     style: CSSStyleDeclaration,
     propertyName: string,
@@ -183,19 +181,22 @@ const setOrRemoveCustomPropertyAllowTransparent = (
     }
 };
 
-const setCurrentPageBackgroundColor = (color: string): void => {
+const setCurrentPageBackgroundColor = (
+    color: string,
+    targetThemeName?: string,
+): void => {
     const page = getCurrentPageElement();
-    const effectivePageBackgroundColor = getEffectivePageBackgroundColor(page);
-    const effectiveMarginBoxBackgroundColor =
-        getEffectiveMarginBoxBackgroundColor(page);
+
     setOrRemoveCustomProperty(
         page.style,
         "--marginBox-background-color",
         color,
     );
 
-    if (effectivePageBackgroundColor === effectiveMarginBoxBackgroundColor) {
+    if (doesThemeUseUnifiedPageBackground(page, targetThemeName)) {
         setOrRemoveCustomProperty(page.style, "--page-background-color", color);
+    } else {
+        page.style.removeProperty("--page-background-color");
     }
 };
 
@@ -281,8 +282,14 @@ export const getCurrentPageSettings = (): IPageSettings => {
     };
 };
 
-export const applyPageSettings = (settings: IPageSettings): void => {
-    setCurrentPageBackgroundColor(settings.page.backgroundColor);
+export const applyPageSettings = (
+    settings: IPageSettings,
+    targetThemeName?: string,
+): void => {
+    setCurrentPageBackgroundColor(
+        settings.page.backgroundColor,
+        targetThemeName,
+    );
     setPageNumberColor(settings.page.pageNumberColor);
     setPageNumberOutlineColor(settings.page.pageNumberOutlineColor);
     setPageNumberBackgroundColor(settings.page.pageNumberBackgroundColor);
