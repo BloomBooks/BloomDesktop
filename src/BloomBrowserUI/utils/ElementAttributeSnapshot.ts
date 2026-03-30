@@ -2,6 +2,10 @@ export type ElementAttributeMap = {
     [attributeName: string]: string;
 };
 
+// Captures the full attribute set from a DOM element so callers can restore it later.
+// BookAndPageSettingsDialog uses this to snapshot the current page element when the
+// dialog opens, then restore the original page attributes if the user cancels after
+// live settings changes have mutated the page.
 export class ElementAttributeSnapshot {
     private readonly attributes: ElementAttributeMap;
 

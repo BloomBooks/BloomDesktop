@@ -78,6 +78,10 @@ interface IContextMenuPoint {
     pageId: string;
 }
 
+// Thumbnails render only the page div, but many Bloom layout rules are written against
+// body[data-*] selectors. Copy the book body's data-* attributes onto a wrapper here so
+// those selectors still match in the thumbnail pane. Lowercase them first because React
+// only forwards custom DOM attributes reliably when the prop name is lowercase.
 const normalizeBookDisplayAttributes = (
     attributes: Record<string, string>,
 ): Record<string, string> => {

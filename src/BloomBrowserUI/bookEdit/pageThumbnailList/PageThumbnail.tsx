@@ -45,6 +45,8 @@ export const PageThumbnail: React.FunctionComponent<{
     // So we do it lazily after setting up the initial framework of pages.
     const requestPage = useCallback(() => {
         if (props.page.key === "placeholder") {
+            // Placeholder entries still go through the effect that increments the
+            // pending count, so balance it before skipping the request.
             pendingPageRequestCount--;
             return;
         }
