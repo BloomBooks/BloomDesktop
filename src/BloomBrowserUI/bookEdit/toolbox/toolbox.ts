@@ -585,7 +585,6 @@ export class ToolBox {
         const activeToolId = getActiveToolIdFromCurrentToolboxUi();
         const checkBoxId = toolId + "Check";
         beginAddTool(checkBoxId, toolIdWithTool, false, () => {
-            invalidatePendingJQueryAccordionActivationRetries();
             const adapter = getToolboxReactAdapter();
             if (adapter) {
                 if (activeToolId) {
@@ -739,6 +738,15 @@ function ensureJQueryAccordionActivationHook(toolbox: JQuery): void {
 const initialAccordionInitializationRetryDelayInMilliseconds = 10;
 const maximumAccordionInitializationRetryDelayInMilliseconds = 50;
 const maxMillisecondsToWaitForAccordionInitialization = 3000;
+let pendingSetCurrentToolRetryTimeout: number | undefined;
+let latestSetCurrentToolRequestToken = 0;
+
+function clearPendingSetCurrentToolRetry(): void {
+    if (pendingSetCurrentToolRetryTimeout !== undefined) {
+        window.clearTimeout(pendingSetCurrentToolRetryTimeout);
+        pendingSetCurrentToolRetryTimeout = undefined;
+    }
+}
 
 // This primarily calls the detachFromPage method of the current tool, if any.
 // It also tries to find the current toolbox instance (in the right iframe, wherever it is called),
@@ -1115,7 +1123,16 @@ function setCurrentTool(
     toolID: string,
     retryCount = 0,
     waitStartTime = Date.now(),
+    requestToken?: number,
 ) {
+    const currentRequestToken =
+        requestToken ?? ++latestSetCurrentToolRequestToken;
+    if (requestToken === undefined) {
+        clearPendingSetCurrentToolRetry();
+    } else if (currentRequestToken !== latestSetCurrentToolRequestToken) {
+        return;
+    }
+
     // I'm downright grumpy about how this code sometimes uses names with "Tool" appended, sometimes doesn't.
     // For now I'm just making functions work with either form.
     toolID = ToolBox.addToolToString(toolID);
@@ -1170,10 +1187,15 @@ function setCurrentTool(
         );
         // A 0ms retry loop can burn through the whole retry budget before jQuery finishes
         // initializing on a slow startup, so back off a little and cap the total wait time.
-        window.setTimeout(
-            () => setCurrentTool(toolID, retryCount + 1, waitStartTime),
-            retryDelay,
-        );
+        pendingSetCurrentToolRetryTimeout = window.setTimeout(() => {
+            pendingSetCurrentToolRetryTimeout = undefined;
+            setCurrentTool(
+                toolID,
+                retryCount + 1,
+                waitStartTime,
+                currentRequestToken,
+            );
+        }, retryDelay);
         return;
     }
 
