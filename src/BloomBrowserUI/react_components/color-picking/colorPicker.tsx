@@ -144,6 +144,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
         "Default for style",
         "EditTab.DirectFormatting.labelForDefaultColor",
     );
+    const sampleColorTitle = useL10n("Sample Color", "ColorPicker.SampleColor");
     const defaultButtonLabel = props.defaultButtonLabel ?? defaultStyleLabel;
 
     const cloneColor = (color: IColorInfo): IColorInfo => {
@@ -319,7 +320,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
                 {hasNativeEyedropper && (
                     <IconButton
                         size="medium"
-                        title="Sample Color"
+                        title={sampleColorTitle}
                         onClick={handleEyedropperClick}
                         disabled={eyedropperActive}
                         css={css`

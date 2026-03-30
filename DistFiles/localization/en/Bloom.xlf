@@ -914,6 +914,11 @@
         <note>ID: ColorPicker.New</note>
         <note>A background color selection that enables a color picker.</note>
       </trans-unit>
+      <trans-unit id="ColorPicker.SampleColor" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Sample Color</source>
+        <note>ID: ColorPicker.SampleColor</note>
+        <note>Tooltip text on the eyedropper button that samples a color from the page.</note>
+      </trans-unit>
       <trans-unit id="Common.BookSettings">
         <source xml:lang="en">Book Settings</source>
         <note>ID: Common.BookSettings</note>
