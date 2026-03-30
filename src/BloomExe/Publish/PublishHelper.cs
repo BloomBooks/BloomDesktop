@@ -1052,7 +1052,8 @@ namespace Bloom.Publish
             ImageUtils.ReallyCropImages(
                 modifiedBook.RawDom,
                 modifiedBook.FolderPath,
-                modifiedBook.FolderPath
+                modifiedBook.FolderPath,
+                true
             );
             // Must come after ReallyCropImages, because any cropping for background images is
             // destroyed by SimplifyBackgroundImages.
@@ -1066,7 +1067,10 @@ namespace Bloom.Publish
                 var childrenToRemove = dataDiv
                     .ChildNodes.OfType<SafeXmlElement>()
                     .Where(child =>
-                        child.ChildNodes.OfType<SafeXmlElement>().FirstOrDefault()?.HasClass("bloom-canvas")
+                        child
+                            .ChildNodes.OfType<SafeXmlElement>()
+                            .FirstOrDefault()
+                            ?.HasClass("bloom-canvas")
                         ?? false
                     )
                     .ToArray();
