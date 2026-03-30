@@ -731,6 +731,7 @@
         <source xml:lang="en">Book Settings</source>
         <note>BookSettings.Title</note>
         <note>the heading of the dialog</note>
+        <note>Obsolete as of 6.4</note>
       </trans-unit>
       <trans-unit id="BookAndPageSettings.Title" sil:dynamic="true">
         <source xml:lang="en">Book and Page Settings</source>
