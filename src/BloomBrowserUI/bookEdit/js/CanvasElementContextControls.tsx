@@ -1223,7 +1223,7 @@ const fieldTypeData: Array<{
             "bloom-alwaysShowBubble",
             "Cover-Default-style",
         ],
-        hint: "Click to choose topic",
+        hint: "Choose topic",
         functionOnHintClick: "showTopicChooser",
     },
 ];
