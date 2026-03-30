@@ -1217,7 +1217,7 @@ export function localizeCkeditorTooltips(bar: JQuery) {
 // This is invoked when we are about to change pages.
 function removeEditingDebris() {
     resetAbovePageControls();
-    // We are mirroring the changeLayoutModeToggleClickHandler() here, in case the user changes
+    // We are mirroring the Change Layout mode toggle behavior here, in case the user changes
     // pages while the Change Layout mode toggle is on.
     // The DOM here is for just one page, so there's only ever one marginBox.
     const marginBox = document.getElementsByClassName("marginBox")[0];
