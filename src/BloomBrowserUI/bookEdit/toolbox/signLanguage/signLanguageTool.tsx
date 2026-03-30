@@ -785,7 +785,7 @@ export class SignLanguageToolControls extends React.Component<
 }
 
 export class SignLanguageTool extends ToolboxToolReactAdaptor {
-    private reactControls: SignLanguageToolControls;
+    private reactControls?: SignLanguageToolControls;
 
     public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
@@ -847,7 +847,11 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     public detachFromPage() {
-        this.reactControls.setNoVideo(false);
+        const reactControls = this.reactControls;
+        if (!reactControls) {
+            return;
+        }
+        reactControls.setNoVideo(false);
         // Decided NOT to remove bloom-selected here. It's harmless (only the edit stylesheet
         // does anything with it) and leaving it allows us to keep the same one selected
         // when we come back to the page. This is especially important when refreshing the
@@ -861,7 +865,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
                 );
             }
         }
-        this.reactControls.turnOffVideo();
+        reactControls.turnOffVideo();
     }
 
     public id(): string {
@@ -911,9 +915,13 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     };
 
     public newPageReady() {
+        const reactControls = this.reactControls;
+        if (!reactControls) {
+            return;
+        }
         // among other things, this clears us out of "processing"
         // when the page is refreshed with the new video
-        this.reactControls.setState({
+        reactControls.setState({
             stateClass: "idle",
             // Clear out stale video statistics from any page previously shown.
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-6752.
@@ -923,9 +931,9 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         });
         const containers = SignLanguageTool.getVideoContainers(false);
         if (!containers || containers.length === 0) {
-            if (this.reactControls.state.enabled) {
-                this.reactControls.turnOffVideo();
-                this.reactControls.setState({
+            if (reactControls.state.enabled) {
+                reactControls.turnOffVideo();
+                reactControls.setState({
                     enabled: false,
                 });
             }
@@ -955,9 +963,9 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             }
             // we turn it off when we leave a page, so even if we already have enabled:true,
             // we need to turn it on for this page now we know there is something to record.
-            this.reactControls.turnOnVideo();
-            if (!this.reactControls.state.enabled) {
-                this.reactControls.setState({ enabled: true });
+            reactControls.turnOnVideo();
+            if (!reactControls.state.enabled) {
+                reactControls.setState({ enabled: true });
             }
         }
     }
@@ -965,30 +973,34 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     // This (param) container has just been selected as the current one by either:
     // newPageReady() or the user's click (containerClickListener).
     private updateStateForSelected(container: Element) {
+        const reactControls = this.reactControls;
+        if (!reactControls) {
+            return;
+        }
         const videos = container.getElementsByTagName("video");
         if (videos.length === 0) {
-            this.reactControls.setNoVideo(true);
+            reactControls.setNoVideo(true);
             return;
         }
         const sources = videos[0].getElementsByTagName("source");
 
         if (sources.length === 0) {
-            this.reactControls.setNoVideo(true);
+            reactControls.setNoVideo(true);
             return;
         }
 
         const src = sources[0].getAttribute("src");
         if (!src) {
-            this.reactControls.setNoVideo(true);
+            reactControls.setNoVideo(true);
             return;
         }
         const urlTimingObj = SignLanguageTool.parseVideoSrcAttribute(src);
         const start = urlTimingObj.start;
         const end = urlTimingObj.end; // could be 0.0
-        const stats = this.reactControls.state.videoStatistics;
+        const stats = reactControls.state.videoStatistics;
         stats.startSeconds = start;
         stats.endSeconds = end;
-        this.reactControls.setState({ videoStatistics: stats });
+        reactControls.setState({ videoStatistics: stats });
         get(
             // extractPathComponent doesn't unencode the path, so if needed this
             // URL should already be %encoded. But video filenames in Bloom are currently
@@ -997,15 +1009,14 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             (result) => {
                 const fileExists: boolean = result.data;
                 if (fileExists) {
-                    this.reactControls.getVideoStatsFromFile(); // (async) also sets reactControls state
+                    reactControls.getVideoStatsFromFile(); // (async) also sets reactControls state
                     SignLanguageTool.setCurrentVideoPoint(
                         parseFloat(
-                            this.reactControls.state.videoStatistics
-                                .startSeconds,
+                            reactControls.state.videoStatistics.startSeconds,
                         ),
                     );
                 } else {
-                    this.reactControls.setNoVideo(true);
+                    reactControls.setNoVideo(true);
                 }
             },
         );
