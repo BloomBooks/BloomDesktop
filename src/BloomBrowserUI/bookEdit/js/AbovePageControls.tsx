@@ -3,12 +3,16 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { useL10n } from "../../react_components/l10nHooks";
 import { CustomPageLayoutMenu } from "../toolbox/canvas/customPageLayoutMenu";
-import { kIdForDragActivityTabControl } from "../toolbox/games/DragActivityTabControl";
+import {
+    DragActivityTabControl,
+    kIdForDragActivityTabControl,
+} from "../toolbox/games/DragActivityTabControl";
 import { getWorkspaceBundleExports } from "./workspaceFrames";
 import { CogIcon } from "./CogIcon";
 
 interface IAbovePageControlsState {
     isGamePage: boolean;
+    activeGameTab: number;
     showChangeLayoutModeToggle: boolean;
     isChangeLayoutMode: boolean;
     onChangeLayoutModeToggle?: () => void;
@@ -23,6 +27,7 @@ interface IAbovePageControlsState {
 
 const defaultState: IAbovePageControlsState = {
     isGamePage: false,
+    activeGameTab: 0,
     showChangeLayoutModeToggle: false,
     isChangeLayoutMode: false,
     showPageLayoutMenu: false,
@@ -54,6 +59,17 @@ export function resetAbovePageControls(): void {
     }
 }
 
+export function renderDragActivityTabControl(currentTab: number): void {
+    currentState = {
+        ...currentState,
+        activeGameTab: currentTab,
+    };
+
+    if (currentState.isGamePage) {
+        renderAbovePageControls();
+    }
+}
+
 function renderAbovePageControls(): void {
     const page = document.getElementsByClassName("bloom-page")[0] as
         | HTMLElement
@@ -70,6 +86,7 @@ function renderAbovePageControls(): void {
     ReactDOM.render(
         <AbovePageControls
             isGamePage={currentState.isGamePage}
+            activeGameTab={currentState.activeGameTab}
             showChangeLayoutModeToggle={currentState.showChangeLayoutModeToggle}
             isChangeLayoutMode={currentState.isChangeLayoutMode}
             onChangeLayoutModeToggle={currentState.onChangeLayoutModeToggle}
@@ -138,7 +155,9 @@ const AbovePageControls: React.FunctionComponent<IAbovePageControlsState> = (
                         flex: 1 1 auto;
                         min-width: 0;
                     `}
-                />
+                >
+                    <DragActivityTabControl activeTab={props.activeGameTab} />
+                </div>
             </div>
         );
     }

@@ -6,7 +6,6 @@ import {
     kDarkestBackground,
     toolboxTheme,
 } from "../../../bloomMaterialUITheme";
-import * as ReactDOM from "react-dom";
 import { getToolboxBundleExports } from "../../js/workspaceFrames";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { default as PencilIcon } from "@mui/icons-material/Edit";
@@ -126,23 +125,6 @@ const buttonCss = css`
 
 // also occurs in less files
 export const kIdForDragActivityTabControl = "drag-activity-tab-control";
-
-// This is the function that the editable page iframe exports so that the toolbox can call it
-// to render the Start/Correct/Wrong/Play control.
-// This deliberately does NOT use the cross-iframe getPage() function, because it MUST be
-// called in a way that has it executing in the right context, where document refers to the
-// page iframe document. The toolbox must call it through getEditablePageBundleExports().
-// This is because ReactDOM.render seems to have trouble if we pass it an element that
-// belongs to a different document.
-export function renderDragActivityTabControl(currentTab: number) {
-    const root = document.getElementById(kIdForDragActivityTabControl);
-    if (!root) {
-        // not created yet, try later
-        setTimeout(() => renderDragActivityTabControl(currentTab), 200);
-        return;
-    }
-    ReactDOM.render(<DragActivityTabControl activeTab={currentTab} />, root);
-}
 
 export const Tabs: React.FunctionComponent<{
     value: number;
