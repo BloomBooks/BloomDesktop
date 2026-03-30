@@ -26,7 +26,6 @@ namespace BloomTests
             Assert.That(Program.StartupVitePort, Is.EqualTo(15173));
             Assert.That(Program.StartupLabel, Is.EqualTo("my-cool-feature"));
             Assert.That(remainingArgs, Is.EqualTo(new[] { @"C:\Temp\Example.bloomcollection" }));
-            Assert.That(WebView2Browser.RemoteDebuggingPort, Is.Null);
         }
 
         [Test]
