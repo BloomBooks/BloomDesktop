@@ -1360,6 +1360,15 @@ namespace Bloom.Book
 
                 foreach (SafeXmlElement node in nodesOfInterest)
                 {
+                    var xmatterPageKey = node.GetAttribute(kDataXmatterPage).Trim();
+                    if (
+                        xmatterPageKey != string.Empty
+                        && !data.XmatterPageDataAttributeSets.ContainsKey(xmatterPageKey)
+                    )
+                    {
+                        GatherXmatterPageDataAttributeSetIntoDataSet(data, node);
+                    }
+
                     bool isCollectionValue = false;
                     bool hasCustomLayoutId = node.HasAttribute("data-custom-layout-id");
                     if (hasCustomLayoutId)
@@ -1396,11 +1405,9 @@ namespace Bloom.Book
                     }
                     if (key == String.Empty)
                     {
-                        key = node.GetAttribute(kDataXmatterPage).Trim();
+                        key = xmatterPageKey;
                         if (key != String.Empty)
                         {
-                            if (!data.XmatterPageDataAttributeSets.ContainsKey(key))
-                                GatherXmatterPageDataAttributeSetIntoDataSet(data, node);
                             // This element has a data-xmatter-page attribute. So it is a bloom-page div.
                             // And currently a bloom-page cannot also be an element waiting to be filled with data-collection, so we're done here.
                             continue;
@@ -1772,6 +1779,11 @@ namespace Bloom.Book
         )
         {
             var customLayoutId = node.GetAttribute("data-custom-layout-id").Trim();
+            var xmatterKey = node.GetAttribute(kDataXmatterPage).Trim();
+            if (xmatterKey != string.Empty)
+            {
+                UpdateXmatterPageDataAttributeSets(data, node);
+            }
             if (customLayoutId != string.Empty)
             {
                 // Pages with this attribute typically also have data-xmatter-page.
@@ -1780,11 +1792,6 @@ namespace Bloom.Book
                 // class bloom-customLayout), or in the second pass because it has data-xmatter-page. In either case, we want to restore the custom page content first.
                 // We need to do attribute processing in both cases, but only restore
                 // the page content when we have the class.
-                var xmatterKey = node.GetAttribute(kDataXmatterPage).Trim();
-                if (xmatterKey != string.Empty)
-                {
-                    UpdateXmatterPageDataAttributeSets(data, node);
-                }
                 if (!node.HasClass("bloom-customLayout"))
                 {
                     // This is a custom layout element, but it is not in custom layout mode.
@@ -1801,10 +1808,9 @@ namespace Bloom.Book
 
             if (key == string.Empty)
             {
-                key = node.GetAttribute(kDataXmatterPage).Trim();
+                key = xmatterKey;
                 if (key != string.Empty)
                 {
-                    UpdateXmatterPageDataAttributeSets(data, node);
                     return;
                 }
                 key = node.GetAttribute("data-collection").Trim();

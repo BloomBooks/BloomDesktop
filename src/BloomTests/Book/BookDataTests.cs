@@ -3408,6 +3408,74 @@ namespace BloomTests.Book
                 );
         }
 
+        [Test]
+        public void GatherDataItemsFromXElement_CustomLayoutPageWithXmatterPage_GathersXmatterAttributes()
+        {
+            var dom = new HtmlDom(
+                @"<html><head></head><body>
+				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' data-xmatter-page='frontCover' data-someattribute='someValue'>
+                    <div class='marginBox'>
+                        <div data-book='bookTitle' lang='en'>My Title</div>
+                    </div>
+				</div>
+			</body></html>"
+            );
+            var dataSet = new DataSet();
+            var bookData = new BookData(
+                new HtmlDom("<html><body></body></html>"),
+                _collectionSettings,
+                null
+            );
+
+            bookData.GatherDataItemsFromXElement(dataSet, dom.RawDom.DocumentElement);
+
+            Assert.That(
+                dataSet.XmatterPageDataAttributeSets.TryGetValue(
+                    "frontCover",
+                    out var xmatterAttributes
+                ),
+                Is.True
+            );
+            Assert.That(
+                xmatterAttributes.Single(x => x.Key == "data-someattribute").Value,
+                Is.EqualTo("someValue")
+            );
+            Assert.That(dataSet.TextVariables.ContainsKey("customOutsideFrontCover"), Is.True);
+        }
+
+        [Test]
+        public void UpdateDomFromDataset_CustomLayoutPageWithXmatterPage_RestoresXmatterAttributes()
+        {
+            var dom = new HtmlDom(
+                @"<html><head></head><body>
+				<div id='bloomDataDiv'>
+                    <div data-xmatter-page='frontCover' data-someattribute='someValue'></div>
+                </div>
+				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' data-xmatter-page='frontCover'>
+                    <div class='marginBox'>
+                        <div data-book='bookTitle' lang='en'>My Title</div>
+                    </div>
+				</div>
+			</body></html>"
+            );
+
+            var bookData = new BookData(dom, _collectionSettings, null);
+            var customPage = (SafeXmlElement)
+                dom.RawDom.SelectSingleNode(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']"
+                );
+            customPage.RemoveAttribute("data-someattribute");
+
+            bookData.UpdateDomFromDataset();
+
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover' and @data-xmatter-page='frontCover' and @data-someattribute='someValue']",
+                    1
+                );
+        }
+
         public static CollectionSettings CreateCollection(
             string Language1LangTag = "tpi",
             string Language1Name = "Tok Pisin",
