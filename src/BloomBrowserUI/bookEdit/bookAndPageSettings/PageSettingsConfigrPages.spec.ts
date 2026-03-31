@@ -149,4 +149,34 @@ describe("PageSettingsConfigrPages", () => {
         ).toBe("#ABCDEF");
         expect(page.style.getPropertyValue("--page-background-color")).toBe("");
     });
+
+    it("treats unspecified target themes as unified during a theme change", () => {
+        document.head.innerHTML = `<style>
+            .bloom-page {
+                --page-background-color: #2e2e2e;
+                --marginBox-background-color: #ffffff;
+                --page-and-marginBox-are-same-color-multiplicand: 0;
+            }
+        </style>`;
+        const page = document.body.querySelector(".bloom-page") as HTMLElement;
+
+        applyPageSettings(
+            {
+                page: {
+                    backgroundColor: "#ABCDEF",
+                    pageNumberColor: "#000000",
+                    pageNumberOutlineColor: "transparent",
+                    pageNumberBackgroundColor: "transparent",
+                },
+            },
+            "narrow-margin-ebook",
+        );
+
+        expect(
+            page.style.getPropertyValue("--marginBox-background-color"),
+        ).toBe("#ABCDEF");
+        expect(page.style.getPropertyValue("--page-background-color")).toBe(
+            "#ABCDEF",
+        );
+    });
 });

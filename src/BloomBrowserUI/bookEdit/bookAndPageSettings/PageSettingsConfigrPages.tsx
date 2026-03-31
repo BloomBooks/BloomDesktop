@@ -35,7 +35,6 @@ export const getCurrentPageElement = (): HTMLElement => {
 };
 
 const kTransparentCssValue = "transparent";
-const kUnifiedBackgroundThemes = new Set(["default", "zero-margin-ebook"]);
 const kSeparatedBackgroundThemes = new Set(["rounded-border-ebook"]);
 
 const normalizeToHexOrEmpty = (color: string): string => {
@@ -134,13 +133,11 @@ const doesThemeUseUnifiedPageBackground = (
     targetThemeName?: string,
 ): boolean => {
     if (targetThemeName) {
-        if (kUnifiedBackgroundThemes.has(targetThemeName)) {
-            return true;
-        }
-
         if (kSeparatedBackgroundThemes.has(targetThemeName)) {
             return false;
         }
+
+        return true;
     }
 
     const computedPage = getComputedStyleForPage(page);
