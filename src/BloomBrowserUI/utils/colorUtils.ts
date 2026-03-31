@@ -18,7 +18,7 @@ export const kBloomBuff = "#d2d2d2"; // See @bloom-buff
 export const kBloomToolboxWhite = "#ffffff88"; //See @bloom-toolboxWhite
 export const kBloomPurple = "#96668f"; // See @bloom-purple
 export const kBloomWarning = "#FEBF00"; // darker looked bad on Export to Spreadsheet. See https://issues.bloomlibrary.org/youtrack/issue/BL-10769
-export const kBloomDarkTextOverWarning = "##000000cc"; // black with 20% transparency
+export const kBloomDarkTextOverWarning = "#000000cc"; // black with 20% transparency
 
 export const kFormBackground = "#f0f0f0"; // See @form-background;
 

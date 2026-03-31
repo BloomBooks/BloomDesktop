@@ -358,7 +358,7 @@ namespace Bloom
             }
 
             ToastService.ShowToast(
-                ToastSeverity.Warning,
+                ToastType.Warning,
                 text: shortUserLevelMessage,
                 durationSeconds: 15,
                 action: action
