@@ -193,6 +193,9 @@ namespace Bloom.web.controllers
                 var customLayoutData = book.BookData.GetVariableOrNull(customLayoutId, "*");
                 if (string.IsNullOrEmpty(customLayoutData.Xml))
                 {
+                    // "data-tool-id" needs to be set in TS in order to persist when we
+                    // reply "false" here.  (It needs to be set in C# when we reply "true"
+                    // and save the page here.)
                     request.ReplyWithText("false");
                     return;
                 }
