@@ -31,6 +31,19 @@ div.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight) p {
     // color: @textOnLightBackground;
 }
 
+// In the Edit tab, we now use pseudo-elements to display the highlight instead of just background-color nd color, to avoid
+// computed styles getting stuck in the book (BL-15300, see audioTextHighlightManager.ts). Here overwrite the highlighting
+// colors from basePage.less which are otherwise used to display highlighting (e.g. in Bloom Player), so that only the
+// pseudo-elements are displaying the highlights
+body.bloom-audio-customHighlights {
+    span.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight),
+    div.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight) p,
+    .ui-audioCurrent .ui-enableHighlight {
+        background-color: transparent !important;
+        color: inherit !important;
+    }
+}
+
 .bloom-ui-current-audio-marker:before {
     background-image: url(currentTextIndicator.svg);
     background-repeat: no-repeat;
@@ -76,33 +89,26 @@ div.ui-audioCurrent p {
     position: unset; // BL-11633, works around Chromium bug
 }
 
-.ui-audioCurrent.bloom-postAudioSplit[data-audiorecordingmode="TextBox"]:not(
-        .ui-suppressHighlight
-    ):not(.ui-disableHighlight) {
-    // Special highlighting after the Split button completes to show it completed.
-    // Note: This highlighting is expected to persist across sessions, but to be hidden (displayed with the yellow color) while each segment is playing.
-    //       This is accomplished because this rule temporarily drops out of effect when .ui-audioCurrent is moved to the span as that segment plays.
-    //       (The rule requires a span BELOW the .ui-audioCurrent, so it drops out of effect the span IS the .ui-audioCurrent).
-    span:nth-child(3n + 1 of .bloom-highlightSegment) {
-        background-color: #bfedf3;
-    }
-
-    span:nth-child(3n + 2 of .bloom-highlightSegment) {
-        background-color: #7fdae6;
-    }
-
-    span:nth-child(3n + 3 of .bloom-highlightSegment) {
-        background-color: #29c2d6;
-    }
-
-    span {
-        position: unset; // BL-11633, works around Chromium bug
-    }
-
-    p {
-        // Override the normal yellow highlight so it doesn't clash with the ones we just added
-        background: none;
-    }
+// Use pseudoelements to display TBT highlighting in the Edit tab. See audioTextHighlightManager.ts
+::highlight(bloom-audio-current) {
+    // Read from CSS variables so the Format dialog's stored audio highlight colors
+    // control the normally-yellow recording highlight
+    background-color: var(
+        --bloom-audio-current-highlight-background,
+        @highlightColor
+    );
+    color: var(--bloom-audio-current-highlight-color, @textOnLightBackground);
+}
+// Note: This highlighting is expected to persist across sessions, but to be hidden
+// (displayed with the yellow color) while each segment is playing.
+::highlight(bloom-audio-split-1) {
+    background-color: #bfedf3;
+}
+::highlight(bloom-audio-split-2) {
+    background-color: #7fdae6;
+}
+::highlight(bloom-audio-split-3) {
+    background-color: #29c2d6;
 }
 
 .ui-audioBody {
