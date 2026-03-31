@@ -1,4 +1,4 @@
-import { Browser, Frame, Page, chromium } from "./playwrightTest";
+import { Browser, Page, chromium } from "./playwrightTest";
 
 type WorkspaceTabId = "collection" | "edit" | "publish";
 const configuredCdpPort = process.env.BLOOM_CDP_PORT;
@@ -66,19 +66,23 @@ export const connectToBloomExe = async (): Promise<{
     return { browser, page };
 };
 
-export const getBloomTopBarFrame = async (page: Page): Promise<Frame> => {
-    const topBarHandle = await page.$("#topBar");
-    if (!topBarHandle) {
-        throw new Error("Could not find the Bloom topBar iframe.");
-    }
+export const clickWorkspaceTab = async (
+    page: Page,
+    name: WorkspaceTabId extends infer _T
+        ? "Collections" | "Edit" | "Publish"
+        : never,
+): Promise<void> => {
+    await page.waitForSelector("#main-tabs button", {
+        timeout: 10000,
+    });
 
-    const frame = await topBarHandle.contentFrame();
-    if (!frame) {
-        throw new Error("The Bloom topBar iframe did not expose a frame.");
-    }
+    await page.locator("#main-tabs button").filter({ hasText: name }).first();
 
-    await frame.waitForLoadState("domcontentloaded");
-    return frame;
+    await page
+        .locator("#main-tabs button")
+        .filter({ hasText: name })
+        .first()
+        .click();
 };
 
 export const getWorkspaceTabs = async (): Promise<{
