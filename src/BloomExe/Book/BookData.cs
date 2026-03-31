@@ -1360,6 +1360,16 @@ namespace Bloom.Book
 
                 foreach (SafeXmlElement node in nodesOfInterest)
                 {
+                    // We always want to save background audio attributes (among others) for xmatter
+                    // pages.  (BL-16081)  Sometimes, this is the only data we want to save for this
+                    // node.
+                    var xmatterPage = node.GetAttribute(kDataXmatterPage);
+                    if (!string.IsNullOrWhiteSpace(xmatterPage))
+                    {
+                        var xmatterPageKey = xmatterPage.Trim();
+                        if (!data.XmatterPageDataAttributeSets.ContainsKey(xmatterPageKey))
+                            GatherXmatterPageDataAttributeSetIntoDataSet(data, node);
+                    }
                     bool isCollectionValue = false;
                     bool hasCustomLayoutId = node.HasAttribute("data-custom-layout-id");
                     if (hasCustomLayoutId)
@@ -1396,11 +1406,8 @@ namespace Bloom.Book
                     }
                     if (key == String.Empty)
                     {
-                        key = node.GetAttribute(kDataXmatterPage).Trim();
-                        if (key != String.Empty)
+                        if ((!string.IsNullOrWhiteSpace(xmatterPage)))
                         {
-                            if (!data.XmatterPageDataAttributeSets.ContainsKey(key))
-                                GatherXmatterPageDataAttributeSetIntoDataSet(data, node);
                             // This element has a data-xmatter-page attribute. So it is a bloom-page div.
                             // And currently a bloom-page cannot also be an element waiting to be filled with data-collection, so we're done here.
                             continue;
