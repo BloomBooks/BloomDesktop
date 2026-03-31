@@ -77,7 +77,7 @@ import {
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
-import { get, postData, postJson } from "../../utils/bloomApi";
+import { get, postData, postJson, postString } from "../../utils/bloomApi";
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { getExactClientSize } from "../../utils/elementUtils";
@@ -8021,6 +8021,10 @@ export function showCanvasTool() {
         } else {
             toolbox.activateToolFromId(kCanvasToolId);
         }
+        postString(
+            "editView/saveToolboxSetting",
+            "active\t" + kCanvasToolId + "Check\t1",
+        );
     };
 
     const toolbox = getToolboxBundleExports()?.getTheOneToolbox();

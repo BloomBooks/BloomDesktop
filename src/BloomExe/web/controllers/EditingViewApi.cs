@@ -190,13 +190,13 @@ namespace Bloom.web.controllers
             var customLayoutId = pageElt.GetAttribute("data-custom-layout-id");
             if (switchingToCustom)
             {
+                pageElt.SetAttribute("data-tool-id", "canvas");
                 var customLayoutData = book.BookData.GetVariableOrNull(customLayoutId, "*");
                 if (string.IsNullOrEmpty(customLayoutData.Xml))
                 {
                     request.ReplyWithText("false");
                     return;
                 }
-                pageElt.SetAttribute("data-tool-id", "canvas");
             }
             else
             {
