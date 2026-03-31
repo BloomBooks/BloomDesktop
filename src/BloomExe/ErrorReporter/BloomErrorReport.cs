@@ -94,7 +94,7 @@ namespace Bloom.ErrorReporter
         )
         {
             ToastService.ShowToast(
-                ToastSeverity.Warning,
+                ToastType.Warning,
                 text: shortMsg,
                 durationSeconds: 10,
                 action: new ToastAction

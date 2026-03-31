@@ -12,9 +12,12 @@ import InfoIcon from "@mui/icons-material/Info";
 import WarningIcon from "@mui/icons-material/Warning";
 import ErrorIcon from "@mui/icons-material/Error";
 import WaitIcon from "@mui/icons-material/HourglassEmpty";
+import CloseIcon from "@mui/icons-material/Close";
 import { kBloomDarkTextOverWarning, kBloomWarning } from "../utils/colorUtils";
-import { Box, SvgIconPropsSizeOverrides } from "@mui/material";
+import { Box, IconButton, SvgIconPropsSizeOverrides } from "@mui/material";
 import { OverridableStringUnion } from "@mui/types";
+import { kBloomPurple } from "../bloomMaterialUITheme";
+import { GiftIcon } from "./GiftIcon";
 
 export const kErrorBoxColor = "#eb3941";
 const kLightBlueBackground = "#faffff";
@@ -25,6 +28,8 @@ export const BoxWithIconAndText: React.FunctionComponent<{
     borderColor?: string;
     backgroundColor?: string;
     icon?: JSX.Element;
+    closeButton?: boolean;
+    onCloseButtonClick?: () => void;
     bottomRightButton?: JSX.Element;
 }> = (props) => {
     let border = css``;
@@ -34,17 +39,20 @@ export const BoxWithIconAndText: React.FunctionComponent<{
         `;
     }
     const {
-        hasBorder,
-        color,
-        borderColor,
-        backgroundColor,
-        icon,
-        bottomRightButton,
+        hasBorder: _hasBorder,
+        color: _color,
+        borderColor: _borderColor,
+        backgroundColor: _backgroundColor,
+        icon: _icon,
+        closeButton: _closeButton,
+        onCloseButtonClick: _onCloseButtonClick,
+        bottomRightButton: _bottomRightButton,
         ...propsToPass
     } = props;
     const cssForIcon = css`
         margin-right: ${kDialogPadding};
     `;
+    const contentRightInset = props.closeButton ? 28 : 0;
     // React's cloneElement doesn't work with Emotion's css prop, so we have to do this.
     // See https://github.com/emotion-js/emotion/issues/1102.
     const cloneElement = (element, props) =>
@@ -76,6 +84,31 @@ export const BoxWithIconAndText: React.FunctionComponent<{
             `}
             {...propsToPass} // allows defining more css rules from container
         >
+            {props.closeButton && (
+                <IconButton
+                    size="small"
+                    css={css`
+                        && {
+                            position: absolute;
+                            top: 6px;
+                            right: 6px;
+                            color: inherit;
+                            opacity: 0.8;
+                            z-index: 1;
+                        }
+
+                        && .MuiSvgIcon-root {
+                            color: inherit;
+                        }
+                    `}
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        props.onCloseButtonClick?.();
+                    }}
+                >
+                    <CloseIcon fontSize="small" htmlColor="currentColor" />
+                </IconButton>
+            )}
             <div
                 css={css`
                     display: flex;
@@ -90,6 +123,7 @@ export const BoxWithIconAndText: React.FunctionComponent<{
                 <div
                     css={css`
                         flex-grow: 1;
+                        padding-right: ${contentRightInset}px;
                     `}
                 >
                     {props.children}
@@ -126,6 +160,8 @@ interface IBoxProps {
         "inherit" | "large" | "medium" | "small",
         SvgIconPropsSizeOverrides
     >;
+    closeButton?: boolean;
+    onCloseButtonClick?: () => void;
     bottomRightButton?: JSX.Element;
 }
 export const NoteBox: React.FunctionComponent<IBoxProps> = (props) => {
@@ -149,6 +185,21 @@ export const WaitBox: React.FunctionComponent<IBoxProps> = (props) => {
             color="white"
             backgroundColor="#96668F"
             icon={<WaitIcon fontSize={props.iconSize} />}
+            bottomRightButton={props.bottomRightButton}
+            {...props}
+        >
+            {localizedMessage || props.children}
+        </BoxWithIconAndText>
+    );
+};
+
+export const UpdateBox: React.FunctionComponent<IBoxProps> = (props) => {
+    const localizedMessage = useL10n(props.l10Msg || "", props.l10nKey || null);
+    return (
+        <BoxWithIconAndText
+            color="white"
+            backgroundColor={kBloomPurple}
+            icon={<GiftIcon fontSize={props.iconSize} />}
             bottomRightButton={props.bottomRightButton}
             {...props}
         >

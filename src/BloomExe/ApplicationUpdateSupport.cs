@@ -257,7 +257,7 @@ namespace Bloom
                     "CollectionTab.UpToDate",
                     "Your Bloom is up to date."
                 );
-                ToastService.ShowToast(text: message, durationSeconds: 5);
+                ToastService.ShowToast(type: ToastType.Update, text: message, durationSeconds: 5);
             }
         }
 
@@ -267,7 +267,7 @@ namespace Bloom
                 "CollectionTab.UpdateCheckInProgress",
                 "Bloom is already working on checking for updates."
             );
-            ToastService.ShowToast(text: message, durationSeconds: 5);
+            ToastService.ShowToast(type: ToastType.Update, text: message, durationSeconds: 5);
         }
 
         private static void ShowToastForFoundUpdates(
@@ -284,6 +284,7 @@ namespace Bloom
                 "Update Now"
             );
             ToastService.ShowToast(
+                type: ToastType.Update,
                 text: msgAvail,
                 durationSeconds: 10,
                 action: new ToastAction
@@ -301,7 +302,7 @@ namespace Bloom
             if (e != null)
                 _updateException = e;
             ToastService.ShowToast(
-                ToastSeverity.Error,
+                ToastType.Error,
                 text: msg,
                 durationSeconds: 10,
                 action: new ToastAction
@@ -338,7 +339,7 @@ namespace Bloom
 
         private static void ShowToastForDownloadingMessage(string updatingMsg)
         {
-            ToastService.ShowToast(text: updatingMsg, durationSeconds: 5);
+            ToastService.ShowToast(type: ToastType.Update, text: updatingMsg, durationSeconds: 5);
         }
 
         private static void ShowToastForDownloadedWaitingForRestart(Action restartBloom)
@@ -370,6 +371,7 @@ namespace Bloom
                 )
             );
             ToastService.ShowToast(
+                type: ToastType.Update,
                 text: msg,
                 action: new ToastAction
                 {
@@ -456,7 +458,7 @@ namespace Bloom
 
         private static void ShowFailureNotification(string failMsg)
         {
-            ToastService.ShowToast(ToastSeverity.Warning, text: failMsg, durationSeconds: 5);
+            ToastService.ShowToast(ToastType.Warning, text: failMsg, durationSeconds: 5);
         }
 
         internal static void DebugShowToastScenario(string scenario, Action restartBloom = null)
