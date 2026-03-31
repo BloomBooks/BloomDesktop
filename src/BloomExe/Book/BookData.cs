@@ -1367,7 +1367,15 @@ namespace Bloom.Book
                         if (!node.HasClass("bloom-customLayout"))
                         {
                             // This is a custom layout element, but it is not in custom layout mode.
-                            // So we don't want to save its total content.
+                            // So we don't want to save its total content.  But we do want to save
+                            // background audio attributes (among others) for xmatter pages.  (BL-16081)
+                            var xmatterPage = node.GetAttribute(kDataXmatterPage);
+                            if (!string.IsNullOrWhiteSpace(xmatterPage))
+                            {
+                                var key1 = xmatterPage.Trim();
+                                if (!data.XmatterPageDataAttributeSets.ContainsKey(key1))
+                                    GatherXmatterPageDataAttributeSetIntoDataSet(data, node);
+                            }
                             continue;
                         }
                     }
