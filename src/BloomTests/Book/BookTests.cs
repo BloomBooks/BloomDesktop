@@ -2463,30 +2463,33 @@ namespace BloomTests.Book
         [Test]
         public void BringBookUpToDate_Level14Migration_SavesCustomOutsideFrontCoverToDataDiv()
         {
-            _bookDom = new HtmlDom(
+            // Must use CreateBookWithPhysicalFile, not CreateBook, lest we get a mock BookStorage
+            var book = CreateBookWithPhysicalFile(
                 @"
-				<html>
-					<head>
-						<meta name='xmatter' content='Factory' />
-						<meta name='maintenanceLevel' content='13' />
-					</head>
-					<body>
-						<div id='bloomDataDiv'></div>
+                <html>
+                    <head>
+                        <meta name='xmatter' content='Factory' />
+                        <meta name='maintenanceLevel' content='13' />
+                    </head>
+                    <body>
+                        <div id='bloomDataDiv'></div>
                         <div class='bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover cover-is-image A5Portrait side-right'
-							data-page='required singleton'
-							data-export='front-matter-cover'
-							data-xmatter-page='frontCover'
+                            data-page='required singleton'
+                            data-export='front-matter-cover'
+                            data-xmatter-page='frontCover'
                             data-custom-layout-id='customOutsideFrontCover'
-							id='frontCover-id'>
-							<div class='marginBox'>
-								<div class='migrated-marker'>preserve me</div>
-							</div>
-						</div>
-					</body>
-				</html>"
+                            id='frontCover-id'>
+                            <div class='marginBox'>
+                                <div class='migrated-marker'>preserve me</div>
+                            </div>
+                        </div>
+                    </body>
+                </html>",
+                CreateDefaultCollectionsSettings()
             );
-
-            var book = CreateBook();
+            book.Storage.BookInfo.AppearanceSettings.UpdateFromDynamic(
+                new Newtonsoft.Json.Linq.JObject { ["coverIsImage"] = true }
+            );
 
             book.BringBookUpToDate(new NullProgress());
 

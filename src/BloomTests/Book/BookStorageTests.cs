@@ -2399,6 +2399,62 @@ These are similar but already have game-theme classes
         }
 
         [Test]
+        public void MigrateToLevel14CoverIsImageToCustomLayout_WithBookData_PerformsFullLegacyCoverMigration()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head>
+<meta name='maintenanceLevel' content='13'></meta>
+</head><body>
+<div id='bloomDataDiv'></div>
+<div class='bloom-page cover cover-is-image outsideFrontCover' data-custom-layout-id='outsideFrontCoverCustom'>
+  <div class='marginBox'><p>Cover custom text</p></div>
+</div>
+</body></html>"
+            );
+
+            storage.BookInfo.AppearanceSettings.UpdateFromDynamic(
+                new Newtonsoft.Json.Linq.JObject { ["coverIsImage"] = true }
+            );
+            var bookData = new BookData(storage.Dom, storage.CollectionSettings, _ => { });
+
+            Assert.That(
+                storage.Dom.SafeSelectNodes("//div[contains(@class,'cover-is-image')]").Count,
+                Is.EqualTo(1)
+            );
+            Assert.That(
+                storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-customLayout')]").Count,
+                Is.EqualTo(0)
+            );
+
+            storage.MigrateToLevel14CoverIsImageToCustomLayout(bookData);
+
+            Assert.That(storage.Dom.GetMetaValue("maintenanceLevel", "0"), Is.EqualTo("14"));
+            Assert.That(
+                storage.Dom.SafeSelectNodes("//div[contains(@class,'cover-is-image')]").Count,
+                Is.EqualTo(0)
+            );
+            Assert.That(
+                storage
+                    .Dom.SafeSelectNodes(
+                        "//div[contains(@class,'outsideFrontCover') and contains(@class,'bloom-customLayout') and @data-custom-layout-id='outsideFrontCoverCustom']"
+                    )
+                    .Count,
+                Is.EqualTo(1)
+            );
+            Assert.That(
+                storage
+                    .Dom.SafeSelectNodes(
+                        "//div[@id='bloomDataDiv']/div[@data-book='outsideFrontCoverCustom' and @lang='*' and contains(.,'Cover custom text')]"
+                    )
+                    .Count,
+                Is.EqualTo(1)
+            );
+            var appearanceProperties = (System.Collections.Generic.IDictionary<string, object>)
+                storage.BookInfo.AppearanceSettings.TestOnlyPropertiesAccess;
+            Assert.That(appearanceProperties.ContainsKey("coverIsImage"), Is.False);
+        }
+
+        [Test]
         public void PerformNecessaryMaintenanceOnBook_DoesNothingIfAlreadyProcessed()
         {
             var storage = GetInitialStorageWithCustomHtml(
