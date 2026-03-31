@@ -74,6 +74,7 @@ import {
 import { wrapWithRequestPageContentDelay } from "./bloomEditing";
 import { get, post, useApiObject } from "../../utils/bloomApi";
 import { ILanguageNameValues } from "../bookSettings/FieldVisibilityGroup";
+import StyleEditor from "../StyleEditor/StyleEditor";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
@@ -85,6 +86,24 @@ interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
 // Eventually we may need a way to distinguish buttons used for navigation from other buttons.
 function isNavigationButton(canvasElement: HTMLElement) {
     return canvasElement.classList.contains(kBloomButtonClass);
+}
+
+function getFormatTargetElement(
+    canvasElement: HTMLElement,
+): HTMLElement | undefined {
+    const editable = canvasElement.getElementsByClassName(
+        "bloom-editable bloom-visibility-code-on",
+    )[0] as HTMLElement | undefined;
+    if (editable) {
+        return editable;
+    }
+
+    const candidates = Array.from(
+        canvasElement.querySelectorAll("[class]"),
+    ) as HTMLElement[];
+    return candidates.find((candidate) =>
+        StyleEditor.shouldAllowNonEditableStyleDialogTarget(candidate),
+    );
 }
 
 // This is the controls bar that appears beneath a canvas element when it is selected. It contains buttons
@@ -358,6 +377,8 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const editableTextElement = props.canvasElement.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on",
     )[0] as HTMLElement;
+    const formatTargetElement = getFormatTargetElement(props.canvasElement);
+    const showFormatButton = !!formatTargetElement && !isNavButton;
 
     if (isNavButton) {
         menuOptions.splice(0, 0, {
@@ -458,6 +479,13 @@ const CanvasElementContextControls: React.FunctionComponent<{
             languageNameValues,
             noneLabel,
         );
+    } else if (formatTargetElement && !isNavButton) {
+        menuOptions.push({
+            l10nId: "EditTab.Toolbox.ComicTool.Options.Format",
+            english: "Format",
+            onClick: () => GetEditor().runFormatDialog(formatTargetElement),
+            icon: <CogIcon css={getMenuIconCss()} />,
+        });
     }
 
     const runMetadataDialog = () => {
@@ -619,7 +647,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                             )}
                         </Fragment>
                     )}
-                    {editableTextElement && !isNavButton && (
+                    {showFormatButton && (
                         <ButtonWithTooltip
                             tipL10nKey="EditTab.Toolbox.ComicTool.Options.Format"
                             icon={CogIcon}
@@ -627,7 +655,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                             onClick={() => {
                                 if (!props.canvasElement) return;
                                 GetEditor().runFormatDialog(
-                                    editableTextElement,
+                                    formatTargetElement,
                                 );
                             }}
                         />
@@ -652,7 +680,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                         </Fragment>
                     )}
                     {(!(hasImage && isPlaceHolder) &&
-                        !editableTextElement &&
+                        !showFormatButton &&
                         !(hasVideo && !videoAlreadyChosen)) || (
                         // Add a spacer if there is any button before these
                         <div
@@ -1876,6 +1904,33 @@ function addImageMenuOptions(
                     theOneCanvasElementManager.updateCanvasElementForChangedImage(
                         bgImg,
                     );
+
+                    // We want to make it active. However, if it used to be a placeholder, it was
+                    // previously hidden. This interferes with making the measurements to move the
+                    // control frame (at least), so we make a few attempts to activate it.
+                    // Don't make a long timeout here, because it could override some other
+                    // selection that the user quickly makes.
+                    const activateConvertedBackground = () => {
+                        requestAnimationFrame(() => {
+                            theOneCanvasElementManager.setActiveElement(
+                                bgImageCe,
+                            );
+                        });
+                    };
+                    activateConvertedBackground();
+                    if (!haveRealBgImage) {
+                        const fallbackHandle = setTimeout(() => {
+                            activateConvertedBackground();
+                        }, 120);
+                        bgImg.addEventListener(
+                            "load",
+                            () => {
+                                clearTimeout(fallbackHandle);
+                                activateConvertedBackground();
+                            },
+                            { once: true },
+                        );
+                    }
                     setMenuOpen(false);
                 },
             });

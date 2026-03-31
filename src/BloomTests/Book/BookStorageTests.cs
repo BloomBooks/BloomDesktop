@@ -2206,6 +2206,199 @@ These are similar but already have game-theme classes
         }
 
         [Test]
+        public void MigrateToLevel14CoverIsImageToCustomLayout_ConvertsCoverClassAndCompletes()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head>
+<meta name='maintenanceLevel' content='13'></meta>
+</head><body>
+<div class='bloom-page cover cover-is-image outsideFrontCover'></div>
+</body></html>"
+            );
+
+            storage.BookInfo.AppearanceSettings.UpdateFromDynamic(
+                new Newtonsoft.Json.Linq.JObject { ["coverIsImage"] = true }
+            );
+
+            storage.MigrateToLevel14CoverIsImageToCustomLayout(null);
+
+            var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
+            Assert.That(maintLevel, Is.EqualTo("14"));
+            Assert.That(
+                storage.Dom.SafeSelectNodes("//div[contains(@class,'cover-is-image')]").Count,
+                Is.EqualTo(0)
+            );
+            Assert.That(
+                storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-customLayout')]").Count,
+                Is.EqualTo(1)
+            );
+            var appearanceProperties = (System.Collections.Generic.IDictionary<string, object>)
+                storage.BookInfo.AppearanceSettings.TestOnlyPropertiesAccess;
+            Assert.That(appearanceProperties.ContainsKey("coverIsImage"), Is.False);
+        }
+
+        [Test]
+        public void MigrateToLevel14CoverIsImageToCustomLayout_WhenClassMissingButSettingPresent_MarksOutsideFrontCoverCustomLayout()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head>
+<meta name='maintenanceLevel' content='13'></meta>
+</head><body>
+<div class='bloom-page cover outsideFrontCover'></div>
+</body></html>"
+            );
+
+            storage.BookInfo.AppearanceSettings.UpdateFromDynamic(
+                new Newtonsoft.Json.Linq.JObject { ["coverIsImage"] = true }
+            );
+
+            storage.MigrateToLevel14CoverIsImageToCustomLayout(null);
+
+            Assert.That(
+                storage
+                    .Dom.SafeSelectNodes(
+                        "//div[contains(@class,'outsideFrontCover') and contains(@class,'bloom-customLayout')]"
+                    )
+                    .Count,
+                Is.EqualTo(1)
+            );
+            var appearanceProperties = (System.Collections.Generic.IDictionary<string, object>)
+                storage.BookInfo.AppearanceSettings.TestOnlyPropertiesAccess;
+            Assert.That(appearanceProperties.ContainsKey("coverIsImage"), Is.False);
+        }
+
+        [Test]
+        public void MigrateToLevel14CoverIsImageToCustomLayout_WhenSettingIsFalse_RemovesPropertyWithoutConvertingCover()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head>
+<meta name='maintenanceLevel' content='13'></meta>
+</head><body>
+<div class='bloom-page cover cover-is-image outsideFrontCover'></div>
+</body></html>"
+            );
+
+            storage.BookInfo.AppearanceSettings.UpdateFromDynamic(
+                new Newtonsoft.Json.Linq.JObject { ["coverIsImage"] = false }
+            );
+
+            storage.MigrateToLevel14CoverIsImageToCustomLayout(null);
+
+            Assert.That(
+                storage.Dom.SafeSelectNodes("//div[contains(@class,'cover-is-image')]").Count,
+                Is.EqualTo(1)
+            );
+            Assert.That(
+                storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-customLayout')]").Count,
+                Is.EqualTo(0)
+            );
+            var appearanceProperties = (System.Collections.Generic.IDictionary<string, object>)
+                storage.BookInfo.AppearanceSettings.TestOnlyPropertiesAccess;
+            Assert.That(appearanceProperties.ContainsKey("coverIsImage"), Is.False);
+            Assert.That(storage.Dom.GetMetaValue("maintenanceLevel", "0"), Is.EqualTo("14"));
+        }
+
+        [Test]
+        public void RestoreStuffBeforeMigration_WhenLegacyCoverCaptured_RestoresOutsideFrontCoverMarginBoxContent()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head>
+<meta name='maintenanceLevel' content='13'></meta>
+</head><body>
+<div class='bloom-page cover cover-is-image outsideFrontCover'>
+  <div class='marginBox'><div class='original-content'>original</div></div>
+</div>
+</body></html>"
+            );
+
+            storage.CaptureInitialStateForMigration();
+
+            var currentOutsideFrontCover = storage
+                .Dom.SafeSelectNodes("//div[contains(@class,'outsideFrontCover')]")
+                .Cast<SafeXmlElement>()
+                .First();
+            currentOutsideFrontCover.RemoveClass("cover-is-image");
+            var currentMarginBox = BookStorage.GetMarginBox(currentOutsideFrontCover);
+            currentMarginBox.InnerXml = "<div class='replacement-content'>replacement</div>";
+
+            storage.RestoreStuffBeforeMigration();
+
+            Assert.That(
+                storage
+                    .Dom.SafeSelectNodes(
+                        "//div[contains(@class,'outsideFrontCover')]//div[contains(@class,'original-content')]"
+                    )
+                    .Count,
+                Is.EqualTo(1)
+            );
+            Assert.That(
+                storage
+                    .Dom.SafeSelectNodes(
+                        "//div[contains(@class,'outsideFrontCover')]//div[contains(@class,'replacement-content')]"
+                    )
+                    .Count,
+                Is.EqualTo(0)
+            );
+        }
+
+        [Test]
+        public void RestoreStuffBeforeMigration_WhenNoLegacyCoverCaptured_DoesNothing()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head>
+<meta name='maintenanceLevel' content='13'></meta>
+</head><body>
+<div class='bloom-page cover outsideFrontCover'>
+  <div class='marginBox'><div class='replacement-content'>replacement</div></div>
+</div>
+</body></html>"
+            );
+
+            storage.CaptureInitialStateForMigration();
+            storage.RestoreStuffBeforeMigration();
+
+            Assert.That(
+                storage
+                    .Dom.SafeSelectNodes(
+                        "//div[contains(@class,'outsideFrontCover')]//div[contains(@class,'replacement-content')]"
+                    )
+                    .Count,
+                Is.EqualTo(1)
+            );
+        }
+
+        [Test]
+        public void MigrateToLevel14CoverIsImageToCustomLayout_WithBookData_SavesCustomLayoutContentInDataDiv()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head>
+<meta name='maintenanceLevel' content='13'></meta>
+</head><body>
+<div id='bloomDataDiv'></div>
+<div class='bloom-page cover cover-is-image outsideFrontCover bloom-customLayout' data-custom-layout-id='outsideFrontCoverCustom'>
+  <div class='marginBox'><p>Cover custom text</p></div>
+</div>
+</body></html>"
+            );
+
+            storage.BookInfo.AppearanceSettings.UpdateFromDynamic(
+                new Newtonsoft.Json.Linq.JObject { ["coverIsImage"] = true }
+            );
+            var bookData = new BookData(storage.Dom, storage.CollectionSettings, _ => { });
+
+            storage.MigrateToLevel14CoverIsImageToCustomLayout(bookData);
+
+            Assert.That(
+                storage
+                    .Dom.SafeSelectNodes(
+                        "//div[@id='bloomDataDiv']/div[@data-book='outsideFrontCoverCustom' and @lang='*' and contains(.,'Cover custom text')]"
+                    )
+                    .Count,
+                Is.EqualTo(1)
+            );
+        }
+
+        [Test]
         public void PerformNecessaryMaintenanceOnBook_DoesNothingIfAlreadyProcessed()
         {
             var storage = GetInitialStorageWithCustomHtml(

@@ -102,6 +102,8 @@ namespace Bloom.Book
         bool LinkToLocalCollectionStyles { get; set; }
 
         IEnumerable<string> GetActivityFolderNamesReferencedInBook();
+        void CaptureInitialStateForMigration();
+        void RestoreStuffBeforeMigration();
         void MigrateMaintenanceLevels();
         void MigrateToMediaLevel1ShrinkLargeImages();
         void MigrateToLevel2RemoveTransparentComicalSvgs();
@@ -116,6 +118,7 @@ namespace Bloom.Book
         void MigrateToLevel10GameHeader();
         void MigrateToLevel12PageNumberPosition(); // Level 11 was skipped.
         void MigrateToLevel13SplitPaneMarginBoxes();
+        void MigrateToLevel14CoverIsImageToCustomLayout(BookData bookData);
 
         void DoBackMigrations();
 
@@ -185,12 +188,13 @@ namespace Bloom.Book
         ///   Bloom 6.3 11 = unused migration (decided operation wasn't needed after 12 introduced)
         ///   Bloom 6.3 12 = change appearance settings page number control to use page number position system
         ///   Bloom 6.3 13 = fix split-pane-component margin boxes with positioning style
+        ///   Bloom 6.4 14 = migrate legacy coverIsImage setting to custom-layout cover
         /// History of kMediaMaintenanceLevel (introduced in 6.0)
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
         ///   Bloom 6.0: 1 = maintenanceLevel at least 1 (so images are opaque and not too big)
         /// </summary>
-        public const int kMaintenanceLevel = 13;
+        public const int kMaintenanceLevel = 14;
         public const int kMediaMaintenanceLevel = 1;
 
         public const string PrefixForCorruptHtmFiles = "_broken_";
@@ -3118,6 +3122,7 @@ namespace Bloom.Book
         private string _cachedXmatterPackName;
         private HtmlDom _cachedXmatterDom;
         private BookInfo _cachedXmatterBookInfo;
+        private SafeXmlElement _preMigrationOutsideFrontCover;
 
         private XMatterHelper XMatterHelper
         {
@@ -3939,6 +3944,53 @@ namespace Bloom.Book
             return level;
         }
 
+        public void CaptureInitialStateForMigration()
+        {
+            _preMigrationOutsideFrontCover = null;
+            if (GetMaintenanceLevel() >= 14)
+                return;
+
+            var outsideFrontCover = Dom.SafeSelectNodes(
+                    "//body//div[contains(@class,'bloom-page') and contains(@class,'outsideFrontCover')]"
+                )
+                .Cast<SafeXmlElement>()
+                .FirstOrDefault();
+            if (outsideFrontCover == null || !outsideFrontCover.HasClass("cover-is-image"))
+                return;
+
+            _preMigrationOutsideFrontCover = outsideFrontCover.CloneNode(true) as SafeXmlElement;
+        }
+
+        public void RestoreStuffBeforeMigration()
+        {
+            if (_preMigrationOutsideFrontCover == null)
+                return;
+
+            var currentOutsideFrontCover = Dom.SafeSelectNodes(
+                    "//body//div[contains(@class,'bloom-page') and contains(@class,'outsideFrontCover')]"
+                )
+                .Cast<SafeXmlElement>()
+                .FirstOrDefault();
+            if (currentOutsideFrontCover == null)
+                return;
+
+            var preservedMarginBox = GetMarginBox(_preMigrationOutsideFrontCover);
+            var currentMarginBox = GetMarginBox(currentOutsideFrontCover);
+            if (preservedMarginBox == null || currentMarginBox == null)
+                return;
+
+            while (currentMarginBox.HasChildNodes)
+                currentMarginBox.RemoveChild(currentMarginBox.ChildNodes[0]);
+
+            var preservedChildren = preservedMarginBox.ChildNodes.Cast<SafeXmlNode>().ToList();
+            foreach (var child in preservedChildren)
+            {
+                currentMarginBox.AppendChild(
+                    currentMarginBox.OwnerDocument.ImportNode(child, true)
+                );
+            }
+        }
+
         /// <summary>
         /// Bloom 4.9 and later (a bit later than the above 4.9 and therefore a separate maintenance
         /// level) will only put comical-generated svgs in Bloom imageContainers if they are
@@ -4525,6 +4577,49 @@ namespace Bloom.Book
             FixProblematicSplitPaneMarginBoxes();
 
             Dom.UpdateMetaElement("maintenanceLevel", "13");
+        }
+
+        public void MigrateToLevel14CoverIsImageToCustomLayout(BookData bookData)
+        {
+            if (GetMaintenanceLevel() >= 14)
+                return;
+
+            var hadLegacyCoverSetting =
+                BookInfo.AppearanceSettings.TryGetBooleanPropertyValue(
+                    "coverIsImage",
+                    out var legacyCoverSettingValue
+                ) && legacyCoverSettingValue;
+            BookInfo.AppearanceSettings.Properties.Remove("coverIsImage");
+
+            if (hadLegacyCoverSetting)
+            {
+                var outsideFrontCover = Dom.SafeSelectNodes(
+                        "//body//div[contains(@class,'bloom-page') and contains(@class,'outsideFrontCover')]"
+                    )
+                    .Cast<SafeXmlElement>()
+                    .FirstOrDefault();
+                if (outsideFrontCover != null)
+                {
+                    outsideFrontCover.RemoveClass("cover-is-image");
+                    outsideFrontCover.AddClass("bloom-customLayout");
+
+                    if (
+                        outsideFrontCover.HasClass("bloom-customLayout")
+                        && !string.IsNullOrEmpty(
+                            outsideFrontCover.GetAttribute("data-custom-layout-id")
+                        )
+                    )
+                    {
+                        var onePageDom = new HtmlDom("<html><head></head><body></body></html>");
+                        onePageDom.Body.AppendChild(
+                            onePageDom.RawDom.ImportNode(outsideFrontCover, true)
+                        );
+                        bookData.SuckInDataFromEditedDom(onePageDom, BookInfo);
+                    }
+                }
+            }
+
+            Dom.UpdateMetaElement("maintenanceLevel", "14");
         }
 
         /// <summary>
