@@ -302,7 +302,7 @@ export class ToolBox {
             task();
         }
         this.doWhenClosingTool = [];
-        if (currentTool) {
+        if (currentTool && isToolInitialized(currentTool)) {
             currentTool.detachFromPage();
         }
     }
@@ -722,7 +722,7 @@ function detachCurrentTool() {
     const toolbox = getTheOneToolbox();
     if (toolbox) {
         toolbox.detachCurrentTool();
-    } else if (currentTool) {
+    } else if (currentTool && isToolInitialized(currentTool)) {
         // If the toolbox is not available, we still may be able to detach the current tool.
         // This is what we used to do before we had some extra behavior in the toolbox.
         currentTool.detachFromPage();
@@ -820,7 +820,7 @@ export function applyToolboxStateToUpdatedPage() {
         if (currentTool && toolbox.toolboxIsShowing()) {
             doWhenPageReady(() => {
                 const activeTool = currentTool;
-                if (activeTool) {
+                if (activeTool && isToolInitialized(activeTool)) {
                     activeTool
                         .beginRestoreSettings(
                             savedSettings as unknown as string,
@@ -833,7 +833,10 @@ export function applyToolboxStateToUpdatedPage() {
                             // Re-run tool UI setup on page/book switches. Some tools
                             // (for example reader toggle controls) are initialized in showTool().
                             Promise.resolve(activeTool.showTool()).then(() => {
-                                if (currentTool === activeTool) {
+                                if (
+                                    currentTool === activeTool &&
+                                    isToolInitialized(activeTool)
+                                ) {
                                     activeTool.newPageReady();
                                     scheduleDelayedNewPageReady(activeTool);
                                 }
@@ -850,7 +853,11 @@ export function applyToolboxStateToUpdatedPage() {
 
 function scheduleDelayedNewPageReady(tool: ITool): void {
     window.setTimeout(() => {
-        if (currentTool !== tool || !toolbox.toolboxIsShowing()) {
+        if (
+            currentTool !== tool ||
+            !toolbox.toolboxIsShowing() ||
+            !isToolInitialized(tool)
+        ) {
             return;
         }
 
@@ -1009,18 +1016,22 @@ function switchTool(newToolName: string): void {
             }
         }
     }
-    if (currentTool !== newTool) {
-        if (currentTool) {
+    const canActivateNewTool = !!newTool && isToolInitialized(newTool);
+    const shouldSwitchAwayFromCurrent =
+        currentTool !== newTool || (!!newTool && !canActivateNewTool);
+
+    if (shouldSwitchAwayFromCurrent) {
+        if (currentTool && isToolInitialized(currentTool)) {
             detachCurrentTool();
             currentTool.hideTool();
         }
-        if (newTool) {
+        if (canActivateNewTool && newTool) {
             activateTool(newTool);
         }
         // Without recording that currentTool isn't defined, then returning from
         // More... to the same tool doesn't activate that tool.
         // See https://issues.bloomlibrary.org/youtrack/issue/BL-6720.
-        currentTool = newTool ? newTool : undefined;
+        currentTool = canActivateNewTool && newTool ? newTool : undefined;
     }
     newToolId = undefined;
 }
@@ -1028,6 +1039,9 @@ function switchTool(newToolName: string): void {
 function activateTool(newTool: ITool) {
     if (newTool && toolbox.toolboxIsShowing()) {
         const toolElt = getToolElement(newTool);
+        if (!toolElt) {
+            return;
+        }
         // Always re-restore settings so tool state tracks the current book.
         newTool.hasRestoredSettings = true;
         newTool
@@ -1057,13 +1071,20 @@ function getToolElement(tool: ITool): HTMLElement | null {
     return toolElement;
 }
 
+function isToolInitialized(tool: ITool): boolean {
+    return !!getToolElement(tool);
+}
+
 async function activateToolInternalAsync(
     newTool: ITool,
     toolElt: HTMLElement | null,
 ): Promise<void> {
-    if (toolElt) {
-        newTool.finishToolLocalization(toolElt);
+    if (!toolElt) {
+        throw new Error(
+            `activateToolInternalAsync called for uninitialized tool: ${newTool.id()}`,
+        );
     }
+    newTool.finishToolLocalization(toolElt);
 
     // Await it so that we can guarantee that newPageReady() and insertLangAttributesIntoToolboxElements()
     // happen after showTool.
@@ -1103,6 +1124,19 @@ function setCurrentTool(toolID: string) {
                 ($("#toolbox").find("> h3").first().attr("data-toolId") as
                     | string
                     | undefined) ?? "";
+        }
+
+        if (toolID) {
+            const tool = masterToolList.find(
+                (possibleTool) =>
+                    ToolBox.addToolToString(possibleTool.id()) === toolID,
+            );
+            if (tool && !isToolInitialized(tool)) {
+                toolID =
+                    ($("#toolbox").find("> h3").first().attr("data-toolId") as
+                        | string
+                        | undefined) ?? "";
+            }
         }
 
         if (toolID) {
