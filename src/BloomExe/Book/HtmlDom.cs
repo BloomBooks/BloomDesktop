@@ -3812,6 +3812,110 @@ namespace Bloom.Book
             }
         }
 
+        // Used in migration to support highlight pseudoelements in Edit tab
+        internal static void RewriteAudioHighlightRulesToCssVariables(SafeXmlElement userStylesNode)
+        {
+            var userStyleKeyDict = GetUserStyleKeyDict(userStylesNode);
+            var rulesToCheck = new HashSet<string>();
+            var updatedRule = false;
+            foreach (var key in userStyleKeyDict.Keys)
+            {
+                if (key.EndsWith(" span.ui-audioCurrent"))
+                    rulesToCheck.Add(key);
+            }
+
+            foreach (var key in rulesToCheck)
+            {
+                var updatedSentenceRule = RewriteAudioHighlightRuleToCssVariables(
+                    userStyleKeyDict[key]
+                );
+                if (updatedSentenceRule != userStyleKeyDict[key])
+                {
+                    userStyleKeyDict[key] = updatedSentenceRule;
+                    updatedRule = true;
+                }
+
+                var paragraphRuleKey = key.Replace(" span.ui-audioCurrent", ".ui-audioCurrent p");
+                if (userStyleKeyDict.ContainsKey(paragraphRuleKey))
+                {
+                    var updatedParagraphRule = RewriteAudioHighlightRuleToCssVariables(
+                        userStyleKeyDict[paragraphRuleKey]
+                    );
+                    if (updatedParagraphRule != userStyleKeyDict[paragraphRuleKey])
+                    {
+                        userStyleKeyDict[paragraphRuleKey] = updatedParagraphRule;
+                        updatedRule = true;
+                    }
+                }
+
+                var paddedSentenceRuleKey = key + " > span.ui-enableHighlight";
+                if (userStyleKeyDict.ContainsKey(paddedSentenceRuleKey))
+                {
+                    var updatedPaddedSentenceRule = RewriteAudioHighlightRuleToCssVariables(
+                        userStyleKeyDict[paddedSentenceRuleKey]
+                    );
+                    if (updatedPaddedSentenceRule != userStyleKeyDict[paddedSentenceRuleKey])
+                    {
+                        userStyleKeyDict[paddedSentenceRuleKey] = updatedPaddedSentenceRule;
+                        updatedRule = true;
+                    }
+                }
+            }
+
+            if (updatedRule)
+            {
+                var rawCSS = GetCompleteFilteredUserStylesInnerText(userStyleKeyDict);
+                userStylesNode.InnerXml = WrapUserStyleInCdata(rawCSS);
+            }
+        }
+
+        private static string RewriteAudioHighlightRuleToCssVariables(string ruleValue)
+        {
+            const string highlightBackgroundVariable = "--bloom-audio-highlight-background";
+            const string highlightColorVariable = "--bloom-audio-highlight-text-color";
+
+            var backgroundColorMatch = Regex.Match(ruleValue, @"background-color\s*:\s*([^;}]*)");
+            var hasBackgroundVariable = ruleValue.Contains(highlightBackgroundVariable);
+            if (!backgroundColorMatch.Success && !hasBackgroundVariable)
+                return ruleValue;
+
+            var colorMatch = Regex.Match(ruleValue, @"(?<!-)color\s*:\s*([^;}]*)");
+            var insertAt = ruleValue.IndexOf('{');
+            if (insertAt < 0)
+                return ruleValue;
+
+            var updatedRuleValue = ruleValue;
+            if (!hasBackgroundVariable)
+            {
+                var insertedDeclarations =
+                    $" {highlightBackgroundVariable}: {backgroundColorMatch.Groups[1].Value.Trim()};";
+                if (!updatedRuleValue.Contains(highlightColorVariable) && colorMatch.Success)
+                    insertedDeclarations +=
+                        $" {highlightColorVariable}: {colorMatch.Groups[1].Value.Trim()};";
+
+                updatedRuleValue = updatedRuleValue.Insert(insertAt + 1, insertedDeclarations);
+            }
+
+            // The shared base rule paints from these variables, so remove the duplicated direct
+            // declarations and let the vars be the single source of truth in userModifiedStyles.
+            updatedRuleValue = Regex.Replace(
+                updatedRuleValue,
+                @"\s*background-color\s*:\s*[^;}]*(;)?",
+                string.Empty
+            );
+
+            if (updatedRuleValue.Contains(highlightColorVariable) && colorMatch.Success)
+            {
+                updatedRuleValue = Regex.Replace(
+                    updatedRuleValue,
+                    @"\s*(?<!-)color\s*:\s*[^;}]*(;)?",
+                    string.Empty
+                );
+            }
+
+            return updatedRuleValue;
+        }
+
         public bool HasClassOnBody(string className)
         {
             return Body.HasClass(className);

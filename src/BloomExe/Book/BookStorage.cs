@@ -119,6 +119,7 @@ namespace Bloom.Book
         void MigrateToLevel12PageNumberPosition(); // Level 11 was skipped.
         void MigrateToLevel13SplitPaneMarginBoxes();
         void MigrateToLevel14CoverIsImageToCustomLayout(BookData bookData);
+        void MigrateToLevel15AudioHighlightCssVariables();
 
         void DoBackMigrations();
 
@@ -189,12 +190,13 @@ namespace Bloom.Book
         ///   Bloom 6.3 12 = change appearance settings page number control to use page number position system
         ///   Bloom 6.3 13 = fix split-pane-component margin boxes with positioning style
         ///   Bloom 6.4 14 = migrate legacy coverIsImage setting to custom-layout cover
+        ///   Bloom 6.4 15 = rewrite audio highlight user styles to store CSS variables
         /// History of kMediaMaintenanceLevel (introduced in 6.0)
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
         ///   Bloom 6.0: 1 = maintenanceLevel at least 1 (so images are opaque and not too big)
         /// </summary>
-        public const int kMaintenanceLevel = 14;
+        public const int kMaintenanceLevel = 15;
         public const int kMediaMaintenanceLevel = 1;
 
         public const string PrefixForCorruptHtmFiles = "_broken_";
@@ -4620,6 +4622,18 @@ namespace Bloom.Book
             }
 
             Dom.UpdateMetaElement("maintenanceLevel", "14");
+        }
+
+        public void MigrateToLevel15AudioHighlightCssVariables()
+        {
+            if (GetMaintenanceLevel() >= 15)
+                return;
+
+            var userStylesNode = HtmlDom.GetUserModifiedStyleElement(Dom.Head);
+            if (userStylesNode != null)
+                HtmlDom.RewriteAudioHighlightRulesToCssVariables(userStylesNode);
+
+            Dom.UpdateMetaElement("maintenanceLevel", "15");
         }
 
         /// <summary>

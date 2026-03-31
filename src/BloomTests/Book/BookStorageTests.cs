@@ -2432,6 +2432,38 @@ These are similar but already have game-theme classes
         }
 
         [Test]
+        public void PerformNecessaryMaintenanceOnBook_MigratesAudioHighlightRulesToCssVariables()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head>
+	<meta name='maintenanceLevel' content='13'></meta>
+	<style type='text/css' title='userModifiedStyles'>
+	/*<![CDATA[*/
+	.Title-On-Cover-style span.ui-audioCurrent { background-color: rgb(254, 191, 0); }
+	.Title-On-Cover-style span.ui-audioCurrent > span.ui-enableHighlight { background-color: rgb(254, 191, 0); }
+	.Title-On-Cover-style.ui-audioCurrent p { background-color: rgb(254, 191, 0); }/*]]>*/
+	</style>
+</head><body><div class='Title-On-Cover-style'></div></body></html>",
+                doSave: false
+            );
+
+            storage.MigrateToLevel15AudioHighlightCssVariables();
+
+            var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
+            Assert.That(maintLevel, Is.EqualTo("15"));
+
+            var userStylesNode = HtmlDom.GetUserModifiedStyleElement(storage.Dom.Head);
+            Assert.That(
+                userStylesNode.InnerXml,
+                Does.Contain("--bloom-audio-highlight-background: rgb(254, 191, 0);")
+            );
+            Assert.That(
+                userStylesNode.InnerXml,
+                Does.Not.Contain("background-color: rgb(254, 191, 0);")
+            );
+        }
+
+        [Test]
         public void ShowAccessDeniedHtml_SetsErrorMessagesHtmlCorrectly()
         {
             var storage = GetInitialStorage();

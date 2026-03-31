@@ -44,6 +44,9 @@ import { CanvasElementManager } from "../js/CanvasElementManager";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementUtils";
 import { getPageIFrame } from "../../utils/shared";
 
+const kAudioHighlightBackgroundCssVar = "--bloom-audio-highlight-background";
+const kAudioHighlightTextColorCssVar = "--bloom-audio-highlight-text-color";
+
 // Controls the CSS text-align value
 // Note: CSS text-align W3 standard does not specify "start" or "end", but Firefox/Chrome/Edge do support it.
 // Note: CSS text-align also has values "initial", and "inherit", which we do not support currently.
@@ -676,12 +679,20 @@ export default class StyleEditor {
         if (!rule) {
             return; // paranoia
         }
-        rule.style.setProperty("background-color", hiliteBgColor);
+        // (March 2026) We are switching to using CSS variables for the hilite colors, so they can be used by both the
+        // css rules here (used in e.g. bloom player) and the highlighting pseudoelements which we will now be using
+        // edit tab.
+        rule.style.setProperty(kAudioHighlightBackgroundCssVar, hiliteBgColor);
+        rule.style.removeProperty("background-color");
         if (hiliteTextColor) {
-            rule.style.setProperty("color", hiliteTextColor);
+            rule.style.setProperty(
+                kAudioHighlightTextColorCssVar,
+                hiliteTextColor,
+            );
         } else {
-            rule.style.removeProperty("color");
+            rule.style.removeProperty(kAudioHighlightTextColorCssVar);
         }
+        rule.style.removeProperty("color");
     }
 
     public getAudioHiliteProps(styleName: string): {
@@ -694,8 +705,16 @@ export default class StyleEditor {
             this.sentenceHiliteRuleSelector,
             false,
         );
-        const hiliteTextColor = sentenceRule?.style?.color;
-        let hiliteBgColor = sentenceRule?.style?.backgroundColor;
+        const hiliteTextColor =
+            sentenceRule?.style
+                ?.getPropertyValue(kAudioHighlightTextColorCssVar)
+                .trim() ||
+            sentenceRule?.style?.color ||
+            undefined;
+        let hiliteBgColor =
+            sentenceRule?.style
+                ?.getPropertyValue(kAudioHighlightBackgroundCssVar)
+                .trim() || sentenceRule?.style?.backgroundColor;
         if (!hiliteBgColor) {
             hiliteBgColor = kBloomYellow;
         }
