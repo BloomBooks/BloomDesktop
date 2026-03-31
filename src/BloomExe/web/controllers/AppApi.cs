@@ -226,6 +226,7 @@ namespace Bloom.Api
             if (_bookSelection.CurrentSelection == null)
             {
                 request.Failed("No book selected");
+                return;
             }
 
             if (Book.Book.CollectionKind(_bookSelection.CurrentSelection) != "main")
@@ -234,6 +235,13 @@ namespace Bloom.Api
                 HandleMakeFromSelectedBook(request);
                 return;
             }
+
+            if (!_bookSelection.CurrentSelection.IsSaveable)
+            {
+                request.Failed("Current book is not saveable");
+                return;
+            }
+
             _editBookCommand.Raise(_bookSelection.CurrentSelection);
             request.PostSucceeded();
         }
