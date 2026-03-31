@@ -9348,6 +9348,14 @@ react-tabs@^3.0.0:
     clsx "^1.1.0"
     prop-types "^15.5.0"
 
+react-toastify@11.0.1-react17:
+  version "11.0.1-react17"
+  resolved "https://registry.yarnpkg.com/react-toastify/-/react-toastify-11.0.1-react17.tgz#797af2f213b23147f8aef337f2cd65d71695d530"
+  integrity sha512-OVzc+wLzStoUU2B2QEKSKvfjg5rymCqfIhvVbRRl+ONF8gPT04VQPVNzCrUcsow8elrkeqB5tlAhRx/osD0xSw==
+  dependencies:
+    clsx "^2.1.1"
+    use-sync-external-store "^1.4.0"
+
 react-tooltip@^4.2.10:
   version "4.2.18"
   resolved "https://registry.yarnpkg.com/react-tooltip/-/react-tooltip-4.2.18.tgz#2fb8c5e115c4e5476f94081f4bb2ba77f5b2297f"

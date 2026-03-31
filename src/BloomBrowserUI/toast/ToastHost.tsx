@@ -1,6 +1,5 @@
 import { postJsonAsync } from "../utils/bloomApi";
 import * as React from "react";
-import { css } from "@emotion/react";
 import WebSocketManager, {
     IBloomWebSocketEvent,
 } from "../utils/WebSocketManager";
@@ -8,6 +7,8 @@ import { ToastInfo, Toast } from "./Toast";
 import { useToastDebugEvents } from "./toastUtils";
 import { ThemeProvider } from "@mui/material";
 import { lightTheme } from "../bloomMaterialUITheme";
+import { ToastContainer, ToastOptions, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 type ToastShowEvent = IBloomWebSocketEvent & ToastInfo;
 
@@ -19,79 +20,128 @@ const getToastLifetimeSeconds = (toast: ToastInfo): number => {
     return toast.durationSeconds ?? Number.POSITIVE_INFINITY;
 };
 
+const getToastAutoClose = (toastInfo: ToastInfo): number | false => {
+    return toastInfo.durationSeconds ? toastInfo.durationSeconds * 1000 : false;
+};
+
 export const ToastHost: React.FunctionComponent<{
     dismissMessageKeys?: string[];
 }> = (props) => {
-    const [toasts, setToasts] = React.useState<ToastInfo[]>([]);
-
-    const enqueueToasts = React.useCallback((incomingToasts: ToastInfo[]) => {
-        setToasts((currentToasts) => {
-            const nextToasts = [...currentToasts];
-
-            incomingToasts.forEach((incomingToast) => {
-                const duplicateIndex = nextToasts.findIndex(
-                    (toast) =>
-                        !!getMessageIdentity(incomingToast) &&
-                        getMessageIdentity(incomingToast) ===
-                            getMessageIdentity(toast),
-                );
-
-                if (duplicateIndex < 0) {
-                    nextToasts.push(incomingToast);
-                    return;
-                }
-
-                const existingToast = nextToasts[duplicateIndex];
-                if (
-                    getToastLifetimeSeconds(incomingToast) >
-                    getToastLifetimeSeconds(existingToast)
-                ) {
-                    nextToasts[duplicateIndex] = {
-                        ...existingToast,
-                        ...incomingToast,
-                    };
-                }
-            });
-
-            return nextToasts;
-        });
-    }, []);
+    const activeToastsRef = React.useRef<Map<string, ToastInfo>>(new Map());
 
     const removeToast = React.useCallback((toastToRemove: ToastInfo) => {
-        setToasts((currentToasts) =>
-            currentToasts.filter(
-                (toast) =>
-                    getMessageIdentity(toast) !==
-                    getMessageIdentity(toastToRemove),
-            ),
-        );
+        const identity = getMessageIdentity(toastToRemove);
+        activeToastsRef.current.delete(identity);
+        toast.dismiss(identity);
     }, []);
 
     const handleAction = React.useCallback(
-        (toast: ToastInfo) => {
-            if (!toast.actionInfo) {
+        (toastInfo: ToastInfo) => {
+            if (!toastInfo.actionInfo) {
                 return;
             }
 
-            if (toast.actionInfo.callbackId) {
+            if (toastInfo.actionInfo.callbackId) {
                 // Keep the toast visible until the backend confirms it accepted the callback.
                 // That way a failed post does not make the action silently disappear.
                 void postJsonAsync("toast/performAction", {
-                    callbackId: toast.actionInfo.callbackId,
+                    callbackId: toastInfo.actionInfo.callbackId,
                 }).then(() => {
-                    removeToast(toast);
+                    removeToast(toastInfo);
                 });
 
                 return;
             }
 
-            removeToast(toast);
+            removeToast(toastInfo);
         },
         [removeToast],
     );
 
+    const getToastOptions = React.useCallback(
+        (identity: string, toastInfo: ToastInfo): ToastOptions => {
+            return {
+                toastId: identity,
+                autoClose: getToastAutoClose(toastInfo),
+                draggable: false,
+                icon: false,
+                onClose: () => {
+                    activeToastsRef.current.delete(identity);
+                },
+            };
+        },
+        [],
+    );
+
+    const showToast = React.useCallback(
+        (toastInfo: ToastInfo) => {
+            const identity = getMessageIdentity(toastInfo);
+            toast(
+                <Toast
+                    toast={toastInfo}
+                    onClose={removeToast}
+                    onAction={handleAction}
+                />,
+                getToastOptions(identity, toastInfo),
+            );
+
+            activeToastsRef.current.set(identity, toastInfo);
+        },
+        [getToastOptions, handleAction, removeToast],
+    );
+
+    const updateToast = React.useCallback(
+        (toastInfo: ToastInfo) => {
+            const identity = getMessageIdentity(toastInfo);
+
+            if (!activeToastsRef.current.has(identity)) {
+                showToast(toastInfo);
+                return;
+            }
+
+            activeToastsRef.current.set(identity, toastInfo);
+            toast.update(identity, {
+                ...getToastOptions(identity, toastInfo),
+                render: (
+                    <Toast
+                        toast={toastInfo}
+                        onClose={removeToast}
+                        onAction={handleAction}
+                    />
+                ),
+            });
+        },
+        [getToastOptions, handleAction, removeToast, showToast],
+    );
+
+    const enqueueToasts = React.useCallback(
+        (incomingToasts: ToastInfo[]) => {
+            incomingToasts.forEach((incomingToast) => {
+                const identity = getMessageIdentity(incomingToast);
+                const existingToast = activeToastsRef.current.get(identity);
+
+                if (!existingToast) {
+                    showToast(incomingToast);
+                    return;
+                }
+
+                if (
+                    getToastLifetimeSeconds(incomingToast) >
+                    getToastLifetimeSeconds(existingToast)
+                ) {
+                    updateToast({
+                        ...existingToast,
+                        ...incomingToast,
+                    });
+                }
+            });
+        },
+        [showToast, updateToast],
+    );
+
     const clearToasts = React.useCallback(() => {
-        setToasts([]);
+        activeToastsRef.current.clear();
+        toast.dismiss();
     }, []);
 
     // Subscribe once to backend websocket toast show events so the host can render toasts.
@@ -118,39 +168,26 @@ export const ToastHost: React.FunctionComponent<{
             return;
         }
 
-        setToasts((currentToasts) =>
-            currentToasts.filter(
-                (toast) =>
-                    !props.dismissMessageKeys?.includes(
-                        getMessageIdentity(toast) || "",
-                    ),
-            ),
-        );
+        props.dismissMessageKeys.forEach((messageKey) => {
+            if (activeToastsRef.current.has(messageKey)) {
+                activeToastsRef.current.delete(messageKey);
+                toast.dismiss(messageKey);
+            }
+        });
     }, [props.dismissMessageKeys]);
 
-    // Each Toast positions itself above the previous one using padding.
-    // Note that I decided, for now, it isn't worth the complication of ensuring that variable-height
-    // toasts are perfectly stacked with equal spacing.
-    // I.e. the bottom of each toast is equally spaced from the bottom of the next toast.
-    // I also haven't tried to properly handle more toasts than can fit on the screen.
     return (
-        <div
-            css={css`
-                position: relative;
-                z-index: 4;
-            `}
-        >
-            <ThemeProvider theme={lightTheme}>
-                {toasts.map((toast, index) => (
-                    <Toast
-                        key={getMessageIdentity(toast)}
-                        toast={toast}
-                        index={index}
-                        onClose={removeToast}
-                        onAction={handleAction}
-                    />
-                ))}
-            </ThemeProvider>
-        </div>
+        <ThemeProvider theme={lightTheme}>
+            <ToastContainer
+                position="bottom-right"
+                newestOnTop={true}
+                closeButton={false}
+                hideProgressBar={true}
+                toastStyle={{
+                    minHeight: "unset",
+                    padding: 0,
+                }}
+            />
+        </ThemeProvider>
     );
 };
