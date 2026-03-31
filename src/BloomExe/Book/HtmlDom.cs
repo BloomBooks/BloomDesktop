@@ -3812,6 +3812,140 @@ namespace Bloom.Book
             }
         }
 
+        // Used in migrations to support highlight pseudoelements in Edit tab while keeping
+        // stored user styles compatible with older Bloom versions.
+        internal static void EnsureAudioHighlightRulesUseCssVariablesAndLegacyColors(
+            SafeXmlElement userStylesNode
+        )
+        {
+            var userStyleKeyDict = GetUserStyleKeyDict(userStylesNode);
+            var rulesToCheck = new HashSet<string>();
+            var updatedRule = false;
+            foreach (var key in userStyleKeyDict.Keys)
+            {
+                if (key.EndsWith(" span.ui-audioCurrent"))
+                    rulesToCheck.Add(key);
+            }
+
+            foreach (var key in rulesToCheck)
+            {
+                var updatedSentenceRule = EnsureAudioHighlightRuleUsesCssVariablesAndLegacyColors(
+                    userStyleKeyDict[key]
+                );
+                if (updatedSentenceRule != userStyleKeyDict[key])
+                {
+                    userStyleKeyDict[key] = updatedSentenceRule;
+                    updatedRule = true;
+                }
+
+                var paragraphRuleKey = key.Replace(" span.ui-audioCurrent", ".ui-audioCurrent p");
+                if (userStyleKeyDict.ContainsKey(paragraphRuleKey))
+                {
+                    var updatedParagraphRule =
+                        EnsureAudioHighlightRuleUsesCssVariablesAndLegacyColors(
+                            userStyleKeyDict[paragraphRuleKey]
+                        );
+                    if (updatedParagraphRule != userStyleKeyDict[paragraphRuleKey])
+                    {
+                        userStyleKeyDict[paragraphRuleKey] = updatedParagraphRule;
+                        updatedRule = true;
+                    }
+                }
+
+                var paddedSentenceRuleKey = key + " > span.ui-enableHighlight";
+                if (userStyleKeyDict.ContainsKey(paddedSentenceRuleKey))
+                {
+                    var updatedPaddedSentenceRule =
+                        EnsureAudioHighlightRuleUsesCssVariablesAndLegacyColors(
+                            userStyleKeyDict[paddedSentenceRuleKey]
+                        );
+                    if (updatedPaddedSentenceRule != userStyleKeyDict[paddedSentenceRuleKey])
+                    {
+                        userStyleKeyDict[paddedSentenceRuleKey] = updatedPaddedSentenceRule;
+                        updatedRule = true;
+                    }
+                }
+            }
+
+            if (updatedRule)
+            {
+                var rawCSS = GetCompleteFilteredUserStylesInnerText(userStyleKeyDict);
+                userStylesNode.InnerXml = WrapUserStyleInCdata(rawCSS);
+            }
+        }
+
+        private static string EnsureAudioHighlightRuleUsesCssVariablesAndLegacyColors(
+            string ruleValue
+        )
+        {
+            const string highlightBackgroundVariable = "--bloom-audio-highlight-background";
+            const string highlightColorVariable = "--bloom-audio-highlight-text-color";
+
+            var backgroundColorMatch = Regex.Match(ruleValue, @"background-color\s*:\s*([^;}]*)");
+            var backgroundVariableMatch = Regex.Match(
+                ruleValue,
+                $@"{Regex.Escape(highlightBackgroundVariable)}\s*:\s*([^;}}]*)"
+            );
+            if (!backgroundColorMatch.Success && !backgroundVariableMatch.Success)
+                return ruleValue;
+
+            var colorMatch = Regex.Match(ruleValue, @"(?<!-)color\s*:\s*([^;}]*)");
+            var colorVariableMatch = Regex.Match(
+                ruleValue,
+                $@"{Regex.Escape(highlightColorVariable)}\s*:\s*([^;}}]*)"
+            );
+            var backgroundValue = backgroundVariableMatch.Success
+                ? backgroundVariableMatch.Groups[1].Value.Trim()
+                : backgroundColorMatch.Groups[1].Value.Trim();
+            var colorValue =
+                colorVariableMatch.Success ? colorVariableMatch.Groups[1].Value.Trim()
+                : colorMatch.Success ? colorMatch.Groups[1].Value.Trim()
+                : null;
+
+            var updatedRuleValue = UpsertCssDeclaration(
+                ruleValue,
+                $@"{Regex.Escape(highlightBackgroundVariable)}\s*:\s*[^;}}]*(;)?",
+                $"{highlightBackgroundVariable}: {backgroundValue};"
+            );
+            updatedRuleValue = UpsertCssDeclaration(
+                updatedRuleValue,
+                @"background-color\s*:\s*[^;}]*(;)?",
+                $"background-color: {backgroundValue};"
+            );
+
+            if (!string.IsNullOrEmpty(colorValue))
+            {
+                updatedRuleValue = UpsertCssDeclaration(
+                    updatedRuleValue,
+                    $@"{Regex.Escape(highlightColorVariable)}\s*:\s*[^;}}]*(;)?",
+                    $"{highlightColorVariable}: {colorValue};"
+                );
+                updatedRuleValue = UpsertCssDeclaration(
+                    updatedRuleValue,
+                    @"(?<!-)color\s*:\s*[^;}]*(;)?",
+                    $"color: {colorValue};"
+                );
+            }
+
+            return updatedRuleValue;
+        }
+
+        private static string UpsertCssDeclaration(
+            string ruleValue,
+            string declarationPattern,
+            string declarationValue
+        )
+        {
+            if (Regex.IsMatch(ruleValue, declarationPattern))
+                return new Regex(declarationPattern).Replace(ruleValue, declarationValue, 1);
+
+            var insertAt = ruleValue.IndexOf('{');
+            if (insertAt < 0)
+                return ruleValue;
+
+            return ruleValue.Insert(insertAt + 1, $" {declarationValue}");
+        }
+
         public bool HasClassOnBody(string className)
         {
             return Body.HasClass(className);

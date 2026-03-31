@@ -1870,6 +1870,7 @@ namespace Bloom.Book
             Storage.MigrateToLevel12PageNumberPosition();
             Storage.MigrateToLevel13SplitPaneMarginBoxes();
             Storage.MigrateToLevel14CoverIsImageToCustomLayout(_bookData);
+            Storage.MigrateToLevel15AudioHighlightCssVariables();
 
             Storage.DoBackMigrations();
 

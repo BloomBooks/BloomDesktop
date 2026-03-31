@@ -15,21 +15,24 @@ body {
 // Bloom applies in the talking-book tool. Accordingly, we tell the agent to
 // apply that class. However, the user may NOT have configured a custom highlighting.
 // In case they do not, this provides the default highlighting. In this location,
-// it works for edit mode, bloomPubs, both kinds of ePUBs, and very likely anywhere
-// else we'd want ui-audioCurrent to produce a highlight.
+// it works for bloomPubs and both kinds of ePUBs, and very likely anywhere
+// else we'd want ui-audioCurrent to produce a highlight. (As of March 2026, in the
+// edit tab we are using highlighting pseudo-elements instead, BL-15300. Those read
+// the computed highlight colors and copy them to document-level variables.)
 // Setting the foreground color is usually redundant, but digital comic book covers
 // use white text, and it's now possible for the user to choose a text color, so
 // we want to ensure a contrast with the background color (unless the user overrides,
 // in which case, adequate contrast is up to them).
 // (Color is @bloom-yellow.)
-// (When editing the text, this background causes problems (due to a Chromium bug)
-// if the elements have their default position: relative. This is overidden in
-// audioRecording.less.)
 span.ui-audioCurrent,
 div.ui-audioCurrent p,
 .ui-audioCurrent .ui-enableHighlight {
-    background-color: #febf00;
-    color: black;
+    // These variables mirror the default audio highlight colors so edit-mode custom highlights
+    // and older consumers can share one source of truth.
+    --bloom-audio-highlight-background: #febf00;
+    --bloom-audio-highlight-text-color: black;
+    background-color: var(--bloom-audio-highlight-background);
+    color: var(--bloom-audio-highlight-text-color);
 }
 
 textarea,

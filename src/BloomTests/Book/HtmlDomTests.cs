@@ -1326,6 +1326,119 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void EnsureAudioHighlightRulesUseCssVariablesAndLegacyColors_WorksForExistingRules()
+        {
+            var bookDom = new HtmlDom(
+                @"<html>
+  <head>
+    <style type='text/css' title='userModifiedStyles'>
+    /*<![CDATA[*/
+    .Title-On-Cover-style span.ui-audioCurrent { background-color: rgb(254, 191, 0); }
+    .Title-On-Cover-style span.ui-audioCurrent > span.ui-enableHighlight { background-color: rgb(254, 191, 0); }
+    .Title-On-Cover-style.ui-audioCurrent p { background-color: rgb(254, 191, 0); }/*]]>*/
+    </style>
+  </head>
+  <body>
+    <div class='Title-On-Cover-style'></div>
+   </body>
+</html>"
+            );
+            var bookStyleNode = HtmlDom.GetUserModifiedStyleElement(bookDom.Head);
+
+            HtmlDom.EnsureAudioHighlightRulesUseCssVariablesAndLegacyColors(bookStyleNode);
+            var updatedCssRules = bookStyleNode.InnerXml;
+
+            Assert.That(
+                updatedCssRules,
+                Does.Match(
+                    @"\.Title-On-Cover-style span\.ui-audioCurrent \{(?=.*--bloom-audio-highlight-background: rgb\(254, 191, 0\);)(?=.*background-color: rgb\(254, 191, 0\);)[^}]*\}"
+                )
+            );
+            Assert.That(
+                updatedCssRules,
+                Does.Match(
+                    @"\.Title-On-Cover-style span\.ui-audioCurrent > span\.ui-enableHighlight \{(?=.*--bloom-audio-highlight-background: rgb\(254, 191, 0\);)(?=.*background-color: rgb\(254, 191, 0\);)[^}]*\}"
+                )
+            );
+            Assert.That(
+                updatedCssRules,
+                Does.Match(
+                    @"\.Title-On-Cover-style\.ui-audioCurrent p \{(?=.*--bloom-audio-highlight-background: rgb\(254, 191, 0\);)(?=.*background-color: rgb\(254, 191, 0\);)[^}]*\}"
+                )
+            );
+        }
+
+        [Test]
+        public void EnsureAudioHighlightRulesUseCssVariablesAndLegacyColors_WorksWhenRulesAlreadyHavePaddedSentenceSelectors()
+        {
+            var bookDom = new HtmlDom(
+                @"<html>
+  <head>
+    <style type='text/css' title='userModifiedStyles'>
+    /*<![CDATA[*/
+    .Bubble-style span.ui-audioCurrent { background-color: transparent; color: rgb(0, 255, 255); }
+    .Bubble-style span.ui-audioCurrent > span.ui-enableHighlight { background-color: transparent; color: rgb(0, 255, 255); }
+    .Bubble-style.ui-audioCurrent p { background-color: transparent; color: rgb(0, 255, 255); }/*]]>*/
+    </style>
+  </head>
+  <body>
+    <div class='Bubble-style'></div>
+   </body>
+</html>"
+            );
+            var bookStyleNode = HtmlDom.GetUserModifiedStyleElement(bookDom.Head);
+
+            HtmlDom.EnsureAudioHighlightRulesUseCssVariablesAndLegacyColors(bookStyleNode);
+            var updatedCssRules = bookStyleNode.InnerXml;
+
+            Assert.That(
+                updatedCssRules,
+                Does.Match(
+                    @"\.Bubble-style span\.ui-audioCurrent \{(?=.*--bloom-audio-highlight-background: transparent;)(?=.*background-color: transparent;)(?=.*--bloom-audio-highlight-text-color: rgb\(0, 255, 255\);)(?=.*color: rgb\(0, 255, 255\);)[^}]*\}"
+                )
+            );
+            Assert.That(
+                updatedCssRules,
+                Does.Match(
+                    @"\.Bubble-style span\.ui-audioCurrent > span\.ui-enableHighlight \{(?=.*--bloom-audio-highlight-background: transparent;)(?=.*background-color: transparent;)(?=.*--bloom-audio-highlight-text-color: rgb\(0, 255, 255\);)(?=.*color: rgb\(0, 255, 255\);)[^}]*\}"
+                )
+            );
+            Assert.That(
+                updatedCssRules,
+                Does.Match(
+                    @"\.Bubble-style\.ui-audioCurrent p \{(?=.*--bloom-audio-highlight-background: transparent;)(?=.*background-color: transparent;)(?=.*--bloom-audio-highlight-text-color: rgb\(0, 255, 255\);)(?=.*color: rgb\(0, 255, 255\);)[^}]*\}"
+                )
+            );
+        }
+
+        [Test]
+        public void EnsureAudioHighlightRulesUseCssVariablesAndLegacyColors_RestoresLegacyColorsForVariableOnlyRules()
+        {
+            var bookDom = new HtmlDom(
+                @"<html>
+  <head>
+    <style type='text/css' title='userModifiedStyles'>
+    /*<![CDATA[*/
+    .Bubble-style span.ui-audioCurrent { --bloom-audio-highlight-background: transparent; --bloom-audio-highlight-text-color: rgb(0, 255, 255); }
+    .Bubble-style span.ui-audioCurrent > span.ui-enableHighlight { --bloom-audio-highlight-background: transparent; --bloom-audio-highlight-text-color: rgb(0, 255, 255); }
+    .Bubble-style.ui-audioCurrent p { --bloom-audio-highlight-background: transparent; --bloom-audio-highlight-text-color: rgb(0, 255, 255); }/*]]>*/
+    </style>
+  </head>
+  <body>
+    <div class='Bubble-style'></div>
+   </body>
+</html>"
+            );
+            var bookStyleNode = HtmlDom.GetUserModifiedStyleElement(bookDom.Head);
+
+            HtmlDom.EnsureAudioHighlightRulesUseCssVariablesAndLegacyColors(bookStyleNode);
+            var updatedCssRules = bookStyleNode.InnerXml;
+
+            Assert.That(updatedCssRules, Does.Contain("background-color: transparent;"));
+            Assert.That(updatedCssRules, Does.Contain("color: rgb(0, 255, 255);"));
+        }
+
+        [Test]
         public void FixAnyAddedCustomPages_Works()
         {
             var content =

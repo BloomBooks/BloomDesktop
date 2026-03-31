@@ -42,6 +42,10 @@ import { RenderRoot } from "./AudioHilitePage";
 import { RenderCanvasElementRoot } from "./CanvasElementFormatPage";
 import { CanvasElementManager } from "../js/CanvasElementManager";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementUtils";
+import {
+    kAudioHighlightBackgroundCssVar,
+    kAudioHighlightTextColorCssVar,
+} from "../toolbox/talkingBook/audioTextHighlightManager";
 import { getPageIFrame } from "../../utils/shared";
 
 // Controls the CSS text-align value
@@ -676,10 +680,18 @@ export default class StyleEditor {
         if (!rule) {
             return; // paranoia
         }
+        // Keep both the CSS variable form and the legacy declarations so newer edit-tab
+        // pseudoelement highlights and older Bloom versions read the same colors.
+        rule.style.setProperty(kAudioHighlightBackgroundCssVar, hiliteBgColor);
         rule.style.setProperty("background-color", hiliteBgColor);
         if (hiliteTextColor) {
+            rule.style.setProperty(
+                kAudioHighlightTextColorCssVar,
+                hiliteTextColor,
+            );
             rule.style.setProperty("color", hiliteTextColor);
         } else {
+            rule.style.removeProperty(kAudioHighlightTextColorCssVar);
             rule.style.removeProperty("color");
         }
     }
@@ -694,7 +706,7 @@ export default class StyleEditor {
             this.sentenceHiliteRuleSelector,
             false,
         );
-        const hiliteTextColor = sentenceRule?.style?.color;
+        const hiliteTextColor = sentenceRule?.style?.color || undefined;
         let hiliteBgColor = sentenceRule?.style?.backgroundColor;
         if (!hiliteBgColor) {
             hiliteBgColor = kBloomYellow;
