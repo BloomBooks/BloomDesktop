@@ -1880,6 +1880,11 @@
       <trans-unit id="EditTab.FrontMatter.TopicPrompt" sil:dynamic="true">
         <source xml:lang="en">Click to choose topic</source>
         <note>ID: EditTab.FrontMatter.TopicPrompt</note>
+        <note>obsolete as of Bloom 6.4, replaced by EditTab.FrontMatter.TopicPrompt2</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.TopicPrompt2" translate="no">
+        <source xml:lang="en">Choose topic</source>
+        <note>ID: EditTab.FrontMatter.TopicPrompt2</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt" sil:dynamic="true">
         <source xml:lang="en">Acknowledgments for translated version, in {lang}</source>
@@ -2368,6 +2373,10 @@
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.TextColor" sil:dynamic="true">
         <source xml:lang="en">Text Color</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.TextColor</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.TextOutlineColor" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Text Outline Color</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.TextOutlineColor</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.TextBlock" sil:dynamic="true">
         <source xml:lang="en">Text Block</source>

@@ -264,10 +264,11 @@ namespace Bloom.web.controllers
                 (request) =>
                 {
                     var collection = GetCollectionOfRequest(request);
-                    if (_collectionModel.DeleteBook(GetBookObjectFromPost(request), collection))
-                        request.PostSucceeded();
-                    else
-                        request.Failed();
+                    _collectionModel.DeleteBook(GetBookObjectFromPost(request), collection);
+                    // There are valid reasons for DeleteBook to return false (such as user cancel).
+                    // It shouldn't be considered a failure. Always report success.
+                    // A real exception will throw and cause the request to fail generally.
+                    request.PostSucceeded();
                 },
                 true
             );
@@ -402,14 +403,12 @@ namespace Bloom.web.controllers
             }
         }
 
-        // Currently only used by Books on Blorg Progress Bar; if a Sign Language is defined, we use that.
+        // Currently only used by Books on Blorg Progress Bar
         private void HandleGetBookCountByLanguage(ApiRequest request)
         {
             if (request.HttpMethod == HttpMethods.Post)
                 return; // should be Get
-            var langTag = string.IsNullOrEmpty(_settings.SignLanguageTag)
-                ? _settings.Language1Tag
-                : _settings.SignLanguageTag;
+            var langTag = _settings.PrimaryLangTagWithSignPrioritized;
             var bloomLibraryApiClient = new BloomLibraryBookApiClient();
             int count;
             try

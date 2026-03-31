@@ -10,7 +10,6 @@ import {
     WrongImagePlaceholderIcon,
 } from "../../../react_components/icons/ImagePlaceholderIcon";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
-import { SignLanguageIcon } from "../../../react_components/icons/SignLanguageIcon";
 import { GifIcon } from "../../../react_components/icons/GifIcon";
 import { Point } from "../../js/point";
 import { getCanvasElementManager } from "./canvasElementUtils";
@@ -493,13 +492,13 @@ export const CanvasElementVideoItem: React.FunctionComponent<{
             makeTarget={props.makeTarget}
             showOuterRectangle={props.showOuterRectangle}
         >
-            <SignLanguageIcon
+            <img
                 css={css`
                     width: 100%;
                     height: 100%;
                     cursor: grab;
                 `}
-                color={kBloomBlue}
+                src="/bloom/bookEdit/toolbox/canvas/sign-language-overlay.svg"
             />
         </CanvasElementSvgItem>
     );

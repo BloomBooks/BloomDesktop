@@ -166,6 +166,7 @@ namespace Bloom.Workspace
                     BackColor = Palette.GeneralBackground,
                     Dock = DockStyle.Fill,
                     AdditionalHtml = workspaceAdditionalHtml,
+                    TabStop = false, // Prevent unwanted focus indicator on first dom control (BL-16061)
                 };
 
                 RegisterWorkspaceRootForDebugging(workspaceAdditionalHtml);
@@ -979,9 +980,7 @@ window.showWorkspaceInitializationFailure = function(message) {
             {
                 using (var server = new BloomWebSocketServer())
                 {
-                    server.Init(
-                        (BloomServer.portForHttp + 1).ToString(CultureInfo.InvariantCulture)
-                    );
+                    server.Init(BloomServer.WebSocketPort.ToString(CultureInfo.InvariantCulture));
                     server.SendString("app", "uiLanguageChanged", langTag);
                 }
             }

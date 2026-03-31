@@ -84,6 +84,8 @@ namespace Bloom.Edit
             );
             var backColor = MiscUtils.ColorToHtmlCode(Palette.SidePanelBackgroundColor);
             _baseHtml = RobustFile.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
+            if (useViteDev)
+                _baseHtml = ReactControl.ReplaceViteDevOrigin(_baseHtml);
         }
 
         private void InvokePageSelectedChanged(IPage page)

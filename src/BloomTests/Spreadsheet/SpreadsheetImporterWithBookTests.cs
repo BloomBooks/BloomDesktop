@@ -161,7 +161,7 @@ namespace BloomTests.Spreadsheet
             <div class=""bloom-canvas bloom-background-image-in-style-attr"" data-book=""coverImage"" style=""background-image:url('some image.jpg')"" data-copyright=""Copyright, SIL International 2009."" data-creator="""" data-license=""cc-by-nd""></div>
 
             <div class=""bottomBlock"">
-                <img class=""branding"" src=""/bloom/api/branding/image?id=cover-bottom-left.svg"" type=""image/svg"" onerror=""this.style.display='none'""></img> 
+                <img class=""branding"" src=""/bloom/api/branding/image?id=cover-bottom-left.svg"" type=""image/svg"" onerror=""this.style.display='none'""></img>
 
                 <div class=""bottomTextContent"">
                     <div class=""creditsRow"" data-hint=""You may use this space for author/illustrator, or anything else."">
@@ -178,7 +178,7 @@ namespace BloomTests.Spreadsheet
                             Bafia
                         </div>
 
-                        <div class=""coverBottomBookTopic bloom-userCannotModifyStyles bloom-alwaysShowBubble Cover-Default-style"" data-derived=""topic"" data-functiononhintclick=""ShowTopicChooser()"" data-hint=""Click to choose topic""></div>
+                        <div class=""coverBottomBookTopic bloom-userCannotModifyStyles bloom-alwaysShowBubble Cover-Default-style"" data-derived=""topic"" data-functiononhintclick=""ShowTopicChooser()"" data-hint=""Choose topic""></div>
                     </div>
                 </div>
             </div>

@@ -172,20 +172,35 @@ namespace Bloom.web.controllers
         /// </summary>
         private void HandleToggleCustomCover(ApiRequest request)
         {
-            var pageId = request.GetPostStringOrNull();
+            var requestJson = request.GetPostJsonOrNull();
+            var pageId =
+                requestJson == null
+                    ? request.GetPostStringOrNull()
+                    : request.RequiredPostString("pageId");
+            var keepCustomLayoutDataWhenSwitchingToStandard =
+                requestJson != null
+                && request.RequiredPostString("keepCustomLayoutDataWhenSwitchingToStandard")
+                    == "true";
             var book = View.Model.CurrentBook;
             var page = book.GetPage(pageId);
             var pageElt = page.GetDivNodeForThisPage();
             var switchingToCustom = !pageElt.HasClass("bloom-customLayout");
+            var shouldRemoveCustomLayoutDataWhenSwitchingToStandard =
+                !switchingToCustom && !keepCustomLayoutDataWhenSwitchingToStandard;
+            var customLayoutId = pageElt.GetAttribute("data-custom-layout-id");
             if (switchingToCustom)
             {
-                var customLayoutId = pageElt.GetAttribute("data-custom-layout-id");
                 var customLayoutData = book.BookData.GetVariableOrNull(customLayoutId, "*");
                 if (string.IsNullOrEmpty(customLayoutData.Xml))
                 {
                     request.ReplyWithText("false");
                     return;
                 }
+                pageElt.SetAttribute("data-tool-id", "canvas");
+            }
+            else
+            {
+                pageElt.RemoveAttribute("data-tool-id");
             }
 
             request.ReplyWithText("true");
@@ -200,9 +215,22 @@ namespace Bloom.web.controllers
                     // page element.
                     var backgroundAudio = pageElt.GetAttribute(HtmlDom.musicAttrName);
                     var backgroundAudioVolume = pageElt.GetAttribute(HtmlDom.musicVolumeName);
+                    var dataToolId = pageElt.GetAttribute("data-tool-id");
                     // Bring everything up to date consistent with the new
                     // state. Might be enough just do the BookData update.
                     book.EnsureUpToDateMemory(new NullProgress());
+                    // Toggling between custom and standard layout can replace the xMatter page HTML,
+                    // so reapply branding QR-code HTML adjustments for the current book settings.
+                    // This should not need to regenerate the QR code file.
+                    book.UpdateQrCodeHtmlForCurrentSettings(updateQrCodeFileEvenIfItExists: false);
+
+                    if (
+                        shouldRemoveCustomLayoutDataWhenSwitchingToStandard
+                        && !string.IsNullOrWhiteSpace(customLayoutId)
+                    )
+                    {
+                        book.BookData.RemoveAllFormsAndDataDivChildrenForDataBook(customLayoutId);
+                    }
 
                     var updatedPageElt = book.GetPage(pageId)?.GetDivNodeForThisPage();
                     if (updatedPageElt != null)
@@ -223,6 +251,11 @@ namespace Bloom.web.controllers
                         // Keep the same invariant we enforce elsewhere.
                         if (string.IsNullOrEmpty(backgroundAudio))
                             updatedPageElt.RemoveAttribute(HtmlDom.musicVolumeName);
+
+                        if (string.IsNullOrEmpty(dataToolId))
+                            updatedPageElt.RemoveAttribute("data-tool-id");
+                        else
+                            updatedPageElt.SetAttribute("data-tool-id", dataToolId);
                     }
 
                     return pageId;

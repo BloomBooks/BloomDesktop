@@ -9,6 +9,7 @@ import { getWorkspaceBundleExports } from "../../js/workspaceFrames";
 import {
     CanvasElementManager,
     ITextColorInfo,
+    ITextOutlineColorInfo,
 } from "../../js/CanvasElementManager";
 import { Bubble, BubbleSpec, TailSpec } from "comicaljs";
 import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
@@ -132,6 +133,14 @@ const CanvasToolControls: React.FunctionComponent = () => {
         "Text Color",
         "EditTab.Toolbox.ComicTool.Options.TextColor",
     );
+    const textOutlineColorTitle = useL10n(
+        "Text Outline Color",
+        "EditTab.Toolbox.ComicTool.Options.TextOutlineColor",
+    );
+    const noneLabel = useL10n(
+        "None",
+        "EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None",
+    );
     const backgroundColorTitle = useL10n(
         "Background Color",
         "EditTab.Toolbox.ComicTool.Options.BackgroundColor",
@@ -147,6 +156,11 @@ const CanvasToolControls: React.FunctionComponent = () => {
         defaultTextColors[0],
     );
     const [textColorIsDefault, setTextColorIsDefault] = useState(true);
+    const [textOutlineColorSwatch, setTextOutlineColorSwatch] = useState(
+        getColorInfoFromSpecialNameOrColorString("transparent"),
+    );
+    const [textOutlineColorIsDefault, setTextOutlineColorIsDefault] =
+        useState(true);
 
     // Background color swatch
     // defaults to "white" background color
@@ -337,6 +351,23 @@ const CanvasToolControls: React.FunctionComponent = () => {
                     canvasElementTextColorInformation.color,
                 );
                 setTextColorSwatch(newSwatch);
+
+                const canvasElementTextOutlineColorInformation: ITextOutlineColorInfo =
+                    canvasElementManager.getTextOutlineColorInformation();
+                setTextOutlineColorIsDefault(
+                    canvasElementTextOutlineColorInformation.isDefault,
+                );
+                if (canvasElementTextOutlineColorInformation.isDefault) {
+                    setTextOutlineColorSwatch(
+                        getColorInfoFromSpecialNameOrColorString("transparent"),
+                    );
+                } else {
+                    setTextOutlineColorSwatch(
+                        getColorInfoFromSpecialNameOrColorString(
+                            canvasElementTextOutlineColorInformation.color,
+                        ),
+                    );
+                }
             }
         } else {
             setCanvasElementType(getBubbleType(getCanvasElementManager()));
@@ -532,6 +563,31 @@ const CanvasToolControls: React.FunctionComponent = () => {
         }
     };
 
+    // We come into this from chooser change
+    const updateTextOutlineColor = (newColor: IColorInfo) => {
+        const color = newColor.colors[0];
+        const canvasElementManager = getCanvasElementManager();
+        if (canvasElementManager) {
+            setTextOutlineColorIsDefault(false);
+            setTextOutlineColorSwatch(newColor);
+
+            canvasElementManager.setTextOutlineColor(color);
+            updateReactFromComical(canvasElementManager);
+        }
+    };
+
+    const defaultTextOutlineColorClicked = () => {
+        const canvasElementManager = getCanvasElementManager();
+        if (canvasElementManager) {
+            setTextOutlineColorIsDefault(true);
+            setTextOutlineColorSwatch(
+                getColorInfoFromSpecialNameOrColorString("transparent"),
+            );
+            canvasElementManager.setTextOutlineColor("");
+            updateReactFromComical(canvasElementManager);
+        }
+    };
+
     const noteInputFocused = (input: HTMLElement) =>
         getCanvasElementManager()?.setThingToFocusAfterSettingColor(input);
 
@@ -635,17 +691,45 @@ const CanvasToolControls: React.FunctionComponent = () => {
     };
 
     const launchTextColorChooser = () => {
+        launchTextStyleChooser(
+            textColorTitle,
+            textColorSwatch,
+            updateTextColor,
+            defaultTextColorClicked,
+        );
+    };
+
+    const launchTextOutlineColorChooser = () => {
+        launchTextStyleChooser(
+            textOutlineColorTitle,
+            textOutlineColorIsDefault
+                ? defaultTextColors[0]
+                : textOutlineColorSwatch,
+            updateTextOutlineColor,
+            defaultTextOutlineColorClicked,
+            noneLabel,
+        );
+    };
+
+    const launchTextStyleChooser = (
+        localizedTitle: string,
+        initialColor: IColorInfo,
+        onChange: (color: IColorInfo) => void,
+        onDefaultClick: () => void,
+        defaultButtonLabel?: string,
+    ) => {
         const colorPickerDialogProps: IColorPickerDialogProps = {
             transparency: false,
             noGradientSwatches: true,
-            localizedTitle: textColorTitle,
-            initialColor: textColorSwatch,
+            localizedTitle,
+            initialColor,
             palette: BloomPalette.Text,
             isForCanvasElement: true,
-            onChange: (color) => updateTextColor(color),
+            onChange: (color) => onChange(color),
             onInputFocus: noteInputFocused,
             includeDefault: true,
-            onDefaultClick: defaultTextColorClicked,
+            onDefaultClick,
+            defaultButtonLabel,
             //defaultColor???
         };
         getWorkspaceBundleExports().showColorPickerDialog(
@@ -748,6 +832,22 @@ const CanvasToolControls: React.FunctionComponent = () => {
             />
         </FormControl>
     );
+    const textOutlineColorControl = (
+        <FormControl variant="standard">
+            <InputLabel htmlFor="text-outline-color-bar" shrink={true}>
+                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.TextOutlineColor">
+                    Text Outline Color
+                </Span>
+            </InputLabel>
+            <ColorBar
+                id="text-outline-color-bar"
+                onClick={launchTextOutlineColorChooser}
+                colorInfo={textOutlineColorSwatch}
+                text={textOutlineColorIsDefault ? "- - -" : undefined}
+                alignTextLeft={textOutlineColorIsDefault}
+            />
+        </FormControl>
+    );
 
     const activeElement = canvasElementManager?.getActiveElement();
     const effectiveCanvasElementType =
@@ -829,6 +929,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
             return (
                 <>
                     {hasText && textColorControl}
+                    {hasText && textOutlineColorControl}
                     {backgroundColorControl}
                     {hasImage && imageFillControl}
                 </>
@@ -932,6 +1033,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
                             />
                         </FormControl>
                         {textColorControl}
+                        {textOutlineColorControl}
                         {backgroundColorControl}
                         <FormControl
                             variant="standard"

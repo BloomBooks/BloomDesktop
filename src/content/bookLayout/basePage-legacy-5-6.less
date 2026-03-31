@@ -1804,7 +1804,9 @@ body[data-bfnomargin*="video"][data-media*="video"][data-bfnomargin*="portrait"]
 // Make translation group in text-only page fill the page (BL-15739)
 .bloom-page
     > .marginBox
-    > .split-pane-component-inner:has(> .bloom-translationGroup:not(.box-header-off)) {
+    > .split-pane-component-inner:has(
+        > .bloom-translationGroup:not(.box-header-off)
+    ) {
     height: 100%;
     width: 100%;
 }

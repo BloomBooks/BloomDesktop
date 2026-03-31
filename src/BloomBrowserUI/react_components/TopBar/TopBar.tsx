@@ -14,6 +14,7 @@ import {
     kGreyOnDarkColor,
 } from "../../bloomMaterialUITheme";
 import { ScopedCssBaseline } from "@mui/material";
+import { TopBarContextMenu } from "./TopBarContextMenu";
 
 export type WorkspaceTabId = "collection" | "edit" | "publish";
 
@@ -71,6 +72,7 @@ export const TopBar: React.FunctionComponent = () => {
         "workspace",
         "tabs",
     );
+    const topBarRef = React.useRef<HTMLDivElement>(null);
 
     const tabStates = state.tabStates ?? defaultWorkspaceTabState.tabStates;
     const activeTab = React.useMemo((): WorkspaceTabId => {
@@ -110,16 +112,22 @@ export const TopBar: React.FunctionComponent = () => {
            CssBaseline would apply everywhere. */
         <ScopedCssBaseline>
             <div
+                ref={topBarRef}
                 css={css`
                     background-color: ${getColorForTab(activeTab)};
                     padding-top: 2px;
                     display: flex;
                     align-items: flex-start;
-                    gap: 100px;
                 `}
             >
                 <BloomTabs tabStates={tabStates} selectTab={handleSelectTab} />
+                <div
+                    css={css`
+                        flex: 0 1 100px;
+                    `}
+                />
                 <TopBarControls activeTab={activeTab} />
+                <TopBarContextMenu targetRef={topBarRef} />
             </div>
         </ScopedCssBaseline>
     );
@@ -206,7 +214,6 @@ export const BloomTabs: React.FunctionComponent<{
                     margin: 0;
                     padding: 0;
                     gap: 1px;
-                    min-width: 300px;
                 `
             }
         >
