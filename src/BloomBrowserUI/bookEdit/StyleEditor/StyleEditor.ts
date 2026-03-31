@@ -695,7 +695,7 @@ export default class StyleEditor {
             this.sentenceHiliteRuleSelector,
             false,
         );
-        const hiliteTextColor = sentenceRule?.style?.color;
+        const hiliteTextColor = sentenceRule?.style?.color || undefined;
         let hiliteBgColor = sentenceRule?.style?.backgroundColor;
         if (!hiliteBgColor) {
             hiliteBgColor = kBloomYellow;
