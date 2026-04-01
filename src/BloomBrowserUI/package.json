@@ -168,6 +168,7 @@
         "react-slick": "^0.31.0",
         "react-table": "^6.10.0",
         "react-tabs": "^3.0.0",
+        "react-toastify": "11.0.1-react17",
         "react-tooltip": "^4.2.10",
         "react-transition-group": "^4.4.1",
         "react-truncate-markup": "^5.1.0",

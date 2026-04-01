@@ -5,14 +5,15 @@ using Bloom.Api;
 namespace Bloom.web
 {
     /// <summary>
-    /// Severity values for toast notifications sent over websocket.
-    /// Keep in sync with ToastSeverity in src/BloomBrowserUI/toast/Toast.tsx.
+    /// Type values for toast notifications sent over websocket.
+    /// Keep in sync with ToastType in src/BloomBrowserUI/toast/Toast.tsx.
     /// </summary>
-    public static class ToastSeverity
+    public static class ToastType
     {
         public const string Error = "error";
         public const string Warning = "warning";
         public const string Notice = "notice";
+        public const string Update = "update";
     }
 
     /// <summary>
@@ -56,7 +57,7 @@ namespace Bloom.web
         /// should remain independent so each one can carry its own lifecycle and action.
         /// </summary>
         public static void ShowToast(
-            string severity = ToastSeverity.Notice,
+            string type = ToastType.Notice,
             string text = null,
             string l10nId = null,
             int? durationSeconds = null,
@@ -67,7 +68,7 @@ namespace Bloom.web
             CleanupExpiredCallbacks();
 
             dynamic bundle = new DynamicJson();
-            bundle.severity = severity;
+            bundle.type = type;
 
             if (!string.IsNullOrWhiteSpace(text))
                 bundle.text = text;
