@@ -1915,6 +1915,7 @@ function addImageMenuOptions(
                             theOneCanvasElementManager.setActiveElement(
                                 bgImageCe,
                             );
+                            theOneCanvasElementManager.expandImageToFillSpace();
                         });
                     };
                     activateConvertedBackground();
