@@ -118,6 +118,7 @@ export const Toast: React.FunctionComponent<{
                     props.onClose(props.toast);
                 }}
                 bottomRightButton={actionButton}
+                textVerticalOffset="2px"
                 // Emotion turns this css prop into a className before ToastBox receives it,
                 //  so BoxWithIconAndText merges these styles with its own internal css.
                 css={css`
