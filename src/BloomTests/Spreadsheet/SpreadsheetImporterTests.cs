@@ -384,14 +384,7 @@ namespace BloomTests.Spreadsheet
             </div>
 			<div class=""split-pane-component position-top"">
                 <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
-                    <div class=""bloom-canvas bloom-has-canvas-element bloom-leadingElement"" data-test-id=""ic{2}"">
-						<div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
-							<div class=""bloom-imageContainer"">
-								<img src=""placeHolder.png"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
-							</div>
-						</div>
-						{4}
-					</div>
+                    <div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{2}""><img src=""placeHolder.png"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>{4}</div>
                 </div>
             </div>
         </div>
@@ -439,16 +432,11 @@ namespace BloomTests.Spreadsheet
             </div>
 			<div class=""split-pane-component position-top"">
                 <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
-                    <div class=""bloom-canvas bloom-has-canvas-element bloom-leadingElement"" data-test-id=""ic{2}"">
-						<div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
-							<div class=""bloom-imageContainer"">
-								<img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
-							</div>
-						</div>
-					</div>
+                    <div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{2}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
                 </div>
             </div>
-			<div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">\n                <div class=""split-pane-component position-top"">
+			<div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
+                <div class=""split-pane-component position-top"">
                     <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
                         <div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"" data-test-id=""tg{3}"">
                            <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
@@ -463,13 +451,7 @@ namespace BloomTests.Spreadsheet
             </div>
 			<div class=""split-pane-component position-top"">
                 <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
-                    <div class=""bloom-canvas bloom-has-canvas-element bloom-leadingElement"" data-test-id=""ic{4}"">
-						<div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
-							<div class=""bloom-imageContainer"">
-								<img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
-							</div>
-						</div>
-					</div>
+                    <div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{4}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
                 </div>
             </div>
         </div>
@@ -531,13 +513,7 @@ namespace BloomTests.Spreadsheet
         static string BloomCanvas(int icNumber)
         {
             return String.Format(
-                @"<div class=""bloom-canvas bloom-has-canvas-element bloom-leadingElement"" data-test-id=""ic{0}"">
-            <div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
-                <div class=""bloom-imageContainer"">
-                    <img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
-                </div>
-            </div>
-        </div>",
+                @"<div class=""bloom-canvas bloom-leadingElement"" data-test-id=""ic{0}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>",
                 icNumber
             );
         }
@@ -1724,7 +1700,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[@data-test-id='{tag}']//img[@src='{text}']",
+                    $".//div[@data-test-id='{tag}']/img[@src='{text}']",
                     1
                 );
         }
@@ -1850,7 +1826,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[@data-test-id='{tag}']//img[@src='{text}']",
+                    $".//div[@data-test-id='{tag}']/img[@src='{text}']",
                     1
                 );
         }
