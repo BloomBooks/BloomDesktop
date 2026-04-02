@@ -390,6 +390,9 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
     return (
         <BloomDialog
             css={css`
+                height: 100%;
+                box-sizing: border-box;
+
                 .MuiDialog-paper {
                     width: ${kBookSettingsDialogWidthPx}px;
                     height: ${kBookSettingsDialogHeightPx}px;
