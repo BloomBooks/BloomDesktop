@@ -2925,19 +2925,59 @@ namespace Bloom.Book
             label.InnerText = badgeLabel;
         }
 
+        /// <summary>
+        /// Generates or reuses a plain black QR image in the book folder for the specified payload.
+        /// This is used by publish-time features, such as inline xMatter QR markers, that need an
+        /// unbranded QR code asset they can reference from generated HTML.
+        /// </summary>
+        public static string GeneratePlainQrCodeImage(string bookFolderPath, string payload)
+        {
+            var qrFileName =
+                $"inline-qrcode-{MiscUtils.GetMd5HashOfString(payload).Substring(0, 12)}.png";
+            var qrFilePath = Path.Combine(bookFolderPath, qrFileName);
+            if (!RobustFile.Exists(qrFilePath))
+            {
+                GenerateQrCodeImage(
+                    bookFolderPath,
+                    payload,
+                    qrFileName,
+                    Color.Black,
+                    tweakForBloomBranding: false
+                );
+            }
+
+            return qrFileName;
+        }
+
         private static string GenerateQrCodeImage(string bookFolderPath, string url)
         {
-            string qrFileName;
+            return GenerateQrCodeImage(
+                bookFolderPath,
+                url,
+                "lang-qr-code.png",
+                Color.FromArgb(255, 91, 91, 91),
+                tweakForBloomBranding: true
+            );
+        }
+
+        private static string GenerateQrCodeImage(
+            string bookFolderPath,
+            string payload,
+            string qrFileName,
+            Color foregroundColor,
+            bool tweakForBloomBranding
+        )
+        {
             using (var qrGenerator = new QRCodeGenerator())
             {
-                using (var qrData = qrGenerator.CreateQrCode(url, QRCodeGenerator.ECCLevel.Q))
+                using (var qrData = qrGenerator.CreateQrCode(payload, QRCodeGenerator.ECCLevel.Q))
                 {
                     using (var qrCode = new ArtQRCode(qrData))
                     {
                         using (
                             var qrBitmap = qrCode.GetGraphic(
                                 20,
-                                Color.FromArgb(255, 91, 91, 91), // medium dark gray
+                                foregroundColor,
                                 Color.White,
                                 Color.White,
                                 null,
@@ -2946,13 +2986,16 @@ namespace Bloom.Book
                             )
                         )
                         {
-                            // Modify image to make corner detection pattern centers red
-                            // (TODO) Round off corners of detection squares
-                            // (These first two might be possible to do with the QR code library.  GetGraphic has
-                            // a "finderPatternImage" parameter that might work for these.)
-                            // Also make center square white to overlay Bloom logo and overlay the Bloom logo
-                            TweakQrCodeBitmap(qrBitmap);
-                            qrFileName = "lang-qr-code.png";
+                            if (tweakForBloomBranding)
+                            {
+                                // Modify image to make corner detection pattern centers red
+                                // (TODO) Round off corners of detection squares
+                                // (These first two might be possible to do with the QR code library.  GetGraphic has
+                                // a "finderPatternImage" parameter that might work for these.)
+                                // Also make center square white to overlay Bloom logo and overlay the Bloom logo
+                                TweakQrCodeBitmap(qrBitmap);
+                            }
+
                             qrBitmap.Save(Path.Combine(bookFolderPath, qrFileName));
                         }
                     }

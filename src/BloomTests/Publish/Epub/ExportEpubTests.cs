@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using Bloom;
@@ -83,6 +84,28 @@ namespace BloomTests.Publish.Epub
         private BloomBook SetupBook(string text, string lang, params string[] images)
         {
             return SetupBookLong(text, lang, images: images);
+        }
+
+        [Test]
+        public void InlineQrMarkersOnXmatterPages_AreReplacedAndImageIncluded()
+        {
+            var book = SetupBookLong(
+                "Some title",
+                "xyz",
+                extraPageClass: " bloom-frontMatter frontCover' data-page='required singleton",
+                optionalDataDiv: @"<div id='bloomDataDiv'>
+						<div data-book='contentLanguage1' lang='*'>xyz</div>
+                        <div data-book='smallCoverCredits' lang='xyz'><p>QR: john@example.com</p></div>
+					</div>",
+                createPhysicalFile: true
+            );
+
+            MakeEpub("output", "InlineQrMarkersOnXmatterPages_AreReplacedAndImageIncluded", book);
+
+            GetPageOneData();
+            Assert.That(_page1Data, Does.Not.Contain("QR: john@example.com"));
+            Assert.That(_page1Data, Does.Contain("inline-qrcode-"));
+            Assert.That(_manifestContent, Does.Contain("inline-qrcode-"));
         }
 
         // we were testing that not having bloom enterprise would cause images descriptions to be removed.

@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Bloom.Publish;
 using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
 using NUnit.Framework;
+using SIL.IO;
+using SIL.TestUtilities;
 
 namespace BloomTests.Publish
 {
@@ -1145,6 +1148,129 @@ namespace BloomTests.Publish
                     @"The feature ""PublishTab.Feature.Music"" was removed from this book because it requires a higher subscription tier"
                 )
             );
+        }
+
+        [TestCase("john@example.com", "mailto:john@example.com")]
+        [TestCase("mailto:john@example.com", "mailto:john@example.com")]
+        [TestCase("example.com", "https://example.com")]
+        [TestCase("https://example.com", "https://example.com")]
+        [TestCase("HTTP://example.com", "HTTP://example.com")]
+        public void NormalizeInlineQrPayload_HandlesExpectedPrefixes(string input, string expected)
+        {
+            Assert.That(InlineQrCodeReplacer.NormalizePayload(input), Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void ReplaceInlineQrCodesOnXmatterPages_ReplacesOnlyXmatterPages()
+        {
+            using (var folder = new TemporaryFolder("InlineQrCodes"))
+            {
+                var doc = SafeXmlDocument.Create();
+                doc.LoadXml(
+                    @"<div class='bloom-book'>
+                        <div class='bloom-page bloom-frontMatter' data-xmatter-page='credits' id='xmatterPage'>
+                            <div class='marginBox'>
+                                <div class='bloom-editable' lang='en'>Before QR: john@example.com after qr: example.com and qr:</div>
+                            </div>
+                        </div>
+                        <div class='bloom-page' id='contentPage'>
+                            <div class='marginBox'>
+                                <div class='bloom-editable' lang='en'>qr: content.example</div>
+                            </div>
+                        </div>
+                    </div>"
+                );
+
+                var pages = doc.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
+                    .Cast<SafeXmlElement>()
+                    .ToList();
+                InlineQrCodeReplacer.ReplaceOnXmatterPages(pages, folder.Path);
+
+                var assertThatDom = AssertThatXmlIn.Element(doc.DocumentElement);
+                assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='xmatterPage']//img[contains(@class,'bloom-inline-qrcode')]",
+                    2
+                );
+                assertThatDom.HasNoMatchForXpath(
+                    "//div[@id='contentPage']//img[contains(@class,'bloom-inline-qrcode')]"
+                );
+                assertThatDom.HasAtLeastOneMatchForXpath(
+                    "//div[@id='xmatterPage']//img[@alt='QR code for mailto:john@example.com']"
+                );
+                assertThatDom.HasAtLeastOneMatchForXpath(
+                    "//div[@id='xmatterPage']//img[@alt='QR code for https://example.com']"
+                );
+                assertThatDom.HasAtLeastOneMatchForXpath(
+                    "//div[@id='xmatterPage']//a[@href='mailto:john@example.com']/img[contains(@class,'bloom-inline-qrcode')]"
+                );
+                assertThatDom.HasAtLeastOneMatchForXpath(
+                    "//div[@id='xmatterPage']//a[@href='https://example.com']/img[contains(@class,'bloom-inline-qrcode')]"
+                );
+                assertThatDom.HasAtLeastOneMatchForXpath(
+                    "//div[@id='xmatterPage']//div[contains(., 'qr:')]"
+                );
+                assertThatDom.HasAtLeastOneMatchForXpath(
+                    "//div[@id='contentPage']//div[contains(., 'qr: content.example')]"
+                );
+
+                var qrImages = doc.SafeSelectNodes(
+                        "//div[@id='xmatterPage']//img[contains(@class,'bloom-inline-qrcode')]"
+                    )
+                    .Cast<SafeXmlElement>();
+                foreach (var qrImage in qrImages)
+                {
+                    var link = qrImage.ParentNode as SafeXmlElement;
+                    Assert.That(link, Is.Not.Null);
+                    Assert.That(link.Name, Is.EqualTo("a"));
+                    Assert.That(link.GetAttribute("style"), Does.Contain("display:inline-block"));
+                    Assert.That(link.GetAttribute("style"), Does.Contain("margin-top:1em"));
+                    Assert.That(link.GetAttribute("style"), Does.Contain("text-decoration:none"));
+                    Assert.That(link.GetAttribute("style"), Does.Contain("color:inherit"));
+                    Assert.That(qrImage.GetAttribute("style"), Does.Contain("display:block"));
+                    Assert.That(
+                        RobustFile.Exists(Path.Combine(folder.Path, qrImage.GetAttribute("src"))),
+                        Is.True
+                    );
+                }
+
+                var editable =
+                    doc.SelectSingleNode(
+                        "//div[@id='xmatterPage']//div[contains(@class,'bloom-editable')]"
+                    ) as SafeXmlElement;
+                Assert.That(editable, Is.Not.Null);
+                Assert.That(editable.GetAttribute("lang"), Is.EqualTo("en"));
+            }
+        }
+
+        [Test]
+        public void ReplaceInlineQrCodesOnXmatterPages_PreservesTrailingPunctuation()
+        {
+            using (var folder = new TemporaryFolder("InlineQrCodes"))
+            {
+                var doc = SafeXmlDocument.Create();
+                doc.LoadXml(
+                    @"<div class='bloom-book'>
+                        <div class='bloom-page bloom-frontMatter' data-xmatter-page='credits' id='xmatterPage'>
+                            <div class='marginBox'>
+                                <div class='bloom-editable' lang='en'>QR: example.com.</div>
+                            </div>
+                        </div>
+                    </div>"
+                );
+
+                var pages = doc.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
+                    .Cast<SafeXmlElement>()
+                    .ToList();
+                InlineQrCodeReplacer.ReplaceOnXmatterPages(pages, folder.Path);
+
+                var assertThatDom = AssertThatXmlIn.Element(doc.DocumentElement);
+                assertThatDom.HasAtLeastOneMatchForXpath(
+                    "//div[@id='xmatterPage']//img[@alt='QR code for https://example.com']"
+                );
+                assertThatDom.HasAtLeastOneMatchForXpath(
+                    "//div[@id='xmatterPage']//div[contains(., '.')]"
+                );
+            }
         }
     }
 }
