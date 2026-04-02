@@ -1445,37 +1445,28 @@ function makeImageFieldMenuItem(
         return;
 
     const isCoverImage = img.getAttribute("data-book") === "coverImage";
-    const subMenu: ILocalizableMenuItemProps[] = [
-        {
-            l10nId: "EditTab.Toolbox.ComicTool.Options.CoverImage",
-            english: "Cover Image",
-            onClick: () => {
-                if (isCoverImage) {
-                    img.removeAttribute("data-book");
-                } else {
-                    const page = canvasElement.closest(
-                        ".bloom-page",
-                    ) as HTMLElement;
-                    for (const existingCoverImage of Array.from(
-                        page.querySelectorAll('img[data-book="coverImage"]'),
-                    )) {
-                        if (existingCoverImage !== img) {
-                            existingCoverImage.removeAttribute("data-book");
-                        }
-                    }
-                    img.setAttribute("data-book", "coverImage");
-                }
-                setMenuOpen(false);
-            },
-            icon: isCoverImage && <CheckIcon css={getMenuIconCss()} />,
-        },
-    ];
-
     menuOptions.push({
-        l10nId: "EditTab.Toolbox.ComicTool.Options.FieldType",
-        english: "Field Type:",
-        subMenu: subMenu,
-        onClick: () => {},
+        l10nId: "EditTab.Toolbox.ComicTool.Options.UseForBookThumbnail",
+        english: "Use for book thumbnail",
+        onClick: () => {
+            if (isCoverImage) {
+                img.removeAttribute("data-book");
+            } else {
+                const page = canvasElement.closest(
+                    ".bloom-page",
+                ) as HTMLElement;
+                for (const existingCoverImage of Array.from(
+                    page.querySelectorAll('img[data-book="coverImage"]'),
+                )) {
+                    if (existingCoverImage !== img) {
+                        existingCoverImage.removeAttribute("data-book");
+                    }
+                }
+                img.setAttribute("data-book", "coverImage");
+            }
+            setMenuOpen(false);
+        },
+        icon: isCoverImage && <CheckIcon css={getMenuIconCss()} />,
     });
 }
 
