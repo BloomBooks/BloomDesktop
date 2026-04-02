@@ -567,7 +567,7 @@ window.showWorkspaceInitializationFailure = function(message) {
         internal void ShowTeamCollectionClobberToast()
         {
             ToastService.ShowToast(
-                ToastSeverity.Error,
+                ToastType.Error,
                 text: "The Team Collection has a newer version of this book. Return to the Collection Tab for more information.",
                 action: new ToastAction { Callback = () => ChangeTab(WorkspaceTab.collection) },
                 toastId: "team-collection-clobber"

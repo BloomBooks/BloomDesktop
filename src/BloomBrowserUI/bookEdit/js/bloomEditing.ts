@@ -29,7 +29,6 @@ import {
     kCanvasElementClass,
     kCanvasElementSelector,
 } from "../toolbox/canvas/canvasElementUtils";
-import { showTopicChooserDialog } from "../TopicChooser/TopicChooserDialog";
 import "../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "./jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
 import "../../lib/jquery.qtip.js";
@@ -754,16 +753,6 @@ export function SetupElements(
         });
 
     SetupMetadataButton(container);
-
-    //note, the normal way is for the user to click the link on the bubble.
-    //But clicking on the existing topic may be natural too, and this prevents
-    //them from editing it by hand.
-    $(container)
-        .find("div[data-derived='topic']")
-        .click(function () {
-            if ($(this).css("cursor") === "not-allowed") return;
-            showTopicChooserDialog();
-        });
 
     setupBookLinkGrids(container);
 

@@ -1600,7 +1600,9 @@ namespace Bloom.Edit
         public void ClearOutDisplay()
         {
             _pageListView.Clear();
-            _mainBrowser.Navigate("about:blank", false);
+            _mainBrowser?.RunJavascriptFireAndForget(
+                "workspaceBundle.switchContentPage('about:blank');"
+            );
         }
 
         public void Dispose()

@@ -159,6 +159,7 @@ const Tab: React.FunctionComponent<{
 
                     background-color: #575757;
                     border: solid thin black;
+                    border-bottom-style: none;
                     border-top-left-radius: 4px;
                     border-top-right-radius: 4px;
                     font-weight: normal;

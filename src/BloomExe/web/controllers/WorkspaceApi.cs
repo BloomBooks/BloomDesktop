@@ -266,15 +266,24 @@ namespace Bloom.web.controllers
                     ApplicationUpdateSupport.DebugShowToastScenario("failure");
                     break;
                 case "all":
-                    ToastService.ShowToast(text: "Toast test: notice", durationSeconds: 5);
                     ToastService.ShowToast(
-                        ToastSeverity.Warning,
+                        text: "Toast test: notice which is so long that it wraps and wraps",
+                        durationSeconds: 5
+                    );
+                    ToastService.ShowToast(
+                        type: ToastType.Update,
+                        text: "Toast test: update available",
+                        durationSeconds: 8,
+                        action: new ToastAction { Label = "Update", Callback = () => { } }
+                    );
+                    ToastService.ShowToast(
+                        ToastType.Warning,
                         text: "Toast test: warning",
                         durationSeconds: 7
                     );
                     ToastService.ShowToast(
-                        ToastSeverity.Error,
-                        text: "Toast test: persistent with action",
+                        ToastType.Error,
+                        text: "Toast test: persistent with action having text which is long enough to wrap",
                         action: new ToastAction { Label = "Dismiss", Callback = () => { } }
                     );
                     break;
@@ -283,14 +292,14 @@ namespace Bloom.web.controllers
                     break;
                 case "warning":
                     ToastService.ShowToast(
-                        ToastSeverity.Warning,
+                        ToastType.Warning,
                         text: "Toast test: warning",
                         durationSeconds: 7
                     );
                     break;
                 case "error":
                     ToastService.ShowToast(
-                        ToastSeverity.Error,
+                        ToastType.Error,
                         text: "Toast test: error",
                         durationSeconds: 10
                     );

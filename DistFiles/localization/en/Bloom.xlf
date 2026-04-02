@@ -1889,6 +1889,11 @@
       <trans-unit id="EditTab.FrontMatter.TopicPrompt" sil:dynamic="true">
         <source xml:lang="en">Click to choose topic</source>
         <note>ID: EditTab.FrontMatter.TopicPrompt</note>
+        <note>obsolete as of Bloom 6.4, replaced by EditTab.FrontMatter.TopicPrompt2</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.TopicPrompt2" translate="no">
+        <source xml:lang="en">Choose topic</source>
+        <note>ID: EditTab.FrontMatter.TopicPrompt2</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt" sil:dynamic="true">
         <source xml:lang="en">Acknowledgments for translated version, in {lang}</source>
@@ -2253,9 +2258,9 @@
         <source xml:lang="en">Copy text</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.CopyText</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.CoverImage" sil:dynamic="true" translate ="no">
-        <source xml:lang="en">Cover Image</source>
-        <note>ID: EditTab.Toolbox.ComicTool.Options.CoverImage</note>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.UseForBookThumbnail" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Use for book thumbnail</source>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.UseForBookThumbnail</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Duplicate" sil:dynamic="true">
         <source xml:lang="en">Duplicate</source>

@@ -110,14 +110,6 @@ public class AppearanceSettings
         // The default here is rarely if ever relevant. Usually a newly created instance will be initialized from a folder, and the default will be overwritten,
         // either to whatever we find in appearance.json, or to "legacy-5-6" if there is no appearance.json.
         new StringPropertyDef("cssThemeName", "cssThemeName", "default"),
-        // BooleanPropertyDef, not CssXDef because this is not a css variable.
-        new BooleanPropertyDef(
-            "coverIsImage",
-            "coverIsImage",
-            defaultValue: false,
-            requiresXmatterUpdate: true,
-            valueRequiredIfLegacyTheme: false
-        ), // If true, cover page is just a full bleed image.
         // If true, book uses full bleed page layout in edit mode. Printing that way is still optional.
         new BooleanPropertyDef("fullBleed", "fullBleed", defaultValue: false),
         // Does not correspond to a css variable. We will set the relevant page number css variables based on this setting.
@@ -185,11 +177,8 @@ public class AppearanceSettings
     // Some setting's values are not allowed in legacy mode.
     // REVIEW:
     // This concept of forcing a value based on the legacy theme was introduced at the time coverIsImage was added.
-    // And currently (Dec 2024), it is the only property that has a valueRequiredIfLegacyTheme.
-    // But I think the properties which existed before that and which get disabled by setting the theme
-    // to legacy should also be set. e.g. cover-topic-show
-    // Without this, the user can set the theme to non-legacy, change the property to whatever he wants,
-    // then change the theme back to legacy.
+    // Since then that was removed and (as of March 2026) no property has a valueRequiredIfLegacyTheme.
+    // Possibly more should have it.
     private void SetRequiredValuesIfLegacyTheme()
     {
         if (CssThemeName != "legacy-5-6") // Can't use UsingLegacy here because it includes logic about the syncing of files which we don't want.
@@ -211,22 +200,7 @@ public class AppearanceSettings
 
     private void SetProperty(KeyValuePair<string, object> property)
     {
-        if (
-            !Properties.ContainsKey(property.Key)
-            || !Properties[property.Key].Equals(property.Value)
-        )
-        {
-            var propDef = propertyDefinitions.FirstOrDefault(pd => pd.Name == property.Key);
-            if (propDef?.RequiresXmatterUpdate == true)
-                PendingChangeRequiresXmatterUpdate = true;
-        }
-
         Properties[property.Key] = property.Value;
-    }
-
-    public bool CoverIsImage
-    {
-        get { return _properties.coverIsImage; }
     }
 
     public bool FullBleed
@@ -234,9 +208,6 @@ public class AppearanceSettings
         get { return _properties.fullBleed; }
         set { _properties.fullBleed = value; }
     }
-
-    // When this is set to true, we ensure that the xmatter is updated before saving the book.
-    public bool PendingChangeRequiresXmatterUpdate;
 
     /// <summary>
     /// Usually, this is simply the theme name, but if the book doesn't have one (that is, it was made by
@@ -1147,7 +1118,6 @@ public abstract class PropertyDef
 {
     public string Name;
     public dynamic DefaultValue;
-    public bool RequiresXmatterUpdate;
     public object ValueRequiredIfLegacyTheme;
 
     public void SetDefault(dynamic prop)
@@ -1168,14 +1138,12 @@ public class StringPropertyDef : PropertyDef
         string name,
         string overrideGroup,
         string defaultValue,
-        bool requiresXmatterUpdate = false,
         object valueRequiredIfLegacyTheme = null
     )
     {
         Name = name;
         DefaultValue = defaultValue;
         OverrideGroup = overrideGroup;
-        RequiresXmatterUpdate = requiresXmatterUpdate;
         ValueRequiredIfLegacyTheme = valueRequiredIfLegacyTheme;
     }
 }
@@ -1186,14 +1154,12 @@ public class BooleanPropertyDef : PropertyDef
         string name,
         string overrideGroup,
         bool defaultValue,
-        bool requiresXmatterUpdate = false,
         object valueRequiredIfLegacyTheme = null
     )
     {
         Name = name;
         OverrideGroup = overrideGroup;
         DefaultValue = defaultValue;
-        RequiresXmatterUpdate = requiresXmatterUpdate;
         ValueRequiredIfLegacyTheme = valueRequiredIfLegacyTheme;
     }
 }

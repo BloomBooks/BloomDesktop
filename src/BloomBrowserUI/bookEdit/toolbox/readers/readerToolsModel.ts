@@ -1915,18 +1915,20 @@ export class ReaderToolsModel {
         }
 
         // inform the user if the list was truncated
-        const toolbox = $("#toolbox");
-        const msgDiv: JQuery = $(toolbox).find("#allowed-word-list-truncated");
+        const msgDiv = this.getToolElementById("allowed-word-list-truncated");
+        const truncatedText = this.getToolElementById(
+            "allowed_word_list_truncated_text",
+        );
 
         // if the list was truncated, show the message
         if (words.length < this.maxAllowedWords) {
-            msgDiv.html("");
-        } else {
-            msgDiv.html(
-                theOneLocalizationManager.simpleFormat(
-                    $(toolbox).find("#allowed_word_list_truncated_text").html(),
-                    [this.maxAllowedWords.toLocaleString(uiLang)],
-                ),
+            if (msgDiv) {
+                msgDiv.innerHTML = "";
+            }
+        } else if (msgDiv) {
+            msgDiv.innerHTML = theOneLocalizationManager.simpleFormat(
+                truncatedText?.innerHTML || "",
+                [this.maxAllowedWords.toLocaleString(uiLang)],
             );
         }
 

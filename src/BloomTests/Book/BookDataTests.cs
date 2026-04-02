@@ -3260,6 +3260,55 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void GatherDataItemsFromXElement_BloomEditableTrailingEmptyDiv_NormalizesStoredValue()
+        {
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+                <div class='bloom-page'>
+                     <div class='bloom-editable bloom-visibility-code-on' data-book='bookTitle' lang='en'><p>title EN</p><div>&#160;</div></div>
+                </div>
+                </body></html>"
+            );
+            var dataSet = new DataSet();
+            var bookData = new BookData(
+                new HtmlDom("<html><body></body></html>"),
+                _collectionSettings,
+                null
+            );
+
+            bookData.GatherDataItemsFromXElement(dataSet, dom.RawDom.DocumentElement);
+
+            var storedForm = dataSet
+                .TextVariables["bookTitle"]
+                .TextAlternatives.GetExactAlternative("en");
+            Assert.That(storedForm, Does.Not.Contain("<div"));
+            Assert.That(storedForm, Does.Contain("title EN"));
+        }
+
+        [Test]
+        public void SynchronizeDataItemsThroughoutDOM_BloomEditableTrailingEmptyDiv_NormalizesAppliedValue()
+        {
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+                <div id='bloomDataDiv'>
+                     <div data-book='bookTitle' lang='en'><p>title EN</p><div>&#160;</div></div>
+                </div>
+                <div class='bloom-page'>
+                     <div findMe='target' class='bloom-editable bloom-visibility-code-on' data-book='bookTitle' lang='en'><p/></div>
+                </div>
+                </body></html>"
+            );
+
+            var data = new BookData(dom, _collectionSettings, null);
+            data.SynchronizeDataItemsThroughoutDOM();
+
+            var target = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='target']");
+            Assert.That(target.InnerXml, Does.Not.Contain("<div"));
+            Assert.That(target.InnerXml, Does.Contain("title EN"));
+        }
+
+        [Test]
         public void GatherDataItemsFromXElement_OmitsDataPageNumber()
         {
             var dom = new HtmlDom(
@@ -3404,6 +3453,75 @@ namespace BloomTests.Book
                 .Dom(bookDom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']//div[contains(@class,'marginBox')]//*[@data-derived='topic']",
+                    1
+                );
+        }
+
+        [Test]
+        public void GatherDataItemsFromXElement_CustomLayoutPageWithXmatterPage_GathersXmatterAttributes()
+        {
+            var dom = new HtmlDom(
+                @"<html><head></head><body>
+				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' data-xmatter-page='frontCover' data-someattribute='someValue'>
+                    <div class='marginBox'>
+                        <div data-book='bookTitle' lang='en'>My Title</div>
+                    </div>
+				</div>
+			</body></html>"
+            );
+            var dataSet = new DataSet();
+            var bookData = new BookData(
+                new HtmlDom("<html><body></body></html>"),
+                _collectionSettings,
+                null
+            );
+
+            bookData.GatherDataItemsFromXElement(dataSet, dom.RawDom.DocumentElement);
+
+            Assert.That(
+                dataSet.XmatterPageDataAttributeSets.TryGetValue(
+                    "frontCover",
+                    out var xmatterAttributes
+                ),
+                Is.True
+            );
+            Assert.That(
+                xmatterAttributes.Single(x => x.Key == "data-someattribute").Value,
+                Is.EqualTo("someValue")
+            );
+            Assert.That(xmatterAttributes.Any(x => x.Key == "data-custom-layout-id"), Is.False);
+            Assert.That(dataSet.TextVariables.ContainsKey("customOutsideFrontCover"), Is.True);
+        }
+
+        [Test]
+        public void UpdateDomFromDataset_CustomLayoutPageWithXmatterPage_RestoresXmatterAttributes()
+        {
+            var dom = new HtmlDom(
+                @"<html><head></head><body>
+				<div id='bloomDataDiv'>
+                    <div data-xmatter-page='frontCover' data-someattribute='someValue'></div>
+                </div>
+				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' data-xmatter-page='frontCover'>
+                    <div class='marginBox'>
+                        <div data-book='bookTitle' lang='en'>My Title</div>
+                    </div>
+				</div>
+			</body></html>"
+            );
+
+            var bookData = new BookData(dom, _collectionSettings, null);
+            var customPage = (SafeXmlElement)
+                dom.RawDom.SelectSingleNode(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']"
+                );
+            customPage.RemoveAttribute("data-someattribute");
+
+            bookData.UpdateDomFromDataset();
+
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover' and @data-xmatter-page='frontCover' and @data-someattribute='someValue']",
                     1
                 );
         }

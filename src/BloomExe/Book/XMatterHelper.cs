@@ -22,7 +22,6 @@ namespace Bloom.Book
     {
         private readonly HtmlDom _bookDom;
         private readonly string _nameOfXMatterPack;
-        private readonly IFileLocator _fileLocator;
 
         /// <summary>
         /// Constructs by finding the file and folder of the xmatter pack, given the its key name e.g. "Factory", "SILIndonesia".
@@ -41,7 +40,6 @@ namespace Bloom.Book
             bool useDeviceVersionIfAvailable = false
         )
         {
-            _fileLocator = fileLocator;
             string directoryPath = null;
             _bookDom = bookDom;
             var bookSpecificXMatterPack = bookDom.GetMetaValue("xmatter", null);
@@ -176,17 +174,6 @@ namespace Bloom.Book
         {
             var directoryName = nameOfXMatterPack + "-XMatter";
 
-            if (Program.RunningHarvesterMode)
-            {
-                // Get a new file locator that also searches the Custom XMatter directory.
-                // This allows the Harvseter to preserve custom branding if those books are uploaded to web. (See BL-BL-9084)
-                var extraSearchPaths = new string[]
-                {
-                    BloomFileLocator.GetCustomXMatterDirectory(),
-                };
-                fileLocator = fileLocator.CloneAndCustomize(extraSearchPaths);
-            }
-
             if (silent)
             {
                 // Using LocateDirectoryWithThrow is quite expensive for directories we don't find...the Exception it creates, which we don't use,
@@ -318,8 +305,7 @@ namespace Bloom.Book
             Layout layout,
             bool orderXmatterForDeviceUse,
             string metadataLangTag,
-            List<string> oldIds = null,
-            bool coverIsImage = false
+            List<string> oldIds = null
         )
         {
             //don't want to pollute shells with this content
@@ -361,29 +347,7 @@ namespace Bloom.Book
                 )
             )
             {
-                var newPageSource = xmatterPage;
-
-                // If we are using an image for the front cover, replace the typical front cover with
-                // a special one which has a full-page bloom-canvas.
-                if (coverIsImage && IsOutsideFrontCoverPage(xmatterPage))
-                {
-                    var directoryPath = GetXMatterDirectory(
-                        "CoverIsImage",
-                        _fileLocator,
-                        null,
-                        true
-                    );
-                    var coverIsImageDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(
-                        directoryPath.CombineForPath("CoverIsImage-XMatter.html"),
-                        false
-                    );
-                    var coverIsImagePage = coverIsImageDom.SelectSingleNode(
-                        "/html/body/div[contains(@data-page,'required')]"
-                    );
-                    newPageSource = coverIsImagePage as SafeXmlElement;
-                }
-
-                var newPageDiv = _bookDom.RawDom.ImportNode(newPageSource, true) as SafeXmlElement;
+                var newPageDiv = _bookDom.RawDom.ImportNode(xmatterPage, true) as SafeXmlElement;
 
                 // If we're updating an existing book, we want to keep the IDs (as much as possible; sometimes
                 // the number of xmatter pages changes and we have to add IDs). In this case, oldIds is obtained
