@@ -1344,7 +1344,7 @@ namespace Bloom.Edit
             pageListDom.RawDom.GetElementsByTagName("head")[0].AppendChild(style);
         }
 
-        private HtmlDom GetXmlDocumentForEditScreenWebPage(string pageUrl, string pageListUrl)
+        internal HtmlDom GetXmlDocumentForEditScreenWebPage(string pageUrl, string pageListUrl)
         {
             var path = FileLocationUtilities.GetFileDistributedWithApplication(
                 Path.Combine(
@@ -1388,11 +1388,6 @@ namespace Bloom.Edit
                 GetUrlForCurrentPage(),
                 GetUrlForPageListFile()
             );
-        }
-
-        internal HtmlDom GetXmlDocumentForEditScreenWebPage(string pageUrl, string pageListUrl)
-        {
-            return GetXmlDocumentForEditScreenWebPage(pageUrl, pageListUrl);
         }
 
         internal void UpdateCurrentPageDebugView(string pageUrl, string pageListUrl)
