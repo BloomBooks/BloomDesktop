@@ -856,10 +856,8 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                             padding-right: 0 !important;
                                         }
 
-                                        > div[data-toolid="leveledReaderTool"],
-                                        > div[data-toolid="decodableReaderTool"],
-                                        > div[data-toolId="leveledReaderTool"],
-                                        > div[data-toolId="decodableReaderTool"] {
+                                        div[data-toolid="leveledReaderTool"],
+                                        div[data-toolId="decodableReaderTool"] {
                                             width: 100% !important;
                                             min-width: 0;
                                             align-self: stretch !important;

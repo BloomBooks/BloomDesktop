@@ -20,6 +20,14 @@
     max-height: @toggle-button-height;
 }
 
+// Not sure why, but after the switch to single browser, the toggle
+// was displaying too high. I'm ok just tweaking it for now.
+// Eventually we'll rewrite the tool in React.
+#decodable-reader-tool-content:not(.turned-off)
+    + #decodable-reader-tool-toggle-react-container {
+    margin-top: 8px;
+}
+
 /*Styles for ReaderTools.htm*/
 div.stageLine {
     display: block;
