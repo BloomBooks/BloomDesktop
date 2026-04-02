@@ -1004,8 +1004,9 @@ function setEditableContentFromKnownDataBookValueIfAny(
                             // the user can always correct it back to what he just typed.
                             const temp = document.createElement("div");
                             temp.innerHTML = content || "";
-                            if (temp.textContent.trim() !== "")
+                            if (temp.textContent.trim() !== "") {
                                 editable.innerHTML = content;
+                            }
                             adjustAutoSizeForVisibleEditableInTranslationGroup(
                                 tg,
                             );
