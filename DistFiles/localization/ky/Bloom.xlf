@@ -2574,10 +2574,10 @@
         <target xml:lang="ky" state="needs-translation">Copy text</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.CopyText</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.CoverImage" sil:dynamic="true" translate="no">
-        <source xml:lang="en">Cover Image</source>
-        <target xml:lang="ky" state="needs-translation">Cover Image</target>
-        <note>ID: EditTab.Toolbox.ComicTool.Options.CoverImage</note>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.UseForBookThumbnail" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Use for book thumbnail</source>
+        <target xml:lang="ky" state="needs-translation">Use for book thumbnail</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.UseForBookThumbnail</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Duplicate" sil:dynamic="true">
         <source xml:lang="en">Duplicate</source>
