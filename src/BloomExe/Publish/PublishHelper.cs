@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1038,6 +1038,7 @@ namespace Bloom.Publish
             modifiedBook.WriteFontFaces = wantFontFaceDeclarations;
             modifiedBook.BringBookUpToDate(new NullProgress(), true);
             modifiedBook.RemoveNonPublishablePages(omittedPageLabels);
+            DeDuplicateGifs(modifiedBook.RawDom, modifiedBook.FolderPath);
             if (processVideos)
             {
                 var domForVideoProcessing = modifiedBook.OurHtmlDom;
@@ -1082,6 +1083,51 @@ namespace Bloom.Publish
             modifiedBook.Save(true);
             modifiedBook.UpdateSupportFiles();
             return modifiedBook;
+        }
+
+        internal static void DeDuplicateGifs(SafeXmlDocument dom, string folderPath)
+        {
+            var gifImgs = dom.SafeSelectNodes("//div[contains(@class, 'bloom-gif')]/div[contains(@class,'bloom-imageContainer')]/img").Cast<SafeXmlElement>();
+            // Note byte[] doesn't work well as a dictionary key.
+            var hashToSrc = new Dictionary<string, string>();
+            var hashToPath = new Dictionary<string, string>();
+            foreach (var img in gifImgs)
+            {
+                var src = img.GetAttribute("src");
+                if (string.IsNullOrEmpty(src))
+                    continue;
+                var filePath = BookStorage.GetNormalizedPathForOS(Path.Combine(folderPath, src));
+                if (!RobustFile.Exists(filePath) && filePath.Contains("%"))
+                {
+                    var urlpath = UrlPathString.CreateFromUrlEncodedString(src);
+                    var unencodedSrc = urlpath.NotEncoded;
+                    filePath = BookStorage.GetNormalizedPathForOS(Path.Combine(folderPath, unencodedSrc));
+                    if (!RobustFile.Exists(filePath))
+                        continue;
+                }
+                var fileContent = RobustFile.ReadAllBytes(filePath);
+                var rawHash = SHA256.HashData(fileContent);
+                var hashString = Convert.ToHexString(rawHash);
+                if (hashToPath.TryGetValue(hashString, out var existingPath) &&
+                    hashToSrc.TryGetValue(hashString, out var existingSrc))
+                {
+                    // The original file reference might be duplicated, and we don't want to delete
+                    // the file that we're using as the reference.  (We use filePath because it's
+                    // conceivable that one src may be URL-encoded and the other not, but they refer
+                    // to the same file.)
+                    if (filePath != existingPath)
+                    {
+                        // We have two different files with the same content.  Use the first one and delete the duplicate.
+                        img.SetAttribute("src", existingSrc);
+                        RobustFile.Delete(filePath);
+                    }
+                }
+                else
+                {
+                    hashToSrc[hashString] = src;
+                    hashToPath[hashString] = filePath;
+                }
+            }
         }
 
         /// <summary>
