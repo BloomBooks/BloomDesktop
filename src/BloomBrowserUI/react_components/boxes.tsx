@@ -28,6 +28,7 @@ export const BoxWithIconAndText: React.FunctionComponent<{
     borderColor?: string;
     backgroundColor?: string;
     icon?: JSX.Element;
+    textVerticalOffset?: string;
     closeButton?: boolean;
     onCloseButtonClick?: () => void;
     bottomRightButton?: JSX.Element;
@@ -44,6 +45,7 @@ export const BoxWithIconAndText: React.FunctionComponent<{
         borderColor: _borderColor,
         backgroundColor: _backgroundColor,
         icon: _icon,
+        textVerticalOffset: _textVerticalOffset,
         closeButton: _closeButton,
         onCloseButtonClick: _onCloseButtonClick,
         bottomRightButton: _bottomRightButton,
@@ -123,6 +125,7 @@ export const BoxWithIconAndText: React.FunctionComponent<{
                 <div
                     css={css`
                         flex-grow: 1;
+                        margin-top: ${props.textVerticalOffset || "0px"};
                         padding-right: ${contentRightInset}px;
                     `}
                 >
@@ -160,6 +163,7 @@ interface IBoxProps {
         "inherit" | "large" | "medium" | "small",
         SvgIconPropsSizeOverrides
     >;
+    textVerticalOffset?: string;
     closeButton?: boolean;
     onCloseButtonClick?: () => void;
     bottomRightButton?: JSX.Element;
