@@ -603,9 +603,12 @@ export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = (
     }, [onColorPickerVisibilityChanged]);
 
     return (
-        <div>
+        <>
             <div
                 css={css`
+                    position: relative;
+                    height: 19px;
+                    overflow: hidden;
                     border: solid 1px black;
                     padding: 2px;
                     opacity: ${props.disabled ? 0.2 : 1};
@@ -613,65 +616,56 @@ export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = (
                 `}
             >
                 <div
+                    data-testid="color-display-button-transparency-background"
                     css={css`
-                        position: relative;
-                        height: 19px;
-                        overflow: hidden;
-                        ${widthString}
+                        position: absolute;
+                        inset: 2px;
+                        background-color: white;
+                        background-image:
+                            linear-gradient(
+                                45deg,
+                                #d0d0d0 25%,
+                                transparent 25%
+                            ),
+                            linear-gradient(
+                                -45deg,
+                                #d0d0d0 25%,
+                                transparent 25%
+                            ),
+                            linear-gradient(
+                                45deg,
+                                transparent 75%,
+                                #d0d0d0 75%
+                            ),
+                            linear-gradient(
+                                -45deg,
+                                transparent 75%,
+                                #d0d0d0 75%
+                            );
+                        background-position:
+                            0 0,
+                            0 5px,
+                            5px -5px,
+                            -5px 0;
+                        background-size: 10px 10px;
                     `}
-                >
-                    <div
-                        data-testid="color-display-button-transparency-background"
-                        css={css`
-                            position: absolute;
-                            inset: 0;
-                            background-color: white;
-                            background-image:
-                                linear-gradient(
-                                    45deg,
-                                    #d0d0d0 25%,
-                                    transparent 25%
-                                ),
-                                linear-gradient(
-                                    -45deg,
-                                    #d0d0d0 25%,
-                                    transparent 25%
-                                ),
-                                linear-gradient(
-                                    45deg,
-                                    transparent 75%,
-                                    #d0d0d0 75%
-                                ),
-                                linear-gradient(
-                                    -45deg,
-                                    transparent 75%,
-                                    #d0d0d0 75%
-                                );
-                            background-position:
-                                0 0,
-                                0 5px,
-                                5px -5px,
-                                -5px 0;
-                            background-size: 10px 10px;
-                        `}
-                    />
-                    <div
-                        data-testid="color-display-button-swatch"
-                        css={css`
-                            position: absolute;
-                            inset: 0;
-                            background-color: ${currentButtonColor};
-                        `}
-                        onClick={() => {
-                            if (props.disabled) return;
-                            if (onColorPickerVisibilityChanged) {
-                                onColorPickerVisibilityChanged(true);
-                            }
-                            setColorAtDialogOpen(props.initialColor);
-                            setDialogOpen(true);
-                        }}
-                    />
-                </div>
+                />
+                <div
+                    data-testid="color-display-button-swatch"
+                    css={css`
+                        position: absolute;
+                        inset: 2px;
+                        background-color: ${currentButtonColor};
+                    `}
+                    onClick={() => {
+                        if (props.disabled) return;
+                        if (onColorPickerVisibilityChanged) {
+                            onColorPickerVisibilityChanged(true);
+                        }
+                        setColorAtDialogOpen(props.initialColor);
+                        setDialogOpen(true);
+                    }}
+                />
             </div>
             <ColorPickerDialog
                 open={dialogOpen}
@@ -702,6 +696,6 @@ export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = (
                         : undefined
                 }
             />
-        </div>
+        </>
     );
 };

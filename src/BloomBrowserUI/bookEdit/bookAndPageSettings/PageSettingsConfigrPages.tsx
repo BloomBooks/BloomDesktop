@@ -82,49 +82,73 @@ const normalizeToHexOrTransparentOrEmpty = (color: string): string => {
     return parsed.toHexString().toUpperCase();
 };
 
-const getComputedStyleForPage = (page: HTMLElement): CSSStyleDeclaration => {
-    const view = page.ownerDocument.defaultView;
+const getComputedStyleForElement = (
+    element: HTMLElement,
+): CSSStyleDeclaration => {
+    const view = element.ownerDocument.defaultView;
     if (view) {
-        return view.getComputedStyle(page);
+        return view.getComputedStyle(element);
     }
-    return getComputedStyle(page);
+    return getComputedStyle(element);
 };
 
 const getCurrentPageBackgroundColor = (): string => {
     const page = getCurrentPageElement();
-    const computedPage = getComputedStyleForPage(page);
+    const computedPageStyle = getComputedStyleForElement(page);
 
+    // We cannot just read computedPageStyle.backgroundColor. In separated themes,
+    // the outer .bloom-page shell stays theme-colored while the user-facing page
+    // surface inside .marginBox has its own color, and the settings UI needs to
+    // round-trip the persisted page-surface color rather than the shell color.
     const inlineMarginBox = normalizeToHexOrEmpty(
         page.style.getPropertyValue("--marginBox-background-color"),
     );
+    // Prefer an inline marginBox override first because this is the most direct
+    // persisted value for the editable page surface, and applyPageSettings()
+    // always writes it when the user picks a page color.
     if (inlineMarginBox) return inlineMarginBox;
 
     const inline = normalizeToHexOrEmpty(
         page.style.getPropertyValue("--page-background-color"),
     );
+    // Next honor an inline page-shell override. Unified themes use this for the
+    // same visible surface, and persisted page styles from the DOM can specify
+    // the page shell even when there is no separate inline marginBox value.
     if (inline) return inline;
 
     const computedMarginBoxVariable = normalizeToHexOrEmpty(
-        computedPage.getPropertyValue("--marginBox-background-color"),
+        computedPageStyle.getPropertyValue("--marginBox-background-color"),
     );
+    // If there is no inline override, the active theme may still define the
+    // visible page surface through the marginBox variable. This is the key case
+    // where a single computed page background would be wrong for rounded themes.
     if (computedMarginBoxVariable) return computedMarginBoxVariable;
 
     const computedVariable = normalizeToHexOrEmpty(
-        computedPage.getPropertyValue("--page-background-color"),
+        computedPageStyle.getPropertyValue("--page-background-color"),
     );
+    // For flat themes, the themed default often lives on the page-background
+    // variable. Reading the variable preserves the intended setting without
+    // depending on which element ultimately paints the background.
     if (computedVariable) return computedVariable;
 
     const marginBox = page.querySelector(".marginBox") as HTMLElement | null;
     if (marginBox) {
         const computedMarginBoxBackground = normalizeToHexOrEmpty(
-            getComputedStyleForPage(marginBox).backgroundColor,
+            getComputedStyleForElement(marginBox).backgroundColor,
         );
+        // Last resort: some CSS can paint the marginBox directly. If that
+        // happens without a useful custom property on .bloom-page, read the
+        // rendered marginBox background because that is still the visible page
+        // surface the dialog is editing.
         if (computedMarginBoxBackground) return computedMarginBoxBackground;
     }
 
     const computedBackground = normalizeToHexOrEmpty(
-        computedPage.backgroundColor,
+        computedPageStyle.backgroundColor,
     );
+    // Final fallback for pages that do not expose a background through the
+    // custom properties or a distinct marginBox surface.
     return computedBackground || "#FFFFFF";
 };
 
@@ -132,6 +156,11 @@ const doesThemeUseUnifiedPageBackground = (
     page: HTMLElement,
     targetThemeName?: string,
 ): boolean => {
+    // "Unified page background" means the outer .bloom-page shell and the
+    // inner .marginBox are intended to look like one continuous surface, so a
+    // user-picked page color should be applied to both. The default theme works
+    // this way. Rounded themes are the opposite: they intentionally keep a
+    // distinct outer shell color around a differently colored marginBox.
     if (targetThemeName) {
         if (kSeparatedBackgroundThemes.has(targetThemeName)) {
             return false;
@@ -140,9 +169,9 @@ const doesThemeUseUnifiedPageBackground = (
         return true;
     }
 
-    const computedPage = getComputedStyleForPage(page);
+    const computedPageStyle = getComputedStyleForElement(page);
     const multiplicand = Number.parseFloat(
-        computedPage
+        computedPageStyle
             .getPropertyValue(
                 "--page-and-marginBox-are-same-color-multiplicand",
             )
@@ -190,6 +219,9 @@ const setCurrentPageBackgroundColor = (
         color,
     );
 
+    // For unified (borderless) backgrounds we color both surfaces so the whole page stays
+    // flat. For separated backgrounds, such as rounded-border-ebook, we leave
+    // the outer page shell on the theme color and only recolor the marginBox.
     if (doesThemeUseUnifiedPageBackground(page, targetThemeName)) {
         setOrRemoveCustomProperty(page.style, "--page-background-color", color);
     } else {
@@ -206,7 +238,7 @@ const getPageNumberColor = (): string => {
     if (inline) return inline;
 
     const computed = normalizeToHexOrEmpty(
-        getComputedStyleForPage(page).getPropertyValue("--pageNumber-color"),
+        getComputedStyleForElement(page).getPropertyValue("--pageNumber-color"),
     );
     return computed || "#000000";
 };
@@ -225,7 +257,7 @@ const getPageNumberOutlineColor = (): string => {
     if (inline) return inline;
 
     const computed = normalizeToHexOrTransparentOrEmpty(
-        getComputedStyleForPage(page).getPropertyValue(
+        getComputedStyleForElement(page).getPropertyValue(
             "--pageNumber-outline-color",
         ),
     );
@@ -250,7 +282,7 @@ const getPageNumberBackgroundColor = (): string => {
     if (inline) return inline;
 
     const computed = normalizeToHexOrTransparentOrEmpty(
-        getComputedStyleForPage(page).getPropertyValue(
+        getComputedStyleForElement(page).getPropertyValue(
             "--pageNumber-background-color",
         ),
     );

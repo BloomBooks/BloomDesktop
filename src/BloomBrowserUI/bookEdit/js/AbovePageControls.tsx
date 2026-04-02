@@ -204,27 +204,27 @@ const AbovePageControls: React.FunctionComponent<IAbovePageControlsState> = (
     );
 };
 
-const PageSettingsButton: React.FunctionComponent = () => {
-    const label = useL10n("Page Settings", "PageSettings.Title");
-    const title = useL10n("Open Page Settings...", "PageSettings.OpenTooltip");
+// const PageSettingsButton: React.FunctionComponent = () => {
+//     const label = useL10n("Page Settings", "PageSettings.Title");
+//     const title = useL10n("Open Page Settings...", "PageSettings.OpenTooltip");
 
-    return (
-        <button
-            className="page-settings-button above-page-control-typography"
-            title={title}
-            onClick={() =>
-                getWorkspaceBundleExports().showBookSettingsDialog("colors")
-            }
-        >
-            <CogIcon
-                className="page-settings-button-icon"
-                aria-hidden="true"
-                size={20}
-            />
-            <span className="page-settings-button-label">{label}</span>
-        </button>
-    );
-};
+//     return (
+//         <button
+//             className="page-settings-button above-page-control-typography"
+//             title={title}
+//             onClick={() =>
+//                 getWorkspaceBundleExports().showBookSettingsDialog("colors")
+//             }
+//         >
+//             <CogIcon
+//                 className="page-settings-button-icon"
+//                 aria-hidden="true"
+//                 size={20}
+//             />
+//             <span className="page-settings-button-label">{label}</span>
+//         </button>
+//     );
+// };
 
 const ChangeLayoutModeToggle: React.FunctionComponent<{
     isChecked: boolean;
@@ -240,11 +240,14 @@ const ChangeLayoutModeToggle: React.FunctionComponent<{
                     type="checkbox"
                     name="onoffswitch"
                     className="onoffswitch-checkbox"
-                    id="myonoffswitch"
+                    id="changeLayoutToggle"
                     checked={props.isChecked}
                     onChange={() => props.onChange?.()}
                 />
-                <label className="onoffswitch-label" htmlFor="myonoffswitch">
+                <label
+                    className="onoffswitch-label"
+                    htmlFor="changeLayoutToggle"
+                >
                     <span className="onoffswitch-inner"></span>
                     <span className="onoffswitch-switch"></span>
                 </label>
