@@ -28,7 +28,7 @@ import {
 } from "../BloomDialog/commonDialogComponents";
 
 // These helpers don't depend on component state/props; keeping them outside avoids hook-deps issues.
-const willSwatchColorBeFilteredOut = (
+const colorFilter = (
     color: IColorInfo,
     transparency?: boolean,
     noGradientSwatches?: boolean,
@@ -124,7 +124,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
                 let numberToDelete = 0;
                 // CustomColorPicker is going to filter these colors out anyway.
                 let numberToSkip = previousSwatchColorArray.filter((color) =>
-                    willSwatchColorBeFilteredOut(
+                    colorFilter(
                         color,
                         props.transparency,
                         props.noGradientSwatches,
@@ -142,7 +142,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
                     // At first I wanted to do this filtering outside the loop, but some of them might be pre-filtered
                     // by the above two conditions.
                     if (
-                        willSwatchColorBeFilteredOut(
+                        colorFilter(
                             newColor,
                             props.transparency,
                             props.noGradientSwatches,
