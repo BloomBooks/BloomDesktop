@@ -676,7 +676,6 @@ export function getMasterToolList() {
 const masterToolList: ITool[] = [];
 let currentTool: ITool | undefined = undefined;
 let toolboxReactActivationHooked = false;
-let jQueryAccordionActivationHooked = false;
 
 // The AI decided to create this react adapter object and save in in a window variable.
 // It gets set in a useEffect in the React component that is the root of the toolbox.
@@ -712,40 +711,6 @@ function getActiveToolIdFromCurrentToolboxUi(): string | undefined {
         .find("> h3.ui-accordion-header-active")
         .get(0) as HTMLElement | undefined;
     return activeHeader?.getAttribute("data-toolId") || undefined;
-}
-
-function isAccordionInitialized(toolboxElement: JQuery): boolean {
-    return toolboxElement.hasClass("ui-accordion");
-}
-
-function ensureJQueryAccordionActivationHook(toolbox: JQuery): void {
-    if (jQueryAccordionActivationHooked) {
-        return;
-    }
-
-    // Even if startup gives up waiting for the accordion, later user clicks still need
-    // to flow through switchTool() once the accordion finishes initializing.
-    toolbox.onSafe("accordionactivate.toolbox", (event, ui) => {
-        let newToolName = "";
-        if (ui.newHeader.attr("data-toolId")) {
-            newToolName = ui.newHeader.attr("data-toolId").toString();
-        }
-        switchTool(newToolName);
-    });
-    jQueryAccordionActivationHooked = true;
-}
-
-const initialAccordionInitializationRetryDelayInMilliseconds = 10;
-const maximumAccordionInitializationRetryDelayInMilliseconds = 50;
-const maxMillisecondsToWaitForAccordionInitialization = 3000;
-let pendingSetCurrentToolRetryTimeout: number | undefined;
-let latestSetCurrentToolRequestToken = 0;
-
-function clearPendingSetCurrentToolRetry(): void {
-    if (pendingSetCurrentToolRetryTimeout !== undefined) {
-        window.clearTimeout(pendingSetCurrentToolRetryTimeout);
-        pendingSetCurrentToolRetryTimeout = undefined;
-    }
 }
 
 // This primarily calls the detachFromPage method of the current tool, if any.
@@ -1119,20 +1084,7 @@ async function activateToolInternalAsync(
  * This function attempts to activate the tool whose "data-toolId" attribute is equal to the value
  * of "currentTool" (the last tool displayed).
  */
-function setCurrentTool(
-    toolID: string,
-    retryCount = 0,
-    waitStartTime = Date.now(),
-    requestToken?: number,
-) {
-    const currentRequestToken =
-        requestToken ?? ++latestSetCurrentToolRequestToken;
-    if (requestToken === undefined) {
-        clearPendingSetCurrentToolRetry();
-    } else if (currentRequestToken !== latestSetCurrentToolRequestToken) {
-        return;
-    }
-
+function setCurrentTool(toolID: string) {
     // I'm downright grumpy about how this code sometimes uses names with "Tool" appended, sometimes doesn't.
     // For now I'm just making functions work with either form.
     toolID = ToolBox.addToolToString(toolID);
@@ -1163,41 +1115,6 @@ function setCurrentTool(
     // NOTE: tools without a "data-toolId" attribute (such as the More tool) cannot be the "currentTool."
     let idx = 0;
     const toolbox = $("#toolbox");
-    ensureJQueryAccordionActivationHook(toolbox);
-
-    if (!isAccordionInitialized(toolbox)) {
-        const elapsedTime = Date.now() - waitStartTime;
-        if (elapsedTime >= maxMillisecondsToWaitForAccordionInitialization) {
-            const fallbackToolId =
-                (toolbox.find("> h3").first().attr("data-toolId") as
-                    | string
-                    | undefined) ?? toolID;
-            console.error(
-                `Toolbox accordion did not initialize within ${elapsedTime}ms while activating ${toolID || "the default tool"}. Falling back without waiting for the accordion UI.`,
-            );
-            if (fallbackToolId) {
-                switchTool(fallbackToolId);
-            }
-            return;
-        }
-        const retryDelay = Math.min(
-            initialAccordionInitializationRetryDelayInMilliseconds *
-                (retryCount + 1),
-            maximumAccordionInitializationRetryDelayInMilliseconds,
-        );
-        // A 0ms retry loop can burn through the whole retry budget before jQuery finishes
-        // initializing on a slow startup, so back off a little and cap the total wait time.
-        pendingSetCurrentToolRetryTimeout = window.setTimeout(() => {
-            pendingSetCurrentToolRetryTimeout = undefined;
-            setCurrentTool(
-                toolID,
-                retryCount + 1,
-                waitStartTime,
-                currentRequestToken,
-            );
-        }, retryDelay);
-        return;
-    }
 
     const accordionHeaders = toolbox.find("> h3");
     if (toolID) {
@@ -1236,6 +1153,18 @@ function setCurrentTool(
     // turn animation back on
     toolbox.accordion("option", "animate", ani);
 
+    // when a tool is activated, save its data-toolId so state can be restored when Bloom is restarted.
+    // We do this after we actually set the initial tool, because setting the intial tool may not CHANGE
+    // the active tool (if it's already the one we want, typically the first), so we can't rely on
+    // the activate event happening in the initial call. Instead, we make SURE to call it for the
+    // tool we are making active.
+    toolbox.onSafe("accordionactivate.toolbox", (event, ui) => {
+        let newToolName = "";
+        if (ui.newHeader.attr("data-toolId")) {
+            newToolName = ui.newHeader.attr("data-toolId").toString();
+        }
+        switchTool(newToolName);
+    });
     //alert("switching to " + currentTool + " which has index " + toolIndex);
     //setTimeout(e => switchTool(currentTool), 700);
     switchTool(toolID);
