@@ -1025,6 +1025,10 @@ namespace Bloom.Book
                 //switch to html/xml encoding
                 form = XmlString.FromUnencoded(decodedUrlStr);
             }
+            if (node is SafeXmlElement element && element.HasClass("bloom-editable"))
+            {
+                form = XmlString.FromXml(NormalizeEditableInnerXml(form.Xml));
+            }
             node.InnerXml = form.Xml;
             if (node.GetAttribute("data-textonly") == "true")
             {
@@ -1035,6 +1039,105 @@ namespace Bloom.Book
                 // that was synchronized.
                 node.InnerText = node.InnerText;
             }
+        }
+
+        /// <summary>
+        /// Somehow Bloom sometimes gets an extra div in the editable content, which should only contain p elements
+        /// (BL-16065). CkEditor may be implicated. Whe bookdata round-trips them, somehow things were getting
+        /// messed up so that an extra div containing just a br was visible as an extra line. CoPilot came up
+        /// with this patch. It may be doing more than is strictly necessary to prevent BL-16065.
+        /// </summary>
+        private static string NormalizeEditableInnerXml(string xml)
+        {
+            if (string.IsNullOrWhiteSpace(xml))
+            {
+                return xml;
+            }
+
+            var doc = SafeXmlDocument.Create();
+            doc.LoadXml("<wrapper>" + xml + "</wrapper>");
+            var wrapper = doc.DocumentElement;
+
+            // Remove top-level divs that contain only whitespace/nbsp/br and optional CKEditor bookmark spans.
+            // These are CKEditor artifacts with no visible content; a <br> at the start or end of a <p>
+            // does not affect rendering, so there is no need to preserve them.
+            foreach (var child in wrapper.ChildNodes)
+            {
+                if (
+                    child is SafeXmlElement el
+                    && string.Equals(el.Name, "div", StringComparison.OrdinalIgnoreCase)
+                    && IsEmptyishTopLevelBreakDiv(el)
+                )
+                {
+                    wrapper.RemoveChild(child);
+                }
+            }
+
+            return wrapper.InnerXml;
+        }
+
+        private static bool IsWhitespaceOrNbsp(string text)
+        {
+            if (text == null)
+            {
+                return true;
+            }
+
+            return string.IsNullOrWhiteSpace(text.Replace('\u00A0', ' '));
+        }
+
+        private static bool IsEmptyishTopLevelBreakDiv(SafeXmlElement div)
+        {
+            if (!string.Equals(div.Name, "div", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (!IsWhitespaceOrNbsp(div.InnerText))
+            {
+                return false;
+            }
+
+            foreach (var child in div.ChildNodes)
+            {
+                if (child.NodeType == XmlNodeType.Text && IsWhitespaceOrNbsp(child.Value))
+                {
+                    continue;
+                }
+
+                if (child is SafeXmlElement childElement)
+                {
+                    if (string.Equals(childElement.Name, "br", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    if (IsCkEditorBookmarkSpan(childElement))
+                    {
+                        continue;
+                    }
+                }
+
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool IsCkEditorBookmarkSpan(SafeXmlElement span)
+        {
+            if (!string.Equals(span.Name, "span", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var id = span.GetAttribute("id") ?? string.Empty;
+            if (id.StartsWith("cke_bm", StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            return span.HasAttribute("data-cke-bookmark");
         }
 
         public SafeXmlElement AddDataDivElementContainingBookVariable(
@@ -1443,6 +1546,8 @@ namespace Bloom.Book
                         if (hasCustomLayoutId)
                             HideStuffInDataDivChildren(node1 as SafeXmlElement);
                         value = node1.InnerXml.Trim(); //may contain formatting
+                        if (node.HasClass("bloom-editable"))
+                            value = NormalizeEditableInnerXml(value);
                         if (KeysOfVariablesThatAreUrlEncoded.Contains(key))
                         {
                             value = UrlPathString.CreateFromHtmlXmlEncodedString(value).UrlEncoded;
