@@ -5446,7 +5446,7 @@ namespace Bloom.Book
             BookStorage.UpdateQrCode(
                 OurHtmlDom,
                 CollectionSettings.ShowBlorgLanguageQrCode,
-                Language1Tag,
+                CollectionSettings.PrimaryLangTagWithSignPrioritized,
                 CollectionSettings.BadgeQrCodeLabelLocalizedWithLang,
                 FolderPath,
                 updateQrCodeFileEvenIfItExists
