@@ -256,7 +256,6 @@ const CanvasElementContextControls: React.FunctionComponent<{
         // but has to be after all the hooks.
         return null;
     }
-
     let menuOptions: IMenuItemWithSubmenu[] = [];
     if (hasRectangle) {
         menuOptions.splice(0, 0, {
@@ -272,37 +271,13 @@ const CanvasElementContextControls: React.FunctionComponent<{
             ),
         });
     }
+
     if (hasText && !isInDraggableGame && !isNavButton) {
         menuOptions.splice(0, 0, {
             l10nId: "EditTab.Toolbox.ComicTool.Options.AddChildBubble",
             english: "Add Child Bubble",
             onClick: theOneCanvasElementManager?.addChildCanvasElement,
         });
-    }
-    if (canToggleDraggability) {
-        addMenuItemForTogglingDraggability(
-            menuOptions,
-            props.canvasElement,
-            currentDraggableTarget,
-            setCurrentDraggableTarget,
-        );
-    }
-    if (currentDraggableTargetId) {
-        addMenuItemsForDraggable(
-            menuOptions,
-            props.canvasElement,
-            currentDraggableTargetId,
-            currentDraggableTarget,
-            setCurrentDraggableTarget,
-        );
-    }
-    if (canChooseAudioForElement) {
-        const audioMenuItem = hasText
-            ? getAudioMenuItemForTextItem(textHasAudio, setMenuOpen)
-            : getAudioMenuItemForImage(imageSound, setImageSound, setMenuOpen);
-
-        menuOptions.push(divider);
-        menuOptions.push(audioMenuItem);
     }
     if (hasImage) {
         const canModifyImage = !imgContainer.classList.contains(
@@ -331,6 +306,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
             },
             icon: <CogIcon css={getMenuIconCss()} />,
         });
+        menuOptions.push(divider);
         menuOptions.push({
             l10nId: "Common.Delete",
             english: "Delete",
@@ -362,6 +338,43 @@ const CanvasElementContextControls: React.FunctionComponent<{
     }
 
     menuOptions.push(divider);
+
+    if (canChooseAudioForElement) {
+        const audioMenuItem = hasText
+            ? getAudioMenuItemForTextItem(textHasAudio, setMenuOpen)
+            : getAudioMenuItemForImage(imageSound, setImageSound, setMenuOpen);
+
+        menuOptions.push(divider);
+        menuOptions.push(audioMenuItem);
+    }
+
+    menuOptions.push(divider);
+
+    if (canToggleDraggability) {
+        addMenuItemForTogglingDraggability(
+            menuOptions,
+            props.canvasElement,
+            currentDraggableTarget,
+            setCurrentDraggableTarget,
+        );
+    }
+    if (currentDraggableTargetId) {
+        addMenuItemsForDraggable(
+            menuOptions,
+            props.canvasElement,
+            currentDraggableTargetId,
+            currentDraggableTarget,
+            setCurrentDraggableTarget,
+        );
+    }
+
+    menuOptions.push(divider);
+
+    // and these for text boxes
+    if (editableTextElement && !isNavButton) {
+        addTextMenuItems(menuOptions, editableTextElement, props.canvasElement);
+        menuOptions.push(divider);
+    }
 
     if (!isBackgroundImage && !isSpecialGameElementSelected && !isLinkGrid) {
         menuOptions.push({
@@ -395,6 +408,8 @@ const CanvasElementContextControls: React.FunctionComponent<{
         );
         if (index < 0) {
             index = menuOptions.indexOf(divider);
+        } else {
+            index += 1;
         }
         menuOptions.splice(index, 0, fillItem);
 
@@ -429,10 +444,6 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const langName = editableTextElement?.getAttribute(
         "data-languagetipcontent",
     );
-    // and these for text boxes
-    if (editableTextElement && !isNavButton) {
-        addTextMenuItems(menuOptions, editableTextElement, props.canvasElement);
-    }
 
     const runMetadataDialog = () => {
         if (!props.canvasElement) return;
@@ -1037,7 +1048,7 @@ function addTextMenuItems(
     // height vs adjusting the image size, when both are present. Also, our current auto-height
     // code doesn't handle padding where our canvas-buttons have it.
     if (!canvasElement.classList.contains(kBloomButtonClass)) {
-        textMenuItem.push(divider, {
+        textMenuItem.push({
             l10nId: "EditTab.Toolbox.ComicTool.Options.AutoHeight",
             english: "Auto Height",
             // We don't actually know there's no image on the clipboard, but it's not relevant for a text box.
@@ -1069,7 +1080,6 @@ function addVideoMenuItems(
             onClick: () => doVideoCommand(videoContainer, "record"),
             icon: <CircleIcon css={getMenuIconCss(0.85)} />,
         },
-        divider,
         {
             l10nId: "EditTab.Toolbox.ComicTool.Options.PlayEarlier",
             english: "Play Earlier",
@@ -1124,6 +1134,16 @@ function addImageMenuOptions(
 
     const realImagePresent = hasRealImage(img);
     const imageMenuOptions: IMenuItemWithSubmenu[] = [
+        // Keep the image metadata item first so image context menus match the expected design.
+        // Other image actions follow in the same order as the screenshot.
+        {
+            l10nId: "EditTab.Image.EditMetadataOverlay",
+            english: "Set Image Information...",
+            subLabelL10nId: "EditTab.Image.EditMetadataOverlayMore",
+            onClick: runMetadataDialog,
+            icon: <CopyrightIcon css={getMenuIconCss()} />,
+            disabled: !realImagePresent,
+        },
         {
             l10nId: "EditTab.Image.ChooseImage",
             english: "Choose image from your computer...",
@@ -1144,18 +1164,6 @@ function addImageMenuOptions(
             english: "Copy image",
             onClick: () => doImageCommand(img, "copy"),
             icon: <CopyIcon css={getMenuIconCss()} />,
-            disabled: !realImagePresent,
-        },
-        // If the image doesn't exist, we still show the menu item for editing metadata,
-        // but disable it.  Menu items are often disabled instead of hidden when they
-        // don't make sense.  We did this with the Copy Image menu item above as well,
-        // and it happens with other menu items for possibly other reasons.
-        {
-            l10nId: "EditTab.Image.EditMetadataOverlay",
-            english: "Set Image Information...",
-            subLabelL10nId: "EditTab.Image.EditMetadataOverlayMore",
-            onClick: runMetadataDialog,
-            icon: <CopyrightIcon css={getMenuIconCss()} />,
             disabled: !realImagePresent,
         },
         {
@@ -1366,21 +1374,20 @@ function addMenuItemsForDraggable(
 
 // Make sure we don't start/end with a divider, and there aren't two in a row.
 function cleanUpDividers(menuItems: IMenuItemWithSubmenu[]) {
-    let lastDividerIndex = -1;
-    const cleanMenuItems = menuItems.filter((option, index) => {
+    let previousWasDivider = true;
+    return menuItems.filter((option, index) => {
         if (option === divider) {
-            if (
-                lastDividerIndex === index - 1 ||
-                index === menuItems.length - 1
-            ) {
+            const isLastItem = index === menuItems.length - 1;
+            if (previousWasDivider || isLastItem) {
                 return false;
-            } else {
-                lastDividerIndex = index;
             }
+            previousWasDivider = true;
+            return true;
         }
+
+        previousWasDivider = false;
         return true;
     });
-    return cleanMenuItems;
 }
 
 function setLinkDestination(): void {
