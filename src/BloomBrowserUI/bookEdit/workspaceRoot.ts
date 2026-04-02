@@ -7,6 +7,7 @@ import {
     showColorPickerDialog as doShowColorPickerDialog,
     hideColorPickerDialog as doHideColorPickerDialog,
 } from "../react_components/color-picking/colorPickerDialog";
+import { postJson } from "../utils/bloomApi";
 import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 import $ from "jquery";
 
@@ -42,7 +43,6 @@ export interface IWorkspaceExports {
         emailRequiredForTeamCollection?: boolean,
     ): void;
     showAboutDialogFromWorkspaceRoot(): void;
-    setWorkspaceMode(mode: string): void;
 }
 
 export function SayHello() {
@@ -51,6 +51,9 @@ export function SayHello() {
 
 // These functions should be available for calling by non-module code (such as C# directly)
 // using the workspaceBundle object (see more details in workspaceFrames.ts)
+// (This file was briefly the root of the workspaceBundle, before that the root of the
+// edit pane root bundle, but now it is just included by the app bundle, since it no longer
+// has a private iframe.)
 import { getToolboxBundleExports } from "./js/workspaceFrames";
 export { getToolboxBundleExports };
 import { getEditablePageBundleExports } from "./js/workspaceFrames";
@@ -71,6 +74,7 @@ import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/Copyr
 import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
 import * as ReactDOM from "react-dom";
 import { FunctionComponentElement } from "react";
+import { ToastDebugInput, toastDebugEvents } from "../toast/toastUtils";
 
 import { showAdjustTimingsDialog } from "./toolbox/talkingBook/AdjustTimingsDialog";
 import { getPageIframeBody } from "../utils/shared";
@@ -176,8 +180,10 @@ export function closeDialog(id: string) {
 }
 
 export function toolboxIsShowing() {
-    return (<HTMLInputElement>$(document).find("#pure-toggle-right").get(0))
-        .checked;
+    const checkbox = $(document).find("#pure-toggle-right").get(0) as
+        | HTMLInputElement
+        | undefined;
+    return checkbox ? checkbox.checked : true;
 }
 
 // Do this task when the toolbox is loaded. If it isn't already, we set a timeout and do it when we can.
@@ -286,107 +292,41 @@ export function showRegistrationDialogFromWorkspaceRoot() {
     showRegistrationDialogForEditTab();
 }
 
-let hasActivatedEditMode = false;
-
-// In various contexts if we don't have an explicit mode, we default to collection mode.
-const normalizeWorkspaceMode = (mode: string | null | undefined): string => {
-    if (mode === "publish") {
-        return "publish";
-    }
-    return mode === "edit" ? "edit" : "collection";
-};
-
-// Apply to the body a class indicating which mode we're in...collection, edit, or publish.
-// This is used to control which elements are visible in the workspace.
-const applyWorkspaceModeClass = (mode: string): void => {
-    const classesToRemove: string[] = [];
-    document.body.classList.forEach((className) => {
-        if (className.endsWith("-mode")) {
-            classesToRemove.push(className);
-        }
-    });
-
-    classesToRemove.forEach((className) =>
-        document.body.classList.remove(className),
-    );
-    document.body.classList.add(`${mode}-mode`);
-};
-
-// We manage a param in the root url so that if the main browser is refreshed, it can reopen
-// in the same tab.
-const updateWorkspaceModeInUrl = (mode: string): void => {
-    const normalizedMode = normalizeWorkspaceMode(mode);
-    updateWorkspaceUrlParam("mode", normalizedMode);
-};
-
 const updateWorkspaceUrlParam = (name: string, value: string): void => {
     const url = new URL(window.location.href);
     url.searchParams.set(name, value);
     window.history.replaceState(window.history.state, "", url.toString());
 };
 
-// When an iframe is not in use, we set its src to about:blank. This at least frees up memory,
-// and may help with other issues caused by having a stale page in the edit iframe while
-// activity in the collection tab has moved us to another book, and similar problems.
-// This function is used to restore the proper src of an iframe when we switch to its tab.
-const restoreIframeSrcFromUrlIfNeeded = (
-    iframeId: string,
-    paramName: string,
-    restoreAction?: (savedSrc: string) => void,
-): void => {
-    const iframe = document.getElementById(
-        iframeId,
-    ) as HTMLIFrameElement | null;
-    if (!iframe) {
-        return;
-    }
-
-    const currentSrc = iframe.getAttribute("src") || "";
-    const needsRestore = currentSrc === "" || currentSrc === "about:blank";
-    if (!needsRestore) {
-        return;
-    }
-
-    const url = new URL(window.location.href);
-    const savedSrc = url.searchParams.get(paramName);
-    if (savedSrc) {
-        if (restoreAction) {
-            restoreAction(savedSrc);
-        } else {
-            iframe.src = savedSrc;
-        }
-    }
-};
-
-const initializeWorkspaceModeFromUrl = (): void => {
-    const url = new URL(window.location.href);
-    const mode = normalizeWorkspaceMode(url.searchParams.get("mode"));
-    applyWorkspaceModeClass(mode);
-    updateWorkspaceModeInUrl(mode);
-    restoreIframeSrcFromUrlIfNeeded("page", "pageSrc", switchContentPage);
-    restoreIframeSrcFromUrlIfNeeded("pageList", "pageListSrc");
-};
-
-initializeWorkspaceModeFromUrl();
-
-export function setWorkspaceMode(mode: string): void {
-    const normalizedMode = normalizeWorkspaceMode(mode);
-    applyWorkspaceModeClass(normalizedMode);
-    updateWorkspaceModeInUrl(normalizedMode);
-
-    if (normalizedMode === "edit") {
-        restoreIframeSrcFromUrlIfNeeded("page", "pageSrc", switchContentPage);
-        restoreIframeSrcFromUrlIfNeeded("pageList", "pageListSrc");
-    }
-
-    if (normalizedMode === "edit" && !hasActivatedEditMode) {
-        hasActivatedEditMode = true;
+const installToastDebugHooks = (): void => {
+    // These globals are mainly devtools helpers today, but they use general names because
+    // browser-side code may eventually call into the same toast entry points directly.
+    window.showToastScenario = (scenario = "all") => {
+        postJson("toast/test", { scenario });
+    };
+    window.showToast = (toast) => {
         window.dispatchEvent(
-            new CustomEvent("bloom-edit-mode-first-activated"),
+            new CustomEvent(toastDebugEvents.show, {
+                detail: toast,
+            }),
         );
-    }
-}
+    };
+    window.clearToasts = () => {
+        window.dispatchEvent(new CustomEvent(toastDebugEvents.clear));
+    };
+};
 
+let workspaceRootDocumentInitialized = false;
+
+const initializeWorkspaceRootDocument = (): void => {
+    if (workspaceRootDocumentInitialized) {
+        return;
+    }
+
+    workspaceRootDocumentInitialized = true;
+    installToastDebugHooks();
+};
+initializeWorkspaceRootDocument();
 // Adjusts the zoom scaling element created in C# SetupPageZoom; keep in sync with that code.
 // Called directly from C# code, in EditingView.SetZoom().
 // Argument is a raw number (e.g., 0.5 for 50% zoom, 1.0 for 100% zoom).
@@ -436,7 +376,6 @@ interface WorkspaceBundleApi {
     showAboutDialogFromWorkspaceRoot: typeof showAboutDialogFromWorkspaceRoot;
     showRequiresSubscriptionDialog: typeof showRequiresSubscriptionDialog;
     showRegistrationDialogFromWorkspaceRoot: typeof showRegistrationDialogFromWorkspaceRoot;
-    setWorkspaceMode: typeof setWorkspaceMode;
     showAdjustTimingsDialogFromWorkspaceRoot: typeof showAdjustTimingsDialogFromWorkspaceRoot;
     setZoom: typeof setZoom;
     getToolboxBundleExports: typeof getToolboxBundleExports;
@@ -450,6 +389,9 @@ interface WorkspaceBundleApi {
 declare global {
     interface Window {
         workspaceBundle: WorkspaceBundleApi;
+        showToastScenario?: (scenario?: string) => void;
+        showToast?: (toast: ToastDebugInput) => void;
+        clearToasts?: () => void;
     }
 }
 
@@ -475,7 +417,6 @@ window.workspaceBundle = {
     showAboutDialogFromWorkspaceRoot,
     showRequiresSubscriptionDialog,
     showRegistrationDialogFromWorkspaceRoot,
-    setWorkspaceMode,
     showAdjustTimingsDialogFromWorkspaceRoot:
         showAdjustTimingsDialogFromWorkspaceRoot,
     setZoom,

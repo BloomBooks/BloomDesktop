@@ -128,7 +128,7 @@ namespace BloomTests.Spreadsheet
 	                            English
 	                        </div>
 
-	                        <div class=""coverBottomBookTopic bloom-userCannotModifyStyles bloom-alwaysShowBubble Cover-Default-style"" data-derived=""topic"" data-functiononhintclick=""ShowTopicChooser()"" data-hint=""Click to choose topic"" lang=""en"">
+                            <div class=""coverBottomBookTopic bloom-userCannotModifyStyles bloom-alwaysShowBubble Cover-Default-style"" data-derived=""topic"" data-functiononhintclick=""ShowTopicChooser()"" data-hint=""Choose topic"" lang=""en"">
 	                            Science
 	                        </div>
 	                    </div>

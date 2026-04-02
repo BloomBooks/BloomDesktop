@@ -553,7 +553,12 @@ namespace Bloom.WebLibraryIntegration
             var htmlFile = BookStorage.FindBookHtmlInFolder(stagingDirectory);
             var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlFile, false);
 
-            ImageUtils.ReallyCropImages(xmlDomFromHtmlFile, stagingDirectory, stagingDirectory);
+            ImageUtils.ReallyCropImages(
+                xmlDomFromHtmlFile,
+                stagingDirectory,
+                stagingDirectory,
+                true
+            );
             PublishHelper.SimplifyBackgroundImages(xmlDomFromHtmlFile); // after really cropping
 
             XmlHtmlConverter.SaveDOMAsHtml5(xmlDomFromHtmlFile, htmlFile);

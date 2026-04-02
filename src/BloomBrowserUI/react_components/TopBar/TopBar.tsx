@@ -14,12 +14,13 @@ import {
     kGreyOnDarkColor,
 } from "../../bloomMaterialUITheme";
 import { ScopedCssBaseline } from "@mui/material";
+import { TopBarContextMenu } from "./TopBarContextMenu";
 
 export type WorkspaceTabId = "collection" | "edit" | "publish";
 
-type WorkspaceTabState = "active" | "enabled" | "disabled" | "hidden";
+export type WorkspaceTabState = "active" | "enabled" | "disabled" | "hidden";
 
-type TabStates = Record<WorkspaceTabId, WorkspaceTabState>;
+export type TabStates = Record<WorkspaceTabId, WorkspaceTabState>;
 
 interface ITabDefinition {
     id: WorkspaceTabId;
@@ -49,31 +50,33 @@ const tabDefinitions: Array<ITabDefinition> = [
     },
 ];
 
-export const TopBar: React.FunctionComponent = () => {
-    const defaultState = React.useMemo(
-        () => ({
-            tabStates: {
-                collection: "active",
-                edit: "hidden",
-                publish: "hidden",
-            } as TabStates,
-        }),
-        [],
+export function getActiveWorkspaceTab(tabStates: TabStates): WorkspaceTabId {
+    return (
+        tabDefinitions.find((t) => tabStates[t.id] === "active")?.id ??
+        "collection"
     );
+}
 
+export const defaultWorkspaceTabState: { tabStates: TabStates } = {
+    tabStates: {
+        collection: "active",
+        edit: "hidden",
+        publish: "hidden",
+    },
+};
+
+export const TopBar: React.FunctionComponent = () => {
     const state = useWatchApiObject<{ tabStates: TabStates }>(
         "workspace/tabs",
-        defaultState,
+        defaultWorkspaceTabState,
         "workspace",
         "tabs",
     );
+    const topBarRef = React.useRef<HTMLDivElement>(null);
 
-    const tabStates = state.tabStates ?? defaultState.tabStates;
+    const tabStates = state.tabStates ?? defaultWorkspaceTabState.tabStates;
     const activeTab = React.useMemo((): WorkspaceTabId => {
-        return (
-            tabDefinitions.find((t) => tabStates[t.id] === "active")?.id ??
-            "collection"
-        );
+        return getActiveWorkspaceTab(tabStates);
     }, [tabStates]);
 
     const handleSelectTab = React.useCallback(
@@ -109,16 +112,22 @@ export const TopBar: React.FunctionComponent = () => {
            CssBaseline would apply everywhere. */
         <ScopedCssBaseline>
             <div
+                ref={topBarRef}
                 css={css`
                     background-color: ${getColorForTab(activeTab)};
                     padding-top: 2px;
                     display: flex;
                     align-items: flex-start;
-                    gap: 100px;
                 `}
             >
                 <BloomTabs tabStates={tabStates} selectTab={handleSelectTab} />
+                <div
+                    css={css`
+                        flex: 0 1 100px;
+                    `}
+                />
                 <TopBarControls activeTab={activeTab} />
+                <TopBarContextMenu targetRef={topBarRef} />
             </div>
         </ScopedCssBaseline>
     );
@@ -150,6 +159,7 @@ const Tab: React.FunctionComponent<{
 
                     background-color: #575757;
                     border: solid thin black;
+                    border-bottom-style: none;
                     border-top-left-radius: 4px;
                     border-top-right-radius: 4px;
                     font-weight: normal;
@@ -205,7 +215,6 @@ export const BloomTabs: React.FunctionComponent<{
                     margin: 0;
                     padding: 0;
                     gap: 1px;
-                    min-width: 300px;
                 `
             }
         >

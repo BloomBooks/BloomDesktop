@@ -1078,15 +1078,15 @@ namespace BloomTests.Publish
         }
 
         [Test]
-        public void RemoveClassesToDisableFeatures_RemovesClassesFromFullCoverImagePages()
+        public void RemoveClassesToDisableFeatures_RemovesClassesFromCustomXMatterPages()
         {
             var doc = SafeXmlDocument.Create();
             doc.LoadXml(
                 @"<div class=""bloom-book"">
-                    <div class=""bloom-page cover coverColor bloom-frontMatter cover-is-image no-margin-page frontCover outsideFrontCover side-right Device16x9Landscape"" id=""fullCoverImage"" data-page-number=""1"">
-                        <div class=""pageLabel"">Front Cover</div>
+                    <div class=""bloom-page bloom-customLayout outsideBackCover side-left"" id=""customBackCover"" data-page-number=""2"">
+                        <div class=""pageLabel"">Back Cover</div>
                     </div>
-                    <div class=""bloom-page numberedPage side-left"" id=""normalPage1""  data-page-number=""2""/>
+                    <div class=""bloom-page numberedPage side-right"" id=""normalPage1""  data-page-number=""1""/>
                 </div>"
             );
             var pageElts = doc.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
@@ -1103,15 +1103,13 @@ namespace BloomTests.Publish
             AssertThatXmlIn
                 .Element(pageElts[0])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    "//div[@id='fullCoverImage' and @class='bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover side-right Device16x9Landscape']",
+                    "//div[@id='customBackCover' and @class='bloom-page outsideBackCover side-left']",
                     1
                 );
             Assert.That(
                 messages,
                 Has.Member(
-                    // Would like it to be this, but the localization manager doesn't work well enough in unit tests.
-                    //@"The feature ""Fill the front cover with a single image"" was removed from this book because it requires a higher subscription tier"
-                    @"The feature ""BookSettings.CoverIsImage"" was removed from this book because it requires a higher subscription tier"
+                    @"The feature ""PageLayout.CustomXMatterPage"" was removed from this book because it requires a higher subscription tier"
                 )
             );
         }

@@ -14,10 +14,15 @@ import {
     getPageIframeBody,
 } from "../../utils/shared";
 import { GameTool } from "./games/GameTool";
+import { isLongPressEvaluating } from "../longPressShared";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import { showRequiresSubscriptionDialogInAnyView } from "../../react_components/requiresSubscription";
-
-export const isLongPressEvaluating: string = "isLongPressEvaluating";
+import {
+    callOnBlur,
+    setExtraFunctionToHandleBlurTasks,
+} from "../../utils/menuCloseOnBlur";
+export { isLongPressEvaluating };
+export { callOnBlur as registerMenuCloseOnBlur };
 
 /**
  * The html code for a check mark character
@@ -297,7 +302,7 @@ export class ToolBox {
             task();
         }
         this.doWhenClosingTool = [];
-        if (currentTool) {
+        if (currentTool && isToolInitialized(currentTool)) {
             currentTool.detachFromPage();
         }
     }
@@ -657,9 +662,13 @@ export class ToolBox {
 }
 
 const toolbox = new ToolBox();
+setExtraFunctionToHandleBlurTasks(ToolBox.addWhenClosingToolTask);
 
 export function getTheOneToolbox() {
     return toolbox;
+}
+export function getMasterToolList() {
+    return masterToolList;
 }
 
 // Array of ITool objects, typically one for each tool. The code for each tool inserts an appropriate ITool
@@ -713,7 +722,7 @@ function detachCurrentTool() {
     const toolbox = getTheOneToolbox();
     if (toolbox) {
         toolbox.detachCurrentTool();
-    } else if (currentTool) {
+    } else if (currentTool && isToolInitialized(currentTool)) {
         // If the toolbox is not available, we still may be able to detach the current tool.
         // This is what we used to do before we had some extra behavior in the toolbox.
         currentTool.detachFromPage();
@@ -785,8 +794,11 @@ export function restoreToolboxSettings() {
 export function applyToolboxStateToUpdatedPage() {
     get("toolbox/settings", (result) => {
         savedSettings = result.data;
+        // savedSettings["current"] is always set to the last active tool for the book,
+        // except for new books where it is null. In that case, the default value
+        // should be talkingBookTool.  (BL-16026)
         const currentFromBook = ToolBox.addToolToString(
-            (savedSettings && savedSettings["current"]) || "",
+            (savedSettings && savedSettings["current"]) || "talkingBookTool",
         );
         const currentInToolbox = currentTool
             ? ToolBox.addToolToString(currentTool.id())
@@ -808,7 +820,7 @@ export function applyToolboxStateToUpdatedPage() {
         if (currentTool && toolbox.toolboxIsShowing()) {
             doWhenPageReady(() => {
                 const activeTool = currentTool;
-                if (activeTool) {
+                if (activeTool && isToolInitialized(activeTool)) {
                     activeTool
                         .beginRestoreSettings(
                             savedSettings as unknown as string,
@@ -821,7 +833,10 @@ export function applyToolboxStateToUpdatedPage() {
                             // Re-run tool UI setup on page/book switches. Some tools
                             // (for example reader toggle controls) are initialized in showTool().
                             Promise.resolve(activeTool.showTool()).then(() => {
-                                if (currentTool === activeTool) {
+                                if (
+                                    currentTool === activeTool &&
+                                    isToolInitialized(activeTool)
+                                ) {
                                     activeTool.newPageReady();
                                     scheduleDelayedNewPageReady(activeTool);
                                 }
@@ -838,7 +853,11 @@ export function applyToolboxStateToUpdatedPage() {
 
 function scheduleDelayedNewPageReady(tool: ITool): void {
     window.setTimeout(() => {
-        if (currentTool !== tool || !toolbox.toolboxIsShowing()) {
+        if (
+            currentTool !== tool ||
+            !toolbox.toolboxIsShowing() ||
+            !isToolInitialized(tool)
+        ) {
             return;
         }
 
@@ -958,7 +977,10 @@ function restoreToolboxSettingsWhenPageReady(settings: ToolboxSettings) {
     doWhenPageReady(() => {
         // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
         const opts = settings;
-        const currentTool = opts["current"] || "";
+        // currentTool is always set except for new books. For new books, it is undefined and we want
+        // to treat that the same as if it were set to "talkingBookTool" so that the tool will display
+        // the first time the user opens the toolbox. (BL-16026)
+        const currentTool = opts["current"] || "talkingBookTool";
         const shouldBeVisible = !!opts["visibility"];
 
         if (toolbox.toolboxIsShowing() !== shouldBeVisible) {
@@ -994,18 +1016,22 @@ function switchTool(newToolName: string): void {
             }
         }
     }
-    if (currentTool !== newTool) {
-        if (currentTool) {
+    const canActivateNewTool = !!newTool && isToolInitialized(newTool);
+    const shouldSwitchAwayFromCurrent =
+        currentTool !== newTool || (!!newTool && !canActivateNewTool);
+
+    if (shouldSwitchAwayFromCurrent) {
+        if (currentTool && isToolInitialized(currentTool)) {
             detachCurrentTool();
             currentTool.hideTool();
         }
-        if (newTool) {
+        if (canActivateNewTool && newTool) {
             activateTool(newTool);
         }
         // Without recording that currentTool isn't defined, then returning from
         // More... to the same tool doesn't activate that tool.
         // See https://issues.bloomlibrary.org/youtrack/issue/BL-6720.
-        currentTool = newTool ? newTool : undefined;
+        currentTool = canActivateNewTool && newTool ? newTool : undefined;
     }
     newToolId = undefined;
 }
@@ -1013,6 +1039,9 @@ function switchTool(newToolName: string): void {
 function activateTool(newTool: ITool) {
     if (newTool && toolbox.toolboxIsShowing()) {
         const toolElt = getToolElement(newTool);
+        if (!toolElt) {
+            return;
+        }
         // Always re-restore settings so tool state tracks the current book.
         newTool.hasRestoredSettings = true;
         newTool
@@ -1042,13 +1071,20 @@ function getToolElement(tool: ITool): HTMLElement | null {
     return toolElement;
 }
 
+function isToolInitialized(tool: ITool): boolean {
+    return !!getToolElement(tool);
+}
+
 async function activateToolInternalAsync(
     newTool: ITool,
     toolElt: HTMLElement | null,
 ): Promise<void> {
-    if (toolElt) {
-        newTool.finishToolLocalization(toolElt);
+    if (!toolElt) {
+        throw new Error(
+            `activateToolInternalAsync called for uninitialized tool: ${newTool.id()}`,
+        );
     }
+    newTool.finishToolLocalization(toolElt);
 
     // Await it so that we can guarantee that newPageReady() and insertLangAttributesIntoToolboxElements()
     // happen after showTool.
@@ -1081,6 +1117,26 @@ function setCurrentTool(toolID: string) {
                 switchTool(newToolName);
             });
             toolboxReactActivationHooked = true;
+        }
+
+        if (!toolID) {
+            toolID =
+                ($("#toolbox").find("> h3").first().attr("data-toolId") as
+                    | string
+                    | undefined) ?? "";
+        }
+
+        if (toolID) {
+            const tool = masterToolList.find(
+                (possibleTool) =>
+                    ToolBox.addToolToString(possibleTool.id()) === toolID,
+            );
+            if (tool && !isToolInitialized(tool)) {
+                toolID =
+                    ($("#toolbox").find("> h3").first().attr("data-toolId") as
+                        | string
+                        | undefined) ?? "";
+            }
         }
 
         if (toolID) {
@@ -1828,37 +1884,10 @@ function showToolboxChanged(wasShowing: boolean): void {
             // the talking book tool.
             newToolName = "talkingBookTool";
         }
+        const adapter = getToolboxReactAdapter();
+        if (adapter) {
+            adapter.setActiveToolByToolId(newToolName);
+        }
         switchTool(newToolName);
     }
-}
-
-// The current use of this variable and the following two functions is to allow popup menus
-// to be closed when a click outside the toolbox occurs, or when the toolbox closes.
-// Only one such menu can be opened, so at this point we only need to register one function.
-// Most activity outside the toolbox, even outside Bloom altogether, causes its window
-// to lose focus, so we listen for that event.
-// However, some clicks in the document iframe...at least clicks on images...do not have
-// that effect, so we have an explict mousedown listener there that calls
-// handleClickOutsideToolbox().
-// The function is typically a React useState setter that is fairly harmless to call
-// multiple times, but to reduce renders we try to only call it once, though it is
-// possible that handleClickOutsideToolbox will be called both by the blur listener
-// and the iframe mousedown listener as a result of the same click.
-let losingFocusFunction: (() => void) | undefined;
-
-export function handleClickOutsideToolbox(): void {
-    losingFocusFunction?.();
-    losingFocusFunction = undefined;
-}
-
-export function callWhenFocusLost(fn: () => void): void {
-    losingFocusFunction = fn;
-    ToolBox.addWhenClosingToolTask(fn);
-    window.addEventListener(
-        "blur",
-        () => {
-            handleClickOutsideToolbox();
-        },
-        { once: true },
-    );
 }

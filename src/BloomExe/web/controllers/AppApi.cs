@@ -151,6 +151,53 @@ namespace Bloom.Api
                 },
                 false
             );
+            apiHandler.RegisterBooleanEndpointHandler(
+                kAppUrlPrefix + "alwaysMeasurePerformance",
+                request => GetShell()?.GetAlwaysMeasurePerformance() ?? false,
+                (request, value) => GetShell()?.SetAlwaysMeasurePerformance(value),
+                true
+            );
+            apiHandler.RegisterBooleanEndpointHandler(
+                kAppUrlPrefix + "isMeddlingWithNewFiles",
+                request => GetShell()?.GetIsMeddlingWithNewFiles() ?? false,
+                (request, value) => GetShell()?.SetIsMeddlingWithNewFiles(value),
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "resizeWindow",
+                request =>
+                {
+                    var data = request.RequiredPostDynamic();
+                    var width = Convert.ToInt32(data.width);
+                    var height = Convert.ToInt32(data.height);
+                    GetShell()?.ResizeWindow(width, height);
+                    request.PostSucceeded();
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "startMeasuringPerformance",
+                request =>
+                {
+                    GetShell()?.StartMeasuringPerformance();
+                    request.PostSucceeded();
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "showPerformancePage",
+                request =>
+                {
+                    GetShell()?.ShowPerformancePage();
+                    request.PostSucceeded();
+                },
+                true
+            );
+        }
+
+        private Shell GetShell()
+        {
+            return Shell.GetShellOrOtherOpenForm() as Shell;
         }
 
         private void HandleMakeFromSelectedBook(ApiRequest request)
@@ -179,6 +226,7 @@ namespace Bloom.Api
             if (_bookSelection.CurrentSelection == null)
             {
                 request.Failed("No book selected");
+                return;
             }
 
             if (Book.Book.CollectionKind(_bookSelection.CurrentSelection) != "main")
@@ -187,6 +235,13 @@ namespace Bloom.Api
                 HandleMakeFromSelectedBook(request);
                 return;
             }
+
+            if (!_bookSelection.CurrentSelection.IsSaveable)
+            {
+                request.Failed("Current book is not saveable");
+                return;
+            }
+
             _editBookCommand.Raise(_bookSelection.CurrentSelection);
             request.PostSucceeded();
         }

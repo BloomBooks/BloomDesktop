@@ -849,6 +849,77 @@ namespace BloomTests.ImageProcessing
         }
 
         [Test]
+        public void ReallyCropImages_SameFolderWithUncropped_KeepsOriginalFile_WithMetadataChanged()
+        {
+            // This test verifies that when an image appears both cropped and uncropped,
+            // the original file is kept (not orphaned).
+
+            using (var folder = new TemporaryFolder("KeepOriginalTest"))
+            {
+                var imagePath = Path.Combine(folder.Path, "shared.png");
+                var _pathToTestImages = "src\\BloomTests\\ImageProcessing\\images";
+                var sourcePath = FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestImages,
+                    "bird.png"
+                );
+                RobustFile.Copy(sourcePath, imagePath);
+
+                // Create a DOM with both cropped and uncropped usage
+                var dom = new HtmlDom(
+                    @"<html><head></head><body>
+                <div class=""bloom-page"">
+                    <div class=""marginBox"">
+                        <div class=""bloom-canvas"">"
+                        + MakeImageCanvasElement(
+                            "uncroppedImg",
+                            "shared.png",
+                            "height: 300px; left: 10px; top: 10px; width: 200px;"
+                        )
+                        + MakeImageCanvasElement(
+                            "croppedImg",
+                            "shared.png",
+                            "height: 300px; left: 10px; top: 10px; width: 200px;",
+                            "width: 400px; left: -50px; top: -50px"
+                        )
+                        + @"</div>
+                    </div>
+                </div>
+            </body></html>"
+                );
+
+                var originalBytes = RobustFile.ReadAllBytes(imagePath);
+
+                // SUT
+                ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path, true);
+
+                // Verify the original file still exists
+                Assert.That(
+                    File.Exists(imagePath),
+                    Is.True,
+                    "Original file should be kept when still referenced by uncropped image"
+                );
+
+                // Verify the file content has changed due to fixing the metadata.
+                var currentBytes = RobustFile.ReadAllBytes(imagePath);
+                Assert.That(
+                    currentBytes.Length,
+                    Is.Not.EqualTo(originalBytes.Length),
+                    "Original file content has lost some metadata"
+                );
+
+                // Verify uncropped image still references original
+                var uncroppedImg = dom.SelectSingleNode("//img[@id='uncroppedImg']");
+                Assert.That(uncroppedImg.GetAttribute("src"), Is.EqualTo("shared.png"));
+
+                // Verify cropped image has new name
+                var croppedImg = dom.SelectSingleNode("//img[@id='croppedImg']");
+                var croppedSrc = croppedImg.GetAttribute("src");
+                Assert.That(croppedSrc, Is.Not.EqualTo("shared.png"));
+                Assert.That(File.Exists(Path.Combine(folder.Path, croppedSrc)), Is.True);
+            }
+        }
+
+        [Test]
         public void ReallyCropImages_SameFolderWithUncropped_KeepsOriginalFile()
         {
             // This test verifies that when an image appears both cropped and uncropped,

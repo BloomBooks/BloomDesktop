@@ -1,6 +1,6 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,9 +10,9 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
-using Bloom.web;
 using Bloom.Workspace;
 using L10NSharp;
+using Newtonsoft.Json;
 using SIL.Reporting;
 
 namespace Bloom.CollectionTab
@@ -24,10 +24,9 @@ namespace Bloom.CollectionTab
         private BookSelection _bookSelection;
         private BloomWebSocketServer _webSocketServer;
         private TeamCollectionManager _tcManager;
-        private readonly IframeReactControl _iframeReactControl;
-        private bool _loadedIntoIframe;
         private bool _isDisposed;
         private bool _bookChangesPending = false; // bookchanged event while tab not visible
+        private Book.Book _bookForPendingLabelUpdate = null; // book needing label update when UI ready
 
         internal WorkspaceView WorkspaceView { get; set; }
 
@@ -49,7 +48,6 @@ namespace Bloom.CollectionTab
             _bookSelection = bookSelection;
             _webSocketServer = webSocketServer;
             _tcManager = tcManager;
-            _iframeReactControl = new IframeReactControl();
 
             // Commented out because of BL-12890, while we think about that.
             //bookRefreshEvent.Subscribe(book => {
@@ -62,10 +60,7 @@ namespace Bloom.CollectionTab
 
             localizationChangedEvent.Subscribe(unused =>
             {
-                if (_loadedIntoIframe)
-                {
-                    ReloadIntoIframe();
-                }
+                _webSocketServer.SendEvent("collection", "reload");
             });
 
             //TODO splitContainer1.SplitterDistance = _collectionListView.PreferredWidth;
@@ -132,8 +127,37 @@ namespace Bloom.CollectionTab
 
         private void UpdateForBookChanges(Book.Book book)
         {
+            if (book.BookData.GetVariableOrNull("bookTitle", book.Language1Tag) == null)
+            {
+                var saveNeeded = false;
+                if (!string.IsNullOrEmpty(book.BookInfo.Title))
+                {
+                    saveNeeded = true;
+                }
+                book.BookInfo.Title = "";
+                if (!String.IsNullOrEmpty(book.BookInfo.AllTitles))
+                {
+                    var titleDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(
+                        book.BookInfo.AllTitles
+                    );
+                    if (titleDict != null && titleDict.ContainsKey(book.Language1Tag))
+                    {
+                        titleDict.Remove(book.Language1Tag);
+                        saveNeeded = true;
+                        book.BookInfo.AllTitles = JsonConvert.SerializeObject(titleDict);
+                    }
+                }
+                book.BookInfo.ThumbnailLabel = book.BookInfo.GetBestDisplayTitle(
+                    book.CollectionSettings,
+                    book
+                );
+                if (saveNeeded)
+                    book.BookInfo.Save(); // if we don't save here, the old title stays in the meta.json file.
+            }
             _model.UpdateThumbnailAsync(book);
-            _model.UpdateLabelOfBookInEditableCollection(book);
+            // Queue the label update to be sent when the collection pane signals it's ready.
+            _bookForPendingLabelUpdate = book;
+
             // This message causes the preview to update.
             _webSocketServer.SendEvent("bookContent", "reload");
             _bookChangesPending = false;
@@ -235,35 +259,12 @@ namespace Bloom.CollectionTab
                 // duplicated it here.
                 // Doing it at this point seems to work fine.
                 CheckForDuplicatesAndRepair();
-                ReloadIntoIframe();
             }
 
             if (WorkspaceView != null && WorkspaceView.InvokeRequired)
                 WorkspaceView.Invoke((Action)work);
             else
                 work();
-        }
-
-        internal void EnsureLoadedInMainBrowser()
-        {
-            ReloadIntoIframe();
-        }
-
-        private void ReloadIntoIframe()
-        {
-            if (WorkspaceView?.MainBrowser == null)
-                return;
-
-            WorkspaceView.EnsureWorkspaceRootDocumentLoaded();
-
-            _ = _iframeReactControl.Load(
-                WorkspaceView.MainBrowser,
-                "collectionsTabPaneBundle",
-                null,
-                "collectionTab",
-                Color.FromArgb(51, 51, 51)
-            );
-            _loadedIntoIframe = true;
         }
 
         private void CheckForDuplicatesAndRepair()
@@ -343,6 +344,20 @@ namespace Bloom.CollectionTab
             );
         }
 
+        /// <summary>
+        /// Called by the frontend when the collection pane has finished loading
+        /// and is ready to receive book label updates.  This will realphabetize
+        /// a renamed book.
+        /// </summary>
+        internal void ProcessPendingBookLabelUpdate()
+        {
+            if (_bookForPendingLabelUpdate != null)
+            {
+                _model.UpdateLabelOfBookInEditableCollection(_bookForPendingLabelUpdate);
+                _bookForPendingLabelUpdate = null;
+            }
+        }
+
         public void Dispose()
         {
             if (_isDisposed)
@@ -364,8 +379,6 @@ namespace Bloom.CollectionTab
                 if (!Program.RunningInConsoleMode)
                     throw;
             }
-
-            _iframeReactControl.Dispose();
         }
     }
 }

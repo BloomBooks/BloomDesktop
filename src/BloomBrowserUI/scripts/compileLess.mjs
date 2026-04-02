@@ -54,7 +54,11 @@ export async function compileLessFiles(options = {}) {
             name: "bookLayout",
             root: path.join(contentRoot, "bookLayout"),
             outputBase: path.join(outputBase, "bookLayout"),
-            entries: ["basePage.less", "canvasElement.less"],
+            entries: [
+                "basePage.less",
+                "canvasElement.less",
+                "basePage-legacy-5-6.less",
+            ],
         },
     ];
 

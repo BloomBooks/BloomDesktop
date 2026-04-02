@@ -934,6 +934,12 @@ body.publishingWithoutFullBleed .bloom-mediaBox.Size6x9Landscape {
     min-height: 8.5in;
     max-height: 8.5in;
 }
+.bloom-page.HalfFolioPortrait {
+    min-width: 6.5in;
+    max-width: 6.5in;
+    min-height: 8.5in;
+    max-height: 8.5in;
+}
 .bloom-page.HalfLegalLandscape {
     min-width: 8.5in;
     max-width: 8.5in;
@@ -1048,6 +1054,10 @@ body.publishingWithoutFullBleed .bloom-mediaBox.Size6x9Landscape {
 .HalfLegalPortrait .marginBox {
     height: 7.31889764in;
     width: 5.42519685in;
+}
+.HalfFolioPortrait .marginBox {
+    height: 7.31889764in;
+    width: 4.92519685in;
 }
 .LegalPortrait .marginBox {
     height: 12.81889764in;
@@ -1641,6 +1651,12 @@ body[data-bfnomargin*="video"][data-media*="video"][data-bfnomargin*="portrait"]
     left: 15mm;
     width: 7.31889764in;
 }
+.HalfFolioPortrait.outsideFrontCover .marginBox,
+.HalfFolioPortrait.outsideBackCover .marginBox {
+    height: 7.51574803in;
+    left: 15mm;
+    width: 5.31889764in;
+}
 .QuarterLetterPortrait.outsideFrontCover .marginBox,
 .QuarterLetterPortrait.outsideBackCover .marginBox {
     height: 4.51574803in;
@@ -1788,7 +1804,9 @@ body[data-bfnomargin*="video"][data-media*="video"][data-bfnomargin*="portrait"]
 // Make translation group in text-only page fill the page (BL-15739)
 .bloom-page
     > .marginBox
-    > .split-pane-component-inner:has(> .bloom-translationGroup) {
+    > .split-pane-component-inner:has(
+        > .bloom-translationGroup:not(.box-header-off)
+    ) {
     height: 100%;
     width: 100%;
 }

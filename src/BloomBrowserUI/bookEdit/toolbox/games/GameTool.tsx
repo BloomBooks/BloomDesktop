@@ -1299,12 +1299,12 @@ const DragActivityControls: React.FunctionComponent<{
                                         color={kBloomBlue}
                                         strokeColor={kBloomBlue}
                                     />
-                                    <CanvasElementRectangleItem />
+                                    <GameTextItem capitalize={true} />
                                     <CanvasElementVideoItem />
                                 </CanvasElementItemRow>
                                 <CanvasElementItemRow>
                                     <CanvasElementGifItem />
-                                    <GameTextItem />
+                                    <CanvasElementRectangleItem />
                                 </CanvasElementItemRow>
                             </CanvasElementItemRegion>
                         )}
@@ -1462,6 +1462,7 @@ const DragActivityControls: React.FunctionComponent<{
 
 const GameTextItem: React.FunctionComponent<{
     addClasses?: string;
+    capitalize?: boolean;
 }> = (props) => {
     // We don't want game text items to autosize, so we add this class to them. (BL-14779)
     let classesToAdd = props.addClasses ?? "";
@@ -1470,7 +1471,10 @@ const GameTextItem: React.FunctionComponent<{
     }
     return (
         <CanvasElementTextItem
-            css={textItemCss("14pt")}
+            css={textItemCss({
+                fontSize: "14pt",
+                capitalize: props.capitalize,
+            })}
             l10nKey="EditTab.Toolbox.DragActivity.Text"
             makeTarget={false}
             addClasses={classesToAdd.trim()}
@@ -1479,11 +1483,16 @@ const GameTextItem: React.FunctionComponent<{
     );
 };
 
-function textItemCss(
-    fontSize: string = "larger",
-    darkBackground: boolean = false,
-    radius: string = "0",
-) {
+function textItemCss(options?: {
+    fontSize?: string;
+    darkBackground?: boolean;
+    radius?: string;
+    capitalize?: boolean;
+}) {
+    const fontSize = options?.fontSize ?? "larger";
+    const darkBackground = options?.darkBackground ?? false;
+    const radius = options?.radius ?? "0";
+    const capitalize = options?.capitalize ?? false;
     return css`
         margin-left: 5px;
         text-align: center; // Center the text horizontally
@@ -1493,10 +1502,15 @@ function textItemCss(
         background-color: ${darkBackground ? kBloomBlue : "white"};
         border-radius: ${radius};
         font-size: ${fontSize};
+        text-transform: ${capitalize ? "uppercase" : "none"};
     `;
 }
 
-const draggableWordCss = textItemCss("20px", true, "5px");
+const draggableWordCss = textItemCss({
+    fontSize: "20px",
+    darkBackground: true,
+    radius: "5px",
+});
 
 const playAudioCss = css`
     margin-top: 10px;

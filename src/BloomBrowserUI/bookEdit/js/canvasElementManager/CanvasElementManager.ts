@@ -63,8 +63,14 @@ import { shouldHideToolsOverImages } from "../editablePageUtils";
 import * as Geometry from "./CanvasElementGeometry";
 import * as Alternates from "./CanvasElementAlternates";
 import * as Positioning from "./CanvasElementPositioning";
-import type { ITextColorInfo } from "./CanvasElementSharedTypes";
-export type { ITextColorInfo } from "./CanvasElementSharedTypes";
+import type {
+    ITextColorInfo,
+    ITextOutlineColorInfo,
+} from "./CanvasElementSharedTypes";
+export type {
+    ITextColorInfo,
+    ITextOutlineColorInfo,
+} from "./CanvasElementSharedTypes";
 import { CanvasElementFactories } from "./CanvasElementFactories";
 import { CanvasElementClipboard } from "./CanvasElementClipboard";
 import { CanvasElementDuplication } from "./CanvasElementDuplication";
@@ -1715,31 +1721,155 @@ export class CanvasElementManager {
         if (activeEl) {
             // First, see if this canvas element is in parent/child relationship with any others.
             // We need to set text color on the whole 'family' at once.
-            const bubble = new Bubble(activeEl);
-            const relatives = Comical.findRelatives(bubble);
-            relatives.push(bubble);
-            relatives.forEach((bubble) =>
-                this.setTextColorInternal(hexOrRgbColor, bubble.content),
+            this.setTextStyleColorForActiveFamily(
+                ["color"],
+                hexOrRgbColor,
+                "black",
             );
         }
         restoreCanvasElementFocus(this.thingToFocusAfterSettingColor);
     }
 
+    // Set the outline color of the text in all of the active canvas element family's canvas elements.
+    // If hexOrRgbColor is empty string, we are clearing text outlines.
+    public setTextOutlineColor(hexOrRgbColor: string) {
+        const activeEl = theOneCanvasElementManager.getActiveElement();
+        if (activeEl) {
+            const bubble = new Bubble(activeEl);
+            const relatives = Comical.findRelatives(bubble);
+            relatives.push(bubble);
+            relatives.forEach((relativeBubble) =>
+                this.setTextOutlineColorInternal(
+                    hexOrRgbColor,
+                    relativeBubble.content,
+                ),
+            );
+        }
+        restoreCanvasElementFocus(this.thingToFocusAfterSettingColor);
+    }
+
+    private setTextStyleColorForActiveFamily(
+        propertyNames: string[],
+        value: string,
+        defaultColorIfNoTargets: string,
+    ) {
+        const activeEl = theOneCanvasElementManager.getActiveElement();
+        if (activeEl) {
+            const bubble = new Bubble(activeEl);
+            const relatives = Comical.findRelatives(bubble);
+            relatives.push(bubble);
+            relatives.forEach((relativeBubble) =>
+                this.setTextStyleColorInternal(
+                    propertyNames,
+                    value,
+                    relativeBubble.content,
+                    defaultColorIfNoTargets,
+                ),
+            );
+        }
+    }
+
     private setTextColorInternal(hexOrRgbColor: string, element: HTMLElement) {
-        // BL-11621: We are in the process of moving to putting the canvas element text color on the inner
-        // bloom-editables. So we clear any color on the canvas element div and set it on all of the
-        // inner bloom-editables.
+        this.setTextStyleColorInternal(
+            ["color"],
+            hexOrRgbColor,
+            element,
+            "black",
+        );
+    }
+
+    private setTextOutlineColorInternal(
+        hexOrRgbColor: string,
+        element: HTMLElement,
+    ) {
+        this.setTextStyleColorInternal(
+            ["-webkit-text-stroke-color"],
+            hexOrRgbColor,
+            element,
+            "",
+        );
+
+        const outlineWidth = hexOrRgbColor ? "2px" : "";
+        const paintOrder = hexOrRgbColor ? "stroke" : "";
         const topBox = element.closest(
             kCanvasElementSelector,
         ) as HTMLDivElement;
-        topBox.style.color = "";
         const textColorTargets = this.getTextColorTargets(topBox);
+        const outlineWidthProperty = "-webkit-text-stroke-width";
+        const paintOrderProperty = "paint-order";
+        const applyOutlineProperties = (target: HTMLElement) => {
+            if (outlineWidth) {
+                target.style.setProperty(outlineWidthProperty, outlineWidth);
+            } else {
+                target.style.removeProperty(outlineWidthProperty);
+            }
+
+            if (paintOrder) {
+                target.style.setProperty(paintOrderProperty, paintOrder);
+            } else {
+                target.style.removeProperty(paintOrderProperty);
+            }
+        };
+
+        if (textColorTargets.length === 0) {
+            applyOutlineProperties(topBox);
+            return;
+        }
+
         textColorTargets.forEach((target) => {
-            target.style.color = hexOrRgbColor;
+            applyOutlineProperties(target);
+        });
+    }
+
+    private setTextStyleColorInternal(
+        propertyNames: string[],
+        value: string,
+        element: HTMLElement,
+        defaultColorIfNoTargets: string,
+    ) {
+        const topBox = element.closest(
+            kCanvasElementSelector,
+        ) as HTMLDivElement;
+        propertyNames.forEach((propertyName) =>
+            topBox.style.removeProperty(propertyName),
+        );
+        const textColorTargets = this.getTextColorTargets(topBox);
+        if (textColorTargets.length === 0) {
+            propertyNames.forEach((propertyName) =>
+                topBox.style.setProperty(
+                    propertyName,
+                    value || defaultColorIfNoTargets,
+                ),
+            );
+        }
+        textColorTargets.forEach((target) => {
+            propertyNames.forEach((propertyName) => {
+                target.style.setProperty(propertyName, value);
+            });
         });
     }
 
     public getTextColorInformation(): ITextColorInfo {
+        return this.getTextStyleColorInformation(
+            ["color"],
+            "black",
+            (textElement) => this.getDefaultStyleTextColor(textElement),
+        );
+    }
+
+    public getTextOutlineColorInformation(): ITextOutlineColorInfo {
+        return this.getTextStyleColorInformation(
+            ["-webkit-text-stroke-color"],
+            "black",
+            () => "",
+        );
+    }
+
+    private getTextStyleColorInformation(
+        propertyNames: string[],
+        defaultColorIfNoTargets: string,
+        getDefaultColorForFirstTarget: (textElement: HTMLElement) => string,
+    ): ITextColorInfo {
         const activeEl = theOneCanvasElementManager.getActiveElement();
         let textColor = "";
         let isDefaultStyleColor = false;
@@ -1747,28 +1877,31 @@ export class CanvasElementManager {
             const topBox = activeEl.closest(
                 kCanvasElementSelector,
             ) as HTMLDivElement;
-            // const allUserStyles = StyleEditor.GetFormattingStyleRules(
-            //     topBox.ownerDocument
-            // );
             const style = topBox.style;
-            textColor = style && style.color ? style.color : "";
-            // We are in the process of moving to putting the Canvas element text color on the inner
-            // bloom-editables. So if the canvas element div didn't have a color, check the inner
-            // bloom-editables.
+            textColor =
+                propertyNames
+                    .map((propertyName) => style.getPropertyValue(propertyName))
+                    .find((color) => !!color) || "";
             if (textColor === "") {
                 const textColorTargets = this.getTextColorTargets(topBox);
                 if (textColorTargets.length === 0) {
-                    // Image on Image case comes here.
                     isDefaultStyleColor = true;
-                    textColor = "black";
+                    textColor = defaultColorIfNoTargets;
                 } else {
                     const firstTextTarget = textColorTargets[0];
-                    const colorStyle = firstTextTarget.style.color;
+                    const colorStyle =
+                        propertyNames
+                            .map((propertyName) =>
+                                firstTextTarget.style.getPropertyValue(
+                                    propertyName,
+                                ),
+                            )
+                            .find((color) => !!color) || "";
                     if (colorStyle) {
                         textColor = colorStyle;
                     } else {
                         textColor =
-                            this.getDefaultStyleTextColor(firstTextTarget);
+                            getDefaultColorForFirstTarget(firstTextTarget);
                         isDefaultStyleColor = true;
                     }
                 }

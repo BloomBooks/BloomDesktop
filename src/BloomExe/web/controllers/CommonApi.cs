@@ -10,13 +10,13 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.MiscUI;
+using Bloom.web;
 using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.PlatformUtilities;
 using SIL.Reporting;
 using SIL.Windows.Forms.Miscellaneous;
-using ApplicationException = System.ApplicationException;
 using Timer = System.Windows.Forms.Timer;
 
 namespace Bloom.web.controllers
@@ -195,6 +195,7 @@ namespace Bloom.web.controllers
                 false,
                 false
             );
+            apiHandler.RegisterEndpointHandler("common/instanceInfo", HandleInstanceInfo, false);
             // This is useful for debugging TypeScript code, especially on Linux.  I wouldn't necessarily expect
             // to see it used anywhere in code that gets submitted and merged.
             apiHandler.RegisterEndpointHandler(
@@ -233,6 +234,32 @@ namespace Bloom.web.controllers
                 "common/reloadCollection",
                 HandleReloadCollection,
                 true
+            );
+        }
+
+        private void HandleInstanceInfo(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Get)
+                throw new ArgumentException("common/instanceInfo only supports GET");
+
+            var executablePath = Application.ExecutablePath;
+            var cdpPort = Bloom.WebView2Browser.RemoteDebuggingPort;
+            request.ReplyWithJson(
+                new
+                {
+                    instanceKind = "running-bloom",
+                    processId = Process.GetCurrentProcess().Id,
+                    executablePath,
+                    executableDirectory = Path.GetDirectoryName(executablePath),
+                    httpPort = BloomServer.portForHttp,
+                    webSocketPort = BloomServer.WebSocketPort,
+                    serverUrl = BloomServer.ServerUrl,
+                    serverUrlWithBloomPrefix = BloomServer.ServerUrlWithBloomPrefixEndingInSlash,
+                    workspaceTabsUrl = BloomServer.ServerUrlWithBloomPrefixEndingInSlash
+                        + "api/workspace/tabs",
+                    cdpPort,
+                    cdpOrigin = cdpPort.HasValue ? $"http://localhost:{cdpPort.Value}" : null,
+                }
             );
         }
 

@@ -1,14 +1,23 @@
 This project has a web front-end at src/BloomBrowserUI.
 The front-end uses yarn 1.22.22. Never ever use npm.
 
+# Architecture
+
+- C# backend
+- web front-end in React/Typescript
+- WebView2 for hosting the web front-end in the desktop app
+- We strictly control both ends of the API. 
+    - Don't worry about legacy API support. If you need to change the API, just change it on both sides.
+    - Don't be overly defensive about error handling. If the API is used incorrectly, it's fine for it to throw an error. We want to know about it so we can fix it.
+
 # Code Style
 
 - Always use arrow functions and function components in React
 - do not destructure props
 - do not define a props data type unless it is huge
-- example: export const SomeComponent: React.FunctionComponent<{initiallySelectedGroupIndex: number;> = (props) => {...}
+- example: export const SomeComponent: React.FunctionComponent<{initiallySelectedGroupIndex: number;}> = (props) => {...}
 
-- Avoid removing existing comments.
+- Avoid removing existing comments unless your changes make them inaccurate/obsolete
 - Avoid adding a comment like "// add this line".
 
 - Style elements using the css macro from @emotion/react directly on the element being styled, using the css prop. E.g. `<div css={css`color:red`}>`

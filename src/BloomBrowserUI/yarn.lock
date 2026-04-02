@@ -2940,10 +2940,10 @@
   resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.52.5.tgz#1657f56326bbe0ac80eedc9f9c18fc1ddd24e107"
   integrity sha512-TAcgQh2sSkykPRWLrdyy2AiceMckNf5loITqXxFI5VuQjS5tSuw3WlwdN8qv8vzjLAUTvYaH/mVjSFpbkFbpTg==
 
-"@sillsdev/config-r@1.0.0-alpha.19":
-  version "1.0.0-alpha.19"
-  resolved "https://registry.npmjs.org/@sillsdev/config-r/-/config-r-1.0.0-alpha.19.tgz#012888b7309e87b970d9b423c616eed395315ff7"
-  integrity sha512-tKTaFS2MwJ7z1dmUWXGCej59g6e1lLXzpJq0LG/Yov+P0EdOB4m32wxS2QMscz17/TBUy2IFNh4UkjTmRjNMNg==
+"@sillsdev/config-r@1.0.0-alpha.23":
+  version "1.0.0-alpha.23"
+  resolved "https://registry.yarnpkg.com/@sillsdev/config-r/-/config-r-1.0.0-alpha.23.tgz#70805e49e6dd8bb197eb2b110999a3501f80e98b"
+  integrity sha512-8s6+frggiRi7YUzF8J1wBAVEHXE1BucxEyKoqymyYSokqwzc107GokTIDr7YJO39rIOcrhI3ojWNGTUeeHfQjQ==
   dependencies:
     "@textea/json-viewer" "^2.13.1"
     formik "^2.2.9"
@@ -4924,11 +4924,6 @@ css-color-keywords@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/css-color-keywords/-/css-color-keywords-1.0.0.tgz#fea2616dc676b2962686b3af8dbdbe180b244e05"
   integrity sha512-FyyrDHZKEjXDpNJYvVsV960FiqQyXc/LlYmsxl2BcdMb2WPx0OGRVgTg55rPSyLSNMqP52R9r8geSp7apN3Ofg==
-
-css-element-queries@^1.2.3:
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/css-element-queries/-/css-element-queries-1.2.3.tgz#e14940b1fcd4bf0da60ea4145d05742d7172e516"
-  integrity sha512-QK9uovYmKTsV2GXWQiMOByVNrLn2qz6m3P7vWpOR4IdD6I3iXoDw5qtgJEN3Xq7gIbdHVKvzHjdAtcl+4Arc4Q==
 
 css-to-react-native@^3.0.0:
   version "3.1.0"
@@ -9352,6 +9347,14 @@ react-tabs@^3.0.0:
   dependencies:
     clsx "^1.1.0"
     prop-types "^15.5.0"
+
+react-toastify@11.0.1-react17:
+  version "11.0.1-react17"
+  resolved "https://registry.yarnpkg.com/react-toastify/-/react-toastify-11.0.1-react17.tgz#797af2f213b23147f8aef337f2cd65d71695d530"
+  integrity sha512-OVzc+wLzStoUU2B2QEKSKvfjg5rymCqfIhvVbRRl+ONF8gPT04VQPVNzCrUcsow8elrkeqB5tlAhRx/osD0xSw==
+  dependencies:
+    clsx "^2.1.1"
+    use-sync-external-store "^1.4.0"
 
 react-tooltip@^4.2.10:
   version "4.2.18"

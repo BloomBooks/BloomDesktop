@@ -29,7 +29,6 @@ import {
     kCanvasElementClass,
     kCanvasElementSelector,
 } from "../toolbox/canvas/canvasElementConstants";
-import { showTopicChooserDialog } from "../TopicChooser/TopicChooserDialog";
 import "../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "./jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
 import "../../lib/jquery.qtip.js";
@@ -715,16 +714,6 @@ export function SetupElements(
 
     SetupMetadataButton(container);
 
-    //note, the normal way is for the user to click the link on the bubble.
-    //But clicking on the existing topic may be natural too, and this prevents
-    //them from editing it by hand.
-    $(container)
-        .find("div[data-derived='topic']")
-        .click(function () {
-            if ($(this).css("cursor") === "not-allowed") return;
-            showTopicChooserDialog();
-        });
-
     setupBookLinkGrids(container);
 
     const { divsThatHaveSourceBubbles, bubbleDivs } =
@@ -1095,7 +1084,7 @@ export function bootstrap() {
     document.addEventListener(
         "mousedown",
         () => {
-            getToolboxBundleExports()?.handleClickOutsideToolbox();
+            getToolboxBundleExports()?.simulateBlurOnPageFrameMouseDown();
         },
         { capture: true },
     );
@@ -1144,6 +1133,11 @@ export function bootstrap() {
         .each((index: number, element: Element) => {
             attachToCkEditor(element);
         });
+
+    // CKEditor initialization can replace editable nodes in some environments,
+    // so re-attach longpress handlers after editors are wired up.
+    activateLongPressFor($("div.bloom-page").find(".bloom-editable"));
+
     if ($("div.bloom-page").length === 1) {
         addScrollbarsToPage($("div.bloom-page")[0]);
     }
@@ -1642,11 +1636,38 @@ async function pasteImpl(imageAvailable: boolean) {
 }
 
 export function activateLongPressFor(jQuerySetOfMatchedElements) {
+    const ensureLongPressPluginLoaded = async (): Promise<boolean> => {
+        if (typeof $.fn.longPress === "function") {
+            return true;
+        }
+
+        try {
+            await import("../../lib/long-press/jquery.longpress.js");
+        } catch (e) {
+            console.error("Failed to import longpress plugin:", e);
+            return false;
+        }
+
+        if (typeof $.fn.longPress !== "function") {
+            console.error(
+                "Longpress plugin import completed, but $.fn.longPress is still undefined.",
+            );
+            return false;
+        }
+
+        return true;
+    };
+
     // using axios directly because we already have a catch...though not obviously better than the Bloom Api one?
     axios
         .get("/bloom/api/keyboarding/useLongpress")
-        .then((response) => {
+        .then(async (response) => {
             if (response.data) {
+                const pluginIsLoaded = await ensureLongPressPluginLoaded();
+                if (!pluginIsLoaded) {
+                    return;
+                }
+
                 theOneLocalizationManager
                     .asyncGetText(
                         "BookEditor.CharacterMap.Instructions",

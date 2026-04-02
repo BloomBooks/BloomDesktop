@@ -26,6 +26,9 @@ namespace Bloom
 {
     public partial class WebView2Browser : Browser
     {
+        public static int? RemoteDebuggingPort =>
+            BloomServer.portForHttp > 0 ? BloomServer.RemoteDebuggingPort : (int?)null;
+
         public static string AlternativeWebView2Path;
         private bool _readyToNavigate;
         private PasteCommand _pasteCommand;
@@ -33,6 +36,7 @@ namespace Bloom
         private UndoCommand _undoCommand;
         private CutCommand _cutCommand;
         private bool _inDisposeMethod;
+        private bool _isBuiltInBrowserZoomEnabled = true;
 
         // All our existing code assumes we can just construct a browser. And it seems to work.
         // But in some newer code involving awaits and multiple browsers in unit tests, we
@@ -189,6 +193,7 @@ namespace Bloom
 
                 _webview.CoreWebView2.Settings.IsStatusBarEnabled = false;
                 _webview.CoreWebView2.Settings.IsWebMessageEnabled = true;
+                _webview.CoreWebView2.Settings.IsZoomControlEnabled = _isBuiltInBrowserZoomEnabled;
                 // Disable swipe navigation, which is a problem on trackpads (and touch screens). See BL-12405.
                 _webview.CoreWebView2.Settings.IsSwipeNavigationEnabled = false;
 
@@ -203,6 +208,15 @@ namespace Bloom
                 };
                 _readyToNavigate = true;
             };
+        }
+
+        public override void SetBuiltInBrowserZoomEnabled(bool enabled)
+        {
+            _isBuiltInBrowserZoomEnabled = enabled;
+            if (_webview?.CoreWebView2 != null)
+            {
+                _webview.CoreWebView2.Settings.IsZoomControlEnabled = enabled;
+            }
         }
 
         private void ContextMenuRequested(
@@ -286,9 +300,10 @@ namespace Bloom
             {
                 additionalBrowserArgs += " --accept-lang=" + _uiLanguageOfThisRun;
             }
-            #region DEBUG
-            additionalBrowserArgs += " --remote-debugging-port=9222 "; // allow external inspector connect
-            #endregion
+            if (RemoteDebuggingPort.HasValue)
+            {
+                additionalBrowserArgs += $" --remote-debugging-port={RemoteDebuggingPort.Value} "; // allow external inspector connect
+            }
 
             var op = new CoreWebView2EnvironmentOptions(additionalBrowserArgs);
 

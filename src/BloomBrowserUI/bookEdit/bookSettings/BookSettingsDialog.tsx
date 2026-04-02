@@ -263,15 +263,6 @@ export const BookSettingsDialog: React.FunctionComponent<{
         "BookSettings.Gutter.DefaultLabel",
     );
 
-    const coverIsImageLabel = useL10n(
-        "Fill the front cover with a single image",
-        "BookSettings.CoverIsImage",
-    );
-    const coverIsImageDescription = useL10n(
-        "Replace the front cover content with a single full-bleed image. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.",
-        "BookSettings.CoverIsImage.Description.V2",
-    );
-
     const fullBleedLabel = useL10n(
         "Use full bleed page layout",
         "BookSettings.FullBleed",
@@ -389,9 +380,6 @@ export const BookSettingsDialog: React.FunctionComponent<{
         setMigratedTheme("");
     };
 
-    const tierAllowsFullPageCoverImage =
-        useGetFeatureStatus("fullPageCoverImage")?.enabled;
-
     const tierAllowsFullBleed = useGetFeatureStatus("PrintshopReady")?.enabled;
 
     function saveSettingsAndCloseDialog() {
@@ -490,35 +478,6 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                 </ConfigrStatic>
                             )}
                             <ConfigrGroup label={whatToShowOnCoverLabel}>
-                                <div>
-                                    <ConfigrBoolean
-                                        label={coverIsImageLabel}
-                                        description={coverIsImageDescription}
-                                        {...getAdditionalProps<boolean>(
-                                            `coverIsImage`,
-                                        )}
-                                        disabled={
-                                            appearanceDisabled ||
-                                            !tierAllowsFullPageCoverImage
-                                        }
-                                    />
-                                    <div
-                                        css={css`
-                                            display: flex;
-                                            padding-bottom: 5px;
-                                            font-size: 12px;
-                                            font-weight: bold;
-                                        `}
-                                    >
-                                        <BloomSubscriptionIndicatorIconAndText
-                                            feature="fullPageCoverImage"
-                                            css={css`
-                                                margin-left: auto;
-                                            `}
-                                            disabled={appearanceDisabled}
-                                        />
-                                    </div>
-                                </div>
                                 <FieldVisibilityGroup
                                     field="cover-title"
                                     labelFrame="Show Title in {0}"

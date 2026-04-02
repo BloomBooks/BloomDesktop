@@ -10,7 +10,10 @@ import { LocalizableSelectableMenuItem } from "../../../react_components/localiz
 export const CustomPageLayoutMenu: React.FunctionComponent<{
     isCustom: boolean;
     disableCustomPage?: boolean;
-    setCustom: (value: "standard" | "custom" | "customStartOver") => void;
+    setCustom: (
+        value: "standard" | "custom",
+        keepCustomLayoutDataWhenSwitchingToStandard: boolean,
+    ) => void;
 }> = (props) => {
     const selectedLayoutLabel = useL10n(
         props.isCustom ? "Custom Layout" : "Standard Layout",
@@ -20,31 +23,20 @@ export const CustomPageLayoutMenu: React.FunctionComponent<{
     );
 
     const handleChange = (event: SelectChangeEvent<string>) => {
-        let selection = event.target.value as
-            | "standard"
-            | "custom"
-            | "customStartOver";
-        // If custom is selected with shift+ctrl held, trigger startOver behavior
+        const selection = event.target.value as "standard" | "custom";
         // TypeScript thinks the argument should be a SelectChangeEvent in order to pass
         // the function as the onChange handler for a Select, but in fact it always
         // comes in as a PointerEvent which has the keyboard modifier info we need.
         const nativeEvent = (event as unknown as { nativeEvent?: PointerEvent })
             .nativeEvent;
         const pointerEvent = nativeEvent ?? (event as unknown as PointerEvent);
-        if (
-            selection === "custom" &&
-            // We MUST not try to go directly from a custom layout to a 'startover',
-            // because if we're already in custom mode, we don't have available the
-            // page content in standard layout that we need to work from.
-            !props.isCustom &&
+        const keepCustomLayoutDataWhenSwitchingToStandard =
+            selection === "standard" &&
             "shiftKey" in pointerEvent &&
             "ctrlKey" in pointerEvent &&
             pointerEvent.shiftKey &&
-            pointerEvent.ctrlKey
-        ) {
-            selection = "customStartOver";
-        }
-        props.setCustom(selection);
+            pointerEvent.ctrlKey;
+        props.setCustom(selection, keepCustomLayoutDataWhenSwitchingToStandard);
     };
 
     return (
@@ -95,6 +87,7 @@ export const CustomPageLayoutMenu: React.FunctionComponent<{
                         selected={props.isCustom}
                         value="custom"
                         disabled={props.disableCustomPage}
+                        featureName="CustomXMatterPage"
                     />
                 </Select>
             </div>
