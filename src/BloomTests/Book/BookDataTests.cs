@@ -3458,6 +3458,53 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void SuckInDataFromEditedDom_CustomOutsideFrontCoverWithoutCoverImageDataBook_UsesFallbackImageForCoverImage()
+        {
+            var bookDom = new HtmlDom(
+                @"<html><head></head><body>
+				<div id='bloomDataDiv'></div>
+				<div class='bloom-page outsideFrontCover'>
+					<div class='marginBox'>
+						<div class='bloom-canvas'>
+							<img data-book='coverImage' src='placeHolder.png'></img>
+						</div>
+					</div>
+				</div>
+			</body></html>"
+            );
+            var bookData = new BookData(bookDom, _collectionSettings, null);
+
+            var editedPageDom = new HtmlDom(
+                @"<html><head></head><body>
+				<div class='bloom-page outsideFrontCover bloom-customLayout' data-custom-layout-id='customOutsideFrontCover'>
+					<div class='marginBox'>
+						<div class='bloom-canvas'>
+							<img src='fallbackCoverImage.png'></img>
+						</div>
+					</div>
+				</div>
+			</body></html>"
+            );
+
+            bookData.SuckInDataFromEditedDom(editedPageDom);
+
+            var coverImageDataDivElement = bookDom.SelectSingleNodeHonoringDefaultNS(
+                "//div[@id='bloomDataDiv']/div[@data-book='coverImage']"
+            );
+            Assert.That(coverImageDataDivElement, Is.Not.Null);
+            Assert.That(coverImageDataDivElement.InnerText, Is.EqualTo("fallbackCoverImage.png"));
+
+            var standardCoverImageElement = (SafeXmlElement)
+                bookDom.SelectSingleNodeHonoringDefaultNS(
+                    "//div[contains(@class,'outsideFrontCover')]//img[@data-book='coverImage']"
+                );
+            Assert.That(
+                standardCoverImageElement.GetAttribute("src"),
+                Is.EqualTo("fallbackCoverImage.png")
+            );
+        }
+
+        [Test]
         public void GatherDataItemsFromXElement_CustomLayoutPageWithXmatterPage_GathersXmatterAttributes()
         {
             var dom = new HtmlDom(

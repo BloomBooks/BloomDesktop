@@ -5228,6 +5228,18 @@ namespace Bloom.Book
             if (outsideFrontCover == null)
                 return null;
 
+            coverImgElt = GetCoverImageElt(outsideFrontCover);
+            if (coverImgElt == null)
+                return null;
+
+            return GetImagePath(coverImgElt);
+        }
+
+        internal static SafeXmlElement GetCoverImageElt(SafeXmlElement outsideFrontCover)
+        {
+            if (outsideFrontCover == null)
+                return null;
+
             // Prefer the designated cover image if it is present and not placeholder.
             var designatedCoverImage = outsideFrontCover
                 .SafeSelectNodes(
@@ -5237,21 +5249,20 @@ namespace Bloom.Book
                 .FirstOrDefault();
 
             SafeXmlElement bestPlaceholderElt = null;
-            string bestPlaceholderPath = null;
+            string bestPlaceholderSource = null;
 
             if (designatedCoverImage != null)
             {
-                var designatedPath = GetImagePath(designatedCoverImage);
-                if (designatedPath != null)
+                var designatedSource = GetImageSourceForCoverSelection(designatedCoverImage);
+                if (!string.IsNullOrWhiteSpace(designatedSource))
                 {
-                    if (!ImageUtils.IsPlaceholderImageFilename(designatedPath))
+                    if (!ImageUtils.IsPlaceholderImageFilename(designatedSource))
                     {
-                        coverImgElt = designatedCoverImage;
-                        return designatedPath;
+                        return designatedCoverImage;
                     }
 
                     bestPlaceholderElt = designatedCoverImage;
-                    bestPlaceholderPath = designatedPath;
+                    bestPlaceholderSource = designatedSource;
                 }
             }
 
@@ -5271,25 +5282,32 @@ namespace Bloom.Book
                 if (candidate == designatedCoverImage)
                     continue;
 
-                var candidatePath = GetImagePath(candidate);
-                if (candidatePath == null)
+                var candidateSource = GetImageSourceForCoverSelection(candidate);
+                if (string.IsNullOrWhiteSpace(candidateSource))
                     continue;
 
-                if (!ImageUtils.IsPlaceholderImageFilename(candidatePath))
+                if (!ImageUtils.IsPlaceholderImageFilename(candidateSource))
                 {
-                    coverImgElt = candidate;
-                    return candidatePath;
+                    return candidate;
                 }
 
-                if (bestPlaceholderPath == null)
+                if (bestPlaceholderSource == null)
                 {
                     bestPlaceholderElt = candidate;
-                    bestPlaceholderPath = candidatePath;
+                    bestPlaceholderSource = candidateSource;
                 }
             }
 
-            coverImgElt = bestPlaceholderElt;
-            return bestPlaceholderPath;
+            return bestPlaceholderElt;
+        }
+
+        private static string GetImageSourceForCoverSelection(SafeXmlElement imageElement)
+        {
+            var imageUrl = HtmlDom.GetImageElementUrl(imageElement);
+            if (!string.IsNullOrWhiteSpace(imageUrl.PathOnly.NotEncoded))
+                return imageUrl.PathOnly.NotEncoded;
+
+            return imageUrl.UrlEncoded;
         }
 
         private string GetImagePath(SafeXmlElement imageElement)

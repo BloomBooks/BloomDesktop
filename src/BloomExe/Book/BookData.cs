@@ -1658,6 +1658,8 @@ namespace Bloom.Book
                         );
                     }
                 }
+
+                AddFallbackCoverImageFromCustomOutsideFrontCover(data, sourceElement);
             }
             catch (Exception error)
             {
@@ -1669,6 +1671,90 @@ namespace Bloom.Book
                     error
                 );
             }
+        }
+
+        private void AddFallbackCoverImageFromCustomOutsideFrontCover(
+            DataSet data,
+            SafeXmlNode sourceElement
+        )
+        {
+            var customOutsideFrontCover = sourceElement
+                .SafeSelectNodes(
+                    "self::div[contains(concat(' ', normalize-space(@class), ' '), ' outsideFrontCover ') and contains(concat(' ', normalize-space(@class), ' '), ' bloom-customLayout ')] | .//div[contains(concat(' ', normalize-space(@class), ' '), ' outsideFrontCover ') and contains(concat(' ', normalize-space(@class), ' '), ' bloom-customLayout ')]"
+                )
+                .Cast<SafeXmlElement>()
+                .FirstOrDefault();
+
+            if (customOutsideFrontCover == null)
+                return;
+
+            var fallbackImageNode = Book.GetCoverImageElt(customOutsideFrontCover);
+            if (fallbackImageNode == null)
+                return;
+
+            var imageUrl = HtmlDom.GetImageElementUrl(fallbackImageNode);
+            var encodedImagePath = imageUrl.UrlEncoded;
+            if (
+                string.IsNullOrWhiteSpace(encodedImagePath)
+                && !string.IsNullOrWhiteSpace(imageUrl.PathOnly.NotEncoded)
+            )
+            {
+                encodedImagePath = UrlPathString
+                    .CreateFromUnencodedString(imageUrl.PathOnly.NotEncoded)
+                    .UrlEncoded;
+            }
+            if (string.IsNullOrWhiteSpace(encodedImagePath) && fallbackImageNode.Name == "img")
+            {
+                var src = fallbackImageNode.GetAttribute("src");
+                if (!string.IsNullOrWhiteSpace(src))
+                {
+                    encodedImagePath = UrlPathString.CreateFromUrlEncodedString(src).UrlEncoded;
+                }
+            }
+            if (string.IsNullOrWhiteSpace(encodedImagePath))
+                return;
+
+            AddOrUpdateTextVariableFromNode(
+                data,
+                "coverImage",
+                "*",
+                encodedImagePath,
+                false,
+                true,
+                fallbackImageNode
+            );
+        }
+
+        private void AddOrUpdateTextVariableFromNode(
+            DataSet data,
+            string key,
+            string lang,
+            string value,
+            bool isCollectionValue,
+            bool isVariableUrlEncoded,
+            SafeXmlElement nodeForAttributes
+        )
+        {
+            if (!data.TextVariables.TryGetValue(key, out var dataSetValue))
+            {
+                var textAlternatives = new MultiTextBase();
+                textAlternatives.SetAlternative(lang, value);
+                dataSetValue = new DataSetElementValue(textAlternatives, isCollectionValue);
+                data.TextVariables.Add(key, dataSetValue);
+            }
+            else if (!dataSetValue.TextAlternatives.ContainsAlternative(lang))
+            {
+                dataSetValue.TextAlternatives.SetAlternative(lang, value);
+            }
+            else
+            {
+                return;
+            }
+
+            if (isVariableUrlEncoded)
+                KeysOfVariablesThatAreUrlEncoded.Add(key);
+
+            dataSetValue.SetAttributeList(lang, GetAttributesToSave(nodeForAttributes));
         }
 
         // Attributes not to copy when saving element attribute data in a DataSetElementValue.
