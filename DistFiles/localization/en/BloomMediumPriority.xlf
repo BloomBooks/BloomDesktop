@@ -753,6 +753,11 @@
         <note>ID: BookAndPageSettings.PageArea</note>
         <note>Area label for tabs/pages that affect only the current page.</note>
       </trans-unit>
+      <trans-unit id="BookAndPageSettings.PageArea.Description" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Page settings apply to the current page.</source>
+        <note>ID: BookAndPageSettings.PageArea.Description</note>
+        <note>Description text shown for the Page area in the combined Book and Page Settings dialog.</note>
+      </trans-unit>
       <trans-unit id="BookAndPageSettings.Colors" sil:dynamic="true">
         <source xml:lang="en">Colors</source>
         <note>ID: BookAndPageSettings.Colors</note>
@@ -849,6 +854,21 @@
       <trans-unit id="Common.BackgroundColor" sil:dynamic="true">
         <source xml:lang="en">Background Color</source>
         <note>Common.CoverBackgroundColor</note>
+      </trans-unit>
+      <trans-unit id="PageSettings.OutlineColor" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Outline Color</source>
+        <note>ID: PageSettings.OutlineColor</note>
+        <note>Label for the page number outline color control on the page Colors settings page.</note>
+      </trans-unit>
+      <trans-unit id="PageSettings.PageNumberOutlineColor.Description" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Use an outline color when the page number needs more contrast against the page.</source>
+        <note>ID: PageSettings.PageNumberOutlineColor.Description</note>
+        <note>Help text for the page number outline color control on the page Colors settings page.</note>
+      </trans-unit>
+      <trans-unit id="PageSettings.PageNumberBackgroundColor.Description" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Use a page number background color when the theme puts the number inside a shape, for example a circle, and you want to specify the color of that shape.</source>
+        <note>ID: PageSettings.PageNumberBackgroundColor.Description</note>
+        <note>Help text for the page number background color control on the page Colors settings page.</note>
       </trans-unit>
       <trans-unit id="BookSettings.WhatToShowOnCover" sil:dynamic="true">
         <source xml:lang="en">Front Cover</source>
