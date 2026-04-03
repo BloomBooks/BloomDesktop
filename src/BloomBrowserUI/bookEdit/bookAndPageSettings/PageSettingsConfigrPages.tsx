@@ -22,6 +22,10 @@ export type IPageSettings = {
     };
 };
 
+export type IChangedPageSettings = {
+    page: Partial<IPageSettings["page"]>;
+};
+
 export const getCurrentPageElement = (): HTMLElement => {
     const page = getPageIframeBody()?.querySelector(
         ".bloom-page",
@@ -322,6 +326,83 @@ export const applyPageSettings = (
     setPageNumberColor(settings.page.pageNumberColor);
     setPageNumberOutlineColor(settings.page.pageNumberOutlineColor);
     setPageNumberBackgroundColor(settings.page.pageNumberBackgroundColor);
+};
+
+export const getChangedPageSettings = (
+    initialSettings: IPageSettings,
+    currentSettings: IPageSettings,
+): IChangedPageSettings | undefined => {
+    const changedSettings: IChangedPageSettings["page"] = {};
+
+    if (
+        normalizeToHexOrEmpty(initialSettings.page.backgroundColor) !==
+        normalizeToHexOrEmpty(currentSettings.page.backgroundColor)
+    ) {
+        changedSettings.backgroundColor = currentSettings.page.backgroundColor;
+    }
+
+    if (
+        normalizeToHexOrEmpty(initialSettings.page.pageNumberColor) !==
+        normalizeToHexOrEmpty(currentSettings.page.pageNumberColor)
+    ) {
+        changedSettings.pageNumberColor = currentSettings.page.pageNumberColor;
+    }
+
+    if (
+        normalizeToHexOrTransparentOrEmpty(
+            initialSettings.page.pageNumberOutlineColor,
+        ) !==
+        normalizeToHexOrTransparentOrEmpty(
+            currentSettings.page.pageNumberOutlineColor,
+        )
+    ) {
+        changedSettings.pageNumberOutlineColor =
+            currentSettings.page.pageNumberOutlineColor;
+    }
+
+    if (
+        normalizeToHexOrTransparentOrEmpty(
+            initialSettings.page.pageNumberBackgroundColor,
+        ) !==
+        normalizeToHexOrTransparentOrEmpty(
+            currentSettings.page.pageNumberBackgroundColor,
+        )
+    ) {
+        changedSettings.pageNumberBackgroundColor =
+            currentSettings.page.pageNumberBackgroundColor;
+    }
+
+    if (Object.keys(changedSettings).length === 0) {
+        return undefined;
+    }
+
+    return {
+        page: changedSettings,
+    };
+};
+
+export const applyChangedPageSettings = (
+    settings: IChangedPageSettings,
+    targetThemeName?: string,
+): void => {
+    if (settings.page.backgroundColor !== undefined) {
+        setCurrentPageBackgroundColor(
+            settings.page.backgroundColor,
+            targetThemeName,
+        );
+    }
+
+    if (settings.page.pageNumberColor !== undefined) {
+        setPageNumberColor(settings.page.pageNumberColor);
+    }
+
+    if (settings.page.pageNumberOutlineColor !== undefined) {
+        setPageNumberOutlineColor(settings.page.pageNumberOutlineColor);
+    }
+
+    if (settings.page.pageNumberBackgroundColor !== undefined) {
+        setPageNumberBackgroundColor(settings.page.pageNumberBackgroundColor);
+    }
 };
 
 export const parsePageSettingsFromConfigrValue = (

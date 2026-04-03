@@ -25,9 +25,9 @@ import { getWorkspaceBundleExports } from "../js/workspaceFrames";
 import { ElementAttributeSnapshot } from "../../utils/ElementAttributeSnapshot";
 import { useGetFeatureStatus } from "../../react_components/featureStatus";
 import {
-    arePageSettingsEquivalent,
-    applyPageSettings,
+    applyChangedPageSettings,
     getCurrentPageElement,
+    getChangedPageSettings,
     getCurrentPageSettings,
     IPageSettings,
     parsePageSettingsFromConfigrValue,
@@ -320,10 +320,18 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
             const latestSettings =
                 latestSettingsRef.current ?? settingsToReturnLater;
             if (latestSettings) {
-                applyPageSettings(
-                    parsePageSettingsFromConfigrValue(latestSettings),
-                    getThemeNameFromConfigrSettings(latestSettings),
-                );
+                const parsedPageSettings =
+                    parsePageSettingsFromConfigrValue(latestSettings);
+                const changedPageSettings = pageSettings
+                    ? getChangedPageSettings(pageSettings, parsedPageSettings)
+                    : undefined;
+
+                if (changedPageSettings) {
+                    applyChangedPageSettings(
+                        changedPageSettings,
+                        getThemeNameFromConfigrSettings(latestSettings),
+                    );
+                }
 
                 const settingsToPost =
                     removePageSettingsFromConfigrSettings(latestSettings);
@@ -455,13 +463,12 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
                         onChange={(s) => {
                             const parsedPageSettings =
                                 parsePageSettingsFromConfigrValue(s);
-                            const isInitialConfigrEcho =
-                                !settingsToReturnLater &&
-                                !!pageSettings &&
-                                arePageSettingsEquivalent(
-                                    parsedPageSettings,
-                                    pageSettings,
-                                );
+                            const changedPageSettings = pageSettings
+                                ? getChangedPageSettings(
+                                      pageSettings,
+                                      parsedPageSettings,
+                                  )
+                                : undefined;
 
                             // Config-r may call onChange while rendering, so defer state updates.
                             latestSettingsRef.current = s;
@@ -469,12 +476,23 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
                                 setSettingsToReturnLater(s);
                             }, 0);
 
-                            if (isInitialConfigrEcho) {
+                            if (
+                                !pageSettings ||
+                                !initialPageAttributeSnapshot.current
+                            ) {
                                 return;
                             }
 
-                            applyPageSettings(
-                                parsedPageSettings,
+                            initialPageAttributeSnapshot.current.restoreToElement(
+                                getCurrentPageElement(),
+                            );
+
+                            if (!changedPageSettings) {
+                                return;
+                            }
+
+                            applyChangedPageSettings(
+                                changedPageSettings,
                                 getThemeNameFromConfigrSettings(s),
                             );
                         }}
