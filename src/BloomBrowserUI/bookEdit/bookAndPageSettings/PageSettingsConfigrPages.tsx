@@ -37,7 +37,6 @@ export const getCurrentPageElement = (): HTMLElement => {
 };
 
 const kTransparentCssValue = "transparent";
-const kSeparatedBackgroundThemes = new Set(["rounded-border-ebook"]);
 
 const normalizeToHexOrEmpty = (color: string): string => {
     const trimmed = color.trim();
@@ -84,6 +83,18 @@ const normalizeToHexOrTransparentOrEmpty = (color: string): string => {
     return parsed.toHexString().toUpperCase();
 };
 
+const normalizeResolvedColorOrEmpty = (color: string): string => {
+    const trimmed = color.trim();
+    // Custom property inspection can return unresolved expressions like
+    // var(--page-background-color). Those are implementation details, not the
+    // user-facing color that the settings UI should round-trip.
+    if (trimmed.startsWith("var(")) {
+        return "";
+    }
+
+    return normalizeToHexOrEmpty(trimmed);
+};
+
 const getComputedStyleForElement = (
     element: HTMLElement,
 ): CSSStyleDeclaration => {
@@ -102,28 +113,27 @@ const getCurrentPageBackgroundColor = (): string => {
     // the outer .bloom-page shell stays theme-colored while the user-facing page
     // surface inside .marginBox has its own color, and the settings UI needs to
     // round-trip the persisted page-surface color rather than the shell color.
-    const inlineMarginBox = normalizeToHexOrEmpty(
+    const inlineMarginBox = normalizeResolvedColorOrEmpty(
         page.style.getPropertyValue("--marginBox-background-color"),
     );
-    // Prefer an inline marginBox override first because this is the most direct
-    // persisted value for the editable page surface, and applyPageSettings()
-    // always writes it when the user picks a page color.
+    // Honor an inline marginBox override first for backwards compatibility with
+    // older saved pages that persisted a page-specific marginBox color.
     if (inlineMarginBox) return inlineMarginBox;
 
     const inline = normalizeToHexOrEmpty(
         page.style.getPropertyValue("--page-background-color"),
     );
-    // Next honor an inline page-shell override. Unified themes use this for the
-    // same visible surface, and persisted page styles from the DOM can specify
-    // the page shell even when there is no separate inline marginBox value.
+    // Next honor an inline page-surface override. This is the only page-level
+    // background color the settings dialog now writes.
     if (inline) return inline;
 
-    const computedMarginBoxVariable = normalizeToHexOrEmpty(
+    const computedMarginBoxVariable = normalizeResolvedColorOrEmpty(
         computedPageStyle.getPropertyValue("--marginBox-background-color"),
     );
-    // If there is no inline override, the active theme may still define the
-    // visible page surface through the marginBox variable. This is the key case
-    // where a single computed page background would be wrong for rounded themes.
+    // If a theme supplies a literal marginBox color, honor it as the visible
+    // page surface. If the variable is just an alias like var(--page-background-color),
+    // normalizeResolvedColorOrEmpty() deliberately ignores it and we fall through
+    // to the true resolved surface color below.
     if (computedMarginBoxVariable) return computedMarginBoxVariable;
 
     const computedVariable = normalizeToHexOrEmpty(
@@ -154,35 +164,6 @@ const getCurrentPageBackgroundColor = (): string => {
     return computedBackground || "#FFFFFF";
 };
 
-const doesThemeUseUnifiedPageBackground = (
-    page: HTMLElement,
-    targetThemeName?: string,
-): boolean => {
-    // "Unified page background" means the outer .bloom-page shell and the
-    // inner .marginBox are intended to look like one continuous surface, so a
-    // user-picked page color should be applied to both. The default theme works
-    // this way. Rounded themes are the opposite: they intentionally keep a
-    // distinct outer shell color around a differently colored marginBox.
-    if (targetThemeName) {
-        if (kSeparatedBackgroundThemes.has(targetThemeName)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    const computedPageStyle = getComputedStyleForElement(page);
-    const multiplicand = Number.parseFloat(
-        computedPageStyle
-            .getPropertyValue(
-                "--page-and-marginBox-are-same-color-multiplicand",
-            )
-            .trim(),
-    );
-
-    return Number.isNaN(multiplicand) || multiplicand > 0;
-};
-
 const setOrRemoveCustomProperty = (
     style: CSSStyleDeclaration,
     propertyName: string,
@@ -209,26 +190,14 @@ const setOrRemoveCustomPropertyAllowTransparent = (
     }
 };
 
-const setCurrentPageBackgroundColor = (
-    color: string,
-    targetThemeName?: string,
-): void => {
+const setCurrentPageBackgroundColor = (color: string): void => {
     const page = getCurrentPageElement();
 
-    setOrRemoveCustomProperty(
-        page.style,
-        "--marginBox-background-color",
-        color,
-    );
-
-    // For unified (borderless) backgrounds we color both surfaces so the whole page stays
-    // flat. For separated backgrounds, such as rounded-border-ebook, we leave
-    // the outer page shell on the theme color and only recolor the marginBox.
-    if (doesThemeUseUnifiedPageBackground(page, targetThemeName)) {
-        setOrRemoveCustomProperty(page.style, "--page-background-color", color);
-    } else {
-        page.style.removeProperty("--page-background-color");
-    }
+    // Page settings own the page surface color. The marginBox follows that by
+    // default in theme CSS, so there is no need to persist a second page-level
+    // color override for the same visible surface.
+    setOrRemoveCustomProperty(page.style, "--page-background-color", color);
+    page.style.removeProperty("--marginBox-background-color");
 };
 
 const getPageNumberColor = (): string => {
@@ -313,14 +282,8 @@ export const getCurrentPageSettings = (): IPageSettings => {
     };
 };
 
-export const applyPageSettings = (
-    settings: IPageSettings,
-    targetThemeName?: string,
-): void => {
-    setCurrentPageBackgroundColor(
-        settings.page.backgroundColor,
-        targetThemeName,
-    );
+export const applyPageSettings = (settings: IPageSettings): void => {
+    setCurrentPageBackgroundColor(settings.page.backgroundColor);
     setPageNumberColor(settings.page.pageNumberColor);
     setPageNumberOutlineColor(settings.page.pageNumberOutlineColor);
     setPageNumberBackgroundColor(settings.page.pageNumberBackgroundColor);
@@ -381,13 +344,9 @@ export const getChangedPageSettings = (
 
 export const applyChangedPageSettings = (
     settings: IChangedPageSettings,
-    targetThemeName?: string,
 ): void => {
     if (settings.page.backgroundColor !== undefined) {
-        setCurrentPageBackgroundColor(
-            settings.page.backgroundColor,
-            targetThemeName,
-        );
+        setCurrentPageBackgroundColor(settings.page.backgroundColor);
     }
 
     if (settings.page.pageNumberColor !== undefined) {

@@ -754,7 +754,10 @@ div.bloom-page.coverColor {
     display: block;
     box-sizing: border-box;
 
-    background-color: var(--page-background-color) !important;
+    background-color: var(
+        --page-frame-color,
+        var(--page-background-color)
+    ) !important;
 
     // editMode.less may change this when we're editing
     .split-pane-component-inner > .bloom-translationGroup {

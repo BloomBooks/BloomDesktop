@@ -25,6 +25,13 @@ const { mockPost, mockPostJson, mockCloseDialog, configrPaneRenderState } =
 
 vi.mock("../../utils/shared", () => ({
     getPageIframeBody: () => document.body,
+    getBloomPageElement: () =>
+        document.body.querySelector(".bloom-page") as HTMLElement | null,
+    whenBloomPageIsReady: (callback: (page: HTMLElement) => void) => {
+        const page = document.body.querySelector(".bloom-page") as HTMLElement;
+        callback(page);
+        return () => {};
+    },
 }));
 
 vi.mock("../../utils/bloomApi", async (importOriginal) => {
@@ -76,19 +83,24 @@ vi.mock("../../react_components/BloomDialog/BloomDialogPlumbing", () => ({
     }),
 }));
 
-vi.mock("../../react_components/BloomDialog/BloomDialog", () => ({
-    BloomDialog: React.forwardRef<
+vi.mock("../../react_components/BloomDialog/BloomDialog", () => {
+    const MockBloomDialog = React.forwardRef<
         HTMLDivElement,
         React.PropsWithChildren<object>
-    >((props, ref) => <div ref={ref}>{props.children}</div>),
-    DialogBottomButtons: (props: React.PropsWithChildren<object>) => (
-        <div>{props.children}</div>
-    ),
-    DialogMiddle: (props: React.PropsWithChildren<object>) => (
-        <div>{props.children}</div>
-    ),
-    DialogTitle: (props: { title: string }) => <div>{props.title}</div>,
-}));
+    >((props, ref) => <div ref={ref}>{props.children}</div>);
+    MockBloomDialog.displayName = "MockBloomDialog";
+
+    return {
+        BloomDialog: MockBloomDialog,
+        DialogBottomButtons: (props: React.PropsWithChildren<object>) => (
+            <div>{props.children}</div>
+        ),
+        DialogMiddle: (props: React.PropsWithChildren<object>) => (
+            <div>{props.children}</div>
+        ),
+        DialogTitle: (props: { title: string }) => <div>{props.title}</div>,
+    };
+});
 
 vi.mock("../../react_components/BloomDialog/commonDialogComponents", () => ({
     DialogOkButton: (props: { onClick: () => void }) => (

@@ -27,23 +27,36 @@ describe("PageSettingsConfigrPages", () => {
         expect(settings.page.backgroundColor).toBe("#FFFFFF");
     });
 
+    it("ignores computed marginBox aliases and reads the resolved page surface color", () => {
+        document.head.innerHTML = `<style>
+            .bloom-page {
+                --page-background-color: #fdf3c5;
+                --marginBox-background-color: var(--page-background-color);
+            }
+        </style>`;
+
+        const settings = getCurrentPageSettings();
+
+        expect(settings.page.backgroundColor).toBe("#FDF3C5");
+    });
+
     it("uses the computed page number background color when there is no inline override", () => {
         document.head.innerHTML = `<style>
             .bloom-page {
                 --pageNumber-background-color: rgb(255, 255, 255);
             }
         </style>`;
-        const page = document.body.querySelector(".bloom-page") as HTMLElement;
 
         const settings = getCurrentPageSettings();
 
         expect(settings.page.pageNumberBackgroundColor).toBe("#FFFFFF");
     });
 
-    it("preserves the themed outer page background when applying a page background color", () => {
+    it("updates only the page background variable when applying a page background color", () => {
         document.head.innerHTML = `<style>
             .bloom-page {
-                --page-background-color: #2e2e2e;
+                --page-frame-color: #2e2e2e;
+                --page-background-color: #ffffff;
                 --marginBox-background-color: #ffffff;
                 --page-and-marginBox-are-same-color-multiplicand: 0;
             }
@@ -61,8 +74,10 @@ describe("PageSettingsConfigrPages", () => {
 
         expect(
             page.style.getPropertyValue("--marginBox-background-color"),
-        ).toBe("#ABCDEF");
-        expect(page.style.getPropertyValue("--page-background-color")).toBe("");
+        ).toBe("");
+        expect(page.style.getPropertyValue("--page-background-color")).toBe(
+            "#ABCDEF",
+        );
     });
 
     it("updates both page and margin box colors when the theme uses one flat background", () => {
@@ -74,7 +89,6 @@ describe("PageSettingsConfigrPages", () => {
             }
         </style>`;
         const page = document.body.querySelector(".bloom-page") as HTMLElement;
-        page.style.setProperty("--marginBox-background-color", "#fedcba");
 
         applyPageSettings({
             page: {
@@ -87,13 +101,13 @@ describe("PageSettingsConfigrPages", () => {
 
         expect(
             page.style.getPropertyValue("--marginBox-background-color"),
-        ).toBe("#ABCDEF");
+        ).toBe("");
         expect(page.style.getPropertyValue("--page-background-color")).toBe(
             "#ABCDEF",
         );
     });
 
-    it("uses the target default theme semantics during a theme change", () => {
+    it("updates the page surface when the book theme changes to default", () => {
         document.head.innerHTML = `<style>
             .bloom-page {
                 --page-background-color: #2e2e2e;
@@ -103,27 +117,24 @@ describe("PageSettingsConfigrPages", () => {
         </style>`;
         const page = document.body.querySelector(".bloom-page") as HTMLElement;
 
-        applyPageSettings(
-            {
-                page: {
-                    backgroundColor: "#ABCDEF",
-                    pageNumberColor: "#000000",
-                    pageNumberOutlineColor: "transparent",
-                    pageNumberBackgroundColor: "transparent",
-                },
+        applyPageSettings({
+            page: {
+                backgroundColor: "#ABCDEF",
+                pageNumberColor: "#000000",
+                pageNumberOutlineColor: "transparent",
+                pageNumberBackgroundColor: "transparent",
             },
-            "default",
-        );
+        });
 
         expect(
             page.style.getPropertyValue("--marginBox-background-color"),
-        ).toBe("#ABCDEF");
+        ).toBe("");
         expect(page.style.getPropertyValue("--page-background-color")).toBe(
             "#ABCDEF",
         );
     });
 
-    it("uses the target rounded theme semantics during a theme change", () => {
+    it("updates the page surface when the book theme changes to rounded-border-ebook", () => {
         document.head.innerHTML = `<style>
             .bloom-page {
                 --page-background-color: #ffffff;
@@ -133,25 +144,24 @@ describe("PageSettingsConfigrPages", () => {
         </style>`;
         const page = document.body.querySelector(".bloom-page") as HTMLElement;
 
-        applyPageSettings(
-            {
-                page: {
-                    backgroundColor: "#ABCDEF",
-                    pageNumberColor: "#000000",
-                    pageNumberOutlineColor: "transparent",
-                    pageNumberBackgroundColor: "transparent",
-                },
+        applyPageSettings({
+            page: {
+                backgroundColor: "#ABCDEF",
+                pageNumberColor: "#000000",
+                pageNumberOutlineColor: "transparent",
+                pageNumberBackgroundColor: "transparent",
             },
-            "rounded-border-ebook",
-        );
+        });
 
         expect(
             page.style.getPropertyValue("--marginBox-background-color"),
-        ).toBe("#ABCDEF");
-        expect(page.style.getPropertyValue("--page-background-color")).toBe("");
+        ).toBe("");
+        expect(page.style.getPropertyValue("--page-background-color")).toBe(
+            "#ABCDEF",
+        );
     });
 
-    it("treats unspecified target themes as unified during a theme change", () => {
+    it("updates the page surface the same way for other themes", () => {
         document.head.innerHTML = `<style>
             .bloom-page {
                 --page-background-color: #2e2e2e;
@@ -161,21 +171,18 @@ describe("PageSettingsConfigrPages", () => {
         </style>`;
         const page = document.body.querySelector(".bloom-page") as HTMLElement;
 
-        applyPageSettings(
-            {
-                page: {
-                    backgroundColor: "#ABCDEF",
-                    pageNumberColor: "#000000",
-                    pageNumberOutlineColor: "transparent",
-                    pageNumberBackgroundColor: "transparent",
-                },
+        applyPageSettings({
+            page: {
+                backgroundColor: "#ABCDEF",
+                pageNumberColor: "#000000",
+                pageNumberOutlineColor: "transparent",
+                pageNumberBackgroundColor: "transparent",
             },
-            "narrow-margin-ebook",
-        );
+        });
 
         expect(
             page.style.getPropertyValue("--marginBox-background-color"),
-        ).toBe("#ABCDEF");
+        ).toBe("");
         expect(page.style.getPropertyValue("--page-background-color")).toBe(
             "#ABCDEF",
         );

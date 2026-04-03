@@ -140,6 +140,7 @@ public class AppearanceSettings
         new CssStringVariableDef("marginBox-padding", "margins"),
         new CssStringVariableDef("multilingual-editable-vertical-gap", "margins"),
         new CssStringVariableDef("page-background-color", "colors"),
+        new CssStringVariableDef("page-frame-color", "colors"),
         new CssStringVariableDef("page-gutter", "margins"),
         new CssStringVariableDef("page-margin-bottom", "margins"),
         new CssStringVariableDef("page-margin-left", "margins"),

@@ -74,16 +74,6 @@ interface IOverrideInformation {
     xmatterName: string;
 }
 
-const getThemeNameFromConfigrSettings = (
-    settings: ConfigrValues | undefined,
-): string | undefined => {
-    const appearance = settings?.["appearance"] as
-        | Record<string, unknown>
-        | undefined;
-    const cssThemeName = appearance?.["cssThemeName"];
-    return typeof cssThemeName === "string" ? cssThemeName : undefined;
-};
-
 export const BookAndPageSettingsDialog: React.FunctionComponent<{
     initiallySelectedPageKey?: string;
 }> = (props) => {
@@ -326,10 +316,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
                     : undefined;
 
                 if (changedPageSettings) {
-                    applyChangedPageSettings(
-                        changedPageSettings,
-                        getThemeNameFromConfigrSettings(latestSettings),
-                    );
+                    applyChangedPageSettings(changedPageSettings);
                 }
 
                 const settingsToPost =
@@ -489,10 +476,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
                                 return;
                             }
 
-                            applyChangedPageSettings(
-                                changedPageSettings,
-                                getThemeNameFromConfigrSettings(s),
-                            );
+                            applyChangedPageSettings(changedPageSettings);
                         }}
                         initiallySelectedTopLevelPageKey={
                             initiallySelectedConfigrPageKey

@@ -1903,7 +1903,6 @@ namespace Bloom.Book
         private static readonly string[] kPageStylePropertiesToPersist =
         {
             "--page-background-color",
-            "--marginBox-background-color",
             "--pageNumber-color",
             "--pageNumber-outline-color",
             "--pageNumber-background-color",

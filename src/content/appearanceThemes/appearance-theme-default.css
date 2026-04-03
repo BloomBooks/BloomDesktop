@@ -66,6 +66,9 @@
      *  The unset keyword removes having any value associated with this variable. */
     --pageNumber-always-left-margin: unset;
 
+    /* background-color: value in .bloom-page when a theme wants a decorative shell behind the page surface */
+    --page-frame-color: unset;
+
     /* background-color: value in .bloom-page */
     --page-background-color: white;
 
@@ -105,8 +108,11 @@
 
     /* background-color: value in .numberedPage .marginBox */
     /* This is not just for text boxes, but for everything inside the page margins.
-       (For example, the space between text boxes or the background of partly transparent images.) */
-    --marginBox-background-color: white; /* it is not transparent because at edit time we set the parent (the translationGroup) color to show padding
+         (For example, the space between text boxes or the background of partly transparent images.)
+         It defaults to the page surface color rather than transparent, because in edit mode we set
+         the parent translationGroup color to show padding and still need the editable content area
+         itself to paint like the page surface. */
+    --marginBox-background-color: var(--page-background-color);
     /* padding: value in .numberedPage .marginBox */
     --marginBox-padding: 0px;
     /* border-radius: value in .numberedPage .marginBox */

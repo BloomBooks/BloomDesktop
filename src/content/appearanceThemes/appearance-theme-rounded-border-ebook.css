@@ -10,12 +10,13 @@
     --page-margin-bottom: 2mm;
     --page-margin-left: 2mm;
     --page-margin-right: 2mm;
-    --page-background-color: #2e2e2e; /* almost black */
+    --page-frame-color: #2e2e2e; /* almost black */
+    --page-background-color: #ffffff;
     --marginBox-border-radius: 15px;
     --marginBox-padding: 1.5mm;
-    --marginBox-background-color: #ffffff; /* white */
 
-    /* set to 0 because our marginBox is white but background is dark. This has the effect of increasing the text padding on the edges. */
+    /* set to 0 because the visible page frame is dark while the reading surface is white.
+       This has the effect of increasing the text padding on the edges. */
     --page-and-marginBox-are-same-color-multiplicand: 0;
 
     /* move so that page number doesn't it hide it if the text box is in the lower left */
