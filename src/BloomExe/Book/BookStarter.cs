@@ -71,7 +71,7 @@ namespace Bloom.Book
             var newBookFolder = Path.Combine(parentCollectionPath, initialBookName);
             CopyFolder(sourceBookFolder, newBookFolder);
             BookStorage.RemoveLocalOnlyFiles(newBookFolder);
-                //if something bad happens from here on out, we need to delete that folder we just made
+            //if something bad happens from here on out, we need to delete that folder we just made
             try
             {
                 var oldNamedFile = Path.Combine(
@@ -93,7 +93,11 @@ namespace Bloom.Book
                 RobustFile.Move(oldNamedFile, newNamedFile);
 
                 //the destination may change here...
-                newBookFolder = SetupNewDocumentContents(sourceBookFolder, newBookFolder, newBookInstanceId);
+                newBookFolder = SetupNewDocumentContents(
+                    sourceBookFolder,
+                    newBookFolder,
+                    newBookInstanceId
+                );
 
                 if (OnNextRunSimulateFailureMakingBook)
                     throw new ApplicationException("Simulated failure for unit test");
@@ -166,7 +170,11 @@ namespace Bloom.Book
             return defaultValue;
         }
 
-        private string SetupNewDocumentContents(string sourceFolderPath, string initialPath, string newBookInstanceId)
+        private string SetupNewDocumentContents(
+            string sourceFolderPath,
+            string initialPath,
+            string newBookInstanceId
+        )
         {
             // This bookInfo is temporary, just used to make the (also temporary) BookStorage we
             // use here in this method. I don't think it actually matters what its save context is.
@@ -243,6 +251,10 @@ namespace Bloom.Book
             // class to figure out which BookData keys to remove.
             ClearUnneededOriginalContentFromDerivative(storage.Dom, bookData);
 
+            // Preserve the bloom-customLayout class through xmatter replacement, so that
+            // EnsureUpToDate can later decide whether to keep or remove it based on the subscription.
+            var customLayoutIds = XMatterHelper.GatherCustomLayoutIds(storage.Dom);
+
             // For a new book, we discard any old xmatter Ids, so the new book will have its own page IDs.
             // One way this is helpful is caching cover images by page ID, so each book has a different cover page ID.
             XMatterHelper.RemoveExistingXMatter(storage.Dom, new List<string>());
@@ -272,6 +284,9 @@ namespace Bloom.Book
                 BookCopyrightAndLicense.RemoveLicense(storage);
 
             InjectXMatter(initialPath, storage, sizeAndOrientation);
+
+            // Restore bloom-customLayout to any pages that had it before xmatter replacement.
+            XMatterHelper.RestoreCustomLayoutClasses(storage.Dom, customLayoutIds);
 
             SetLineageAndId(storage, sourceFolderPath, newBookInstanceId);
 
@@ -416,7 +431,11 @@ namespace Bloom.Book
             storage.Dom.RemoveMetaElement("xmatter-for-children");
         }
 
-        private void SetLineageAndId(BookStorage storage, string sourceFolderPath, string newBookInstanceId)
+        private void SetLineageAndId(
+            BookStorage storage,
+            string sourceFolderPath,
+            string newBookInstanceId
+        )
         {
             string parentId = null;
             string lineage = null;
