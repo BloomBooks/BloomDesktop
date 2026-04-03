@@ -20,6 +20,7 @@ import {
     useApiObject,
     useApiStringState,
 } from "../../utils/bloomApi";
+import { whenBloomPageIsReady } from "../../utils/shared";
 import { useL10n } from "../../react_components/l10nHooks";
 import { getWorkspaceBundleExports } from "../js/workspaceFrames";
 import { ElementAttributeSnapshot } from "../../utils/ElementAttributeSnapshot";
@@ -242,18 +243,19 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
         ElementAttributeSnapshot | undefined
     >(undefined);
 
-    // Capture the current page settings and original page attributes once when the dialog mounts
-    // so Cancel can restore the page accurately; this is safe here because the dialog is only
-    // opened for an already-loaded editable page and getCurrentPageElement() should exist then.
+    // This effect synchronizes dialog state with the editable page iframe, which is outside React.
+    // The iframe body can exist slightly before .bloom-page is inserted, so wait for that element
+    // once on mount before snapshotting settings used by Cancel and the initial config-r values.
     React.useEffect(() => {
-        const currentPageElement = getCurrentPageElement();
-        setPageSettings(getCurrentPageSettings());
-        initialPageAttributeSnapshot.current =
-            ElementAttributeSnapshot.fromElement(currentPageElement);
-        setCurrentPageIsXMatter(
-            currentPageElement.classList.contains("bloom-frontMatter") ||
-                currentPageElement.classList.contains("bloom-backMatter"),
-        );
+        return whenBloomPageIsReady((currentPageElement) => {
+            setPageSettings(getCurrentPageSettings());
+            initialPageAttributeSnapshot.current =
+                ElementAttributeSnapshot.fromElement(currentPageElement);
+            setCurrentPageIsXMatter(
+                currentPageElement.classList.contains("bloom-frontMatter") ||
+                    currentPageElement.classList.contains("bloom-backMatter"),
+            );
+        });
     }, []);
 
     // If the dialog unmounts while a nested color picker is open, clear the shared visibility flag
@@ -291,9 +293,6 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
         );
         setDeletedCustomBookStyles(true);
     };
-
-    const tierAllowsFullPageCoverImage =
-        useGetFeatureStatus("fullPageCoverImage")?.enabled;
 
     const tierAllowsFullBleed = useGetFeatureStatus("PrintshopReady")?.enabled;
 
@@ -348,7 +347,6 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
 
     const bookSettingsArea = useBookSettingsAreaDefinition({
         appearanceDisabled,
-        tierAllowsFullPageCoverImage,
         tierAllowsFullBleed,
         pageSizeSupportsFullBleed,
         settings,

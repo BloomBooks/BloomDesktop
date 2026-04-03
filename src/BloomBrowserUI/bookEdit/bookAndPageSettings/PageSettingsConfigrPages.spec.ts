@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../../utils/shared", () => ({
-    getPageIframeBody: () => document.body,
+    getBloomPageElement: () =>
+        document.body.querySelector(".bloom-page") as HTMLElement | null,
 }));
 
 import {

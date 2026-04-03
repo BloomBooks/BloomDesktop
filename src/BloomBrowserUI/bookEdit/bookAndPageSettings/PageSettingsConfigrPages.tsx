@@ -11,7 +11,7 @@ import {
 } from "../../react_components/color-picking/colorPickerDialog";
 import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
 import { useL10n } from "../../react_components/l10nHooks";
-import { getPageIframeBody } from "../../utils/shared";
+import { getBloomPageElement } from "../../utils/shared";
 
 export type IPageSettings = {
     page: {
@@ -27,9 +27,7 @@ export type IChangedPageSettings = {
 };
 
 export const getCurrentPageElement = (): HTMLElement => {
-    const page = getPageIframeBody()?.querySelector(
-        ".bloom-page",
-    ) as HTMLElement | null;
+    const page = getBloomPageElement();
     if (!page) {
         throw new Error(
             "PageSettingsConfigrPages could not find .bloom-page in the page iframe",
