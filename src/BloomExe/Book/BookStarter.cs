@@ -71,7 +71,7 @@ namespace Bloom.Book
             var newBookFolder = Path.Combine(parentCollectionPath, initialBookName);
             CopyFolder(sourceBookFolder, newBookFolder);
             BookStorage.RemoveLocalOnlyFiles(newBookFolder);
-                //if something bad happens from here on out, we need to delete that folder we just made
+            //if something bad happens from here on out, we need to delete that folder we just made
             try
             {
                 var oldNamedFile = Path.Combine(
@@ -93,7 +93,11 @@ namespace Bloom.Book
                 RobustFile.Move(oldNamedFile, newNamedFile);
 
                 //the destination may change here...
-                newBookFolder = SetupNewDocumentContents(sourceBookFolder, newBookFolder, newBookInstanceId);
+                newBookFolder = SetupNewDocumentContents(
+                    sourceBookFolder,
+                    newBookFolder,
+                    newBookInstanceId
+                );
 
                 if (OnNextRunSimulateFailureMakingBook)
                     throw new ApplicationException("Simulated failure for unit test");
@@ -166,7 +170,11 @@ namespace Bloom.Book
             return defaultValue;
         }
 
-        private string SetupNewDocumentContents(string sourceFolderPath, string initialPath, string newBookInstanceId)
+        private string SetupNewDocumentContents(
+            string sourceFolderPath,
+            string initialPath,
+            string newBookInstanceId
+        )
         {
             // This bookInfo is temporary, just used to make the (also temporary) BookStorage we
             // use here in this method. I don't think it actually matters what its save context is.
@@ -416,7 +424,11 @@ namespace Bloom.Book
             storage.Dom.RemoveMetaElement("xmatter-for-children");
         }
 
-        private void SetLineageAndId(BookStorage storage, string sourceFolderPath, string newBookInstanceId)
+        private void SetLineageAndId(
+            BookStorage storage,
+            string sourceFolderPath,
+            string newBookInstanceId
+        )
         {
             string parentId = null;
             string lineage = null;

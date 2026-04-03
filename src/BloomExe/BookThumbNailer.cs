@@ -498,7 +498,7 @@ namespace Bloom
             RebuildThumbNail(
                 book,
                 thumbnailOptions,
-                (info, image) => { },
+                (info, image) => image?.Dispose(),
                 (info, ex) =>
                 {
                     throw ex;

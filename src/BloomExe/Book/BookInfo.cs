@@ -355,6 +355,7 @@ namespace Bloom.Book
             {
                 try
                 {
+                    // Caller owns this image and must dispose it promptly to release any file lock.
                     image = RobustImageIO.GetImageFromFile(path);
                     return true;
                 }

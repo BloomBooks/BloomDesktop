@@ -721,7 +721,11 @@ namespace Bloom.CollectionTab
             UpdateThumbnailAsync(
                 book,
                 BookThumbNailer.GetCoverThumbnailOptions(-1, Guid.Empty),
-                RefreshOneThumbnail,
+                (bookInfo, image) =>
+                {
+                    RefreshOneThumbnail(bookInfo, image);
+                    image?.Dispose();
+                },
                 HandleThumbnailerErrror
             );
         }
