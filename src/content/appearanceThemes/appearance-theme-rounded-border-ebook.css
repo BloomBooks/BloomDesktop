@@ -37,7 +37,6 @@
     --pageNumber-top: unset;
     --pageNumber-font-size: 11pt;
     --pageNumber-border-radius: 50%;
-    --pageNumber-background-color: #ffffff;
     --pageNumber-background-width: 33px;
     --pageNumber-always-left-margin: var(--page-margin-left);
     --pageNumber-right-margin: deliberately-invalid; /* prevents right being set at all. unset does not work. Prevent centering for this layout */
