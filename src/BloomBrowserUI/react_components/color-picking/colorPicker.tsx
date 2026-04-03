@@ -87,40 +87,6 @@ const setEyedropperBackdropTransparent = (
     }
 };
 
-const setPageScalingDisabled = (disabled: boolean): (() => void) => {
-    if (!disabled) {
-        return () => {};
-    }
-
-    // Bloom applies page zoom using a transform on this element (see editViewFrame.ts setZoom()).
-    // WebView2's EyeDropper sampling can be offset when the page content is transformed.
-    const iframe = parent.window.document.getElementById(
-        "page",
-    ) as HTMLIFrameElement | null;
-    const iframeDoc = iframe?.contentWindow?.document;
-    const container = iframeDoc?.getElementById(
-        "page-scaling-container",
-    ) as HTMLElement | null;
-
-    if (!container) {
-        return () => {};
-    }
-
-    const previousTransform = container.style.transform;
-    const previousWidth = container.style.width;
-    const previousTransformOrigin = container.style.transformOrigin;
-
-    container.style.transform = "";
-    container.style.width = "";
-    container.style.transformOrigin = "";
-
-    return () => {
-        container.style.transform = previousTransform;
-        container.style.width = previousWidth;
-        container.style.transformOrigin = previousTransformOrigin;
-    };
-};
-
 export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
     props,
 ) => {
@@ -240,7 +206,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
         setEyedropperActive(true);
         props.onEyedropperActiveChange?.(true);
         setEyedropperBackdropTransparent(backdropSelector, true);
-        const restorePageScaling = setPageScalingDisabled(true);
+
         try {
             const result = await new constructor().open();
             if (result?.sRGBHex) {
@@ -252,7 +218,6 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
         } catch {
             // The user can cancel (e.g. Escape), which rejects the promise.
         } finally {
-            restorePageScaling();
             setEyedropperBackdropTransparent(backdropSelector, false);
             if (mountedRef.current) {
                 setEyedropperActive(false);
