@@ -719,7 +719,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
         defaultButtonLabel?: string,
     ) => {
         const colorPickerDialogProps: IColorPickerDialogProps = {
-            transparency: false,
+            transparency: true,
             noGradientSwatches: true,
             localizedTitle,
             initialColor,
