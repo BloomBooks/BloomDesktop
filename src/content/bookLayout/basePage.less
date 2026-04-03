@@ -950,6 +950,9 @@ The buffer would be absent if the marginBox had a border or the page has a backg
         padding-bottom: var(--topLevel-text-padding-bottom);
     }
 
+    /*
+I can't repro the problem this was fixing, so for now I'm commenting it out.
+
     // Theme-switch testing exposed that these horizontal-then-vertical corner cases were
     // missing from the existing split-pane padding rules, so zero-margin pages lost the
     // intended top-level text padding on those layouts.
@@ -1001,7 +1004,7 @@ The buffer would be absent if the marginBox had a border or the page has a backg
         .mixinRightTgPadding;
         .mixinBottomTgPadding;
     }
-
+*/
     // This one handles the text box at the bottom left of a Big Video Diglot.
     // Review: it's not obvious what to do about the outer edges here. In the simpler cases,
     // we DO have outer-edge padding when there is no other margin and the top-level split is vertical.

@@ -1886,6 +1886,20 @@ namespace Bloom.Book
         public const string musicAttrName = "data-backgroundaudio";
         public const string musicVolumeName = musicAttrName + "volume";
 
+        /* Why do we whitelist? Agent says:
+        Bloom already has history of bad results from copying inline style too broadly.
+        The nearby element-level comment in BookData.cs:2073 explains one concrete example:
+        inline display rules copied into saved content caused visibility regressions on covers, while some inline style still had to
+         be preserved for legitimate cases like image cropping. Same pattern here: don’t ban style completely,
+         but only allow the specific inline properties that represent intentional persisted settings.
+
+        These five properties are exactly the ones the Page Settings UI writes onto the page element in PageSettingsConfigrPages.tsx:191.
+        Everything else about page appearance is supposed to come from theme CSS and userModifiedStyles, not from arbitrary leftovers in
+        the page’s inline style.
+
+        Summary: we whitelist because page.style is a noisy transport layer coming back from the live editor,
+        not a durable format. Without the whitelist, saving a page would risk persisting accidental editor state and causing hard-to-debug visual
+        regressions.*/
         private static readonly string[] kPageStylePropertiesToPersist =
         {
             "--page-background-color",

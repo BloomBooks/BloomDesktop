@@ -14,11 +14,6 @@ declare module "*.html?raw" {
     export default content;
 }
 
-declare module "*.svg?raw" {
-    const content: string;
-    export default content;
-}
-
 declare module "select2/dist/js/select2.js" {
     const select2Factory: (
         root: unknown,
