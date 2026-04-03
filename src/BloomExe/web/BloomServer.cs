@@ -28,6 +28,7 @@ using Bloom.Publish.Epub;
 using Bloom.SafeXml;
 using Bloom.web;
 using Bloom.web.controllers;
+using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.Code;
@@ -1955,6 +1956,7 @@ namespace Bloom.Api
                 // of controls we hide for things like adding books to collection, displaying the collection, playing audio (that last we might want back one day).
                 EpubMaker.kEPUBExportFolder.ToLowerInvariant(),
                 BloomPubMaker.BRExportFolder.ToLowerInvariant(),
+                BookUpload.kUploadStagingFolder.ToLowerInvariant(),
                 // old quiz pages ask for this script, but it's now bundled with rest of edit code
                 "simplecomprehensionquiz.js",
                 // bloom-player always asks for questions.json for every book.
