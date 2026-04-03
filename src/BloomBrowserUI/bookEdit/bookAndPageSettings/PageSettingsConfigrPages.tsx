@@ -535,70 +535,70 @@ const PageConfigrInputs: React.FunctionComponent<{
  * We could add this back in the future, perhaps as a book settings feature
  * instead of a page settings feature.
  */
-// const PageNumberConfigrInputs: React.FunctionComponent<{
-//     disabled?: boolean;
-//     onColorPickerVisibilityChanged?: (open: boolean) => void;
-// }> = (props) => {
-//     const colorLabel = useL10n("Color", "Common.Color");
-//     const outlineColorLabel = useL10n(
-//         "Outline Color",
-//         "PageSettings.OutlineColor",
-//     );
-//     const outlineColorDescription = useL10n(
-//         "Use an outline color when the page number needs more contrast against the page.",
-//         "PageSettings.PageNumberOutlineColor.Description",
-//     );
-//     const backgroundColorLabel = useL10n(
-//         "Background Color",
-//         "Common.BackgroundColor",
-//     );
-//     const backgroundColorDescription = useL10n(
-//         "Use a page number background color when the theme puts the number inside a shape, for example a circle, and you want to specify the color of that shape.",
-//         "PageSettings.PageNumberBackgroundColor.Description",
-//     );
-//
-//     return (
-//         <>
-//             <PageSettingsConfigrColorInput
-//                 label={colorLabel}
-//                 path={"page.pageNumberColor"}
-//                 localizedTitle={colorLabel}
-//                 transparency={false}
-//                 palette={BloomPalette.Text}
-//                 disabled={props.disabled ?? false}
-//                 onColorPickerVisibilityChanged={
-//                     props.onColorPickerVisibilityChanged
-//                 }
-//             />
-//             <PageSettingsConfigrColorInput
-//                 label={outlineColorLabel}
-//                 path={"page.pageNumberOutlineColor"}
-//                 description={outlineColorDescription}
-//                 localizedTitle={outlineColorLabel}
-//                 transparency={true}
-//                 palette={BloomPalette.Text}
-//                 emptyValueDisplayColor={kTransparentCssValue}
-//                 disabled={props.disabled ?? false}
-//                 onColorPickerVisibilityChanged={
-//                     props.onColorPickerVisibilityChanged
-//                 }
-//             />
-//             <PageSettingsConfigrColorInput
-//                 label={backgroundColorLabel}
-//                 path={"page.pageNumberBackgroundColor"}
-//                 description={backgroundColorDescription}
-//                 localizedTitle={backgroundColorLabel}
-//                 transparency={true}
-//                 palette={BloomPalette.PageColors}
-//                 emptyValueDisplayColor={kTransparentCssValue}
-//                 disabled={props.disabled ?? false}
-//                 onColorPickerVisibilityChanged={
-//                     props.onColorPickerVisibilityChanged
-//                 }
-//             />
-//         </>
-//     );
-// };
+const PageNumberConfigrInputs: React.FunctionComponent<{
+    disabled?: boolean;
+    onColorPickerVisibilityChanged?: (open: boolean) => void;
+}> = (props) => {
+    const colorLabel = useL10n("Color", "Common.Color");
+    const outlineColorLabel = useL10n(
+        "Outline Color",
+        "PageSettings.OutlineColor",
+    );
+    const outlineColorDescription = useL10n(
+        "Use an outline color when the page number needs more contrast against the page.",
+        "PageSettings.PageNumberOutlineColor.Description",
+    );
+    const backgroundColorLabel = useL10n(
+        "Background Color",
+        "Common.BackgroundColor",
+    );
+    const backgroundColorDescription = useL10n(
+        "Use a page number background color when the theme puts the number inside a shape, for example a circle, and you want to specify the color of that shape.",
+        "PageSettings.PageNumberBackgroundColor.Description",
+    );
+
+    return (
+        <>
+            <PageSettingsConfigrColorInput
+                label={colorLabel}
+                path={"page.pageNumberColor"}
+                localizedTitle={colorLabel}
+                transparency={true}
+                palette={BloomPalette.Text}
+                disabled={props.disabled ?? false}
+                onColorPickerVisibilityChanged={
+                    props.onColorPickerVisibilityChanged
+                }
+            />
+            <PageSettingsConfigrColorInput
+                label={outlineColorLabel}
+                path={"page.pageNumberOutlineColor"}
+                description={outlineColorDescription}
+                localizedTitle={outlineColorLabel}
+                transparency={true}
+                palette={BloomPalette.Text}
+                emptyValueDisplayColor={kTransparentCssValue}
+                disabled={props.disabled ?? false}
+                onColorPickerVisibilityChanged={
+                    props.onColorPickerVisibilityChanged
+                }
+            />
+            <PageSettingsConfigrColorInput
+                label={backgroundColorLabel}
+                path={"page.pageNumberBackgroundColor"}
+                description={backgroundColorDescription}
+                localizedTitle={backgroundColorLabel}
+                transparency={true}
+                palette={BloomPalette.PageColors}
+                emptyValueDisplayColor={kTransparentCssValue}
+                disabled={props.disabled ?? false}
+                onColorPickerVisibilityChanged={
+                    props.onColorPickerVisibilityChanged
+                }
+            />
+        </>
+    );
+};
 
 export type IPageSettingsAreaDefinition = {
     label: string;
@@ -634,11 +634,14 @@ export const usePageSettingsAreaDefinition = (props: {
                         }
                     />
                 </ConfigrGroup>
-                {/*
-                    BL-15642: hide the page number color group for now.
-                    We could add this back in the future, perhaps as a book
-                    settings feature instead of a page settings feature.
-                */}
+                <ConfigrGroup label={"Page Number"}>
+                    <PageNumberConfigrInputs
+                        disabled={false}
+                        onColorPickerVisibilityChanged={
+                            props.onColorPickerVisibilityChanged
+                        }
+                    />
+                </ConfigrGroup>
             </ConfigrPage>,
         ],
     };

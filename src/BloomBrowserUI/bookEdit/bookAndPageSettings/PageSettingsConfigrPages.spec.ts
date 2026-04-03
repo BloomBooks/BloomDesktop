@@ -1,4 +1,20 @@
+import * as React from "react";
+import ReactDOM from "react-dom";
+import { act } from "react-dom/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("../../react_components/l10nHooks", () => ({
+    useL10n: (englishText: string) => englishText,
+}));
+
+vi.mock("@sillsdev/config-r", () => ({
+    ConfigrPage: (props: React.PropsWithChildren<object>) =>
+        React.createElement("div", undefined, props.children),
+    ConfigrGroup: (props: React.PropsWithChildren<object>) =>
+        React.createElement("div", undefined, props.children),
+    ConfigrCustomStringInput: (props: { label: string; path: string }) =>
+        React.createElement("div", { "data-testid": props.path }, props.label),
+}));
 
 vi.mock("../../utils/shared", () => ({
     getBloomPageElement: () =>
@@ -8,6 +24,7 @@ vi.mock("../../utils/shared", () => ({
 import {
     applyPageSettings,
     getCurrentPageSettings,
+    usePageSettingsAreaDefinition,
 } from "./PageSettingsConfigrPages";
 
 describe("PageSettingsConfigrPages", () => {
@@ -50,6 +67,39 @@ describe("PageSettingsConfigrPages", () => {
         const settings = getCurrentPageSettings();
 
         expect(settings.page.pageNumberBackgroundColor).toBe("#FFFFFF");
+    });
+
+    it("shows the page number color controls in the colors page", () => {
+        const container = document.createElement("div");
+
+        const TestComponent: React.FunctionComponent = () => {
+            const pageSettingsArea = usePageSettingsAreaDefinition({});
+            return React.createElement(
+                React.Fragment,
+                undefined,
+                pageSettingsArea.pages[0],
+            );
+        };
+
+        act(() => {
+            ReactDOM.render(React.createElement(TestComponent), container);
+        });
+
+        expect(
+            container.querySelector('[data-testid="page.pageNumberColor"]'),
+        ).not.toBeNull();
+        expect(
+            container.querySelector(
+                '[data-testid="page.pageNumberOutlineColor"]',
+            ),
+        ).not.toBeNull();
+        expect(
+            container.querySelector(
+                '[data-testid="page.pageNumberBackgroundColor"]',
+            ),
+        ).not.toBeNull();
+
+        ReactDOM.unmountComponentAtNode(container);
     });
 
     it("updates only the page background variable when applying a page background color", () => {
