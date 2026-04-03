@@ -2659,6 +2659,11 @@
         <target xml:lang="th" state="final">สไตล์</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Style</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ElementType" sil:dynamic="true">
+        <source xml:lang="en">Element Type</source>
+        <target xml:lang="th" state="needs-translation">Element Type</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.ElementType</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Caption" sil:dynamic="true">
         <source xml:lang="en">Caption</source>
         <target xml:lang="th" state="needs-translation">Caption</target>
