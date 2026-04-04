@@ -2659,9 +2659,9 @@
         <target xml:lang="fr" state="final">Style</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Style</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ElementType" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ElementType" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Element Type</source>
-        <target xml:lang="fr" state="needs-translation">Element Type</target>
+        <target xml:lang="fr" state="final">Type d'Élément</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ElementType</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Caption" sil:dynamic="true" approved="yes">
