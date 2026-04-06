@@ -839,16 +839,6 @@
         <target xml:lang="bn" state="needs-translation">Colors</target>
         <note>ID: BookAndPageSettings.Colors</note>
       </trans-unit>
-      <trans-unit id="PageSettings.Title" sil:dynamic="true">
-        <source xml:lang="en">Page Settings</source>
-        <target xml:lang="bn" state="needs-translation">Page Settings</target>
-        <note>ID: PageSettings.Title</note>
-      </trans-unit>
-      <trans-unit id="PageSettings.OpenTooltip" sil:dynamic="true">
-        <source xml:lang="en">Open Page Settings...</source>
-        <target xml:lang="bn" state="needs-translation">Open Page Settings...</target>
-        <note>ID: PageSettings.OpenTooltip</note>
-      </trans-unit>
       <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true">
         <source xml:lang="en">Max Image Size</source>
         <target xml:lang="bn" state="needs-translation">Max Image Size</target>
