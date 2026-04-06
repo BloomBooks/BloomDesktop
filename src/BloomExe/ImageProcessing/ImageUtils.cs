@@ -2172,7 +2172,21 @@ namespace Bloom.ImageProcessing
             bool alsoTrimMetadataForUncroppedImages = false
         )
         {
-            var images = bookDom.SafeSelectNodes("//img").Cast<SafeXmlElement>().ToArray();
+            var images = bookDom.SafeSelectElements("//img").ToList();
+            // We need to keep the cover image data in the bloomDataDiv consistent if anything
+            // (e.g., cropping) causes us to rename the cover image file.  If we upload the
+            // book to bloomlibrary.org, the cover image file stored in the bloomDataDiv will
+            // be needed to harvest the book or to make derivatives of it. (BL-16096)
+            if (images.Any(x => x.GetAttribute("data-book") == "coverImage"))
+            {
+                var coverImageDiv = bookDom
+                    .SafeSelectElements(
+                        "//div[@id='bloomDataDiv']/div[@data-book='coverImage' and @src]"
+                    )
+                    .FirstOrDefault();
+                if (coverImageDiv != null)
+                    images.Add(coverImageDiv);
+            }
             // src values that occur in uncropped images. Note, it is NOT the case that an img whose src
             // is in this set never cropped; it just means that at least one occurrence of it is not
             // cropped, which makes the image name unavailable to use for a cropped image.
@@ -2258,6 +2272,9 @@ namespace Bloom.ImageProcessing
             {
                 // This is a duplicate. We can use the same metadata-cropped image file.
                 img.SetAttribute("src", fileName);
+                // Handle the bloomDataDiv definition for the cover image.  (BL-16096)
+                if (img.Name.ToLowerInvariant() == "div")
+                    img.InnerText = fileName;
                 return;
             }
             TrimMetadataInImage(img, imageSourceFolder, imageDestFolder);
@@ -2311,7 +2328,7 @@ namespace Bloom.ImageProcessing
         private static void DeleteOrphanedImageFiles(
             string imageSourceFolder,
             string imageDestFolder,
-            SafeXmlElement[] images,
+            List<SafeXmlElement> images,
             HashSet<string> replacedOriginals
         )
         {
