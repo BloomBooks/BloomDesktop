@@ -46,6 +46,11 @@ namespace Bloom
             get { return _thumbnailProvider; }
         }
 
+        private static Image CreateDisposableErrorThumbnail()
+        {
+            return Resources.Error70x70.Clone() as Image;
+        }
+
         private void GetThumbNailOfBookCover(
             Book.Book book,
             HtmlThumbNailer.ThumbnailOptions thumbnailOptions,
@@ -56,14 +61,14 @@ namespace Bloom
         {
             if (book is ErrorBook)
             {
-                callback(Resources.Error70x70);
+                callback(CreateDisposableErrorThumbnail());
                 return;
             }
             try
             {
                 if (book.HasFatalError) //NB: we might not know yet... we don't fully load every book just to show its thumbnail
                 {
-                    callback(Resources.Error70x70);
+                    callback(CreateDisposableErrorThumbnail());
                     return;
                 }
                 GenerateImageForWeb(book);
@@ -79,7 +84,7 @@ namespace Bloom
                 var dom = book.GetPreviewXmlDocumentForFirstPage();
                 if (dom == null)
                 {
-                    callback(Resources.Error70x70);
+                    callback(CreateDisposableErrorThumbnail());
                     return;
                 }
                 string folderForCachingThumbnail;
@@ -97,13 +102,13 @@ namespace Bloom
 #else
                 if (!CreateThumbnailOfCoverImage(book, thumbnailOptions, callback))
                 {
-                    callback(Resources.Error70x70);
+                    callback(CreateDisposableErrorThumbnail());
                 }
 #endif
             }
             catch (Exception err)
             {
-                callback(Resources.Error70x70);
+                callback(CreateDisposableErrorThumbnail());
                 errorCallback(err);
                 Debug.Fail(err.Message);
             }
@@ -469,7 +474,8 @@ namespace Bloom
         }
 
         /// <summary>
-        /// Will call either 'callback' or 'errorCallback' UNLESS the thumbnail is readonly, in which case it will do neither.
+        /// Will call either 'callback' or 'errorCallback'.
+        /// The callback receives an image that the callback must dispose when done.
         /// </summary>
         /// <param name="book"></param>
         /// <param name="thumbnailOptions"></param>
@@ -517,7 +523,8 @@ namespace Bloom
         }
 
         /// <summary>
-        /// Will call either 'callback' or 'errorCallback' UNLESS the thumbnail is readonly, in which case it will do neither.
+        /// Will call either 'callback' or 'errorCallback'.
+        /// The callback receives an image that the callback must dispose when done.
         /// </summary>
         /// <param name="book"></param>
         /// <param name="thumbnailOptions"></param>
