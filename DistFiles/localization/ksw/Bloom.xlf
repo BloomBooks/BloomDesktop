@@ -640,6 +640,11 @@
         <target xml:lang="ksw" state="needs-translation">Settings</target>
         <note>ID: CollectionSettingsDialog.CollectionSettingsWindowTitle</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.Title">
+        <source xml:lang="en">Collection Settings</source>
+        <target xml:lang="ksw" state="needs-translation">Collection Settings</target>
+        <note>ID: CollectionSettingsDialog.Title</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
         <source xml:lang="en">Change...</source>
         <target xml:lang="ksw" state="needs-translation">Change...</target>
@@ -1054,6 +1059,11 @@
         <source xml:lang="en">New...</source>
         <target xml:lang="ksw" state="needs-translation">New...</target>
         <note>ID: ColorPicker.New</note>
+      </trans-unit>
+      <trans-unit id="ColorPicker.SampleColor" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Sample Color</source>
+        <target xml:lang="ksw" state="needs-translation">Sample Color</target>
+        <note>ID: ColorPicker.SampleColor</note>
       </trans-unit>
       <trans-unit id="Common.BookSettings">
         <source xml:lang="en">Book Settings</source>
