@@ -5228,14 +5228,17 @@ namespace Bloom.Book
             if (outsideFrontCover == null)
                 return null;
 
-            coverImgElt = GetCoverImageElt(outsideFrontCover);
+            coverImgElt = GetCoverImageElt(outsideFrontCover, StoragePageFolder);
             if (coverImgElt == null)
                 return null;
 
             return GetImagePath(coverImgElt);
         }
 
-        internal static SafeXmlElement GetCoverImageElt(SafeXmlElement outsideFrontCover)
+        internal static SafeXmlElement GetCoverImageElt(
+            SafeXmlElement outsideFrontCover,
+            string bookFolderPath = null
+        )
         {
             if (outsideFrontCover == null)
                 return null;
@@ -5248,6 +5251,7 @@ namespace Bloom.Book
                 .Cast<SafeXmlElement>()
                 .FirstOrDefault();
 
+            SafeXmlElement bestNonExistingNonPlaceholderElt = null;
             SafeXmlElement bestPlaceholderElt = null;
             string bestPlaceholderSource = null;
 
@@ -5258,11 +5262,19 @@ namespace Bloom.Book
                 {
                     if (!ImageUtils.IsPlaceholderImageFilename(designatedSource))
                     {
-                        return designatedCoverImage;
+                        if (
+                            bookFolderPath == null
+                            || ImageExistsInFolder(designatedSource, bookFolderPath)
+                        )
+                            return designatedCoverImage;
+                        // File doesn't exist on disk; remember it but keep looking for one that does.
+                        bestNonExistingNonPlaceholderElt = designatedCoverImage;
                     }
-
-                    bestPlaceholderElt = designatedCoverImage;
-                    bestPlaceholderSource = designatedSource;
+                    else
+                    {
+                        bestPlaceholderElt = designatedCoverImage;
+                        bestPlaceholderSource = designatedSource;
+                    }
                 }
             }
 
@@ -5288,17 +5300,28 @@ namespace Bloom.Book
 
                 if (!ImageUtils.IsPlaceholderImageFilename(candidateSource))
                 {
-                    return candidate;
-                }
+                    if (
+                        bookFolderPath == null
+                        || ImageExistsInFolder(candidateSource, bookFolderPath)
+                    )
+                        return candidate;
 
-                if (bestPlaceholderSource == null)
+                    if (bestNonExistingNonPlaceholderElt == null)
+                        bestNonExistingNonPlaceholderElt = candidate;
+                }
+                else if (bestPlaceholderSource == null)
                 {
                     bestPlaceholderElt = candidate;
                     bestPlaceholderSource = candidateSource;
                 }
             }
 
-            return bestPlaceholderElt;
+            return bestNonExistingNonPlaceholderElt ?? bestPlaceholderElt;
+        }
+
+        private static bool ImageExistsInFolder(string source, string bookFolderPath)
+        {
+            return RobustFile.Exists(Path.Combine(bookFolderPath, Uri.UnescapeDataString(source)));
         }
 
         private static string GetImageSourceForCoverSelection(SafeXmlElement imageElement)
