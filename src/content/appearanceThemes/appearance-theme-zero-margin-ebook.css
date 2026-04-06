@@ -17,7 +17,7 @@ Note that hiding the page numbers is done by a setting in appearance.json, not h
     --page-horizontalSplit-height: 0mm;
 }
 
-.numberedPage {
+[class*="Device"].numberedPage {
     --pageNumber-background-color: transparent;
     --pageNumber-outline-color: white;
     --pageNumber-extra-height: 0mm !important; /* we put the page number on top of the image so we don't need a margin boost */
