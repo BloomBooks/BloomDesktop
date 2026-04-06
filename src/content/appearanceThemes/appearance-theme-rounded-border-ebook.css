@@ -29,7 +29,6 @@
 }
 [class*="Device"].numberedPage:not(.bloom-interactive-page) {
     --pageNumber-extra-height: 0mm !important; /* we put the page number on top of the image so we don't need a margin boost */
-    --pageNumber-background-color: #ffffff; /* I'm not clear why this is white, but all I did in this change is to move it so that it can be overridden by page settings */
     --pageNumber-outline-color: white;
 }
 [class*="Device"].numberedPage:not(.bloom-interactive-page)::after {
