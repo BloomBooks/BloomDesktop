@@ -170,6 +170,9 @@ namespace Bloom.Publish.BloomPub
                     .Cast<SafeXmlElement>(),
                 modifiedBook.FolderPath
             );
+            // BL-15848 Deduplication to save space. After publish-time media transforms so we compare the actual bloompub payload,
+            // not source files that may still be resized, trimmed, or rewritten later in the pipeline.
+            PublishHelper.DeDuplicateMediaFiles(modifiedBook.RawDom, modifiedBook.FolderPath);
             var newContent = XmlHtmlConverter.ConvertDomToHtml5(modifiedBook.RawDom);
 
             var originalBookHtmlPath = BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath);
