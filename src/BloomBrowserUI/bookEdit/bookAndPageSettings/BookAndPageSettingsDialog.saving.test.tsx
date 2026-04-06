@@ -270,4 +270,13 @@ describe("BookAndPageSettingsDialog saving", () => {
             page.style.getPropertyValue("--pageNumber-background-color"),
         ).toBe("");
     });
+
+    it("does not post book settings when only page settings change", async () => {
+        await renderDialog();
+
+        click('[data-testid="page-change"]');
+        click('[data-testid="dialog-ok"]');
+
+        expect(mockPostJson).not.toHaveBeenCalled();
+    });
 });

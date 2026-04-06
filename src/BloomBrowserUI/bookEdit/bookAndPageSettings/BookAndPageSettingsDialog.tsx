@@ -204,6 +204,17 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
         return settingsWithoutPage as IBookSettings;
     };
 
+    const haveBookSettingsChanged = (
+        currentSettingsValue: ConfigrValues,
+    ): boolean => {
+        const currentBookSettings =
+            removePageSettingsFromConfigrSettings(currentSettingsValue);
+        return (
+            JSON.stringify(currentBookSettings) !==
+            JSON.stringify(settings ?? {})
+        );
+    };
+
     const settings: IBookSettings | undefined = React.useMemo(() => {
         if (settingsString === "{}") {
             return undefined;
@@ -319,10 +330,11 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
                     applyChangedPageSettings(changedPageSettings);
                 }
 
-                const settingsToPost =
-                    removePageSettingsFromConfigrSettings(latestSettings);
-                // If nothing changed, we don't get any...and don't need to make this call.
-                postJson("book/settings", settingsToPost);
+                if (haveBookSettingsChanged(latestSettings)) {
+                    const settingsToPost =
+                        removePageSettingsFromConfigrSettings(latestSettings);
+                    postJson("book/settings", settingsToPost);
+                }
             }
         } finally {
             closeDialogAndClearOpenFlag();
