@@ -102,4 +102,38 @@ test.describe("ColorPicker", () => {
         expect(beforeDrag).not.toEqual(duringDrag);
         expect(duringDrag).not.toEqual(afterDrag);
     });
+
+    test("alpha slider shows and updates opacity percentage", async ({
+        page,
+    }) => {
+        await setTestComponent(
+            page,
+            "../color-picking/component-tests/colorPickerTestHarness",
+            "ColorPickerTestHarness",
+            {},
+        );
+
+        const opacityPercentage = page.locator(".alpha-slider-percentage");
+        await expect(opacityPercentage).toHaveText("100%");
+
+        const alpha = page.locator(".alpha-slider-track");
+        const box = await alpha.boundingBox();
+        expect(box).not.toBeNull();
+
+        await page.mouse.move(
+            box!.x + box!.width - 4,
+            box!.y + box!.height / 2,
+        );
+        await page.mouse.down();
+        await page.mouse.move(
+            box!.x + box!.width * 0.35,
+            box!.y + box!.height / 2,
+            {
+                steps: 8,
+            },
+        );
+        await page.mouse.up();
+
+        await expect(opacityPercentage).not.toHaveText("100%");
+    });
 });
