@@ -537,6 +537,40 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// Collect the data-custom-layout-id values of any pages that currently have bloom-customLayout,
+        /// so that <see cref="RestoreCustomLayoutClasses"/> can re-apply the class after xmatter replacement.
+        /// </summary>
+        public static HashSet<string> GatherCustomLayoutIds(HtmlDom dom)
+        {
+            return dom.SafeSelectNodes(
+                    "//div[contains(@class, 'bloom-page') and @data-custom-layout-id and contains(concat(' ', normalize-space(@class), ' '), ' bloom-customLayout ')]"
+                )
+                .Cast<SafeXmlElement>()
+                .Select(page => page.GetAttribute("data-custom-layout-id"))
+                .Where(id => !string.IsNullOrEmpty(id))
+                .ToHashSet();
+        }
+
+        /// <summary>
+        /// Re-apply bloom-customLayout to any pages whose data-custom-layout-id was collected by
+        /// <see cref="GatherCustomLayoutIds"/> before xmatter was replaced.
+        /// </summary>
+        public static void RestoreCustomLayoutClasses(HtmlDom dom, HashSet<string> customLayoutIds)
+        {
+            foreach (
+                var page in dom.SafeSelectNodes(
+                        "//div[contains(@class, 'bloom-page') and @data-custom-layout-id]"
+                    )
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var id = page.GetAttribute("data-custom-layout-id");
+                if (customLayoutIds.Contains(id))
+                    page.AddClass("bloom-customLayout");
+            }
+        }
+
+        /// <summary>
         /// This will return a different name if we recognize the submitted name and we know that we have changed it or retired it.
         /// </summary>
         public static string MigrateXMatterName(string nameOfXMatterPack)

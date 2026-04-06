@@ -2040,6 +2040,28 @@ namespace Bloom.Book
             );
             _bookData.MergeBrandingSettings(CollectionSettings.Subscription.BrandingKey);
             _bookData.SynchronizeDataItemsThroughoutDOM();
+            // After SynchronizeDataItemsThroughoutDOM restores the content of custom layout pages
+            // from the data-div, the bloom-editables may reflect old language settings (e.g. when
+            // making a derivative or changing languages). Re-prepare those pages so they have
+            // bloom-editables for the current languages and the correct content-order classes.
+            foreach (
+                var customPage in OurHtmlDom
+                    .SafeSelectNodes(
+                        "//div[contains(@class,'bloom-page') and contains(@class,'bloom-customLayout')]"
+                    )
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                TranslationGroupManager.PrepareElementsInPageOrDocument(customPage, _bookData);
+                TranslationGroupManager.UpdateContentLanguageClasses(
+                    customPage,
+                    _bookData,
+                    BookInfo.AppearanceSettings,
+                    Language1Tag,
+                    Language2Tag,
+                    Language3Tag
+                );
+            }
             licenseMetadata = GetLicenseMetadata();
             // I think we should only mess with tags if we are updating the book for real.
             var oldTagsPath = Path.Combine(Storage.FolderPath, "tags.txt");
@@ -2541,14 +2563,7 @@ namespace Bloom.Book
             // Various things, especially publication, don't work with unknown page sizes.
             Layout layout = Layout.FromDomAndChoices(bookDOM, Layout.A5Portrait, fileLocator);
             var oldIds = new List<string>();
-            var customLayoutIds = bookDOM
-                .SafeSelectNodes(
-                    "//div[contains(@class, 'bloom-page') and @data-custom-layout-id and contains(concat(' ', normalize-space(@class), ' '), ' bloom-customLayout ')]"
-                )
-                .Cast<SafeXmlElement>()
-                .Select(page => page.GetAttribute("data-custom-layout-id"))
-                .Where(id => !string.IsNullOrEmpty(id))
-                .ToHashSet();
+            var customLayoutIds = XMatterHelper.GatherCustomLayoutIds(bookDOM);
             XMatterHelper.RemoveExistingXMatter(bookDOM, oldIds);
             // this says, if you can't figure out the page size, use the one we got before we removed the xmatter...
             // still requiring it to be a valid layout.
@@ -2560,18 +2575,7 @@ namespace Bloom.Book
                 _bookData.MetadataLanguage1Tag,
                 oldIds
             );
-            foreach (
-                var page in bookDOM
-                    .SafeSelectNodes(
-                        "//div[contains(@class, 'bloom-page') and @data-custom-layout-id]"
-                    )
-                    .Cast<SafeXmlElement>()
-            )
-            {
-                var customLayoutId = page.GetAttribute("data-custom-layout-id");
-                if (customLayoutIds.Contains(customLayoutId))
-                    page.AddClass("bloom-customLayout");
-            }
+            XMatterHelper.RestoreCustomLayoutClasses(bookDOM, customLayoutIds);
             var dataBookLangs = bookDOM.GatherDataBookLanguages();
             TranslationGroupManager.PrepareDataBookTranslationGroups(bookDOM.RawDom, dataBookLangs);
 
