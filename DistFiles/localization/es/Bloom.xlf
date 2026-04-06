@@ -2663,7 +2663,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ElementType" sil:dynamic="true">
         <source xml:lang="en">Element Type</source>
-        <target xml:lang="es-ES" state="needs-translation">Element Type</target>
+        <target xml:lang="es-ES" state="translated">Tipo de elemento</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ElementType</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Caption" sil:dynamic="true" approved="yes">
