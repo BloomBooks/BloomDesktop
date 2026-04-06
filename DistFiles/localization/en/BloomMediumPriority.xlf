@@ -763,16 +763,6 @@
         <note>ID: BookAndPageSettings.Colors</note>
         <note>Label for the page-level Colors page within the combined Book and Page Settings dialog.</note>
       </trans-unit>
-      <trans-unit id="PageSettings.Title" sil:dynamic="true">
-        <source xml:lang="en">Page Settings</source>
-        <note>ID: PageSettings.Title</note>
-        <note>Title text for the standalone Page Settings dialog and the page settings button label above custom pages.</note>
-      </trans-unit>
-      <trans-unit id="PageSettings.OpenTooltip" sil:dynamic="true">
-        <source xml:lang="en">Open Page Settings...</source>
-        <note>ID: PageSettings.OpenTooltip</note>
-        <note>Tooltip shown when hovering over the Page Settings button above a custom page.</note>
-      </trans-unit>
       <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true">
         <source xml:lang="en">Max Image Size</source>
         <note>BookSettings.eBook.Image.MaxResolution</note>

@@ -549,6 +549,7 @@
       <trans-unit id="CollectionSettingsDialog.CollectionSettingsWindowTitle">
         <source xml:lang="en">Settings</source>
         <note>ID: CollectionSettingsDialog.CollectionSettingsWindowTitle</note>
+        <note>Obsolete as of 6.4</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.Title">
         <source xml:lang="en">Collection Settings</source>
