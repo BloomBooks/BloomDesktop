@@ -108,6 +108,7 @@ const getComputedStyleForElement = (
 const getCurrentPageBackgroundColor = (): string => {
     const page = getCurrentPageElement();
     const computedPageStyle = getComputedStyleForElement(page);
+    /*
 
     // We cannot just read computedPageStyle.backgroundColor. In separated themes,
     // the outer .bloom-page shell stays theme-colored while the user-facing page
@@ -119,7 +120,7 @@ const getCurrentPageBackgroundColor = (): string => {
     // Honor an inline marginBox override first for backwards compatibility with
     // older saved pages that persisted a page-specific marginBox color.
     if (inlineMarginBox) return inlineMarginBox;
-
+*/
     const inline = normalizeToHexOrEmpty(
         page.style.getPropertyValue("--page-background-color"),
     );
@@ -127,6 +128,10 @@ const getCurrentPageBackgroundColor = (): string => {
     // background color the settings dialog now writes.
     if (inline) return inline;
 
+    //--- ok so nothing explicit, now look a what the theme may have added
+
+    // Note: do we even need --marginBox-background-color anymore?
+    // So far (6.4) we have never shipped a way for the user to set it.
     const computedMarginBoxVariable = normalizeResolvedColorOrEmpty(
         computedPageStyle.getPropertyValue("--marginBox-background-color"),
     );
@@ -143,6 +148,8 @@ const getCurrentPageBackgroundColor = (): string => {
     // variable. Reading the variable preserves the intended setting without
     // depending on which element ultimately paints the background.
     if (computedVariable) return computedVariable;
+
+    // -- ok so no variables even from a theme, how about some other css that paints the marginBox directly?
 
     const marginBox = page.querySelector(".marginBox") as HTMLElement | null;
     if (marginBox) {

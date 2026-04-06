@@ -36,6 +36,12 @@
     --pageNumber-top: unset;
     --pageNumber-font-size: 11pt;
     --pageNumber-border-radius: 50%;
+    /* This is a hard one. It needs to have a background (a circle) in case there is a picture underneath it.
+    But if there isn't a picture underneath it and you set a page background, it probably is not going
+    to look good to have this white underneath it. Now we do have commented out code here that lets you
+    change this setting. But we are reluctant to ship it because it's on a page-by-page basis and there's
+    a lot of feeling that people are going to want to be able to just set it for the whole book. */
+    --pageNumber-background-color: #ffffff;
     --pageNumber-background-width: 33px;
     --pageNumber-always-left-margin: var(--page-margin-left);
     --pageNumber-right-margin: deliberately-invalid; /* prevents right being set at all. unset does not work. Prevent centering for this layout */

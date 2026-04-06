@@ -67,7 +67,7 @@
     --pageNumber-always-left-margin: unset;
 
     /* background-color: value in .bloom-page when a theme wants a decorative shell behind the page surface */
-    --page-frame-color: unset;
+    /* DO WE NEED THIS? --page-frame-color: unset;*/
 
     /* background-color: value in .bloom-page */
     --page-background-color: white;
