@@ -142,7 +142,11 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                     </BloomTooltip>
                 </div>
             </SettingsGroup>
-            <FormGroup>
+            <FormGroup
+                css={css`
+                    margin-top: 1em;
+                `}
+            >
                 <ApiCheckbox
                     label="Include background colors"
                     l10nKey="PublishTab.PdfMaker.IncludeBackgroundColors"
