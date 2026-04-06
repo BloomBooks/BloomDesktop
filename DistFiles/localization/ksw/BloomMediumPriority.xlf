@@ -809,6 +809,46 @@
         <target xml:lang="ksw" state="needs-translation">Book Settings</target>
         <note>BookSettings.Title</note>
       </trans-unit>
+      <trans-unit id="BookAndPageSettings.Title" sil:dynamic="true">
+        <source xml:lang="en">Book and Page Settings</source>
+        <target xml:lang="ksw" state="needs-translation">Book and Page Settings</target>
+        <note>ID: BookAndPageSettings.Title</note>
+      </trans-unit>
+      <trans-unit id="BookAndPageSettings.BookArea" sil:dynamic="true">
+        <source xml:lang="en">Book</source>
+        <target xml:lang="ksw" state="needs-translation">Book</target>
+        <note>ID: BookAndPageSettings.BookArea</note>
+      </trans-unit>
+      <trans-unit id="BookAndPageSettings.BookArea.Description" sil:dynamic="true">
+        <source xml:lang="en">Book settings apply to all of the pages of the current book.</source>
+        <target xml:lang="ksw" state="needs-translation">Book settings apply to all of the pages of the current book.</target>
+        <note>ID: BookAndPageSettings.BookArea.Description</note>
+      </trans-unit>
+      <trans-unit id="BookAndPageSettings.PageArea" sil:dynamic="true">
+        <source xml:lang="en">Current Page</source>
+        <target xml:lang="ksw" state="needs-translation">Current Page</target>
+        <note>ID: BookAndPageSettings.PageArea</note>
+      </trans-unit>
+      <trans-unit id="BookAndPageSettings.PageArea.Description" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Page settings apply to the current page.</source>
+        <target xml:lang="ksw" state="needs-translation">Page settings apply to the current page.</target>
+        <note>ID: BookAndPageSettings.PageArea.Description</note>
+      </trans-unit>
+      <trans-unit id="BookAndPageSettings.Colors" sil:dynamic="true">
+        <source xml:lang="en">Colors</source>
+        <target xml:lang="ksw" state="needs-translation">Colors</target>
+        <note>ID: BookAndPageSettings.Colors</note>
+      </trans-unit>
+      <trans-unit id="PageSettings.Title" sil:dynamic="true">
+        <source xml:lang="en">Page Settings</source>
+        <target xml:lang="ksw" state="needs-translation">Page Settings</target>
+        <note>ID: PageSettings.Title</note>
+      </trans-unit>
+      <trans-unit id="PageSettings.OpenTooltip" sil:dynamic="true">
+        <source xml:lang="en">Open Page Settings...</source>
+        <target xml:lang="ksw" state="needs-translation">Open Page Settings...</target>
+        <note>ID: PageSettings.OpenTooltip</note>
+      </trans-unit>
       <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true">
         <source xml:lang="en">Max Image Size</source>
         <target xml:lang="ksw" state="needs-translation">Max Image Size</target>
@@ -1093,7 +1133,7 @@
         <target xml:lang="ksw" state="needs-translation">Unnumbered Page</target>
         <note>ID: BookSettings.Fonts.UnnumberedPage</note>
       </trans-unit>
-      <trans-unit id="PageLayout.CustomXMatterPage" translate="no">
+      <trans-unit id="PageLayout.CustomXMatterPage">
         <source xml:lang="en">Customized Front and Back Matter Page Layout</source>
         <target xml:lang="ksw" state="needs-translation">Customized Front and Back Matter Page Layout</target>
         <note>ID: PageLayout.CustomXMatterPage</note>
