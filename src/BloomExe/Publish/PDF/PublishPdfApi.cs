@@ -71,6 +71,20 @@ namespace Bloom.Publish.PDF
                 null,
                 false
             );
+            apiHandler.RegisterBooleanEndpointHandler(
+                kApiUrlPart + "includeBackgroundColors",
+                request => CurrentBook?.UserPrefs.IncludeBackgroundColors ?? false,
+                (
+                    (writeRequest, value) =>
+                    {
+                        if (CurrentBook != null)
+                        {
+                            CurrentBook.UserPrefs.IncludeBackgroundColors = value;
+                        }
+                    }
+                ),
+                false
+            );
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "printAnalytics",
                 HandlePrintAnalytics,
