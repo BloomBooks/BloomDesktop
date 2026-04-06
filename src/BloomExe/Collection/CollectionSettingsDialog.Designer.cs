@@ -649,12 +649,12 @@ namespace Bloom.Collection
 			this.Controls.Add(this._tab);
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
-			this._L10NSharpExtender.SetLocalizingId(this, "CollectionSettingsDialog.CollectionSettingsWindowTitle");
+			this._L10NSharpExtender.SetLocalizingId(this, "CollectionSettingsDialog.Title");
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "CollectionSettingsDialog";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-			this.Text = "Settings";
+			this.Text = "Collection Settings";
 			this.Load += new System.EventHandler(this.OnLoad);
 			this._tab.ResumeLayout(false);
 			this.tabPage1.ResumeLayout(false);

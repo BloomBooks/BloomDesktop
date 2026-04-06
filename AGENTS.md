@@ -43,3 +43,9 @@ It is vital that you not run `yarn build` unless instructed to. If there is alre
 - Localizations for translatable strings are kept in DistFiles/localizations; new ones are initially added to one of the files in the "en" subdirectory
 - Mark new XLF entries translate="no"
 - Don't change the content or ID of an existing XLF entry unless it is new (marked translate="no"). Instead, mark the old one with a note saying it is "obsolete as of <current Bloom version>" and make a new entry with a different ID.
+
+# Commenting
+All public methods should have a comment. So should most private ones!
+
+# Git Committing
+Always include a good description when creating a git commit.

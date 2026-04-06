@@ -73,7 +73,7 @@ import {
 } from "../toolbox/canvas/canvasElementUtils";
 import { wrapWithRequestPageContentDelay } from "./bloomEditing";
 import { get, post, useApiObject } from "../../utils/bloomApi";
-import { ILanguageNameValues } from "../bookSettings/FieldVisibilityGroup";
+import { ILanguageNameValues } from "../bookAndPageSettings/FieldVisibilityGroup";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 

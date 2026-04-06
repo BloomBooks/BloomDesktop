@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+    findRunningStandardBloomInstances,
     requireOptionValue,
     requireTcpPortOption,
 } from "../.github/skills/bloom-automation/bloomProcessCommon.mjs";
@@ -83,6 +84,42 @@ if (!existsSync(projectPath)) {
     process.exit(1);
 }
 
+const normalizeComparablePath = (value) =>
+    path.resolve(value).replace(/\//g, "\\").toLowerCase();
+
+const tryInferVitePortFromRunningBloom = async () => {
+    const runningInstances = await findRunningStandardBloomInstances();
+    const expectedRepoRoot = normalizeComparablePath(options.repoRoot);
+    const vitePorts = [
+        ...new Set(
+            runningInstances
+                .filter(
+                    (instance) =>
+                        instance.detectedRepoRoot &&
+                        normalizeComparablePath(instance.detectedRepoRoot) ===
+                            expectedRepoRoot &&
+                        instance.vitePort,
+                )
+                .map((instance) => instance.vitePort),
+        ),
+    ];
+
+    if (vitePorts.length === 1) {
+        return vitePorts[0];
+    }
+
+    if (vitePorts.length > 1) {
+        console.warn(
+            `Multiple running Bloom instances from this worktree reported different Vite ports (${vitePorts.join(", ")}). Launching without an inherited Vite port.`,
+        );
+    }
+
+    return undefined;
+};
+
+const effectiveVitePort =
+    options.vitePort ?? (await tryInferVitePortFromRunningBloom());
+
 const dotnetArgs = [
     "watch",
     "run",
@@ -98,12 +135,18 @@ if (startupLabel) {
     dotnetArgs.push("--label", startupLabel);
 }
 
-if (options.vitePort) {
-    dotnetArgs.push("--vite-port", String(options.vitePort));
+if (effectiveVitePort) {
+    dotnetArgs.push("--vite-port", String(effectiveVitePort));
 }
 
-if (options.vitePort) {
-    console.log(`Bloom Vite dev port: ${options.vitePort}`);
+if (effectiveVitePort) {
+    if (options.vitePort) {
+        console.log(`Bloom Vite dev port: ${effectiveVitePort}`);
+    } else {
+        console.log(
+            `Inherited Bloom Vite dev port from running worktree instance: ${effectiveVitePort}`,
+        );
+    }
 }
 
 const createForwardingLineWriter = (target, onLine) => {

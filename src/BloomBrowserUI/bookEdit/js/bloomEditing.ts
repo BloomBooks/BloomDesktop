@@ -66,6 +66,7 @@ import PlaceholderProvider from "./PlaceholderProvider";
 import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
 import { handleUndo } from "../workspaceRoot";
 import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
+import { resetAbovePageControls } from "./AbovePageControls";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -1204,8 +1205,9 @@ export function localizeCkeditorTooltips(bar: JQuery) {
 
 // This is invoked when we are about to change pages.
 function removeEditingDebris() {
-    // We are mirroring the origami layoutToggleClickHandler() here, in case the user changes
-    // pages while the origami toggle in on.
+    resetAbovePageControls();
+    // We are mirroring the Change Layout mode toggle behavior here, in case the user changes
+    // pages while the Change Layout mode toggle is on.
     // The DOM here is for just one page, so there's only ever one marginBox.
     const marginBox = document.getElementsByClassName("marginBox")[0];
     marginBox.classList.remove("origami-layout-mode");

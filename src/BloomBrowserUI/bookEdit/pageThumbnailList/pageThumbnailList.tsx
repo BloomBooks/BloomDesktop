@@ -78,6 +78,20 @@ interface IContextMenuPoint {
     pageId: string;
 }
 
+// Thumbnails render only the page div, but many Bloom layout rules are written against
+// body[data-*] selectors. Copy the book body's data-* attributes onto a wrapper here so
+// those selectors still match in the thumbnail pane. Lowercase them first because React
+// only forwards custom DOM attributes reliably when the prop name is lowercase.
+const normalizeBookDisplayAttributes = (
+    attributes: Record<string, string>,
+): Record<string, string> => {
+    const normalized: Record<string, string> = {};
+    Object.entries(attributes).forEach(([key, value]) => {
+        normalized[key.startsWith("data-") ? key.toLowerCase() : key] = value;
+    });
+    return normalized;
+};
+
 // This map goes from page ID to a callback that we get from the page thumbnail
 // which should be called when the main Bloom program informs us that
 // the thumbnail needs to be updated.
@@ -106,6 +120,11 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
     const bookAttributesThatMayAffectDisplay = useApiData<any>(
         "pageList/bookAttributesThatMayAffectDisplay",
         {},
+    );
+    const normalizedBookDisplayAttributes = React.useMemo(
+        () =>
+            normalizeBookDisplayAttributes(bookAttributesThatMayAffectDisplay),
+        [bookAttributesThatMayAffectDisplay],
     );
 
     const pageMenuDefinition: IPageMenuItem[] = [
@@ -464,10 +483,7 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
     };
 
     return (
-        <div
-            id="wrapperForBodyAttributes"
-            {...bookAttributesThatMayAffectDisplay}
-        >
+        <div id="wrapperForBodyAttributes" {...normalizedBookDisplayAttributes}>
             <Responsive
                 className="page-thumbnail-list"
                 width={180}

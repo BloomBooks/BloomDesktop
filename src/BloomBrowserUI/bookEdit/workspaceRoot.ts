@@ -22,6 +22,7 @@ export interface IWorkspaceExports {
         task: (toolboxFrameExports: IToolboxFrameExports) => unknown,
     );
     getModalDialogContainer(): HTMLElement | null;
+    ShowEditViewDialog(dialog: FunctionComponentElement<unknown>): void;
     showConfirmDialog(props: IConfirmDialogProps): void;
     showColorPickerDialog(props: IColorPickerDialogProps): void;
     hideColorPickerDialog(): void;
@@ -43,6 +44,7 @@ export interface IWorkspaceExports {
         emailRequiredForTeamCollection?: boolean,
     ): void;
     showAboutDialogFromWorkspaceRoot(): void;
+    showBookSettingsDialog(initiallySelectedPageKey?: string): void;
 }
 
 export function SayHello() {
@@ -62,7 +64,7 @@ import { showPageChooserDialog } from "../pageChooser/PageChooserDialog";
 export { showPageChooserDialog };
 
 import "../lib/errorHandler";
-import { showBookSettingsDialog } from "./bookSettings/BookSettingsDialog";
+import { showBookSettingsDialog } from "./bookAndPageSettings/BookAndPageSettingsDialog";
 export { showBookSettingsDialog };
 import { showRegistrationDialogForEditTab } from "../react_components/registration/registrationDialog";
 export { showRegistrationDialogForEditTab as showRegistrationDialog };
@@ -274,11 +276,6 @@ export function showCopyrightAndLicenseDialog(imageUrl?: string) {
 export function showEditViewTopicChooserDialog() {
     showTopicChooserDialog();
 }
-export function showEditViewBookSettingsDialog(
-    initiallySelectedGroupIndex?: number,
-) {
-    showBookSettingsDialog(initiallySelectedGroupIndex);
-}
 
 export function showAboutDialogFromWorkspaceRoot() {
     showAboutDialog();
@@ -372,7 +369,6 @@ interface WorkspaceBundleApi {
     hideColorPickerDialog: typeof hideColorPickerDialog;
     showCopyrightAndLicenseDialog: typeof showCopyrightAndLicenseDialog;
     showEditViewTopicChooserDialog: typeof showEditViewTopicChooserDialog;
-    showEditViewBookSettingsDialog: typeof showEditViewBookSettingsDialog;
     showAboutDialogFromWorkspaceRoot: typeof showAboutDialogFromWorkspaceRoot;
     showRequiresSubscriptionDialog: typeof showRequiresSubscriptionDialog;
     showRegistrationDialogFromWorkspaceRoot: typeof showRegistrationDialogFromWorkspaceRoot;
@@ -413,7 +409,6 @@ window.workspaceBundle = {
     hideColorPickerDialog,
     showCopyrightAndLicenseDialog,
     showEditViewTopicChooserDialog,
-    showEditViewBookSettingsDialog,
     showAboutDialogFromWorkspaceRoot,
     showRequiresSubscriptionDialog,
     showRegistrationDialogFromWorkspaceRoot,

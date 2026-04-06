@@ -107,6 +107,9 @@ export const extractRepoRoot = (text) => {
 export const normalizeBloomInstanceInfo = (info, discoveredViaPort) => {
     const httpPort = toTcpPort(info?.httpPort) ?? discoveredViaPort;
     const cdpPort = toTcpPort(info?.cdpPort);
+    const executablePath = normalizePath(info?.executablePath);
+    const detectedRepoRoot = extractRepoRoot(executablePath);
+    const vitePort = toTcpPort(info?.vitePort);
 
     return {
         processId: toPositiveInteger(info?.processId),
@@ -114,6 +117,9 @@ export const normalizeBloomInstanceInfo = (info, discoveredViaPort) => {
         httpPort,
         origin: toLocalOrigin(httpPort),
         cdpPort,
+        executablePath,
+        detectedRepoRoot,
+        vitePort,
     };
 };
 

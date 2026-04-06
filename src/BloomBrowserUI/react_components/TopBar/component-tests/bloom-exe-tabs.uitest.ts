@@ -1,30 +1,28 @@
 import { test, expect } from "../../component-tester/playwrightTest";
 import {
+    clickWorkspaceTab,
     connectToBloomExe,
-    getBloomTopBarFrame,
     waitForActiveWorkspaceTab,
 } from "../../component-tester/bloomExeCdp";
 
 test.describe("Bloom exe CDP top bar", () => {
-    test("switches embedded workspace tabs through the real top bar iframe", async () => {
+    test("switches embedded workspace tabs through the real top bar", async () => {
         const connection = await connectToBloomExe();
 
         try {
-            const topBarFrame = await getBloomTopBarFrame(connection.page);
-
-            await topBarFrame.getByRole("tab", { name: "Collections" }).click();
+            await clickWorkspaceTab(connection.page, "Collections");
             await waitForActiveWorkspaceTab("collection");
             await expect(connection.page.locator("body")).toHaveClass(
                 /collection-mode/,
             );
 
-            await topBarFrame.getByRole("tab", { name: "Publish" }).click();
+            await clickWorkspaceTab(connection.page, "Publish");
             await waitForActiveWorkspaceTab("publish");
             await expect(connection.page.locator("body")).toHaveClass(
                 /publish-mode/,
             );
 
-            await topBarFrame.getByRole("tab", { name: "Edit" }).click();
+            await clickWorkspaceTab(connection.page, "Edit");
             await waitForActiveWorkspaceTab("edit");
             await expect(connection.page.locator("body")).toHaveClass(
                 /edit-mode/,
@@ -38,7 +36,6 @@ test.describe("Bloom exe CDP top bar", () => {
         const connection = await connectToBloomExe();
 
         try {
-            const topBarFrame = await getBloomTopBarFrame(connection.page);
             const consoleMessages: string[] = [];
             const requestUrls: string[] = [];
 
@@ -59,7 +56,7 @@ test.describe("Bloom exe CDP top bar", () => {
                 )
                 .toBe(true);
 
-            await topBarFrame.getByRole("tab", { name: "Publish" }).click();
+            await clickWorkspaceTab(connection.page, "Publish");
             await waitForActiveWorkspaceTab("publish");
 
             await expect
@@ -70,7 +67,7 @@ test.describe("Bloom exe CDP top bar", () => {
                 )
                 .toBe(true);
 
-            await topBarFrame.getByRole("tab", { name: "Edit" }).click();
+            await clickWorkspaceTab(connection.page, "Edit");
             await waitForActiveWorkspaceTab("edit");
         } finally {
             await connection.browser.close();

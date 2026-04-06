@@ -237,6 +237,9 @@ namespace Bloom.web.controllers
 
             var executablePath = Application.ExecutablePath;
             var cdpPort = Bloom.WebView2Browser.RemoteDebuggingPort;
+            int? vitePort = ReactControl.TryGetActiveViteDevPort(out var activeVitePort)
+                ? activeVitePort
+                : null;
             request.ReplyWithJson(
                 new
                 {
@@ -251,6 +254,7 @@ namespace Bloom.web.controllers
                     workspaceTabsUrl = BloomServer.ServerUrlWithBloomPrefixEndingInSlash
                         + "api/workspace/tabs",
                     cdpPort,
+                    vitePort,
                     cdpOrigin = cdpPort.HasValue ? $"http://localhost:{cdpPort.Value}" : null,
                 }
             );

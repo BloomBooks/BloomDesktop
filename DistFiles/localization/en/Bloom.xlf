@@ -550,6 +550,10 @@
         <source xml:lang="en">Settings</source>
         <note>ID: CollectionSettingsDialog.CollectionSettingsWindowTitle</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.Title">
+        <source xml:lang="en">Collection Settings</source>
+        <note>ID: CollectionSettingsDialog.Title</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
         <source xml:lang="en">Change...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.ChangeLanguageLink</note>
@@ -909,6 +913,11 @@
         <source xml:lang="en">New...</source>
         <note>ID: ColorPicker.New</note>
         <note>A background color selection that enables a color picker.</note>
+      </trans-unit>
+      <trans-unit id="ColorPicker.SampleColor" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Sample Color</source>
+        <note>ID: ColorPicker.SampleColor</note>
+        <note>Tooltip text on the eyedropper button that samples a color from the page.</note>
       </trans-unit>
       <trans-unit id="Common.BookSettings">
         <source xml:lang="en">Book Settings</source>

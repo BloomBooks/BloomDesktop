@@ -10,12 +10,13 @@
     --page-margin-bottom: 2mm;
     --page-margin-left: 2mm;
     --page-margin-right: 2mm;
-    --page-background-color: #2e2e2e; /* almost black */
+    --page-frame-color: #2e2e2e; /* almost black */
+    --page-background-color: #ffffff;
     --marginBox-border-radius: 15px;
     --marginBox-padding: 1.5mm;
-    --marginBox-background-color: #ffffff; /* white */
 
-    /* set to 0 because our marginBox is white but background is dark. This has the effect of increasing the text padding on the edges. */
+    /* set to 0 because the visible page frame is dark while the reading surface is white.
+       This has the effect of increasing the text padding on the edges. */
     --page-and-marginBox-are-same-color-multiplicand: 0;
 
     /* move so that page number doesn't it hide it if the text box is in the lower left */
@@ -26,15 +27,20 @@
 .numberedPage:where([class*="Device"]:not(.bloom-interactive-page)) {
     --topLevel-text-padding: 0.5em;
 }
-
 [class*="Device"].numberedPage:not(.bloom-interactive-page) {
     --pageNumber-extra-height: 0mm !important; /* we put the page number on top of the image so we don't need a margin boost */
+    --pageNumber-outline-color: white;
 }
 [class*="Device"].numberedPage:not(.bloom-interactive-page)::after {
     --pageNumber-bottom: var(--page-margin-bottom);
     --pageNumber-top: unset;
     --pageNumber-font-size: 11pt;
     --pageNumber-border-radius: 50%;
+    /* This is a hard one. It needs to have a background (a circle) in case there is a picture underneath it.
+    But if there isn't a picture underneath it and you set a page background, it probably is not going
+    to look good to have this white underneath it. Now we do have commented out code here that lets you
+    change this setting. But we are reluctant to ship it because it's on a page-by-page basis and there's
+    a lot of feeling that people are going to want to be able to just set it for the whole book. */
     --pageNumber-background-color: #ffffff;
     --pageNumber-background-width: 33px;
     --pageNumber-always-left-margin: var(--page-margin-left);
