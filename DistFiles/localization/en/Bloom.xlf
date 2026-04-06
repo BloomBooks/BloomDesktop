@@ -4319,6 +4319,10 @@
         <note>ID: PublishTab.PdfMaker.ExcludePrintBleed</note>
         <note>displayed as an option in the PDF Options menu in Publish tab. Be careful, "print bleed" is a technical term in printing, meaning to print into an area outside the main page content that is ideally trimmed off; do not translate literally</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.IncludeBackgroundColors" translate="no">
+        <source xml:lang="en">Include background colors</source>
+        <note>ID: PublishTab.PdfMaker.IncludeBackgroundColors</note>
+      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml">
         <source xml:lang="en">Making PDF from HTML</source>
         <note>ID: PublishTab.PdfMaker.MakingFromHtml</note>

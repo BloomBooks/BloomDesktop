@@ -1895,6 +1895,51 @@ namespace Bloom.Book
             "--pageNumber-background-color",
         };
 
+        public static void RemovePageBackgroundColorStyles(SafeXmlDocument dom)
+        {
+            foreach (
+                SafeXmlElement pageDiv in dom.SafeSelectNodes(
+                    "//div[contains(@class,'bloom-page')]"
+                )
+            )
+            {
+                RemoveStyleProperties(pageDiv, "--page-background-color");
+            }
+        }
+
+        private static void RemoveStyleProperties(
+            SafeXmlElement element,
+            params string[] propertyNames
+        )
+        {
+            var style = element.GetAttribute("style");
+            if (string.IsNullOrWhiteSpace(style))
+                return;
+
+            var filteredSegments = style
+                .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(segment => segment.Trim())
+                .Where(segment => !string.IsNullOrEmpty(segment))
+                .Where(segment =>
+                {
+                    var colonIndex = segment.IndexOf(':');
+                    if (colonIndex < 0)
+                        return true;
+
+                    var propertyName = segment.Substring(0, colonIndex).Trim();
+                    return !propertyNames.Contains(propertyName);
+                })
+                .ToArray();
+
+            if (filteredSegments.Length == 0)
+            {
+                element.RemoveAttribute("style");
+                return;
+            }
+
+            element.SetAttribute("style", string.Join("; ", filteredSegments) + ";");
+        }
+
         private static string GetPersistedPageStyleValue(SafeXmlElement editedPageDiv)
         {
             var style = editedPageDiv.GetAttribute("style");
