@@ -36,5 +36,20 @@ namespace BloomTests.Book
                 Assert.That(up.MostRecentPage == 3);
             }
         }
+
+        [Test]
+        public void LoadOrMakeNew_IncludeBackgroundColors_ReadsAndSavesCorrectly()
+        {
+            using (var t = new TempFile("{\"includeBackgroundColors\":true}"))
+            {
+                var up = UserPrefs.LoadOrMakeNew(t.Path);
+                Assert.That(up.IncludeBackgroundColors, Is.True);
+
+                up.IncludeBackgroundColors = false;
+
+                var reloaded = UserPrefs.LoadOrMakeNew(t.Path);
+                Assert.That(reloaded.IncludeBackgroundColors, Is.False);
+            }
+        }
     }
 }

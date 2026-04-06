@@ -142,6 +142,19 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                     </BloomTooltip>
                 </div>
             </SettingsGroup>
+            <FormGroup>
+                <ApiCheckbox
+                    label="Include background colors"
+                    l10nKey="PublishTab.PdfMaker.IncludeBackgroundColors"
+                    apiEndpoint="publish/pdf/includeBackgroundColors"
+                    onChange={() => {
+                        if (activeButton) {
+                            props.onChange?.(activeButton);
+                            post("publish/pdf/" + activeButton);
+                        }
+                    }}
+                />
+            </FormGroup>
             <SettingsGroup
                 label={useL10n(
                     "Prepare for Printshop",

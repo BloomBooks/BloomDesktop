@@ -1886,6 +1886,89 @@ namespace Bloom.Book
         public const string musicAttrName = "data-backgroundaudio";
         public const string musicVolumeName = musicAttrName + "volume";
 
+        private static readonly string[] kPageStylePropertiesToPersist =
+        {
+            "--page-background-color",
+            "--marginBox-background-color",
+            "--pageNumber-color",
+            "--pageNumber-outline-color",
+            "--pageNumber-background-color",
+        };
+
+        public static void RemovePageBackgroundColorStyles(SafeXmlDocument dom)
+        {
+            foreach (
+                SafeXmlElement pageDiv in dom.SafeSelectNodes(
+                    "//div[contains(@class,'bloom-page')]"
+                )
+            )
+            {
+                RemoveStyleProperties(pageDiv, "--page-background-color");
+            }
+        }
+
+        private static void RemoveStyleProperties(
+            SafeXmlElement element,
+            params string[] propertyNames
+        )
+        {
+            var style = element.GetAttribute("style");
+            if (string.IsNullOrWhiteSpace(style))
+                return;
+
+            var filteredSegments = style
+                .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(segment => segment.Trim())
+                .Where(segment => !string.IsNullOrEmpty(segment))
+                .Where(segment =>
+                {
+                    var colonIndex = segment.IndexOf(':');
+                    if (colonIndex < 0)
+                        return true;
+
+                    var propertyName = segment.Substring(0, colonIndex).Trim();
+                    return !propertyNames.Contains(propertyName);
+                })
+                .ToArray();
+
+            if (filteredSegments.Length == 0)
+            {
+                element.RemoveAttribute("style");
+                return;
+            }
+
+            element.SetAttribute("style", string.Join("; ", filteredSegments) + ";");
+        }
+
+        private static string GetPersistedPageStyleValue(SafeXmlElement editedPageDiv)
+        {
+            var style = editedPageDiv.GetAttribute("style");
+            if (string.IsNullOrWhiteSpace(style))
+                return string.Empty;
+
+            var persistedStyleSegments = style
+                .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(segment => segment.Trim())
+                .Where(segment => !string.IsNullOrEmpty(segment))
+                .Where(segment =>
+                {
+                    var colonIndex = segment.IndexOf(':');
+                    if (colonIndex <= 0)
+                        return false;
+
+                    var propertyName = segment.Substring(0, colonIndex).Trim();
+                    return kPageStylePropertiesToPersist.Contains(
+                        propertyName,
+                        StringComparer.OrdinalIgnoreCase
+                    );
+                })
+                .ToArray();
+
+            return persistedStyleSegments.Any()
+                ? string.Join("; ", persistedStyleSegments)
+                : string.Empty;
+        }
+
         public static void ProcessPageAfterEditing(
             SafeXmlElement destinationPageDiv,
             SafeXmlElement edittedPageDiv
