@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -1038,7 +1039,6 @@ namespace Bloom.Publish
             modifiedBook.WriteFontFaces = wantFontFaceDeclarations;
             modifiedBook.BringBookUpToDate(new NullProgress(), true);
             modifiedBook.RemoveNonPublishablePages(omittedPageLabels);
-            DeDuplicateGifs(modifiedBook.RawDom, modifiedBook.FolderPath);
             if (processVideos)
             {
                 var domForVideoProcessing = modifiedBook.OurHtmlDom;
@@ -1085,49 +1085,320 @@ namespace Bloom.Publish
             return modifiedBook;
         }
 
-        internal static void DeDuplicateGifs(SafeXmlDocument dom, string folderPath)
+        private sealed class MediaReference
         {
-            var gifImgs = dom.SafeSelectNodes("//div[contains(@class, 'bloom-gif')]/div[contains(@class,'bloom-imageContainer')]/img").Cast<SafeXmlElement>();
-            // Note byte[] doesn't work well as a dictionary key.
-            var hashToSrc = new Dictionary<string, string>();
-            var hashToPath = new Dictionary<string, string>();
-            foreach (var img in gifImgs)
+            public string RelativePath;
+            public Action<string> RewriteReference;
+        }
+
+        internal static void DeDuplicateMediaFiles(SafeXmlDocument dom, string folderPath)
+        {
+            DeDuplicateReferencedMedia(GetImageMediaReferences(dom), folderPath);
+            DeDuplicateReferencedMedia(GetVideoMediaReferences(dom), folderPath);
+            // Narration files are tied to specific spans, so keep those one-to-one file names stable.
+            var talkingBookAudioFileNames = GetTalkingBookAudioFileNames(dom);
+            DeDuplicateReferencedMedia(
+                GetNonTalkingAudioMediaReferences(dom, talkingBookAudioFileNames),
+                folderPath
+            );
+        }
+
+        private static void DeDuplicateReferencedMedia(
+            IEnumerable<MediaReference> references,
+            string folderPath
+        )
+        {
+            var referencesByPath = new Dictionary<string, List<MediaReference>>();
+            var firstRelativePathByNormalizedPath = new Dictionary<string, string>();
+            var fullPathByNormalizedPath = new Dictionary<string, string>();
+            var normalizedPathsInEncounterOrder = new List<string>();
+
+            foreach (var reference in references)
             {
-                var src = img.GetAttribute("src");
-                if (string.IsNullOrEmpty(src))
+                if (string.IsNullOrWhiteSpace(reference.RelativePath))
                     continue;
-                var filePath = BookStorage.GetNormalizedPathForOS(Path.Combine(folderPath, src));
-                if (!RobustFile.Exists(filePath) && filePath.Contains("%"))
+
+                var relativePath = NormalizeSlashes(reference.RelativePath);
+                var caseNormalizedRelativePath = BookStorage.GetNormalizedPathForOS(relativePath); // for comparison
+                if (!referencesByPath.TryGetValue(caseNormalizedRelativePath, out var refsForPath))
                 {
-                    var urlpath = UrlPathString.CreateFromUrlEncodedString(src);
-                    var unencodedSrc = urlpath.NotEncoded;
-                    filePath = BookStorage.GetNormalizedPathForOS(Path.Combine(folderPath, unencodedSrc));
-                    if (!RobustFile.Exists(filePath))
-                        continue;
+                    refsForPath = new List<MediaReference>();
+                    referencesByPath[caseNormalizedRelativePath] = refsForPath;
+                    firstRelativePathByNormalizedPath[caseNormalizedRelativePath] = relativePath;
+                    fullPathByNormalizedPath[caseNormalizedRelativePath] = ResolveMediaFilePath(
+                        folderPath,
+                        relativePath
+                    );
+                    normalizedPathsInEncounterOrder.Add(caseNormalizedRelativePath);
                 }
-                var fileContent = RobustFile.ReadAllBytes(filePath);
-                var rawHash = SHA256.HashData(fileContent);
-                var hashString = Convert.ToHexString(rawHash);
-                if (hashToPath.TryGetValue(hashString, out var existingPath) &&
-                    hashToSrc.TryGetValue(hashString, out var existingSrc))
+
+                refsForPath.Add(reference);
+            }
+
+            var hashToCanonicalRelativePath = new Dictionary<string, string>();
+            var normalizedPathsToDelete = new HashSet<string>();
+            foreach (var normalizedRelativePath in normalizedPathsInEncounterOrder)
+            {
+                var filePath = fullPathByNormalizedPath[normalizedRelativePath];
+                if (!RobustFile.Exists(filePath))
+                    continue;
+
+                var hashString = ComputeFileHash(filePath);
+                if (
+                    hashToCanonicalRelativePath.TryGetValue(
+                        hashString,
+                        out var canonicalRelativePath
+                    )
+                )
                 {
-                    // The original file reference might be duplicated, and we don't want to delete
-                    // the file that we're using as the reference.  (We use filePath because it's
-                    // conceivable that one src may be URL-encoded and the other not, but they refer
-                    // to the same file.)
-                    if (filePath != existingPath)
+                    // Rewrite all references before deleting any duplicate file so later references to
+                    // the same duplicate path can still be resolved during this pass.
+                    foreach (var reference in referencesByPath[normalizedRelativePath])
                     {
-                        // We have two different files with the same content.  Use the first one and delete the duplicate.
-                        img.SetAttribute("src", existingSrc);
-                        RobustFile.Delete(filePath);
+                        reference.RewriteReference(canonicalRelativePath);
                     }
+
+                    normalizedPathsToDelete.Add(normalizedRelativePath);
                 }
                 else
                 {
-                    hashToSrc[hashString] = src;
-                    hashToPath[hashString] = filePath;
+                    hashToCanonicalRelativePath[hashString] = firstRelativePathByNormalizedPath[
+                        normalizedRelativePath
+                    ];
                 }
             }
+
+            foreach (var normalizedRelativePath in normalizedPathsToDelete)
+            {
+                RobustFile.Delete(fullPathByNormalizedPath[normalizedRelativePath]);
+            }
+        }
+
+        private static IEnumerable<MediaReference> GetImageMediaReferences(SafeXmlDocument dom)
+        {
+            foreach (
+                var imageElement in HtmlDom
+                    .SelectChildImgAndBackgroundImageElements(dom.DocumentElement)
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var relativePath = HtmlDom.GetImageElementUrl(imageElement).PathOnly.NotEncoded;
+                if (
+                    string.IsNullOrWhiteSpace(relativePath)
+                    || ImageUtils.IsPlaceholderImageFilename(relativePath)
+                )
+                {
+                    continue;
+                }
+
+                yield return new MediaReference
+                {
+                    RelativePath = relativePath,
+                    RewriteReference = canonicalRelativePath =>
+                        HtmlDom.SetImageElementUrl(
+                            imageElement,
+                            UrlPathString.CreateFromUnencodedString(canonicalRelativePath)
+                        ),
+                };
+            }
+
+            foreach (
+                var bookSetting in dom.SafeSelectNodes(
+                        "//div[@id='bloomDataDiv']/div[@data-book='coverImage' or @data-book='licenseImage']"
+                    )
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var relativePath = UrlPathString
+                    .CreateFromUrlEncodedString(bookSetting.InnerText.Trim())
+                    .PathOnly.NotEncoded;
+                if (
+                    string.IsNullOrWhiteSpace(relativePath)
+                    || ImageUtils.IsPlaceholderImageFilename(relativePath)
+                )
+                {
+                    continue;
+                }
+
+                yield return new MediaReference
+                {
+                    RelativePath = relativePath,
+                    RewriteReference = canonicalRelativePath =>
+                    {
+                        bookSetting.InnerText = canonicalRelativePath;
+                        if (bookSetting.GetAttribute("data-book") == "coverImage")
+                        {
+                            bookSetting.SetAttribute("src", canonicalRelativePath);
+                        }
+                    },
+                };
+            }
+        }
+
+        private static IEnumerable<MediaReference> GetVideoMediaReferences(SafeXmlDocument dom)
+        {
+            foreach (
+                var videoContainer in HtmlDom
+                    .SelectChildVideoElements(dom.DocumentElement)
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var relativePath = HtmlDom.GetVideoElementUrl(videoContainer).PathOnly.NotEncoded;
+                if (string.IsNullOrWhiteSpace(relativePath))
+                    continue;
+
+                yield return new MediaReference
+                {
+                    RelativePath = relativePath,
+                    RewriteReference = canonicalRelativePath =>
+                        HtmlDom.SetVideoElementUrl(
+                            videoContainer,
+                            UrlPathString.CreateFromUnencodedString(canonicalRelativePath)
+                        ),
+                };
+            }
+        }
+
+        private static IEnumerable<MediaReference> GetNonTalkingAudioMediaReferences(
+            SafeXmlDocument dom,
+            HashSet<string> talkingBookAudioFileNames
+        )
+        {
+            foreach (
+                var pageWithBackgroundMusic in HtmlDom
+                    .SelectChildBackgroundMusicElements(dom.DocumentElement)
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var reference = MakeAudioAttributeReference(
+                    pageWithBackgroundMusic,
+                    HtmlDom.musicAttrName,
+                    talkingBookAudioFileNames
+                );
+                if (reference != null)
+                    yield return reference;
+            }
+
+            foreach (
+                var soundElement in dom.SafeSelectNodes(".//*[@data-sound]").Cast<SafeXmlElement>()
+            )
+            {
+                var reference = MakeAudioAttributeReference(
+                    soundElement,
+                    "data-sound",
+                    talkingBookAudioFileNames
+                );
+                if (reference != null)
+                    yield return reference;
+            }
+
+            foreach (
+                var elementWithCorrectSound in dom.SafeSelectNodes(".//*[@data-correct-sound]")
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var reference = MakeAudioAttributeReference(
+                    elementWithCorrectSound,
+                    "data-correct-sound",
+                    talkingBookAudioFileNames
+                );
+                if (reference != null)
+                    yield return reference;
+            }
+
+            foreach (
+                var elementWithWrongSound in dom.SafeSelectNodes(".//*[@data-wrong-sound]")
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var reference = MakeAudioAttributeReference(
+                    elementWithWrongSound,
+                    "data-wrong-sound",
+                    talkingBookAudioFileNames
+                );
+                if (reference != null)
+                    yield return reference;
+            }
+        }
+
+        private static MediaReference MakeAudioAttributeReference(
+            SafeXmlElement element,
+            string attributeName,
+            HashSet<string> talkingBookAudioFileNames
+        )
+        {
+            var rawValue = element.GetAttribute(attributeName);
+            if (string.IsNullOrWhiteSpace(rawValue) || rawValue == "none")
+                return null;
+
+            var fileName = UrlPathString.CreateFromUrlEncodedString(rawValue).PathOnly.NotEncoded;
+            var normalizedFileName = BookStorage.GetNormalizedPathForOS(fileName);
+            if (talkingBookAudioFileNames.Contains(normalizedFileName))
+                return null;
+
+            return new MediaReference
+            {
+                RelativePath = MakeRelativePath("audio", fileName),
+                RewriteReference = canonicalRelativePath =>
+                    element.SetAttribute(attributeName, Path.GetFileName(canonicalRelativePath)),
+            };
+        }
+
+        private static HashSet<string> GetTalkingBookAudioFileNames(SafeXmlDocument dom)
+        {
+            // Match Bloom's narration selector so we skip exactly the files publish already treats as
+            // talking-book audio, including split TextBox recordings.
+            var fileNames = new HashSet<string>();
+            foreach (
+                var narrationElement in HtmlDom
+                    .SelectChildNarrationAudioElements(
+                        dom.DocumentElement,
+                        includeSplitTextBoxAudio: true,
+                        langsToExclude: null
+                    )
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var narrationId = narrationElement.GetOptionalStringAttribute("id", null);
+                if (string.IsNullOrWhiteSpace(narrationId))
+                    continue;
+
+                foreach (var fileName in BookStorage.GetNarrationAudioFileNames(narrationId, true))
+                {
+                    fileNames.Add(BookStorage.GetNormalizedPathForOS(fileName));
+                }
+            }
+
+            return fileNames;
+        }
+
+        private static string ComputeFileHash(string filePath)
+        {
+            using (var stream = RobustFile.OpenRead(filePath))
+            {
+                return Convert.ToHexString(SHA256.HashData(stream));
+            }
+        }
+
+        private static string ResolveMediaFilePath(string folderPath, string relativePath)
+        {
+            var path = relativePath.Replace('/', Path.DirectorySeparatorChar);
+            return BookStorage.GetNormalizedPathForOS(Path.Combine(folderPath, path));
+        }
+
+        private static string NormalizeSlashes(string relativePath)
+        {
+            return relativePath.Replace('\\', '/');
+        }
+
+        private static string MakeRelativePath(params string[] parts)
+        {
+            return string.Join(
+                "/",
+                parts
+                    .Where(part => !string.IsNullOrWhiteSpace(part))
+                    .Select(part => part.Trim('/', '\\'))
+            );
         }
 
         /// <summary>
