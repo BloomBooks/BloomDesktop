@@ -816,7 +816,7 @@
       </trans-unit>
       <trans-unit id="BookAndPageSettings.BookArea" sil:dynamic="true">
         <source xml:lang="en">Book</source>
-        <target xml:lang="es-ES" state="needs-translation">Book</target>
+        <target xml:lang="es-ES" state="translated">Libro</target>
         <note>ID: BookAndPageSettings.BookArea</note>
       </trans-unit>
       <trans-unit id="BookAndPageSettings.BookArea.Description" sil:dynamic="true">
@@ -826,7 +826,7 @@
       </trans-unit>
       <trans-unit id="BookAndPageSettings.PageArea" sil:dynamic="true">
         <source xml:lang="en">Current Page</source>
-        <target xml:lang="es-ES" state="needs-translation">Current Page</target>
+        <target xml:lang="es-ES" state="translated">Página actual</target>
         <note>ID: BookAndPageSettings.PageArea</note>
       </trans-unit>
       <trans-unit id="BookAndPageSettings.PageArea.Description" sil:dynamic="true" translate="no">
@@ -836,7 +836,7 @@
       </trans-unit>
       <trans-unit id="BookAndPageSettings.Colors" sil:dynamic="true">
         <source xml:lang="en">Colors</source>
-        <target xml:lang="es-ES" state="needs-translation">Colors</target>
+        <target xml:lang="es-ES" state="translated">Colores</target>
         <note>ID: BookAndPageSettings.Colors</note>
       </trans-unit>
       <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true" approved="yes">
