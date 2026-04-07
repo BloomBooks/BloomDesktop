@@ -4908,6 +4908,11 @@
         <target xml:lang="fr" state="final">Exclure l'impression à fond perdu autour des bords de page</target>
         <note>ID: PublishTab.PdfMaker.ExcludePrintBleed</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.IncludeBackgroundColors" translate="no">
+        <source xml:lang="en">Include background colors</source>
+        <target xml:lang="fr" state="needs-translation">Include background colors</target>
+        <note>ID: PublishTab.PdfMaker.IncludeBackgroundColors</note>
+      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml" approved="yes">
         <source xml:lang="en">Making PDF from HTML</source>
         <target xml:lang="fr" state="final">Transformation du HTML en PDF</target>
