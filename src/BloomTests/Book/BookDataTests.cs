@@ -3347,7 +3347,11 @@ namespace BloomTests.Book
         {
             var bookDom = new HtmlDom(
                 @"<html><head></head><body>
-				<div id='bloomDataDiv'></div>
+				<div id='bloomDataDiv'>
+                    <div data-book='contentLanguage1' lang='*'>xyz</div>
+                    <div data-book='contentLanguage2' lang='*'>en</div>
+                    <div data-book='contentLanguage3' lang='*'>fr</div>
+                </div>
 				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' id='customCover1'>
                     <div class='marginBox'></div>
 				</div>
@@ -3436,7 +3440,37 @@ namespace BloomTests.Book
                 .Dom(bookDom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']//div[contains(@class,'marginBox')]//*[contains(concat(' ', normalize-space(@class), ' '), ' bloom-editable ')]",
+                    3
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']//div[contains(@class,'marginBox')]//*[@data-book='bookTitle' and @lang='xyz']",
                     1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']//div[contains(@class,'marginBox')]//*[@data-book='bookTitle' and @lang='en']",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']//div[contains(@class,'marginBox')]//*[@data-book='bookTitle' and @lang='fr']",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']//div[contains(@class,'marginBox')]//*[@data-book='bookTitle' and contains(concat(' ', normalize-space(@class), ' '), ' bloom-visibility-code-on ')]",
+                    3
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']//div[contains(@class,'marginBox')]//*[@data-book='bookTitle' and not(contains(concat(' ', normalize-space(@class), ' '), ' bloom-visibility-code-on '))]",
+                    0
                 );
             AssertThatXmlIn
                 .Dom(bookDom.RawDom)
@@ -3447,7 +3481,7 @@ namespace BloomTests.Book
                 .Dom(bookDom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']//div[contains(@class,'marginBox')]//*[@data-book='bookTitle']",
-                    1
+                    3
                 );
             AssertThatXmlIn
                 .Dom(bookDom.RawDom)
