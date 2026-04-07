@@ -2040,28 +2040,6 @@ namespace Bloom.Book
             );
             _bookData.MergeBrandingSettings(CollectionSettings.Subscription.BrandingKey);
             _bookData.SynchronizeDataItemsThroughoutDOM();
-            // After SynchronizeDataItemsThroughoutDOM restores the content of custom layout pages
-            // from the data-div, the bloom-editables may reflect old language settings (e.g. when
-            // making a derivative or changing languages). Re-prepare those pages so they have
-            // bloom-editables for the current languages and the correct content-order classes.
-            foreach (
-                var customPage in OurHtmlDom
-                    .SafeSelectNodes(
-                        "//div[contains(@class,'bloom-page') and contains(@class,'bloom-customLayout')]"
-                    )
-                    .Cast<SafeXmlElement>()
-            )
-            {
-                TranslationGroupManager.PrepareElementsInPageOrDocument(customPage, _bookData);
-                TranslationGroupManager.UpdateContentLanguageClasses(
-                    customPage,
-                    _bookData,
-                    BookInfo.AppearanceSettings,
-                    Language1Tag,
-                    Language2Tag,
-                    Language3Tag
-                );
-            }
             licenseMetadata = GetLicenseMetadata();
             // I think we should only mess with tags if we are updating the book for real.
             var oldTagsPath = Path.Combine(Storage.FolderPath, "tags.txt");
