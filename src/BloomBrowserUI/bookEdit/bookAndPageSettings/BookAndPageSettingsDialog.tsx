@@ -172,8 +172,10 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
     const [settingsToReturnLater, setSettingsToReturnLater] = React.useState<
         ConfigrValues | undefined
     >(undefined);
-    const [selectedPageKeyOverride, setSelectedPageKeyOverride] =
-        React.useState<string>();
+    const [pageSelectionRequest, setPageSelectionRequest] = React.useState<{
+        pageKey: string;
+        requestId: number;
+    }>();
     const latestSettingsRef = React.useRef<ConfigrValues | undefined>(
         undefined,
     );
@@ -366,7 +368,10 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
             if (latestSettingsRef.current) {
                 setSettingsToReturnLater(latestSettingsRef.current);
             }
-            setSelectedPageKeyOverride("themeAndLayout");
+            setPageSelectionRequest((currentRequest) => ({
+                pageKey: "themeAndLayout",
+                requestId: (currentRequest?.requestId ?? 0) + 1,
+            }));
         },
         onColorPickerVisibilityChanged: setDialogVisibleWhileColorPickerOpen,
         themeNames: appearanceUIOptions.themeNames,
@@ -378,7 +383,10 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
 
     const initiallySelectedConfigrPageKey = props.initiallySelectedPageKey;
     const selectedConfigrPageKey =
-        selectedPageKeyOverride ?? initiallySelectedConfigrPageKey;
+        pageSelectionRequest?.pageKey ?? initiallySelectedConfigrPageKey;
+    const configrPaneKey = pageSelectionRequest
+        ? `${pageSelectionRequest.pageKey}-${pageSelectionRequest.requestId}`
+        : (selectedConfigrPageKey ?? "default");
 
     const configrAreas = [
         <ConfigrArea
@@ -458,7 +466,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
             >
                 {configrInitialValues && (
                     <ConfigrPane
-                        key={selectedConfigrPageKey ?? "default"}
+                        key={configrPaneKey}
                         className={kConfigrPaneClassName}
                         label={bookSettingsTitle}
                         initialValues={configrInitialValues}

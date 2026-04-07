@@ -93,6 +93,10 @@ export const useBookSettingsAreaDefinition = (
         "BookSettings.LanguagesGroupLabel",
         "",
     );
+    const normalTextBoxLanguagesLabel = useL10n(
+        "Languages to show in normal text boxes",
+        "BookSettings.NormalTextBoxLangsLabel",
+    );
     const themeLabel = useL10n("Page Theme", "BookSettings.PageThemeLabel", "");
     const themeDescription = useL10n(
         "", // will be translated or the English will come from the xliff
@@ -467,7 +471,7 @@ export const useBookSettingsAreaDefinition = (
                 label={languagesLabel}
                 pageKey="normalTextBoxLanguages"
             >
-                <ConfigrGroup>
+                <ConfigrGroup label={normalTextBoxLanguagesLabel}>
                     <FieldVisibilityGroup
                         field="autoTextBox"
                         labelFrame="Show {0}"
