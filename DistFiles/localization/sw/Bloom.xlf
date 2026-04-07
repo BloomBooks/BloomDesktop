@@ -4907,6 +4907,11 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="needs-translation">Exclude print bleed around page edges</target>
         <note>ID: PublishTab.PdfMaker.ExcludePrintBleed</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.IncludeBackgroundColors" translate="no">
+        <source xml:lang="en">Include background colors</source>
+        <target xml:lang="sw" state="needs-translation">Include background colors</target>
+        <note>ID: PublishTab.PdfMaker.IncludeBackgroundColors</note>
+      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml" approved="yes">
         <source xml:lang="en">Making PDF from HTML</source>
         <target xml:lang="sw" state="final">Kutengeneza PDF kutoka kwa HTML</target>
