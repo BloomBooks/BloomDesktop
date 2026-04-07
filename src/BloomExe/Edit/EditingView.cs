@@ -595,6 +595,8 @@ namespace Bloom.Edit
         public void UpdateMetadataForCurrentImage()
         {
             _model.UpdateMetaData(_fileNameOfImageBeingModified);
+            // Refresh the page to get rid of obsolete "missing copyright" buttons. (BL-16100)
+            _model.RefreshDisplayOfCurrentPage();
         }
 
         private void LaunchCopyrightAndLicenseDialogForImage(Metadata imageMetadata)
