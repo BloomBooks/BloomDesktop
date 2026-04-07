@@ -10,12 +10,12 @@ import { getInitialBookSettingsPageKey } from "./BookSettingsButton";
 const getCurrentPageElementMock = vi.mocked(getCurrentPageElement);
 
 describe("BookSettingsButton", () => {
-    it("defaults to content pages if the current page is not available yet", () => {
+    it("defaults to Theme & Layout if the current page is not available yet", () => {
         getCurrentPageElementMock.mockImplementation(() => {
             throw new Error("page iframe not ready");
         });
 
-        expect(getInitialBookSettingsPageKey()).toBe("contentPages");
+        expect(getInitialBookSettingsPageKey()).toBe("themeAndLayout");
     });
 
     it("uses the cover page key when the current page is a cover", () => {

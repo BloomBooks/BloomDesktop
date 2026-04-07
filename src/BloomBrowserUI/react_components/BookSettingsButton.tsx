@@ -16,9 +16,9 @@ export const getInitialBookSettingsPageKey = (): string => {
     try {
         return getCurrentPageElement().classList.contains("cover")
             ? "cover"
-            : "contentPages";
+            : "themeAndLayout";
     } catch {
-        return "contentPages";
+        return "themeAndLayout";
     }
 };
 
