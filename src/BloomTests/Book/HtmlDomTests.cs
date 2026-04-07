@@ -77,6 +77,30 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void RemovePageBackgroundColorStyles_RemovesOnlyPageBackgroundColor()
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml(
+                @"<html><body>
+                    <div class='bloom-page' style='--page-background-color: #123456; --marginBox-background-color: #abcdef; --pageNumber-color: #111111;'></div>
+                    <div class='bloom-page coverColor' style='--page-background-color: #654321;'></div>
+                </body></html>"
+            );
+
+            HtmlDom.RemovePageBackgroundColorStyles(dom);
+
+            var assertThatDom = AssertThatXmlIn.Dom(dom);
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[contains(@class,'bloom-page')][contains(@style,'--marginBox-background-color: #abcdef') and contains(@style,'--pageNumber-color: #111111') and not(contains(@style,'--page-background-color'))]",
+                1
+            );
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[contains(@class,'coverColor') and not(@style)]",
+                1
+            );
+        }
+
+        [Test]
         public void BaseForRelativePaths_NoHead_NoLongerThrows()
         {
             var dom = new HtmlDom(@"<html></html>");

@@ -4493,7 +4493,11 @@ namespace Bloom.Book
             {
                 InsertFullBleedMarkup(printingDom.Body);
             }
-            if (!FullBleed)
+            if (!UserPrefs.IncludeBackgroundColors)
+            {
+                HtmlDom.RemovePageBackgroundColorStyles(printingDom.RawDom);
+            }
+            if (!FullBleed && !UserPrefs.IncludeBackgroundColors)
                 SetBackwardsCompatibleCoverBackgroundColor(printingDom.RawDom, "white", true);
             AddPreviewJavascript(printingDom);
             return printingDom;
