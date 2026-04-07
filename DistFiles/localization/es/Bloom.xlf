@@ -643,7 +643,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.Title">
         <source xml:lang="en">Collection Settings</source>
-        <target xml:lang="es-ES" state="needs-translation">Collection Settings</target>
+        <target xml:lang="es-ES" state="translated">Configuración de la colección</target>
         <note>ID: CollectionSettingsDialog.Title</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink" approved="yes">
