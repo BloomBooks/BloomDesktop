@@ -1853,6 +1853,13 @@ namespace Bloom.Book
                 foreach (var elt in nodesToProcessFirst)
                     UpdateOneElementFromDataSet(data, itemsToDelete, elt);
 
+                // After restoring custom page content from the data-div, prepare any bloom-editables
+                // for languages that weren't present in the saved version (e.g. a newly-added content
+                // language). Without this, the second pass below that updates e.g. bookTitle would
+                // find no destination elements for newly-added languages on the custom page.
+                foreach (var elt in nodesToProcessFirst)
+                    TranslationGroupManager.PrepareElementsInPageOrDocument(elt, this);
+
                 // Run this query AFTER that update, so that we're updating the (possibly modified) set of nodes that
                 // result from doing it.
                 var query =
