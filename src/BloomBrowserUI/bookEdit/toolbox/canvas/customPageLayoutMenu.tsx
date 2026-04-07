@@ -1,11 +1,13 @@
 import * as React from "react";
 import { css, ThemeProvider } from "@emotion/react";
-import { Button, Menu } from "@mui/material";
+import { Button, Link, Menu } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { toolboxMenuPopupTheme } from "../../../bloomMaterialUITheme";
 import { kBloomPurple } from "../../../utils/colorUtils";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { LocalizableSelectableMenuItem } from "../../../react_components/localizableMenuItem";
+import { LightTooltip } from "../../../react_components/lightTooltip";
+import { getWorkspaceBundleExports } from "../../js/workspaceFrames";
 
 export const CustomPageLayoutMenu: React.FunctionComponent<{
     isCustom: boolean;
@@ -31,9 +33,14 @@ export const CustomPageLayoutMenu: React.FunctionComponent<{
         setMenuAnchor(undefined);
     };
 
+    const handleOpenThemeAndLayoutSettings = () => {
+        handleCloseMenu();
+        getWorkspaceBundleExports().showBookSettingsDialog("themeAndLayout");
+    };
+
     const handleSelect = (
         selection: "standard" | "custom",
-        event: React.MouseEvent<HTMLElement>,
+        event: React.MouseEvent<Element>,
     ) => {
         const keepCustomLayoutDataWhenSwitchingToStandard =
             selection === "standard" && event.shiftKey && event.ctrlKey;
@@ -96,16 +103,98 @@ export const CustomPageLayoutMenu: React.FunctionComponent<{
                         selected={!props.isCustom}
                         onClick={(event) => handleSelect("standard", event)}
                     />
-                    <LocalizableSelectableMenuItem
-                        english="Custom"
-                        l10nId="EditTab.CustomCover.Custom"
-                        selected={props.isCustom}
-                        onClick={(event) => handleSelect("custom", event)}
-                        disabled={props.disableCustomPage}
-                        featureName="CustomXMatterPage"
-                    />
+                    {props.disableCustomPage ? (
+                        <LightTooltip
+                            placement="right"
+                            title={
+                                <LegacyThemeCustomLayoutTooltip
+                                    onOpenPageThemeSettings={
+                                        handleOpenThemeAndLayoutSettings
+                                    }
+                                />
+                            }
+                        >
+                            <span
+                                css={css`
+                                    display: block;
+                                `}
+                            >
+                                <LocalizableSelectableMenuItem
+                                    english="Custom"
+                                    l10nId="EditTab.CustomCover.Custom"
+                                    selected={props.isCustom}
+                                    onClick={(event) =>
+                                        handleSelect("custom", event)
+                                    }
+                                    disabled={true}
+                                    featureName="CustomXMatterPage"
+                                />
+                            </span>
+                        </LightTooltip>
+                    ) : (
+                        <LocalizableSelectableMenuItem
+                            english="Custom"
+                            l10nId="EditTab.CustomCover.Custom"
+                            selected={props.isCustom}
+                            onClick={(event) => handleSelect("custom", event)}
+                            disabled={false}
+                            featureName="CustomXMatterPage"
+                        />
+                    )}
                 </Menu>
             </div>
         </ThemeProvider>
+    );
+};
+
+// show a tooltip with a link to the Theme and Layout page of Book Settings when the user tries to select Custom Layout
+// but their current page theme doesn't support it
+const LegacyThemeCustomLayoutTooltip: React.FunctionComponent<{
+    onOpenPageThemeSettings: () => void;
+}> = (props) => {
+    const tooltipMessage = useL10n(
+        "This feature requires a newer [Page Theme].",
+        "EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message",
+    );
+
+    const linkStart = tooltipMessage.indexOf("[");
+    const linkEnd = tooltipMessage.indexOf(
+        "]",
+        linkStart >= 0 ? linkStart + 1 : 0,
+    );
+
+    const beforeLink =
+        linkStart >= 0 ? tooltipMessage.substring(0, linkStart) : "";
+    const linkText =
+        linkStart >= 0 && linkEnd > linkStart
+            ? tooltipMessage.substring(linkStart + 1, linkEnd)
+            : tooltipMessage;
+    const afterLink =
+        linkStart >= 0 && linkEnd > linkStart
+            ? tooltipMessage.substring(linkEnd + 1)
+            : "";
+
+    return (
+        <div
+            css={css`
+                font-size: 12px;
+                line-height: 1.4;
+            `}
+        >
+            {beforeLink}
+            <Link
+                component="button"
+                type="button"
+                underline="always"
+                onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    props.onOpenPageThemeSettings();
+                }}
+            >
+                {linkText}
+            </Link>
+            {afterLink}
+        </div>
     );
 };

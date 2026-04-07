@@ -970,6 +970,11 @@
         <note>BookSettings.ThemeDisablesOptionsNoticeWithLink</note>
         <note>Text in square brackets should be a clickable link that switches this dialog to the Theme and Layout page.</note>
       </trans-unit>
+      <trans-unit id="EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message" translate="no" sil:dynamic="true">
+        <source xml:lang="en">This feature requires a newer [Page Theme].</source>
+        <note>ID: EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message</note>
+        <note>Text in square brackets should be the clickable link that opens Book and Page Settings.</note>
+      </trans-unit>
       <trans-unit id="BookSettings.AdvancedLayoutLabel" sil:dynamic="true">
         <source xml:lang="en">Advanced Layout</source>
         <note>BookSettings.AdvancedLayoutLabel</note>
