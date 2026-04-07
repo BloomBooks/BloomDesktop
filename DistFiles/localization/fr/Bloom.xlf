@@ -640,9 +640,9 @@
         <target xml:lang="fr" state="final">Paramètres</target>
         <note>ID: CollectionSettingsDialog.CollectionSettingsWindowTitle</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.Title">
+      <trans-unit id="CollectionSettingsDialog.Title" approved="yes">
         <source xml:lang="en">Collection Settings</source>
-        <target xml:lang="fr" state="needs-translation">Collection Settings</target>
+        <target xml:lang="fr" state="final">Paramètres de la Collection</target>
         <note>ID: CollectionSettingsDialog.Title</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink" approved="yes">
