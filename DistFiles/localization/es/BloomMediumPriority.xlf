@@ -821,7 +821,7 @@
       </trans-unit>
       <trans-unit id="BookAndPageSettings.BookArea.Description" sil:dynamic="true">
         <source xml:lang="en">Book settings apply to all of the pages of the current book.</source>
-        <target xml:lang="es-ES" state="needs-translation">Book settings apply to all of the pages of the current book.</target>
+        <target xml:lang="es-ES" state="translated">La configuración del libro se aplica a todas las páginas del libro actual.</target>
         <note>ID: BookAndPageSettings.BookArea.Description</note>
       </trans-unit>
       <trans-unit id="BookAndPageSettings.PageArea" sil:dynamic="true">
