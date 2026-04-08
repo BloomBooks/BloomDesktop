@@ -1421,6 +1421,7 @@ namespace Bloom.Edit
 
             return dom;
         }
+
         internal void SaveToolboxSettings(string data)
         {
             // ref BL-9859, BL-9912, BL-9978

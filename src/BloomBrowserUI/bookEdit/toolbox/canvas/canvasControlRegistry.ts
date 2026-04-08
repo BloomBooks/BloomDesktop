@@ -59,6 +59,7 @@ import { DuplicateIcon } from "../../js/DuplicateIcon";
 import { FillSpaceIcon } from "../../js/FillSpaceIcon";
 import { LinkIcon } from "../../js/LinkIcon";
 import { MissingMetadataIcon } from "../../js/MissingMetadataIcon";
+import StyleEditor from "../../StyleEditor/StyleEditor";
 import { editLinkGrid } from "../../js/linkGrid";
 import {
     copyAndPlaySoundAsync,
@@ -130,6 +131,22 @@ const getEditable = (ctx: IControlContext): HTMLElement | undefined => {
     return ctx.canvasElement.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on",
     )[0] as HTMLElement | undefined;
+};
+
+const getFormatTargetElement = (
+    ctx: IControlContext,
+): HTMLElement | undefined => {
+    const editable = getEditable(ctx);
+    if (editable) {
+        return editable;
+    }
+
+    const candidates = Array.from(
+        ctx.canvasElement.querySelectorAll("[class]"),
+    ) as HTMLElement[];
+    return candidates.find((candidate) =>
+        StyleEditor.shouldAllowNonEditableStyleDialogTarget(candidate),
+    );
 };
 
 const hasRealImage = (img: HTMLImageElement | undefined): boolean => {
@@ -738,12 +755,12 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
             iconScale: 0.8,
         },
         action: (ctx) => {
-            const editable = getEditable(ctx);
-            if (!editable) {
+            const target = getFormatTargetElement(ctx);
+            if (!target) {
                 return;
             }
 
-            GetEditor().runFormatDialog(editable);
+            GetEditor().runFormatDialog(target);
         },
     },
     copyText: {
@@ -1086,6 +1103,12 @@ export const controlSections: Record<SectionId, IControlSection> = {
         id: "gameDraggable",
         controlsBySurface: {
             menu: ["toggleDraggable", "togglePartOfRightAnswer"],
+        },
+    },
+    formatTarget: {
+        id: "formatTarget",
+        controlsBySurface: {
+            menu: ["format"],
         },
     },
     image: {

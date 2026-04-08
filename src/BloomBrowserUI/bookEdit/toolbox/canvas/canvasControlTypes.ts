@@ -96,6 +96,7 @@ export type CommandControlId = Exclude<TopLevelControlId, PanelControlId>;
 
 export type SectionId =
     | "gameDraggable"
+    | "formatTarget"
     | "image"
     | "imagePanel"
     | "video"
@@ -117,6 +118,7 @@ export interface IControlContext {
     hasPreviousVideoContainer: boolean;
     hasNextVideoContainer: boolean;
     hasText: boolean;
+    hasFormatTarget: boolean;
     isRectangle: boolean;
     rectangleHasBackground: boolean;
     isCropped: boolean;

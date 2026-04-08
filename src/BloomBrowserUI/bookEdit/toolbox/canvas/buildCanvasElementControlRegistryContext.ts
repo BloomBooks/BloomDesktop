@@ -8,6 +8,7 @@ import {
     kImageContainerClass,
 } from "../../js/bloomImages";
 import { getGameType, GameType } from "../games/GameInfo";
+import StyleEditor from "../../StyleEditor/StyleEditor";
 import { kDraggableIdAttribute } from "./canvasElementDraggables";
 import {
     kBackgroundImageClass,
@@ -95,6 +96,16 @@ export const buildCanvasElementControlRegistryContext = (
         canvasElement.hasAttribute("data-derived") ||
         canvasElement.querySelector("[data-derived]") !== null;
     const hasText = hasEditableText || hasDerivedText;
+    const hasFormatTarget =
+        canvasElement.getElementsByClassName(
+            "bloom-editable bloom-visibility-code-on",
+        ).length > 0 ||
+        Array.from(canvasElement.querySelectorAll("[class]")).some(
+            (candidate) =>
+                StyleEditor.shouldAllowNonEditableStyleDialogTarget(
+                    candidate as HTMLElement,
+                ),
+        );
     const isRectangle =
         canvasElement.getElementsByClassName("bloom-rectangle").length > 0;
     const rectangle = canvasElement.getElementsByClassName(
@@ -148,6 +159,7 @@ export const buildCanvasElementControlRegistryContext = (
             ? !!findNextVideoContainer(videoContainer)
             : false,
         hasText,
+        hasFormatTarget,
         isRectangle,
         rectangleHasBackground:
             rectangle?.classList.contains("bloom-theme-background") ?? false,

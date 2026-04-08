@@ -19,12 +19,20 @@ export interface IAlternate {
     lang?: string;
 }
 
+interface ITailSpec {
+    tipX: number;
+    tipY: number;
+    midpointX: number;
+    midpointY: number;
+}
+
 export const saveStateOfCanvasElementAsCurrentLangAlternate = (
     canvasElement: HTMLElement,
     canvasElementLangIn?: string,
 ): void => {
     const canvasElementLang =
-        canvasElementLangIn ?? GetSettings().languageForNewTextBoxes;
+        canvasElementLangIn ??
+        (GetSettings() as ICollectionSettings).languageForNewTextBoxes;
 
     const editable = Array.from(
         canvasElement.getElementsByClassName("bloom-editable"),
@@ -49,7 +57,8 @@ export const saveStateOfCanvasElementAsCurrentLangAlternate = (
 export const adjustCanvasElementsForCurrentLanguage = (
     container: HTMLElement,
 ): void => {
-    const canvasElementLang = GetSettings().languageForNewTextBoxes;
+    const canvasElementLang = (GetSettings() as ICollectionSettings)
+        .languageForNewTextBoxes;
     Array.from(container.getElementsByClassName(kCanvasElementClass)).forEach(
         (canvasElement) => {
             const editable = Array.from(
@@ -110,11 +119,12 @@ export const adjustCanvasElementsForCurrentLanguage = (
 export const saveCurrentCanvasElementStateAsCurrentLangAlternate = (
     container: HTMLElement,
 ): void => {
-    const canvasElementLang = GetSettings().languageForNewTextBoxes;
+    const canvasElementLang = (GetSettings() as ICollectionSettings)
+        .languageForNewTextBoxes;
     Array.from(container.getElementsByClassName(kCanvasElementClass)).forEach(
-        (top: HTMLElement) =>
+        (top) =>
             saveStateOfCanvasElementAsCurrentLangAlternate(
-                top,
+                top as HTMLElement,
                 canvasElementLang,
             ),
     );
@@ -166,7 +176,8 @@ export const adjustCanvasElementAlternates = (
     newLeft: number,
     newTop: number,
 ): void => {
-    const canvasElementLang = GetSettings().languageForNewTextBoxes;
+    const canvasElementLang = (GetSettings() as ICollectionSettings)
+        .languageForNewTextBoxes;
     Array.from(canvasElement.getElementsByClassName("bloom-editable")).forEach(
         (editable) => {
             const lang = editable.getAttribute("lang");
@@ -207,22 +218,15 @@ export const adjustCanvasElementAlternates = (
                         height,
                     );
 
-                    const tails = alternate.tails;
-                    tails.forEach(
-                        (tail: {
-                            tipX: number;
-                            tipY: number;
-                            midpointX: number;
-                            midpointY: number;
-                        }) => {
-                            tail.tipX = newLeft + (tail.tipX - oldLeft) * scale;
-                            tail.tipY = newTop + (tail.tipY - oldTop) * scale;
-                            tail.midpointX =
-                                newLeft + (tail.midpointX - oldLeft) * scale;
-                            tail.midpointY =
-                                newTop + (tail.midpointY - oldTop) * scale;
-                        },
-                    );
+                    const tails = alternate.tails as ITailSpec[];
+                    tails.forEach((tail) => {
+                        tail.tipX = newLeft + (tail.tipX - oldLeft) * scale;
+                        tail.tipY = newTop + (tail.tipY - oldTop) * scale;
+                        tail.midpointX =
+                            newLeft + (tail.midpointX - oldLeft) * scale;
+                        tail.midpointY =
+                            newTop + (tail.midpointY - oldTop) * scale;
+                    });
                     alternate.style = newStyle;
                     alternate.tails = tails;
                     editable.setAttribute(

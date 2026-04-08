@@ -84,7 +84,7 @@ export const audioAvailabilityRules: AvailabilityRulesMap = {
 
 export const textAvailabilityRules: AvailabilityRulesMap = {
     format: {
-        visible: (ctx) => ctx.hasText,
+        visible: (ctx) => ctx.hasFormatTarget,
     },
     copyText: {
         // Keep this available whenever the element has text. The command

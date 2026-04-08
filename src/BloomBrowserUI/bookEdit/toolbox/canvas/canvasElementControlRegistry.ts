@@ -272,10 +272,13 @@ export const navigationLabelButtonControls: ICanvasElementControlConfiguration =
 
 export const noneCanvasElementControls: ICanvasElementControlConfiguration = {
     type: "none",
-    menuSections: ["wholeElement"],
-    toolbar: ["duplicate", "delete"],
+    menuSections: ["formatTarget", "wholeElement"],
+    toolbar: ["format", "spacer", "duplicate", "delete"],
     toolPanel: [],
-    availabilityRules: mergeRules(wholeElementAvailabilityRules),
+    availabilityRules: mergeRules(
+        textAvailabilityRules,
+        wholeElementAvailabilityRules,
+    ),
 };
 
 export const canvasElementControlRegistry: Record<
