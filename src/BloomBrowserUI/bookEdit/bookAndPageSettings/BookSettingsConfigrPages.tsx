@@ -1,5 +1,5 @@
 import { css } from "@emotion/react";
-import { Slider, Typography } from "@mui/material";
+import { Link, Slider, Typography } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import {
     ConfigrBoolean,
@@ -57,6 +57,7 @@ type BookSettingsAreaProps = {
     migratedTheme: string;
     deleteCustomBookStyles: () => void;
     saveSettingsAndCloseDialog: () => void;
+    onGoToThemeAndLayout?: () => void;
     onColorPickerVisibilityChanged?: (open: boolean) => void;
     themeNames: Array<{ label: string; value: string }>;
 };
@@ -79,18 +80,22 @@ export const useBookSettingsAreaDefinition = (
     );
 
     const coverLabel = useL10n("Cover", "BookSettings.CoverGroupLabel");
-    const contentPagesLabel = useL10n(
-        "Content Pages",
-        "BookSettings.ContentPagesGroupLabel",
+    const themeAndLayoutLabel = useL10n(
+        "Theme & Layout",
+        "BookSettings.ThemeAndLayoutGroupLabel",
     );
     const printPublishingLabel = useL10n(
         "Print Publishing",
         "BookSettings.PrintPublishingGroupLabel",
     );
-    const languagesToShowNormalSubgroupLabel = useL10n(
+    const languagesLabel = useL10n(
+        "Languages",
+        "BookSettings.LanguagesGroupLabel",
+        "",
+    );
+    const normalTextBoxLanguagesLabel = useL10n(
         "Languages to show in normal text boxes",
         "BookSettings.NormalTextBoxLangsLabel",
-        "",
     );
     const themeLabel = useL10n("Page Theme", "BookSettings.PageThemeLabel", "");
     const themeDescription = useL10n(
@@ -192,7 +197,7 @@ export const useBookSettingsAreaDefinition = (
     const coverColorPickerControl = React.useCallback(
         (coverColorProps: {
             value: string;
-            disabled: boolean;
+            disabled?: boolean;
             onChange: (value: string) => void;
         }) => {
             return (
@@ -212,66 +217,10 @@ export const useBookSettingsAreaDefinition = (
         pageKey: "bookArea",
         content: bookAreaDescription,
         pages: [
-            <ConfigrPage key="cover" label={coverLabel} pageKey="cover">
-                {props.appearanceDisabled && (
-                    <ConfigrStatic>
-                        <NoteBox>
-                            <Div l10nKey="BookSettings.ThemeDisablesOptionsNotice">
-                                The selected page theme does not support the
-                                following settings.
-                            </Div>
-                        </NoteBox>
-                    </ConfigrStatic>
-                )}
-                <ConfigrGroup label={whatToShowOnCoverLabel}>
-                    <FieldVisibilityGroup
-                        field="cover-title"
-                        labelFrame="Show Title in {0}"
-                        labelFrameL10nKey="BookSettings.ShowWrittenLanguageTitle"
-                        settings={props.settings}
-                        settingsToReturnLater={props.settingsToReturnLater}
-                        disabled={props.appearanceDisabled}
-                        L1MustBeTurnedOn={true}
-                        getAdditionalProps={props.getAdditionalProps}
-                    />
-
-                    <ConfigrBoolean
-                        label={showLanguageNameLabel}
-                        disabled={props.appearanceDisabled}
-                        {...props.getAdditionalProps<boolean>(
-                            `cover-languageName-show`,
-                        )}
-                    />
-                    <ConfigrBoolean
-                        label={showTopicLabel}
-                        disabled={props.appearanceDisabled}
-                        {...props.getAdditionalProps<boolean>(
-                            `cover-topic-show`,
-                        )}
-                    />
-                    <ConfigrBoolean
-                        label={showCreditsLabel}
-                        disabled={props.appearanceDisabled}
-                        {...props.getAdditionalProps<boolean>(
-                            `cover-creditsRow-show`,
-                        )}
-                    />
-                </ConfigrGroup>
-                <ConfigrGroup label={"All Cover Pages"}>
-                    <ConfigrCustomStringInput
-                        label={coverBackgroundColorLabel}
-                        control={coverColorPickerControl}
-                        disabled={props.appearanceDisabled}
-                        {...props.getAdditionalProps<string>(
-                            `cover-background-color`,
-                        )}
-                    />
-                </ConfigrGroup>
-            </ConfigrPage>,
             <ConfigrPage
-                key="contentPages"
-                label={contentPagesLabel}
-                pageKey="contentPages"
+                key="themeAndLayout"
+                label={themeAndLayoutLabel}
+                pageKey="themeAndLayout"
             >
                 {
                     // This group of four possible messages...sometimes none of them shows, so there are five options...
@@ -419,20 +368,10 @@ export const useBookSettingsAreaDefinition = (
                         description={pageNumberLocationNote}
                     />
                 </ConfigrGroup>
-                <ConfigrGroup label={languagesToShowNormalSubgroupLabel}>
-                    <FieldVisibilityGroup
-                        field="autoTextBox"
-                        labelFrame="Show {0}"
-                        labelFrameL10nKey="BookSettings.ShowContentLanguage"
-                        settings={props.settings}
-                        settingsToReturnLater={props.settingsToReturnLater}
-                        disabled={false}
-                        getAdditionalProps={props.getAdditionalProps}
-                    />
-                </ConfigrGroup>
                 <ConfigrGroup label={advancedLayoutLabel}>
                     <ConfigrSelect
                         label={textPaddingLabel}
+                        disabled={props.appearanceDisabled}
                         options={[
                             {
                                 label: textPaddingDefaultLabel,
@@ -453,6 +392,7 @@ export const useBookSettingsAreaDefinition = (
                     />
                     <ConfigrSelect
                         label={gutterLabel}
+                        disabled={props.appearanceDisabled}
                         options={[
                             {
                                 label: gutterDefaultLabel,
@@ -466,6 +406,80 @@ export const useBookSettingsAreaDefinition = (
                         ]}
                         description={gutterDescription}
                         {...props.getAdditionalProps<string>(`page-gutter`)}
+                    />
+                </ConfigrGroup>
+            </ConfigrPage>,
+            <ConfigrPage key="cover" label={coverLabel} pageKey="cover">
+                {props.appearanceDisabled && (
+                    <ConfigrStatic>
+                        <NoteBox>
+                            <ThemeDisablesOptionsNoticeWithLink
+                                onGoToThemeAndLayout={
+                                    props.onGoToThemeAndLayout
+                                }
+                            />
+                        </NoteBox>
+                    </ConfigrStatic>
+                )}
+                <ConfigrGroup label={whatToShowOnCoverLabel}>
+                    <FieldVisibilityGroup
+                        field="cover-title"
+                        labelFrame="Show Title in {0}"
+                        labelFrameL10nKey="BookSettings.ShowWrittenLanguageTitle"
+                        settings={props.settings}
+                        settingsToReturnLater={props.settingsToReturnLater}
+                        disabled={props.appearanceDisabled}
+                        L1MustBeTurnedOn={true}
+                        getAdditionalProps={props.getAdditionalProps}
+                    />
+
+                    <ConfigrBoolean
+                        label={showLanguageNameLabel}
+                        disabled={props.appearanceDisabled}
+                        {...props.getAdditionalProps<boolean>(
+                            `cover-languageName-show`,
+                        )}
+                    />
+                    <ConfigrBoolean
+                        label={showTopicLabel}
+                        disabled={props.appearanceDisabled}
+                        {...props.getAdditionalProps<boolean>(
+                            `cover-topic-show`,
+                        )}
+                    />
+                    <ConfigrBoolean
+                        label={showCreditsLabel}
+                        disabled={props.appearanceDisabled}
+                        {...props.getAdditionalProps<boolean>(
+                            `cover-creditsRow-show`,
+                        )}
+                    />
+                </ConfigrGroup>
+                <ConfigrGroup label={"All Cover Pages"}>
+                    <ConfigrCustomStringInput
+                        label={coverBackgroundColorLabel}
+                        control={coverColorPickerControl}
+                        disabled={props.appearanceDisabled}
+                        {...props.getAdditionalProps<string>(
+                            `cover-background-color`,
+                        )}
+                    />
+                </ConfigrGroup>
+            </ConfigrPage>,
+            <ConfigrPage
+                key="normalTextBoxLanguages"
+                label={languagesLabel}
+                pageKey="normalTextBoxLanguages"
+            >
+                <ConfigrGroup label={normalTextBoxLanguagesLabel}>
+                    <FieldVisibilityGroup
+                        field="autoTextBox"
+                        labelFrame="Show {0}"
+                        labelFrameL10nKey="BookSettings.ShowContentLanguage"
+                        settings={props.settings}
+                        settingsToReturnLater={props.settingsToReturnLater}
+                        disabled={false}
+                        getAdditionalProps={props.getAdditionalProps}
                     />
                 </ConfigrGroup>
             </ConfigrPage>,
@@ -541,6 +555,40 @@ export const useBookSettingsAreaDefinition = (
             </ConfigrPage>,
         ],
     };
+};
+
+export const ThemeDisablesOptionsNoticeWithLink: React.FunctionComponent<{
+    onGoToThemeAndLayout?: () => void;
+}> = (props) => {
+    const message = useL10n(
+        "The selected [Page Theme] does not support the following settings.",
+        "BookSettings.ThemeDisablesOptionsNoticeWithLink",
+    );
+
+    const linkStart = message.indexOf("[");
+    const linkEnd = message.indexOf("]", linkStart >= 0 ? linkStart + 1 : 0);
+
+    if (linkStart < 0 || linkEnd <= linkStart) {
+        return <span>{message}</span>;
+    }
+
+    return (
+        <span>
+            {message.substring(0, linkStart)}
+            <Link
+                component="button"
+                type="button"
+                underline="always"
+                onClick={(event) => {
+                    event.preventDefault();
+                    props.onGoToThemeAndLayout?.();
+                }}
+            >
+                {message.substring(linkStart + 1, linkEnd)}
+            </Link>
+            {message.substring(linkEnd + 1)}
+        </span>
+    );
 };
 
 const BloomResolutionSlider: React.FunctionComponent<
@@ -632,7 +680,7 @@ const BloomResolutionSliderInner: React.FunctionComponent<{
 
 const CoverColorPickerForConfigr: React.FunctionComponent<{
     value: string;
-    disabled: boolean;
+    disabled?: boolean;
     onChange: (value: string) => void;
     onColorPickerVisibilityChanged?: (open: boolean) => void;
 }> = (props) => {

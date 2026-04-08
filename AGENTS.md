@@ -42,6 +42,7 @@ It is vital that you not run `yarn build` unless instructed to. If there is alre
 # Localization
 - Localizations for translatable strings are kept in DistFiles/localizations; new ones are initially added to one of the files in the "en" subdirectory
 - Mark new XLF entries translate="no"
+- When adding a new string, do not add it to all of the various language files. Just the one in the "en" subdirectory.
 - Don't change the content or ID of an existing XLF entry unless it is new (marked translate="no"). Instead, mark the old one with a note saying it is "obsolete as of <current Bloom version>" and make a new entry with a different ID.
 
 # Commenting

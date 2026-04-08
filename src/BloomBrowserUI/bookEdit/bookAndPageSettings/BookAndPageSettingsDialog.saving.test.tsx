@@ -23,6 +23,24 @@ const { mockPost, mockPostJson, mockCloseDialog, configrPaneRenderState } =
         },
     }));
 
+vi.mock("./BookSettingsConfigrPages", () => ({
+    useBookSettingsAreaDefinition: (props: {
+        onGoToThemeAndLayout?: () => void;
+    }) => ({
+        pageKey: "bookArea",
+        label: "Book",
+        content: (
+            <button
+                data-testid="go-to-theme-and-layout"
+                onClick={() => props.onGoToThemeAndLayout?.()}
+            >
+                Go to Theme &amp; Layout
+            </button>
+        ),
+        pages: [],
+    }),
+}));
+
 vi.mock("../../utils/shared", () => ({
     getPageIframeBody: () => document.body,
     getBloomPageElement: () =>
@@ -123,11 +141,22 @@ vi.mock("@sillsdev/config-r", () => ({
                 pageNumberBackgroundColor: string;
             };
         };
+        initiallySelectedTopLevelPageKey?: string;
         onChange: (settings: unknown) => void;
     }) => {
+        const [currentPage, setCurrentPage] = React.useState(
+            props.initiallySelectedTopLevelPageKey ?? "themeAndLayout",
+        );
         configrPaneRenderState.lastInitialValues = props.initialValues;
         return (
             <div>
+                <div data-testid="current-configr-page">{currentPage}</div>
+                <button
+                    data-testid="navigate-cover"
+                    onClick={() => setCurrentPage("cover")}
+                >
+                    Navigate Cover
+                </button>
                 <button
                     data-testid="theme-change"
                     onClick={() => {
@@ -168,11 +197,17 @@ vi.mock("@sillsdev/config-r", () => ({
                 >
                     Page Reset
                 </button>
+                {props.children}
             </div>
         );
     },
-    ConfigrArea: (props: React.PropsWithChildren<object>) => (
-        <div>{props.children}</div>
+    ConfigrArea: (
+        props: React.PropsWithChildren<{ content?: React.ReactNode }>,
+    ) => (
+        <div>
+            {props.content}
+            {props.children}
+        </div>
     ),
     ConfigrPage: (props: React.PropsWithChildren<object>) => (
         <div>{props.children}</div>
@@ -278,5 +313,32 @@ describe("BookAndPageSettingsDialog saving", () => {
         click('[data-testid="dialog-ok"]');
 
         expect(mockPostJson).not.toHaveBeenCalled();
+    });
+
+    it("reopens Theme & Layout when the link is clicked a second time", async () => {
+        await act(async () => {
+            ReactDOM.render(
+                <BookAndPageSettingsDialog initiallySelectedPageKey="cover" />,
+                container,
+            );
+        });
+
+        const getCurrentPage = () =>
+            (
+                container.querySelector(
+                    '[data-testid="current-configr-page"]',
+                ) as HTMLElement
+            ).textContent;
+
+        expect(getCurrentPage()).toBe("cover");
+
+        click('[data-testid="go-to-theme-and-layout"]');
+        expect(getCurrentPage()).toBe("themeAndLayout");
+
+        click('[data-testid="navigate-cover"]');
+        expect(getCurrentPage()).toBe("cover");
+
+        click('[data-testid="go-to-theme-and-layout"]');
+        expect(getCurrentPage()).toBe("themeAndLayout");
     });
 });

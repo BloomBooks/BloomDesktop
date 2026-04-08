@@ -1,4 +1,3 @@
-import * as React from "react";
 import ReactDOM from "react-dom";
 import {
     ConfigrArea,
@@ -26,25 +25,35 @@ function renderSettingsPane(
             initiallySelectedTopLevelPageKey={initiallySelectedTopLevelPageKey}
         >
             <ConfigrArea key="bookArea" label="Book" pageKey="bookArea">
+                <ConfigrPage
+                    key="themeAndLayout"
+                    label="Theme & Layout"
+                    pageKey="themeAndLayout"
+                >
+                    {/* Test-only placeholder body; this spec only cares which tab ConfigrPane selects. */}
+                    <ConfigrStatic>
+                        <div>Theme &amp; Layout test content</div>
+                    </ConfigrStatic>
+                </ConfigrPage>
                 <ConfigrPage key="cover" label="Cover" pageKey="cover">
                     <ConfigrStatic>
-                        <div>Cover content</div>
+                        <div>Cover test content</div>
                     </ConfigrStatic>
                 </ConfigrPage>
                 <ConfigrPage
-                    key="contentPages"
-                    label="Content Pages"
-                    pageKey="contentPages"
+                    key="normalTextBoxLanguages"
+                    label="Languages"
+                    pageKey="normalTextBoxLanguages"
                 >
                     <ConfigrStatic>
-                        <div>Content pages content</div>
+                        <div>Languages test content</div>
                     </ConfigrStatic>
                 </ConfigrPage>
             </ConfigrArea>
             <ConfigrArea key="pageArea" label="Current Page" pageKey="pageArea">
                 <ConfigrPage key="colors" label="Colors" pageKey="colors">
                     <ConfigrStatic>
-                        <div>Colors content</div>
+                        <div>Colors test content</div>
                     </ConfigrStatic>
                 </ConfigrPage>
             </ConfigrArea>
@@ -71,9 +80,16 @@ afterEach(() => {
 });
 
 describe("ConfigrPane nested initial selection", () => {
+    it("defaults to Theme & Layout when no page key is provided", () => {
+        renderSettingsPane(undefined as unknown as string);
+
+        expect(getSelectedTabLabels()).toContain("Theme & Layout");
+    });
+
     it.each([
         ["cover", "Cover"],
-        ["contentPages", "Content Pages"],
+        ["themeAndLayout", "Theme & Layout"],
+        ["normalTextBoxLanguages", "Languages"],
         ["colors", "Colors"],
     ])(
         "shows nested page %s when passed as initiallySelectedTopLevelPageKey",

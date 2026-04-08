@@ -172,6 +172,10 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
     const [settingsToReturnLater, setSettingsToReturnLater] = React.useState<
         ConfigrValues | undefined
     >(undefined);
+    const [pageSelectionRequest, setPageSelectionRequest] = React.useState<{
+        pageKey: string;
+        requestId: number;
+    }>();
     const latestSettingsRef = React.useRef<ConfigrValues | undefined>(
         undefined,
     );
@@ -227,6 +231,10 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
 
     const configrInitialValues: ConfigrValues | undefined =
         React.useMemo(() => {
+            if (settingsToReturnLater) {
+                return settingsToReturnLater;
+            }
+
             if (!settings || !pageSettings) {
                 return undefined;
             }
@@ -235,7 +243,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
                 ...settings,
                 page: pageSettings.page,
             } as unknown as ConfigrValues;
-        }, [settings, pageSettings]);
+        }, [settings, pageSettings, settingsToReturnLater]);
 
     const [deletedCustomBookStyles, setDeletedCustomBookStyles] =
         React.useState(false);
@@ -356,6 +364,15 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
         migratedTheme,
         deleteCustomBookStyles,
         saveSettingsAndCloseDialog,
+        onGoToThemeAndLayout: () => {
+            if (latestSettingsRef.current) {
+                setSettingsToReturnLater(latestSettingsRef.current);
+            }
+            setPageSelectionRequest((currentRequest) => ({
+                pageKey: "themeAndLayout",
+                requestId: (currentRequest?.requestId ?? 0) + 1,
+            }));
+        },
         onColorPickerVisibilityChanged: setDialogVisibleWhileColorPickerOpen,
         themeNames: appearanceUIOptions.themeNames,
     });
@@ -364,9 +381,12 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
         onColorPickerVisibilityChanged: setDialogVisibleWhileColorPickerOpen,
     });
 
-    const initiallySelectedConfigrPageKey = currentPageIsXMatter
-        ? undefined
-        : props.initiallySelectedPageKey;
+    const initiallySelectedConfigrPageKey = props.initiallySelectedPageKey;
+    const selectedConfigrPageKey =
+        pageSelectionRequest?.pageKey ?? initiallySelectedConfigrPageKey;
+    const configrPaneKey = pageSelectionRequest
+        ? `${pageSelectionRequest.pageKey}-${pageSelectionRequest.requestId}`
+        : (selectedConfigrPageKey ?? "default");
 
     const configrAreas = [
         <ConfigrArea
@@ -446,6 +466,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
             >
                 {configrInitialValues && (
                     <ConfigrPane
+                        key={configrPaneKey}
                         className={kConfigrPaneClassName}
                         label={bookSettingsTitle}
                         initialValues={configrInitialValues}
@@ -491,7 +512,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
                             applyChangedPageSettings(changedPageSettings);
                         }}
                         initiallySelectedTopLevelPageKey={
-                            initiallySelectedConfigrPageKey
+                            selectedConfigrPageKey
                         }
                     >
                         {configrAreas}
