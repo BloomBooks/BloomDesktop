@@ -2,7 +2,7 @@ import { SetupImage } from "./bloomImages";
 import { kBloomCanvasClass } from "../toolbox/canvas/canvasElementUtils";
 import "../../lib/split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
-import { postThatMightNavigate } from "../../utils/bloomApi";
+import { post, postThatMightNavigate } from "../../utils/bloomApi";
 import { theOneCanvasElementManager } from "./CanvasElementManager";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import $ from "jquery";
