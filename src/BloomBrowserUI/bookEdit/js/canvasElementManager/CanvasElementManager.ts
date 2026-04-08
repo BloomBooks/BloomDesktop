@@ -76,9 +76,10 @@ import { CanvasElementClipboard } from "./CanvasElementClipboard";
 import { CanvasElementDuplication } from "./CanvasElementDuplication";
 import {
     alignControlFrameWithActiveElement as alignCanvasElementControlFrameWithActiveElement,
+    adjustMoveCropHandleVisibility,
     adjustContextControlPosition as adjustCanvasElementContextControlPosition,
     checkActiveElementIsVisible as ensureActiveCanvasElementIsVisible,
-    getHandleTitlesAsync as getCanvasElementHandleTitlesAsync,
+    getHandleTitlesAsync,
     removeControlFrame as removeCanvasElementControlFrame,
     restoreFocus as restoreCanvasElementFocus,
     setupControlFrame as setupCanvasElementControlFrame,
@@ -219,7 +220,9 @@ export class CanvasElementManager {
             findBestLocationForNewCanvasElement:
                 this.findBestLocationForNewCanvasElement.bind(this),
             reorderRectangleCanvasElement:
-                this.reorderRectangleCanvasElement.bind(this),
+                this.factories.reorderRectangleCanvasElement.bind(
+                    this.factories,
+                ),
             addChildInternal: this.addChildInternal.bind(this),
             adjustRelativePointToBloomCanvas:
                 this.adjustRelativePointToBloomCanvas.bind(this),
@@ -241,7 +244,7 @@ export class CanvasElementManager {
                     ),
                 adjustStuffRelatedToImage:
                     this.adjustStuffRelatedToImage.bind(this),
-                getHandleTitlesAsync: this.getHandleTitlesAsync.bind(this),
+                getHandleTitlesAsync,
                 startMoving: this.startMoving.bind(this),
                 stopMoving: this.stopMoving.bind(this),
             },
@@ -1668,31 +1671,9 @@ export class CanvasElementManager {
 
     private doAfterNewImageAdjusted: (() => void) | undefined = undefined;
 
-    private async getHandleTitlesAsync(
-        controlFrame: HTMLElement,
-        className: string,
-        l10nId: string,
-        force: boolean = false,
-        attribute: string = "title",
-    ) {
-        return getCanvasElementHandleTitlesAsync(
-            controlFrame,
-            className,
-            l10nId,
-            force,
-            attribute,
-        );
-    }
-
     // Align the control frame with the active canvas element.
     private alignControlFrameWithActiveElement = () => {
-        alignCanvasElementControlFrameWithActiveElement(
-            this.activeElement,
-            (removeCropAttrsIfNotNeeded) =>
-                this.handleDragInteractions.adjustMoveCropHandleVisibility(
-                    removeCropAttrsIfNotNeeded,
-                ),
-        );
+        alignCanvasElementControlFrameWithActiveElement(this.activeElement);
     };
 
     adjustContextControlPosition(
@@ -2239,7 +2220,7 @@ export class CanvasElementManager {
                 element.classList.remove("moving");
             },
         );
-        this.handleDragInteractions.adjustMoveCropHandleVisibility();
+        adjustMoveCropHandleVisibility(this.activeElement, true);
         this.alignControlFrameWithActiveElement();
     }
 
@@ -2586,15 +2567,6 @@ export class CanvasElementManager {
         this.clipboard.finishPasteImageFromClipboard(imageInfo);
     }
 
-    // Put the rectangle in the right place in the DOM so it is behind the other canvas elements
-    // but in front of the background image.  Also adjust the ComicalJS bubble level so it is in
-    // front of the the background image.
-    private reorderRectangleCanvasElement(
-        rectangle: HTMLElement,
-        bloomCanvas: HTMLElement,
-    ): void {
-        this.factories.reorderRectangleCanvasElement(rectangle, bloomCanvas);
-    }
     public setDefaultHeightFromWidth(canvasElement: HTMLElement) {
         this.factories.setDefaultHeightFromWidth(canvasElement);
     }

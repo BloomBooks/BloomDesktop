@@ -12,6 +12,7 @@ import {
     kBloomButtonClass,
     kBloomCanvasSelector,
 } from "../../toolbox/canvas/canvasElementConstants";
+import { CanvasElementHandleDragInteractions } from "./CanvasElementHandleDragInteractions";
 
 export interface ICanvasElementSelectionUiCallbacks {
     getActiveElement: () => HTMLElement | undefined;
@@ -202,9 +203,6 @@ export async function getHandleTitlesAsync(
 // Align the control frame with the active canvas element.
 export function alignControlFrameWithActiveElement(
     activeElement: HTMLElement | undefined,
-    adjustMoveCropHandleVisibility: (
-        removeCropAttrsIfNotNeeded?: boolean,
-    ) => void,
 ): void {
     const controlFrame = document.getElementById(
         "canvas-element-control-frame",
@@ -293,8 +291,40 @@ export function alignControlFrameWithActiveElement(
         controlsAbove =
             tipY > activeElement.clientHeight + activeElement.offsetTop;
     }
-    adjustMoveCropHandleVisibility();
+    adjustMoveCropHandleVisibility(activeElement);
     adjustContextControlPosition(controlFrame, controlsAbove, activeElement);
+}
+
+export function adjustMoveCropHandleVisibility(
+    activeElement: HTMLElement | undefined,
+    removeCropAttrsIfNotNeeded = false,
+): void {
+    const controlFrame = document.getElementById(
+        "canvas-element-control-frame",
+    );
+    if (!controlFrame || !activeElement) return;
+
+    const imgC = activeElement.getElementsByClassName(kImageContainerClass)[0];
+    const img = imgC?.getElementsByTagName("img")[0];
+    let wantMoveCropHandle = false;
+    if (img) {
+        const imgRect = img.getBoundingClientRect();
+        const controlRect = controlFrame.getBoundingClientRect();
+        wantMoveCropHandle =
+            imgRect.width > controlRect.width + 1 ||
+            imgRect.height > controlRect.height + 1;
+        if (!wantMoveCropHandle && removeCropAttrsIfNotNeeded) {
+            img.style.width = "";
+            img.style.top = "";
+            img.style.left = "";
+        }
+    }
+
+    controlFrame.classList.toggle(
+        "bloom-ui-canvas-element-show-move-crop-handle",
+        wantMoveCropHandle,
+    );
+    CanvasElementHandleDragInteractions.updateCurrentlyCropped(activeElement);
 }
 
 export function adjustContextControlPosition(

@@ -746,7 +746,9 @@ export class CanvasElementHandleDragInteractions {
                 break;
         }
         this.host.adjustStuffRelatedToImage(activeElement, img);
-        this.updateCurrentlyCropped(activeElement);
+        CanvasElementHandleDragInteractions.updateCurrentlyCropped(
+            activeElement,
+        );
     };
 
     private adjustDeltaForSnap(
@@ -782,36 +784,7 @@ export class CanvasElementHandleDragInteractions {
         return delta;
     }
 
-    public adjustMoveCropHandleVisibility(removeCropAttrsIfNotNeeded = false) {
-        const controlFrame = document.getElementById(
-            "canvas-element-control-frame",
-        );
-        const activeElement = this.host.getActiveElement();
-        if (!controlFrame || !activeElement) return;
-        const imgC =
-            activeElement.getElementsByClassName(kImageContainerClass)[0];
-        const img = imgC?.getElementsByTagName("img")[0];
-        let wantMoveCropHandle = false;
-        if (img) {
-            const imgRect = img.getBoundingClientRect();
-            const controlRect = controlFrame.getBoundingClientRect();
-            wantMoveCropHandle =
-                imgRect.width > controlRect.width + 1 ||
-                imgRect.height > controlRect.height + 1;
-            if (!wantMoveCropHandle && removeCropAttrsIfNotNeeded) {
-                img.style.width = "";
-                img.style.top = "";
-                img.style.left = "";
-            }
-        }
-        controlFrame.classList.toggle(
-            "bloom-ui-canvas-element-show-move-crop-handle",
-            wantMoveCropHandle,
-        );
-        this.updateCurrentlyCropped(activeElement);
-    }
-
-    private updateCurrentlyCropped(activeElement: HTMLElement) {
+    public static updateCurrentlyCropped(activeElement: HTMLElement): void {
         const sideHandles = Array.from(
             document.getElementsByClassName(
                 "bloom-ui-canvas-element-side-handle",
@@ -841,7 +814,7 @@ export class CanvasElementHandleDragInteractions {
             if (!longClass) return;
             const side = longClass.substring(
                 "bloom-ui-canvas-element-side-handle-".length,
-            );
+            ) as keyof typeof cropped;
             if (cropped[side]) {
                 handle.classList.add("bloom-currently-cropped");
             } else {
