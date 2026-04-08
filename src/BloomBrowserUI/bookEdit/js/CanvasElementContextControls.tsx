@@ -1876,7 +1876,6 @@ function addImageMenuOptions(
                     // I think we still want the cover background to be the cover image. So we will not
                     // remove an existing data-book value if the current image doesn't have one.
                     if (currentDataBook) {
-                        bgImg.setAttribute("data-book", currentDataBook);
                         // Arguable. But the only image that currently has a data-book is the cover image.
                         // I think it makes most sense to consider the background image on the cover page
                         // to be the cover image, if it once becomes that way. So we'll not transfer that
@@ -1884,6 +1883,8 @@ function addImageMenuOptions(
                         // (It's dangerous if two different images both have this...eventually one will
                         // get changed to match the other.)
                         img.removeAttribute("data-book");
+                        // Order is important here: we need to retain the data-book value if img === bgImg. (BL-16093)
+                        bgImg.setAttribute("data-book", currentDataBook);
                     }
 
                     if (!haveRealBgImage) {
