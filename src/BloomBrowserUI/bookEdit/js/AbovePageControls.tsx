@@ -49,6 +49,7 @@ export function updateAbovePageControls(
 
 export function resetAbovePageControls(): void {
     currentState = defaultState;
+    getWorkspaceBundleExports().setToolboxEnabled(true);
 
     const container = document.getElementsByClassName(
         "above-page-control-container",
