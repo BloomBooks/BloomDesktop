@@ -1,9 +1,10 @@
 import * as React from "react";
 import { css, ThemeProvider } from "@emotion/react";
-import { Button, Link, Menu, Tooltip } from "@mui/material";
+import { Button, Link, Menu } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { toolboxMenuPopupTheme } from "../../../bloomMaterialUITheme";
 import { kBloomPurple } from "../../../utils/colorUtils";
+import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { LocalizableSelectableMenuItem } from "../../../react_components/localizableMenuItem";
 import { useGetFeatureStatus } from "../../../react_components/featureStatus";
@@ -110,11 +111,11 @@ export const CustomPageLayoutMenu: React.FunctionComponent<{
                         onClick={(event) => handleSelect("standard", event)}
                     />
                     {blockedByLegacyTheme ? (
-                        <Tooltip
+                        <BloomTooltip
                             open={!!menuAnchor}
                             placement="right"
-                            arrow
-                            title={
+                            enableClickInTooltip={true}
+                            tip={
                                 <LegacyThemeCustomLayoutTooltip
                                     onOpenPageThemeSettings={
                                         handleOpenThemeAndLayoutSettings
@@ -122,19 +123,17 @@ export const CustomPageLayoutMenu: React.FunctionComponent<{
                                 />
                             }
                         >
-                            <span>
-                                <LocalizableSelectableMenuItem
-                                    english="Custom"
-                                    l10nId="EditTab.CustomCover.Custom"
-                                    selected={props.isCustom}
-                                    onClick={(event) =>
-                                        handleSelect("custom", event)
-                                    }
-                                    disabled={true}
-                                    featureName="CustomXMatterPage"
-                                />
-                            </span>
-                        </Tooltip>
+                            <LocalizableSelectableMenuItem
+                                english="Custom"
+                                l10nId="EditTab.CustomCover.Custom"
+                                selected={props.isCustom}
+                                onClick={(event) =>
+                                    handleSelect("custom", event)
+                                }
+                                disabled={true}
+                                featureName="CustomXMatterPage"
+                            />
+                        </BloomTooltip>
                     ) : (
                         <LocalizableSelectableMenuItem
                             english="Custom"
