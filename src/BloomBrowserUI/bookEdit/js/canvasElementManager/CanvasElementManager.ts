@@ -104,7 +104,6 @@ const kComicalGeneratedClass: string = "comical-generated";
 const kTransformPropName = "bloom-zoomTransformForInitialFocus";
 export { kBackgroundImageClass } from "../../toolbox/canvas/canvasElementConstants";
 
-type ResizeDirection = "ne" | "nw" | "sw" | "se";
 export {
     getAllDraggables,
     isDraggable,
@@ -2070,11 +2069,6 @@ export class CanvasElementManager {
         };
     }
 
-    // Setup event handlers that allow the canvas element to be moved around or resized.
-    private setMouseDragHandlers(bloomCanvas: HTMLElement): void {
-        this.pointerInteractions.setMouseDragHandlers(bloomCanvas);
-    }
-
     // Move all child canvas elements as necessary so they are at least partly inside their container
     // (by as much as we require when dragging them).
     public ensureCanvasElementsIntersectParent(parentContainer: HTMLElement) {
@@ -2253,42 +2247,6 @@ export class CanvasElementManager {
     // that canvas element as text editing events, rather than drag events, as long as it keeps focus.
     // This is the canvas element, if any, that is currently in that state.
     public theCanvasElementWeAreTextEditing: HTMLElement | undefined;
-
-    // Returns a string representing which style of resize to use
-    // This is based on where the mouse event is relative to the center of the element
-    //
-    // The returned string is the directional prefix to the *-resize cursor values
-    // e.g., if "ne-resize" would be appropriate, this function will return the "ne" prefix
-    // e.g. "ne" = Northeast, "nw" = Northwest", "sw" = Southwest, "se" = Southeast"
-    private getResizeMode(
-        element: HTMLElement,
-        event: MouseEvent,
-    ): ResizeDirection {
-        // Convert into a coordinate system where the origin is the center of the element (rather than the top-left of the page)
-        const center = this.getCenterPosition(element);
-        const clickCoordinates = { x: event.pageX, y: event.pageY };
-        const relativeCoordinates = {
-            x: clickCoordinates.x - center.x,
-            y: clickCoordinates.y - center.y,
-        };
-
-        let resizeMode: ResizeDirection;
-        if (relativeCoordinates.y! < 0) {
-            if (relativeCoordinates.x! >= 0) {
-                resizeMode = "ne"; // NorthEast = top-right
-            } else {
-                resizeMode = "nw"; // NorthWest = top-left
-            }
-        } else {
-            if (relativeCoordinates.x! < 0) {
-                resizeMode = "sw"; // SouthWest = bottom-left
-            } else {
-                resizeMode = "se"; // SouthEast = bottom-right
-            }
-        }
-
-        return resizeMode;
-    }
 
     // Calculates the center of an element
     public getCenterPosition(element: HTMLElement): { x: number; y: number } {
@@ -2534,20 +2492,6 @@ export class CanvasElementManager {
         );
     }
 
-    private addCanvasElementFromOriginal(
-        offsetX: number,
-        offsetY: number,
-        originalElement: HTMLElement,
-        style?: string,
-    ): HTMLElement | undefined {
-        return this.factories.addCanvasElementFromOriginal(
-            offsetX,
-            offsetY,
-            originalElement,
-            style,
-        );
-    }
-
     private isCanvasElementWithClass(
         canvasElement: HTMLElement,
         className: string,
@@ -2607,18 +2551,6 @@ export class CanvasElementManager {
         );
     }
 
-    private addVideoCanvasElement(
-        location: Point,
-        bloomCanvasJQuery: JQuery,
-        rightTopOffset?: string,
-    ): HTMLElement {
-        return this.factories.addVideoCanvasElement(
-            location,
-            bloomCanvasJQuery,
-            rightTopOffset,
-        );
-    }
-
     public getActiveOrFirstBloomCanvasOnPage(): HTMLElement | null {
         // If there is an active element, use its bloom canvas.
         // Otherwise, return the first bloom canvas on the page.
@@ -2652,119 +2584,6 @@ export class CanvasElementManager {
     }
     public finishPasteImageFromClipboard(imageInfo: IImageInfo): void {
         this.clipboard.finishPasteImageFromClipboard(imageInfo);
-    }
-
-    private addPictureCanvasElement(
-        location: Point,
-        bloomCanvasJQuery: JQuery,
-        rightTopOffset?: string,
-        imageInfo?: {
-            imageId: string;
-            src: string; // must already appropriately URL-encoded.
-            copyright: string;
-            creator: string;
-            license: string;
-        },
-        size?: { width: number; height: number },
-        doAfterElementCreated?: (newElement: HTMLElement) => void,
-    ): HTMLElement {
-        return this.factories.addPictureCanvasElement(
-            location,
-            bloomCanvasJQuery,
-            rightTopOffset,
-            imageInfo,
-            size,
-            doAfterElementCreated,
-        );
-    }
-    private addNavigationImageButtonElement(
-        location: Point,
-        bloomCanvasJQuery: JQuery,
-        rightTopOffset?: string,
-        imageInfo?: {
-            imageId: string;
-            src: string; // must already appropriately URL-encoded.
-            copyright: string;
-            creator: string;
-            license: string;
-        },
-        doAfterElementCreated?: (newElement: HTMLElement) => void,
-    ): HTMLElement {
-        return this.factories.addNavigationImageButtonElement(
-            location,
-            bloomCanvasJQuery,
-            rightTopOffset,
-            imageInfo,
-            doAfterElementCreated,
-        );
-    }
-
-    private addNavigationImageWithLabelButtonElement(
-        location: Point,
-        bloomCanvasJQuery: JQuery,
-        rightTopOffset?: string,
-        imageInfo?: {
-            imageId: string;
-            src: string; // must already appropriately URL-encoded.
-            copyright: string;
-            creator: string;
-            license: string;
-        },
-    ): HTMLElement {
-        return this.factories.addNavigationImageWithLabelButtonElement(
-            location,
-            bloomCanvasJQuery,
-            rightTopOffset,
-            imageInfo,
-        );
-    }
-
-    private addNavigationLabelButtonElement(
-        location: Point,
-        bloomCanvasJQuery: JQuery,
-        rightTopOffset?: string,
-    ): HTMLElement {
-        return this.factories.addNavigationLabelButtonElement(
-            location,
-            bloomCanvasJQuery,
-            rightTopOffset,
-        );
-    }
-
-    private addSoundCanvasElement(
-        location: Point,
-        bloomCanvasJQuery: JQuery,
-        rightTopOffset?: string,
-    ): HTMLElement {
-        return this.factories.addSoundCanvasElement(
-            location,
-            bloomCanvasJQuery,
-            rightTopOffset,
-        );
-    }
-
-    private addBookLinkGridCanvasElement(
-        location: Point,
-        bloomCanvasJQuery: JQuery,
-        rightTopOffset?: string,
-    ): HTMLElement {
-        return this.factories.addBookLinkGridCanvasElement(
-            location,
-            bloomCanvasJQuery,
-            rightTopOffset,
-        );
-    }
-
-    private addRectangleCanvasElement(
-        location: Point,
-        bloomCanvasJQuery: JQuery,
-        rightTopOffset?: string,
-    ): HTMLElement {
-        return this.factories.addRectangleCanvasElement(
-            location,
-            bloomCanvasJQuery,
-            rightTopOffset,
-        );
     }
 
     // Put the rectangle in the right place in the DOM so it is behind the other canvas elements
@@ -3140,15 +2959,6 @@ export class CanvasElementManager {
             unscaledRelativeLeft,
             unscaledRelativeTop,
         );
-    }
-
-    // Determines the unrounded width/height of the content of an element (i.e, excluding its margin, border, padding)
-    //
-    // This differs from JQuery width/height because those functions give you values rounded to the nearest pixel.
-    // This differs from getBoundingClientRect().width because that function includes the border and padding of the element in the width.
-    // This function returns the interior content's width/height (unrounded), without any margin, border, or padding
-    private static getInteriorWidthHeight(element: HTMLElement): Point {
-        return Positioning.getInteriorWidthHeight(element);
     }
 
     // Lots of places we need to find the bloom-canvas that a particular element resides in.
