@@ -53,7 +53,12 @@ import {
     kDraggableIdAttribute,
     theOneCanvasElementManager,
 } from "./CanvasElementManager";
-import { copySelection, GetEditor, pasteClipboard } from "./bloomEditing";
+import {
+    copySelection,
+    GetEditor,
+    IsPageXMatter,
+    pasteClipboard,
+} from "./bloomEditing";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { useL10n } from "../../react_components/l10nHooks";
 import { CogIcon } from "./CogIcon";
@@ -1708,6 +1713,19 @@ function addImageMenuOptions(
         );
     };
 
+    // The "Become background" option is not available for standard xmatter pages.
+    const xmatterPage = IsPageXMatter($(canvasElement));
+    const customLayoutablePage = canvasElement.closest(
+        ".bloom-page[data-custom-layout-id]",
+    );
+    const pageAllowsCanvasElements =
+        (!xmatterPage ||
+            (customLayoutablePage &&
+                customLayoutablePage.classList.contains(
+                    "bloom-customLayout",
+                ))) ??
+        false;
+
     const realImagePresent = hasRealImage(img);
     const imageMenuOptions: IMenuItemWithSubmenu[] = [
         // If the image doesn't exist, we still show the menu item for editing metadata,
@@ -1823,7 +1841,7 @@ function addImageMenuOptions(
                 );
             },
         });
-        if (realImagePresent) {
+        if (realImagePresent && pageAllowsCanvasElements) {
             imageMenuOptions.push({
                 l10nId: "EditTab.Toolbox.ComicTool.Options.BecomeBackground",
                 english: "Become Background",
