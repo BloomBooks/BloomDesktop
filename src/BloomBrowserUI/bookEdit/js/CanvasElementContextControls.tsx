@@ -1699,6 +1699,15 @@ function addImageMenuOptions(
         );
     };
 
+    // The "Become background" option is not available for standard cover pages.
+    const customLayoutablePage = canvasElement.closest(
+        ".bloom-page[data-custom-layout-id]",
+    );
+    const isStandardCoverPage =
+        (customLayoutablePage &&
+            !customLayoutablePage.classList.contains("bloom-customLayout")) ??
+        false;
+
     const realImagePresent = hasRealImage(img);
     const imageMenuOptions: IMenuItemWithSubmenu[] = [
         {
@@ -1818,6 +1827,7 @@ function addImageMenuOptions(
             imageMenuOptions.push({
                 l10nId: "EditTab.Toolbox.ComicTool.Options.BecomeBackground",
                 english: "Become Background",
+                disabled: isStandardCoverPage,
                 onClick: () => {
                     const bloomCanvas = canvasElement.closest(
                         kBloomCanvasSelector,
