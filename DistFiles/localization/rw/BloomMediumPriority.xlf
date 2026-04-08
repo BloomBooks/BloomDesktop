@@ -904,6 +904,16 @@
         <target xml:lang="rw" state="needs-translation">Content Pages</target>
         <note>BookSettings.ContentPagesGroupLabel</note>
       </trans-unit>
+      <trans-unit id="BookSettings.ThemeAndLayoutGroupLabel" translate="no" sil:dynamic="true">
+        <source xml:lang="en">Theme &amp; Layout</source>
+        <target xml:lang="rw" state="needs-translation">Theme &amp; Layout</target>
+        <note>ID: BookSettings.ThemeAndLayoutGroupLabel</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.LanguagesGroupLabel" translate="no" sil:dynamic="true">
+        <source xml:lang="en">Languages</source>
+        <target xml:lang="rw" state="needs-translation">Languages</target>
+        <note>ID: BookSettings.LanguagesGroupLabel</note>
+      </trans-unit>
       <trans-unit id="BookSettings.PrintPublishingGroupLabel" sil:dynamic="true">
         <source xml:lang="en">Print Publishing</source>
         <target xml:lang="rw" state="needs-translation">Print Publishing</target>
@@ -1047,6 +1057,16 @@
         <source xml:lang="en">The selected page theme does not support the following settings.</source>
         <target xml:lang="rw" state="needs-translation">The selected page theme does not support the following settings.</target>
         <note>BookSettings.ThemeDisablesOptionsNotice</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.ThemeDisablesOptionsNoticeWithLink" translate="no" sil:dynamic="true">
+        <source xml:lang="en">The selected [Page Theme] does not support the following settings.</source>
+        <target xml:lang="rw" state="needs-translation">The selected [Page Theme] does not support the following settings.</target>
+        <note>BookSettings.ThemeDisablesOptionsNoticeWithLink</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message" translate="no" sil:dynamic="true">
+        <source xml:lang="en">This feature requires a newer [Page Theme].</source>
+        <target xml:lang="rw" state="needs-translation">This feature requires a newer [Page Theme].</target>
+        <note>ID: EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message</note>
       </trans-unit>
       <trans-unit id="BookSettings.AdvancedLayoutLabel" sil:dynamic="true">
         <source xml:lang="en">Advanced Layout</source>
