@@ -1,6 +1,6 @@
 ---
 name: bloom-automation
-description: Use when an agent needs to determine if Bloom is already running, detect whether the running Bloom came from a different worktree, kill Bloom or dotnet-watch parents, start Bloom from the current worktree, attach to the embedded WebView2 over CDP, inspect DOM/console/network, or run Playwright tests against the actual exe instead of CURRENTPAGE.
+description: Use when an agent needs to determine if Bloom is already running, detect whether the running Bloom came from a different worktree, kill Bloom or dotnet-watch parents, start Bloom from the current worktree, attach to the embedded WebView2 over CDP, inspect DOM/console/network, use dev-browser to inspect or run e2e tests against the actual exe instead of CURRENTPAGE.
 argument-hint: "repo root or worktree, task such as status, restart, attach, run exe-backed tests"
 user-invocable: true
 ---
@@ -219,8 +219,9 @@ These tests attach to the real Bloom.exe target over CDP and verify tab switchin
 - Exact-target cleanup is intentionally strict: `killBloomProcess.mjs --http-port <port>` should only kill the instance that actually reports that HTTP port, and should fail without killing anything if that target cannot be resolved.
 - When reporting work, include the helper commands you used so reviewers can confirm the workflow stayed on the supported path.
 - Wrong-worktree detection is authoritative when a real `Bloom.exe` child exists or when `dotnet watch` was started with an absolute `--project` path.
-- A standalone `dotnet watch` started with a relative project path may not expose enough information to attribute it to a worktree. For current-worktree automation, start Bloom through `node scripts/watchBloomExe.mjs`, which always uses an absolute path. For the already-running Bloom workflow, use `--running-bloom` instead of trying to infer a worktree.
 - When more than one Bloom is running from the same worktree, repo-root matching is not enough. Use the explicit HTTP port workflow.
+- For ad hoc local debugging in this workspace, `dev-browser --connect http://localhost:<cdpPort>` can attach directly to the existing Bloom WebView2 target. Use it as a low-friction inspection client.
+- After attaching to Bloom's WebView2 target, if Bloom is on the Edit tab, the editable page content lives inside the iframe named `page`; the top-level document mostly hosts shell UI plus the root dialog container.
 
 ## Completion Checks
 - Bloom's status is known: not running, running from current worktree, or running from different worktree.
@@ -243,7 +244,7 @@ Report:
 - what browser-native evidence you collected: DOM state, console output, network request, tab state, or test results
 
 ## Example Prompts
-- `Use bloom-automation to determine whether Bloom is already running from this worktree and attach Playwright to the embedded browser.`
-- `Use bloom-automation to switch the already-running Bloom to the Edit tab.`
-- `Use bloom-automation to kill the wrong-worktree Bloom and start the current checkout with dotnet watch.`
-- `Use bloom-automation to run the exe-backed Playwright top bar smoke tests against the actual Bloom.exe window.`
+- `troubleshoot why the page is refreshing when we open page settings`
+
+## Debugging tips
+Use node or bash scripts. Avoid powershell. Use the "dev-browser" cli instead of playwright for interactive debugging/driving Bloom. Use "dev-browser --help" to see the available commands and options. If the user hasn't installed dev-browser, ask them for permission to install it (https://github.com/SawyerHood/dev-browser).

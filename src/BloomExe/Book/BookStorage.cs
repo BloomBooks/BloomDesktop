@@ -45,6 +45,8 @@ namespace Bloom.Book
         string FolderName { get; }
         string FolderPath { get; }
         string PathToExistingHtml { get; }
+
+        // Caller owns the returned image and must dispose it promptly.
         bool TryGetPremadeThumbnail(string fileName, out Image image);
 
         //bool DeleteBook();
@@ -435,6 +437,7 @@ namespace Bloom.Book
             string path = Path.Combine(FolderPath, fileName);
             if (RobustFile.Exists(path))
             {
+                // Caller owns this image and must dispose it promptly to release any file lock.
                 image = RobustImageIO.GetImageFromFile(path);
                 return true;
             }

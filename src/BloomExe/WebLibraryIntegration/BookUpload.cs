@@ -46,6 +46,8 @@ namespace Bloom.WebLibraryIntegration
 
         public const string UploadHashesFilename = ".lastUploadInfo"; // this filename must begin with a period
 
+        public const string kUploadStagingFolder = "BloomUploadStaging";
+
         static string _destination;
 
         public BookUpload(
@@ -292,7 +294,7 @@ namespace Bloom.WebLibraryIntegration
                     // that they get to the same index at near enough to the same time to matter.
                     using (
                         var stagingDirectoryTempFolder = new TemporaryFolder(
-                            "BloomUploadStaging" + _stagingVariable++
+                            kUploadStagingFolder + _stagingVariable++
                         )
                     )
                     {

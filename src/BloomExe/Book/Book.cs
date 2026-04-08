@@ -2541,14 +2541,7 @@ namespace Bloom.Book
             // Various things, especially publication, don't work with unknown page sizes.
             Layout layout = Layout.FromDomAndChoices(bookDOM, Layout.A5Portrait, fileLocator);
             var oldIds = new List<string>();
-            var customLayoutIds = bookDOM
-                .SafeSelectNodes(
-                    "//div[contains(@class, 'bloom-page') and @data-custom-layout-id and contains(concat(' ', normalize-space(@class), ' '), ' bloom-customLayout ')]"
-                )
-                .Cast<SafeXmlElement>()
-                .Select(page => page.GetAttribute("data-custom-layout-id"))
-                .Where(id => !string.IsNullOrEmpty(id))
-                .ToHashSet();
+            var customLayoutIds = XMatterHelper.GatherCustomLayoutIds(bookDOM);
             XMatterHelper.RemoveExistingXMatter(bookDOM, oldIds);
             // this says, if you can't figure out the page size, use the one we got before we removed the xmatter...
             // still requiring it to be a valid layout.
@@ -2560,18 +2553,7 @@ namespace Bloom.Book
                 _bookData.MetadataLanguage1Tag,
                 oldIds
             );
-            foreach (
-                var page in bookDOM
-                    .SafeSelectNodes(
-                        "//div[contains(@class, 'bloom-page') and @data-custom-layout-id]"
-                    )
-                    .Cast<SafeXmlElement>()
-            )
-            {
-                var customLayoutId = page.GetAttribute("data-custom-layout-id");
-                if (customLayoutIds.Contains(customLayoutId))
-                    page.AddClass("bloom-customLayout");
-            }
+            XMatterHelper.RestoreCustomLayoutClasses(bookDOM, customLayoutIds);
             var dataBookLangs = bookDOM.GatherDataBookLanguages();
             TranslationGroupManager.PrepareDataBookTranslationGroups(bookDOM.RawDom, dataBookLangs);
 
@@ -4489,7 +4471,11 @@ namespace Bloom.Book
             {
                 InsertFullBleedMarkup(printingDom.Body);
             }
-            if (!FullBleed)
+            if (!UserPrefs.IncludeBackgroundColors)
+            {
+                HtmlDom.RemovePageBackgroundColorStyles(printingDom.RawDom);
+            }
+            if (!FullBleed && !UserPrefs.IncludeBackgroundColors)
                 SetBackwardsCompatibleCoverBackgroundColor(printingDom.RawDom, "white", true);
             AddPreviewJavascript(printingDom);
             return printingDom;

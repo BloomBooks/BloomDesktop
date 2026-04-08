@@ -188,6 +188,22 @@
     }
 }
 
+// Canvas text outlines are stored as inline styles so they persist into exported books.
+// Some older reading engines partially support these properties in problematic ways.
+// If all required features are not supported together, force-disable outline styles.
+@supports not (
+    (-webkit-text-stroke-width: 1px) and (-webkit-text-stroke-color: black) and
+        (paint-order: stroke)
+) {
+    .bloom-canvas .bloom-canvas-element,
+    .bloom-canvas .bloom-canvas-element .bloom-editable,
+    .bloom-canvas .bloom-canvas-element [data-derived] {
+        -webkit-text-stroke-width: initial !important;
+        -webkit-text-stroke-color: initial !important;
+        paint-order: initial !important;
+    }
+}
+
 // Code to handle borders
 .bloom-canvas {
     // Over picture elements with speech bubbles

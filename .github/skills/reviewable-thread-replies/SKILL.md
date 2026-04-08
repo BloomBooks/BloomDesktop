@@ -2,6 +2,7 @@
 name: reviewable-thread-replies
 description: 'Reply to GitHub and Reviewable PR discussion threads one-by-one. Use whenever the user asks you to respond to review comments with accurate in-thread replies and verification.'
 argument-hint: 'Repo/PR and target comments to reply to (for example: BloomBooks/BloomDesktop#7557 + specific discussion links/IDs)'
+note: it's not clear that this skill is adequately developed, it's not clear that it works.
 ---
 
 # Reviewable Thread Replies

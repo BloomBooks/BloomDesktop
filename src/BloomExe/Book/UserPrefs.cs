@@ -18,6 +18,7 @@ namespace Bloom.Book
         private bool _reducePdfMemory;
         private string _colorProfileForPdf;
         private bool _fullBleed;
+        private bool _includeBackgroundColors;
         private string _spreadsheetFolder;
         private bool _uploadAgreementsAccepted;
 
@@ -123,6 +124,17 @@ namespace Bloom.Book
             set
             {
                 _fullBleed = value;
+                Save();
+            }
+        }
+
+        [JsonProperty("includeBackgroundColors")]
+        public bool IncludeBackgroundColors
+        {
+            get { return _includeBackgroundColors; }
+            set
+            {
+                _includeBackgroundColors = value;
                 Save();
             }
         }

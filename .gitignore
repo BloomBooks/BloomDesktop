@@ -201,3 +201,4 @@ src/BloomBrowserUI/test-results/
 critiqueAI.json
 
 pr-comments*.md
+*.stackdump

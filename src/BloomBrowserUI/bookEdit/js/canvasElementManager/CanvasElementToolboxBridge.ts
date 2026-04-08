@@ -4,6 +4,7 @@
 // page-to-toolbox bridge direction explicit.
 
 import { kCanvasToolId } from "../../toolbox/toolIds";
+import { postString } from "../../../utils/bloomApi";
 import {
     doWhenWorkspaceBundleLoaded,
     getToolboxBundleExports,
@@ -48,9 +49,13 @@ export function showCanvasTool() {
             if (typeof toolbox.ensureToolEnabled === "function") {
                 toolbox.ensureToolEnabled(kCanvasToolId);
             }
-            return;
+        } else {
+            toolbox.activateToolFromId(kCanvasToolId);
         }
-        toolbox.activateToolFromId(kCanvasToolId);
+        postString(
+            "editView/saveToolboxSetting",
+            "active\t" + kCanvasToolId + "Check\t1",
+        );
     };
 
     const toolbox = getToolboxBundleExports()?.getTheOneToolbox();

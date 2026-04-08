@@ -6,7 +6,7 @@ The front-end uses yarn 1.22.22. Never ever use npm.
 - C# backend
 - web front-end in React/Typescript
 - WebView2 for hosting the web front-end in the desktop app
-- We strictly control both ends of the API. 
+- We strictly control both ends of the API.
     - Don't worry about legacy API support. If you need to change the API, just change it on both sides.
     - Don't be overly defensive about error handling. If the API is used incorrectly, it's fine for it to throw an error. We want to know about it so we can fix it.
 
@@ -42,3 +42,10 @@ It is vital that you not run `yarn build` unless instructed to. If there is alre
 # Localization
 - Localizations for translatable strings are kept in DistFiles/localizations; new ones are initially added to one of the files in the "en" subdirectory
 - Mark new XLF entries translate="no"
+- Don't change the content or ID of an existing XLF entry unless it is new (marked translate="no"). Instead, mark the old one with a note saying it is "obsolete as of <current Bloom version>" and make a new entry with a different ID.
+
+# Commenting
+All public methods should have a comment. So should most private ones!
+
+# Git Committing
+Always include a good description when creating a git commit.

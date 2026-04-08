@@ -15,8 +15,8 @@ import {
     theOneCanvasElementManager,
     CanvasElementManager,
 } from "./js/canvasElementManager/CanvasElementManager";
-import { renderDragActivityTabControl } from "./toolbox/games/DragActivityTabControl";
 import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants";
+import { renderDragActivityTabControl } from "./js/AbovePageControls";
 
 function getPageId(): string {
     const page = document.querySelector(".bloom-page");

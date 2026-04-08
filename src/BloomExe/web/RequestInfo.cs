@@ -13,6 +13,7 @@ using System.Web;
 using Bloom.Book;
 using Bloom.web;
 using Bloom.web.controllers;
+using SIL.Code;
 using SIL.IO;
 using SIL.Reporting;
 
@@ -136,6 +137,23 @@ namespace Bloom.Api
 
         public bool HaveFullyProcessedRequest { get; private set; }
 
+        // We intentionally do not use RobustFile.OpenRead() in this endpoint.
+        // We need a read stream that permits concurrent overwrite/delete of the same file
+        // while it is being served (notably for thumbnails and media), so we require
+        // FileShare.ReadWrite | FileShare.Delete.
+        // robustfile-hook: allow FileStream
+        private static FileStream OpenSharedReadStreamWithRetry(string path)
+        {
+            return RetryUtility.Retry(() =>
+                new FileStream(
+                    path,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.ReadWrite | FileShare.Delete
+                )
+            );
+        }
+
         public void ReplyWithFileContent(string path, string originalPath = null)
         {
             //Deal with BL-3153, where the file was still open in another thread
@@ -152,7 +170,7 @@ namespace Bloom.Api
 
             try
             {
-                fs = RobustFile.OpenRead(path);
+                fs = OpenSharedReadStreamWithRetry(path);
             }
             catch (Exception error)
             {
@@ -255,7 +273,7 @@ namespace Bloom.Api
                             _actualContext.Response.OutputStream.Write(buffer, 0, read);
                             try
                             {
-                                fs = RobustFile.OpenRead(path);
+                                fs = OpenSharedReadStreamWithRetry(path);
                             }
                             catch (FileNotFoundException)
                             {

@@ -485,23 +485,31 @@ namespace Bloom.Book
             string[] dataDefaultLanguages
         )
         {
-            HashSet<string> classesToKeep = null;
+            HtmlDom.RemoveClassesBeginningWith(editable, "bloom-content");
             if (editable.ParentWithClass("bloom-customLayout") != null)
             {
-                // on a custom page, every bloom-editable is the only thing visible
-                // in its translationGroup, and visibility is not controlled by the
-                // appearance system. So we will never add these classes. However,
-                // they might have been copied there when setting up the custom layout.
-                // To avoid a distracting and possibly annoying change of appearance
-                // when transitioning to a custom layout, we will keep whatever class
-                // from this group the element had when the conversion happened.
-                // It's also important not to remove them in the copy in the data-div;
+                // On a custom layout page, assign bloom-contentFirst/Second/Third based on the
+                // data-default-languages attribute of the parent group and whether the element
+                // is visible. This ensures correctness after language changes or derivative creation.
+                // It's also important not to remove these from the copy in the data-div;
                 // we prevent that by renaming bloom-editable and bloom-translationGroup.
-                classesToKeep = new HashSet<string>(
-                    new[] { "bloom-contentFirst", "bloom-contentSecond", "bloom-contentThird" }
-                );
+                if (IsVisible(editable))
+                {
+                    var group = editable.ParentNode as SafeXmlElement;
+                    switch (group?.GetAttribute("data-default-languages")?.Trim())
+                    {
+                        case "V":
+                            editable.AddClass("bloom-contentFirst");
+                            break;
+                        case "N1":
+                            editable.AddClass("bloom-contentSecond");
+                            break;
+                        case "N2":
+                            editable.AddClass("bloom-contentThird");
+                            break;
+                    }
+                }
             }
-            HtmlDom.RemoveClassesBeginningWith(editable, "bloom-content", classesToKeep);
             var lang = editable.GetAttribute("lang");
 
             //These bloom-content* classes are used by some stylesheet rules, primarily to boost the font-size of some languages.

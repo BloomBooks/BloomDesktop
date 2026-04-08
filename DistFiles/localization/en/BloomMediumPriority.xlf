@@ -731,6 +731,37 @@
         <source xml:lang="en">Book Settings</source>
         <note>BookSettings.Title</note>
         <note>the heading of the dialog</note>
+        <note>Obsolete as of 6.4</note>
+      </trans-unit>
+      <trans-unit id="BookAndPageSettings.Title" sil:dynamic="true">
+        <source xml:lang="en">Book and Page Settings</source>
+        <note>ID: BookAndPageSettings.Title</note>
+        <note>the heading of the dialog</note>
+      </trans-unit>
+      <trans-unit id="BookAndPageSettings.BookArea" sil:dynamic="true">
+        <source xml:lang="en">Book</source>
+        <note>ID: BookAndPageSettings.BookArea</note>
+        <note>Area label for tabs/pages that affect all pages in the current book.</note>
+      </trans-unit>
+      <trans-unit id="BookAndPageSettings.BookArea.Description" sil:dynamic="true">
+        <source xml:lang="en">Book settings apply to all of the pages of the current book.</source>
+        <note>ID: BookAndPageSettings.BookArea.Description</note>
+        <note>Description text shown for the Book area in the combined Book and Page Settings dialog.</note>
+      </trans-unit>
+      <trans-unit id="BookAndPageSettings.PageArea" sil:dynamic="true">
+        <source xml:lang="en">Current Page</source>
+        <note>ID: BookAndPageSettings.PageArea</note>
+        <note>Area label for tabs/pages that affect only the current page.</note>
+      </trans-unit>
+      <trans-unit id="BookAndPageSettings.PageArea.Description" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Page settings apply to the current page.</source>
+        <note>ID: BookAndPageSettings.PageArea.Description</note>
+        <note>Description text shown for the Page area in the combined Book and Page Settings dialog.</note>
+      </trans-unit>
+      <trans-unit id="BookAndPageSettings.Colors" sil:dynamic="true">
+        <source xml:lang="en">Colors</source>
+        <note>ID: BookAndPageSettings.Colors</note>
+        <note>Label for the page-level Colors page within the combined Book and Page Settings dialog.</note>
       </trans-unit>
       <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true">
         <source xml:lang="en">Max Image Size</source>
@@ -987,7 +1018,7 @@
         <source xml:lang="en">Unnumbered Page</source>
         <note>ID: BookSettings.Fonts.UnnumberedPage</note>
       </trans-unit>
-      <trans-unit id="PageLayout.CustomXMatterPage" translate="no">
+      <trans-unit id="PageLayout.CustomXMatterPage">
         <source xml:lang="en">Customized Front and Back Matter Page Layout</source>
         <note>ID: PageLayout.CustomXMatterPage</note>
       </trans-unit>

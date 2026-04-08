@@ -2300,7 +2300,7 @@ export default class StyleEditor {
         onChange: (s: string) => void,
     ) {
         const colorPickerDialogProps: ISimpleColorPickerDialogProps = {
-            transparency: false,
+            transparency: true,
             localizedTitle: title,
             initialColor: initialColor,
             palette: BloomPalette.Text,
