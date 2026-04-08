@@ -1117,8 +1117,8 @@ export const controlSections: Record<SectionId, IControlSection> = {
             menu: [
                 "missingMetadata",
                 "chooseImage",
-                "pasteImage",
                 "copyImage",
+                "pasteImage",
                 "resetImage",
                 "expandToFillSpace",
                 "becomeBackground",
