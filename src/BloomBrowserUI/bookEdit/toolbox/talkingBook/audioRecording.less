@@ -35,7 +35,7 @@ div.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight) p {
 // computed styles getting stuck in the book (BL-15300, see audioTextHighlightManager.ts). Here overwrite the highlighting
 // colors from basePage.less which are otherwise used to display highlighting (e.g. in Bloom Player), so that only the
 // pseudo-elements are displaying the highlights
-body.bloom-audio-customHighlights {
+body.bloom-audio-pseudoHighlights {
     span.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight),
     div.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight) p,
     .ui-audioCurrent .ui-enableHighlight {
