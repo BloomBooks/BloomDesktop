@@ -4,19 +4,22 @@ const kSuppressHighlightClass = "ui-suppressHighlight";
 const kDisableHighlightClass = "ui-disableHighlight";
 const kPostAudioSplitClass = "bloom-postAudioSplit";
 const kTextBoxRecordingMode = "textbox";
-const kCustomHighlightSupportClass = "bloom-audio-customHighlights";
+const kPseudoHighlightSupportClass = "bloom-audio-pseudoHighlights";
 
 const kCurrentHighlightBackgroundCssVar =
     "--bloom-audio-current-highlight-background";
 const kCurrentHighlightColorCssVar = "--bloom-audio-current-highlight-color";
 
-// This manager translates Bloom's audio-highlight classes into the CSS Custom Highlight API.
+// This manager translates Bloom's audio-highlight classes into the CSS highlight registry and
+// ::highlight pseudo-elements.
 // In rare cases, the browser can automatically move computed css into an inline style within a contenteditable, which
 // we suspect is causing BL-15300 where TBT highlighting gets stuck in the book. This method of highlighting without
 // modifying the dom should prevent that, and is also the direction we want to move in for highlighting.
 // The DOM still decides which pieces of text are eligible and marks them with the appropriate classes, but in the Edit
 // Tab the visible paint comes from ::highlight pseudo-elements instead of the element
-// background colors, which we continue to use in Bloom Player etc.
+// background colors, which we continue to use in Bloom Player etc. - we will need to keep the original class and css
+// rules for a while so that old versions of Bloom player display the highlights, but a next step would be to make
+// newer versions of Bloom Player switch to using pseudo-elements to display highlights like we do here
 
 export const currentHighlightName = "bloom-audio-current";
 
@@ -111,9 +114,9 @@ export class AudioTextHighlightManager {
             return;
         }
 
-        // Once custom highlights are active, suppress the old element background rules so we don't double-highlight
+        // Once pseudo-element highlights are active, suppress the old element background rules so we don't double-highlight
         getDocumentBody(contextNode)?.classList.add(
-            kCustomHighlightSupportClass,
+            kPseudoHighlightSupportClass,
         );
 
         this.refreshCurrentHighlight(currentHighlight, currentTextBox);
@@ -137,7 +140,7 @@ export class AudioTextHighlightManager {
         // copilot wants belt-and-suspenders, fine
         if (!registry || !Highlight) {
             console.error(
-                "AudioTextHighlightManager.refreshCurrentHighlight() lost custom highlight support after refreshHighlights() verified it.",
+                "AudioTextHighlightManager.refreshCurrentHighlight() lost pseudo-highlight support after refreshHighlights() verified it.",
             );
             return;
         }
@@ -187,7 +190,7 @@ export class AudioTextHighlightManager {
         const Highlight = getHighlightConstructor(contextNode);
         if (!registry || !Highlight) {
             console.error(
-                "AudioTextHighlightManager.refreshSplitHighlights() lost custom highlight support after refreshHighlights() verified it.",
+                "AudioTextHighlightManager.refreshSplitHighlights() lost pseudo-highlight support after refreshHighlights() verified it.",
             );
             return;
         }
@@ -303,23 +306,23 @@ export class AudioTextHighlightManager {
         // The actual colors still come from CSS so user-modified highlight colors keep working.
         // We copy them into document-level variables that the ::highlight rule can read.
         const documentBody = getDocumentBody(styleSource);
-        const hadCustomHighlightOverride = documentBody?.classList.contains(
-            kCustomHighlightSupportClass,
+        const hadPseudoHighlightOverride = documentBody?.classList.contains(
+            kPseudoHighlightSupportClass,
         );
 
         // We have rules in audioRecording.less to override the normal highlighting background-color
         // (make it transparent), so it isn't underneath
         // the pseudo-element highlights which we use instead in the edit tab. Remove that rule, detect the otherwise
         // present computed highlight color, and then put the rule back.
-        if (hadCustomHighlightOverride) {
-            documentBody?.classList.remove(kCustomHighlightSupportClass);
+        if (hadPseudoHighlightOverride) {
+            documentBody?.classList.remove(kPseudoHighlightSupportClass);
         }
         const computedStyle =
             getDocumentWindow(styleSource)?.getComputedStyle(styleSource);
         const backgroundColor = computedStyle?.backgroundColor;
         const color = computedStyle?.color;
-        if (hadCustomHighlightOverride) {
-            documentBody?.classList.add(kCustomHighlightSupportClass);
+        if (hadPseudoHighlightOverride) {
+            documentBody?.classList.add(kPseudoHighlightSupportClass);
         }
 
         if (backgroundColor) {

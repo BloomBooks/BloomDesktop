@@ -37,7 +37,7 @@ type TestCssWithHighlights = {
     highlights?: FakeHighlightRegistry;
 };
 
-const installCustomHighlightPolyfill = (targetWindow: Window) => {
+const installPseudoHighlightPolyfill = (targetWindow: Window) => {
     const targetWindowWithCss = targetWindow as Window & {
         CSS?: TestCssWithHighlights;
     };
@@ -61,7 +61,7 @@ const getPageWindow = (): Window | undefined => {
     return iframe?.contentWindow ?? undefined;
 };
 
-const getCustomHighlightsRegistry = (): FakeHighlightRegistry => {
+const getPseudoHighlightsRegistry = (): FakeHighlightRegistry => {
     const targetWindow = getPageWindow() ?? globalThis.window;
     const cssWithHighlights = (
         targetWindow as Window & {
@@ -78,7 +78,7 @@ const getCustomHighlightsRegistry = (): FakeHighlightRegistry => {
 };
 
 const getSplitHighlightTexts = (): string[][] => {
-    const registry = getCustomHighlightsRegistry();
+    const registry = getPseudoHighlightsRegistry();
     return splitHighlightNames.map((name) => {
         const highlight = registry.get(name);
         return highlight
@@ -88,7 +88,7 @@ const getSplitHighlightTexts = (): string[][] => {
 };
 
 const getHighlightTexts = (highlightName: string): string[] => {
-    const highlight = getCustomHighlightsRegistry().get(highlightName);
+    const highlight = getPseudoHighlightsRegistry().get(highlightName);
     return highlight ? highlight.ranges.map((range) => range.toString()) : [];
 };
 
@@ -110,13 +110,13 @@ const getHighlightTexts = (highlightName: string): string[] => {
 
 describe("audio recording tests", () => {
     beforeAll(async () => {
-        installCustomHighlightPolyfill(globalThis.window);
+        installPseudoHighlightPolyfill(globalThis.window);
 
         await setupForAudioRecordingTests();
 
         const pageWindow = getPageWindow();
         if (pageWindow) {
-            installCustomHighlightPolyfill(pageWindow);
+            installPseudoHighlightPolyfill(pageWindow);
         }
     });
 
@@ -124,7 +124,7 @@ describe("audio recording tests", () => {
         // Clean up any pending timers to prevent "parent is not defined" errors
         // when tests finish before timers fire
         theOneAudioRecorder?.clearTimeouts();
-        getCustomHighlightsRegistry().clear();
+        getPseudoHighlightsRegistry().clear();
     });
 
     // In an earlier version of our API, checkForAnyRecording was designed to fail (404) if there was no recording.
@@ -2247,8 +2247,8 @@ describe("audio recording tests", () => {
         });
     });
 
-    describe("- custom split highlights", () => {
-        it("registers the current sentence highlight with custom highlights", async () => {
+    describe("- pseudo-element split highlights", () => {
+        it("registers the current sentence highlight with pseudo-element highlights", async () => {
             SetupIFrameFromHtml(
                 '<div id="page1"><div class="bloom-editable" data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence ui-audioCurrent">One.</span></p></div></div>',
             );
@@ -2273,7 +2273,7 @@ describe("audio recording tests", () => {
             expect(getHighlightTexts(currentHighlightName)).toEqual(["One."]);
         });
 
-        it("clears custom highlights when entering show playback order mode", async () => {
+        it("clears pseudo-element highlights when entering show playback order mode", async () => {
             SetupIFrameFromHtml(
                 '<div id="page1"><div class="bloom-translationGroup"><div class="bloom-editable" data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence ui-audioCurrent">One.</span></p></div></div></div>',
             );
