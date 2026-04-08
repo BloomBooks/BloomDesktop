@@ -1,6 +1,7 @@
 import * as React from "react";
 import { css } from "@emotion/react";
 import { get } from "../utils/bloomApi";
+import { setToolboxEnabledHandler } from "../bookEdit/workspaceRoot";
 
 interface IEditFrameSources {
     pageListSrc: string;
@@ -22,6 +23,7 @@ export const EditTabPane: React.FunctionComponent<{ active: boolean }> = (
         defaultEditFrameSources,
     );
     const [toolboxIsShowing, setToolboxIsShowing] = React.useState(true);
+    const [toolboxIsEnabled, setToolboxIsEnabled] = React.useState(true);
 
     // Request edit-frame URLs from C# when edit mode becomes active so app.tsx controls iframe rendering.
     React.useEffect(() => {
@@ -38,6 +40,20 @@ export const EditTabPane: React.FunctionComponent<{ active: boolean }> = (
             setToolboxIsShowing(data.toolboxIsShowing ?? true);
         });
     }, [props.active]);
+
+    React.useEffect(() => {
+        // We will use this to disable and hide the toolbox when in Change Layout mode (BL-16069)
+        setToolboxEnabledHandler((enabled) => {
+            setToolboxIsEnabled(enabled);
+            if (!enabled) {
+                setToolboxIsShowing(false);
+            }
+        });
+
+        return () => {
+            setToolboxEnabledHandler(undefined);
+        };
+    }, []);
 
     return (
         <div
@@ -88,6 +104,15 @@ export const EditTabPane: React.FunctionComponent<{ active: boolean }> = (
                     top: 3px;
                 }
 
+                .pure-toggle-label.toolbox-disabled {
+                    opacity: 0.45;
+                    cursor: default;
+                }
+
+                .pure-toggle-label.toolbox-disabled .pure-toggle-icon {
+                    filter: grayscale(1);
+                }
+
                 .pure-drawer {
                     position: absolute;
                     top: 0;
@@ -123,14 +148,21 @@ export const EditTabPane: React.FunctionComponent<{ active: boolean }> = (
                     id="pure-toggle-right"
                     data-toggle="right"
                     checked={toolboxIsShowing}
+                    disabled={!toolboxIsEnabled}
                     onChange={(event) => {
+                        if (!toolboxIsEnabled) {
+                            return;
+                        }
                         setToolboxIsShowing(event.currentTarget.checked);
                     }}
                 />
                 <label
-                    className="pure-toggle-label"
+                    className={`pure-toggle-label${
+                        toolboxIsEnabled ? "" : " toolbox-disabled"
+                    }`}
                     htmlFor="pure-toggle-right"
                     data-toggle-label="right"
+                    aria-disabled={!toolboxIsEnabled}
                 >
                     <span className="pure-toggle-icon" />
                 </label>
