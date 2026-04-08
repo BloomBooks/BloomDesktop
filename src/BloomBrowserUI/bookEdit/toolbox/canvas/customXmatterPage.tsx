@@ -475,6 +475,7 @@ export function setupPageLayoutMenu(): void {
 
     if (page.classList.contains("bloom-customLayout")) {
         ensureDerivedFieldsFitOnCustomPage(page as HTMLElement);
+        showCanvasTool();
     }
 }
 
