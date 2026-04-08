@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1108,6 +1107,7 @@ namespace Bloom.Publish
             string folderPath
         )
         {
+            var deduper = new ContentHashDeduper();
             var referencesByPath = new Dictionary<string, List<MediaReference>>();
             var firstRelativePathByNormalizedPath = new Dictionary<string, string>();
             var fullPathByNormalizedPath = new Dictionary<string, string>();
@@ -1135,7 +1135,6 @@ namespace Bloom.Publish
                 refsForPath.Add(reference);
             }
 
-            var hashToCanonicalRelativePath = new Dictionary<string, string>();
             var normalizedPathsToDelete = new HashSet<string>();
             foreach (var normalizedRelativePath in normalizedPathsInEncounterOrder)
             {
@@ -1143,10 +1142,10 @@ namespace Bloom.Publish
                 if (!RobustFile.Exists(filePath))
                     continue;
 
-                var hashString = ComputeFileHash(filePath);
                 if (
-                    hashToCanonicalRelativePath.TryGetValue(
-                        hashString,
+                    deduper.TryGetCanonicalIdentifier(
+                        filePath,
+                        firstRelativePathByNormalizedPath[normalizedRelativePath],
                         out var canonicalRelativePath
                     )
                 )
@@ -1159,12 +1158,6 @@ namespace Bloom.Publish
                     }
 
                     normalizedPathsToDelete.Add(normalizedRelativePath);
-                }
-                else
-                {
-                    hashToCanonicalRelativePath[hashString] = firstRelativePathByNormalizedPath[
-                        normalizedRelativePath
-                    ];
                 }
             }
 
@@ -1364,12 +1357,6 @@ namespace Bloom.Publish
             }
 
             return fileNames;
-        }
-
-        private static string ComputeFileHash(string filePath)
-        {
-            using var stream = RobustFile.OpenRead(filePath);
-            return Convert.ToHexString(SHA256.HashData(stream));
         }
 
         private static string ResolveMediaFilePath(string folderPath, string relativePath)

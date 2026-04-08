@@ -130,6 +130,8 @@ namespace Bloom.Publish.Epub
         private Dictionary<string, string> _mapSrcPathToDestFileName =
             new Dictionary<string, string>();
 
+        private ContentHashDeduper _mediaDeduper = new ContentHashDeduper();
+
         // All the things (files) we need to list in the manifest
         private List<string> _manifestItems;
 
@@ -390,6 +392,8 @@ namespace Bloom.Publish.Epub
             _desiredNameMap = new Dictionary<SafeXmlElement, string>();
             _scriptedItems = new List<string>();
             _svgItems = new List<string>();
+            _mapSrcPathToDestFileName = new Dictionary<string, string>();
+            _mediaDeduper = new ContentHashDeduper();
             _firstContentPageItem = null;
             _fontsUsedInBook.Clear();
             var warningMessages = new List<string>();
@@ -3400,9 +3404,47 @@ namespace Bloom.Publish.Epub
                 limitImageDimensions,
                 forUseOnColoredBackground
             );
-            _manifestItems.Add(SubfolderAdjustedName(subfolder, fileName));
+            if (ShouldDeduplicateCopiedMedia(subfolder))
+            {
+                dstPath = GetCanonicalCopiedMediaPath(dstPath, subfolder);
+            }
+
+            var manifestItem = dstPath.Substring(_contentFolder.Length + 1).Replace('\\', '/');
+            if (!_manifestItems.Contains(manifestItem))
+                _manifestItems.Add(manifestItem);
+
             _mapSrcPathToDestFileName[srcPath] = dstPath;
             return dstPath;
+        }
+
+        private bool ShouldDeduplicateCopiedMedia(string subfolder)
+        {
+            return subfolder == kImagesFolder || subfolder == kVideoFolder;
+        }
+
+        private string GetCanonicalCopiedMediaPath(string copiedFilePath, string subfolder)
+        {
+            if (
+                !_mediaDeduper.TryGetCanonicalIdentifier(
+                    copiedFilePath,
+                    copiedFilePath,
+                    out var canonicalFilePath,
+                    subfolder
+                )
+            )
+            {
+                return copiedFilePath;
+            }
+
+            if (
+                BookStorage.GetNormalizedPathForOS(canonicalFilePath)
+                != BookStorage.GetNormalizedPathForOS(copiedFilePath)
+            )
+            {
+                RobustFile.Delete(copiedFilePath);
+            }
+
+            return canonicalFilePath;
         }
 
         public static string GetAdjustedFilename(string srcPath, string folderPath)

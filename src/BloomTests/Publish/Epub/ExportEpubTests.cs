@@ -85,6 +85,88 @@ namespace BloomTests.Publish.Epub
             return SetupBookLong(text, lang, images: images);
         }
 
+        [Test]
+        public void DeduplicatesDuplicateImages()
+        {
+            var book = SetupBook("This is some text", "en", "duplicate-a", "duplicate-b");
+            MakeImageFiles(book, "duplicate-a", "duplicate-b");
+
+            MakeEpub("output", "DeduplicatesDuplicateImages", book);
+
+            CheckBasicsInManifest("duplicate-a");
+            AssertThatXmlIn
+                .String(FixContentForXPathValueSlash(_manifestContent))
+                .HasNoMatchForXpath(
+                    "package/manifest/item[@href='" + kImagesSlash + "duplicate-b.png']"
+                );
+
+            var pageData = GetPageNData(2);
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//img[@src='" + kImagesSlash + "duplicate-a.png']",
+                    2
+                );
+            AssertThatXmlIn
+                .String(pageData)
+                .HasNoMatchForXpath("//img[@src='" + kImagesSlash + "duplicate-b.png']");
+
+            VerifyEpubItemExists(Path.GetDirectoryName(_manifestFile) + "/images/duplicate-a.png");
+            VerifyEpubItemDoesNotExist(
+                Path.GetDirectoryName(_manifestFile) + "/images/duplicate-b.png"
+            );
+        }
+
+        [Test]
+        public void DeduplicatesDuplicateVideos()
+        {
+            var book = SetupBookLong(
+                "This is some text",
+                "en",
+                extraContentOutsideTranslationGroup: @"
+<div class='bloom-videoContainer bloom-selected'>
+	<video><source src='video/duplicate-a.mp4' type='video/mp4'></source></video>
+</div>
+<div class='bloom-videoContainer bloom-selected'>
+	<video><source src='video/duplicate-b.mp4' type='video/mp4'></source></video>
+</div>"
+            );
+            MakeVideoFiles(book, "duplicate-a", "duplicate-b");
+
+            MakeEpub("output", "DeduplicatesDuplicateVideos", book);
+
+            AssertThatXmlIn
+                .String(FixContentForXPathValueSlash(_manifestContent))
+                .HasAtLeastOneMatchForXpath(
+                    "package/manifest/item[@href='" + kVideoSlash + "duplicate-a.mp4']"
+                );
+            AssertThatXmlIn
+                .String(FixContentForXPathValueSlash(_manifestContent))
+                .HasNoMatchForXpath(
+                    "package/manifest/item[@href='" + kVideoSlash + "duplicate-b.mp4']"
+                );
+
+            var pageData = GetPageNData(2);
+            AssertThatXmlIn
+                .String(pageData)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//xhtml:source[@src='" + kVideoSlash + "duplicate-a.mp4']",
+                    2,
+                    _ns
+                );
+            AssertThatXmlIn
+                .String(pageData)
+                .HasNoMatchForXpath(
+                    "//xhtml:source[@src='" + kVideoSlash + "duplicate-b.mp4']",
+                    _ns
+                );
+
+            VerifyEpubItemExists(Path.GetDirectoryName(_manifestFile) + "/video/duplicate-a.mp4");
+            VerifyEpubItemDoesNotExist(
+                Path.GetDirectoryName(_manifestFile) + "/video/duplicate-b.mp4"
+            );
+        }
+
         // we were testing that not having bloom enterprise would cause images descriptions to be removed.
         // but now, image descriptions should never be removed: they no longer require bloom enterprise.
         [TestCase(BookInfo.HowToPublishImageDescriptions.None)]
