@@ -44,6 +44,7 @@ export interface IProgressBoxProps {
 
 export type ProgressBoxHandle = {
     clear: () => void;
+    scrollToLastError: () => void;
 };
 
 let indexForMessageKey = 0;
@@ -60,23 +61,27 @@ export const ProgressBox = React.forwardRef<
     const [localMessages, setLocalMessages] = React.useState<
         Array<JSX.Element>
     >([]);
+    const rootRef = React.useRef<HTMLDivElement>(null);
+    const shouldScrollToErrorRef = React.useRef(false);
+    // Auto-scroll until the user deliberately reads older output, then preserve their position.
+    const shouldAutoScrollRef = React.useRef(true);
 
     const {
         webSocketContext,
         onReadyToReceive,
         onGotErrorMessage,
         preloadedProgressEvents,
-        messages: propsMessages,
-        setMessages: propsDummy,
+        messages: controlledMessages,
+        setMessages: controlledSetMessages,
         ...divProps
     } = props;
 
     let messages = localMessages;
     let setMessages = setLocalMessages;
-    if (props.messages && props.setMessages) {
-        messages = props.messages;
-        setMessages = props.setMessages;
-    } else if (props.messages || props.setMessages) {
+    if (controlledMessages && controlledSetMessages) {
+        messages = controlledMessages;
+        setMessages = controlledSetMessages;
+    } else if (controlledMessages || controlledSetMessages) {
         console.error(
             "messages and setMessages must both be provided for controlled use of ProgressBox",
         );
@@ -85,111 +90,182 @@ export const ProgressBox = React.forwardRef<
     // used for scrolling to bottom
     const bottomRef = React.useRef<HTMLDivElement>(null);
 
-    React.useEffect(() => {
-        if (props.preloadedProgressEvents) {
-            // Don't overwrite existing messages.  See https://issues.bloomlibrary.org/youtrack/issue/BL-11696.
-            props.preloadedProgressEvents.forEach((e) => processEvent(e));
+    const isNearBottom = React.useCallback(
+        (element?: HTMLDivElement | null) => {
+            if (!element) {
+                return true;
+            }
+
+            return (
+                element.scrollHeight -
+                    element.scrollTop -
+                    element.clientHeight <=
+                24
+            );
+        },
+        [],
+    );
+
+    const scrollToLastError = React.useCallback(() => {
+        const errorLines = rootRef.current?.querySelectorAll(
+            '[data-progress-severity="error"], [data-progress-severity="fatal"]',
+        );
+        const lastErrorLine = errorLines?.[
+            errorLines.length > 0 ? errorLines.length - 1 : 0
+        ] as HTMLElement | undefined;
+
+        if (lastErrorLine) {
+            lastErrorLine.scrollIntoView({
+                behavior: "smooth",
+                block: "nearest",
+            });
         }
-    }, [props.preloadedProgressEvents]);
+    }, []);
+
+    const writeLine = React.useCallback(
+        function writeLine(
+            message: string,
+            color: string,
+            style?: string,
+            severity?: string,
+        ) {
+            const line = (
+                <p
+                    key={indexForMessageKey++}
+                    // Severity tags let the action log jump directly to the last error line.
+                    data-progress-severity={severity}
+                    css={css`
+                        color: ${color};
+                        ${style ? style : ""}
+                    `}
+                >
+                    <StringWithOptionalLink message={message} />
+                </p>
+            );
+            setMessages((old) => [...old, line]);
+        },
+        [setMessages],
+    );
+
+    const processEvent = React.useCallback(
+        function processEvent(e: IBloomWebSocketProgressEvent) {
+            const msg = "" + e.message;
+
+            if (e.id === "message") {
+                if (e.progressKind) {
+                    switch (e.progressKind) {
+                        default:
+                            writeLine(msg, "black");
+                            break;
+                        case "Heading":
+                            writeLine(msg, "black", "font-weight:bold");
+                            break;
+                        case "Error":
+                        case "Fatal":
+                            shouldScrollToErrorRef.current = true;
+                            writeLine(
+                                msg,
+                                kErrorColor,
+                                undefined,
+                                e.progressKind.toLowerCase(),
+                            );
+                            onGotErrorMessage?.();
+                            break;
+                        case "Warning":
+                            writeLine(msg, kBloomGold);
+                            break;
+                    }
+                } else {
+                    writeLine(msg, "black");
+                }
+            }
+        },
+        [onGotErrorMessage, writeLine],
+    );
+
+    // Preload any already-emitted progress events so the log shows the full history.
+    React.useEffect(() => {
+        if (preloadedProgressEvents) {
+            // Don't overwrite existing messages.  See https://issues.bloomlibrary.org/youtrack/issue/BL-11696.
+            preloadedProgressEvents.forEach((e) => processEvent(e));
+        }
+    }, [preloadedProgressEvents, processEvent]);
 
     React.useEffect(() => {
-        const listener = (e) => processEvent(e);
-        if (props.webSocketContext) {
+        const listener = (e: IBloomWebSocketProgressEvent) => processEvent(e);
+        if (webSocketContext) {
             WebSocketManager.addListener<IBloomWebSocketProgressEvent>(
-                props.webSocketContext,
+                webSocketContext,
                 listener,
             );
         }
-        if (props.onReadyToReceive && props.webSocketContext) {
-            WebSocketManager.notifyReady(
-                props.webSocketContext,
-                props.onReadyToReceive,
-            );
+        if (onReadyToReceive && webSocketContext) {
+            WebSocketManager.notifyReady(webSocketContext, onReadyToReceive);
         }
         // clean up when we are unmounted or this useEffect runs again (i.e. if the props.webSocketContext were to change)
         return () => {
-            if (props.webSocketContext)
-                WebSocketManager.removeListener(
-                    props.webSocketContext,
-                    listener,
-                );
+            if (webSocketContext)
+                WebSocketManager.removeListener(webSocketContext, listener);
         };
-    }, [props.webSocketContext]);
+    }, [onReadyToReceive, processEvent, webSocketContext]);
 
     React.useEffect(() => {
+        if (shouldScrollToErrorRef.current) {
+            shouldScrollToErrorRef.current = false;
+            scrollToLastError();
+            shouldAutoScrollRef.current = isNearBottom(rootRef.current);
+            return;
+        }
+
+        if (!shouldAutoScrollRef.current) {
+            return;
+        }
+
         if (bottomRef && bottomRef.current)
             bottomRef!.current!.scrollIntoView({
                 behavior: "smooth",
                 block: "start",
             });
-    }, [messages]);
+    }, [isNearBottom, messages, scrollToLastError]);
 
     // This (along with the forwardRef wrapper above) allows the parent to call clear() on this component.
     React.useImperativeHandle(ref, () => ({
         clear() {
+            shouldAutoScrollRef.current = true;
             setMessages([]);
+        },
+        scrollToLastError() {
+            scrollToLastError();
         },
     }));
 
-    function writeLine(message: string, color: string, style?: string) {
-        const line = (
-            <p
-                key={indexForMessageKey++}
-                css={css`
-                    color: ${color};
-                    ${style ? style : ""}
-                `}
-            >
-                <StringWithOptionalLink message={message} />
-            </p>
-        );
-        setMessages((old) => [...old, line]);
-    }
-
-    function processEvent(e: IBloomWebSocketProgressEvent) {
-        const msg = "" + e.message;
-
-        if (e.id === "message") {
-            if (e.progressKind) {
-                switch (e.progressKind) {
-                    default:
-                        writeLine(msg, "black");
-                        break;
-                    case "Heading":
-                        writeLine(msg, "black", "font-weight:bold");
-                        break;
-                    case "Error":
-                    case "Fatal":
-                        writeLine(msg, kErrorColor);
-                        props.onGotErrorMessage?.();
-                        break;
-                    case "Warning":
-                        writeLine(msg, kBloomGold);
-                        break;
-                }
-            } else {
-                writeLine(msg, "black");
-            }
-        }
-    }
-
     return (
         <div
+            data-testid="progress-box-log"
+            ref={rootRef}
+            onScroll={() => {
+                shouldAutoScrollRef.current = isNearBottom(rootRef.current);
+            }}
             css={css`
                 overflow-y: auto;
+                overflow-x: hidden;
                 background-color: ${kLogBackgroundColor};
                 padding: ${kDialogPadding};
                 height: 100%;
                 box-sizing: border-box;
+                min-width: 0;
 
                 &,
                 * {
-                    user-select: all;
+                    user-select: text;
                 }
                 p {
                     margin-block-start: 0px;
                     margin-block-end: 8px;
                     font-family: "consolas", "monospace";
+                    white-space: pre-wrap;
+                    overflow-wrap: anywhere;
+                    word-break: break-word;
                 }
             `} // accept styling that the parent might have put on the <ProgressBox> element. See https://emotion.sh/docs/css-prop
             {...divProps}
@@ -201,3 +277,9 @@ export const ProgressBox = React.forwardRef<
 });
 
 ProgressBox.displayName = "ProgressBox";
+
+export const TestableProgressBox: React.FunctionComponent<IProgressBoxProps> = (
+    props,
+) => {
+    return <ProgressBox {...props} />;
+};

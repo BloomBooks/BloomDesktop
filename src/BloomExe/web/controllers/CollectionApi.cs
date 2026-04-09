@@ -41,6 +41,7 @@ namespace Bloom.web.controllers
         private int _thumbnailEventsToWaitFor = -1;
 
         private object _thumbnailEventsLock = new object();
+        private readonly object _coverImageRequestLock = new object();
 
         public CollectionApi(
             CollectionSettings settings,
@@ -705,9 +706,14 @@ namespace Bloom.web.controllers
                 return;
             }
 
-            string fullImagePath = _collectionModel
-                .GetBookFromBookInfo(bookInfo)
-                .GetCoverImagePathAndElt(out SafeXmlElement imgElement);
+            string fullImagePath;
+            SafeXmlElement imgElement;
+            lock (_coverImageRequestLock)
+            {
+                fullImagePath = _collectionModel
+                    .GetBookFromBookInfo(bookInfo)
+                    .GetCoverImagePathAndElt(out imgElement);
+            }
             if (string.IsNullOrEmpty(fullImagePath))
             {
                 HandleThumbnailRequest(request);

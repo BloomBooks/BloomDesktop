@@ -28,6 +28,7 @@ namespace Bloom.SubscriptionAndFeatures
         BulkUpload,
         BulkBloomPub,
         Bookshelf,
+        AppBuilder,
     }
 
     public static class FeatureRegistry
@@ -186,6 +187,12 @@ namespace Bloom.SubscriptionAndFeatures
             {
                 Feature = FeatureName.ViewBookHistory,
                 SubscriptionTier = SubscriptionTier.LocalCommunity,
+            },
+            new FeatureInfo
+            {
+                Feature = FeatureName.AppBuilder,
+                SubscriptionTier = SubscriptionTier.Pro,
+                ExperimentalFeatureToken = Bloom.ExperimentalFeatures.kAppBuilder,
             },
             // ----------------------------------------
             // Enterprise Tier Features

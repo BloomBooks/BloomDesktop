@@ -305,6 +305,7 @@ namespace Bloom
 
         private static string GetAutomationPortTitlePart()
         {
+            // Surface the CDP port in the window title so humans and automation can identify the right Bloom instance.
             var cdpPort = WebView2Browser.RemoteDebuggingPort;
             return cdpPort.HasValue ? $"automation:{cdpPort.Value}" : null;
         }

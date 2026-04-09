@@ -49,6 +49,7 @@ namespace Bloom.Collection
         internal bool ShowExperimentalBookSourcesOption = false;
 
         internal bool PendingAllowTeamCollection;
+        internal bool PendingAllowAppBuilder;
         internal bool AllowTeamCollectionOptionEnabled = false;
 
         // "Internal" so CollectionSettingsApi can update these.
@@ -115,6 +116,9 @@ namespace Bloom.Collection
             );
             PendingAllowTeamCollection = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kTeamCollections
+            );
+            PendingAllowAppBuilder = ExperimentalFeatures.IsFeatureEnabled(
+                ExperimentalFeatures.kAppBuilder
             );
 
             if (
@@ -405,6 +409,7 @@ namespace Bloom.Collection
                 PendingAutomaticallyUpdate && AutoUpdateSupportedOnThisPlatform;
             UpdateExperimentalBookSources();
             UpdateTeamCollectionAllowed();
+            UpdateAppBuilderAllowed();
 
             _collectionSettings.Country = _countryText.Text.Trim();
             _collectionSettings.Province = _provinceText.Text.Trim();
@@ -816,6 +821,14 @@ namespace Bloom.Collection
 
             if (wasTeamCollectionsEnabled != PendingAllowTeamCollection)
                 ChangeThatRequiresRestart();
+        }
+
+        private void UpdateAppBuilderAllowed()
+        {
+            ExperimentalFeatures.SetValue(
+                ExperimentalFeatures.kAppBuilder,
+                PendingAllowAppBuilder
+            );
         }
     }
 }

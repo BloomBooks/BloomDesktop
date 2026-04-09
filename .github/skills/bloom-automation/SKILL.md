@@ -138,7 +138,7 @@ Notes:
 
 ## Core Workflow
 1. Run `node .github/skills/bloom-automation/bloomProcessStatus.mjs --json` if you need to know whether an ordinary current-worktree instance is already running.
-2. If you need a fresh automation-owned instance, start it with `node scripts/watchBloomExe.mjs`.
+2. If a current-worktree instance is already running and the user did not explicitly ask for a second instance, reuse it. If you need a fresh automation-owned instance instead, first kill the existing exact target with `node .github/skills/bloom-automation/killBloomProcess.mjs` or `node .github/skills/bloom-automation/killBloomProcess.mjs --http-port <httpPort>`, then start the replacement with `node scripts/watchBloomExe.mjs`.
 3. Copy the printed HTTP and CDP ports. If you need the exact PID later, run `node .github/skills/bloom-automation/bloomProcessStatus.mjs --http-port <httpPort> --json`.
 4. If you instead want to reuse a current-worktree instance that Bloom found by itself, only then use repo-root matching and `--only-mismatched` cleanup.
 5. Run `node .github/skills/bloom-automation/webview2Targets.mjs --http-port <httpPort> --json --wait` to discover the live WebView2 target for that exact instance when you need debugging detail.
@@ -163,6 +163,12 @@ Use this when the user says to reuse the already-running Bloom.
 - Attach over CDP and drive the UI directly.
 - Do not restart unless the user explicitly wants a fresh run or you need to load new code.
 
+### Do not accumulate worktree-owned instances
+- Do not start another Bloom from the same worktree just because explicit ports are available.
+- Before any fresh launch, check whether a current-worktree instance is already running.
+- If one is running and the user did not explicitly ask for multi-instance behavior, either reuse it or kill that exact instance before launching a replacement.
+- Only keep multiple current-worktree Bloom instances alive when the user explicitly asked for that workflow or when the task itself is a verified multi-instance scenario.
+
 ### Treat wrong-worktree Bloom as a blocker
 - Treat that as a blocker because it produces extremely confusing results.
 - Report the detected repo root from `node .github/skills/bloom-automation/bloomProcessStatus.mjs`.
@@ -172,6 +178,7 @@ Use this when the user says to reuse the already-running Bloom.
 ### Start with the helper, not raw watch commands
 - Start it from the current worktree.
 - Use `node scripts/watchBloomExe.mjs` for fresh automation-owned launches.
+- Before using `watchBloomExe.mjs` for a fresh launch, clean up any existing current-worktree instance unless the user explicitly asked for concurrent instances.
 - Treat the printed HTTP port as the identity of that instance. Use `bloomProcessStatus.mjs --http-port <port>`, `webview2Targets.mjs --http-port <port>`, and `killBloomProcess.mjs --http-port <port>` to target it precisely.
 - Never wait for `watchBloomExe.mjs` to exit as a readiness signal. It is a long-lived launcher. Wait for the latest `Bloom ready.` line in the background terminal output instead, and treat a later `Bloom PID ... exited shortly after reporting ready` message as a failed launch.
 

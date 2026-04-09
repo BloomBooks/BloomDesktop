@@ -302,6 +302,7 @@ namespace Bloom
             }
             if (RemoteDebuggingPort.HasValue)
             {
+                // Expose a CDP endpoint so Playwright and other automation can attach to the real Bloom WebView2 surface.
                 additionalBrowserArgs += $" --remote-debugging-port={RemoteDebuggingPort.Value} "; // allow external inspector connect
             }
 

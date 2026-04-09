@@ -316,6 +316,10 @@ namespace Bloom.web.controllers
                         ?? ExperimentalFeatures.IsFeatureEnabled(
                             ExperimentalFeatures.kTeamCollections
                         ),
+                    allowAppBuilder = dialog?.PendingAllowAppBuilder
+                        ?? ExperimentalFeatures.IsFeatureEnabled(
+                            ExperimentalFeatures.kAppBuilder
+                        ),
                     showQrCode = dialog?.PendingShowQrCode
                         ?? _collectionSettings.ShowBlorgLanguageQrCode,
                     qrcodeCaption = dialog?.PendingBadgeQrCodeCaption
@@ -348,6 +352,16 @@ namespace Bloom.web.controllers
                 var previousValue = dialog.PendingAllowTeamCollection;
                 dialog.PendingAllowTeamCollection = allowTeamCollection;
                 if (allowTeamCollection != previousValue)
+                    dialog.ChangeThatRequiresRestart();
+            }
+
+            var allowAppBuilderToken = data["allowAppBuilder"];
+            if (allowAppBuilderToken != null)
+            {
+                var allowAppBuilder = allowAppBuilderToken.Value<bool>();
+                var previousValue = dialog.PendingAllowAppBuilder;
+                dialog.PendingAllowAppBuilder = allowAppBuilder;
+                if (allowAppBuilder != previousValue)
                     dialog.ChangeThatRequiresRestart();
             }
 

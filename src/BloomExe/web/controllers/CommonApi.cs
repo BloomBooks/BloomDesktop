@@ -235,6 +235,8 @@ namespace Bloom.web.controllers
             if (request.HttpMethod != HttpMethods.Get)
                 throw new ArgumentException("common/instanceInfo only supports GET");
 
+            // Give automation one stable discovery payload for the running Bloom instance instead of making
+            // scripts scrape window titles, ports, or process command lines.
             var executablePath = Application.ExecutablePath;
             var cdpPort = Bloom.WebView2Browser.RemoteDebuggingPort;
             int? vitePort = ReactControl.TryGetActiveViteDevPort(out var activeVitePort)

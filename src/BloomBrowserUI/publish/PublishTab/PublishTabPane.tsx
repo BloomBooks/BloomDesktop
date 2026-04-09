@@ -1,6 +1,5 @@
 import { css } from "@emotion/react";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import {
     kBloomBlue,
     kPanelBackground,
@@ -19,17 +18,22 @@ import { LibraryPublishScreen } from "../LibraryPublish/LibraryPublishScreen";
 import { PDFPrintPublishScreen } from "../PDFPrintPublish/PDFPrintPublishScreen";
 import { PublishAudioVideo } from "../video/PublishAudioVideo";
 import { EPUBPublishScreen } from "../ePUBPublish/ePUBPublishScreen";
+import { AppPublisherScreen } from "../Apps/AppPublisherScreen";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import { NoteBox, WarningBox } from "../../react_components/boxes";
 import { kBloomUnselectedTabBackground } from "../../utils/colorUtils";
 import { PublishingBookRequiresHigherTierNotice } from "./PublishingBookRequiresHigherTierNotice";
-import { FeatureStatus } from "../../react_components/featureStatus";
+import {
+    FeatureStatus,
+    useGetFeatureStatus,
+} from "../../react_components/featureStatus";
 import { AboutDialogLauncher } from "../../react_components/aboutDialog";
 import { RegistrationDialogEventLauncher } from "../../react_components/registration/registrationDialogLauncher";
+import { RequiresSubscriptionOverlayWrapper } from "../../react_components/requiresSubscription";
 
 export const CheckoutNeededScreen: React.FunctionComponent<{
     titleForDisplay: string;
-}> = (props) => {
+}> = (_props) => {
     const needsCheckoutText1 = useL10n(
         "Please check out this book from the Team Collection before publishing it.",
         "TeamCollection.CheckoutRequiredExplanation",
@@ -71,13 +75,21 @@ export const CheckoutNeededScreen: React.FunctionComponent<{
 };
 
 export const PublishTabPane: React.FunctionComponent = () => {
-    const kWaitForUserToChooseTabIndex = 5;
+    // Start on a sentinel index until C# tells us which tab should be active for the current book.
+    // This avoids flashing the last book's publish mode while new tab info loads.
+    const kWaitForUserToChooseTabIndex = 6;
 
     // Temporary: notify c# about clicks so WinForms menus can close.
     // Remove this once menus move into the same browser UI.
     React.useEffect(() => {
         const notifyBrowserClicked = () => {
-            (window as any).chrome?.webview?.postMessage("browser-clicked");
+            (
+                window as Window & {
+                    chrome?: {
+                        webview?: { postMessage(message: string): void };
+                    };
+                }
+            ).chrome?.webview?.postMessage("browser-clicked");
         };
 
         window.addEventListener("click", notifyBrowserClicked);
@@ -96,6 +108,7 @@ export const PublishTabPane: React.FunctionComponent = () => {
     const [tabIndex, setTabIndex] = React.useState(
         kWaitForUserToChooseTabIndex,
     );
+    const appBuilderFeatureStatus = useGetFeatureStatus("AppBuilder");
     const setup = () => {
         setTabIndex(kWaitForUserToChooseTabIndex);
         get("publish/getInitialPublishTabInfo", (result) => {
@@ -150,6 +163,7 @@ export const PublishTabPane: React.FunctionComponent = () => {
         iconSrc: string;
         labelL10nKey: string;
         label: string;
+        hidden?: boolean;
     }
     const publishTabs: PublishTabProps[] = [
         {
@@ -181,6 +195,13 @@ export const PublishTabPane: React.FunctionComponent = () => {
             iconSrc: "/bloom/publish/PublishTab/publish video.png",
             labelL10nKey: "PublishTab.RecordVideoButton",
             label: "Audio or Video",
+        },
+        {
+            tipL10nKey: "PublishTab.Apps-tooltip",
+            iconSrc: "/bloom/publish/PublishTab/AppsPublishButton.svg",
+            labelL10nKey: "PublishTab.Apps",
+            label: "Apps",
+            hidden: appBuilderFeatureStatus?.visible === false,
         },
     ];
 
@@ -281,7 +302,14 @@ export const PublishTabPane: React.FunctionComponent = () => {
                         >
                             <TabList>
                                 {publishTabs.map((tab, index) => (
-                                    <Tab key={index}>
+                                    <Tab
+                                        key={index}
+                                        className={
+                                            tab.hidden
+                                                ? "invisible_tab"
+                                                : undefined
+                                        }
+                                    >
                                         <BloomTooltip
                                             tip={{
                                                 l10nKey: tab.tipL10nKey,
@@ -334,6 +362,11 @@ export const PublishTabPane: React.FunctionComponent = () => {
                             </TabPanel>
                             <TabPanel>
                                 <PublishAudioVideo />
+                            </TabPanel>
+                            <TabPanel>
+                                <RequiresSubscriptionOverlayWrapper featureName="AppBuilder">
+                                    <AppPublisherScreen />
+                                </RequiresSubscriptionOverlayWrapper>
                             </TabPanel>
                             <TabPanel>
                                 {/* Before user has selected a publish mode, show a blank panel */}

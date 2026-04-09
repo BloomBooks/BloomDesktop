@@ -15,10 +15,19 @@ import { BloomSubscriptionIndicatorIconAndText } from "../react_components/requi
 import { useGetFeatureStatus } from "../react_components/featureStatus";
 import { useL10n } from "../react_components/l10nHooks";
 
+interface IAdvancedSettings {
+    autoUpdate?: boolean;
+    showExperimentalBookSources?: boolean;
+    allowTeamCollection?: boolean;
+    allowAppBuilder?: boolean;
+    showQrCode?: boolean;
+    qrcodeCaption?: string;
+}
+
 export const AdvancedSettingsPanel: React.FunctionComponent = () => {
-    const [settings, setSettings] = React.useState<object | undefined>(
-        undefined,
-    );
+    const [settings, setSettings] = React.useState<
+        IAdvancedSettings | undefined
+    >(undefined);
     const [showAutoUpdate, setShowAutoUpdate] = React.useState<boolean>(false);
     const [allowTeamCollectionEnabled, setAllowTeamCollectionEnabled] =
         React.useState<boolean>(false);
@@ -39,6 +48,10 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         "Automatically Update Bloom",
         "CollectionSettingsDialog.AdvancedTab.AutoUpdate",
     );
+    const experimentalFeaturesLabel = useL10n(
+        "Experimental Features",
+        "CollectionSettingsDialog.AdvancedTab.Experimental.ExperimentalFeatures",
+    );
     const showExperimentalBookSourcesLabel = useL10n(
         "Show Experimental Book Sources",
         "CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalBookSources",
@@ -47,9 +60,9 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         "Team Collections",
         "TeamCollection.TeamCollections",
     );
-    const availableWithSubscriptionLabel = useL10n(
-        "Available with your Bloom Subscription",
-        "AvailableWithSubscription",
+    const appBuilderLabel = useL10n(
+        "App Builder",
+        "CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder",
     );
     const qrCodesLabel = useL10n(
         "QR Codes",
@@ -78,12 +91,14 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
     const canChangeTeamCollectionOption = allowTeamCollectionEnabled !== false;
 
     const normalizeConfigrSettings = React.useCallback(
-        (settingsValue: string | object | undefined): object | undefined => {
+        (
+            settingsValue: string | IAdvancedSettings | undefined,
+        ): IAdvancedSettings | undefined => {
             if (!settingsValue) {
                 return undefined;
             }
             if (typeof settingsValue === "string") {
-                return JSON.parse(settingsValue) as object;
+                return JSON.parse(settingsValue) as IAdvancedSettings;
             }
             return settingsValue;
         },
@@ -158,6 +173,21 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                                     path="autoUpdate"
                                 />
                             )}
+                        </ConfigrGroup>
+                        <ConfigrGroup label={qrCodesLabel}>
+                            <ConfigrBoolean
+                                label={showQrCodesLabel}
+                                path="showQrCode"
+                                description={showQrCodesDescription}
+                            ></ConfigrBoolean>
+                            <ConfigrInput
+                                path="qrcodeCaption"
+                                label={captionLabel}
+                                description={captionDescription}
+                                disabled={!settings.showQrCode}
+                            />
+                        </ConfigrGroup>
+                        <ConfigrGroup label={experimentalFeaturesLabel}>
                             {showExperimentalBookSourcesOption && (
                                 <ConfigrBoolean
                                     label={showExperimentalBookSourcesLabel}
@@ -181,8 +211,28 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                                         !teamCollectionOptionEnabled ||
                                         !canChangeTeamCollectionOption
                                     }
-                                ></ConfigrBoolean>
+                                ></ConfigrBoolean>{" "}
+                                <div
+                                    css={css`
+                                        display: flex;
+                                        justify-content: flex-end;
+                                        .bloom-subscriptionIndicator {
+                                            font-size: 10pt;
+                                            font-weight: 700;
+                                        }
+                                    `}
+                                >
+                                    <BloomSubscriptionIndicatorIconAndText
+                                        feature="TeamCollection"
+                                        className="bloom-subscriptionIndicator"
+                                    />
+                                </div>
                             </div>
+
+                            <ConfigrBoolean
+                                label={appBuilderLabel}
+                                path="allowAppBuilder"
+                            />
                             <div
                                 css={css`
                                     display: flex;
@@ -194,23 +244,10 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                                 `}
                             >
                                 <BloomSubscriptionIndicatorIconAndText
-                                    feature="TeamCollection"
+                                    feature="AppBuilder"
                                     className="bloom-subscriptionIndicator"
                                 />
                             </div>
-                        </ConfigrGroup>
-                        <ConfigrGroup label={qrCodesLabel}>
-                            <ConfigrBoolean
-                                label={showQrCodesLabel}
-                                path="showQrCode"
-                                description={showQrCodesDescription}
-                            ></ConfigrBoolean>
-                            <ConfigrInput
-                                path="qrcodeCaption"
-                                label={captionLabel}
-                                description={captionDescription}
-                                disabled={!settings["showQrCode"]}
-                            />
                         </ConfigrGroup>
                     </ConfigrPage>
                 </ConfigrPane>
