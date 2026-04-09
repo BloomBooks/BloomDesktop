@@ -324,9 +324,30 @@ export const PageChooserDialog: React.FunctionComponent<
     }, [templateBooks]);
 
     const getToolId = (templatePageDiv: HTMLDivElement | undefined): string => {
-        return templatePageDiv
-            ? getAttributeStringSafely(templatePageDiv, "data-tool-id")
-            : "";
+        if (templatePageDiv) {
+            const pageToolId = getAttributeStringSafely(
+                templatePageDiv,
+                "data-tool-id",
+            );
+            if (pageToolId) {
+                return pageToolId;
+            }
+            const featureName = getAttributeStringSafely(
+                templatePageDiv,
+                "data-feature",
+            );
+            if (featureName === "canvas") {
+                const canvas =
+                    templatePageDiv.querySelector(kBloomCanvasSelector);
+                const canvasToolId = (canvas as Element)?.getAttribute(
+                    "data-tool-id",
+                );
+                if (canvasToolId) {
+                    return canvasToolId;
+                }
+            }
+        }
+        return "";
     };
 
     // "Safely" from a type-checking point of view. The calling code is responsible
@@ -409,7 +430,7 @@ export const PageChooserDialog: React.FunctionComponent<
             willLoseData(selectedPageDiv),
             convertWholeBookCheckbox ? convertWholeBookCheckbox.checked : false,
             props.forChooseLayout ? -1 : 1,
-            selectedPageDiv.getAttribute("data-tool-id") ?? "",
+            getToolId(selectedPageDiv),
             getToolId(selectedPageDiv),
         );
     }
@@ -706,11 +727,7 @@ export const PageChooserDialog: React.FunctionComponent<
                             learnMoreLink={learnMoreLink}
                             requiredTool={getToolId(selectedTemplatePageDiv)}
                             onSubmit={handleAddPageOrChooseLayoutButtonClick}
-                            dataToolId={
-                                selectedTemplatePageDiv.getAttribute(
-                                    "data-tool-id",
-                                ) ?? ""
-                            }
+                            dataToolId={getToolId(selectedTemplatePageDiv)}
                         />
                     )}
                 </div>
