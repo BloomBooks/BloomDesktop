@@ -328,7 +328,6 @@ function finishReactivatingPage(page: HTMLElement): void {
     // it's a new canvas so we need to set it up
     theOneCanvasElementManager.turnOnCanvasElementEditing();
     ensureDerivedFieldsFitOnCustomPage(page);
-    getToolboxBundleExports()?.applyToolboxStateToPage();
     // Enable or show the canvas tool.
     showCanvasTool();
 }
@@ -521,10 +520,6 @@ function renderPageLayoutMenu(page: HTMLElement): void {
                     () => convertXmatterPageToCustom(page),
                     "customPageLayout-convertFirstTime",
                 );
-                // Set data-tool-id on the browser DOM so it persists when jumpToPage saves.
-                // (The C# toggleCustomPageLayout set it on the C# DOM, but returned early
-                // without SaveThen, so that change would be overwritten by the browser save.)
-                page.setAttribute("data-tool-id", "canvas");
                 // Persist the newly created custom layout state so a later toggle back
                 // to standard has matching server-side state to work from.
                 await postString(
