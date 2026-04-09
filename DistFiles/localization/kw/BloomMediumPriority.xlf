@@ -525,8 +525,8 @@
         <note>ID: EditTab.Toolbox.CanvasTool.BookGrid</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.ClickToSetLinkDest" sil:dynamic="true">
-        <source xml:lang="en">Click to set where the link takes you</source>
-        <target xml:lang="kw" state="needs-translation">Click to set where the link takes you</target>
+        <source xml:lang="en">Choose link target</source>
+        <target xml:lang="kw" state="needs-translation">Choose link target</target>
         <note>ID: EditTab.Toolbox.CanvasTool.ClickToSetLinkDest</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.DragInstructions" sil:dynamic="true">
