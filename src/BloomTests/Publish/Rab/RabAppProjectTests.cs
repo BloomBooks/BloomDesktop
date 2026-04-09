@@ -9,8 +9,8 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Bloom.Collection;
 using Bloom.Publish.Rab;
-using BloomTests.TestDoubles.CollectionTab;
 using BloomTests.TeamCollection;
+using BloomTests.TestDoubles.CollectionTab;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
@@ -282,9 +282,18 @@ namespace BloomTests.Publish.Rab
 
             var choices = service.GetAvailableIconChoices().ToArray();
 
-            Assert.That(choices.Select(choice => choice.Id), Is.EqualTo(new[] { "ab-001-black", "ab-003-green" }));
-            Assert.That(choices[0].IconPath, Is.EqualTo(Path.Combine(blackIconFolder, "ab-001-black.png")));
-            Assert.That(choices[1].IconPath, Is.EqualTo(Path.Combine(greenIconFolder, "ab-003-green.png")));
+            Assert.That(
+                choices.Select(choice => choice.Id),
+                Is.EqualTo(new[] { "ab-001-black", "ab-003-green" })
+            );
+            Assert.That(
+                choices[0].IconPath,
+                Is.EqualTo(Path.Combine(blackIconFolder, "ab-001-black.png"))
+            );
+            Assert.That(
+                choices[1].IconPath,
+                Is.EqualTo(Path.Combine(greenIconFolder, "ab-003-green.png"))
+            );
         }
 
         [Test]
@@ -295,10 +304,7 @@ namespace BloomTests.Publish.Rab
             var installedIconRoot = Path.Combine(installDir, "images", "icons", "rab");
             var installedIconFolder = Path.Combine(installedIconRoot, "ab-003-green");
             Directory.CreateDirectory(installedIconFolder);
-            RobustFile.WriteAllText(
-                Path.Combine(installedIconFolder, "ab-003-green.png"),
-                "png"
-            );
+            RobustFile.WriteAllText(Path.Combine(installedIconFolder, "ab-003-green.png"), "png");
 
             var bundledIconRoot = Path.Combine(tempFolder.Path, "appbuilder-icons");
             Directory.CreateDirectory(bundledIconRoot);
@@ -348,7 +354,10 @@ namespace BloomTests.Publish.Rab
 
             var choices = service.GetAvailableIconChoices().ToArray();
 
-            Assert.That(choices.Select(choice => choice.Id), Is.EqualTo(new[] { "bloom-ai-01-book-stack" }));
+            Assert.That(
+                choices.Select(choice => choice.Id),
+                Is.EqualTo(new[] { "bloom-ai-01-book-stack" })
+            );
             Assert.That(
                 choices[0].IconPath,
                 Is.EqualTo(Path.Combine(bundledIconFolder, "bloom-ai-01-book-stack.png"))
@@ -408,7 +417,10 @@ namespace BloomTests.Publish.Rab
 
             var paths = service.ReadPaths();
 
-            Assert.That(paths.RabRoot, Is.EqualTo(Path.Combine(tempFolder.Path, "app configuration")));
+            Assert.That(
+                paths.RabRoot,
+                Is.EqualTo(Path.Combine(tempFolder.Path, "app configuration"))
+            );
             Assert.That(Directory.Exists(legacyRabRoot), Is.False);
             Assert.That(Directory.Exists(paths.RabRoot), Is.True);
             Assert.That(RobustFile.Exists(Path.Combine(paths.RabRoot, "setup.json")), Is.True);
@@ -908,7 +920,10 @@ namespace BloomTests.Publish.Rab
             Assert.That(project.PackageName, Is.EqualTo("org.sil.bloom.updated.app"));
             Assert.That(settings.PackageName, Is.EqualTo("org.sil.bloom.updated.app"));
             Assert.That(settings.Copyright, Is.EqualTo("Updated Copyright"));
-            Assert.That(RobustFile.ReadAllText(paths.AboutTextPath), Is.EqualTo("Updated about text"));
+            Assert.That(
+                RobustFile.ReadAllText(paths.AboutTextPath),
+                Is.EqualTo("Updated about text")
+            );
         }
 
         [Test]
@@ -961,15 +976,14 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            var error = Assert.Throws<ApplicationException>(
-                () =>
-                    service.SaveAppSettings(
-                        new RabAppSettings
-                        {
-                            AppName = "Configured App",
-                            PackageName = "org.sil.bloom.configured.app",
-                        }
-                    )
+            var error = Assert.Throws<ApplicationException>(() =>
+                service.SaveAppSettings(
+                    new RabAppSettings
+                    {
+                        AppName = "Configured App",
+                        PackageName = "org.sil.bloom.configured.app",
+                    }
+                )
             );
 
             Assert.That(

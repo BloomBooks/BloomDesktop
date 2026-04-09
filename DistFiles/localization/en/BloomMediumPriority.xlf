@@ -1237,10 +1237,6 @@
         <source xml:lang="en">More Settings</source>
         <note>ID: PublishTab.Apps.SettingsDialog.MoreSettings</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.ReadingAppBuilder.ValidationMessage" translate="no">
-        <source xml:lang="en">Fill in the required fields and fix validation errors above before opening Reading App Builder.</source>
-        <note>ID: PublishTab.Apps.SettingsDialog.ReadingAppBuilder.ValidationMessage</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.StartingReadingAppBuilder" translate="no">
         <source xml:lang="en">Starting Reading App Builder...</source>
         <note>ID: PublishTab.Apps.SettingsDialog.StartingReadingAppBuilder</note>

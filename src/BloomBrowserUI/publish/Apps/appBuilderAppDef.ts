@@ -274,17 +274,13 @@ export async function fetchAppBuilderSettings(
         return defaultSettings;
     }
 
-    const response = await postJsonAsync("fileIO/readFile", {
-        path: appDefPath,
-    });
-    const appDefContents =
-        typeof response?.data === "string" ? response.data : "";
-    const settings = getAppBuilderSettingsFromAppDef(
-        appDefPath,
-        appDefContents,
-    );
-    settings.about = await fetchAppBuilderAboutText(appDefPath);
-    return settings;
+    const response = await getWithPromise("publish/rab/app-settings");
+    const rawSettings =
+        typeof response?.data === "string"
+            ? (JSON.parse(response.data) as unknown)
+            : response?.data;
+
+    return normalizeSettings(rawSettings as IAppBuilderAppSettingsApi);
 }
 
 export function refreshAppBuilderSettings(

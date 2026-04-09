@@ -1,6 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("../../utils/bloomApi", () => ({
+    getWithPromise: vi.fn(),
+    postJsonAsync: vi.fn(),
+    useApiObject: vi.fn(),
+}));
+
+import { getWithPromise, postJsonAsync } from "../../utils/bloomApi";
 import {
     applyDefaultAppBuilderIconChoice,
+    fetchAppBuilderSettings,
     getAppBuilderPackageNameValidationIssue,
     getAppBuilderSettingsValidationIssues,
     getAboutTextPath,
@@ -13,7 +22,14 @@ import {
     updateAppBuilderAppDef,
 } from "./appBuilderAppDef";
 
+const getWithPromiseMock = vi.mocked(getWithPromise);
+const postJsonAsyncMock = vi.mocked(postJsonAsync);
+
 describe("appBuilderAppDef", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
     it("normalizes settings from PascalCase API payloads", () => {
         const settings = normalizeSettings({
             AppName: "Sample App",
@@ -270,5 +286,35 @@ describe("appBuilderAppDef", () => {
         ).toBe(
             "C:\\Users\\hatto\\Documents\\Bloom\\RAB Books\\app configuration\\project-assets\\about.txt",
         );
+    });
+
+    it("loads effective app settings from the backend instead of reparsing the appDef", async () => {
+        getWithPromiseMock.mockResolvedValue({
+            data: {
+                AppName: "Flower",
+                ColorScheme: "Indigo",
+                PackageName: "org.sil.flower",
+                IconPath: "C:\\icons\\flower.png",
+                Copyright: "Copyright 2026",
+                About: "Created with Bloom.",
+            },
+        } as never);
+
+        const settings = await fetchAppBuilderSettings(
+            "C:\\Users\\hatto\\Documents\\Bloom\\RAB Books\\app configuration\\RAB Books\\RAB Books.appDef",
+        );
+
+        expect(getWithPromiseMock).toHaveBeenCalledWith(
+            "publish/rab/app-settings",
+        );
+        expect(postJsonAsyncMock).not.toHaveBeenCalled();
+        expect(settings).toEqual({
+            appName: "Flower",
+            colorScheme: "Indigo",
+            packageName: "org.sil.flower",
+            iconPath: "C:\\icons\\flower.png",
+            copyright: "Copyright 2026",
+            about: "Created with Bloom.",
+        });
     });
 });

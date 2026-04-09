@@ -117,9 +117,9 @@ export const AppBuilderIconChooserForConfigr: React.FunctionComponent<{
                     align-items: center;
                     justify-content: center;
                     gap: 2px;
-                    width: 72px;
+                    min-width: 72px;
                     min-height: 56px;
-                    padding: 4px 6px;
+                    padding: 4px 8px;
                     background: white;
                     border: 1px solid rgba(0, 0, 0, 0.23);
                     border-radius: 4px;

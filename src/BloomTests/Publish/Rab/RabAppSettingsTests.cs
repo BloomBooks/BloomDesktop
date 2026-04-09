@@ -42,11 +42,11 @@ namespace BloomTests.Publish.Rab
                 new RabAppSettings()
                 {
                     AppName = "Bloom App",
-                ColorScheme = "Lime",
+                    ColorScheme = "Lime",
                     PackageName = "org.sil.bloom.app",
                     IconPath = @"C:\icons\app.png",
                     Copyright = "Copyright 2026",
-                About = "About this app",
+                    About = "About this app",
                 }
             );
             project.Save();
@@ -62,20 +62,21 @@ namespace BloomTests.Publish.Rab
             Assert.That(settings.IconPath, Is.EqualTo(@"C:\icons\app.png"));
             Assert.That(settings.Copyright, Is.EqualTo("Copyright 2026"));
             Assert.That(
-              appDef.Root?.Element("colors")
-                ?.Element("color")
-                ?.Element("color-mapping")
-                ?.Attribute("value")
-                ?.Value,
-              Is.EqualTo(RabAppProject.DefaultPrimaryColor)
+                appDef
+                    .Root?.Element("colors")
+                    ?.Element("color")
+                    ?.Element("color-mapping")
+                    ?.Attribute("value")
+                    ?.Value,
+                Is.EqualTo(RabAppProject.DefaultPrimaryColor)
             );
             Assert.That(
-              appDef.Root?.Element("about")?.Attribute("enabled")?.Value,
-              Is.EqualTo("true")
+                appDef.Root?.Element("about")?.Attribute("enabled")?.Value,
+                Is.EqualTo("true")
             );
             Assert.That(
-              appDef.Root?.Element("about")?.Element("filename")?.Value,
-              Is.EqualTo(RabAppProject.DefaultAboutFileName)
+                appDef.Root?.Element("about")?.Element("filename")?.Value,
+                Is.EqualTo(RabAppProject.DefaultAboutFileName)
             );
         }
 

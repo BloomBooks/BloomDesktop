@@ -207,8 +207,6 @@ const ReadingAppBuilderButtonForConfigr: React.FunctionComponent<{
     onOpen: () => void;
     buttonLabel: string;
     canOpenInRab: boolean;
-    showValidationMessage: boolean;
-    validationMessage: string;
 }> = (props) => {
     return (
         <div
@@ -236,19 +234,6 @@ const ReadingAppBuilderButtonForConfigr: React.FunctionComponent<{
             >
                 {props.buttonLabel}
             </BloomButton>
-            {props.showValidationMessage && (
-                <div
-                    css={css`
-                        max-width: 360px;
-                        color: #c62828;
-                        font-size: 0.9rem;
-                        line-height: 1.3;
-                        text-align: right;
-                    `}
-                >
-                    {props.validationMessage}
-                </div>
-            )}
         </div>
     );
 };
@@ -317,10 +302,6 @@ export const AppBuilderSettingsDialog: React.FunctionComponent<{
         "More Settings",
         "PublishTab.Apps.SettingsDialog.MoreSettings",
     );
-    const readingAppBuilderValidationMessage = useL10n(
-        "Fill in the required fields and fix validation errors above before opening Reading App Builder.",
-        "PublishTab.Apps.SettingsDialog.ReadingAppBuilder.ValidationMessage",
-    );
     const readingAppBuilderDescription = useL10n(
         "Use this to do more customization of your app. Make sure to click Save and quit Reading App Builder before returning to Bloom.",
         "PublishTab.Apps.SettingsDialog.RunRAB.Description",
@@ -334,10 +315,6 @@ export const AppBuilderSettingsDialog: React.FunctionComponent<{
         );
     }
 
-    const hasSettingsValidationIssues = Object.values(
-        getAppBuilderSettingsValidationIssues(getCurrentSettings()),
-    ).some((issue) => !!issue);
-
     const openReadingAppBuilderControl: React.FunctionComponent<{
         value: string;
         disabled?: boolean;
@@ -348,8 +325,6 @@ export const AppBuilderSettingsDialog: React.FunctionComponent<{
                 {...controlProps}
                 buttonLabel={readingAppBuilderButtonLabel}
                 canOpenInRab={props.canOpenInRab}
-                showValidationMessage={hasSettingsValidationIssues}
-                validationMessage={readingAppBuilderValidationMessage}
                 onOpen={() => {
                     void saveSettingsAndOpenReadingAppBuilder();
                 }}

@@ -146,12 +146,17 @@ namespace Bloom.Publish.Rab
                 .Select(directory =>
                 {
                     var directoryName = Path.GetFileName(directory);
-                    return CreateIconChoice(directoryName, Path.Combine(directory, directoryName + ".png"));
+                    return CreateIconChoice(
+                        directoryName,
+                        Path.Combine(directory, directoryName + ".png")
+                    );
                 });
 
             var flatFileChoices = Directory
                 .GetFiles(iconRoot, "*.png")
-                .Select(iconPath => CreateIconChoice(Path.GetFileNameWithoutExtension(iconPath), iconPath));
+                .Select(iconPath =>
+                    CreateIconChoice(Path.GetFileNameWithoutExtension(iconPath), iconPath)
+                );
 
             return folderChoices.Concat(flatFileChoices).Where(choice => choice != null);
         }

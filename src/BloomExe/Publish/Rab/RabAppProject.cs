@@ -329,13 +329,15 @@ namespace Bloom.Publish.Rab
             if (!string.IsNullOrWhiteSpace(adaptiveIconPath))
                 return adaptiveIconPath;
 
-            var launcherImagesElement = _document.Root?.Elements("images")
+            var launcherImagesElement = _document
+                .Root?.Elements("images")
                 .FirstOrDefault(element => (string)element.Attribute("type") == "launcher");
             if (launcherImagesElement != null)
             {
                 foreach (var (size, relativePath) in kLauncherIconFiles.Reverse())
                 {
-                    var imageElement = launcherImagesElement.Elements("image")
+                    var imageElement = launcherImagesElement
+                        .Elements("image")
                         .FirstOrDefault(element => (int?)element.Attribute("width") == size);
                     var configuredPath = imageElement?.Value;
                     if (string.IsNullOrWhiteSpace(configuredPath))
@@ -356,11 +358,11 @@ namespace Bloom.Publish.Rab
 
         private string GetAdaptiveForegroundIconPath()
         {
-            var adaptiveForegroundFileName = _document.Root?
-                .Element("adaptive-icon")?
-                .Element("foreground")?
-                .Element("image")?
-                .Value;
+            var adaptiveForegroundFileName = _document
+                .Root?.Element("adaptive-icon")
+                ?.Element("foreground")
+                ?.Element("image")
+                ?.Value;
             if (string.IsNullOrWhiteSpace(adaptiveForegroundFileName))
                 return null;
 
