@@ -1732,16 +1732,18 @@ namespace Bloom.Book
         private List<Tuple<string, XmlString>> GetAttributesToSave(SafeXmlElement node)
         {
             var result = new List<Tuple<string, XmlString>>();
-            if (HtmlDom.IsInCustomLayoutPage(node))
+            if (node.Name == "img" && HtmlDom.IsInCustomLayoutPage(node))
             {
-                // We don't want to transfer attribute values or classes from the custom page
+                // We don't want to transfer most image attribute values or classes from the custom page
                 // layout to the standard one. It's likely that special styling or image cropping
                 // or anything similar  will have the wrong effect there. The one exception is the
                 // src of an image: we allow changing the cover image in one place to change it in
                 // the other, just as changing the text of a title in one place changes it in both.
                 // We don't need to worry about re-creating attribute values inside the custom margin
                 // box, because its whole content is saved.
-                if (node.Name == "img" && !string.IsNullOrWhiteSpace(node.GetAttribute("src")))
+                // We do want to transfer data normally for text elements; for example, talking book
+                // recordings should transfer (and also survive the book being opened in 6.3).
+                if (!string.IsNullOrWhiteSpace(node.GetAttribute("src")))
                     result.Add(
                         Tuple.Create("src", XmlString.FromUnencoded(node.GetAttribute("src")))
                     );
