@@ -20,6 +20,9 @@ import calculateAspectRatio from "calculate-aspect-ratio";
 import VideoTrimSlider from "../../../react_components/videoTrimSlider";
 import { updateVideoInContainer } from "../../js/bloomVideo";
 import { selectVideoContainer } from "../../js/videoUtils";
+import WebSocketManager, {
+    IBloomWebSocketEvent,
+} from "../../../utils/WebSocketManager";
 import $ from "jquery";
 
 // The recording process can be in one of these states:
@@ -58,7 +61,7 @@ interface IComponentState {
 
 declare let MediaRecorder: {
     prototype: MediaRecorder;
-    new (s: MediaStream, options: any): MediaRecorder;
+    new (s: MediaStream, options: MediaRecorderOptions): MediaRecorder;
 };
 
 // string and number versions of the untrimmed values for both the start and end points of a video.
@@ -116,6 +119,15 @@ export class SignLanguageToolControls extends React.Component<
     private mediaRecorder: MediaRecorder;
     private timerId: number;
     private recordingStarted: number;
+
+    private bloomAppIsActive: boolean = true;
+    private pendingTurnOnVideoBecauseBloomWasInactive: boolean = false;
+    private restartCameraAfterMediaRecorderStop: boolean = true;
+    private cameraRetryTimerId: number | undefined;
+    private toolIsActive: boolean = false;
+
+    private static kWebSocketContext = "window";
+    private static kBloomAppActivationChanged = "appActivationChanged";
 
     public render() {
         return (
@@ -481,7 +493,7 @@ export class SignLanguageToolControls extends React.Component<
             "signLanguage/getStats",
             { params: paramsObj },
             (result) => {
-                if (result.statusText != "OK") {
+                if (result.statusText !== "OK") {
                     this.setNoVideo(true);
                 } else {
                     const frameSize: string = result.data.frameSize;
@@ -538,7 +550,7 @@ export class SignLanguageToolControls extends React.Component<
             "",
             { params: paramsObj },
             (result) => {
-                if (result.data == "deleted") {
+                if (result.data === "deleted") {
                     const elt = this.getSelectedVideoContainer();
                     if (elt) {
                         elt.classList.add("bloom-noVideoSelected");
@@ -562,7 +574,88 @@ export class SignLanguageToolControls extends React.Component<
         postJson("fileIO/showInFolder", JSON.stringify({ folderPath: path }));
     }
 
+    public setToolIsActive(toolIsActive: boolean) {
+        this.toolIsActive = toolIsActive;
+        if (!toolIsActive) {
+            this.pendingTurnOnVideoBecauseBloomWasInactive = false;
+        }
+    }
+
+    private handleBloomAppActivationChanged = (e: IBloomWebSocketEvent) => {
+        if (e.id !== SignLanguageToolControls.kBloomAppActivationChanged) {
+            return;
+        }
+
+        const bloomIsActive = (e as unknown as { active: boolean }).active;
+        this.bloomAppIsActive = bloomIsActive;
+
+        if (!bloomIsActive) {
+            const wasUsingCamera = !!this.videoStream;
+            // Remember whether we should be showing the preview, so we can resume when Bloom becomes active.
+            this.pendingTurnOnVideoBecauseBloomWasInactive =
+                this.toolIsActive && wasUsingCamera;
+
+            // If we're counting down, cancel it (back to idle) so we don't keep timers running.
+            if (
+                this.state.stateClass === "countdown3" ||
+                this.state.stateClass === "countdown2" ||
+                this.state.stateClass === "countdown1"
+            ) {
+                document.removeEventListener("keydown", this.onKeyPress);
+                window.clearTimeout(this.timerId);
+                this.setState({ stateClass: "idle" });
+            }
+
+            // If we're recording, stop the recorder but don't restart the camera after it stops.
+            if (this.state.recording) {
+                this.restartCameraAfterMediaRecorderStop = false;
+                document.removeEventListener("keydown", this.onKeyPress);
+                this.setState({ recording: false, stateClass: "processing" });
+                this.mediaRecorder.stop();
+            }
+
+            if (!this.state.recording) {
+                this.turnOffVideo();
+            }
+            return;
+        }
+
+        // Bloom is active again.
+        if (
+            this.pendingTurnOnVideoBecauseBloomWasInactive &&
+            this.toolIsActive &&
+            this.state.enabled
+        ) {
+            this.pendingTurnOnVideoBecauseBloomWasInactive = false;
+            this.turnOnVideo();
+        }
+    };
+
+    public componentDidMount() {
+        WebSocketManager.addListener(
+            SignLanguageToolControls.kWebSocketContext,
+            this.handleBloomAppActivationChanged,
+        );
+    }
+
+    public componentWillUnmount() {
+        WebSocketManager.removeListener(
+            SignLanguageToolControls.kWebSocketContext,
+            this.handleBloomAppActivationChanged,
+        );
+        this.turnOffVideo();
+    }
+
     public turnOnVideo() {
+        if (!this.bloomAppIsActive) {
+            if (this.toolIsActive && this.state.enabled) {
+                this.pendingTurnOnVideoBecauseBloomWasInactive = true;
+            }
+            return;
+        }
+        if (this.videoStream) {
+            return;
+        }
         const constraints = { video: true };
         navigator.mediaDevices
             .getUserMedia(constraints)
@@ -571,11 +664,23 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     public turnOffVideo() {
+        if (this.cameraRetryTimerId !== undefined) {
+            window.clearTimeout(this.cameraRetryTimerId);
+            this.cameraRetryTimerId = undefined;
+        }
         if (this.videoStream) {
             const oldStream = this.videoStream;
             this.videoStream = null; // prevent recursive calls
             oldStream.getVideoTracks().forEach((t) => t.stop());
             oldStream.getAudioTracks().forEach((t) => t.stop());
+        }
+
+        const videoMonitor = document.getElementById(
+            "videoMonitor",
+        ) as HTMLVideoElement;
+        if (videoMonitor) {
+            videoMonitor.srcObject = null;
+            videoMonitor.pause();
         }
     }
 
@@ -590,10 +695,24 @@ export class SignLanguageToolControls extends React.Component<
                 reason &&
                 reason.name &&
                 (reason.name === "NotReadableError" || // Gecko63 or so
-                    reason.name == "SourceUnavailableError"), // Gecko45
+                    reason.name === "SourceUnavailableError"), // Gecko45
         });
+
         // In case the user plugs in a camera, try once a second to turn it on.
-        window.setTimeout(() => this.turnOnVideo(), 1000);
+        // But don't keep retrying if Bloom isn't active or this tool isn't enabled.
+        if (this.cameraRetryTimerId !== undefined) {
+            window.clearTimeout(this.cameraRetryTimerId);
+        }
+        this.cameraRetryTimerId = window.setTimeout(() => {
+            this.cameraRetryTimerId = undefined;
+            if (
+                this.bloomAppIsActive &&
+                this.toolIsActive &&
+                this.state.enabled
+            ) {
+                this.turnOnVideo();
+            }
+        }, 1000);
     }
 
     // callback from getUserMedia when it succeeds; gives us a stream we can monitor and record from.
@@ -739,7 +858,15 @@ export class SignLanguageToolControls extends React.Component<
             // longer useful after calling mediaRecorder.stop(). The monitor freezes and
             // nothing happens when I click record. So dispose of it and start a new one.
             this.turnOffVideo();
-            this.turnOnVideo();
+            const shouldRestartCamera =
+                this.restartCameraAfterMediaRecorderStop &&
+                this.bloomAppIsActive &&
+                this.toolIsActive &&
+                this.state.enabled;
+            this.restartCameraAfterMediaRecorderStop = true;
+            if (shouldRestartCamera) {
+                this.turnOnVideo();
+            }
         };
 
         // All set, get the actual recording going.
@@ -794,6 +921,14 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         return root as HTMLDivElement;
     }
 
+    public async showTool(): Promise<void> {
+        this.reactControls.setToolIsActive(true);
+    }
+
+    public hideTool(): void {
+        this.reactControls.setToolIsActive(false);
+    }
+
     public isExperimental(): boolean {
         return false;
     }
@@ -802,7 +937,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         return false;
     }
 
-    public beginRestoreSettings(settings: string): JQueryPromise<void> {
+    public beginRestoreSettings(_settings: string): JQueryPromise<void> {
         // Nothing to do, so return an already-resolved promise.
         const result = $.Deferred<void>();
         result.resolve();
@@ -823,16 +958,16 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
 
     public static getSelectedVideoPathAndTiming(): string | null {
         const containers = this.getVideoContainers(true);
-        if (!containers || containers.length == 0) {
+        if (!containers || containers.length === 0) {
             return null;
         }
         const container = containers[0];
         const videos = container.getElementsByTagName("video");
-        if (videos.length == 0) {
+        if (videos.length === 0) {
             return null;
         }
         const sources = videos[0].getElementsByTagName("source");
-        if (sources.length == 0) {
+        if (sources.length === 0) {
             return null;
         }
         return sources[0].getAttribute("src");
@@ -861,6 +996,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
                 );
             }
         }
+        this.reactControls.setToolIsActive(false);
         this.reactControls.turnOffVideo();
     }
 

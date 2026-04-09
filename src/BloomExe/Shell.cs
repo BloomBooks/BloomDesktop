@@ -35,6 +35,8 @@ namespace Bloom
         private readonly ControlKeyEvent _controlKeyEvent;
         private readonly WorkspaceView _workspaceView;
         private AudioRecording _audioRecording;
+        private bool _sentInactiveBecauseMinimized;
+        private bool _mostRecentAppIsActive = true;
 
         // This is needed because on Linux the ResizeEnd event is firing before the Load event handler is
         // finished, overwriting the saved RestoreBounds before they are applied.
@@ -138,12 +140,57 @@ namespace Bloom
         {
             base.OnActivated(e);
             _audioRecording.ResumeMonitoringAudio();
+            if (!AppIsShuttingDown)
+                SendBloomAppActivationChanged(true);
         }
 
         protected override void OnDeactivate(EventArgs e)
         {
             base.OnDeactivate(e);
             _audioRecording.PauseMonitoringAudio(true);
+            SendBloomAppActivationChanged(false);
+        }
+
+        private void SendBloomAppActivationChanged(bool bloomIsActive)
+        {
+            if (_mostRecentAppIsActive == bloomIsActive)
+                return;
+            _mostRecentAppIsActive = bloomIsActive;
+
+            var websocketServer = BloomWebSocketServer.Instance;
+            if (websocketServer == null)
+                return;
+
+            dynamic eventBundle = new DynamicJson();
+            eventBundle.active = bloomIsActive;
+            websocketServer.SendBundle("window", "appActivationChanged", eventBundle);
+        }
+
+        protected override void OnSizeChanged(EventArgs e)
+        {
+            base.OnSizeChanged(e);
+
+            // Minimizing does not reliably trigger OnDeactivate (e.g., if no other window is activated).
+            // But we still want to release resources like camera/mic while Bloom is minimized.
+            if (WindowState == FormWindowState.Minimized)
+            {
+                if (!_sentInactiveBecauseMinimized)
+                {
+                    _sentInactiveBecauseMinimized = true;
+                    SendBloomAppActivationChanged(false);
+                }
+            }
+            else
+            {
+                // On some systems, minimizing doesn't reliably trigger OnDeactivate.
+                // If we sent an inactive notification while minimized and we are now restored and focused,
+                // make sure subscribers can resume.
+                if (_sentInactiveBecauseMinimized && (Focused || ContainsFocus))
+                {
+                    SendBloomAppActivationChanged(true);
+                }
+                _sentInactiveBecauseMinimized = false;
+            }
         }
 
         public bool AppIsShuttingDown => _startedClosingEvent || _finishedClosingEvent;
