@@ -1758,6 +1758,13 @@ namespace Bloom.Book
                     );
                 return result;
             }
+            // Margin box doesn't have any of the properties that would normally make it one of the nodes
+            // passed to this method. However, it is the node that gets passed for a custom page. It would
+            // probably be harmless to process it normally, but it would result in the data-div node for
+            // the custom page content having the class marignBox. That might cause something unexpected,
+            // and the marginBox doesn't have any classes or attributes we need to preserve, so just skip it.
+            if (node.HasClass("marginBox"))
+                return result;
             foreach (var attr in node.AttributePairs)
             {
                 if (_attributesNotToCopy.Contains(attr.Name))
