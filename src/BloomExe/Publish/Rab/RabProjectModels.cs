@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-
 namespace Bloom.Publish.Rab
 {
     // Passive DTOs and path helpers live here so RabProjectService can focus on orchestration.
@@ -60,7 +59,6 @@ namespace Bloom.Publish.Rab
         public string KeyAlias { get; set; }
         public string AliasPassword { get; set; }
         public List<RabBookPublishInfo> Books { get; set; } = new List<RabBookPublishInfo>();
-        public RabAppSettings Settings { get; set; } = new RabAppSettings();
         public string LastBuiltInputSignature { get; set; }
     }
 
@@ -70,12 +68,19 @@ namespace Bloom.Publish.Rab
         public string[] LauncherIconPaths { get; set; } = Array.Empty<string>();
     }
 
+    public class RabIconChoice
+    {
+        public string Id { get; set; }
+        public string Label { get; set; }
+        public string IconPath { get; set; }
+    }
+
     internal class RabWorkspacePaths
     {
         public RabWorkspacePaths(string collectionRoot)
         {
             CollectionRoot = collectionRoot;
-            RabRoot = Path.Combine(collectionRoot, "rab");
+            RabRoot = Path.Combine(collectionRoot, "app configuration");
             BloomPubRoot = Path.Combine(RabRoot, "bloompubs");
             BuildRoot = Path.Combine(RabRoot, "build");
             ApkRoot = Path.Combine(RabRoot, "apk");

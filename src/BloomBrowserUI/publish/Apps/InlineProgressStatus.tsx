@@ -36,7 +36,10 @@ export const InlineProgressStatus: React.FunctionComponent<{
                 )}
             </div>
             {props.progressPercent > 0 && (
-                <ProgressBar percentage={props.progressPercent} />
+                <ProgressBar
+                    percentage={props.progressPercent}
+                    animateWhileInProgress={true}
+                />
             )}
         </div>
     );

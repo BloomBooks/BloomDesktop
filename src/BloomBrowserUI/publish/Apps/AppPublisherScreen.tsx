@@ -76,27 +76,16 @@ const AppActionButton: React.FunctionComponent<{
     );
 };
 
-const AppsStepInstruction: React.FunctionComponent = (props) => {
-    return (
-        <div
-            css={css`
-                margin-bottom: 12px;
-                max-width: 720px;
-            `}
-        >
-            {props.children}
-        </div>
-    );
-};
-
 // Keep this component mostly declarative. The hook owns websocket/API state so the JSX can stay focused on the workflow.
-const AppPublisherScreenContents: React.FunctionComponent = () => {
-    const screenState = useAppBuilderPublisherScreen();
+const AppPublisherScreenContents: React.FunctionComponent<{
+    isActive: boolean;
+}> = (props) => {
+    const screenState = useAppBuilderPublisherScreen(props.isActive);
     const [showSettingsDialog, setShowSettingsDialog] = React.useState(false);
     const [showChooseBooksDialog, setShowChooseBooksDialog] =
         React.useState(false);
     const setupTooltip = useL10n(
-        "Create the Reading App Builder project in this collection's rab folder.",
+        "Create the Reading App Builder project in this collection's app configuration folder.",
         "PublishTab.Apps.Setup.Tooltip",
     );
     const setupDoneTooltip = useL10n(
@@ -119,6 +108,10 @@ const AppPublisherScreenContents: React.FunctionComponent = () => {
         "The APK is current. Try on phone will use the latest build.",
         "PublishTab.Apps.Build.DoneTooltip",
     );
+    const setupRequiredTooltip = useL10n(
+        "Run Setup before using this step.",
+        "PublishTab.Apps.SetupRequiredTooltip",
+    );
     const buildNeedsSetupTooltip = useL10n(
         "Run Setup before building the app.",
         "PublishTab.Apps.Build.NeedsSetupTooltip",
@@ -138,6 +131,10 @@ const AppPublisherScreenContents: React.FunctionComponent = () => {
     const settingsButtonLabel = useL10n(
         "Customize...",
         "PublishTab.Apps.CustomizeButton",
+    );
+    const customizeValidationMessage = useL10n(
+        "Some required settings are missing or invalid.",
+        "PublishTab.Apps.CustomizeButton.ValidationMessage",
     );
     const preparingWorkspaceLabel = useL10n(
         "Preparing workspace",
@@ -199,10 +196,6 @@ const AppPublisherScreenContents: React.FunctionComponent = () => {
         "Install build tools",
         "PublishTab.Apps.PrepareStepper.BuildToolsInstalled",
     );
-    const signingKeyReadyLabel = useL10n(
-        "Create signing key",
-        "PublishTab.Apps.PrepareStepper.SigningKeyReady",
-    );
     const projectCreatedLabel = useL10n(
         "Create project",
         "PublishTab.Apps.PrepareStepper.ProjectCreated",
@@ -210,10 +203,6 @@ const AppPublisherScreenContents: React.FunctionComponent = () => {
     const prepareWorkingOnLabel = useL10n(
         "Working on: ",
         "PublishTab.Apps.PrepareStepper.WorkingOn",
-    );
-    const prepareAllReadyLabel = useL10n(
-        "All prepare steps are ready.",
-        "PublishTab.Apps.PrepareStepper.AllReady",
     );
     const prepareIncompleteLabel = useL10n(
         "Finish the remaining prepare steps to build the app.",
@@ -227,7 +216,8 @@ const AppPublisherScreenContents: React.FunctionComponent = () => {
     const busyAction = screenState.busyAction;
     const apkIsCurrent = screenState.status.apkExists && !buildIsNeeded;
     const canRunSetup = !busyAction && !prepareIsReady;
-    const canRunBuild = !busyAction;
+    const canUseConfiguredProject = prepareIsReady && !busyAction;
+    const canRunBuild = !busyAction && screenState.hasRequiredBuildSettings;
     const canUseCurrentApk = apkIsCurrent && !busyAction;
     const activePrepareStepId = getPrepareStepIdForStage(
         busyAction,
@@ -242,9 +232,7 @@ const AppPublisherScreenContents: React.FunctionComponent = () => {
                   ? rabInstalledLabel
                   : step.id === "build-tools-installed"
                     ? buildToolsInstalledLabel
-                    : step.id === "signing-key-ready"
-                      ? signingKeyReadyLabel
-                      : projectCreatedLabel,
+                    : projectCreatedLabel,
     }));
     const currentProgressStageLabel = getProgressStageLabel(
         busyAction,
@@ -298,7 +286,7 @@ const AppPublisherScreenContents: React.FunctionComponent = () => {
                         areStepsAlwaysEnabled={true}
                         css={css`
                             .MuiStepContent-root {
-                                padding-bottom: 20px;
+                                padding-bottom: 0;
                             }
 
                             .MuiStepLabel-label {
@@ -309,11 +297,6 @@ const AppPublisherScreenContents: React.FunctionComponent = () => {
                         <Step expanded={true} completed={false}>
                             <StepLabel>Prepare to make an app</StepLabel>
                             <StepContent>
-                                <AppsStepInstruction>
-                                    Create a Reading App Builder project for
-                                    this collection. Before doing this, make
-                                    sure that Reading App Builder is installed.
-                                </AppsStepInstruction>
                                 <AppActionButton
                                     enabled={canRunSetup}
                                     l10nKey="PublishTab.Apps.PrepareButton"
@@ -330,7 +313,6 @@ const AppPublisherScreenContents: React.FunctionComponent = () => {
                                     activeStepId={activePrepareStepId}
                                     isBusy={busyAction === "setup"}
                                     workingOnLabel={prepareWorkingOnLabel}
-                                    allReadyLabel={prepareAllReadyLabel}
                                     incompleteLabel={prepareIncompleteLabel}
                                 />
                                 <ActionLogAccordion
@@ -348,14 +330,18 @@ const AppPublisherScreenContents: React.FunctionComponent = () => {
                         <Step expanded={true} completed={false}>
                             <StepLabel>
                                 <AppActionButton
-                                    enabled={!busyAction}
+                                    enabled={canUseConfiguredProject}
                                     l10nKey="PublishTab.Apps.ChooseBooks"
                                     onClick={() =>
                                         setShowChooseBooksDialog(true)
                                     }
                                     size="large"
                                     variant="contained"
-                                    tooltip={chooseBooksTooltip}
+                                    tooltip={
+                                        prepareIsReady
+                                            ? chooseBooksTooltip
+                                            : setupRequiredTooltip
+                                    }
                                 >
                                     Choose Books...
                                 </AppActionButton>
@@ -382,17 +368,36 @@ const AppPublisherScreenContents: React.FunctionComponent = () => {
                         <Step expanded={true} completed={false}>
                             <StepLabel>
                                 <AppActionButton
-                                    enabled={!busyAction}
+                                    enabled={canUseConfiguredProject}
                                     l10nKey="PublishTab.Apps.CustomizeButton"
                                     onClick={() => setShowSettingsDialog(true)}
                                     size="large"
                                     variant="contained"
-                                    tooltip={settingsTooltip}
+                                    tooltip={
+                                        prepareIsReady
+                                            ? settingsTooltip
+                                            : setupRequiredTooltip
+                                    }
                                     iconBeforeText={<SettingsIcon />}
                                 >
                                     {settingsButtonLabel}
                                 </AppActionButton>
                             </StepLabel>
+                            <StepContent>
+                                {canUseConfiguredProject &&
+                                    !screenState.hasRequiredBuildSettings && (
+                                        <Typography
+                                            css={css`
+                                                color: #c62828;
+                                                font-size: 0.9rem;
+                                                line-height: 1.35;
+                                                max-width: 340px;
+                                            `}
+                                        >
+                                            {customizeValidationMessage}
+                                        </Typography>
+                                    )}
+                            </StepContent>
                         </Step>
                         <Step expanded={true} completed={false}>
                             <StepLabel>
@@ -531,6 +536,7 @@ const AppPublisherScreenContents: React.FunctionComponent = () => {
             </PublishPanel>
             {showSettingsDialog && (
                 <AppBuilderSettingsDialog
+                    appDefPath={screenState.status.appDefPath ?? ""}
                     canOpenInRab={
                         screenState.status.projectExists && rabInstalled
                     }
@@ -554,7 +560,9 @@ const AppPublisherScreenContents: React.FunctionComponent = () => {
     );
 };
 
-export const AppPublisherScreen: React.FunctionComponent = () => {
+export const AppPublisherScreen: React.FunctionComponent<{
+    isActive: boolean;
+}> = (props) => {
     const optionsPanel = (
         <SettingsPanel>
             <div
@@ -592,7 +600,7 @@ export const AppPublisherScreen: React.FunctionComponent = () => {
                 bannerDescriptionMarkdown="Create an app that you can install on your Android phone, share with others, and publish on the Google Play Store."
                 optionsPanelContents={optionsPanel}
             >
-                <AppPublisherScreenContents />
+                <AppPublisherScreenContents isActive={props.isActive} />
             </PublishScreenTemplate>
         </Typography>
     );

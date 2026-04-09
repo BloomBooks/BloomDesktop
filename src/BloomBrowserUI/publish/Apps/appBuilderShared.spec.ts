@@ -28,6 +28,9 @@ describe("appBuilderShared prepare steps", () => {
             getPrepareStepIdForStage("setup", "installing-build-tools"),
         ).toBe("build-tools-installed");
         expect(
+            getPrepareStepIdForStage("setup", "generating-signing-key"),
+        ).toBe("project-created");
+        expect(
             getPrepareStepIdForStage("build", "installing-build-tools"),
         ).toBeUndefined();
     });

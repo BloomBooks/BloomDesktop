@@ -2,10 +2,17 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { act } from "react-dom/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { postJson } from "../../utils/bloomApi";
 import {
     ActionLogAccordion,
     useActionLogController,
 } from "./ActionLogAccordion";
+
+vi.mock("../../utils/bloomApi", () => {
+    return {
+        postJson: vi.fn(),
+    };
+});
 
 const { scrollToLastErrorMock } = vi.hoisted(() => {
     return {
@@ -116,6 +123,7 @@ const TestHarness: React.FunctionComponent = () => {
 
 describe("ActionLogAccordion", () => {
     let container: HTMLDivElement | null = null;
+    const postJsonMock = vi.mocked(postJson);
 
     const renderHarness = () => {
         if (!container) {
@@ -148,6 +156,7 @@ describe("ActionLogAccordion", () => {
         container = document.createElement("div");
         document.body.appendChild(container);
         scrollToLastErrorMock.mockClear();
+        postJsonMock.mockClear();
         vi.useFakeTimers();
     });
 
@@ -160,6 +169,7 @@ describe("ActionLogAccordion", () => {
         vi.runOnlyPendingTimers();
         vi.useRealTimers();
         scrollToLastErrorMock.mockClear();
+        postJsonMock.mockClear();
     });
 
     it("hides each step log until that step has output", () => {
@@ -223,5 +233,16 @@ describe("ActionLogAccordion", () => {
         click(host.querySelector('[data-testid="clear-setup-message"]'));
 
         expect(host.querySelector('[data-testid="setup-log"]')).toBeNull();
+    });
+
+    it("copies the visible log text when raw websocket messages are unavailable", () => {
+        const host = renderHarness();
+
+        click(host.querySelector('[data-testid="add-build-message"]'));
+        click(host.querySelector('[data-testid="build-log-copy-button"]'));
+
+        expect(postJsonMock).toHaveBeenCalledWith("common/clipboardText", {
+            text: "Build message",
+        });
     });
 });

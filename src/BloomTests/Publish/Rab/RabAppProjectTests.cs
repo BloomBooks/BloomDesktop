@@ -7,9 +7,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Bloom.Collection;
 using Bloom.Publish.Rab;
+using BloomTests.TestDoubles.CollectionTab;
 using BloomTests.TeamCollection;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;
@@ -187,6 +190,42 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public void MakePackageName_UsesCopyrightHolderForOrganizationSegment()
+        {
+            var packageName = RabProjectService.MakePackageName(
+                "Libre Foobar",
+                "2019 Do Gooders",
+                Array.Empty<(string organizationName, string packageSegment)>()
+            );
+
+            Assert.That(packageName, Is.EqualTo("org.doogooders.bloom.libre.foobar"));
+        }
+
+        [Test]
+        public void MakePackageName_UsesOrganizationPairOverrideWhenAvailable()
+        {
+            var packageName = RabProjectService.MakePackageName(
+                "Sample App",
+                "Copyright © 2026, SIL International",
+                new[] { (organizationName: "SIL International", packageSegment: "sil") }
+            );
+
+            Assert.That(packageName, Is.EqualTo("org.sil.bloom.sample.app"));
+        }
+
+        [Test]
+        public void GetPackageName_UsesCollectionLanguage1TagForDefaultPrefixAndIgnoresCollectionName()
+        {
+            var collectionSettings = new CollectionSettings { Language1Tag = "xyz" };
+            var service = new LanguageAwareRabProjectService(
+                "My Story Collection",
+                collectionSettings
+            );
+
+            Assert.That(service.GetPackageNameForTest(), Is.EqualTo("org.sil.xyz.stories"));
+        }
+
+        [Test]
         public void FindRabLauncherPath_UsesRegistryInstallDir_WhenAvailable()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
@@ -222,6 +261,97 @@ namespace BloomTests.Publish.Rab
             Assert.That(
                 service.FindRabLauncherPath(),
                 Is.EqualTo(Path.Combine(defaultInstallDir, "rab.bat"))
+            );
+        }
+
+        [Test]
+        public void GetAvailableIconChoices_ReturnsRepresentativePngFromEachInstalledRabIconFolder()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var installDir = Path.Combine(tempFolder.Path, "Reading App Builder");
+            var iconRoot = Path.Combine(installDir, "images", "icons", "rab");
+            var blackIconFolder = Path.Combine(iconRoot, "ab-001-black");
+            var greenIconFolder = Path.Combine(iconRoot, "ab-003-green");
+            Directory.CreateDirectory(blackIconFolder);
+            Directory.CreateDirectory(greenIconFolder);
+            RobustFile.WriteAllText(Path.Combine(blackIconFolder, "ab-001-black.png"), "png");
+            RobustFile.WriteAllText(Path.Combine(blackIconFolder, "ab-001-black-36.png"), "png");
+            RobustFile.WriteAllText(Path.Combine(greenIconFolder, "ab-003-green.png"), "png");
+
+            var service = new RegistryAwareRabProjectService(tempFolder.Path, installDir, "14.0");
+
+            var choices = service.GetAvailableIconChoices().ToArray();
+
+            Assert.That(choices.Select(choice => choice.Id), Is.EqualTo(new[] { "ab-001-black", "ab-003-green" }));
+            Assert.That(choices[0].IconPath, Is.EqualTo(Path.Combine(blackIconFolder, "ab-001-black.png")));
+            Assert.That(choices[1].IconPath, Is.EqualTo(Path.Combine(greenIconFolder, "ab-003-green.png")));
+        }
+
+        [Test]
+        public void GetAvailableIconChoices_IncludesBundledIconsAlongsideInstalledRabIcons()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var installDir = Path.Combine(tempFolder.Path, "Reading App Builder");
+            var installedIconRoot = Path.Combine(installDir, "images", "icons", "rab");
+            var installedIconFolder = Path.Combine(installedIconRoot, "ab-003-green");
+            Directory.CreateDirectory(installedIconFolder);
+            RobustFile.WriteAllText(
+                Path.Combine(installedIconFolder, "ab-003-green.png"),
+                "png"
+            );
+
+            var bundledIconRoot = Path.Combine(tempFolder.Path, "appbuilder-icons");
+            Directory.CreateDirectory(bundledIconRoot);
+            RobustFile.WriteAllText(
+                Path.Combine(bundledIconRoot, "bloom-ai-01-book-stack.png"),
+                "png"
+            );
+
+            var service = new RegistryAwareRabProjectService(tempFolder.Path, installDir, "14.0")
+            {
+                BundledIconRootToReturn = bundledIconRoot,
+            };
+
+            var choices = service.GetAvailableIconChoices().ToArray();
+
+            Assert.That(
+                choices.Select(choice => choice.Id),
+                Is.EqualTo(new[] { "ab-003-green", "bloom-ai-01-book-stack" })
+            );
+            Assert.That(
+                choices.Single(choice => choice.Id == "ab-003-green").IconPath,
+                Is.EqualTo(Path.Combine(installedIconFolder, "ab-003-green.png"))
+            );
+            Assert.That(
+                choices.Single(choice => choice.Id == "bloom-ai-01-book-stack").IconPath,
+                Is.EqualTo(Path.Combine(bundledIconRoot, "bloom-ai-01-book-stack.png"))
+            );
+        }
+
+        [Test]
+        public void GetAvailableIconChoices_AcceptsLegacyFolderBasedBundledIcons()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var installDir = Path.Combine(tempFolder.Path, "Reading App Builder");
+            var bundledIconRoot = Path.Combine(tempFolder.Path, "appbuilder-icons");
+            var bundledIconFolder = Path.Combine(bundledIconRoot, "bloom-ai-01-book-stack");
+            Directory.CreateDirectory(bundledIconFolder);
+            RobustFile.WriteAllText(
+                Path.Combine(bundledIconFolder, "bloom-ai-01-book-stack.png"),
+                "png"
+            );
+
+            var service = new RegistryAwareRabProjectService(tempFolder.Path, installDir, "14.0")
+            {
+                BundledIconRootToReturn = bundledIconRoot,
+            };
+
+            var choices = service.GetAvailableIconChoices().ToArray();
+
+            Assert.That(choices.Select(choice => choice.Id), Is.EqualTo(new[] { "bloom-ai-01-book-stack" }));
+            Assert.That(
+                choices[0].IconPath,
+                Is.EqualTo(Path.Combine(bundledIconFolder, "bloom-ai-01-book-stack.png"))
             );
         }
 
@@ -266,11 +396,34 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public void GetPaths_MigratesLegacyRabFolderToAppConfigurationFolder()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var legacyRabRoot = Path.Combine(tempFolder.Path, "rab");
+            Directory.CreateDirectory(legacyRabRoot);
+            var legacyFilePath = Path.Combine(legacyRabRoot, "setup.json");
+            RobustFile.WriteAllText(legacyFilePath, "{}");
+
+            var service = new RealPathRabProjectService(tempFolder);
+
+            var paths = service.ReadPaths();
+
+            Assert.That(paths.RabRoot, Is.EqualTo(Path.Combine(tempFolder.Path, "app configuration")));
+            Assert.That(Directory.Exists(legacyRabRoot), Is.False);
+            Assert.That(Directory.Exists(paths.RabRoot), Is.True);
+            Assert.That(RobustFile.Exists(Path.Combine(paths.RabRoot, "setup.json")), Is.True);
+        }
+
+        [Test]
         public void GetRabProcessEnvironmentVariables_UsesBloomOwnedAppData_AndClearsGlobalToolchainVars()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
-            var service = new TestRabProjectService(paths, "Sample App", new List<RabBookPublishInfo>());
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            );
 
             var environmentVariables = service.GetRabProcessEnvironmentVariables();
 
@@ -530,7 +683,11 @@ namespace BloomTests.Publish.Rab
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
-            var service = new TestRabProjectService(paths, "Sample App", new List<RabBookPublishInfo>());
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            );
 
             Directory.CreateDirectory(
                 Path.Combine(
@@ -559,7 +716,11 @@ namespace BloomTests.Publish.Rab
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
-            var service = new TestRabProjectService(paths, "Sample App", new List<RabBookPublishInfo>());
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            );
 
             Directory.CreateDirectory(
                 Path.Combine(
@@ -733,9 +894,9 @@ namespace BloomTests.Publish.Rab
                 new RabAppSettings()
                 {
                     AppName = "Updated App",
-                    MainColor = "#123456",
                     PackageName = "org.sil.bloom.updated.app",
                     Copyright = "Updated Copyright",
+                    About = "Updated about text",
                 }
             );
 
@@ -745,13 +906,13 @@ namespace BloomTests.Publish.Rab
             var settings = project.GetAppSettings();
             Assert.That(project.AppName, Is.EqualTo("Updated App"));
             Assert.That(project.PackageName, Is.EqualTo("org.sil.bloom.updated.app"));
-            Assert.That(settings.MainColor, Is.EqualTo("#123456"));
             Assert.That(settings.PackageName, Is.EqualTo("org.sil.bloom.updated.app"));
             Assert.That(settings.Copyright, Is.EqualTo("Updated Copyright"));
+            Assert.That(RobustFile.ReadAllText(paths.AboutTextPath), Is.EqualTo("Updated about text"));
         }
 
         [Test]
-        public async Task SetupAsync_UsesSavedPackageNameWhenCreatingProject()
+        public async Task SaveAppSettings_DoesNotPersistShadowSettingsAfterProjectExists()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -768,19 +929,53 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+            await service.SetupAsync();
+
             service.SaveAppSettings(
                 new RabAppSettings
                 {
-                    AppName = "Configured App",
-                    PackageName = "org.sil.bloom.configured.app",
+                    AppName = "Project App",
+                    PackageName = "org.sil.bloom.project.app",
                 }
             );
 
-            await service.SetupAsync();
+            var persistedState = JObject.Parse(RobustFile.ReadAllText(paths.SetupStatePath));
+            Assert.That(persistedState["Settings"], Is.Null);
+        }
 
-            var project = RabAppProject.Load(service.GetStatus().AppDefPath);
-            Assert.That(project.AppName, Is.EqualTo("Configured App"));
-            Assert.That(project.PackageName, Is.EqualTo("org.sil.bloom.configured.app"));
+        [Test]
+        public void SaveAppSettings_ThrowsBeforeSetupCreatesProject()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Book One",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+            var error = Assert.Throws<ApplicationException>(
+                () =>
+                    service.SaveAppSettings(
+                        new RabAppSettings
+                        {
+                            AppName = "Configured App",
+                            PackageName = "org.sil.bloom.configured.app",
+                        }
+                    )
+            );
+
+            Assert.That(
+                error?.Message,
+                Is.EqualTo("Run Setup before customizing the Reading App Builder project.")
+            );
         }
 
         [Test]
@@ -815,7 +1010,10 @@ namespace BloomTests.Publish.Rab
                 service.DetachedWorkingDirectory,
                 Is.EqualTo(Path.GetDirectoryName(service.RabLauncherPathToReturn))
             );
-            Assert.That(service.DetachedEnvironmentVariables["APPDATA"], Is.EqualTo(service.RabAppDataFolder));
+            Assert.That(
+                service.DetachedEnvironmentVariables["APPDATA"],
+                Is.EqualTo(service.RabAppDataFolder)
+            );
             Assert.That(
                 settingsDocument.Root?.Element("apps")?.Element("app")?.Element("filename")?.Value,
                 Is.EqualTo(service.GetStatus().AppDefPath)
@@ -1057,7 +1255,11 @@ namespace BloomTests.Publish.Rab
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
-            var service = new TestRabProjectService(paths, "Sample App", new List<RabBookPublishInfo>())
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            )
             {
                 IsRabInstalledForSetupResult = false,
             };
@@ -1067,7 +1269,6 @@ namespace BloomTests.Publish.Rab
             AssertPrepareStep(status, "installer-available", true);
             AssertPrepareStep(status, "rab-installed", false);
             AssertPrepareStep(status, "build-tools-installed", false);
-            AssertPrepareStep(status, "signing-key-ready", false);
             AssertPrepareStep(status, "project-created", false);
         }
 
@@ -1130,7 +1331,9 @@ namespace BloomTests.Publish.Rab
             Assert.That(service.Commands[0], Does.StartWith("-install-sdks-if-needed "));
             Assert.That(
                 service.Progress.Messages.Select(message => message.Item1),
-                Does.Contain("Reading App Builder is not installed at the registry install path. Installing it now...")
+                Does.Contain(
+                    "Reading App Builder is not installed at the registry install path. Installing it now..."
+                )
             );
             Assert.That(
                 service.Progress.Messages.Select(message => message.Item1),
@@ -1149,11 +1352,18 @@ namespace BloomTests.Publish.Rab
             );
             RobustFile.WriteAllText(installerPath, "installer");
 
-            var service = new TestRabProjectService(paths, "Sample App", new List<RabBookPublishInfo>())
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            )
             {
                 IsRabInstalledForSetupResult = false,
                 RabSetupInstallerPathToReturn = installerPath,
-                LaunchExternalTargetException = new Win32Exception(1223, "The operation was canceled by the user."),
+                LaunchExternalTargetException = new Win32Exception(
+                    1223,
+                    "The operation was canceled by the user."
+                ),
             };
 
             Assert.DoesNotThrowAsync(async () => await service.SetupAsync());
@@ -1162,7 +1372,9 @@ namespace BloomTests.Publish.Rab
             Assert.That(service.InstalledRabFromSetupPaths, Is.EqualTo(new[] { installerPath }));
             Assert.That(
                 service.Progress.Messages.Select(message => message.Item1),
-                Does.Contain("Reading App Builder installer did not start. Windows reported: The operation was canceled by the user.")
+                Does.Contain(
+                    "Reading App Builder installer did not start. Windows reported: The operation was canceled by the user."
+                )
             );
         }
 
@@ -1171,7 +1383,11 @@ namespace BloomTests.Publish.Rab
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
-            var service = new TestRabProjectService(paths, "Sample App", new List<RabBookPublishInfo>());
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            );
 
             var arguments = service.BuildRabInstallerArguments(@"C:\temp\rab-install.log");
 
@@ -1218,7 +1434,11 @@ namespace BloomTests.Publish.Rab
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
 
-            var service = new TestRabProjectService(paths, "Sample App", new List<RabBookPublishInfo>())
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            )
             {
                 IsRabInstalledForSetupResult = false,
                 RabSetupInstallerPathToReturn = null,
@@ -1238,7 +1458,9 @@ namespace BloomTests.Publish.Rab
             );
             Assert.That(
                 service.Progress.Messages.Select(message => message.Item1),
-                Does.Contain("Reading App Builder is not installed at the registry install path. Opening the download page...")
+                Does.Contain(
+                    "Reading App Builder is not installed at the registry install path. Opening the download page..."
+                )
             );
         }
 
@@ -1310,7 +1532,11 @@ namespace BloomTests.Publish.Rab
                 _trackedBooks = trackedBooks;
                 _progressSpy = progressSpy;
                 RabJdkInstallFolder = Path.Combine(paths.RabRoot, "toolchain", "jdk");
-                RabAndroidSdkInstallFolder = Path.Combine(paths.RabRoot, "toolchain", "android-sdk");
+                RabAndroidSdkInstallFolder = Path.Combine(
+                    paths.RabRoot,
+                    "toolchain",
+                    "android-sdk"
+                );
                 RabAppDataFolder = Path.Combine(paths.RabRoot, "toolchain", "appdata");
             }
 
@@ -1319,7 +1545,11 @@ namespace BloomTests.Publish.Rab
             public string DetachedFileName { get; private set; }
             public string DetachedArguments { get; private set; }
             public string DetachedWorkingDirectory { get; private set; }
-            public IReadOnlyDictionary<string, string> DetachedEnvironmentVariables { get; private set; }
+            public IReadOnlyDictionary<string, string> DetachedEnvironmentVariables
+            {
+                get;
+                private set;
+            }
             public List<string> ExternalTargetsStarted { get; } = new List<string>();
             public ProgressSpy Progress => _progressSpy;
             public bool IsRabInstalledForSetupResult { get; set; } = true;
@@ -1424,7 +1654,9 @@ namespace BloomTests.Publish.Rab
 
                 if (tokens.Contains("-install-sdks-if-needed"))
                 {
-                    JavaExistsBeforeInstallSdksCommand = RobustFile.Exists(GetRabJavaExecutablePath());
+                    JavaExistsBeforeInstallSdksCommand = RobustFile.Exists(
+                        GetRabJavaExecutablePath()
+                    );
                     TzdbExistsBeforeInstallSdksCommand = RobustFile.Exists(
                         Path.Combine(GetRabJdkRootPath(), "lib", "tzdb.dat")
                     );
@@ -1543,11 +1775,7 @@ namespace BloomTests.Publish.Rab
                 Directory.CreateDirectory(Path.GetDirectoryName(tzdbPath));
                 RobustFile.WriteAllText(tzdbPath, "tzdb");
 
-                var adbPath = Path.Combine(
-                    RabAndroidSdkInstallFolder,
-                    "platform-tools",
-                    "adb.exe"
-                );
+                var adbPath = Path.Combine(RabAndroidSdkInstallFolder, "platform-tools", "adb.exe");
                 Directory.CreateDirectory(Path.GetDirectoryName(adbPath));
                 RobustFile.WriteAllText(adbPath, "adb");
             }
@@ -1827,11 +2055,54 @@ namespace BloomTests.Publish.Rab
             }
         }
 
+        private class LanguageAwareRabProjectService : RabProjectService
+        {
+            private readonly string _appName;
+
+            public LanguageAwareRabProjectService(
+                string appName,
+                CollectionSettings collectionSettings
+            )
+                : base(null, null, null, collectionSettings, null, new ProgressSpy())
+            {
+                _appName = appName;
+            }
+
+            internal override string GetProjectSlug()
+            {
+                return MakeProjectSlug(_appName);
+            }
+
+            public string GetPackageNameForTest()
+            {
+                return GetPackageName();
+            }
+        }
+
+        private class RealPathRabProjectService : RabProjectService
+        {
+            public RealPathRabProjectService(TemporaryFolder tempFolder)
+                : base(
+                    new FakeCollectionModel(tempFolder, new CollectionSettings()),
+                    null,
+                    null,
+                    new CollectionSettings(),
+                    null,
+                    new ProgressSpy()
+                ) { }
+
+            public RabWorkspacePaths ReadPaths()
+            {
+                return GetPaths();
+            }
+        }
+
         private class RegistryAwareRabProjectService : RabProjectService
         {
             private readonly string _defaultInstallDir;
             private readonly string _registryInstallDir;
             private readonly string _registryVersion;
+            public string BundledIconRootToReturn { get; set; }
 
             public RegistryAwareRabProjectService(
                 string defaultInstallDir,
@@ -1859,6 +2130,11 @@ namespace BloomTests.Publish.Rab
                     return _registryVersion;
 
                 return null;
+            }
+
+            internal override string GetBundledIconRoot()
+            {
+                return BundledIconRootToReturn;
             }
         }
     }

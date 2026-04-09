@@ -365,7 +365,9 @@ export const PublishTabPane: React.FunctionComponent = () => {
                             </TabPanel>
                             <TabPanel>
                                 <RequiresSubscriptionOverlayWrapper featureName="AppBuilder">
-                                    <AppPublisherScreen />
+                                    <AppPublisherScreen
+                                        isActive={tabIndex === 5}
+                                    />
                                 </RequiresSubscriptionOverlayWrapper>
                             </TabPanel>
                             <TabPanel>

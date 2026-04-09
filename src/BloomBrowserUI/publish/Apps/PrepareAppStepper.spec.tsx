@@ -55,7 +55,6 @@ describe("PrepareAppStepper", () => {
                 activeStepId="rab-installed"
                 isBusy={true}
                 workingOnLabel="Working on: "
-                allReadyLabel="All ready"
                 incompleteLabel="Not ready"
             />,
         );
@@ -85,7 +84,7 @@ describe("PrepareAppStepper", () => {
         ).toBe("Working on: Run installer");
     });
 
-    it("shows the ready summary when every prepare step is complete", () => {
+    it("hides the status summary when every prepare step is complete", () => {
         const host = renderStepper(
             <PrepareAppStepper
                 steps={[
@@ -102,15 +101,13 @@ describe("PrepareAppStepper", () => {
                 ]}
                 isBusy={false}
                 workingOnLabel="Working on: "
-                allReadyLabel="All prepare steps are ready."
                 incompleteLabel="Not ready"
             />,
         );
 
         expect(
-            host.querySelector('[data-testid="prepare-stepper-status"]')
-                ?.textContent,
-        ).toBe("All prepare steps are ready.");
+            host.querySelector('[data-testid="prepare-stepper-status"]'),
+        ).toBeNull();
     });
 
     it("wraps each label inside a dedicated width-limited element", () => {
@@ -125,7 +122,6 @@ describe("PrepareAppStepper", () => {
                 ]}
                 isBusy={false}
                 workingOnLabel="Working on: "
-                allReadyLabel="All ready"
                 incompleteLabel="Not ready"
             />,
         );

@@ -92,7 +92,6 @@ export const PrepareAppStepper: React.FunctionComponent<{
     activeStepId?: AppBuilderPrepareStepId;
     isBusy: boolean;
     workingOnLabel: string;
-    allReadyLabel: string;
     incompleteLabel: string;
 }> = (props) => {
     const activeStep = props.steps.find(
@@ -103,7 +102,7 @@ export const PrepareAppStepper: React.FunctionComponent<{
         props.isBusy && activeStep
             ? `${props.workingOnLabel}${activeStep.label}`
             : allComplete
-              ? props.allReadyLabel
+              ? undefined
               : props.incompleteLabel;
 
     return (
@@ -189,18 +188,20 @@ export const PrepareAppStepper: React.FunctionComponent<{
                     })}
                 </BloomStepper>
             </div>
-            <div
-                data-testid="prepare-stepper-status"
-                css={css`
-                    font-size: 13px;
-                    font-weight: ${props.isBusy && activeStep ? 700 : 500};
-                    color: ${props.isBusy && activeStep
-                        ? kBloomBlue
-                        : "#4a5563"};
-                `}
-            >
-                {statusText}
-            </div>
+            {statusText && (
+                <div
+                    data-testid="prepare-stepper-status"
+                    css={css`
+                        font-size: 13px;
+                        font-weight: ${props.isBusy && activeStep ? 700 : 500};
+                        color: ${props.isBusy && activeStep
+                            ? kBloomBlue
+                            : "#4a5563"};
+                    `}
+                >
+                    {statusText}
+                </div>
+            )}
         </div>
     );
 };

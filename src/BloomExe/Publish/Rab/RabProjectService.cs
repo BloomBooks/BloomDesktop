@@ -8,6 +8,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Security;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Bloom.Api;
@@ -33,15 +34,32 @@ namespace Bloom.Publish.Rab
         private const string kDefaultRabInstallDir =
             @"C:\Program Files (x86)\SIL\Reading App Builder";
         private const string kRabRegistrySubKey = @"Software\SIL\Reading App Builder";
-        private const string kBloomRabRegistrySubKey = @"Software\SIL\Reading App Builder for Bloom";
+        private const string kBloomRabRegistrySubKey =
+            @"Software\SIL\Reading App Builder for Bloom";
         private const int kUserCanceledShellLaunchErrorCode = 1223;
         private const string kRabSetupInstallerPrefix = "Reading-App-Builder-14.0";
         private const string kRabSetupInstallerSuffix = "-Setup.exe";
         private const string kRabSetupDownloadUrl =
             "https://drive.google.com/file/d/1LjWaGg1IMeB9Y8aK5It2RDmKmFNnrL3l/view?usp=drive_link";
         private const string kRabSetupLanguage = "en";
+        private const int kRabLaunchPollIntervalMs = 250;
+        private const int kRabLaunchTimeoutMs = 60000;
+        private static readonly (int Size, string RelativePath)[] kLauncherIconFiles =
+        {
+            (36, @"drawable-ldpi\ic_launcher.png"),
+            (48, @"drawable-mdpi\ic_launcher.png"),
+            (72, @"drawable-hdpi\ic_launcher.png"),
+            (96, @"drawable-xhdpi\ic_launcher.png"),
+            (144, @"drawable-xxhdpi\ic_launcher.png"),
+            (192, @"drawable-xxxhdpi\ic_launcher.png"),
+            (512, @"drawable-web\ic_launcher.png"),
+        };
         internal const long kEstimatedAppOverheadBytes = 12L * 1000 * 1000;
         public const long kMaxAppSizeBytes = 100L * 1000 * 1000;
+        private static readonly (
+            string organizationName,
+            string packageSegment
+        )[] kOrganizationPackageSegments = { ("SIL International", "sil"), ("SIL", "sil") };
         private readonly CollectionModel _collectionModel;
         private readonly BookSelection _bookSelection;
         private readonly BookServer _bookServer;
@@ -107,6 +125,50 @@ namespace Bloom.Publish.Rab
             return GetEffectiveAppSettings(paths);
         }
 
+        public IReadOnlyCollection<RabIconChoice> GetAvailableIconChoices()
+        {
+            return new[] { GetBundledIconRoot(), GetRabInstalledIconRoot() }
+                .SelectMany(GetAvailableIconChoicesFromRoot)
+                .GroupBy(choice => choice.Id, StringComparer.OrdinalIgnoreCase)
+                .Select(group => group.First())
+                .Where(choice => choice != null)
+                .OrderBy(choice => choice.Label, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        }
+
+        private IEnumerable<RabIconChoice> GetAvailableIconChoicesFromRoot(string iconRoot)
+        {
+            if (string.IsNullOrWhiteSpace(iconRoot) || !Directory.Exists(iconRoot))
+                return Array.Empty<RabIconChoice>();
+
+            var folderChoices = Directory
+                .GetDirectories(iconRoot)
+                .Select(directory =>
+                {
+                    var directoryName = Path.GetFileName(directory);
+                    return CreateIconChoice(directoryName, Path.Combine(directory, directoryName + ".png"));
+                });
+
+            var flatFileChoices = Directory
+                .GetFiles(iconRoot, "*.png")
+                .Select(iconPath => CreateIconChoice(Path.GetFileNameWithoutExtension(iconPath), iconPath));
+
+            return folderChoices.Concat(flatFileChoices).Where(choice => choice != null);
+        }
+
+        private RabIconChoice CreateIconChoice(string iconId, string iconPath)
+        {
+            if (string.IsNullOrWhiteSpace(iconId) || !RobustFile.Exists(iconPath))
+                return null;
+
+            return new RabIconChoice()
+            {
+                Id = iconId,
+                Label = iconId,
+                IconPath = iconPath,
+            };
+        }
+
         public void SaveAppSettings(RabAppSettings settings)
         {
             var paths = GetPaths();
@@ -116,15 +178,19 @@ namespace Bloom.Publish.Rab
                 paths,
                 LoadState(paths) ?? new RabSetupState()
             );
-            state.Settings = NormalizeSettingsForPersistence(paths, settings);
-            SaveState(paths, state);
-
             if (string.IsNullOrWhiteSpace(state.AppDefPath) || !RobustFile.Exists(state.AppDefPath))
-                return;
+                throw new ApplicationException(
+                    "Run Setup before customizing the Reading App Builder project."
+                );
+
+            var normalizedSettings = NormalizeSettingsForPersistence(paths, settings);
 
             var project = RabAppProject.Load(state.AppDefPath);
-            project.SetAppSettings(state.Settings);
+            project.SetAppSettings(normalizedSettings);
+            EnsureAboutText(paths, normalizedSettings);
+            SynchronizeProjectIconFiles(paths, project, normalizedSettings);
             project.Save();
+            SaveState(paths, state);
         }
 
         public void SaveTrackedBooks(IReadOnlyCollection<RabTrackedBookInfo> trackedBooks)
@@ -151,6 +217,17 @@ namespace Bloom.Publish.Rab
 
         public void OpenInRab()
         {
+            OpenInRabInternal();
+        }
+
+        public async Task OpenInRabAndWaitForWindowAsync()
+        {
+            OpenInRabInternal();
+            await WaitForRabWindowAsync();
+        }
+
+        private void OpenInRabInternal()
+        {
             var paths = GetPaths();
             var appDefPath = FindAppDefPath(paths);
             if (string.IsNullOrWhiteSpace(appDefPath) || !RobustFile.Exists(appDefPath))
@@ -173,6 +250,19 @@ namespace Bloom.Publish.Rab
                 Path.GetDirectoryName(rabLauncher),
                 GetRabProcessEnvironmentVariables()
             );
+        }
+
+        private async Task WaitForRabWindowAsync()
+        {
+            var elapsedMilliseconds = 0;
+            while (elapsedMilliseconds < kRabLaunchTimeoutMs)
+            {
+                if (TryBringRunningRabToFront())
+                    return;
+
+                await Task.Delay(kRabLaunchPollIntervalMs);
+                elapsedMilliseconds += kRabLaunchPollIntervalMs;
+            }
         }
 
         public RabProjectStatus GetStatus()
@@ -536,7 +626,7 @@ namespace Bloom.Publish.Rab
                         .ToArray();
 
                     throw new ApplicationException(
-                        "Reading App Builder finished without producing an APK in the collection's rab folder. "
+                        "Reading App Builder finished without producing an APK in the collection's app configuration folder. "
                             + $"Searched roots: {string.Join(", ", searchRoots)}. "
                             + $"APK candidates found: {string.Join(", ", apkCandidates)}"
                     );
@@ -547,7 +637,7 @@ namespace Bloom.Publish.Rab
                 _progress.MessageWithoutLocalizing($"APK: {apkPath}");
 
                 state.LastBuiltInputSignature = ComputeBuildInputSignature(
-                    state.Settings,
+                    GetEffectiveAppSettings(paths),
                     trackedBooks
                 );
                 SaveState(paths, state);
@@ -625,7 +715,19 @@ namespace Bloom.Publish.Rab
 
         internal virtual RabWorkspacePaths GetPaths()
         {
-            return new RabWorkspacePaths(_collectionModel.TheOneEditableCollection.PathToDirectory);
+            var collectionRoot = _collectionModel.TheOneEditableCollection.PathToDirectory;
+            var paths = new RabWorkspacePaths(collectionRoot);
+            MigrateLegacyRabFolder(collectionRoot, paths.RabRoot);
+            return paths;
+        }
+
+        private void MigrateLegacyRabFolder(string collectionRoot, string currentRabRoot)
+        {
+            var legacyRabRoot = Path.Combine(collectionRoot, "rab");
+            if (!Directory.Exists(legacyRabRoot) || Directory.Exists(currentRabRoot))
+                return;
+
+            RobustIO.MoveDirectory(legacyRabRoot, currentRabRoot);
         }
 
         internal virtual string GetProjectSlug()
@@ -645,7 +747,16 @@ namespace Bloom.Publish.Rab
 
         internal virtual string GetPackageName()
         {
-            return MakePackageName(GetProjectSlug());
+            return MakeDefaultPackageName(_collectionSettings?.Language1Tag);
+        }
+
+        internal static string MakeDefaultPackageName(string language1Tag)
+        {
+            var languageSegment = GetLanguagePackageSegment(language1Tag);
+            var packagePrefix = string.IsNullOrWhiteSpace(languageSegment)
+                ? "org.sil.bloom"
+                : $"org.sil.{languageSegment}";
+            return packagePrefix + ".stories";
         }
 
         internal static string MakeProjectSlug(string baseName)
@@ -667,14 +778,119 @@ namespace Bloom.Publish.Rab
 
         internal static string MakePackageName(string projectSlug)
         {
-            var segments = MakeProjectSlug(projectSlug)
-                .Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(segment => char.IsDigit(segment[0]) ? "a" + segment : segment)
-                .ToArray();
+            return MakePackageName(projectSlug, null, null);
+        }
+
+        internal static string MakePackageName(
+            string projectSlug,
+            string copyrightNotice,
+            IEnumerable<(string organizationName, string packageSegment)> organizationPairs
+        )
+        {
+            var segments = GetPackageNameSegments(projectSlug);
             if (segments.Length == 0)
                 return "org.sil.bloom.app";
 
-            return "org.sil.bloom." + string.Join(".", segments);
+            var organizationSegment = GetOrganizationPackageSegment(
+                copyrightNotice,
+                organizationPairs
+            );
+            var packagePrefix = string.IsNullOrWhiteSpace(organizationSegment)
+                ? "org.sil.bloom"
+                : $"org.{organizationSegment}.bloom";
+            return packagePrefix + "." + string.Join(".", segments);
+        }
+
+        private static string[] GetPackageNameSegments(string projectSlug)
+        {
+            return MakeProjectSlug(projectSlug)
+                .Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(NormalizePackageSegment)
+                .ToArray();
+        }
+
+        private static string GetLanguagePackageSegment(string language1Tag)
+        {
+            var segment = MakeProjectSlug(language1Tag).Replace("-", string.Empty);
+            return string.IsNullOrWhiteSpace(segment) ? null : NormalizePackageSegment(segment);
+        }
+
+        private static string NormalizePackageSegment(string segment)
+        {
+            return char.IsDigit(segment[0]) ? "a" + segment : segment;
+        }
+
+        private static string GetOrganizationPackageSegment(
+            string copyrightNotice,
+            IEnumerable<(string organizationName, string packageSegment)> organizationPairs
+        )
+        {
+            var rightsHolder = ExtractRightsHolder(copyrightNotice);
+            if (string.IsNullOrWhiteSpace(rightsHolder))
+                return null;
+
+            if (organizationPairs != null)
+            {
+                foreach (var (organizationName, packageSegment) in organizationPairs)
+                {
+                    if (
+                        !string.IsNullOrWhiteSpace(packageSegment)
+                        && OrganizationNamesMatch(rightsHolder, organizationName)
+                    )
+                        return packageSegment.Trim().ToLowerInvariant();
+                }
+            }
+
+            var segment = MakeProjectSlug(rightsHolder).Replace("-", string.Empty);
+            if (string.IsNullOrWhiteSpace(segment))
+                return null;
+
+            return char.IsDigit(segment[0]) ? "org" + segment : segment;
+        }
+
+        private static bool OrganizationNamesMatch(string rightsHolder, string organizationName)
+        {
+            return string.Equals(
+                NormalizeOrganizationName(rightsHolder),
+                NormalizeOrganizationName(organizationName),
+                StringComparison.Ordinal
+            );
+        }
+
+        private static string NormalizeOrganizationName(string value)
+        {
+            return Regex
+                .Replace(value ?? string.Empty, "[^a-z0-9]+", string.Empty, RegexOptions.IgnoreCase)
+                .ToLowerInvariant();
+        }
+
+        private static string ExtractRightsHolder(string copyrightNotice)
+        {
+            if (string.IsNullOrWhiteSpace(copyrightNotice))
+                return null;
+
+            var value = copyrightNotice.Trim();
+            value = Regex.Replace(value, @"^copyright\s*", string.Empty, RegexOptions.IgnoreCase);
+            value = Regex.Replace(value, @"^(?:\(c\)|©)\s*", string.Empty, RegexOptions.IgnoreCase);
+
+            var commaIndex = value.IndexOf(',');
+            if (commaIndex >= 0)
+            {
+                var prefix = value.Substring(0, commaIndex);
+                if (Regex.IsMatch(prefix, @"^[\d\s\-/]+$"))
+                    value = value.Substring(commaIndex + 1).Trim();
+            }
+
+            value = Regex.Replace(
+                value,
+                @"^\d{4}(?:\s*[-/]\s*\d{4})*\s*",
+                string.Empty,
+                RegexOptions.IgnoreCase
+            );
+            value = Regex.Replace(value, @"^(?:by\s+)", string.Empty, RegexOptions.IgnoreCase);
+            value = value.Trim(' ', ',', '.', ':', ';', '-', '/');
+
+            return string.IsNullOrWhiteSpace(value) ? null : value;
         }
 
         private void EnsureWorkspaceFolders(RabWorkspacePaths paths)
@@ -885,11 +1101,20 @@ namespace Bloom.Publish.Rab
 
         private string EnsureAboutText(RabWorkspacePaths paths, RabAppSettings settings)
         {
+            var aboutText = settings?.About;
+            if (string.IsNullOrWhiteSpace(aboutText))
+                aboutText = BuildDefaultAboutText(settings);
+
+            RobustFile.WriteAllText(paths.AboutTextPath, aboutText ?? string.Empty);
+            return paths.AboutTextPath;
+        }
+
+        private string BuildDefaultAboutText(RabAppSettings settings)
+        {
             var currentBook = _bookSelection.CurrentSelection;
 
             var metadata = currentBook?.GetLicenseMetadata();
             var lines = new List<string>();
-            var bookTitle = currentBook?.TitleBestForUserDisplay;
             var copyrightNotice = settings?.Copyright;
             if (string.IsNullOrWhiteSpace(copyrightNotice))
                 copyrightNotice = metadata?.CopyrightNotice;
@@ -904,19 +1129,16 @@ namespace Bloom.Publish.Rab
                 lines.Add(metadata.License.RightsStatement);
             lines.Add("Created with Bloom.");
 
-            RobustFile.WriteAllText(
-                paths.AboutTextPath,
-                string.Join(
-                    Environment.NewLine + Environment.NewLine,
-                    lines.Where(line => !string.IsNullOrWhiteSpace(line))
-                )
+            return string.Join(
+                Environment.NewLine + Environment.NewLine,
+                lines.Where(line => !string.IsNullOrWhiteSpace(line))
             );
-            return paths.AboutTextPath;
         }
 
         private string[] EnsureLauncherIcons(RabWorkspacePaths paths, RabAppSettings settings)
         {
             var iconSourcePath = settings?.IconPath;
+
             if (string.IsNullOrWhiteSpace(iconSourcePath))
             {
                 iconSourcePath = Path.Combine(
@@ -1232,7 +1454,8 @@ namespace Bloom.Publish.Rab
                 if (environmentVariables != null)
                 {
                     foreach (var pair in environmentVariables)
-                        process.StartInfo.EnvironmentVariables[pair.Key] = pair.Value ?? string.Empty;
+                        process.StartInfo.EnvironmentVariables[pair.Key] =
+                            pair.Value ?? string.Empty;
                 }
 
                 process.OutputDataReceived += (sender, args) =>
@@ -1298,9 +1521,27 @@ namespace Bloom.Publish.Rab
                 return false;
 
             return RobustFile.Exists(Path.Combine(installDir, "rab.bat"))
-                && RobustFile.Exists(
-                    Path.Combine(installDir, "runtime", "bin", "keytool.exe")
-                );
+                && RobustFile.Exists(Path.Combine(installDir, "runtime", "bin", "keytool.exe"));
+        }
+
+        internal virtual string GetRabInstalledIconRoot()
+        {
+            var installDir = GetRabRegistryValue("InstallDir");
+            if (string.IsNullOrWhiteSpace(installDir))
+                return null;
+
+            return Path.Combine(installDir, "images", "icons", "rab");
+        }
+
+        internal virtual string GetBundledIconRoot()
+        {
+            var applicationRoot = FileLocationUtilities.DirectoryOfApplicationOrSolution;
+            var packagedRoot = Path.Combine(applicationRoot, "appbuilder-icons");
+            if (Directory.Exists(packagedRoot))
+                return packagedRoot;
+
+            var sourceRoot = Path.Combine(applicationRoot, "DistFiles", "appbuilder-icons");
+            return Directory.Exists(sourceRoot) ? sourceRoot : null;
         }
 
         internal virtual string FindRabSetupInstallerPath()
@@ -1322,7 +1563,11 @@ namespace Bloom.Publish.Rab
                     continue;
 
                 var installerPath = Directory
-                    .GetFiles(directory, $"{kRabSetupInstallerPrefix}*.exe", SearchOption.TopDirectoryOnly)
+                    .GetFiles(
+                        directory,
+                        $"{kRabSetupInstallerPrefix}*.exe",
+                        SearchOption.TopDirectoryOnly
+                    )
                     .Where(path => IsRabSetupInstallerFileName(Path.GetFileName(path)))
                     .OrderBy(path => path.Length)
                     .FirstOrDefault();
@@ -1343,14 +1588,8 @@ namespace Bloom.Publish.Rab
             if (string.IsNullOrWhiteSpace(fileName))
                 return false;
 
-            return fileName.StartsWith(
-                    kRabSetupInstallerPrefix,
-                    StringComparison.OrdinalIgnoreCase
-                )
-                && fileName.EndsWith(
-                    kRabSetupInstallerSuffix,
-                    StringComparison.OrdinalIgnoreCase
-                );
+            return fileName.StartsWith(kRabSetupInstallerPrefix, StringComparison.OrdinalIgnoreCase)
+                && fileName.EndsWith(kRabSetupInstallerSuffix, StringComparison.OrdinalIgnoreCase);
         }
 
         internal static bool IsUserCanceledShellLaunch(Win32Exception error)
@@ -1373,7 +1612,11 @@ namespace Bloom.Publish.Rab
         {
             return !string.IsNullOrWhiteSpace(pathOrUrl)
                 && !pathOrUrl.Contains("://")
-                && string.Equals(Path.GetExtension(pathOrUrl), ".exe", StringComparison.OrdinalIgnoreCase);
+                && string.Equals(
+                    Path.GetExtension(pathOrUrl),
+                    ".exe",
+                    StringComparison.OrdinalIgnoreCase
+                );
         }
 
         internal virtual void StartExternalExecutable(string executablePath)
@@ -1394,9 +1637,7 @@ namespace Bloom.Publish.Rab
             var logPath = Path.Combine(Path.GetTempPath(), "rab-install.log");
             var arguments = BuildRabInstallerArguments(logPath);
 
-            _progress.MessageWithoutLocalizing(
-                $"> {Path.GetFileName(installerPath)} {arguments}"
-            );
+            _progress.MessageWithoutLocalizing($"> {Path.GetFileName(installerPath)} {arguments}");
 
             using var process = StartShellProcess(
                 new ProcessStartInfo()
@@ -1588,13 +1829,10 @@ namespace Bloom.Publish.Rab
                 },
                 new RabPrepareStepStatus()
                 {
-                    Id = "signing-key-ready",
-                    Complete = HasSigningKey(state),
-                },
-                new RabPrepareStepStatus()
-                {
                     Id = "project-created",
-                    Complete = !string.IsNullOrWhiteSpace(appDefPath)
+                    Complete =
+                        HasSigningKey(state)
+                        && !string.IsNullOrWhiteSpace(appDefPath)
                         && RobustFile.Exists(appDefPath),
                 },
             };
@@ -1614,11 +1852,7 @@ namespace Bloom.Publish.Rab
         internal virtual bool IsRabAndroidSdkInstalled()
         {
             return RobustFile.Exists(
-                Path.Combine(
-                    GetRabAndroidSdkInstallFolder(),
-                    "platform-tools",
-                    "adb.exe"
-                )
+                Path.Combine(GetRabAndroidSdkInstallFolder(), "platform-tools", "adb.exe")
             );
         }
 
@@ -1809,23 +2043,74 @@ namespace Bloom.Publish.Rab
             state.AliasPassword = string.IsNullOrWhiteSpace(state.AliasPassword)
                 ? project.AliasPassword
                 : state.AliasPassword;
-            state.Settings = MergeSettings(
-                state.Settings,
-                project.GetAppSettings(),
-                GetDefaultAppSettings()
-            );
             return state;
         }
 
         private RabAppSettings GetEffectiveAppSettings(RabWorkspacePaths paths)
         {
-            var state = EnsureStateHasProjectAndSigningInfo(paths, LoadState(paths));
+            EnsureStateHasProjectAndSigningInfo(paths, LoadState(paths));
             var project = LoadProjectOrNull(paths);
-            return MergeSettings(
-                state?.Settings,
-                project?.GetAppSettings(),
-                GetDefaultAppSettings()
+
+            if (project != null)
+            {
+                var defaultSettings = GetDefaultAppSettings();
+                var effectiveSettings = MergeSettings(
+                    project.GetAppSettings(),
+                    null,
+                    defaultSettings
+                );
+                effectiveSettings.About = FirstNonEmpty(
+                    ReadAboutText(paths),
+                    effectiveSettings.About,
+                    defaultSettings.About
+                );
+                return effectiveSettings;
+            }
+
+            return MergeSettings(null, null, GetDefaultAppSettings());
+        }
+
+        private void SynchronizeProjectIconFiles(
+            RabWorkspacePaths paths,
+            RabAppProject project,
+            RabAppSettings settings
+        )
+        {
+            var launcherIconPaths = EnsureLauncherIcons(paths, settings);
+            var launcherImagesRoot = Path.Combine(
+                Path.GetDirectoryName(project.FilePath) ?? string.Empty,
+                Path.GetFileNameWithoutExtension(project.FilePath) + "_data",
+                "images"
             );
+
+            var launcherEntries = kLauncherIconFiles
+                .Zip(
+                    launcherIconPaths,
+                    (launcherIcon, sourcePath) =>
+                    {
+                        var destinationPath = Path.Combine(
+                            launcherImagesRoot,
+                            launcherIcon.RelativePath.Replace('\\', Path.DirectorySeparatorChar)
+                        );
+                        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
+                        RobustFile.Copy(sourcePath, destinationPath, true);
+                        return (launcherIcon.RelativePath, launcherIcon.Size, launcherIcon.Size);
+                    }
+                )
+                .ToArray();
+
+            project.SetLauncherIcons(launcherEntries);
+
+            var adaptiveForegroundSourcePath = settings?.IconPath;
+
+            var adaptiveForegroundDestinationPath = Path.Combine(
+                launcherImagesRoot,
+                "mipmap-xxxhdpi",
+                "ic_launcher_foreground.png"
+            );
+            Directory.CreateDirectory(Path.GetDirectoryName(adaptiveForegroundDestinationPath));
+            RobustFile.Copy(adaptiveForegroundSourcePath, adaptiveForegroundDestinationPath, true);
+            project.SetAdaptiveIconForegroundImage("ic_launcher_foreground.png");
         }
 
         private RabAppSettings NormalizeSettingsForPersistence(
@@ -1835,23 +2120,27 @@ namespace Bloom.Publish.Rab
         {
             var mergedSettings = MergeSettings(settings, null, GetDefaultAppSettings());
             mergedSettings.AppName = mergedSettings.AppName?.Trim();
-            mergedSettings.MainColor = mergedSettings.MainColor?.Trim();
+            mergedSettings.ColorScheme = mergedSettings.ColorScheme?.Trim();
             mergedSettings.PackageName = mergedSettings.PackageName?.Trim();
             mergedSettings.Copyright = mergedSettings.Copyright?.Trim();
+            mergedSettings.About = mergedSettings.About?.Trim();
             mergedSettings.IconPath = NormalizeIconPath(paths, mergedSettings.IconPath?.Trim());
             return mergedSettings;
         }
 
         private RabAppSettings GetDefaultAppSettings()
         {
-            return new RabAppSettings()
+            var defaultSettings = new RabAppSettings()
             {
                 AppName = GetAppName(),
-                MainColor = RabAppProject.DefaultPrimaryColor,
+                ColorScheme = RabAppProject.DefaultColorScheme,
                 PackageName = GetPackageName(),
                 IconPath = string.Empty,
                 Copyright = GetDefaultAppCopyright(),
             };
+
+            defaultSettings.About = BuildDefaultAboutText(defaultSettings);
+            return defaultSettings;
         }
 
         private string GetDefaultAppCopyright()
@@ -1880,10 +2169,10 @@ namespace Bloom.Publish.Rab
                     fallbackSettings?.AppName,
                     defaultSettings?.AppName
                 ),
-                MainColor = FirstNonEmpty(
-                    preferredSettings?.MainColor,
-                    fallbackSettings?.MainColor,
-                    defaultSettings?.MainColor
+                ColorScheme = FirstNonEmpty(
+                    preferredSettings?.ColorScheme,
+                    fallbackSettings?.ColorScheme,
+                    defaultSettings?.ColorScheme
                 ),
                 PackageName = FirstNonEmpty(
                     preferredSettings?.PackageName,
@@ -1900,7 +2189,20 @@ namespace Bloom.Publish.Rab
                     fallbackSettings?.Copyright,
                     defaultSettings?.Copyright
                 ),
+                About = FirstNonEmpty(
+                    preferredSettings?.About,
+                    fallbackSettings?.About,
+                    defaultSettings?.About
+                ),
             };
+        }
+
+        private string ReadAboutText(RabWorkspacePaths paths)
+        {
+            if (!RobustFile.Exists(paths.AboutTextPath))
+                return null;
+
+            return RobustFile.ReadAllText(paths.AboutTextPath);
         }
 
         private string NormalizeIconPath(RabWorkspacePaths paths, string iconPath)

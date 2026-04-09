@@ -1099,10 +1099,7 @@
         <source xml:lang="en">Prepare</source>
         <note>ID: PublishTab.Apps.PrepareButton</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.PrepareStepper.AllReady" translate="no">
-        <source xml:lang="en">All prepare steps are ready.</source>
-        <note>ID: PublishTab.Apps.PrepareStepper.AllReady</note>
-      </trans-unit>
+
       <trans-unit id="PublishTab.Apps.PrepareStepper.BuildToolsInstalled" translate="no">
         <source xml:lang="en">Install build tools</source>
         <note>ID: PublishTab.Apps.PrepareStepper.BuildToolsInstalled</note>
@@ -1144,16 +1141,16 @@
         <note>ID: PublishTab.Apps.Progress.LaunchingOnPhone</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.Title" translate="no">
-        <source xml:lang="en">Settings</source>
+        <source xml:lang="en">App Settings</source>
         <note>ID: PublishTab.Apps.SettingsDialog.Title</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.DetailsPage" translate="no">
-        <source xml:lang="en">Details</source>
+        <source xml:lang="en">Basics</source>
         <note>ID: PublishTab.Apps.SettingsDialog.DetailsPage</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.DetailsGroup" translate="no">
-        <source xml:lang="en">Details</source>
-        <note>ID: PublishTab.Apps.SettingsDialog.DetailsGroup</note>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.RequiredGroup" translate="no">
+        <source xml:lang="en">Basics</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.RequiredGroup</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.AdvancedPage" translate="no">
         <source xml:lang="en">Advanced</source>
@@ -1170,6 +1167,10 @@
       <trans-unit id="PublishTab.Apps.SettingsDialog.MainColor" translate="no">
         <source xml:lang="en">Main Color</source>
         <note>ID: PublishTab.Apps.SettingsDialog.MainColor</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.ColorScheme" translate="no">
+        <source xml:lang="en">Color Scheme</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.ColorScheme</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName" translate="no">
         <source xml:lang="en">Package Name</source>
@@ -1192,36 +1193,65 @@
         <note>ID: PublishTab.Apps.SettingsDialog.IconChooseTitle</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Description" translate="no">
-        <source xml:lang="en">The package name uniquely identifies the app. It is a lowercase dot-separated string without spaces, such as org.yourorg.appname.language or com.yourcompany.language.appname.</source>
+        <source xml:lang="en">Template: org.&lt;yourorg&gt;.&lt;language-code&gt;.&lt;appname&gt;. E.g. org.sil.xyz.stories. For additional help please contact the Digital Publishing Department of your organization.</source>
         <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Description</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.TipsLabel" translate="no">
         <source xml:lang="en">Tips on choosing the package name:</source>
         <note>ID: PublishTab.Apps.SettingsDialog.PackageName.TipsLabel</note>
+        <note>Obsolete as of Bloom 6.4</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Tip1" translate="no">
         <source xml:lang="en">Start the package name by turning round the web address of your organisation, e.g. if your web address is 'sil.org', the package name can start with 'org.sil'.</source>
         <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Tip1</note>
+        <note>Obsolete as of Bloom 6.4</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Tip2" translate="no">
         <source xml:lang="en">After that, add additional strings to identify the app, such as 'org.sil.xyz.stories' where 'xyz' is the language code.</source>
         <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Tip2</note>
+        <note>Obsolete as of Bloom 6.4</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Tip3" translate="no">
         <source xml:lang="en">For test applications, you can use a temporary package name beginning with 'com.example', e.g. 'com.example.test1', 'com.example.stories', etc.</source>
         <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Tip3</note>
+        <note>Obsolete as of Bloom 6.4</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Tip4" translate="no">
         <source xml:lang="en">For additional help, please contact the digital publishing department of your organisation.</source>
         <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Tip4</note>
+        <note>Obsolete as of Bloom 6.4</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Required" translate="no">
+        <source xml:lang="en">Package name is required.</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Required</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Invalid" translate="no">
+        <source xml:lang="en">Use a lowercase dot-separated package name with no spaces, like org.sil.sample.</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Invalid</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.ReadingAppBuilder" translate="no">
         <source xml:lang="en">Reading App Builder</source>
         <note>ID: PublishTab.Apps.SettingsDialog.ReadingAppBuilder</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.AdvancedPage.Description" translate="no">
-        <source xml:lang="en">After Setup creates the Reading App Builder project, use the button below to open that project in Reading App Builder and edit its advanced settings there.</source>
-        <note>ID: PublishTab.Apps.SettingsDialog.AdvancedPage.Description</note>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.MoreSettings" translate="no">
+        <source xml:lang="en">More Settings</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.MoreSettings</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.ReadingAppBuilder.ValidationMessage" translate="no">
+        <source xml:lang="en">Fill in the required fields and fix validation errors above before opening Reading App Builder.</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.ReadingAppBuilder.ValidationMessage</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.StartingReadingAppBuilder" translate="no">
+        <source xml:lang="en">Starting Reading App Builder...</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.StartingReadingAppBuilder</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.RunRAB.Description" translate="no">
+        <source xml:lang="en">Use this to do more customization of your app. Make sure to click Save and quit Reading App Builder before returning to Bloom.</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.RunRAB.Description</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.CustomizeButton.ValidationMessage" translate="no">
+        <source xml:lang="en">Some required settings are missing or invalid.</source>
+        <note>ID: PublishTab.Apps.CustomizeButton.ValidationMessage</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.ShowApkInFileExplorer" translate="no">
         <source xml:lang="en">Show App (.apk) in File Explorer</source>
@@ -1306,6 +1336,10 @@
       <trans-unit id="PublishTab.Apps.SettingsButton.Tooltip" translate="no">
         <source xml:lang="en">Edit the Reading App Builder app settings for this collection.</source>
         <note>ID: PublishTab.Apps.SettingsButton.Tooltip</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SetupRequiredTooltip" translate="no">
+        <source xml:lang="en">Run Setup before using this step.</source>
+        <note>ID: PublishTab.Apps.SetupRequiredTooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Setup.DoneTooltip" translate="no">
         <source xml:lang="en">The Reading App Builder project is already set up for this collection.</source>

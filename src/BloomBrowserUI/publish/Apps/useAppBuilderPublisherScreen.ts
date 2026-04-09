@@ -19,6 +19,12 @@ import {
     normalizeStatus,
     AppBuilderAction,
 } from "./appBuilderShared";
+import {
+    defaultSettings,
+    hasRequiredBuildSettings,
+    IAppBuilderAppSettings,
+    refreshAppBuilderSettings,
+} from "./appBuilderAppDef";
 import { IAppSizeEstimates } from "./AppSizeIndicator";
 
 export interface IAppBuilderPublisherScreenState {
@@ -27,6 +33,7 @@ export interface IAppBuilderPublisherScreenState {
     installLog: IActionLogController;
     status: IAppBuilderStatus;
     buildIsNeeded: boolean;
+    hasRequiredBuildSettings: boolean;
     busyAction?: AppBuilderAction;
     progressPercent: number;
     progressStageCode?: string;
@@ -36,12 +43,16 @@ export interface IAppBuilderPublisherScreenState {
     markConfigurationChanged: () => void;
 }
 
-export function useAppBuilderPublisherScreen(): IAppBuilderPublisherScreenState {
+export function useAppBuilderPublisherScreen(
+    isActive: boolean,
+): IAppBuilderPublisherScreenState {
     const setupLog = useActionLogController();
     const buildLog = useActionLogController();
     const installLog = useActionLogController();
     const [status, setStatus] =
         React.useState<IAppBuilderStatus>(defaultStatus);
+    const [settings, setSettings] =
+        React.useState<IAppBuilderAppSettings>(defaultSettings);
     const [busyAction, setBusyAction] = React.useState<AppBuilderAction>();
     const [progressPercent, setProgressPercent] = React.useState(0);
     const [progressStageCode, setProgressStageCode] = React.useState<string>();
@@ -90,21 +101,46 @@ export function useAppBuilderPublisherScreen(): IAppBuilderPublisherScreenState 
         });
     }
 
+    function refreshSettings(appDefPath?: string): void {
+        refreshAppBuilderSettings(setSettings, appDefPath);
+    }
+
     function refreshStatus(): void {
         get("publish/rab/status", (result) => {
-            setStatus(normalizeStatus(result.data));
+            const nextStatus = normalizeStatus(result.data);
+            setStatus(nextStatus);
+            refreshSettings(nextStatus.appDefPath);
         });
     }
 
-    // Load size estimates once on mount so the book picker can render against the current collection.
+    // This effect is warranted because tab activation is an external UI lifecycle boundary,
+    // and we need to re-read the RAB project whenever the Apps screen becomes active.
     React.useEffect(() => {
-        refreshSizeEstimates();
-    }, []);
+        if (!isActive) {
+            return;
+        }
 
-    // Load the current RAB status once on mount so the button state reflects the collection's rab folder.
-    React.useEffect(() => {
         refreshStatus();
-    }, []);
+        refreshSizeEstimates();
+    }, [isActive]);
+
+    // This effect is warranted because returning from Reading App Builder restores browser focus,
+    // and that is our signal to refresh from the appDef after external edits.
+    React.useEffect(() => {
+        const handleWindowFocus = () => {
+            if (!isActive) {
+                return;
+            }
+
+            refreshStatus();
+            refreshSizeEstimates();
+        };
+
+        window.addEventListener("focus", handleWindowFocus);
+        return () => {
+            window.removeEventListener("focus", handleWindowFocus);
+        };
+    }, [isActive]);
 
     function getActionLogController(
         action: AppBuilderAction,
@@ -120,6 +156,10 @@ export function useAppBuilderPublisherScreen(): IAppBuilderPublisherScreenState 
     }
 
     function runAction(action: AppBuilderAction): void {
+        if (action === "build" && !hasRequiredBuildSettings(settings)) {
+            return;
+        }
+
         getActionLogController(action).clear();
 
         // Reset visible progress before starting a new backend operation so reused accordions never show stale state.
@@ -175,6 +215,7 @@ export function useAppBuilderPublisherScreen(): IAppBuilderPublisherScreenState 
         installLog,
         status,
         buildIsNeeded: status.buildNeeded || pendingBuildNeeded,
+        hasRequiredBuildSettings: hasRequiredBuildSettings(settings),
         busyAction,
         progressPercent,
         progressStageCode,

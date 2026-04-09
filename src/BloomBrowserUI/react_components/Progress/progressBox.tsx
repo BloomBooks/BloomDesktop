@@ -40,6 +40,7 @@ export interface IProgressBoxProps {
     // mounting/unmounting is happening, as ProgressDialog does.
     messages?: Array<JSX.Element>;
     setMessages?: React.Dispatch<React.SetStateAction<JSX.Element[]>>;
+    onMessageLogged?: (message: string) => void;
 }
 
 export type ProgressBoxHandle = {
@@ -70,6 +71,7 @@ export const ProgressBox = React.forwardRef<
         webSocketContext,
         onReadyToReceive,
         onGotErrorMessage,
+        onMessageLogged,
         preloadedProgressEvents,
         messages: controlledMessages,
         setMessages: controlledSetMessages,
@@ -143,8 +145,9 @@ export const ProgressBox = React.forwardRef<
                 </p>
             );
             setMessages((old) => [...old, line]);
+            onMessageLogged?.(message);
         },
-        [setMessages],
+        [onMessageLogged, setMessages],
     );
 
     const processEvent = React.useCallback(

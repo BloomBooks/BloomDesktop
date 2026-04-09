@@ -1,13 +1,13 @@
 import { css } from "@emotion/react";
+import axios, { CancelTokenSource } from "axios";
 import {
+    ConfigrInput,
     ConfigrCustomStringInput,
     ConfigrGroup,
-    ConfigrInput,
     ConfigrPage,
     ConfigrPane,
-    ConfigrStatic,
 } from "@sillsdev/config-r";
-import { Button } from "@mui/material";
+import { CircularProgress, MenuItem, Select } from "@mui/material";
 import * as React from "react";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import {
@@ -21,189 +21,263 @@ import {
     DialogOkButton,
 } from "../../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../../react_components/l10nHooks";
-import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
-import {
-    ColorDisplayButton,
-    DialogResult,
-} from "../../react_components/color-picking/colorPickerDialog";
 import BloomButton from "../../react_components/bloomButton";
-import { postJson, useApiObject } from "../../utils/bloomApi";
+import { postDataWithConfigAsync } from "../../utils/bloomApi";
 import {
+    applyDefaultAppBuilderIconChoice,
     defaultSettings,
-    getBloomLocalFileUrl,
-    getDefaultAppBuilderIconUrl,
+    fetchAppBuilderIconChoices,
+    getAppBuilderPackageNameValidationIssue,
+    getAppBuilderSettingsValidationIssues,
     IAppBuilderAppSettings,
-    IAppBuilderAppSettingsApi,
-    normalizeConfigrSettings,
-    normalizeSettings,
-} from "./appBuilderShared";
+    saveAppBuilderSettings,
+    useAppBuilderAppSettingsForPath,
+} from "./appBuilderAppDef";
+import { AppBuilderIconChooserForConfigr } from "./AppBuilderIconChooser";
+import { normalizeConfigrSettings } from "./appBuilderShared";
 
 const kSettingsDialogFormWidth = "638px";
+const kStartingReadingAppBuilderDialogWidth = "420px";
 
-const AppBuilderColorPickerForConfigr: React.FunctionComponent<{
-    value: string;
-    disabled?: boolean;
-    onChange: (value: string) => void;
+const StartingReadingAppBuilderDialog: React.FunctionComponent<{
+    onCancel: () => void;
 }> = (props) => {
-    const mainColorLabel = useL10n(
-        "Main Color",
-        "PublishTab.Apps.SettingsDialog.MainColor",
+    const startingReadingAppBuilderLabel = useL10n(
+        "Starting Reading App Builder...",
+        "PublishTab.Apps.SettingsDialog.StartingReadingAppBuilder",
     );
 
     return (
-        <ColorDisplayButton
-            disabled={props.disabled}
-            initialColor={props.value || defaultSettings.mainColor}
-            localizedTitle={mainColorLabel}
-            transparency={false}
-            palette={BloomPalette.CoverBackground}
-            width={75}
-            onClose={(dialogResult: DialogResult, newColor: string) => {
-                if (dialogResult === DialogResult.OK) {
-                    props.onChange(newColor);
-                }
-            }}
+        <BloomDialog
+            open={true}
+            dialogFrameProvidedExternally={false}
+            onClose={props.onCancel}
+            onCancel={props.onCancel}
+            draggable={false}
+            maxWidth={false}
+        >
+            <DialogMiddle
+                css={css`
+                    width: ${kStartingReadingAppBuilderDialogWidth};
+                    min-height: 220px;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 18px;
+                    text-align: center;
+                    padding: 24px 36px 0;
+                `}
+                aria-live="polite"
+            >
+                <CircularProgress size={72} thickness={4} />
+                <div
+                    css={css`
+                        font-size: 1.2rem;
+                        font-weight: 600;
+                    `}
+                >
+                    {startingReadingAppBuilderLabel}
+                </div>
+            </DialogMiddle>
+            <DialogBottomButtons>
+                <DialogCancelButton default={true} />
+            </DialogBottomButtons>
+        </BloomDialog>
+    );
+};
+
+const kRabColorSchemes = [
+    { name: "White", swatchColor: "#FFFFFF" },
+    { name: "Dark Green", swatchColor: "#083F0E" },
+    { name: "Dark Blue", swatchColor: "#000B63" },
+    { name: "Royal Blue", swatchColor: "#0D47A1" },
+    { name: "Indigo", swatchColor: "#3F51B5" },
+    { name: "Dark Indigo", swatchColor: "#1A237E" },
+    { name: "Blue", swatchColor: "#2196F3" },
+    { name: "Dark Red", swatchColor: "#6C0000" },
+    { name: "Purple", swatchColor: "#9C27B0" },
+    { name: "Deep Purple", swatchColor: "#673AB7" },
+    { name: "Light Blue", swatchColor: "#03A9F4" },
+    { name: "Cyan", swatchColor: "#00BCD4" },
+    { name: "Teal", swatchColor: "#009688" },
+    { name: "Green", swatchColor: "#4CAF50" },
+    { name: "India Green", swatchColor: "#138808" },
+    { name: "Pakistan Green", swatchColor: "#006600" },
+    { name: "Asparagus Green", swatchColor: "#87A96B" },
+    { name: "Dark Olive Green", swatchColor: "#556B2F" },
+    { name: "Shamrock Green", swatchColor: "#009E60" },
+    { name: "Light Green", swatchColor: "#8BC34A" },
+    { name: "Lime", swatchColor: "#C0CA33" },
+    { name: "Amber", swatchColor: "#FFC107" },
+    { name: "Orange", swatchColor: "#FF9800" },
+    { name: "Deep Orange", swatchColor: "#FF5722" },
+    { name: "Dark Orange", swatchColor: "#AD4428" },
+    { name: "Red", swatchColor: "#F44336" },
+    { name: "Brown", swatchColor: "#4E342E" },
+    { name: "Chocolate", swatchColor: "#7B3F00" },
+    { name: "Black", swatchColor: "#000000" },
+];
+
+const AppBuilderColorSchemeSwatch: React.FunctionComponent<{
+    color: string;
+}> = (props) => {
+    return (
+        <span
+            css={css`
+                width: 30px;
+                height: 16px;
+                border-radius: 3px;
+                border: 1px solid rgba(0, 0, 0, 0.18);
+                background: ${props.color};
+                flex: 0 0 auto;
+            `}
         />
     );
 };
 
-const AppBuilderIconPickerForConfigr: React.FunctionComponent<{
+const AppBuilderColorSchemeLabel: React.FunctionComponent<{
+    name: string;
+    swatchColor: string;
+}> = (props) => {
+    return (
+        <span
+            css={css`
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+            `}
+        >
+            <AppBuilderColorSchemeSwatch color={props.swatchColor} />
+            <span>{props.name}</span>
+        </span>
+    );
+};
+
+const AppBuilderColorSchemeChooserForConfigr: React.FunctionComponent<{
     value: string;
     disabled?: boolean;
     onChange: (value: string) => void;
 }> = (props) => {
-    const chooseButtonLabel = useL10n("Choose...", "Common.ChooseButton");
-    const resetButtonLabel = useL10n(
-        "Reset",
-        "PublishTab.Apps.SettingsDialog.IconReset",
+    const selectedScheme =
+        kRabColorSchemes.find((scheme) => scheme.name === props.value) ??
+        kRabColorSchemes.find(
+            (scheme) => scheme.name === defaultSettings.colorScheme,
+        ) ??
+        kRabColorSchemes[0];
+
+    return (
+        <Select
+            value={props.value || selectedScheme.name}
+            disabled={props.disabled}
+            size="small"
+            css={css`
+                width: 196px;
+                background: white;
+            `}
+            onChange={(event) => {
+                props.onChange(event.target.value);
+            }}
+            renderValue={(selected) => {
+                const scheme =
+                    kRabColorSchemes.find((item) => item.name === selected) ??
+                    selectedScheme;
+
+                return (
+                    <AppBuilderColorSchemeLabel
+                        name={scheme.name}
+                        swatchColor={scheme.swatchColor}
+                    />
+                );
+            }}
+        >
+            {kRabColorSchemes.map((scheme) => (
+                <MenuItem key={scheme.name} value={scheme.name}>
+                    <AppBuilderColorSchemeLabel
+                        name={scheme.name}
+                        swatchColor={scheme.swatchColor}
+                    />
+                </MenuItem>
+            ))}
+        </Select>
     );
-    const chooseIconTitle = useL10n(
-        "Choose App Icon",
-        "PublishTab.Apps.SettingsDialog.IconChooseTitle",
-    );
-    const previewUrl = props.value
-        ? getBloomLocalFileUrl(props.value)
-        : getDefaultAppBuilderIconUrl();
+};
 
-    async function chooseIcon(): Promise<void> {
-        const result = await postJson("fileIO/chooseFile", {
-            title: chooseIconTitle,
-            fileTypes: [
-                {
-                    name: "Images",
-                    extensions: ["png", "jpg", "jpeg", "webp"],
-                },
-            ],
-            defaultPath: props.value,
-        });
-
-        if (typeof result?.data === "string" && result.data) {
-            props.onChange(result.data);
-        }
-    }
-
+const ReadingAppBuilderButtonForConfigr: React.FunctionComponent<{
+    value: string;
+    onChange: (value: string) => void;
+    onOpen: () => void;
+    buttonLabel: string;
+    canOpenInRab: boolean;
+    showValidationMessage: boolean;
+    validationMessage: string;
+}> = (props) => {
     return (
         <div
             css={css`
-                display: flex;
-                align-items: center;
-                gap: 8px;
                 width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 8px;
             `}
         >
-            <div
-                css={css`
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    width: 52px;
-                    height: 52px;
-                    overflow: hidden;
-                    background: #fff;
-                    border: 1px solid #d7d7d7;
-                    border-radius: 4px;
-                    flex: 0 0 auto;
+            <BloomButton
+                enabled={props.canOpenInRab}
+                l10nKey="PublishTab.Apps.SettingsDialog.ReadingAppBuilder"
+                hasText={true}
+                variant="contained"
+                onClick={props.onOpen}
+                css={(theme) => css`
+                    background-color: ${theme.palette.primary.main};
+
+                    &:hover {
+                        background-color: ${theme.palette.primary.dark};
+                    }
                 `}
             >
-                <img
-                    key={previewUrl}
-                    src={previewUrl}
-                    alt=""
+                {props.buttonLabel}
+            </BloomButton>
+            {props.showValidationMessage && (
+                <div
                     css={css`
-                        max-width: 100%;
-                        max-height: 100%;
-                        object-fit: contain;
+                        max-width: 360px;
+                        color: #c62828;
+                        font-size: 0.9rem;
+                        line-height: 1.3;
+                        text-align: right;
                     `}
-                    onLoad={(event) => {
-                        event.currentTarget.style.visibility = "visible";
-                    }}
-                    onError={(event) => {
-                        event.currentTarget.style.visibility = "hidden";
-                    }}
-                />
-            </div>
-            <div
-                css={css`
-                    display: flex;
-                    gap: 8px;
-                    align-items: center;
-                `}
-            >
-                <Button
-                    type="button"
-                    disabled={props.disabled}
-                    variant="outlined"
-                    title={chooseButtonLabel}
-                    aria-label={chooseButtonLabel}
-                    onClick={() => {
-                        void chooseIcon();
-                    }}
                 >
-                    ...
-                </Button>
-                <Button
-                    type="button"
-                    disabled={props.disabled || !props.value}
-                    variant="text"
-                    onClick={() => props.onChange("")}
-                >
-                    {resetButtonLabel}
-                </Button>
-            </div>
+                    {props.validationMessage}
+                </div>
+            )}
         </div>
     );
 };
 
 export const AppBuilderSettingsDialog: React.FunctionComponent<{
+    appDefPath: string;
     canOpenInRab: boolean;
     onClose: () => void;
     onSaved: () => void;
 }> = (props) => {
-    const rawSettings = useApiObject<IAppBuilderAppSettingsApi>(
-        "publish/rab/settings",
-        defaultSettings,
-    );
-    const settings = normalizeSettings(rawSettings);
+    const settings = useAppBuilderAppSettingsForPath(props.appDefPath);
+    const [isStartingReadingAppBuilder, setIsStartingReadingAppBuilder] =
+        React.useState(false);
+    const openReadingAppBuilderCancelSource = React.useRef<
+        CancelTokenSource | undefined
+    >(undefined);
+    const cancelStartingReadingAppBuilderRef = React.useRef(false);
     // Configr returns the edited form state only when OK is pressed, so stash that payload until we convert and save it.
     const [settingsToReturnLater, setSettingsToReturnLater] = React.useState<
         string | object | undefined
     >(undefined);
 
     const dialogTitle = useL10n(
-        "Settings",
+        "App Settings",
         "PublishTab.Apps.SettingsDialog.Title",
     );
-    const detailsPageLabel = useL10n(
-        "Details",
-        "PublishTab.Apps.SettingsDialog.DetailsPage",
-    );
     const detailsGroupLabel = useL10n(
-        "Details",
+        "Basics",
         "PublishTab.Apps.SettingsDialog.DetailsGroup",
-    );
-    const advancedPageLabel = useL10n(
-        "Advanced",
-        "PublishTab.Apps.SettingsDialog.AdvancedPage",
     );
     const appearanceGroupLabel = useL10n(
         "Appearance",
@@ -213,9 +287,9 @@ export const AppBuilderSettingsDialog: React.FunctionComponent<{
         "App Name",
         "PublishTab.Apps.SettingsDialog.AppName",
     );
-    const mainColorLabel = useL10n(
-        "Main Color",
-        "PublishTab.Apps.SettingsDialog.MainColor",
+    const colorSchemeLabel = useL10n(
+        "Color Scheme",
+        "PublishTab.Apps.SettingsDialog.ColorScheme",
     );
     const packageNameLabel = useL10n(
         "Package Name",
@@ -226,38 +300,33 @@ export const AppBuilderSettingsDialog: React.FunctionComponent<{
         "Copyright",
         "PublishTab.Apps.SettingsDialog.Copyright",
     );
+    const aboutLabel = useL10n("About", "PublishTab.Apps.SettingsDialog.About");
     const packageNameDescription = useL10n(
-        "The package name uniquely identifies the app. It is a lowercase dot-separated string without spaces, such as org.yourorg.appname.language or com.yourcompany.language.appname.",
+        "Template: org.<yourorg>.<language-code>.<appname>. E.g. org.sil.xyz.stories. For additional help please contact the Digital Publishing Department of your organization.",
         "PublishTab.Apps.SettingsDialog.PackageName.Description",
     );
-    const packageNameTipsLabel = useL10n(
-        "Tips on choosing the package name:",
-        "PublishTab.Apps.SettingsDialog.PackageName.TipsLabel",
+    const packageNameInvalidMessage = useL10n(
+        "Use a lowercase dot-separated package name with no spaces, for example org.sil.xyz.stories",
+        "PublishTab.Apps.SettingsDialog.PackageName.Invalid",
     );
-    const packageNameTip1 = useL10n(
-        "Start the package name by turning round the web address of your organisation, e.g. if your web address is 'sil.org', the package name can start with 'org.sil'.",
-        "PublishTab.Apps.SettingsDialog.PackageName.Tip1",
-    );
-    const packageNameTip2 = useL10n(
-        "After that, add additional strings to identify the app, such as 'org.sil.xyz.stories' where 'xyz' is the language code.",
-        "PublishTab.Apps.SettingsDialog.PackageName.Tip2",
-    );
-    const packageNameTip3 = useL10n(
-        "For test applications, you can use a temporary package name beginning with 'com.example', e.g. 'com.example.test1', 'com.example.stories', etc.",
-        "PublishTab.Apps.SettingsDialog.PackageName.Tip3",
-    );
-    const packageNameTip4 = useL10n(
-        "For additional help, please contact the digital publishing department of your organisation.",
-        "PublishTab.Apps.SettingsDialog.PackageName.Tip4",
-    );
-    const packageNameHelpText = `${packageNameDescription} ${packageNameTipsLabel} 1. ${packageNameTip1} 2. ${packageNameTip2} 3. ${packageNameTip3} 4. ${packageNameTip4}`;
     const readingAppBuilderButtonLabel = useL10n(
         "Reading App Builder",
         "PublishTab.Apps.SettingsDialog.ReadingAppBuilder",
     );
+    const moreSettingsLabel = useL10n(
+        "More Settings",
+        "PublishTab.Apps.SettingsDialog.MoreSettings",
+    );
+    const readingAppBuilderValidationMessage = useL10n(
+        "Fill in the required fields and fix validation errors above before opening Reading App Builder.",
+        "PublishTab.Apps.SettingsDialog.ReadingAppBuilder.ValidationMessage",
+    );
+    const readingAppBuilderDescription = useL10n(
+        "Use this to do more customization of your app. Make sure to click Save and quit Reading App Builder before returning to Bloom.",
+        "PublishTab.Apps.SettingsDialog.RunRAB.Description",
+    );
 
-    function getSettingsToSave(): IAppBuilderAppSettings {
-        // Start from the current API-backed settings so untouched fields survive a partial Configr edit.
+    function getCurrentSettings(): IAppBuilderAppSettings {
         return (
             (normalizeConfigrSettings(
                 settingsToReturnLater,
@@ -265,147 +334,271 @@ export const AppBuilderSettingsDialog: React.FunctionComponent<{
         );
     }
 
-    async function saveSettings(
-        openReadingAppBuilder?: boolean,
-    ): Promise<void> {
-        const settingsToSave = getSettingsToSave();
-        await postJson("publish/rab/settings", settingsToSave);
-        props.onSaved();
-        props.onClose();
+    const hasSettingsValidationIssues = Object.values(
+        getAppBuilderSettingsValidationIssues(getCurrentSettings()),
+    ).some((issue) => !!issue);
 
-        if (openReadingAppBuilder && props.canOpenInRab) {
-            await postJson("publish/rab/open", {});
+    const openReadingAppBuilderControl: React.FunctionComponent<{
+        value: string;
+        disabled?: boolean;
+        onChange: (value: string) => void;
+    }> = (controlProps) => {
+        return (
+            <ReadingAppBuilderButtonForConfigr
+                {...controlProps}
+                buttonLabel={readingAppBuilderButtonLabel}
+                canOpenInRab={props.canOpenInRab}
+                showValidationMessage={hasSettingsValidationIssues}
+                validationMessage={readingAppBuilderValidationMessage}
+                onOpen={() => {
+                    void saveSettingsAndOpenReadingAppBuilder();
+                }}
+            />
+        );
+    };
+
+    function validatePackageName(packageName: string | number): true | string {
+        const issue = getAppBuilderPackageNameValidationIssue(
+            packageName.toString(),
+        );
+        if (issue === "invalid") {
+            return packageNameInvalidMessage;
+        }
+
+        return true;
+    }
+
+    function getSettingsToSave(): IAppBuilderAppSettings {
+        // Start from the current API-backed settings so untouched fields survive a partial Configr edit.
+        return getCurrentSettings();
+    }
+
+    function finishStartingReadingAppBuilder(): void {
+        openReadingAppBuilderCancelSource.current = undefined;
+        setIsStartingReadingAppBuilder(false);
+    }
+
+    function cancelStartingReadingAppBuilder(): void {
+        cancelStartingReadingAppBuilderRef.current = true;
+        openReadingAppBuilderCancelSource.current?.cancel(
+            "User canceled starting Reading App Builder.",
+        );
+        finishStartingReadingAppBuilder();
+    }
+
+    function wasStartingReadingAppBuilderCanceled(): boolean {
+        return cancelStartingReadingAppBuilderRef.current;
+    }
+
+    async function openReadingAppBuilder(): Promise<boolean> {
+        const cancelSource = axios.CancelToken.source();
+        openReadingAppBuilderCancelSource.current = cancelSource;
+
+        try {
+            const response = await postDataWithConfigAsync(
+                "publish/rab/open",
+                {},
+                {
+                    cancelToken: cancelSource.token,
+                    headers: {
+                        "Content-Type": "application/json; charset=utf-8",
+                    },
+                },
+            );
+            return !!response;
+        } catch (error) {
+            if (axios.isCancel(error)) {
+                return false;
+            }
+
+            throw error;
+        } finally {
+            openReadingAppBuilderCancelSource.current = undefined;
+        }
+    }
+
+    async function persistSettings(): Promise<boolean> {
+        const iconChoices = await fetchAppBuilderIconChoices();
+        const settingsToSave = applyDefaultAppBuilderIconChoice(
+            getSettingsToSave(),
+            iconChoices,
+        );
+        const didSave = await saveAppBuilderSettings(
+            props.appDefPath,
+            settingsToSave,
+        );
+        if (!didSave) {
+            return false;
+        }
+
+        props.onSaved();
+        return true;
+    }
+
+    async function saveSettingsAndClose(): Promise<void> {
+        const didSave = await persistSettings();
+        if (!didSave) {
+            return;
+        }
+
+        props.onClose();
+    }
+
+    async function saveSettingsAndOpenReadingAppBuilder(): Promise<void> {
+        if (!props.canOpenInRab) {
+            return;
+        }
+
+        cancelStartingReadingAppBuilderRef.current = false;
+        setIsStartingReadingAppBuilder(true);
+
+        try {
+            const didSave = await persistSettings();
+            if (!didSave || wasStartingReadingAppBuilderCanceled()) {
+                finishStartingReadingAppBuilder();
+                return;
+            }
+
+            const didOpen = await openReadingAppBuilder();
+            if (!didOpen || wasStartingReadingAppBuilderCanceled()) {
+                finishStartingReadingAppBuilder();
+                return;
+            }
+
+            props.onClose();
+        } catch (error) {
+            finishStartingReadingAppBuilder();
+            throw error;
         }
     }
 
     return (
-        <BloomDialog
-            open={true}
-            dialogFrameProvidedExternally={false}
-            onClose={props.onClose}
-            onCancel={() => props.onClose()}
-            draggable={false}
-            maxWidth={false}
-        >
-            <DialogTitle title={dialogTitle} />
-            <DialogMiddle
-                css={css`
-                    &:first-child {
-                        margin-top: 0;
-                    }
-                    overflow-y: auto;
-
-                    form {
-                        overflow-y: auto;
-                        height: 600px;
-                        width: ${kSettingsDialogFormWidth};
-
-                        #groups {
-                            margin-right: 10px;
-                        }
-                    }
-
-                    a {
-                        color: ${kBloomBlue};
-                    }
-                `}
+        <>
+            <BloomDialog
+                open={true}
+                dialogFrameProvidedExternally={false}
+                onClose={props.onClose}
+                onCancel={props.onClose}
+                draggable={false}
+                maxWidth={false}
             >
-                <ConfigrPane
-                    key={JSON.stringify(settings)}
-                    label={dialogTitle}
-                    showAppBar={false}
-                    showSearch={true}
-                    initialValues={settings}
-                    themeOverrides={{
-                        palette: {
-                            primary: { main: kBloomBlue },
-                        },
-                    }}
-                    onChange={(nextSettings) => {
-                        setSettingsToReturnLater(nextSettings);
-                    }}
+                <DialogTitle title={dialogTitle} />
+                <DialogMiddle
+                    css={css`
+                        &:first-child {
+                            margin-top: 0;
+                        }
+                        overflow-y: auto;
+
+                        form {
+                            overflow-y: auto;
+                            height: 600px;
+                            width: ${kSettingsDialogFormWidth};
+
+                            #groups {
+                                margin-right: 10px;
+                            }
+                        }
+
+                        a {
+                            color: ${kBloomBlue};
+                        }
+                    `}
                 >
-                    <ConfigrPage
-                        label={detailsPageLabel}
-                        pageKey="details"
-                        topLevel={true}
+                    <ConfigrPane
+                        key={JSON.stringify(settings)}
+                        label={dialogTitle}
+                        showAppBar={false}
+                        showSearch={true}
+                        initialValues={
+                            settings as unknown as Record<string, unknown>
+                        }
+                        themeOverrides={{
+                            palette: {
+                                primary: { main: kBloomBlue },
+                            },
+                        }}
+                        onChange={(nextSettings) => {
+                            setSettingsToReturnLater(nextSettings);
+                        }}
                     >
-                        <ConfigrGroup label={detailsGroupLabel}>
-                            <ConfigrInput label={appNameLabel} path="appName" />
-                            <ConfigrInput
-                                label={packageNameLabel}
-                                path="packageName"
-                                description={packageNameHelpText}
-                            />
-                            <ConfigrInput
-                                label={copyrightLabel}
-                                path="copyright"
-                            />
-                        </ConfigrGroup>
-                        <ConfigrGroup label={appearanceGroupLabel}>
-                            <ConfigrCustomStringInput
-                                label={mainColorLabel}
-                                path="mainColor"
-                                control={AppBuilderColorPickerForConfigr}
-                            />
-                            <ConfigrCustomStringInput
-                                label={iconLabel}
-                                path="iconPath"
-                                control={AppBuilderIconPickerForConfigr}
-                            />
-                        </ConfigrGroup>
-                    </ConfigrPage>
-                    <ConfigrPage
-                        label={advancedPageLabel}
-                        pageKey="advanced"
-                        topLevel={true}
-                    >
-                        <ConfigrGroup>
-                            <ConfigrStatic>
-                                <div
-                                    css={css`
-                                        display: flex;
-                                        flex-direction: column;
-                                        gap: 12px;
-                                    `}
-                                >
-                                    <BloomButton
-                                        enabled={props.canOpenInRab}
-                                        l10nKey="PublishTab.Apps.SettingsDialog.ReadingAppBuilder"
-                                        hasText={true}
-                                        variant="contained"
-                                        onClick={() => {
-                                            void saveSettings(true);
-                                        }}
-                                    >
-                                        {readingAppBuilderButtonLabel}
-                                    </BloomButton>
-                                    <div
-                                        css={css`
-                                            font-size: 0.9em;
-                                            color: #555;
-                                        `}
-                                    >
-                                        {useL10n(
-                                            "After Setup creates the Reading App Builder project, use the button below to open that project in Reading App Builder and edit its advanced settings there.",
-                                            "PublishTab.Apps.SettingsDialog.AdvancedPage.Description",
-                                        )}
-                                    </div>
-                                </div>
-                            </ConfigrStatic>
-                        </ConfigrGroup>
-                    </ConfigrPage>
-                </ConfigrPane>
-            </DialogMiddle>
-            <DialogBottomButtons>
-                <DialogOkButton
-                    default={true}
-                    onClick={() => {
-                        void saveSettings();
-                    }}
+                        <ConfigrPage
+                            label={""}
+                            pageKey="details"
+                            topLevel={true}
+                        >
+                            <ConfigrGroup label={detailsGroupLabel}>
+                                <ConfigrInput
+                                    label={appNameLabel}
+                                    path="appName"
+                                    required={true}
+                                    charactersWide={40}
+                                />
+                                <ConfigrInput
+                                    label={packageNameLabel}
+                                    path="packageName"
+                                    description={packageNameDescription}
+                                    required={true}
+                                    charactersWide={40}
+                                    validation={validatePackageName}
+                                />
+                                <ConfigrInput
+                                    label={copyrightLabel}
+                                    path="copyright"
+                                    required={true}
+                                    charactersWide={40}
+                                />
+                                <ConfigrInput
+                                    label={aboutLabel}
+                                    path="about"
+                                    required={true}
+                                    charactersWide={50}
+                                    allowNewLines={true}
+                                    minLinesToShow={2}
+                                    maxLinesToShowBeforeScrolling={5}
+                                />
+                            </ConfigrGroup>
+                            <ConfigrGroup label={appearanceGroupLabel}>
+                                <ConfigrCustomStringInput
+                                    label={colorSchemeLabel}
+                                    path="colorScheme"
+                                    control={
+                                        AppBuilderColorSchemeChooserForConfigr
+                                    }
+                                />
+                                <ConfigrCustomStringInput
+                                    label={iconLabel}
+                                    path="iconPath"
+                                    control={AppBuilderIconChooserForConfigr}
+                                />
+                            </ConfigrGroup>
+                            <ConfigrGroup>
+                                <ConfigrCustomStringInput
+                                    label={moreSettingsLabel}
+                                    path="openReadingAppBuilder"
+                                    description={readingAppBuilderDescription}
+                                    overrideValue=""
+                                    control={openReadingAppBuilderControl}
+                                />
+                            </ConfigrGroup>
+                        </ConfigrPage>
+                    </ConfigrPane>
+                </DialogMiddle>
+                <DialogBottomButtons>
+                    <DialogOkButton
+                        default={true}
+                        onClick={() => {
+                            void saveSettingsAndClose();
+                        }}
+                    />
+                    <DialogCancelButton />
+                </DialogBottomButtons>
+            </BloomDialog>
+            {isStartingReadingAppBuilder && (
+                <StartingReadingAppBuilderDialog
+                    onCancel={cancelStartingReadingAppBuilder}
                 />
-                <DialogCancelButton />
-            </DialogBottomButtons>
-        </BloomDialog>
+            )}
+        </>
     );
 };

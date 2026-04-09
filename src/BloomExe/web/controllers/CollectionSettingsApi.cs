@@ -317,9 +317,7 @@ namespace Bloom.web.controllers
                             ExperimentalFeatures.kTeamCollections
                         ),
                     allowAppBuilder = dialog?.PendingAllowAppBuilder
-                        ?? ExperimentalFeatures.IsFeatureEnabled(
-                            ExperimentalFeatures.kAppBuilder
-                        ),
+                        ?? ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kAppBuilder),
                     showQrCode = dialog?.PendingShowQrCode
                         ?? _collectionSettings.ShowBlorgLanguageQrCode,
                     qrcodeCaption = dialog?.PendingBadgeQrCodeCaption

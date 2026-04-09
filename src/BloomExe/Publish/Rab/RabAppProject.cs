@@ -10,10 +10,11 @@ namespace Bloom.Publish.Rab
     public class RabAppSettings
     {
         public string AppName { get; set; }
-        public string MainColor { get; set; }
+        public string ColorScheme { get; set; }
         public string PackageName { get; set; }
         public string IconPath { get; set; }
         public string Copyright { get; set; }
+        public string About { get; set; }
     }
 
     public class RabBookPublishInfo
@@ -27,6 +28,18 @@ namespace Bloom.Publish.Rab
     public class RabAppProject
     {
         public const string DefaultPrimaryColor = "#3F51B5";
+        public const string DefaultColorScheme = "Indigo";
+        public const string DefaultAboutFileName = "about.txt";
+        private static readonly (int Size, string RelativePath)[] kLauncherIconFiles =
+        {
+            (36, @"drawable-ldpi\ic_launcher.png"),
+            (48, @"drawable-mdpi\ic_launcher.png"),
+            (72, @"drawable-hdpi\ic_launcher.png"),
+            (96, @"drawable-xhdpi\ic_launcher.png"),
+            (144, @"drawable-xxhdpi\ic_launcher.png"),
+            (192, @"drawable-xxxhdpi\ic_launcher.png"),
+            (512, @"drawable-web\ic_launcher.png"),
+        };
         private const string kIconPathMetadataName = "bloom-rab-icon-path";
         private readonly XDocument _document;
         private XDocument _contentsDocument;
@@ -84,10 +97,11 @@ namespace Bloom.Publish.Rab
             return new RabAppSettings()
             {
                 AppName = AppName,
-                MainColor = GetPrimaryColor(),
+                ColorScheme = GetColorSchemeName(),
                 PackageName = PackageName ?? string.Empty,
-                IconPath = GetMetadataValue(kIconPathMetadataName),
+                IconPath = GetLauncherIconPath() ?? GetMetadataValue(kIconPathMetadataName),
                 Copyright = GetMetadataValue("copyright-text"),
+                About = string.Empty,
             };
         }
 
@@ -114,11 +128,75 @@ namespace Bloom.Publish.Rab
             if (!string.IsNullOrWhiteSpace(settings?.PackageName))
                 SetPackageName(settings.PackageName.Trim());
 
-            if (!string.IsNullOrWhiteSpace(settings?.MainColor))
-                SetPrimaryColor(settings.MainColor.Trim());
+            if (!string.IsNullOrWhiteSpace(settings?.ColorScheme))
+                SetColorSchemeName(settings.ColorScheme.Trim());
 
+            SetAboutFileName(DefaultAboutFileName);
             SetMetadataValue("copyright-text", settings?.Copyright?.Trim());
-            SetMetadataValue(kIconPathMetadataName, settings?.IconPath?.Trim());
+        }
+
+        public void SetLauncherIcons(
+            IEnumerable<(string RelativePath, int Width, int Height)> icons
+        )
+        {
+            var root = _document.Root;
+            if (root == null)
+                throw new ApplicationException("RAB project file is missing its root element.");
+
+            var imagesElement = root.Elements("images")
+                .FirstOrDefault(element => (string)element.Attribute("type") == "launcher");
+            if (imagesElement == null)
+            {
+                imagesElement = new XElement("images", new XAttribute("type", "launcher"));
+                var adaptiveIconElement = root.Element("adaptive-icon");
+                if (adaptiveIconElement != null)
+                    adaptiveIconElement.AddBeforeSelf(imagesElement);
+                else
+                    root.Add(imagesElement);
+            }
+
+            imagesElement.RemoveNodes();
+            foreach (var (relativePath, width, height) in icons)
+            {
+                imagesElement.Add(
+                    new XElement(
+                        "image",
+                        new XAttribute("width", width),
+                        new XAttribute("height", height),
+                        relativePath
+                    )
+                );
+            }
+        }
+
+        public void SetAdaptiveIconForegroundImage(string fileName)
+        {
+            var root = _document.Root;
+            if (root == null)
+                throw new ApplicationException("RAB project file is missing its root element.");
+
+            var adaptiveIconElement = root.Element("adaptive-icon");
+            if (adaptiveIconElement == null)
+            {
+                adaptiveIconElement = new XElement("adaptive-icon");
+                root.Add(adaptiveIconElement);
+            }
+
+            var foregroundElement = adaptiveIconElement.Element("foreground");
+            if (foregroundElement == null)
+            {
+                foregroundElement = new XElement("foreground");
+                adaptiveIconElement.Add(foregroundElement);
+            }
+
+            var imageElement = foregroundElement.Element("image");
+            if (imageElement == null)
+            {
+                imageElement = new XElement("image");
+                foregroundElement.Add(imageElement);
+            }
+
+            imageElement.Value = fileName;
         }
 
         public void SetBookEntries(IEnumerable<RabBookPublishInfo> books)
@@ -239,17 +317,60 @@ namespace Bloom.Publish.Rab
             return _document.Root?.Element(parentName)?.Element(childName)?.Value;
         }
 
-        private string GetPrimaryColor()
+        private string GetColorSchemeName()
         {
-            return _document
-                    .Root?.Elements("colors")
-                    .FirstOrDefault(element => (string)element.Attribute("type") == "main")
-                    ?.Elements("color")
-                    .FirstOrDefault(element => (string)element.Attribute("name") == "PrimaryColor")
-                    ?.Elements("color-mapping")
-                    .FirstOrDefault(element => (string)element.Attribute("theme") == "Normal")
-                    ?.Attribute("value")
-                    ?.Value ?? DefaultPrimaryColor;
+            return _document.Root?.Element("color-scheme")?.Attribute("name")?.Value
+                ?? DefaultColorScheme;
+        }
+
+        private string GetLauncherIconPath()
+        {
+            var adaptiveIconPath = GetAdaptiveForegroundIconPath();
+            if (!string.IsNullOrWhiteSpace(adaptiveIconPath))
+                return adaptiveIconPath;
+
+            var launcherImagesElement = _document.Root?.Elements("images")
+                .FirstOrDefault(element => (string)element.Attribute("type") == "launcher");
+            if (launcherImagesElement != null)
+            {
+                foreach (var (size, relativePath) in kLauncherIconFiles.Reverse())
+                {
+                    var imageElement = launcherImagesElement.Elements("image")
+                        .FirstOrDefault(element => (int?)element.Attribute("width") == size);
+                    var configuredPath = imageElement?.Value;
+                    if (string.IsNullOrWhiteSpace(configuredPath))
+                        configuredPath = relativePath;
+
+                    var fullPath = Path.Combine(
+                        ProjectDataFolderPath,
+                        "images",
+                        configuredPath.Replace('\\', Path.DirectorySeparatorChar)
+                    );
+                    if (RobustFile.Exists(fullPath))
+                        return fullPath;
+                }
+            }
+
+            return null;
+        }
+
+        private string GetAdaptiveForegroundIconPath()
+        {
+            var adaptiveForegroundFileName = _document.Root?
+                .Element("adaptive-icon")?
+                .Element("foreground")?
+                .Element("image")?
+                .Value;
+            if (string.IsNullOrWhiteSpace(adaptiveForegroundFileName))
+                return null;
+
+            var fullPath = Path.Combine(
+                ProjectDataFolderPath,
+                "images",
+                "mipmap-xxxhdpi",
+                adaptiveForegroundFileName
+            );
+            return RobustFile.Exists(fullPath) ? fullPath : null;
         }
 
         private void EnsureApkFilename()
@@ -330,43 +451,53 @@ namespace Bloom.Publish.Rab
             packageElement.Value = packageName;
         }
 
-        private void SetPrimaryColor(string mainColor)
+        private void SetColorSchemeName(string colorScheme)
         {
             var root = _document.Root;
             if (root == null)
                 return;
 
-            var colorsElement = root.Elements("colors")
-                .FirstOrDefault(element => (string)element.Attribute("type") == "main");
-            if (colorsElement == null)
+            var colorSchemeElement = root.Element("color-scheme");
+            if (colorSchemeElement == null)
             {
-                colorsElement = new XElement("colors", new XAttribute("type", "main"));
-                var booksElement = root.Element("books");
-                if (booksElement != null)
-                    booksElement.AddBeforeSelf(colorsElement);
+                colorSchemeElement = new XElement("color-scheme");
+                var fontsElement = root.Element("fonts");
+                if (fontsElement != null)
+                    fontsElement.AddAfterSelf(colorSchemeElement);
                 else
-                    root.Add(colorsElement);
+                    root.Add(colorSchemeElement);
             }
 
-            var primaryColorElement = colorsElement
-                .Elements("color")
-                .FirstOrDefault(element => (string)element.Attribute("name") == "PrimaryColor");
-            if (primaryColorElement == null)
+            colorSchemeElement.SetAttributeValue("name", colorScheme);
+        }
+
+        private void SetAboutFileName(string fileName)
+        {
+            var root = _document.Root;
+            if (root == null)
+                return;
+
+            var aboutElement = root.Element("about");
+            if (aboutElement == null)
             {
-                primaryColorElement = new XElement("color", new XAttribute("name", "PrimaryColor"));
-                colorsElement.Add(primaryColorElement);
+                aboutElement = new XElement("about");
+                var deepLinkingElement = root.Element("deep-linking");
+                if (deepLinkingElement != null)
+                    deepLinkingElement.AddBeforeSelf(aboutElement);
+                else
+                    root.Add(aboutElement);
             }
 
-            var normalMapping = primaryColorElement
-                .Elements("color-mapping")
-                .FirstOrDefault(element => (string)element.Attribute("theme") == "Normal");
-            if (normalMapping == null)
+            aboutElement.SetAttributeValue("enabled", "true");
+
+            var filenameElement = aboutElement.Element("filename");
+            if (filenameElement == null)
             {
-                normalMapping = new XElement("color-mapping", new XAttribute("theme", "Normal"));
-                primaryColorElement.Add(normalMapping);
+                filenameElement = new XElement("filename");
+                aboutElement.Add(filenameElement);
             }
 
-            normalMapping.SetAttributeValue("value", mainColor);
+            filenameElement.Value = fileName;
         }
 
         private XElement GetBooksMetadataElement()

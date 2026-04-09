@@ -25,22 +25,13 @@ namespace Bloom.Publish.Rab
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "settings",
-                request =>
-                {
-                    if (request.HttpMethod == HttpMethods.Get)
-                    {
-                        request.ReplyWithJson(_rabProjectService.GetAppSettings());
-                        return;
-                    }
-
-                    _rabProjectService.SaveAppSettings(
-                        Newtonsoft.Json.JsonConvert.DeserializeObject<RabAppSettings>(
-                            request.RequiredPostJson()
-                        )
-                    );
-                    request.PostSucceeded();
-                },
+                kApiUrlPart + "app-settings",
+                request => request.ReplyWithJson(_rabProjectService.GetAppSettings()),
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "icon-choices",
+                request => request.ReplyWithJson(_rabProjectService.GetAvailableIconChoices()),
                 true
             );
             apiHandler.RegisterEndpointHandler(
@@ -61,11 +52,11 @@ namespace Bloom.Publish.Rab
                 request => request.ReplyWithJson(_rabProjectService.GetSizeEstimates()),
                 true
             );
-            apiHandler.RegisterEndpointHandler(
+            apiHandler.RegisterAsyncEndpointHandler(
                 kApiUrlPart + "open",
-                request =>
+                async request =>
                 {
-                    _rabProjectService.OpenInRab();
+                    await _rabProjectService.OpenInRabAndWaitForWindowAsync();
                     request.PostSucceeded();
                 },
                 true

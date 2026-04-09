@@ -73,7 +73,23 @@ namespace Bloom.web.controllers
                 false
             );
 
+            apiHandler.RegisterEndpointHandler("fileIO/readFile", ReadFile, true);
             apiHandler.RegisterEndpointHandler("fileIO/writeFile", WriteFile, true);
+        }
+
+        private void ReadFile(ApiRequest request)
+        {
+            string json = request.RequiredPostJson();
+            dynamic data = JsonConvert.DeserializeObject<ExpandoObject>(json);
+            string path = data.path;
+            try
+            {
+                request.ReplyWithText(RobustFile.ReadAllText(path));
+            }
+            catch (Exception e)
+            {
+                request.Failed(HttpStatusCode.InternalServerError, e.Message);
+            }
         }
 
         private void WriteFile(ApiRequest request)

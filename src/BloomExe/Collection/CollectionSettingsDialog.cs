@@ -825,10 +825,7 @@ namespace Bloom.Collection
 
         private void UpdateAppBuilderAllowed()
         {
-            ExperimentalFeatures.SetValue(
-                ExperimentalFeatures.kAppBuilder,
-                PendingAllowAppBuilder
-            );
+            ExperimentalFeatures.SetValue(ExperimentalFeatures.kAppBuilder, PendingAllowAppBuilder);
         }
     }
 }

@@ -1,17 +1,28 @@
 import { css } from "@emotion/react";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
+import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
+    IconButton,
+} from "@mui/material";
 import * as React from "react";
+import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { ProgressBox } from "../../react_components/Progress/progressBox";
 import type { ProgressBoxHandle } from "../../react_components/Progress/progressBox";
+import { useL10n } from "../../react_components/l10nHooks";
+import { postJson } from "../../utils/bloomApi";
 
 export interface IActionLogController {
     progressBoxRef: React.RefObject<ProgressBoxHandle | null>;
     messages: Array<JSX.Element>;
     setMessages: React.Dispatch<React.SetStateAction<JSX.Element[]>>;
+    rawMessages: string[];
     isExpanded: boolean;
     setIsExpanded: React.Dispatch<React.SetStateAction<boolean>>;
     hasMessages: boolean;
+    appendRawMessage: (message: string) => void;
     clear: () => void;
     openForError: () => void;
     scrollToLastError: () => void;
@@ -20,12 +31,20 @@ export interface IActionLogController {
 export function useActionLogController(): IActionLogController {
     const progressBoxRef = React.useRef<ProgressBoxHandle>(null);
     const [messages, setMessages] = React.useState<Array<JSX.Element>>([]);
+    const [rawMessages, setRawMessages] = React.useState<string[]>([]);
     const [isExpanded, setIsExpanded] = React.useState(false);
     const [shouldScrollToError, setShouldScrollToError] = React.useState(false);
     const hasMessages = messages.length > 0;
 
+    const appendRawMessage = React.useCallback(function appendRawMessage(
+        message: string,
+    ) {
+        setRawMessages((old) => [...old, message]);
+    }, []);
+
     const clear = React.useCallback(() => {
         setMessages([]);
+        setRawMessages([]);
         setIsExpanded(false);
         setShouldScrollToError(false);
     }, []);
@@ -59,9 +78,11 @@ export function useActionLogController(): IActionLogController {
         progressBoxRef,
         messages,
         setMessages,
+        rawMessages,
         isExpanded,
         setIsExpanded,
         hasMessages,
+        appendRawMessage,
         clear,
         openForError,
         scrollToLastError,
@@ -74,9 +95,22 @@ export const ActionLogAccordion: React.FunctionComponent<{
     webSocketContext?: string;
     dataTestId?: string;
 }> = (props) => {
+    const copyTooltip = useL10n("Copy", "Common.Copy");
+    const logTextContainerRef = React.useRef<HTMLDivElement>(null);
+
     // Keep the ProgressBox mounted while an action is running so the first websocket lines are captured
     // even before there is enough content to show the accordion.
     const shouldRenderListener = props.isActive || props.controller.hasMessages;
+
+    const copyLogToClipboard = React.useCallback(() => {
+        const rawLogText = props.controller.rawMessages.join("\n");
+        const renderedLogText =
+            logTextContainerRef.current?.innerText?.trim() ?? "";
+
+        postJson("common/clipboardText", {
+            text: rawLogText || renderedLogText,
+        });
+    }, [props.controller.rawMessages]);
 
     if (!shouldRenderListener) {
         return null;
@@ -88,6 +122,7 @@ export const ActionLogAccordion: React.FunctionComponent<{
             webSocketContext={props.webSocketContext}
             messages={props.controller.messages}
             setMessages={props.controller.setMessages}
+            onMessageLogged={props.controller.appendRawMessage}
             onGotErrorMessage={props.controller.openForError}
             css={css`
                 height: 100%;
@@ -192,6 +227,29 @@ export const ActionLogAccordion: React.FunctionComponent<{
                 `}
             >
                 <div
+                    css={css`
+                        display: flex;
+                        justify-content: flex-end;
+                        margin-bottom: 4px;
+                    `}
+                >
+                    <BloomTooltip tip={copyTooltip}>
+                        <IconButton
+                            aria-label={copyTooltip}
+                            onClick={copyLogToClipboard}
+                            size="small"
+                            data-testid={
+                                props.dataTestId
+                                    ? `${props.dataTestId}-copy-button`
+                                    : undefined
+                            }
+                        >
+                            <ContentCopyIcon fontSize="small" />
+                        </IconButton>
+                    </BloomTooltip>
+                </div>
+                <div
+                    ref={logTextContainerRef}
                     css={css`
                         position: relative;
                         min-height: 8em;

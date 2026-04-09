@@ -20,27 +20,6 @@ export interface IAppBuilderTrackedBookApi {
     Title?: string;
 }
 
-export interface IAppBuilderAppSettings {
-    appName: string;
-    mainColor: string;
-    packageName: string;
-    iconPath: string;
-    copyright: string;
-}
-
-export interface IAppBuilderAppSettingsApi {
-    appName?: string;
-    mainColor?: string;
-    packageName?: string;
-    iconPath?: string;
-    copyright?: string;
-    AppName?: string;
-    MainColor?: string;
-    PackageName?: string;
-    IconPath?: string;
-    Copyright?: string;
-}
-
 export interface IAppBuilderStatus {
     rabInstalled: boolean;
     projectExists: boolean;
@@ -60,7 +39,6 @@ export type AppBuilderPrepareStepId =
     | "installer-available"
     | "rab-installed"
     | "build-tools-installed"
-    | "signing-key-ready"
     | "project-created";
 
 export interface IAppBuilderPrepareStepStatus {
@@ -143,14 +121,6 @@ export const kAppBuilderWebSocketContext = "publish-rab";
 
 export type AppBuilderAction = "setup" | "build" | "install";
 
-export const defaultSettings: IAppBuilderAppSettings = {
-    appName: "",
-    mainColor: "#3F51B5",
-    packageName: "",
-    iconPath: "",
-    copyright: "",
-};
-
 export const defaultStatus: IAppBuilderStatus = {
     rabInstalled: false,
     projectExists: false,
@@ -166,7 +136,6 @@ export function getDefaultPrepareSteps(): IAppBuilderPrepareStepStatus[] {
         { id: "installer-available", complete: false },
         { id: "rab-installed", complete: false },
         { id: "build-tools-installed", complete: false },
-        { id: "signing-key-ready", complete: false },
         { id: "project-created", complete: false },
     ];
 }
@@ -179,21 +148,6 @@ export function normalizeTrackedBook(
         bookId: trackedBook?.bookId ?? trackedBook?.BookId ?? "",
         folderPath: trackedBook?.folderPath ?? trackedBook?.FolderPath ?? "",
         title: trackedBook?.title ?? trackedBook?.Title ?? "",
-    };
-}
-
-export function normalizeSettings(
-    settings?: IAppBuilderAppSettingsApi,
-): IAppBuilderAppSettings {
-    return {
-        appName: settings?.appName ?? settings?.AppName ?? "",
-        mainColor:
-            settings?.mainColor ??
-            settings?.MainColor ??
-            defaultSettings.mainColor,
-        packageName: settings?.packageName ?? settings?.PackageName ?? "",
-        iconPath: settings?.iconPath ?? settings?.IconPath ?? "",
-        copyright: settings?.copyright ?? settings?.Copyright ?? "",
     };
 }
 
@@ -219,10 +173,6 @@ export function normalizeBookSizeEstimate(
         sizeBytes: estimate?.sizeBytes ?? estimate?.SizeBytes ?? 0,
         isActual: estimate?.isActual ?? estimate?.IsActual ?? false,
     };
-}
-
-export function getDefaultAppBuilderIconUrl(): string {
-    return `${getBloomApiPrefix(false)}branding/shared/bloom-icon.png`;
 }
 
 export function getBloomLocalFileUrl(filePath: string): string {
@@ -416,7 +366,6 @@ export function getPrepareStepIdForStage(
         case "installing-build-tools":
             return "build-tools-installed";
         case "generating-signing-key":
-            return "signing-key-ready";
         case "preparing-workspace":
         case "exporting-bloompubs":
         case "creating-project":
