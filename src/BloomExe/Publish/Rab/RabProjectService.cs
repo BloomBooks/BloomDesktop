@@ -752,16 +752,17 @@ namespace Bloom.Publish.Rab
 
         internal virtual string GetPackageName()
         {
-            return MakeDefaultPackageName(_collectionSettings?.Language1Tag);
+            return MakeDefaultPackageName(GetProjectSlug(), _collectionSettings?.Language1Tag);
         }
 
-        internal static string MakeDefaultPackageName(string language1Tag)
+        internal static string MakeDefaultPackageName(string projectSlug, string language1Tag)
         {
+            var segments = GetPackageNameSegments(projectSlug);
             var languageSegment = GetLanguagePackageSegment(language1Tag);
             var packagePrefix = string.IsNullOrWhiteSpace(languageSegment)
                 ? "org.sil.bloom"
                 : $"org.sil.{languageSegment}";
-            return packagePrefix + ".stories";
+            return packagePrefix + "." + string.Join(".", segments);
         }
 
         internal static string MakeProjectSlug(string baseName)

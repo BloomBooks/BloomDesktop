@@ -28,7 +28,6 @@ import {
     defaultSettings,
     fetchAppBuilderIconChoices,
     getAppBuilderPackageNameValidationIssue,
-    getAppBuilderSettingsValidationIssues,
     IAppBuilderAppSettings,
     saveAppBuilderSettings,
     useAppBuilderAppSettingsForPath,
@@ -170,7 +169,8 @@ const AppBuilderColorSchemeChooserForConfigr: React.FunctionComponent<{
             disabled={props.disabled}
             size="small"
             css={css`
-                width: 196px;
+                min-width: 280px;
+                width: 100%;
                 background: white;
             `}
             onChange={(event) => {
@@ -213,9 +213,7 @@ const ReadingAppBuilderButtonForConfigr: React.FunctionComponent<{
             css={css`
                 width: 100%;
                 display: flex;
-                flex-direction: column;
-                align-items: flex-end;
-                gap: 8px;
+                justify-content: flex-end;
             `}
         >
             <BloomButton
@@ -224,13 +222,6 @@ const ReadingAppBuilderButtonForConfigr: React.FunctionComponent<{
                 hasText={true}
                 variant="contained"
                 onClick={props.onOpen}
-                css={(theme) => css`
-                    background-color: ${theme.palette.primary.main};
-
-                    &:hover {
-                        background-color: ${theme.palette.primary.dark};
-                    }
-                `}
             >
                 {props.buttonLabel}
             </BloomButton>
@@ -306,15 +297,6 @@ export const AppBuilderSettingsDialog: React.FunctionComponent<{
         "Use this to do more customization of your app. Make sure to click Save and quit Reading App Builder before returning to Bloom.",
         "PublishTab.Apps.SettingsDialog.RunRAB.Description",
     );
-
-    function getCurrentSettings(): IAppBuilderAppSettings {
-        return (
-            (normalizeConfigrSettings(
-                settingsToReturnLater,
-            ) as IAppBuilderAppSettings) ?? settings
-        );
-    }
-
     const openReadingAppBuilderControl: React.FunctionComponent<{
         value: string;
         disabled?: boolean;
@@ -345,7 +327,11 @@ export const AppBuilderSettingsDialog: React.FunctionComponent<{
 
     function getSettingsToSave(): IAppBuilderAppSettings {
         // Start from the current API-backed settings so untouched fields survive a partial Configr edit.
-        return getCurrentSettings();
+        return (
+            (normalizeConfigrSettings(
+                settingsToReturnLater,
+            ) as IAppBuilderAppSettings) ?? settings
+        );
     }
 
     function finishStartingReadingAppBuilder(): void {
@@ -520,13 +506,13 @@ export const AppBuilderSettingsDialog: React.FunctionComponent<{
                                 <ConfigrInput
                                     label={copyrightLabel}
                                     path="copyright"
-                                    required={true}
+                                    required={false}
                                     charactersWide={40}
                                 />
                                 <ConfigrInput
                                     label={aboutLabel}
                                     path="about"
-                                    required={true}
+                                    required={false}
                                     charactersWide={50}
                                     allowNewLines={true}
                                     minLinesToShow={2}

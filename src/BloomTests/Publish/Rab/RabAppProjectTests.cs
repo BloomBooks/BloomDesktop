@@ -4,7 +4,9 @@ using System.ComponentModel;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Bloom.Collection;
@@ -41,6 +43,14 @@ namespace BloomTests.Publish.Rab
     </book>
   </books>
 </app-definition>";
+
+        private static string GetRabTestDataPath(
+            string fileName,
+            [CallerFilePath] string currentFilePath = ""
+        )
+        {
+            return Path.Combine(Path.GetDirectoryName(currentFilePath), "TestData", fileName);
+        }
 
         [Test]
         public void SetBookEntries_ReplacesBookEntries_AndPreservesCollectionMetadata()
@@ -169,6 +179,105 @@ namespace BloomTests.Publish.Rab
             Assert.That(Directory.Exists(booksRoot), Is.False);
             Assert.That(RobustFile.Exists(contentsPath), Is.True);
         }
+
+                [Test]
+                public void SynchronizeFonts_ReplacesUnreferencedEntries_AndPreservesReferencedFamilyIds()
+                {
+                        using var tempFile = TempFile.WithExtension(".appDef");
+                        RobustFile.WriteAllText(
+                                tempFile.Path,
+                                @"<?xml version='1.0' encoding='utf-8'?>
+<app-definition type='RAB' program-version='13.4'>
+    <project-name>Sample Project</project-name>
+    <fonts>
+        <font-handling>
+            <viewer type='default'/>
+        </font-handling>
+        <font family='font1'>
+            <font-name>Andika</font-name>
+            <display-name>Andika</display-name>
+            <filename format='woff2'>Andika-Regular.woff2</filename>
+            <style-decl property='font-weight' value='normal'/>
+            <style-decl property='font-style' value='normal'/>
+        </font>
+        <font family='Obsolete Font'>
+            <font-name>Obsolete Font</font-name>
+            <display-name>Obsolete Font</display-name>
+            <filename format='woff2'>Obsolete-Regular.woff2</filename>
+            <style-decl property='font-weight' value='normal'/>
+            <style-decl property='font-style' value='normal'/>
+        </font>
+    </fonts>
+    <books id='C01'>
+        <styles-info>
+            <text-font family='font1'/>
+        </styles-info>
+    </books>
+</app-definition>"
+                        );
+
+                        var project = RabAppProject.Load(tempFile.Path);
+                        project.SynchronizeFonts(
+                                new[]
+                                {
+                                        new RabAppFontDefinition
+                                        {
+                                                FamilyName = "Andika",
+                                                FontName = "Andika",
+                                                DisplayName = "Andika",
+                                                FileName = "Andika-Regular.woff2",
+                                                Format = "woff2",
+                                                Weight = "normal",
+                                                Style = "normal",
+                                        },
+                                        new RabAppFontDefinition
+                                        {
+                                                FamilyName = "ABeeZee",
+                                                FontName = "ABeeZee Bold",
+                                                DisplayName = "ABeeZee",
+                                                FileName = "ABeeZee-Bold.woff2",
+                                                Format = "woff2",
+                                                Weight = "bold",
+                                                Style = "normal",
+                                        },
+                                }
+                        );
+                        project.Save();
+
+                        var document = XDocument.Load(tempFile.Path);
+                        var fonts = document.Root.Element("fonts")?.Elements("font").ToList();
+
+                        Assert.That(fonts, Has.Count.EqualTo(2));
+                        Assert.That(
+                                fonts[0].Attribute("family")?.Value,
+                                Is.EqualTo("font1"),
+                                "The existing referenced family id should be preserved for Andika."
+                        );
+                        Assert.That(fonts[0].Element("display-name")?.Value, Is.EqualTo("Andika"));
+                        Assert.That(fonts[1].Attribute("family")?.Value, Is.EqualTo("ABeeZee"));
+                        Assert.That(fonts[1].Element("font-name")?.Value, Is.EqualTo("ABeeZee Bold"));
+                        Assert.That(
+                                fonts.Any(font => font.Element("display-name")?.Value == "Obsolete Font"),
+                                Is.False,
+                                "Unreferenced stale font entries should be removed."
+                        );
+                }
+
+                [Test]
+                public void ReadFontDefinitionsFromBloomPub_ReadsEmbeddedFontFaces()
+                {
+                    var bloomPubPath = GetRabTestDataPath("Book4.bloompub");
+
+                        var fonts = RabProjectService.ReadFontDefinitionsFromBloomPub(bloomPubPath);
+
+                        Assert.That(fonts, Has.Count.EqualTo(1));
+                        Assert.That(fonts[0].DisplayName, Is.EqualTo("ABeeZee"));
+                        Assert.That(fonts[0].FontName, Is.EqualTo("ABeeZee"));
+                        Assert.That(fonts[0].FileName, Is.EqualTo("ABeeZee-Regular.woff2"));
+                        Assert.That(fonts[0].Format, Is.EqualTo("woff2"));
+                        Assert.That(fonts[0].Weight, Is.EqualTo("normal"));
+                        Assert.That(fonts[0].Style, Is.EqualTo("normal"));
+                }
 
         [TestCase("My Collection", "my-collection", "org.sil.bloom.my.collection")]
         [TestCase("123 Numbers First", "123-numbers-first", "org.sil.bloom.a123.numbers.first")]
@@ -785,6 +894,46 @@ namespace BloomTests.Publish.Rab
             Assert.That(RobustFile.ReadAllText(staleBookPath), Does.Contain("Flower"));
             Assert.That(RobustFile.ReadAllText(staleBookPath), Does.Not.Contain("butterfly"));
             Assert.That(Directory.Exists(booksRoot), Is.True);
+        }
+
+        [Test]
+        public async Task BuildAsync_RefreshesProjectFontsFromExportedBloomPubs()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Flower",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "Flower.bloompub"),
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+            service.FontsCssByFolderPath[trackedBooks[0].FolderPath] =
+                "@font-face {font-family:'ABeeZee'; font-weight:normal; font-style:normal; src:url('ABeeZee-Regular.woff2') format('woff2');}";
+
+            await service.SetupAsync();
+            await service.BuildAsync();
+
+            var document = XDocument.Load(service.GetStatus().AppDefPath);
+            var fonts = document.Root.Element("fonts")?.Elements("font").ToList();
+
+            Assert.That(fonts, Is.Not.Null);
+            Assert.That(fonts, Has.Count.EqualTo(1));
+            Assert.That(fonts[0].Element("display-name")?.Value, Is.EqualTo("ABeeZee"));
+            Assert.That(
+                fonts[0].Element("filename")?.Value,
+                Is.EqualTo("ABeeZee-Regular.woff2")
+            );
+            Assert.That(
+                fonts[0].Element("filename")?.Attribute("format")?.Value,
+                Is.EqualTo("woff2")
+            );
         }
 
         [Test]
@@ -1837,7 +1986,7 @@ namespace BloomTests.Publish.Rab
                         )
                             ? existing.BloomPubPath
                             : book.BloomPubPath;
-                        RobustFile.WriteAllText(bloomPubPath, $"BloomPUB for {book.Title}");
+                        WriteBloomPub(bloomPubPath, book);
                         return new RabBookPublishInfo
                         {
                             BookId = book.BookId,
@@ -1847,6 +1996,38 @@ namespace BloomTests.Publish.Rab
                         };
                     })
                     .ToList();
+            }
+            public Dictionary<string, string> FontsCssByFolderPath { get; } =
+                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            private void WriteBloomPub(string bloomPubPath, RabBookPublishInfo book)
+            {
+                if (RobustFile.Exists(bloomPubPath))
+                    RobustFile.Delete(bloomPubPath);
+
+                using var archive = ZipFile.Open(bloomPubPath, ZipArchiveMode.Create);
+                using (var htmlWriter = new StreamWriter(archive.CreateEntry("index.htm").Open()))
+                {
+                    htmlWriter.Write($"<html><body>{book.Title}</body></html>");
+                }
+
+                if (!FontsCssByFolderPath.TryGetValue(book.FolderPath, out var fontsCss))
+                    return;
+
+                using (var cssWriter = new StreamWriter(archive.CreateEntry("fonts.css").Open()))
+                {
+                    cssWriter.Write(fontsCss);
+                }
+
+                foreach (Match match in Regex.Matches(fontsCss, @"url\('(?<file>[^']+)'\)"))
+                {
+                    var fileName = match.Groups["file"].Value;
+                    if (string.IsNullOrWhiteSpace(fileName))
+                        continue;
+
+                    using var fontWriter = new StreamWriter(archive.CreateEntry(fileName).Open());
+                    fontWriter.Write("font-data");
+                }
             }
 
             private void CreateAppDef(IReadOnlyList<string> tokens)
@@ -1909,8 +2090,9 @@ namespace BloomTests.Publish.Rab
                         var entry = archive.CreateEntry(
                             $"assets/{Path.GetFileName(book.BloomPubPath)}"
                         );
-                        using var writer = new StreamWriter(entry.Open());
-                        writer.Write(RobustFile.ReadAllText(book.BloomPubPath));
+                        using var sourceStream = File.OpenRead(book.BloomPubPath);
+                        using var destinationStream = entry.Open();
+                        sourceStream.CopyTo(destinationStream);
                     }
 
                     var projectDataRoot = Path.Combine(

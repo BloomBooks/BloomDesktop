@@ -69,6 +69,17 @@ namespace Bloom.Publish.Rab
         public string[] LauncherIconPaths { get; set; } = Array.Empty<string>();
     }
 
+    internal class RabAppFontDefinition
+    {
+        public string FamilyName { get; set; }
+        public string FontName { get; set; }
+        public string DisplayName { get; set; }
+        public string FileName { get; set; }
+        public string Format { get; set; }
+        public string Weight { get; set; }
+        public string Style { get; set; }
+    }
+
     public class RabIconChoice
     {
         public string Id { get; set; }

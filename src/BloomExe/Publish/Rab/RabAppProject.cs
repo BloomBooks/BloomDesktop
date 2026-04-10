@@ -204,6 +204,75 @@ namespace Bloom.Publish.Rab
             SetBookEntries(books.Select((book, index) => ($"B{index + 1:000}", book)));
         }
 
+        internal void SynchronizeFonts(IEnumerable<RabAppFontDefinition> fonts)
+        {
+            var root = _document.Root;
+            if (root == null)
+                throw new ApplicationException("RAB project file is missing its root element.");
+
+            var desiredFonts = (fonts ?? Array.Empty<RabAppFontDefinition>())
+                .Where(font =>
+                    font != null
+                    && !string.IsNullOrWhiteSpace(font.DisplayName)
+                    && !string.IsNullOrWhiteSpace(font.FileName)
+                )
+                .GroupBy(
+                    font =>
+                        string.Join(
+                            "\u001f",
+                            font.DisplayName ?? string.Empty,
+                            font.Weight ?? string.Empty,
+                            font.Style ?? string.Empty,
+                            font.FileName ?? string.Empty,
+                            font.Format ?? string.Empty
+                        ),
+                    StringComparer.OrdinalIgnoreCase
+                )
+                .Select(group => group.First())
+                .OrderBy(font => font.DisplayName, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(font => GetFontSortOrder(font.Weight, font.Style))
+                .ThenBy(font => font.FontName, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var fontsElement = GetOrCreateFontsElement(root);
+            var existingFontElements = fontsElement
+                .Elements("font")
+                .Select(element => new ExistingFontElement(element))
+                .ToList();
+            var existingFontHandling = fontsElement.Element("font-handling");
+            var referencedFamilies = GetReferencedFontFamilies();
+            var usedFamilyIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var updatedFontElements = new List<XElement>();
+
+            foreach (var font in desiredFonts)
+            {
+                var familyId = ResolveFamilyId(font, existingFontElements);
+                usedFamilyIds.Add(familyId);
+                updatedFontElements.Add(CreateFontElement(familyId, font));
+            }
+
+            foreach (var existingFont in existingFontElements)
+            {
+                if (!referencedFamilies.Contains(existingFont.FamilyId))
+                    continue;
+
+                if (usedFamilyIds.Contains(existingFont.FamilyId))
+                    continue;
+
+                updatedFontElements.Add(new XElement(existingFont.Element));
+                usedFamilyIds.Add(existingFont.FamilyId);
+            }
+
+            fontsElement.RemoveNodes();
+            fontsElement.Add(
+                existingFontHandling != null
+                    ? new XElement(existingFontHandling)
+                    : CreateDefaultFontHandlingElement()
+            );
+            foreach (var fontElement in updatedFontElements)
+                fontsElement.Add(fontElement);
+        }
+
         public void SetBookEntries(
             IEnumerable<(string BookElementId, RabBookPublishInfo Book)> books
         )
@@ -301,6 +370,146 @@ namespace Bloom.Publish.Rab
         private string GetSingleElementValue(string name)
         {
             return _document.Root?.Element(name)?.Value;
+        }
+
+        private XElement GetOrCreateFontsElement(XElement root)
+        {
+            var fontsElement = root.Element("fonts");
+            if (fontsElement != null)
+                return fontsElement;
+
+            fontsElement = new XElement("fonts");
+            var insertBefore =
+                root.Element("color-scheme")
+                ?? root.Element("color-themes")
+                ?? root.Element("colors")
+                ?? root.Element("books");
+            if (insertBefore != null)
+                insertBefore.AddBeforeSelf(fontsElement);
+            else
+                root.Add(fontsElement);
+
+            return fontsElement;
+        }
+
+        private HashSet<string> GetReferencedFontFamilies()
+        {
+            return _document
+                .Descendants("text-font")
+                .Select(element => (string)element.Attribute("family"))
+                .Where(family => !string.IsNullOrWhiteSpace(family))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        }
+
+        private static XElement CreateDefaultFontHandlingElement()
+        {
+            return new XElement(
+                "font-handling",
+                new XElement("viewer", new XAttribute("type", "default"))
+            );
+        }
+
+        private static string ResolveFamilyId(
+            RabAppFontDefinition font,
+            IEnumerable<ExistingFontElement> existingFonts
+        )
+        {
+            foreach (var existingFont in existingFonts)
+            {
+                if (
+                    string.Equals(
+                        existingFont.DisplayName,
+                        font.DisplayName,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                    || string.Equals(
+                        existingFont.FamilyId,
+                        font.DisplayName,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                    || string.Equals(
+                        existingFont.BaseFontName,
+                        font.DisplayName,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
+                {
+                    return existingFont.FamilyId;
+                }
+            }
+
+            return font.FamilyName ?? font.DisplayName;
+        }
+
+        private static XElement CreateFontElement(string familyId, RabAppFontDefinition font)
+        {
+            return new XElement(
+                "font",
+                new XAttribute("family", familyId),
+                new XElement("font-name", font.FontName),
+                new XElement("display-name", font.DisplayName),
+                new XElement(
+                    "filename",
+                    new XAttribute("format", font.Format ?? "opentype"),
+                    font.FileName
+                ),
+                new XElement(
+                    "style-decl",
+                    new XAttribute("property", "font-weight"),
+                    new XAttribute("value", font.Weight ?? "normal")
+                ),
+                new XElement(
+                    "style-decl",
+                    new XAttribute("property", "font-style"),
+                    new XAttribute("value", font.Style ?? "normal")
+                )
+            );
+        }
+
+        private static int GetFontSortOrder(string weight, string style)
+        {
+            var isBold = string.Equals(weight, "bold", StringComparison.OrdinalIgnoreCase);
+            var isItalic = string.Equals(style, "italic", StringComparison.OrdinalIgnoreCase);
+            if (!isBold && !isItalic)
+                return 0;
+
+            if (isBold && !isItalic)
+                return 1;
+
+            if (!isBold && isItalic)
+                return 2;
+
+            return 3;
+        }
+
+        private static string GetBaseFontName(string fontName)
+        {
+            if (string.IsNullOrWhiteSpace(fontName))
+                return string.Empty;
+
+            foreach (var suffix in new[] { " Bold Italic", " Bold", " Italic" })
+            {
+                if (fontName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+                    return fontName.Substring(0, fontName.Length - suffix.Length);
+            }
+
+            return fontName;
+        }
+
+        private class ExistingFontElement
+        {
+            public ExistingFontElement(XElement element)
+            {
+                Element = element;
+                FamilyId = (string)element.Attribute("family") ?? string.Empty;
+                DisplayName = (string)element.Element("display-name") ?? string.Empty;
+                BaseFontName = GetBaseFontName((string)element.Element("font-name") ?? string.Empty);
+            }
+
+            public XElement Element { get; }
+            public string FamilyId { get; }
+            public string DisplayName { get; }
+            public string BaseFontName { get; }
         }
 
         private string GetMetadataValue(string name)

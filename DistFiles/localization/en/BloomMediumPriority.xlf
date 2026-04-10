@@ -1245,10 +1245,6 @@
         <source xml:lang="en">Use this to do more customization of your app. Make sure to click Save and quit Reading App Builder before returning to Bloom.</source>
         <note>ID: PublishTab.Apps.SettingsDialog.RunRAB.Description</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.CustomizeButton.ValidationMessage" translate="no">
-        <source xml:lang="en">Some required settings are missing or invalid.</source>
-        <note>ID: PublishTab.Apps.CustomizeButton.ValidationMessage</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Apps.ShowApkInFileExplorer" translate="no">
         <source xml:lang="en">Show App (.apk) in File Explorer</source>
         <note>ID: PublishTab.Apps.ShowApkInFileExplorer</note>
