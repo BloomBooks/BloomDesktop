@@ -75,10 +75,11 @@ async function convertXmatterPageToCustom(page: HTMLElement): Promise<void> {
     BloomSourceBubbles.removeSourceBubbles(page);
 
     const contentElements = Array.from(
-        marginBox.querySelectorAll("[data-book], [data-derived]"),
+        marginBox.querySelectorAll<HTMLElement>("[data-book], [data-derived]"),
     );
     const newCanvasElements: HTMLElement[] = [];
     const newCeImages: HTMLElement[] = [];
+    const measurementHost = createMeasurementHost(marginBox);
 
     for (const elem of contentElements) {
         // If something was completely hidden on the source page (typically by a book setting),
@@ -106,6 +107,7 @@ async function convertXmatterPageToCustom(page: HTMLElement): Promise<void> {
         } else {
             let ceContent = elem;
             const baseSizeOn = elem;
+            let useContentBoundsSizing = false;
             if (elem.classList.contains("bloom-editable")) {
                 const tg = elem.parentElement;
                 if (!tg || !tg.classList.contains("bloom-translationGroup")) {
@@ -163,6 +165,7 @@ async function convertXmatterPageToCustom(page: HTMLElement): Promise<void> {
                 // until we finish the loop, so that nothing moves before we figure out
                 // where to put its new canvas element.
                 ceContent = elem.cloneNode(true) as HTMLElement;
+                useContentBoundsSizing = true;
             }
 
             preserveHintMetadata(elem as HTMLElement, ceContent as HTMLElement);
@@ -174,29 +177,43 @@ async function convertXmatterPageToCustom(page: HTMLElement): Promise<void> {
             newCe.classList.add(kCanvasElementClass);
             newCanvasElements.push(newCe);
             newCe.appendChild(ceContent);
-            // Before we move the tg, measure its size and make newCe match
-            // Review: do we need to add allowance for borders/margins/padding?
-            const baseComputedStyle = window.getComputedStyle(baseSizeOn);
-            const marginLeft =
-                Number.parseFloat(baseComputedStyle.marginLeft) || 0;
-            const marginRight =
-                Number.parseFloat(baseComputedStyle.marginRight) || 0;
-            const marginTop =
-                Number.parseFloat(baseComputedStyle.marginTop) || 0;
-            const marginBottom =
-                Number.parseFloat(baseComputedStyle.marginBottom) || 0;
-            newCe.style.width =
-                baseSizeOn.clientWidth + marginLeft + marginRight + "px";
-            newCe.style.height =
-                baseSizeOn.clientHeight + marginTop + marginBottom + "px";
-            // set its top and left to where it currently is relative to the page
-            const pageRect = page.getBoundingClientRect();
-            const tgRect = baseSizeOn.getBoundingClientRect();
-            const scale = EditableDivUtils.getPageScale();
-            newCe.style.left =
-                (tgRect.left - pageRect.left) / scale - marginLeft + "px";
-            newCe.style.top =
-                (tgRect.top - pageRect.top) / scale - marginTop + "px";
+
+            if (useContentBoundsSizing) {
+                setCanvasElementSizeAndPositionFromVisibleContent(
+                    newCe,
+                    ceContent,
+                    baseSizeOn,
+                    page,
+                    measurementHost,
+                );
+                // Once the CE itself is positioned/sized to account for source margins,
+                // keep the root converted content from adding an extra offset.
+                ceContent.style.margin = "0";
+            } else {
+                // Before we move the tg, measure its size and make newCe match
+                // Review: do we need to add allowance for borders/margins/padding?
+                const baseComputedStyle = window.getComputedStyle(baseSizeOn);
+                const marginLeft =
+                    Number.parseFloat(baseComputedStyle.marginLeft) || 0;
+                const marginRight =
+                    Number.parseFloat(baseComputedStyle.marginRight) || 0;
+                const marginTop =
+                    Number.parseFloat(baseComputedStyle.marginTop) || 0;
+                const marginBottom =
+                    Number.parseFloat(baseComputedStyle.marginBottom) || 0;
+                newCe.style.width =
+                    baseSizeOn.clientWidth + marginLeft + marginRight + "px";
+                newCe.style.height =
+                    baseSizeOn.clientHeight + marginTop + marginBottom + "px";
+                // set its top and left to where it currently is relative to the page
+                const pageRect = page.getBoundingClientRect();
+                const tgRect = baseSizeOn.getBoundingClientRect();
+                const scale = EditableDivUtils.getPageScale();
+                newCe.style.left =
+                    (tgRect.left - pageRect.left) / scale - marginLeft + "px";
+                newCe.style.top =
+                    (tgRect.top - pageRect.top) / scale - marginTop + "px";
+            }
         }
     }
     const mainCanvas = document.createElement("div");
@@ -221,11 +238,125 @@ async function convertXmatterPageToCustom(page: HTMLElement): Promise<void> {
         bubble.setBubbleSpec(bubbleSpec);
     }
 
+    measurementHost.remove();
     marginBox.innerHTML = ""; // remove all the existing content
     marginBox.appendChild(mainCanvas);
     // This needs to be after we measure positions of things!
     page.classList.add("bloom-customLayout");
     finishReactivatingPage(page);
+}
+
+function createMeasurementHost(parent: HTMLElement): HTMLElement {
+    const measurementHost = document.createElement("div");
+    measurementHost.style.position = "absolute";
+    measurementHost.style.left = "-100000px";
+    measurementHost.style.top = "-100000px";
+    measurementHost.style.visibility = "hidden";
+    measurementHost.style.pointerEvents = "none";
+    parent.appendChild(measurementHost);
+    return measurementHost;
+}
+
+/** Returns true if the element has any visible CSS border on any side. */
+function hasVisibleBorder(element: HTMLElement): boolean {
+    const style = window.getComputedStyle(element);
+    return ["top", "right", "bottom", "left"].some((side) => {
+        const width = parseFloat(
+            style.getPropertyValue(`border-${side}-width`),
+        );
+        const borderStyle = style.getPropertyValue(`border-${side}-style`);
+        return width > 0 && borderStyle !== "none" && borderStyle !== "hidden";
+    });
+}
+
+function getVisibleContentRect(element: HTMLElement): DOMRect {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    const rects: DOMRect[] = Array.from(range.getClientRects()).filter(
+        (rect) => rect.width > 0 && rect.height > 0,
+    );
+
+    // img elements need their full bounding rect included; the range-based approach
+    // may not fully account for all image area.
+    for (const img of Array.from(
+        element.querySelectorAll<HTMLElement>("img"),
+    )) {
+        const rect = img.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+            rects.push(rect);
+        }
+    }
+
+    // Elements with visible borders need their full border box included,
+    // since range rects only cover the content area inside the border.
+    for (const child of [
+        element,
+        ...Array.from(element.querySelectorAll<HTMLElement>("*")),
+    ]) {
+        if (hasVisibleBorder(child)) {
+            const rect = child.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+                rects.push(rect);
+            }
+        }
+    }
+
+    if (rects.length === 0) {
+        return element.getBoundingClientRect();
+    }
+
+    let left = rects[0].left;
+    let top = rects[0].top;
+    let right = rects[0].right;
+    let bottom = rects[0].bottom;
+    for (const rect of rects.slice(1)) {
+        left = Math.min(left, rect.left);
+        top = Math.min(top, rect.top);
+        right = Math.max(right, rect.right);
+        bottom = Math.max(bottom, rect.bottom);
+    }
+
+    return new DOMRect(left, top, right - left, bottom - top);
+}
+
+function setCanvasElementSizeAndPositionFromVisibleContent(
+    canvasElement: HTMLElement,
+    canvasContent: HTMLElement,
+    sourceElement: HTMLElement,
+    page: HTMLElement,
+    measurementHost: HTMLElement,
+): void {
+    const sourceContentRect = getVisibleContentRect(sourceElement);
+    const width = Math.max(1, Math.ceil(sourceContentRect.width));
+    const height = Math.max(1, Math.ceil(sourceContentRect.height));
+    canvasElement.style.width = `${width}px`;
+    canvasElement.style.height = `${height}px`;
+
+    const probeCanvasElement = document.createElement("div");
+    probeCanvasElement.classList.add(kCanvasElementClass);
+    probeCanvasElement.style.width = `${width}px`;
+    probeCanvasElement.style.height = `${height}px`;
+    const probeContent = canvasContent.cloneNode(true) as HTMLElement;
+    probeCanvasElement.appendChild(probeContent);
+    measurementHost.appendChild(probeCanvasElement);
+
+    const probeContentRect = getVisibleContentRect(probeContent);
+    const probeCanvasRect = probeCanvasElement.getBoundingClientRect();
+    const contentOffsetLeft = probeContentRect.left - probeCanvasRect.left;
+    const contentOffsetTop = probeContentRect.top - probeCanvasRect.top;
+
+    probeCanvasElement.remove();
+
+    const pageRect = page.getBoundingClientRect();
+    const scale = EditableDivUtils.getPageScale();
+    canvasElement.style.left =
+        (sourceContentRect.left - pageRect.left) / scale -
+        contentOffsetLeft +
+        "px";
+    canvasElement.style.top =
+        (sourceContentRect.top - pageRect.top) / scale -
+        contentOffsetTop +
+        "px";
 }
 
 async function getLanguageNameValues(): Promise<ILanguageNameValues> {
