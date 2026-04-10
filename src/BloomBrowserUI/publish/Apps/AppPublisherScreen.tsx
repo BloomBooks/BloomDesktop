@@ -288,8 +288,7 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                         `}
                     >
                         <Step expanded={true} completed={false}>
-                            <StepLabel>Prepare to make an app</StepLabel>
-                            <StepContent>
+                            <StepLabel>
                                 <AppActionButton
                                     enabled={canRunSetup}
                                     l10nKey="PublishTab.Apps.PrepareButton"
@@ -301,6 +300,8 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                                 >
                                     {setupButtonLabel}
                                 </AppActionButton>
+                            </StepLabel>
+                            <StepContent>
                                 <PrepareAppStepper
                                     steps={prepareSteps}
                                     activeStepId={activePrepareStepId}
@@ -439,8 +440,7 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                             </StepContent>
                         </Step>
                         <Step expanded={true} completed={false}>
-                            <StepLabel>Completed app</StepLabel>
-                            <StepContent>
+                            <StepLabel>
                                 <div
                                     css={css`
                                         display: flex;
@@ -449,46 +449,25 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                                         align-items: flex-start;
                                     `}
                                 >
-                                    <div
-                                        css={css`
-                                            display: flex;
-                                            flex-direction: column;
-                                        `}
+                                    <AppActionButton
+                                        enabled={canUseCurrentApk}
+                                        l10nKey="PublishTab.Apps.TryOnPhone"
+                                        onClick={() =>
+                                            screenState.runAction("install")
+                                        }
+                                        size="large"
+                                        tooltip={tryOnPhoneTooltip}
+                                        iconBeforeText={
+                                            <img
+                                                src={apkToPhoneIconUrl}
+                                                width={19}
+                                                height={14}
+                                                alt=""
+                                            />
+                                        }
                                     >
-                                        <AppActionButton
-                                            enabled={canUseCurrentApk}
-                                            l10nKey="PublishTab.Apps.TryOnPhone"
-                                            onClick={() =>
-                                                screenState.runAction("install")
-                                            }
-                                            size="large"
-                                            tooltip={tryOnPhoneTooltip}
-                                            iconBeforeText={
-                                                <img
-                                                    src={apkToPhoneIconUrl}
-                                                    width={19}
-                                                    height={14}
-                                                    alt=""
-                                                />
-                                            }
-                                        >
-                                            Try on phone
-                                        </AppActionButton>
-                                        <InlineProgressStatus
-                                            showProgress={
-                                                busyAction === "install" &&
-                                                !!currentProgressStageLabel
-                                            }
-                                            progressLabel={
-                                                busyAction === "install"
-                                                    ? currentProgressStageLabel
-                                                    : undefined
-                                            }
-                                            progressPercent={
-                                                screenState.progressPercent
-                                            }
-                                        />
-                                    </div>
+                                        Try on phone
+                                    </AppActionButton>
                                     <AppActionButton
                                         enabled={canUseCurrentApk}
                                         l10nKey="PublishTab.Apps.ShowApkInFileExplorer"
@@ -502,6 +481,22 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                                         {showApkInExplorer}
                                     </AppActionButton>
                                 </div>
+                            </StepLabel>
+                            <StepContent>
+                                <InlineProgressStatus
+                                    showProgress={
+                                        busyAction === "install" &&
+                                        !!currentProgressStageLabel
+                                    }
+                                    progressLabel={
+                                        busyAction === "install"
+                                            ? currentProgressStageLabel
+                                            : undefined
+                                    }
+                                    progressPercent={
+                                        screenState.progressPercent
+                                    }
+                                />
                                 {canUseCurrentApk &&
                                     screenState.status.apkExists &&
                                     (screenState.status.apkSizeBytes ?? 0) >

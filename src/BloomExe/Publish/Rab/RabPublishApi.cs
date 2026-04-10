@@ -52,6 +52,15 @@ namespace Bloom.Publish.Rab
                 request => request.ReplyWithJson(_rabProjectService.GetSizeEstimates()),
                 true
             );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "reset-bloompub-cache",
+                request =>
+                {
+                    _rabProjectService.ResetBloomPubCacheForScreenSession();
+                    request.PostSucceeded();
+                },
+                true
+            );
             apiHandler.RegisterAsyncEndpointHandler(
                 kApiUrlPart + "open",
                 async request =>

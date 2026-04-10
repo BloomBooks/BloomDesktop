@@ -68,6 +68,9 @@ namespace Bloom.Publish.Rab
         private readonly BloomWebSocketServer _webSocketServer;
         private readonly IWebSocketProgress _progress;
         private string _activeProgressAction;
+        private int _lastBuildProgressPercent;
+        private string _lastLoggedProgressStage;
+        private int? _lastLoggedProgressPercent;
 
         public RabProjectService(
             CollectionModel collectionModel,
@@ -112,6 +115,16 @@ namespace Bloom.Publish.Rab
         {
             Build();
             return Task.CompletedTask;
+        }
+
+        public void ResetBloomPubCacheForScreenSession()
+        {
+            var paths = GetPaths();
+            EnsureWorkspaceFolders(paths);
+            DeleteStaleBloomPubExports(
+                paths.BloomPubRoot,
+                new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            );
         }
 
         public Task InstallAsync()
@@ -415,7 +428,7 @@ namespace Bloom.Publish.Rab
                     var keystorePassword = GeneratePassword();
                     var keystorePath = Path.Combine(
                         paths.KeystoreRoot,
-                        GetProjectSlug() + ".keystore"
+                        MakeProjectSlug(GetAppName()) + ".keystore"
                     );
                     EnsureKeystore(keystorePath, keystorePassword);
 
@@ -578,10 +591,11 @@ namespace Bloom.Publish.Rab
 
         private void Build()
         {
-            // Build always refreshes BloomPUB inputs before invoking RAB so the APK matches the current collection state.
+            // Build reuses BloomPUBs created during the current Apps-screen session and regenerates only missing ones.
             var paths = GetPaths();
             EnsureWorkspaceFolders(paths);
             _activeProgressAction = "build";
+            _lastBuildProgressPercent = 0;
             try
             {
                 ReportProgressStage("preparing-build", 0);
@@ -592,7 +606,7 @@ namespace Bloom.Publish.Rab
                 var trackedBooks = ExportTrackedBooks(paths, state);
                 var supportFiles = EnsureProjectSupportFiles(paths);
 
-                ReportProgressStage("updating-project", 65);
+                ReportProgressStage("updating-project", 35);
                 _progress.MessageWithoutLocalizing(
                     "Updating the Reading App Builder project with fresh BloomPUB files..."
                 );
@@ -605,7 +619,7 @@ namespace Bloom.Publish.Rab
                 state.Books = trackedBooks;
                 SaveState(paths, state);
 
-                ReportProgressStage("building-android-app", 80);
+                ReportProgressStage("building-android-app", 45);
                 _progress.MessageWithoutLocalizing(
                     "Building the Android app with Reading App Builder...",
                     ProgressKind.Heading
@@ -621,7 +635,7 @@ namespace Bloom.Publish.Rab
                     paths.RabRoot
                 );
 
-                ReportProgressStage("finalizing-apk", 95);
+                ReportProgressStage("finalizing-apk", 98);
                 var apkPath = FindLatestApkPath(paths);
                 if (string.IsNullOrEmpty(apkPath))
                 {
@@ -730,14 +744,6 @@ namespace Bloom.Publish.Rab
             return new RabWorkspacePaths(collectionRoot);
         }
 
-        internal virtual string GetProjectSlug()
-        {
-            var baseName = string.IsNullOrWhiteSpace(_collectionSettings.CollectionName)
-                ? Path.GetFileName(_collectionModel.TheOneEditableCollection.PathToDirectory)
-                : _collectionSettings.CollectionName;
-            return MakeProjectSlug(baseName);
-        }
-
         internal virtual string GetAppName()
         {
             return string.IsNullOrWhiteSpace(_collectionSettings.CollectionName)
@@ -747,7 +753,7 @@ namespace Bloom.Publish.Rab
 
         internal virtual string GetPackageName()
         {
-            return MakeDefaultPackageName(GetProjectSlug(), _collectionSettings?.Language1Tag);
+            return MakeDefaultPackageName("stories", _collectionSettings?.Language1Tag);
         }
 
         internal static string MakeDefaultPackageName(string projectSlug, string language1Tag)
@@ -1007,12 +1013,27 @@ namespace Bloom.Publish.Rab
                         bookInfo.FolderName + BloomPubMaker.BloomPubExtensionWithDot
                     );
 
-                _progress.MessageWithoutLocalizing($"Creating BloomPUB for {bookTitle}...");
-                var settings = BloomPubPublishSettings.GetPublishSettingsForBook(
-                    _bookServer,
-                    bookInfo
-                );
-                BloomPubMaker.CreateBloomPub(settings, bloomPubPath, book, _bookServer, _progress);
+                if (RobustFile.Exists(bloomPubPath))
+                {
+                    _progress.MessageWithoutLocalizing(
+                        $"Reusing existing BloomPUB for {bookTitle}..."
+                    );
+                }
+                else
+                {
+                    _progress.MessageWithoutLocalizing($"Creating BloomPUB for {bookTitle}...");
+                    var settings = BloomPubPublishSettings.GetPublishSettingsForBook(
+                        _bookServer,
+                        bookInfo
+                    );
+                    BloomPubMaker.CreateBloomPub(
+                        settings,
+                        bloomPubPath,
+                        book,
+                        _bookServer,
+                        _progress
+                    );
+                }
                 ReportBloomPubStageProgress(index + 1, booksToExport.Count);
 
                 exportedBooks.Add(
@@ -1054,8 +1075,19 @@ namespace Bloom.Publish.Rab
 
         private void ReportProgressStage(string stage, int percent)
         {
+            var clampedPercent = Math.Max(0, Math.Min(100, percent));
             _progress.SendStage(stage);
-            _progress.SendPercent(Math.Max(0, Math.Min(100, percent)));
+            _progress.SendPercent(clampedPercent);
+
+            if (
+                !string.Equals(stage, _lastLoggedProgressStage, StringComparison.Ordinal)
+                || _lastLoggedProgressPercent != clampedPercent
+            )
+            {
+                _progress.MessageWithoutLocalizing($"Progress: {stage} ({clampedPercent}%)");
+                _lastLoggedProgressStage = stage;
+                _lastLoggedProgressPercent = clampedPercent;
+            }
         }
 
         private void ReportBloomPubStageProgress(int completedBooks, int totalBooks)
@@ -1065,13 +1097,111 @@ namespace Bloom.Publish.Rab
 
             // Keep the setup/build progress bar moving during per-book export work instead of jumping straight to the next stage.
             var startPercent = _activeProgressAction == "build" ? 10 : 10;
-            var endPercent = _activeProgressAction == "build" ? 55 : 45;
+            var endPercent = _activeProgressAction == "build" ? 30 : 45;
             var percent =
                 startPercent
                 + (int)
                     Math.Round((endPercent - startPercent) * completedBooks / (double)totalBooks);
 
             ReportProgressStage("exporting-bloompubs", percent);
+        }
+
+        private static readonly (string Marker, int Percent)[] kBuildOutputMilestones =
+        {
+            ("*** Building Android app ***", 45),
+            ("*** Setting paths ***", 47),
+            ("*** JDK ***", 49),
+            ("*** Android SDK ***", 51),
+            ("*** Compiling Android APK ***", 55),
+            ("BUILD SUCCESSFUL", 97),
+        };
+
+        private static readonly (string TaskName, int Percent)[] kGradleTaskMilestones =
+        {
+            ("mergeReleaseNativeLibs", 58),
+            ("generateReleaseResources", 60),
+            ("mergeReleaseResources", 63),
+            ("compressReleaseAssets", 66),
+            ("processReleaseResources", 68),
+            ("compileReleaseJavaWithJavac", 70),
+            ("minifyReleaseWithR8", 85),
+            ("compileReleaseArtProfile", 95),
+            ("packageRelease", 96),
+            ("assembleRelease", 97),
+        };
+
+        internal void ReportProcessOutputLine(
+            string line,
+            ProgressKind kind = ProgressKind.Progress,
+            string commandArguments = null
+        )
+        {
+            if (string.IsNullOrWhiteSpace(line))
+                return;
+
+            TryAdvanceBuildProgressFromOutput(line, commandArguments);
+            _progress.MessageWithoutLocalizing(FormatTimestampedLogLine(line), kind);
+        }
+
+        private static string FormatTimestampedLogLine(string line)
+        {
+            return $"[{DateTime.Now:HH:mm:ss.fff}] {line}";
+        }
+
+        private void TryAdvanceBuildProgressFromOutput(string line, string commandArguments)
+        {
+            if (_activeProgressAction != "build")
+                return;
+
+            if (string.IsNullOrWhiteSpace(commandArguments) || !commandArguments.Contains("-build"))
+                return;
+
+            var progressPercent = GetBuildProgressPercentFromOutput(line);
+            if (!progressPercent.HasValue || progressPercent.Value <= _lastBuildProgressPercent)
+                return;
+
+            _lastBuildProgressPercent = progressPercent.Value;
+            ReportProgressStage("building-android-app", progressPercent.Value);
+        }
+
+        internal static int? GetBuildProgressPercentFromOutput(string line)
+        {
+            if (string.IsNullOrWhiteSpace(line))
+                return null;
+
+            if (TryGetGradleTaskName(line, out var taskName))
+            {
+                foreach (var milestone in kGradleTaskMilestones)
+                {
+                    if (string.Equals(taskName, milestone.TaskName, StringComparison.Ordinal))
+                        return milestone.Percent;
+                }
+            }
+
+            foreach (var milestone in kBuildOutputMilestones)
+            {
+                if (!line.Contains(milestone.Marker, StringComparison.Ordinal))
+                    continue;
+
+                return milestone.Percent;
+            }
+
+            return null;
+        }
+
+        private static bool TryGetGradleTaskName(string line, out string taskName)
+        {
+            taskName = null;
+            var prefix = "> Task :";
+            if (!line.StartsWith(prefix, StringComparison.Ordinal))
+                return false;
+
+            var suffixStart = line.IndexOf(' ', prefix.Length);
+            taskName =
+                suffixStart >= 0
+                    ? line.Substring(prefix.Length, suffixStart - prefix.Length)
+                    : line.Substring(prefix.Length);
+            return !string.IsNullOrWhiteSpace(taskName);
         }
 
         private string GetBookTitleForRab(global::Bloom.Book.Book book, BookInfo bookInfo)
@@ -1116,19 +1246,15 @@ namespace Bloom.Publish.Rab
 
             var metadata = currentBook?.GetLicenseMetadata();
             var lines = new List<string>();
-            var copyrightNotice = settings?.Copyright;
-            if (string.IsNullOrWhiteSpace(copyrightNotice))
-                copyrightNotice = metadata?.CopyrightNotice;
-            if (string.IsNullOrWhiteSpace(copyrightNotice))
-                copyrightNotice = currentBook?.BookInfo?.Copyright;
 
             if (!string.IsNullOrWhiteSpace(settings?.AppName))
                 lines.Add(settings.AppName);
-            if (!string.IsNullOrWhiteSpace(copyrightNotice))
-                lines.Add(copyrightNotice);
-            if (!string.IsNullOrWhiteSpace(metadata?.License?.RightsStatement))
-                lines.Add(metadata.License.RightsStatement);
-            lines.Add("Created with Bloom.");
+
+            var url = "https://bloomlibrary.org/language:" + _collectionSettings?.Language1Tag;
+
+            lines.Add(
+                $"Created with Bloom. Get more books in this language at [BloomLibrary.org]({url})"
+            );
 
             return string.Join(
                 Environment.NewLine + Environment.NewLine,
@@ -1429,7 +1555,7 @@ namespace Bloom.Publish.Rab
             IReadOnlyDictionary<string, string> environmentVariables = null
         )
         {
-            _progress.MessageWithoutLocalizing($"> {Path.GetFileName(fileName)} {arguments}");
+            ReportProcessOutputLine($"> {Path.GetFileName(fileName)} {arguments}");
 
             using (var process = new Process())
             {
@@ -1454,12 +1580,12 @@ namespace Bloom.Publish.Rab
                 process.OutputDataReceived += (sender, args) =>
                 {
                     if (!string.IsNullOrWhiteSpace(args.Data))
-                        _progress.MessageWithoutLocalizing(args.Data);
+                        ReportProcessOutputLine(args.Data, ProgressKind.Progress, arguments);
                 };
                 process.ErrorDataReceived += (sender, args) =>
                 {
                     if (!string.IsNullOrWhiteSpace(args.Data))
-                        _progress.MessageWithoutLocalizing(args.Data, ProgressKind.Warning);
+                        ReportProcessOutputLine(args.Data, ProgressKind.Warning, arguments);
                 };
 
                 if (!process.Start())

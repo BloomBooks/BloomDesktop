@@ -184,11 +184,6 @@ namespace BloomTests.Publish.Rab
                 return _paths;
             }
 
-            internal override string GetProjectSlug()
-            {
-                return "rab-manual-test-app";
-            }
-
             internal override string GetAppName()
             {
                 return "RAB Manual Test App";
@@ -196,7 +191,7 @@ namespace BloomTests.Publish.Rab
 
             internal override string GetPackageName()
             {
-                return MakePackageName(GetProjectSlug());
+                return MakeDefaultPackageName("stories", null);
             }
 
             internal override List<RabBookPublishInfo> ExportSetupBooks(RabWorkspacePaths paths)

@@ -160,14 +160,16 @@ export function useAppBuilderPublisherScreen(
     }
 
     // This effect is warranted because tab activation is an external UI lifecycle boundary,
-    // and we need to re-read the RAB project whenever the Apps screen becomes active.
+    // and we need to reset the ephemeral BloomPUB cache plus re-read the RAB project whenever the Apps screen becomes active.
     React.useEffect(() => {
         if (!isActive) {
             return;
         }
 
-        void refreshStatus();
-        refreshSizeEstimates();
+        void postData("publish/rab/reset-bloompub-cache", {}).then(() => {
+            void refreshStatus();
+            refreshSizeEstimates();
+        });
     }, [isActive]);
 
     // This effect is warranted because returning from Reading App Builder restores browser focus,
