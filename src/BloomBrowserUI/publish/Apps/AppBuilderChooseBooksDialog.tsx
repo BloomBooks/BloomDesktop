@@ -17,7 +17,7 @@ import {
     Link as BookSelectionLink,
 } from "../../react_components/BookGridSetup/BookLinkTypes";
 import { useL10n } from "../../react_components/l10nHooks";
-import { postJson, useWatchApiData } from "../../utils/bloomApi";
+import { postJsonAsync, useWatchApiData } from "../../utils/bloomApi";
 import {
     EstimatedAppSizeIndicator,
     IAppSizeEstimates,
@@ -70,7 +70,7 @@ export const AppBuilderChooseBooksDialog: React.FunctionComponent<{
 
     async function saveBooks(): Promise<void> {
         // Preserve the UI order; RAB should show books in the same sequence the user chose here.
-        await postJson(
+        await postJsonAsync(
             "publish/rab/books",
             selectedLinks.map((link) => ({
                 bookId: link.book.id,

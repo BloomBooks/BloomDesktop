@@ -335,8 +335,11 @@ export const AppBuilderSettingsDialog: React.FunctionComponent<{
             return settings;
         }
 
-        const { openReadingAppBuilder, ...settingsToSave } = normalizedSettings;
-        void openReadingAppBuilder;
+        // Configr stores this button field alongside the form state, but it should never be saved to appDef-backed settings.
+        const {
+            openReadingAppBuilder: _openReadingAppBuilder,
+            ...settingsToSave
+        } = normalizedSettings;
 
         return settingsToSave as IAppBuilderAppSettings;
     }

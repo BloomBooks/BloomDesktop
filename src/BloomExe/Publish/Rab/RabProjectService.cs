@@ -1675,6 +1675,26 @@ namespace Bloom.Publish.Rab
             );
         }
 
+        private string RedactSensitiveProcessArguments(string arguments)
+        {
+            if (string.IsNullOrWhiteSpace(arguments))
+                return arguments;
+
+            // Keep the process log readable without exposing signing credentials in progress output.
+            var redactedArguments = arguments;
+
+            foreach (var flag in new[] { "-ksp", "-kap", "-storepass", "-keypass" })
+            {
+                redactedArguments = Regex.Replace(
+                    redactedArguments,
+                    $@"{Regex.Escape(flag)}\s+(""(?:\\""|[^""])*""|\S+)",
+                    $"{flag} \"***\""
+                );
+            }
+
+            return redactedArguments;
+        }
+
         private void AddProjectConfigurationArguments(
             List<string> arguments,
             RabPrepareState state,
@@ -1752,7 +1772,9 @@ namespace Bloom.Publish.Rab
             IReadOnlyDictionary<string, string> environmentVariables = null
         )
         {
-            ReportProcessOutputLine($"> {Path.GetFileName(fileName)} {arguments}");
+            ReportProcessOutputLine(
+                $"> {Path.GetFileName(fileName)} {RedactSensitiveProcessArguments(arguments)}"
+            );
 
             using (var process = new Process())
             {
@@ -1834,7 +1856,9 @@ namespace Bloom.Publish.Rab
             IReadOnlyDictionary<string, string> environmentVariables = null
         )
         {
-            ReportProcessOutputLine($"> {Path.GetFileName(fileName)} {arguments}");
+            ReportProcessOutputLine(
+                $"> {Path.GetFileName(fileName)} {RedactSensitiveProcessArguments(arguments)}"
+            );
 
             var outputLines = new List<string>();
             var syncRoot = new object();
