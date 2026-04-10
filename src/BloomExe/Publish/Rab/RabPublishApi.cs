@@ -25,8 +25,8 @@ namespace Bloom.Publish.Rab
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "app-settings",
-                request => request.ReplyWithJson(_rabProjectService.GetAppSettings()),
+                kApiUrlPart + "default-settings",
+                request => request.ReplyWithJson(_rabProjectService.GetDefaultSettings()),
                 true
             );
             apiHandler.RegisterEndpointHandler(

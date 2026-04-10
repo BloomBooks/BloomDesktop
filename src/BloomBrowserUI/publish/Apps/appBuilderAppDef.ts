@@ -51,7 +51,7 @@ export interface IAppBuilderSettingsValidationIssues {
     about?: "required";
 }
 
-export const kDefaultAppBuilderIconId = "bloom-app-icon-21";
+export const kDefaultAppBuilderIconId = "bloom-app-icon-52";
 
 export const defaultSettings: IAppBuilderAppSettings = {
     appName: "",
@@ -103,20 +103,72 @@ const kLauncherIconDefinitions = [
     },
 ];
 
-export function normalizeSettings(
+function firstNonEmpty(...values: Array<string | undefined>): string {
+    return values.find((value) => !!value && value.trim().length > 0) ?? "";
+}
+
+function normalizeApiSettings(
     settings?: IAppBuilderAppSettingsApi,
 ): IAppBuilderAppSettings {
     return {
-        appName: settings?.appName ?? settings?.AppName ?? "",
-        colorScheme:
-            settings?.colorScheme ??
-            settings?.ColorScheme ??
+        appName: firstNonEmpty(settings?.appName, settings?.AppName),
+        colorScheme: firstNonEmpty(
+            settings?.colorScheme,
+            settings?.ColorScheme,
             defaultSettings.colorScheme,
-        packageName: settings?.packageName ?? settings?.PackageName ?? "",
-        iconPath: settings?.iconPath ?? settings?.IconPath ?? "",
-        copyright: settings?.copyright ?? settings?.Copyright ?? "",
-        about: settings?.about ?? settings?.About ?? "",
+        ),
+        packageName: firstNonEmpty(
+            settings?.packageName,
+            settings?.PackageName,
+        ),
+        iconPath: firstNonEmpty(settings?.iconPath, settings?.IconPath),
+        copyright: firstNonEmpty(settings?.copyright, settings?.Copyright),
+        about: firstNonEmpty(settings?.about, settings?.About),
     };
+}
+
+function mergeSettings(
+    preferredSettings: IAppBuilderAppSettings,
+    fallbackSettings: IAppBuilderAppSettings,
+): IAppBuilderAppSettings {
+    return {
+        appName: firstNonEmpty(
+            preferredSettings.appName,
+            fallbackSettings.appName,
+        ),
+        colorScheme: firstNonEmpty(
+            preferredSettings.colorScheme,
+            fallbackSettings.colorScheme,
+            defaultSettings.colorScheme,
+        ),
+        packageName: firstNonEmpty(
+            preferredSettings.packageName,
+            fallbackSettings.packageName,
+        ),
+        iconPath: firstNonEmpty(
+            preferredSettings.iconPath,
+            fallbackSettings.iconPath,
+        ),
+        copyright: firstNonEmpty(
+            preferredSettings.copyright,
+            fallbackSettings.copyright,
+        ),
+        about: firstNonEmpty(preferredSettings.about, fallbackSettings.about),
+    };
+}
+
+function settingsAreEqual(
+    left: IAppBuilderAppSettings,
+    right: IAppBuilderAppSettings,
+): boolean {
+    return (
+        left.appName === right.appName &&
+        left.colorScheme === right.colorScheme &&
+        left.packageName === right.packageName &&
+        left.iconPath === right.iconPath &&
+        left.copyright === right.copyright &&
+        left.about === right.about
+    );
 }
 
 export function getAppBuilderSettingsFromAppDef(
@@ -125,10 +177,7 @@ export function getAppBuilderSettingsFromAppDef(
 ): IAppBuilderAppSettings {
     const appDefDocument = parseAppDefDocument(appDefContents);
     return {
-        appName:
-            getDefaultAppName(appDefDocument) ??
-            getSingleElementText(appDefDocument, "project-name") ??
-            "",
+        appName: getDefaultAppName(appDefDocument) ?? "",
         colorScheme:
             getColorSchemeName(appDefDocument) ?? defaultSettings.colorScheme,
         packageName: getSingleElementText(appDefDocument, "package") ?? "",
@@ -274,13 +323,48 @@ export async function fetchAppBuilderSettings(
         return defaultSettings;
     }
 
-    const response = await getWithPromise("publish/rab/app-settings");
+    const [appDefResponse, about] = await Promise.all([
+        postJsonAsync("fileIO/readFile", {
+            path: appDefPath,
+        }),
+        fetchAppBuilderAboutText(appDefPath),
+    ]);
+    if (typeof appDefResponse?.data !== "string") {
+        throw new Error(
+            "Bloom could not read the Reading App Builder app definition.",
+        );
+    }
+
+    return {
+        ...getAppBuilderSettingsFromAppDef(appDefPath, appDefResponse.data),
+        about,
+    };
+}
+
+export async function fetchDefaultAppBuilderSettings(): Promise<IAppBuilderAppSettings> {
+    const response = await getWithPromise("publish/rab/default-settings");
     const rawSettings =
         typeof response?.data === "string"
             ? (JSON.parse(response.data) as unknown)
             : response?.data;
 
-    return normalizeSettings(rawSettings as IAppBuilderAppSettingsApi);
+    return normalizeApiSettings(rawSettings as IAppBuilderAppSettingsApi);
+}
+
+export async function initializeAppBuilderSettings(
+    appDefPath: string,
+): Promise<IAppBuilderAppSettings> {
+    const [rawSettings, defaultAppSettings] = await Promise.all([
+        fetchAppBuilderSettings(appDefPath),
+        fetchDefaultAppBuilderSettings(),
+    ]);
+    const initializedSettings = mergeSettings(rawSettings, defaultAppSettings);
+
+    if (!settingsAreEqual(rawSettings, initializedSettings)) {
+        await saveAppBuilderSettings(appDefPath, initializedSettings);
+    }
+
+    return initializedSettings;
 }
 
 export function refreshAppBuilderSettings(
@@ -663,16 +747,18 @@ function getProjectDataFolder(appDefPath: string): string {
 
 export function getAboutTextPath(appDefPath: string): string {
     return joinWindowsPath(
-        getAppConfigurationRoot(appDefPath),
+        getBloomAppDataRoot(appDefPath),
         "project-assets",
         "about.txt",
     );
 }
 
-function getAppConfigurationRoot(appDefPath: string): string {
+function getBloomAppDataRoot(appDefPath: string): string {
     const normalizedPath = appDefPath.replace(/[\\/]+/g, "\\");
-    const marker = "\\app configuration\\";
-    const markerIndex = normalizedPath.toLowerCase().lastIndexOf(marker);
+    const marker = "\\Bloom App Data\\";
+    const markerIndex = normalizedPath
+        .toLowerCase()
+        .lastIndexOf(marker.toLowerCase());
     if (markerIndex >= 0) {
         return normalizedPath.substring(0, markerIndex + marker.length - 1);
     }

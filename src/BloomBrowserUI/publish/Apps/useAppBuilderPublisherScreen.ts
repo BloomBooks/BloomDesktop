@@ -1,5 +1,5 @@
 import * as React from "react";
-import { get, postData, postJson } from "../../utils/bloomApi";
+import { get, getWithPromise, postData, postJson } from "../../utils/bloomApi";
 import {
     IBloomWebSocketProgressEvent,
     useSubscribeToWebSocketForEvent,
@@ -13,6 +13,7 @@ import {
     defaultStatus,
     getProgressStageCodeFromMessage,
     IAppBuilderStatus,
+    IAppBuilderStatusApi,
     IAppBuilderSizeEstimatesApi,
     kAppBuilderWebSocketContext,
     normalizeSizeEstimates,
@@ -23,6 +24,7 @@ import {
     defaultSettings,
     hasRequiredBuildSettings,
     IAppBuilderAppSettings,
+    initializeAppBuilderSettings,
     refreshAppBuilderSettings,
 } from "./appBuilderAppDef";
 import { IAppSizeEstimates } from "./AppSizeIndicator";
@@ -61,6 +63,7 @@ export function useAppBuilderPublisherScreen(
     const [pendingBuildNeeded, setPendingBuildNeeded] = React.useState(false);
     const [rawSizeEstimates, setRawSizeEstimates] =
         React.useState<IAppBuilderSizeEstimatesApi>({});
+    const statusRetryTimeoutRef = React.useRef<number>();
     const sizeEstimates = normalizeSizeEstimates(rawSizeEstimates);
 
     useSubscribeToWebSocketForStringMessage(
@@ -105,12 +108,55 @@ export function useAppBuilderPublisherScreen(
         refreshAppBuilderSettings(setSettings, appDefPath);
     }
 
-    function refreshStatus(): void {
-        get("publish/rab/status", (result) => {
-            const nextStatus = normalizeStatus(result.data);
+    async function fetchStatusAsync(): Promise<IAppBuilderStatus> {
+        const response = await getWithPromise("publish/rab/status");
+        if (!response) {
+            throw new Error(
+                "Bloom could not read the Reading App Builder status.",
+            );
+        }
+        const rawStatus =
+            typeof response?.data === "string"
+                ? (JSON.parse(response.data) as unknown)
+                : response?.data;
+
+        return normalizeStatus(rawStatus as IAppBuilderStatusApi);
+    }
+
+    async function refreshStatus(
+        initializeSettingsAfterSetup: boolean = false,
+    ): Promise<void> {
+        try {
+            const nextStatus = await fetchStatusAsync();
+            if (statusRetryTimeoutRef.current !== undefined) {
+                window.clearTimeout(statusRetryTimeoutRef.current);
+                statusRetryTimeoutRef.current = undefined;
+            }
             setStatus(nextStatus);
+
+            if (initializeSettingsAfterSetup && nextStatus.appDefPath) {
+                const initializedSettings = await initializeAppBuilderSettings(
+                    nextStatus.appDefPath,
+                );
+                setSettings(initializedSettings);
+
+                const refreshedStatus = await fetchStatusAsync();
+                setStatus(refreshedStatus);
+                return;
+            }
+
             refreshSettings(nextStatus.appDefPath);
-        });
+        } catch {
+            if (statusRetryTimeoutRef.current !== undefined) {
+                window.clearTimeout(statusRetryTimeoutRef.current);
+            }
+
+            if (isActive) {
+                statusRetryTimeoutRef.current = window.setTimeout(() => {
+                    void refreshStatus(initializeSettingsAfterSetup);
+                }, 1000);
+            }
+        }
     }
 
     // This effect is warranted because tab activation is an external UI lifecycle boundary,
@@ -120,7 +166,7 @@ export function useAppBuilderPublisherScreen(
             return;
         }
 
-        refreshStatus();
+        void refreshStatus();
         refreshSizeEstimates();
     }, [isActive]);
 
@@ -132,7 +178,7 @@ export function useAppBuilderPublisherScreen(
                 return;
             }
 
-            refreshStatus();
+            void refreshStatus();
             refreshSizeEstimates();
         };
 
@@ -141,6 +187,15 @@ export function useAppBuilderPublisherScreen(
             window.removeEventListener("focus", handleWindowFocus);
         };
     }, [isActive]);
+
+    // This effect is warranted because the retry timer is an external browser resource that must be cleared on unmount.
+    React.useEffect(() => {
+        return () => {
+            if (statusRetryTimeoutRef.current !== undefined) {
+                window.clearTimeout(statusRetryTimeoutRef.current);
+            }
+        };
+    }, []);
 
     function getActionLogController(
         action: AppBuilderAction,
@@ -153,6 +208,20 @@ export function useAppBuilderPublisherScreen(
             case "install":
                 return installLog;
         }
+    }
+
+    async function handleActionCompleted(
+        action: AppBuilderAction,
+        initializeSettingsAfterSetup: boolean,
+    ): Promise<void> {
+        setProgressPercent(0);
+        setProgressStageCode(undefined);
+        if (action === "setup" || action === "build") {
+            setPendingBuildNeeded(false);
+            refreshSizeEstimates();
+        }
+        await refreshStatus(initializeSettingsAfterSetup);
+        setBusyAction(undefined);
     }
 
     function runAction(action: AppBuilderAction): void {
@@ -178,20 +247,10 @@ export function useAppBuilderPublisherScreen(
             `publish/rab/${action}`,
             {},
             () => {
-                setBusyAction(undefined);
-                setProgressPercent(0);
-                setProgressStageCode(undefined);
-                if (action === "setup" || action === "build") {
-                    setPendingBuildNeeded(false);
-                    refreshSizeEstimates();
-                }
-                refreshStatus();
+                void handleActionCompleted(action, action === "setup");
             },
             () => {
-                setBusyAction(undefined);
-                setProgressPercent(0);
-                setProgressStageCode(undefined);
-                refreshStatus();
+                void handleActionCompleted(action, false);
             },
         );
     }
@@ -206,7 +265,7 @@ export function useAppBuilderPublisherScreen(
 
     function markConfigurationChanged(): void {
         setPendingBuildNeeded(true);
-        refreshStatus();
+        void refreshStatus();
     }
 
     return {

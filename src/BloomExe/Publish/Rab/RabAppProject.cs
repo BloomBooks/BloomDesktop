@@ -503,7 +503,9 @@ namespace Bloom.Publish.Rab
                 Element = element;
                 FamilyId = (string)element.Attribute("family") ?? string.Empty;
                 DisplayName = (string)element.Element("display-name") ?? string.Empty;
-                BaseFontName = GetBaseFontName((string)element.Element("font-name") ?? string.Empty);
+                BaseFontName = GetBaseFontName(
+                    (string)element.Element("font-name") ?? string.Empty
+                );
             }
 
             public XElement Element { get; }

@@ -1,5 +1,6 @@
 import { css } from "@emotion/react";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
+import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing";
 import SettingsIcon from "@mui/icons-material/Settings";
 import {
     Step,
@@ -85,8 +86,8 @@ const AppPublisherScreenContents: React.FunctionComponent<{
     const [showChooseBooksDialog, setShowChooseBooksDialog] =
         React.useState(false);
     const setupTooltip = useL10n(
-        "Create the Reading App Builder project in this collection's app configuration folder.",
-        "PublishTab.Apps.Setup.Tooltip",
+        "Create the Reading App Builder project in this collection's Bloom App Data folder.",
+        "PublishTab.Apps.Setup.TooltipBloomAppData",
     );
     const setupDoneTooltip = useL10n(
         "The Reading App Builder project is already set up for this collection.",
@@ -200,14 +201,6 @@ const AppPublisherScreenContents: React.FunctionComponent<{
         "Create project",
         "PublishTab.Apps.PrepareStepper.ProjectCreated",
     );
-    const prepareWorkingOnLabel = useL10n(
-        "Working on: ",
-        "PublishTab.Apps.PrepareStepper.WorkingOn",
-    );
-    const prepareIncompleteLabel = useL10n(
-        "Finish the remaining prepare steps to build the app.",
-        "PublishTab.Apps.PrepareStepper.Incomplete",
-    );
     const rabInstalled = screenState.status.rabInstalled;
     const prepareIsReady = arePrepareStepsComplete(
         screenState.status.prepareSteps,
@@ -312,8 +305,6 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                                     steps={prepareSteps}
                                     activeStepId={activePrepareStepId}
                                     isBusy={busyAction === "setup"}
-                                    workingOnLabel={prepareWorkingOnLabel}
-                                    incompleteLabel={prepareIncompleteLabel}
                                 />
                                 <ActionLogAccordion
                                     controller={screenState.setupLog}
@@ -413,6 +404,9 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                                     }
                                     size="large"
                                     tooltip={buildTooltipToShow}
+                                    iconBeforeText={
+                                        <PrecisionManufacturingIcon />
+                                    }
                                 >
                                     Build
                                 </AppActionButton>

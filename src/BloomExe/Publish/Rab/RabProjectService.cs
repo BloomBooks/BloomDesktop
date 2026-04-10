@@ -39,6 +39,7 @@ namespace Bloom.Publish.Rab
         private const int kUserCanceledShellLaunchErrorCode = 1223;
         private const string kRabSetupInstallerPrefix = "Reading-App-Builder-14.0";
         private const string kRabSetupInstallerSuffix = "-Setup.exe";
+        private const string kDefaultBundledIconId = "bloom-app-icon-52";
         private const string kRabSetupDownloadUrl =
             "https://drive.google.com/file/d/1LjWaGg1IMeB9Y8aK5It2RDmKmFNnrL3l/view?usp=drive_link";
         private const string kRabSetupLanguage = "en";
@@ -123,6 +124,11 @@ namespace Bloom.Publish.Rab
         {
             var paths = GetPaths();
             return GetEffectiveAppSettings(paths);
+        }
+
+        public RabAppSettings GetDefaultSettings()
+        {
+            return GetDefaultAppSettings();
         }
 
         public IReadOnlyCollection<RabIconChoice> GetAvailableIconChoices()
@@ -631,7 +637,7 @@ namespace Bloom.Publish.Rab
                         .ToArray();
 
                     throw new ApplicationException(
-                        "Reading App Builder finished without producing an APK in the collection's app configuration folder. "
+                        "Reading App Builder finished without producing an APK in the collection's Bloom App Data folder. "
                             + $"Searched roots: {string.Join(", ", searchRoots)}. "
                             + $"APK candidates found: {string.Join(", ", apkCandidates)}"
                     );
@@ -721,18 +727,7 @@ namespace Bloom.Publish.Rab
         internal virtual RabWorkspacePaths GetPaths()
         {
             var collectionRoot = _collectionModel.TheOneEditableCollection.PathToDirectory;
-            var paths = new RabWorkspacePaths(collectionRoot);
-            MigrateLegacyRabFolder(collectionRoot, paths.RabRoot);
-            return paths;
-        }
-
-        private void MigrateLegacyRabFolder(string collectionRoot, string currentRabRoot)
-        {
-            var legacyRabRoot = Path.Combine(collectionRoot, "rab");
-            if (!Directory.Exists(legacyRabRoot) || Directory.Exists(currentRabRoot))
-                return;
-
-            RobustIO.MoveDirectory(legacyRabRoot, currentRabRoot);
+            return new RabWorkspacePaths(collectionRoot);
         }
 
         internal virtual string GetProjectSlug()
@@ -1145,14 +1140,6 @@ namespace Bloom.Publish.Rab
         {
             var iconSourcePath = settings?.IconPath;
 
-            if (string.IsNullOrWhiteSpace(iconSourcePath))
-            {
-                iconSourcePath = Path.Combine(
-                    BloomFileLocator.GetBrandingFolder("shared"),
-                    "bloom-icon.png"
-                );
-            }
-
             if (!RobustFile.Exists(iconSourcePath))
                 throw new ApplicationException(
                     $"Bloom could not find the Reading App Builder icon source: {iconSourcePath}"
@@ -1548,6 +1535,16 @@ namespace Bloom.Publish.Rab
 
             var sourceRoot = Path.Combine(applicationRoot, "DistFiles", "appbuilder-icons");
             return Directory.Exists(sourceRoot) ? sourceRoot : null;
+        }
+
+        private string GetDefaultBundledIconPath()
+        {
+            var bundledIconRoot = GetBundledIconRoot();
+            if (string.IsNullOrWhiteSpace(bundledIconRoot))
+                return string.Empty;
+
+            var iconPath = Path.Combine(bundledIconRoot, kDefaultBundledIconId + ".png");
+            return RobustFile.Exists(iconPath) ? iconPath : string.Empty;
         }
 
         internal virtual string FindRabSetupInstallerPath()
@@ -2124,13 +2121,25 @@ namespace Bloom.Publish.Rab
             RabAppSettings settings
         )
         {
-            var mergedSettings = MergeSettings(settings, null, GetDefaultAppSettings());
+            var mergedSettings = NormalizeSettingsForComparison(settings);
             mergedSettings.AppName = mergedSettings.AppName?.Trim();
             mergedSettings.ColorScheme = mergedSettings.ColorScheme?.Trim();
             mergedSettings.PackageName = mergedSettings.PackageName?.Trim();
             mergedSettings.Copyright = mergedSettings.Copyright?.Trim();
             mergedSettings.About = mergedSettings.About?.Trim();
             mergedSettings.IconPath = NormalizeIconPath(paths, mergedSettings.IconPath?.Trim());
+            return mergedSettings;
+        }
+
+        private RabAppSettings NormalizeSettingsForComparison(RabAppSettings settings)
+        {
+            var mergedSettings = MergeSettings(settings, null, GetDefaultAppSettings());
+            mergedSettings.AppName = mergedSettings.AppName?.Trim();
+            mergedSettings.ColorScheme = mergedSettings.ColorScheme?.Trim();
+            mergedSettings.PackageName = mergedSettings.PackageName?.Trim();
+            mergedSettings.Copyright = mergedSettings.Copyright?.Trim();
+            mergedSettings.About = mergedSettings.About?.Trim();
+            mergedSettings.IconPath = mergedSettings.IconPath?.Trim();
             return mergedSettings;
         }
 
@@ -2141,7 +2150,7 @@ namespace Bloom.Publish.Rab
                 AppName = GetAppName(),
                 ColorScheme = RabAppProject.DefaultColorScheme,
                 PackageName = GetPackageName(),
-                IconPath = string.Empty,
+                IconPath = GetDefaultBundledIconPath(),
                 Copyright = GetDefaultAppCopyright(),
             };
 
@@ -2324,7 +2333,7 @@ namespace Bloom.Publish.Rab
         )
         {
             // Compare normalized logical inputs rather than timestamps so Build Needed reflects real user-visible changes.
-            var normalizedSettings = NormalizeSettingsForPersistence(GetPaths(), settings);
+            var normalizedSettings = NormalizeSettingsForComparison(settings);
             var orderedBooks = (trackedBooks ?? Enumerable.Empty<RabTrackedBookInfo>())
                 .Select(book => new JObject
                 {

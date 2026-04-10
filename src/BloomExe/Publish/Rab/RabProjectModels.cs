@@ -61,6 +61,8 @@ namespace Bloom.Publish.Rab
         public string AliasPassword { get; set; }
         public List<RabBookPublishInfo> Books { get; set; } = new List<RabBookPublishInfo>();
         public string LastBuiltInputSignature { get; set; }
+        public string LastBuiltApkPath { get; set; }
+        public string LastBuiltPackageName { get; set; }
     }
 
     internal class RabProjectSupportFiles
@@ -92,7 +94,7 @@ namespace Bloom.Publish.Rab
         public RabWorkspacePaths(string collectionRoot)
         {
             CollectionRoot = collectionRoot;
-            RabRoot = Path.Combine(collectionRoot, "app configuration");
+            RabRoot = Path.Combine(collectionRoot, "Bloom App Data");
             BloomPubRoot = Path.Combine(RabRoot, "bloompubs");
             BuildRoot = Path.Combine(RabRoot, "build");
             ApkRoot = Path.Combine(RabRoot, "apk");

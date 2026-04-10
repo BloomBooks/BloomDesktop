@@ -91,28 +91,13 @@ export const PrepareAppStepper: React.FunctionComponent<{
     steps: Array<IAppBuilderPrepareStepStatus & { label: string }>;
     activeStepId?: AppBuilderPrepareStepId;
     isBusy: boolean;
-    workingOnLabel: string;
-    incompleteLabel: string;
 }> = (props) => {
-    const activeStep = props.steps.find(
-        (step) => step.id === props.activeStepId,
-    );
-    const allComplete = props.steps.every((step) => step.complete);
-    const statusText =
-        props.isBusy && activeStep
-            ? `${props.workingOnLabel}${activeStep.label}`
-            : allComplete
-              ? undefined
-              : props.incompleteLabel;
-
     return (
         <div
             data-testid="prepare-stepper"
             css={css`
                 margin-top: 12px;
                 display: flex;
-                flex-direction: column;
-                gap: 10px;
                 max-width: 900px;
             `}
         >
@@ -188,20 +173,6 @@ export const PrepareAppStepper: React.FunctionComponent<{
                     })}
                 </BloomStepper>
             </div>
-            {statusText && (
-                <div
-                    data-testid="prepare-stepper-status"
-                    css={css`
-                        font-size: 13px;
-                        font-weight: ${props.isBusy && activeStep ? 700 : 500};
-                        color: ${props.isBusy && activeStep
-                            ? kBloomBlue
-                            : "#4a5563"};
-                    `}
-                >
-                    {statusText}
-                </div>
-            )}
         </div>
     );
 };

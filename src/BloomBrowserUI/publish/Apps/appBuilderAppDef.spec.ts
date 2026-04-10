@@ -10,15 +10,16 @@ import { getWithPromise, postJsonAsync } from "../../utils/bloomApi";
 import {
     applyDefaultAppBuilderIconChoice,
     fetchAppBuilderSettings,
+    fetchDefaultAppBuilderSettings,
     getAppBuilderPackageNameValidationIssue,
     getAppBuilderSettingsValidationIssues,
     getAboutTextPath,
     getAppBuilderSettingsFromAppDef,
     getDefaultAppBuilderIconChoice,
     hasRequiredBuildSettings,
+    initializeAppBuilderSettings,
     kDefaultAppBuilderIconId,
     normalizeIconChoice,
-    normalizeSettings,
     updateAppBuilderAppDef,
 } from "./appBuilderAppDef";
 
@@ -30,27 +31,7 @@ describe("appBuilderAppDef", () => {
         vi.clearAllMocks();
     });
 
-    it("normalizes settings from PascalCase API payloads", () => {
-        const settings = normalizeSettings({
-            AppName: "Sample App",
-            ColorScheme: "Lime",
-            PackageName: "org.sil.sample",
-            IconPath: "C:\\icons\\sample.png",
-            Copyright: "Copyright 2026",
-            About: "About this app",
-        });
-
-        expect(settings).toEqual({
-            appName: "Sample App",
-            colorScheme: "Lime",
-            packageName: "org.sil.sample",
-            iconPath: "C:\\icons\\sample.png",
-            copyright: "Copyright 2026",
-            about: "About this app",
-        });
-    });
-
-    it("prefers bloom-app-icon-21 as the default icon choice", () => {
+    it("prefers bloom-app-icon-52 as the default icon choice", () => {
         const choices = [
             normalizeIconChoice({
                 Id: "ab-001-black",
@@ -241,7 +222,7 @@ describe("appBuilderAppDef", () => {
 
         expect(
             getAppBuilderSettingsFromAppDef(
-                "C:\\Collection\\app configuration\\stories.appDef",
+                "C:\\Collection\\Bloom App Data\\stories.appDef",
                 originalAppDef,
             ),
         ).toEqual({
@@ -278,43 +259,172 @@ describe("appBuilderAppDef", () => {
         );
     });
 
-    it("stores about text under the app configuration root for nested app defs", () => {
+    it("keeps app name blank when the raw appDef app-name is blank", () => {
+        const appDefWithBlankAppName = `<?xml version="1.0" encoding="utf-8"?>
+<app-definition type="RAB" program-version="13.4">
+  <project-name>Stories</project-name>
+  <app-name lang="default"/>
+  <package>org.sil.stories</package>
+</app-definition>`;
+
+        expect(
+            getAppBuilderSettingsFromAppDef(
+                "C:\\Collection\\Bloom App Data\\stories.appDef",
+                appDefWithBlankAppName,
+            ).appName,
+        ).toBe("");
+    });
+
+    it("stores about text under the Bloom App Data root for nested app defs", () => {
         expect(
             getAboutTextPath(
-                "C:\\Users\\hatto\\Documents\\Bloom\\RAB Books\\app configuration\\RAB Books\\RAB Books.appDef",
+                "C:\\Users\\hatto\\Documents\\Bloom\\RAB Books\\Bloom App Data\\RAB Books\\RAB Books.appDef",
             ),
         ).toBe(
-            "C:\\Users\\hatto\\Documents\\Bloom\\RAB Books\\app configuration\\project-assets\\about.txt",
+            "C:\\Users\\hatto\\Documents\\Bloom\\RAB Books\\Bloom App Data\\project-assets\\about.txt",
         );
     });
 
-    it("loads effective app settings from the backend instead of reparsing the appDef", async () => {
+    it("loads app settings from the raw appDef and about file", async () => {
+        postJsonAsyncMock
+            .mockResolvedValueOnce({
+                data: `<?xml version="1.0" encoding="utf-8"?>
+<app-definition type="RAB" program-version="13.4">
+  <project-name>Stories</project-name>
+  <app-name lang="default"/>
+  <package>org.sil.stories</package>
+  <color-scheme name="Indigo" />
+  <books id="C01">
+    <metadata>
+      <meta name="copyright-text" content="Copyright 2026" />
+    </metadata>
+  </books>
+</app-definition>`,
+            } as never)
+            .mockResolvedValueOnce({
+                data: "About this app",
+            } as never);
+
+        const settings = await fetchAppBuilderSettings(
+            "C:\\Users\\hatto\\Documents\\Bloom\\RAB Books\\Bloom App Data\\RAB Books\\RAB Books.appDef",
+        );
+
+        expect(postJsonAsyncMock).toHaveBeenNthCalledWith(
+            1,
+            "fileIO/readFile",
+            {
+                path: "C:\\Users\\hatto\\Documents\\Bloom\\RAB Books\\Bloom App Data\\RAB Books\\RAB Books.appDef",
+            },
+        );
+        expect(postJsonAsyncMock).toHaveBeenNthCalledWith(
+            2,
+            "fileIO/readFile",
+            {
+                path: "C:\\Users\\hatto\\Documents\\Bloom\\RAB Books\\Bloom App Data\\project-assets\\about.txt",
+            },
+        );
+        expect(settings).toEqual({
+            appName: "",
+            colorScheme: "Indigo",
+            packageName: "org.sil.stories",
+            iconPath: "",
+            copyright: "Copyright 2026",
+            about: "About this app",
+        });
+    });
+
+    it("loads collection-derived defaults from the backend without reading the appDef", async () => {
         getWithPromiseMock.mockResolvedValue({
             data: {
-                AppName: "Flower",
+                AppName: "Stories",
                 ColorScheme: "Indigo",
-                PackageName: "org.sil.flower",
-                IconPath: "C:\\icons\\flower.png",
+                PackageName: "org.sil.stories",
+                IconPath:
+                    "C:\\Bloom\\DistFiles\\appbuilder-icons\\bloom-app-icon-52.png",
                 Copyright: "Copyright 2026",
                 About: "Created with Bloom.",
             },
         } as never);
 
-        const settings = await fetchAppBuilderSettings(
-            "C:\\Users\\hatto\\Documents\\Bloom\\RAB Books\\app configuration\\RAB Books\\RAB Books.appDef",
-        );
+        const settings = await fetchDefaultAppBuilderSettings();
 
         expect(getWithPromiseMock).toHaveBeenCalledWith(
-            "publish/rab/app-settings",
+            "publish/rab/default-settings",
         );
-        expect(postJsonAsyncMock).not.toHaveBeenCalled();
         expect(settings).toEqual({
-            appName: "Flower",
+            appName: "Stories",
             colorScheme: "Indigo",
-            packageName: "org.sil.flower",
-            iconPath: "C:\\icons\\flower.png",
+            packageName: "org.sil.stories",
+            iconPath:
+                "C:\\Bloom\\DistFiles\\appbuilder-icons\\bloom-app-icon-52.png",
             copyright: "Copyright 2026",
             about: "Created with Bloom.",
         });
+    });
+
+    it("initializes missing raw app settings by saving through the frontend", async () => {
+        const appDefPath =
+            "C:\\Users\\hatto\\Documents\\Bloom\\RAB Books\\Bloom App Data\\RAB Books\\RAB Books.appDef";
+        const rawAppDef = `<?xml version="1.0" encoding="utf-8"?>
+<app-definition type="RAB" program-version="13.4">
+  <project-name>Stories</project-name>
+  <app-name lang="default"/>
+  <package/>
+  <color-scheme name="Indigo" />
+  <books id="C01">
+    <metadata />
+  </books>
+</app-definition>`;
+
+        getWithPromiseMock.mockResolvedValue({
+            data: {
+                AppName: "Stories",
+                ColorScheme: "Indigo",
+                PackageName: "org.sil.stories",
+                Copyright: "Copyright 2026",
+                About: "Created with Bloom.",
+            },
+        } as never);
+        postJsonAsyncMock
+            .mockResolvedValueOnce({ data: rawAppDef } as never)
+            .mockResolvedValueOnce({ data: "" } as never)
+            .mockResolvedValueOnce({ data: rawAppDef } as never)
+            .mockResolvedValueOnce({} as never)
+            .mockResolvedValueOnce({} as never);
+
+        const settings = await initializeAppBuilderSettings(appDefPath);
+
+        expect(settings).toEqual({
+            appName: "Stories",
+            colorScheme: "Indigo",
+            packageName: "org.sil.stories",
+            iconPath: "",
+            copyright: "Copyright 2026",
+            about: "Created with Bloom.",
+        });
+
+        const aboutWriteCall = postJsonAsyncMock.mock.calls.find(
+            (call) =>
+                call[0] === "fileIO/writeFile" &&
+                (call[1] as { path: string }).path ===
+                    "C:\\Users\\hatto\\Documents\\Bloom\\RAB Books\\Bloom App Data\\project-assets\\about.txt",
+        );
+        expect(aboutWriteCall?.[1]).toEqual({
+            path: "C:\\Users\\hatto\\Documents\\Bloom\\RAB Books\\Bloom App Data\\project-assets\\about.txt",
+            content: "Created with Bloom.",
+        });
+
+        const appDefWriteCall = postJsonAsyncMock.mock.calls.find(
+            (call) =>
+                call[0] === "fileIO/writeFile" &&
+                (call[1] as { path: string }).path === appDefPath,
+        );
+        const writtenAppDef = (appDefWriteCall?.[1] as { content: string })
+            .content;
+        expect(writtenAppDef).toContain(
+            '<app-name lang="default">Stories</app-name>',
+        );
+        expect(writtenAppDef).toContain("<package>org.sil.stories</package>");
+        expect(writtenAppDef).toContain('content="Copyright 2026"');
     });
 });

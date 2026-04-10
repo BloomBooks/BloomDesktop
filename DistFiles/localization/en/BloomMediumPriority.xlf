@@ -1104,10 +1104,6 @@
         <source xml:lang="en">Install build tools</source>
         <note>ID: PublishTab.Apps.PrepareStepper.BuildToolsInstalled</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.PrepareStepper.Incomplete" translate="no">
-        <source xml:lang="en">Finish the remaining prepare steps to build the app.</source>
-        <note>ID: PublishTab.Apps.PrepareStepper.Incomplete</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Apps.PrepareStepper.InstallerAvailable" translate="no">
         <source xml:lang="en">Get installer</source>
         <note>ID: PublishTab.Apps.PrepareStepper.InstallerAvailable</note>
@@ -1123,10 +1119,6 @@
       <trans-unit id="PublishTab.Apps.PrepareStepper.SigningKeyReady" translate="no">
         <source xml:lang="en">Create signing key</source>
         <note>ID: PublishTab.Apps.PrepareStepper.SigningKeyReady</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Apps.PrepareStepper.WorkingOn" translate="no">
-        <source xml:lang="en">Working on: </source>
-        <note>ID: PublishTab.Apps.PrepareStepper.WorkingOn</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Progress.CheckingDevice" translate="no">
         <source xml:lang="en">Checking for connected phone</source>
@@ -1250,7 +1242,7 @@
         <note>ID: PublishTab.Apps.ShowApkInFileExplorer</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.BannerTitle" translate="no">
-        <source xml:lang="en">Build Android Apps!</source>
+        <source xml:lang="en">Build Android Apps</source>
         <note>ID: PublishTab.Apps.BannerTitle</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps" translate="no">
@@ -1340,6 +1332,11 @@
       <trans-unit id="PublishTab.Apps.Setup.Tooltip" translate="no">
         <source xml:lang="en">Create the Reading App Builder project in this collection's rab folder.</source>
         <note>ID: PublishTab.Apps.Setup.Tooltip</note>
+        <note>obsolete as of 6.4</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.Setup.TooltipBloomAppData" translate="no">
+        <source xml:lang="en">Create the Reading App Builder project in this collection's Bloom App Data folder.</source>
+        <note>ID: PublishTab.Apps.Setup.TooltipBloomAppData</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.TryOnPhone" translate="no">
         <source xml:lang="en">Try on phone</source>

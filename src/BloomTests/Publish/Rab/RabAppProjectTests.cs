@@ -514,28 +514,6 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void GetPaths_MigratesLegacyRabFolderToAppConfigurationFolder()
-        {
-            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
-            var legacyRabRoot = Path.Combine(tempFolder.Path, "rab");
-            Directory.CreateDirectory(legacyRabRoot);
-            var legacyFilePath = Path.Combine(legacyRabRoot, "setup.json");
-            RobustFile.WriteAllText(legacyFilePath, "{}");
-
-            var service = new RealPathRabProjectService(tempFolder);
-
-            var paths = service.ReadPaths();
-
-            Assert.That(
-                paths.RabRoot,
-                Is.EqualTo(Path.Combine(tempFolder.Path, "app configuration"))
-            );
-            Assert.That(Directory.Exists(legacyRabRoot), Is.False);
-            Assert.That(Directory.Exists(paths.RabRoot), Is.True);
-            Assert.That(RobustFile.Exists(Path.Combine(paths.RabRoot, "setup.json")), Is.True);
-        }
-
-        [Test]
         public void GetRabProcessEnvironmentVariables_UsesBloomOwnedAppData_AndClearsGlobalToolchainVars()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
@@ -1076,6 +1054,42 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public async Task SaveAppSettings_ThrowsWhenIconPathIsMissing()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Book One",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+            await service.SetupAsync();
+
+            var error = Assert.Throws<ApplicationException>(() =>
+                service.SaveAppSettings(
+                    new RabAppSettings
+                    {
+                        AppName = "Updated App",
+                        PackageName = "org.sil.bloom.updated.app",
+                    }
+                )
+            );
+
+            Assert.That(
+                error?.Message,
+                Is.EqualTo("Bloom could not find the Reading App Builder icon source: ")
+            );
+        }
+
+        [Test]
         public async Task SaveAppSettings_DoesNotPersistShadowSettingsAfterProjectExists()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
@@ -1457,6 +1471,26 @@ namespace BloomTests.Publish.Rab
             await service.SetupAsync();
 
             Assert.That(service.GetStatus().PrepareSteps.All(step => step.Complete), Is.True);
+        }
+
+        [Test]
+        public void GetStatus_ReportsPrerequisiteSteps_WhenWorkspaceFolderIsMissing()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            );
+
+            var status = service.GetStatus();
+
+            AssertPrepareStep(status, "installer-available", true);
+            AssertPrepareStep(status, "rab-installed", true);
+            AssertPrepareStep(status, "build-tools-installed", true);
+            AssertPrepareStep(status, "project-created", false);
+            Assert.That(status.ProjectExists, Is.False);
         }
 
         [Test]
