@@ -285,49 +285,30 @@ describe("appBuilderAppDef", () => {
         );
     });
 
-    it("loads app settings from the raw appDef and about file", async () => {
-        postJsonAsyncMock
-            .mockResolvedValueOnce({
-                data: `<?xml version="1.0" encoding="utf-8"?>
-<app-definition type="RAB" program-version="13.4">
-  <project-name>Stories</project-name>
-  <app-name lang="default"/>
-  <package>org.sil.stories</package>
-  <color-scheme name="Indigo" />
-  <books id="C01">
-    <metadata>
-      <meta name="copyright-text" content="Copyright 2026" />
-    </metadata>
-  </books>
-</app-definition>`,
-            } as never)
-            .mockResolvedValueOnce({
-                data: "About this app",
-            } as never);
+    it("loads app settings from the backend settings endpoint", async () => {
+        getWithPromiseMock.mockResolvedValueOnce({
+            data: {
+                AppName: "Stories",
+                ColorScheme: "Indigo",
+                PackageName: "org.sil.stories",
+                IconPath:
+                    "C:\\Bloom\\DistFiles\\appbuilder-icons\\bloom-app-icon-52.png",
+                Copyright: "Copyright 2026",
+                About: "About this app",
+            },
+        } as never);
 
         const settings = await fetchAppBuilderSettings(
             "C:\\Users\\hatto\\Documents\\Bloom\\RAB Books\\Bloom App Data\\RAB Books\\RAB Books.appDef",
         );
 
-        expect(postJsonAsyncMock).toHaveBeenNthCalledWith(
-            1,
-            "fileIO/readFile",
-            {
-                path: "C:\\Users\\hatto\\Documents\\Bloom\\RAB Books\\Bloom App Data\\RAB Books\\RAB Books.appDef",
-            },
-        );
-        expect(postJsonAsyncMock).toHaveBeenNthCalledWith(
-            2,
-            "fileIO/readFile",
-            {
-                path: "C:\\Users\\hatto\\Documents\\Bloom\\RAB Books\\Bloom App Data\\project-assets\\about.txt",
-            },
-        );
+        expect(getWithPromiseMock).toHaveBeenCalledWith("publish/rab/settings");
         expect(settings).toEqual({
-            appName: "",
+            appName: "Stories",
             colorScheme: "Indigo",
             packageName: "org.sil.stories",
-            iconPath: "",
+            iconPath:
+                "C:\\Bloom\\DistFiles\\appbuilder-icons\\bloom-app-icon-52.png",
             copyright: "Copyright 2026",
             about: "About this app",
         });
@@ -362,35 +343,31 @@ describe("appBuilderAppDef", () => {
         });
     });
 
-    it("initializes missing raw app settings by saving through the frontend", async () => {
+    it("initializes missing raw app settings by saving through the settings endpoint", async () => {
         const appDefPath =
             "C:\\Users\\hatto\\Documents\\Bloom\\RAB Books\\Bloom App Data\\RAB Books\\RAB Books.appDef";
-        const rawAppDef = `<?xml version="1.0" encoding="utf-8"?>
-<app-definition type="RAB" program-version="13.4">
-  <project-name>Stories</project-name>
-  <app-name lang="default"/>
-  <package/>
-  <color-scheme name="Indigo" />
-  <books id="C01">
-    <metadata />
-  </books>
-</app-definition>`;
-
-        getWithPromiseMock.mockResolvedValue({
+        getWithPromiseMock.mockResolvedValueOnce({
+            data: {
+                AppName: "Stories",
+                ColorScheme: "Indigo",
+                PackageName: "",
+                IconPath: "",
+                Copyright: "Copyright 2026",
+                About: "",
+            },
+        } as never);
+        getWithPromiseMock.mockResolvedValueOnce({
             data: {
                 AppName: "Stories",
                 ColorScheme: "Indigo",
                 PackageName: "org.sil.stories",
+                IconPath:
+                    "C:\\Bloom\\DistFiles\\appbuilder-icons\\bloom-app-icon-52.png",
                 Copyright: "Copyright 2026",
                 About: "Created with Bloom.",
             },
         } as never);
-        postJsonAsyncMock
-            .mockResolvedValueOnce({ data: rawAppDef } as never)
-            .mockResolvedValueOnce({ data: "" } as never)
-            .mockResolvedValueOnce({ data: rawAppDef } as never)
-            .mockResolvedValueOnce({} as never)
-            .mockResolvedValueOnce({} as never);
+        postJsonAsyncMock.mockResolvedValueOnce({} as never);
 
         const settings = await initializeAppBuilderSettings(appDefPath);
 
@@ -403,28 +380,17 @@ describe("appBuilderAppDef", () => {
             about: "Created with Bloom.",
         });
 
-        const aboutWriteCall = postJsonAsyncMock.mock.calls.find(
-            (call) =>
-                call[0] === "fileIO/writeFile" &&
-                (call[1] as { path: string }).path ===
-                    "C:\\Users\\hatto\\Documents\\Bloom\\RAB Books\\Bloom App Data\\project-assets\\about.txt",
+        const settingsSaveCall = postJsonAsyncMock.mock.calls.find(
+            (call) => call[0] === "publish/rab/settings",
         );
-        expect(aboutWriteCall?.[1]).toEqual({
-            path: "C:\\Users\\hatto\\Documents\\Bloom\\RAB Books\\Bloom App Data\\project-assets\\about.txt",
-            content: "Created with Bloom.",
+        expect(settingsSaveCall?.[1]).toEqual({
+            appName: "Stories",
+            colorScheme: "Indigo",
+            packageName: "org.sil.stories",
+            iconPath:
+                "C:\\Bloom\\DistFiles\\appbuilder-icons\\bloom-app-icon-52.png",
+            copyright: "Copyright 2026",
+            about: "Created with Bloom.",
         });
-
-        const appDefWriteCall = postJsonAsyncMock.mock.calls.find(
-            (call) =>
-                call[0] === "fileIO/writeFile" &&
-                (call[1] as { path: string }).path === appDefPath,
-        );
-        const writtenAppDef = (appDefWriteCall?.[1] as { content: string })
-            .content;
-        expect(writtenAppDef).toContain(
-            '<app-name lang="default">Stories</app-name>',
-        );
-        expect(writtenAppDef).toContain("<package>org.sil.stories</package>");
-        expect(writtenAppDef).toContain('content="Copyright 2026"');
     });
 });

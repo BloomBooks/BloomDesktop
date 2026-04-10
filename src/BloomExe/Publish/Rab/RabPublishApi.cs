@@ -25,6 +25,25 @@ namespace Bloom.Publish.Rab
                 true
             );
             apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "settings",
+                request =>
+                {
+                    if (request.HttpMethod == HttpMethods.Get)
+                    {
+                        request.ReplyWithJson(_rabProjectService.GetAppSettings());
+                        return;
+                    }
+
+                    _rabProjectService.SaveAppSettings(
+                        Newtonsoft.Json.JsonConvert.DeserializeObject<RabAppSettings>(
+                            request.RequiredPostJson()
+                        )
+                    );
+                    request.PostSucceeded();
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "default-settings",
                 request => request.ReplyWithJson(_rabProjectService.GetDefaultSettings()),
                 true

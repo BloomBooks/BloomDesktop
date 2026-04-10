@@ -323,22 +323,13 @@ export async function fetchAppBuilderSettings(
         return defaultSettings;
     }
 
-    const [appDefResponse, about] = await Promise.all([
-        postJsonAsync("fileIO/readFile", {
-            path: appDefPath,
-        }),
-        fetchAppBuilderAboutText(appDefPath),
-    ]);
-    if (typeof appDefResponse?.data !== "string") {
-        throw new Error(
-            "Bloom could not read the Reading App Builder app definition.",
-        );
-    }
+    const response = await getWithPromise("publish/rab/settings");
+    const rawSettings =
+        typeof response?.data === "string"
+            ? (JSON.parse(response.data) as unknown)
+            : response?.data;
 
-    return {
-        ...getAppBuilderSettingsFromAppDef(appDefPath, appDefResponse.data),
-        about,
-    };
+    return normalizeApiSettings(rawSettings as IAppBuilderAppSettingsApi);
 }
 
 export async function fetchDefaultAppBuilderSettings(): Promise<IAppBuilderAppSettings> {
@@ -380,25 +371,7 @@ export async function saveAppBuilderSettings(
     appDefPath: string,
     settings: IAppBuilderAppSettings,
 ): Promise<boolean> {
-    const response = await postJsonAsync("fileIO/readFile", {
-        path: appDefPath,
-    });
-    const appDefContents =
-        typeof response?.data === "string" ? response.data : "";
-    const updatedAppDefContents = updateAppBuilderAppDef(
-        appDefContents,
-        settings,
-    );
-
-    await syncAppBuilderIconFiles(appDefPath, settings.iconPath);
-    await postJsonAsync("fileIO/writeFile", {
-        path: getAboutTextPath(appDefPath),
-        content: settings.about,
-    });
-    await postJsonAsync("fileIO/writeFile", {
-        path: appDefPath,
-        content: updatedAppDefContents,
-    });
+    await postJsonAsync("publish/rab/settings", settings);
 
     return true;
 }

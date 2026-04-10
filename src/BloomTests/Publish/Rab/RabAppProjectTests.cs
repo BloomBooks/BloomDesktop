@@ -180,13 +180,13 @@ namespace BloomTests.Publish.Rab
             Assert.That(RobustFile.Exists(contentsPath), Is.True);
         }
 
-                [Test]
-                public void SynchronizeFonts_ReplacesUnreferencedEntries_AndPreservesReferencedFamilyIds()
-                {
-                        using var tempFile = TempFile.WithExtension(".appDef");
-                        RobustFile.WriteAllText(
-                                tempFile.Path,
-                                @"<?xml version='1.0' encoding='utf-8'?>
+        [Test]
+        public void SynchronizeFonts_ReplacesUnreferencedEntries_AndPreservesReferencedFamilyIds()
+        {
+            using var tempFile = TempFile.WithExtension(".appDef");
+            RobustFile.WriteAllText(
+                tempFile.Path,
+                @"<?xml version='1.0' encoding='utf-8'?>
 <app-definition type='RAB' program-version='13.4'>
     <project-name>Sample Project</project-name>
     <fonts>
@@ -214,70 +214,70 @@ namespace BloomTests.Publish.Rab
         </styles-info>
     </books>
 </app-definition>"
-                        );
+            );
 
-                        var project = RabAppProject.Load(tempFile.Path);
-                        project.SynchronizeFonts(
-                                new[]
-                                {
-                                        new RabAppFontDefinition
-                                        {
-                                                FamilyName = "Andika",
-                                                FontName = "Andika",
-                                                DisplayName = "Andika",
-                                                FileName = "Andika-Regular.woff2",
-                                                Format = "woff2",
-                                                Weight = "normal",
-                                                Style = "normal",
-                                        },
-                                        new RabAppFontDefinition
-                                        {
-                                                FamilyName = "ABeeZee",
-                                                FontName = "ABeeZee Bold",
-                                                DisplayName = "ABeeZee",
-                                                FileName = "ABeeZee-Bold.woff2",
-                                                Format = "woff2",
-                                                Weight = "bold",
-                                                Style = "normal",
-                                        },
-                                }
-                        );
-                        project.Save();
-
-                        var document = XDocument.Load(tempFile.Path);
-                        var fonts = document.Root.Element("fonts")?.Elements("font").ToList();
-
-                        Assert.That(fonts, Has.Count.EqualTo(2));
-                        Assert.That(
-                                fonts[0].Attribute("family")?.Value,
-                                Is.EqualTo("font1"),
-                                "The existing referenced family id should be preserved for Andika."
-                        );
-                        Assert.That(fonts[0].Element("display-name")?.Value, Is.EqualTo("Andika"));
-                        Assert.That(fonts[1].Attribute("family")?.Value, Is.EqualTo("ABeeZee"));
-                        Assert.That(fonts[1].Element("font-name")?.Value, Is.EqualTo("ABeeZee Bold"));
-                        Assert.That(
-                                fonts.Any(font => font.Element("display-name")?.Value == "Obsolete Font"),
-                                Is.False,
-                                "Unreferenced stale font entries should be removed."
-                        );
-                }
-
-                [Test]
-                public void ReadFontDefinitionsFromBloomPub_ReadsEmbeddedFontFaces()
+            var project = RabAppProject.Load(tempFile.Path);
+            project.SynchronizeFonts(
+                new[]
                 {
-                    var bloomPubPath = GetRabTestDataPath("Book4.bloompub");
-
-                        var fonts = RabProjectService.ReadFontDefinitionsFromBloomPub(bloomPubPath);
-
-                        Assert.That(fonts, Has.Count.EqualTo(1));
-                        Assert.That(fonts[0].DisplayName, Is.EqualTo("ABeeZee"));
-                        Assert.That(fonts[0].FontName, Is.EqualTo("ABeeZee"));
-                        Assert.That(fonts[0].FileName, Is.EqualTo("ABeeZee-Regular.woff2"));
-                        Assert.That(fonts[0].Format, Is.EqualTo("woff2"));
-                        Assert.That(fonts[0].Weight, Is.EqualTo("normal"));
-                        Assert.That(fonts[0].Style, Is.EqualTo("normal"));
+                    new RabAppFontDefinition
+                    {
+                        FamilyName = "Andika",
+                        FontName = "Andika",
+                        DisplayName = "Andika",
+                        FileName = "Andika-Regular.woff2",
+                        Format = "woff2",
+                        Weight = "normal",
+                        Style = "normal",
+                    },
+                    new RabAppFontDefinition
+                    {
+                        FamilyName = "ABeeZee",
+                        FontName = "ABeeZee Bold",
+                        DisplayName = "ABeeZee",
+                        FileName = "ABeeZee-Bold.woff2",
+                        Format = "woff2",
+                        Weight = "bold",
+                        Style = "normal",
+                    },
                 }
+            );
+            project.Save();
+
+            var document = XDocument.Load(tempFile.Path);
+            var fonts = document.Root.Element("fonts")?.Elements("font").ToList();
+
+            Assert.That(fonts, Has.Count.EqualTo(2));
+            Assert.That(
+                fonts[0].Attribute("family")?.Value,
+                Is.EqualTo("font1"),
+                "The existing referenced family id should be preserved for Andika."
+            );
+            Assert.That(fonts[0].Element("display-name")?.Value, Is.EqualTo("Andika"));
+            Assert.That(fonts[1].Attribute("family")?.Value, Is.EqualTo("ABeeZee"));
+            Assert.That(fonts[1].Element("font-name")?.Value, Is.EqualTo("ABeeZee Bold"));
+            Assert.That(
+                fonts.Any(font => font.Element("display-name")?.Value == "Obsolete Font"),
+                Is.False,
+                "Unreferenced stale font entries should be removed."
+            );
+        }
+
+        [Test]
+        public void ReadFontDefinitionsFromBloomPub_ReadsEmbeddedFontFaces()
+        {
+            var bloomPubPath = GetRabTestDataPath("Book4.bloompub");
+
+            var fonts = RabProjectService.ReadFontDefinitionsFromBloomPub(bloomPubPath);
+
+            Assert.That(fonts, Has.Count.EqualTo(1));
+            Assert.That(fonts[0].DisplayName, Is.EqualTo("ABeeZee"));
+            Assert.That(fonts[0].FontName, Is.EqualTo("ABeeZee"));
+            Assert.That(fonts[0].FileName, Is.EqualTo("ABeeZee-Regular.woff2"));
+            Assert.That(fonts[0].Format, Is.EqualTo("woff2"));
+            Assert.That(fonts[0].Weight, Is.EqualTo("normal"));
+            Assert.That(fonts[0].Style, Is.EqualTo("normal"));
+        }
 
         [TestCase("My Collection", "my-collection", "org.sil.bloom.my.collection")]
         [TestCase("123 Numbers First", "123-numbers-first", "org.sil.bloom.a123.numbers.first")]
@@ -839,7 +839,9 @@ namespace BloomTests.Publish.Rab
                 Is.True
             );
             Assert.That(
-                service.Progress.Messages.Any(message => message.Item1.Contains("BUILD SUCCESSFUL")),
+                service.Progress.Messages.Any(message =>
+                    message.Item1.Contains("BUILD SUCCESSFUL")
+                ),
                 Is.True
             );
         }
@@ -860,9 +862,7 @@ namespace BloomTests.Publish.Rab
                 Is.EqualTo(94)
             );
             Assert.That(
-                RabProjectService.GetBuildProgressPercentFromOutput(
-                    "> Task :packageRelease"
-                ),
+                RabProjectService.GetBuildProgressPercentFromOutput("> Task :packageRelease"),
                 Is.EqualTo(95)
             );
         }
@@ -994,10 +994,7 @@ namespace BloomTests.Publish.Rab
             Assert.That(fonts, Is.Not.Null);
             Assert.That(fonts, Has.Count.EqualTo(1));
             Assert.That(fonts[0].Element("display-name")?.Value, Is.EqualTo("ABeeZee"));
-            Assert.That(
-                fonts[0].Element("filename")?.Value,
-                Is.EqualTo("ABeeZee-Regular.woff2")
-            );
+            Assert.That(fonts[0].Element("filename")?.Value, Is.EqualTo("ABeeZee-Regular.woff2"));
             Assert.That(
                 fonts[0].Element("filename")?.Attribute("format")?.Value,
                 Is.EqualTo("woff2")
@@ -1987,24 +1984,26 @@ namespace BloomTests.Publish.Rab
 
             private void EmitSimulatedBuildOutput(string rabArguments)
             {
-                foreach (var line in new[]
-                {
-                    "*** Building Android app ***",
-                    "*** Setting paths ***",
-                    "*** JDK ***",
-                    "*** Android SDK ***",
-                    "*** Compiling Android APK ***",
-                    "> Task :mergeReleaseNativeLibs",
-                    "> Task :generateReleaseResources",
-                    "> Task :mergeReleaseResources",
-                    "> Task :compressReleaseAssets",
-                    "> Task :processReleaseResources",
-                    "> Task :compileReleaseJavaWithJavac",
-                    "> Task :minifyReleaseWithR8",
-                    "> Task :packageRelease",
-                    "> Task :assembleRelease",
-                    "BUILD SUCCESSFUL in 1m 38s",
-                })
+                foreach (
+                    var line in new[]
+                    {
+                        "*** Building Android app ***",
+                        "*** Setting paths ***",
+                        "*** JDK ***",
+                        "*** Android SDK ***",
+                        "*** Compiling Android APK ***",
+                        "> Task :mergeReleaseNativeLibs",
+                        "> Task :generateReleaseResources",
+                        "> Task :mergeReleaseResources",
+                        "> Task :compressReleaseAssets",
+                        "> Task :processReleaseResources",
+                        "> Task :compileReleaseJavaWithJavac",
+                        "> Task :minifyReleaseWithR8",
+                        "> Task :packageRelease",
+                        "> Task :assembleRelease",
+                        "BUILD SUCCESSFUL in 1m 38s",
+                    }
+                )
                 {
                     ReportProcessOutputLine(line, commandArguments: rabArguments);
                 }
@@ -2163,6 +2162,7 @@ namespace BloomTests.Publish.Rab
                     })
                     .ToList();
             }
+
             public Dictionary<string, string> FontsCssByFolderPath { get; } =
                 new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
