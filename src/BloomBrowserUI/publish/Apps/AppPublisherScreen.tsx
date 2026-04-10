@@ -133,10 +133,19 @@ const AppPublisherScreenContents: React.FunctionComponent<{
         "Customize...",
         "PublishTab.Apps.CustomizeButton",
     );
-    const customizeValidationMessage = useL10n(
-        "Some required settings are missing or invalid.",
-        "PublishTab.Apps.CustomizeButton.ValidationMessage",
+    const appNameLabel = useL10n(
+        "App Name",
+        "PublishTab.Apps.SettingsDialog.AppName",
     );
+    const packageNameLabel = useL10n(
+        "Package Name",
+        "PublishTab.Apps.SettingsDialog.PackageName",
+    );
+    const copyrightLabel = useL10n(
+        "Copyright",
+        "PublishTab.Apps.SettingsDialog.Copyright",
+    );
+    const aboutLabel = useL10n("About", "PublishTab.Apps.SettingsDialog.About");
     const preparingWorkspaceLabel = useL10n(
         "Preparing workspace",
         "PublishTab.Apps.Progress.PreparingWorkspace",
@@ -253,6 +262,25 @@ const AppPublisherScreenContents: React.FunctionComponent<{
     const prepareTooltipToShow = prepareIsReady
         ? prepareDoneTooltip
         : prepareTooltip;
+    const validationIssueLabels: string[] = [];
+    if (screenState.settingsValidationIssues.appName) {
+        validationIssueLabels.push(appNameLabel);
+    }
+    if (screenState.settingsValidationIssues.packageName) {
+        validationIssueLabels.push(packageNameLabel);
+    }
+    if (screenState.settingsValidationIssues.copyright) {
+        validationIssueLabels.push(copyrightLabel);
+    }
+    if (screenState.settingsValidationIssues.about) {
+        validationIssueLabels.push(aboutLabel);
+    }
+    const customizeValidationMessage = useL10n(
+        "Required or invalid settings: %0.",
+        "PublishTab.Apps.CustomizeButton.ValidationMessage",
+        undefined,
+        validationIssueLabels.join(", "),
+    );
 
     return (
         <>

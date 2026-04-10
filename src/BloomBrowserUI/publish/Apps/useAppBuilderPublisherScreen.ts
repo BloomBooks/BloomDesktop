@@ -22,8 +22,10 @@ import {
 } from "./appBuilderShared";
 import {
     defaultSettings,
+    getAppBuilderSettingsValidationIssues,
     hasRequiredBuildSettings,
     IAppBuilderAppSettings,
+    IAppBuilderSettingsValidationIssues,
     initializeAppBuilderSettings,
     refreshAppBuilderSettings,
 } from "./appBuilderAppDef";
@@ -36,6 +38,7 @@ export interface IAppBuilderPublisherScreenState {
     status: IAppBuilderStatus;
     buildIsNeeded: boolean;
     hasRequiredBuildSettings: boolean;
+    settingsValidationIssues: IAppBuilderSettingsValidationIssues;
     busyAction?: AppBuilderAction;
     progressPercent: number;
     progressStageCode?: string;
@@ -294,6 +297,8 @@ export function useAppBuilderPublisherScreen(
         status,
         buildIsNeeded: status.buildNeeded || pendingBuildNeeded,
         hasRequiredBuildSettings: hasRequiredBuildSettings(settings),
+        settingsValidationIssues:
+            getAppBuilderSettingsValidationIssues(settings),
         busyAction,
         progressPercent,
         progressStageCode,

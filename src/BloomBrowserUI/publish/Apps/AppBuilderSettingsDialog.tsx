@@ -506,13 +506,13 @@ export const AppBuilderSettingsDialog: React.FunctionComponent<{
                                 <ConfigrInput
                                     label={copyrightLabel}
                                     path="copyright"
-                                    required={false}
+                                    required={true}
                                     charactersWide={40}
                                 />
                                 <ConfigrInput
                                     label={aboutLabel}
                                     path="about"
-                                    required={false}
+                                    required={true}
                                     charactersWide={50}
                                     allowNewLines={true}
                                     minLinesToShow={2}

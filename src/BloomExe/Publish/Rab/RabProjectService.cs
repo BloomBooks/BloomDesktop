@@ -758,11 +758,36 @@ namespace Bloom.Publish.Rab
                     $"Installing {Path.GetFileName(apkPath)} on {device.DisplayName}...",
                     ProgressKind.Heading
                 );
-                RunProcess(
+                var installResult = InstallApkOnDevice(
                     adbPath,
-                    $"-s {QuoteArgument(device.Serial)} install -r {QuoteArgument(apkPath)}",
+                    device.Serial,
+                    apkPath,
                     paths.RabRoot
                 );
+                if (installResult.ExitCode != 0)
+                {
+                    if (IsUpdateIncompatibleInstallFailure(installResult.Output))
+                    {
+                        _progress.MessageWithoutLocalizing(
+                            $"A different signed copy of {appName} is already installed on {device.DisplayName}. Removing it and retrying...",
+                            ProgressKind.Warning
+                        );
+                        UninstallAppFromDevice(adbPath, device.Serial, packageName, paths.RabRoot);
+                        installResult = InstallApkOnDevice(
+                            adbPath,
+                            device.Serial,
+                            apkPath,
+                            paths.RabRoot
+                        );
+                    }
+
+                    if (installResult.ExitCode != 0)
+                    {
+                        throw new ApplicationException(
+                            $"{Path.GetFileName(adbPath)} exited with code {installResult.ExitCode}."
+                        );
+                    }
+                }
 
                 ReportProgressStage("launching-on-phone", 85);
                 _progress.MessageWithoutLocalizing(
@@ -1235,7 +1260,9 @@ namespace Bloom.Publish.Rab
         {
             var parts = new List<string> { familyName };
             if (!string.Equals(weight, "normal", StringComparison.OrdinalIgnoreCase))
-                parts.Add(char.ToUpperInvariant(weight[0]) + weight.Substring(1).ToLowerInvariant());
+                parts.Add(
+                    char.ToUpperInvariant(weight[0]) + weight.Substring(1).ToLowerInvariant()
+                );
 
             if (!string.Equals(style, "normal", StringComparison.OrdinalIgnoreCase))
                 parts.Add(char.ToUpperInvariant(style[0]) + style.Substring(1).ToLowerInvariant());
@@ -1718,7 +1745,7 @@ namespace Bloom.Publish.Rab
             };
         }
 
-        private void RunProcess(
+        internal virtual void RunProcess(
             string fileName,
             string arguments,
             string workingDirectory,
@@ -1769,6 +1796,98 @@ namespace Bloom.Publish.Rab
                     throw new ApplicationException(
                         $"{Path.GetFileName(fileName)} exited with code {process.ExitCode}."
                     );
+            }
+        }
+
+        internal virtual (int ExitCode, string Output) InstallApkOnDevice(
+            string adbPath,
+            string deviceSerial,
+            string apkPath,
+            string workingDirectory
+        )
+        {
+            return RunProcessCapturingOutput(
+                adbPath,
+                $"-s {QuoteArgument(deviceSerial)} install -r {QuoteArgument(apkPath)}",
+                workingDirectory
+            );
+        }
+
+        internal virtual void UninstallAppFromDevice(
+            string adbPath,
+            string deviceSerial,
+            string packageName,
+            string workingDirectory
+        )
+        {
+            RunProcess(
+                adbPath,
+                $"-s {QuoteArgument(deviceSerial)} uninstall {QuoteArgument(packageName)}",
+                workingDirectory
+            );
+        }
+
+        private (int ExitCode, string Output) RunProcessCapturingOutput(
+            string fileName,
+            string arguments,
+            string workingDirectory,
+            IReadOnlyDictionary<string, string> environmentVariables = null
+        )
+        {
+            ReportProcessOutputLine($"> {Path.GetFileName(fileName)} {arguments}");
+
+            var outputLines = new List<string>();
+            var syncRoot = new object();
+
+            using (var process = new Process())
+            {
+                process.StartInfo = new ProcessStartInfo()
+                {
+                    FileName = fileName,
+                    Arguments = arguments,
+                    WorkingDirectory = workingDirectory,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                };
+
+                if (environmentVariables != null)
+                {
+                    foreach (var pair in environmentVariables)
+                        process.StartInfo.EnvironmentVariables[pair.Key] =
+                            pair.Value ?? string.Empty;
+                }
+
+                process.OutputDataReceived += (sender, args) =>
+                {
+                    if (string.IsNullOrWhiteSpace(args.Data))
+                        return;
+
+                    lock (syncRoot)
+                        outputLines.Add(args.Data);
+
+                    ReportProcessOutputLine(args.Data, ProgressKind.Progress, arguments);
+                };
+                process.ErrorDataReceived += (sender, args) =>
+                {
+                    if (string.IsNullOrWhiteSpace(args.Data))
+                        return;
+
+                    lock (syncRoot)
+                        outputLines.Add(args.Data);
+
+                    ReportProcessOutputLine(args.Data, ProgressKind.Warning, arguments);
+                };
+
+                if (!process.Start())
+                    throw new ApplicationException($"Bloom could not start {fileName}.");
+
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+                process.WaitForExit();
+
+                return (process.ExitCode, string.Join(Environment.NewLine, outputLines));
             }
         }
 
@@ -2780,7 +2899,7 @@ namespace Bloom.Publish.Rab
             return $"Bloom could not find Reading App Builder at {GetDefaultRabInstallDir()} (registry reports version {version}).";
         }
 
-        private string FindAdbPath()
+        internal virtual string FindAdbPath()
         {
             return RabAdbHelper.ResolveAdbPath();
         }
@@ -2803,9 +2922,18 @@ namespace Bloom.Publish.Rab
             return RabAppProject.Load(appDefPath);
         }
 
-        private RabAdbConnectedDevice GetSingleConnectedDevice(string adbPath)
+        internal virtual RabAdbConnectedDevice GetSingleConnectedDevice(string adbPath)
         {
             return RabAdbHelper.GetSingleConnectedDevice(adbPath, GetPaths().RabRoot, _progress);
+        }
+
+        private static bool IsUpdateIncompatibleInstallFailure(string output)
+        {
+            return !string.IsNullOrWhiteSpace(output)
+                && output.IndexOf(
+                    "INSTALL_FAILED_UPDATE_INCOMPATIBLE",
+                    StringComparison.OrdinalIgnoreCase
+                ) >= 0;
         }
 
         internal static IReadOnlyList<string> ParseConnectedDeviceSerials(string adbDevicesOutput)

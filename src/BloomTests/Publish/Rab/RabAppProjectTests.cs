@@ -707,6 +707,83 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public async Task InstallAsync_UninstallsAndRetriesWhenExistingPackageHasDifferentSignature()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Book One",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+            await service.PrepareAsync();
+            await service.BuildAsync();
+            service.InstallApkResults.Enqueue(
+                (
+                    1,
+                    "adb.exe: failed to install sample.apk: Failure [INSTALL_FAILED_UPDATE_INCOMPATIBLE: Existing package org.sil.en.stories signatures do not match newer version; ignoring!]"
+                )
+            );
+            service.InstallApkResults.Enqueue((0, "Performing Streamed Install"));
+
+            await service.InstallAsync();
+
+            Assert.That(service.UninstallCommands.Count, Is.EqualTo(1));
+            Assert.That(
+                service.UninstallCommands[0],
+                Does.Contain("uninstall \"org.sil.en.stories\"")
+            );
+            Assert.That(service.InstallCommandCount, Is.EqualTo(2));
+            Assert.That(
+                service.RunProcessCommands,
+                Has.Some.Contains(
+                    "shell monkey -p \"org.sil.en.stories\" -c android.intent.category.LAUNCHER 1"
+                )
+            );
+            Assert.That(
+                service.Progress.Warnings,
+                Has.Some.Contains("Removing it and retrying")
+            );
+        }
+
+        [Test]
+        public async Task InstallAsync_DoesNotUninstallWhenInstallFailsForAnotherReason()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Book One",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+            await service.PrepareAsync();
+            await service.BuildAsync();
+            service.InstallApkResults.Enqueue((1, "adb.exe: failed to install sample.apk: Failure [INSTALL_FAILED_VERSION_DOWNGRADE]"));
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () => await service.InstallAsync());
+
+            Assert.That(error.Message, Is.EqualTo("adb.exe exited with code 1."));
+            Assert.That(service.UninstallCommands, Is.Empty);
+            Assert.That(service.InstallCommandCount, Is.EqualTo(1));
+        }
+
+        [Test]
         public async Task SetupAndBuildAsync_CreatesTrackedProjectState_AndValidApk()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
@@ -1847,6 +1924,8 @@ namespace BloomTests.Publish.Rab
                 @"C:\Program Files (x86)\SIL\Reading App Builder\rab.bat";
             public string RabSetupInstallerPathToReturn { get; set; } =
                 @"C:\Users\tester\Downloads\Reading-App-Builder-14.0-Bloom-Setup.exe";
+            public string AdbPathToReturn { get; set; } =
+                @"C:\Users\tester\AppData\Local\SIL\Bloom\ReadingAppBuilder\android-sdk\platform-tools\adb.exe";
             public string RabJdkInstallFolder { get; set; }
             public string RabAndroidSdkInstallFolder { get; set; }
             public string RabAppDataFolder { get; set; }
@@ -1856,6 +1935,18 @@ namespace BloomTests.Publish.Rab
             public bool? JavaExistsBeforeInstallSdksCommand { get; private set; }
             public bool? TzdbExistsBeforeInstallSdksCommand { get; private set; }
             public int BloomPubWriteCount { get; private set; }
+            public Queue<(int ExitCode, string Output)> InstallApkResults { get; } = new();
+            public List<string> UninstallCommands { get; } = new List<string>();
+            public List<string> RunProcessCommands { get; } = new List<string>();
+            public int InstallCommandCount { get; private set; }
+            public RabAdbConnectedDevice ConnectedDeviceToReturn { get; set; } =
+                new RabAdbConnectedDevice
+                {
+                    Serial = "38300DLJH007PN",
+                    Model = "Pixel_8",
+                    Device = "shiba",
+                    Product = "shiba",
+                };
 
             internal override RabWorkspacePaths GetPaths()
             {
@@ -2072,6 +2163,52 @@ namespace BloomTests.Publish.Rab
             {
                 TryBringRunningRabToFrontCallCount++;
                 return TryBringRunningRabToFrontResult;
+            }
+
+            internal override string FindAdbPath()
+            {
+                return AdbPathToReturn;
+            }
+
+            internal override RabAdbConnectedDevice GetSingleConnectedDevice(string adbPath)
+            {
+                return ConnectedDeviceToReturn;
+            }
+
+            internal override (int ExitCode, string Output) InstallApkOnDevice(
+                string adbPath,
+                string deviceSerial,
+                string apkPath,
+                string workingDirectory
+            )
+            {
+                InstallCommandCount++;
+                if (InstallApkResults.Count > 0)
+                    return InstallApkResults.Dequeue();
+
+                return (0, string.Empty);
+            }
+
+            internal override void UninstallAppFromDevice(
+                string adbPath,
+                string deviceSerial,
+                string packageName,
+                string workingDirectory
+            )
+            {
+                UninstallCommands.Add(
+                    $"-s \"{deviceSerial}\" uninstall \"{packageName}\""
+                );
+            }
+
+            internal override void RunProcess(
+                string fileName,
+                string arguments,
+                string workingDirectory,
+                IReadOnlyDictionary<string, string> environmentVariables = null
+            )
+            {
+                RunProcessCommands.Add(arguments);
             }
 
             private void CreateBuildToolMarkers()
