@@ -326,9 +326,10 @@ function setCanvasElementSizeAndPositionFromVisibleContent(
     page: HTMLElement,
     measurementHost: HTMLElement,
 ): void {
+    const scale = EditableDivUtils.getPageScale() || 1;
     const sourceContentRect = getVisibleContentRect(sourceElement);
-    const width = Math.max(1, Math.ceil(sourceContentRect.width));
-    const height = Math.max(1, Math.ceil(sourceContentRect.height));
+    const width = Math.max(1, Math.ceil(sourceContentRect.width / scale));
+    const height = Math.max(1, Math.ceil(sourceContentRect.height / scale));
     canvasElement.style.width = `${width}px`;
     canvasElement.style.height = `${height}px`;
 
@@ -342,13 +343,14 @@ function setCanvasElementSizeAndPositionFromVisibleContent(
 
     const probeContentRect = getVisibleContentRect(probeContent);
     const probeCanvasRect = probeCanvasElement.getBoundingClientRect();
-    const contentOffsetLeft = probeContentRect.left - probeCanvasRect.left;
-    const contentOffsetTop = probeContentRect.top - probeCanvasRect.top;
+    const contentOffsetLeft =
+        (probeContentRect.left - probeCanvasRect.left) / scale;
+    const contentOffsetTop =
+        (probeContentRect.top - probeCanvasRect.top) / scale;
 
     probeCanvasElement.remove();
 
     const pageRect = page.getBoundingClientRect();
-    const scale = EditableDivUtils.getPageScale();
     canvasElement.style.left =
         (sourceContentRect.left - pageRect.left) / scale -
         contentOffsetLeft +
@@ -492,6 +494,7 @@ function ensureDerivedFieldsFitOnCustomPage(page: HTMLElement): void {
     const derivedElements = Array.from(
         bloomCanvas.querySelectorAll("div[data-derived]"),
     ) as HTMLElement[];
+    const scale = EditableDivUtils.getPageScale() || 1;
     for (const derivedElement of derivedElements) {
         const canvasElement = derivedElement.closest(
             `.${kCanvasElementClass}`,
@@ -511,11 +514,11 @@ function ensureDerivedFieldsFitOnCustomPage(page: HTMLElement): void {
         }
 
         const getRenderedHeight = (): number =>
-            Math.ceil(derivedElement.getBoundingClientRect().height);
+            Math.ceil(derivedElement.getBoundingClientRect().height / scale);
         const getRenderedWidth = (): number =>
             Math.ceil(
                 Math.max(
-                    derivedElement.getBoundingClientRect().width,
+                    derivedElement.getBoundingClientRect().width / scale,
                     derivedElement.offsetWidth,
                 ),
             );
