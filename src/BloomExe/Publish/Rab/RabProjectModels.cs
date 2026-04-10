@@ -5,6 +5,9 @@ using System.IO;
 namespace Bloom.Publish.Rab
 {
     // Passive DTOs and path helpers live here so RabProjectService can focus on orchestration.
+    /// <summary>
+    /// Summarizes the current App Builder workspace state that the browser UI needs to render actions and status.
+    /// </summary>
     public class RabProjectStatus
     {
         public bool RabInstalled { get; set; }
@@ -22,12 +25,18 @@ namespace Bloom.Publish.Rab
             Array.Empty<RabPrepareStepStatus>();
     }
 
+    /// <summary>
+    /// Reports completion for each prepare checklist step shown in the Apps screen.
+    /// </summary>
     public class RabPrepareStepStatus
     {
         public string Id { get; set; }
         public bool Complete { get; set; }
     }
 
+    /// <summary>
+    /// Captures the size of one book's contribution to the generated app.
+    /// </summary>
     public class RabBookSizeEstimate
     {
         public string BookId { get; set; }
@@ -37,6 +46,9 @@ namespace Bloom.Publish.Rab
         public bool IsActual { get; set; }
     }
 
+    /// <summary>
+    /// Captures the book-by-book and overall app size estimates shown in the Apps screen.
+    /// </summary>
     public class RabAppSizeEstimates
     {
         public RabBookSizeEstimate[] Books { get; set; } = Array.Empty<RabBookSizeEstimate>();
@@ -44,6 +56,9 @@ namespace Bloom.Publish.Rab
         public long MaxAppSizeBytes { get; set; }
     }
 
+    /// <summary>
+    /// Identifies a collection book that should be included in the Reading App Builder project.
+    /// </summary>
     public class RabTrackedBookInfo
     {
         public string BookId { get; set; }
@@ -51,7 +66,7 @@ namespace Bloom.Publish.Rab
         public string Title { get; set; }
     }
 
-    internal class RabSetupState
+    internal class RabPrepareState
     {
         public string AppDefPath { get; set; }
         public string ProjectName { get; set; }
@@ -82,6 +97,9 @@ namespace Bloom.Publish.Rab
         public string Style { get; set; }
     }
 
+    /// <summary>
+    /// Describes one icon choice that Bloom can offer for a Reading App Builder app.
+    /// </summary>
     public class RabIconChoice
     {
         public string Id { get; set; }
@@ -102,7 +120,7 @@ namespace Bloom.Publish.Rab
             ProjectAssetsRoot = Path.Combine(RabRoot, "project-assets");
             LauncherIconRoot = Path.Combine(ProjectAssetsRoot, "launcher-icons");
             AboutTextPath = Path.Combine(ProjectAssetsRoot, "about.txt");
-            SetupStatePath = Path.Combine(RabRoot, "setup.json");
+            PrepareStatePath = Path.Combine(RabRoot, "prepare.json");
         }
 
         public string CollectionRoot { get; }
@@ -114,6 +132,6 @@ namespace Bloom.Publish.Rab
         public string ProjectAssetsRoot { get; }
         public string LauncherIconRoot { get; }
         public string AboutTextPath { get; }
-        public string SetupStatePath { get; }
+        public string PrepareStatePath { get; }
     }
 }

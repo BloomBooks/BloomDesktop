@@ -104,7 +104,7 @@ namespace BloomTests.Publish.Rab
                 iconPaths
             );
 
-            await service.SetupAsync();
+            await service.PrepareAsync();
             await service.BuildAsync();
 
             var status = service.GetStatus();
@@ -116,15 +116,15 @@ namespace BloomTests.Publish.Rab
             Assert.That(RobustFile.Exists(status.ApkPath), Is.True);
             Assert.That(status.TrackedBookTitles, Is.EqualTo(new[] { bookTitle }));
 
-            var setupState = JsonConvert.DeserializeObject<RabSetupState>(
-                RobustFile.ReadAllText(paths.SetupStatePath)
+            var prepareState = JsonConvert.DeserializeObject<RabPrepareState>(
+                RobustFile.ReadAllText(paths.PrepareStatePath)
             );
-            Assert.That(setupState, Is.Not.Null);
-            Assert.That(setupState.AppDefPath, Is.EqualTo(status.AppDefPath));
-            Assert.That(setupState.Books, Has.Count.EqualTo(1));
-            Assert.That(setupState.Books[0].BloomPubPath, Is.Not.Null);
-            Assert.That(RobustFile.Exists(setupState.Books[0].BloomPubPath), Is.True);
-            Assert.That(setupState.Books[0].Title, Is.EqualTo(bookTitle));
+            Assert.That(prepareState, Is.Not.Null);
+            Assert.That(prepareState.AppDefPath, Is.EqualTo(status.AppDefPath));
+            Assert.That(prepareState.Books, Has.Count.EqualTo(1));
+            Assert.That(prepareState.Books[0].BloomPubPath, Is.Not.Null);
+            Assert.That(RobustFile.Exists(prepareState.Books[0].BloomPubPath), Is.True);
+            Assert.That(prepareState.Books[0].Title, Is.EqualTo(bookTitle));
 
             var project = RabAppProject.Load(status.AppDefPath);
             Assert.That(project.AppName, Is.EqualTo("RAB Manual Test App"));
@@ -194,14 +194,14 @@ namespace BloomTests.Publish.Rab
                 return MakeDefaultPackageName("stories", null);
             }
 
-            internal override List<RabBookPublishInfo> ExportSetupBooks(RabWorkspacePaths paths)
+            internal override List<RabBookPublishInfo> ExportPrepareBooks(RabWorkspacePaths paths)
             {
                 return ExportBooks(paths, null);
             }
 
             internal override List<RabBookPublishInfo> ExportTrackedBooks(
                 RabWorkspacePaths paths,
-                RabSetupState state
+                RabPrepareState state
             )
             {
                 return ExportBooks(paths, state.Books.FirstOrDefault()?.BloomPubPath);

@@ -7,6 +7,9 @@ using SIL.IO;
 
 namespace Bloom.Publish.Rab
 {
+    /// <summary>
+    /// Represents the subset of Reading App Builder app settings that Bloom edits directly.
+    /// </summary>
     public class RabAppSettings
     {
         public string AppName { get; set; }
@@ -17,6 +20,9 @@ namespace Bloom.Publish.Rab
         public string About { get; set; }
     }
 
+    /// <summary>
+    /// Describes one BloomPUB export that should be wired into the Reading App Builder project.
+    /// </summary>
     public class RabBookPublishInfo
     {
         public string BookId { get; set; }
@@ -25,6 +31,9 @@ namespace Bloom.Publish.Rab
         public string BloomPubPath { get; set; }
     }
 
+    /// <summary>
+    /// Wraps a Reading App Builder .appDef file and its companion contents.xml so Bloom can keep them in sync.
+    /// </summary>
     public class RabAppProject
     {
         public const string DefaultPrimaryColor = "#3F51B5";
@@ -50,6 +59,9 @@ namespace Bloom.Publish.Rab
             _document = document;
         }
 
+        /// <summary>
+        /// Gets the path to the underlying .appDef file.
+        /// </summary>
         public string FilePath { get; }
 
         private string ProjectDataFolderPath =>
@@ -63,9 +75,15 @@ namespace Bloom.Publish.Rab
 
         private string BooksRootPath => Path.Combine(ProjectDataFolderPath, "books");
 
+        /// <summary>
+        /// Gets the project name stored in the .appDef, falling back to the file name when needed.
+        /// </summary>
         public string ProjectName =>
             GetSingleElementValue("project-name") ?? Path.GetFileNameWithoutExtension(FilePath);
 
+        /// <summary>
+        /// Gets the effective default-language app name stored in the .appDef.
+        /// </summary>
         public string AppName =>
             _document
                 .Root?.Elements("app-name")
@@ -74,16 +92,34 @@ namespace Bloom.Publish.Rab
             ?? GetSingleElementValue("project-name")
             ?? Path.GetFileNameWithoutExtension(FilePath);
 
+        /// <summary>
+        /// Gets the configured Android package name.
+        /// </summary>
         public string PackageName => GetSingleElementValue("package");
 
+        /// <summary>
+        /// Gets the keystore path stored in the signing section.
+        /// </summary>
         public string KeystorePath => GetNestedElementValue("signing", "keystore");
 
+        /// <summary>
+        /// Gets the keystore password stored in the signing section.
+        /// </summary>
         public string KeystorePassword => GetNestedElementValue("signing", "keystore-password");
 
+        /// <summary>
+        /// Gets the signing key alias stored in the project.
+        /// </summary>
         public string KeyAlias => GetNestedElementValue("signing", "alias");
 
+        /// <summary>
+        /// Gets the signing key alias password stored in the project.
+        /// </summary>
         public string AliasPassword => GetNestedElementValue("signing", "alias-password");
 
+        /// <summary>
+        /// Gets the current book titles listed in the .appDef.
+        /// </summary>
         public string[] BookTitles =>
             _document
                 .Root?.Element("books")
@@ -92,6 +128,9 @@ namespace Bloom.Publish.Rab
                 .Where(title => !string.IsNullOrWhiteSpace(title))
                 .ToArray() ?? Array.Empty<string>();
 
+        /// <summary>
+        /// Reads the editable app settings from the .appDef.
+        /// </summary>
         public RabAppSettings GetAppSettings()
         {
             return new RabAppSettings()
@@ -105,6 +144,9 @@ namespace Bloom.Publish.Rab
             };
         }
 
+        /// <summary>
+        /// Loads a Reading App Builder project from disk while preserving existing XML whitespace.
+        /// </summary>
         public static RabAppProject Load(string filePath)
         {
             return new RabAppProject(
@@ -113,6 +155,9 @@ namespace Bloom.Publish.Rab
             );
         }
 
+        /// <summary>
+        /// Applies Bloom-managed app settings to the .appDef.
+        /// </summary>
         public void SetAppSettings(RabAppSettings settings)
         {
             var root = _document.Root;
@@ -135,6 +180,9 @@ namespace Bloom.Publish.Rab
             SetMetadataValue("copyright-text", settings?.Copyright?.Trim());
         }
 
+        /// <summary>
+        /// Replaces the launcher icon entries in the .appDef with the supplied generated icons.
+        /// </summary>
         public void SetLauncherIcons(
             IEnumerable<(string RelativePath, int Width, int Height)> icons
         )
@@ -169,6 +217,9 @@ namespace Bloom.Publish.Rab
             }
         }
 
+        /// <summary>
+        /// Sets the adaptive icon foreground image reference in the .appDef.
+        /// </summary>
         public void SetAdaptiveIconForegroundImage(string fileName)
         {
             var root = _document.Root;
@@ -199,6 +250,9 @@ namespace Bloom.Publish.Rab
             imageElement.Value = fileName;
         }
 
+        /// <summary>
+        /// Rebuilds the book list using generated sequential book ids.
+        /// </summary>
         public void SetBookEntries(IEnumerable<RabBookPublishInfo> books)
         {
             SetBookEntries(books.Select((book, index) => ($"B{index + 1:000}", book)));
@@ -273,6 +327,9 @@ namespace Bloom.Publish.Rab
                 fontsElement.Add(fontElement);
         }
 
+        /// <summary>
+        /// Rebuilds the .appDef and contents.xml book entries using the supplied imported book ids.
+        /// </summary>
         public void SetBookEntries(
             IEnumerable<(string BookElementId, RabBookPublishInfo Book)> books
         )
@@ -332,6 +389,9 @@ namespace Bloom.Publish.Rab
             );
         }
 
+        /// <summary>
+        /// Removes all book entries from the .appDef.
+        /// </summary>
         public void ClearBookEntries()
         {
             var booksElement = _document.Root?.Element("books");
@@ -342,6 +402,9 @@ namespace Bloom.Publish.Rab
                 existingBook.Remove();
         }
 
+        /// <summary>
+        /// Rebuilds contents.xml entries for the tracked books without changing the .appDef book ids.
+        /// </summary>
         public void SetTrackedContentsEntries(IEnumerable<RabBookPublishInfo> books)
         {
             SetContentsEntries(
@@ -349,6 +412,9 @@ namespace Bloom.Publish.Rab
             );
         }
 
+        /// <summary>
+        /// Saves the .appDef and any loaded contents.xml changes back to disk.
+        /// </summary>
         public void Save()
         {
             _document.Save(FilePath);
@@ -360,6 +426,9 @@ namespace Bloom.Publish.Rab
             }
         }
 
+        /// <summary>
+        /// Deletes unpacked generated book data so Reading App Builder imports fresh BloomPUB payloads.
+        /// </summary>
         public void DeleteGeneratedBookData()
         {
             // RAB can reuse unpacked generated book payloads from a prior build, so clear them before importing new tracked books.

@@ -1,3 +1,4 @@
+using System.IO;
 using System.Xml.Linq;
 using Bloom.Publish.Rab;
 using NUnit.Framework;

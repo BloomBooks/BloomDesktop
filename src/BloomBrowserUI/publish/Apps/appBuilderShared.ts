@@ -119,7 +119,7 @@ export interface IProgressStageLabels {
 
 export const kAppBuilderWebSocketContext = "publish-rab";
 
-export type AppBuilderAction = "setup" | "build" | "install";
+export type AppBuilderAction = "prepare" | "build" | "install";
 
 export const defaultStatus: IAppBuilderStatus = {
     rabInstalled: false,
@@ -131,6 +131,7 @@ export const defaultStatus: IAppBuilderStatus = {
     trackedBooks: [],
 };
 
+// Keep the checklist order stable so UI state and server normalization agree on the same workflow.
 export function getDefaultPrepareSteps(): IAppBuilderPrepareStepStatus[] {
     return [
         { id: "installer-available", complete: false },
@@ -240,7 +241,7 @@ export function getProgressStageLabel(
     labels: IProgressStageLabels,
 ): string | undefined {
     if (
-        busyAction !== "setup" &&
+        busyAction !== "prepare" &&
         busyAction !== "build" &&
         busyAction !== "install"
     ) {
@@ -273,7 +274,7 @@ export function getProgressStageLabel(
         case "complete":
             return labels.complete;
         default:
-            if (busyAction === "setup") {
+            if (busyAction === "prepare") {
                 return labels.preparingWorkspace;
             }
 
@@ -339,7 +340,7 @@ export function getProgressStageCodeFromMessage(
     }
 
     if (
-        message.includes("Setup complete.") ||
+        message.includes("Prepare complete.") ||
         message.includes("Build complete.") ||
         message.includes("Install complete.")
     ) {
@@ -353,7 +354,7 @@ export function getPrepareStepIdForStage(
     busyAction: AppBuilderAction | undefined,
     stageCode: string | undefined,
 ): AppBuilderPrepareStepId | undefined {
-    if (busyAction !== "setup" || !stageCode) {
+    if (busyAction !== "prepare" || !stageCode) {
         return undefined;
     }
 

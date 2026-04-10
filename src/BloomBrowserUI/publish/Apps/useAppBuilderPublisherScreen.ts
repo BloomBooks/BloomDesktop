@@ -30,7 +30,7 @@ import {
 import { IAppSizeEstimates } from "./AppSizeIndicator";
 
 export interface IAppBuilderPublisherScreenState {
-    setupLog: IActionLogController;
+    prepareLog: IActionLogController;
     buildLog: IActionLogController;
     installLog: IActionLogController;
     status: IAppBuilderStatus;
@@ -45,10 +45,11 @@ export interface IAppBuilderPublisherScreenState {
     markConfigurationChanged: () => void;
 }
 
+// Owns the App Builder screen's API state, websocket progress, and per-action logs.
 export function useAppBuilderPublisherScreen(
     isActive: boolean,
 ): IAppBuilderPublisherScreenState {
-    const setupLog = useActionLogController();
+    const prepareLog = useActionLogController();
     const buildLog = useActionLogController();
     const installLog = useActionLogController();
     const [status, setStatus] =
@@ -64,6 +65,7 @@ export function useAppBuilderPublisherScreen(
     const [rawSizeEstimates, setRawSizeEstimates] =
         React.useState<IAppBuilderSizeEstimatesApi>({});
     const statusRetryTimeoutRef = React.useRef<number>();
+    const latestStatusRequestIdRef = React.useRef(0);
     const sizeEstimates = normalizeSizeEstimates(rawSizeEstimates);
 
     useSubscribeToWebSocketForStringMessage(
@@ -124,23 +126,38 @@ export function useAppBuilderPublisherScreen(
     }
 
     async function refreshStatus(
-        initializeSettingsAfterSetup: boolean = false,
+        initializeSettingsAfterPrepare: boolean = false,
     ): Promise<void> {
+        const requestId = latestStatusRequestIdRef.current + 1;
+        latestStatusRequestIdRef.current = requestId;
+
         try {
             const nextStatus = await fetchStatusAsync();
+            if (requestId !== latestStatusRequestIdRef.current) {
+                return;
+            }
+
             if (statusRetryTimeoutRef.current !== undefined) {
                 window.clearTimeout(statusRetryTimeoutRef.current);
                 statusRetryTimeoutRef.current = undefined;
             }
             setStatus(nextStatus);
 
-            if (initializeSettingsAfterSetup && nextStatus.appDefPath) {
+            if (initializeSettingsAfterPrepare && nextStatus.appDefPath) {
                 const initializedSettings = await initializeAppBuilderSettings(
                     nextStatus.appDefPath,
                 );
+                if (requestId !== latestStatusRequestIdRef.current) {
+                    return;
+                }
+
                 setSettings(initializedSettings);
 
                 const refreshedStatus = await fetchStatusAsync();
+                if (requestId !== latestStatusRequestIdRef.current) {
+                    return;
+                }
+
                 setStatus(refreshedStatus);
                 return;
             }
@@ -153,7 +170,7 @@ export function useAppBuilderPublisherScreen(
 
             if (isActive) {
                 statusRetryTimeoutRef.current = window.setTimeout(() => {
-                    void refreshStatus(initializeSettingsAfterSetup);
+                    void refreshStatus(initializeSettingsAfterPrepare);
                 }, 1000);
             }
         }
@@ -203,8 +220,8 @@ export function useAppBuilderPublisherScreen(
         action: AppBuilderAction,
     ): IActionLogController {
         switch (action) {
-            case "setup":
-                return setupLog;
+            case "prepare":
+                return prepareLog;
             case "build":
                 return buildLog;
             case "install":
@@ -214,15 +231,15 @@ export function useAppBuilderPublisherScreen(
 
     async function handleActionCompleted(
         action: AppBuilderAction,
-        initializeSettingsAfterSetup: boolean,
+        initializeSettingsAfterPrepare: boolean,
     ): Promise<void> {
         setProgressPercent(0);
         setProgressStageCode(undefined);
-        if (action === "setup" || action === "build") {
+        if (action === "prepare" || action === "build") {
             setPendingBuildNeeded(false);
             refreshSizeEstimates();
         }
-        await refreshStatus(initializeSettingsAfterSetup);
+        await refreshStatus(initializeSettingsAfterPrepare);
         setBusyAction(undefined);
     }
 
@@ -236,7 +253,7 @@ export function useAppBuilderPublisherScreen(
         // Reset visible progress before starting a new backend operation so reused accordions never show stale state.
         setProgressPercent(0);
         setProgressStageCode(
-            action === "setup"
+            action === "prepare"
                 ? "checking-installer"
                 : action === "build"
                   ? "preparing-build"
@@ -249,7 +266,7 @@ export function useAppBuilderPublisherScreen(
             `publish/rab/${action}`,
             {},
             () => {
-                void handleActionCompleted(action, action === "setup");
+                void handleActionCompleted(action, action === "prepare");
             },
             () => {
                 void handleActionCompleted(action, false);
@@ -271,7 +288,7 @@ export function useAppBuilderPublisherScreen(
     }
 
     return {
-        setupLog,
+        prepareLog,
         buildLog,
         installLog,
         status,

@@ -85,13 +85,13 @@ const AppPublisherScreenContents: React.FunctionComponent<{
     const [showSettingsDialog, setShowSettingsDialog] = React.useState(false);
     const [showChooseBooksDialog, setShowChooseBooksDialog] =
         React.useState(false);
-    const setupTooltip = useL10n(
+    const prepareTooltip = useL10n(
         "Create the Reading App Builder project in this collection's Bloom App Data folder.",
-        "PublishTab.Apps.Setup.TooltipBloomAppData",
+        "PublishTab.Apps.Prepare.TooltipBloomAppData",
     );
-    const setupDoneTooltip = useL10n(
-        "The Reading App Builder project is already set up for this collection.",
-        "PublishTab.Apps.Setup.DoneTooltip",
+    const prepareDoneTooltip = useL10n(
+        "The Reading App Builder project is already prepared for this collection.",
+        "PublishTab.Apps.Prepare.DoneTooltip",
     );
     const chooseBooksTooltip = useL10n(
         "Choose which books to include in the app and the order they should appear.",
@@ -109,13 +109,13 @@ const AppPublisherScreenContents: React.FunctionComponent<{
         "The APK is current. Try on phone will use the latest build.",
         "PublishTab.Apps.Build.DoneTooltip",
     );
-    const setupRequiredTooltip = useL10n(
-        "Run Setup before using this step.",
-        "PublishTab.Apps.SetupRequiredTooltip",
+    const prepareRequiredTooltip = useL10n(
+        "Run Prepare before using this step.",
+        "PublishTab.Apps.PrepareRequiredTooltip",
     );
-    const buildNeedsSetupTooltip = useL10n(
-        "Run Setup before building the app.",
-        "PublishTab.Apps.Build.NeedsSetupTooltip",
+    const buildNeedsPrepareTooltip = useL10n(
+        "Run Prepare before building the app.",
+        "PublishTab.Apps.Build.NeedsPrepareTooltip",
     );
     const tryOnPhoneTooltip = useL10n(
         "Load and run the app on your phone. First ble USB Debugging on the phone and connect it with a USB cable.",
@@ -125,7 +125,7 @@ const AppPublisherScreenContents: React.FunctionComponent<{
         "Show App (.apk) in File Explorer",
         "PublishTab.Apps.ShowApkInFileExplorer",
     );
-    const setupButtonLabel = useL10n(
+    const prepareButtonLabel = useL10n(
         "Prepare",
         "PublishTab.Apps.PrepareButton",
     );
@@ -208,7 +208,7 @@ const AppPublisherScreenContents: React.FunctionComponent<{
     const buildIsNeeded = screenState.buildIsNeeded;
     const busyAction = screenState.busyAction;
     const apkIsCurrent = screenState.status.apkExists && !buildIsNeeded;
-    const canRunSetup = !busyAction && !prepareIsReady;
+    const canRunPrepare = !busyAction && !prepareIsReady;
     const canUseConfiguredProject = prepareIsReady && !busyAction;
     const canRunBuild = !busyAction && screenState.hasRequiredBuildSettings;
     const canUseCurrentApk = apkIsCurrent && !busyAction;
@@ -246,11 +246,13 @@ const AppPublisherScreenContents: React.FunctionComponent<{
         },
     );
     const buildTooltipToShow = !prepareIsReady
-        ? buildNeedsSetupTooltip
+        ? buildNeedsPrepareTooltip
         : buildIsNeeded
           ? buildTooltip
           : buildDoneTooltip;
-    const setupTooltipToShow = prepareIsReady ? setupDoneTooltip : setupTooltip;
+    const prepareTooltipToShow = prepareIsReady
+        ? prepareDoneTooltip
+        : prepareTooltip;
 
     return (
         <>
@@ -290,32 +292,32 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                         <Step expanded={true} completed={false}>
                             <StepLabel>
                                 <AppActionButton
-                                    enabled={canRunSetup}
+                                    enabled={canRunPrepare}
                                     l10nKey="PublishTab.Apps.PrepareButton"
                                     onClick={() =>
-                                        screenState.runAction("setup")
+                                        screenState.runAction("prepare")
                                     }
                                     size="large"
-                                    tooltip={setupTooltipToShow}
+                                    tooltip={prepareTooltipToShow}
                                 >
-                                    {setupButtonLabel}
+                                    {prepareButtonLabel}
                                 </AppActionButton>
                             </StepLabel>
                             <StepContent>
                                 <PrepareAppStepper
                                     steps={prepareSteps}
                                     activeStepId={activePrepareStepId}
-                                    isBusy={busyAction === "setup"}
+                                    isBusy={busyAction === "prepare"}
                                 />
                                 <ActionLogAccordion
-                                    controller={screenState.setupLog}
-                                    isActive={busyAction === "setup"}
+                                    controller={screenState.prepareLog}
+                                    isActive={busyAction === "prepare"}
                                     webSocketContext={
-                                        busyAction === "setup"
+                                        busyAction === "prepare"
                                             ? kAppBuilderWebSocketContext
                                             : undefined
                                     }
-                                    dataTestId="setup-log-accordion"
+                                    dataTestId="prepare-log-accordion"
                                 />
                             </StepContent>
                         </Step>
@@ -332,7 +334,7 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                                     tooltip={
                                         prepareIsReady
                                             ? chooseBooksTooltip
-                                            : setupRequiredTooltip
+                                            : prepareRequiredTooltip
                                     }
                                 >
                                     Choose Books...
@@ -368,7 +370,7 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                                     tooltip={
                                         prepareIsReady
                                             ? settingsTooltip
-                                            : setupRequiredTooltip
+                                            : prepareRequiredTooltip
                                     }
                                     iconBeforeText={<SettingsIcon />}
                                 >

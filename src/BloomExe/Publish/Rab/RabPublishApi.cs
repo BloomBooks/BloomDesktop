@@ -4,6 +4,9 @@ using Bloom.Api;
 
 namespace Bloom.Publish.Rab
 {
+    /// <summary>
+    /// Registers the Bloom-side API endpoints that drive the Reading App Builder prepare, build, and install workflow.
+    /// </summary>
     public class RabPublishApi
     {
         private const string kApiUrlPart = "publish/rab/";
@@ -16,6 +19,9 @@ namespace Bloom.Publish.Rab
             _rabProjectService = rabProjectService;
         }
 
+        /// <summary>
+        /// Adds the App Builder endpoints to Bloom's API handler.
+        /// </summary>
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             // Keep the API layer thin: deserialize/route here and let RabProjectService own the workflow rules.
@@ -90,12 +96,12 @@ namespace Bloom.Publish.Rab
                 true
             );
             apiHandler.RegisterAsyncEndpointHandler(
-                kApiUrlPart + "setup",
+                kApiUrlPart + "prepare",
                 async request =>
                     await RunRabOperationAsync(
                         request,
-                        () => _rabProjectService.SetupAsync(),
-                        "Setup"
+                        () => _rabProjectService.PrepareAsync(),
+                        "Prepare"
                     ),
                 true
             );

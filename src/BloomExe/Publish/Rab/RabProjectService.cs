@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Security;
 using System.Text.RegularExpressions;
@@ -26,6 +27,9 @@ using SIL.Reporting;
 
 namespace Bloom.Publish.Rab
 {
+    /// <summary>
+    /// Coordinates Bloom's Reading App Builder workflow, including preparing the project, building an APK, and installing it on a device.
+    /// </summary>
     public class RabProjectService
     {
         private const string kDefaultAlias = "bloomkey";
@@ -105,18 +109,27 @@ namespace Bloom.Publish.Rab
             _progress = progress ?? new WebSocketProgress(_webSocketServer, kWebSocketContext);
         }
 
-        public Task SetupAsync()
+        /// <summary>
+        /// Prepares the collection-owned Reading App Builder workspace so the project can be customized or built.
+        /// </summary>
+        public Task PrepareAsync()
         {
-            Setup();
+            Prepare();
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Builds a fresh APK from the current prepared project state.
+        /// </summary>
         public Task BuildAsync()
         {
             Build();
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Clears cached BloomPUB exports that are only intended to live for the current Apps screen session.
+        /// </summary>
         public void ResetBloomPubCacheForScreenSession()
         {
             var paths = GetPaths();
@@ -127,23 +140,35 @@ namespace Bloom.Publish.Rab
             );
         }
 
+        /// <summary>
+        /// Installs the latest APK on a connected Android device and launches it.
+        /// </summary>
         public Task InstallAsync()
         {
             Install();
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Loads the effective app settings by merging the saved RAB project with Bloom-derived defaults.
+        /// </summary>
         public RabAppSettings GetAppSettings()
         {
             var paths = GetPaths();
             return GetEffectiveAppSettings(paths);
         }
 
+        /// <summary>
+        /// Returns the default app settings Bloom would use before a project has been prepared.
+        /// </summary>
         public RabAppSettings GetDefaultSettings()
         {
             return GetDefaultAppSettings();
         }
 
+        /// <summary>
+        /// Returns all app icon choices available from Bloom and the installed Reading App Builder toolchain.
+        /// </summary>
         public IReadOnlyCollection<RabIconChoice> GetAvailableIconChoices()
         {
             return new[] { GetBundledIconRoot(), GetRabInstalledIconRoot() }
@@ -193,6 +218,9 @@ namespace Bloom.Publish.Rab
             };
         }
 
+        /// <summary>
+        /// Persists app settings back to the prepared Reading App Builder project.
+        /// </summary>
         public void SaveAppSettings(RabAppSettings settings)
         {
             var paths = GetPaths();
@@ -200,11 +228,11 @@ namespace Bloom.Publish.Rab
 
             var state = EnsureStateHasProjectAndSigningInfo(
                 paths,
-                LoadState(paths) ?? new RabSetupState()
+                LoadState(paths) ?? new RabPrepareState()
             );
             if (string.IsNullOrWhiteSpace(state.AppDefPath) || !RobustFile.Exists(state.AppDefPath))
                 throw new ApplicationException(
-                    "Run Setup before customizing the Reading App Builder project."
+                    "Run Prepare before customizing the Reading App Builder project."
                 );
 
             var normalizedSettings = NormalizeSettingsForPersistence(paths, settings);
@@ -217,6 +245,9 @@ namespace Bloom.Publish.Rab
             SaveState(paths, state);
         }
 
+        /// <summary>
+        /// Persists the ordered list of books Bloom should export into the prepared Reading App Builder project.
+        /// </summary>
         public void SaveTrackedBooks(IReadOnlyCollection<RabTrackedBookInfo> trackedBooks)
         {
             if (trackedBooks == null || trackedBooks.Count == 0)
@@ -227,7 +258,7 @@ namespace Bloom.Publish.Rab
 
             var state = EnsureStateHasProjectAndSigningInfo(
                 paths,
-                LoadState(paths) ?? new RabSetupState()
+                LoadState(paths) ?? new RabPrepareState()
             );
             var existingByFolder = (state.Books ?? new List<RabBookPublishInfo>())
                 .Where(book => !string.IsNullOrWhiteSpace(book.FolderPath))
@@ -239,11 +270,17 @@ namespace Bloom.Publish.Rab
             SaveState(paths, state);
         }
 
+        /// <summary>
+        /// Opens the prepared Reading App Builder project in the external RAB application.
+        /// </summary>
         public void OpenInRab()
         {
             OpenInRabInternal();
         }
 
+        /// <summary>
+        /// Opens the prepared Reading App Builder project and waits until the RAB window is visible.
+        /// </summary>
         public async Task OpenInRabAndWaitForWindowAsync()
         {
             OpenInRabInternal();
@@ -256,7 +293,7 @@ namespace Bloom.Publish.Rab
             var appDefPath = FindAppDefPath(paths);
             if (string.IsNullOrWhiteSpace(appDefPath) || !RobustFile.Exists(appDefPath))
                 throw new ApplicationException(
-                    "Run Setup before opening the app in Reading App Builder."
+                    "Run Prepare before opening the app in Reading App Builder."
                 );
 
             var rabLauncher = FindRabLauncherPath();
@@ -289,13 +326,16 @@ namespace Bloom.Publish.Rab
             }
         }
 
+        /// <summary>
+        /// Returns the current prepare/build/install status that drives the Apps screen.
+        /// </summary>
         public RabProjectStatus GetStatus()
         {
             var paths = GetPaths();
             var appDefPath = FindAppDefPath(paths);
             var latestApk = FindLatestApkPath(paths);
             var apkExists = !string.IsNullOrEmpty(latestApk) && RobustFile.Exists(latestApk);
-            var rabInstalled = IsRabInstalledForSetup();
+            var rabInstalled = IsRabInstalledForPrepare();
             var state = EnsureStateHasProjectAndSigningInfo(paths, LoadState(paths), appDefPath);
             var prepareSteps = GetPrepareSteps(paths, state, appDefPath, rabInstalled);
             var trackedBooks = GetConfiguredTrackedBooks(paths).ToArray();
@@ -346,6 +386,9 @@ namespace Bloom.Publish.Rab
             return status;
         }
 
+        /// <summary>
+        /// Estimates per-book and overall app size using available BloomPUB exports when possible.
+        /// </summary>
         public RabAppSizeEstimates GetSizeEstimates()
         {
             var paths = GetPaths();
@@ -379,6 +422,9 @@ namespace Bloom.Publish.Rab
             };
         }
 
+        /// <summary>
+        /// Reports an App Builder failure to Bloom's log and the progress channel used by the Apps screen.
+        /// </summary>
         public void ReportFailure(string action, Exception error)
         {
             Logger.WriteError($"Reading App Builder {action} failed.", error);
@@ -390,17 +436,17 @@ namespace Bloom.Publish.Rab
                 _progress.MessageWithoutLocalizing($"Bloom log: {Logger.LogPath}");
         }
 
-        private void Setup()
+        private void Prepare()
         {
             var paths = GetPaths();
-            _activeProgressAction = "setup";
+            _activeProgressAction = "prepare";
             try
             {
                 ReportProgressStage("checking-installer", 0);
-                if (!EnsureRabInstalledForSetup())
+                if (!EnsureRabInstalledForPrepare())
                     return;
 
-                // Setup makes the on-disk RAB workspace match Bloom's current settings and tracked-book list,
+                // Prepare makes the on-disk RAB workspace match Bloom's current settings and tracked-book list,
                 // creating the project only on the first run and refreshing inputs after that.
                 EnsureWorkspaceFolders(paths);
                 EnsureRabBuildPrerequisites(paths);
@@ -412,11 +458,11 @@ namespace Bloom.Publish.Rab
                 );
 
                 ReportProgressStage("exporting-bloompubs", 10);
-                var trackedBooks = ExportSetupBooks(paths);
+                var trackedBooks = ExportPrepareBooks(paths);
                 var effectiveSettings = GetEffectiveAppSettings(paths);
                 var supportFiles = EnsureProjectSupportFiles(paths);
                 var existingProjectPath = FindAppDefPath(paths);
-                RabSetupState state;
+                RabPrepareState state;
                 var createdNewProject = string.IsNullOrEmpty(existingProjectPath);
 
                 if (createdNewProject)
@@ -432,7 +478,7 @@ namespace Bloom.Publish.Rab
                     );
                     EnsureKeystore(keystorePath, keystorePassword);
 
-                    state = new RabSetupState()
+                    state = new RabPrepareState()
                     {
                         KeystorePath = keystorePath,
                         KeystorePassword = keystorePassword,
@@ -469,7 +515,7 @@ namespace Bloom.Publish.Rab
                     );
                     state = EnsureStateHasProjectAndSigningInfo(
                         paths,
-                        LoadState(paths) ?? new RabSetupState(),
+                        LoadState(paths) ?? new RabPrepareState(),
                         existingProjectPath
                     );
                 }
@@ -495,11 +541,12 @@ namespace Bloom.Publish.Rab
                 }
 
                 ReconcileProjectWithImportedBooks(existingProjectPath, trackedBooks);
+                SynchronizeProjectFonts(existingProjectPath, trackedBooks);
                 ReportProgressStage("updating-project", 85);
                 SaveState(paths, state);
 
                 ReportProgressStage("complete", 100);
-                _progress.MessageWithoutLocalizing("Setup complete.", ProgressKind.Heading);
+                _progress.MessageWithoutLocalizing("Prepare complete.", ProgressKind.Heading);
                 _progress.MessageWithoutLocalizing($"Project file: {existingProjectPath}");
             }
             finally
@@ -508,11 +555,11 @@ namespace Bloom.Publish.Rab
             }
         }
 
-        private bool EnsureRabInstalledForSetup()
+        private bool EnsureRabInstalledForPrepare()
         {
             ReportProgressStage("checking-installer", 0);
 
-            if (IsRabInstalledForSetup())
+            if (IsRabInstalledForPrepare())
                 return true;
 
             var installerPath = FindRabSetupInstallerPath();
@@ -536,7 +583,7 @@ namespace Bloom.Publish.Rab
                     _progress.MessageWithoutLocalizing($"Installer: {installerPath}");
                     return false;
                 }
-                if (!IsRabInstalledForSetup())
+                if (!IsRabInstalledForPrepare())
                     throw new ApplicationException(
                         "Reading App Builder installer finished, but Bloom still could not find the installed program."
                     );
@@ -616,6 +663,7 @@ namespace Bloom.Publish.Rab
                     paths.RabRoot
                 );
                 ReconcileProjectWithImportedBooks(state.AppDefPath, trackedBooks);
+                SynchronizeProjectFonts(state.AppDefPath, trackedBooks);
                 state.Books = trackedBooks;
                 SaveState(paths, state);
 
@@ -911,7 +959,7 @@ namespace Bloom.Publish.Rab
             Directory.CreateDirectory(paths.LauncherIconRoot);
         }
 
-        internal virtual List<RabBookPublishInfo> ExportSetupBooks(RabWorkspacePaths paths)
+        internal virtual List<RabBookPublishInfo> ExportPrepareBooks(RabWorkspacePaths paths)
         {
             var state = LoadState(paths);
             if (state?.Books?.Count > 0)
@@ -926,11 +974,11 @@ namespace Bloom.Publish.Rab
 
         internal virtual List<RabBookPublishInfo> ExportTrackedBooks(
             RabWorkspacePaths paths,
-            RabSetupState state
+            RabPrepareState state
         )
         {
             if (state.Books == null || state.Books.Count == 0)
-                return ExportSetupBooks(paths);
+                return ExportPrepareBooks(paths);
 
             var bookInfos = new List<BookInfo>();
             foreach (var trackedBook in state.Books)
@@ -1073,6 +1121,128 @@ namespace Bloom.Publish.Rab
             }
         }
 
+        private static void SynchronizeProjectFonts(
+            string appDefPath,
+            IEnumerable<RabBookPublishInfo> trackedBooks
+        )
+        {
+            var project = RabAppProject.Load(appDefPath);
+            project.SynchronizeFonts(ReadFontDefinitionsFromBloomPubs(trackedBooks));
+            project.Save();
+        }
+
+        internal static List<RabAppFontDefinition> ReadFontDefinitionsFromBloomPub(
+            string bloomPubPath
+        )
+        {
+            if (string.IsNullOrWhiteSpace(bloomPubPath) || !RobustFile.Exists(bloomPubPath))
+                return new List<RabAppFontDefinition>();
+
+            using var archive = ZipFile.OpenRead(bloomPubPath);
+            var fontsCssEntry = archive.GetEntry("fonts.css");
+            if (fontsCssEntry == null)
+                return new List<RabAppFontDefinition>();
+
+            using var reader = new StreamReader(fontsCssEntry.Open());
+            var fontsCss = reader.ReadToEnd();
+            if (string.IsNullOrWhiteSpace(fontsCss))
+                return new List<RabAppFontDefinition>();
+
+            return Regex
+                .Matches(fontsCss, "@font-face\\s*\\{(?<body>[^}]*)\\}", RegexOptions.IgnoreCase)
+                .Cast<Match>()
+                .Select(match => CreateFontDefinitionFromCss(match.Groups["body"].Value))
+                .Where(font => font != null)
+                .ToList();
+        }
+
+        private static List<RabAppFontDefinition> ReadFontDefinitionsFromBloomPubs(
+            IEnumerable<RabBookPublishInfo> trackedBooks
+        )
+        {
+            return (trackedBooks ?? Array.Empty<RabBookPublishInfo>())
+                .SelectMany(book => ReadFontDefinitionsFromBloomPub(book.BloomPubPath))
+                .GroupBy(
+                    font =>
+                        string.Join(
+                            "\u001f",
+                            font.DisplayName ?? string.Empty,
+                            font.Weight ?? string.Empty,
+                            font.Style ?? string.Empty,
+                            font.FileName ?? string.Empty,
+                            font.Format ?? string.Empty
+                        ),
+                    StringComparer.OrdinalIgnoreCase
+                )
+                .Select(group => group.First())
+                .ToList();
+        }
+
+        private static RabAppFontDefinition CreateFontDefinitionFromCss(string cssBody)
+        {
+            var familyName = ReadCssProperty(cssBody, "font-family");
+            var fileName = ReadCssUrlFileName(cssBody);
+            if (string.IsNullOrWhiteSpace(familyName) || string.IsNullOrWhiteSpace(fileName))
+                return null;
+
+            var weight = ReadCssProperty(cssBody, "font-weight") ?? "normal";
+            var style = ReadCssProperty(cssBody, "font-style") ?? "normal";
+            var format = ReadCssFormat(cssBody) ?? Path.GetExtension(fileName).TrimStart('.');
+
+            return new RabAppFontDefinition()
+            {
+                FamilyName = familyName,
+                FontName = BuildFontName(familyName, weight, style),
+                DisplayName = familyName,
+                FileName = fileName,
+                Format = format,
+                Weight = weight,
+                Style = style,
+            };
+        }
+
+        private static string ReadCssProperty(string cssBody, string propertyName)
+        {
+            var match = Regex.Match(
+                cssBody ?? string.Empty,
+                $@"{Regex.Escape(propertyName)}\s*:\s*(?<value>[^;]+)",
+                RegexOptions.IgnoreCase
+            );
+            return match.Success ? match.Groups["value"].Value.Trim().Trim('\'', '"') : null;
+        }
+
+        private static string ReadCssUrlFileName(string cssBody)
+        {
+            var match = Regex.Match(
+                cssBody ?? string.Empty,
+                @"url\((['""]?)(?<file>[^)'""]+)\1\)",
+                RegexOptions.IgnoreCase
+            );
+            return match.Success ? Path.GetFileName(match.Groups["file"].Value.Trim()) : null;
+        }
+
+        private static string ReadCssFormat(string cssBody)
+        {
+            var match = Regex.Match(
+                cssBody ?? string.Empty,
+                @"format\((['""]?)(?<format>[^)'""]+)\1\)",
+                RegexOptions.IgnoreCase
+            );
+            return match.Success ? match.Groups["format"].Value.Trim() : null;
+        }
+
+        private static string BuildFontName(string familyName, string weight, string style)
+        {
+            var parts = new List<string> { familyName };
+            if (!string.Equals(weight, "normal", StringComparison.OrdinalIgnoreCase))
+                parts.Add(char.ToUpperInvariant(weight[0]) + weight.Substring(1).ToLowerInvariant());
+
+            if (!string.Equals(style, "normal", StringComparison.OrdinalIgnoreCase))
+                parts.Add(char.ToUpperInvariant(style[0]) + style.Substring(1).ToLowerInvariant());
+
+            return string.Join(" ", parts.Where(part => !string.IsNullOrWhiteSpace(part)));
+        }
+
         private void ReportProgressStage(string stage, int percent)
         {
             var clampedPercent = Math.Max(0, Math.Min(100, percent));
@@ -1095,7 +1265,7 @@ namespace Bloom.Publish.Rab
             if (totalBooks <= 0 || string.IsNullOrWhiteSpace(_activeProgressAction))
                 return;
 
-            // Keep the setup/build progress bar moving during per-book export work instead of jumping straight to the next stage.
+            // Keep the prepare/build progress bar moving during per-book export work instead of jumping straight to the next stage.
             var startPercent = _activeProgressAction == "build" ? 10 : 10;
             var endPercent = _activeProgressAction == "build" ? 30 : 45;
             var percent =
@@ -1406,7 +1576,7 @@ namespace Bloom.Publish.Rab
             RabWorkspacePaths paths,
             RabAppSettings settings,
             IEnumerable<RabBookPublishInfo> books,
-            RabSetupState state,
+            RabPrepareState state,
             RabProjectSupportFiles supportFiles
         )
         {
@@ -1438,7 +1608,7 @@ namespace Bloom.Publish.Rab
 
         private string BuildRabArgsForProjectUpdate(
             RabWorkspacePaths paths,
-            RabSetupState state,
+            RabPrepareState state,
             IEnumerable<RabBookPublishInfo> books,
             RabProjectSupportFiles supportFiles,
             bool buildProject
@@ -1480,7 +1650,7 @@ namespace Bloom.Publish.Rab
 
         private void AddProjectConfigurationArguments(
             List<string> arguments,
-            RabSetupState state,
+            RabPrepareState state,
             RabProjectSupportFiles supportFiles
         )
         {
@@ -1633,7 +1803,7 @@ namespace Bloom.Publish.Rab
                 throw new ApplicationException($"Bloom could not start {fileName}.");
         }
 
-        internal virtual bool IsRabInstalledForSetup()
+        internal virtual bool IsRabInstalledForPrepare()
         {
             var installDir = GetRabRegistryValue("InstallDir");
             if (string.IsNullOrWhiteSpace(installDir))
@@ -1936,7 +2106,7 @@ namespace Bloom.Publish.Rab
 
         internal virtual RabPrepareStepStatus[] GetPrepareSteps(
             RabWorkspacePaths paths,
-            RabSetupState state,
+            RabPrepareState state,
             string appDefPath,
             bool rabInstalled
         )
@@ -2006,7 +2176,7 @@ namespace Bloom.Publish.Rab
             return directPath;
         }
 
-        internal virtual bool HasSigningKey(RabSetupState state)
+        internal virtual bool HasSigningKey(RabPrepareState state)
         {
             return state != null
                 && !string.IsNullOrWhiteSpace(state.KeystorePath)
@@ -2128,7 +2298,7 @@ namespace Bloom.Publish.Rab
             return matchingBookInfo;
         }
 
-        private RabSetupState LoadStateOrThrow(RabWorkspacePaths paths)
+        private RabPrepareState LoadStateOrThrow(RabWorkspacePaths paths)
         {
             var state = EnsureStateHasProjectAndSigningInfo(paths, LoadState(paths));
             if (
@@ -2137,15 +2307,15 @@ namespace Bloom.Publish.Rab
                 || !RobustFile.Exists(state.AppDefPath)
             )
                 throw new ApplicationException(
-                    "Use Setup to create the Reading App Builder project before building or installing."
+                    "Use Prepare to create the Reading App Builder project before building or installing."
                 );
 
             return state;
         }
 
-        private RabSetupState EnsureStateHasProjectAndSigningInfo(
+        private RabPrepareState EnsureStateHasProjectAndSigningInfo(
             RabWorkspacePaths paths,
-            RabSetupState state,
+            RabPrepareState state,
             string appDefPath = null
         )
         {
@@ -2155,7 +2325,7 @@ namespace Bloom.Publish.Rab
                 return state;
 
             var project = RabAppProject.Load(appDefPath);
-            state = state ?? new RabSetupState();
+            state = state ?? new RabPrepareState();
             state.AppDefPath = appDefPath;
             state.ProjectName = string.IsNullOrWhiteSpace(state.ProjectName)
                 ? Path.GetFileNameWithoutExtension(appDefPath)
@@ -2494,20 +2664,20 @@ namespace Bloom.Publish.Rab
             );
         }
 
-        private RabSetupState LoadState(RabWorkspacePaths paths)
+        private RabPrepareState LoadState(RabWorkspacePaths paths)
         {
-            if (!RobustFile.Exists(paths.SetupStatePath))
+            if (!RobustFile.Exists(paths.PrepareStatePath))
                 return null;
 
-            return JsonConvert.DeserializeObject<RabSetupState>(
-                RobustFile.ReadAllText(paths.SetupStatePath)
+            return JsonConvert.DeserializeObject<RabPrepareState>(
+                RobustFile.ReadAllText(paths.PrepareStatePath)
             );
         }
 
-        private void SaveState(RabWorkspacePaths paths, RabSetupState state)
+        private void SaveState(RabWorkspacePaths paths, RabPrepareState state)
         {
             RobustFile.WriteAllText(
-                paths.SetupStatePath,
+                paths.PrepareStatePath,
                 JsonConvert.SerializeObject(state, Formatting.Indented)
             );
         }

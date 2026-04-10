@@ -519,7 +519,7 @@ namespace BloomTests.Publish.Rab
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var legacyRabRoot = Path.Combine(tempFolder.Path, "rab");
             Directory.CreateDirectory(legacyRabRoot);
-            var legacyFilePath = Path.Combine(legacyRabRoot, "setup.json");
+            var legacyFilePath = Path.Combine(legacyRabRoot, "prepare.json");
             RobustFile.WriteAllText(legacyFilePath, "{}");
 
             var service = new RealPathRabProjectService(tempFolder);
@@ -532,7 +532,7 @@ namespace BloomTests.Publish.Rab
             );
             Assert.That(Directory.Exists(legacyRabRoot), Is.False);
             Assert.That(Directory.Exists(paths.RabRoot), Is.True);
-            Assert.That(RobustFile.Exists(Path.Combine(paths.RabRoot, "setup.json")), Is.True);
+            Assert.That(RobustFile.Exists(Path.Combine(paths.RabRoot, "prepare.json")), Is.True);
         }
 
         [Test]
@@ -728,7 +728,7 @@ namespace BloomTests.Publish.Rab
             Assert.That(service.GetStatus().ProjectExists, Is.False);
             Assert.That(service.GetStatus().ApkExists, Is.False);
 
-            await service.SetupAsync();
+            await service.PrepareAsync();
             Assert.That(service.GetStatus().BuildNeeded, Is.True);
             await service.BuildAsync();
 
@@ -744,13 +744,13 @@ namespace BloomTests.Publish.Rab
             Assert.That(status.ApkPath, Is.Not.Null);
             Assert.That(RobustFile.Exists(status.ApkPath), Is.True);
 
-            var setupState = JsonConvert.DeserializeObject<RabSetupState>(
-                RobustFile.ReadAllText(paths.SetupStatePath)
+            var prepareState = JsonConvert.DeserializeObject<RabPrepareState>(
+                RobustFile.ReadAllText(paths.PrepareStatePath)
             );
-            Assert.That(setupState, Is.Not.Null);
-            Assert.That(setupState.AppDefPath, Is.EqualTo(status.AppDefPath));
+            Assert.That(prepareState, Is.Not.Null);
+            Assert.That(prepareState.AppDefPath, Is.EqualTo(status.AppDefPath));
             Assert.That(
-                setupState.Books.Select(book => book.Title),
+                prepareState.Books.Select(book => book.Title),
                 Is.EqualTo(new[] { "Book One" })
             );
 
@@ -818,7 +818,7 @@ namespace BloomTests.Publish.Rab
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
 
-            await service.SetupAsync();
+            await service.PrepareAsync();
             await service.BuildAsync();
 
             Assert.That(service.Progress.Percents, Does.Contain(70));
@@ -901,7 +901,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task SetupAsync_DeletesBrokenJdkInstallBeforeInstallingBuildTools()
+        public async Task PrepareAsync_DeletesBrokenJdkInstallBeforeInstallingBuildTools()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -920,7 +920,7 @@ namespace BloomTests.Publish.Rab
             );
             RobustFile.WriteAllText(service.GetRabJavaExecutablePath(), "java");
 
-            await service.SetupAsync();
+            await service.PrepareAsync();
 
             Assert.That(service.JavaExistsBeforeInstallSdksCommand, Is.False);
             Assert.That(service.TzdbExistsBeforeInstallSdksCommand, Is.False);
@@ -944,7 +944,7 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.SetupAsync();
+            await service.PrepareAsync();
 
             var appDefPath = service.GetStatus().AppDefPath;
             var booksRoot = Path.Combine(
@@ -985,7 +985,7 @@ namespace BloomTests.Publish.Rab
             service.FontsCssByFolderPath[trackedBooks[0].FolderPath] =
                 "@font-face {font-family:'ABeeZee'; font-weight:normal; font-style:normal; src:url('ABeeZee-Regular.woff2') format('woff2');}";
 
-            await service.SetupAsync();
+            await service.PrepareAsync();
             await service.BuildAsync();
 
             var document = XDocument.Load(service.GetStatus().AppDefPath);
@@ -1022,7 +1022,7 @@ namespace BloomTests.Publish.Rab
             RobustFile.WriteAllText(staleBloomPubPath, "BloomPUB for Butterfly");
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.SetupAsync();
+            await service.PrepareAsync();
             await service.BuildAsync();
 
             Assert.That(RobustFile.Exists(staleBloomPubPath), Is.False);
@@ -1052,8 +1052,8 @@ namespace BloomTests.Publish.Rab
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
 
-            await service.SetupAsync();
-            var writesAfterSetup = service.BloomPubWriteCount;
+            await service.PrepareAsync();
+            var writesAfterPrepare = service.BloomPubWriteCount;
 
             await service.BuildAsync();
             var writesAfterFirstBuild = service.BloomPubWriteCount;
@@ -1061,7 +1061,7 @@ namespace BloomTests.Publish.Rab
             await service.BuildAsync();
 
             Assert.That(service.BloomPubWriteCount, Is.EqualTo(writesAfterFirstBuild));
-            Assert.That(writesAfterFirstBuild, Is.EqualTo(writesAfterSetup));
+            Assert.That(writesAfterFirstBuild, Is.EqualTo(writesAfterPrepare));
             Assert.That(
                 service.Progress.Messages.Select(message => message.Item1),
                 Does.Contain("Reusing existing BloomPUB for Flower...")
@@ -1087,7 +1087,7 @@ namespace BloomTests.Publish.Rab
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
 
-            await service.SetupAsync();
+            await service.PrepareAsync();
             Assert.That(RobustFile.Exists(trackedBooks[0].BloomPubPath), Is.True);
 
             service.ResetBloomPubCacheForScreenSession();
@@ -1121,7 +1121,7 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[1].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.SetupAsync();
+            await service.PrepareAsync();
             await service.BuildAsync();
 
             Assert.That(service.GetStatus().BuildNeeded, Is.False);
@@ -1175,7 +1175,7 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.SetupAsync();
+            await service.PrepareAsync();
             service.Commands.Clear();
 
             service.SaveAppSettings(
@@ -1220,7 +1220,7 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.SetupAsync();
+            await service.PrepareAsync();
 
             service.SaveAppSettings(
                 new RabAppSettings
@@ -1230,12 +1230,12 @@ namespace BloomTests.Publish.Rab
                 }
             );
 
-            var persistedState = JObject.Parse(RobustFile.ReadAllText(paths.SetupStatePath));
+            var persistedState = JObject.Parse(RobustFile.ReadAllText(paths.PrepareStatePath));
             Assert.That(persistedState["Settings"], Is.Null);
         }
 
         [Test]
-        public void SaveAppSettings_ThrowsBeforeSetupCreatesProject()
+        public void SaveAppSettings_ThrowsBeforePrepareCreatesProject()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -1264,7 +1264,7 @@ namespace BloomTests.Publish.Rab
 
             Assert.That(
                 error?.Message,
-                Is.EqualTo("Run Setup before customizing the Reading App Builder project.")
+                Is.EqualTo("Run Prepare before customizing the Reading App Builder project.")
             );
         }
 
@@ -1286,7 +1286,7 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.SetupAsync();
+            await service.PrepareAsync();
 
             service.OpenInRab();
 
@@ -1331,7 +1331,7 @@ namespace BloomTests.Publish.Rab
             {
                 TryBringRunningRabToFrontResult = true,
             };
-            await service.SetupAsync();
+            await service.PrepareAsync();
 
             service.OpenInRab();
 
@@ -1358,7 +1358,7 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.SetupAsync();
+            await service.PrepareAsync();
 
             Directory.CreateDirectory(Path.GetDirectoryName(service.GetRabSettingsFilePath()));
             new XDocument(
@@ -1415,7 +1415,7 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.SetupAsync();
+            await service.PrepareAsync();
 
             service.Progress.Messages.Clear();
             service.OpenInRab();
@@ -1551,7 +1551,7 @@ namespace BloomTests.Publish.Rab
                 new List<RabBookPublishInfo>()
             )
             {
-                IsRabInstalledForSetupResult = false,
+                IsRabInstalledForPrepareResult = false,
             };
 
             var status = service.GetStatus();
@@ -1563,7 +1563,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task GetStatus_ReportsCompletedPrepareSteps_AfterSetupAsync()
+        public async Task GetStatus_ReportsCompletedPrepareSteps_AfterPrepareAsync()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -1581,13 +1581,13 @@ namespace BloomTests.Publish.Rab
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
 
-            await service.SetupAsync();
+            await service.PrepareAsync();
 
             Assert.That(service.GetStatus().PrepareSteps.All(step => step.Complete), Is.True);
         }
 
         [Test]
-        public async Task SetupAsync_InstallsRabSilently_AndContinues_WhenRegistryInstallIsMissingAndInstallerExists()
+        public async Task PrepareAsync_InstallsRabSilently_AndContinues_WhenRegistryInstallIsMissingAndInstallerExists()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -1610,11 +1610,11 @@ namespace BloomTests.Publish.Rab
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks)
             {
-                IsRabInstalledForSetupResult = false,
+                IsRabInstalledForPrepareResult = false,
                 RabSetupInstallerPathToReturn = installerPath,
             };
 
-            await service.SetupAsync();
+            await service.PrepareAsync();
 
             Assert.That(service.InstalledRabFromSetupPaths, Is.EqualTo(new[] { installerPath }));
             Assert.That(service.Commands, Is.Not.Empty);
@@ -1632,7 +1632,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task SetupAsync_DoesNotFail_WhenInstallerLaunchIsCanceledByUser()
+        public async Task PrepareAsync_DoesNotFail_WhenInstallerLaunchIsCanceledByUser()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -1648,7 +1648,7 @@ namespace BloomTests.Publish.Rab
                 new List<RabBookPublishInfo>()
             )
             {
-                IsRabInstalledForSetupResult = false,
+                IsRabInstalledForPrepareResult = false,
                 RabSetupInstallerPathToReturn = installerPath,
                 LaunchExternalTargetException = new Win32Exception(
                     1223,
@@ -1656,7 +1656,7 @@ namespace BloomTests.Publish.Rab
                 ),
             };
 
-            Assert.DoesNotThrowAsync(async () => await service.SetupAsync());
+            Assert.DoesNotThrowAsync(async () => await service.PrepareAsync());
 
             Assert.That(service.Commands, Is.Empty);
             Assert.That(service.InstalledRabFromSetupPaths, Is.EqualTo(new[] { installerPath }));
@@ -1719,7 +1719,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task SetupAsync_OpensDownloadPage_WhenRegistryInstallAndInstallerAreMissing()
+        public async Task PrepareAsync_OpensDownloadPage_WhenRegistryInstallAndInstallerAreMissing()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -1730,11 +1730,11 @@ namespace BloomTests.Publish.Rab
                 new List<RabBookPublishInfo>()
             )
             {
-                IsRabInstalledForSetupResult = false,
+                IsRabInstalledForPrepareResult = false,
                 RabSetupInstallerPathToReturn = null,
             };
 
-            await service.SetupAsync();
+            await service.PrepareAsync();
 
             Assert.That(service.Commands, Is.Empty);
             Assert.That(
@@ -1772,9 +1772,9 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(trackedBooks[0].FolderPath);
 
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
-            await service.SetupAsync();
+            await service.PrepareAsync();
             await service.BuildAsync();
-            service.IsRabInstalledForSetupResult = false;
+            service.IsRabInstalledForPrepareResult = false;
 
             var status = service.GetStatus();
 
@@ -1842,7 +1842,7 @@ namespace BloomTests.Publish.Rab
             }
             public List<string> ExternalTargetsStarted { get; } = new List<string>();
             public ProgressSpy Progress => _progressSpy;
-            public bool IsRabInstalledForSetupResult { get; set; } = true;
+            public bool IsRabInstalledForPrepareResult { get; set; } = true;
             public string RabLauncherPathToReturn { get; set; } =
                 @"C:\Program Files (x86)\SIL\Reading App Builder\rab.bat";
             public string RabSetupInstallerPathToReturn { get; set; } =
@@ -1887,14 +1887,14 @@ namespace BloomTests.Publish.Rab
                 });
             }
 
-            internal override List<RabBookPublishInfo> ExportSetupBooks(RabWorkspacePaths paths)
+            internal override List<RabBookPublishInfo> ExportPrepareBooks(RabWorkspacePaths paths)
             {
                 return ExportBooks(paths, _trackedBooks);
             }
 
             internal override List<RabBookPublishInfo> ExportTrackedBooks(
                 RabWorkspacePaths paths,
-                RabSetupState state
+                RabPrepareState state
             )
             {
                 Assert.That(state.Books, Is.Not.Null);
@@ -2027,9 +2027,9 @@ namespace BloomTests.Publish.Rab
                 return RabLauncherPathToReturn;
             }
 
-            internal override bool IsRabInstalledForSetup()
+            internal override bool IsRabInstalledForPrepare()
             {
-                return IsRabInstalledForSetupResult;
+                return IsRabInstalledForPrepareResult;
             }
 
             internal override string FindRabSetupInstallerPath()
@@ -2050,7 +2050,7 @@ namespace BloomTests.Publish.Rab
                 if (LaunchExternalTargetException != null)
                     throw LaunchExternalTargetException;
 
-                IsRabInstalledForSetupResult = true;
+                IsRabInstalledForPrepareResult = true;
             }
 
             internal override string GetRabJdkInstallFolder()

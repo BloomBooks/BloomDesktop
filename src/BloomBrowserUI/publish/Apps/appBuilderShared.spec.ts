@@ -20,15 +20,15 @@ describe("appBuilderShared prepare steps", () => {
         ]);
     });
 
-    it("maps setup websocket stages onto prepare step ids", () => {
-        expect(getPrepareStepIdForStage("setup", "running-installer")).toBe(
+    it("maps prepare websocket stages onto prepare step ids", () => {
+        expect(getPrepareStepIdForStage("prepare", "running-installer")).toBe(
             "rab-installed",
         );
         expect(
-            getPrepareStepIdForStage("setup", "installing-build-tools"),
+            getPrepareStepIdForStage("prepare", "installing-build-tools"),
         ).toBe("build-tools-installed");
         expect(
-            getPrepareStepIdForStage("setup", "generating-signing-key"),
+            getPrepareStepIdForStage("prepare", "generating-signing-key"),
         ).toBe("project-created");
         expect(
             getPrepareStepIdForStage("build", "installing-build-tools"),
