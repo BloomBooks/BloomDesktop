@@ -748,10 +748,7 @@ namespace BloomTests.Publish.Rab
                     "shell monkey -p \"org.sil.en.stories\" -c android.intent.category.LAUNCHER 1"
                 )
             );
-            Assert.That(
-                service.Progress.Warnings,
-                Has.Some.Contains("Removing it and retrying")
-            );
+            Assert.That(service.Progress.Warnings, Has.Some.Contains("Removing it and retrying"));
         }
 
         [Test]
@@ -774,9 +771,16 @@ namespace BloomTests.Publish.Rab
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
             await service.PrepareAsync();
             await service.BuildAsync();
-            service.InstallApkResults.Enqueue((1, "adb.exe: failed to install sample.apk: Failure [INSTALL_FAILED_VERSION_DOWNGRADE]"));
+            service.InstallApkResults.Enqueue(
+                (
+                    1,
+                    "adb.exe: failed to install sample.apk: Failure [INSTALL_FAILED_VERSION_DOWNGRADE]"
+                )
+            );
 
-            var error = Assert.ThrowsAsync<ApplicationException>(async () => await service.InstallAsync());
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.InstallAsync()
+            );
 
             Assert.That(error.Message, Is.EqualTo("adb.exe exited with code 1."));
             Assert.That(service.UninstallCommands, Is.Empty);
@@ -2196,9 +2200,7 @@ namespace BloomTests.Publish.Rab
                 string workingDirectory
             )
             {
-                UninstallCommands.Add(
-                    $"-s \"{deviceSerial}\" uninstall \"{packageName}\""
-                );
+                UninstallCommands.Add($"-s \"{deviceSerial}\" uninstall \"{packageName}\"");
             }
 
             internal override void RunProcess(

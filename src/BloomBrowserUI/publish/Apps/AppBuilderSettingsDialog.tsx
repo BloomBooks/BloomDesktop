@@ -253,7 +253,7 @@ export const AppBuilderSettingsDialog: React.FunctionComponent<{
     );
     const detailsGroupLabel = useL10n(
         "Basics",
-        "PublishTab.Apps.SettingsDialog.DetailsGroup",
+        "PublishTab.Apps.SettingsDialog.BasicsGroup",
     );
     const appearanceGroupLabel = useL10n(
         "Appearance",
@@ -327,11 +327,18 @@ export const AppBuilderSettingsDialog: React.FunctionComponent<{
 
     function getSettingsToSave(): IAppBuilderAppSettings {
         // Start from the current API-backed settings so untouched fields survive a partial Configr edit.
-        return (
-            (normalizeConfigrSettings(
-                settingsToReturnLater,
-            ) as IAppBuilderAppSettings) ?? settings
-        );
+        const normalizedSettings = normalizeConfigrSettings(
+            settingsToReturnLater,
+        ) as Record<string, unknown> | undefined;
+
+        if (!normalizedSettings) {
+            return settings;
+        }
+
+        const { openReadingAppBuilder, ...settingsToSave } = normalizedSettings;
+        void openReadingAppBuilder;
+
+        return settingsToSave as IAppBuilderAppSettings;
     }
 
     function finishStartingReadingAppBuilder(): void {
@@ -471,9 +478,10 @@ export const AppBuilderSettingsDialog: React.FunctionComponent<{
                         label={dialogTitle}
                         showAppBar={false}
                         showSearch={true}
-                        initialValues={
-                            settings as unknown as Record<string, unknown>
-                        }
+                        initialValues={{
+                            ...(settings as unknown as Record<string, unknown>),
+                            openReadingAppBuilder: "",
+                        }}
                         themeOverrides={{
                             palette: {
                                 primary: { main: kBloomBlue },
@@ -538,7 +546,6 @@ export const AppBuilderSettingsDialog: React.FunctionComponent<{
                                     label={moreSettingsLabel}
                                     path="openReadingAppBuilder"
                                     description={readingAppBuilderDescription}
-                                    overrideValue=""
                                     control={openReadingAppBuilderControl}
                                 />
                             </ConfigrGroup>
