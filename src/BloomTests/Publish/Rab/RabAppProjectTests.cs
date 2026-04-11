@@ -1425,10 +1425,7 @@ namespace BloomTests.Publish.Rab
                 Is.EqualTo(legacySharedState.KeystorePassword)
             );
             Assert.That(prepareState.KeyAlias, Is.EqualTo(legacySharedState.KeyAlias));
-            Assert.That(
-                prepareState.AliasPassword,
-                Is.EqualTo(legacySharedState.AliasPassword)
-            );
+            Assert.That(prepareState.AliasPassword, Is.EqualTo(legacySharedState.AliasPassword));
             Assert.That(RobustFile.Exists(migratedPaths.SharedKeystorePath), Is.True);
             Assert.That(
                 RobustFile.ReadAllText(migratedPaths.SharedKeystorePath),
