@@ -530,6 +530,16 @@ namespace BloomTests.Publish.Rab
                 paths.RabRoot,
                 Is.EqualTo(Path.Combine(tempFolder.Path, "app configuration"))
             );
+            Assert.That(
+                paths.KeystoreRoot,
+                Is.EqualTo(
+                    Path.Combine(
+                        Bloom.ProjectContext.GetBloomAppDataFolder(),
+                        "ReadingAppBuilder",
+                        "keystore"
+                    )
+                )
+            );
             Assert.That(Directory.Exists(legacyRabRoot), Is.False);
             Assert.That(Directory.Exists(paths.RabRoot), Is.True);
             Assert.That(RobustFile.Exists(Path.Combine(paths.RabRoot, "prepare.json")), Is.True);
@@ -1316,6 +1326,120 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public async Task PrepareAsync_NewProject_StoresSigningKeyInBloomOwnedFolder()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var bloomOwnedRabRoot = Path.Combine(tempFolder.Path, "user", "ReadingAppBuilder");
+            var paths = new RabWorkspacePaths(tempFolder.Path, bloomOwnedRabRoot);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Book One",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+
+            await service.PrepareAsync();
+
+            var prepareState = JsonConvert.DeserializeObject<RabPrepareState>(
+                RobustFile.ReadAllText(paths.PrepareStatePath)
+            );
+            Assert.That(prepareState.KeystorePath, Is.EqualTo(paths.SharedKeystorePath));
+            Assert.That(prepareState.KeystorePath.StartsWith(paths.RabRoot), Is.False);
+            Assert.That(RobustFile.Exists(paths.SharedKeystorePath), Is.True);
+            Assert.That(RobustFile.Exists(paths.SharedSigningStatePath), Is.True);
+
+            var project = RabAppProject.Load(service.GetStatus().AppDefPath);
+            Assert.That(project.KeystorePath, Is.EqualTo(paths.SharedKeystorePath));
+        }
+
+        [Test]
+        public async Task PrepareAsync_ExistingProject_SeedsBloomOwnedSigningFromLegacyProject()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var legacyPaths = new RabWorkspacePaths(tempFolder.Path);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Book One",
+                    BloomPubPath = Path.Combine(legacyPaths.BloomPubRoot, "book-1.bloompub"),
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+
+            var legacyService = new TestRabProjectService(legacyPaths, "Sample App", trackedBooks);
+            await legacyService.PrepareAsync();
+
+            var legacySharedState = JsonConvert.DeserializeObject<RabPrepareState>(
+                RobustFile.ReadAllText(legacyPaths.PrepareStatePath)
+            );
+            var legacyCollectionKeystorePath = Path.Combine(
+                legacyPaths.LegacyKeystoreRoot,
+                "sample-app.keystore"
+            );
+            Directory.CreateDirectory(legacyPaths.LegacyKeystoreRoot);
+            RobustFile.Copy(legacySharedState.KeystorePath, legacyCollectionKeystorePath, true);
+            legacySharedState.KeystorePath = legacyCollectionKeystorePath;
+            RobustFile.WriteAllText(
+                legacyPaths.PrepareStatePath,
+                JsonConvert.SerializeObject(legacySharedState, Formatting.Indented)
+            );
+
+            var legacyProjectDocument = XDocument.Load(legacyService.GetStatus().AppDefPath);
+            legacyProjectDocument
+                .Root?.Element("signing")
+                ?.Element("keystore")
+                ?.SetValue(legacyCollectionKeystorePath);
+            legacyProjectDocument.Save(legacyService.GetStatus().AppDefPath);
+
+            var bloomOwnedRabRoot = Path.Combine(tempFolder.Path, "user", "ReadingAppBuilder");
+            var migratedPaths = new RabWorkspacePaths(tempFolder.Path, bloomOwnedRabRoot);
+            trackedBooks[0].BloomPubPath = Path.Combine(
+                migratedPaths.BloomPubRoot,
+                "book-1.bloompub"
+            );
+            var migratedService = new TestRabProjectService(
+                migratedPaths,
+                "Sample App",
+                trackedBooks
+            );
+
+            await migratedService.PrepareAsync();
+            await migratedService.PrepareAsync();
+
+            var prepareState = JsonConvert.DeserializeObject<RabPrepareState>(
+                RobustFile.ReadAllText(migratedPaths.PrepareStatePath)
+            );
+            Assert.That(prepareState.KeystorePath, Is.EqualTo(migratedPaths.SharedKeystorePath));
+            Assert.That(
+                prepareState.KeystorePassword,
+                Is.EqualTo(legacySharedState.KeystorePassword)
+            );
+            Assert.That(prepareState.KeyAlias, Is.EqualTo(legacySharedState.KeyAlias));
+            Assert.That(
+                prepareState.AliasPassword,
+                Is.EqualTo(legacySharedState.AliasPassword)
+            );
+            Assert.That(RobustFile.Exists(migratedPaths.SharedKeystorePath), Is.True);
+            Assert.That(
+                RobustFile.ReadAllText(migratedPaths.SharedKeystorePath),
+                Is.EqualTo(RobustFile.ReadAllText(legacyCollectionKeystorePath))
+            );
+
+            var project = RabAppProject.Load(migratedService.GetStatus().AppDefPath);
+            Assert.That(project.KeystorePath, Is.EqualTo(migratedPaths.SharedKeystorePath));
+        }
+
+        [Test]
         public void SaveAppSettings_ThrowsBeforePrepareCreatesProject()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
@@ -2068,7 +2192,10 @@ namespace BloomTests.Publish.Rab
                 }
 
                 if (tokens.Contains("-load"))
+                {
+                    UpdateProjectSigning(tokens, GetTokenValue(tokens, "-load"));
                     ImportBooksIntoProject(tokens, GetTokenValue(tokens, "-load"));
+                }
 
                 if (tokens.Contains("-load") && tokens.Contains("-build"))
                 {
@@ -2422,6 +2549,20 @@ namespace BloomTests.Publish.Rab
                         }
                     }
                 }
+            }
+
+            private void UpdateProjectSigning(IReadOnlyList<string> tokens, string appDefPath)
+            {
+                var document = XDocument.Load(appDefPath);
+                var signing = document.Root?.Element("signing");
+                Assert.That(signing, Is.Not.Null);
+
+                signing.Element("keystore")?.SetValue(GetTokenValue(tokens, "-ks"));
+                signing.Element("keystore-password")?.SetValue(GetTokenValue(tokens, "-ksp"));
+                signing.Element("alias")?.SetValue(GetTokenValue(tokens, "-ka"));
+                signing.Element("alias-password")?.SetValue(GetTokenValue(tokens, "-kap"));
+
+                document.Save(appDefPath);
             }
 
             private void ImportBooksIntoProject(IReadOnlyList<string> tokens, string appDefPath)
