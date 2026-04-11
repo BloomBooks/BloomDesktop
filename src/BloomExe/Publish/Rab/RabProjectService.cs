@@ -468,7 +468,9 @@ namespace Bloom.Publish.Rab
                 if (createdNewProject)
                 {
                     ReportProgressStage("generating-signing-key", 55);
-                    _progress.MessageWithoutLocalizing("Preparing Bloom's Android signing key...");
+                    _progress.MessageWithoutLocalizing(
+                        "Preparing Bloom's Android signing key..."
+                    );
                     state = CreatePrepareState(EnsureBloomOwnedSigningState(paths));
 
                     ReportProgressStage("creating-project", 70);
@@ -2923,10 +2925,7 @@ namespace Bloom.Publish.Rab
             if (state == null)
                 return null;
 
-            if (
-                !string.IsNullOrWhiteSpace(state.KeystorePath)
-                && RobustFile.Exists(state.KeystorePath)
-            )
+            if (!string.IsNullOrWhiteSpace(state.KeystorePath) && RobustFile.Exists(state.KeystorePath))
                 return state.KeystorePath;
 
             var legacyKeystorePath = Path.Combine(
@@ -2961,10 +2960,7 @@ namespace Bloom.Publish.Rab
 
             return HasSigningKey(state)
                 ? state
-                : ApplyBloomOwnedSigningState(
-                    state ?? new RabPrepareState(),
-                    bloomOwnedSigningState
-                );
+                : ApplyBloomOwnedSigningState(state ?? new RabPrepareState(), bloomOwnedSigningState);
         }
 
         private RabPrepareState ApplyBloomOwnedSigningState(
