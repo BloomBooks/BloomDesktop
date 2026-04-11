@@ -469,9 +469,22 @@ namespace Bloom.Publish.Rab
                 {
                     ReportProgressStage("generating-signing-key", 55);
                     _progress.MessageWithoutLocalizing(
-                        "Preparing Bloom's Android signing key..."
+                        "Generating a signing key for this collection..."
                     );
-                    state = CreatePrepareState(EnsureBloomOwnedSigningState(paths));
+                    var keystorePassword = GeneratePassword();
+                    var keystorePath = Path.Combine(
+                        paths.KeystoreRoot,
+                        MakeProjectSlug(GetAppName()) + ".keystore"
+                    );
+                    EnsureKeystore(keystorePath, keystorePassword);
+
+                    state = new RabPrepareState()
+                    {
+                        KeystorePath = keystorePath,
+                        KeystorePassword = keystorePassword,
+                        KeyAlias = kDefaultAlias,
+                        AliasPassword = keystorePassword,
+                    };
 
                     ReportProgressStage("creating-project", 70);
                     _progress.MessageWithoutLocalizing(
@@ -505,7 +518,6 @@ namespace Bloom.Publish.Rab
                         LoadState(paths) ?? new RabPrepareState(),
                         existingProjectPath
                     );
-                    state = EnsureStateUsesBloomOwnedSigningIfAppropriate(paths, state);
                 }
 
                 state = EnsureStateHasProjectAndSigningInfo(paths, state, existingProjectPath);
@@ -802,7 +814,7 @@ namespace Bloom.Publish.Rab
         internal virtual RabWorkspacePaths GetPaths()
         {
             var collectionRoot = _collectionModel.TheOneEditableCollection.PathToDirectory;
-            return new RabWorkspacePaths(collectionRoot, GetBloomOwnedRabToolchainRoot());
+            return new RabWorkspacePaths(collectionRoot);
         }
 
         internal virtual string GetAppName()
@@ -1427,7 +1439,7 @@ namespace Bloom.Publish.Rab
 
         private string BuildDefaultAboutText(RabAppSettings settings)
         {
-            var currentBook = _bookSelection?.CurrentSelection;
+            var currentBook = _bookSelection.CurrentSelection;
 
             var metadata = currentBook?.GetLicenseMetadata();
             var lines = new List<string>();
@@ -2811,168 +2823,6 @@ namespace Bloom.Publish.Rab
                 paths.PrepareStatePath,
                 JsonConvert.SerializeObject(state, Formatting.Indented)
             );
-        }
-
-        private RabSharedSigningState LoadBloomOwnedSigningState(RabWorkspacePaths paths)
-        {
-            if (!RobustFile.Exists(paths.SharedSigningStatePath))
-                return null;
-
-            return JsonConvert.DeserializeObject<RabSharedSigningState>(
-                RobustFile.ReadAllText(paths.SharedSigningStatePath)
-            );
-        }
-
-        private void SaveBloomOwnedSigningState(
-            RabWorkspacePaths paths,
-            RabSharedSigningState state
-        )
-        {
-            Directory.CreateDirectory(paths.KeystoreRoot);
-            RobustFile.WriteAllText(
-                paths.SharedSigningStatePath,
-                JsonConvert.SerializeObject(state, Formatting.Indented)
-            );
-        }
-
-        private RabPrepareState CreatePrepareState(RabSharedSigningState signingState)
-        {
-            return new RabPrepareState
-            {
-                KeystorePath = signingState.KeystorePath,
-                KeystorePassword = signingState.KeystorePassword,
-                KeyAlias = signingState.KeyAlias,
-                AliasPassword = signingState.AliasPassword,
-            };
-        }
-
-        private RabSharedSigningState CreateBloomOwnedSigningState(RabWorkspacePaths paths)
-        {
-            var keystorePassword = GeneratePassword();
-            EnsureKeystore(paths.SharedKeystorePath, keystorePassword);
-
-            var signingState = new RabSharedSigningState
-            {
-                KeystorePath = paths.SharedKeystorePath,
-                KeystorePassword = keystorePassword,
-                KeyAlias = kDefaultAlias,
-                AliasPassword = keystorePassword,
-            };
-
-            SaveBloomOwnedSigningState(paths, signingState);
-            return signingState;
-        }
-
-        private RabSharedSigningState CopySigningStateToBloomOwnedKeystore(
-            RabWorkspacePaths paths,
-            RabPrepareState state
-        )
-        {
-            var sourceKeystorePath = GetSigningSourcePath(paths, state);
-            if (string.IsNullOrWhiteSpace(sourceKeystorePath) || !HasSigningCredentials(state))
-                return null;
-
-            Directory.CreateDirectory(paths.KeystoreRoot);
-            if (
-                !string.Equals(
-                    sourceKeystorePath,
-                    paths.SharedKeystorePath,
-                    StringComparison.OrdinalIgnoreCase
-                )
-            )
-            {
-                RobustFile.Copy(sourceKeystorePath, paths.SharedKeystorePath, true);
-            }
-
-            var signingState = new RabSharedSigningState
-            {
-                KeystorePath = paths.SharedKeystorePath,
-                KeystorePassword = state.KeystorePassword,
-                KeyAlias = state.KeyAlias,
-                AliasPassword = state.AliasPassword,
-            };
-
-            SaveBloomOwnedSigningState(paths, signingState);
-            return signingState;
-        }
-
-        private RabSharedSigningState EnsureBloomOwnedSigningState(RabWorkspacePaths paths)
-        {
-            var signingState = LoadBloomOwnedSigningState(paths);
-            if (signingState != null)
-            {
-                if (!RobustFile.Exists(signingState.KeystorePath))
-                    throw new ApplicationException(
-                        "Bloom could not find the shared App Builder signing key. Restore it from backup or re-prepare from a collection that still has its original keystore copy."
-                    );
-
-                return signingState;
-            }
-
-            return CreateBloomOwnedSigningState(paths);
-        }
-
-        private bool HasSigningCredentials(RabPrepareState state)
-        {
-            return state != null
-                && !string.IsNullOrWhiteSpace(state.KeystorePassword)
-                && !string.IsNullOrWhiteSpace(state.KeyAlias)
-                && !string.IsNullOrWhiteSpace(state.AliasPassword);
-        }
-
-        private string GetSigningSourcePath(RabWorkspacePaths paths, RabPrepareState state)
-        {
-            if (state == null)
-                return null;
-
-            if (!string.IsNullOrWhiteSpace(state.KeystorePath) && RobustFile.Exists(state.KeystorePath))
-                return state.KeystorePath;
-
-            var legacyKeystorePath = Path.Combine(
-                paths.LegacyKeystoreRoot,
-                MakeProjectSlug(GetAppName()) + ".keystore"
-            );
-            if (RobustFile.Exists(legacyKeystorePath))
-                return legacyKeystorePath;
-
-            return null;
-        }
-
-        private RabPrepareState EnsureStateUsesBloomOwnedSigningIfAppropriate(
-            RabWorkspacePaths paths,
-            RabPrepareState state
-        )
-        {
-            var bloomOwnedSigningState = LoadBloomOwnedSigningState(paths);
-            if (bloomOwnedSigningState == null)
-            {
-                bloomOwnedSigningState = CopySigningStateToBloomOwnedKeystore(paths, state);
-                if (bloomOwnedSigningState != null)
-                    return ApplyBloomOwnedSigningState(state, bloomOwnedSigningState);
-
-                return state;
-            }
-
-            if (!RobustFile.Exists(bloomOwnedSigningState.KeystorePath))
-                throw new ApplicationException(
-                    "Bloom could not find the shared App Builder signing key. Restore it from backup or re-prepare from a collection that still has its original keystore copy."
-                );
-
-            return HasSigningKey(state)
-                ? state
-                : ApplyBloomOwnedSigningState(state ?? new RabPrepareState(), bloomOwnedSigningState);
-        }
-
-        private RabPrepareState ApplyBloomOwnedSigningState(
-            RabPrepareState state,
-            RabSharedSigningState signingState
-        )
-        {
-            state.KeystorePath = signingState.KeystorePath;
-            state.KeystorePassword = signingState.KeystorePassword;
-            state.KeyAlias = signingState.KeyAlias;
-            state.AliasPassword = signingState.AliasPassword;
-            return state;
         }
 
         internal virtual string FindAppDefPath(RabWorkspacePaths paths)

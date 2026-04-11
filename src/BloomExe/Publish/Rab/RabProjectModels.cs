@@ -80,14 +80,6 @@ namespace Bloom.Publish.Rab
         public string LastBuiltPackageName { get; set; }
     }
 
-    internal class RabSharedSigningState
-    {
-        public string KeystorePath { get; set; }
-        public string KeystorePassword { get; set; }
-        public string KeyAlias { get; set; }
-        public string AliasPassword { get; set; }
-    }
-
     internal class RabProjectSupportFiles
     {
         public string AboutTextPath { get; set; }
@@ -117,20 +109,14 @@ namespace Bloom.Publish.Rab
 
     internal class RabWorkspacePaths
     {
-        public RabWorkspacePaths(string collectionRoot, string bloomOwnedRabRoot = null)
+        public RabWorkspacePaths(string collectionRoot)
         {
             CollectionRoot = collectionRoot;
             RabRoot = Path.Combine(collectionRoot, "Bloom App Data");
             BloomPubRoot = Path.Combine(RabRoot, "bloompubs");
             BuildRoot = Path.Combine(RabRoot, "build");
             ApkRoot = Path.Combine(RabRoot, "apk");
-            LegacyKeystoreRoot = Path.Combine(RabRoot, "keystore");
-            BloomOwnedRabRoot = string.IsNullOrWhiteSpace(bloomOwnedRabRoot)
-                ? RabRoot
-                : bloomOwnedRabRoot;
-            KeystoreRoot = Path.Combine(BloomOwnedRabRoot, "keystore");
-            SharedKeystorePath = Path.Combine(KeystoreRoot, "bloom-app-builder.keystore");
-            SharedSigningStatePath = Path.Combine(KeystoreRoot, "signing.json");
+            KeystoreRoot = Path.Combine(RabRoot, "keystore");
             ProjectAssetsRoot = Path.Combine(RabRoot, "project-assets");
             LauncherIconRoot = Path.Combine(ProjectAssetsRoot, "launcher-icons");
             AboutTextPath = Path.Combine(ProjectAssetsRoot, "about.txt");
@@ -142,11 +128,7 @@ namespace Bloom.Publish.Rab
         public string BloomPubRoot { get; }
         public string BuildRoot { get; }
         public string ApkRoot { get; }
-        public string LegacyKeystoreRoot { get; }
-        public string BloomOwnedRabRoot { get; }
         public string KeystoreRoot { get; }
-        public string SharedKeystorePath { get; }
-        public string SharedSigningStatePath { get; }
         public string ProjectAssetsRoot { get; }
         public string LauncherIconRoot { get; }
         public string AboutTextPath { get; }
