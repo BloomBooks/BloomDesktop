@@ -530,6 +530,16 @@ namespace BloomTests.Publish.Rab
                 paths.RabRoot,
                 Is.EqualTo(Path.Combine(tempFolder.Path, "app configuration"))
             );
+            Assert.That(
+                paths.KeystoreRoot,
+                Is.EqualTo(
+                    Path.Combine(
+                        Bloom.ProjectContext.GetBloomAppDataFolder(),
+                        "ReadingAppBuilder",
+                        "keystore"
+                    )
+                )
+            );
             Assert.That(Directory.Exists(legacyRabRoot), Is.False);
             Assert.That(Directory.Exists(paths.RabRoot), Is.True);
             Assert.That(RobustFile.Exists(Path.Combine(paths.RabRoot, "prepare.json")), Is.True);
@@ -1313,6 +1323,73 @@ namespace BloomTests.Publish.Rab
 
             var persistedState = JObject.Parse(RobustFile.ReadAllText(paths.PrepareStatePath));
             Assert.That(persistedState["Settings"], Is.Null);
+        }
+
+        [Test]
+        public async Task PrepareAsync_NewProject_StoresSigningKeyInBloomOwnedFolder()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var bloomOwnedRabRoot = Path.Combine(tempFolder.Path, "user", "ReadingAppBuilder");
+            var paths = new RabWorkspacePaths(tempFolder.Path, bloomOwnedRabRoot);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Book One",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+
+            await service.PrepareAsync();
+
+            var prepareState = JsonConvert.DeserializeObject<RabPrepareState>(
+                RobustFile.ReadAllText(paths.PrepareStatePath)
+            );
+            Assert.That(prepareState.KeystorePath, Is.EqualTo(paths.SharedKeystorePath));
+            Assert.That(prepareState.KeystorePath.StartsWith(paths.RabRoot), Is.False);
+            Assert.That(RobustFile.Exists(paths.SharedKeystorePath), Is.True);
+            Assert.That(RobustFile.Exists(paths.SharedSigningStatePath), Is.True);
+
+            var project = RabAppProject.Load(service.GetStatus().AppDefPath);
+            Assert.That(project.KeystorePath, Is.EqualTo(paths.SharedKeystorePath));
+        }
+
+        [Test]
+        public async Task PrepareAsync_Reprepare_KeepsUsingBloomOwnedSigningKey()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var bloomOwnedRabRoot = Path.Combine(tempFolder.Path, "user", "ReadingAppBuilder");
+            var paths = new RabWorkspacePaths(tempFolder.Path, bloomOwnedRabRoot);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Book One",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+
+            await service.PrepareAsync();
+            await service.PrepareAsync();
+
+            var prepareState = JsonConvert.DeserializeObject<RabPrepareState>(
+                RobustFile.ReadAllText(paths.PrepareStatePath)
+            );
+            Assert.That(prepareState.KeystorePath, Is.EqualTo(paths.SharedKeystorePath));
+            Assert.That(RobustFile.Exists(paths.SharedKeystorePath), Is.True);
+
+            var project = RabAppProject.Load(service.GetStatus().AppDefPath);
+            Assert.That(project.KeystorePath, Is.EqualTo(paths.SharedKeystorePath));
         }
 
         [Test]
