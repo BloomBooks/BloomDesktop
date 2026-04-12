@@ -10,7 +10,11 @@ git diff --cached --name-only --diff-filter=AM -z -- '*.cs' | tr '\0' '\n' >$fil
 if [ -s $filesToFormat ]; then
   status=0
   while IFS= read -r file; do
-    dotnet csharpier format --log-level Debug "$file" || status=$?
+    if dotnet csharpier format --log-level Debug "$file"; then
+      git add -- "$file" || status=$?
+    else
+      status=$?
+    fi
   done < $filesToFormat
 else
   status=0
