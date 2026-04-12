@@ -8,6 +8,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net.Http;
 using System.Security;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -43,12 +44,16 @@ namespace Bloom.Publish.Rab
         private const int kUserCanceledShellLaunchErrorCode = 1223;
         private const string kRabSetupInstallerPrefix = "Reading-App-Builder-14.0";
         private const string kRabSetupInstallerSuffix = "-Setup.exe";
+        private const string kRabSetupInstallerFileName =
+            "Reading-App-Builder-For-Bloom-6-4-Setup.exe";
         private const string kDefaultBundledIconId = "bloom-app-icon-52";
         private const string kRabSetupDownloadUrl =
-            "https://drive.google.com/file/d/1LjWaGg1IMeB9Y8aK5It2RDmKmFNnrL3l/view?usp=drive_link";
+            "https://bloomlibrary.org/installers/Reading-App-Builder-For-Bloom-6-4-Setup.exe";
         private const string kRabSetupLanguage = "en";
         private const int kRabLaunchPollIntervalMs = 250;
         private const int kRabLaunchTimeoutMs = 60000;
+        private static readonly TimeSpan kRabInstallerDownloadLogInterval = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan kRabInstallerDownloadTimeout = TimeSpan.FromMinutes(30);
         private static readonly (int Size, string RelativePath)[] kLauncherIconFiles =
         {
             (36, @"drawable-ldpi\ic_launcher.png"),
@@ -362,6 +367,7 @@ namespace Bloom.Publish.Rab
                 ProjectExists = !string.IsNullOrEmpty(appDefPath) && RobustFile.Exists(appDefPath),
                 ApkExists = apkExists,
                 BuildNeeded = buildNeeded,
+                UserDownloadsDirectory = GetUserDownloadsDirectory(),
                 AppDefPath = appDefPath,
                 ApkPath = latestApk,
                 ApkSizeBytes = apkExists ? new FileInfo(latestApk).Length : 0,
@@ -548,7 +554,7 @@ namespace Bloom.Publish.Rab
             if (IsRabInstalledForPrepare())
                 return true;
 
-            var installerPath = FindRabSetupInstallerPath();
+            var installerPath = GetRabSetupInstallerPath();
             if (!string.IsNullOrWhiteSpace(installerPath))
             {
                 ReportProgressStage("running-installer", 0);
@@ -563,7 +569,7 @@ namespace Bloom.Publish.Rab
                 catch (Win32Exception error) when (IsUserCanceledShellLaunch(error))
                 {
                     _progress.MessageWithoutLocalizing(
-                        $"Reading App Builder installer did not start. Windows reported: {error.Message}",
+                        $"Reading App Builder installer did not start. Windows canceled the shell launch before the installer process started (error {error.NativeErrorCode}: {error.Message}). Bloom did not cancel it.",
                         ProgressKind.Warning
                     );
                     _progress.MessageWithoutLocalizing($"Installer: {installerPath}");
@@ -584,12 +590,28 @@ namespace Bloom.Publish.Rab
 
             ReportProgressStage("downloading-installer", 0);
             _progress.MessageWithoutLocalizing(
-                "Reading App Builder is not installed at the registry install path. Opening the download page...",
+                "Reading App Builder is not installed at the registry install path. Bloom could not download the installer.",
                 ProgressKind.Heading
             );
-            LaunchExternalTarget(kRabSetupDownloadUrl);
             _progress.MessageWithoutLocalizing($"Download: {kRabSetupDownloadUrl}");
             return false;
+        }
+
+        internal virtual string GetRabSetupInstallerPath()
+        {
+            var existingInstallerPath = FindRabSetupInstallerPath();
+            if (!string.IsNullOrWhiteSpace(existingInstallerPath))
+                return existingInstallerPath;
+
+            ReportProgressStage("downloading-installer", 0);
+            _progress.MessageWithoutLocalizing(
+                "Reading App Builder is not installed at the registry install path. Downloading it now...",
+                ProgressKind.Heading
+            );
+
+            var downloadedInstallerPath = DownloadRabSetupInstaller();
+            _progress.MessageWithoutLocalizing($"Download: {kRabSetupDownloadUrl}");
+            return downloadedInstallerPath;
         }
 
         private void EnsureRabBuildPrerequisites(RabWorkspacePaths paths)
@@ -1974,12 +1996,10 @@ namespace Bloom.Publish.Rab
 
         internal virtual string FindRabSetupInstallerPath()
         {
-            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             var searchDirectories = new[]
             {
-                string.IsNullOrWhiteSpace(userProfile)
-                    ? null
-                    : Path.Combine(userProfile, "Downloads"),
+                GetUserDownloadsDirectory(),
+                GetRabInstallerDownloadDirectory(),
                 Path.GetTempPath(),
             }
                 .Where(path => !string.IsNullOrWhiteSpace(path))
@@ -2004,6 +2024,155 @@ namespace Bloom.Publish.Rab
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Downloads the Reading App Builder installer from the public BloomLibrary URL.
+        /// Direct anonymous S3 access to the guessed bucket/key returns AccessDenied in production,
+        /// so we must download from the real published URL instead of talking to S3 directly.
+        /// </summary>
+        internal virtual string DownloadRabSetupInstaller()
+        {
+            var installerPath = Path.Combine(
+                GetRabInstallerDownloadDirectory(),
+                kRabSetupInstallerFileName
+            );
+            DateTime? lastProgressLogUtc = null;
+
+            Logger.WriteEvent(
+                $"Downloading Reading App Builder installer from {kRabSetupDownloadUrl} to {installerPath}"
+            );
+
+            DownloadRabSetupInstallerFromUrl(
+                installerPath,
+                (transferredBytes, totalBytes) =>
+                {
+                    lastProgressLogUtc = MaybeLogRabInstallerDownloadProgress(
+                        transferredBytes,
+                        totalBytes,
+                        lastProgressLogUtc
+                    );
+                }
+            );
+
+            Logger.WriteEvent(
+                $"Finished downloading Reading App Builder installer to {installerPath}"
+            );
+
+            return installerPath;
+        }
+
+        internal virtual HttpClient CreateRabInstallerHttpClient()
+        {
+            return new HttpClient() { Timeout = kRabInstallerDownloadTimeout };
+        }
+
+        internal virtual void DownloadRabSetupInstallerFromUrl(
+            string installerPath,
+            Action<long, long> reportProgress
+        )
+        {
+            using var httpClient = CreateRabInstallerHttpClient();
+            using var response = httpClient
+                .GetAsync(kRabSetupDownloadUrl, HttpCompletionOption.ResponseHeadersRead)
+                .GetAwaiter()
+                .GetResult();
+            response.EnsureSuccessStatusCode();
+
+            Directory.CreateDirectory(Path.GetDirectoryName(installerPath));
+
+            using var responseStream = response
+                .Content.ReadAsStreamAsync()
+                .GetAwaiter()
+                .GetResult();
+            using var fileStream = RobustFile.Create(installerPath);
+
+            CopyRabInstallerDownloadStream(
+                responseStream,
+                fileStream,
+                response.Content.Headers.ContentLength ?? -1,
+                reportProgress
+            );
+        }
+
+        internal virtual void CopyRabInstallerDownloadStream(
+            Stream responseStream,
+            Stream fileStream,
+            long totalBytes,
+            Action<long, long> reportProgress
+        )
+        {
+            var buffer = new byte[81920];
+            long transferredBytes = 0;
+
+            while (true)
+            {
+                var bytesRead = responseStream.Read(buffer, 0, buffer.Length);
+                if (bytesRead <= 0)
+                    break;
+
+                fileStream.Write(buffer, 0, bytesRead);
+                transferredBytes += bytesRead;
+                reportProgress?.Invoke(transferredBytes, totalBytes);
+            }
+        }
+
+        internal virtual DateTime GetUtcNow()
+        {
+            return DateTime.UtcNow;
+        }
+
+        internal DateTime? MaybeLogRabInstallerDownloadProgress(
+            long transferredBytes,
+            long totalBytes,
+            DateTime? lastLoggedUtc
+        )
+        {
+            var now = GetUtcNow();
+            if (!ShouldLogRabInstallerDownloadProgress(now, lastLoggedUtc))
+                return lastLoggedUtc;
+
+            Logger.WriteEvent(
+                FormatRabInstallerDownloadProgressMessage(transferredBytes, totalBytes)
+            );
+            return now;
+        }
+
+        internal static bool ShouldLogRabInstallerDownloadProgress(
+            DateTime now,
+            DateTime? lastLoggedUtc
+        )
+        {
+            return !lastLoggedUtc.HasValue
+                || now - lastLoggedUtc.Value >= kRabInstallerDownloadLogInterval;
+        }
+
+        internal static string FormatRabInstallerDownloadProgressMessage(
+            long transferredBytes,
+            long totalBytes
+        )
+        {
+            var transferredText = FormatRabInstallerDownloadBytes(transferredBytes);
+            if (totalBytes > 0)
+            {
+                return $"Downloading Reading App Builder installer: {transferredText} / {FormatRabInstallerDownloadBytes(totalBytes)}";
+            }
+
+            return $"Downloading Reading App Builder installer: {transferredText} received";
+        }
+
+        internal static string FormatRabInstallerDownloadBytes(long byteCount)
+        {
+            const double kilobyte = 1024d;
+            const double megabyte = kilobyte * 1024d;
+
+            if (byteCount >= megabyte)
+                return $"{byteCount / megabyte:0.0} MB";
+
+            if (byteCount >= kilobyte)
+                return $"{byteCount / kilobyte:0.0} KB";
+
+            return $"{byteCount} B";
         }
 
         internal virtual IReadOnlyList<string> GetRabRegistrySubKeys()
@@ -2062,6 +2231,7 @@ namespace Bloom.Publish.Rab
 
         internal virtual void InstallRabFromSetup(string installerPath)
         {
+            var stagedInstallerPath = PrepareRabInstallerForLaunch(installerPath);
             var logPath = Path.Combine(Path.GetTempPath(), "rab-install.log");
             var arguments = BuildRabInstallerArguments(logPath);
 
@@ -2070,9 +2240,9 @@ namespace Bloom.Publish.Rab
             using var process = StartShellProcess(
                 new ProcessStartInfo()
                 {
-                    FileName = installerPath,
+                    FileName = stagedInstallerPath,
                     Arguments = arguments,
-                    WorkingDirectory = Path.GetDirectoryName(installerPath),
+                    WorkingDirectory = Path.GetDirectoryName(stagedInstallerPath),
                     UseShellExecute = true,
                     ErrorDialog = false,
                 }
@@ -2089,6 +2259,71 @@ namespace Bloom.Publish.Rab
                 throw new ApplicationException(
                     $"Reading App Builder installer exited with code {process.ExitCode}."
                 );
+        }
+
+        /// <summary>
+        /// Stages the downloaded installer into a Bloom-owned temp folder and removes Mark-of-the-Web
+        /// metadata before shell launch, so Windows handles it like a local file instead of a browser download.
+        /// </summary>
+        internal virtual string PrepareRabInstallerForLaunch(string installerPath)
+        {
+            if (string.IsNullOrWhiteSpace(installerPath))
+                throw new ArgumentException("Installer path is required.", nameof(installerPath));
+
+            if (!RobustFile.Exists(installerPath))
+                throw new FileNotFoundException(
+                    $"Reading App Builder installer was not found at {installerPath}.",
+                    installerPath
+                );
+
+            var stagingDirectory = GetRabInstallerStagingDirectory();
+            Directory.CreateDirectory(stagingDirectory);
+
+            var stagedInstallerPath = Path.Combine(
+                stagingDirectory,
+                Path.GetFileName(installerPath)
+            );
+            RobustFile.Copy(installerPath, stagedInstallerPath, true);
+            RemoveZoneIdentifierFromFile(stagedInstallerPath);
+            return stagedInstallerPath;
+        }
+
+        /// <summary>
+        /// Returns the Bloom-owned temp folder used for staging the Reading App Builder installer before launch.
+        /// </summary>
+        internal virtual string GetRabInstallerStagingDirectory()
+        {
+            return Path.Combine(Path.GetTempPath(), "Bloom", "ReadingAppBuilderInstaller");
+        }
+
+        internal virtual string GetRabInstallerDownloadDirectory()
+        {
+            return Path.Combine(Path.GetTempPath(), "Bloom", "ReadingAppBuilderDownloads");
+        }
+
+        internal virtual string GetUserDownloadsDirectory()
+        {
+            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            return string.IsNullOrWhiteSpace(userProfile)
+                ? string.Empty
+                : Path.Combine(userProfile, "Downloads");
+        }
+
+        /// <summary>
+        /// Removes the browser-added Zone.Identifier alternate data stream when present.
+        /// </summary>
+        internal virtual void RemoveZoneIdentifierFromFile(string filePath)
+        {
+            // Browser downloads can carry a Zone.Identifier stream that makes Windows treat the
+            // installer as internet-downloaded when we shell launch it.
+            var zoneIdentifierPath = filePath + ":Zone.Identifier";
+            try
+            {
+                RobustFile.Delete(zoneIdentifierPath);
+            }
+            catch (FileNotFoundException) { }
+            catch (DirectoryNotFoundException) { }
+            catch (NotSupportedException) { }
         }
 
         internal virtual Process StartShellProcess(ProcessStartInfo startInfo)
@@ -2241,27 +2476,62 @@ namespace Bloom.Publish.Rab
         )
         {
             var installerPath = FindRabSetupInstallerPath();
+            var installerIsAvailable = !string.IsNullOrWhiteSpace(installerPath);
+            var hasSigningKey = HasSigningKey(state);
+            var hasProject =
+                !string.IsNullOrWhiteSpace(appDefPath) && RobustFile.Exists(appDefPath);
+            string installerCompleteTooltip = null;
+
+            if (rabInstalled)
+                installerCompleteTooltip =
+                    "Reading App Builder is already installed, so you can skip downloading the installer."; // Reading App Builder is already installed, so this step is complete without needing an installer file.
+            else if (installerIsAvailable)
+                installerCompleteTooltip = $"Installer found at {installerPath}"; // Reading App Builder is not installed yet, but Bloom found an installer file it can run.
 
             return new[]
             {
                 new RabPrepareStepStatus()
                 {
                     Id = "installer-available",
-                    Complete = rabInstalled || !string.IsNullOrWhiteSpace(installerPath),
+                    Complete = rabInstalled || installerIsAvailable,
+                    IncompleteTooltip =
+                        "Download the Reading App Builder installer so Bloom can run it for you.",
+                    CompleteTooltip = installerCompleteTooltip,
                 },
-                new RabPrepareStepStatus() { Id = "rab-installed", Complete = rabInstalled },
+                new RabPrepareStepStatus()
+                {
+                    Id = "rab-installed",
+                    Complete = rabInstalled,
+                    IncompleteTooltip =
+                        "Run the Reading App Builder installer to install the app on this computer.",
+                    CompleteTooltip = "Reading App Builder is installed and ready to use.",
+                },
                 new RabPrepareStepStatus()
                 {
                     Id = "build-tools-installed",
                     Complete = AreRabBuildToolsInstalled(),
+                    IncompleteTooltip =
+                        "Install the Android SDK and JDK build tools that Reading App Builder needs.",
+                    CompleteTooltip = "The Android SDK and JDK build tools are installed.",
                 },
                 new RabPrepareStepStatus()
                 {
-                    Id = "project-created",
-                    Complete =
-                        HasSigningKey(state)
-                        && !string.IsNullOrWhiteSpace(appDefPath)
-                        && RobustFile.Exists(appDefPath),
+                    Id = "publisher-identity-created",
+                    Complete = hasSigningKey,
+                    IncompleteTooltip =
+                        $"Create a keystore that is used to sign any app you create, from any collection on this computer. It is stored at {paths.SharedKeystorePath}",
+                    CompleteTooltip = hasSigningKey
+                        ? $"Your keystore is used to sign apps, and you'll need it to publish new versions of your app. It is stored at {paths.SharedKeystorePath}"
+                        : $"Your keystore is used to sign apps, and you'll need it to publish new versions of your app. It is stored at {paths.SharedKeystorePath}",
+                },
+                new RabPrepareStepStatus()
+                {
+                    Id = "bloom-app-data-created",
+                    Complete = hasProject,
+                    IncompleteTooltip =
+                        "Create a Reading App Builder project for this Bloom collection.",
+                    CompleteTooltip =
+                        "A Reading App Builder project already exists for this Bloom collection.",
                 },
             };
         }

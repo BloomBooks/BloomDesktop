@@ -43,6 +43,9 @@ const apkToPhoneIconUrl = new URL(
     import.meta.url,
 ).toString();
 
+const rabInstallerDownloadUrl =
+    "https://bloomlibrary.org/installers/Reading-App-Builder-14.0-Bloom-Setup.exe";
+
 const AppActionButton: React.FunctionComponent<{
     enabled: boolean;
     l10nKey: string;
@@ -198,6 +201,14 @@ const AppPublisherScreenContents: React.FunctionComponent<{
         "Get installer",
         "PublishTab.Apps.PrepareStepper.InstallerAvailable",
     );
+    const installerAvailableTooltip = useL10n(
+        "This will download the installer for Reading App Builder. Alternatively you can download and run it yourself from [here].",
+        "PublishTab.Apps.PrepareStepper.InstallerAvailable.Tooltip",
+        undefined,
+        undefined,
+        undefined,
+        true,
+    );
     const rabInstalledLabel = useL10n(
         "Run installer",
         "PublishTab.Apps.PrepareStepper.RabInstalled",
@@ -206,6 +217,7 @@ const AppPublisherScreenContents: React.FunctionComponent<{
         "Install build tools",
         "PublishTab.Apps.PrepareStepper.BuildToolsInstalled",
     );
+    const publisherIdentityCreatedLabel = useL10n("Create keystore", null);
     const projectCreatedLabel = useL10n(
         "Create project",
         "PublishTab.Apps.PrepareStepper.ProjectCreated",
@@ -234,7 +246,22 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                   ? rabInstalledLabel
                   : step.id === "build-tools-installed"
                     ? buildToolsInstalledLabel
-                    : projectCreatedLabel,
+                    : step.id === "publisher-identity-created"
+                      ? publisherIdentityCreatedLabel
+                      : projectCreatedLabel,
+        tooltip:
+            step.id === "installer-available" && !step.complete
+                ? {
+                      text: installerAvailableTooltip,
+                      linkHref: rabInstallerDownloadUrl,
+                  }
+                : step.complete
+                  ? step.completeTooltipText
+                      ? { text: step.completeTooltipText }
+                      : undefined
+                  : step.incompleteTooltipText
+                    ? { text: step.incompleteTooltipText }
+                    : undefined,
     }));
     const currentProgressStageLabel = getProgressStageLabel(
         busyAction,

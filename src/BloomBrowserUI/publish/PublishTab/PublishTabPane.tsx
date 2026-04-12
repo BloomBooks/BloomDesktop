@@ -163,6 +163,7 @@ export const PublishTabPane: React.FunctionComponent = () => {
         iconSrc: string;
         labelL10nKey: string;
         label: string;
+        id?: string;
         hidden?: boolean;
     }
     const publishTabs: PublishTabProps[] = [
@@ -185,6 +186,14 @@ export const PublishTabPane: React.FunctionComponent = () => {
             label: "BloomPUB",
         },
         {
+            tipL10nKey: "PublishTab.Apps-tooltip",
+            iconSrc: "/bloom/publish/PublishTab/AppsPublishButton.svg",
+            labelL10nKey: "PublishTab.Apps",
+            label: "Apps",
+            id: "apps",
+            hidden: appBuilderFeatureStatus?.visible === false,
+        },
+        {
             tipL10nKey: "PublishTab.EpubRadio-tooltip",
             iconSrc: "/bloom/publish/PublishTab/ePUBPublishButton.png",
             labelL10nKey: "PublishTab.EpubButton",
@@ -195,13 +204,6 @@ export const PublishTabPane: React.FunctionComponent = () => {
             iconSrc: "/bloom/publish/PublishTab/publish video.png",
             labelL10nKey: "PublishTab.RecordVideoButton",
             label: "Audio or Video",
-        },
-        {
-            tipL10nKey: "PublishTab.Apps-tooltip",
-            iconSrc: "/bloom/publish/PublishTab/AppsPublishButton.svg",
-            labelL10nKey: "PublishTab.Apps",
-            label: "Apps",
-            hidden: appBuilderFeatureStatus?.visible === false,
         },
     ];
 
@@ -358,17 +360,19 @@ export const PublishTabPane: React.FunctionComponent = () => {
                                 <ReaderPublishScreen />
                             </TabPanel>
                             <TabPanel>
+                                <RequiresSubscriptionOverlayWrapper featureName="AppBuilder">
+                                    <AppPublisherScreen
+                                        isActive={
+                                            publishTabs[tabIndex]?.id === "apps"
+                                        }
+                                    />
+                                </RequiresSubscriptionOverlayWrapper>
+                            </TabPanel>
+                            <TabPanel>
                                 <EPUBPublishScreen />
                             </TabPanel>
                             <TabPanel>
                                 <PublishAudioVideo />
-                            </TabPanel>
-                            <TabPanel>
-                                <RequiresSubscriptionOverlayWrapper featureName="AppBuilder">
-                                    <AppPublisherScreen
-                                        isActive={tabIndex === 5}
-                                    />
-                                </RequiresSubscriptionOverlayWrapper>
                             </TabPanel>
                             <TabPanel>
                                 {/* Before user has selected a publish mode, show a blank panel */}

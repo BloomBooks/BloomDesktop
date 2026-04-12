@@ -26,6 +26,7 @@ export interface IAppBuilderStatus {
     apkExists: boolean;
     buildNeeded: boolean;
     prepareSteps: IAppBuilderPrepareStepStatus[];
+    userDownloadsDirectory?: string;
     appDefPath?: string;
     appName?: string;
     apkPath?: string;
@@ -39,18 +40,25 @@ export type AppBuilderPrepareStepId =
     | "installer-available"
     | "rab-installed"
     | "build-tools-installed"
-    | "project-created";
+    | "publisher-identity-created"
+    | "bloom-app-data-created";
 
 export interface IAppBuilderPrepareStepStatus {
     id: AppBuilderPrepareStepId;
     complete: boolean;
+    incompleteTooltipText?: string;
+    completeTooltipText?: string;
 }
 
 export interface IAppBuilderPrepareStepStatusApi {
     id?: AppBuilderPrepareStepId;
     complete?: boolean;
+    incompleteTooltip?: string;
+    completeTooltip?: string;
     Id?: AppBuilderPrepareStepId;
     Complete?: boolean;
+    IncompleteTooltip?: string;
+    CompleteTooltip?: string;
 }
 
 export interface IAppBuilderStatusApi {
@@ -59,6 +67,7 @@ export interface IAppBuilderStatusApi {
     apkExists?: boolean;
     buildNeeded?: boolean;
     prepareSteps?: IAppBuilderPrepareStepStatusApi[];
+    userDownloadsDirectory?: string;
     appDefPath?: string;
     appName?: string;
     apkPath?: string;
@@ -70,6 +79,7 @@ export interface IAppBuilderStatusApi {
     ApkExists?: boolean;
     BuildNeeded?: boolean;
     PrepareSteps?: IAppBuilderPrepareStepStatusApi[];
+    UserDownloadsDirectory?: string;
     AppDefPath?: string;
     AppName?: string;
     ApkPath?: string;
@@ -137,7 +147,8 @@ export function getDefaultPrepareSteps(): IAppBuilderPrepareStepStatus[] {
         { id: "installer-available", complete: false },
         { id: "rab-installed", complete: false },
         { id: "build-tools-installed", complete: false },
-        { id: "project-created", complete: false },
+        { id: "publisher-identity-created", complete: false },
+        { id: "bloom-app-data-created", complete: false },
     ];
 }
 
@@ -161,6 +172,9 @@ export function normalizePrepareStepStatus(
     return {
         id: stepId ?? fallback.id,
         complete: step?.complete ?? step?.Complete ?? false,
+        incompleteTooltipText:
+            step?.incompleteTooltip ?? step?.IncompleteTooltip,
+        completeTooltipText: step?.completeTooltip ?? step?.CompleteTooltip,
     };
 }
 
@@ -204,6 +218,8 @@ export function normalizeStatus(
             normalizedPrepareSteps.length > 0
                 ? normalizedPrepareSteps
                 : getDefaultPrepareSteps(),
+        userDownloadsDirectory:
+            status?.userDownloadsDirectory ?? status?.UserDownloadsDirectory,
         appDefPath: status?.appDefPath ?? status?.AppDefPath,
         appName: status?.appName ?? status?.AppName,
         apkPath: status?.apkPath ?? status?.ApkPath,
@@ -366,13 +382,14 @@ export function getPrepareStepIdForStage(
             return "rab-installed";
         case "installing-build-tools":
             return "build-tools-installed";
-        case "generating-signing-key":
         case "preparing-workspace":
         case "exporting-bloompubs":
+        case "generating-signing-key":
+            return "publisher-identity-created";
         case "creating-project":
         case "updating-project":
         case "complete":
-            return "project-created";
+            return "bloom-app-data-created";
         default:
             return undefined;
     }

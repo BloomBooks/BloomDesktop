@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export interface IBloomWebSocketEvent {
     clientContext: string;
@@ -21,9 +21,18 @@ export function useWebSocketListener(
     clientContext: string,
     listener: (messageEvent: IBloomWebSocketEvent) => void,
 ) {
+    const latestListener = useRef(listener);
+    latestListener.current = listener;
+
     useEffect(() => {
-        WebSocketManager.addListener(clientContext, listener);
-    }, []);
+        const listenerWrapper = (messageEvent: IBloomWebSocketEvent) => {
+            latestListener.current(messageEvent);
+        };
+        WebSocketManager.addListener(clientContext, listenerWrapper);
+        return () => {
+            WebSocketManager.removeListener(clientContext, listenerWrapper);
+        };
+    }, [clientContext]);
 }
 
 // avoid making this public, so that we can have more freedom to make changes to the signature
@@ -34,16 +43,26 @@ function useWebSocketListenerInnerWithMessage<T>(
     processEvent: (e: IBloomWebSocketEvent) => T,
     filter?: (e: IBloomWebSocketEvent) => boolean,
 ) {
+    const latestListener = useRef(listener);
+    const latestProcessEvent = useRef(processEvent);
+    const latestFilter = useRef(filter);
+    latestListener.current = listener;
+    latestProcessEvent.current = processEvent;
+    latestFilter.current = filter;
+
     useEffect(() => {
         const l = (e: IBloomWebSocketEvent) => {
-            if (e.id === eventId && (!filter || filter(e))) {
-                listener(processEvent(e));
+            if (
+                e.id === eventId &&
+                (!latestFilter.current || latestFilter.current(e))
+            ) {
+                latestListener.current(latestProcessEvent.current(e));
             }
         };
         WebSocketManager.addListener(clientContext, l);
-        // Clean up when we are unmounted or this useEffect runs again (i.e. if the props.webSocketContext were to change)
+        // This effect is required because the websocket is an external system that must be subscribed and unsubscribed explicitly.
         return () => WebSocketManager.removeListener(clientContext, l);
-    }, []);
+    }, [clientContext, eventId]);
 }
 
 export function useSubscribeToWebSocketForEvent(
@@ -327,8 +346,12 @@ export default class WebSocketManager {
             "bookImage",
             "book", // via useWatchString
             "bookTeamCollectionStatus", // via useTColBookStatus
+            "bookCollection", // one BookOnBlorgBadge per book subscribes here
             // each book collection subscribes to this
             "editableCollectionList",
+            // dialog launchers and app builder screens legitimately keep several listeners mounted
+            "LaunchDialog",
+            "publish-rab",
         ];
 
         // in the case of the progressDialog, we expect to have 2: one for the dialog, which is listening, and one for the ProgressBox.

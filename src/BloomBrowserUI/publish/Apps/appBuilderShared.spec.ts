@@ -29,7 +29,10 @@ describe("appBuilderShared prepare steps", () => {
         ).toBe("build-tools-installed");
         expect(
             getPrepareStepIdForStage("prepare", "generating-signing-key"),
-        ).toBe("project-created");
+        ).toBe("publisher-identity-created");
+        expect(getPrepareStepIdForStage("prepare", "creating-project")).toBe(
+            "bloom-app-data-created",
+        );
         expect(
             getPrepareStepIdForStage("build", "installing-build-tools"),
         ).toBeUndefined();

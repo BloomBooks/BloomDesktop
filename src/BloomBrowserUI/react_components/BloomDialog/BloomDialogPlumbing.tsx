@@ -57,18 +57,30 @@ export function useEventLaunchedBloomDialog(idForLaunchingFromServer: string) {
         initiallyOpen: false,
         dialogFrameProvidedExternally: false,
     });
+    const showDialog = dialogEnvironment.showDialog;
     // for c# server
     useWebSocketListener("LaunchDialog", (event) => {
         if (event.id === idForLaunchingFromServer) {
-            dialogEnvironment.showDialog(event);
+            showDialog(event);
         }
     });
-    // for storybook
-    document.addEventListener("LaunchDialog", (event: any) => {
-        if (event.detail.id === idForLaunchingFromServer) {
-            dialogEnvironment.showDialog(event.detail);
-        }
-    });
+    useEffect(() => {
+        const storybookLaunchListener = (event: Event) => {
+            const launchEvent = event as CustomEvent<{ id: string }>;
+            if (launchEvent.detail.id === idForLaunchingFromServer) {
+                showDialog(launchEvent.detail);
+            }
+        };
+
+        // This effect is required because the document event is an external subscription outside React.
+        document.addEventListener("LaunchDialog", storybookLaunchListener);
+        return () => {
+            document.removeEventListener(
+                "LaunchDialog",
+                storybookLaunchListener,
+            );
+        };
+    }, [showDialog, idForLaunchingFromServer]);
     return dialogEnvironment;
 }
 

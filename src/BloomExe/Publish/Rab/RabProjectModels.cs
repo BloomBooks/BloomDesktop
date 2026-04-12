@@ -14,6 +14,7 @@ namespace Bloom.Publish.Rab
         public bool ProjectExists { get; set; }
         public bool ApkExists { get; set; }
         public bool BuildNeeded { get; set; }
+        public string UserDownloadsDirectory { get; set; }
         public string AppDefPath { get; set; }
         public string AppName { get; set; }
         public string ApkPath { get; set; }
@@ -32,6 +33,8 @@ namespace Bloom.Publish.Rab
     {
         public string Id { get; set; }
         public bool Complete { get; set; }
+        public string IncompleteTooltip { get; set; }
+        public string CompleteTooltip { get; set; }
     }
 
     /// <summary>

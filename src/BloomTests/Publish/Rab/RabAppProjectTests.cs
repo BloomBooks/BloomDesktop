@@ -992,6 +992,28 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public void GetStatus_IncludesUserDownloadsDirectory()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            )
+            {
+                UserDownloadsDirectoryToReturn = @"C:\Users\tester\Downloads",
+            };
+
+            var status = service.GetStatus();
+
+            Assert.That(
+                status.UserDownloadsDirectory,
+                Is.EqualTo(service.UserDownloadsDirectoryToReturn)
+            );
+        }
+
+        [Test]
         public async Task PrepareAsync_DeletesBrokenJdkInstallBeforeInstallingBuildTools()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
@@ -1717,7 +1739,32 @@ namespace BloomTests.Publish.Rab
             AssertPrepareStep(status, "installer-available", true);
             AssertPrepareStep(status, "rab-installed", false);
             AssertPrepareStep(status, "build-tools-installed", false);
-            AssertPrepareStep(status, "project-created", false);
+            AssertPrepareStep(status, "publisher-identity-created", false);
+            AssertPrepareStep(status, "bloom-app-data-created", false);
+            Assert.That(
+                status
+                    .PrepareSteps.Single(step => step.Id == "publisher-identity-created")
+                    .IncompleteTooltip,
+                Does.StartWith("Create a keystore that is used to sign any app you create")
+            );
+            Assert.That(
+                status
+                    .PrepareSteps.Single(step => step.Id == "installer-available")
+                    .CompleteTooltip,
+                Does.Contain("Reading-App-Builder-For-Bloom-6-4-Setup.exe")
+            );
+            Assert.That(
+                status.PrepareSteps.Single(step => step.Id == "rab-installed").IncompleteTooltip,
+                Is.EqualTo(
+                    "Run the Reading App Builder installer to install the app on this computer."
+                )
+            );
+            Assert.That(
+                status
+                    .PrepareSteps.Single(step => step.Id == "build-tools-installed")
+                    .CompleteTooltip,
+                Is.EqualTo("The Android SDK and JDK build tools are installed.").IgnoreCase
+            );
         }
 
         [Test]
@@ -1741,7 +1788,31 @@ namespace BloomTests.Publish.Rab
 
             await service.PrepareAsync();
 
-            Assert.That(service.GetStatus().PrepareSteps.All(step => step.Complete), Is.True);
+            var status = service.GetStatus();
+
+            Assert.That(status.PrepareSteps.All(step => step.Complete), Is.True);
+            Assert.That(
+                status
+                    .PrepareSteps.Single(step => step.Id == "publisher-identity-created")
+                    .CompleteTooltip,
+                Does.StartWith(
+                    "Your keystore is used to sign apps, and you'll need it to publish new versions of your app."
+                )
+            );
+            Assert.That(
+                status
+                    .PrepareSteps.Single(step => step.Id == "publisher-identity-created")
+                    .CompleteTooltip,
+                Does.Contain(paths.SharedKeystorePath)
+            );
+            Assert.That(
+                status
+                    .PrepareSteps.Single(step => step.Id == "bloom-app-data-created")
+                    .CompleteTooltip,
+                Is.EqualTo(
+                    "A Reading App Builder project already exists for this Bloom collection."
+                )
+            );
         }
 
         [Test]
@@ -1751,7 +1822,7 @@ namespace BloomTests.Publish.Rab
             var paths = new RabWorkspacePaths(tempFolder.Path);
             var installerPath = Path.Combine(
                 tempFolder.Path,
-                "Reading-App-Builder-14.0-Bloom-Setup.exe"
+                "Reading-App-Builder-For-Bloom-6-4-Setup.exe"
             );
             RobustFile.WriteAllText(installerPath, "installer");
             var trackedBooks = new List<RabBookPublishInfo>
@@ -1796,7 +1867,7 @@ namespace BloomTests.Publish.Rab
             var paths = new RabWorkspacePaths(tempFolder.Path);
             var installerPath = Path.Combine(
                 tempFolder.Path,
-                "Reading-App-Builder-14.0-Bloom-Setup.exe"
+                "Reading-App-Builder-For-Bloom-6-4-Setup.exe"
             );
             RobustFile.WriteAllText(installerPath, "installer");
 
@@ -1821,8 +1892,46 @@ namespace BloomTests.Publish.Rab
             Assert.That(
                 service.Progress.Messages.Select(message => message.Item1),
                 Does.Contain(
-                    "Reading App Builder installer did not start. Windows reported: The operation was canceled by the user."
+                    "Reading App Builder installer did not start. Windows canceled the shell launch before the installer process started (error 1223: The operation was canceled by the user.). Bloom did not cancel it."
                 )
+            );
+        }
+
+        [Test]
+        public void PrepareRabInstallerForLaunch_CopiesInstallerToStagingFolder_AndRemovesZoneIdentifier()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var installerPath = Path.Combine(
+                tempFolder.Path,
+                "Reading-App-Builder-For-Bloom-6-4-Setup.exe"
+            );
+            RobustFile.WriteAllText(installerPath, "installer");
+            RobustFile.WriteAllText(
+                installerPath + ":Zone.Identifier",
+                "[ZoneTransfer]\r\nZoneId=3"
+            );
+
+            var stagingFolder = Path.Combine(tempFolder.Path, "installer-staging");
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            )
+            {
+                RabInstallerStagingDirectory = stagingFolder,
+            };
+
+            var stagedPath = service.CallPrepareRabInstallerForLaunch(installerPath);
+
+            Assert.That(
+                stagedPath,
+                Is.EqualTo(Path.Combine(stagingFolder, Path.GetFileName(installerPath)))
+            );
+            Assert.That(RobustFile.ReadAllText(stagedPath), Is.EqualTo("installer"));
+            Assert.That(
+                () => RobustFile.ReadAllText(stagedPath + ":Zone.Identifier"),
+                Throws.InstanceOf<FileNotFoundException>()
             );
         }
 
@@ -1847,7 +1956,40 @@ namespace BloomTests.Publish.Rab
             Assert.That(arguments, Does.Contain("/LOG=\"C:\\temp\\rab-install.log\""));
         }
 
-        [TestCase(@"C:\Users\tester\Downloads\Reading-App-Builder-14.0-Bloom-Setup.exe", true)]
+        [Test]
+        public void ShouldLogRabInstallerDownloadProgress_OnlyEveryFiveSeconds()
+        {
+            var start = new DateTime(2026, 4, 11, 10, 0, 0, DateTimeKind.Utc);
+
+            Assert.That(
+                RabProjectService.ShouldLogRabInstallerDownloadProgress(start, null),
+                Is.True
+            );
+            Assert.That(
+                RabProjectService.ShouldLogRabInstallerDownloadProgress(start.AddSeconds(4), start),
+                Is.False
+            );
+            Assert.That(
+                RabProjectService.ShouldLogRabInstallerDownloadProgress(start.AddSeconds(5), start),
+                Is.True
+            );
+        }
+
+        [Test]
+        public void FormatRabInstallerDownloadProgressMessage_UsesHumanReadableSizes()
+        {
+            var message = RabProjectService.FormatRabInstallerDownloadProgressMessage(
+                1572864,
+                3145728
+            );
+
+            Assert.That(
+                message,
+                Is.EqualTo("Downloading Reading App Builder installer: 1.5 MB / 3.0 MB")
+            );
+        }
+
+        [TestCase(@"C:\Users\tester\Downloads\Reading-App-Builder-For-Bloom-6-4-Setup.exe", true)]
         [TestCase("https://example.org/installer", false)]
         [TestCase(@"C:\Users\tester\Downloads\notes.txt", false)]
         public void IsExternalExecutablePath_MatchesExecutableFilesOnly(
@@ -1862,7 +2004,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [TestCase("Reading-App-Builder-14.0-Setup.exe", true)]
-        [TestCase("Reading-App-Builder-14.0-Bloom-Setup.exe", true)]
+        [TestCase("Reading-App-Builder-For-Bloom-6-4-Setup.exe", true)]
         [TestCase("Reading-App-Builder-14.0-Bloom.exe", false)]
         [TestCase("Reading-App-Builder-13.0-Setup.exe", false)]
         public void IsRabSetupInstallerFileName_MatchesExpectedVariants(
@@ -1877,10 +2019,14 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task PrepareAsync_OpensDownloadPage_WhenRegistryInstallAndInstallerAreMissing()
+        public async Task PrepareAsync_DownloadsInstaller_WhenRegistryInstallAndInstallerAreMissing()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
+            var downloadedInstallerPath = Path.Combine(
+                tempFolder.Path,
+                "Reading-App-Builder-For-Bloom-6-4-Setup.exe"
+            );
 
             var service = new TestRabProjectService(
                 paths,
@@ -1890,25 +2036,30 @@ namespace BloomTests.Publish.Rab
             {
                 IsRabInstalledForPrepareResult = false,
                 RabSetupInstallerPathToReturn = null,
+                RabSetupInstallerDownloadPathToReturn = downloadedInstallerPath,
             };
 
             await service.PrepareAsync();
 
-            Assert.That(service.Commands, Is.Empty);
             Assert.That(
-                service.ExternalTargetsStarted,
-                Is.EqualTo(
-                    new[]
-                    {
-                        "https://drive.google.com/file/d/1LjWaGg1IMeB9Y8aK5It2RDmKmFNnrL3l/view?usp=drive_link",
-                    }
+                service.DownloadedRabSetupInstallerPaths,
+                Is.EqualTo(new[] { downloadedInstallerPath })
+            );
+            Assert.That(
+                service.InstalledRabFromSetupPaths,
+                Is.EqualTo(new[] { downloadedInstallerPath })
+            );
+            Assert.That(service.Commands, Is.Not.Empty);
+            Assert.That(service.ExternalTargetsStarted, Is.Empty);
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Contain(
+                    "Reading App Builder is not installed at the registry install path. Downloading it now..."
                 )
             );
             Assert.That(
                 service.Progress.Messages.Select(message => message.Item1),
-                Does.Contain(
-                    "Reading App Builder is not installed at the registry install path. Opening the download page..."
-                )
+                Does.Contain("Reading App Builder installation complete.")
             );
         }
 
@@ -1990,6 +2141,7 @@ namespace BloomTests.Publish.Rab
 
             public List<string> Commands { get; } = new List<string>();
             public List<string> InstalledRabFromSetupPaths { get; } = new List<string>();
+            public List<string> DownloadedRabSetupInstallerPaths { get; } = new List<string>();
             public string DetachedFileName { get; private set; }
             public string DetachedArguments { get; private set; }
             public string DetachedWorkingDirectory { get; private set; }
@@ -2004,12 +2156,16 @@ namespace BloomTests.Publish.Rab
             public string RabLauncherPathToReturn { get; set; } =
                 @"C:\Program Files (x86)\SIL\Reading App Builder\rab.bat";
             public string RabSetupInstallerPathToReturn { get; set; } =
-                @"C:\Users\tester\Downloads\Reading-App-Builder-14.0-Bloom-Setup.exe";
+                @"C:\Users\tester\Downloads\Reading-App-Builder-For-Bloom-6-4-Setup.exe";
+            public string RabSetupInstallerDownloadPathToReturn { get; set; }
+            public string UserDownloadsDirectoryToReturn { get; set; } =
+                @"C:\Users\tester\Downloads";
             public string AdbPathToReturn { get; set; } =
                 @"C:\Users\tester\AppData\Local\SIL\Bloom\ReadingAppBuilder\android-sdk\platform-tools\adb.exe";
             public string RabJdkInstallFolder { get; set; }
             public string RabAndroidSdkInstallFolder { get; set; }
             public string RabAppDataFolder { get; set; }
+            public string RabInstallerStagingDirectory { get; set; }
             public bool TryBringRunningRabToFrontResult { get; set; }
             public int TryBringRunningRabToFrontCallCount { get; private set; }
             public Exception LaunchExternalTargetException { get; set; }
@@ -2154,6 +2310,11 @@ namespace BloomTests.Publish.Rab
                 }
             }
 
+            internal override string GetUserDownloadsDirectory()
+            {
+                return UserDownloadsDirectoryToReturn;
+            }
+
             private void EmitSimulatedBuildOutput(string rabArguments)
             {
                 foreach (
@@ -2209,6 +2370,29 @@ namespace BloomTests.Publish.Rab
                 return RabSetupInstallerPathToReturn;
             }
 
+            internal override string DownloadRabSetupInstaller()
+            {
+                DownloadedRabSetupInstallerPaths.Add(RabSetupInstallerDownloadPathToReturn);
+
+                if (!string.IsNullOrWhiteSpace(RabSetupInstallerDownloadPathToReturn))
+                {
+                    Directory.CreateDirectory(
+                        Path.GetDirectoryName(RabSetupInstallerDownloadPathToReturn)
+                    );
+                    RobustFile.WriteAllText(
+                        RabSetupInstallerDownloadPathToReturn,
+                        "downloaded installer"
+                    );
+                }
+
+                return RabSetupInstallerDownloadPathToReturn;
+            }
+
+            public string CallPrepareRabInstallerForLaunch(string installerPath)
+            {
+                return PrepareRabInstallerForLaunch(installerPath);
+            }
+
             internal override void LaunchExternalTarget(string pathOrUrl)
             {
                 ExternalTargetsStarted.Add(pathOrUrl);
@@ -2223,6 +2407,11 @@ namespace BloomTests.Publish.Rab
                     throw LaunchExternalTargetException;
 
                 IsRabInstalledForPrepareResult = true;
+            }
+
+            internal override string GetRabInstallerStagingDirectory()
+            {
+                return RabInstallerStagingDirectory ?? base.GetRabInstallerStagingDirectory();
             }
 
             internal override string GetRabJdkInstallFolder()

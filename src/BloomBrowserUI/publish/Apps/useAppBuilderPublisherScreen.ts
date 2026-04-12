@@ -22,12 +22,12 @@ import {
 } from "./appBuilderShared";
 import {
     defaultSettings,
+    fetchAppBuilderSettings,
     getAppBuilderSettingsValidationIssues,
     hasRequiredBuildSettings,
     IAppBuilderAppSettings,
     IAppBuilderSettingsValidationIssues,
     initializeAppBuilderSettings,
-    refreshAppBuilderSettings,
 } from "./appBuilderAppDef";
 import { IAppSizeEstimates } from "./AppSizeIndicator";
 
@@ -69,6 +69,7 @@ export function useAppBuilderPublisherScreen(
         React.useState<IAppBuilderSizeEstimatesApi>({});
     const statusRetryTimeoutRef = React.useRef<number>();
     const latestStatusRequestIdRef = React.useRef(0);
+    const isMountedRef = React.useRef(true);
     const sizeEstimates = normalizeSizeEstimates(rawSizeEstimates);
 
     useSubscribeToWebSocketForStringMessage(
@@ -105,12 +106,21 @@ export function useAppBuilderPublisherScreen(
 
     function refreshSizeEstimates(): void {
         get("publish/rab/size-estimates", (result) => {
+            if (!isMountedRef.current) {
+                return;
+            }
+
             setRawSizeEstimates(result.data);
         });
     }
 
-    function refreshSettings(appDefPath?: string): void {
-        refreshAppBuilderSettings(setSettings, appDefPath);
+    async function refreshSettings(appDefPath?: string): Promise<void> {
+        const nextSettings = await fetchAppBuilderSettings(appDefPath);
+        if (!isMountedRef.current) {
+            return;
+        }
+
+        setSettings(nextSettings);
     }
 
     async function fetchStatusAsync(): Promise<IAppBuilderStatus> {
@@ -136,7 +146,10 @@ export function useAppBuilderPublisherScreen(
 
         try {
             const nextStatus = await fetchStatusAsync();
-            if (requestId !== latestStatusRequestIdRef.current) {
+            if (
+                requestId !== latestStatusRequestIdRef.current ||
+                !isMountedRef.current
+            ) {
                 return;
             }
 
@@ -150,14 +163,20 @@ export function useAppBuilderPublisherScreen(
                 const initializedSettings = await initializeAppBuilderSettings(
                     nextStatus.appDefPath,
                 );
-                if (requestId !== latestStatusRequestIdRef.current) {
+                if (
+                    requestId !== latestStatusRequestIdRef.current ||
+                    !isMountedRef.current
+                ) {
                     return;
                 }
 
                 setSettings(initializedSettings);
 
                 const refreshedStatus = await fetchStatusAsync();
-                if (requestId !== latestStatusRequestIdRef.current) {
+                if (
+                    requestId !== latestStatusRequestIdRef.current ||
+                    !isMountedRef.current
+                ) {
                     return;
                 }
 
@@ -165,13 +184,13 @@ export function useAppBuilderPublisherScreen(
                 return;
             }
 
-            refreshSettings(nextStatus.appDefPath);
+            void refreshSettings(nextStatus.appDefPath);
         } catch {
             if (statusRetryTimeoutRef.current !== undefined) {
                 window.clearTimeout(statusRetryTimeoutRef.current);
             }
 
-            if (isActive) {
+            if (isActive && isMountedRef.current) {
                 statusRetryTimeoutRef.current = window.setTimeout(() => {
                     void refreshStatus(initializeSettingsAfterPrepare);
                 }, 1000);
@@ -190,6 +209,8 @@ export function useAppBuilderPublisherScreen(
             void refreshStatus();
             refreshSizeEstimates();
         });
+        // refreshStatus and refreshSizeEstimates are intentionally omitted so this only reruns when the tab activation boundary changes.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isActive]);
 
     // This effect is warranted because returning from Reading App Builder restores browser focus,
@@ -208,11 +229,15 @@ export function useAppBuilderPublisherScreen(
         return () => {
             window.removeEventListener("focus", handleWindowFocus);
         };
+        // refreshStatus and refreshSizeEstimates are intentionally omitted so this only reruns when the external focus boundary changes.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isActive]);
 
     // This effect is warranted because the retry timer is an external browser resource that must be cleared on unmount.
     React.useEffect(() => {
         return () => {
+            isMountedRef.current = false;
+            latestStatusRequestIdRef.current += 1;
             if (statusRetryTimeoutRef.current !== undefined) {
                 window.clearTimeout(statusRetryTimeoutRef.current);
             }
@@ -236,6 +261,10 @@ export function useAppBuilderPublisherScreen(
         action: AppBuilderAction,
         initializeSettingsAfterPrepare: boolean,
     ): Promise<void> {
+        if (!isMountedRef.current) {
+            return;
+        }
+
         setProgressPercent(0);
         setProgressStageCode(undefined);
         if (action === "prepare" || action === "build") {
@@ -243,6 +272,10 @@ export function useAppBuilderPublisherScreen(
             refreshSizeEstimates();
         }
         await refreshStatus(initializeSettingsAfterPrepare);
+        if (!isMountedRef.current) {
+            return;
+        }
+
         setBusyAction(undefined);
     }
 

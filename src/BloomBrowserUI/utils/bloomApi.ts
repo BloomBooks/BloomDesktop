@@ -240,15 +240,25 @@ export function useApiObject<T>(
 ): T {
     const [value, setValue] = useState<T>(defaultValue);
     useEffect(() => {
+        let isCancelled = false;
+
         if (skipQuery) {
             setValue(defaultValue);
         } else {
             get(urlSuffix, (c) => {
+                if (isCancelled) {
+                    return;
+                }
+
                 if (typeof c.data === "string") {
                     setValue(JSON.parse(c.data as string));
                 } else setValue(c.data);
             });
         }
+
+        return () => {
+            isCancelled = true;
+        };
         // This is a compromise/kludge. Typically, the caller passes defaultValue as what appears to be
         // an object constant, like { foo: "bar" }. Every render of the caller will create a new instance
         // of { foo: "bar" }, which will cause this effect to run again, and the API call to be made again,

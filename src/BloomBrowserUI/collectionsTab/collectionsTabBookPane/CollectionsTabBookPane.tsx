@@ -34,6 +34,11 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     // splitter works.
     disableEventsInIframe: boolean;
 }> = (props) => {
+    const propsForContainer = {
+        ...props,
+    } as typeof props & { disableEventsInIframe?: boolean };
+    delete propsForContainer.disableEventsInIframe;
+
     const [isTeamCollection, setIsTeamCollection] = useState(false);
     const [bookTeamCollectionStatus, setBookTeamCollectionStatus] = useState(
         initialBookTeamCollectionStatus,
@@ -294,7 +299,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                 padding: 10px;
                 background-color: ${kDarkestBackground};
             `}
-            {...props} // allows defining more css rules from container
+            {...propsForContainer} // allows defining more css rules from container
         >
             <div
                 css={css`

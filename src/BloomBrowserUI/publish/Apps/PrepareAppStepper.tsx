@@ -2,9 +2,11 @@ import { css, keyframes } from "@emotion/react";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import {
     CircularProgress,
+    Link,
     Step,
     StepLabel,
     StepIconProps,
+    Tooltip,
 } from "@mui/material";
 import * as React from "react";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
@@ -30,6 +32,50 @@ const pulse = keyframes`
         opacity: 0.75;
     }
 `;
+
+interface IPrepareStepTooltip {
+    text: string;
+    linkHref?: string;
+}
+
+export const PrepareStepTooltipContent: React.FunctionComponent<{
+    tooltip: IPrepareStepTooltip;
+}> = (props) => {
+    if (!props.tooltip.linkHref) {
+        return <>{props.tooltip.text}</>;
+    }
+
+    const idxOpen = props.tooltip.text.indexOf("[");
+    const idxClose = props.tooltip.text.indexOf("]", idxOpen + 1);
+
+    if (idxOpen < 0 || idxClose <= idxOpen) {
+        return (
+            <Link
+                underline="hover"
+                href={props.tooltip.linkHref}
+                target="_blank"
+                rel="noreferrer"
+            >
+                {props.tooltip.text}
+            </Link>
+        );
+    }
+
+    return (
+        <span>
+            {props.tooltip.text.substring(0, idxOpen)}
+            <Link
+                underline="hover"
+                href={props.tooltip.linkHref}
+                target="_blank"
+                rel="noreferrer"
+            >
+                {props.tooltip.text.substring(idxOpen + 1, idxClose)}
+            </Link>
+            {props.tooltip.text.substring(idxClose + 1)}
+        </span>
+    );
+};
 
 const PrepareStepIcon: React.FunctionComponent<StepIconProps> = (props) => {
     if (props.completed) {
@@ -88,7 +134,12 @@ const PrepareStepIcon: React.FunctionComponent<StepIconProps> = (props) => {
 };
 
 export const PrepareAppStepper: React.FunctionComponent<{
-    steps: Array<IAppBuilderPrepareStepStatus & { label: string }>;
+    steps: Array<
+        IAppBuilderPrepareStepStatus & {
+            label: string;
+            tooltip?: IPrepareStepTooltip;
+        }
+    >;
     activeStepId?: AppBuilderPrepareStepId;
     isBusy: boolean;
 }> = (props) => {
@@ -163,11 +214,44 @@ export const PrepareAppStepper: React.FunctionComponent<{
                                 data-testid={`prepare-step-${step.id}`}
                                 data-state={stepState}
                             >
-                                <StepLabel StepIconComponent={PrepareStepIcon}>
-                                    <span className="prepare-step-label">
-                                        {step.label}
-                                    </span>
-                                </StepLabel>
+                                {step.tooltip ? (
+                                    <Tooltip
+                                        title={
+                                            <PrepareStepTooltipContent
+                                                tooltip={step.tooltip}
+                                            />
+                                        }
+                                        placement="top"
+                                        disableInteractive={false}
+                                        enterDelay={0}
+                                        enterNextDelay={0}
+                                    >
+                                        <span
+                                            className="prepare-step-tooltip-target"
+                                            css={css`
+                                                display: inline-flex;
+                                            `}
+                                        >
+                                            <StepLabel
+                                                StepIconComponent={
+                                                    PrepareStepIcon
+                                                }
+                                            >
+                                                <span className="prepare-step-label">
+                                                    {step.label}
+                                                </span>
+                                            </StepLabel>
+                                        </span>
+                                    </Tooltip>
+                                ) : (
+                                    <StepLabel
+                                        StepIconComponent={PrepareStepIcon}
+                                    >
+                                        <span className="prepare-step-label">
+                                            {step.label}
+                                        </span>
+                                    </StepLabel>
+                                )}
                             </Step>
                         );
                     })}

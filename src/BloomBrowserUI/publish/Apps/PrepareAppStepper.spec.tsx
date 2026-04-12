@@ -2,7 +2,10 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { act } from "react-dom/test-utils";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { PrepareAppStepper } from "./PrepareAppStepper";
+import {
+    PrepareAppStepper,
+    PrepareStepTooltipContent,
+} from "./PrepareAppStepper";
 
 describe("PrepareAppStepper", () => {
     let container: HTMLDivElement | null = null;
@@ -120,5 +123,67 @@ describe("PrepareAppStepper", () => {
         expect(label?.textContent).toBe(
             "Install build tools for localized layouts",
         );
+    });
+
+    it("adds a tooltip only to steps that provide one", () => {
+        const tooltipText =
+            "This will download the installer for Reading App Builder. Alternatively you can download and run it yourself from [here].";
+        const tooltipHref =
+            "https://bloomlibrary.org/installers/Reading-App-Builder-14.0-Bloom-Setup.exe";
+        const host = renderStepper(
+            <PrepareAppStepper
+                steps={[
+                    {
+                        id: "installer-available",
+                        complete: false,
+                        label: "Get installer",
+                        tooltip: {
+                            text: tooltipText,
+                            linkHref: tooltipHref,
+                        },
+                    },
+                    {
+                        id: "rab-installed",
+                        complete: false,
+                        label: "Run installer",
+                    },
+                ]}
+                isBusy={false}
+            />,
+        );
+
+        const tooltipTargets = host.querySelectorAll(
+            ".prepare-step-tooltip-target",
+        );
+        act(() => {
+            tooltipTargets[0].dispatchEvent(
+                new MouseEvent("mouseover", { bubbles: true }),
+            );
+        });
+
+        expect(
+            document.body.querySelector('[role="tooltip"] a')?.textContent,
+        ).toBe("here");
+        expect(
+            document.body
+                .querySelector('[role="tooltip"] a')
+                ?.getAttribute("href"),
+        ).toBe(tooltipHref);
+        expect(tooltipTargets).toHaveLength(1);
+    });
+
+    it("renders the bracketed tooltip text as the link text", () => {
+        const host = renderStepper(
+            <PrepareStepTooltipContent
+                tooltip={{
+                    text: "Download the installer from [here].",
+                    linkHref:
+                        "https://bloomlibrary.org/installers/Reading-App-Builder-14.0-Bloom-Setup.exe",
+                }}
+            />,
+        );
+
+        expect(host.textContent).toBe("Download the installer from here.");
+        expect(host.querySelector("a")?.textContent).toBe("here");
     });
 });
