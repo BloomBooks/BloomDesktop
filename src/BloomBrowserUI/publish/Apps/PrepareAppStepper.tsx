@@ -193,7 +193,7 @@ export const PrepareAppStepper: React.FunctionComponent<{
                         }
 
                         .MuiStepLabel-label.Mui-active {
-                            color: ${kBloomBlue};
+                            color: ${kBloomBlue} !important;
                             font-weight: 700;
                         }
                     `}
