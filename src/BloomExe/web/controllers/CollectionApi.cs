@@ -708,6 +708,8 @@ namespace Bloom.web.controllers
 
             string fullImagePath;
             SafeXmlElement imgElement;
+            // Book grids and app-publisher pickers can request many cover images at once.
+            // Serialize this shared book lookup so concurrent requests do not race while reading cover data.
             lock (_coverImageRequestLock)
             {
                 fullImagePath = _collectionModel
