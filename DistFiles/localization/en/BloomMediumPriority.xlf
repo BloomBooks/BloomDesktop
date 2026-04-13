@@ -9,6 +9,11 @@
         <source xml:lang="en">Available with your Bloom Subscription</source>
         <note>ID: AvailableWithSubscription</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder" translate="no">
+        <source xml:lang="en">App Builder</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder</note>
+        <note>This checkbox enables the experimental publish-to-apps workflow.</note>
+      </trans-unit>
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">
         <source xml:lang="en">Choose...</source>
@@ -1081,6 +1086,346 @@
       <trans-unit id="ARecording">
         <source xml:lang="en">A Recording</source>
         <note>ID: ARecording</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.ChooseBooksDialog.Title" translate="no">
+        <source xml:lang="en">Choose Books</source>
+        <note>ID: PublishTab.Apps.ChooseBooksDialog.Title</note>
+        <note>Title of the dialog where the user chooses which books to include in the Android app.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.CustomizeButton" translate="no">
+        <source xml:lang="en">Customize...</source>
+        <note>ID: PublishTab.Apps.CustomizeButton</note>
+        <note>Button label that opens the app settings dialog for the current Android app project.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.CustomizeButton.ValidationMessage" translate="no">
+        <source xml:lang="en">Required or invalid settings: %0.</source>
+        <note>ID: PublishTab.Apps.CustomizeButton.ValidationMessage</note>
+        <note>Shown below the Customize button when required app settings are missing or invalid. %0 is a comma-separated list of field labels such as App Name or Package Name.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.PrepareButton" translate="no">
+        <source xml:lang="en">Prepare</source>
+        <note>ID: PublishTab.Apps.PrepareButton</note>
+        <note>Button label for the first step that prepares the Android app project and required tools.</note>
+      </trans-unit>
+
+      <trans-unit id="PublishTab.Apps.PrepareStepper.BuildToolsInstalled" translate="no">
+        <source xml:lang="en">Install build tools</source>
+        <note>ID: PublishTab.Apps.PrepareStepper.BuildToolsInstalled</note>
+        <note>Label for a setup checklist step that installs Android build tools.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.PrepareStepper.InstallerAvailable" translate="no">
+        <source xml:lang="en">Get installer</source>
+        <note>ID: PublishTab.Apps.PrepareStepper.InstallerAvailable</note>
+        <note>Label for a setup checklist step that downloads or locates the Reading App Builder installer.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.PrepareStepper.ProjectCreated" translate="no">
+        <source xml:lang="en">Create project</source>
+        <note>ID: PublishTab.Apps.PrepareStepper.ProjectCreated</note>
+        <note>Label for a setup checklist step that creates the Reading App Builder project for this collection.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.PrepareStepper.RabInstalled" translate="no">
+        <source xml:lang="en">Run installer</source>
+        <note>ID: PublishTab.Apps.PrepareStepper.RabInstalled</note>
+        <note>Label for a setup checklist step that runs the Reading App Builder installer.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.PrepareStepper.SigningKeyReady" translate="no">
+        <source xml:lang="en">Create signing key</source>
+        <note>ID: PublishTab.Apps.PrepareStepper.SigningKeyReady</note>
+        <note>Label for a setup checklist step that creates the Android signing key.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.Progress.CheckingDevice" translate="no">
+        <source xml:lang="en">Checking for connected phone</source>
+        <note>ID: PublishTab.Apps.Progress.CheckingDevice</note>
+        <note>Progress message shown while Bloom checks for a connected Android phone.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.Progress.InstallingOnPhone" translate="no">
+        <source xml:lang="en">Installing app on phone</source>
+        <note>ID: PublishTab.Apps.Progress.InstallingOnPhone</note>
+        <note>Progress message shown while Bloom installs the generated Android app on a connected phone.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.Progress.LaunchingOnPhone" translate="no">
+        <source xml:lang="en">Launching app on phone</source>
+        <note>ID: PublishTab.Apps.Progress.LaunchingOnPhone</note>
+        <note>Progress message shown while Bloom launches the installed Android app on a connected phone.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.Title" translate="no">
+        <source xml:lang="en">App Settings</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.Title</note>
+        <note>Title of the dialog used to edit Android app settings for the current collection.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.BasicsGroup" translate="no">
+        <source xml:lang="en">Basics</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.BasicsGroup</note>
+        <note>Group heading inside the app settings dialog for the basic required fields.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.AppearanceGroup" translate="no">
+        <source xml:lang="en">Appearance</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.AppearanceGroup</note>
+        <note>Group heading inside the app settings dialog for appearance-related settings such as color scheme and icon.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.AppName" translate="no">
+        <source xml:lang="en">App Name</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.AppName</note>
+        <note>Field label for the app name shown to end users on the Android device.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.MainColor" translate="no">
+        <source xml:lang="en">Main Color</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.MainColor</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.ColorScheme" translate="no">
+        <source xml:lang="en">Color Scheme</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.ColorScheme</note>
+        <note>Field label for choosing the app's color scheme.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName" translate="no">
+        <source xml:lang="en">Package Name</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.PackageName</note>
+        <note>Field label for the Android package identifier. This is a technical identifier, not the user-visible app name.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.Icon" translate="no">
+        <source xml:lang="en">Icon</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.Icon</note>
+        <note>Field label for the app icon chooser.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.Icon.Current" translate="no">
+        <source xml:lang="en">Current icon</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.Icon.Current</note>
+        <note>Label for the current custom icon when it is not one of the bundled icon choices.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.Copyright" translate="no">
+        <source xml:lang="en">Copyright</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.Copyright</note>
+        <note>Field label for the copyright text shown in the app.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.About" translate="no">
+        <source xml:lang="en">About</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.About</note>
+        <note>Field label for the descriptive About text shown in the app.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.IconReset" translate="no">
+        <source xml:lang="en">Reset</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.IconReset</note>
+        <note>Button label that resets the app icon to the default choice.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.IconChooseTitle" translate="no">
+        <source xml:lang="en">Choose App Icon</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.IconChooseTitle</note>
+        <note>Title or accessible label for the app icon chooser.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Description" translate="no">
+        <source xml:lang="en">Template: org.&lt;yourorg&gt;.&lt;language-code&gt;.&lt;appname&gt;. E.g. org.sil.xyz.stories. For additional help please contact the Digital Publishing Department of your organization.</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Description</note>
+        <note>Help text explaining how to form a valid Android package name. Keep the example package names lowercase and dot-separated.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.TipsLabel" translate="no">
+        <source xml:lang="en">Tips on choosing the package name:</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.PackageName.TipsLabel</note>
+        <note>Obsolete as of Bloom 6.4</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Tip1" translate="no">
+        <source xml:lang="en">Start the package name by turning round the web address of your organisation, e.g. if your web address is 'sil.org', the package name can start with 'org.sil'.</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Tip1</note>
+        <note>Obsolete as of Bloom 6.4</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Tip2" translate="no">
+        <source xml:lang="en">After that, add additional strings to identify the app, such as 'org.sil.xyz.stories' where 'xyz' is the language code.</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Tip2</note>
+        <note>Obsolete as of Bloom 6.4</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Tip3" translate="no">
+        <source xml:lang="en">For test applications, you can use a temporary package name beginning with 'com.example', e.g. 'com.example.test1', 'com.example.stories', etc.</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Tip3</note>
+        <note>Obsolete as of Bloom 6.4</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Tip4" translate="no">
+        <source xml:lang="en">For additional help, please contact the digital publishing department of your organisation.</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Tip4</note>
+        <note>Obsolete as of Bloom 6.4</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Required" translate="no">
+        <source xml:lang="en">Package name is required.</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Required</note>
+        <note>Validation message shown when the package name field is blank.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Invalid" translate="no">
+        <source xml:lang="en">Use a lowercase dot-separated package name with no spaces, like org.sil.sample.</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Invalid</note>
+        <note>Validation message shown when the Android package name is invalid. Keep the example package name lowercase and dot-separated.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.ReadingAppBuilder" translate="no">
+        <source xml:lang="en">Reading App Builder</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.ReadingAppBuilder</note>
+        <note>Name of the external SIL application "Reading App Builder". Usually leave the product name unchanged.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.MoreSettings" translate="no">
+        <source xml:lang="en">More Settings</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.MoreSettings</note>
+        <note>Label for the section that opens Reading App Builder for additional app customization.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.StartingReadingAppBuilder" translate="no">
+        <source xml:lang="en">Starting Reading App Builder...</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.StartingReadingAppBuilder</note>
+        <note>Progress text shown while Bloom launches the external Reading App Builder application.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsDialog.RunRAB.Description" translate="no">
+        <source xml:lang="en">Use this to do more customization of your app. Make sure to click Save and quit Reading App Builder before returning to Bloom.</source>
+        <note>ID: PublishTab.Apps.SettingsDialog.RunRAB.Description</note>
+        <note>Description for the button that opens Reading App Builder. "Reading App Builder" is the product name.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.ShowApkInFileExplorer" translate="no">
+        <source xml:lang="en">Show App (.apk) in File Explorer</source>
+        <note>ID: PublishTab.Apps.ShowApkInFileExplorer</note>
+        <note>Button label that opens Windows File Explorer to show the generated APK file.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.BannerTitle" translate="no">
+        <source xml:lang="en">Build Android Apps</source>
+        <note>ID: PublishTab.Apps.BannerTitle</note>
+        <note>Heading shown at the top of the Publish to Apps screen.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps" translate="no">
+        <source xml:lang="en">Apps</source>
+        <note>ID: PublishTab.Apps</note>
+        <note>Label for the Publish tab section used to build Android apps.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps-tooltip" translate="no" sil:dynamic="true">
+        <source xml:lang="en">Create an app that you can install on your Android phone, share with others, and publish on the Google Play Store.</source>
+        <note>ID: PublishTab.Apps-tooltip</note>
+        <note>Tooltip or description for the Publish to Apps section. "Google Play Store" is a product name.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.Build" translate="no">
+        <source xml:lang="en">Build</source>
+        <note>ID: PublishTab.Apps.Build</note>
+        <note>Button label for building a new Android APK.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.Build.DoneTooltip" translate="no">
+        <source xml:lang="en">The APK is current. Try on phone will use the latest build.</source>
+        <note>ID: PublishTab.Apps.Build.DoneTooltip</note>
+        <note>Tooltip shown when the build step is already up to date.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.Build.NeedsPrepareTooltip" translate="no">
+        <source xml:lang="en">Run Prepare before building the app.</source>
+        <note>ID: PublishTab.Apps.Build.NeedsPrepareTooltip</note>
+        <note>Tooltip shown when the user must run Prepare before Build.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.Build.Tooltip" translate="no">
+        <source xml:lang="en">Build a new APK from the current settings and selected books.</source>
+        <note>ID: PublishTab.Apps.Build.Tooltip</note>
+        <note>Tooltip for the Build button.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.ChooseBooks" translate="no">
+        <source xml:lang="en">Choose Books...</source>
+        <note>ID: PublishTab.Apps.ChooseBooks</note>
+        <note>Button label that opens the dialog for choosing which books go into the Android app.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.ChooseBooks.Tooltip" translate="no">
+        <source xml:lang="en">Choose which books to include in the app and the order they should appear.</source>
+        <note>ID: PublishTab.Apps.ChooseBooks.Tooltip</note>
+        <note>Tooltip for the Choose Books button.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.Progress.BuildingAndroidApp" translate="no">
+        <source xml:lang="en">Building Android app</source>
+        <note>ID: PublishTab.Apps.Progress.BuildingAndroidApp</note>
+        <note>Progress message shown while Reading App Builder is building the Android APK.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.Progress.Complete" translate="no">
+        <source xml:lang="en">Done</source>
+        <note>ID: PublishTab.Apps.Progress.Complete</note>
+        <note>Progress label shown when the current action is complete.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.Progress.CreatingProject" translate="no">
+        <source xml:lang="en">Creating Reading App Builder project</source>
+        <note>ID: PublishTab.Apps.Progress.CreatingProject</note>
+        <note>Progress message shown while Bloom creates the Reading App Builder project.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.Progress.ExportingBloompubs" translate="no">
+        <source xml:lang="en">Creating BloomPUBs</source>
+        <note>ID: PublishTab.Apps.Progress.ExportingBloompubs</note>
+        <note>Progress message shown while Bloom exports BloomPUB files for the app build.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.Progress.FinalizingApk" translate="no">
+        <source xml:lang="en">Finalizing APK</source>
+        <note>ID: PublishTab.Apps.Progress.FinalizingApk</note>
+        <note>Progress message shown while the Android APK is being finalized.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.Progress.GeneratingSigningKey" translate="no">
+        <source xml:lang="en">Generating signing key</source>
+        <note>ID: PublishTab.Apps.Progress.GeneratingSigningKey</note>
+        <note>Progress message shown while Bloom creates the Android signing key.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.Progress.PreparingBuild" translate="no">
+        <source xml:lang="en">Preparing build</source>
+        <note>ID: PublishTab.Apps.Progress.PreparingBuild</note>
+        <note>Progress message shown at the start of an Android app build.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.Progress.PreparingWorkspace" translate="no">
+        <source xml:lang="en">Preparing workspace</source>
+        <note>ID: PublishTab.Apps.Progress.PreparingWorkspace</note>
+        <note>Progress message shown while Bloom prepares the local workspace for app building.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.Progress.UpdatingProject" translate="no">
+        <source xml:lang="en">Updating Reading App Builder project</source>
+        <note>ID: PublishTab.Apps.Progress.UpdatingProject</note>
+        <note>Progress message shown while Bloom updates the existing Reading App Builder project.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.ReadingAppBuilderSite" translate="no">
+        <source xml:lang="en">Reading App Builder website</source>
+        <note>ID: PublishTab.Apps.ReadingAppBuilderSite</note>
+        <note>Link text that opens the Reading App Builder website. "Reading App Builder" is the product name.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SettingsButton.Tooltip" translate="no">
+        <source xml:lang="en">Edit the Reading App Builder app settings for this collection.</source>
+        <note>ID: PublishTab.Apps.SettingsButton.Tooltip</note>
+        <note>Tooltip for the Customize button.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.PrepareRequiredTooltip" translate="no">
+        <source xml:lang="en">Run Prepare before using this step.</source>
+        <note>ID: PublishTab.Apps.PrepareRequiredTooltip</note>
+        <note>Tooltip shown when a later step is disabled until Prepare has been run.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.Prepare.DoneTooltip" translate="no">
+        <source xml:lang="en">The Reading App Builder project is already prepared for this collection.</source>
+        <note>ID: PublishTab.Apps.Prepare.DoneTooltip</note>
+        <note>Tooltip shown when the Prepare step is already complete.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.Setup.Tooltip" translate="no">
+        <source xml:lang="en">Create the Reading App Builder project in this collection's rab folder.</source>
+        <note>ID: PublishTab.Apps.Setup.Tooltip</note>
+        <note>obsolete as of 6.4</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.Prepare.TooltipBloomAppData" translate="no">
+        <source xml:lang="en">Create the Reading App Builder project in this collection's Bloom App Data folder.</source>
+        <note>ID: PublishTab.Apps.Prepare.TooltipBloomAppData</note>
+        <note>Tooltip for Prepare. "Bloom App Data" is the name of the collection-owned data folder.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.TryOnPhone" translate="no">
+        <source xml:lang="en">Try on phone</source>
+        <note>ID: PublishTab.Apps.TryOnPhone</note>
+        <note>Button label that installs the generated Android app on a connected phone and launches it.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.TryOnPhone.Tooltip" translate="no">
+        <source xml:lang="en">Load and run the app on your phone. First enable USB Debugging on the phone and connect it with a USB cable.</source>
+        <note>ID: PublishTab.Apps.TryOnPhone.Tooltip</note>
+        <note>Tooltip for the Try on phone button. "USB Debugging" is the Android setting name and may need to stay recognizable.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.ApkSize.Text" translate="no">
+        <source xml:lang="en">Actual app size is %0.</source>
+        <note>ID: PublishTab.Apps.ApkSize.Text</note>
+        <note>Summary text for the actual built app size. %0 is a formatted file size such as 82 MB.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SizeEstimate.OverheadLabel" translate="no">
+        <source xml:lang="en">App overhead</source>
+        <note>ID: PublishTab.Apps.SizeEstimate.OverheadLabel</note>
+        <note>Label for the non-book portion of the estimated app size.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SizeEstimate.OverLimit" translate="no">
+        <source xml:lang="en">This estimate is above the %0 Android app size limit. Choose fewer books or smaller books.</source>
+        <note>ID: PublishTab.Apps.SizeEstimate.OverLimit</note>
+        <note>Warning shown when the estimated app size exceeds the Android size limit. %0 is the size limit, for example 100 MB.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.SizeEstimate.Total" translate="no">
+        <source xml:lang="en">Apps have a maximum size of about %1. The current estimate for this app is %0.</source>
+        <note>ID: PublishTab.Apps.SizeEstimate.Total</note>
+        <note>Summary text for the estimated total app size. %0 is the current estimated app size and %1 is the app size limit, for example 100 MB.</note>
       </trans-unit>
     </body>
   </file>

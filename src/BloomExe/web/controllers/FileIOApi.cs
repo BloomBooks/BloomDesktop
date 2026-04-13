@@ -72,7 +72,6 @@ namespace Bloom.web.controllers
                 HandleCompleteRelativePath,
                 false
             );
-
             apiHandler.RegisterEndpointHandler("fileIO/writeFile", WriteFile, true);
         }
 

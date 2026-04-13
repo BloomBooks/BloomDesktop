@@ -519,7 +519,7 @@ const startBloomExe = (vitePort) => {
 
     const child = spawn(process.execPath, args, {
         cwd: browserUIRoot,
-        stdio: ["ignore", "pipe", "pipe"],
+        stdio: ["inherit", "pipe", "pipe"],
         shell: false,
     });
 

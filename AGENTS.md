@@ -36,6 +36,11 @@ The front-end uses yarn 1.22.22. Never ever use npm.
 # Terminal
 The vscode terminal often loses the first character sent from copilot agents. So if you send "cd" it might just say "bash: d: command not found". Try prefixing commands with a space.
 
+# Running Bloom
+- Do not run an already-built `Bloom.exe` directly, because it may be stale and miss local code changes.
+- Use a source-aware launcher that picks up the current repo state. Right now the default launcher is `./go.sh` at the repo root.
+- Do not launch Bloom with `dotnet run` or `node scripts/watchBloomExe.mjs` unless you are specifically working on the launcher scripts themselves or a better repo-supported source-aware launcher has been documented.
+
 If you create new files for temporary purposes (e.g. output or artifact or log files), be sure to clean them up when you're done and be careful not to accidentally commit them.
 
 # Don't run build

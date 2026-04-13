@@ -19,6 +19,7 @@ using Bloom.Publish.AccessibilityChecker;
 using Bloom.Publish.BloomPub;
 using Bloom.Publish.Epub;
 using Bloom.Publish.PDF;
+using Bloom.Publish.Rab;
 using Bloom.Publish.Video;
 using Bloom.Spreadsheet;
 using Bloom.TeamCollection;
@@ -157,6 +158,7 @@ namespace Bloom
                                 typeof(PublishPdfApi),
                                 typeof(PublishAudioVideoAPI),
                                 typeof(PublishEpubApi),
+                                typeof(RabPublishApi),
                                 typeof(AccessibilityCheckApi),
                                 typeof(CollectionSettingsApi),
                                 typeof(SubscriptionSettingsEditorApi),
@@ -394,6 +396,7 @@ namespace Bloom
             _scope.Resolve<AddOrChangePageApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<PublishApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<PublishToBloomPubApi>().RegisterWithApiHandler(server.ApiHandler);
+            _scope.Resolve<RabPublishApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<PublishPdfApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<PublishAudioVideoAPI>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<PublishEpubApi>().RegisterWithApiHandler(server.ApiHandler);

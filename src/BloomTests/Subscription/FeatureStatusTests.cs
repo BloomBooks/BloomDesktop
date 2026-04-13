@@ -1,3 +1,4 @@
+using Bloom;
 using Bloom.SubscriptionAndFeatures;
 using NUnit.Framework;
 
@@ -94,6 +95,43 @@ namespace BloomTests.FeatureStatusTests
             StringAssert.Contains("\"subscriptionTier\":\"Pro\"", json);
             StringAssert.Contains("\"enabled\":true", json);
             StringAssert.Contains("\"visible\":true", json);
+        }
+
+        [Test]
+        public void GetFeatureStatus_ExperimentalFeatureHiddenUnlessEnabled()
+        {
+            var subscription = Subscription.CreateTempSubscriptionForTier(SubscriptionTier.Pro);
+
+            ExperimentalFeatures.SetValue(ExperimentalFeatures.kAppBuilder, false);
+            var hiddenStatus = FeatureStatus.GetFeatureStatus(subscription, FeatureName.AppBuilder);
+
+            ExperimentalFeatures.SetValue(ExperimentalFeatures.kAppBuilder, true);
+            var visibleStatus = FeatureStatus.GetFeatureStatus(
+                subscription,
+                FeatureName.AppBuilder
+            );
+
+            ExperimentalFeatures.SetValue(ExperimentalFeatures.kAppBuilder, false);
+
+            Assert.That(hiddenStatus.Visible, Is.False);
+            Assert.That(hiddenStatus.Enabled, Is.True);
+            Assert.That(visibleStatus.Visible, Is.True);
+            Assert.That(visibleStatus.Enabled, Is.True);
+        }
+
+        [Test]
+        public void GetFeatureStatus_ExperimentalFeatureStillRequiresSubscription()
+        {
+            var subscription = Subscription.CreateTempSubscriptionForTier(SubscriptionTier.Basic);
+            ExperimentalFeatures.SetValue(ExperimentalFeatures.kAppBuilder, true);
+
+            var status = FeatureStatus.GetFeatureStatus(subscription, FeatureName.AppBuilder);
+
+            ExperimentalFeatures.SetValue(ExperimentalFeatures.kAppBuilder, false);
+
+            Assert.That(status.Visible, Is.True);
+            Assert.That(status.Enabled, Is.False);
+            Assert.That(status.SubscriptionTier, Is.EqualTo(SubscriptionTier.Pro));
         }
 
         [Test]

@@ -151,6 +151,7 @@ const waitForActiveWorkspaceTab = async (
 ) => {
     const deadline = Date.now() + timeoutMs;
 
+    // Wait for Bloom's backend state, not just the click, so callers know the host shell accepted the tab switch.
     while (Date.now() < deadline) {
         const tabs = await getWorkspaceTabs(workspaceTabsEndpoint);
         if (tabs.tabStates?.[tab] === "active") {
@@ -205,6 +206,39 @@ const getBloomPage = (browser) => {
     );
 };
 
+const clickWorkspaceTab = async (page, tab) => {
+    const tabLabel = getTabLabel(tab);
+    const topLevelTab = page.getByRole("tab", { name: tabLabel });
+    if ((await topLevelTab.count()) > 0) {
+        await topLevelTab.first().click();
+        return "top-level-role-tab";
+    }
+
+    const mainTabsButton = page
+        .locator("#main-tabs button")
+        .filter({ hasText: tabLabel });
+    if ((await mainTabsButton.count()) > 0) {
+        await mainTabsButton.first().click();
+        return "top-level-main-tabs";
+    }
+
+    const topBarHandle = await page.$("#topBar");
+    if (!topBarHandle) {
+        throw new Error(
+            `Could not find a workspace tab control for '${tabLabel}' on the main page or in the legacy topBar iframe.`,
+        );
+    }
+
+    const topBarFrame = await topBarHandle.contentFrame();
+    if (!topBarFrame) {
+        throw new Error("The Bloom topBar iframe did not expose a frame.");
+    }
+
+    await topBarFrame.waitForLoadState("domcontentloaded");
+    await topBarFrame.getByRole("tab", { name: tabLabel }).click();
+    return "legacy-topbar-iframe";
+};
+
 const main = async () => {
     const options = parseArgs();
     const tab = normalizeTab(options.tab);
@@ -236,19 +270,7 @@ const main = async () => {
         }
 
         await page.waitForLoadState("domcontentloaded");
-
-        const topBarHandle = await page.$("#topBar");
-        if (!topBarHandle) {
-            throw new Error("Could not find the Bloom topBar iframe.");
-        }
-
-        const topBarFrame = await topBarHandle.contentFrame();
-        if (!topBarFrame) {
-            throw new Error("The Bloom topBar iframe did not expose a frame.");
-        }
-
-        await topBarFrame.waitForLoadState("domcontentloaded");
-        await topBarFrame.getByRole("tab", { name: getTabLabel(tab) }).click();
+        const clickSurface = await clickWorkspaceTab(page, tab);
 
         const tabs = await waitForActiveWorkspaceTab(
             workspaceTabsEndpoint,
@@ -266,6 +288,7 @@ const main = async () => {
                 cdpPort: instance.cdpPort,
             },
             selectedTab: tab,
+            clickSurface,
             bodyClassName,
             pageUrl: page.url(),
             tabStates: tabs.tabStates,
@@ -279,6 +302,7 @@ const main = async () => {
         console.log(`Bloom HTTP port: ${result.instance.httpPort}`);
         console.log(`Bloom CDP port: ${result.instance.cdpPort}`);
         console.log(`Selected tab: ${result.selectedTab}`);
+        console.log(`Click surface: ${result.clickSurface}`);
         console.log(`Body class: ${result.bodyClassName}`);
         console.log(JSON.stringify(result.tabStates));
     } finally {

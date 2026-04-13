@@ -36,6 +36,63 @@
                 "${workspaceFolder}/Bloom.sln"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "flatten-appbuilder-icons",
+            "type": "process",
+            "command": "node",
+            "args": [
+                "${workspaceFolder}/.github/skills/rab-icon-grid-processing/flattenAppBuilderIcons.mjs"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "test-rab-icon-choices",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "test",
+                "${workspaceFolder}/src/BloomTests/BloomTests.csproj",
+                "--filter",
+                "GetAvailableIconChoices"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "crop-appbuilder-icon-samples",
+            "type": "process",
+            "command": "powershell.exe",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.github/skills/rab-icon-grid-processing/cropAppBuilderIconSamples.ps1"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "pilot-extract-appbuilder-icons",
+            "type": "shell",
+            "command": "powershell.exe",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.github/skills/rab-icon-grid-processing/extractAppBuilderIconGridSamples.ps1",
+                "-SourcePaths",
+                "${workspaceFolder}/DistFiles/appbuilder-icons-old/bloom-ai2-01-open-book-stars.png",
+                "${workspaceFolder}/DistFiles/appbuilder-icons-old/bloom-ai2-19-rocket-book.png",
+                "-OutputRoot",
+                "output\\copilot-verify\\appbuilder-icon-samples",
+                "-MaxIconsPerSource",
+                "2",
+                "-StartNumber",
+                "1"
+            ],
+            "isBackground": false,
+            "problemMatcher": []
         }
     ]
 }

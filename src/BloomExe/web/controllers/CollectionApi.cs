@@ -705,9 +705,11 @@ namespace Bloom.web.controllers
                 return;
             }
 
-            string fullImagePath = _collectionModel
+            string fullImagePath;
+            SafeXmlElement imgElement;
+            fullImagePath = _collectionModel
                 .GetBookFromBookInfo(bookInfo)
-                .GetCoverImagePathAndElt(out SafeXmlElement imgElement);
+                .GetCoverImagePathAndElt(out imgElement);
             if (string.IsNullOrEmpty(fullImagePath))
             {
                 HandleThumbnailRequest(request);
