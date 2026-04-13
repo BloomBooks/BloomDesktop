@@ -81,7 +81,8 @@ import { get, postData, postJson, postString } from "../../utils/bloomApi";
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { getExactClientSize } from "../../utils/elementUtils";
-import { copyContentToTarget, getTarget } from "bloom-player";
+import { getTarget } from "bloom-player";
+import { copyContentToTargetAndCleanup } from "./dragActivityRuntimeUtils";
 import { showRequiresSubscriptionDialogInEditView } from "../../react_components/requiresSubscription";
 import { FeatureStatus } from "../../react_components/featureStatus";
 import $ from "jquery";
@@ -2905,7 +2906,7 @@ export class CanvasElementManager {
             this.doAfterNewImageAdjusted();
             this.doAfterNewImageAdjusted = undefined;
         }
-        copyContentToTarget(canvasElement);
+        copyContentToTargetAndCleanup(canvasElement);
     }
 
     // When the image is changed in a canvas element (e.g., choose or paste image),

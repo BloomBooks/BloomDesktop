@@ -292,11 +292,23 @@ export function updateVideoInContainer(container: Element, url: string): void {
             video.appendChild(source);
         }
         if (source) {
-            source.setAttribute("src", url);
+            source.setAttribute("src", addNowParam(url));
+            video.load();
             // Transparent background videos allow the placeholder to show.  See BL-13918.
             container.classList.remove("bloom-noVideoSelected");
         }
     }
+}
+
+function addNowParam(url: string): string {
+    const hashIndex = url.indexOf("#");
+    const hash = hashIndex >= 0 ? url.substring(hashIndex) : "";
+    const beforeHash = hashIndex >= 0 ? url.substring(0, hashIndex) : url;
+    const queryIndex = beforeHash.indexOf("?");
+    const baseUrl =
+        queryIndex >= 0 ? beforeHash.substring(0, queryIndex) : beforeHash;
+
+    return `${baseUrl}?now=${Date.now()}${hash}`;
 }
 
 // configure one of the icons we display over videos. We put a div around it and apply

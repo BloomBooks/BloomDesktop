@@ -10,7 +10,6 @@ import {
     post,
     postDataWithConfig,
     postJson,
-    postThatMightNavigate,
 } from "../../../utils/bloomApi";
 import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
 import { UrlUtils } from "../../../utils/urlUtils";
@@ -20,6 +19,7 @@ import calculateAspectRatio from "calculate-aspect-ratio";
 import VideoTrimSlider from "../../../react_components/videoTrimSlider";
 import { updateVideoInContainer } from "../../js/bloomVideo";
 import { selectVideoContainer } from "../../js/videoUtils";
+import { getCanvasElementManager } from "../canvas/canvasElementUtils";
 import $ from "jquery";
 
 // The recording process can be in one of these states:
@@ -518,13 +518,28 @@ export class SignLanguageToolControls extends React.Component<
         updateVideoInContainer(container, url);
     }
 
+    private refreshAfterVideoChange() {
+        document.removeEventListener("keydown", this.onKeyPress);
+        window.clearTimeout(this.timerId);
+        SignLanguageTool.removeVideoOverlay();
+        this.setState(
+            {
+                recording: false,
+                stateClass: "idle",
+                minutesRecorded: "",
+                secondsRecorded: "",
+                videoInfoLoaded: false,
+            },
+            () => {
+                this.getVideoStatsFromFile();
+            },
+        );
+    }
+
     private importRecording() {
         post("signLanguage/importVideo", (result) => {
             this.updateVideo(result.data);
-            // Makes sure the page gets saved with a reference to the new video,
-            // and incidentally that everything gets updated to be consistent with the
-            // new state of things.
-            postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
+            this.refreshAfterVideoChange();
         });
     }
 
@@ -546,12 +561,7 @@ export class SignLanguageToolControls extends React.Component<
                         if (video && video.parentElement)
                             video.parentElement.removeChild(video);
                     }
-                    // Makes sure the page gets saved without a reference to the deleted video,
-                    // and incidentally that everything gets updated to be consistent with the
-                    // new state of things.
-                    postThatMightNavigate(
-                        "common/saveChangesAndRethinkPageEvent",
-                    );
+                    this.refreshAfterVideoChange();
                 }
             },
         );
@@ -727,12 +737,7 @@ export class SignLanguageToolControls extends React.Component<
                 },
                 (result) => {
                     this.updateVideo(result.data);
-                    // Makes sure the page gets saved with a reference to the new video,
-                    // and incidentally that everything gets updated to be consistent with the
-                    // new state of things.
-                    postThatMightNavigate(
-                        "common/saveChangesAndRethinkPageEvent",
-                    );
+                    this.refreshAfterVideoChange();
                 },
             );
             // Don't know why this is necessary, but for some reason, the stream we have is no
@@ -787,6 +792,18 @@ export class SignLanguageToolControls extends React.Component<
 export class SignLanguageTool extends ToolboxToolReactAdaptor {
     private reactControls: SignLanguageToolControls;
 
+    private static getVideoContainersFromPage(
+        page: HTMLElement,
+        selected?: boolean,
+    ): HTMLElement[] {
+        const selector = selected
+            ? ".bloom-videoContainer.bloom-selected"
+            : ".bloom-videoContainer";
+        return Array.from(page.querySelectorAll(selector)).filter(
+            (container) => !container.closest("[data-target-of]"),
+        ) as HTMLElement[];
+    }
+
     public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
         root.setAttribute("class", "signLanguageBody");
@@ -811,14 +828,11 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
 
     // Specify 'true' to get only containers marked as selected
     public static getVideoContainers(selected?: boolean): HTMLElement[] {
-        let classes = "bloom-videoContainer";
-        if (selected) {
-            classes += " bloom-selected";
-        }
         const page = ToolBox.getPage();
-        return (
-            page ? Array.from(page.getElementsByClassName(classes)) : []
-        ) as HTMLElement[];
+        if (!page) {
+            return [];
+        }
+        return this.getVideoContainersFromPage(page, selected);
     }
 
     public static getSelectedVideoPathAndTiming(): string | null {
@@ -848,6 +862,12 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
 
     public detachFromPage() {
         this.reactControls.setNoVideo(false);
+        this.reactControls.setState({
+            recording: false,
+            stateClass: "idle",
+            minutesRecorded: "",
+            secondsRecorded: "",
+        });
         // Decided NOT to remove bloom-selected here. It's harmless (only the edit stylesheet
         // does anything with it) and leaving it allows us to keep the same one selected
         // when we come back to the page. This is especially important when refreshing the
@@ -910,6 +930,84 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         }
     };
 
+    public showTool() {
+        this.syncSelectionFromCurrentPage();
+    }
+
+    private syncSelectionFromCurrentPage() {
+        const pageBody = ToolBox.getPage();
+        if (!pageBody) {
+            // Tool activation can race with page readiness.
+            window.setTimeout(() => this.syncSelectionFromCurrentPage(), 100);
+            return;
+        }
+
+        const preselectedVideo = pageBody.querySelector(
+            ".bloom-videoContainer.bloom-selected",
+        ) as HTMLElement | null;
+        if (preselectedVideo) {
+            // Normalize any existing selection through videoUtils logic so target copies
+            // cannot remain selected.
+            selectVideoContainer(preselectedVideo);
+        }
+
+        let containers = SignLanguageTool.getVideoContainersFromPage(
+            pageBody,
+            false,
+        );
+        if (containers.length === 0) {
+            const activeCanvasElement =
+                getCanvasElementManager()?.getActiveElement();
+            const activeVideoContainer = activeCanvasElement?.querySelector(
+                ".bloom-videoContainer",
+            ) as HTMLElement | null;
+            if (
+                activeVideoContainer &&
+                !activeVideoContainer.closest("[data-target-of]")
+            ) {
+                selectVideoContainer(activeVideoContainer);
+                containers = [activeVideoContainer];
+            }
+        }
+
+        if (containers.length === 0) {
+            if (this.reactControls.state.enabled) {
+                this.reactControls.turnOffVideo();
+                this.reactControls.setState({
+                    enabled: false,
+                });
+            }
+            return;
+        }
+
+        // We want one video container to be selected, so pick the first.
+        // If one is already marked selected, presumably from a previous use of this page,
+        // we'll leave that one active.
+        const selectedVideos = SignLanguageTool.getVideoContainersFromPage(
+            pageBody,
+            true,
+        );
+        const videoToUse =
+            selectedVideos.length > 0 ? selectedVideos[0] : containers[0];
+        selectVideoContainer(videoToUse);
+        this.updateStateForSelected(videoToUse);
+
+        for (let i = 0; i < containers.length; i++) {
+            const container = containers[i];
+            // UpdateMarkup is called fairlyfrequently. Not sure what effect having
+            // the same listener attached multiple times might have, so play safe by
+            // removing it before adding.
+            container.removeEventListener("click", this.containerClickListener);
+            container.addEventListener("click", this.containerClickListener);
+        }
+        // we turn it off when we leave a page, so even if we already have enabled:true,
+        // we need to turn it on for this page now we know there is something to record.
+        this.reactControls.turnOnVideo();
+        if (!this.reactControls.state.enabled) {
+            this.reactControls.setState({ enabled: true });
+        }
+    }
+
     public newPageReady() {
         // among other things, this clears us out of "processing"
         // when the page is refreshed with the new video
@@ -921,45 +1019,8 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             haveRecording: false,
             videoInfoLoaded: false,
         });
-        const containers = SignLanguageTool.getVideoContainers(false);
-        if (!containers || containers.length === 0) {
-            if (this.reactControls.state.enabled) {
-                this.reactControls.turnOffVideo();
-                this.reactControls.setState({
-                    enabled: false,
-                });
-            }
-        } else {
-            // We want one video container to be selected, so pick the first.
-            // If one is already marked selected, presumably from a previous use of this page,
-            // we'll leave that one active.
-            const selectedVideos = SignLanguageTool.getVideoContainers(true);
-            const videoToUse =
-                selectedVideos.length > 0 ? selectedVideos[0] : containers[0];
-            selectVideoContainer(videoToUse);
-            this.updateStateForSelected(videoToUse);
 
-            for (let i = 0; i < containers.length; i++) {
-                const container = containers[i];
-                // UpdateMarkup is called fairlyfrequently. Not sure what effect having
-                // the same listener attached multiple times might have, so play safe by
-                // removing it before adding.
-                container.removeEventListener(
-                    "click",
-                    this.containerClickListener,
-                );
-                container.addEventListener(
-                    "click",
-                    this.containerClickListener,
-                );
-            }
-            // we turn it off when we leave a page, so even if we already have enabled:true,
-            // we need to turn it on for this page now we know there is something to record.
-            this.reactControls.turnOnVideo();
-            if (!this.reactControls.state.enabled) {
-                this.reactControls.setState({ enabled: true });
-            }
-        }
+        this.syncSelectionFromCurrentPage();
     }
 
     // This (param) container has just been selected as the current one by either:
