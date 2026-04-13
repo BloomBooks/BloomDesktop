@@ -416,6 +416,15 @@ namespace Bloom.Book
             UpdateVariablesAndDataDiv(dom.RawDom, info);
         }
 
+        /// <summary>
+        /// Create or update the data div with all the data-book values in the specified page element.
+        /// </summary>
+        /// <param name="pageElement">This is a page div that we just edited and want to read from.</param>
+        public void SuckInDataFromEditedDom(SafeXmlElement pageElement, BookInfo info = null)
+        {
+            UpdateVariablesAndDataDiv(pageElement, info);
+        }
+
         public void SynchronizeDataItemsThroughoutDOM()
         {
             var itemsToDelete = new HashSet<Tuple<string, string>>();
@@ -1457,7 +1466,7 @@ namespace Bloom.Book
             try
             {
                 string query =
-                    $".//{elementName}[(@data-book or @data-library or @data-collection or @{kDataXmatterPage} or @data-custom-layout-id) and not(contains(@class,'bloom-writeOnly'))]";
+                    $"self::{elementName}[(@data-book or @data-library or @data-collection or @{kDataXmatterPage} or @data-custom-layout-id) and not(contains(@class,'bloom-writeOnly'))] | .//{elementName}[(@data-book or @data-library or @data-collection or @{kDataXmatterPage} or @data-custom-layout-id) and not(contains(@class,'bloom-writeOnly'))]";
 
                 var nodesOfInterest = sourceElement.SafeSelectNodes(query);
 

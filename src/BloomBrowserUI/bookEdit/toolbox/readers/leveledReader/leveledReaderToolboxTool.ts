@@ -70,6 +70,10 @@ export class LeveledReaderToolboxTool implements ITool {
     }
 
     public newPageReady() {
+        // Remount the toggle after the page is ready so it can pick up the
+        // current page body's reader classes instead of the initial placeholder state.
+        createToggle(true);
+
         // Often we could get away without reloading this, but we might
         // have just deleted a page, or duplicated one, or pasted one...
         getTheOneReaderToolsModel().clearWholeBookCache();

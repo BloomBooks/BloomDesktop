@@ -1098,7 +1098,24 @@ namespace Bloom.Edit
                 imgElt,
                 new NullProgress()
             );
+            if (_nextSaveMustBeFull)
+            {
+                // We've changed the metadata on the current page, but a full save will
+                // try to sync everything using the data-div, which has not yet been updated.
+                // It comes before the page, so the out-of-date copy there will overwrite the
+                // changes we just made. The simplest way to prevent this is to update the
+                // data-div to match the current page before we do the full save.
+                UpdateDataDivFromCurrentPage();
+            }
             RefreshDisplayOfCurrentPage();
+        }
+
+        private void UpdateDataDivFromCurrentPage()
+        {
+            CurrentBook.BookData.SuckInDataFromEditedDom(
+                _pageSelection.CurrentSelection.GetDivNodeForThisPage(),
+                CurrentBook.BookInfo
+            );
         }
 
         private DataSet _pageDataBeforeEdits;
@@ -1349,6 +1366,7 @@ namespace Bloom.Edit
                 "img { image-rendering: optimizeSpeed; image-rendering: crisp-edges; }";
             pageListDom.RawDom.GetElementsByTagName("head")[0].AppendChild(style);
         }
+
         internal void SaveToolboxSettings(string data)
         {
             // ref BL-9859, BL-9912, BL-9978

@@ -44,11 +44,14 @@ export const ReaderToolSwitch: React.FunctionComponent<{
                     // Toggle the display of the reader tool UI.
                     document
                         .getElementById(prefix + "-reader-tool-content")
-                        ?.classList.toggle("turned-off");
+                        ?.classList.toggle("turned-off", !checked);
 
                     // Set the class on the page we are currently working with in edit mode.
                     // This just ensures our display is correct while editing. Persisting the value is done below.
-                    ToolBox.getPage()?.classList.toggle(`${prefix}-reader`);
+                    ToolBox.getPage()?.classList.toggle(
+                        `${prefix}-reader`,
+                        checked,
+                    );
 
                     // If we toggle the reader tool, we need to update the markup.
                     applyToolboxStateToUpdatedPage();
