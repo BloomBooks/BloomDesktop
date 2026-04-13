@@ -24,7 +24,7 @@ const BookGridSetup: React.FC<{
     const [targets, setTargets] = useState<Link[]>(props.links); // initialize with links prop
     const showsBooksInApp = props.targetLabel === "books-in-app";
     const targetHeader = useL10n(
-        showsBooksInApp ? "Book in App (%0)" : "Links in Grid (%0)",
+        showsBooksInApp ? "Books in App (%0)" : "Links in Grid (%0)",
         showsBooksInApp
             ? "BookGridSetup.BooksInApp"
             : "BookGridSetup.LinksInGrid",

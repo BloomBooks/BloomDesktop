@@ -1423,9 +1423,9 @@
         <note>Warning shown when the estimated app size exceeds the Android size limit. %0 is the size limit, for example 100 MB.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SizeEstimate.Total" translate="no">
-        <source xml:lang="en">Apps have a maximum size of about 100mb. The current estimate for this app is %0.</source>
+        <source xml:lang="en">Apps have a maximum size of about %1. The current estimate for this app is %0.</source>
         <note>ID: PublishTab.Apps.SizeEstimate.Total</note>
-        <note>Summary text for the estimated total app size. %0 is a formatted file size such as 82 MB.</note>
+        <note>Summary text for the estimated total app size. %0 is the current estimated app size and %1 is the app size limit, for example 100 MB.</note>
       </trans-unit>
     </body>
   </file>
