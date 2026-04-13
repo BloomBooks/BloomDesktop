@@ -51,6 +51,9 @@ export const AppBuilderChooseBooksDialog: React.FunctionComponent<{
         title: book.title,
         thumbnail: `/bloom/api/collections/book/coverImage?book-id=${book.id}`,
     }));
+    const bookIdsToFolderNames = Object.fromEntries(
+        collectionBooks.map((book) => [book.id, book.folderName]),
+    );
     const initialLinks: BookSelectionLink[] = props.currentBooks.map(
         (book) => ({
             book: {
@@ -125,7 +128,15 @@ export const AppBuilderChooseBooksDialog: React.FunctionComponent<{
                 >
                     <BookGridSetup
                         sourceBooks={sourceBooks}
-                        links={selectedLinks}
+                        links={selectedLinks.map((link) => ({
+                            ...link,
+                            book: {
+                                ...link.book,
+                                folderName:
+                                    bookIdsToFolderNames[link.book.id] ??
+                                    link.book.folderName,
+                            },
+                        }))}
                         onLinksChanged={setSelectedLinks}
                         targetLabel="books-in-app"
                     />
